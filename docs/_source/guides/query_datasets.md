@@ -1,9 +1,16 @@
-# Queries
+# 🔎 Query datasets
 
 The search in Argilla is driven by Elasticsearch's powerful [query string syntax](https://www.elastic.co/guide/en/elasticsearch/reference/7.10/query-dsl-query-string-query.html#query-string-syntax).
 It allows you to perform simple fuzzy searches of words and phrases, or complex queries taking full advantage of Argilla's data model.
 
-These queries can be used in the search bar of the Argilla web app, or with the Python client as optional arguments.
+The same query can be used in the search bar of the Argilla web app, or with the Python client as optional arguments.
+
+
+```python
+import argilla as rg
+
+rg.load("my_dataset", query="text.exact:example")
+```
 
 ## Search fields
 
