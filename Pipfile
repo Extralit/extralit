@@ -5,6 +5,7 @@ name = "pypi"
 
 [packages]
 argilla = {file = ".", editable = true}
+pipfile = "*"
 
 [dev-packages]
 

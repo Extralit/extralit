@@ -18,15 +18,18 @@ spec:
         - name: wait-for-elasticsearch
           image: alpine/curl:latest
           command: [ "sh", "-c",
-            "ELASTICSEARCH_URL='http://elasticsearch:9200'; status_code=$(curl -s -o /dev/null -w '%{http_code}' $ELASTICSEARCH_URL);
+            "ELASTICSEARCH_URL='https://elastic:$(ELASTIC_PASSWORD)@elasticsearch-master:9200'; status_code=$(curl -s -k -o /dev/null -w '%{http_code}' $ELASTICSEARCH_URL);
           while [ $status_code -ne 200 ]; do sleep 5; status_code=$(curl -s -o /dev/null -w '%{http_code}' $ELASTICSEARCH_URL);
           echo Sleeping...; done; echo Elasticsearch Connected " ]
+          env:
+            - name: ELASTIC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: elasticsearch-master-credentials
+                  key: password
       containers:
         - name: argilla-server
-          image: argilla/argilla-server:latest
-          env:
-            - name: ARGILLA_ELASTICSEARCH
-              value: "http://elasticsearch:9200"
+          image: argilla/argilla-server:develop
           ports:
             - containerPort: 6900
           resources:
@@ -34,3 +37,22 @@ spec:
               cpu: "0.5"
             limits:
               cpu: "1"
+          env:
+            - name: ARGILLA_ELASTICSEARCH
+              value: "https://elastic:$(ELASTIC_PASSWORD)@elasticsearch-master:9200"
+            - name: ELASTIC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: elasticsearch-master-credentials
+                  key: password
+            - name: ARGILLA_ELASTICSEARCH_SSL_VERIFY
+              value: "False"
+            - name: ARGILLA_ELASTICSEARCH_CA_PATH
+              value: /usr/share/elasticsearch/config/certs/ca.crt
+          volumeMounts:
+            - name: elasticsearch-master-certs
+              mountPath: /usr/share/elasticsearch/config/certs
+      volumes:
+        - name: elasticsearch-master-certs
+          secret:
+            secretName: elasticsearch-master-certs
