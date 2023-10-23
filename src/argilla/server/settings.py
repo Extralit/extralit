@@ -206,3 +206,4 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+print("Settings", settings)

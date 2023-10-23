@@ -22,6 +22,7 @@ import { translations } from "./translation";
 
 const LOCAL_ENVIRONMENT = "http://localhost:6900";
 const BASE_URL = process.env.API_BASE_URL ?? LOCAL_ENVIRONMENT;
+console.log("API_BASE_URL", BASE_URL);
 const DIST_FOLDER = process.env.DIST_FOLDER || "dist";
 
 const config: NuxtConfig = {
