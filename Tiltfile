@@ -29,13 +29,13 @@ helm_resource(
 # argilla-server is the backend (FastAPI + SQL)
 docker_build(
     'itnrecal-argilla-hf',
-    '.',
-    dockerfile='docker/api.dockerfile',
+    context='.',
     build_args={'ENV': ENV},
-    ignore=['./src/argilla/__pycache__', './frontend', './docs', './build', './k8s', './scripts', './dist'],
+    dockerfile='./docker/api.dockerfile',
+    only=['./src/argilla', './docker/', './dist/', './scripts/'],
     live_update=[
         # Sync the source code to the container
-        sync('./src/', '/home/argilla/src'),
+        sync('./src/', '/home/argilla/src/'),
         sync('./docker/scripts/start_argilla_server.sh', '/home/argilla/'),
         # Restart the server to pick up code changes
         run('/bin/bash start_argilla_server.sh', trigger='./docker/scripts/start_argilla_server.sh')

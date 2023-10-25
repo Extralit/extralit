@@ -1,0 +1,11 @@
+apiVersion: ctlptl.dev/v1alpha1
+kind: Cluster
+product: kind
+registry: ctlptl-registry
+kindV1Alpha4Cluster:
+  name: kind
+  nodes:
+  - role: control-plane
+    extraMounts:
+    - hostPath: /Users/jonnytr/kind-volumes/elasticsearch
+      containerPath: /usr/share/elasticsearch/data
