@@ -27,7 +27,7 @@ RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 # Copy the scripts and install uvicorn
-COPY docker/scripts/start_argilla_server.sh /home/argilla
+COPY docker/scripts/start_argilla_server.sh /home/argilla/
 RUN chmod +x /home/argilla/start_argilla_server.sh && \
   pip install uvicorn[standard] && \
   for wheel in /packages/*.whl; do pip install "$wheel"[server,postgresql]; done && \

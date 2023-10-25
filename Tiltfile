@@ -23,16 +23,16 @@ helm_resource(
     deps=['./k8s/helm/elasticsearch-helm.yaml'],
     port_forwards=['9200'],
     labels=['elasticsearch']
-    )
+)
 
 
-# argilla-server is the backend (FastAPI + SQL)
+# argilla-server is the web backend (FastAPI + SQL database)
 docker_build(
-    'itnrecal-argilla-hf',
+    'itnrecal-argilla-server',
     context='.',
     build_args={'ENV': ENV},
     dockerfile='./docker/api.dockerfile',
-    only=['./src/argilla', './docker/', './dist/', './scripts/'],
+    only=['./src/argilla/', './docker/', './dist/'],
     live_update=[
         # Sync the source code to the container
         sync('./src/', '/home/argilla/src/'),
@@ -47,4 +47,28 @@ k8s_resource(
   'argilla-server-deployment',
   port_forwards=['6900'],
   labels=['argilla-server'],
+)
+
+# argilla-frontend is the web interface (Vue.js + Nuxt)
+docker_build(
+    'itnrecal-argilla-frontend',
+    context='.',
+    build_args={'ENV': ENV},
+    dockerfile='./docker/web.dockerfile',
+    only=['./frontend/', './scripts/'],
+    ignore=['./frontend/.nuxt/', './frontend/node_modules/', './fronend/package-lock.json'],
+    live_update=[
+        fall_back_on('./frontend/nuxt.config.ts'),
+        # Sync the frontend directory to the container
+        sync('./frontend/', '/home/argilla/frontend/'),
+        # Restart the server to pick up code changes
+        run('npm install', trigger=['./frontend/package.json']),
+    ]
+)
+
+k8s_yaml('./k8s/argilla-frontend-deployment.yaml')
+k8s_resource(
+  'argilla-frontend-deployment',
+  port_forwards=['3000'],
+  labels=['argilla-frontend'],
 )

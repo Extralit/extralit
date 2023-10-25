@@ -29,7 +29,7 @@ spec:
                   key: password
       containers:
         - name: argilla-server
-          image: itnrecal-argilla-hf
+          image: itnrecal-argilla-server
           ports:
             - containerPort: 6900
           resources:
