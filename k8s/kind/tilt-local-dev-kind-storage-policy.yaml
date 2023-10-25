@@ -2,8 +2,6 @@ apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: k8-storage-policy
-  labels:
-    app: elasticsearch
 provisioner: rancher.io/local-path
 reclaimPolicy: Delete
 volumeBindingMode: Immediate
@@ -11,19 +9,16 @@ volumeBindingMode: Immediate
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: local-pv
-  labels:
-    app: elasticsearch
+  name: my-pv
 spec:
   capacity:
     storage: 4Gi  # specify the size of the volume
-  volumeMode: Filesystem  # can also be Block
   accessModes:
     - ReadWriteOnce  # The volume can be mounted as read-write by a single node
   storageClassName: k8s-storage-policy  # name of the StorageClass
-  persistentVolumeReclaimPolicy: Delete  # Retain the volume data when the PVC is deleted
+  persistentVolumeReclaimPolicy: Retain  # Retain the volume data when the PVC is deleted
   local:
-    path: "/Users/jonnytr/kind-volumes/elasticsearch"  # path on the host where the data is stored
+    path: "/Users/jonnytr/kind-volumes/elasticsearch"
   nodeAffinity:
     required:
       nodeSelectorTerms:

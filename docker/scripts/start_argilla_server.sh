@@ -22,8 +22,8 @@ fi
 #   UVICORN_PORT to 5000.
 
 # Check for ARGILLA_BASE_URL and add --root-path if present
-if [ -n "$ARGILLA_BASE_URL" ]; then
-	python -m uvicorn argilla:app --host "0.0.0.0" --root-path "$ARGILLA_BASE_URL"
+if [[ "$ENV" == "dev" ]]; then
+    python -m uvicorn argilla:app --host "0.0.0.0" --reload
 else
 	python -m uvicorn argilla:app --host "0.0.0.0"
 fi
