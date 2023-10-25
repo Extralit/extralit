@@ -1,13 +1,9 @@
 #!/usr/bin/bash
 set -e
 
-export ARGILLA_ELASTICSEARCH=https://elastic:eL69E=ZEKq3LF*IbsOAT@localhost:9200
-export ARGILLA_ELASTICSEARCH_SSL_VERIFY="False"
-export DEFAULT_USER_ENABLED="true"
-export DEFAULT_USER_PASSWORD="1234"
-export DEFAULT_USER_API_KEY="1234"
+export ARGILLA_ELASTICSEARCH=https://elastic:$ELASTIC_PASSWORD@$ARGILLA_ELASTICSEARCH_HOST
+echo $ARGILLA_ELASTICSEARCH
 export ARGILLA_ENABLE_TELEMETRY=0
-export API_BASE_URL="http://localhost:8000"
 
 # Run database migrations
 python -m argilla server database migrate
