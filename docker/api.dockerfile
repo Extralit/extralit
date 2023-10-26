@@ -33,14 +33,17 @@ RUN chmod +x /home/argilla/start_argilla_server.sh && \
   for wheel in /packages/*.whl; do pip install "$wheel"[server,postgresql]; done && \
   rm -rf /packages
 
+# Copy the entire repository into /home/argilla in the container
+COPY . /home/argilla/
+
+# Change the ownership of the /home/argilla directory to the new user
+RUN chown -R argilla:argilla /home/argilla
+
 # Switch to the argilla user
 USER argilla
 
 # Set the working directory
 WORKDIR /home/argilla/
-
-# Copy the entire repository into /home/argilla in the container
-COPY . /home/argilla/
 
 # Expose the necessary port
 EXPOSE 6900

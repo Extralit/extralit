@@ -45,6 +45,7 @@ These development tools
 ### Set up local infrastructure
 
 1. Create a `kind` cluster
+
 ```bash
 ctlptl create registry ctlptl-registry --port=5005
 ctlptl create cluster kind --registry=ctlptl-registry
@@ -52,8 +53,10 @@ ctlptl create cluster kind --registry=ctlptl-registry
 
 
 2. Apply config to mount local directory
-> ctlptl apply -f k8s/kind/kind-config.yaml
 
+```bash
+ctlptl apply -f k8s/kind/kind-config.yaml
+```
 
 ### Start local development
 

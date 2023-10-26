@@ -3,7 +3,7 @@ kind: StorageClass
 metadata:
   name: k8-storage-policy
 provisioner: rancher.io/local-path
-reclaimPolicy: Delete
+reclaimPolicy: Retain
 volumeBindingMode: Immediate
 ---
 apiVersion: v1
@@ -17,7 +17,7 @@ spec:
   accessModes:
     - ReadWriteOnce  # The volume can be mounted as read-write by a single node
   storageClassName: k8s-storage-policy  # name of the StorageClass
-  persistentVolumeReclaimPolicy: Delete  # Retain the volume data when the PVC is deleted
+  persistentVolumeReclaimPolicy: Retain  # Retain the volume data when the PVC is deleted
   local:
     path: "/usr/share/elasticsearch/data"  
   nodeAffinity:
