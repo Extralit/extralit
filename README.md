@@ -57,7 +57,13 @@ ctlptl create cluster kind --registry=ctlptl-registry
 
 ### Start local development
 
-1. Check
+1. Run Tilt on kind kub
+
+```bash
+kubectl config set-cluster kind
+kubectl create ns argilla-hf
+ENV=dev tilt up --namespace=argilla-hf
+```
 
 ## 🛠️ Project Architecture
 

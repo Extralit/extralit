@@ -7,14 +7,12 @@ RUN useradd -ms /bin/bash argilla
 # Set the working directory
 WORKDIR /home/argilla/
 
-# Change the ownership of the /home/appuser directory to the new user
-RUN chown -R argilla:argilla /home/argilla
-
-# Copy the frontend directory to the container
 COPY frontend/ ./frontend/
-
-# Copy the scripts/build_frontend.sh script to the container
 COPY scripts/ ./scripts/
+COPY docs/ ./docs/
+
+# Change the ownership of the /home/argilla directory to the new user
+RUN chown -R argilla:argilla /home/argilla
 
 # Switch to the new user
 USER argilla
@@ -26,4 +24,4 @@ RUN chmod +x ./scripts/build_frontend.sh && /bin/bash ./scripts/build_frontend.s
 EXPOSE 3000
 
 # Command to run the application
-CMD /bin/bash -c "cd frontend && npm run dev"
+CMD /bin/bash -c "ls -al *; cd frontend && npm run dev"

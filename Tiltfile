@@ -55,14 +55,14 @@ docker_build(
     context='.',
     build_args={'ENV': ENV},
     dockerfile='./docker/web.dockerfile',
-    only=['./frontend/', './scripts/'],
-    ignore=['./frontend/.nuxt/', './frontend/node_modules/', './fronend/package-lock.json'],
+    only=['./frontend/', './scripts/', './docs/'],
+    ignore=['./frontend/.nuxt/', './frontend/node_modules/', './frontend/package-lock.json'],
     live_update=[
         fall_back_on('./frontend/nuxt.config.ts'),
         # Sync the frontend directory to the container
         sync('./frontend/', '/home/argilla/frontend/'),
-        # Restart the server to pick up code changes
-        run('npm install', trigger=['./frontend/package.json']),
+        sync('./docs/', '/home/argilla/docs/'),
+        run('npm install', trigger=['./frontend/package.json'])
     ]
 )
 

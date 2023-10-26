@@ -17,3 +17,12 @@ spec:
         image: itnrecal-argilla-frontend  # This should match the container name used in Tiltfile
         ports:
         - containerPort: 3000
+        resources:
+          requests:
+            cpu: "0.5"
+          limits:
+            cpu: "1"
+        env:
+          - name: API_BASE_URL
+            value: "argilla-server:6900"
+  

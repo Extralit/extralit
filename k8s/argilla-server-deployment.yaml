@@ -40,6 +40,8 @@ spec:
           env:
             - name: ARGILLA_ELASTICSEARCH_HOST
               value: "elasticsearch-master:9200"
+            - name: ARGILLA_CORS_ORIGINS
+              value: '["*", "argilla-frontend"]'
             - name: ELASTIC_PASSWORD
               valueFrom:
                 secretKeyRef:
