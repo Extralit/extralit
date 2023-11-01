@@ -69,6 +69,6 @@ docker_build(
 k8s_yaml('./k8s/argilla-frontend-deployment.yaml')
 k8s_resource(
   'argilla-frontend-deployment',
-  port_forwards=['3000'],
+  port_forwards='3000:3000',
   labels=['argilla-frontend'],
 )

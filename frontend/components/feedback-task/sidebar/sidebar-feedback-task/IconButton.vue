@@ -1,7 +1,7 @@
 <template>
   <BaseButton
     class="icon-button"
-    :class="sidebarButtonClass"
+    :class="[sidebarButtonClass, tooltipClass]"
     :data-title="tooltip"
     @on-click="onClickIcon"
   >
@@ -65,6 +65,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    tooltipPosition: {
+      type: String,
+      default: "left",
+    }
   },
   computed: {
     sidebarButtonClass() {
@@ -75,6 +79,10 @@ export default {
     },
     buttonStateClass() {
       return this.isButtonActive ? "active" : null;
+    },
+    tooltipClass() {
+      console.log(this.id, 'tooltipPosition', this.tooltipPosition);
+      return this.tooltipPosition === 'left' ? 'has-tooltip--left' : 'has-tooltip--right';
     },
   },
   methods: {
@@ -140,8 +148,16 @@ export default {
     transform: translateX(0);
   }
 }
+
 .icon-button[data-title] {
   position: relative;
+}
+
+.has-tooltip--left {
   @extend %has-tooltip--left;
+}
+
+.has-tooltip--right {
+  @extend %has-tooltip--right;
 }
 </style>

@@ -32,6 +32,10 @@
           @refresh="refresh()"
         />
       </template>
+      <template v-slot:sidebar-left>
+        <SidebarPDFViewerComponent
+        />
+      </template>
       <template v-slot:top>
         <section class="dataset__top-area">
           <DatasetFiltersComponent :recordCriteria="recordCriteria" />
@@ -52,12 +56,14 @@
 <script>
 import HeaderAndTopAndOneColumn from "@/layouts/HeaderAndTopAndOneColumn";
 import { useAnnotationModeViewModel } from "./useAnnotationModeViewModel";
+import SidebarPDFViewerComponent from "~/components/feedback-task/sidebar/SidebarPDFViewer.component.vue";
 
 export default {
   name: "DatasetPage",
   components: {
     HeaderAndTopAndOneColumn,
-  },
+    SidebarPDFViewerComponent
+},
   data() {
     return {
       visibleTrainModal: false,

@@ -7,8 +7,11 @@
     <div class="footer-area">
       <slot name="footer">here is the footer</slot>
     </div>
-    <div class="sidebar-area">
-      <slot name="sidebar-right">here is the sidebar content left</slot>
+    <div class="sidebar-area-right">
+      <slot name="sidebar-right">here is the sidebar content right</slot>
+    </div>
+    <div class="sidebar-area-left">
+      <slot name="sidebar-left">here is the sidebar content left</slot>
     </div>
     <div class="top-area">
       <slot name="top">here is the top content</slot>
@@ -71,8 +74,11 @@ $gap-width: $base-space * 7;
 .footer-area {
   grid-area: 5 / 1 / 5 / 4;
 }
-.sidebar-area {
+.sidebar-area-right {
   grid-area: 2 / 4 / 5 / 5;
+}
+.sidebar-area-left {
+  grid-area: 2 / 1 / 5 / 2;
 }
 .empty-content-right {
   grid-area: 2 / 3 / 4 / 4;

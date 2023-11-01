@@ -1,31 +1,30 @@
 <template>
   <div class="sidebar__container">
-    <SidebarFeedbackTaskPanel v-if="isPanelVisible" @close-panel="closePanel">
-      <HelpShortcut v-if="currentPanel === 'help-shortcut'" />
-      <FeedbackTaskProgress
-      v-else-if="currentPanel === 'metrics'"
-      :datasetId="datasetId"
-      />
-    </SidebarFeedbackTaskPanel>
-    <SidebarFeedbackTask
+    <SidebarPDFPanel v-if="isPanelVisible" @close-panel="closePanel">
+      <!-- <PDFViewer 
+        v-if="currentPanel === 'pdf'"
+        :pdfUrl="pdfUrl" 
+      /> -->
+    </SidebarPDFPanel>
+
+    <SidebarPDFMenu
       @on-click-sidebar-action="onClickSidebarAction"
       :sidebar-items="sidebarItems"
       :active-buttons="[currentPanel, currentMode]"
       :expanded-component="currentPanel"
     />
+    
   </div>
 </template>
-
+  
 <script>
-import "assets/icons/progress";
-import "assets/icons/refresh";
 import "assets/icons/shortcuts";
-
+  
 export default {
   props: {
     datasetId: {
       type: String,
-      required: true,
+      required: false,
     },
   },
   data: () => ({
@@ -43,6 +42,7 @@ export default {
             tooltip: "Progress",
             icon: "progress",
             action: "show-metrics",
+            tooltipPosition: "right",
             type: "expandable",
             component: "FeedbackTaskProgress",
           },
@@ -51,27 +51,27 @@ export default {
       secondGroup: {
         buttonType: "default",
         buttons: [
-          {
-            id: "refresh",
-            tooltip: "Refresh",
-            icon: "refresh",
-            group: "Refresh",
-            type: "non-expandable",
-            action: "refresh",
-          },
+          // {
+          //   id: "refresh",
+          //   tooltip: "Refresh",
+          //   icon: "refresh",
+          //   group: "Refresh",
+          //   type: "non-expandable",
+          //   action: "refresh",
+          // },
         ],
       },
       bottomGroup: {
         buttonType: "expandable",
         buttons: [
-          {
-            id: "help-shortcut",
-            tooltip: "Shortcuts",
-            icon: "shortcuts",
-            action: "show-help",
-            type: "custom-expandable",
-            component: "HelpShortcut",
-          },
+          // {
+          //   id: "help-shortcut",
+          //   tooltip: "Shortcuts",
+          //   icon: "shortcuts",
+          //   action: "show-help",
+          //   type: "custom-expandable",
+          //   component: "HelpShortcut",
+          // },
         ],
       },
     };
@@ -106,7 +106,7 @@ export default {
       $nuxt.$emit("on-sidebar-toggle-panel", null);
     },
   },
-};
+}
 </script>
 
 <style lang="scss" scoped>
@@ -114,7 +114,7 @@ export default {
   &__container {
     position: fixed;
     display: flex;
-    right: 0;
+    left: 0;
     z-index: 1;
     pointer-events: none;
   }
