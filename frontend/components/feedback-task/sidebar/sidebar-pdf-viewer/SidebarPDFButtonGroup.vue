@@ -76,7 +76,7 @@ export default {
     }
     &.bottomGroup {
       margin-top: auto;
-      margin-bottom: $base-space * 2;
+      margin-bottom: 0;
     }
     .custom-expandable :deep(svg) {
       fill: palette(purple, 200);

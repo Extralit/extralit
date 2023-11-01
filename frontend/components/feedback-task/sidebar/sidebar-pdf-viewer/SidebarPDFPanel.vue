@@ -127,10 +127,10 @@ export default {
 }
 @keyframes slide {
   0% {
-    right: -$sidebarPdfViewerWidth + 1px;
+    left: -$sidebarPdfViewerWidth;
   }
   100% {
-    right: 0;
+    left: 0;
   }
 }
 @keyframes fade {

@@ -69,14 +69,17 @@ $sidebar-button-size: 45px;
 .sidebar {
   display: flex;
   flex-direction: column;
+  // justify-content: flex-start;  /* Ensure items start at the top */
+  // align-items: flex-start;  /* Align items to the left */
   gap: 1em;
-  top: 0;
+  // top: 0;
   width: $sidebar-button-size;
   min-width: $sidebar-button-size;
   // min-height: calc(100vh - $topbarHeight);
   min-width: $sidebarMenuWidth;
   background: palette(grey, 700);
   border-right: 1px solid $black-10;
+  border-bottom: 1px solid $black-10;
   box-shadow: none;
   pointer-events: all;
   transition: box-shadow 0.2s ease-in-out 0.4s;
@@ -100,11 +103,6 @@ $sidebar-button-size: 45px;
   &__info {
     position: relative;
   }
-}
-
-.icon-button[data-title] {
-  position: relative;
-  @extend %has-tooltip--right;
 }
 </style>
   

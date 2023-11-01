@@ -29,6 +29,7 @@ export default {
   data: () => {
     return {
       showPanel: false,
+      showPDFPanel: false,
     };
   },
   computed: {
@@ -40,9 +41,14 @@ export default {
     this.$nuxt.$on("on-sidebar-toggle-panel", (value) => {
       this.showPanel = value;
     });
+
+    this.$nuxt.$on("on-sidebar-pdf-toggle-panel", (value) => {
+      this.showPDFPanel = value;
+    });
   },
   beforeDestroy() {
     this.$nuxt.$off("on-sidebar-toggle-panel");
+    this.$nuxt.$off("on-sidebar-pdf-toggle-panel");
   },
 };
 </script>

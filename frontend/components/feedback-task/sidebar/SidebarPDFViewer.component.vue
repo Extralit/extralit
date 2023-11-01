@@ -1,6 +1,6 @@
 <template>
   <div class="sidebar__container">
-    <SidebarPDFPanel v-if="isPanelVisible" @close-panel="closePanel">
+    <SidebarPDFPanel v-if="isPanelVisible" @close-panel="closePDFPanel">
       <!-- <PDFViewer 
         v-if="currentPanel === 'pdf'"
         :pdfUrl="pdfUrl" 
@@ -39,8 +39,8 @@ export default {
         buttons: [
           {
             id: "metrics",
-            tooltip: "Progress",
-            icon: "progress",
+            tooltip: "PDF Viewer",
+            icon: "search",
             action: "show-metrics",
             tooltipPosition: "right",
             type: "expandable",
@@ -61,19 +61,19 @@ export default {
           // },
         ],
       },
-      bottomGroup: {
-        buttonType: "expandable",
-        buttons: [
-          // {
-          //   id: "help-shortcut",
-          //   tooltip: "Shortcuts",
-          //   icon: "shortcuts",
-          //   action: "show-help",
-          //   type: "custom-expandable",
-          //   component: "HelpShortcut",
-          // },
-        ],
-      },
+      // bottomGroup: {
+      //   buttonType: "expandable",
+      //   buttons: [
+      //     // {
+      //     //   id: "help-shortcut",
+      //     //   tooltip: "Shortcuts",
+      //     //   icon: "shortcuts",
+      //     //   action: "show-help",
+      //     //   type: "custom-expandable",
+      //     //   component: "HelpShortcut",
+      //     // },
+      //   ],
+      // },
     };
   },
   methods: {
@@ -98,12 +98,12 @@ export default {
 
       this.isPanelVisible = !!this.currentPanel;
 
-      $nuxt.$emit("on-sidebar-toggle-panel", this.isPanelVisible);
+      $nuxt.$emit("on-sidebar-pdf-toggle-panel", this.isPanelVisible);
     },
-    closePanel() {
+    closePDFPanel() {
       this.isPanelVisible = false;
       this.currentPanel = null;
-      $nuxt.$emit("on-sidebar-toggle-panel", null);
+      $nuxt.$emit("on-sidebar-pdf-toggle-panel", null);
     },
   },
 }

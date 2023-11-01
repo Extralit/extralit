@@ -81,7 +81,6 @@ export default {
       return this.isButtonActive ? "active" : null;
     },
     tooltipClass() {
-      console.log(this.id, 'tooltipPosition', this.tooltipPosition);
       return this.tooltipPosition === 'left' ? 'has-tooltip--left' : 'has-tooltip--right';
     },
   },
