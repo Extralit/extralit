@@ -163,6 +163,7 @@ class FeedbackRecord(BaseModel):
         external_id: The external ID of the record, which means that the user can
             specify this ID to identify the record no matter what the Argilla ID is.
             Defaults to None.
+        document_id: The ID of the document that the record belongs to. Defaults to None.
 
     Examples:
         >>> from argilla.client.feedback.schemas.records import FeedbackRecord, ResponseSchema, SuggestionSchema, ValueSchema
@@ -197,6 +198,8 @@ class FeedbackRecord(BaseModel):
     responses: List[ResponseSchema] = Field(default_factory=list)
     suggestions: Union[Tuple[SuggestionSchema], List[SuggestionSchema]] = Field(default_factory=tuple)
     external_id: Optional[str] = None
+
+    document_id: Optional[str] = None
 
     _unified_responses: Optional[Dict[str, List["UnifiedValueSchema"]]] = PrivateAttr(default_factory=dict)
 

@@ -42,6 +42,7 @@ from argilla.server.apis.v1.handlers import responses as responses_v1
 from argilla.server.apis.v1.handlers import suggestions as suggestions_v1
 from argilla.server.apis.v1.handlers import users as users_v1
 from argilla.server.apis.v1.handlers import workspaces as workspaces_v1
+from argilla.server.apis.v1.handlers import documents as documents_v1
 from argilla.server.errors.base_errors import __ALL__
 
 api_router = APIRouter(responses={error.HTTP_STATUS: error.api_documentation() for error in __ALL__})
@@ -74,3 +75,4 @@ api_router.include_router(responses_v1.router, prefix="/v1")
 api_router.include_router(users_v1.router, prefix="/v1")
 api_router.include_router(workspaces_v1.router, prefix="/v1")
 api_router.include_router(suggestions_v1.router, prefix="/v1")
+api_router.include_router(documents_v1.router, prefix="/v1")

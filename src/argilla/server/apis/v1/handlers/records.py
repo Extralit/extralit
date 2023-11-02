@@ -54,7 +54,7 @@ async def _get_record(
 async def update_record(
     *,
     db: AsyncSession = Depends(get_async_db),
-    search_engine: SearchEngine = Depends(get_search_engine),
+    search_engine: SearchdddEngine = Depends(get_search_engine),
     record_id: UUID,
     record_update: RecordUpdate,
     current_user: User = Security(auth.get_current_user),

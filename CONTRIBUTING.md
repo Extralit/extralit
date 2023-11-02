@@ -8,7 +8,7 @@ conda activate argilla
 ```
 
 ## Updating the database schema
-modify the code in `[src/argilla/server/models/database.py](src/argilla/server/models/database.py)` to update the database declarative schema. 
+Modify the `[database model code](src/argilla/server/models/database.py)` to define the database's declarative schema.
 
 Then, to apply the changes to the database run the following command:
 

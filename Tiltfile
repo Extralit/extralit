@@ -20,7 +20,7 @@ helm_resource(
     flags=[
         '--version=8.5.1',
         '--values=./k8s/helm/elasticsearch-helm.yaml'],
-    deps=['./k8s/helm/elasticsearch-helm.yaml'],
+    deps=['./k8s/helm/elasticsearch-helm.yaml', 'elastic'],
     port_forwards=['9200'],
     labels=['elasticsearch']
 )
@@ -32,10 +32,12 @@ docker_build(
     context='.',
     build_args={'ENV': ENV},
     dockerfile='./docker/api.dockerfile',
-    only=['./src/argilla/', './docker/', './dist/'],
+    only=['./src/argilla/', './docker/', './dist/', './src/argilla/server/alembic/versions/'],
     live_update=[
         # Sync the source code to the container
+        fall_back_on('./src/argilla/server/'),
         sync('./src/', '/home/argilla/src/'),
+        sync('./src/argilla/server/alembic/versions/', '/home/argilla/src/argilla/server/alembic/versions/'),
         sync('./docker/scripts/start_argilla_server.sh', '/home/argilla/'),
         # Restart the server to pick up code changes
         run('/bin/bash start_argilla_server.sh', trigger='./docker/scripts/start_argilla_server.sh')
@@ -45,6 +47,7 @@ docker_build(
 k8s_yaml(['./k8s/argilla-server-deployment.yaml', './k8s/argilla-server-service.yaml', './k8s/argilla-server-ingress.yaml'])
 k8s_resource(
   'argilla-server-deployment',
+  resource_deps=['main-db', 'elasticsearch'],
   port_forwards=['6900'],
   labels=['argilla-server'],
 )
@@ -81,6 +84,7 @@ docker_build(
 k8s_yaml('./k8s/argilla-frontend-deployment.yaml')
 k8s_resource(
   'argilla-frontend-deployment',
+  resource_deps=['argilla-server-deployment'],
   port_forwards='3000:3000',
   labels=['argilla-frontend'],
 )
