@@ -49,6 +49,18 @@ k8s_resource(
   labels=['argilla-server'],
 )
 
+# PostgreSQL is the database for argilla-server
+helm_resource(
+    name='postgres', 
+    chart='bitnami/postgresql', 
+    flags=[
+        '--version=13.2.0',
+        '--values=./k8s/helm/postgres-helm.yaml'],
+    deps=['./k8s/helm/postgres-helm.yaml'],
+    port_forwards=['5432'],
+    labels=['argilla-server']
+)
+
 # argilla-frontend is the web interface (Vue.js + Nuxt)
 docker_build(
     'itnrecal-argilla-frontend',
@@ -72,3 +84,5 @@ k8s_resource(
   port_forwards='3000:3000',
   labels=['argilla-frontend'],
 )
+
+

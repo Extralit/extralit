@@ -12,7 +12,7 @@ metadata:
   name: my-pv
 spec:
   capacity:
-    storage: 4Gi  # specify the size of the volume
+    storage: 8Gi  # specify the size of the volume
   volumeMode: Filesystem  # can also be Block
   accessModes:
     - ReadWriteOnce  # The volume can be mounted as read-write by a single node

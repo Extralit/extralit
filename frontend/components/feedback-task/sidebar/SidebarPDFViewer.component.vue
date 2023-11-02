@@ -1,6 +1,7 @@
 <template>
   <div class="sidebar__container">
     <SidebarPDFPanel v-if="isPanelVisible" @close-panel="closePDFPanel">
+      <pdf src="./assets/1475-2875-13-193.pdf"></pdf>
       <!-- <PDFViewer 
         v-if="currentPanel === 'pdf'"
         :pdfUrl="pdfUrl" 
@@ -19,8 +20,12 @@
   
 <script>
 import "assets/icons/shortcuts";
-  
+import pdf from 'vue-pdf'
+
 export default {
+  components: {
+    pdf
+  },
   props: {
     datasetId: {
       type: String,
@@ -30,7 +35,7 @@ export default {
   data: () => ({
     currentPanel: null,
     currentMode: "annotate",
-    isPanelVisible: false,
+    isPanelVisible: false
   }),
   created() {
     this.sidebarItems = {

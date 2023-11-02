@@ -42,6 +42,13 @@ spec:
               value: "elasticsearch-master:9200"
             - name: ARGILLA_CORS_ORIGINS
               value: '["*", "argilla-frontend"]'
+            - name: POSTGRES_HOST
+              value: "postgres-postgresql:5432"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-postgresql
+                  key: postgres-password
             - name: ELASTIC_PASSWORD
               valueFrom:
                 secretKeyRef:

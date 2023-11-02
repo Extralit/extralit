@@ -25,7 +25,7 @@
           @animationend="animated = false"
           class="sidebar__close-button"
         >
-          <svgicon name="chevron-right" width="12" height="12"></svgicon>
+          <svgicon name="chevron-left" width="12" height="12"></svgicon>
         </base-button>
         <transition name="fade" appear duration="500" mode="out-in">
           <slot></slot>
@@ -35,7 +35,7 @@
   </transition>
 </template>
 <script>
-import "assets/icons/chevron-right";
+import "assets/icons/chevron-left";
 export default {
   data: () => {
     return {

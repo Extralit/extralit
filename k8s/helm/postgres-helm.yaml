@@ -1,0 +1,11 @@
+global:
+  storageClass: "k8s-storage-policy"
+
+postgresql:
+  persistence:
+    enabled: true
+    storageClass: "k8s-storage-policy"
+    size: 2Gi
+  backup:
+    size: 2Gi
+  postgresqlDatabase: "argilla"

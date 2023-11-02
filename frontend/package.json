@@ -25,8 +25,8 @@
     "@nuxtjs/auth-next": "5.0.0-1613647907.37b1156",
     "@nuxtjs/axios": "^5.12.5",
     "@nuxtjs/composition-api": "^0.33.1",
-    "@nuxtjs/style-resources": "^1.0.0",
     "@nuxtjs/i18n": "^7.3.1",
+    "@nuxtjs/style-resources": "^1.0.0",
     "@pinia/nuxt": "^0.2.1",
     "@vuex-orm/core": "^0.36.4",
     "@vuex-orm/plugin-axios": "^0.9.3",
@@ -79,6 +79,7 @@
     "prettier": "^2.2.1",
     "sass-loader": "^10.1.0",
     "typescript": "^5.1.6",
-    "vue-jest": "^3.0.7"
+    "vue-jest": "^3.0.7",
+    "vue-pdf": "^4.3.0"
   }
 }
