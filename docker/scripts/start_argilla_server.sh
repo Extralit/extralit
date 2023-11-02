@@ -2,8 +2,7 @@
 set -e
 
 export ARGILLA_ELASTICSEARCH=https://elastic:$ELASTIC_PASSWORD@$ARGILLA_ELASTICSEARCH_HOST
-export ARGILLA_DATABASE_URL=postgresql://postgres:$POSTGRES_PASSWORD@$POSTGRES_HOST/argilla
-echo $ARGILLA_ELASTICSEARCH
+export ARGILLA_DATABASE_URL=postgresql://postgres:$POSTGRES_PASSWORD@$POSTGRES_HOST/postgres
 export ARGILLA_ENABLE_TELEMETRY=0
 
 # Run database migrations

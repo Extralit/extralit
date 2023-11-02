@@ -51,7 +51,7 @@ k8s_resource(
 
 # PostgreSQL is the database for argilla-server
 helm_resource(
-    name='postgres', 
+    name='main-db', 
     chart='bitnami/postgresql', 
     flags=[
         '--version=13.2.0',

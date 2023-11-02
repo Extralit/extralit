@@ -1,6 +1,9 @@
 global:
   storageClass: "k8s-storage-policy"
 
+nameOverride: "main-db"
+fullnameOverride: "main-db"
+
 postgresql:
   persistence:
     enabled: true
@@ -8,4 +11,3 @@ postgresql:
     size: 2Gi
   backup:
     size: 2Gi
-  postgresqlDatabase: "argilla"

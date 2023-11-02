@@ -23,6 +23,7 @@ from sqlalchemy import Enum as SAEnum
 from sqlalchemy.engine.default import DefaultExecutionContext
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.dialects.postgresql import BYTEA
 
 from argilla.server.enums import DatasetStatus, MetadataPropertyType, ResponseStatus, SuggestionType, UserRole
 from argilla.server.models.base import DatabaseModel
@@ -129,6 +130,9 @@ class Record(DatabaseModel):
     metadata_: Mapped[Optional[dict]] = mapped_column("metadata", MutableDict.as_mutable(JSON), nullable=True)
     external_id: Mapped[Optional[str]] = mapped_column(index=True)
     dataset_id: Mapped[UUID] = mapped_column(ForeignKey("datasets.id", ondelete="CASCADE"), index=True)
+
+    document_id = mapped_column(ForeignKey('documents.id', ondelete='CASCADE'), nullable=True)
+    document = relationship("Document", back_populates="records")
 
     dataset: Mapped["Dataset"] = relationship(back_populates="records")
     responses: Mapped[List["Response"]] = relationship(
@@ -252,7 +256,7 @@ class Dataset(DatabaseModel):
         order_by=Question.inserted_at.asc(),
     )
     records: Mapped[List["Record"]] = relationship(
-        back_populates="dataset",
+        back_populates="dataset",   
         cascade="all, delete-orphan",
         passive_deletes=True,
         order_by=Record.inserted_at.asc(),
@@ -368,4 +372,18 @@ class User(DatabaseModel):
             f"User(id={str(self.id)!r}, first_name={self.first_name!r}, last_name={self.last_name!r}, "
             f"username={self.username!r}, role={self.role.value!r}, "
             f"inserted_at={str(self.inserted_at)!r}, updated_at={str(self.updated_at)!r})"
+        )
+
+class Document(DatabaseModel):
+    __tablename__ = "documents"
+
+    pmid: Mapped[str] = mapped_column(String, index=True, nullable=True)
+    file_name: Mapped[str] = mapped_column(String, nullable=False)
+    file_data: Mapped[BYTEA] = mapped_column(BYTEA, nullable=False)
+
+    records = relationship("Record", back_populates="document")
+
+    def __repr__(self):
+        return (
+            f"Document(id={str(self.id)!r}, pmid={self.pmid!r}, file_name={self.file_name!r}"
         )

@@ -9,3 +9,5 @@ kindV1Alpha4Cluster:
     extraMounts:
     - hostPath: /Users/jonnytr/kind-volumes/elasticsearch
       containerPath: /usr/share/elasticsearch/data
+    - hostPath: /Users/jonnytr/kind-volumes/postgresql
+      containerPath: /var/lib/postgresql/data

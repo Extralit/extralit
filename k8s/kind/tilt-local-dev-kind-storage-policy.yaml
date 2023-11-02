@@ -9,15 +9,15 @@ volumeBindingMode: Immediate
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: my-pv
+  name: elastic-pv
 spec:
   capacity:
-    storage: 8Gi  # specify the size of the volume
+    storage: 4Gi  # specify the size of the volume
   volumeMode: Filesystem  # can also be Block
   accessModes:
     - ReadWriteOnce  # The volume can be mounted as read-write by a single node
-  storageClassName: k8s-storage-policy  # name of the StorageClass
-  persistentVolumeReclaimPolicy: Retain  # Retain the volume data when the PVC is deleted
+  storageClassName: k8s-storage-policy
+  persistentVolumeReclaimPolicy: Retain
   local:
     path: "/usr/share/elasticsearch/data"  
   nodeAffinity:
@@ -28,3 +28,27 @@ spec:
           operator: In
           values:
           - kind-control-plane  # replace with your node name
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: postgres-pv
+spec:
+  capacity:
+    storage: 9Gi  # specify the size of the volume
+  volumeMode: Filesystem  # can also be Block
+  accessModes:
+    - ReadWriteOnce  # The volume can be mounted as read-write by a single node
+  storageClassName: k8s-storage-policy
+  persistentVolumeReclaimPolicy: Retain
+  local:
+    path: "/var/lib/postgresql/data"
+  nodeAffinity: 
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In  
+          values:
+          - kind-control-plane
+
