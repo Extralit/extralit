@@ -8,11 +8,16 @@ export class DocumentRepository {
 
   async getByPubmedID(pmid: string): Promise<Document>  {
     try {
-      const response = await this.axios.get(`/v1/documents/by-pmid/${pmid}`);
+      const response = await this.axios.get(`/v1/documents/by-pmid/${pmid}`, {
+        responseType: 'arraybuffer',
+      });
       const documentId = response.headers['x-document-id'];
       const documentFileName = response.headers['x-document-file-name'];
 
-      return new Document(documentId, response.data, documentFileName, pmid); 
+      // const dataBlob = new Blob([response.data], { type: 'application/pdf' });
+      const dataUint8Array = new Uint8Array(response.data);
+
+      return new Document(documentId, dataUint8Array, documentFileName, pmid); 
     } catch (error) {
       throw new Error('Error fetching document');
     }
@@ -20,11 +25,16 @@ export class DocumentRepository {
 
   async getDocumentById(id: string): Promise<Document> {
     try {
-      const response = await this.axios.get(`/v1/documents/by-id/${id}`);
+      const response = await this.axios.get(`/v1/documents/by-id/${id}`, {
+        responseType: 'arraybuffer',
+      });
+      console.log(response.headers)
       const documentId = response.headers['x-document-id'];
       const documentFileName = response.headers['x-document-file-name'];
 
-      return new Document(documentId, response.data, documentFileName, null);   
+      const dataUint8Array = new Uint8Array(response.data);
+
+      return new Document(documentId, dataUint8Array, documentFileName, null);   
     } catch (error) {
       throw new Error('Error fetching document');
     }

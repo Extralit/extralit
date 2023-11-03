@@ -9,7 +9,7 @@ export class GetDocumentByIdUseCase {
 
   async set(id: string) {
     const document = await this.documentRepository.getDocumentById(id);
-    // console.log(this.documentStorage)
+    console.log('GetDocumentByIdUseCase', typeof(document.file_data))
     this.documentStorage.set(document);
   }
 

@@ -76,10 +76,10 @@
     "eslint-plugin-vue": "^8.2.0",
     "jest": "^27.4.5",
     "jest-serializer-vue": "^2.0.2",
+    "pdfjs-dist": "^3.11.174",
     "prettier": "^2.2.1",
     "sass-loader": "^10.1.0",
     "typescript": "^5.1.6",
-    "vue-jest": "^3.0.7",
-    "vue-pdf": "^4.3.0"
+    "vue-jest": "^3.0.7"
   }
 }

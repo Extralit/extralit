@@ -69,7 +69,7 @@ async def get_document_by_pmid(
         headers={
             "Content-Disposition": f'attachment; filename="{document.file_name}"',
             "X-Document-ID": str(document.id),
-            "X-Document-File-Name": document.file_name
+            "X-Document-File-Name": document.file_name,
         },
         media_type="application/pdf"
     )
@@ -106,7 +106,7 @@ async def get_document_by_id(
         headers={
             "Content-Disposition": f'attachment; filename="{document.file_name}"',
             "X-Document-ID": str(document.id),
-            "X-Document-File-Name": document.file_name
+            "X-Document-File-Name": document.file_name,
         },
         media_type="application/pdf"
     )
