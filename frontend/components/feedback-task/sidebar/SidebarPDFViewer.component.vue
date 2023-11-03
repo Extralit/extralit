@@ -1,7 +1,7 @@
 <template>
   <div class="sidebar__container">
     <SidebarPDFPanel v-if="isPanelVisible" @close-panel="closePDFPanel">
-      <pdf src="./assets/1475-2875-13-193.pdf"></pdf>
+      <pdf :src="document.data"></pdf>
       <!-- <PDFViewer 
         v-if="currentPanel === 'pdf'"
         :pdfUrl="pdfUrl" 
@@ -21,6 +21,7 @@
 <script>
 import "assets/icons/shortcuts";
 import pdf from 'vue-pdf'
+import useDocumentViewModel from "./sidebar-pdf-viewer/useDocumentViewModel";
 
 export default {
   components: {
@@ -37,7 +38,12 @@ export default {
     currentMode: "annotate",
     isPanelVisible: false
   }),
+  setup() {
+    return useDocumentViewModel();
+  },
   created() {
+    this.setDocument('11102d5f-883d-4b3f-b52b-97230a4da78e')
+
     this.sidebarItems = {
       firstGroup: {
         buttonType: "expandable",

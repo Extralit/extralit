@@ -4,3 +4,4 @@ export * from "./MetadataRepository";
 export * from "./MetricsRepository";
 export * from "./QuestionRepository";
 export * from "./RecordRepository";
+export * from "./DocumentRepository";

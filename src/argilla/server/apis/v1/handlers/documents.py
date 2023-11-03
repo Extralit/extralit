@@ -55,20 +55,21 @@ async def get_document_by_pmid(
     )
     await authorize(current_user, DocumentPolicy.get())
 
-    documents: Document = query.fetchone()
-
+    documents = query.fetchone()
     if documents is None or len(documents) == 0:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Document with pmid `{pmid}` not found",
         )
     
-    document = documents[0]
+    document: Document = documents[0]
 
     return StreamingResponse(
         BytesIO(document.file_data), 
         headers={
-            "Content-Disposition": f'attachment; filename="{document.file_name}"'
+            "Content-Disposition": f'attachment; filename="{document.file_name}"',
+            "X-Document-ID": str(document.id),
+            "X-Document-File-Name": document.file_name
         },
         media_type="application/pdf"
     )
@@ -91,20 +92,21 @@ async def get_document_by_id(
     )
     await authorize(current_user, DocumentPolicy.get())
 
-    documents: Document = query.fetchone()
-
+    documents = query.fetchone()
     if documents is None or len(documents) == 0:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Document with id `{id}` not found",
         )
     
-    document = documents[0]
+    document: Document = documents[0]
 
     return StreamingResponse(
         BytesIO(document.file_data), 
         headers={
-            "Content-Disposition": f'attachment; filename="{document.file_name}"'
+            "Content-Disposition": f'attachment; filename="{document.file_name}"',
+            "X-Document-ID": str(document.id),
+            "X-Document-File-Name": document.file_name
         },
         media_type="application/pdf"
     )

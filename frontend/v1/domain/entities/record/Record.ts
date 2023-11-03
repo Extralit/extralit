@@ -3,6 +3,7 @@ import { Field } from "../field/Field";
 import { Question } from "../question/Question";
 import { Suggestion } from "../question/Suggestion";
 import { RecordAnswer } from "./RecordAnswer";
+import { Document } from "../document/Document";
 
 const DEFAULT_STATUS = "pending";
 
@@ -18,7 +19,8 @@ export class Record {
     public readonly fields: Field[],
     public answer: RecordAnswer,
     private readonly suggestions: Suggestion[],
-    public readonly page: number
+    public readonly page: number,
+    public readonly document?: Document
   ) {
     this.completeQuestion();
     this.updatedAt = answer?.updatedAt;

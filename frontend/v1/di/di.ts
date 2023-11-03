@@ -10,9 +10,11 @@ import {
   FieldRepository,
   MetricsRepository,
   MetadataRepository,
+  DocumentRepository
 } from "@/v1/infrastructure/repositories";
 
 import { useDataset } from "@/v1/infrastructure/storage/DatasetStorage";
+import { useDocument } from "@/v1/infrastructure/storage/DocumentStorage";
 import { useRecords } from "@/v1/infrastructure/storage/RecordsStorage";
 import { useDatasets } from "@/v1/infrastructure/storage/DatasetsStorage";
 import { useMetrics } from "@/v1/infrastructure/storage/MetricsStorage";
@@ -20,6 +22,7 @@ import { useDatasetSetting } from "@/v1/infrastructure/storage/DatasetSettingSto
 
 import { GetDatasetsUseCase } from "@/v1/domain/usecases/get-datasets-use-case";
 import { GetDatasetByIdUseCase } from "@/v1/domain/usecases/get-dataset-by-id-use-case";
+import { GetDocumentByIdUseCase } from "@/v1/domain/usecases/get-document-by-id-use-case";
 import { DeleteDatasetUseCase } from "@/v1/domain/usecases/delete-dataset-use-case";
 import { LoadRecordsToAnnotateUseCase } from "@/v1/domain/usecases/load-records-to-annotate-use-case";
 import { SubmitRecordUseCase } from "@/v1/domain/usecases/submit-record-use-case";
@@ -40,6 +43,7 @@ export const loadDependencyContainer = (context: Context) => {
   const dependencies = [
     register(DatasetRepository).withDependencies(useAxios, useStore).build(),
     register(RecordRepository).withDependency(useAxios).build(),
+    register(DocumentRepository).withDependency(useAxios).build(),
     register(QuestionRepository).withDependency(useAxios).build(),
     register(FieldRepository).withDependency(useAxios).build(),
     register(MetricsRepository).withDependency(useAxios).build(),
@@ -49,6 +53,10 @@ export const loadDependencyContainer = (context: Context) => {
 
     register(GetDatasetsUseCase)
       .withDependencies(DatasetRepository, useDatasets)
+      .build(),
+
+    register(GetDocumentByIdUseCase)
+      .withDependencies(DocumentRepository, useDocument)
       .build(),
 
     register(GetDatasetByIdUseCase)
