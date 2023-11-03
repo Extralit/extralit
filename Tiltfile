@@ -32,12 +32,11 @@ docker_build(
     context='.',
     build_args={'ENV': ENV},
     dockerfile='./docker/api.dockerfile',
-    only=['./src/argilla/', './docker/', './dist/', './src/argilla/server/alembic/versions/'],
+    only=['./src', './dist', './docker/scripts', './setup.py', './pyproject.toml', './requirements.txt'],
+    ignore=['./frontend'],
     live_update=[
         # Sync the source code to the container
-        fall_back_on('./src/argilla/server/'),
         sync('./src/', '/home/argilla/src/'),
-        sync('./src/argilla/server/alembic/versions/', '/home/argilla/src/argilla/server/alembic/versions/'),
         sync('./docker/scripts/start_argilla_server.sh', '/home/argilla/'),
         # Restart the server to pick up code changes
         run('/bin/bash start_argilla_server.sh', trigger='./docker/scripts/start_argilla_server.sh')

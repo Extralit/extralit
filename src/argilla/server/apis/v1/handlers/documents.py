@@ -1,13 +1,17 @@
+from io import BytesIO
 from uuid import UUID
 from typing import TYPE_CHECKING
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, Path, File, status
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, Path, status, Security
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import and_, func, or_, select
 
 from argilla.server.database import get_async_db
 from argilla.server.models.database import Document
-from argilla.server.schemas.v1.documents import DocumentCreate, DocumentResponse
+from argilla.server.security import auth
+from argilla.server.policies import DocumentPolicy, authorize, is_authorized
+from argilla.server.models import User
 
 if TYPE_CHECKING:
     from argilla.server.models import Document
@@ -20,7 +24,10 @@ async def upload_document(
     db: AsyncSession = Depends(get_async_db),
     document: UploadFile,
     pmid: str,
+    current_user: User = Security(auth.get_current_user)
 ):
+    await authorize(current_user, DocumentPolicy.get())
+    
     # Assuming file_name is derived from the uploaded file
     file_name = document.filename
     file_data = await document.read()
@@ -30,40 +37,74 @@ async def upload_document(
     
     return new_document.id
 
-@router.get("/documents/by-pmid/{pmid}", response_model=DocumentResponse)
+@router.get("/documents/by-pmid/{pmid}", responses={200: {"content": {"application/pdf": {}}}})
 async def get_document_by_pmid(
     *,
     db: AsyncSession = Depends(get_async_db),
-    pmid: str
+    pmid: str,
+    current_user: User = Security(auth.get_current_user)
 ):
-    document = await db.execute(
-        select(Document).where(Document.pmid == pmid)
-    )
-    document: Document = await document.fetchone()
-
-    if document is None:
+    if pmid is None or not isinstance(pmid, str) or not pmid.isnumeric():
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Document with pmid `{pmid}` not found",
         )
+    
+    query = await db.execute(
+        select(Document).where(Document.pmid == pmid)
+    )
+    await authorize(current_user, DocumentPolicy.get())
 
-    return DocumentResponse(id=document.id, pmid=pmid, file_data=document.file_data)
+    documents: Document = query.fetchone()
 
-@router.get("/documents/by-id/{id}", response_model=DocumentResponse)
+    if documents is None or len(documents) == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Document with pmid `{pmid}` not found",
+        )
+    
+    document = documents[0]
+
+    return StreamingResponse(
+        BytesIO(document.file_data), 
+        headers={
+            "Content-Disposition": f'attachment; filename="{document.file_name}"'
+        },
+        media_type="application/pdf"
+    )
+
+@router.get("/documents/by-id/{id}", responses={200: {"content": {"application/pdf": {}}}})
 async def get_document_by_id(
     *,
     db: AsyncSession = Depends(get_async_db),
-    id: UUID = Path(..., title="The UUID of the document to get")
+    id: UUID = Path(..., title="The UUID of the document to get"),
+    current_user: User = Security(auth.get_current_user)
 ):
-    document = await db.execute(
-        select(Document).where(Document.id == id)
-    )
-    document: Document = await document.fetchone()
-
-    if document is None:
+    if id is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Document with id `{id}` not found",
         )
+    
+    query = await db.execute(
+        select(Document).where(Document.id == id)
+    )
+    await authorize(current_user, DocumentPolicy.get())
 
-    return DocumentResponse(id=document.id, pmid=document.pmid, file_data=document.file_data)
+    documents: Document = query.fetchone()
+
+    if documents is None or len(documents) == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Document with id `{id}` not found",
+        )
+    
+    document = documents[0]
+
+    return StreamingResponse(
+        BytesIO(document.file_data), 
+        headers={
+            "Content-Disposition": f'attachment; filename="{document.file_name}"'
+        },
+        media_type="application/pdf"
+    )

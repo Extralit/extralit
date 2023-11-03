@@ -133,6 +133,22 @@ class UserPolicyV1:
         return actor.is_owner
 
 
+class DocumentPolicy:
+    @classmethod
+    def create(cls) -> PolicyAction:
+        async def is_allowed(actor: User) -> bool:
+            return actor.is_owner or actor.is_admin
+
+        return is_allowed
+    
+    @classmethod
+    def get(cls, ) -> PolicyAction:
+        async def is_allowed(actor: User) -> bool:
+            return actor.is_owner or actor.is_admin
+
+        return is_allowed
+        
+
 class DatasetPolicy:
     @classmethod
     async def list(cls, user: User) -> bool:

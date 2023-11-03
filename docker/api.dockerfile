@@ -28,25 +28,30 @@ ENV PATH="/opt/venv/bin:$PATH"
 
 # Copy the scripts and install uvicorn
 COPY docker/scripts/start_argilla_server.sh /home/argilla/
+
+# Copy the entire repository into /home/argilla in the container
+COPY . /home/argilla/
+
 RUN chmod +x /home/argilla/start_argilla_server.sh && \
   pip install uvicorn[standard] && \
   for wheel in /packages/*.whl; do pip install "$wheel"[server,postgresql]; done && \
   rm -rf /packages
 
-# Copy the entire repository into /home/argilla in the container
-COPY . /home/argilla/
 
 # Change the ownership of the /home/argilla directory to the new user
 RUN chown -R argilla:argilla /home/argilla
 
-# Switch to the argilla user
-USER argilla
-
 # Set the working directory
 WORKDIR /home/argilla/
+
+# Conditionally run the command based on ENV
+RUN if [ "$ENV" = "dev" ]; then pip install --upgrade -e . ; fi
+
+# Switch to the argilla user
+USER argilla
 
 # Expose the necessary port
 EXPOSE 6900
 
 # Set the command for the container
-CMD /bin/bash -c "ls -al *; pip install --upgrade -e .; /bin/bash start_argilla_server.sh"
+CMD /bin/bash -c "/bin/bash start_argilla_server.sh"

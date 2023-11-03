@@ -56,7 +56,7 @@ server = [
     "smart-open",
     "brotli-asgi >= 1.1,< 1.3",
     # Database dependencies
-    "alembic ~= 1.9.0",
+    "alembic ~= 1.12.0",
     "SQLAlchemy ~= 2.0.0",
     "greenlet >= 2.0.0",
     # Async SQLite
