@@ -84,7 +84,7 @@ $gap-width: $base-space * 7;
   grid-area: 2 / 4 / 5 / 5;
 }
 .sidebar-area-left {
-  grid-area: 3 / 1 / 5 / 2;
+  grid-area: 2 / 1 / 5 / 2;
 }
 .empty-content-right {
   grid-area: 2 / 3 / 4 / 4;

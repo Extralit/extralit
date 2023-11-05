@@ -2,12 +2,10 @@
   <div class="sidebar__container">
     <SidebarPDFPanel v-if="isPanelVisible" @close-panel="closePDFPanel">
       <div>
-        <!-- {{ document.file_name }} -->
+        {{ document.file_name }}
+        <PDFViewer :pdfData="document.file_data"/>
       </div>
-      <!-- <PDFViewer 
-        v-if="currentPanel === 'pdf'"
-        :pdfUrl="pdfUrl" 
-      /> -->
+
     </SidebarPDFPanel>
 
     <SidebarPDFMenu
@@ -22,13 +20,13 @@
   
 <script>
 import "assets/icons/shortcuts";
-import { getDocument } from 'pdfjs-dist';
+import PDFViewer from '@/components/feedback-task/sidebar/sidebar-pdf-viewer/PDFViewer.vue';
 
 import useDocumentViewModel from "./sidebar-pdf-viewer/useDocumentViewModel";
 
 export default {
   components: {
-    pdf
+    PDFViewer
   },
   props: {
     datasetId: {
