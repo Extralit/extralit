@@ -7,9 +7,15 @@ export class GetDocumentByIdUseCase {
     private readonly documentStorage: IDocumentStorage
   ) {}
 
-  async set(id: string) {
+  async setDocumentByID(id: string) {
     const document = await this.documentRepository.getDocumentById(id);
-    console.log('GetDocumentByIdUseCase', typeof(document.file_data))
+
+    this.documentStorage.set(document);
+  }
+
+  async setDocumentByPubmedID(id: string) {
+    const document = await this.documentRepository.getDocumentByPubmedID(id);
+
     this.documentStorage.set(document);
   }
 

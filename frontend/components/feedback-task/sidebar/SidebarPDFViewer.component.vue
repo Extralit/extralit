@@ -2,8 +2,7 @@
   <div class="sidebar__container">
     <SidebarPDFPanel v-if="isPanelVisible" @close-panel="closePDFPanel">
       <div>
-        {{ document.file_name }}
-        <PDFViewer :pdfData="document.file_data"/>
+        <PDFViewer :pdf-data="document.file_data" :file-name="document.file_name"/>
       </div>
 
     </SidebarPDFPanel>
@@ -43,8 +42,12 @@ export default {
     return useDocumentViewModel();
   },
   created() {
-    this.setDocument('11102d5f-883d-4b3f-b52b-97230a4da78e')
-
+    try {
+      this.setDocumentByPubmedID('1000')  
+    } catch (error) {
+      console.log(error);
+    }
+    
     this.sidebarItems = {
       firstGroup: {
         buttonType: "expandable",

@@ -25,7 +25,7 @@
           @animationend="animated = false"
           class="sidebar__close-button"
         >
-          <svgicon name="chevron-left" width="12" height="12"></svgicon>
+          <svgicon name="chevron-right" width="12" height="12"></svgicon>
         </base-button>
         <transition name="fade" appear duration="500" mode="out-in">
           <slot></slot>
@@ -36,6 +36,7 @@
 </template>
 <script>
 import "assets/icons/chevron-left";
+import "assets/icons/chevron-right";
 export default {
   data: () => {
     return {
@@ -60,8 +61,8 @@ export default {
   height: 100vh;
   background: palette(grey, 700);
   padding: 1em 1.5em 0 1.5em;
-  border-left: 1px solid palette(grey, 600);
-  overflow: visible;
+  border-right: 1px solid palette(grey, 600);
+  overflow: scroll;
   pointer-events: all;
   &:hover {
     #{$this}__close-button:not(.zoom-out) {
@@ -95,9 +96,11 @@ export default {
     }
   }
   &__content {
-    display: block;
-    position: relative;
+    // display: block;
+    // position: relative;
+    // width: 100%;
     color: $black-54;
+    // max-height: calc(100vh - $topbarHeight);
   }
   &__content {
     @include font-size(13px);

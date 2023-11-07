@@ -33,8 +33,8 @@ COPY docker/scripts/start_argilla_server.sh /home/argilla/
 COPY . /home/argilla/
 
 RUN chmod +x /home/argilla/start_argilla_server.sh && \
-  pip install uvicorn[standard] && \
-  for wheel in /packages/*.whl; do pip install "$wheel"[server,postgresql]; done && \
+  pip install -q uvicorn[standard] && \
+  for wheel in /packages/*.whl; do pip install -q "$wheel"[server,postgresql]; done && \
   rm -rf /packages
 
 

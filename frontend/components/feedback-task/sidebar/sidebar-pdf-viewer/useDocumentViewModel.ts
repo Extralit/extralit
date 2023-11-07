@@ -9,13 +9,18 @@ export const useDocumentViewModel = () => {
   const getDocument = useResolve(GetDocumentByIdUseCase);
   const { state: document } = useDocument();
 
-  const setDocument = async (id: string) => {
-    await getDocument.set(id);
+  const setDocumentByID = async (id: string) => {
+    await getDocument.setDocumentByID(id);
+  };
+
+  const setDocumentByPubmedID = async (pmoid: string) => {
+    await getDocument.setDocumentByPubmedID(pmoid);
   };
 
   return {
     document,
-    setDocument
+    setDocumentByID: setDocumentByID,
+    setDocumentByPubmedID: setDocumentByPubmedID
   };
 };
 
