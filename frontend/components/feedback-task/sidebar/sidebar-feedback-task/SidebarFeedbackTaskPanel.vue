@@ -17,7 +17,7 @@
 
 <template>
   <transition name="show-panel" appear>
-    <aside class="sidebar">
+    <aside class="sidebar" :class="layoutClass">
       <div class="sidebar__content">
         <base-button
           @click.prevent="closePanel"
@@ -34,9 +34,16 @@
     </aside>
   </transition>
 </template>
+
 <script>
 import "assets/icons/chevron-right";
 export default {
+  props: {
+    currentPanel: {
+      type: String,
+      required: false,
+    },
+  },
   data: () => {
     return {
       animated: false,
@@ -48,8 +55,14 @@ export default {
       this.animated = true;
     },
   },
+  computed: {
+    layoutClass() {
+      return this.currentPanel === 'document' ? "--document-panel" : null;
+    },
+  },
 };
 </script>
+
 <style lang="scss" scoped>
 .sidebar {
   $this: &;
@@ -62,6 +75,9 @@ export default {
   border-left: 1px solid palette(grey, 600);
   overflow: visible;
   pointer-events: all;
+  &.--document-panel {
+    width: $sidebarPanelWidth + $sidebarDocumentAdditionalWidth;
+  }
   &:hover {
     #{$this}__close-button:not(.zoom-out) {
       opacity: 1;

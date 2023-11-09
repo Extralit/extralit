@@ -32,10 +32,10 @@
           @refresh="refresh()"
         />
       </template>
-      <template v-slot:sidebar-left>
+      <!-- <template v-slot:sidebar-left>
         <SidebarPDFViewerComponent
         />
-      </template>
+      </template> -->
       <template v-slot:top>
         <section class="dataset__top-area">
           <DatasetFiltersComponent :recordCriteria="recordCriteria" />

@@ -10,9 +10,9 @@
     <div class="sidebar-area-right">
       <slot name="sidebar-right">here is the sidebar content right</slot>
     </div>
-    <div class="sidebar-area-left">
+    <!-- <div class="sidebar-area-left">
       <slot name="sidebar-left">here is the sidebar content left</slot>
-    </div>
+    </div> -->
     <div class="top-area">
       <slot name="top">here is the top content</slot>
     </div>
@@ -28,27 +28,33 @@ export default {
   name: "HeaderAndTopAndOneColumnsLayout",
   data: () => {
     return {
-      showPanel: false,
-      showPDFPanel: false,
+      sidebarPanel: null,
+      // left_panel: false,
     };
   },
   computed: {
     layoutClass() {
-      return this.showPanel ? "--panel" : null;
+      if (this.sidebarPanel === 'document') {
+        return '--document-panel';
+      } else if (!!this.sidebarPanel) {
+        return '--right-panel';
+      }
+
+      return null;
     },
   },
   created() {
-    this.$nuxt.$on("on-sidebar-toggle-panel", (value) => {
-      this.showPanel = value;
+    this.$nuxt.$on("on-sidebar-panel", (value) => {
+      this.sidebarPanel = value;
     });
 
-    this.$nuxt.$on("on-sidebar-pdf-toggle-panel", (value) => {
-      this.showPDFPanel = value;
-    });
+    // this.$nuxt.$on("on-sidebar-left-panel", (value) => {
+    //   this.left_panel = value;
+    // });
   },
-  beforeDestroy() {
-    this.$nuxt.$off("on-sidebar-toggle-panel");
-    this.$nuxt.$off("on-sidebar-pdf-toggle-panel");
+  afterDestroy() {
+    this.$nuxt.$off("on-sidebar-panel");
+    // this.$nuxt.$off("on-sidebar-left-panel");
   },
 };
 </script>
@@ -63,12 +69,21 @@ $gap-width: $base-space * 7;
   grid-row-gap: 0px;
   height: 100vh;
   transition: 0.4s ease-in-out;
-  &.--panel {
+  &.--right-panel {
     @include media(">desktop") {
       grid-template-columns: $gap-width 1fr calc($gap-width / 2) $sidebarWidth;
       transition: 0.4s ease-out;
     }
   }
+  &.--document-panel {
+    @include media(">desktop") {
+      grid-template-columns: $gap-width 1fr calc($gap-width / 2) $sidebarWidth+$sidebarDocumentAdditionalWidth;
+      transition: 0.4s ease-out;
+    }
+  }
+  // &.--left-panel {
+  //   transition: 0.4s ease-out;
+  // }
 }
 
 .header-area {

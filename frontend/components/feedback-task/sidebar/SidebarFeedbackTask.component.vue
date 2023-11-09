@@ -1,12 +1,20 @@
 <template>
   <div class="sidebar__container">
-    <SidebarFeedbackTaskPanel v-if="isPanelVisible" @close-panel="closePanel">
-      <HelpShortcut v-if="currentPanel === 'help-shortcut'" />
+    <SidebarFeedbackTaskPanel v-if="isPanelVisible" @close-panel="closePanel" :currentPanel="currentPanel">
+      <HelpShortcut 
+      v-if="currentPanel === 'help-shortcut'" />
+
       <FeedbackTaskProgress
       v-else-if="currentPanel === 'metrics'"
       :datasetId="datasetId"
       />
+
+      <PDFViewer 
+      v-else-if="currentPanel === 'document'"
+      :pdf-data="document.file_data" 
+      :file-name="document.file_name"/>
     </SidebarFeedbackTaskPanel>
+
     <SidebarFeedbackTask
       @on-click-sidebar-action="onClickSidebarAction"
       :sidebar-items="sidebarItems"
@@ -20,6 +28,7 @@
 import "assets/icons/progress";
 import "assets/icons/refresh";
 import "assets/icons/shortcuts";
+import useDocumentViewModel from "./sidebar-pdf-viewer/useDocumentViewModel";
 
 export default {
   props: {
@@ -33,11 +42,28 @@ export default {
     currentMode: "annotate",
     isPanelVisible: false,
   }),
+  setup() {
+    return useDocumentViewModel();
+  },
   created() {
+    try {
+      this.setDocumentByPubmedID('1000')
+    } catch (error) {
+      console.log(error);
+    }
+
     this.sidebarItems = {
       firstGroup: {
         buttonType: "expandable",
         buttons: [
+          {
+            id: "document",
+            tooltip: "Document Viewer",
+            icon: "search",
+            action: "show-document",
+            type: "expandable",
+            component: "PDFViewer",
+          },
           {
             id: "metrics",
             tooltip: "Progress",
@@ -95,15 +121,15 @@ export default {
     togglePanel(panelContent) {
       this.currentPanel =
         this.currentPanel !== panelContent ? panelContent : null;
-
+      
       this.isPanelVisible = !!this.currentPanel;
 
-      $nuxt.$emit("on-sidebar-toggle-panel", this.isPanelVisible);
+      $nuxt.$emit("on-sidebar-panel", this.currentPanel);
     },
     closePanel() {
       this.isPanelVisible = false;
       this.currentPanel = null;
-      $nuxt.$emit("on-sidebar-toggle-panel", null);
+      $nuxt.$emit("on-sidebar-panel", null);
     },
   },
 };

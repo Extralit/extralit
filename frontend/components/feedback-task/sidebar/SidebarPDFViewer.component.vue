@@ -1,10 +1,7 @@
 <template>
   <div class="sidebar__container">
     <SidebarPDFPanel v-if="isPanelVisible" @close-panel="closePDFPanel">
-      <div>
-        <PDFViewer :pdf-data="document.file_data" :file-name="document.file_name"/>
-      </div>
-
+      <PDFViewer :pdf-data="document.file_data" :file-name="document.file_name"/>
     </SidebarPDFPanel>
 
     <SidebarPDFMenu
@@ -20,7 +17,6 @@
 <script>
 import "assets/icons/shortcuts";
 import PDFViewer from '@/components/feedback-task/sidebar/sidebar-pdf-viewer/PDFViewer.vue';
-
 import useDocumentViewModel from "./sidebar-pdf-viewer/useDocumentViewModel";
 
 export default {
@@ -113,12 +109,12 @@ export default {
 
       this.isPanelVisible = !!this.currentPanel;
 
-      $nuxt.$emit("on-sidebar-pdf-toggle-panel", this.isPanelVisible);
+      $nuxt.$emit("on-sidebar-left-toggle-panel", this.isPanelVisible);
     },
     closePDFPanel() {
       this.isPanelVisible = false;
       this.currentPanel = null;
-      $nuxt.$emit("on-sidebar-pdf-toggle-panel", null);
+      $nuxt.$emit("on-sidebar-left-toggle-panel", null);
     },
   },
 }
