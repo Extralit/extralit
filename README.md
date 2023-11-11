@@ -10,8 +10,6 @@
 <h2 align="center">Open-source feedback layer for LLM-based data extractions</h2>
 <br>
 
-<img src="docs/_source/_static/images/main/data-extraction-pipeline.jpg" alt="pipeline">
-
 
 <br>
 
@@ -25,7 +23,9 @@
 
 ## What is Argilla?
 
-Argilla is an open-source platform for data-centric LLM development. Integrates human and model feedback loops for continuous LLM refinement and oversight.
+<img src="docs/_source/_static/images/main/data-extraction-pipeline.jpg" alt="pipeline">
+
+Argilla is a UI interface and platform for LLM-based document data extraction that integrates human and model feedback loops for continuous LLM refinement and data extraction oversight.
 
 With Argilla's Python SDK and adaptable UI, you can create human and model-in-the-loop workflows for:
 
