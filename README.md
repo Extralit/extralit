@@ -7,8 +7,10 @@
 </h1>
 
 
-<h2 align="center">Open-source feedback layer for LLMs</h2>
+<h2 align="center">Open-source feedback layer for LLM-based data extractions</h2>
 <br>
+
+<img src="docs/_source/_static/images/main/data-extraction-pipeline.jpg" alt="pipeline">
 
 
 <br>
@@ -27,6 +29,7 @@ Argilla is an open-source platform for data-centric LLM development. Integrates 
 
 With Argilla's Python SDK and adaptable UI, you can create human and model-in-the-loop workflows for:
 
+* Data extraction validation
 * Supervised fine-tuning
 * Preference tuning (RLHF, DPO, RLAIF, and more)
 * Small, specialized NLP models
@@ -35,14 +38,14 @@ With Argilla's Python SDK and adaptable UI, you can create human and model-in-th
 ## 🚀 Development Quickstart
 
 ### Install the Pre-requisites
-These development tools
+These steps are required to run and develop Argilla locally.
 
 1. Install [Docker Desktop](https://docs.docker.com/get-docker/)
 2. Install [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
 2. Install [ctlptl](https://github.com/tilt-dev/ctlptl/tree/main#how-do-i-install-it)
 3. Install [Tilt](https://docs.tilt.dev/)
 
-### Set up local infrastructure
+### Set up local infrastructure for Kind
 
 1. Create a `kind` cluster
 
@@ -60,12 +63,17 @@ ctlptl apply -f k8s/kind/kind-config.yaml
 
 ### Start local development
 
-1. Run Tilt on kind kub
+1. Run Tilt 
 
+Select the K8s cluster
 ```bash
-kubectl config set-cluster kind
-kubectl create ns argilla-hf
-ENV=dev tilt up --namespace=argilla-hf
+kubectl config set-cluster <cluster_name>
+```
+
+Setting the `ENV` variable to `dev` enables hot-reloading of Docker containers for 🚀 rapid deployment:
+```bash
+kubectl create ns <namespace>
+ENV=dev tilt up --namespace=<namespace>
 ```
 
 ## 🛠️ Project Architecture

@@ -78,7 +78,7 @@ $gap-width: $base-space * 7;
   &.--document-panel {
     @include media(">desktop") {
       grid-template-columns: $gap-width 1fr calc($gap-width / 2) $sidebarWidth+$sidebarDocumentAdditionalWidth;
-      transition: 0.4s ease-out;
+      transition: 0.8s ease-out;
     }
   }
   // &.--left-panel {

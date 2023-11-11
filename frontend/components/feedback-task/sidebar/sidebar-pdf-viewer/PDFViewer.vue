@@ -1,168 +1,208 @@
 <template>
-  <div>
-    <div class="pdf-navigation">
-      <div class="pdf-navigation__left">
-        <div>{{ fileName }}</div>
-      </div>
-      <span>
-        <button @click="zoomIn">+</button>
-        <button @click="zoomOut">-</button>
-      </span>
-      <span class="pdf-navigation__right">
-        <button @click="goToPreviousPage" :disabled="pdfPageNum === 1">Prev. Page</button>
-        <button @click="goToNextPage" :disabled="pdfPageNum === totalPages">Next Page</button>
-      </span>
+    <div class="the-pdf-viewer" id="the-frb-pdf-viewer">
+        <div class="pdf-viewer-container" ref="pdf-viewer-container">
+            <div id="pdf-viewer" class="pdf-viewer" ref="pdf-viewer"></div>
+        </div>
     </div>
-    
-    <div ref="pdfContainer" class="pdf-container">
-      <canvas ref="pdfCanvas" class="pdf-canvas"></canvas>
-      <div ref="textLayer" class="textLayer"></div>
-    </div>
-  </div>
 </template>
 
 <script>
-import BaseButton from "@/components/base/base-button/BaseButton.vue";
-import { getDocument, PDFPageProxy, renderTextLayer } from 'pdfjs-dist';
+import * as PDFJS from 'pdfjs-dist/web/pdf_viewer'
+import 'pdfjs-dist/web/pdf_viewer.css'
 
 export default {
-  name: 'PDFViewer',
-  props: {
-    pdfData: {
-      type: Uint8Array,
-      required: true,
-    },
-    fileName: {
-      type: String,
-      required: false
-    },
-  },
-  data() {
-    return {
-      pdfDocument: null,
-      pdfPage: null,
-      pdfPageNum: 1,  // Start at first page
-      totalPages: 0,
-      scale: 1,
-    };
-  },
-  methods: {
-    async loadPdf() {
-      try {
-        const loadingTask = getDocument({ data: this.pdfData });
-        this.pdfDocument = await loadingTask.promise;
-        this.totalPages = this.pdfDocument.numPages;
-        this.renderPage(this.pdfPageNum);
-      } catch (error) {
-        console.error('Error loading PDF:', error);
-      }
-    },
-    async renderPage(num) {
-      try {
-        const page = await this.pdfDocument.getPage(num);
-        const pdfContainer = this.$refs.pdfContainer;
-        const canvas = this.$refs.pdfCanvas;
-        const context = canvas.getContext('2d');
-        const viewport = page.getViewport({ scale: this.scale });
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-
-        // Render PDF page
-        await page.render({
-          canvasContext: context,
-          viewport,
-        }).promise;
-
-        // Render text layer
-        const textLayer = this.$refs.textLayer;
-        if (textLayer) {  // Check if textLayer is defined
-          textLayer.innerHTML = '';  // Clear previous text layer if any
-          textLayer.style.width = `${viewport.width}px`;
-          textLayer.style.height = `${viewport.height}px`;
-
-          const textContent = await page.getTextContent();
-          renderTextLayer({
-            textContent,
-            container: textLayer,
-            viewport,
-            textDivs: [],
-          });
-        } else {
-          console.error('textLayer ref is undefined');
+    props: {
+        maxWidth: {
+            type: Number,
+            default: 900
+        },
+        solrResponse: {
+            type: Object,
+            default: () => { return {'response': { 'docs': [] }} } 
+        },
+        pdfData: {
+            type: Uint8Array,
+            required: true,
+        },
+        fileName: {
+            type: String,
+            required: false
+        },
+        documentPath: {
+            type: String,
+            default: '/'
         }
-      } catch (error) {
-        console.error('Error rendering page:', error);
-      }
     },
-    goToPreviousPage() {
-      if (this.pdfPageNum > 1) {
-        this.pdfPageNum--;
-        this.renderPage(this.pdfPageNum);
-      }
+    data() {
+        return {
+            pdfjsLib: null,
+            PDFViewer: null,
+            viewportWidth: 0,
+            pageDict: {},
+            PDFLinkService: null,
+        }
     },
-    goToNextPage() {
-      if (this.pdfPageNum < this.totalPages) {
-        this.pdfPageNum++;
-        this.renderPage(this.pdfPageNum);
-      }
+    mounted() {
+        this.PDFLinkService = new PDFJS.PDFLinkService();
+        this.pdfjsLib = require('pdfjs-dist/webpack')
+        this.$nextTick(() => {
+            this.initializeViewer();
+        });
+        this.PDFLinkService.setViewer(this.PDFViewer);
     },
-    zoomIn() {
-      this.scale *= 1.1;  // adjust factor as necessary
-      this.renderPage(this.pdfPageNum);
+    computed: {
+        pdfScale() {
+            return this.viewportWidth >= this.maxWidth ? 1 : 'page-width'
+        }
     },
-    zoomReset() {
-      this.scale = 1;
-      this.renderPage(this.pdfPageNum);
-    },
-    zoomOut() {
-      this.scale /= 1.1;  // adjust factor as necessary
-      this.renderPage(this.pdfPageNum);
-    },
-  },
-  mounted() {
-    this.loadPdf();
-  },
-  watch: {
-    pdfData: 'loadPdf',
-  },
-};
+    methods: {
+        triggerResize() {
+            if (this.$refs['pdf-viewer-container'] == null) {
+                return
+            }
+            this.viewportWidth = this.$refs['pdf-viewer-container'].offsetWidth
+            this.PDFViewer.currentScaleValue = 1.0001
+            this.PDFViewer.currentScaleValue = this.pdfScale
+        },
+        initializeViewer() {
+            this.PDFViewer = new PDFJS.PDFViewer({
+                container: this.$refs['pdf-viewer-container'],
+                linkService: this.PDFLinkService
+            })
+            document.addEventListener('pagesinit', () => {
+                this.triggerResize();
+            });
+            window.addEventListener('resize', () => {
+                this.triggerResize()
+            })
+            document.addEventListener('pagerendered', (e) => {
+                this.renderHighlightsOnPage(e.detail.pageNumber)
+            })
+
+            let loadingTask = this.pdfjsLib.getDocument({ data: this.pdfData })
+            loadingTask.promise.then((pdfDocument) => {
+                this.PDFViewer.setDocument(pdfDocument)
+                this.generatePageDictionary()
+            })
+        },
+        generatePageDictionary() {
+            this.solrResponse.response.docs.forEach((doc, idx) => {
+                this.pageDict[doc.page_number.toString()] = doc
+            })
+        },
+        renderHighlightsOnPage(pageNumber) {
+            if (this.solrResponse && this.solrResponse.payloads) {
+                Object.keys(this.solrResponse.payloads).forEach(payloadDoc => {
+                    let highlightTerms = this.solrResponse.payloads[payloadDoc].SpeechContentOcr
+                        ? this.solrResponse.payloads[payloadDoc].SpeechContentOcr
+                        : this.solrResponse.payloads[payloadDoc].content_ocr
+                    Object.keys(highlightTerms).forEach(term => {
+                        highlightTerms[term].forEach(highlight => {
+                            let [targetPageNumber, ...coordinates] = highlight.payload
+                                ? highlight.payload.split(' ').filter(Number)
+                                : highlight.split(' ').filter(Number)
+                            if (pageNumber.toString() === targetPageNumber.toString()) {
+                                this.addHighlightToPDF(pageNumber, coordinates, highlight.startOffset, highlight.endOffset)
+                            }
+                        })
+                    })
+                })
+            } else {
+                console.error('target PDF not found in result set')
+            }
+        },
+        addHighlightToPDF(pageNumber, coordinates, startOffset, endOffset) {
+            let doc = this.pageDict[pageNumber]
+            let pageDimension = doc.PageDimension
+                ? doc.PageDimension
+                : doc.page_dimension
+            let [pageWidth, pageHeight] = pageDimension[0].trim().split(' ').slice(2)
+            let [x1, y1, x2, y2] = coordinates
+            let highlight = document.createElement('span')
+            let targetPage = document.querySelector(`[data-page-number="${pageNumber}"]`)
+
+            // set up highlight position and size
+            const highlightSize = {}
+            highlightSize.top = (y1 / pageHeight) * 100
+            highlightSize.left = (x1 / pageWidth) * 100
+            highlightSize.height = ((y2 / pageHeight) - (y1 / pageHeight)) * 100
+            highlightSize.width = ((x2 / pageWidth) - (x1 / pageWidth)) * 100
+
+            Object.keys(highlightSize).forEach((dimension) => {
+                if (!highlightSize[dimension]) {
+                    console.error(`Undefined sizing variable for highlight: highlightSize.${dimension} evaluated to ${highlightSize[dimension]}. Highlight will not render correctly. This is probably an issue with payload data being provided to the application.`)
+                }
+            })
+
+            // set the relative position for the highlight
+            highlight.setAttribute('data-end-offset', endOffset)
+            highlight.setAttribute('data-start-offset', startOffset)
+            highlight.setAttribute('class', 'box-highlight')
+            highlight.setAttribute('style', `
+        top:${highlightSize.top}%;
+        left:${highlightSize.left}%;
+        height:${highlightSize.height}%;
+        width:${highlightSize.width}%;
+      `)
+
+            // add the highlight to the page
+            targetPage.appendChild(highlight)
+        }
+    }
+}
 </script>
 
-<style scoped>
-.pdf-container {
-  overflow: auto;
-  /* width: 100%; */
-  position: relative;
-  /* height: 100%; */
-}
-.pdf-canvas {
-  display: block;
-  /* min-width: 100%; */
+<style lang="scss" scoped>
+.pdf-viewer-container {
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    position: absolute;
+    overflow-y: scroll;
 }
 
-.pdf-canvas, .textLayer {
-  /* position: absolute; */
-  left: 0;
-  top: 0;
-  pointer-events: none;
-}
+.pdf-viewer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 
-.textLayer {
-  z-index: 1;
-}
+    & .page {
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 4em;
+        position: relative;
+        max-width: 100%;
+        box-shadow: 2px 0 1.5em 0 rgba(#2f3235, 0.4);
 
-.pdf-navigation {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+        ::-moz-selection {
+            background: blue;
+            color: transparent;
+        }
 
-.pdf-navigation__left {
-  flex: 1;
-}
+        ::selection {
+            background: blue;
+            color: transparent;
+        }
 
-.pdf-navigation__right {
-  display: flex;
-  gap: 1rem;
+        &:first-child {
+            margin-top: 12em;
+        }
+
+        &:last-child {
+            margin-bottom: 4em;
+        }
+
+        .box-highlight {
+            position: absolute;
+            display: block;
+            background: blue;
+            opacity: 0.2;
+            transform-origin: center center;
+            transform: scale(1.1, 1.15);
+            border-radius: 2px;
+            pointer-events: none;
+        }
+    }
 }
 </style>

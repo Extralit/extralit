@@ -138,7 +138,7 @@ export default {
 <style lang="scss" scoped>
 .sidebar {
   &__container {
-    position: fixed;
+    // position: fixed;
     display: flex;
     right: 0;
     z-index: 1;
