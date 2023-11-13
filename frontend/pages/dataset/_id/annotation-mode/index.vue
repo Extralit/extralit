@@ -88,13 +88,3 @@ export default {
   },
 };
 </script>
-
-<style lang="scss" scoped>
-.dataset {
-  &__top-area {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-}
-</style>
