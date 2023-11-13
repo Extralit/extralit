@@ -21,7 +21,7 @@
 </p>
 </h3>
 
-## What is Argilla?
+## What is Argilla [For Document Data Extraction]?
 
 <img src="docs/_source/_static/images/main/data-extraction-pipeline.jpg" alt="pipeline">
 
