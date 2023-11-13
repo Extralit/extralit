@@ -10,7 +10,7 @@ import {
   FieldRepository,
   MetricsRepository,
   MetadataRepository,
-  DocumentRepository
+  DocumentRepository,
   VectorRepository,
 } from "@/v1/infrastructure/repositories";
 

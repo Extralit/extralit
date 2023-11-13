@@ -1,7 +1,7 @@
 """Added Document model and updated Record model
 
 Revision ID: 7552df94427a
-Revises: 84f6b9ff6076
+Revises: bda6fe24314e
 Create Date: 2023-11-02 13:54:59.615241
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '7552df94427a'
-down_revision = '84f6b9ff6076'
+down_revision = 'bda6fe24314e'
 branch_labels = None
 depends_on = None
 
