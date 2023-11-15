@@ -19,12 +19,11 @@
         <div class="fields__header--right">
           <SimilarityScorePercentage
             v-show="recordCriteria.isFilteringBySimilarity"
-            v-if="record.score.percentage"
+            v-if="record.score.value"
             class="similarity__progress"
-            :value="record.score.percentage"
+            :value="record.score.value"
             :data-title="$t('similarityScore')"
-          >
-          </SimilarityScorePercentage>
+          />
           <SimilarityFilter
             v-if="datasetVectors?.length"
             :availableVectors="datasetVectors"

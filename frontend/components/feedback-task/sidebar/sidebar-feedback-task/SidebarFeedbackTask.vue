@@ -17,15 +17,9 @@
 
 <template>
   <div class="sidebar" :class="expandedComponent && '--expanded'">
-    <SidebarFeedbackTaskButtonGroup
-      v-for="group in sidebarGroups"
-      :key="group"
-      :group-name="group"
-      :group-button-type="getButtonType(group)"
-      :groupItems="filteredSidebarItemsByGroup(group)"
-      :active-buttons="activeButtons"
-      @on-click-sidebar-action="onClickSidebarAction"
-    />
+    <SidebarFeedbackTaskButtonGroup v-for="group in sidebarGroups" :key="group" :group-name="group"
+      :group-button-type="getButtonType(group)" :groupItems="filteredSidebarItemsByGroup(group)"
+      :active-buttons="activeButtons" @on-click-sidebar-action="onClickSidebarAction" />
   </div>
 </template>
 
@@ -66,6 +60,7 @@ export default {
 
 <style lang="scss" scoped>
 $sidebar-button-size: 45px;
+
 .sidebar {
   display: flex;
   flex-direction: column;
@@ -73,7 +68,7 @@ $sidebar-button-size: 45px;
   top: 0;
   width: $sidebar-button-size;
   min-width: $sidebar-button-size;
-  min-height: calc(100vh - $topbarHeight);
+  min-height: calc(100vh - $topbarHeight - $topbarHeight);
   min-width: $sidebarMenuWidth;
   background: palette(grey, 700);
   border-left: 1px solid $black-10;
@@ -82,21 +77,25 @@ $sidebar-button-size: 45px;
   transition: box-shadow 0.2s ease-in-out 0.4s;
   // TODO - Only for MVP
   padding-top: $base-space * 2;
+
   &.--expanded {
     box-shadow: inset 1px 1px 5px -2px #c7c7c7;
     transition: box-shadow 0.2s ease-in-out;
   }
+
   p {
     text-align: center;
     font-weight: 600;
     @include font-size(12px);
     margin-bottom: 0.5em;
   }
+
   a {
     position: relative;
     display: block;
     outline: none;
   }
+
   &__info {
     position: relative;
   }

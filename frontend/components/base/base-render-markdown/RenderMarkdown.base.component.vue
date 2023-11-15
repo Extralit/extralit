@@ -104,6 +104,21 @@ export default {
     img {
       max-width: 100%;
     }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+
+      th, td {
+        border: 1px solid #ddd; // Adjust color as needed
+        padding: 2px; // Adjust padding as needed
+        text-align: left;
+      }
+
+      th {
+        background-color: #f2f2f2; // Light gray background for header
+      }
+    }
   }
 }
 :deep() {

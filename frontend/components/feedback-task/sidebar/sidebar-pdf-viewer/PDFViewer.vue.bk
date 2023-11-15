@@ -1,0 +1,219 @@
+<template>
+  <div>
+    <div class="pdf-navigation">
+      <div class="title-container">
+        <p class="document__title">{{ fileName }}</p>
+      </div>
+      <div class="controls">
+        <div class="zoom-controls">
+          <button @click="zoomOut">-</button>
+          <button @click="zoomIn">+</button>
+        </div>
+        <div class="page-controls">
+          <button @click="goToPreviousPage" :disabled="pdfPageNum === 1">Prev. Page</button>
+          <button @click="goToNextPage" :disabled="pdfPageNum === totalPages">Next Page</button>
+        </div>
+      </div>
+    </div>
+
+    <div ref="pdfContainer" class="pdf-container" @mousedown="onMouseDown" @mousemove="onMouseMove" @mouseup="onMouseUp" @mouseleave="onMouseUp">
+      <canvas ref="pdfCanvas" class="pdf-canvas"></canvas>
+      <div ref="pdfTextLayer" class="pdf-text-layer"></div>
+    </div>
+  </div>
+</template>
+
+<script>
+import BaseButton from "@/components/base/base-button/BaseButton.vue";
+// import { PDFDocument } from 'pdf-lib';
+import { getDocument, PDFPageProxy, renderTextLayer, GlobalWorkerOptions } from 'pdfjs-dist/build/pdf';
+import 'pdfjs-dist/web/pdf_viewer.css'
+
+export default {
+  props: {
+    pdfData: {
+      type: Uint8Array,
+      required: true,
+    },
+    fileName: {
+      type: String,
+      required: false
+    },
+  },
+  data() {
+    return {
+      pdfDocument: null,
+      pdfPage: null,
+      totalPages: null,
+      pdfPageNum: 1,  // Start at first page
+      scale: 1,
+      dragging: false,
+      startX: 0,
+      startY: 0,
+      initialLeft: 0,
+      initialTop: 0,
+    };
+  },
+  methods: {
+    async loadPdf() {
+      try {
+        this.pdfDocument = await getDocument({ data: this.pdfData }).promise;
+        this.totalPages = this.pdfDocument.numPages;
+        this.renderPage(this.pdfPageNum);
+      } catch (error) {
+        console.error('Error loading PDF:', error);
+      }
+    },
+    async renderPage(num) {
+      try {
+        const page = await this.pdfDocument.getPage(num);
+        const pdfContainer = this.$refs.pdfContainer;
+        const canvas = this.$refs.pdfCanvas;
+        const context = canvas.getContext('2d');
+        const viewport = page.getViewport({ scale: this.scale });
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+
+        // Render PDF page into canvas context
+        const renderContext = {
+          canvasContext: context,
+          viewport: viewport
+        };
+        await page.render(renderContext).promise;
+
+        // Render text layer
+        // Prepare and render the text layer
+        // const textLayerDiv = this.$refs.pdfTextLayer;
+        // textLayerDiv.style.height = `${canvas.height}px`;
+        // textLayerDiv.style.width = `${canvas.width}px`;
+
+        // const textContent = await page.getTextContent();
+        // const textLayer = new renderTextLayer({
+        //   textLayerDiv: textLayerDiv,
+        //   pageIndex: page.pageIndex,
+        //   viewport: viewport
+        // });
+        // textLayer.setTextContent(textContent);
+        // textLayer.render();
+      } catch (error) {
+        console.error('Error rendering page:', error);
+      }
+    },
+    goToPreviousPage() {
+      if (this.pdfPageNum > 1) {
+        this.pdfPageNum--;
+        this.renderPage(this.pdfPageNum);
+      }
+    },
+    goToNextPage() {
+      if (this.pdfPageNum < this.totalPages) {
+        this.pdfPageNum++;
+        this.renderPage(this.pdfPageNum);
+      }
+    },
+    zoomIn() {
+      this.scale *= 1.1;  // adjust factor as necessary
+      this.renderPage(this.pdfPageNum);
+    },
+    zoomReset() {
+      this.scale = 1;
+      this.renderPage(this.pdfPageNum);
+    },
+    zoomOut() {
+      this.scale /= 1.1;  // adjust factor as necessary
+      this.renderPage(this.pdfPageNum);
+    },
+    onMouseDown(e) {
+      this.dragging = true;
+      this.startX = e.clientX;
+      this.startY = e.clientY;
+      this.initialLeft = this.$refs.pdfContainer.scrollLeft;
+      this.initialTop = this.$refs.pdfContainer.scrollTop;
+    },
+    onMouseMove(e) {
+      if (this.dragging) {
+        const dx = e.clientX - this.startX;
+        const dy = e.clientY - this.startY;
+        this.$refs.pdfContainer.scrollLeft -= dx;
+        this.$refs.pdfContainer.scrollTop -= dy;
+      }
+    },
+    onMouseUp() {
+      this.dragging = false;
+    },
+  },
+  created() {
+    GlobalWorkerOptions.workerSrc = '//cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+  },
+  mounted() {
+    this.loadPdf();
+  },
+  watch: {
+    pdfData: 'loadPdf',
+  },
+};
+</script>
+
+<style lang="scss" scoped>
+.pdf-navigation {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.title-container {
+  flex: 1;
+  max-width: calc(100% - 200px);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.document__title {
+  white-space: nowrap;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  padding-right: 5px;
+}
+
+.controls {
+  display: flex;
+  gap: 8px;
+}
+
+.zoom-controls,
+.page-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.pdf-container {
+  // all: initial;
+  overflow: auto;
+  position: relative;
+  cursor: grab;
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.pdf-canvas {
+  display: block;
+  position: relative;
+  min-width: 100%;
+  width: 200%;
+}
+
+.pdf-canvas, .pdf-text-layer {
+  // position: absolute;
+  // left: 0;
+  // top: 0;
+  // pointer-events: none;
+}
+
+.pdf-text-layer {
+  z-index: 1;
+}
+</style>

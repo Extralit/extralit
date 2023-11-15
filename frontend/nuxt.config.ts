@@ -149,10 +149,19 @@ const config: NuxtConfig = {
           mode: [Mode.BODY],
         },
       });
+      config.module.rules.push({
+        test: /\.mjs$/,
+        include: /node_modules\/pdfjs-dist/,
+        type: 'javascript/auto',
+      });
     },
     babel: {
-      plugins: [["@babel/plugin-proposal-private-methods", { loose: true }]],
+      plugins: [
+        ['@babel/plugin-proposal-private-methods', { loose: true }],
+        ['@babel/plugin-proposal-class-properties', { loose: true }],
+      ],
     },
+    transpile: ['pdfjs-dist'],
     terser: {
       terserOptions: {
         keep_classnames: true,

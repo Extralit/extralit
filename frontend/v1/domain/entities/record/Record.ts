@@ -20,8 +20,8 @@ export class Record {
     public readonly fields: Field[],
     public answer: RecordAnswer,
     private readonly suggestions: Suggestion[],
-    public readonly page: number,
     score: number,
+    public readonly page: number,
     public readonly document?: Document
   ) {
     this.completeQuestion();

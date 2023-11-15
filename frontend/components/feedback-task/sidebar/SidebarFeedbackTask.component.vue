@@ -13,6 +13,7 @@
       v-else-if="currentPanel === 'document'"
       :pdf-data="document.file_data" 
       :file-name="document.file_name"/>
+
     </SidebarFeedbackTaskPanel>
 
     <SidebarFeedbackTask
@@ -47,7 +48,7 @@ export default {
   },
   created() {
     try {
-      this.setDocumentByPubmedID('1000')
+      this.setDocumentByPubmedID('1234')
     } catch (error) {
       console.log(error);
     }
@@ -62,7 +63,7 @@ export default {
             icon: "search",
             action: "show-document",
             type: "expandable",
-            component: "PDFViewer",
+            component: "PDFViewerHighlight",
           },
           {
             id: "metrics",

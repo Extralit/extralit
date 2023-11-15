@@ -76,6 +76,12 @@ kubectl create ns <namespace>
 ENV=dev tilt up --namespace=<namespace>
 ```
 
+### Start staging/prod K8s deployment
+
+```bash
+ENV=dev DOCKER_REPO=<remote docker repository> tilt up --namespace <namespace> --context <K8s cluster context>
+```
+
 ## 🛠️ Project Architecture
 
 Argilla is built on 5 core components:

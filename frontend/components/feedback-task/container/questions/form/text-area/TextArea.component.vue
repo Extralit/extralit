@@ -142,12 +142,12 @@ export default {
 }
 
 .textarea {
-  display: flex;
+  display: block;
   flex: 0 0 100%;
   &--markdown {
-    display: inline;
+    display: block;
     flex: 1;
-    padding: $base-space;
+    padding: 0;
   }
 }
 </style>

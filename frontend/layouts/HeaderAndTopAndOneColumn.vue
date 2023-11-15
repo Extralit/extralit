@@ -3,18 +3,8 @@
     <div class="header-area">
       <slot name="header">here is the header</slot>
     </div>
-    <div class="empty-content-left"></div>
-    <div class="footer-area">
-      <slot name="footer">here is the footer</slot>
-    </div>
-    <div class="sidebar-area-right">
+    <div class="sidebar-area">
       <slot name="sidebar-right">here is the sidebar content right</slot>
-    </div>
-    <!-- <div class="sidebar-area-left">
-      <slot name="sidebar-left">here is the sidebar content left</slot>
-    </div> -->
-    <div class="top-area">
-      <slot name="top">here is the top content</slot>
     </div>
     <div class="center-area">
       <slot name="center">here is the center content</slot>
@@ -31,7 +21,6 @@ export default {
   data: () => {
     return {
       sidebarPanel: null,
-      // left_panel: false,
     };
   },
   computed: {
@@ -49,14 +38,9 @@ export default {
     this.$nuxt.$on("on-sidebar-panel", (value) => {
       this.sidebarPanel = value;
     });
-
-    // this.$nuxt.$on("on-sidebar-left-panel", (value) => {
-    //   this.left_panel = value;
-    // });
   },
   afterDestroy() {
     this.$nuxt.$off("on-sidebar-panel");
-    // this.$nuxt.$off("on-sidebar-left-panel");
   },
 };
 </script>
@@ -83,13 +67,10 @@ $gap-width: $base-space * 2;
   }
   &.--document-panel {
     @include media(">desktop") {
-      grid-template-columns: $gap-width 1fr calc($gap-width / 2) $sidebarWidth+$sidebarDocumentAdditionalWidth;
-      transition: 0.8s ease-out;
+      grid-template-columns: 1fr $sidebarWidth+$sidebarDocumentAdditionalWidth;
+      transition: 0.4s ease-out;
     }
   }
-  // &.--left-panel {
-  //   transition: 0.4s ease-out;
-  // }
 }
 
 .header-area {
@@ -98,17 +79,8 @@ $gap-width: $base-space * 2;
 .footer-area {
   grid-area: footer;
 }
-.sidebar-area-right {
-  grid-area: 2 / 4 / 5 / 5;
-}
-.sidebar-area-left {
-  grid-area: 2 / 1 / 5 / 2;
-}
-.empty-content-right {
-  grid-area: 2 / 3 / 4 / 4;
-}
-.top-area {
-  grid-area: 2 / 2 / 3 / 3;
+.sidebar-area {
+  grid-area: sidebar;
 }
 .center-area {
   grid-area: center;

@@ -77,8 +77,7 @@ export default {
   pointer-events: all;
   &.--document-panel {
     width: $sidebarPanelWidth + $sidebarDocumentAdditionalWidth;
-    overflow-x: auto;
-    overflow-y: auto;
+    padding: 0 0 0 0;
   }
   &:hover {
     #{$this}__close-button:not(.zoom-out) {
@@ -103,6 +102,7 @@ export default {
     outline: 0;
     border-radius: $border-radius-s;
     transform: scale(0);
+    z-index: 1;
     &.zoom-out {
       opacity: 1;
       animation: zoom-out 0.3s ease-out forwards;

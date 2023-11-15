@@ -3,11 +3,15 @@
 # https://docs.tilt.dev/api.html#api.version_settings
 version_settings(constraint='>=0.23.4')
 
+# Allow deployment on prod K8s context
+allow_k8s_contexts(k8s_context())
+
 # Read the ENV environment variable
 ENV = str(local('echo $ENV')).strip()
+DOCKER_REPO = str(local('echo $DOCKER_REPO')).strip()
 
 # Check if ENV is set to 'dev' for local development
-if ENV == 'dev':
+if 'kind' in k8s_context():
     # Storage policy
     k8s_yaml('./k8s/kind/tilt-local-dev-kind-storage-policy.yaml')
 
@@ -28,7 +32,7 @@ helm_resource(
 
 # argilla-server is the web backend (FastAPI + SQL database)
 docker_build(
-    'itnrecal-argilla-server',
+    "{DOCKER_REPO}/itnrecal-argilla-server".format(DOCKER_REPO=DOCKER_REPO),
     context='.',
     build_args={'ENV': ENV},
     dockerfile='./docker/api.dockerfile',
@@ -42,8 +46,17 @@ docker_build(
         run('/bin/bash start_argilla_server.sh', trigger='./docker/scripts/start_argilla_server.sh')
     ]
 )
+argilla_server_k8s_yaml = read_yaml_stream('./k8s/argilla-server-deployment.yaml')
+for o in argilla_server_k8s_yaml:
+    for container in o['spec']['template']['spec']['containers']:
+        if container['name'] == 'argilla-server':
+            container['image'] = "{DOCKER_REPO}/itnrecal-argilla-server".format(DOCKER_REPO=DOCKER_REPO)
 
-k8s_yaml(['./k8s/argilla-server-deployment.yaml', './k8s/argilla-server-service.yaml', './k8s/argilla-server-ingress.yaml'])
+k8s_yaml([
+    encode_yaml_stream(argilla_server_k8s_yaml), 
+    './k8s/argilla-server-service.yaml', 
+    './k8s/argilla-server-ingress.yaml'
+    ])
 k8s_resource(
   'argilla-server-deployment',
   resource_deps=['main-db', 'elasticsearch'],
@@ -65,7 +78,7 @@ helm_resource(
 
 # argilla-frontend is the web interface (Vue.js + Nuxt)
 docker_build(
-    'itnrecal-argilla-frontend',
+    '{DOCKER_REPO}/itnrecal-argilla-frontend'.format(DOCKER_REPO=DOCKER_REPO),
     context='.',
     build_args={'ENV': ENV},
     dockerfile='./docker/web.dockerfile',
@@ -80,7 +93,15 @@ docker_build(
     ]
 )
 
-k8s_yaml('./k8s/argilla-frontend-deployment.yaml')
+argilla_frontend_k8s_yaml = read_yaml_stream('./k8s/argilla-frontend-deployment.yaml')
+for o in argilla_frontend_k8s_yaml:
+    for container in o['spec']['template']['spec']['containers']:
+        if container['name'] == 'argilla-frontend':
+            container['image'] = "{DOCKER_REPO}/itnrecal-argilla-frontend".format(DOCKER_REPO=DOCKER_REPO)
+
+k8s_yaml(
+    encode_yaml_stream(argilla_frontend_k8s_yaml)
+    )
 k8s_resource(
   'argilla-frontend-deployment',
   resource_deps=['argilla-server-deployment'],
