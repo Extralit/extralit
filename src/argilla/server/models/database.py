@@ -443,8 +443,9 @@ class Document(DatabaseModel):
     pmid: Mapped[str] = mapped_column(String, index=True, nullable=True)
     file_name: Mapped[str] = mapped_column(String, nullable=False)
     file_data: Mapped[BYTEA] = mapped_column(BYTEA, nullable=False)
+    url: Mapped[str] = mapped_column(String, nullable=True)
 
     def __repr__(self):
         return (
-            f"Document(id={str(self.id)!r}, pmid={self.pmid!r}, file_name={self.file_name!r}"
+            f"Document(id={str(self.id)!r}, pmid={self.pmid!r}, file_name={self.file_name!r}, url={self.url!r})"
         )

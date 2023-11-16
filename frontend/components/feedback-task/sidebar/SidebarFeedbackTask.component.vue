@@ -31,7 +31,7 @@
 import "assets/icons/progress";
 import "assets/icons/refresh";
 import "assets/icons/shortcuts";
-import useDocumentViewModel from "./sidebar-pdf-viewer/useDocumentViewModel";
+import useDocumentViewModel from "./document-viewer/useDocumentViewModel";
 
 export default {
   props: {
@@ -182,3 +182,4 @@ export default {
   }
 }
 </style>
+./document-viewer/useDocumentViewModel

@@ -40,14 +40,14 @@
               v-if="question.isTextType"
               :id="`use-markdown-${question.id}`"
               v-model="question.settings.use_markdown"
-              >Use Markdown</BaseSwitch
+              >Render Markdown Text</BaseSwitch
             >
 
             <BaseSwitch
-              v-if="question.isTextType"
+              v-if="question.isTextType && 'use_table' in question.settings"
               :id="`use-table-${question.id}`"
               v-model="question.settings.use_table"
-              >Use Table</BaseSwitch
+              >Render Editable Table</BaseSwitch
             >
 
             <BaseRangeSlider
