@@ -21,13 +21,15 @@ roles:
   - transform
 
 replicas: 1
-minimumMasterNodes: 1
+# minimumMasterNodes: 1
 
 esMajorVersion: ""
 
 # Allows you to add any config files in /usr/share/elasticsearch/config/
 # such as elasticsearch.yml and log4j2.properties
-esConfig: {}
+esConfig: 
+ elasticsearch.yml: |
+  ingest.geoip.downloader.enabled: false
 #  log4j2.properties: |
 #    key = value
 

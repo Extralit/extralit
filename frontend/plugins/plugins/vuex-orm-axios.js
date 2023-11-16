@@ -76,10 +76,12 @@ export default ({ $axios, app }) => {
         break;
       }
       case 404:
-        Notification.dispatch("notify", {
-          message: `Warning: ${detail.params.detail}`,
-          type: "warning",
-        });
+        if (detail.params.detail) {
+          Notification.dispatch("notify", {
+            message: `Warning: ${detail.params.detail}`,
+            type: "warning",
+          });
+        }
         break;
       default:
         Notification.dispatch("notify", {

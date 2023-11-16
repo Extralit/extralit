@@ -27,6 +27,7 @@ export interface BackedRecord {
   fields: { [key: string]: string };
   updated_at: string;
   query_score: number;
+  metadata?: any;
 }
 
 export interface BackedRecords {

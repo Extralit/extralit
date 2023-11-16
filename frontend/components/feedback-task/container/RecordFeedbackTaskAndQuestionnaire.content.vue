@@ -48,6 +48,9 @@ export default {
     record() {
       return this.records.getRecordOn(this.recordCriteria.committed.page);
     },
+    metadata() {
+      return this.record?.metadata;
+    },
     noMoreDataMessage() {
       return `You've reached the end of the data for the ${this.recordCriteria.committed.status} queue.`;
     },
@@ -77,6 +80,8 @@ export default {
 
       await this.loadRecords(mode, this.recordCriteria);
 
+      this.$nuxt.$emit('on-change-record-metadata', this.metadata);
+
       this.onSearchFinished();
 
       this.fetching = false;
@@ -89,6 +94,8 @@ export default {
       this.fetching = true;
 
       const isNextRecordExist = await this.paginateRecords(this.recordCriteria);
+
+      this.$nuxt.$emit('on-change-record-metadata', this.metadata);
 
       if (!isNextRecordExist) {
         setTimeout(() => {

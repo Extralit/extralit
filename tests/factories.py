@@ -255,7 +255,7 @@ class FieldFactory(BaseFactory):
 
 
 class TextFieldFactory(FieldFactory):
-    settings = {"type": FieldType.text.value, "use_markdown": False}
+    settings = {"type": FieldType.text.value, "use_markdown": False, "use_table": False}
 
 
 class MetadataPropertyFactory(BaseFactory):
@@ -314,7 +314,7 @@ class QuestionFactory(BaseFactory):
 
 
 class TextQuestionFactory(QuestionFactory):
-    settings = {"type": QuestionType.text.value, "use_markdown": False}
+    settings = {"type": QuestionType.text.value, "use_markdown": False, "use_table": False}
 
 
 class RatingQuestionFactory(QuestionFactory):

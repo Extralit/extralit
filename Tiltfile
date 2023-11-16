@@ -9,6 +9,9 @@ allow_k8s_contexts(k8s_context())
 # Read the ENV environment variable
 ENV = str(local('echo $ENV')).strip()
 DOCKER_REPO = str(local('echo $DOCKER_REPO')).strip()
+if not DOCKER_REPO:
+    DOCKER_REPO = 'localhost:5005'
+    print('DOCKER_REPO not set, using default: {DOCKER_REPO}'.format(DOCKER_REPO=DOCKER_REPO))
 
 # Check if ENV is set to 'dev' for local development
 if 'kind' in k8s_context():
@@ -43,7 +46,8 @@ docker_build(
         sync('./src/', '/home/argilla/src/'),
         sync('./docker/scripts/start_argilla_server.sh', '/home/argilla/'),
         # Restart the server to pick up code changes
-        run('/bin/bash start_argilla_server.sh', trigger='./docker/scripts/start_argilla_server.sh')
+        run('/bin/bash start_argilla_server.sh', trigger='./docker/scripts/start_argilla_server.sh'),
+        run('python -m argilla server database migrate', trigger='./src/argilla/server/alembic/versions')
     ]
 )
 argilla_server_k8s_yaml = read_yaml_stream('./k8s/argilla-server-deployment.yaml')

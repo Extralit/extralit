@@ -7,6 +7,7 @@ interface RatingSetting {
 interface TextSetting {
   type: "text";
   use_markdown: boolean;
+  use_table: boolean;
 }
 interface RankingSetting {
   type: "ranking";

@@ -43,6 +43,13 @@
               >Use Markdown</BaseSwitch
             >
 
+            <BaseSwitch
+              v-if="question.isTextType"
+              :id="`use-table-${question.id}`"
+              v-model="question.settings.use_table"
+              >Use Table</BaseSwitch
+            >
+
             <BaseRangeSlider
               v-if="
                 !!question.settings.visible_options &&

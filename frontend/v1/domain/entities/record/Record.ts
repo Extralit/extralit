@@ -4,7 +4,7 @@ import { Question } from "../question/Question";
 import { Suggestion } from "../question/Suggestion";
 import { Score } from "../similarity/Score";
 import { RecordAnswer } from "./RecordAnswer";
-import { Document } from "../document/Document";
+import { Metadata } from "../metadata/Metadata";
 
 const DEFAULT_STATUS = "pending";
 
@@ -22,7 +22,7 @@ export class Record {
     private readonly suggestions: Suggestion[],
     score: number,
     public readonly page: number,
-    public readonly document?: Document
+    public readonly metadata?: Metadata,
   ) {
     this.completeQuestion();
     this.updatedAt = answer?.updatedAt;

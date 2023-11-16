@@ -371,6 +371,7 @@ async def get_record_by_id(
     with_dataset: bool = False,
     with_suggestions: bool = False,
     with_vectors: bool = False,
+    with_metadata: bool = False,
 ) -> Union[Record, None]:
     query = select(Record).filter_by(id=record_id)
     if with_dataset:
@@ -383,6 +384,9 @@ async def get_record_by_id(
         query = query.options(selectinload(Record.suggestions))
     if with_vectors:
         query = query.options(selectinload(Record.vectors))
+    if with_metadata:
+        query = query.options(selectinload(Record.metadata_))
+
     result = await db.execute(query)
 
     return result.scalar_one_or_none()

@@ -180,9 +180,6 @@ class Record(DatabaseModel):
     external_id: Mapped[Optional[str]] = mapped_column(index=True)
     dataset_id: Mapped[UUID] = mapped_column(ForeignKey("datasets.id", ondelete="CASCADE"), index=True)
 
-    document_id = mapped_column(ForeignKey('documents.id', ondelete='CASCADE'), nullable=True)
-    document = relationship("Document", back_populates="records")
-
     dataset: Mapped["Dataset"] = relationship(back_populates="records")
     responses: Mapped[List["Response"]] = relationship(
         back_populates="record",
@@ -446,8 +443,6 @@ class Document(DatabaseModel):
     pmid: Mapped[str] = mapped_column(String, index=True, nullable=True)
     file_name: Mapped[str] = mapped_column(String, nullable=False)
     file_data: Mapped[BYTEA] = mapped_column(BYTEA, nullable=False)
-
-    records = relationship("Record", back_populates="document")
 
     def __repr__(self):
         return (

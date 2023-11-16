@@ -36,6 +36,7 @@ class BaseQuestionSettings(BaseModel):
 class TextQuestionSettings(BaseQuestionSettings):
     type: Literal[QuestionType.text]
     use_markdown: bool = False
+    use_table: bool = False
 
     def check_response(self, response: ResponseValue, status: Optional[ResponseStatus] = None):
         if not isinstance(response.value, str):

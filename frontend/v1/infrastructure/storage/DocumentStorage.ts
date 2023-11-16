@@ -16,13 +16,10 @@ export const useDocument = () => {
     return state.get();
   }
 
-  // const currentDocument = state.currentDocument;
-
   return {
     ...state,
     set,
     get,
-    // currentDocument,
   };
 };
 

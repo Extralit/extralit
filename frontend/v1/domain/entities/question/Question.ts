@@ -96,6 +96,7 @@ export class Question {
       this.title !== this.original.title ||
       this.description !== this.original.description ||
       this.settings.use_markdown !== this.original.settings.use_markdown ||
+      this.settings.use_table !== this.original.settings.use_table ||
       this.settings.visible_options !== this.original.settings.visible_options
     );
   }

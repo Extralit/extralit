@@ -88,6 +88,8 @@ class TextQuestion(QuestionSchema):
             modified.
         use_markdown: Whether the question should be rendered using markdown or not.
             Defaults to False.
+        use_table: Whether the question should be rendered using a table editor or not.
+            Defaults to False.
 
     Examples:
         >>> from argilla.client.feedback.schemas.questions import TextQuestion
@@ -96,12 +98,14 @@ class TextQuestion(QuestionSchema):
 
     type: Literal[QuestionTypes.text] = Field(QuestionTypes.text.value, allow_mutation=False)
     use_markdown: bool = False
+    use_table: bool = False
 
     @property
     def server_settings(self) -> Dict[str, Any]:
         return {
             "type": self.type,
             "use_markdown": self.use_markdown,
+            "use_table": self.use_table,
         }
 
 

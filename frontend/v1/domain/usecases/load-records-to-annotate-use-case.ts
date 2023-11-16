@@ -82,7 +82,7 @@ export class LoadRecordsToAnnotateUseCase {
     const [recordsFromBackend, questionsFromBackend, fieldsFromBackend] =
       await Promise.all([getRecords, getQuestions, getFields]);
 
-    const recordsToAnnotate = recordsFromBackend.records.map(
+        const recordsToAnnotate = recordsFromBackend.records.map(
       (record, index) => {
         const recordPage = criteria.isFilteringBySimilarity
           ? index + pagination.from
@@ -140,7 +140,8 @@ export class LoadRecordsToAnnotateUseCase {
           answer,
           suggestions,
           record.query_score,
-          recordPage
+          recordPage,
+          record.metadata
         );
       }
     );

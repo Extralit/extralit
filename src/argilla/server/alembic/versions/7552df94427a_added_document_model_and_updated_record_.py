@@ -28,8 +28,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_documents_pmid'), 'documents', ['pmid'], unique=False)
-    op.add_column('records', sa.Column('document_id', sa.Uuid(), nullable=True))
-    op.create_foreign_key(None, 'records', 'documents', ['document_id'], ['id'], ondelete='CASCADE')
     # ### end Alembic commands ###
 
 
