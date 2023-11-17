@@ -6,12 +6,7 @@
   <br>
 </h1>
 
-
 <h2 align="center">Open-source feedback layer for LLM-based data extractions</h2>
-<br>
-
-
-<br>
 
 <h3>
 <p align="center">
@@ -80,6 +75,25 @@ ENV=dev tilt up --namespace=<namespace>
 
 ```bash
 ENV=dev DOCKER_REPO=<remote docker repository> tilt up --namespace <namespace> --context <K8s cluster context>
+```
+
+## 🛠️ Developer guide
+
+### Editing database schema:
+Editting the database schema files at `src/argilla/server/models/*.py` require running these commands to apply revisions to the database.
+
+1. Create revision
+```bash
+cd src/argilla
+alembic revision -m <message>
+```
+
+If you happen to run into errors due to the revisions from upstream argilla-io/argilla repo, set the down-revision tag to their latest in the revision `"7552df94427a"` at `src/argilla/server/alembic/versions`
+
+2. Apply the revision
+```bash
+# Be sure to set environment variables ARGILLA_ELASTICSEARCH and ARGILLA_DATABASE_URL
+python -m argilla server database migrate
 ```
 
 ## 🛠️ Project Architecture
