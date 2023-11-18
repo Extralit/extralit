@@ -3,7 +3,7 @@ nodeGroup: "master"
 
 # The service that non master groups will try to connect to when joining the cluster
 # This should be set to clusterName + "-" + nodeGroup for your master group
-masterService: ""
+masterService: "elasticsearch-master"
 
 # Elasticsearch roles that will be applied to this nodeGroup
 # These will be set as environment variables. E.g. node.roles=master
@@ -21,17 +21,19 @@ roles:
   - transform
 
 replicas: 1
-# minimumMasterNodes: 1
+minimumMasterNodes: 1
 
 esMajorVersion: ""
 
 # Allows you to add any config files in /usr/share/elasticsearch/config/
 # such as elasticsearch.yml and log4j2.properties
 esConfig: 
- elasticsearch.yml: |
-  ingest.geoip.downloader.enabled: false
-#  log4j2.properties: |
-#    key = value
+  elasticsearch.yml: |
+    ingest.geoip.downloader.enabled: false
+    cluster.initial_master_nodes: []
+
+discovery:
+  seed_hosts: []
 
 createCert: true
 
@@ -56,7 +58,7 @@ envFrom: []
 # Disable it to use your own elastic-credential Secret.
 secret:
   enabled: true
-  password: "" # generated randomly if not defined
+  password: "password" # generated randomly if not defined
 
 # A list of secrets and their paths to mount inside the pod
 # This is useful for mounting certificates for security and for mounting
@@ -90,7 +92,7 @@ resources:
     cpu: "1000m"
     memory: "2Gi"
   limits:
-    cpu: "1000m"
+    cpu: "2000m"
     memory: "2Gi"
 
 initResources: {}
@@ -237,10 +239,10 @@ readinessProbe:
   initialDelaySeconds: 10
   periodSeconds: 10
   successThreshold: 3
-  timeoutSeconds: 5
+  timeoutSeconds: 15
 
 # https://www.elastic.co/guide/en/elasticsearch/reference/current/cluster-health.html#request-params wait_for_status
-clusterHealthCheckParams: "wait_for_status=green&timeout=1s"
+clusterHealthCheckParams: "wait_for_status=green&timeout=10s"
 
 ## Use an alternate scheduler.
 ## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
@@ -303,7 +305,7 @@ networkPolicy:
   ## In order for a Pod to access Elasticsearch, it needs to have the following label:
   ## {{ template "uname" . }}-client: "true"
   ## Example for default configuration to access HTTP port:
-  ## elasticsearch-master-http-client: "true"
+  elasticsearch-master-http-client: "true"
   ## Example for default configuration to access transport port:
   ## elasticsearch-master-transport-client: "true"
 

@@ -22,6 +22,7 @@ def upgrade() -> None:
     sa.Column('pmid', sa.String(), nullable=True),
     sa.Column('file_name', sa.String(), nullable=False),
     sa.Column('file_data', postgresql.BYTEA(), nullable=False),
+    sa.Column('url', sa.String(), nullable=True),
     sa.Column('id', sa.Uuid(), nullable=False),
     sa.Column('inserted_at', sa.DateTime(), nullable=False),
     sa.Column('updated_at', sa.DateTime(), nullable=False),

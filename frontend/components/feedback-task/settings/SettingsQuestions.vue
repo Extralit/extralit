@@ -44,7 +44,7 @@
             >
 
             <BaseSwitch
-              v-if="question.isTextType && 'use_table' in question.settings"
+              v-if="question.isTextType"
               :id="`use-table-${question.id}`"
               v-model="question.settings.use_table"
               >Render Editable Table</BaseSwitch

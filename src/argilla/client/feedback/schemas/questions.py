@@ -100,6 +100,8 @@ class TextQuestion(QuestionSchema):
     use_markdown: bool = False
     use_table: bool = False
 
+    assert not (use_markdown and use_table), "Ensure that only one of these is True"
+
     @property
     def server_settings(self) -> Dict[str, Any]:
         return {

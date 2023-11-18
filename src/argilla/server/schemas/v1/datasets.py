@@ -206,6 +206,7 @@ class FieldCreate(BaseModel):
 class TextQuestionSettingsCreate(BaseModel):
     type: Literal[QuestionType.text]
     use_markdown: bool = False
+    use_table: bool = False
 
 
 class UniqueValuesCheckerMixin(BaseModel):

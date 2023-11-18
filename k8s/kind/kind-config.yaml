@@ -11,3 +11,9 @@ kindV1Alpha4Cluster:
       containerPath: /usr/share/elasticsearch/data
     - hostPath: /Users/jonnytr/kind-volumes/postgresql
       containerPath: /var/lib/postgresql/data
+  - role: worker
+    extraMounts:
+    - hostPath: /Users/jonnytr/kind-volumes/elasticsearch-worker
+      containerPath: /usr/share/elasticsearch/data
+    - hostPath: /Users/jonnytr/kind-volumes/postgresql-worker
+      containerPath: /var/lib/postgresql/data

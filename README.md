@@ -54,6 +54,8 @@ ctlptl create cluster kind --registry=ctlptl-registry
 
 ```bash
 ctlptl apply -f k8s/kind/kind-config.yaml
+kubectl taint node kind-control-plane node-role.kubernetes.io/control-plane:NoSchedule-
+
 ```
 
 ### Start local development
