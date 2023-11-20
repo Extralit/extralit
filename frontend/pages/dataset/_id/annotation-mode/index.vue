@@ -4,7 +4,7 @@
     <HeaderAndTopAndOneColumn :key="refreshKey">
       <template v-slot:header>
         <HeaderFeedbackTaskComponent :key="datasetId" :datasetId="datasetId" :breadcrumbs="breadcrumbs"
-          :showTrainButton="true" @on-click-train="showTrainModal(true)" />
+          :showTrainButton="false" @on-click-train="showTrainModal(true)" />
         <BaseModal :modal-custom="true" :prevent-body-scroll="true" modal-class="modal-auto"
           modal-position="modal-top-center" :modal-visible="visibleTrainModal" allow-close
           @close-modal="showTrainModal(false)">

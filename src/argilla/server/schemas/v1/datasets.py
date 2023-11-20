@@ -69,10 +69,10 @@ VECTOR_SETTINGS_CREATE_TITLE_MIN_LENGTH = 1
 VECTOR_SETTINGS_CREATE_TITLE_MAX_LENGTH = 500
 
 RATING_OPTIONS_MIN_ITEMS = 2
-RATING_OPTIONS_MAX_ITEMS = 10
+RATING_OPTIONS_MAX_ITEMS = 20
 
-RATING_LOWER_VALUE_ALLOWED = 1
-RATING_UPPER_VALUE_ALLOWED = 10
+RATING_LOWER_VALUE_ALLOWED = 0
+RATING_UPPER_VALUE_ALLOWED = 100
 
 VALUE_TEXT_OPTION_VALUE_MIN_LENGTH = 1
 VALUE_TEXT_OPTION_VALUE_MAX_LENGTH = 200
@@ -241,6 +241,7 @@ class RatingQuestionSettingsCreate(UniqueValuesCheckerMixin):
     def check_option_value_range(cls, value: List[RatingQuestionSettingsOption]):
         """Validator to control all values are in allowed range 1 <= x <= 10"""
         for option in value:
+            if not isinstance(option.value, int): continue
             if not RATING_LOWER_VALUE_ALLOWED <= option.value <= RATING_UPPER_VALUE_ALLOWED:
                 raise ValueError(
                     f"Option value {option.value!r} out of range "
