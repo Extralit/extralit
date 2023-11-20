@@ -242,6 +242,13 @@ class Workspace:
             >>> workspace.delete()
         """
         try:
+            workspaces_api_v1.delete_workspace_documents(client=self._client, id=self.id)
+        except NotFoundApiError as e:
+            warnings.warn(f"Workspace with id {self.id} doesn't exist in Argilla. \n{e}")
+        except BaseClientError as e:
+            warnings.warn(f"Error while deleting documents workspace with id {self.id!r}. \n{e}")
+
+        try:
             workspaces_api_v1.delete_workspace(client=self._client, id=self.id)
         except NotFoundApiError as e:
             raise ValueError(f"Workspace with id {self.id} doesn't exist in Argilla.") from e
@@ -252,7 +259,7 @@ class Workspace:
             ) from e
         except BaseClientError as e:
             raise RuntimeError(f"Error while deleting workspace with id {self.id!r}.") from e
-
+        
     @staticmethod
     def __active_client() -> "httpx.Client":
         """Returns the active Argilla `httpx.Client` instance."""

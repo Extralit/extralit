@@ -1,0 +1,65 @@
+import base64
+from abc import ABC, abstractmethod
+from typing import Any, Dict, List, Literal, Optional, Union
+
+from pydantic import BaseModel, Field, Extra
+from uuid import UUID
+
+class Document(BaseModel, ABC):
+    """Schema for the `Document` model.
+
+    Args:
+        url: The URL of the document. Optional.
+        file_data: The file data of the document. Required.
+        file_name: The file name of the document. Required.
+        pmid: The PMID of the document. Optional.
+        doi: The DOI of the document. Optional.
+        workspace_id: The workspace ID of the document. Required.
+    """
+
+    doi: Optional[str] = None
+    pmid: Optional[str] = None
+    file_name: str = Field(...)
+    url: Optional[str] = None
+    file_data: Optional[str] = Field(None, description="Base64 encoded file data")
+    workspace_id: Optional[UUID] = Field(None, description="The workspace ID to which the document belongs to")
+    id: Optional[UUID] = Field(None, description="The ID of the document, which gets assigned after databse insertion")
+
+    class Config:
+        validate_assignment = True
+        extra = Extra.forbid
+        json_encoders = {
+            UUID: str
+        }
+
+    @classmethod
+    def from_file(cls, file_path: str, pmid: Optional[str] = None, doi: Optional[str] = None, workspace_id: Optional[UUID] = None) -> "Document":
+        assert pmid or doi, "Either pmid or doi must be provided"
+
+        with open(file_path, "rb") as file:
+            file_data = base64.b64encode(file.read()).decode()
+        file_name = file_path.split("/")[-1]
+
+        return cls(
+            file_data=file_data,
+            file_name=file_name,
+            pmid=pmid,
+            doi=doi,
+            workspace_id=workspace_id,
+        )
+
+    def to_server_payload(self) -> Dict[str, Any]:
+        """Method that will be used to create the payload that will be sent to Argilla
+        to create a field in the `FeedbackDataset`.
+        """
+        return {
+            "file_data": self.file_data,
+            "url": self.url,
+            "file_name": self.file_name,
+            "pmid": self.pmid,
+            "doi": self.doi,
+            "workspace_id": str(self.workspace_id),
+        }
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(id={self.id!r}, file_name={self.file_name!r}, pmid={self.pmid!r}, doi={self.doi!r}, workspace_id={self.workspace_id!r})"

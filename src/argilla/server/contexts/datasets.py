@@ -35,6 +35,7 @@ from argilla.server.models import (
     Vector,
     VectorSettings,
 )
+from argilla.server.models.database import Document
 from argilla.server.models.suggestions import SuggestionCreateWithRecordId
 from argilla.server.schemas.v1.datasets import (
     DatasetCreate,
@@ -47,6 +48,7 @@ from argilla.server.schemas.v1.datasets import (
     RecordUpdateWithId,
     ResponseValueCreate,
 )
+from argilla.server.schemas.v1.documents import DocumentCreate, DocumentListItem
 from argilla.server.schemas.v1.datasets import (
     VectorSettings as VectorSettingsSchema,
 )
@@ -1080,3 +1082,35 @@ async def get_metadata_property_by_id(db: "AsyncSession", metadata_property_id: 
         select(MetadataProperty).filter_by(id=metadata_property_id).options(selectinload(MetadataProperty.dataset))
     )
     return result.scalar_one_or_none()
+
+async def create_document(db: "AsyncSession", dataset_create: DocumentCreate):
+    return await Document.create(
+        db,
+        url=dataset_create.url,
+        file_data=dataset_create.file_data,
+        file_name=dataset_create.file_name,
+        pmid=dataset_create.pmid,
+        doi=dataset_create.doi,
+        workspace_id=dataset_create.workspace_id,
+)
+
+async def delete_documents(
+    db: "AsyncSession", workspace_id: UUID
+) -> None:
+    async with db.begin_nested():
+        params = [Document.workspace_id == workspace_id]
+        documents = await Document.delete_many(db=db, params=params, autocommit=False)
+
+        print(f"Deleting {len(documents)} documents")
+
+    await db.commit()
+
+async def list_documents(
+    db: "AsyncSession", workspace_id: UUID
+) -> List[DocumentListItem]:
+
+    result = await db.execute(select(Document).filter_by(workspace_id=workspace_id))
+    documents: List[Document] = result.scalars().all()
+    documents = [DocumentListItem(**doc.__dict__) for doc in documents]
+
+    return documents

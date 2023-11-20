@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import warnings
+import warnings, json
 from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 
@@ -32,8 +32,8 @@ from argilla.client.sdk.v1.datasets.models import (
     FeedbackRecordsSearchVectorQuery,
     FeedbackResponseStatusFilter,
     FeedbackVectorSettingsModel,
+    FeedbackDocumentModel
 )
-
 
 def create_dataset(
     client: httpx.Client,
@@ -607,7 +607,7 @@ def get_metrics(
     of a `FeedbackDataset`.
 
     Args:
-        client: the authenticated Argilla client to be used to send the request to the API.
+        client: the auzthenticated Argilla client to be used to send the request to the API.
         id: the id of the dataset to retrieve the metrics from.
 
     Returns:
@@ -622,4 +622,63 @@ def get_metrics(
         response_obj = Response.from_httpx_response(response)
         response_obj.parsed = FeedbackMetricsModel(**response.json())
         return response_obj
+    return handle_response_error(response)
+
+
+
+def upload_document(
+    client: httpx.Client,
+    document: FeedbackDocumentModel,
+) -> Response[Union[UUID, ErrorMessage, HTTPValidationError]]:
+    """Sends a POST request to `/api/v1/documents` endpoint to create a new `Document`.
+
+    Args:
+        client: the authenticated client to be used to send the request to the API.
+        url: the URL of the document. Optional.
+        file_data: the file data of the document. Required.
+        file_name: the file name of the document. Required.
+        pmid: the PMID of the document. Optional.
+        doi: the DOI of the document. Optional.
+        workspace_id: the id of the workspace where the document will be created.
+
+    Returns:
+        A `Response` object containing a `parsed` attribute with the parsed response if the
+        request was successful, which is the UUID of the created document.
+    """
+    endpoint = "/api/v1/documents"
+    response = client.post(url=endpoint, json=document.to_server_payload())
+
+    if response.status_code == 201:
+        response_obj = Response.from_httpx_response(response)
+        response_obj.parsed = UUID(response.json())
+        return response_obj
+    return handle_response_error(response)
+
+
+def list_documents(
+    client: httpx.Client,
+    workspace_id: UUID,
+) -> Response[Union[list, List[Dict], ErrorMessage, HTTPValidationError]]:
+    """Sends a GET request to `/api/v1/documents/workspace/{workspace_id}` endpoint to retrieve a list of
+    `Document` filtered by `workspace_id`.
+
+    Args:
+        client: the authenticated Argilla client to be used to send the request to the API.
+        workspace_id: the id of the workspace to filter the documents by. Note that the user
+            should either be owner or have access to the workspace. Defaults to None.
+
+    Returns:
+        A `Response` object containing a `parsed` attribute with the parsed response if the
+        request was successful, which is a list of `FeedbackDatasetModel` if any, otherwise
+        it will contain an empty list.
+    """
+    url = f"/api/v1/documents/workspace/{workspace_id}"
+
+    response = client.get(url=url)
+
+    if response.status_code == 200:
+        response_obj = Response.from_httpx_response(response)
+        response_obj.parsed = [document for document in response.json()]
+        return response_obj
+    
     return handle_response_error(response)

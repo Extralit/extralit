@@ -440,12 +440,16 @@ class User(DatabaseModel):
 class Document(DatabaseModel):
     __tablename__ = "documents"
 
-    pmid: Mapped[str] = mapped_column(String, index=True, nullable=True)
-    file_name: Mapped[str] = mapped_column(String, nullable=False)
-    file_data: Mapped[BYTEA] = mapped_column(BYTEA, nullable=False)
     url: Mapped[str] = mapped_column(String, nullable=True)
+    file_data: Mapped[BYTEA] = mapped_column(BYTEA, nullable=False)
+    file_name: Mapped[str] = mapped_column(String, nullable=False)
+    pmid: Mapped[str] = mapped_column(String, index=True, nullable=True)
+    doi: Mapped[str] = mapped_column(String, index=True, nullable=True)
+    workspace_id: Mapped[UUID] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
+    inserted_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
 
     def __repr__(self):
         return (
-            f"Document(id={str(self.id)!r}, pmid={self.pmid!r}, file_name={self.file_name!r}, url={self.url!r})"
+            f"Document(id={str(self.id)!r}, workspace_id={str(self.workspace_id)!r},"
+            f"pmid={self.pmid!r}, doi={self.doi!r}, file_name={self.file_name!r}, url={self.url!r})"
         )

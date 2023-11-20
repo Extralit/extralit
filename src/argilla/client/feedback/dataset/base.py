@@ -19,6 +19,7 @@ from argilla.client.feedback.dataset import helpers
 from argilla.client.feedback.integrations.huggingface import HuggingFaceDatasetMixin
 from argilla.client.feedback.schemas.records import FeedbackRecord, SortBy
 from argilla.client.feedback.schemas.types import AllowedFieldTypes, AllowedMetadataPropertyTypes, AllowedQuestionTypes
+from argilla.client.feedback.schemas.documents import Document
 from argilla.client.feedback.schemas.vector_settings import VectorSettings
 from argilla.utils.dependency import requires_dependencies
 
@@ -160,7 +161,7 @@ class FeedbackDatasetBase(ABC, Generic[R], metaclass=ABCMeta):
                     f"Invalid `metadata_property={metadata_property.name}` provided as it already exists. Current"
                     f" `metadata_properties` are: {', '.join(existing_metadata_property_names)}"
                 )
-
+            
     @requires_dependencies("datasets")
     def format_as(self, format: Literal["datasets"]) -> "Dataset":
         """Formats the `FeedbackDataset` as a `datasets.Dataset` object.

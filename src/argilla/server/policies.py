@@ -138,12 +138,26 @@ class DocumentPolicy:
     @classmethod
     def create(cls) -> PolicyAction:
         async def is_allowed(actor: User) -> bool:
-            return actor.is_owner or actor.is_admin
+            return actor.is_owner or actor.is_admin or actor.is_annotator
 
         return is_allowed
     
     @classmethod
     def get(cls, ) -> PolicyAction:
+        async def is_allowed(actor: User) -> bool:
+            return actor.is_owner or actor.is_admin or actor.is_annotator
+
+        return is_allowed
+    
+    @classmethod
+    def delete(cls, ) -> PolicyAction:
+        async def is_allowed(actor: User) -> bool:
+            return actor.is_owner
+
+        return is_allowed
+    
+    @classmethod
+    def list(cls, ) -> PolicyAction:
         async def is_allowed(actor: User) -> bool:
             return actor.is_owner or actor.is_admin
 

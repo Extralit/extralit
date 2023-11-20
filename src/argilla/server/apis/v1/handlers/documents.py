@@ -1,6 +1,7 @@
+import base64
 from io import BytesIO
 from uuid import UUID
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional, List
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, Path, status, Security
 from fastapi.responses import StreamingResponse
@@ -12,6 +13,8 @@ from argilla.server.models.database import Document
 from argilla.server.security import auth
 from argilla.server.policies import DocumentPolicy, authorize, is_authorized
 from argilla.server.models import User
+from argilla.server.contexts import accounts, datasets
+from argilla.server.schemas.v1.documents import DocumentCreate, DocumentListItem
 
 if TYPE_CHECKING:
     from argilla.server.models import Document
@@ -22,20 +25,40 @@ router = APIRouter(tags=["documents"])
 async def upload_document(
     *,
     db: AsyncSession = Depends(get_async_db),
-    document: UploadFile,
-    pmid: str,
+    document_create: DocumentCreate,
     current_user: User = Security(auth.get_current_user)
 ):
     await authorize(current_user, DocumentPolicy.get())
+
+    if not await accounts.get_workspace_by_id(db, document_create.workspace_id):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Workspace with id `{document_create.workspace_id}` not found",
+        )
     
-    # Assuming file_name is derived from the uploaded file
-    file_name = document.filename
-    file_data = await document.read()
-    new_document = Document(pmid=pmid, file_name=file_name, file_data=file_data)
-    db.add(new_document)
-    await db.commit()
+    # If a file is uploaded, use it. Otherwise, use the file_data from the DocumentCreate model
+    document = None
+    if document is not None:
+        file_name = document.filename
+        file_data_bytes = await document.read()
+    else:
+        if document_create.file_data is not None:
+            file_data_bytes = base64.b64decode(document_create.file_data)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No file was uploaded and no file_data was provided in the request body",
+            )
+
+    new_document = Document(pmid=document_create.pmid, 
+                            doi=document_create.doi,
+                            url=document_create.url,
+                            file_name=document_create.file_name or file_name, 
+                            file_data=file_data_bytes,
+                            workspace_id=document_create.workspace_id)
+    document = await datasets.create_document(db, new_document)
     
-    return new_document.id
+    return document.id
 
 @router.get("/documents/by-pmid/{pmid}", responses={200: {"content": {"application/pdf": {}}}})
 async def get_document_by_pmid(
@@ -110,3 +133,29 @@ async def get_document_by_id(
         },
         media_type="application/pdf"
     )
+
+@router.delete("/documents/workspace/{workspace_id}", status_code=status.HTTP_200_OK)
+async def delete_documents_by_workspace_id(*,
+    db: AsyncSession = Depends(get_async_db),
+    workspace_id: UUID = Path(..., title="The UUID of the workspace whose documents will all be deleted"),
+    current_user: User = Security(auth.get_current_user)
+    ):
+    await authorize(current_user, DocumentPolicy.delete())
+
+    await datasets.delete_documents(db, workspace_id)
+
+
+@router.get("/documents/workspace/{workspace_id}", status_code=status.HTTP_200_OK, 
+            response_model=List[DocumentListItem])
+async def list_documents(*,
+    db: AsyncSession = Depends(get_async_db),
+    workspace_id: UUID = Path(..., title="The UUID of the workspace whose documents will be retrieved"),
+    current_user: User = Security(auth.get_current_user)
+    ) -> List[Document]:
+    await authorize(current_user, DocumentPolicy.list())
+
+    documents = await datasets.list_documents(db, workspace_id)
+
+    print('list_documents', documents)
+
+    return documents

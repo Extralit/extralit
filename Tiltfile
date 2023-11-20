@@ -40,7 +40,7 @@ docker_build(
     build_args={'ENV': ENV},
     dockerfile='./docker/api.dockerfile',
     only=['./src', './dist', './docker/scripts', './setup.py', './pyproject.toml', './requirements.txt'],
-    ignore=['./frontend'],
+    ignore=['./frontend', '**/__pycache__'],
     live_update=[
         # Sync the source code to the container
         sync('./src/', '/home/argilla/src/'),
@@ -87,7 +87,7 @@ docker_build(
     build_args={'ENV': ENV},
     dockerfile='./docker/web.dockerfile',
     only=['./frontend/', './scripts/', './docs/'],
-    ignore=['./frontend/.nuxt/', './frontend/node_modules/', './frontend/package-lock.json'],
+    ignore=['./frontend/.nuxt/', './frontend/node_modules/', './frontend/package-lock.json', '**/__pycache__'],
     live_update=[
         fall_back_on('./frontend/nuxt.config.ts'),
         # Sync the frontend directory to the container

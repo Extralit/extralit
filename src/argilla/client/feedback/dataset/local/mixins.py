@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from typing import TYPE_CHECKING, List, Literal, Optional, Type, Union
+from typing import TYPE_CHECKING, List, Literal, Optional, Type, Union, Dict
 from uuid import UUID
 
 from argilla.client.api import ArgillaSingleton
@@ -40,6 +40,7 @@ from argilla.client.feedback.schemas.remote.questions import (
     RemoteRatingQuestion,
     RemoteTextQuestion,
 )
+from argilla.client.feedback.schemas.documents import Document
 from argilla.client.feedback.schemas.types import AllowedMetadataPropertyTypes
 from argilla.client.feedback.schemas.vector_settings import VectorSettings
 from argilla.client.sdk.commons.errors import AlreadyExistsApiError
@@ -157,6 +158,26 @@ class ArgillaMixin:
                     f" exception: {e}"
                 ) from e
         return uploaded_questions
+    
+    @staticmethod
+    def __add_documents(
+        documents: List["Document"], client: "httpx.Client", workspace_id: UUID
+    ) -> List["Document"]:
+        uploaded_documents = []
+        for document in documents:
+            try:
+                new_document = datasets_api_v1.upload_document(
+                    client=client, document=document.to_server_payload(), workspace_id=workspace_id,
+                ).parsed
+                uploaded_documents.append(new_document)
+                
+            except Exception as e:
+                ArgillaMixin.__delete_dataset(client=client, id=workspace_id)
+                raise Exception(
+                    f"Failed while adding the document '{document.file_name}' to the `Dataset` in Argilla with"
+                    f" exception: {e}"
+                ) from e
+        return uploaded_documents
 
     @staticmethod
     def _parse_to_remote_metadata_property(
@@ -241,6 +262,10 @@ class ArgillaMixin:
             ArgillaMixin.__add_fields(fields=self.fields, client=httpx_client, id=created_dataset.id)
             ArgillaMixin.__add_questions(questions=self.questions, client=httpx_client, id=created_dataset.id)
 
+            if self.documents:
+                ArgillaMixin.__add_documents(documents=self.documents.values(), 
+                                             client=httpx_client, workspace_id=workspace.id)
+
             if self.metadata_properties:
                 ArgillaMixin.__add_metadata_properties(
                     metadata_properties=self.metadata_properties, client=httpx_client, id=created_dataset.id
@@ -257,6 +282,7 @@ class ArgillaMixin:
             #  Once is done, this prefetch info should be removed.
             fields = ArgillaMixin.__get_fields(client=httpx_client, id=created_dataset.id)
             questions = ArgillaMixin.__get_questions(client=httpx_client, id=created_dataset.id)
+            documents = ArgillaMixin.__get_documents(client=httpx_client, workspace_id=workspace.id)
 
             remote_dataset = RemoteFeedbackDataset(
                 client=httpx_client,
@@ -267,6 +293,7 @@ class ArgillaMixin:
                 updated_at=created_dataset.updated_at,
                 fields=fields,
                 questions=questions,
+                documents=documents,
                 guidelines=self.guidelines,
                 allow_extra_metadata=self.allow_extra_metadata,
             )
@@ -292,6 +319,14 @@ class ArgillaMixin:
         for question in datasets_api_v1.get_questions(client=client, id=id).parsed:
             questions.append(ArgillaMixin._parse_to_remote_question(question))
         return questions
+    
+    @staticmethod
+    def __get_documents(client: "httpx.Client", workspace_id: UUID) -> Dict[str, "Document"]:
+        documents = {}
+        for doc in datasets_api_v1.list_documents(client=client, workspace_id=workspace_id).parsed:
+            print(doc)
+            documents[doc['pmid'] or doc['doi']] = Document(**doc)
+        return documents
 
     @staticmethod
     def __get_metadata_properties(client: "httpx.Client", id: UUID) -> List["AllowedRemoteMetadataPropertyTypes"]:
@@ -351,6 +386,7 @@ class ArgillaMixin:
 
         fields = ArgillaMixin.__get_fields(client=httpx_client, id=existing_dataset.id)
         questions = ArgillaMixin.__get_questions(client=httpx_client, id=existing_dataset.id)
+        documents = ArgillaMixin.__get_documents(client=httpx_client, workspace_id=existing_dataset.workspace_id)
 
         return RemoteFeedbackDataset(
             client=httpx_client,
@@ -361,6 +397,7 @@ class ArgillaMixin:
             updated_at=existing_dataset.updated_at,
             fields=fields,
             questions=questions,
+            documents=documents,
             guidelines=existing_dataset.guidelines or None,
             allow_extra_metadata=existing_dataset.allow_extra_metadata,
             with_vectors=with_vectors,

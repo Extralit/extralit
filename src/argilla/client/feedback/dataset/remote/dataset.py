@@ -31,6 +31,7 @@ from argilla.client.feedback.schemas.questions import (
     RatingQuestion,
 )
 from argilla.client.feedback.schemas.records import FeedbackRecord
+from argilla.client.feedback.schemas.documents import Document
 from argilla.client.feedback.schemas.remote.records import RemoteFeedbackRecord
 from argilla.client.feedback.schemas.remote.vector_settings import RemoteVectorSettings
 from argilla.client.feedback.schemas.vector_settings import VectorSettings
@@ -396,6 +397,7 @@ class RemoteFeedbackDataset(FeedbackDatasetBase[RemoteFeedbackRecord]):
         updated_at: datetime,
         fields: List["AllowedRemoteFieldTypes"],
         questions: List["AllowedRemoteQuestionTypes"],
+        documents: Optional[Dict[str, "Document"]] = {},
         guidelines: Optional[str] = None,
         allow_extra_metadata: bool = True,
         with_vectors: Union[Literal[INCLUDE_ALL_VECTORS_PARAM], List[str], None] = None,
@@ -429,6 +431,7 @@ class RemoteFeedbackDataset(FeedbackDatasetBase[RemoteFeedbackRecord]):
 
         self._fields = fields
         self._questions = questions
+        self._documents = documents
         self._guidelines = guidelines
         self._allow_extra_metadata = allow_extra_metadata
 
@@ -456,6 +459,10 @@ class RemoteFeedbackDataset(FeedbackDatasetBase[RemoteFeedbackRecord]):
     @property
     def questions(self) -> Union[List["AllowedRemoteQuestionTypes"]]:
         return self._questions
+    
+    @property
+    def documents(self) -> Union[Dict[str, "Document"]]:
+        return self._documents
 
     @property
     def records(self) -> RemoteFeedbackRecords:
@@ -537,6 +544,7 @@ class RemoteFeedbackDataset(FeedbackDatasetBase[RemoteFeedbackRecord]):
             + textwrap.indent(f"\nurl={self.url}", indent)
             + textwrap.indent(f"\nfields={self.fields}", indent)
             + textwrap.indent(f"\nquestions={self.questions}", indent)
+            + textwrap.indent(f"\ndocuments={self.documents}", indent)
             + textwrap.indent(f"\nguidelines={self.guidelines}", indent)
             + ")"
         )
@@ -925,6 +933,41 @@ class RemoteFeedbackDataset(FeedbackDatasetBase[RemoteFeedbackRecord]):
                 vectors_settings.remove(vector_settings.name)
                 deleted_vectors_settings.append(vector_settings)
         return deleted_vectors_settings if len(deleted_vectors_settings) > 1 else deleted_vectors_settings[0]
+    
+    @allowed_for_roles(roles=[UserRole.owner, UserRole.admin])
+    def add_document(self, document: Document) -> Document:
+        """Adds a new document to the current `FeedbackDataset` in Argilla.
+
+        Args:
+            document: the document to add.
+
+        Returns:
+            The newly added document to the current `FeedbackDataset` in Argilla.
+
+        Raises:
+            PermissionError: if the user does not have either `owner` or `admin` role.
+            ValueError: if the document with the given name already exists in the
+                dataset in Argilla.
+        """
+        assert document.pmid or document.doi, "Document must have either pmid or doi."
+        
+        if (document.pmid or document.doi) in self._documents:
+            print(f"Document with pmid {document.pmid} or doi {document.doi} already exists.")
+            return self._documents[(document.pmid or document.doi)]
+
+        document.workspace_id = self.workspace.id
+        try:
+            uploaded_document_id = datasets_api_v1.upload_document(
+                client=self._client,
+                document=document,
+            ).parsed
+
+            self._documents[(document.pmid or document.doi)] = document
+        except AlreadyExistsApiError:
+            raise ValueError(f"Document with name {document.file_name!r} already exists.")
+        document.id = uploaded_document_id
+        return document
+
 
     def filter_by(
         self,

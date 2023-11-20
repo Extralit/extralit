@@ -29,6 +29,7 @@ from argilla.client.feedback.schemas.questions import (
     RatingQuestion,
     TextQuestion,
 )
+from argilla.client.feedback.schemas.documents import Document
 from argilla.client.feedback.schemas.records import (
     FeedbackRecord,
     RankingValueSchema,
@@ -65,4 +66,5 @@ __all__ = [
     "SortBy",
     "RecordSortField",
     "VectorSettings",
+    "Document",
 ]

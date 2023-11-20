@@ -30,6 +30,7 @@ from argilla.client.feedback.schemas.questions import (
     RatingQuestion,
     TextQuestion,
 )
+from argilla.client.feedback.schemas.documents import Document
 from argilla.client.feedback.schemas.records import FeedbackRecord
 from argilla.client.feedback.schemas.vector_settings import VectorSettings
 from argilla.client.feedback.training.schemas import (
@@ -70,6 +71,7 @@ class FeedbackDataset(ArgillaMixin, HuggingFaceDatasetMixin, FeedbackDatasetBase
         *,
         fields: List["AllowedFieldTypes"],
         questions: List["AllowedQuestionTypes"],
+        documents: Optional[Dict[str, "Document"]] = None,
         metadata_properties: Optional[List["AllowedMetadataPropertyTypes"]] = None,
         vectors_settings: Optional[List[VectorSettings]] = None,
         guidelines: Optional[str] = None,
@@ -167,6 +169,7 @@ class FeedbackDataset(ArgillaMixin, HuggingFaceDatasetMixin, FeedbackDatasetBase
 
         self._fields = fields or []
         self._questions = questions or []
+        self._documents = documents or {}
         self._metadata_properties = metadata_properties or []
         self._guidelines = guidelines
         self._allow_extra_metadata = allow_extra_metadata
@@ -192,6 +195,10 @@ class FeedbackDataset(ArgillaMixin, HuggingFaceDatasetMixin, FeedbackDatasetBase
     @property
     def questions(self) -> Union[List["AllowedQuestionTypes"]]:
         return self._questions
+    
+    @property
+    def documents(self) -> Union[Dict[str, "Document"]]:
+        return self._documents
 
     @property
     def metadata_properties(
@@ -248,6 +255,24 @@ class FeedbackDataset(ArgillaMixin, HuggingFaceDatasetMixin, FeedbackDatasetBase
         """
         for i in range(0, len(self._records), batch_size):
             yield self._records[i : i + batch_size]
+
+    def add_document(self, document: "Document") -> "Document":
+        """Adds the given document to the dataset.
+
+        Args:
+            document: the document to add.
+
+        Returns:
+            The document that was added.
+
+        Raises:
+            TypeError: if `document` is not a `Document`.
+            ValueError: if `document` is already in the dataset.
+        """
+        assert document.pmid or document.doi, f"Document must have either pmid or doi"
+
+        self._documents[document.pmid or document.doi] = document
+        return document
 
     def add_records(
         self, records: Union["FeedbackRecord", Dict[str, Any], List[Union["FeedbackRecord", Dict[str, Any]]]]
