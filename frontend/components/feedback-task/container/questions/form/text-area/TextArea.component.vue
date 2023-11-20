@@ -18,6 +18,10 @@
         :markdown="question.answer.value"
         @click.native="onFocus"
       />
+      <RenderTableBaseComponent
+        v-else-if="question.settings.use_table"
+        :tableData="question.answer.value"
+      />
       <ContentEditableFeedbackTask
         v-else
         class="textarea"
@@ -101,6 +105,10 @@ export default {
   },
   computed: {
     classes() {
+      if (this.question.settings.use_table) {
+        return "--table";
+      }
+
       if (this.isEditionModeActive) {
         return "--editing";
       }
@@ -108,9 +116,20 @@ export default {
       if (this.isFocused && this.isExitedFromEditionModeWithKeyboard) {
         return "--focus";
       }
-
+      
       return null;
     },
+  },
+  mounted() {
+    this.$nuxt.$on('update:tableData', (tableJsonString) => {
+      console.log('update:tableData', tableJsonString)
+      if (this.question.settings.use_table) {
+        this.question.answer.value = tableJsonString;
+      }
+    });
+  },
+  destroyed() {
+    this.$nuxt.$off('update:tableData');
   },
 };
 </script>
@@ -135,6 +154,11 @@ export default {
   &.--focus {
     outline: 2px solid $primary-color;
   }
+  &.--table {
+    padding: 0px;
+    border: 0px;
+    min-height: 0px;
+  }
   .content--exploration-mode & {
     border: none;
     padding: 0;
@@ -142,12 +166,12 @@ export default {
 }
 
 .textarea {
-  display: block;
+  display: flex;
   flex: 0 0 100%;
   &--markdown {
-    display: block;
+    display: inline;
     flex: 1;
-    padding: 0;
+    padding: 0px;
   }
 }
 </style>

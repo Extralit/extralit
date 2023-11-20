@@ -67,7 +67,6 @@ def delete_workspace_documents(
 
     if response.status_code == 200:
         response_obj = Response.from_httpx_response(response)
-        response_obj.parsed = WorkspaceModel(**response.json())
         return response_obj
     return handle_response_error(response)
 

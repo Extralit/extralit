@@ -156,6 +156,4 @@ async def list_documents(*,
 
     documents = await datasets.list_documents(db, workspace_id)
 
-    print('list_documents', documents)
-
     return documents

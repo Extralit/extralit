@@ -105,18 +105,21 @@ export default {
       max-width: 100%;
     }
     table {
+      display: block;
+      overflow-x: auto;
       border-collapse: collapse;
       width: 100%;
-      overflow-x: auto;
 
       th, td {
         border: 1px solid #ddd; // Adjust color as needed
-        padding: 2px; // Adjust padding as needed
+        padding: 5px; // Adjust padding as needed
         text-align: left;
+        white-space: nowrap;
       }
 
       th {
         background-color: #f2f2f2; // Light gray background for header
+        white-space: nowrap;
       }
     }
   }
