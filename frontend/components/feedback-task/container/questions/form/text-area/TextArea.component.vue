@@ -28,7 +28,7 @@
         class="textarea"
         :value="question.answer.value"
         :originalValue="question.answer.originalValue"
-        :placeholder="question.settings.placeholder"
+        :placeholder="inputPlaceholder"
         :isFocused="isFocused"
         :isEditionModeActive="isEditionModeActive"
         @change-text="onChangeTextArea"
@@ -115,6 +115,14 @@ export default {
         return "--focus";
       }
       
+      return null;
+    },
+    inputPlaceholder() {
+      if (this.question.settings.use_table) {
+        return "Copy and paste the table here to edit the table.";
+      } else if (this.question.settings?.placeholder !== null) {
+        return this.question.settings.placeholder;
+      }
       return null;
     },
     isValueJSON() {

@@ -233,9 +233,9 @@ export default {
   display: flex;
   flex-direction: column;
   flex-basis: clamp(40%, 720px, 50%);
-  @include media(">desktop") {
-    max-width: clamp(40%, 720px, 50%);
-  }
+  @include media(">desktopLarge") {
+      max-width: clamp(40%, 50vw, 60%);
+    }
   max-height: 100%;
   justify-content: space-between;
   border-radius: $border-radius-m;

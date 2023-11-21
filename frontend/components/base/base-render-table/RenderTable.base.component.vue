@@ -26,7 +26,7 @@ export default {
   },
   data() {
     return {
-      tabulator: null,
+      table: null,
     };
   },
   computed: {
@@ -51,7 +51,7 @@ export default {
             selectContents: true,
           },
           cellEdited: (cell) => {
-            this.tableJSON.data = this.tabulator.getData();
+            this.tableJSON.data = this.table.getData();
             this.tableJSON = this.tableJSON  // Trigger the setter
           }
         };
@@ -76,7 +76,7 @@ export default {
     },
   },
   mounted() {
-    this.tabulator = new Tabulator(this.$refs.table, {
+    this.table = new Tabulator(this.$refs.table, {
       persistence: {
         columns: true,
       },

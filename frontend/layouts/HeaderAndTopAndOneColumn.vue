@@ -66,10 +66,8 @@ $gap-width: $base-space * 2;
     }
   }
   &.--document-panel {
-    @include media(">desktop") {
-      grid-template-columns: 1fr $sidebarWidth+$sidebarDocumentAdditionalWidth;
-      transition: 0.4s ease-out;
-    }
+    grid-template-columns: 1fr $sidebarWidth+$sidebarDocumentAdditionalWidth;
+    transition: 0.4s ease-out;
   }
 }
 

@@ -190,4 +190,3 @@ export default {
   }
 }
 </style>
-./document-viewer/useDocumentViewModel

@@ -42,6 +42,7 @@ export default {
   data() {
     return {
       fetching: false,
+      isDocumentPanelOn: false,
     };
   },
   computed: {
@@ -160,6 +161,9 @@ export default {
         });
       }, 100);
     },
+    // onSidebarPanel(panel) {
+    //   this.isDocumentPanelOn = panel === 'document';
+    // },
   },
   setup(props) {
     return useRecordFeedbackTaskViewModel(props);
@@ -171,10 +175,13 @@ export default {
       "on-change-record-criteria-filter",
       this.onChangeRecordFilter
     );
+
+    // this.$nuxt.$on('on-sidebar-panel', this.onSidebarPanel);
   },
   destroyed() {
     this.$root.$off("on-change-record-page");
     this.$root.$off("on-change-record-criteria-filter");
+    // this.$nuxt.$off('on-sidebar-panel', this.onSidebarPanel);
     Notification.dispatch("clear");
   },
 };
@@ -187,7 +194,11 @@ export default {
   height: 100%;
   gap: $base-space * 2;
   padding: $base-space * 2;
-  @include media("<desktop") {
+  @include media("<desktopLarge") {
+    flex-flow: column;
+    overflow: auto;
+  }
+  &.--document-panel {
     flex-flow: column;
     overflow: auto;
   }
