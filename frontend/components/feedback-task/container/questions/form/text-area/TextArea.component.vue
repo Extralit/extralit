@@ -12,16 +12,16 @@
       :tabindex="isEditionModeActive ? '-1' : '0'"
       @keydown.enter.exact.prevent="onEditMode"
     >
+      <RenderTableBaseComponent
+        v-if="question.settings.use_table && isValueJSON"
+        :tableData="question.answer.value"
+        :editable="true"
+      />
       <RenderMarkdownBaseComponent
-        v-if="question.settings.use_markdown && !isEditionModeActive"
+        v-else-if="question.settings.use_markdown && !isEditionModeActive"
         class="textarea--markdown"
         :markdown="question.answer.value"
         @click.native="onFocus"
-      />
-      <RenderTableBaseComponent
-        v-else-if="question.settings.use_table && isValueJSON"
-        :tableData="question.answer.value"
-        :editable="true"
       />
       <ContentEditableFeedbackTask
         v-else

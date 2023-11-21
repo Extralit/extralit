@@ -16,7 +16,7 @@
         </BaseButton>
       </BaseActionTooltip>
     </div>
-    <div class="content-area" :class="{ '--table': useTable }">
+    <div class="content-area">
       <RenderMarkdownBaseComponent v-if="useMarkdown" :markdown="text" />
       <RenderTableBaseComponent v-else-if="useTable" :tableData="text" />
       <div v-else v-html="text" />
@@ -80,13 +80,6 @@ export default {
   .content-area {
     white-space: pre-wrap;
     word-break: break-word;
-
-    &.--table {
-      display: flex;
-      padding: 0px;
-      border: 0px;
-      background: palette(white);
-    }
   }
   &__title-content {
     word-break: break-word;
