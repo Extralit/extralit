@@ -89,10 +89,12 @@ class TextField(FieldSchema):
 
     type: Literal[FieldTypes.text] = Field(FieldTypes.text.value, allow_mutation=False)
     use_markdown: bool = False
+    use_table: bool = False
 
     @property
     def server_settings(self) -> Dict[str, Any]:
         return {
             "type": self.type,
             "use_markdown": self.use_markdown,
+            "use_table": self.use_table,
         }

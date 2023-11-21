@@ -26,6 +26,7 @@ from argilla.server.schemas.v1.datasets import FieldTitle
 class TextFieldSettings(BaseModel):
     type: Literal[FieldType.text]
     use_markdown: bool = False
+    use_table: bool = False
 
 
 class Field(BaseModel):
@@ -45,6 +46,7 @@ class Field(BaseModel):
 class TextFieldSettingsUpdate(UpdateSchema):
     type: Literal[FieldType.text]
     use_markdown: bool
+    use_table: bool
 
 
 class FieldUpdate(UpdateSchema):

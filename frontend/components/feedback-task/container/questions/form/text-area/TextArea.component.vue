@@ -19,8 +19,9 @@
         @click.native="onFocus"
       />
       <RenderTableBaseComponent
-        v-else-if="question.settings.use_table"
+        v-else-if="question.settings.use_table && isValueJSON"
         :tableData="question.answer.value"
+        :editable="true"
       />
       <ContentEditableFeedbackTask
         v-else
@@ -105,31 +106,38 @@ export default {
   },
   computed: {
     classes() {
-      if (this.question.settings.use_table) {
+      if (this.question.settings.use_table && this.isValueJSON) {
+        // This first clause prevents the table from having --table or --editing class
         return "--table";
-      }
-
-      if (this.isEditionModeActive) {
+      } else if (this.isEditionModeActive) {
         return "--editing";
-      }
-
-      if (this.isFocused && this.isExitedFromEditionModeWithKeyboard) {
+      } else if (this.isFocused && this.isExitedFromEditionModeWithKeyboard) {
         return "--focus";
       }
       
       return null;
     },
+    isValueJSON() {
+      const str = this.question.answer.value;
+      if (!str?.length || !str.includes('{') || !str.includes('[')) { return false; }
+
+      try {
+        JSON.parse(str);
+      } catch (e) {
+        return false;
+      }
+      return true;
+    },
   },
   mounted() {
-    this.$nuxt.$on('update:tableData', (tableJsonString) => {
-      console.log('update:tableData', tableJsonString)
+    this.$nuxt.$on('on-update-response-tabledata', (tableJsonString) => {
       if (this.question.settings.use_table) {
         this.question.answer.value = tableJsonString;
       }
     });
   },
   destroyed() {
-    this.$nuxt.$off('update:tableData');
+    this.$nuxt.$off('on-update-response-tabledata');
   },
 };
 </script>

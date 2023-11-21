@@ -11,6 +11,7 @@
           :title="title"
           :fieldText="content"
           :useMarkdown="settings.use_markdown"
+          :useTable="settings.use_table"
           :stringToHighlight="searchValue"
         />
       </div>

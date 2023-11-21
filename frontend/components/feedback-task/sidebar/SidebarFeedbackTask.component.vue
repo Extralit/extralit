@@ -46,8 +46,11 @@ export default {
     isPanelVisible: false,
   }),
   computed: {
+    hasDocument() {
+      return this.document.id !== null;
+    },
     filteredSidebarItems() {
-      if (this.document.id === null) {
+      if (!this.hasDocument) {
         let newSidebarItems = { ...this.sidebarItems };
         delete newSidebarItems.documentGroup;
         return newSidebarItems;
@@ -116,10 +119,15 @@ export default {
   },
   mounted() {
     this.$nuxt.$on('on-change-record-metadata', (metadata) => {
+      if (!this.hasDocument || !metadata) { return; }
+
       try {
-        if ('pmid' in metadata && metadata.pmid !== null && this.document.pmid !== metadata.pmid) {
+        if (metadata.pmid && this.document.pmid !== metadata.pmid) {
           this.setDocumentByPubmedID(metadata.pmid);
-        } else if ('document_id' in metadata && metadata.document_id !== null && this.document.id !== metadata.document_id) {
+        } else if (metadata.doi && this.document.doi !== metadata.doi) {
+          console.error('TODO set document by doi')
+          // this.setDocumentByPubmedID(metadata.doi);
+        } else if (metadata.document_id && this.document.id !== metadata.document_id) {
           this.setDocumentByID(metadata.document_id);
         }
       } catch (error) {

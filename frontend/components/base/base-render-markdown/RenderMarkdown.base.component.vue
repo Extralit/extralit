@@ -109,18 +109,32 @@ export default {
       overflow-x: auto;
       border-collapse: collapse;
       width: 100%;
+      table-layout: fixed;
 
       th, td {
-        border: 1px solid #ddd; // Adjust color as needed
-        padding: 5px; // Adjust padding as needed
+        border: 1px solid #ddd;
+        padding: 1.5px 5px;
         text-align: left;
         white-space: nowrap;
+        font-size: 13px;
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis; // Display '...' for overflow content
+        vertical-align: middle;  // Center content vertically
+
       }
 
       th {
-        background-color: #f2f2f2; // Light gray background for header
-        white-space: nowrap;
+        padding: 2px 5px;
+        background-color: #cccccc; // Light gray background for header
+        font-size: 14px;
+        font-weight: 600; // Bold font for headers
+
       }
+
+      // tbody tr:nth-child(even) {
+      //     background-color: #ebebeb; // Lighter gray for odd rows
+      // }
     }
   }
 }

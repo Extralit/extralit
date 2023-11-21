@@ -162,6 +162,7 @@ class Metrics(BaseModel):
 class TextFieldSettings(BaseModel):
     type: Literal[FieldType.text]
     use_markdown: bool = False
+    use_table: bool = False
 
 
 class Field(BaseModel):

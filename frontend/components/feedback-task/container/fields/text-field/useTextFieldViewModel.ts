@@ -15,9 +15,10 @@ export const useTextFieldViewModel = (props: {
   fieldText: string;
   stringToHighlight: string;
   useMarkdown: boolean;
+  useTable: boolean;
 }) => {
   const text: ComputedRef<string> = computed(() => {
-    if (props.useMarkdown) return props.fieldText;
+    if (props.useMarkdown || props.useTable) return props.fieldText;
 
     const sanitizeSentence = replaceHtmlChars(props.fieldText);
     const sanitizeStringToHighlight = replaceHtmlChars(props.stringToHighlight);

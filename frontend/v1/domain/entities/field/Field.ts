@@ -27,7 +27,8 @@ export class Field {
   public get isModified(): boolean {
     return (
       this.title.trim() !== this.original.title ||
-      this.settings.use_markdown !== this.original.settings.use_markdown
+      this.settings.use_markdown !== this.original.settings.use_markdown ||
+      this.settings.use_table !== this.original.settings.use_table
     );
   }
 

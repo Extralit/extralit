@@ -20,7 +20,11 @@
           </Validation>
 
           <BaseSwitch v-model="field.settings.use_markdown"
-            >Use Markdown</BaseSwitch
+            >Render Markdown</BaseSwitch
+          >
+
+          <BaseSwitch v-model="field.settings.use_table"
+            >Render Table</BaseSwitch
           >
 
           <div class="settings__edition-form__footer">

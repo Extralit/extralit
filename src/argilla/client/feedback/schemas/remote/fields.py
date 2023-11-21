@@ -28,6 +28,7 @@ class RemoteTextField(TextField, RemoteSchema):
             title=self.title,
             required=self.required,
             use_markdown=self.use_markdown,
+            use_table=self.use_table,
         )
 
     @classmethod
@@ -38,4 +39,5 @@ class RemoteTextField(TextField, RemoteSchema):
             title=payload.title,
             required=payload.required,
             use_markdown=payload.settings["use_markdown"],
+            use_table=payload.settings["use_table"],
         )
