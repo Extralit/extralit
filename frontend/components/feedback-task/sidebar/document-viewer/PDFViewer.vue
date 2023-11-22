@@ -1,53 +1,53 @@
 <template>
-	<div class="pdf-container">
-		<PDFView 
-		:src.sync="pdfData" 
-		:fileName="fileName" 
-		:sidebarFeatureVisible=true 
-		ref="pdfView"
-		class="PDFView"
-		:scale.sync="scale"
-		>
-			<template slot="right-toolbox">
-			</template>
-			<template slot="left-toolbox">
-				<p class="document__title">{{ fileName }}</p>
-			</template>
-			<template slot="error"></template>
-			<template slot="loading"></template>
-		</PDFView>
-	</div>
+  <div class="pdf-container">
+    <PDFView 
+    :src.sync="pdfData" 
+    :fileName="fileName" 
+    :sidebarFeatureVisible=true 
+    ref="pdfView"
+    class="PDFView"
+    :scale.sync="scale"
+    >
+      <template slot="right-toolbox">
+      </template>
+      <template slot="left-toolbox">
+        <p class="document__title">{{ fileName }}</p>
+      </template>
+      <template slot="error"></template>
+      <template slot="loading"></template>
+    </PDFView>
+  </div>
 </template>
 
 <script>
 import { PDFView } from '@gabrielbu/vue-pdf-viewer';
 
 export default {
-	name: 'PDFViewerTest',
-	components: {
-		PDFView,
-	},
-	props:{
-		pdfData: {
-			type: Uint8Array,
-			required: true,
-		},
-		fileName: {
-			type: String,
-			required: false
-		},
-	},
-	data() {
-		return {
-			scale: "1",
-		}
-	},
+  name: 'PDFViewerTest',
+  components: {
+    PDFView,
+  },
+  props:{
+    pdfData: {
+      type: Uint8Array,
+      required: true,
+    },
+    fileName: {
+      type: String,
+      required: false
+    },
+  },
+  data() {
+    return {
+      scale: "0.75",
+    }
+  },
 }
 </script>
 
 <style scoped lang="scss">
 .pdf-container {
-	position: relative;
+  position: relative;
   font-family: "Avenir", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -61,7 +61,7 @@ export default {
 }
 
 .document__title {
-	flex: 1;
+  flex: 1;
   max-width: calc($sidebarWidth / 2);
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;

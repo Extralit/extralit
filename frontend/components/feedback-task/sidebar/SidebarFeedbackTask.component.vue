@@ -50,7 +50,10 @@ export default {
       return this.document.id !== null;
     },
     filteredSidebarItems() {
-      if (!this.hasDocument) {
+      if (this.currentPanel === "document") {
+        let newSidebarItems = {  };
+        return newSidebarItems;
+      } else if (!this.hasDocument) {
         let newSidebarItems = { ...this.sidebarItems };
         delete newSidebarItems.documentGroup;
         return newSidebarItems;
@@ -182,7 +185,7 @@ export default {
 <style lang="scss" scoped>
 .sidebar {
   &__container {
-    // position: fixed;
+    position: fixed;
     display: flex;
     right: 0;
     z-index: 1;

@@ -86,7 +86,7 @@ export default {
   }
 }
 :deep(.snippet) {
-  max-height: calc(100vh - 106px);
+  max-height: calc(100vh - $topbarHeight * 2 - $base-space * 2);
   overflow: auto;
 }
 :deep(table) {

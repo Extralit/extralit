@@ -16,7 +16,7 @@
   -->
 
 <template>
-  <div class="sidebar" :class="expandedComponent && '--expanded'">
+  <div class="sidebar" v-if="expandedComponent !== 'document'" :class="expandedComponent && '--expanded'">
     <SidebarFeedbackTaskButtonGroup v-for="group in sidebarGroups" :key="group" :group-name="group"
       :group-button-type="getButtonType(group)" :groupItems="filteredSidebarItemsByGroup(group)"
       :active-buttons="activeButtons" @on-click-sidebar-action="onClickSidebarAction" />

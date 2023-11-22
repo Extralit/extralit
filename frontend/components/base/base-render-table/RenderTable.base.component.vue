@@ -76,7 +76,9 @@ export default {
     },
   },
   mounted() {
+    const numRows = this.tableJSON.data.length;
     this.table = new Tabulator(this.$refs.table, {
+      height: numRows > 10? "40vh": null,
       persistence: {
         columns: true,
       },

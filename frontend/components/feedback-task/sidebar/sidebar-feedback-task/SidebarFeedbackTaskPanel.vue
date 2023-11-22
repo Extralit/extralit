@@ -21,7 +21,7 @@
       <div class="sidebar__content">
         <base-button
           @click.prevent="closePanel"
-          :class="{ 'zoom-out': animated }"
+          :class="{ 'zoom-out': animated, '--document-panel': layoutClass === '--document-panel' }"
           @animationend="animated = false"
           class="sidebar__close-button"
         >
@@ -76,7 +76,8 @@ export default {
   overflow: visible;
   pointer-events: all;
   &.--document-panel {
-    width: $sidebarPanelWidth + $sidebarDocumentAdditionalWidth;
+    position: absolute;
+    width: calc($sidebarWidth + $sidebarDocumentAdditionalWidth);
     padding: 0 0 0 0;
   }
   &:hover {
@@ -89,6 +90,9 @@ export default {
   &__close-button {
     position: absolute;
     left: -2.5em;
+    &.--document-panel {
+      left: -0.65em;
+    }
     top: 1px;
     display: flex;
     overflow: hidden;
