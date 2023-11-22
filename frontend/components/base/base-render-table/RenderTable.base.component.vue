@@ -1,7 +1,7 @@
 <template>
   <div class="table-container">
-    <div class="--button">
-      <button id="toggle-column-freeze">Toggle Column Freeze</button>
+    <div class="--buttons">
+      <button v-if="indexColumns?.length" id="toggle-column-freeze">Toggle Column Freeze</button>
     </div>
     
     <div ref="table" class="--table"></div>
@@ -27,13 +27,21 @@ export default {
   data() {
     return {
       table: null,
+      indexColumns: [],
+      numRows: 0,
+      freezeColumns: true,
     };
   },
   computed: {
     tableJSON: {
       get() {
         try {
-          return JSON.parse(this.tableData);
+          const json = JSON.parse(this.tableData)
+          this.numRows = json.data.length;
+          this.indexColumns = json.schema.primaryKey;
+
+          return json;
+
         } catch (error) {
           console.error("Failed to parse JSON:", error);
           return null;
@@ -60,15 +68,12 @@ export default {
     },
     columns() {
       if (!this.tableJSON?.schema) return [];
-      let primaryKey = this.tableJSON.schema.primaryKey;
 
       let columns = this.tableJSON.schema.fields.map((column, index) => ({
-        title: column.name,
+        title: column.name === 'index' && index === 0 ? '' : column.name,
         field: column.name,
-        headerSort: false,
-        frozen: primaryKey?.length && primaryKey.includes(column.name),
-        widthGrow: 0.5,
-        ...this.editableConfig, // Spread the editableConfig here
+        frozen: this.indexColumns?.length && this.indexColumns.includes(column.name),
+        ...this.editableConfig,
       }));
       // columns.unshift({ rowHandle: true, formatter: "handle", headerSort: false, frozen: true, width: 30, minWidth: 30 },);
       
@@ -76,21 +81,25 @@ export default {
     },
   },
   mounted() {
-    const numRows = this.tableJSON.data.length;
+    const layout = this.columns.length <= 2 ? "fitColumns" : "fitDataTable"
+
     this.table = new Tabulator(this.$refs.table, {
-      height: numRows > 10? "40vh": null,
+      maxHeight: "40vh",
       persistence: {
         columns: true,
       },
       data: this.tableJSON.data,
       tabEndNewRow: true,
       reactiveData: true,
-      // clipboard: true,
-      // clipboardPasteAction: "replace",
-      // autoColumns: true,
+      clipboard: true,
+      columnDefaults: {
+        resizable: true,
+        maxWidth: layout === 'fitDataTable' ? 150 : null,
+        headerWordWrap: true,
+        headerSort: false,
+      },
       columns: this.columns,
-      resizableColumnFit: true,
-      layout: "fitDataTable",
+      layout: layout,
     });
   },
 };
@@ -105,9 +114,9 @@ export default {
   overflow: auto;
   // background: inherit;
 
-  .--button {
+  .--buttons {
     display: inline-block;
-    padding: 10px 0px;
+    padding: 0 5px 10px 0;
     color: white;
     border-radius: 5px;
     text-decoration: none;

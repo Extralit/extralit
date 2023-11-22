@@ -50,10 +50,7 @@ export default {
       return this.document.id !== null;
     },
     filteredSidebarItems() {
-      if (this.currentPanel === "document") {
-        let newSidebarItems = {  };
-        return newSidebarItems;
-      } else if (!this.hasDocument) {
+      if (!this.hasDocument) {
         let newSidebarItems = { ...this.sidebarItems };
         delete newSidebarItems.documentGroup;
         return newSidebarItems;

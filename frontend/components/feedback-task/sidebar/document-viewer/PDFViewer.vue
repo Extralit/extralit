@@ -39,7 +39,7 @@ export default {
   },
   data() {
     return {
-      scale: "0.75",
+      scale: "auto",
     }
   },
 }

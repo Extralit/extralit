@@ -119,7 +119,7 @@ export default {
     },
     inputPlaceholder() {
       if (this.question.settings.use_table) {
-        return "Copy and paste the table here to edit the table.";
+        return "If corrections needed, copy and paste the table here to edit the data. \nIf the extracted data is irredeemable, describe what's wrong here.";
       } else if (this.question.settings?.placeholder !== null) {
         return this.question.settings.placeholder;
       }

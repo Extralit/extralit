@@ -76,7 +76,6 @@ export default {
   overflow: visible;
   pointer-events: all;
   &.--document-panel {
-    position: absolute;
     width: calc($sidebarWidth + $sidebarDocumentAdditionalWidth);
     padding: 0 0 0 0;
   }
