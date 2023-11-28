@@ -323,9 +323,14 @@ class ArgillaMixin:
     @staticmethod
     def __get_documents(client: "httpx.Client", workspace_id: UUID) -> Dict[str, "Document"]:
         documents = {}
-        for doc in datasets_api_v1.list_documents(client=client, workspace_id=workspace_id).parsed:
-            print(doc)
-            documents[doc['pmid'] or doc['doi']] = Document(**doc)
+        for json in datasets_api_v1.list_documents(client=client, workspace_id=workspace_id).parsed:
+            doc = Document(**json)
+            documents[json['id']] = doc
+            if json['pmid']:
+                documents[json['pmid']] = doc
+            elif json['doi']:
+                documents[json['doi']] = doc
+            
         return documents
 
     @staticmethod

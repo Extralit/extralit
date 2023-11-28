@@ -15,6 +15,7 @@
       <div class="fields__header">
         <div class="fields__header--left">
           <StatusTag class="fields__status" :recordStatus="record.status" />
+          <span>{{ record.metadata?.type }}</span>
         </div>
         <div class="fields__header--right">
           <SimilarityScorePercentage

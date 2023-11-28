@@ -9,6 +9,7 @@ class DocumentCreate(BaseModel):
     pmid: Optional[str]
     doi: Optional[str]
     workspace_id: UUID  # The workspace ID to which the document belongs to
+    id: Optional[UUID]
 
 class DocumentListItem(BaseModel):
     id: UUID

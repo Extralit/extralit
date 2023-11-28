@@ -14,6 +14,7 @@
     >
       <RenderTableBaseComponent
         v-if="question.settings.use_table && isValueJSON"
+        class="textarea"
         :tableData="question.answer.value"
         :editable="true"
       />
@@ -119,7 +120,8 @@ export default {
     },
     inputPlaceholder() {
       if (this.question.settings.use_table) {
-        return "If corrections needed, copy and paste the table here to edit the data. \nIf the extracted data is irredeemable, describe what's wrong here.";
+        return "If corrections is needed, copy and paste the table from left-hand side here to edit the data. \n" +
+          "If the extracted data is irredeemable, describe what's wrong here, otherwise leave blank.";
       } else if (this.question.settings?.placeholder !== null) {
         return this.question.settings.placeholder;
       }
@@ -173,7 +175,7 @@ export default {
   &.--table {
     padding: 0px;
     border: 0px;
-    min-height: 0px;
+    min-height: none;
   }
   .content--exploration-mode & {
     border: none;

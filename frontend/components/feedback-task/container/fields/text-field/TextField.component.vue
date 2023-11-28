@@ -88,6 +88,7 @@ export default {
   &__tooltip {
     display: flex;
     align-self: flex-start;
+    z-index: 1;
   }
   &__copy-button {
     flex-shrink: 0;
