@@ -10,6 +10,7 @@ export type QuestionType =
 export abstract class QuestionAnswer {
   private answer: Answer;
   constructor(public readonly type: QuestionType) {}
+  private _hasValidValues: boolean = true;
 
   complete(answer: Answer) {
     if (this.answer) return;
@@ -32,7 +33,11 @@ export abstract class QuestionAnswer {
   }
 
   get hasValidValues(): boolean {
-    return true;
+    return this._hasValidValues;
+  }
+
+  set hasValidValues(value: boolean) {
+    this._hasValidValues = value;
   }
 
   abstract get valuesAnswered();

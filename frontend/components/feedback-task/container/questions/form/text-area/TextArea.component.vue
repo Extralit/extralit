@@ -17,6 +17,7 @@
         class="textarea"
         :tableData="question.answer.value"
         :editable="true"
+        v-model="question.answer.hasValidValues"
       />
       <RenderMarkdownBaseComponent
         v-else-if="question.settings.use_markdown && !isEditionModeActive"
