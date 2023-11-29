@@ -6,6 +6,7 @@ describe("markdown fields", () => {
       fieldText: "This is a sentence",
       stringToHighlight: "This",
       useMarkdown: true,
+      useTable: false,
     };
     const { text } = useTextFieldViewModel(props);
     expect(text.value).toBe(props.fieldText);
@@ -18,6 +19,7 @@ describe("string to highlight is empty", () => {
       fieldText: "This is a sentence",
       stringToHighlight: "",
       useMarkdown: false,
+      useTable: false,
     };
     const { text } = useTextFieldViewModel(props);
     expect(text.value).toBe(props.fieldText);
@@ -30,6 +32,7 @@ describe("raw text", () => {
       fieldText: "This is a sentence",
       stringToHighlight: "this",
       useMarkdown: false,
+      useTable: false,
     };
     const { text } = useTextFieldViewModel(props);
     expect(text.value).toBe(
@@ -43,6 +46,7 @@ describe("raw text", () => {
       fieldText: "This is a sentence",
       stringToHighlight: "This",
       useMarkdown: false,
+      useTable: false,
     };
     const { text } = useTextFieldViewModel(props);
     expect(text.value).toBe(
@@ -57,6 +61,7 @@ describe("raw text", () => {
         "<p>The HTML <code>button</code> tag defines a clickable button.</p>",
       stringToHighlight: "<p>The HTML",
       useMarkdown: false,
+      useTable: false,
     };
     const { text } = useTextFieldViewModel(props);
     expect(text.value).toBe(
@@ -70,6 +75,7 @@ describe("raw text", () => {
       fieldText: "`This is a sentence",
       stringToHighlight: "`This",
       useMarkdown: false,
+      useTable: false,
     };
     const { text } = useTextFieldViewModel(props);
     expect(text.value).toBe(
@@ -83,6 +89,7 @@ describe("raw text", () => {
       fieldText: "`This` is a sentence",
       stringToHighlight: "`This`",
       useMarkdown: false,
+      useTable: false,
     };
     const { text } = useTextFieldViewModel(props);
     expect(text.value).toBe(
@@ -96,6 +103,7 @@ describe("raw text", () => {
       fieldText: "`This` is a sentence and this sentence",
       stringToHighlight: "this",
       useMarkdown: false,
+      useTable: false,
     };
     const { text } = useTextFieldViewModel(props);
     expect(text.value).toBe(
@@ -110,6 +118,7 @@ describe("raw text", () => {
         "<p>The HTML <code>button</code> tag defines a clickable button.</p>",
       stringToHighlight: "",
       useMarkdown: false,
+      useTable: false,
     };
     const { text } = useTextFieldViewModel(props);
     expect(text.value).toBe(
@@ -123,6 +132,7 @@ describe("raw text", () => {
         "<p>The HTML <code>button</code> tag defines a clickable button.</p>",
       stringToHighlight: "foo",
       useMarkdown: false,
+      useTable: false,
     };
     const { text } = useTextFieldViewModel(props);
     expect(text.value).toBe(
@@ -136,6 +146,7 @@ describe("raw text", () => {
         "<p>The HTML <code>button</code> tag defines a clickable button.</p>",
       stringToHighlight: "foo",
       useMarkdown: false,
+      useTable: false,
     };
     const { text } = useTextFieldViewModel(props);
     expect(text.value).toBe(

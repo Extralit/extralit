@@ -246,7 +246,7 @@ class RemoteFeedbackRecords(ArgillaRecordsMixin):
                     record_ids=[record.id for record in records[start:end]],
                 )
             except Exception as e:
-                raise RuntimeError("Failed to remove records from Argilla") from e
+                raise RuntimeError("Failed to remove records from Argilla. Perhaps try again.") from e
 
     def _fetch_records(self, offset: int, limit: int) -> "FeedbackRecordsModel":
         """Fetches a batch of records from Argilla."""

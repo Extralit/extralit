@@ -121,8 +121,8 @@ export default {
     },
     inputPlaceholder() {
       if (this.question.settings.use_table) {
-        return "If corrections is needed, copy and paste the table from left-hand side here to edit the data. \n" +
-          "If the extracted data is irredeemable, describe what's wrong here, otherwise leave blank.";
+        return "If corrections are needed, copy and paste the table from left-hand side to edit the data. \n" +
+          "If the extracted data is irredeemable, describe what's wrong, otherwise leave blank to indicate correct extraction.";
       } else if (this.question.settings?.placeholder !== null) {
         return this.question.settings.placeholder;
       }

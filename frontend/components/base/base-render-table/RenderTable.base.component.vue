@@ -3,10 +3,10 @@
     <div ref="table" class="--table"/>
     
     <div class="--buttons">
-      <button v-if="indexColumns?.length" @click="toggleColumnFreeze">⬅️ Toggle column freeze</button>
-      <!-- <button @click="validateTable">✅ Validate</button> -->
-      <button v-if="editable" @click="addColumn">➕ Add column</button>
-      <button v-if="editable" @click="addRow">➕ Add row</button>
+      <button v-show="indexColumns?.length" @click="toggleColumnFreeze">⬅️ Toggle column freeze</button>
+      <button @click="validateTable">✅ Validate</button>
+      <button v-show="editable" @click="addColumn">➕ Add column</button>
+      <button v-show="editable" @click="addRow">➕ Add row</button>
     </div>
   </div>
 </template>
@@ -104,7 +104,9 @@ export default {
     columnValidators() {
       const tabulatorValidators = {};
       const tableColumns = this.tableJSON.schema.fields.map(col => col.name);
-      const panderaColumns = this.tableJSON.validation.columns;
+      const panderaColumns = this.tableJSON.validation?.columns;
+
+      if (!panderaColumns) return tabulatorValidators;
 
       for (const [columnName, columnSchema] of Object.entries(panderaColumns)) {
         if (!tableColumns.includes(columnName)) continue;
@@ -272,7 +274,6 @@ export default {
     validateTable() {
       var valid = this.table.validate();
       this.$emit('updateValidation', valid === true);
-      console.log(valid)
     }
   },
   mounted() {
