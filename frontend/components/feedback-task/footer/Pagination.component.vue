@@ -70,12 +70,14 @@ export default {
       event.stopPropagation();
     },
     onPressKeyboardShortcuts(event) {
-      const { code, ctrlKey, metaKey } = event;
+      const { code, ctrlKey, metaKey, shiftKey } = event;
       if (this.$platform.isMac) {
         if (!metaKey) return;
       } else {
         if (!ctrlKey) return;
       }
+
+      if (!shiftKey) return;
 
       switch (code) {
         case "ArrowRight": {

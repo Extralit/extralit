@@ -5,11 +5,10 @@ metadata:
   labels:
     app: argilla-frontend
 spec:
-  type: LoadBalancer
   selector:
     app: argilla-frontend
   ports:
-    - protocol: TCP
-      port: 80
+    - port: 80
       targetPort: 3000
+  type: LoadBalancer
 

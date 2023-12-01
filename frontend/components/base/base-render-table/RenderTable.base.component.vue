@@ -178,7 +178,7 @@ export default {
 
       // Only highlight if the row is not already selected
       if (this.table.getSelectedRows().indexOf(selectedRow) != -1) return;
-      this.table.scrollToRow(selectedRow, "center", false);
+      this.table.scrollToRow(selectedRow, null, false);
       this.table.deselectRow("visible");
       this.table.toggleSelectRow(selectedRow._row)
     },
@@ -260,7 +260,7 @@ export default {
       
       let desc = this.tableJSON.schema.fields.find(col => col.name === fieldName)?.description;
 
-      if (this.tableJSON?.validation.columns.hasOwnProperty(fieldName)) {
+      if (this.tableJSON?.validation?.columns.hasOwnProperty(fieldName)) {
         const panderaSchema = this.tableJSON?.validation.columns[fieldName];
         desc = `${panderaSchema.description}`;
         if (this.columnValidators.hasOwnProperty(fieldName)) {

@@ -111,7 +111,7 @@ k8s_yaml(
 k8s_resource(
   'argilla-frontend-deployment',
   resource_deps=['argilla-server-deployment'],
-  port_forwards='3000:3000',
+  port_forwards=['3000'],
   labels=['argilla-frontend'],
 )
 

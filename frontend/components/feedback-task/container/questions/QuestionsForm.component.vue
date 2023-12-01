@@ -180,18 +180,12 @@ export default {
           break;
         }
         case "Enter": {
-          if (shiftKey) this.onSubmit();
-          break;
-        }
-        case "Space": {
-          if (shiftKey) {
-            event.preventDefault(); // TODO: Review this line
-            this.onClear();
-          }
+          if (ctrlKey || metaKey) this.onSubmit();
           break;
         }
         case "Backspace": {
-          if (shiftKey) this.onDiscard();
+          if (ctrlKey || metaKey) this.onDiscard();
+          else if (shiftKey) this.onClear();
           break;
         }
         default:

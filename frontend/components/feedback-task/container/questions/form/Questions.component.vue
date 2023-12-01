@@ -18,7 +18,7 @@
           :question="question"
           :showSuggestion="showSuggestion"
           :isFocused="checkIfQuestionIsFocused(index)"
-          @on-focus="updateQuestionAutofocus(index)"
+          @on-focus="question.settings?.use_table ? null : updateQuestionAutofocus(index)"
         />
 
         <SingleLabelComponent
