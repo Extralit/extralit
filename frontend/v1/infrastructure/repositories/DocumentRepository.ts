@@ -20,7 +20,7 @@ export class DocumentRepository {
 
       const dataUint8Array = new Uint8Array(response.data);
 
-      return new Document(documentId, dataUint8Array, documentFileName, pmid); 
+      return new Document(documentId, dataUint8Array, documentFileName, pmid);
     } catch (error) {
       throw {
         response: DOCUMENT_API_ERRORS.ERROR_FETCHING_DOCUMENT,

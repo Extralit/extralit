@@ -44,10 +44,14 @@ export default {
     currentPanel: null,
     currentMode: "annotate",
     isPanelVisible: false,
+    metadata: null,
   }),
   computed: {
-    hasDocument() {
+    isDocumentLoaded() {
       return this.document.id !== null;
+    },
+    hasDocument() {
+      return this.metadata === null || this.metadata?.doc_id != null || this.metadata?.pmid != null;
     },
     filteredSidebarItems() {
       if (!this.hasDocument) {
@@ -119,6 +123,7 @@ export default {
   },
   mounted() {
     this.$nuxt.$on('on-change-record-metadata', (metadata) => {
+      this.metadata = metadata;
       if (!metadata) { return; }
 
       try {
@@ -136,7 +141,7 @@ export default {
       } catch (error) {
         console.log(error)
       } finally {
-        if (!this.hasDocument) {
+        if (!this.isDocumentLoaded) {
           this.closePanel();
         }
       }
