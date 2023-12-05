@@ -119,7 +119,7 @@ export default {
   },
   mounted() {
     this.$nuxt.$on('on-change-record-metadata', (metadata) => {
-      if (!this.hasDocument || !metadata) { return; }
+      if (!metadata) { return; }
 
       try {
         if (metadata?.pmid != null && this.document.pmid !== metadata.pmid) {
@@ -128,16 +128,15 @@ export default {
         } else if (metadata?.doc_id != null && this.document.id !== metadata.doc_id) {
           this.setDocumentByID(metadata.doc_id);
           
-        } else if (metadata?.doi != null && this.document.doi !== metadata.doi) {
-          console.error('TODO set document by doi')
-          // this.setDocumentByPubmedID(metadata.doi);
+        // Metadata is null, so we clear the document
+        } else if (this.document.pmid !== null || this.document.id !== null) {
+          this.clearDocument();
         }
 
       } catch (error) {
         console.log(error)
       } finally {
-        if (this.document.id === null) {
-          console.log('close panel')
+        if (!this.hasDocument) {
           this.closePanel();
         }
       }

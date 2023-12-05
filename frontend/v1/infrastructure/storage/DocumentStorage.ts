@@ -16,10 +16,15 @@ export const useDocument = () => {
     return state.get();
   }
 
+  const clear = (): void => {
+    state.save(new Document(null, null, null, null));
+  }
+
   return {
     ...state,
     set,
     get,
+    clear
   };
 };
 

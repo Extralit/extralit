@@ -7,7 +7,7 @@ import { Notification } from "@/models/Notifications";
 
 export const useDocumentViewModel = () => {
   const getDocument = useResolve(GetDocumentByIdUseCase);
-  const { state: document, set: setDocument } = useDocument();
+  const { state: document, set: setDocument, clear: clearDocument } = useDocument();
 
   const setDocumentByID = async (id: string) => {
     try {
@@ -36,7 +36,8 @@ export const useDocumentViewModel = () => {
   return {
     document,
     setDocumentByID: setDocumentByID,
-    setDocumentByPubmedID: setDocumentByPubmedID
+    setDocumentByPubmedID: setDocumentByPubmedID,
+    clearDocument: clearDocument,
   };
 };
 

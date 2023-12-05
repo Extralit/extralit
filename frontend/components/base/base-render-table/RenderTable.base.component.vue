@@ -68,7 +68,7 @@ export default {
         title: column.name === 'index' && index === 0 ? '' : column.name,
         field: column.name,
         frozen: this.freezeColumns && this.indexColumns?.length && this.indexColumns.includes(column.name),
-        visible: column.name === 'reference' ? false : true,
+        // visible: column.name === 'reference' ? false : true,
         validator: this.columnValidators.hasOwnProperty(column.name) ? this.columnValidators[column.name] : null,
         ...this.getColumnEditableConfig(column.name),
       }));
