@@ -3,10 +3,10 @@
     <div ref="table" class="--table"/>
     
     <div class="--buttons">
-      <button v-show="indexColumns?.length" @click="toggleColumnFreeze">⬅️ Toggle column freeze</button>
-      <button @click="validateTable">✅ Validate</button>
-      <button v-show="editable" @click="addColumn">➕ Add column</button>
-      <button v-show="editable" @click="addRow">➕ Add row</button>
+      <button v-show="indexColumns?.length" @click.prevent="toggleColumnFreeze">⬅️ Toggle column freeze</button>
+      <button @click.prevent="validateTable">✅ Validate</button>
+      <button v-show="editable" @click.prevent="addColumn">➕ Add column</button>
+      <button v-show="editable" @click.prevent="addRow">➕ Add row</button>
     </div>
   </div>
 </template>
@@ -33,13 +33,11 @@ export default {
   },
   model: {
     prop: 'hasValidValues',
-    event: 'updateValidation'
+    event: 'updateValidValues'
   },
   data() {
     return {
       table: null,
-      indexColumns: [],
-      numRows: 0,
       freezeColumns: true,
     };
   },
@@ -47,12 +45,7 @@ export default {
     tableJSON: {
       get() {
         try {
-          const json = JSON.parse(this.tableData)
-          this.numRows = json.data.length;
-          this.indexColumns = json.schema.primaryKey;
-
-          return json;
-
+          return JSON.parse(this.tableData)
         } catch (error) {
           console.error("Failed to parse JSON:", error);
           return null;
@@ -62,29 +55,11 @@ export default {
         this.$nuxt.$emit('on-update-response-tabledata', JSON.stringify(json));
       }
     },
+    indexColumns() {
+      return this.tableJSON?.schema?.primaryKey || [];
+    },
     columns() {
       return this.table?.getColumns().map(col => col.getField())
-    },
-    editableColumnsConfig() {
-      if (this.editable) {
-        return {
-          editor: "input",
-          editorParams: {
-            selectContents: true,
-          },
-          editableTitle: false,
-          headerDblClick: function (e, column) {
-            // Enable editable title on double click
-            column.updateDefinition({ editableTitle: !column.getDefinition().editableTitle });
-          },
-          cellEdited: (cell) => {
-            this.tableJSON.data = this.table.getData();
-            this.validateTable();
-            this.tableJSON = this.tableJSON  // Trigger the setter
-          },
-        };
-      }
-      return {};
     },
     columnsConfig() {
       if (!this.tableJSON?.schema) return [];
@@ -93,54 +68,58 @@ export default {
         title: column.name === 'index' && index === 0 ? '' : column.name,
         field: column.name,
         frozen: this.freezeColumns && this.indexColumns?.length && this.indexColumns.includes(column.name),
-        // formatter: "textarea",
-        ...this.editableColumnsConfig,
+        visible: column.name === 'reference' ? false : true,
         validator: this.columnValidators.hasOwnProperty(column.name) ? this.columnValidators[column.name] : null,
+        ...this.getColumnEditableConfig(column.name),
       }));
+
       // columns.unshift({ rowHandle: true, formatter: "handle", headerSort: false, frozen: true, width: 30, minWidth: 30 },);
       
       return configs
     },
     columnValidators() {
-      const tabulatorValidators = {};
       const tableColumns = this.tableJSON.schema.fields.map(col => col.name);
-      const panderaColumns = this.tableJSON.validation?.columns;
+      const schemaColumns = this.tableJSON.validation?.columns;  // Pandera yaml schema
+      if (!schemaColumns) return {};
 
-      if (!panderaColumns) return tabulatorValidators;
-
-      for (const [columnName, columnSchema] of Object.entries(panderaColumns)) {
+      var integer = (cell, value, parameters) => value == "NA" || Number.isInteger(parseInt(value));
+      var decimal = (cell, value, parameters) => value == "NA" || !isNaN(parseFloat(value));
+      var greater_equal = (cell, value, parameters) => value == "NA" || parseFloat(value) >= parameters;
+      var less_equal = (cell, value, parameters) => value == "NA" || parseFloat(value) <= parameters;
+      
+      const tabulatorValidators = {};
+      for (const [columnName, columnSchema] of Object.entries(schemaColumns)) {
         if (!tableColumns.includes(columnName)) continue;
 
         const validators = [];
 
-        if (columnSchema.required) {
+        if (columnSchema.nullable === false) {
           validators.push("required");
         }
 
-        switch (columnSchema.dtype) {
-          case "str":
-            validators.push("string");
-            break;
-          case "int64":
-            validators.push("integer");
-            break;
-          case "float64":
-            validators.push("float");
-            break;
-          default:
-            break;
+        if (columnSchema.dtype === "str") {
+          validators.push("string");
+        } else if (columnSchema.dtype.includes("int")) {
+          validators.push({ type: integer, parameters: null });
+        } else if (columnSchema.dtype.includes("float")) {
+          validators.push({ type: decimal, parameters: null });
         }
 
-        if (columnSchema.checks) {
-          if (columnSchema.checks.greater_than_or_equal_to !== undefined) {
-            validators.push(`min:${columnSchema.checks.greater_than_or_equal_to}`);
-          }
+        for (const key in columnSchema?.checks) {
+          const value = columnSchema.checks[key];
 
-          if (columnSchema.checks.isin) {
-            validators.push(`in:${columnSchema.checks.isin.join("|")}`);
+          if (key === 'greater_than_or_equal_to') {
+            validators.push({ type: greater_equal, parameters: value });
+
+          } else if (key === 'less_than_or_equal_to') {
+            validators.push({ type: less_equal, parameters: value });
+
+          } else 
+          if (key === 'isin' && value.length) {
+            validators.push(`in:${[...value, "NA"].join("|")}`);
           }
         }
-
+                
         // Custom validator example for unique check
         if (columnSchema.unique) {
           const uniqueValidator = {
@@ -158,6 +137,62 @@ export default {
     }
   },
   methods: {
+    getColumnEditableConfig(fieldName) {
+      if (!this.editable) return {};
+
+      // Default editable config for a column
+      var config = {
+        editor: "input",
+        editorParams: {
+          selectContents: true,
+          search: true,
+          emptyValue: "NA",
+          autocomplete: true,
+        },
+        editableTitle: false,
+        headerDblClick: (e, column) => {
+          // Enable editable title on double click
+          if (column.getDefinition().frozen) return;
+          column.updateDefinition({ editableTitle: !column.getDefinition().editableTitle });
+        },
+        cellEdited: (cell) => {
+          this.tableJSON.data = this.table.getData();
+          this.validateTable();
+          this.tableJSON = this.tableJSON  // Trigger the setter
+        },
+      };
+
+      // Add custom editor params for a column based on the Pandera validation schema
+      if (this.tableJSON.validation?.columns?.hasOwnProperty(fieldName)) {
+        const columnSchema = this.tableJSON.validation?.columns[fieldName];
+
+        for (const key in columnSchema?.checks) {
+          var values = columnSchema.checks[key];
+          if (key === 'isin' && values.length) {
+            config.editor = "list";
+            config.editorParams.values = values;
+            config.editorParams.autocomplete = true;
+            config.editorParams.listOnEmpty = true;
+            config.editorParams.freetext = true;
+          }
+        }
+      }
+      return config;
+    },
+    validateTable() {
+      var valid = this.table.validate();
+      this.$emit('updateValidValues', valid === true);
+
+      var errors = {};
+      if (valid !== true) {
+        errors = valid.reduce((acc, cell) => {
+          let errs = cell.validate();
+          acc[`${cell._cell.column.field}: ${cell._cell.value}`] = errs;
+          return acc;
+        }, {});
+      }
+      if (Object.keys(errors).length) console.log(errors);
+    },
     toggleColumnFreeze() {
       this.freezeColumns = !this.freezeColumns;
       this.table.setColumns(this.columnsConfig);
@@ -178,7 +213,7 @@ export default {
 
       // Only highlight if the row is not already selected
       if (this.table.getSelectedRows().indexOf(selectedRow) != -1) return;
-      this.table.scrollToRow(selectedRow, null, false);
+      // this.table.scrollToRow(selectedRow, null, false);
       this.table.deselectRow("visible");
       this.table.toggleSelectRow(selectedRow._row)
     },
@@ -191,13 +226,13 @@ export default {
         this.table.addRow({}).then((row) => { row.validate() });
       }
     },
-    addColumn() {
-      const newFieldName = "newColumn";
+    addColumn(fieldName) {
+      const newFieldName = fieldName || "newColumn";
 
       this.table.addColumn({
         title: newFieldName,
         field: newFieldName,
-        ...this.editableColumnsConfig
+        ...this.getColumnEditableConfig(newFieldName),
       }, false);
 
       // Add the new field to the schema
@@ -243,13 +278,13 @@ export default {
 
       this.table.scrollToColumn(newFieldName, "middle", false);
     },
-    cellTooltip: function (e, cell, onRendered) {
+    cellTooltip(e, cell, onRendered) {
       var text = cell.getValue();
 
       if (text?.length > 100) {
         return text;
 
-      } else if (cell?._cell?.column.field === 'index' && this.tableJSON?.validation.columns.hasOwnProperty(text)) {
+      } else if (cell._cell?.column.field === 'index' && this.tableJSON?.validation.columns.hasOwnProperty(text)) {
         const column_schema = this.tableJSON.validation.columns[text]
         return column_schema.description
       } 
@@ -263,18 +298,24 @@ export default {
       if (this.tableJSON?.validation?.columns.hasOwnProperty(fieldName)) {
         const panderaSchema = this.tableJSON?.validation.columns[fieldName];
         desc = `${panderaSchema.description}`;
+        
         if (this.columnValidators.hasOwnProperty(fieldName)) {
-          desc += `<br/><br/>Checks: ${this.columnValidators[fieldName]}`.replace(/,/g, ', ').replace(/:/g, ': ');
+          const stringAndFunctionNames = this.columnValidators[fieldName].map(value => {
+            if (typeof value === 'string') {
+              return value;
+            } else if (typeof value === 'function') {
+              return value.name;
+            } else if (typeof value === 'object' && value?.type?.name) {
+              return value?.parameters != null ? `${value.type.name}: ${value.parameters}` : `${value.type.name}`;
+            }
+          }).filter(value => value !== undefined);
+          desc += `<br/><br/>Checks: ${stringAndFunctionNames}`.replace(/,/g, ', ').replace(/:/g, ': ');
         }
       }
 
       if (!desc) return null;
       return desc;
     },
-    validateTable() {
-      var valid = this.table.validate();
-      this.$emit('updateValidation', valid === true);
-    }
   },
   mounted() {
     const layout = this.columnsConfig.length <= 2 ? "fitDataStretch" : "fitDataTable"

@@ -1,4 +1,6 @@
+import os
 import base64
+from urllib.parse import urlparse, unquote
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Literal, Optional, Union
 
@@ -33,18 +35,31 @@ class Document(BaseModel, ABC):
         }
 
     @classmethod
-    def from_file(cls, file_path: str, pmid: Optional[str] = None, doi: Optional[str] = None, workspace_id: Optional[UUID] = None) -> "Document":
-        assert pmid or doi, "Either pmid or doi must be provided"
+    def from_file(cls, file_path: str, id: Optional[str] = None, pmid: Optional[str] = None, doi: Optional[str] = None, workspace_id: Optional[UUID] = None) -> "Document":
+        assert pmid or doi or id, "Either `pmid`, `doi`, or `id` must be provided"
+        url = None
 
-        with open(file_path, "rb") as file:
-            file_data = base64.b64encode(file.read()).decode()
-        file_name = file_path.split("/")[-1]
+        if os.path.exists(file_path):
+            with open(file_path, "rb") as file:
+                file_data = base64.b64encode(file.read()).decode()
+            file_name = file_path.split("/")[-1]
+
+        elif urlparse(file_path).scheme:
+            file_data = None
+            url = file_path
+            parsed_url = urlparse(file_path)
+            path = parsed_url.path
+            file_name = unquote(path).split('/')[-1]
+        else:
+            raise ValueError(f"File path {file_path} does not exist")
 
         return cls(
             file_data=file_data,
-            file_name=file_name,
-            pmid=pmid,
-            doi=doi,
+            file_name=file_name if isinstance(file_name, str) else None,
+            url=url if isinstance(url, str) else None,
+            id=UUID(id) if isinstance(id, str) else None,
+            pmid=pmid if isinstance(pmid, str) else None,
+            doi=doi if isinstance(doi, str) else None,
             workspace_id=workspace_id,
         )
 

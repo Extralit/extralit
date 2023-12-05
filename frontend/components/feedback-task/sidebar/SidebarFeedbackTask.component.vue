@@ -122,14 +122,17 @@ export default {
       if (!this.hasDocument || !metadata) { return; }
 
       try {
-        if (metadata.pmid && this.document.pmid !== metadata.pmid) {
+        if (metadata?.pmid != null && this.document.pmid !== metadata.pmid) {
           this.setDocumentByPubmedID(metadata.pmid);
-        } else if (metadata.doi && this.document.doi !== metadata.doi) {
+
+        } else if (metadata?.doc_id != null && this.document.id !== metadata.doc_id) {
+          this.setDocumentByID(metadata.doc_id);
+          
+        } else if (metadata?.doi != null && this.document.doi !== metadata.doi) {
           console.error('TODO set document by doi')
           // this.setDocumentByPubmedID(metadata.doi);
-        } else if (metadata.document_id && this.document.id !== metadata.document_id) {
-          this.setDocumentByID(metadata.document_id);
         }
+
       } catch (error) {
         console.log(error)
       } finally {

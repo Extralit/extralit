@@ -13,10 +13,10 @@ You can speed up your annotation by using these keyboard shortcuts:
 | Unrank option                | `⌫ backspace`                 |
 | Exit text area               | `esc`                         |
 | Reactivate text area         | `↵ enter`                     |
-| Clear                        | `⇧ shift` + `⌫ backspace`     |
+| Clear                        | `ctrl` + `shift` + `⌫ backspace`|
 | Discard                      | `⌘ cmd` + `⌫ backspace`       |
 | Submit                       | `⌘ cmd` + `↵ enter`           |
-| Next page (Mac os)           | `⌘` + `⇧` + `→ right arrow`   |
-| Previous page (Mac os)       | `⌘` + `⇧` + `← left arrow`    |
-| Next page (Other)            | `ctrl` + `⇧` + `→ right arrow`|
-| Previous page (Other)        | `ctrl` + `⇧` + `← left arrow` |
+| Next page (Mac os)           | `⌘ cmd` + `→ right arrow`     |
+| Previous page (Mac os)       | `⌘ cmd` + `← left arrow`      |
+| Next page (Other)            | `ctrl` + `→ right arrow`      |
+| Previous page (Other)        | `ctrl` + `← left arrow`       |

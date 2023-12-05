@@ -949,10 +949,9 @@ class RemoteFeedbackDataset(FeedbackDatasetBase[RemoteFeedbackRecord]):
             ValueError: if the document with the given name already exists in the
                 dataset in Argilla.
         """
-        assert document.pmid or document.doi, "Document must have either pmid or doi."
+        assert document.pmid or document.doi or document.id, "Document must have either id, pmid or doi."
         
         if (document.pmid or document.doi) in self._documents:
-            print(f"Document with pmid {document.pmid} or doi {document.doi} already exists.")
             return self._documents[(document.pmid or document.doi)]
 
         document.workspace_id = self.workspace.id

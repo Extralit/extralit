@@ -44,6 +44,8 @@ RUN chown -R argilla:argilla /home/argilla
 # Set the working directory
 WORKDIR /home/argilla/
 
+RUN chmod +x ./scripts/build_frontend.sh && /bin/bash ./scripts/build_frontend.sh
+
 # Conditionally run the command based on ENV
 RUN if [ "$ENV" = "dev" ]; then pip install --upgrade -e . ; fi
 

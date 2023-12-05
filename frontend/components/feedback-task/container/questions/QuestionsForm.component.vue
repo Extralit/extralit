@@ -147,6 +147,8 @@ export default {
   },
   methods: {
     focusOnFirstQuestionFromOutside(event) {
+      // Prevents jumping around when the user clicks on a button or interacting with the table
+      return
       if (!this.userComesFromOutside) return;
       if (event.srcElement.id || event.srcElement.getAttribute("for")) return;
 
@@ -184,8 +186,13 @@ export default {
           break;
         }
         case "Backspace": {
-          if (ctrlKey || metaKey) this.onDiscard();
-          else if (shiftKey) this.onClear();
+          if (shiftKey && (ctrlKey || metaKey)) {
+            event.preventDefault();
+            event.stopPropagation();
+            this.onClear()
+          } else if (ctrlKey || metaKey) {
+            this.onDiscard()
+          };
           break;
         }
         default:

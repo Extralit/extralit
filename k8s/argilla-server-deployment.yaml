@@ -18,7 +18,7 @@ spec:
         - name: wait-for-elasticsearch
           image: alpine/curl:latest
           command: [ "sh", "-c",
-            "ELASTICSEARCH_URL='https://elastic:$(ELASTIC_PASSWORD)@elasticsearch-master:9200'; echo $ELASTICSEARCH_URL; status_code=$(curl -s -k -o /dev/null -w '%{http_code}' $ELASTICSEARCH_URL);
+            "ELASTICSEARCH_URL='https://elastic:$(ELASTIC_PASSWORD)@elasticsearch-master:9200'; status_code=$(curl -s -k -o /dev/null -w '%{http_code}' $ELASTICSEARCH_URL);
           while [ $status_code -ne 200 ]; do sleep 5; status_code=$(curl -s -o /dev/null -w '%{http_code}' $ELASTICSEARCH_URL);
           echo Sleeping...; done; echo Elasticsearch Connected " ]
           env:
