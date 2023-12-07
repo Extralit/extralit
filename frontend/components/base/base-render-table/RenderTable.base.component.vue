@@ -15,9 +15,10 @@
 <script>
 import {
   TabulatorFull as Tabulator,
-  MoveColumnsModule,
 } from "tabulator-tables";
 import "tabulator-tables/dist/css/tabulator.min.css";
+import { getColumnValidators } from "./validationUtils";
+import { columnSchemaToDesc } from "./tableUtils";
 
 export default {
   name: "RenderTableBaseComponent",
@@ -65,6 +66,9 @@ export default {
     columns() {
       return this.table?.getColumns().map((col) => col.getField());
     },
+    columnValidators() { 
+      return getColumnValidators(this.tableJSON);
+    },
     columnsConfig() {
       if (!this.tableJSON?.schema) return [];
 
@@ -85,64 +89,6 @@ export default {
       // columns.unshift({ rowHandle: true, formatter: "handle", headerSort: false, frozen: true, width: 30, minWidth: 30 },);
 
       return configs;
-    },
-    columnValidators() {
-      const tableColumns = this.tableJSON.schema.fields.map((col) => col.name);
-      const schemaColumns = this.tableJSON.validation?.columns; // Pandera yaml schema
-      if (schemaColumns === null) return {};
-
-      var integer = (cell, value, parameters) => (parameters.nullable && value == "NA") || /^-?\d+$/.test(value);
-      var decimal = (cell, value, parameters) => (parameters.nullable && value == "NA") || /^-?\d*(\.\d+)?$/.test(value);
-      var greater_equal = (cell, value, parameters) => value == "NA" || parseFloat(value) >= parameters;
-      var less_equal = (cell, value, parameters) => value == "NA" || parseFloat(value) <= parameters;
-
-      const tabulatorValidators = {};
-      for (const [columnName, columnSchema] of Object.entries(schemaColumns)) {
-        if (!tableColumns.includes(columnName)) continue;
-        console.log(columnName, columnSchema);
-        const validators = [];
-
-        if (columnSchema.required) {
-          validators.push("required");
-        }
-
-        if (columnSchema.dtype === "str") {
-          validators.push("string");
-        } else if (columnSchema.dtype.includes("int")) {
-          validators.push({ type: integer, parameters: { nullable: columnSchema.nullable } });
-        } else if (columnSchema.dtype.includes("float")) {
-          validators.push({ type: decimal, parameters: { nullable: columnSchema.nullable } });
-        }
-
-        for (const key in columnSchema?.checks) {
-          const value = columnSchema.checks[key];
-
-          if (key === "greater_than_or_equal_to") {
-            validators.push({ type: greater_equal, parameters: value });
-          } else if (key === "less_than_or_equal_to") {
-            validators.push({ type: less_equal, parameters: value });
-          } else if (key === "isin" && value.length) {
-            validators.push(`in:${[...value, "NA"].join("|")}`);
-          }
-        }
-
-        // Custom validator example for unique check
-        if (columnSchema.unique) {
-          const uniqueValidator = {
-            type: function (cell, value, parameters) {
-              const columnValues = cell
-                .getTable()
-                .getData()
-                .map((row) => row[cell.getField()]);
-              return columnValues.filter((v) => v === value).length === 1;
-            },
-          };
-          validators.push(uniqueValidator);
-        }
-        tabulatorValidators[columnName] = validators;
-      }
-
-      return tabulatorValidators;
     },
   },
   methods: {
@@ -203,7 +149,7 @@ export default {
       if (options?.scrollToError) {
         const firstErrorCell = validErrors[0];
         this.table.scrollToRow(firstErrorCell._cell.row);
-        this.table.scrollToColumn(firstErrorCell._cell.column.field);
+        this.table.scrollToColumn(firstErrorCell._cell.column.field, 'middle');
       }
 
       if (options?.showErrors) {
@@ -351,33 +297,8 @@ export default {
     headerTooltip(e, column, onRendered) {
       try {
         const fieldName = column?.getDefinition()?.field;
-        var desc = this.tableJSON?.schema?.fields?.find(
-          (col) => col.name === fieldName
-        )?.description;
+        const desc = columnSchemaToDesc(fieldName, this.tableJSON, this.columnValidators)
 
-        if (this.tableJSON?.validation?.columns.hasOwnProperty(fieldName)) {
-          const panderaSchema = this.tableJSON?.validation.columns[fieldName];
-          desc = panderaSchema.description;
-
-          if (this.columnValidators.hasOwnProperty(fieldName)) {
-            const stringAndFunctionNames = this.columnValidators[fieldName]
-              .map((value) => {
-                if (typeof value === "string") {
-                  return value;
-                } else if (typeof value === "function") {
-                  return value.name;
-                } else if (typeof value === "object" && value?.type?.name) {
-                  return value?.parameters != null
-                    ? `${value.type.name}: ${JSON.stringify(value.parameters)}`
-                    : `${value.type.name}`;
-                }
-              })
-              .filter((value) => value !== undefined);
-            desc += `<br/><br/>Checks: ${stringAndFunctionNames}`
-              .replace(/,/g, ", ")
-              .replace(/:/g, ": ");
-          }
-        }
 
         if (!desc) return null;
         return desc;
@@ -387,13 +308,16 @@ export default {
         console.log(error.stack);
       }
     },
+    async integrateReferencedData() {
+
+    },
   },
   mounted() {
     if (!this.tableJSON) return;
     const layout =
       this.columnsConfig.length <= 2 ? "fitDataStretch" : "fitDataTable";
 
-    this.table = new Tabulator(this.$refs.table, {
+      this.table = new Tabulator(this.$refs.table, {
       maxHeight: "40vh",
       data: this.tableJSON.data,
       persistence: {
@@ -410,6 +334,9 @@ export default {
         headerTooltip: this.headerTooltip.bind(this),
       },
       columns: this.columnsConfig,
+      index: this.columnsConfig.find((column) => column.field === "reference")
+        ? "reference"
+        : null,
       layout: layout,
       selectable: 1,
       selectablePersistence: true,
