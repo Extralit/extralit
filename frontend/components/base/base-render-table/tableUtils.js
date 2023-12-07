@@ -1,20 +1,41 @@
 import { useRecordFeedbackTaskViewModel } from '@/components/feedback-task/container/useRecordFeedbackTaskViewModel';
 
 
+export function columnUniqueCounts(tableJSON) {
+  // tableJSON is an object of the form {data: [{column: value, ...}, ...]}
+  // returns an object of the form {column: uniqueCount, ...}
+  let uniqueCounts = {};
+  for (let key of Object.keys(tableJSON.data[0])) {
+    let values = tableJSON.data.map(row => row[key]);
+    let filteredValues = values.filter(value => value !== null && value !== 'NA' && value?.length);
+    uniqueCounts[key] = new Set(filteredValues).size;
+  }
+
+  return uniqueCounts;
+}
+
 export function findMatchingRefValues(refValues, records) {
+  // refValues is an object of the form {field: refValue}
+  // records is an array of objects of the form {table_name: {data: [{reference: refValue, ...}, ...]}}
+  // returns an object of the form {field: {refValue: {column: value, ...}, ...}, ...}
   const matchingRefValues = {};
+
   for (const [field, refValue] of Object.entries(refValues)) {
     for (const recordTables of records) {
       if (!recordTables) continue;
       const matchingTable = Object.values(recordTables)
         .find((table) => table.data.find((row) => row['reference'] === refValue));
+
       if (matchingTable) {
         if (!matchingTable.hasOwnProperty('columnUniqueCounts')) {
           matchingTable.columnUniqueCounts = columnUniqueCounts(matchingTable)
         }
+
         const refRows = matchingTable.data.reduce((acc, row) => {
           const filteredRowValues = Object.entries(row)
-            .filter(([key, value]) => key != "reference" && (!matchingTable?.columnUniqueCounts?.hasOwnProperty(key) || matchingTable.columnUniqueCounts[key] > 1))
+            .filter(([key, value]) => 
+              key != "reference" &&
+              (matchingTable.data.length <= 1 || !matchingTable?.columnUniqueCounts?.hasOwnProperty(key) || matchingTable.columnUniqueCounts[key] > 1))
             .reduce((obj, [key, value]) => {
               obj[key] = value;
               return obj;
@@ -32,18 +53,9 @@ export function findMatchingRefValues(refValues, records) {
   return matchingRefValues
 }
 
-export function columnUniqueCounts(tableJSON) {
-  let uniqueCounts = {};
-  for (let key of Object.keys(tableJSON.data[0])) {
-    let values = tableJSON.data.map(row => row[key]);
-    let filteredValues = values.filter(value => value !== null && value !== 'NA' && value !== '');
-    uniqueCounts[key] = new Set(filteredValues).size;
-  }
-
-  return uniqueCounts;
-}
-
 export function getTableDataFromRecords(filter_fn) {
+  // filter_fn is a function that takes a record and returns true if it should be included in the table
+  // returns an array of objects of the form {field: {refValue: {column: value, ...}, ...}, ...}
   let recordTables = useRecordFeedbackTaskViewModel({})?.records.records
     .filter(filter_fn)
     .map((rec) => {
@@ -87,6 +99,9 @@ export function getTableDataFromRecords(filter_fn) {
 }
 
 export function columnSchemaToDesc(fieldName, tableJSON, columnValidators) {
+  // tableJSON is an object of the form {data: [{column: value, ...}], validation: {columns: {column: panderaSchema, ...}}}
+  // columnValidators is an object of the form {column: [validator, ...]}
+  // returns a string describing the column schema and validators
   if (!tableJSON) return;
   
   var desc;

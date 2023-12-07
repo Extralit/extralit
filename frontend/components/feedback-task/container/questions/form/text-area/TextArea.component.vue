@@ -130,7 +130,7 @@ export default {
     },
     isValueJSON() {
       const value = this.question.answer.value;
-      if (!value?.length || !value.includes('{') || !value.includes('[')) { return false; }
+      if (!value?.length || !value.startsWith('{')) { return false; }
 
       try {
         JSON.parse(value);
