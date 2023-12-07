@@ -3,10 +3,11 @@
     <div ref="table" class="--table" />
 
     <div class="--buttons">
-      <button v-show="indexColumns?.length" @click.prevent="toggleColumnFreeze">⬅️ Toggle column freeze</button>
-      <button v-show="columns" @click.prevent="validateTable({ showErrors: true, scrollToError: true })">✅ Validate</button>
+      <button v-show="indexColumns?.length" @click.prevent="toggleColumnFreeze">⬅️ Index</button>
+      <button v-show="columns" @click.prevent="validateTable({ showErrors: true, scrollToError: true })">✅ Checks</button>
       <button v-show="editable" @click.prevent="addColumn">➕ Add column</button>
       <button v-show="editable" @click.prevent="addRow">➕ Add row</button>
+      <button v-show="editable" @click.prevent="deleteRow">➖ Drop row</button>
     </div>
   </div>
 </template>
@@ -90,18 +91,18 @@ export default {
       const schemaColumns = this.tableJSON.validation?.columns; // Pandera yaml schema
       if (schemaColumns === null) return {};
 
-      var integer = (cell, value, parameters) => (!parameters?.nullable && value == "NA") || /^-?\d+$/.test(value);
-      var decimal = (cell, value, parameters) => (!parameters?.nullable && value == "NA") || /^-?\d*(\.\d+)?$/.test(value);
+      var integer = (cell, value, parameters) => (parameters.nullable && value == "NA") || /^-?\d+$/.test(value);
+      var decimal = (cell, value, parameters) => (parameters.nullable && value == "NA") || /^-?\d*(\.\d+)?$/.test(value);
       var greater_equal = (cell, value, parameters) => value == "NA" || parseFloat(value) >= parameters;
       var less_equal = (cell, value, parameters) => value == "NA" || parseFloat(value) <= parameters;
 
       const tabulatorValidators = {};
       for (const [columnName, columnSchema] of Object.entries(schemaColumns)) {
         if (!tableColumns.includes(columnName)) continue;
-
+        console.log(columnName, columnSchema);
         const validators = [];
 
-        if (columnSchema.nullable === false) {
+        if (columnSchema.required) {
           validators.push("required");
         }
 
@@ -145,6 +146,11 @@ export default {
     },
   },
   methods: {
+    updateData() {
+      this.tableJSON = this.table.getData();
+      // eslint-disable-next-line no-self-assign
+      this.tableJSON = this.tableJSON; // Trigger the setter
+    },
     getColumnEditableConfig(fieldName) {
       if (!this.editable || this.indexColumns.includes(fieldName)) return {};
 
@@ -164,9 +170,8 @@ export default {
           });
         },
         cellEdited: (cell) => {
-          this.tableJSON.data = this.table.getData();
+          this.updateData();
           this.validateTable();
-          this.tableJSON = this.tableJSON; // Trigger the setter
         },
       };
 
@@ -186,13 +191,6 @@ export default {
           config.editorParams.freetext = true;
           config.editorParams.values = (columnSchema?.checks?.isin?.length) ? columnSchema.checks.isin : config.editorParams.values;
         }
-
-        // for (const key in columnSchema?.checks) {
-        //   var values = columnSchema.checks[key];
-        //   if (key === "isin" && values.length) {
-        //     config.editorParams.values = values;
-        //   }
-        // }
       }
       return config;
     },
@@ -240,26 +238,18 @@ export default {
     },
     selectRow(row) {
       // Highlight all rows with the same index accross different tables
-      const rowColumns = Object.keys(row?._row.data);
-      // Ensures only to highlight on tables with the same columns
-      if (
-        rowColumns.length !== this.columns.length ||
-        !rowColumns.every((val) => this.columns.includes(val))
-      )
-        return;
 
       // const selectedRow = this.table.getRows()[pos - 1]
       const selectedRow = this.table
         .getRows()
         .find(
-          (tableRow) =>
-            JSON.stringify(tableRow.getData()) === JSON.stringify(row._row.data)
+          (tableRow) => tableRow.getData().reference === row._row.data.reference
         );
       if (selectedRow === undefined) return;
 
       // Only highlight if the row is not already selected
       if (this.table.getSelectedRows().indexOf(selectedRow) != -1) return;
-      // this.table.scrollToRow(selectedRow, null, false);
+      this.table.scrollToRow(selectedRow, null, false);
       this.table.deselectRow("visible");
       this.table.toggleSelectRow(selectedRow._row);
     },
@@ -273,6 +263,18 @@ export default {
           row.validate();
         });
       }
+    },
+    deleteRow() {
+      // Get the selected rows
+      const selectedRows = this.table.getSelectedRows();
+
+      // Delete each selected row from the table
+      selectedRows.forEach((row) => {
+        this.table.deleteRow(row);
+      });
+
+      // Update this.tableJSON to reflect the current data in the table
+      this.updateData();
     },
     addColumn() {
       const newFieldName = "newColumn";
@@ -295,7 +297,7 @@ export default {
         name: newFieldName,
         type: "string",
       });
-      this.tableJSON = this.tableJSON; // Trigger the setter
+      this.updateData();
 
       this.table.scrollToColumn(newFieldName, null, false);
     },
