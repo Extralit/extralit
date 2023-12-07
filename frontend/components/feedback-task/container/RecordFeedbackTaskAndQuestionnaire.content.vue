@@ -161,9 +161,6 @@ export default {
         });
       }, 100);
     },
-    // onSidebarPanel(panel) {
-    //   this.isDocumentPanelOn = panel === 'document';
-    // },
   },
   setup(props) {
     return useRecordFeedbackTaskViewModel(props);
@@ -175,13 +172,10 @@ export default {
       "on-change-record-criteria-filter",
       this.onChangeRecordFilter
     );
-
-    // this.$nuxt.$on('on-sidebar-panel', this.onSidebarPanel);
   },
   destroyed() {
     this.$root.$off("on-change-record-page");
     this.$root.$off("on-change-record-criteria-filter");
-    // this.$nuxt.$off('on-sidebar-panel', this.onSidebarPanel);
     Notification.dispatch("clear");
   },
 };

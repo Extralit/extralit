@@ -18,7 +18,11 @@ import {
 } from "tabulator-tables";
 import "tabulator-tables/dist/css/tabulator.min.css";
 import { getColumnValidators } from "./validationUtils";
-import { columnSchemaToDesc } from "./tableUtils";
+import { 
+  columnSchemaToDesc, 
+  getTableDataFromRecords, 
+  findMatchingRefValues
+} from "./tableUtils"; 
 
 export default {
   name: "RenderTableBaseComponent",
@@ -63,6 +67,9 @@ export default {
     indexColumns() {
       return this.tableJSON?.schema?.primaryKey || [];
     },
+    refColumns() {
+      return this.tableJSON.schema.fields.map(field => field.name).filter(name => name.endsWith('_ref')) || [];
+    },
     columns() {
       return this.table?.getColumns().map((col) => col.getField());
     },
@@ -79,20 +86,39 @@ export default {
           this.freezeColumns &&
           this.indexColumns?.length &&
           this.indexColumns.includes(column.name),
-        visible: column.name != "reference",
+        visible: column.name != "reference" && !this.refColumns.includes(column.name),
         validator: this.columnValidators.hasOwnProperty(column.name)
           ? this.columnValidators[column.name]
           : null,
         ...this.getColumnEditableConfig(column.name),
       }));
 
-      // columns.unshift({ rowHandle: true, formatter: "handle", headerSort: false, frozen: true, width: 30, minWidth: 30 },);
+      // configs.unshift({ rowHandle: true, formatter: "handle", headerSort: false, frozen: true, width: 30, minWidth: 30 },);
 
       return configs;
     },
+    referenceValues() {
+      if (!this.refColumns) return null;
+      const firstRow = this.tableJSON?.data?.find((row) => row?.reference.includes('-'))
+      if (!firstRow) return null;
+      
+      const refValues = this.refColumns.reduce((acc, refColumn, index) => {
+        acc[refColumn] = firstRow[refColumn];
+        return acc;
+      }, {});
+      if (!refValues) return null;
+      
+      const publication_ref = firstRow.reference.split('-')[0];
+
+      let records = getTableDataFromRecords((record) => record?.metadata?.reference == publication_ref)
+
+      const matchingRefValues = findMatchingRefValues(refValues, records)
+
+      return matchingRefValues;
+    },
   },
   methods: {
-    updateData() {
+    updateTableJSON() {
       this.tableJSON = this.table.getData();
       // eslint-disable-next-line no-self-assign
       this.tableJSON = this.tableJSON; // Trigger the setter
@@ -116,7 +142,7 @@ export default {
           });
         },
         cellEdited: (cell) => {
-          this.updateData();
+          this.updateTableJSON();
           this.validateTable();
         },
       };
@@ -220,7 +246,7 @@ export default {
       });
 
       // Update this.tableJSON to reflect the current data in the table
-      this.updateData();
+      this.updateTableJSON();
     },
     addColumn() {
       const newFieldName = "newColumn";
@@ -243,7 +269,7 @@ export default {
         name: newFieldName,
         type: "string",
       });
-      this.updateData();
+      this.updateTableJSON();
 
       this.table.scrollToColumn(newFieldName, null, false);
     },
@@ -299,26 +325,37 @@ export default {
         const fieldName = column?.getDefinition()?.field;
         const desc = columnSchemaToDesc(fieldName, this.tableJSON, this.columnValidators)
 
-
         if (!desc) return null;
         return desc;
       } catch (error) {
         console.log(error);
-        // print stack trace
         console.log(error.stack);
       }
     },
-    async integrateReferencedData() {
+    groupHeader(value, count, data, group) {
+      const field = group._group.field
+      let header = value
+      if (this.referenceValues?.[field]?.hasOwnProperty(value)) {
+        const keyValues = Object.entries(this.referenceValues[field][value])
+          .filter(([key, value]) => key !== 'reference' && value && value !== 'NA')
+          .map(([key, value]) => `${key}:<span style="font-weight: normal; color: black;">${value}</span>`)
+          .join(', ');
+        if (keyValues.length > 0) header = keyValues;
+      }
 
+      if (count > 1) {
+        header = header + `<span style='color:black; margin-left:10px;'>(${count})</span>`;
+      }
+
+      return header;
     },
   },
   mounted() {
     if (!this.tableJSON) return;
-    const layout =
-      this.columnsConfig.length <= 2 ? "fitDataStretch" : "fitDataTable";
+    const layout = this.columnsConfig.length <= 2 ? "fitDataStretch" : "fitDataTable";
 
-      this.table = new Tabulator(this.$refs.table, {
-      maxHeight: "40vh",
+    this.table = new Tabulator(this.$refs.table, {
+      maxHeight: "50vh",
       data: this.tableJSON.data,
       persistence: {
         columns: true,
@@ -337,6 +374,9 @@ export default {
       index: this.columnsConfig.find((column) => column.field === "reference")
         ? "reference"
         : null,
+      groupBy: this.refColumns,
+      groupToggleElement: "header",
+      groupHeader: this.groupHeader,
       layout: layout,
       selectable: 1,
       selectablePersistence: true,
