@@ -18,7 +18,7 @@
     </div>
     <div class="content-area">
       <RenderMarkdownBaseComponent v-if="useMarkdown" :markdown="text" />
-      <RenderTableBaseComponent v-else-if="useTable" :tableData="text" />
+      <RenderTableBaseComponent v-else-if="useTable && text?.length > 4" :tableData="text" />
       <div v-else v-html="text" />
     </div>
   </div>

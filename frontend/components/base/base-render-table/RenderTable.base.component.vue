@@ -4,7 +4,7 @@
 
     <div class="--buttons">
       <button v-show="indexColumns?.length" @click.prevent="toggleColumnFreeze">⬅️ Toggle column freeze</button>
-      <button @click.prevent="validateTable({ showErrors: true, scrollToError: true })">✅ Validate</button>
+      <button v-show="columns" @click.prevent="validateTable({ showErrors: true, scrollToError: true })">✅ Validate</button>
       <button v-show="editable" @click.prevent="addColumn">➕ Add column</button>
       <button v-show="editable" @click.prevent="addRow">➕ Add row</button>
     </div>
@@ -41,7 +41,7 @@ export default {
   data() {
     return {
       table: null,
-      freezeColumns: true,
+      freezeColumns: false,
     };
   },
   computed: {
@@ -90,8 +90,8 @@ export default {
       const schemaColumns = this.tableJSON.validation?.columns; // Pandera yaml schema
       if (schemaColumns === null) return {};
 
-      var integer = (cell, value, parameters) => value == "NA" || Number.isInteger(parseInt(value));
-      var decimal = (cell, value, parameters) => value == "NA" || !isNaN(parseFloat(value));
+      var integer = (cell, value, parameters) => (!parameters?.nullable && value == "NA") || /^-?\d+$/.test(value);
+      var decimal = (cell, value, parameters) => (!parameters?.nullable && value == "NA") || /^-?\d*(\.\d+)?$/.test(value);
       var greater_equal = (cell, value, parameters) => value == "NA" || parseFloat(value) >= parameters;
       var less_equal = (cell, value, parameters) => value == "NA" || parseFloat(value) <= parameters;
 
@@ -108,9 +108,9 @@ export default {
         if (columnSchema.dtype === "str") {
           validators.push("string");
         } else if (columnSchema.dtype.includes("int")) {
-          validators.push({ type: integer, parameters: null });
+          validators.push({ type: integer, parameters: { nullable: columnSchema.nullable } });
         } else if (columnSchema.dtype.includes("float")) {
-          validators.push({ type: decimal, parameters: null });
+          validators.push({ type: decimal, parameters: { nullable: columnSchema.nullable } });
         }
 
         for (const key in columnSchema?.checks) {
@@ -154,8 +154,6 @@ export default {
         editorParams: {
           selectContents: true,
           search: true,
-          emptyValue: "NA",
-          autocomplete: true,
         },
         editableTitle: false,
         headerDblClick: (e, column) => {
@@ -176,16 +174,25 @@ export default {
       if (this.tableJSON.validation?.columns?.hasOwnProperty(fieldName)) {
         const columnSchema = this.tableJSON.validation?.columns[fieldName];
 
-        for (const key in columnSchema?.checks) {
-          var values = columnSchema.checks[key];
-          if (key === "isin" && values.length) {
-            config.editor = "list";
-            config.editorParams.values = values;
-            config.editorParams.autocomplete = true;
-            config.editorParams.listOnEmpty = true;
-            config.editorParams.freetext = true;
-          }
+        if (columnSchema.dtype === "str") {
+          config.editor = "list";
+          // config.editorParams.values = columnSchema.checks.isin;
+          config.editorParams.defaultValue = "NA";
+          config.editorParams.emptyValue = "NA";
+          config.editorParams.valuesLookup = 'active';
+          config.editorParams.valuesLookupField = fieldName;
+          config.editorParams.autocomplete = true;
+          config.editorParams.listOnEmpty = true;
+          config.editorParams.freetext = true;
+          config.editorParams.values = (columnSchema?.checks?.isin?.length) ? columnSchema.checks.isin : config.editorParams.values;
         }
+
+        // for (const key in columnSchema?.checks) {
+        //   var values = columnSchema.checks[key];
+        //   if (key === "isin" && values.length) {
+        //     config.editorParams.values = values;
+        //   }
+        // }
       }
       return config;
     },
@@ -359,7 +366,7 @@ export default {
                   return value.name;
                 } else if (typeof value === "object" && value?.type?.name) {
                   return value?.parameters != null
-                    ? `${value.type.name}: ${value.parameters}`
+                    ? `${value.type.name}: ${JSON.stringify(value.parameters)}`
                     : `${value.type.name}`;
                 }
               })
@@ -380,6 +387,7 @@ export default {
     },
   },
   mounted() {
+    if (!this.tableJSON) return;
     const layout =
       this.columnsConfig.length <= 2 ? "fitDataStretch" : "fitDataTable";
 

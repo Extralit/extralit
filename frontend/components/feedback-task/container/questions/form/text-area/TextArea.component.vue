@@ -129,11 +129,11 @@ export default {
       return null;
     },
     isValueJSON() {
-      const str = this.question.answer.value;
-      if (!str?.length || !str.includes('{') || !str.includes('[')) { return false; }
+      const value = this.question.answer.value;
+      if (!value?.length || !value.includes('{') || !value.includes('[')) { return false; }
 
       try {
-        JSON.parse(str);
+        JSON.parse(value);
       } catch (e) {
         return false;
       }
