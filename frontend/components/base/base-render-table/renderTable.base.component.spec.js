@@ -1,5 +1,14 @@
 import { shallowMount } from "@vue/test-utils";
 import RenderTableBaseComponent from "./RenderTable.base.component";
+import { getColumnValidators } from "./validationUtils";
+import { 
+  columnSchemaToDesc, 
+  getTableDataFromRecords, 
+  findMatchingRefValues,
+  incrementReferenceStr,
+  getMaxStringValue,
+} from "./tableUtils"; 
+
 
 const options = {
     components: { RenderTableBaseComponent },

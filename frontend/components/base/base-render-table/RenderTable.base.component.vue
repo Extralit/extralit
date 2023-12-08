@@ -7,7 +7,7 @@
       <button v-show="columns" @click.prevent="validateTable({ showErrors: true, scrollToError: true })">✅ Checks</button>
       <button v-show="editable" @click.prevent="addColumn">➕ Add column</button>
       <button v-show="editable" @click.prevent="addRow">➕ Add row</button>
-      <button v-show="editable" @click.prevent="deleteRow">➖ Drop row</button>
+      <button v-show="editable" @click.prevent="dropRow">➖ Drop row</button>
     </div>
   </div>
 </template>
@@ -21,7 +21,9 @@ import { getColumnValidators } from "./validationUtils";
 import { 
   columnSchemaToDesc, 
   getTableDataFromRecords, 
-  findMatchingRefValues
+  findMatchingRefValues,
+  incrementReferenceStr,
+  getMaxStringValue,
 } from "./tableUtils"; 
 
 export default {
@@ -68,10 +70,11 @@ export default {
       return this.tableJSON?.schema?.primaryKey || [];
     },
     refColumns() {
-      return this.tableJSON.schema.fields.map(field => field.name).filter(name => name.endsWith('_ref')) || [];
+      const arr = this.tableJSON.schema.fields.map(field => field.name).filter(name => name.endsWith('_ref'));
+      return arr?.length ? arr : null;
     },
     columns() {
-      return this.table?.getColumns().map((col) => col.getField());
+      return this.table?.getColumns().map((col) => col.getField()) || [];
     },
     columnValidators() { 
       return getColumnValidators(this.tableJSON);
@@ -86,7 +89,7 @@ export default {
           this.freezeColumns &&
           this.indexColumns?.length &&
           this.indexColumns.includes(column.name),
-        visible: column.name != "reference" && !this.refColumns.includes(column.name),
+        visible: column.name != "reference" && !this.refColumns?.includes(column.name),
         validator: this.columnValidators.hasOwnProperty(column.name)
           ? this.columnValidators[column.name]
           : null,
@@ -119,8 +122,7 @@ export default {
   },
   methods: {
     updateTableJSON() {
-      this.tableJSON = this.table.getData();
-      // eslint-disable-next-line no-self-assign
+      this.tableJSON.data = this.table.getData();
       this.tableJSON = this.tableJSON; // Trigger the setter
     },
     getColumnEditableConfig(fieldName) {
@@ -226,17 +228,27 @@ export default {
       this.table.toggleSelectRow(selectedRow._row);
     },
     addRow() {
-      const selectedRows = this.table.getSelectedRows();
-      if (selectedRows.length > 0) {
-        const selectedRow = selectedRows[0];
-        this.table.addRow({}, false, selectedRow);
-      } else {
-        this.table.addRow({}).then((row) => {
-          row.validate();
-        });
+      const selectedRow = this.table.getSelectedRows()?.[0];
+
+      const requiredFields = this.refColumns || [];
+      if (this.tableJSON.schema.fields.some((field) => field.name === 'reference')) {
+        requiredFields.push('reference');
       }
+      
+      const newRow = {};
+      for (const field of this.columns) {
+        if (requiredFields.includes(field)) {
+          const maxRefValue = getMaxStringValue(field, this.table.getData());
+          newRow[field] = incrementReferenceStr(maxRefValue);
+        } else {
+          newRow[field] = undefined;
+        }
+      }
+      this.table.addRow(newRow, false, selectedRow);
+      this.updateTableJSON();
+      this.validateTable();
     },
-    deleteRow() {
+    dropRow() {
       // Get the selected rows
       const selectedRows = this.table.getSelectedRows();
 
@@ -286,7 +298,6 @@ export default {
 
       // Update the table data
       this.table.setData(data);
-      this.tableJSON.data = data;
 
       this.table.updateColumnDefinition(column.getField(), {
         field: newFieldName,
@@ -301,10 +312,8 @@ export default {
           return field;
         }
       );
-      this.tableJSON = this.tableJSON; // Trigger the setter
+      this.updateTableJSON();
       this.validateTable();
-
-      this.table.scrollToColumn(newFieldName);
     },
     cellTooltip(e, cell, onRendered) {
       var text = cell.getValue();
@@ -338,15 +347,12 @@ export default {
       if (this.referenceValues?.[field]?.hasOwnProperty(value)) {
         const keyValues = Object.entries(this.referenceValues[field][value])
           .filter(([key, value]) => key !== 'reference' && value && value !== 'NA')
-          .map(([key, value]) => `${key}:<span style="font-weight: normal; color: black;">${value}</span>`)
+          .map(([key, value]) => `${key}: <span style="font-weight:normal; color:black; margin:0;">${value}</span>`)
           .join(', ');
         if (keyValues.length > 0) header = keyValues;
       }
 
-      if (count > 1) {
-        header = header + `<span style='color:black; margin-left:10px;'>(${count})</span>`;
-      }
-
+      if (count > 1) header = header + `<span style='color:black; margin-left:10px;'>(${count})</span>`;
       return header;
     },
   },
@@ -371,9 +377,9 @@ export default {
         headerTooltip: this.headerTooltip.bind(this),
       },
       columns: this.columnsConfig,
-      index: this.columnsConfig.find((column) => column.field === "reference")
-        ? "reference"
-        : null,
+      // index: this.columnsConfig.find((column) => column.field === "reference")
+      //   ? "reference"
+      //   : null,
       groupBy: this.refColumns,
       groupToggleElement: "header",
       groupHeader: this.groupHeader,

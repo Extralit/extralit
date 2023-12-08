@@ -14,6 +14,19 @@ export function columnUniqueCounts(tableJSON) {
   return uniqueCounts;
 }
 
+export function getMaxStringValue(columnName, data) {
+  return data.reduce((max, row) => row[columnName] > max ? row[columnName] : max, "");
+}
+
+export function incrementReferenceStr(reference) {
+  const parts = reference.split("-");
+  const lastPart = parts[parts.length - 1];
+  const suffix = lastPart.slice(-1);
+  const incrementedDigits = String(parseInt(lastPart) + 1).padStart(lastPart.length - suffix.length, '0');
+  const newReference = `${parts.slice(0, -1).join("-")}-${incrementedDigits}${suffix}`;
+
+  return newReference;
+}
 export function findMatchingRefValues(refValues, records) {
   // refValues is an object of the form {field: refValue}
   // records is an array of objects of the form {table_name: {data: [{reference: refValue, ...}, ...]}}
