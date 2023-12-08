@@ -3,7 +3,7 @@
     <div ref="table" class="--table" />
 
     <div class="--buttons">
-      <button v-show="indexColumns?.length" @click.prevent="toggleGroupRefColumns">⬅️ Index</button>
+      <button v-show="indexColumns?.length" @click.prevent="toggleGroupRefColumns">⬅️ References</button>
       <button v-show="columns" @click.prevent="validateTable({ showErrors: true, scrollToError: true })">✅ Checks</button>
       <button v-show="editable" @click.prevent="addColumn">➕ Add column</button>
       <button v-show="editable" @click.prevent="addRow">➕ Add row</button>
@@ -25,6 +25,7 @@ import {
   incrementReferenceStr,
   getMaxStringValue,
 } from "./tableUtils"; 
+import { del } from "vue";
 
 export default {
   name: "RenderTableBaseComponent",
@@ -117,7 +118,7 @@ export default {
     },
   },
   methods: {
-    updateTableJSON() {
+    updateTableJsonData() {
       this.tableJSON.data = this.table.getData();
       this.tableJSON = this.tableJSON; // Trigger the setter
     },
@@ -143,7 +144,7 @@ export default {
           });
         },
         cellEdited: (cell) => {
-          this.updateTableJSON();
+          this.updateTableJsonData();
           this.validateTable();
         },
       };
@@ -186,7 +187,6 @@ export default {
           acc[`${cell._cell.column.field}: ${cell._cell.value}`] = failedChecks;
           return acc;
         }, {});
-
         console.log("validateTable errors:", errorValues);
       }
 
@@ -244,7 +244,7 @@ export default {
         }
       }
       this.table.addRow(newRow, false, selectedRow);
-      this.updateTableJSON();
+      this.updateTableJsonData();
       this.validateTable();
     },
     dropRow() {
@@ -257,7 +257,7 @@ export default {
       });
 
       // Update this.tableJSON to reflect the current data in the table
-      this.updateTableJSON();
+      this.updateTableJsonData();
     },
     addColumn() {
       const newFieldName = "newColumn";
@@ -280,38 +280,38 @@ export default {
         name: newFieldName,
         type: "string",
       });
-      this.updateTableJSON();
+      this.updateTableJsonData();
 
       this.table.scrollToColumn(newFieldName, null, false);
     },
     columnTitleChanged(column) {
       const newFieldName = column.getDefinition().title.replace(/ /g, "_");
       const oldFieldName = column.getDefinition().field;
+      if (!newFieldName || newFieldName === oldFieldName) return;
+      if (this.columns.includes(newFieldName)) return;
+      console.log("columnTitleChanged:", oldFieldName, newFieldName)
 
       // Update the field name for all data
       const data = this.table.getData();
       data.forEach((item) => {
         item[newFieldName] = item[oldFieldName];
-        delete item[oldFieldName];
+        del [item, oldFieldName];
       });
-
-      // Update the table data
       this.table.setData(data);
 
-      this.table.updateColumnDefinition(column.getField(), {
+      this.table.updateColumnDefinition(oldFieldName, {
         field: newFieldName,
+        title: newFieldName,
       });
 
       // Update the field name in the schema
-      this.tableJSON.schema.fields = this.tableJSON.schema.fields.map(
-        (field) => {
-          if (field.name === oldFieldName) {
-            return { ...field, name: newFieldName };
-          }
-          return field;
+      this.tableJSON.schema.fields = this.tableJSON.schema.fields.map((field) => {
+        if (field.name == oldFieldName) {
+          return { ...field, name: newFieldName };
         }
-      );
-      this.updateTableJSON();
+        return field;
+      });
+      this.updateTableJsonData();
       this.validateTable();
     },
     cellTooltip(e, cell, onRendered) {
@@ -346,7 +346,7 @@ export default {
       if (this.referenceValues?.[field]?.hasOwnProperty(value)) {
         const keyValues = Object.entries(this.referenceValues[field][value])
           .filter(([key, value]) => key !== "reference" && value && value !== 'NA')
-          .map(([key, value]) => `${key}: <span style="font-weight:normal; color:black; margin:0;">${value}</span>`)
+          .map(([key, value]) => `${key}: <span style="font-weight:normal; color:black; margin-left:0;">${value}</span>`)
           .join(', ');
         if (keyValues.length > 0) header = keyValues;
       }
@@ -363,11 +363,11 @@ export default {
       maxHeight: "50vh",
       data: this.tableJSON.data,
       persistence: { columns: true },
+      layoutColumnsOnNewData: true,
       reactiveData: true,
       clipboard: true,
       columnDefaults: {
         resizable: true,
-        maxWidth: layout === "fitDataTable" ? 150 : null,
         headerWordWrap: true,
         headerSort: false,
         tooltip: this.cellTooltip.bind(this),
@@ -427,7 +427,6 @@ export default {
 
   .--table {
     overflow: auto;
-    // overflow-x: auto;
   }
 }
 </style>

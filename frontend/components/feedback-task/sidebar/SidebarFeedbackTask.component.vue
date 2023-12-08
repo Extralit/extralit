@@ -47,7 +47,7 @@ export default {
     metadata: null,
   }),
   computed: {
-    isDocumentLoaded() {
+    hasDocumentLoaded() {
       return this.document.id !== null;
     },
     hasDocument() {
@@ -123,25 +123,28 @@ export default {
   },
   mounted() {
     this.$nuxt.$on('on-change-record-metadata', (metadata) => {
-      this.metadata = metadata;
       if (!metadata) { return; }
+      console.log(metadata)
+      this.metadata = metadata;
 
       try {
         if (metadata?.pmid != null && this.document.pmid !== metadata.pmid) {
+          console.log('setDocumentByPubmedID', metadata.pmid)
           this.setDocumentByPubmedID(metadata.pmid);
 
         } else if (metadata?.doc_id != null && this.document.id !== metadata.doc_id) {
+          console.log('setDocumentByID', metadata.doc_id)
           this.setDocumentByID(metadata.doc_id);
           
-        // Metadata is null, so we clear the document
-        } else if (this.document.pmid !== null || this.document.id !== null) {
+        // Metadata is null, and this.document is not, so we clear the document
+        } else if (!metadata?.pmid && !metadata?.doc_id && this.hasDocumentLoaded) {
           this.clearDocument();
         }
-
       } catch (error) {
         console.log(error)
       } finally {
-        if (!this.isDocumentLoaded) {
+        if (!this.hasDocument) {
+          console.log('!this.hasDocument', this.hasDocument, this.hasDocumentLoaded)
           this.closePanel();
         }
       }
