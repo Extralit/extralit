@@ -37,7 +37,7 @@ export function findMatchingRefValues(refValues, records) {
     for (const recordTables of records) {
       if (!recordTables) continue;
       const matchingTable = Object.values(recordTables)
-        .find((table) => table.data.find((row) => row['reference'] === refValue));
+        .find((table) => table.data.find((row) => row["reference"] === refValue));
 
       if (matchingTable) {
         if (!matchingTable.hasOwnProperty('columnUniqueCounts')) {
