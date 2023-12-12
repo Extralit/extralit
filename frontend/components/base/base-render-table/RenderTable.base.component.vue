@@ -51,6 +51,7 @@ export default {
     return {
       table: null,
       groupByRefColumns: true,
+      isLoaded: false,
     };
   },
   computed: {
@@ -149,22 +150,28 @@ export default {
         },
       };
 
-      // Add custom editor params for a column based on the Pandera validation schema
-      if (this.tableJSON.validation?.columns?.hasOwnProperty(fieldName)) {
-        const columnSchema = this.tableJSON.validation?.columns[fieldName];
+      if (!this.tableJSON.validation?.columns?.hasOwnProperty(fieldName)) return config;
 
-        if (columnSchema.dtype === "str") {
-          config.editor = "list";
-          // config.editorParams.values = columnSchema.checks.isin;
-          config.editorParams.defaultValue = "NA";
-          config.editorParams.emptyValue = "NA";
-          config.editorParams.valuesLookup = 'active';
-          config.editorParams.valuesLookupField = fieldName;
-          config.editorParams.autocomplete = true;
-          config.editorParams.listOnEmpty = true;
-          config.editorParams.freetext = true;
-          config.editorParams.values = (columnSchema?.checks?.isin?.length) ? columnSchema.checks.isin : config.editorParams.values;
+      // Add custom editor params for a column based on the Pandera validation schema
+      const columnSchema = this.tableJSON.validation?.columns[fieldName];
+
+      if (columnSchema.dtype === "str") {
+        config.editor = "list";
+        config.editorParams.defaultValue = "NA";
+        config.editorParams.emptyValue = "NA";
+        config.editorParams.valuesLookup = 'active';
+        config.editorParams.valuesLookupField = fieldName;
+        config.editorParams.autocomplete = true;
+        // config.editorParams.sort = (a, b) => a.length - b.length;
+        // config.editorParams.multiselect = true;
+        config.editorParams.listOnEmpty = true;
+        config.editorParams.freetext = true;
+        config.editorParams.values = (columnSchema.checks?.isin?.length) ? columnSchema.checks.isin : config.editorParams.values;
+        if (config.editorParams.values) {
+          config.hozAlign = "center";
         }
+      } else if (columnSchema.dtype.includes("int") || columnSchema.dtype.includes("float")) {
+        config.hozAlign = "right";
       }
       return config;
     },
@@ -395,6 +402,7 @@ export default {
     }
 
     this.table.on("tableBuilt", () => {
+      this.isLoaded = true;
       this.table.setColumns(this.columnsConfig);
       this.validateTable();
     });

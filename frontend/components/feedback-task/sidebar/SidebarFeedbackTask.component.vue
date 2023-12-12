@@ -124,16 +124,13 @@ export default {
   mounted() {
     this.$nuxt.$on('on-change-record-metadata', (metadata) => {
       if (!metadata) { return; }
-      console.log(metadata)
       this.metadata = metadata;
 
       try {
         if (metadata?.pmid != null && this.document.pmid !== metadata.pmid) {
-          console.log('setDocumentByPubmedID', metadata.pmid)
           this.setDocumentByPubmedID(metadata.pmid);
 
         } else if (metadata?.doc_id != null && this.document.id !== metadata.doc_id) {
-          console.log('setDocumentByID', metadata.doc_id)
           this.setDocumentByID(metadata.doc_id);
           
         // Metadata is null, and this.document is not, so we clear the document
@@ -144,7 +141,6 @@ export default {
         console.log(error)
       } finally {
         if (!this.hasDocument) {
-          console.log('!this.hasDocument', this.hasDocument, this.hasDocumentLoaded)
           this.closePanel();
         }
       }
