@@ -29,11 +29,11 @@ export function getColumnValidators(tableJSON) {
 			const value = columnSchema.checks[key];
 
 			if (key === "greater_than_or_equal_to") {
-			validators.push({ type: greater_equal, parameters: value });
+				validators.push({ type: greater_equal, parameters: value });
 			} else if (key === "less_than_or_equal_to") {
-			validators.push({ type: less_equal, parameters: value });
+				validators.push({ type: less_equal, parameters: value });
 			} else if (key === "isin" && value.length) {
-			validators.push(`in:${[...value, "NA"].join("|")}`);
+				validators.push(`in:${[...value, "NA"].join("|")}`);
 			}
 		}
 
@@ -45,8 +45,8 @@ export function getColumnValidators(tableJSON) {
 				.getTable()
 				.getData()
 				.map((row) => row[cell.getField()]);
-				return columnValues.filter((v) => v === value).length === 1;
-			},
+					return columnValues.filter((v) => v === value).length === 1;
+				},
 			};
 			validators.push(uniqueValidator);
 		}

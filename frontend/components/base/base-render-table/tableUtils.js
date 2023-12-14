@@ -7,7 +7,7 @@ export function columnUniqueCounts(tableJSON) {
   let uniqueCounts = {};
   for (let key of Object.keys(tableJSON.data[0])) {
     let values = tableJSON.data.map(row => row[key]);
-    let filteredValues = values.filter(value => value !== null && value !== 'NA' && value?.length);
+    let filteredValues = values.filter(value => value != null && value !== 'NA' && value?.length);
     uniqueCounts[key] = new Set(filteredValues).size;
   }
 
@@ -76,7 +76,9 @@ export function getTableDataFromRecords(filter_fn) {
       if (answer_tables) {
         answer_tables = Object.fromEntries(
           Object.entries(answer_tables)
-            .filter(([key, obj]) => typeof obj.value === 'string' && obj.value.startsWith('{'))
+            .filter(([key, obj]) => {
+              return (typeof obj.value === 'string') && (obj.value.startsWith('{'))
+            })
             .map(([key, obj]) => {
               try {
                 const table = JSON.parse(obj.value);
@@ -135,7 +137,7 @@ export function columnSchemaToDesc(fieldName, tableJSON, columnValidators) {
               : `${value.type.name}`;
           }
         })
-        .filter((value) => value !== undefined);
+        .filter((value) => value != null);
       desc += `<br/><br/>Checks: ${stringAndFunctionNames}`
         .replace(/,/g, ", ")
         .replace(/:/g, ": ");

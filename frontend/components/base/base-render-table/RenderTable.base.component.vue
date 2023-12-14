@@ -3,7 +3,7 @@
     <div ref="table" class="--table" />
 
     <div class="--buttons">
-      <button v-show="indexColumns?.length" @click.prevent="toggleGroupRefColumns">⬅️ References</button>
+      <button v-show="indexColumns && indexColumns.length" @click.prevent="toggleGroupRefColumns">⬅️ References</button>
       <button v-show="columns" @click.prevent="validateTable({ showErrors: true, scrollToError: true })">✅ Checks</button>
       <button v-show="editable" @click.prevent="addColumn">➕ Add column</button>
       <button v-show="editable" @click.prevent="addRow">➕ Add row</button>
@@ -352,7 +352,7 @@ export default {
       let header = value
       if (this.referenceValues?.[field]?.hasOwnProperty(value)) {
         const keyValues = Object.entries(this.referenceValues[field][value])
-          .filter(([key, value]) => key !== "reference" && value && value !== 'NA')
+          .filter(([key, value]) => key !== "reference" && value !== 'NA' && value !== null)
           .map(([key, value]) => `${key}: <span style="font-weight:normal; color:black; margin-left:0;">${value}</span>`)
           .join(', ');
         if (keyValues.length > 0) header = keyValues;

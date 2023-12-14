@@ -7,6 +7,7 @@ module.exports = {
     "^~/(.*)$": "<rootDir>/$1",
     "^~~/(.*)$": "<rootDir>/$1",
     "^@/(.*)$": "<rootDir>/$1",
+    '\\.(css|less)$': '<rootDir>/__mocks__/styleMock.js',
   },
   modulePathIgnorePatterns: ["<rootDir>/e2e"],
   transform: {
