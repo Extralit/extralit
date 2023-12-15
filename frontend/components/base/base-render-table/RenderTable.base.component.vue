@@ -13,9 +13,7 @@
 </template>
 
 <script>
-import {
-  TabulatorFull as Tabulator,
-} from "tabulator-tables";
+import { TabulatorFull as Tabulator } from "tabulator-tables";
 import "tabulator-tables/dist/css/tabulator.min.css";
 import { getColumnValidators } from "./validationUtils";
 import { 
@@ -223,7 +221,7 @@ export default {
       const selectedRow = this.table
         .getRows()
         .find(
-          (tableRow) => tableRow.getData().reference === row._row.data.reference
+          (tableRow) => tableRow.getData().reference == row._row.data.reference
         );
       if (selectedRow === undefined) return;
 
@@ -294,7 +292,7 @@ export default {
     columnTitleChanged(column) {
       const newFieldName = column.getDefinition().title.replace(/ /g, "_");
       const oldFieldName = column.getDefinition().field;
-      if (!newFieldName || newFieldName === oldFieldName) return;
+      if (!newFieldName || newFieldName == oldFieldName) return;
       if (this.columns.includes(newFieldName)) return;
       console.log("columnTitleChanged:", oldFieldName, newFieldName)
 
@@ -394,6 +392,7 @@ export default {
       movableColumns: this.editable,
       headerMenu: true,
     });
+
     this.table.on("rowClick", this.clickRow.bind(this));
 
     if (this.editable) {

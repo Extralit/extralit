@@ -27,6 +27,7 @@ export function incrementReferenceStr(reference) {
 
   return newReference;
 }
+
 export function findMatchingRefValues(refValues, records) {
   // refValues is an object of the form {field: refValue}
   // records is an array of objects of the form {table_name: {data: [{reference: refValue, ...}, ...]}}
