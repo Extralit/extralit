@@ -7,8 +7,15 @@
     :tabindex="isEditionModeActive ? '-1' : '0'"
     @keydown.enter.exact.prevent="onEditMode"
   >
+    <RenderTableBaseComponent
+      v-if="question.settings.use_table && isValueJSON"
+      class="textarea"
+      :tableData="question.answer.value"
+      :editable="true"
+      v-model="question.answer.hasValidValues"
+    />
     <RenderMarkdownBaseComponent
-      v-if="question.settings.use_markdown && !isEditionModeActive"
+      v-else-if="question.settings.use_markdown && !isEditionModeActive"
       class="textarea--markdown"
       :markdown="question.answer.value"
       @click.native="onFocus"
@@ -91,15 +98,27 @@ export default {
   },
   computed: {
     classes() {
-      if (this.isEditionModeActive) {
+      if (this.question.settings.use_table && this.isValueJSON) {
+        // This first clause prevents the table from having --table or --editing class
+        return "--table";
+      } else if (this.isEditionModeActive) {
         return "--editing";
-      }
-
-      if (this.isFocused && this.isExitedFromEditionModeWithKeyboard) {
+      } else if (this.isFocused && this.isExitedFromEditionModeWithKeyboard) {
         return "--focus";
       }
 
       return null;
+    },
+    isValueJSON() {
+      const value = this.question.answer.value;
+      if (!value?.length || !value.startsWith('{')) { return false; }
+
+      try {
+        JSON.parse(value);
+        return true;
+      } catch (e) {
+        return false;
+      }
     },
   },
 };
@@ -119,6 +138,11 @@ export default {
   &.--focus {
     outline: 2px solid $primary-color;
   }
+  &.--table {
+    padding: 0px;
+    border: 0px;
+    min-height: none;
+  }
   .content--exploration-mode & {
     border: none;
     padding: 0;
@@ -131,7 +155,7 @@ export default {
   &--markdown {
     display: inline;
     flex: 1;
-    padding: $base-space;
+    padding: 0px;
   }
 }
 </style>

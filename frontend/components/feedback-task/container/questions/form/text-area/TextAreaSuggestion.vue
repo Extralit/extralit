@@ -1,8 +1,14 @@
 <template>
   <div class="container">
+    <RenderTableBaseComponent
+      v-if="question.settings.use_table"
+      class="textarea"
+      :tableData="question.answer?.suggestedAnswer"
+    />
     <RenderMarkdownBaseComponent
+      v-else
       class="textarea--markdown"
-      :markdown="question.suggestion?.suggestedAnswer"
+      :markdown="question.answer?.suggestedAnswer"
     />
     <BaseActionTooltip tooltip="Copied" class="button-copy">
       <BaseButton
