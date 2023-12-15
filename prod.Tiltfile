@@ -39,7 +39,7 @@ docker_build(
     context='.',
     build_args={'ENV': ENV},
     dockerfile='./docker/api.dockerfile',
-    only=['./src', './dist', './docker/scripts', './setup.py', './pyproject.toml', './requirements.txt', './scripts/'],
+    only=['./src', './dist', './docker/scripts', './setup.py', './pyproject.toml', './requirements.txt', './scripts/', './frontend'],
     ignore=['**/__pycache__'],
     live_update=[
         # Sync the source code to the container
@@ -64,9 +64,11 @@ k8s_yaml([
 k8s_resource(
   'argilla-server-deployment',
   resource_deps=['main-db', 'elasticsearch'],
-  port_forwards=['6901:6900'],
+  port_forwards=['6900:6900'],
   labels=['argilla-server'],
 )
+
+k8s_yaml(['./k8s/argilla-loadbalancer-service.yaml'])
 
 
 # PostgreSQL is the database for argilla-server
@@ -81,37 +83,37 @@ helm_resource(
 )
 
 # argilla-frontend is the web interface (Vue.js + Nuxt)
-docker_build(
-    '{DOCKER_REPO}/extralit-argilla-frontend'.format(DOCKER_REPO=DOCKER_REPO),
-    context='.',
-    build_args={'ENV': ENV},
-    dockerfile='./docker/web.dockerfile',
-    only=['./frontend/', './scripts/', './docs/'],
-    ignore=['./frontend/.nuxt/', './frontend/node_modules/', './frontend/package-lock.json', '**/__pycache__'],
-    live_update=[
-        fall_back_on('./frontend/nuxt.config.ts'),
-        # Sync the frontend directory to the container
-        sync('./frontend/', '/home/argilla/frontend/'),
-        sync('./docs/', '/home/argilla/docs/'),
-        run('npm install', trigger=['./frontend/package.json'])
-    ]
-)
+# docker_build(
+#     '{DOCKER_REPO}/extralit-argilla-frontend'.format(DOCKER_REPO=DOCKER_REPO),
+#     context='.',
+#     build_args={'ENV': ENV},
+#     dockerfile='./docker/web.dockerfile',
+#     only=['./frontend/', './scripts/', './docs/'],
+#     ignore=['./frontend/.nuxt/', './frontend/node_modules/', './frontend/package-lock.json', '**/__pycache__'],
+#     live_update=[
+#         fall_back_on('./frontend/nuxt.config.ts'),
+#         # Sync the frontend directory to the container
+#         sync('./frontend/', '/home/argilla/frontend/'),
+#         sync('./docs/', '/home/argilla/docs/'),
+#         run('npm install', trigger=['./frontend/package.json'])
+#     ]
+# )
 
-argilla_frontend_k8s_yaml = read_yaml_stream('./k8s/argilla-frontend-deployment.yaml')
-for o in argilla_frontend_k8s_yaml:
-    for container in o['spec']['template']['spec']['containers']:
-        if container['name'] == 'argilla-frontend':
-            container['image'] = "{DOCKER_REPO}/extralit-argilla-frontend".format(DOCKER_REPO=DOCKER_REPO)
+# argilla_frontend_k8s_yaml = read_yaml_stream('./k8s/argilla-frontend-deployment.yaml')
+# for o in argilla_frontend_k8s_yaml:
+#     for container in o['spec']['template']['spec']['containers']:
+#         if container['name'] == 'argilla-frontend':
+#             container['image'] = "{DOCKER_REPO}/extralit-argilla-frontend".format(DOCKER_REPO=DOCKER_REPO)
 
-k8s_yaml(
-    encode_yaml_stream(argilla_frontend_k8s_yaml)
-    )
-k8s_resource(
-  'argilla-frontend-deployment',
-  resource_deps=['argilla-server-deployment'],
-  port_forwards=['3001:3000'],
-  labels=['argilla-frontend'],
-)
+# k8s_yaml(
+#     encode_yaml_stream(argilla_frontend_k8s_yaml)
+#     )
+# k8s_resource(
+#   'argilla-frontend-deployment',
+#   resource_deps=['argilla-server-deployment'],
+#   port_forwards=['3001:3000'],
+#   labels=['argilla-frontend'],
+# )
 
 
 # If using prod K8s context, deploy argilla-frontend service and ingress
