@@ -68,7 +68,7 @@ $sidebar-button-size: 45px;
   top: 0;
   width: $sidebar-button-size;
   min-width: $sidebar-button-size;
-  min-height: calc(100vh - $topbarHeight - $topbarHeight);
+  min-height: calc(100vh - $topbarHeight);
   min-width: $sidebarMenuWidth;
   background: palette(grey, 700);
   border-left: 1px solid $black-10;

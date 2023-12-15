@@ -56,7 +56,7 @@ export default {
 }
 
 .PDFView {
-  max-height: calc(100vh - $topbarHeight * 2); // Set maximum height to 100% of the viewport height
+  max-height: calc(100vh - $topbarHeight); // Set maximum height to 100% of the viewport height
   overflow-y: auto; // Enable vertical scrolling if the content exceeds the maximum height
 }
 

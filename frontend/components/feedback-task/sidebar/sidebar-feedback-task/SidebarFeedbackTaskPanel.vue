@@ -91,6 +91,7 @@ export default {
     left: -2.5em;
     &.--document-panel {
       left: -0.65em;
+      top: 1em;
     }
     top: 1px;
     display: flex;
