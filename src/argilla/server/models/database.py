@@ -18,12 +18,11 @@ from typing import Any, List, Optional, Union
 from uuid import UUID
 
 from pydantic import parse_obj_as
-from sqlalchemy import JSON, ForeignKey, String, Text, UniqueConstraint, and_, sql
+from sqlalchemy import JSON, ForeignKey, String, Text, UniqueConstraint, and_, sql, LargeBinary
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.engine.default import DefaultExecutionContext
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.dialects.postgresql import BYTEA
 
 from argilla.server.enums import (
     DatasetStatus,
@@ -452,7 +451,7 @@ class Document(DatabaseModel):
     __tablename__ = "documents"
 
     url: Mapped[str] = mapped_column(String, nullable=True)
-    file_data: Mapped[BYTEA] = mapped_column(BYTEA, nullable=False)
+    file_data: Mapped[LargeBinary] = mapped_column(LargeBinary, nullable=False)
     file_name: Mapped[str] = mapped_column(String, nullable=False)
     pmid: Mapped[str] = mapped_column(String, index=True, nullable=True)
     doi: Mapped[str] = mapped_column(String, index=True, nullable=True)
