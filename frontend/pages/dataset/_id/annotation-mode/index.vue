@@ -18,9 +18,6 @@
       <template v-slot:center>
         <RecordFeedbackTaskAndQuestionnaireContent :recordCriteria="recordCriteria" />
       </template>
-      <template v-slot:footer>
-        <PaginationFeedbackTaskComponent :recordCriteria="recordCriteria" />
-      </template>
     </HeaderAndTopAndOneColumn>
   </div>
 </template>

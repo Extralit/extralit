@@ -113,7 +113,7 @@ Take a look at the following [sample model](https://huggingface.co/plaguss/test_
 
 ##### Model card generation
 
-The `ArgillaTrainer` automatically generates a [model card](https://huggingface.co/docs/hub/model-cards) when saving the model. After calling `trainer.train(output_dir="my_model")`, you should see the model card under the same output dir you passed through the train method: `./my_model/README.md`. Most of the fields in the card are automatically generated when possible, but the following fields can be (optionally) updated via the `framework_kwargs` variable of the `ArgillaTrainer` like so:
+The `ArgillaTrainer` automatically generates a [model card](https://huggingface.co/docs/hub/model-cards) when saving the model. After calling `trainer.train(output_dir="my_model")`, you should see the model card under the same output directory you passed through the train method: `./my_model/README.md`. Most of the fields in the card are automatically generated when possible, but the following fields can be (optionally) updated via the `framework_kwargs` variable of the `ArgillaTrainer` like so:
 
 ```python
 model_card_kwargs = {
@@ -530,6 +530,16 @@ from argilla.feedback import TrainingTask
 task = TrainingTask.for_sentence_similarity(
     texts=[dataset.field_by_name("premise"), dataset.field_by_name("hypothesis")],
     label=dataset.question_by_name("label")
+)
+```
+
+For datasets that where annotated with numerical values we could also pass the label strategy we want to use (let's assume we have another question in the dataset named "other-question" that contains values that come from rated answers):
+
+```python
+task = TrainingTask.for_sentence_similarity(
+    texts=[dataset.field_by_name("premise"), dataset.field_by_name("hypothesis")],
+    label=dataset.question_by_name("other-question"),
+    label_strategy="majority" # or "mean" for RankingQuestion
 )
 ```
 
@@ -1461,7 +1471,7 @@ trainer = ArgillaTrainer(
     framework="spacy",
     train_size=0.8
 )
-trainer.update_config(max_epochs=2)
+trainer.update_config(num_train_epochs=2)
 trainer.train(output_dir="my_spacy_model")
 records = trainer.predict("The ArgillaTrainer is great!", as_argilla_records=True)
 rg.log(records=records, name="conll2003", workspace="admin")

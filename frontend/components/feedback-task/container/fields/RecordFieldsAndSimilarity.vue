@@ -19,8 +19,9 @@
         </div>
         <div class="fields__header--right">
           <SimilarityScorePercentage
-            v-show="recordCriteria.isFilteringBySimilarity"
-            v-if="record.score.value"
+            v-if="
+              recordCriteria.isFilteringBySimilarity && record.score.percentage
+            "
             class="similarity__progress"
             :value="record.score.value"
             :data-title="$t('similarityScore')"
@@ -54,11 +55,6 @@ export default {
       type: Object,
       required: true,
     },
-  },
-  data: () => {
-    return {
-      totalRecords: null,
-    };
   },
 };
 </script>
@@ -100,8 +96,6 @@ export default {
 }
 
 .similarity__progress {
-  color: $similarity-color;
-  margin-bottom: $base-space;
   &[data-title] {
     position: relative;
     @extend %has-tooltip--left;
