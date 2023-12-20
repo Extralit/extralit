@@ -12,3 +12,5 @@
 
 # Egg-info directories
 *.egg-info
+
+*/node_modules

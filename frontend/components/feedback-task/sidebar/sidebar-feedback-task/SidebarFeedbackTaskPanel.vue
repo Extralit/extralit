@@ -37,6 +37,8 @@
 
 <script>
 import "assets/icons/chevron-right";
+import interact from 'interactjs'
+
 export default {
   props: {
     currentPanel: {
@@ -54,11 +56,39 @@ export default {
       this.$emit("close-panel");
       this.animated = true;
     },
+    getPanelWidth() {
+      let panelWidth = parseInt(getComputedStyle(this.$el).width);
+      // if (this.currentPanel != 'document') {
+      //   const sidebarPanelWidth = 70; // Replace with your actual value of $sidebarPanelWidth
+      //   panelWidth += sidebarPanelWidth;
+      // }
+      return panelWidth + 'px';
+    },
   },
   computed: {
     layoutClass() {
       return this.currentPanel === 'document' ? "--document-panel" : null;
     },
+  },
+  mounted() {
+    // Set the initial sidebar width
+    this.$el.style.width = this.getPanelWidth();
+    document.documentElement.style.setProperty('--sidebar-width', this.$el.style.width);
+
+    interact(this.$el)
+      .resizable({
+        edges: { left: true, right: true, bottom: false, top: false },
+        modifiers: [
+          interact.modifiers.restrictSize({
+            min: { width: 200, height: 0 },
+          }),
+        ],
+      })
+      .on('resizemove', event => {
+        let target = event.target;
+        target.style.width = event.rect.width + 'px';
+        document.documentElement.style.setProperty('--sidebar-width', target.style.width);
+      });
   },
 };
 </script>

@@ -40,7 +40,7 @@ docker_build(
     build_args={'ENV': ENV},
     dockerfile='./docker/api.dockerfile',
     only=['./src', './dist', './docker/scripts', './setup.py', './pyproject.toml', './requirements.txt', './scripts/', './frontend'],
-    ignore=['**/__pycache__'],
+    ignore=['**/__pycache__', 'frontend/.nuxt', 'frontend/dist', 'frontend/node_modules', 'frontend/package-lock.json'],
     live_update=[
         # Sync the source code to the container
         sync('./src/', '/home/argilla/src/'),
@@ -64,8 +64,9 @@ k8s_yaml([
 k8s_resource(
   'argilla-server-deployment',
   resource_deps=['main-db', 'elasticsearch'],
-  port_forwards=['6900:6900'],
+  port_forwards=['6901:6900'],
   labels=['argilla-server'],
+  links=['10.24.49.66'],
 )
 
 k8s_yaml(['./k8s/argilla-loadbalancer-service.yaml'])

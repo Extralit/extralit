@@ -22,13 +22,7 @@ export default {
   },
   computed: {
     layoutClass() {
-      if (this.sidebarPanel === 'document') {
-        return '--document-panel';
-      } else if (!!this.sidebarPanel) {
-        return '--right-panel';
-      }
-
-      return null;
+      return this.sidebarPanel ? "--panel" : null;
     },
   },
   created() {
@@ -43,6 +37,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+:root {
+  --sidebar-width: $sidebarPanelWidth + $sidebarMenuWidth + $sidebarDocumentAdditionalWidth;
+}
 $gap-width: $base-space * 2;
 .layout {
   display: grid;
@@ -55,15 +52,11 @@ $gap-width: $base-space * 2;
     "center sidebar";
   height: 100vh;
   transition: 0.4s ease-in-out;
-  &.--right-panel {
+  &.--panel {
     @include media(">desktop") {
-      grid-template-columns: 1fr $sidebarWidth;
+      grid-template-columns: 1fr var(--sidebar-width);
       transition: 0.4s ease-out;
     }
-  }
-  &.--document-panel {
-    grid-template-columns: 1fr $sidebarWidth+$sidebarDocumentAdditionalWidth;
-    transition: 0.4s ease-out;
   }
 }
 
