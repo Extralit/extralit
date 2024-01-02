@@ -80,7 +80,7 @@ export default {
 
       this.fetching = true;
 
-      await this.loadRecords(mode, this.recordCriteria);
+      await this.loadRecords(this.recordCriteria);
 
       this.$nuxt.$emit('on-change-record-metadata', this.metadata);
 

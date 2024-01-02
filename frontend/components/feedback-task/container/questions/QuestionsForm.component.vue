@@ -158,7 +158,7 @@ export default {
     },
     focusOnFirstQuestionFromOutside(event) {
       // Prevents jumping around when the user clicks on a button or interacting with the table
-      return
+      // return
       if (!this.userComesFromOutside) return;
       if (event.srcElement.id || event.srcElement.getAttribute("for")) return;
 
