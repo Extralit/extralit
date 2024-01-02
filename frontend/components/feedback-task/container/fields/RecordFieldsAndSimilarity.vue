@@ -32,6 +32,7 @@
             :recordCriteria="recordCriteria"
             :recordId="record.id"
           />
+          <RecordStatus :recordStatus="record.status" />
         </div></div
     ></RecordFields>
   </div>

@@ -16,7 +16,6 @@ import logging
 from typing import TYPE_CHECKING, List, Literal, Optional, Type, Union, Dict
 from uuid import UUID
 
-from argilla.client.api import ArgillaSingleton
 from argilla.client.feedback.dataset.helpers import get_dataset_by_name_and_workspace
 from argilla.client.feedback.dataset.remote.dataset import INCLUDE_ALL_VECTORS_PARAM, RemoteFeedbackDataset
 from argilla.client.feedback.schemas.enums import FieldTypes, MetadataPropertyTypes, QuestionTypes
@@ -46,6 +45,7 @@ from argilla.client.feedback.schemas.types import AllowedMetadataPropertyTypes
 from argilla.client.feedback.schemas.vector_settings import VectorSettings
 from argilla.client.sdk.commons.errors import AlreadyExistsApiError
 from argilla.client.sdk.v1.datasets import api as datasets_api_v1
+from argilla.client.singleton import ArgillaSingleton
 from argilla.client.workspaces import Workspace
 
 if TYPE_CHECKING:
@@ -974,8 +974,8 @@ class TaskTemplateMixin:
 
         rating_questions = [
             RatingQuestion(
-                name="question_rating_" + str(doc + 1),
-                title="Rate the relevance of the user question" + str(doc + 1),
+                name="rating_retrieved_document_" + str(doc + 1),
+                title="Rate the relevance of the Retrieved Document " + str(doc + 1) + " for the query",
                 values=list(range(1, rating_scale + 1)),
                 description="Rate the relevance of the retrieved document.",
                 required=True if doc == 0 else False,
