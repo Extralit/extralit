@@ -9,9 +9,9 @@
     :scale.sync="scale"
     >
       <template slot="right-toolbox">
+        <p class="document__title">{{ fileName }}</p>
       </template>
       <template slot="left-toolbox">
-        <p class="document__title">{{ fileName }}</p>
       </template>
       <template slot="error"></template>
       <template slot="loading"></template>

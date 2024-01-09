@@ -36,7 +36,7 @@ class Document(BaseModel, ABC):
 
     @classmethod
     def from_file(cls, file_path: str, id: Optional[str] = None, pmid: Optional[str] = None, doi: Optional[str] = None, workspace_id: Optional[UUID] = None) -> "Document":
-        assert pmid or doi or id, "Either `pmid`, `doi`, or `id` must be provided"
+        assert doi or id or pmid, "Either `pmid`, `doi`, or `id` must be provided"
         url = None
 
         if os.path.exists(file_path):
@@ -58,7 +58,7 @@ class Document(BaseModel, ABC):
             file_name=file_name if isinstance(file_name, str) else None,
             url=url if isinstance(url, str) else None,
             id=UUID(id) if isinstance(id, str) else None,
-            pmid=pmid if isinstance(pmid, str) else None,
+            pmid=str(pmid) if pmid else None,
             doi=doi if isinstance(doi, str) else None,
             workspace_id=workspace_id,
         )
@@ -67,7 +67,7 @@ class Document(BaseModel, ABC):
         """Method that will be used to create the payload that will be sent to Argilla
         to create a field in the `FeedbackDataset`.
         """
-        return {
+        json = {
             "file_data": self.file_data,
             "url": self.url,
             "file_name": self.file_name,
@@ -75,6 +75,10 @@ class Document(BaseModel, ABC):
             "doi": self.doi,
             "workspace_id": str(self.workspace_id),
         }
+        if self.id:
+            json["id"] = str(self.id)
+
+        return json
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(id={self.id!r}, file_name={self.file_name!r}, pmid={self.pmid!r}, doi={self.doi!r}, workspace_id={self.workspace_id!r})"

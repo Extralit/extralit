@@ -3,11 +3,21 @@
     <div ref="table" class="--table" />
 
     <div class="--buttons">
-      <button v-show="indexColumns && indexColumns.length" @click.prevent="toggleGroupRefColumns">⬅️ References</button>
-      <button v-show="columns" @click.prevent="validateTable({ showErrors: true, scrollToError: true })">✅ Checks</button>
-      <button v-show="editable" @click.prevent="addColumn">➕ Add column</button>
-      <button v-show="editable" @click.prevent="addRow">➕ Add row</button>
-      <button v-show="editable" @click.prevent="dropRow">➖ Drop row</button>
+      <button v-show="indexColumns && indexColumns.length" @click.prevent="toggleGroupRefColumns">
+        ⬅️ References
+      </button>
+      <button v-show="columns && columnValidators && Object.keys(columnValidators).length" @click.prevent="validateTable({ showErrors: true, scrollToError: true })">
+        ✅ Checks
+      </button>
+      <button v-show="editable" @click.prevent="addColumn">
+        ➕ Add column
+      </button>
+      <button v-show="editable" @click.prevent="addRow">
+        ➕ Add row
+      </button>
+      <button v-show="editable" @click.prevent="dropRow">
+        ➖ Drop row
+      </button>
     </div>
   </div>
 </template>
@@ -70,8 +80,15 @@ export default {
       return this.tableJSON?.schema?.primaryKey || [];
     },
     refColumns() {
-      const arr = this.tableJSON.schema.fields.map(field => field.name).filter(name => name.endsWith('_ref'));
-      return arr.length ? arr : null;
+      try {
+        const arr = this.tableJSON.schema.fields
+          .map(field => field.name)
+          .filter(name => typeof name === 'string' && name.endsWith('_ref'));
+        return arr.length ? arr : null;
+      } catch (error) {
+        console.error("Failed to get refColumns:", error);
+        return null;
+      }
     },
     columns() {
       return this.table?.getColumns().map((col) => col.getField()) || [];
@@ -363,7 +380,7 @@ export default {
   mounted() {
     if (!this.tableJSON) return;
     const layout = this.columnsConfig.length <= 2 ? "fitDataStretch" : "fitDataTable";
-
+    
     this.table = new Tabulator(this.$refs.table, {
       maxHeight: "50vh",
       data: this.tableJSON.data,
@@ -392,6 +409,7 @@ export default {
       movableColumns: this.editable,
       headerMenu: true,
     });
+
 
     this.table.on("rowClick", this.clickRow.bind(this));
 

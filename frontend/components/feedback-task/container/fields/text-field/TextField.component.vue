@@ -17,8 +17,8 @@
       </BaseActionTooltip>
     </div>
     <div class="content-area">
-      <RenderMarkdownBaseComponent v-if="useMarkdown" :markdown="text" />
-      <RenderTableBaseComponent v-else-if="useTable && text && text.length > 4" :tableData="text" />
+      <RenderTableBaseComponent v-if="useTable && isValueJSON" :tableData="text" />
+      <RenderMarkdownBaseComponent v-else-if="useMarkdown" :markdown="text" />
       <div v-else v-html="text" />
     </div>
   </div>
@@ -48,6 +48,19 @@ export default {
     useTable: {
       type: Boolean,
       default: false,
+    },
+  },
+  computed: {
+    isValueJSON() {
+      const value = this.text;
+      if (!value?.length || !value.startsWith('{')) { return false; }
+
+      try {
+        JSON.parse(value);
+        return true;
+      } catch (e) {
+        return false;
+      }
     },
   },
   setup(props) {
@@ -83,6 +96,7 @@ export default {
   }
   &__title-content {
     word-break: break-word;
+    font-weight: 600;
     width: calc(100% - 30px);
   }
   &__tooltip {

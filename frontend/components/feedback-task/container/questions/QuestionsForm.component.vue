@@ -35,9 +35,15 @@
           :class="isDiscarding ? '--button--discarding' : null"
           @on-click="onDiscard"
         >
-          <span class="button__shortcuts" v-text="'⌫'" /><span
-            v-text="$t('questions_form.discard')"
-          />
+          <span class="button__shortcuts-group">
+            <span
+              class="button__shortcuts"
+              v-text="$platform.isMac ? '⌘' : 'ctrl'" />
+            <span
+              class="button__shortcuts"
+              v-text="'⌫'"/>
+          </span>
+          <span v-text="$t('questions_form.discard')" />
         </BaseButton>
         <BaseButton
           type="button"
@@ -45,13 +51,14 @@
           :class="isDraftSaving ? '--button--saving-draft' : null"
           @on-click="onSaveDraft"
         >
-          <span class="button__shortcuts-group"
-            ><span
+          <span class="button__shortcuts-group">
+            <span
               class="button__shortcuts"
-              v-text="$platform.isMac ? '⌘' : 'ctrl'" /><span
+              v-text="$platform.isMac ? '⌘' : 'ctrl'" />
+            <span
               class="button__shortcuts"
-              v-text="'S'"
-          /></span>
+              v-text="'S'"/>
+          </span>
           <span v-text="$t('questions_form.draft')" />
         </BaseButton>
         <BaseButton
@@ -67,7 +74,14 @@
           "
           @on-click="onSubmit"
         >
-          <span class="button__shortcuts" v-text="'↵'" />
+          <span class="button__shortcuts-group">
+            <span
+              class="button__shortcuts"
+              v-text="$platform.isMac ? '⌘' : 'ctrl'" />
+            <span
+              class="button__shortcuts"
+              v-text="'↵'"/>
+          </span>
           <span v-text="$t('questions_form.submit')" />
         </BaseButton>
       </div>
@@ -157,8 +171,8 @@ export default {
       }
     },
     focusOnFirstQuestionFromOutside(event) {
-      // Prevents jumping around when the user clicks on a button or interacting with the table
-      // return
+      return // Prevents jumping around when the user clicks on a button or interacting with the table
+      
       if (!this.userComesFromOutside) return;
       if (event.srcElement.id || event.srcElement.getAttribute("for")) return;
 
@@ -195,10 +209,16 @@ export default {
           break;
         }
         case "Enter": {
+          if (this.$platform.isMac) {
+            if (!metaKey) return;
+          } else if (!ctrlKey) return;
           this.onSubmit();
           break;
         }
         case "Backspace": {
+          if (this.$platform.isMac) {
+            if (!metaKey) return;
+          } else if (!ctrlKey) return;
           this.onDiscard();
           break;
         }

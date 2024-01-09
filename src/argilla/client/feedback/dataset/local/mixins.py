@@ -169,9 +169,12 @@ class ArgillaMixin:
     ) -> List["Document"]:
         uploaded_documents = []
         for document in documents:
+            if not document.workspace_id:
+                document.workspace_id = workspace_id
+
             try:
                 new_document = datasets_api_v1.upload_document(
-                    client=client, document=document.to_server_payload(), workspace_id=workspace_id,
+                    client=client, document=document
                 ).parsed
                 uploaded_documents.append(new_document)
                 

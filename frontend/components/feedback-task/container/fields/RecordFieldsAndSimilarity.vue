@@ -1,40 +1,24 @@
 <template>
   <div class="fields">
-    <SimilarityRecordReference
-      v-show="recordCriteria.isFilteringBySimilarity"
-      v-if="!!records.reference"
-      :fields="records.reference.fields"
-      :recordCriteria="recordCriteria"
-      :availableVectors="datasetVectors"
-    />
-    <RecordFields
-      v-if="!!record"
-      :key="`${record.id}_fields`"
-      :fields="record.fields"
-    >
+    <SimilarityRecordReference v-show="recordCriteria.isFilteringBySimilarity" v-if="!!records.reference"
+      :fields="records.reference.fields" :recordCriteria="recordCriteria" :availableVectors="datasetVectors" />
+    <RecordFields v-if="!!record" :key="`${record.id}_fields`" :fields="record.fields">
       <div class="fields__header">
         <div class="fields__header--left">
-          <StatusTag class="fields__status" :recordStatus="record.status" />
-          <span>{{ record.metadata?.type }}</span>
+          <!-- <span v-if="record.metadata?.type">
+            {{ record.metadata?.type }}
+          </span> -->
         </div>
         <div class="fields__header--right">
-          <SimilarityScorePercentage
-            v-if="
-              recordCriteria.isFilteringBySimilarity && record.score.percentage
-            "
-            class="similarity__progress"
-            :value="record.score.value"
-            :data-title="$t('similarityScore')"
-          />
-          <SimilarityFilter
-            v-if="datasetVectors?.length"
-            :availableVectors="datasetVectors"
-            :recordCriteria="recordCriteria"
-            :recordId="record.id"
-          />
+          <SimilarityScorePercentage v-if="recordCriteria.isFilteringBySimilarity && record.score.percentage
+            " class="similarity__progress" :value="record.score.percentage" :data-title="$t('similarityScore')">
+          </SimilarityScorePercentage>
+          <SimilarityFilter v-if="datasetVectors?.length" :availableVectors="datasetVectors"
+            :recordCriteria="recordCriteria" :recordId="record.id" />
           <RecordStatus :recordStatus="record.status" />
-        </div></div
-    ></RecordFields>
+        </div>
+      </div>
+    </RecordFields>
   </div>
 </template>
 <script>
@@ -75,6 +59,7 @@ export default {
     background: palette(white);
     display: flex;
     justify-content: space-between;
+
     #{$this}__header {
       padding: $base-space $base-space * 2;
     }
@@ -84,12 +69,14 @@ export default {
       align-items: center;
       gap: $base-space;
     }
+
     &--right {
       display: flex;
       align-items: center;
       gap: $base-space;
     }
   }
+
   &__status {
     display: inline-flex;
     margin-right: auto;
