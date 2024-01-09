@@ -6,7 +6,7 @@ const KEY_PRESSED_TIMEOUT_IN_MS = 350;
 
 export const useQuestionsViewModel = () => {
   const { get, set } = useLocalStorage();
-  const showShortcutsHelper = ref(get("showShortcutsHelper") ?? true);
+  const showShortcutsHelper = ref(get("showShortcutsHelper") ?? false);
   const platform = usePlatform();
   let timeout = null;
 

@@ -150,6 +150,7 @@ export default {
         editorParams: {
           selectContents: true,
           search: true,
+          autocomplete: true,
         },
         editableTitle: false,
         headerDblClick: (e, column) => {
@@ -165,29 +166,30 @@ export default {
         },
       };
 
-      if (!this.tableJSON.validation?.columns?.hasOwnProperty(fieldName)) return config;
+      if (this.tableJSON.validation?.columns?.hasOwnProperty(fieldName)) {
+        // Add custom editor params for a column based on the Pandera validation schema
+        const columnSchema = this.tableJSON.validation?.columns[fieldName];
 
-      // Add custom editor params for a column based on the Pandera validation schema
-      const columnSchema = this.tableJSON.validation?.columns[fieldName];
-
-      if (columnSchema.dtype === "str") {
-        config.editor = "list";
-        config.editorParams.defaultValue = "NA";
-        config.editorParams.emptyValue = "NA";
-        config.editorParams.valuesLookup = 'active';
-        config.editorParams.valuesLookupField = fieldName;
-        config.editorParams.autocomplete = true;
-        // config.editorParams.sort = (a, b) => a.length - b.length;
-        // config.editorParams.multiselect = true;
-        config.editorParams.listOnEmpty = true;
-        config.editorParams.freetext = true;
-        config.editorParams.values = (columnSchema.checks?.isin?.length) ? columnSchema.checks.isin : config.editorParams.values;
-        if (config.editorParams.values) {
-          config.hozAlign = "center";
+        if (columnSchema.dtype === "str") {
+          config.editor = "list";
+          config.editorParams.defaultValue = "NA";
+          config.editorParams.emptyValue = "NA";
+          config.editorParams.valuesLookup = 'active';
+          config.editorParams.valuesLookupField = fieldName;
+          config.editorParams.autocomplete = true;
+          // config.editorParams.sort = (a, b) => a.length - b.length;
+          // config.editorParams.multiselect = true;
+          config.editorParams.listOnEmpty = true;
+          config.editorParams.freetext = true;
+          config.editorParams.values = (columnSchema.checks?.isin?.length) ? columnSchema.checks.isin : config.editorParams.values;
+          if (config.editorParams.values) {
+            config.hozAlign = "center";
+          }
+        } else if (columnSchema.dtype.includes("int") || columnSchema.dtype.includes("float")) {
+          config.hozAlign = "right";
         }
-      } else if (columnSchema.dtype.includes("int") || columnSchema.dtype.includes("float")) {
-        config.hozAlign = "right";
       }
+
       return config;
     },
     validateTable(options) {
@@ -232,9 +234,10 @@ export default {
       this.$nuxt.$emit("on-table-highlight-row", row);
     },
     selectRow(row) {
-      // Highlight all rows with the same index accross different tables
+      // If row doesn't have reference, return
+      if (!row._row.data?.reference) return;
 
-      // const selectedRow = this.table.getRows()[pos - 1]
+      // Highlight all rows with the same index accross different tables
       const selectedRow = this.table
         .getRows()
         .find(
@@ -422,9 +425,11 @@ export default {
       this.isLoaded = true;
       this.table.setColumns(this.columnsConfig);
       this.validateTable();
-    });
 
-    this.$nuxt.$on("on-table-highlight-row", this.selectRow.bind(this));
+      if (this.columns.includes("reference")) {
+        this.$nuxt.$on("on-table-highlight-row", this.selectRow.bind(this));
+      }
+    });
   },
   beforeDestroy() {
     this.$nuxt.$off("on-table-highlight-row");

@@ -4,7 +4,6 @@
     :class="questionFormClass"
     @submit.stop.prevent=""
     v-click-outside="onClickOutside"
-    @click="focusOnFirstQuestionFromOutside"
   >
     <div class="questions-form__content">
       <div class="questions-form__header">
@@ -28,6 +27,13 @@
     </div>
     <div class="footer-form">
       <div class="footer-form__content">
+        <BaseButton
+          type="button"
+          class="button--discard"
+          @click.prevent="onClear"
+        >
+          <span v-text="'Clear'" />
+        </BaseButton>
         <BaseButton
           v-if="!record.isDiscarded || isDiscarding"
           type="button"
@@ -171,8 +177,6 @@ export default {
       }
     },
     focusOnFirstQuestionFromOutside(event) {
-      return // Prevents jumping around when the user clicks on a button or interacting with the table
-      
       if (!this.userComesFromOutside) return;
       if (event.srcElement.id || event.srcElement.getAttribute("for")) return;
 
@@ -244,6 +248,9 @@ export default {
     },
     onSaveDraft() {
       this.saveAsDraft(this.record);
+    },
+    onClear() {
+      this.clear(this.record);
     },
     updateQuestionAutofocus(index) {
       this.interactionCount++;
