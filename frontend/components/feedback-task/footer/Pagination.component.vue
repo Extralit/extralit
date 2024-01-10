@@ -83,7 +83,10 @@ export default {
     onPressKeyboardShortcuts(event) {
       const { code, ctrlKey, metaKey, shiftKey } = event;
 
-      if (ctrlKey || metaKey || shiftKey) return;
+      if (shiftKey) return;
+      if (this.$platform.isMac) {
+        if (!metaKey) return;
+      } else if (!ctrlKey) return;
 
       switch (code) {
         case "ArrowRight": {

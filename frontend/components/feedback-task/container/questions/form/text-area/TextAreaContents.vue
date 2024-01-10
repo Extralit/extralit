@@ -12,6 +12,8 @@
       class="textarea"
       :tableData="question.answer.value"
       :editable="true"
+      @click.native="onFocus"
+      @on-change-focus="onChangeFocus"
       v-model="question.answer.hasValidValues"
     />
     <RenderMarkdownBaseComponent
@@ -102,6 +104,9 @@ export default {
     },
     onFocus(event) {
       if (event.defaultPrevented) return;
+      if (this.question.settings.use_table) {
+        this.$emit("on-focus");
+      }
 
       this.isEditionModeActive = true;
       this.isExitedFromEditionModeWithKeyboard = false;
@@ -142,6 +147,10 @@ export default {
   min-height: 10em;
   background: palette(white);
   outline: none;
+  &.--table {
+    border: none;
+    padding: 0;
+  }
   &.--editing {
     border-color: $primary-color;
   }

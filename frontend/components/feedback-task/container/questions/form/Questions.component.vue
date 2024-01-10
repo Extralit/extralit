@@ -6,17 +6,17 @@
         v-for="(question, index) in questions"
         :key="question.id"
         @keydown.arrow-up.prevent="
-          updateQuestionAutofocus(autofocusPosition - 1)
+            $event.ctrlKey || $event.metaKey ? updateQuestionAutofocus(autofocusPosition - 1) : null
         "
         @keydown.arrow-down.prevent="
-          updateQuestionAutofocus(autofocusPosition + 1)
+            $event.ctrlKey || $event.metaKey ? updateQuestionAutofocus(autofocusPosition + 1) : null
         "
       >
         <TextAreaComponent
           v-if="question.isTextType"
           :question="question"
           :isFocused="checkIfQuestionIsFocused(index)"
-          @on-focus="question.settings?.use_table ? null : updateQuestionAutofocus(index)"
+          @on-focus="updateQuestionAutofocus(index)"
         />
 
         <SingleLabelComponent

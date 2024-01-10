@@ -37,7 +37,7 @@
         <BaseButton
           v-if="!record.isDiscarded || isDiscarding"
           type="button"
-          class="button--discard"
+          class="button--draft"
           :class="isDiscarding ? '--button--discarding' : null"
           @on-click="onDiscard"
         >
