@@ -36,6 +36,20 @@ async def upload_document(
             detail=f"Workspace with id `{document_create.workspace_id}` not found",
         )
     
+    # Check if a document with the same pmid, url, or doi already exists
+    existing_document = await db.execute(
+        select(Document).where(
+            or_(
+                Document.pmid == document_create.pmid,
+                Document.url == document_create.url,
+                Document.doi == document_create.doi,
+            )
+        )
+    )
+    existing_document = existing_document.scalars().first()
+    if existing_document is not None:
+        return existing_document.id
+    
     # If a file is uploaded, use it. Otherwise, use the file_data from the DocumentCreate model
     document = None
     if document is not None:
