@@ -2,22 +2,22 @@
   <div class="table-container">
     <div ref="table" class="--table" />
 
-    <div class="--buttons">
-      <button v-show="indexColumns && indexColumns.length" @click.prevent="toggleGroupRefColumns">
-        ⬅️ References
-      </button>
-      <button v-show="columns && columnValidators && Object.keys(columnValidators).length" @click.prevent="validateTable({ showErrors: true, scrollToError: true })">
+    <div class="--table-buttons">
+      <BaseButton v-show="indexColumns && indexColumns.length" @click.prevent="toggleGroupRefColumns">
+        ⬅️ Index
+      </BaseButton>
+      <BaseButton v-show="columns && columnValidators && Object.keys(columnValidators).length" @click.prevent="validateTable({ showErrors: true, scrollToError: true })">
         ✅ Checks
-      </button>
-      <button v-show="editable" @click.prevent="addColumn">
+      </BaseButton>
+      <BaseButton v-show="editable" @click.prevent="addColumn">
         ➕ Add column
-      </button>
-      <button v-show="editable" @click.prevent="addRow">
+      </BaseButton>
+      <BaseButton v-show="editable" @click.prevent="addRow">
         ➕ Add row
-      </button>
-      <button v-show="editable" @click.prevent="dropRow">
+      </BaseButton>
+      <BaseButton v-show="editable" @click.prevent="dropRow">
         ➖ Drop row
-      </button>
+      </BaseButton>
     </div>
   </div>
 </template>
@@ -101,6 +101,18 @@ export default {
 
       const configs = this.tableJSON.schema.fields.map((column) => {
         const visible = !this.groupByRefColumns || !this.isRefColumn(column.name);
+
+        let formatter;
+        if (this.isRefColumn(column.name)) {
+          formatter = (cell, formatterParams) => {
+            const value = cell.getValue();
+            if (!value) return value;
+            else {
+              return "<span style='font-weight:bold;'>" + value + "</span>";
+            }
+          };
+        }
+
         return {
           title: column.name,
           field: column.name,
@@ -108,6 +120,7 @@ export default {
           validator: this.columnValidators.hasOwnProperty(column.name)
             ? this.columnValidators[column.name]
             : null,
+          formatter: formatter,
           ...this.getColumnEditableConfig(column.name),
         }
       });
@@ -139,7 +152,7 @@ export default {
       this.tableJSON = this.tableJSON; // Trigger the setter
     },
     isRefColumn(field) { 
-      return field === "reference" || this.refColumns?.includes(field);
+      return field == "reference" || this.refColumns?.includes(field);
     },
     getColumnEditableConfig(fieldName) {
       if (!this.editable || this.indexColumns.includes(fieldName)) return {};
@@ -234,19 +247,22 @@ export default {
       this.$nuxt.$emit("on-table-highlight-row", row);
     },
     selectRow(row) {
-      // If row doesn't have reference, return
-      if (!row._row.data?.reference) return;
-
-      // Highlight all rows with the same index accross different tables
-      const selectedRow = this.table
-        .getRows()
-        .find(
-          (tableRow) => tableRow.getData().reference == row._row.data.reference
-        );
-      if (selectedRow === undefined) return;
-
+      let selectedRow;
+      if (this.columns.includes("reference")) {
+        // Highlight all rows with the same index accross different tables
+        selectedRow = this.table
+          .getRows()
+          .find(
+            (tableRow) => tableRow.getData().reference == row._row.data.reference
+          );
+      } else {
+        selectedRow = this.table.getRows().find((tableRow) => tableRow._row.data == row._row.data);
+      }
+      
       // Only highlight if the row is not already selected
+      if (selectedRow === undefined) return;
       if (this.table.getSelectedRows().indexOf(selectedRow) != -1) return;
+      
       this.table.scrollToRow(selectedRow, null, false);
       this.table.deselectRow("visible");
       this.table.toggleSelectRow(selectedRow._row);
@@ -426,9 +442,7 @@ export default {
       this.table.setColumns(this.columnsConfig);
       this.validateTable();
 
-      if (this.columns.includes("reference")) {
-        this.$nuxt.$on("on-table-highlight-row", this.selectRow.bind(this));
-      }
+      this.$nuxt.$on("on-table-highlight-row", this.selectRow.bind(this));
     });
   },
   beforeDestroy() {
@@ -446,7 +460,7 @@ export default {
   overflow: auto;
   // background: inherit;
 
-  .--buttons {
+  .--table-buttons {
     display: flex;
     justify-content: space-between;
     padding: 5px 5px 10px 0;

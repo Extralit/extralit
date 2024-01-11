@@ -58,7 +58,7 @@ class Document(BaseModel, ABC):
             file_name=file_name if isinstance(file_name, str) else None,
             url=url if isinstance(url, str) else None,
             id=UUID(id) if isinstance(id, str) else None,
-            pmid=str(pmid) if pmid else None,
+            pmid=str(pmid) if isinstance(pmid, int) or isinstance(pmid, str) and len(pmid)>3 else None,
             doi=doi if isinstance(doi, str) else None,
             workspace_id=workspace_id,
         )

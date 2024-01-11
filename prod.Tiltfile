@@ -40,12 +40,11 @@ docker_build(
     context='.',
     build_args={'ENV': ENV, 'USERS_DB': USERS_DB},
     dockerfile='./docker/api.dockerfile',
-    only=['./src', './dist', './docker/scripts', './setup.py', './pyproject.toml', './requirements.txt', './scripts/', './frontend'],
+    only=['./src', './dist', './docker/scripts', './setup.py', './pyproject.toml', './requirements.txt', './scripts/'],
     ignore=['**/__pycache__', 'src/argilla.egg-info', 'frontend/.nuxt', 'frontend/node_modules', 'frontend/package-lock.json'],
     live_update=[
         # Sync the source code to the container
         sync('./src/', '/home/argilla/src/'),
-        # sync('./frontend/dist/', '/home/argilla/src/server/static/'),
         sync('./docker/scripts/start_argilla_server.sh', '/home/argilla/'),
         # Restart the server to pick up code changes
         run('/bin/bash start_argilla_server.sh', trigger='./docker/scripts/start_argilla_server.sh'),

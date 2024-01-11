@@ -98,6 +98,13 @@ If you happen to run into errors due to the revisions from upstream argilla-io/a
 python -m argilla server database migrate
 ```
 
+3. Update frontend site to the API backend
+
+```bash
+bash scripts/build_frontend.sh
+python setup.py bdist_wheel
+```
+
 ## 🛠️ Project Architecture
 
 Argilla is built on 5 core components:

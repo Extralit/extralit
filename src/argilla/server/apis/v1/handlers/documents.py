@@ -21,6 +21,28 @@ if TYPE_CHECKING:
 
 router = APIRouter(tags=["documents"])
 
+async def check_existing_document(db: AsyncSession, document_create: DocumentCreate):
+    # Add conditions for non-empty attributes
+    conditions = []
+    if document_create.pmid:
+        conditions.append(Document.pmid == document_create.pmid)
+    if document_create.url:
+        conditions.append(Document.url == document_create.url)
+    if document_create.doi:
+        conditions.append(Document.doi == document_create.doi)
+
+    if not conditions:
+        return None
+
+    # Check if a document with the same pmid, url, or doi already exists
+    existing_document = await db.execute(
+        select(Document).where(or_(*conditions))
+    )
+    existing_document = existing_document.scalars().first()
+
+    return existing_document
+
+
 @router.post("/documents", status_code=status.HTTP_201_CREATED, response_model=UUID)
 async def upload_document(
     *,
@@ -36,18 +58,9 @@ async def upload_document(
             detail=f"Workspace with id `{document_create.workspace_id}` not found",
         )
     
-    # Check if a document with the same pmid, url, or doi already exists
-    existing_document = await db.execute(
-        select(Document).where(
-            or_(
-                Document.pmid == document_create.pmid,
-                Document.url == document_create.url,
-                Document.doi == document_create.doi,
-            )
-        )
-    )
-    existing_document = existing_document.scalars().first()
+    existing_document = await check_existing_document(db, document_create)
     if existing_document is not None:
+        print("Document already exists", existing_document.id)
         return existing_document.id
     
     # If a file is uploaded, use it. Otherwise, use the file_data from the DocumentCreate model

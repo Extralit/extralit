@@ -961,7 +961,7 @@ class RemoteFeedbackDataset(FeedbackDatasetBase[RemoteFeedbackRecord], MetricsMi
         try:
             uploaded_document_id = datasets_api_v1.upload_document(
                 client=self._client,
-                document=document,
+            document=document,
             ).parsed
 
             self._documents[(document.pmid or document.doi)] = document
