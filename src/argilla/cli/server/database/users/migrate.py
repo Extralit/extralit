@@ -12,6 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import os
 import traceback
 from typing import TYPE_CHECKING, List, Optional
 from sqlalchemy import select
@@ -49,6 +50,9 @@ class UserCreate(BaseModel):
 class UsersMigrator:
     def __init__(self, users_filename: str):
         self._users_filename = users_filename
+
+        if not os.path.exists(users_filename):
+            raise ValueError(f"Users file {users_filename!r} does not exist, must set the environment variable ARGILLA_LOCAL_AUTH_USERS_DB_FILE")
 
         with open(users_filename) as users_file:
             self._users = yaml.safe_load(users_file.read())

@@ -139,7 +139,8 @@ class Settings(BaseSettings):
             postgres_host = os.getenv("POSTGRES_HOST")
 
             if not postgres_password or not postgres_host:
-                raise Exception("POSTGRES_PASSWORD and POSTGRES_HOST environment variables are required")
+                warnings.warn("ARGILLA_DATABASE_URL or POSTGRES_PASSWORD and POSTGRES_HOST environment variables are "
+                              "not set properly, so certain configurations to argilla server may not work as expected.")
             database_url = f"postgresql+asyncpg://postgres:{postgres_password}@{postgres_host}/postgres"
 
         if "sqlite" in database_url:
