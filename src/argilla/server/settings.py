@@ -132,9 +132,15 @@ class Settings(BaseSettings):
     @validator("database_url", pre=True, always=True)
     def set_database_url(cls, database_url: str, values: dict) -> str:
         if not database_url:
-            home_path = values.get("home_path")
-            sqlite_file = os.path.join(home_path, "argilla.db")
-            return f"sqlite+aiosqlite:///{sqlite_file}?check_same_thread=False"
+            database_url = os.getenv("ARGILLA_DATABASE_URL")
+
+        if not database_url:
+            postgres_password = os.getenv("POSTGRES_PASSWORD")
+            postgres_host = os.getenv("POSTGRES_HOST")
+
+            if not postgres_password or not postgres_host:
+                raise Exception("POSTGRES_PASSWORD and POSTGRES_HOST environment variables are required")
+            database_url = f"postgresql+asyncpg://postgres:{postgres_password}@{postgres_host}/postgres"
 
         if "sqlite" in database_url:
             regex = re.compile(r"sqlite(?!\+aiosqlite)")

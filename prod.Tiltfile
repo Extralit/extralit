@@ -9,6 +9,7 @@ print("Using context:", k8s_context())
 
 # Read the ENV environment variable
 ENV = str(local('echo $ENV')).strip()
+USERS_DB = str(local('echo $USERS_DB')).strip()
 DOCKER_REPO = str(local('echo $DOCKER_REPO')).strip()
 if not DOCKER_REPO:
     DOCKER_REPO = 'localhost:5005'
@@ -37,7 +38,7 @@ helm_resource(
 docker_build(
     "{DOCKER_REPO}/extralit-argilla-server".format(DOCKER_REPO=DOCKER_REPO),
     context='.',
-    build_args={'ENV': ENV},
+    build_args={'ENV': ENV, 'USERS_DB': USERS_DB},
     dockerfile='./docker/api.dockerfile',
     only=['./src', './dist', './docker/scripts', './setup.py', './pyproject.toml', './requirements.txt', './scripts/', './frontend'],
     ignore=['**/__pycache__', 'src/argilla.egg-info', 'frontend/.nuxt', 'frontend/node_modules', 'frontend/package-lock.json'],

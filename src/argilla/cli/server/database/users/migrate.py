@@ -12,7 +12,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import traceback
 from typing import TYPE_CHECKING, List, Optional
+from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 import typer
 import yaml
@@ -35,6 +38,7 @@ class WorkspaceCreate(BaseModel):
 
 class UserCreate(BaseModel):
     first_name: constr(strip_whitespace=True)
+    last_name: Optional[constr(strip_whitespace=True)]
     username: constr(regex=USER_USERNAME_REGEX, min_length=1)
     role: UserRole
     api_key: constr(min_length=1)
@@ -57,8 +61,10 @@ class UsersMigrator:
                 for user in self._users:
                     await self._migrate_user(session, user)
                 await session.commit()
-            except Exception:
+            except Exception as e:
                 await session.rollback()
+                traceback.print_exc()  # Print the traceback
+
                 typer.echo("Users migration process failed...")
                 raise typer.Exit(code=1)
 
@@ -69,22 +75,51 @@ class UsersMigrator:
 
         user_create = self._build_user_create(user)
 
-        await User.create(
-            session,
-            first_name=user_create.first_name,
-            username=user_create.username,
-            role=user_create.role,
-            api_key=user_create.api_key,
-            password_hash=user_create.password_hash,
-            workspaces=[await get_or_new_workspace(session, workspace.name) for workspace in user_create.workspaces],
-            autocommit=False,
+        # Check if a document with the same pmid, url, or doi already exists
+        existing_user = await session.execute(
+            select(User).where(User.username == user_create.username).options(selectinload(User.workspaces))
         )
+        existing_user = existing_user.scalars().first()
+
+        if existing_user:
+            await self._update_user(session, user_create, existing_user)
+        else:
+            typer.echo(f"Creating User with username {user['username']!r}")
+            await User.create(
+                session,
+                first_name=user_create.first_name,
+                username=user_create.username,
+                role=user_create.role,
+                api_key=user_create.api_key,
+                password_hash=user_create.password_hash,
+                workspaces=[await get_or_new_workspace(session, workspace.name) for workspace in user_create.workspaces],
+                autocommit=False,
+            )
+
+    async def _update_user(self, session, user_create, existing_user):
+        typer.echo(f"Updating existing User")
+        existing_user.api_key = user_create.api_key
+        existing_user.password_hash = user_create.password_hash
+        existing_user.first_name = user_create.first_name
+        existing_user.last_name = user_create.last_name
+        if user_create.role:
+            existing_user.role = user_create.role
+        workspaces = []
+        for workspace in user_create.workspaces:
+            workspaces.append(await get_or_new_workspace(session, workspace.name))
+        existing_user.workspaces = workspaces
+
+        await session.commit()
 
     def _build_user_create(self, user: dict) -> UserCreate:
+        role = self._user_role(user)
+        first_name, _, last_name = user.get("full_name", "").partition(" ")
+        
         return UserCreate(
-            first_name=user.get("full_name", ""),
+            first_name=first_name,
+            last_name=last_name,
             username=user["username"],
-            role=self._user_role(user),
+            role=role,
             api_key=user["api_key"],
             password_hash=user["hashed_password"],
             workspaces=[WorkspaceCreate(name=workspace_name) for workspace_name in self._user_workspace_names(user)],

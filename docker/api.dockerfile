@@ -4,13 +4,14 @@ FROM python:3.10.12-slim
 COPY dist/*.whl /packages/
 
 # Set environment variables for the container
-ARG ENV
+ARG ENV=dev
+ARG USERS_DB=/config/users.yaml
 ENV ENV=$ENV
 ENV ARGILLA_HOME_PATH=/var/lib/argilla
 ENV DEFAULT_USER_ENABLED=true
 ENV DEFAULT_USER_PASSWORD=1234
 ENV DEFAULT_USER_API_KEY=argilla.apikey
-ENV USERS_DB=/config/.users.yml
+ENV USERS_DB=$ENV
 ENV UVICORN_PORT=6900
 
 # Create a user and a volume for argilla
