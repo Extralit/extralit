@@ -100,18 +100,7 @@ export default {
       if (!this.tableJSON?.schema) return [];
 
       const configs = this.tableJSON.schema.fields.map((column) => {
-        const visible = !this.groupByRefColumns || !this.isRefColumn(column.name);
-
-        let formatter;
-        if (this.isRefColumn(column.name)) {
-          formatter = (cell, formatterParams) => {
-            const value = cell.getValue();
-            if (!value) return value;
-            else {
-              return "<span style='font-weight:bold;'>" + value + "</span>";
-            }
-          };
-        }
+        const visible = !this.groupByRefColumns || !this.isRefColumn(column.name) || this.columns.length <= 2;
 
         return {
           title: column.name,
@@ -120,7 +109,13 @@ export default {
           validator: this.columnValidators.hasOwnProperty(column.name)
             ? this.columnValidators[column.name]
             : null,
-          formatter: formatter,
+          formatter: this.isRefColumn(column.name) ? (cell, formatterParams) => {
+            const value = cell.getValue();
+            if (!value) return value;
+            else {
+              return "<span style='font-weight:bold;'>" + value + "</span>";
+            }
+          } : null,
           ...this.getColumnEditableConfig(column.name),
         }
       });
