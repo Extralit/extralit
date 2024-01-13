@@ -4,11 +4,11 @@
     :class="questionFormClass"
     @submit.prevent="onSubmit"
     v-click-outside="onClickOutside"
-@click="focusOnFirstQuestionFromOutside"
+    @click="focusOnFirstQuestionFromOutside"
   >
     <div class="questions-form__content">
       <div class="questions-form__header">
-<div class="draft">
+        <div class="draft">
           <p v-if="draftSaving">
             <svgicon color="#0000005e" name="refresh" />
             {{ $t("saving") }}
@@ -23,11 +23,8 @@
             />
           </p>
         </div>
-        <p class="questions-form__title --heading5 --medium">
-          {{ $t("submit-your-feedback") }}
-        </p>
         <p class="questions-form__guidelines-link">
-Read the
+          Read the
           <NuxtLink
             :to="{
               name: 'dataset-id-settings',
@@ -51,11 +48,11 @@ Read the
           type="button"
           class="primary text"
           @click.prevent="onClear"
-:title="$t('shortcuts.questions_form.clear')"
+          :title="$t('shortcuts.questions_form.clear')"
         >
           <span v-text="'Clear'" />
         </BaseButton>
-</div>
+      </div>
       <div class="footer-form__right-area">
         <BaseButton
                     type="button"
@@ -126,7 +123,7 @@ export default {
       return this.record.questionAreCompletedCorrectly();
     },
     isSubmitButtonDisabled() {
-if (this.record.isSubmitted)
+    if (this.record.isSubmitted)
         return !this.isTouched || !this.questionAreCompletedCorrectly;
 
       return !this.questionAreCompletedCorrectly;
@@ -150,8 +147,8 @@ if (this.record.isSubmitted)
     document.removeEventListener("keydown", this.handleGlobalKeys);
   },
   methods: {
-        focusOnFirstQuestionFromOutside(event) {
-// Prevents jumping around when the user clicks on a button or interacting with the table
+    focusOnFirstQuestionFromOutside(event) {
+      // Prevents jumping around when the user clicks on a button or interacting with the table
       return
       if (!this.userComesFromOutside) return;
       if (event.srcElement.id || event.srcElement.getAttribute("for")) return;
@@ -185,7 +182,7 @@ if (this.record.isSubmitted)
           } else if (!ctrlKey) return;
           event.preventDefault();
           event.stopPropagation();
-          this.onSaveDraft();
+          this.onSaveDraftImmediately();
           break;
         }
         case "Enter": {
@@ -203,7 +200,6 @@ if (this.record.isSubmitted)
           break;
         }
         default: {
-          this.autoSubmitWithKeyboard();
           break;
         }
       }

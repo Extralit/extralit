@@ -135,6 +135,16 @@ export default {
       }
     },
   },
+  mounted() {
+    this.$nuxt.$on('on-update-response-tabledata', (tableJsonString) => {
+      if (this.question.settings.use_table) {
+        this.question.answer.value = tableJsonString;
+      }
+    });
+  },
+  destroyed() {
+    this.$nuxt.$off('on-update-response-tabledata');
+  },
 };
 </script>
 
