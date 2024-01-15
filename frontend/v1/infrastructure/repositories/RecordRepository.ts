@@ -436,16 +436,24 @@ export class RecordRepository {
 
   private createParams(fromRecord: number, howMany: number, status: string) {
     const offset = `${fromRecord - 1}`;
-    const backendStatus = status === "pending" ? "missing" : status;
     const params = new URLSearchParams();
 
     params.append("include", "responses");
     params.append("include", "suggestions");
     params.append("offset", offset);
     params.append("limit", howMany.toString());
-    params.append("response_status", backendStatus);
 
-    if (backendStatus === "missing") params.append("response_status", "draft");
+    // add 'valid' status to query all non-discarded records
+    if (status === "pending") {
+      params.append("response_status", 'missing');
+      params.append("response_status", 'draft');
+    } else if (status === "valid") {
+      params.append("response_status", 'missing');
+      params.append("response_status", 'submitted');
+      params.append("response_status", 'draft');
+    } else {
+      params.append("response_status", status);
+    }
 
     return params;
   }
