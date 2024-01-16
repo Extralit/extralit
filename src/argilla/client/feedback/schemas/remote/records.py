@@ -113,7 +113,7 @@ class RemoteFeedbackRecord(FeedbackRecord, RemoteSchema):
     Args:
         question_name_to_id: A dictionary that maps the question names to their corresponding IDs.
         responses: A list of `RemoteResponseSchema` that contains the responses for the
-            current record in Argilla. Every response is linked to only one user. Defaults
+        current record in Argilla. Every response is linked to only one user. Defaults
             to an empty list.
         suggestions: A list of `RemoteSuggestionSchema` that contains the suggestions
             for the current record in Argilla. Every suggestion is linked to only one
@@ -125,6 +125,8 @@ class RemoteFeedbackRecord(FeedbackRecord, RemoteSchema):
 
     responses: List[RemoteResponseSchema] = Field(default_factory=list)
     suggestions: Union[Tuple[AllowedSuggestionSchema], List[AllowedSuggestionSchema]] = Field(default_factory=tuple)
+    inserted_at: Optional[datetime]
+    updated_at: Optional[datetime]
 
     class Config:
         allow_mutation = True
@@ -320,4 +322,6 @@ class RemoteFeedbackRecord(FeedbackRecord, RemoteSchema):
             vectors=payload.vectors if payload.vectors else {},
             external_id=payload.external_id if payload.external_id else None,
             question_name_to_id={value: key for key, value in question_id_to_name.items()},
+            inserted_at=payload.inserted_at,
+            updated_at=payload.updated_at,
         )

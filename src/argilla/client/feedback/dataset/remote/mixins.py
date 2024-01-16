@@ -88,6 +88,9 @@ class ArgillaRecordsMixin:
             fetched_records = self._fetch_records(offset=offset, limit=limit)
             if len(fetched_records.items) == 0:
                 break
+            for record in fetched_records.items:
+                print(record)
+                print(record.__dict__)
             records.extend(
                 [
                     RemoteFeedbackRecord.from_api(record, question_id_to_name=question_id_to_name, client=self._client)

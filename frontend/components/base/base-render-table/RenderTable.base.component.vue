@@ -348,6 +348,7 @@ export default {
         return field;
       });
       this.updateTableJsonData();
+      this.table.setColumns(this.columnsConfig);
       this.validateTable();
     },
     cellTooltip(e, cell, onRendered) {
@@ -384,7 +385,10 @@ export default {
           .filter(([key, value]) => key !== "reference" && value !== 'NA' && value !== null)
           .map(([key, value]) => `${key}: <span style="font-weight:normal; color:black; margin-left:0;">${value}</span>`)
           .join(', ');
-        if (keyValues.length > 0) header = keyValues;
+
+        if (keyValues.length > 0) {
+          header = `<BaseTooltip text="${value}" position="right">${keyValues}</BaseTooltip>`
+        }
       }
 
       if (count > 1) header = header + `<span style='color:black; margin-left:10px;'>(${count})</span>`;
@@ -416,6 +420,7 @@ export default {
       groupBy: this.groupByRefColumns ? this.refColumns: null,
       groupToggleElement: "header",
       groupHeader: this.groupHeader,
+      groupUpdateOnCellEdit: true,
       layout: layout,
       selectable: 1,
       selectablePersistence: true,

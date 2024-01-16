@@ -30,6 +30,8 @@ async def check_existing_document(db: AsyncSession, document_create: DocumentCre
         conditions.append(Document.url == document_create.url)
     if document_create.doi:
         conditions.append(Document.doi == document_create.doi)
+    if document_create.file_name:
+        conditions.append(Document.file_name == document_create.file_name)
 
     if not conditions:
         return None
