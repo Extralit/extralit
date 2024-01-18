@@ -787,6 +787,9 @@ async def _update_record(
                 db, dataset, metadata, caches["metadata_properties"]
             )
 
+    if record_update.fields is not None:
+        _validate_record_fields(dataset, fields=record_update.fields)
+
     if record_update.suggestions is not None:
         params.pop("suggestions")
         questions_ids = [suggestion.question_id for suggestion in record_update.suggestions]

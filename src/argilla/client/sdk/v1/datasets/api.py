@@ -346,6 +346,8 @@ def update_records(
     items = []
     for record in records:
         item = {"id": record["id"]}
+        if "fields" in record:
+            item["fields"] = record["fields"]
         if "metadata" in record:
             item["metadata"] = record["metadata"]
         if "suggestions" in record:

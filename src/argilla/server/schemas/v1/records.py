@@ -52,3 +52,4 @@ class RecordUpdate(UpdateSchema):
     metadata_: Optional[Dict[str, Any]] = Field(None, alias="metadata")
     suggestions: Optional[List[SuggestionCreate]] = None
     vectors: Optional[Dict[str, List[float]]]
+    fields: Optional[Dict[str, Any]]
