@@ -1,6 +1,18 @@
 import { useRecordFeedbackTaskViewModel } from '@/components/feedback-task/container/useRecordFeedbackTaskViewModel';
 
 
+export function isTableJSON(value) {
+  if (!value?.length || (!value.startsWith('{') && !value.startsWith('['))) { return false; }
+  
+  try {
+    JSON.parse(value);
+    return true;
+  } catch (e) {
+    console.log(e)
+    return false;
+  }
+}
+
 export function columnUniqueCounts(tableJSON) {
   // tableJSON is an object of the form {data: [{column: value, ...}, ...]}
   // returns an object of the form {column: uniqueCount, ...}

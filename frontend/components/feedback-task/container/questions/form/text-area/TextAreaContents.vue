@@ -37,6 +37,8 @@
 </template>
 
 <script>
+import { isTableJSON } from "@/components/base/base-render-table/tableUtils.js";
+
 export default {
   name: "TextAreaComponent",
   props: {
@@ -124,15 +126,7 @@ export default {
       return null;
     },
     isValueJSON() {
-      const value = this.question.answer.value;
-      if (!value?.length || !value.startsWith('{')) { return false; }
-
-      try {
-        JSON.parse(value);
-        return true;
-      } catch (e) {
-        return false;
-      }
+      return isTableJSON(this.question.answer.value);
     },
   },
   mounted() {

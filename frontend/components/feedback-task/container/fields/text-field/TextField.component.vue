@@ -26,6 +26,7 @@
 
 <script>
 import { useTextFieldViewModel } from "./useTextFieldViewModel";
+import { isTableJSON } from "@/components/base/base-render-table/tableUtils.js";
 export default {
   name: "TextFieldComponent",
   props: {
@@ -52,15 +53,7 @@ export default {
   },
   computed: {
     isValueJSON() {
-      const value = this.text;
-      if (!value?.length || !value.startsWith('{')) { return false; }
-
-      try {
-        JSON.parse(value);
-        return true;
-      } catch (e) {
-        return false;
-      }
+      return isTableJSON(this.text);
     },
   },
   setup(props) {

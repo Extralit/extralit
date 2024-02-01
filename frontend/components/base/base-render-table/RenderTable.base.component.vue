@@ -165,7 +165,7 @@ export default {
           label: "Delete column",
             action: (e, column) => {
               column.delete();
-              this.updateTableJsonData({ delete: true });
+              this.updateTableJsonData(true);
             }
         })
       }
@@ -181,7 +181,7 @@ export default {
           }
         },
       ];
-      
+
       if (this.editable) {
         // extend the menu with additional options
         menu = [...menu, 
@@ -196,7 +196,7 @@ export default {
             label: "Delete row",
             action: (e, row) => {
               row.delete();
-              this.updateTableJsonData()
+              this.updateTableJsonData(true)
             }
           }
         ]
@@ -207,8 +207,6 @@ export default {
   },
   methods: {
     updateTableJsonData(remove = false, add = false, update = false, newFieldName=null, oldFieldName=null) {
-      this.tableJSON.data = this.table.getData();
-
       if (remove) {
         const removeColumns = this.tableJSON.schema.fields
           .filter((field) => !this.columns.includes(field.name))
@@ -250,11 +248,12 @@ export default {
 
       if (update) {
         // Update the field name for all data
-        const updatedData = this.table.getData().forEach((row) => {
+        const data = this.table.getData()
+        data.forEach((row) => {
           row[newFieldName] = row[oldFieldName];
-          del[row, oldFieldName];
+          delete row[oldFieldName];
         });
-        this.table.setData(updatedData);
+        this.table.setData(data);
 
         this.table.updateColumnDefinition(oldFieldName, {
           field: newFieldName,
@@ -268,8 +267,11 @@ export default {
           }
           return field;
         });
+
+        console.log("update:", data, this.tableJSON.schema.fields, this.columns);
       }
 
+      this.tableJSON.data = this.table.getData();
       this.tableJSON = this.tableJSON; // Trigger the setter
     },
     isRefColumn(field) { 
@@ -439,13 +441,13 @@ export default {
         this.validateTable();
       });
 
-      this.updateTableJsonData({ add: true });
+      this.updateTableJsonData(false, true);
       this.table.scrollToColumn(newFieldName, null, false);
     },
     columnTitleChanged(column) {
       const newFieldName = column.getDefinition().title;
       const oldFieldName = column.getDefinition().field;
-      if (!newFieldName || newFieldName == oldFieldName) return;
+      if (!newFieldName?.length || newFieldName == oldFieldName) return;
       if (this.columns.includes(newFieldName)) {
         setTimeout(() => {
           const message = `Column name '${newFieldName}' already exists. Please choose a different name.`;
@@ -462,8 +464,8 @@ export default {
       }
       console.log("columnTitleChanged:", oldFieldName, newFieldName)
 
-      this.updateTableJsonData({ update: true, newFieldName: newFieldName, oldFieldName: oldFieldName });
-      this.table.setColumns(this.columnsConfig);
+      this.updateTableJsonData(false, false, true, newFieldName, oldFieldName);
+      // this.table.setColumns(this.columnsConfig);
 
       this.validateTable();
     },
@@ -517,18 +519,21 @@ export default {
     
     this.table = new Tabulator(this.$refs.table, {
       data: this.tableJSON.data,
+      history: true,
+      layout: layout,
       maxHeight: "50vh",
-      renderHorizontal: "virtual",
+      // renderHorizontal: "virtual",
       persistence: { columns: true },
       // layoutColumnsOnNewData: true,
       reactiveData: true,
       clipboard: true,
       columnDefaults: {
         resizable: true,
-        headerWordWrap: true,
         headerSort: false,
         tooltip: this.cellTooltip.bind(this),
         headerTooltip: this.headerTooltip.bind(this),
+        headerWordWrap: true,
+        maxWidth: 200,
       },
       columns: this.columnsConfig,
       index: this.columnsConfig.find((column) => column.field === "reference")
@@ -537,7 +542,7 @@ export default {
       groupBy: this.groupByRefColumns ? this.refColumns: null,
       groupToggleElement: "header",
       groupHeader: this.groupHeader,
-      groupUpdateOnCellEdit: true,
+      groupUpdateOnCellEdit: this.groupByRefColumns ? true : null,
       // groupContextMenu: [
       //   {
       //     label: "Hide Group",
@@ -546,7 +551,6 @@ export default {
       //     }
       //   },
       // ],
-      layout: layout,
       selectable: 1,
       selectablePersistence: true,
       validationMode: "highlight",
@@ -599,6 +603,10 @@ export default {
 
   .--table {
     overflow: auto;
+    white-space: normal;
   }
+}
+.tabulator .tabulator-header .tabulator-col .tabulator-col-content .tabulator-col-title {
+  white-space: normal;
 }
 </style>
