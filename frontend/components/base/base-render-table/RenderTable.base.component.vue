@@ -15,14 +15,12 @@
       <BaseButton v-show="editable" @click.prevent="addRow">
         ➕ Add row
       </BaseButton>
-      <BaseButton v-show="editable" @click.prevent="dropRow">
-        ➖ Drop row
-      </BaseButton>
     </div>
   </div>
 </template>
 
 <script>
+import { Notification } from "@/models/Notifications";
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 import "tabulator-tables/dist/css/tabulator.min.css";
 import { getColumnValidators } from "./validationUtils";
@@ -116,6 +114,7 @@ export default {
               return "<span style='font-weight:bold;'>" + value + "</span>";
             }
           } : null,
+          headerContextMenu: this.columnMenu,
           ...this.getColumnEditableConfig(column.name),
         }
       });
@@ -140,10 +139,137 @@ export default {
 
       return matchingRefValues;
     },
+    columnMenu() {
+      let menu = [
+        {
+          label: "Copy column data",
+          action: (e, column) => {
+            let title = column.getDefinition().title
+            let values = column.getCells().map((cell) => cell.getValue());
+
+            navigator.clipboard.writeText([title, ...values].join("\n"));
+          }
+        }
+      ];
+      if (this.editable) {
+        menu.push({
+          label: "Rename column",
+            action: (e, column) => {
+              if (column.getDefinition().frozen) return;
+              column.updateDefinition({
+                editableTitle: !column.getDefinition().editableTitle,
+              });
+            }
+        })
+        menu.push({
+          label: "Delete column",
+            action: (e, column) => {
+              column.delete();
+              this.updateTableJsonData({ delete: true });
+            }
+        })
+      }
+      return menu;
+    },
+    rowMenu() {
+      let menu = [
+        {
+          label: "Copy row",
+          action: (e, row) => {
+            let values = Object.values(row.getData());
+            navigator.clipboard.writeText(values.join("\t"));
+          }
+        },
+      ];
+      
+      if (this.editable) {
+        // extend the menu with additional options
+        menu = [...menu, 
+          {
+            label: "Add row below",
+            action: (e, row) => {
+              this.selectRow(row);
+              this.addRow();
+            }
+          },
+          {
+            label: "Delete row",
+            action: (e, row) => {
+              row.delete();
+              this.updateTableJsonData()
+            }
+          }
+        ]
+      }
+
+      return menu;
+    }
   },
   methods: {
-    updateTableJsonData() {
+    updateTableJsonData(remove = false, add = false, update = false, newFieldName=null, oldFieldName=null) {
       this.tableJSON.data = this.table.getData();
+
+      if (remove) {
+        const removeColumns = this.tableJSON.schema.fields
+          .filter((field) => !this.columns.includes(field.name))
+          .map((field) => field.name);
+          
+        if (removeColumns.length > 0) {
+          console.log('removeColumns', removeColumns)
+          // Remove removeColumns from this.tableJSON.schema
+          this.tableJSON.schema.fields = this.tableJSON.schema.fields.filter(
+            (field) => !removeColumns.includes(field.name)
+          );
+
+          // Remove removeColumns from this.tableJSON.data
+          this.tableJSON.data.forEach((row) => {
+            removeColumns.forEach((column) => {
+              delete row[column];
+            });
+          });
+        }
+      }
+
+      if (add) {
+        const addColumns = this.columns.filter((field) => !this.tableJSON.schema.fields.map((field) => field.name).includes(field));
+
+        // Add the new field to the schema
+        const data = this.table.getData().forEach((item) => {
+          addColumns.forEach((column) => {
+            item[column] = undefined;
+          });
+        });
+        this.table.setData(data);
+        addColumns.forEach((column) => {
+          this.tableJSON.schema.fields.push({
+            name: column,
+            type: "string",
+          });
+        });
+      }
+
+      if (update) {
+        // Update the field name for all data
+        const updatedData = this.table.getData().forEach((row) => {
+          row[newFieldName] = row[oldFieldName];
+          del[row, oldFieldName];
+        });
+        this.table.setData(updatedData);
+
+        this.table.updateColumnDefinition(oldFieldName, {
+          field: newFieldName,
+          title: newFieldName,
+        });
+
+        // Update the field name in the schema
+        this.tableJSON.schema.fields = this.tableJSON.schema.fields.map((field) => {
+          if (field.name == oldFieldName) {
+            return { ...field, name: newFieldName };
+          }
+          return field;
+        });
+      }
+
       this.tableJSON = this.tableJSON; // Trigger the setter
     },
     isRefColumn(field) { 
@@ -161,12 +287,19 @@ export default {
           autocomplete: true,
         },
         editableTitle: false,
-        headerDblClick: (e, column) => {
-          // Enable editable title on double click
-          if (column.getDefinition().frozen) return;
-          column.updateDefinition({
-            editableTitle: !column.getDefinition().editableTitle,
-          });
+        headerMenu: (e, column) => {
+          if (column.getDefinition().editableTitle) {
+            return [{
+              label: "Accept",
+              action: (e, column) => {
+                if (column.getDefinition().frozen) return;
+                column.updateDefinition({
+                  editableTitle: !column.getDefinition().editableTitle,
+                });
+              }
+            }];
+          }
+          return this.columnMenu;
         },
         cellEdited: (cell) => {
           this.updateTableJsonData();
@@ -306,49 +439,32 @@ export default {
         this.validateTable();
       });
 
-      // Add the new field to the schema
-      const data = this.table.getData();
-      data.forEach((item) => {
-        item[newFieldName] = null;
-      });
-      this.table.setData(data);
-      this.tableJSON.schema.fields.push({
-        name: newFieldName,
-        type: "string",
-      });
-      this.updateTableJsonData();
-
+      this.updateTableJsonData({ add: true });
       this.table.scrollToColumn(newFieldName, null, false);
     },
     columnTitleChanged(column) {
-      const newFieldName = column.getDefinition().title.replace(/ /g, "_");
+      const newFieldName = column.getDefinition().title;
       const oldFieldName = column.getDefinition().field;
       if (!newFieldName || newFieldName == oldFieldName) return;
-      if (this.columns.includes(newFieldName)) return;
+      if (this.columns.includes(newFieldName)) {
+        setTimeout(() => {
+          const message = `Column name '${newFieldName}' already exists. Please choose a different name.`;
+          Notification.dispatch("notify", {
+            message: message,
+            numberOfChars: message.length,
+            type: "warning",
+            onClick() {
+              Notification.dispatch("clear");
+            },
+          });
+        }, 500);
+        return;
+      }
       console.log("columnTitleChanged:", oldFieldName, newFieldName)
 
-      // Update the field name for all data
-      const data = this.table.getData();
-      data.forEach((item) => {
-        item[newFieldName] = item[oldFieldName];
-        del [item, oldFieldName];
-      });
-      this.table.setData(data);
-
-      this.table.updateColumnDefinition(oldFieldName, {
-        field: newFieldName,
-        title: newFieldName,
-      });
-
-      // Update the field name in the schema
-      this.tableJSON.schema.fields = this.tableJSON.schema.fields.map((field) => {
-        if (field.name == oldFieldName) {
-          return { ...field, name: newFieldName };
-        }
-        return field;
-      });
-      this.updateTableJsonData();
+      this.updateTableJsonData({ update: true, newFieldName: newFieldName, oldFieldName: oldFieldName });
       this.table.setColumns(this.columnsConfig);
+
       this.validateTable();
     },
     cellTooltip(e, cell, onRendered) {
@@ -400,10 +516,11 @@ export default {
     const layout = this.columnsConfig.length <= 2 ? "fitDataStretch" : "fitDataTable";
     
     this.table = new Tabulator(this.$refs.table, {
-      maxHeight: "50vh",
       data: this.tableJSON.data,
+      maxHeight: "50vh",
+      renderHorizontal: "virtual",
       persistence: { columns: true },
-      layoutColumnsOnNewData: true,
+      // layoutColumnsOnNewData: true,
       reactiveData: true,
       clipboard: true,
       columnDefaults: {
@@ -421,14 +538,25 @@ export default {
       groupToggleElement: "header",
       groupHeader: this.groupHeader,
       groupUpdateOnCellEdit: true,
+      // groupContextMenu: [
+      //   {
+      //     label: "Hide Group",
+      //     action: function (e, group) {
+      //       group.hide();
+      //     }
+      //   },
+      // ],
       layout: layout,
       selectable: 1,
       selectablePersistence: true,
       validationMode: "highlight",
       movableColumns: this.editable,
-      headerMenu: true,
+      rowContextMenu: this.rowMenu,
+      keybindings: {
+        "undo": ["ctrl + z", "meta + z"],
+        "redo": ["ctrl + y", "meta + y"],
+      },
     });
-
 
     this.table.on("rowClick", this.clickRow.bind(this));
 
