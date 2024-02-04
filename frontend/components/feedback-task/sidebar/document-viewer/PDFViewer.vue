@@ -42,6 +42,11 @@ export default {
       scale: "auto",
     }
   },
+  errorCaptured(err, component, info) {
+    this.error = err;
+    console.error(`Error caught from ${component}: ${err}`);
+    return false; // stops the error from propagating further
+  },
 }
 </script>
 

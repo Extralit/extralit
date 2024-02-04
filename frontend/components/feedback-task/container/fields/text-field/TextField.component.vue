@@ -17,7 +17,7 @@
       </BaseActionTooltip>
     </div>
     <div class="content-area">
-      <RenderTableBaseComponent v-if="useTable && isValueJSON" :tableData="text" />
+      <RenderTableBaseComponent v-if="useTable && isValidTableJSON" :tableData="text" />
       <RenderMarkdownBaseComponent v-else-if="useMarkdown" :markdown="text" />
       <div v-else v-html="text" />
     </div>
@@ -52,7 +52,7 @@ export default {
     },
   },
   computed: {
-    isValueJSON() {
+    isValidTableJSON() {
       return isTableJSON(this.text);
     },
   },

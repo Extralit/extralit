@@ -89,7 +89,7 @@ export default {
       }
     },
     columns() {
-      return this.table?.getColumns().map((col) => col.getField()) || [];
+      return this.table?.getColumns()?.map((col) => col.getField()) || [];
     },
     columnValidators() { 
       return getColumnValidators(this.tableJSON);
@@ -114,11 +114,12 @@ export default {
               return "<span style='font-weight:bold;'>" + value + "</span>";
             }
           } : null,
-          headerContextMenu: this.columnMenu,
           ...this.getColumnEditableConfig(column.name),
         }
       });
-      // configs.unshift({ rowHandle: true, formatter: "handle", headerSort: false, frozen: true, width: 30, minWidth: 30 },);
+      if (this.editable) {
+        configs.unshift({ rowHandle: true, formatter: "handle", headerSort: false, frozen: false, width: 30, minWidth: 30 },);
+      }
       return configs;
     },
     referenceValues() {
@@ -152,22 +153,27 @@ export default {
         }
       ];
       if (this.editable) {
-        menu.push({
-          label: "Rename column",
-            action: (e, column) => {
-              if (column.getDefinition().frozen) return;
-              column.updateDefinition({
-                editableTitle: !column.getDefinition().editableTitle,
-              });
-            }
-        })
-        menu.push({
-          label: "Delete column",
-            action: (e, column) => {
-              column.delete();
-              this.updateTableJsonData(true);
-            }
-        })
+        menu = [...menu,
+          {
+            separator: true,
+          },
+          {
+            label: "Rename column",
+              action: (e, column) => {
+                if (column.getDefinition().frozen) return;
+                column.updateDefinition({
+                  editableTitle: !column.getDefinition().editableTitle,
+                });
+              }
+          },
+          {
+            label: "Delete column",
+              action: (e, column) => {
+                column.delete();
+                this.updateTableJsonData(true);
+              }
+          },
+        ];
       }
       return menu;
     },
@@ -176,7 +182,8 @@ export default {
         {
           label: "Copy row",
           action: (e, row) => {
-            let values = Object.values(row.getData());
+            let rowData = row.getData();
+            let values = this.columns.map((column) => rowData[column]);
             navigator.clipboard.writeText(values.join("\t"));
           }
         },
@@ -185,6 +192,23 @@ export default {
       if (this.editable) {
         // extend the menu with additional options
         menu = [...menu, 
+          {
+            label: "Paste",
+            action: (e, row) => {
+              navigator.clipboard.readText().then((text) => {
+                const values = text.split("\t");
+                const currentRow = row.getData();
+                Object.keys(currentRow).forEach((columnName, index) => {
+                  currentRow[columnName] = values[index];
+                });
+                row.update(currentRow);
+                this.updateTableJsonData();
+              });
+            }
+          },
+          {
+            separator: true,
+          },
           {
             label: "Add row below",
             action: (e, row) => {
@@ -289,6 +313,12 @@ export default {
           autocomplete: true,
         },
         editableTitle: false,
+        headerDblClick: (e, column) => {
+          // Enable editable title on double click
+          if (!column.getDefinition().frozen && !column.getDefinition().editableTitle) {
+            column.updateDefinition({ editableTitle: true });
+          }
+        },
         headerMenu: (e, column) => {
           if (column.getDefinition().editableTitle) {
             return [{
@@ -431,7 +461,12 @@ export default {
       this.updateTableJsonData();
     },
     addColumn() {
-      const newFieldName = "newColumn";
+      let newFieldName = "newColumn";
+      let count = 1;
+      while (this.columns.includes(newFieldName)) {
+        newFieldName = `newColumn${count}`;
+        count++;
+      }
 
       this.table.addColumn({
         title: newFieldName,
@@ -445,7 +480,7 @@ export default {
       this.table.scrollToColumn(newFieldName, null, false);
     },
     columnTitleChanged(column) {
-      const newFieldName = column.getDefinition().title;
+      const newFieldName = column.getDefinition().title.replace('.', ' ');
       const oldFieldName = column.getDefinition().field;
       if (!newFieldName?.length || newFieldName == oldFieldName) return;
       if (this.columns.includes(newFieldName)) {
@@ -463,6 +498,12 @@ export default {
         return;
       }
       console.log("columnTitleChanged:", oldFieldName, newFieldName)
+
+      if (column.getDefinition().editableTitle) {
+        column.updateDefinition({
+          editableTitle: false
+        });
+      }
 
       this.updateTableJsonData(false, false, true, newFieldName, oldFieldName);
       // this.table.setColumns(this.columnsConfig);
@@ -514,68 +555,85 @@ export default {
     },
   },
   mounted() {
-    if (!this.tableJSON) return;
-    const layout = this.columnsConfig.length <= 2 ? "fitDataStretch" : "fitDataTable";
-    
-    this.table = new Tabulator(this.$refs.table, {
-      data: this.tableJSON.data,
-      history: true,
-      layout: layout,
-      maxHeight: "50vh",
-      // renderHorizontal: "virtual",
-      persistence: { columns: true },
-      // layoutColumnsOnNewData: true,
-      reactiveData: true,
-      clipboard: true,
-      columnDefaults: {
-        resizable: true,
-        headerSort: false,
-        tooltip: this.cellTooltip.bind(this),
-        headerTooltip: this.headerTooltip.bind(this),
-        headerWordWrap: true,
-        maxWidth: 200,
-      },
-      columns: this.columnsConfig,
-      index: this.columnsConfig.find((column) => column.field === "reference")
+    if (!this.tableJSON?.data?.length || !this.tableJSON?.schema) return;
+
+    try {
+      const layout = this.columnsConfig.length <= 2 ? "fitDataStretch" : "fitDataTable";
+      
+      this.table = new Tabulator(this.$refs.table, {
+        data: this.tableJSON.data,
+        history: true,
+        layout: layout,
+        maxHeight: "50vh",
+        // renderHorizontal: "virtual",
+        // persistence: { columns: true },
+        // layoutColumnsOnNewData: true,
+        reactiveData: true,
+        clipboard: true,
+        columnDefaults: {
+          resizable: true,
+          headerSort: false,
+          tooltip: this.cellTooltip.bind(this),
+          headerTooltip: this.headerTooltip.bind(this),
+          headerWordWrap: true,
+          headerContextMenu: this.columnMenu,
+          // maxWidth: 200,
+        },
+        columns: this.columnsConfig,
+        index: this.columnsConfig.find((column) => column.field === "reference")
         ? "reference"
         : null,
-      groupBy: this.groupByRefColumns ? this.refColumns: null,
-      groupToggleElement: "header",
-      groupHeader: this.groupHeader,
-      groupUpdateOnCellEdit: this.groupByRefColumns ? true : null,
-      // groupContextMenu: [
-      //   {
-      //     label: "Hide Group",
-      //     action: function (e, group) {
-      //       group.hide();
-      //     }
-      //   },
-      // ],
-      selectable: 1,
-      selectablePersistence: true,
-      validationMode: "highlight",
-      movableColumns: this.editable,
-      rowContextMenu: this.rowMenu,
-      keybindings: {
-        "undo": ["ctrl + z", "meta + z"],
-        "redo": ["ctrl + y", "meta + y"],
-      },
-    });
+        groupBy: this.groupByRefColumns ? this.refColumns: null,
+        groupToggleElement: "header",
+        groupHeader: this.groupHeader,
+        groupUpdateOnCellEdit: this.groupByRefColumns ? true : null,
+        groupContextMenu: [
+          {
+            label: "Show reference",
+            action: (e, group) => {
+              group.popup(`${group._group.field}: ${group._group.key}`, "right");
+            }
+          },
+        ],
+        selectable: 1,
+        selectablePersistence: true,
+        validationMode: "highlight",
+        movableRows: this.editable,
+        movableColumns: this.editable,
+        rowContextMenu: this.rowMenu,
+        keybindings: {
+          "undo": ["ctrl + z", "meta + z"],
+          "redo": ["ctrl + y", "meta + y"],
+        },
+      });
 
-    this.table.on("rowClick", this.clickRow.bind(this));
+      this.table.on("rowClick", this.clickRow.bind(this));
 
-    if (this.editable) {
-      this.table.on("columnTitleChanged", this.columnTitleChanged.bind(this));
-      this.table.on("columnMoved", this.columnMoved.bind(this));
+      if (this.editable) {
+        this.table.on("columnTitleChanged", this.columnTitleChanged.bind(this));
+        this.table.on("columnMoved", this.columnMoved.bind(this));
+      }
+
+      this.table.on("tableBuilt", () => {
+        this.isLoaded = true;
+        this.table.setColumns(this.columnsConfig);
+        this.validateTable();
+
+        this.$nuxt.$on("on-table-highlight-row", this.selectRow.bind(this));
+      }); 
+
+    } catch (error) {
+      const message = `Failed to load table: ${error}`;
+      Notification.dispatch("notify", {
+        message: message,
+        numberOfChars: message.length,
+        type: "error",
+        onClick() {
+          Notification.dispatch("clear");
+        },
+      });
+      console.error("Failed to mount table:", error);
     }
-
-    this.table.on("tableBuilt", () => {
-      this.isLoaded = true;
-      this.table.setColumns(this.columnsConfig);
-      this.validateTable();
-
-      this.$nuxt.$on("on-table-highlight-row", this.selectRow.bind(this));
-    });
   },
   beforeDestroy() {
     this.$nuxt.$off("on-table-highlight-row");

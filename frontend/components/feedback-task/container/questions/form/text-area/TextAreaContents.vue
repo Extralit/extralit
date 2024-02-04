@@ -8,7 +8,7 @@
     @keydown.shift.enter.exact.prevent="onEditMode"
   >
     <RenderTableBaseComponent
-      v-if="question.settings.use_table && isValueJSON"
+      v-if="question.settings.use_table && isValidTableJSON"
       class="textarea"
       :tableData="question.answer.value"
       :editable="true"
@@ -116,7 +116,7 @@ export default {
   },
   computed: {
     classes() {
-      if (this.question.settings.use_table && this.isValueJSON) {
+      if (this.question.settings.use_table && this.isValidTableJSON) {
         // This first clause prevents the table from having --table or --editing class
         return "--table";
       } else if (this.isEditionModeActive) {
@@ -125,7 +125,7 @@ export default {
 
       return null;
     },
-    isValueJSON() {
+    isValidTableJSON() {
       return isTableJSON(this.question.answer.value);
     },
   },

@@ -4,9 +4,9 @@ var greater_equal = (cell, value, parameters) => value == "NA" || parseFloat(val
 var less_equal = (cell, value, parameters) => value == "NA" || parseFloat(value) <= parameters;
 
 export function getColumnValidators(tableJSON) {
-	const tableColumns = tableJSON.schema.fields.map((col) => col.name);
 	const schemaColumns = tableJSON.validation?.columns; // Pandera yaml schema
 	if (schemaColumns == null) return {};
+	const tableColumns = tableJSON.schema.fields.map((col) => col.name);
 	
 	const tabulatorValidators = {};
 	for (const [columnName, columnSchema] of Object.entries(schemaColumns)) {
