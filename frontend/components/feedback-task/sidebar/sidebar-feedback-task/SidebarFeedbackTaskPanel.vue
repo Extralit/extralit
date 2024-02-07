@@ -77,7 +77,7 @@ export default {
 
     interact(this.$el)
       .resizable({
-        edges: { left: true, right: true, bottom: false, top: false },
+        edges: { left: true, right: false, bottom: false, top: false },
         modifiers: [
           interact.modifiers.restrictSize({
             min: { width: 200, height: 0 },

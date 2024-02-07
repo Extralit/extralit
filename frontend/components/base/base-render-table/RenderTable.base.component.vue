@@ -1,19 +1,20 @@
 <template>
   <div class="table-container">
+    <div class="--table-buttons">
+      <BaseButton v-show="indexColumns && indexColumns.length" @click.prevent="toggleGroupRefColumns">
+        <span v-if="groupByRefColumns">⬇️ Show group reference</span>
+        <span v-else>⬅️ Show group headers</span>
+      </BaseButton>
+    </div>
+
     <div ref="table" class="--table" />
 
     <div class="--table-buttons">
-      <BaseButton v-show="indexColumns && indexColumns.length" @click.prevent="toggleGroupRefColumns">
-        ⬅️ Index
-      </BaseButton>
       <BaseButton v-show="columns && columnValidators && Object.keys(columnValidators).length" @click.prevent="validateTable({ showErrors: true, scrollToError: true })">
-        ✅ Checks
+        ✅ Check data
       </BaseButton>
       <BaseButton v-show="editable" @click.prevent="addColumn">
         ➕ Add column
-      </BaseButton>
-      <BaseButton v-show="editable" @click.prevent="addRow">
-        ➕ Add row
       </BaseButton>
     </div>
   </div>
@@ -79,10 +80,11 @@ export default {
     },
     refColumns() {
       try {
-        const arr = this.tableJSON.schema.fields
+        const ref_columns = this.tableJSON.schema.fields
           .map(field => field.name)
           .filter(name => typeof name === 'string' && name.endsWith('_ref'));
-        return arr.length ? arr : null;
+          
+        return ref_columns.length ? ref_columns : null;
       } catch (error) {
         console.error("Failed to get refColumns:", error);
         return null;
@@ -118,13 +120,17 @@ export default {
         }
       });
       if (this.editable) {
-        configs.unshift({ rowHandle: true, formatter: "handle", headerSort: false, frozen: false, width: 30, minWidth: 30 },);
+        configs.unshift({ 
+          rowHandle: true, 
+          // formatter: "tickCross", 
+          headerSort: false, frozen: false, hozAlign: "center", width: 30, minWidth: 30 },);
+        // configs.push({ formatter: "buttonCross", width: 30, hozAlign: "center" })
       }
       return configs;
     },
     referenceValues() {
       if (!this.refColumns) return null;
-      const firstRow = this.tableJSON?.data?.find((row) => row?.reference.includes('-'))
+      const firstRow = this.tableJSON?.data?.find((row) => row?.reference?.trim() !== '');
       if (!firstRow) return null;
       
       const refValues = this.refColumns.reduce((acc, refColumn, index) => {
@@ -198,9 +204,12 @@ export default {
               navigator.clipboard.readText().then((text) => {
                 const values = text.split("\t");
                 const currentRow = row.getData();
-                Object.keys(currentRow).forEach((columnName, index) => {
-                  currentRow[columnName] = values[index];
-                });
+                Object.keys(currentRow)
+                  .filter(columnName => !this.isRefColumn(columnName))
+                  .forEach((columnName, index) => {
+                    if (values[index] === undefined) return;
+                    currentRow[columnName] = values[index];
+                  });
                 row.update(currentRow);
                 this.updateTableJsonData();
               });
@@ -302,7 +311,7 @@ export default {
       return field == "reference" || this.refColumns?.includes(field);
     },
     getColumnEditableConfig(fieldName) {
-      if (!this.editable || this.indexColumns.includes(fieldName)) return {};
+      if (!this.editable) return {};
 
       // Default editable config for a column
       var config = {
@@ -437,9 +446,10 @@ export default {
       
       const newRow = {};
       for (const field of this.columns) {
-        if (requiredFields.includes(field)) {
-          const maxRefValue = getMaxStringValue(field, this.table.getData());
-          newRow[field] = incrementReferenceStr(maxRefValue);
+        if (requiredFields.includes(field) && selectedRow._row.data[field]) {
+          newRow[field] = selectedRow._row.data[field]
+          // const maxRefValue = getMaxStringValue(field, this.table.getData());
+          // newRow[field] = incrementReferenceStr(maxRefValue);
         } else {
           newRow[field] = undefined;
         }
@@ -462,6 +472,7 @@ export default {
     },
     addColumn() {
       let newFieldName = "newColumn";
+      // Assign a unique name to the new column
       let count = 1;
       while (this.columns.includes(newFieldName)) {
         newFieldName = `newColumn${count}`;
@@ -542,11 +553,11 @@ export default {
       if (this.referenceValues?.[field]?.hasOwnProperty(value)) {
         const keyValues = Object.entries(this.referenceValues[field][value])
           .filter(([key, value]) => key !== "reference" && value !== 'NA' && value !== null)
-          .map(([key, value]) => `${key}: <span style="font-weight:normal; color:black; margin-left:0;">${value}</span>`)
+          .map(([key, value]) => `<span style="font-weight:normal; color:black; margin-left:0;">${key}:</span> ${value}`)
           .join(', ');
 
         if (keyValues.length > 0) {
-          header = `<BaseTooltip text="${value}" position="right">${keyValues}</BaseTooltip>`
+          header = `<small style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" text="${value}">${keyValues}</small>`
         }
       }
 

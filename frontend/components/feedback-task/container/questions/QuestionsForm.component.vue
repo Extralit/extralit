@@ -79,6 +79,7 @@
 <script>
 import "assets/icons/external-link";
 import "assets/icons/refresh";
+import interact from 'interactjs'
 
 import { useQuestionFormViewModel } from "./useQuestionsFormViewModel";
 
@@ -142,6 +143,16 @@ export default {
   },
   mounted() {
     document.addEventListener("keydown", this.handleGlobalKeys);
+    interact(this.$el)
+      .resizable({
+        edges: { left: true, right: false, bottom: false, top: false },
+      })
+      .on('resizemove', event => {
+        let target = event.target;
+        let newWidth = event.rect.width;
+        let clampedWidth = Math.max(Math.min(newWidth, 0.8 * target.parentElement.offsetWidth), 0.4 * target.parentElement.offsetWidth);
+        target.style.flexBasis = clampedWidth + 'px';
+      });
   },
   destroyed() {
     document.removeEventListener("keydown", this.handleGlobalKeys);
@@ -239,10 +250,10 @@ export default {
 .questions-form {
   display: flex;
   flex-direction: column;
-  flex-basis: clamp(40%, 720px, 50%);
-  @include media(">desktopLarge") {
-      max-width: clamp(40%, 45vw, 60%);
-    }
+  flex-basis: clamp(40%, 720px, 80%);
+  // @include media(">desktopLarge") {
+  //   max-width: clamp(40%, 45vw, 80%);
+  // }
   max-height: 100%;
   min-width: 0;
   justify-content: space-between;
