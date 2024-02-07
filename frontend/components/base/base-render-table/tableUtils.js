@@ -51,29 +51,28 @@ export function findMatchingRefValues(refValues, records) {
       if (!recordTables) continue;
       const matchingTable = Object.values(recordTables)
         .find((table) => table.data.find((row) => row["reference"] === refValue));
+      if (!matchingTable) continue;
 
-      if (matchingTable) {
-        if (!matchingTable.hasOwnProperty('columnUniqueCounts')) {
-          matchingTable.columnUniqueCounts = columnUniqueCounts(matchingTable)
-        }
-
-        const refRows = matchingTable.data.reduce((acc, row) => {
-          const filteredRowValues = Object.entries(row)
-            .filter(([key, value]) => 
-              key != "reference" &&
-              (matchingTable.data.length <= 1 || !matchingTable?.columnUniqueCounts?.hasOwnProperty(key) || matchingTable.columnUniqueCounts[key] > 1))
-            .reduce((obj, [key, value]) => {
-              obj[key] = value;
-              return obj;
-            }, {});
-          acc[row.reference] = filteredRowValues;
-          return acc;
-        }, {});
-
-        matchingRefValues[field] = refRows;
-        break;
+      if (!matchingTable.hasOwnProperty('columnUniqueCounts')) {
+        matchingTable.columnUniqueCounts = columnUniqueCounts(matchingTable)
       }
-    }
+
+      const refRows = matchingTable.data.reduce((acc, row) => {
+        const filteredRowValues = Object.entries(row)
+          .filter(([key, value]) => 
+            key != "reference" &&
+            (matchingTable.data.length <= 1 || !matchingTable?.columnUniqueCounts?.hasOwnProperty(key) || matchingTable.columnUniqueCounts[key] > 1))
+          .reduce((obj, [key, value]) => {
+            obj[key] = value;
+            return obj;
+          }, {});
+        acc[row.reference] = filteredRowValues;
+        return acc;
+      }, {});
+
+      matchingRefValues[field] = refRows;
+      break;
+      }
   }
 
   return matchingRefValues

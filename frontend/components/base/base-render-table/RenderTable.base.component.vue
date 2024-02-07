@@ -27,7 +27,7 @@ import "tabulator-tables/dist/css/tabulator.min.css";
 import { getColumnValidators } from "./validationUtils";
 import { 
   columnSchemaToDesc, 
-  getTableDataFromRecords, 
+  getTableDataFromRecords as getTablesFromRecords, 
   findMatchingRefValues,
   incrementReferenceStr,
   getMaxStringValue,
@@ -129,8 +129,12 @@ export default {
       return configs;
     },
     referenceValues() {
+      // First get the metadata.reference from the current table by checking the first row's _ref columns, 
+      // then use refValues to find the matching tables from other records and get the dict of reference values to rows
       if (!this.refColumns) return null;
-      const firstRow = this.tableJSON?.data?.find((row) => row?.reference?.trim() !== '');
+      const firstRow = this.tableJSON?.data?.find((row) => 
+        this.refColumns.some((refColumn) => row[refColumn] !== undefined)
+      )
       if (!firstRow) return null;
       
       const refValues = this.refColumns.reduce((acc, refColumn, index) => {
@@ -139,12 +143,12 @@ export default {
       }, {});
       if (!refValues) return null;
   
-      const publication_ref = firstRow.reference.split('-')[0];
+      const publication_ref = firstRow.reference?.split('-')[0];
 
-      let records = getTableDataFromRecords((record) => record?.metadata?.reference == publication_ref)
-      const matchingRefValues = findMatchingRefValues(refValues, records)
+      let recordTables = getTablesFromRecords((record) => record?.metadata?.reference == publication_ref)
+      const refToRowDict = findMatchingRefValues(refValues, recordTables)
 
-      return matchingRefValues;
+      return refToRowDict;
     },
     columnMenu() {
       let menu = [
