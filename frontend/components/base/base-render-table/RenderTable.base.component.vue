@@ -143,7 +143,8 @@ export default {
       }, {});
       if (!refValues) return null;
   
-      const publication_ref = firstRow.reference?.split('-')[0];
+      const publication_ref = firstRow[this.refColumns[0]]?.split('-')[0];
+      if (!publication_ref) return null;
 
       let recordTables = getTablesFromRecords((record) => record?.metadata?.reference == publication_ref)
       const refToRowDict = findMatchingRefValues(refValues, recordTables)
@@ -206,10 +207,11 @@ export default {
             label: "Paste",
             action: (e, row) => {
               navigator.clipboard.readText().then((text) => {
-                const values = text.split("\t");
+                const values = text.trim().split("\t");
                 const currentRow = row.getData();
+
                 Object.keys(currentRow)
-                  .filter(columnName => !this.isRefColumn(columnName))
+                  .filter(columnName => this.isRefColumn(columnName) || this.columns.includes(columnName))
                   .forEach((columnName, index) => {
                     if (values[index] === undefined) return;
                     currentRow[columnName] = values[index];
@@ -266,14 +268,17 @@ export default {
       }
 
       if (add) {
-        const addColumns = this.columns.filter((field) => !this.tableJSON.schema.fields.map((field) => field.name).includes(field));
+        const addColumns = this.columns.filter(
+          (field) => !this.tableJSON.schema.fields.map((field) => field.name).includes(field) && field);
 
         // Add the new field to the schema
-        const data = this.table.getData().forEach((item) => {
+        const data = this.table.getData()
+        data.forEach((item) => {
           addColumns.forEach((column) => {
-            item[column] = undefined;
+            item[column] = null;
           });
         });
+
         this.table.setData(data);
         addColumns.forEach((column) => {
           this.tableJSON.schema.fields.push({
@@ -420,21 +425,21 @@ export default {
       this.$nuxt.$emit("on-table-highlight-row", row);
     },
     selectRow(row) {
-      let selectedRow;
-      if (this.columns.includes("reference")) {
-        // Highlight all rows with the same index accross different tables
-        selectedRow = this.table
-          .getRows()
-          .find(
-            (tableRow) => tableRow.getData().reference == row._row.data.reference
-          );
-      } else {
-        selectedRow = this.table.getRows().find((tableRow) => tableRow._row.data == row._row.data);
-      }
+      let selectedRow = row;
+      // if (this.columns.includes("reference")) {
+      //   // Highlight all rows with the same index accross different tables
+      //   selectedRow = this.table
+      //     .getRows()
+      //     .find(
+      //       (tableRow) => tableRow.getData().reference == row._row.data.reference
+      //     );
+      // } else {
+      //   selectedRow = this.table.getRows().find((tableRow) => tableRow._row.data == row._row.data);
+      // }
       
-      // Only highlight if the row is not already selected
-      if (selectedRow === undefined) return;
-      if (this.table.getSelectedRows().indexOf(selectedRow) != -1) return;
+      // // Only highlight if the row is not already selected
+      // if (selectedRow === undefined) return;
+      // if (this.table.getSelectedRows().indexOf(selectedRow) != -1) return;
       
       this.table.scrollToRow(selectedRow, null, false);
       this.table.deselectRow("visible");
@@ -486,8 +491,9 @@ export default {
       this.table.addColumn({
         title: newFieldName,
         field: newFieldName,
+        editableTitle: true,
         ...this.getColumnEditableConfig(newFieldName),
-      }, true).then((col) => {
+      }, false).then((col) => {
         this.validateTable();
       });
 

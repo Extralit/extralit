@@ -19,7 +19,7 @@ export function columnUniqueCounts(tableJSON) {
   let uniqueCounts = {};
   for (let key of Object.keys(tableJSON.data[0])) {
     let values = tableJSON.data.map(row => row[key]);
-    let filteredValues = values.filter(value => value != null && value !== 'NA' && value?.length);
+    let filteredValues = values.filter(value => value != null && value !== 'NA' && value);
     uniqueCounts[key] = new Set(filteredValues).size;
   }
 
