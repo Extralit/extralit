@@ -1,9 +1,14 @@
 <template>
   <div class="container">
     <RenderTableBaseComponent
-      v-if="question.settings.use_table"
+      v-if="question.settings.use_table && isValidTableJSON"
       class="textarea"
       :tableData="question.answer?.suggestedAnswer"
+    />
+    <RenderHTMLBaseComponent
+      v-else-if="question.settings.use_table && isValidHTML"
+      class="textarea"
+      :value="question.answer?.suggestedAnswer"
     />
     <RenderMarkdownBaseComponent
       v-else
@@ -22,12 +27,22 @@
 
 <script>
 import "assets/icons/copy";
+import { isTableJSON } from "@/components/base/base-render-table/tableUtils.js";
+
 export default {
   name: "TextAreaComponent",
   props: {
     question: {
       type: Object,
       required: true,
+    },
+  },
+  computed: {
+    isValidHTML() {
+      return this.question.answer?.suggestedAnswer?.startsWith("<");
+    },
+    isValidTableJSON() {
+      return isTableJSON(this.question.answer?.suggestedAnswer);
     },
   },
 };

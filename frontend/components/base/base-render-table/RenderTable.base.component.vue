@@ -169,6 +169,12 @@ export default {
             separator: true,
           },
           {
+            label: "Add column",
+            action: (e, column) => {
+              this.addColumn(column);
+            }
+          },
+          {
             label: "Rename column",
               action: (e, column) => {
                 if (column.getDefinition().frozen) return;
@@ -269,7 +275,7 @@ export default {
 
       if (add) {
         const addColumns = this.columns.filter(
-          (field) => !this.tableJSON.schema.fields.map((field) => field.name).includes(field) && field);
+          (field) => !this.tableJSON.schema.fields.map((field) => field.name).includes(field) && field != undefined);
 
         // Add the new field to the schema
         const data = this.table.getData()
@@ -310,7 +316,7 @@ export default {
           return field;
         });
 
-        console.log("update:", data, this.tableJSON.schema.fields, this.columns);
+        console.log("update:", 'data', data, 'tableJSON.schema.fields', this.tableJSON.schema.fields, 'currentColumns', this.columns);
       }
 
       this.tableJSON.data = this.table.getData();
@@ -479,7 +485,7 @@ export default {
       // Update this.tableJSON to reflect the current data in the table
       this.updateTableJsonData();
     },
-    addColumn() {
+    addColumn(selectedColumn) {
       let newFieldName = "newColumn";
       // Assign a unique name to the new column
       let count = 1;
@@ -488,12 +494,15 @@ export default {
         count++;
       }
 
+      const selectedColumnField = selectedColumn?.getDefinition()?.field;
+      console.log('selectedColumn', selectedColumn?.getDefinition(), selectedColumnField)
+
       this.table.addColumn({
         title: newFieldName,
         field: newFieldName,
         editableTitle: true,
         ...this.getColumnEditableConfig(newFieldName),
-      }, false).then((col) => {
+      }, false, selectedColumnField).then((col) => {
         this.validateTable();
       });
 

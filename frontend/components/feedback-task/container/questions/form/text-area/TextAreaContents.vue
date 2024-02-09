@@ -7,8 +7,20 @@
     :tabindex="isEditionModeActive ? '-1' : '0'"
     @keydown.shift.enter.exact.prevent="onEditMode"
   >
+    <RenderHTMLBaseComponent
+      v-if="question.settings.use_markdown && isValidHTML"
+      class="textarea"
+      :value="question.answer.value"
+      :editable="true"
+      :originalValue="question.answer.originalValue"
+      :placeholder="question.settings.placeholder"
+      :isFocused="isEditionModeActive"
+      @change-text="onChangeTextArea"
+      @on-change-focus="onChangeFocus"
+      @on-exit-edition-mode="onExitEditionMode"
+    />
     <RenderTableBaseComponent
-      v-if="question.settings.use_table && isValidTableJSON"
+      v-else-if="question.settings.use_table && isValidTableJSON"
       class="textarea"
       :tableData="question.answer.value"
       :editable="true"
@@ -116,7 +128,7 @@ export default {
   },
   computed: {
     classes() {
-      if (this.question.settings.use_table && this.isValidTableJSON) {
+      if (this.question.settings.use_table && (this.isValidHTML || this.isValidTableJSON)) {
         // This first clause prevents the table from having --table or --editing class
         return "--table";
       } else if (this.isEditionModeActive) {
@@ -128,6 +140,9 @@ export default {
     isValidTableJSON() {
       return isTableJSON(this.question.answer.value);
     },
+    isValidHTML() {
+      return this.question.answer.value?.startsWith("<");
+    }
   },
   mounted() {
     this.$nuxt.$on('on-update-response-tabledata', (tableJsonString) => {
@@ -157,6 +172,10 @@ export default {
   }
   &.--editing {
     border-color: $primary-color;
+    outline: 1px solid $primary-color;
+  }
+  &:focus {
+    outline: 1px solid $black-20;
   }
   &:focus:not(:focus-visible) {
     outline: none;

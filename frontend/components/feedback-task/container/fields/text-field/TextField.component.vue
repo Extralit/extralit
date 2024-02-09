@@ -18,6 +18,7 @@
     </div>
     <div class="content-area">
       <RenderTableBaseComponent v-if="useTable && isValidTableJSON" :tableData="text" />
+      <RenderHTMLBaseComponent v-else-if="isValidHTML" :value="text" />
       <RenderMarkdownBaseComponent v-else-if="useMarkdown" :markdown="text" />
       <div v-else v-html="text" />
     </div>
@@ -54,6 +55,9 @@ export default {
   computed: {
     isValidTableJSON() {
       return isTableJSON(this.text);
+    },
+    isValidHTML() {
+      return this.text.startsWith("<");
     },
   },
   setup(props) {
