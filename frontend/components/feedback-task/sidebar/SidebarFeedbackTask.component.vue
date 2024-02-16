@@ -2,18 +2,24 @@
   <div class="sidebar__container">
     <SidebarFeedbackTaskPanel v-if="isPanelVisible" @close-panel="closePanel" :currentPanel="currentPanel">
       <HelpShortcut 
-      v-if="currentPanel === 'help-shortcut'"
+        v-if="currentPanel === 'help-shortcut'"
       />
 
       <FeedbackTaskProgress
-      v-else-if="currentPanel === 'metrics'"
-      :datasetId="datasetId"
+        v-else-if="currentPanel === 'metrics'"
+        :datasetId="datasetId"
       />
 
-      <PDFViewerBaseComponent 
-      v-else-if="currentPanel === 'document' && document.id != null"
-      :pdf-data="document.file_data" 
-      :file-name="document.file_name"
+      <!-- <PDFViewerBaseComponent 
+        v-else-if="currentPanel === 'document' && document.id != null"
+        :pdf-data="document.file_data" 
+        :file-name="document.file_name"
+      /> -->
+
+      <PDFAnnotatorBaseComponent 
+        v-else-if="currentPanel === 'document' && document.id != null"
+        :pdf-data="document.file_data" 
+        :file-name="document.file_name"
       />
 
     </SidebarFeedbackTaskPanel>
@@ -31,7 +37,7 @@
 import "assets/icons/progress";
 import "assets/icons/refresh";
 import "assets/icons/shortcuts";
-import useDocumentViewModel from "@/components/base/base-pdf-viewer/useDocumentViewModel";
+import useDocumentViewModel from "./useDocumentViewModel";
 
 export default {
   props: {
@@ -195,4 +201,4 @@ export default {
     pointer-events: none;
   }
 }
-</style>
+</style>~/components/feedback-task/sidebar/useDocumentViewModel

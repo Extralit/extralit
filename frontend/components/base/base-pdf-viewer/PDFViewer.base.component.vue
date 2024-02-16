@@ -1,13 +1,13 @@
 <template>
   <div class="pdf-container">
     <PDFView 
-    :src.sync="pdfData" 
-    :fileName="fileName" 
-    :sidebarFeatureVisible=true 
-    :scale.sync="scale"
-    :scrollToPage="2"
-    ref="pdfView"
-    class="PDFView"
+      :src.sync="pdfData" 
+      :fileName="fileName" 
+      :sidebarFeatureVisible=true 
+      :scale.sync="scale"
+      :scrollToPage="2"
+      ref="pdfView"
+      class="PDFView"
     >
       <template slot="right-toolbox">
         <p class="document__title">{{ fileName }}</p>

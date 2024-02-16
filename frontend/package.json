@@ -54,6 +54,7 @@
     "nuxt": "^2.15.8",
     "nuxt-highlightjs": "^1.0.2",
     "nuxt-mq": "^2.0.2",
+    "pdf-annotate-vue": "^1.0.2",
     "pinia": "^2.1.4",
     "sass": "^1.49.9",
     "stringz": "^2.1.0",
