@@ -10,7 +10,7 @@
       :datasetId="datasetId"
       />
 
-      <PDFViewer 
+      <PDFViewerBaseComponent 
       v-else-if="currentPanel === 'document' && document.id != null"
       :pdf-data="document.file_data" 
       :file-name="document.file_name"
@@ -31,7 +31,7 @@
 import "assets/icons/progress";
 import "assets/icons/refresh";
 import "assets/icons/shortcuts";
-import useDocumentViewModel from "./document-viewer/useDocumentViewModel";
+import useDocumentViewModel from "@/components/base/base-pdf-viewer/useDocumentViewModel";
 
 export default {
   props: {

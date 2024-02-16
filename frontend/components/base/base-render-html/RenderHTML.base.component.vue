@@ -1,60 +1,75 @@
 <template>
 	<div v-if="editor" class="editor-container">
-		<!-- <bubble-menu 
-			ref="bubbleMenu"
+		<div 
 			v-if="editable"
 			:editor="editor" 
-			:tippy-options="{ duration: 10 }" 
-			:shouldShow="shouldShowBubbleMenu"
-			class="--table-buttons"
 		>
-			<button @click="editor.chain().focus().addColumnAfter().run()">
-				addColumnAfter
-			</button>
-			<button @click="editor.chain().focus().deleteColumn().run()">
-				deleteColumn
-			</button>
-		</bubble-menu> -->
-
-		<div class="--table-buttons" v-if="editable">
-	    <button @click.prevent="editor.chain().focus().addColumnBefore().run()" v-if="editor.can().addColumnBefore()">
-			  ➕ Column
-			</button>
-	    <button @click.prevent="editor.chain().focus().deleteColumn().run()" v-if="editor.can().deleteColumn()">
-			  ➖ Column
-			</button>
-			<button @click.prevent="editor.chain().focus().addRowBefore().run()" v-if="editor.can().addRowBefore()">
-	      ➕ RowBefore
-	    </button>
-	    <button @click.prevent="editor.chain().focus().addRowAfter().run()" v-if="editor.can().addRowAfter()">
-	      ➕ RowAfter
-	    </button>
-	    <button @click.prevent="editor.chain().focus().deleteRow().run()" v-if="editor.can().deleteRow()">
-	      ➖ Row
-	    </button>
-	    <button @click.prevent="editor.chain().focus().mergeCells().run()" v-if="editor.can().mergeCells()">
-	      Merge Cells
-	    </button>
-	    <button @click.prevent="editor.chain().focus().splitCell().run()" v-if="editor.can().splitCell()">
-	      Split Cell
-	    </button>
-			<!-- <button @click.prevent="editor.chain().focus().mergeOrSplit().run()" v-if="editor.can().mergeOrSplit()">
-				merge Or Split
-			</button> -->
-	    <button @click.prevent="editor.chain().focus().toggleHeaderColumn().run()" v-if="editor.can().toggleHeaderColumn()">
-	      Toggle Header Column
-	    </button>
-	    <button @click.prevent="editor.chain().focus().toggleHeaderRow().run()" v-if="editor.can().toggleHeaderRow()">
-	      Toggle Header Row
-	    </button>
-	    <button @click.prevent="editor.chain().focus().toggleHeaderCell().run()" v-if="editor.can().toggleHeaderCell()">
-	      Toggle Header Cell
-	    </button>
-	    <button @click.prevent="editor.chain().focus().fixTables().run()" v-if="editor.can().fixTables()">
-	      Fix Tables
-	    </button>
+			<div
+				class="menubar"
+			>
+				<button class="menubar__button" @click.prevent="editor.chain().focus().addColumnBefore().run()" 
+					:disabled="!editor.can().addColumnBefore()"
+				>
+					➕ Column
+				</button>
+				<button class="menubar__button" @click.prevent="editor.chain().focus().deleteColumn().run()" 
+					:disabled="!editor.can().deleteColumn()"
+				>
+					➖ Column
+				</button>
+				<!-- <button class="menubar__button" @click.prevent="editor.chain().focus().addRowBefore().run()" 
+					:disabled="!editor.can().addRowBefore()"
+				>
+					➕ RowBefore
+				</button> -->
+				<button class="menubar__button" @click.prevent="editor.chain().focus().addRowAfter().run()" 
+					:disabled="!editor.can().addRowAfter()"
+				>
+					➕ Row
+				</button>
+				<button class="menubar__button" @click.prevent="editor.chain().focus().deleteRow().run()" 
+					:disabled="!editor.can().deleteRow()"
+				>
+					➖ Row
+				</button>
+				<button class="menubar__button" @click.prevent="editor.chain().focus().mergeCells().run()" 
+					:disabled="!editor.can().mergeCells()"
+				>
+					Merge Cells
+				</button>
+				<button class="menubar__button" @click.prevent="editor.chain().focus().splitCell().run()" 
+					:disabled="!editor.can().splitCell()"
+				>
+					Split Cell
+				</button>
+				<!-- <button class="menubar__button" @click.prevent="editor.chain().focus().mergeOrSplit().run()" 
+						:disabled="!editor.can().mergeOrSplit()"
+					>
+					merge Or Split
+				</button> -->
+				<button class="menubar__button" @click.prevent="editor.chain().focus().toggleHeaderColumn().run()" 
+					:disabled="!editor.can().toggleHeaderColumn()"
+				>
+					Toggle Header Column
+				</button>
+				<button class="menubar__button" @click.prevent="editor.chain().focus().toggleHeaderRow().run()" 
+					:disabled="!editor.can().toggleHeaderRow()"
+				>
+					Toggle Header Row
+				</button>
+				<button class="menubar__button" @click.prevent="editor.chain().focus().toggleHeaderCell().run()" 
+					:disabled="!editor.can().toggleHeaderCell()"
+				>
+					Toggle Header Cell
+				</button>
+				<button class="menubar__button" @click.prevent="editor.chain().focus().fixTables().run()" 
+					:disabled="!editor.can().fixTables()"
+				>
+					Fix Tables
+				</button>
+			</div>
 		</div>
-		
+
 		<editor-content 
 			:editor="editor" 
 			@focus="setFocus(true)"
@@ -73,8 +88,7 @@ import TableHeader from '@tiptap/extension-table-header'
 import TableRow from '@tiptap/extension-table-row'
 import Text from '@tiptap/extension-text'
 import History from '@tiptap/extension-history'
-// import BubbleMenu from '@tiptap/extension-bubble-menu'
-import { Editor, EditorContent, BubbleMenu } from '@tiptap/vue-2'
+import { Editor, EditorContent } from '@tiptap/vue-2'
 
 
 export default {
@@ -82,7 +96,6 @@ export default {
 
 	components: {
 		EditorContent,
-		BubbleMenu,
 	},
 
 	props: {
@@ -156,6 +169,7 @@ export default {
 				TableHeader,
 				TableCell,
 			],
+			editable: this.editable,
 			content: this.value,
 			onUpdate: ({ editor }) => {
 				this.onChangeText(editor.getHTML());
@@ -216,20 +230,65 @@ export default {
 .editor-container {
   position: relative;
 	flex-flow: column;
-	max-width: 100%;
-  overflow: auto;
+	// max-width: 100%;
+  overflow-x: auto;
+
+  &__content {
+    padding: 4rem 1rem;
+  }
+
+  &__footer {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  &__source-link {
+    display: inline-block;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 0.8rem;
+    background-color: rgba(black, 0.1);
+    color: black;
+    border-radius: 5px;
+    padding: 0.2rem 0.5rem;
+  }
 }
 
-.--table-buttons {
+.menubar {
 	display: flex;
 	flex-wrap: wrap;
 	justify-content: space-between;
 	padding: 5px 5px 0px 0px;
 	color: white;
 	text-decoration: none;
+	
 
-	button {
-    margin-bottom: 5px;
+	.menubar__button {
+		background-color: transparent;
+		border: none;
+		border-radius: 0.4rem;
+		cursor: pointer;
+		height: 1.75rem;
+		margin-right: 0.25rem;
+		padding: 0.25rem;
+
+		svg {
+			fill: currentColor;
+			height: 100%;
+			width: 100%;
+		}
+
+		&:hover,
+		&.is-active {
+			background-color: #858585;
+		}
+
+		&:disabled {
+      background-color: #ccc;  // Adjust as needed
+      color: #888;  // Adjust as needed
+      cursor: not-allowed;
+    }
 	}
 }
 
@@ -301,9 +360,9 @@ input[type="checkbox"] {
   table {
     border-collapse: collapse;
     table-layout: fixed;
-    width: 100%;
     margin: 0;
     overflow: hidden;
+		overflow-x: auto;
 
     td,
     th {
@@ -350,9 +409,6 @@ input[type="checkbox"] {
   }
 }
 
-.tableWrapper {
-  overflow-x: auto;
-}
 
 .resize-cursor {
   cursor: ew-resize;

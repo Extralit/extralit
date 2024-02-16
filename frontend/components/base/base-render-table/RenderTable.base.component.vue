@@ -36,6 +36,7 @@ import { del } from "vue";
 
 export default {
   name: "RenderTableBaseComponent",
+
   props: {
     tableData: {
       type: String,
@@ -50,10 +51,12 @@ export default {
       default: false,
     },
   },
+
   model: {
     prop: "hasValidValues",
     event: "updateValidValues",
   },
+
   data() {
     return {
       table: null,
@@ -61,6 +64,7 @@ export default {
       isLoaded: false,
     };
   },
+
   computed: {
     tableJSON: {
       get() {
@@ -250,6 +254,7 @@ export default {
       return menu;
     }
   },
+
   methods: {
     updateTableJsonData(remove = false, add = false, update = false, newFieldName=null, oldFieldName=null) {
       if (remove) {
@@ -494,8 +499,11 @@ export default {
         count++;
       }
 
-      const selectedColumnField = selectedColumn?.getDefinition()?.field;
-      console.log('selectedColumn', selectedColumn?.getDefinition(), selectedColumnField)
+      let selectedColumnField = null;
+      if (selectedColumn && selectedColumn.hasOwnProperty('getDefinition')) {
+        let selectedColumnField = selectedColumn?.getDefinition()?.field;
+        console.log('selectedColumn', selectedColumn?.getDefinition(), selectedColumnField)
+      }
 
       this.table.addColumn({
         title: newFieldName,
@@ -584,6 +592,7 @@ export default {
       return header;
     },
   },
+
   mounted() {
     if (!this.tableJSON?.data?.length || !this.tableJSON?.schema) return;
 
@@ -665,6 +674,7 @@ export default {
       console.error("Failed to mount table:", error);
     }
   },
+
   beforeDestroy() {
     this.$nuxt.$off("on-table-highlight-row");
   },

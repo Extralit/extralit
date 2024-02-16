@@ -4,9 +4,10 @@
     :src.sync="pdfData" 
     :fileName="fileName" 
     :sidebarFeatureVisible=true 
+    :scale.sync="scale"
+    :scrollToPage="2"
     ref="pdfView"
     class="PDFView"
-    :scale.sync="scale"
     >
       <template slot="right-toolbox">
         <p class="document__title">{{ fileName }}</p>
@@ -46,6 +47,9 @@ export default {
     this.error = err;
     console.error(`Error caught from ${component}: ${err}`);
     return false; // stops the error from propagating further
+  },
+  beforeUnmount() {
+    this.$refs.pdfView.destroy();
   },
 }
 </script>

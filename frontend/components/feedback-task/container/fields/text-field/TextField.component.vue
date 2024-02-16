@@ -18,7 +18,7 @@
     </div>
     <div class="content-area">
       <RenderTableBaseComponent v-if="useTable && isValidTableJSON" :tableData="text" />
-      <RenderHTMLBaseComponent v-else-if="isValidHTML" :value="text" />
+      <RenderHTMLBaseComponent v-else-if="isValidHTML" style="display: block; white-space: pre-wrap; max-width: 100%; overflow-x: auto !important;" :value="text" :editable="false" />
       <RenderMarkdownBaseComponent v-else-if="useMarkdown" :markdown="text" />
       <div v-else v-html="text" />
     </div>
@@ -57,7 +57,7 @@ export default {
       return isTableJSON(this.text);
     },
     isValidHTML() {
-      return this.text.startsWith("<");
+      return this.text.startsWith("<") && !this.text.startsWith("<img") && !this.text.startsWith("<iframe");
     },
   },
   setup(props) {
