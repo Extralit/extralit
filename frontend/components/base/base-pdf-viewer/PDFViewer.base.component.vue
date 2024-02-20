@@ -5,7 +5,7 @@
       :fileName="fileName" 
       :sidebarFeatureVisible=true 
       :scale.sync="scale"
-      :scrollToPage="2"
+      :pageNumber="pageNumber"
       ref="pdfView"
       class="PDFView"
     >
@@ -21,10 +21,10 @@
 </template>
 
 <script>
-import { PDFView } from '@gabrielbu/vue-pdf-viewer';
+import { PDFView } from '@jonnytran/vue-pdf-viewer';
 
 export default {
-  name: 'PDFViewerTest',
+  name: 'PDFViewer',
   components: {
     PDFView,
   },
@@ -35,6 +35,10 @@ export default {
     },
     fileName: {
       type: String,
+      required: false
+    },
+    pageNumber: {
+      type: [Number, String],
       required: false
     },
   },

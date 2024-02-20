@@ -71,7 +71,8 @@
 		</div>
 
 		<editor-content 
-			:editor="editor" 
+			:editor="editor"
+			style="min-width: 500px;" 
 			@focus="setFocus(true)"
 			@blur="setFocus(false)"
 		/>

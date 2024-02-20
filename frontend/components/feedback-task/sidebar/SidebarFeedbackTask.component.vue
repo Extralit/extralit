@@ -10,17 +10,18 @@
         :datasetId="datasetId"
       />
 
-      <!-- <PDFViewerBaseComponent 
+      <PDFViewerBaseComponent 
         v-else-if="currentPanel === 'document' && document.id != null"
         :pdf-data="document.file_data" 
+        :file-name="document.file_name"
+        :pageNumber="document.page_number"
+      />
+
+      <!-- <PDFAnnotatorBaseComponent 
+        v-else-if="currentPanel === 'document' && document.id != null"
+        :pdf-data="'http://localhost:3000/2305.14336v2.pdf'" 
         :file-name="document.file_name"
       /> -->
-
-      <PDFAnnotatorBaseComponent 
-        v-else-if="currentPanel === 'document' && document.id != null"
-        :pdf-data="document.file_data" 
-        :file-name="document.file_name"
-      />
 
     </SidebarFeedbackTaskPanel>
 
@@ -142,6 +143,10 @@ export default {
         // Metadata is null, and this.document is not, so we clear the document
         } else if (!metadata?.pmid && !metadata?.doc_id && this.hasDocumentLoaded) {
           this.clearDocument();
+        }
+
+        if (metadata?.page_number != null) {
+          this.setDocumentPageNumber(metadata.page_number);
         }
       } catch (error) {
         console.log(error)

@@ -33,11 +33,16 @@ export const useDocumentViewModel = () => {
     }
   };
 
+  const setDocumentPageNumber = (pageNumber: number | string) => {
+    setDocument({ ...document, page_number: pageNumber });
+  };
+
   return {
     document,
     setDocumentByID: setDocumentByID,
     setDocumentByPubmedID: setDocumentByPubmedID,
     clearDocument: clearDocument,
+    setDocumentPageNumber: setDocumentPageNumber,
   };
 };
 
