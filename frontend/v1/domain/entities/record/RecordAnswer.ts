@@ -7,6 +7,7 @@ export class RecordAnswer implements Answer {
     public readonly id: string,
     public readonly status: RecordStatus,
     public readonly value: AnswerCombinations,
-    public readonly updatedAt: string
+    public readonly updatedAt: string,
+    public duration?: number
   ) {}
 }

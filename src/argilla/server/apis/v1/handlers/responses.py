@@ -40,6 +40,7 @@ router = APIRouter(tags=["responses"])
 
 async def _get_response(db: AsyncSession, response_id: UUID) -> Response:
     response = await datasets.get_response_by_id(db, response_id)
+
     if not response:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

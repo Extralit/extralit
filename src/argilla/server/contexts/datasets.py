@@ -1015,7 +1015,7 @@ async def create_response(
         await search_engine.update_record_response(response)
 
     await db.commit()
-
+    print('create_response', response.values)
     return response
 
 
@@ -1023,6 +1023,13 @@ async def update_response(
     db: "AsyncSession", search_engine: SearchEngine, response: Response, response_update: ResponseUpdate
 ):
     _validate_response_values(response.record.dataset, values=response_update.values, status=response_update.status)
+
+    if 'duration' in response.values:
+        if 'duration' in response_update.values:
+            response_update.values['duration'].value = \
+                response.values['duration']['value'] + response_update.values['duration'].value
+        else:
+            response_update.values['duration'] = ResponseValueUpdate(value=response.values['duration']['value'])
 
     async with db.begin_nested():
         response = await response.update(
@@ -1038,7 +1045,7 @@ async def update_response(
         await search_engine.update_record_response(response)
 
     await db.commit()
-
+    
     return response
 
 
@@ -1046,9 +1053,16 @@ async def upsert_response(
     db: "AsyncSession", search_engine: SearchEngine, record: Record, user: User, response_upsert: ResponseUpsert
 ) -> Response:
     _validate_response_values(record.dataset, values=response_upsert.values, status=response_upsert.status)
+    
+    if 'duration' in response.values:
+        if 'duration' in response_upsert.values:
+            response_upsert.values['duration'].value = \
+                response.values['duration']['value'] + response_upsert.values['duration'].value
+        else:
+            response_upsert.values['duration'] = ResponseValueUpdate(value=response.values['duration']['value'])
 
     schema = {
-        "values": jsonable_encoder(response_upsert.values),
+        "values": jsonable_encoder(response.values | response_upsert.values),
         "status": response_upsert.status,
         "record_id": response_upsert.record_id,
         "user_id": user.id,
@@ -1092,7 +1106,6 @@ def _validate_response_values(
         if status not in [ResponseStatus.discarded, ResponseStatus.draft]:
             raise ValueError("missing response values")
         return
-
     values_copy = copy.copy(values or {})
     for question in dataset.questions:
         if (
@@ -1105,6 +1118,13 @@ def _validate_response_values(
         question_response = values_copy.pop(question.name, None)
         if question_response:
             question.parsed_settings.check_response(question_response, status)
+
+    if 'duration' in values_copy:
+        duration_response = values_copy.pop('duration', None)
+        if duration_response:
+            duration = duration_response.value
+        if duration and not isinstance(duration, (int, str)):
+            raise ValueError(f"wrong value found for field {duration!r}. Expected (int, str), found {type(duration).__name__!r}")
 
     if values_copy:
         raise ValueError(f"found responses for non configured questions: {list(values_copy.keys())!r}")

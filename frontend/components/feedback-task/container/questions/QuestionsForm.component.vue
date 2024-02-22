@@ -85,6 +85,7 @@ import { useQuestionFormViewModel } from "./useQuestionsFormViewModel";
 
 export default {
   name: "QuestionsFormComponent",
+
   props: {
     datasetId: {
       type: String,
@@ -95,17 +96,22 @@ export default {
       required: true,
     },
   },
+
   data() {
     return {
       autofocusPosition: 0,
       interactionCount: 0,
       isTouched: false,
       userComesFromOutside: false,
+      timer: null,
+      duration: 0,
     };
   },
+
   setup() {
     return useQuestionFormViewModel();
   },
+
   computed: {
     questionFormClass() {
       if (this.isSubmitting) return "--submitted --waiting";
@@ -130,6 +136,7 @@ export default {
       return !this.questionAreCompletedCorrectly;
     },
   },
+
   watch: {
     record: {
       deep: true,
@@ -141,6 +148,7 @@ export default {
       },
     },
   },
+
   mounted() {
     document.addEventListener("keydown", this.handleGlobalKeys);
     interact(this.$el)
@@ -153,10 +161,21 @@ export default {
         let clampedWidth = Math.max(Math.min(newWidth, 0.8 * target.parentElement.offsetWidth), 0.4 * target.parentElement.offsetWidth);
         target.style.flexBasis = clampedWidth + 'px';
       });
+      
+    // Listen for visibility change events
+    this.startTimer();
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
   },
+
+  beforeDestroy() {
+    this.stopTimer();
+    document.removeEventListener('visibilitychange', this.handleVisibilityChange);
+  },
+
   destroyed() {
     document.removeEventListener("keydown", this.handleGlobalKeys);
   },
+
   methods: {
     focusOnFirstQuestionFromOutside(event) {
       // Prevents jumping around when the user clicks on a button or interacting with the table
@@ -225,7 +244,9 @@ export default {
     async onSubmit() {
       if (this.isSubmitButtonDisabled) return;
 
-      await this.submit(this.record);
+      let durationWrapper = { value: this.duration };
+      await this.submit(this.record, durationWrapper);
+      this.duration = durationWrapper.value; 
 
       this.$emit("on-submit-responses");
     },
@@ -233,7 +254,9 @@ export default {
       await this.clear(this.record);
     },
     async onSaveDraftImmediately() {
-      await this.saveDraftImmediately(this.record);
+      let durationWrapper = { value: this.duration };
+      await this.saveDraftImmediately(this.record, durationWrapper);
+      this.duration = durationWrapper.value;
     },
     updateQuestionAutofocus(index) {
       this.interactionCount++;
@@ -241,6 +264,25 @@ export default {
         this.numberOfQuestions - 1,
         Math.max(0, index)
       );
+    },
+    startTimer() {
+      this.timer = setInterval(() => {
+        this.duration++;
+      }, 1000);
+    },
+    stopTimer() {
+      clearInterval(this.timer);
+      this.timer = null;
+    },
+    resetTimer() {
+      this.duration = 0;
+    },
+    handleVisibilityChange() {
+      if (document.hidden) {
+        this.stopTimer();
+      } else {
+        this.startTimer();
+      }
     },
   },
 };
@@ -250,7 +292,7 @@ export default {
 .questions-form {
   display: flex;
   flex-direction: column;
-  flex-basis: clamp(40%, 720px, 80%);
+  flex-basis: clamp(40%, 30vw, 80%);
   // @include media(">desktopLarge") {
   //   max-width: clamp(40%, 45vw, 80%);
   // }

@@ -72,7 +72,7 @@
 
 		<editor-content 
 			:editor="editor"
-			style="min-width: 500px;" 
+			class="editor-content"
 			@focus="setFocus(true)"
 			@blur="setFocus(false)"
 		/>
@@ -254,6 +254,11 @@ export default {
     border-radius: 5px;
     padding: 0.2rem 0.5rem;
   }
+
+	.editor-content {
+		min-width: 40vw;
+		max-height: 60vh;
+	}
 }
 
 .menubar {

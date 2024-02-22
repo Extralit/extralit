@@ -193,7 +193,7 @@ export default {
   }
   &__records,
   &__form {
-    @include media("<desktop") {
+    @include media("<desktopLarge") {
       overflow: visible;
       height: auto;
       max-height: none !important;

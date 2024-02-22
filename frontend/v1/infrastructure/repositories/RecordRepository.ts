@@ -96,7 +96,7 @@ export class RecordRepository {
     status: BackendRecordStatus
   ) {
     try {
-      const request = this.createRequest(status, record.questions);
+      const request = this.createRequest(status, record);
 
       const { data } = await this.axios.put<BackendResponse>(
         `/v1/responses/${record.answer.id}`,
@@ -116,7 +116,7 @@ export class RecordRepository {
     status: BackendRecordStatus
   ) {
     try {
-      const request = this.createRequest(status, record.questions);
+      const request = this.createRequest(status, record);
 
       const { data } = await this.axios.post<BackendResponse>(
         `/v1/records/${record.id}/responses`,
@@ -415,11 +415,11 @@ export class RecordRepository {
 
   private createRequest(
     status: BackendRecordStatus,
-    questions: Question[]
+    record: Record
   ): Omit<BackendResponse, "id" | "updated_at"> {
     const values = {} as BackendAnswerCombinations;
 
-    questions
+    record.questions
       .filter(
         (question) =>
           question.answer.isValid || question.answer.isPartiallyValid
@@ -427,6 +427,10 @@ export class RecordRepository {
       .forEach((question) => {
         values[question.name] = { value: question.answer.valuesAnswered };
       });
+
+    if (record.answer?.duration) {
+      values['duration'] = { value: record.answer.duration };
+    }
 
     return {
       status,
