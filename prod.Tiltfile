@@ -30,6 +30,7 @@ helm_resource(
         '--version=8.5.1',
         '--values=./k8s/helm/elasticsearch-helm.yaml'],
     deps=['./k8s/helm/elasticsearch-helm.yaml', 'elastic'],
+    port_forwards=['9200:9200'],
     labels=['elasticsearch']
 )
 
@@ -67,7 +68,7 @@ k8s_resource(
   resource_deps=['main-db', 'elasticsearch'],
   port_forwards=['6901:6900'],
   labels=['argilla-server'],
-  links=['10.24.49.66'],
+  links=['10.24.49.60'],
 )
 
 k8s_yaml(['./k8s/argilla-loadbalancer-service.yaml'])
@@ -81,5 +82,13 @@ helm_resource(
         '--version=13.2.0',
         '--values=./k8s/helm/postgres-helm.yaml'],
     deps=['./k8s/helm/postgres-helm.yaml'],
+    port_forwards=['5432:5432'],
     labels=['argilla-server']
+)
+
+k8s_yaml('./k8s/grobid-deployment.yaml')
+k8s_resource(
+  'grobid-deployment',
+  port_forwards=['8070:8070', '8081:8081'],
+  labels=['grobid'],
 )

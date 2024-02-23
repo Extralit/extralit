@@ -14,6 +14,16 @@ spec:
       labels:
         app: argilla-server
     spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            preference:
+              matchExpressions:
+              - key: role
+                operator: In
+                values:
+                - backend
       initContainers:
         - name: wait-for-elasticsearch
           image: alpine/curl:latest

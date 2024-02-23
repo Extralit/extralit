@@ -11,3 +11,13 @@ postgresql:
     size: 2Gi
   backup:
     size: 1Gi
+  nodeAffinity: 
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 1
+      preference:
+        matchExpressions:
+        - key: role
+          operator: In
+          values:
+          - backend
+

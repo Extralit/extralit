@@ -1,5 +1,5 @@
 import { useRecordFeedbackTaskViewModel } from '@/components/feedback-task/container/useRecordFeedbackTaskViewModel';
-import { Record } from '~/v1/domain/entities/record/Record';
+import { Record as FeedbackRecord } from '~/v1/domain/entities/record/Record';
 
 
 export function isTableJSON(value: string): boolean {
@@ -41,7 +41,7 @@ export function incrementReferenceStr(reference: string): string {
   return newReference;
 }
 
-export function findMatchingRefValues(refValues: Record<string, string>, records: Record[]): any {
+export function findMatchingRefValues(refValues: Record<string, string>, records: FeedbackRecord[]): any {
   // refValues is an object of the form {field: refValue}
   // records is an array of objects of the form {table_name: {data: [{reference: refValue, ...}, ...]}}
   // returns an object of the form {field: {refValue: {column: value, ...}, ...}, ...}
@@ -79,7 +79,7 @@ export function findMatchingRefValues(refValues: Record<string, string>, records
   return matchingRefValues
 }
 
-export function getTableDataFromRecords(filter_fn: (record: Record) => boolean): any[] {
+export function getTableDataFromRecords(filter_fn: (record: FeedbackRecord) => boolean): any[] {
   // filter_fn is a function that takes a record and returns true if it should be included in the table
   // returns an array of objects of the form {field: {refValue: {column: value, ...}, ...}, ...}
   let recordTables = useRecordFeedbackTaskViewModel({recordCriteria: null})?.records.records

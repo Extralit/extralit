@@ -30,10 +30,13 @@ esMajorVersion: ""
 esConfig: 
   elasticsearch.yml: |
     ingest.geoip.downloader.enabled: false
-    cluster.initial_master_nodes: []
-
-discovery:
-  seed_hosts: []
+    cluster.routing.allocation.enable: all
+    cluster.routing.allocation.node_concurrent_recoveries: 2
+    cluster.routing.allocation.node_initial_primaries_recoveries: 5
+    cluster.routing.allocation.same_shard.host: true
+    cluster.routing.rebalance.enable: all
+    discovery.seed_hosts: ["elasticsearch-master-0"]
+    cluster.initial_master_nodes: ["elasticsearch-master-0"]
 
 createCert: true
 
@@ -173,11 +176,19 @@ antiAffinityTopologyKey: "kubernetes.io/hostname"
 
 # Hard means that by default pods will only be scheduled if there are enough nodes for them
 # and that they will never end up on the same node. Setting this to soft will do this "best effort"
-antiAffinity: "hard"
+antiAffinity: "soft"
 
 # This is the node affinity settings as defined in
 # https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#node-affinity-beta-feature
-nodeAffinity: {}
+nodeAffinity:
+  preferredDuringSchedulingIgnoredDuringExecution:
+  - weight: 1
+    preference:
+      matchExpressions:
+      - key: role
+        operator: In
+        values:
+        - index
 
 # The default is to deploy all pods serially. By setting this to parallel all pods are started at
 # the same time when bootstrapping the cluster
