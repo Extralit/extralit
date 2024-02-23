@@ -49,7 +49,7 @@
 </template>
 
 <script>
-import { isTableJSON } from "@/components/base/base-render-table/tableUtils.js";
+import { isTableJSON } from "@/components/base/base-render-table/tableUtils";
 
 export default {
   name: "TextAreaComponent",

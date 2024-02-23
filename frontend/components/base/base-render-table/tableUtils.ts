@@ -1,7 +1,8 @@
 import { useRecordFeedbackTaskViewModel } from '@/components/feedback-task/container/useRecordFeedbackTaskViewModel';
+import { Record } from '~/v1/domain/entities/record/Record';
 
 
-export function isTableJSON(value) {
+export function isTableJSON(value: string): boolean {
   if (!value?.length || (!value.startsWith('{') && !value.startsWith('['))) { return false; }
   
   try {
@@ -13,7 +14,7 @@ export function isTableJSON(value) {
   }
 }
 
-export function columnUniqueCounts(tableJSON) {
+export function columnUniqueCounts(tableJSON: any): any {
   // tableJSON is an object of the form {data: [{column: value, ...}, ...]}
   // returns an object of the form {column: uniqueCount, ...}
   let uniqueCounts = {};
@@ -26,11 +27,11 @@ export function columnUniqueCounts(tableJSON) {
   return uniqueCounts;
 }
 
-export function getMaxStringValue(columnName, data) {
+export function getMaxStringValue(columnName: string, data: any[]): string {
   return data.reduce((max, row) => row[columnName] > max ? row[columnName] : max, "");
 }
 
-export function incrementReferenceStr(reference) {
+export function incrementReferenceStr(reference: string): string {
   const parts = reference.split("-");
   const lastPart = parts[parts.length - 1];
   const suffix = lastPart.slice(-1);
@@ -40,7 +41,7 @@ export function incrementReferenceStr(reference) {
   return newReference;
 }
 
-export function findMatchingRefValues(refValues, records) {
+export function findMatchingRefValues(refValues: Record<string, string>, records: Record[]): any {
   // refValues is an object of the form {field: refValue}
   // records is an array of objects of the form {table_name: {data: [{reference: refValue, ...}, ...]}}
   // returns an object of the form {field: {refValue: {column: value, ...}, ...}, ...}
@@ -78,10 +79,10 @@ export function findMatchingRefValues(refValues, records) {
   return matchingRefValues
 }
 
-export function getTableDataFromRecords(filter_fn) {
+export function getTableDataFromRecords(filter_fn: (record: Record) => boolean): any[] {
   // filter_fn is a function that takes a record and returns true if it should be included in the table
   // returns an array of objects of the form {field: {refValue: {column: value, ...}, ...}, ...}
-  let recordTables = useRecordFeedbackTaskViewModel({})?.records.records
+  let recordTables = useRecordFeedbackTaskViewModel({recordCriteria: null})?.records.records
     .filter(filter_fn)
     .map((rec) => {
       let answer_tables = rec?.answer?.value || {};
@@ -89,18 +90,21 @@ export function getTableDataFromRecords(filter_fn) {
         answer_tables = Object.fromEntries(
           Object.entries(answer_tables)
             .filter(([key, obj]) => {
-              return (typeof obj.value === 'string') && (obj.value.startsWith('{'))
+              const value = (obj as { value: string }).value;
+              return (typeof value === 'string') && (value.startsWith('{'))
             })
             .map(([key, obj]) => {
               try {
-                const table = JSON.parse(obj.value);
+                const value = (obj as { value: string }).value;
+                const table = JSON.parse(value);
                 delete table.validation;
                 return [key, table]
               } catch (e) {
                 console.error(e);
                 return [key, {}];
               }
-            }).filter(([key, obj]) => Object.keys(obj).length > 0)
+            })
+            .filter(([key, obj]) => Object.keys(obj).length > 0)
         )
       }
 
@@ -125,7 +129,7 @@ export function getTableDataFromRecords(filter_fn) {
   return recordTables;
 }
 
-export function columnSchemaToDesc(fieldName, tableJSON, columnValidators) {
+export function columnSchemaToDesc(fieldName: string, tableJSON: any, columnValidators: any): string | undefined {
   // tableJSON is an object of the form {data: [{column: value, ...}], validation: {columns: {column: panderaSchema, ...}}}
   // columnValidators is an object of the form {column: [validator, ...]}
   // returns a string describing the column schema and validators

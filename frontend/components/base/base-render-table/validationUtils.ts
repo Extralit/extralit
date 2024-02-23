@@ -1,10 +1,24 @@
-var integer = (cell, value, parameters) => (parameters.nullable && value == "NA") || /^-?\d+$/.test(value);
-var decimal = (cell, value, parameters) => (parameters.nullable && value == "NA") || /^-?\d*(\.\d+)?$/.test(value);
-var greater_equal = (cell, value, parameters) => value == "NA" || parseFloat(value) >= parameters;
-var less_equal = (cell, value, parameters) => value == "NA" || parseFloat(value) <= parameters;
+var integer = (cell: any, value: string, parameters: { nullable: boolean }): boolean => 
+	(parameters.nullable && value == "NA") || /^-?\d+$/.test(value);
+var decimal = (cell: any, value: string, parameters: { nullable: boolean }): boolean => 
+	(parameters.nullable && value == "NA") || /^-?\d*(\.\d+)?$/.test(value);
+var greater_equal = (cell: any, value: string, parameters: number): boolean => 
+	value == "NA" || parseFloat(value) >= parameters;
+var less_equal = (cell: any, value: string, parameters: number): boolean => 
+	value == "NA" || parseFloat(value) <= parameters;
 
-export function getColumnValidators(tableJSON) {
-	const schemaColumns = tableJSON.validation?.columns; // Pandera yaml schema
+type SchemaColumns = {
+	[columnName: string]: {
+		required: boolean;
+		dtype: string;
+		nullable: boolean;
+		unique: boolean;
+		checks: any;
+	};
+};
+
+export function getColumnValidators(tableJSON: any): any {
+	const schemaColumns: SchemaColumns = tableJSON.validation?.columns; // Pandera yaml schema
 	if (schemaColumns == null) return {};
 	const tableColumns = tableJSON.schema.fields.map((col) => col.name);
 	
@@ -40,13 +54,13 @@ export function getColumnValidators(tableJSON) {
 		// Custom validator example for unique check
 		if (columnSchema.unique) {
 			const uniqueValidator = {
-			type: function (cell, value, parameters) {
-				const columnValues = cell
-				.getTable()
-				.getData()
-				.map((row) => row[cell.getField()]);
-					return columnValues.filter((v) => v === value).length === 1;
-				},
+				type: function (cell: any, value: string, parameters: any): boolean {
+					const columnValues = cell
+					.getTable()
+					.getData()
+					.map((row) => row[cell.getField()]);
+						return columnValues.filter((v) => v === value).length === 1;
+					},
 			};
 			validators.push(uniqueValidator);
 		}

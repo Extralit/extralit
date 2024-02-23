@@ -20,7 +20,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import { Notification } from "@/models/Notifications";
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 import "tabulator-tables/dist/css/tabulator.min.css";
@@ -149,8 +149,7 @@ export default {
   
       const publication_ref = firstRow[this.refColumns[0]]?.split('-')[0];
       if (!publication_ref) return null;
-
-      let recordTables = getTablesFromRecords((record) => record?.metadata?.reference == publication_ref)
+      let recordTables = getTablesFromRecords((record) => record?.metadata?.reference == publication_ref, publication_ref)
       const refToRowDict = findMatchingRefValues(refValues, recordTables)
 
       return refToRowDict;
