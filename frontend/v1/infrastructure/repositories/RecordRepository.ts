@@ -79,24 +79,25 @@ export class RecordRepository {
     return this.createRecordResponse(record, "discarded");
   }
 
-  submitNewRecordResponse(record: Record): Promise<RecordAnswer> {
-    if (record.answer) return this.updateRecordResponse(record, "submitted");
+  submitNewRecordResponse(record: Record, duration?: number): Promise<RecordAnswer> {
+    if (record.answer) return this.updateRecordResponse(record, "submitted", duration);
 
-    return this.createRecordResponse(record, "submitted");
+    return this.createRecordResponse(record, "submitted", duration);
   }
 
-  saveDraft(record: Record): Promise<RecordAnswer> {
-    if (record.answer) return this.updateRecordResponse(record, "draft");
+  saveDraft(record: Record, duration?: number): Promise<RecordAnswer> {
+    if (record.answer) return this.updateRecordResponse(record, "draft", duration);
 
-    return this.createRecordResponse(record, "draft");
+    return this.createRecordResponse(record, "draft", duration);
   }
 
   private async updateRecordResponse(
     record: Record,
-    status: BackendRecordStatus
+    status: BackendRecordStatus,
+    duration?: number
   ) {
     try {
-      const request = this.createRequest(status, record);
+      const request = this.createRequest(status, record, duration);
 
       const { data } = await this.axios.put<BackendResponse>(
         `/v1/responses/${record.answer.id}`,
@@ -113,10 +114,11 @@ export class RecordRepository {
 
   private async createRecordResponse(
     record: Record,
-    status: BackendRecordStatus
+    status: BackendRecordStatus,
+    duration?: number
   ) {
     try {
-      const request = this.createRequest(status, record);
+      const request = this.createRequest(status, record, duration);
 
       const { data } = await this.axios.post<BackendResponse>(
         `/v1/records/${record.id}/responses`,
@@ -415,7 +417,8 @@ export class RecordRepository {
 
   private createRequest(
     status: BackendRecordStatus,
-    record: Record
+    record: Record,
+    duration?: number
   ): Omit<BackendResponse, "id" | "updated_at"> {
     const values = {} as BackendAnswerCombinations;
 
@@ -428,8 +431,8 @@ export class RecordRepository {
         values[question.name] = { value: question.answer.valuesAnswered };
       });
 
-    if (record.answer?.duration) {
-      values['duration'] = { value: record.answer.duration };
+    if (duration) {
+      values['duration'] = { value: duration };
     }
 
     return {

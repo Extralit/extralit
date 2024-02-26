@@ -16,7 +16,7 @@ export const useQuestionFormViewModel = () => {
   const debounceForAutoSave = useDebounce(2000);
   const debounceForSavingMessage = useDebounce(1000);
 
-  const isDraftSaving = ref(false);
+  const draftSaving = ref(false);
   const isDiscarding = ref(false);
   const isSubmitting = ref(false);
   const discardUseCase = useResolve(DiscardRecordUseCase);
@@ -38,14 +38,15 @@ export const useQuestionFormViewModel = () => {
     isDiscarding.value = false;
   };
 
-  const incrementDuration = (record: Record, durationWrapper: { value: number }) => {
-    if (!record.hasAnyQuestionAnswered || !record.answer) return;
-    if (record.answer.duration === undefined) {
-      record.answer.duration = 0;
-    }
+  const incrementDuration = (record: Record, durationWrapper: { value: number }): number => {
+    if (!durationWrapper || !record.hasAnyQuestionAnswered || !record.answer) return null;
 
-    record.answer.duration += durationWrapper.value;
+    let duration = record.answer?.duration || 0;
+
+    duration += durationWrapper.value;
     durationWrapper.value = 0; // reset duration for upstream caller to indicate it's been consumed
+
+    return duration;
   }
 
   const submit = async (record: Record, durationWrapper?: any) => {
@@ -53,12 +54,10 @@ export const useQuestionFormViewModel = () => {
     debounceForAutoSave.stop();
     beforeUnload.destroy();
 
-    if (durationWrapper) {
-      incrementDuration(record, durationWrapper);
-    }
+    let duration = incrementDuration(record, durationWrapper);
 
     await queue.enqueue(() => {
-      return submitUseCase.execute(record);
+      return submitUseCase.execute(record, duration);
     });
 
     await debounceForSubmit.wait();
@@ -75,17 +74,17 @@ export const useQuestionFormViewModel = () => {
     });
   };
 
-  const onSaveDraft = async (record: Record) => {
+  const onSaveDraft = async (record: Record, duration?: number) => {
     if (!record.hasAnyQuestionAnswered) return;
-    isDraftSaving.value = true;
+    draftSaving.value = true;
 
     try {
       beforeUnload.confirm();
-      await saveDraftUseCase.execute(record);
+      await saveDraftUseCase.execute(record, duration);
     } finally {
       await debounceForSavingMessage.wait();
 
-      isDraftSaving.value = false;
+      draftSaving.value = false;
       beforeUnload.destroy();
     }
   };
@@ -95,12 +94,10 @@ export const useQuestionFormViewModel = () => {
     beforeUnload.confirm();
     await debounceForAutoSave.wait();
 
-    if (durationWrapper) {
-      incrementDuration(record, durationWrapper);
-    }
+    let duration = incrementDuration(record, durationWrapper);
 
     queue.enqueue(() => {
-      return onSaveDraft(record);
+      return onSaveDraft(record, duration);
     });
   };
 
@@ -108,17 +105,15 @@ export const useQuestionFormViewModel = () => {
     if (record.isSubmitted) return;
     debounceForAutoSave.stop();
 
-    if (durationWrapper) {
-      incrementDuration(record, durationWrapper);
-    }
+    let duration = incrementDuration(record, durationWrapper);
 
     queue.enqueue(() => {
-      return onSaveDraft(record);
+      return onSaveDraft(record, duration);
     });
   };
 
   return {
-    draftSaving: isDraftSaving,
+    draftSaving,
     isDiscarding,
     isSubmitting,
     clear,

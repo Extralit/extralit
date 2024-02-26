@@ -523,7 +523,7 @@ async def update_dataset_records(
     dataset = await _get_dataset(db, dataset_id, with_fields=True, with_questions=True, with_metadata_properties=True)
 
     await authorize(current_user, DatasetPolicyV1.update_records(dataset))
-
+    
     try:
         await datasets.update_records(db, search_engine, dataset, records_update)
         telemetry_client.track_data(action="DatasetRecordsUpdated", data={"records": len(records_update.items)})

@@ -9,9 +9,9 @@ export class SubmitRecordUseCase {
     private readonly eventDispatcher: IEventDispatcher
   ) {}
 
-  async execute(record: Record) {
+  async execute(record: Record, duration?: number) {
     const response = await this.recordRepository.submitNewRecordResponse(
-      record
+      record, duration
     );
 
     record.submit(response);

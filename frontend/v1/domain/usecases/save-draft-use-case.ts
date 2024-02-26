@@ -9,8 +9,8 @@ export class SaveDraftRecord {
     private readonly eventDispatcher: IEventDispatcher
   ) {}
 
-  async execute(record: Record) {
-    const response = await this.recordRepository.saveDraft(record);
+  async execute(record: Record, duration?: number) {
+    const response = await this.recordRepository.saveDraft(record, duration);
 
     record.submit(response);
 
