@@ -787,9 +787,6 @@ async def _update_record(
                 db, dataset, metadata, caches["metadata_properties"]
             )
 
-    if record_update.fields is not None:
-        _validate_record_fields(dataset, fields=record_update.fields)
-
     if record_update.suggestions is not None:
         params.pop("suggestions")
         questions_ids = [suggestion.question_id for suggestion in record_update.suggestions]
@@ -1015,7 +1012,7 @@ async def create_response(
         await search_engine.update_record_response(response)
 
     await db.commit()
-    print('create_response', response.values)
+
     return response
 
 
@@ -1045,7 +1042,7 @@ async def update_response(
         await search_engine.update_record_response(response)
 
     await db.commit()
-    
+
     return response
 
 
@@ -1062,7 +1059,7 @@ async def upsert_response(
             response_upsert.values['duration'] = ResponseValueUpdate(value=response.values['duration']['value'])
 
     schema = {
-        "values": jsonable_encoder(response.values | response_upsert.values),
+        "values": jsonable_encoder(response_upsert.values),
         "status": response_upsert.status,
         "record_id": response_upsert.record_id,
         "user_id": user.id,
@@ -1103,9 +1100,10 @@ def _validate_response_values(
     status: ResponseStatus,
 ):
     if not values:
-        if status not in [ResponseStatus.discarded, ResponseStatus.draft]:
+        if status != ResponseStatus.discarded:
             raise ValueError("missing response values")
         return
+
     values_copy = copy.copy(values or {})
     for question in dataset.questions:
         if (
