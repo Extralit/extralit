@@ -3,17 +3,17 @@
     <RenderTableBaseComponent
       v-if="question.settings.use_table && isValidTableJSON"
       class="textarea"
-      :tableData="question.answer?.suggestedAnswer"
+      :tableData="question.suggestion?.suggestedAnswer"
     />
     <RenderHTMLBaseComponent
       v-else-if="question.settings.use_table && isValidHTML"
       class="textarea"
-      :value="question.answer?.suggestedAnswer"
+      :value="question.suggestion?.suggestedAnswer"
     />
     <RenderMarkdownBaseComponent
       v-else
       class="textarea--markdown"
-      :markdown="question.answer?.suggestedAnswer"
+      :markdown="question.suggestion?.suggestedAnswer"
     />
     <BaseActionTooltip tooltip="Copied" class="button-copy">
       <BaseButton
