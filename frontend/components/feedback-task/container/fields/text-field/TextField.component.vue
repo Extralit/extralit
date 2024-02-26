@@ -57,8 +57,10 @@ export default {
       return isTableJSON(this.text);
     },
     isValidHTML() {
-      return this.text.startsWith("<") && !this.text.startsWith("<img") && !this.text.startsWith("<iframe");
-    },
+      const value = this.text?.trimStart();
+
+      return value?.startsWith("<") && !value?.startsWith("<img") && !value?.startsWith("<iframe");
+    }
   },
   setup(props) {
     return useTextFieldViewModel(props);

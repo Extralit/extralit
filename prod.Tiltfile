@@ -82,13 +82,6 @@ helm_resource(
         '--version=13.2.0',
         '--values=./k8s/helm/postgres-helm.yaml'],
     deps=['./k8s/helm/postgres-helm.yaml'],
-    port_forwards=['5432:5432'],
+    port_forwards=['5432'],
     labels=['argilla-server']
-)
-
-k8s_yaml('./k8s/grobid-deployment.yaml')
-k8s_resource(
-  'grobid-deployment',
-  port_forwards=['8070:8070', '8081:8081'],
-  labels=['grobid'],
 )

@@ -36,7 +36,17 @@ spec:
           runAsGroup: 3000
           capabilities:
             add:
-              - SYS_RESOURCE/
+              - SYS_RESOURCE
+        volumeMounts:
+        - name: grobid-storage
+          mountPath: /opt/grobid/grobid-home/tmp
+      initContainers:
+      - name: volume-permissions
+        image: busybox
+        command: ["sh", "-c", "chown -R 1000:3000 /opt/grobid/grobid-home/tmp && chmod -R 777 /opt/grobid/grobid-home/tmp"]
+        volumeMounts:
+        - name: grobid-storage
+          mountPath: /opt/grobid/grobid-home/tmp
       volumes:
       - name: grobid-storage
         persistentVolumeClaim:
@@ -66,4 +76,4 @@ spec:
   storageClassName: k8s-storage-policy
   resources:
     requests:
-      storage: 15Gi
+      storage: 5Gi

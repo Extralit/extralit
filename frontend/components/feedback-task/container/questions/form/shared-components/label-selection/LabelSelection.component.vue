@@ -186,10 +186,7 @@ export default {
       return this.filteredOptions.length > this.maxOptionsToShowBeforeCollapse;
     },
     showSearch() {
-      return (
-        this.options.length >= OPTIONS_THRESHOLD_TO_ENABLE_SEARCH ||
-        this.showCollapseButton
-      );
+      return this.showCollapseButton;
     },
     textToShowInTheCollapseButton() {
       if (this.isExpanded) {

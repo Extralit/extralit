@@ -141,7 +141,9 @@ export default {
       return isTableJSON(this.question.answer.value);
     },
     isValidHTML() {
-      return this.question.answer.value?.startsWith("<") && !this.question.answer.value?.startsWith("<img") && !this.question.answer.value?.startsWith("<iframe");
+      const value = this.question.answer?.value?.trimStart();
+
+      return value?.startsWith("<") && !value?.startsWith("<img") && !value?.startsWith("<iframe");
     }
   },
   mounted() {

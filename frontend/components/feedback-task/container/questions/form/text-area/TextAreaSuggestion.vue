@@ -39,7 +39,9 @@ export default {
   },
   computed: {
     isValidHTML() {
-      return this.question.answer?.suggestedAnswer?.startsWith("<");
+      const value = this.question.answer?.suggestedAnswer?.trimStart();
+
+      return value?.startsWith("<") && !value?.startsWith("<img") && !value?.startsWith("<iframe");
     },
     isValidTableJSON() {
       return isTableJSON(this.question.answer?.suggestedAnswer);
