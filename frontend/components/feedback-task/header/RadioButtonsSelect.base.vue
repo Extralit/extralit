@@ -101,6 +101,8 @@ export default {
           return "#B7B7B7";
         case "pending":
           return "#BB720A";
+        case "valid":
+          return "#BB720A";
         case "submitted":
           return "#3E5CC9";
         case "draft":

@@ -1,12 +1,7 @@
 <template>
 	<div v-if="editor" class="editor-container">
-		<div 
-			v-if="editable"
-			:editor="editor" 
-		>
-			<div
-				class="menubar"
-			>
+		<div v-if="editable" :editor="editor">
+			<div class="menubar">
 				<button class="menubar__button" @click.prevent="editor.chain().focus().addColumnBefore().run()" 
 					:disabled="!editor.can().addColumnBefore()"
 				>
@@ -62,11 +57,29 @@
 				>
 					Toggle Header Cell
 				</button>
-				<button class="menubar__button" @click.prevent="editor.chain().focus().fixTables().run()" 
+				<!-- <button class="menubar__button" @click.prevent="editor.chain().focus().fixTables().run()" 
 					:disabled="!editor.can().fixTables()"
 				>
 					Fix Tables
-				</button>
+				</button> -->
+
+				<BaseDropdown :visible="searchReplaceDropdownVisible" class="dropdown" style="width: auto; padding: 0px;">
+					<span slot="dropdown-header" @click.prevent="toggleDropdown">
+						<BaseButton>
+							Find & Replace
+						</BaseButton> 
+					</span>
+					<span slot="dropdown-content" style="padding: 5px;">
+						<label for="searchTerm" class="dropdown-label">Search:</label>
+						<input id="searchTerm" v-model="searchTerm" type="text" class="dropdown-input" />
+	
+						<label for="replaceTerm" class="dropdown-label">Replace:</label>
+						<input id="replaceTerm" v-model="replaceTerm" type="text" class="dropdown-input" />
+	
+						<button @click.prevent="replaceAll" class="dropdown-button">Find/Replace All</button>
+
+					</span>
+				</BaseDropdown>
 			</div>
 		</div>
 
@@ -75,6 +88,7 @@
 			class="editor-content"
 			@focus="setFocus(true)"
 			@blur="setFocus(false)"
+			@contextmenu.prevent="openContextMenu($event, rowIndex, cellIndex)"
 		/>
 	</div>
 </template>
@@ -89,6 +103,7 @@ import TableHeader from '@tiptap/extension-table-header'
 import TableRow from '@tiptap/extension-table-row'
 import Text from '@tiptap/extension-text'
 import History from '@tiptap/extension-history'
+import SearchAndReplace from "@sereneinserenade/tiptap-search-and-replace";
 import { Editor, EditorContent } from '@tiptap/vue-2'
 
 
@@ -127,6 +142,16 @@ export default {
 			editor: null,
 			sanitizedCurrentValue: null,
 			currentValue: null,
+			searchReplaceDropdownVisible: false,
+			searchTerm: "",
+			replaceTerm: "",
+			contextMenu: {
+				visible: false,
+				x: 0,
+				y: 0,
+				rowIndex: null,
+				cellIndex: null,
+			},
 		}
 	},
 
@@ -169,6 +194,12 @@ export default {
 				TableRow,
 				TableHeader,
 				TableCell,
+				SearchAndReplace.configure({
+					searchResultClass: "search-result",
+					caseSensitive: true,
+					disableRegex: true, 
+				}),
+
 			],
 			editable: this.editable,
 			content: this.value,
@@ -184,6 +215,16 @@ export default {
 	},
 
 	methods: {
+		replaceAll() {
+			if (!this.editor.isActive || !this.searchTerm) return;
+			this.editor.storage.searchAndReplace.searchTerm = this.searchTerm;
+			this.editor.storage.searchAndReplace.replaceTerm = this.replaceTerm;
+
+			this.editor.commands.replaceAll();
+		},
+		toggleDropdown() {
+			this.searchReplaceDropdownVisible = !this.searchReplaceDropdownVisible;
+		},
 		shouldShowBubbleMenu(props) {
 			const isCellSelection = props.state.selection?.constructor?.name.includes('CellSelection');
 			if (isCellSelection) {
@@ -194,6 +235,16 @@ export default {
 
 			// return isCellSelection && isRightClick && this.editor?.isActive;
 			return isCellSelection && this.editor?.isActive
+		},
+		openContextMenu(event, rowIndex, cellIndex) {
+			this.contextMenu.visible = true;
+			this.contextMenu.x = event.clientX;
+			this.contextMenu.y = event.clientY;
+			this.contextMenu.rowIndex = rowIndex;
+			this.contextMenu.cellIndex = cellIndex;
+		},
+		closeContextMenu() {
+			this.contextMenu.visible = false;
 		},
 		reset() {
 			this.currentValue = this.value;
@@ -231,7 +282,7 @@ export default {
 .editor-container {
   position: relative;
 	flex-flow: column;
-	// max-width: 100%;
+	width: 100%;
   overflow-x: auto;
 
   &__content {
@@ -296,6 +347,42 @@ export default {
       cursor: not-allowed;
     }
 	}
+
+	.dropdown {
+		display: flex;
+		flex-direction: column;
+		width: 200px;
+		background-color: #f9f9f9;
+		border: 1px solid #ccc;
+		padding: 10px;
+		border-radius: 4px;
+	}
+
+	.dropdown label {
+		margin-bottom: 5px;
+		font-size: 14px;
+		color: #333;
+	}
+
+	.dropdown input {
+		margin-bottom: 10px;
+		padding: 5px;
+		border: 1px solid #ccc;
+		border-radius: 4px;
+	}
+
+	.dropdown button {
+		padding: 5px 10px;
+		background-color: #4CAF50;
+		color: white;
+		border: none;
+		border-radius: 4px;
+		cursor: pointer;
+	}
+
+	.dropdown button:hover {
+		background-color: #45a049;
+	}
 }
 
 input[type="checkbox"] {
@@ -359,6 +446,14 @@ input[type="checkbox"] {
     border-top: 2px solid rgba(#0D0D0D, 0.1);
     margin: 2rem 0;
   }
+
+	.search-result {
+		background-color: rgba(255, 217, 0, 0.5);
+
+		&-current {
+			background-color: rgba(13, 255, 0, 0.5);
+		}
+	}
 }
 
 /* Table-specific styling */

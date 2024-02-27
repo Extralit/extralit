@@ -44,6 +44,10 @@ export default {
           name: "Pending",
         },
         {
+          id: "valid",
+          name: "All Valid",
+        },
+        {
           id: "draft",
           name: "Draft",
         },
