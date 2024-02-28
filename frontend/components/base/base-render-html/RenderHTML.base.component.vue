@@ -45,12 +45,12 @@
 				<button class="menubar__button" @click.prevent="editor.chain().focus().toggleHeaderColumn().run()" 
 					:disabled="!editor.can().toggleHeaderColumn()"
 				>
-					Toggle Header Column
+					Toggle Index
 				</button>
 				<button class="menubar__button" @click.prevent="editor.chain().focus().toggleHeaderRow().run()" 
 					:disabled="!editor.can().toggleHeaderRow()"
 				>
-					Toggle Header Row
+					Toggle Header
 				</button>
 				<button class="menubar__button" @click.prevent="editor.chain().focus().toggleHeaderCell().run()" 
 					:disabled="!editor.can().toggleHeaderCell()"
@@ -193,7 +193,13 @@ export default {
 				}),
 				TableRow,
 				TableHeader,
-				TableCell,
+				TableCell.extend({
+					addKeyboardShortcuts() {
+						return {
+							'Mod-m': () => this.editor.chain().focus().mergeCells().run(),
+						}
+					}
+				}),
 				SearchAndReplace.configure({
 					searchResultClass: "search-result",
 					caseSensitive: true,
@@ -219,7 +225,7 @@ export default {
 			if (!this.editor.isActive || !this.searchTerm) return;
 			this.editor.storage.searchAndReplace.searchTerm = this.searchTerm;
 			this.editor.storage.searchAndReplace.replaceTerm = this.replaceTerm;
-
+			
 			this.editor.commands.replaceAll();
 		},
 		toggleDropdown() {
@@ -282,8 +288,7 @@ export default {
 .editor-container {
   position: relative;
 	flex-flow: column;
-	width: 100%;
-  overflow-x: auto;
+	overflow-x: auto;
 
   &__content {
     padding: 4rem 1rem;
@@ -306,82 +311,83 @@ export default {
     padding: 0.2rem 0.5rem;
   }
 
+	.menubar {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		padding: 5px 5px 0px 0px;
+		color: white;
+		text-decoration: none;
+		overflow-x: visible;
+
+		.menubar__button {
+			background-color: transparent;
+			border: none;
+			border-radius: 0.4rem;
+			cursor: pointer;
+			height: 1.75rem;
+			margin-right: 0.25rem;
+			padding: 0.25rem;
+
+			svg {
+				fill: currentColor;
+				height: 100%;
+				width: 100%;
+			}
+
+			&:hover,
+			&.is-active {
+				background-color: #858585;
+			}
+
+			&:disabled {
+				background-color: #ccc;  // Adjust as needed
+				color: #888;  // Adjust as needed
+				cursor: not-allowed;
+			}
+		}
+
+		.dropdown {
+			display: flex;
+			flex-direction: column;
+			width: 200px;
+			background-color: #f9f9f9;
+			border: 1px solid #ccc;
+			padding: 10px;
+			border-radius: 4px;
+		}
+
+		.dropdown label {
+			margin-bottom: 5px;
+			font-size: 14px;
+			color: #333;
+		}
+
+		.dropdown input {
+			margin-bottom: 10px;
+			padding: 5px;
+			border: 1px solid #ccc;
+			border-radius: 4px;
+		}
+
+		.dropdown button {
+			padding: 5px 10px;
+			background-color: #4CAF50;
+			color: white;
+			border: none;
+			border-radius: 4px;
+			cursor: pointer;
+		}
+
+		.dropdown button:hover {
+			background-color: #45a049;
+		}
+	}
+
 	.editor-content {
 		min-width: 40vw;
 		max-height: 60vh;
-	}
-}
-
-.menubar {
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: space-between;
-	padding: 5px 5px 0px 0px;
-	color: white;
-	text-decoration: none;
-	
-
-	.menubar__button {
-		background-color: transparent;
-		border: none;
-		border-radius: 0.4rem;
-		cursor: pointer;
-		height: 1.75rem;
-		margin-right: 0.25rem;
-		padding: 0.25rem;
-
-		svg {
-			fill: currentColor;
-			height: 100%;
-			width: 100%;
-		}
-
-		&:hover,
-		&.is-active {
-			background-color: #858585;
-		}
-
-		&:disabled {
-      background-color: #ccc;  // Adjust as needed
-      color: #888;  // Adjust as needed
-      cursor: not-allowed;
-    }
-	}
-
-	.dropdown {
-		display: flex;
-		flex-direction: column;
-		width: 200px;
-		background-color: #f9f9f9;
-		border: 1px solid #ccc;
-		padding: 10px;
-		border-radius: 4px;
-	}
-
-	.dropdown label {
-		margin-bottom: 5px;
-		font-size: 14px;
-		color: #333;
-	}
-
-	.dropdown input {
-		margin-bottom: 10px;
-		padding: 5px;
-		border: 1px solid #ccc;
-		border-radius: 4px;
-	}
-
-	.dropdown button {
-		padding: 5px 10px;
-		background-color: #4CAF50;
-		color: white;
-		border: none;
-		border-radius: 4px;
-		cursor: pointer;
-	}
-
-	.dropdown button:hover {
-		background-color: #45a049;
+		overflow-x: auto;
 	}
 }
 
@@ -477,6 +483,10 @@ input[type="checkbox"] {
       > * {
         margin-bottom: 0;
       }
+    }
+
+		td[colspan], th[colspan] {
+			vertical-align: middle;
     }
 
     th {

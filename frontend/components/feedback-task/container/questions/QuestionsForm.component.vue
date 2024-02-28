@@ -195,6 +195,7 @@ export default {
       this.userComesFromOutside = true;
     },
     handleGlobalKeys(event) {
+      return
       const { code, ctrlKey, metaKey, shiftKey } = event;
 
       if (shiftKey) return;

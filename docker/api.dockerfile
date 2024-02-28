@@ -19,7 +19,7 @@ RUN useradd -ms /bin/bash argilla
 RUN mkdir -p "$ARGILLA_HOME_PATH" && \
   chown argilla:argilla "$ARGILLA_HOME_PATH" && \
   apt-get update && \
-  apt-get install -y python-dev-is-python3 libpq-dev gcc && \
+  apt-get install -y python-dev-is-python3 libpq-dev gcc nano && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/*
 
@@ -50,6 +50,9 @@ USER argilla
 
 # Expose the necessary port
 EXPOSE 6900
+
+RUN echo 'export ARGILLA_ELASTICSEARCH=https://elastic:$ELASTIC_PASSWORD@$ARGILLA_ELASTICSEARCH_HOST' >> /home/argilla/.bashrc && \
+  echo 'export ARGILLA_DATABASE_URL=postgresql+asyncpg://postgres:$POSTGRES_PASSWORD@$POSTGRES_HOST/postgres' >> /home/argilla/.bashrc
 
 # Set the command for the container
 CMD /bin/bash -c "/bin/bash start_argilla_server.sh"

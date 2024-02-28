@@ -205,6 +205,19 @@ class FeedbackRecord(BaseModel):
         extra = Extra.forbid
         validate_assignment = True
 
+    def __repr_args__(self):
+        repr_args = super().__repr_args__()
+
+        for i, (name, value) in enumerate(repr_args):
+            if name == "fields" and value is not None:
+                repr_args[i] = (name, list(value.keys()))
+            elif name in ["responses"] and value is not None:
+                repr_args[i] = (name, {v.user_id: list(v.values.keys()) for v in value})
+            elif name in ["suggestions"] and value is not None:
+                repr_args[i] = (name, [v.dict().keys() for v in value])
+
+        return repr_args
+    
     @validator("suggestions", always=True)
     def normalize_suggestions(cls, values: Any) -> Tuple:
         if not isinstance(values, tuple):
