@@ -2,7 +2,7 @@
   <div class="table-container">
     <div class="--table-buttons">
       <BaseButton v-show="indexColumns && indexColumns.length" @click.prevent="toggleGroupRefColumns">
-        <span v-if="groupByRefColumns">⬇️ Show group reference</span>
+        <span v-if="showGroupBy">⬇️ Show group reference</span>
         <span v-else>⬅️ Show group headers</span>
       </BaseButton>
     </div>
@@ -60,7 +60,7 @@ export default {
   data() {
     return {
       table: null,
-      groupByRefColumns: true,
+      showGroupBy: true,
       isLoaded: false,
     };
   },
@@ -94,6 +94,9 @@ export default {
         return null;
       }
     },
+    groupbyColumns() {
+      return this.refColumns?.filter((column) => column != 'publication_ref');
+    },
     columns() {
       return this.table?.getColumns()?.map((col) => col.getField()) || [];
     },
@@ -104,12 +107,12 @@ export default {
       if (!this.tableJSON?.schema) return [];
 
       const configs = this.tableJSON.schema.fields.map((column) => {
-        const visible = !this.groupByRefColumns || !this.isRefColumn(column.name) || this.columns.length <= 2;
+        const hide = this.showGroupBy && this.isRefColumn(column.name) || column.name == 'publication_ref';
 
         return {
           title: column.name,
           field: column.name,
-          visible: visible,
+          visible: !hide,
           validator: this.columnValidators.hasOwnProperty(column.name)
             ? this.columnValidators[column.name]
             : null,
@@ -147,7 +150,8 @@ export default {
       }, {});
       if (!refValues) return null;
   
-      const publication_ref = firstRow[this.refColumns[0]]?.split('-')[0];
+      const publication_ref = firstRow.publication_ref || firstRow[this.refColumns[0]]?.split('-')[0];
+      console.log('referenceValues', refValues, publication_ref, this.refColumns)
       if (!publication_ref) return null;
       let recordTables = getTablesFromRecords((record) => record?.metadata?.reference == publication_ref, publication_ref)
       const refToRowDict = findMatchingRefValues(refValues, recordTables)
@@ -418,8 +422,8 @@ export default {
       return isValid;
     },
     toggleGroupRefColumns() {
-      this.groupByRefColumns = !this.groupByRefColumns;
-      this.table.setGroupBy(this.groupByRefColumns ? this.refColumns : null);
+      this.showGroupBy = !this.showGroupBy;
+      this.table.setGroupBy(this.showGroupBy ? this.groupbyColumns : null);
       this.table.setColumns(this.columnsConfig);
     },
     columnMoved(column, columns) {
@@ -621,10 +625,10 @@ export default {
         index: this.columnsConfig.find((column) => column.field === "reference")
         ? "reference"
         : null,
-        groupBy: this.groupByRefColumns ? this.refColumns: null,
+        groupBy: this.showGroupBy ? this.groupbyColumns : null,
         groupToggleElement: "header",
         groupHeader: this.groupHeader,
-        groupUpdateOnCellEdit: this.groupByRefColumns ? true : null,
+        groupUpdateOnCellEdit: this.showGroupBy ? true : null,
         groupContextMenu: [
           {
             label: "Show reference",
