@@ -1,7 +1,7 @@
 <template>
   <div class="table-container">
     <div class="--table-buttons">
-      <BaseButton v-show="indexColumns && indexColumns.length" @click.prevent="toggleGroupRefColumns">
+      <BaseButton v-show="refColumns && refColumns.length" @click.prevent="toggleGroupRefColumns">
         <span v-if="showGroupBy">⬇️ Show group reference</span>
         <span v-else>⬅️ Show group headers</span>
       </BaseButton>
@@ -151,7 +151,6 @@ export default {
       if (!refValues) return null;
   
       const publication_ref = firstRow.publication_ref || firstRow[this.refColumns[0]]?.split('-')[0];
-      console.log('referenceValues', refValues, publication_ref, this.refColumns)
       if (!publication_ref) return null;
       let recordTables = getTablesFromRecords((record) => record?.metadata?.reference == publication_ref, publication_ref)
       const refToRowDict = findMatchingRefValues(refValues, recordTables)

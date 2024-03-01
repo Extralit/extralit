@@ -1,11 +1,15 @@
 <template>
-  <div class="markdown-render" v-html="markdownToHtml" v-copy-code />
+  <!-- <div class="markdown-render" v-html="markdownToHtml" v-copy-code /> -->
+  <div class="markdown-render" v-copy-code>
+    <component :is="dynamicComponent" />
+  </div>
 </template>
 <script>
 import { marked } from "marked";
 import { markedHighlight } from "marked-highlight";
 import hljs from "highlight.js";
 import * as DOMPurify from "dompurify";
+import Vue from 'vue';
 
 const preprocess = (html) => {
   return html.replace(/[^\S\r\n]+$/gm, "");
@@ -38,19 +42,42 @@ marked.use(
 
 export default {
   name: "RenderMarkdownBaseComponent",
+  
   props: {
     markdown: {
       type: String,
       required: true,
     },
   },
+
   computed: {
     markdownToHtml() {
-      return marked.parse(this.markdown, {
+      let html = marked.parse(this.markdown, {
         headerIds: false,
         mangle: false,
         breaks: true,
       });
+
+      html = html.replace(/<a href="#(.*?)">(.*?)<\/a>/g, '<button @click.prevent="handleClick(\'#$1\')">$2</button>');
+
+      return html;
+    },
+    dynamicComponent() {
+      return Vue.component('dynamic-component', {
+        template: `<div>${this.markdownToHtml}</div>`,
+        methods: {
+          handleClick(hash) {
+            console.log('hash', hash)
+            window.location.hash = hash;
+          },
+        },
+      });
+    },
+  },
+
+  methods: {
+    handleClick(hash) {
+      window.location.hash = hash;
     },
   },
 };
@@ -121,7 +148,11 @@ export default {
         overflow: hidden;
         text-overflow: ellipsis; // Display '...' for overflow content
         vertical-align: middle;  // Center content vertically
-
+        
+        table {
+          max-height: 120px;
+          overflow-y: scroll;
+        }
       }
 
       th {

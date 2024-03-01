@@ -5,7 +5,7 @@
       :fileName="fileName" 
       :sidebarFeatureVisible=true 
       :scale.sync="scale"
-      :pageNumber="pageNumber"
+      :pageNumber="localPageNumber || pageNumber"
       ref="pdfView"
       class="PDFView"
     >
@@ -28,6 +28,7 @@ export default {
   components: {
     PDFView,
   },
+
   props:{
     pdfData: {
       type: Uint8Array,
@@ -42,11 +43,29 @@ export default {
       required: false
     },
   },
+
   data() {
     return {
-      scale: "auto",
+      scale: "1.25",
+      localPageNumber: this.pageNumber,
     }
   },
+  
+  mounted() {
+    window.addEventListener('hashchange', this.onHashChange);
+    this.onHashChange(); // Call on component mount to handle initial hash
+  },
+
+  methods: {
+    onHashChange() {
+      const hash = window.location.hash.substring(1); // Remove the '#' from the hash
+      const [key, value] = hash.split('.');
+      if (key === 'page_number' && !isNaN(value)) {
+        this.localPageNumber = Number(value); 
+      }
+    },
+  },
+
   errorCaptured(err, component, info) {
     this.error = err;
     console.error(`Error caught from ${component}: ${err}`);
@@ -54,6 +73,7 @@ export default {
   },
   beforeUnmount() {
     this.$refs.pdfView.destroy();
+    window.removeEventListener('hashchange', this.onHashChange);
   },
 }
 </script>
