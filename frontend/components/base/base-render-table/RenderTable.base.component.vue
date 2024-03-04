@@ -1,9 +1,9 @@
 <template>
   <div class="table-container">
     <div class="--table-buttons">
-      <BaseButton v-show="refColumns && refColumns.length" @click.prevent="toggleGroupRefColumns">
-        <span v-if="showGroupBy">⬇️ Show group reference</span>
-        <span v-else>⬅️ Show group headers</span>
+      <BaseButton v-show="refColumns?.length || columns.includes('reference')" @click.prevent="toggleShowRefColumns">
+        <span v-if="!showRefColumns">⬇️ Show reference columns</span>
+        <span v-else>⬅️ Hide reference columns</span>
       </BaseButton>
     </div>
 
@@ -12,6 +12,12 @@
     <div class="--table-buttons">
       <BaseButton v-show="columns && columnValidators && Object.keys(columnValidators).length" @click.prevent="validateTable({ showErrors: true, scrollToError: true })">
         ✅ Check data
+      </BaseButton>
+      <BaseButton v-show="editable && columns && columnValidators && Object.keys(columnValidators).length" @click.prevent="$emit('updateValidValues', true);">
+        Ignore checks
+      </BaseButton>
+      <BaseButton v-show="editable" @click.prevent="table.undo();">
+        Undo
       </BaseButton>
       <BaseButton v-show="editable" @click.prevent="addColumn">
         ➕ Add column
@@ -60,7 +66,7 @@ export default {
   data() {
     return {
       table: null,
-      showGroupBy: true,
+      showRefColumns: false,
       isLoaded: false,
     };
   },
@@ -88,10 +94,10 @@ export default {
           .map(field => field.name)
           .filter(name => typeof name === 'string' && name.endsWith('_ref'));
           
-        return ref_columns.length ? ref_columns : null;
+        return ref_columns;
       } catch (error) {
         console.error("Failed to get refColumns:", error);
-        return null;
+        return [];
       }
     },
     groupbyColumns() {
@@ -107,7 +113,7 @@ export default {
       if (!this.tableJSON?.schema) return [];
 
       const configs = this.tableJSON.schema.fields.map((column) => {
-        const hide = this.showGroupBy && this.isRefColumn(column.name) || column.name == 'publication_ref';
+        const hide = !this.showRefColumns && this.isRefColumn(column.name) || column.name == 'publication_ref';
 
         return {
           title: column.name,
@@ -129,8 +135,9 @@ export default {
       if (this.editable) {
         configs.unshift({ 
           rowHandle: true, 
-          // formatter: "tickCross", 
-          headerSort: false, frozen: false, hozAlign: "center", width: 30, minWidth: 30 },);
+          formatter: "rowSelection", 
+          headerSort: false, frozen: false, hozAlign: "center", width: 30, minWidth: 30,
+        });
         // configs.push({ formatter: "buttonCross", width: 30, hozAlign: "center" })
       }
       return configs;
@@ -343,7 +350,6 @@ export default {
           search: true,
           autocomplete: true,
         },
-        editableTitle: false,
         headerDblClick: (e, column) => {
           // Enable editable title on double click
           if (!column.getDefinition().frozen && !column.getDefinition().editableTitle) {
@@ -375,7 +381,7 @@ export default {
         const columnSchema = this.tableJSON.validation?.columns[fieldName];
 
         if (columnSchema.dtype === "str") {
-          config.editor = "list";
+          config.editor = "autocomplete";
           config.editorParams.defaultValue = "NA";
           config.editorParams.emptyValue = "NA";
           config.editorParams.valuesLookup = 'active';
@@ -392,7 +398,43 @@ export default {
         } else if (columnSchema.dtype.includes("int") || columnSchema.dtype.includes("float")) {
           config.hozAlign = "right";
         }
+
+      } else if (this.refColumns?.includes(fieldName)) {
+        config.editor = "autocomplete";
+
+        if (this.referenceValues.hasOwnProperty(fieldName)) {
+          config.editorParams = {
+            search: true,
+            values: this.referenceValues[fieldName],
+            itemFormatter: (label, value, item, element) => {
+              const keyValues = Object.entries(label)
+                .filter(([key, value]) => key !== "reference" && value !== 'NA' && value !== null)
+                .map(([key, value]) => `<span style="font-weight:normal; color:black; margin-left:0;">${key}:</span> ${value}`)
+                .join(', ');
+              return "<strong>" + value + "</strong>: <div>" + keyValues + "</div>";
+            },
+            showListOnEmpty: true,
+            freetext: true,
+          };
+        } else {
+          config.editorParams = {
+            search: true,
+            valuesLookup: 'active',
+            showListOnEmpty: true,
+            freetext: true,
+          };
+        }
       }
+
+    //   config.editorParams.filterFunc = (term, label, value, item) => {
+    //     //term - the string value from the input element
+    //     //label - the text lable for the item
+    //     //value - the value for the item
+    //     //item - the original value object for the item
+    //     if (value == "NA") return false;
+
+    //     return term === value;
+    // }
 
       return config;
     },
@@ -402,7 +444,7 @@ export default {
       this.$emit("updateValidValues", isValid);
       if (isValid) return true;
 
-      if (options?.scrollToError) {
+      if (options?.scrollToError == true) {
         const firstErrorCell = validErrors[0];
         this.table.scrollToRow(firstErrorCell._cell.row);
         this.table.scrollToColumn(firstErrorCell._cell.column.field, 'middle');
@@ -420,9 +462,9 @@ export default {
 
       return isValid;
     },
-    toggleGroupRefColumns() {
-      this.showGroupBy = !this.showGroupBy;
-      this.table.setGroupBy(this.showGroupBy ? this.groupbyColumns : null);
+    toggleShowRefColumns() {
+      this.showRefColumns = !this.showRefColumns;
+      // this.table.setGroupBy(this.showRefColumns ? this.groupbyColumns : null);
       this.table.setColumns(this.columnsConfig);
     },
     columnMoved(column, columns) {
@@ -479,6 +521,7 @@ export default {
       this.table.addRow(newRow, false, selectedRow);
       this.updateTableJsonData();
       this.validateTable();
+      if (!this.showRefColumns) this.toggleShowRefColumns();
     },
     dropRow() {
       // Get the selected rows
@@ -504,7 +547,7 @@ export default {
       let selectedColumnField = null;
       if (selectedColumn && selectedColumn.hasOwnProperty('getDefinition')) {
         let selectedColumnField = selectedColumn?.getDefinition()?.field;
-        console.log('selectedColumn', selectedColumn?.getDefinition(), selectedColumnField)
+        console.log("selectedColumnField:", selectedColumnField)
       }
 
       this.table.addColumn({
@@ -512,9 +555,7 @@ export default {
         field: newFieldName,
         editableTitle: true,
         ...this.getColumnEditableConfig(newFieldName),
-      }, false, selectedColumnField).then((col) => {
-        this.validateTable();
-      });
+      }, false, selectedColumnField)
 
       this.updateTableJsonData(false, true);
       this.table.scrollToColumn(newFieldName, null, false);
@@ -547,8 +588,6 @@ export default {
 
       this.updateTableJsonData(false, false, true, newFieldName, oldFieldName);
       // this.table.setColumns(this.columnsConfig);
-
-      this.validateTable();
     },
     cellTooltip(e, cell, onRendered) {
       var text = cell.getValue();
@@ -581,7 +620,7 @@ export default {
       let header = value
       if (this.referenceValues?.[field]?.hasOwnProperty(value)) {
         const keyValues = Object.entries(this.referenceValues[field][value])
-          .filter(([key, value]) => key !== "reference" && value !== 'NA' && value !== null)
+          .filter(([key, value]) => key !== "reference" && !this.refColumns?.includes(key) && value !== 'NA' && value)
           .map(([key, value]) => `<span style="font-weight:normal; color:black; margin-left:0;">${key}:</span> ${value}`)
           .join(', ');
 
@@ -603,8 +642,8 @@ export default {
       
       this.table = new Tabulator(this.$refs.table, {
         data: this.tableJSON.data,
-        history: true,
         layout: layout,
+        minHeight: "200px",
         maxHeight: "50vh",
         // renderHorizontal: "virtual",
         // persistence: { columns: true },
@@ -624,10 +663,10 @@ export default {
         index: this.columnsConfig.find((column) => column.field === "reference")
         ? "reference"
         : null,
-        groupBy: this.showGroupBy ? this.groupbyColumns : null,
+        groupBy: this.groupbyColumns,
         groupToggleElement: "header",
         groupHeader: this.groupHeader,
-        groupUpdateOnCellEdit: this.showGroupBy ? true : null,
+        groupUpdateOnCellEdit: true,
         groupContextMenu: [
           {
             label: "Show reference",
@@ -635,20 +674,29 @@ export default {
               group.popup(`${group._group.field}: ${group._group.key}`, "right");
             }
           },
+          {
+            separator: true,
+          },
+          {
+            label: "Delete group of rows",
+            action: (e, group) => {
+              group._group.rows.forEach((row) => {
+                row.delete();
+              });
+              this.updateTableJsonData(true);
+            }
+          },
         ],
-        selectable: 1,
-        selectablePersistence: true,
+        // selectable: 1,
+        // selectablePersistence: true,
         validationMode: "highlight",
         movableRows: this.editable,
         movableColumns: this.editable,
         rowContextMenu: this.rowMenu,
-        keybindings: {
-          "undo": ["ctrl + z", "meta + z"],
-          "redo": ["ctrl + y", "meta + y"],
-        },
+        history: true,
       });
 
-      this.table.on("rowClick", this.clickRow.bind(this));
+      // this.table.on("rowClick", this.clickRow.bind(this));
 
       if (this.editable) {
         this.table.on("columnTitleChanged", this.columnTitleChanged.bind(this));
@@ -683,7 +731,7 @@ export default {
 };
 </script>
 
-<style scoped lang="scss">
+<style lang="scss">
 .table-container {
   display: flex;
   flex-flow: column;
@@ -706,7 +754,11 @@ export default {
     white-space: normal;
   }
 }
-.tabulator .tabulator-header .tabulator-col .tabulator-col-content .tabulator-col-title {
-  white-space: normal;
+// .tabulator .tabulator-header .tabulator-col .tabulator-col-content .tabulator-col-title {
+//   white-space: normal;
+// }
+
+.tabulator-group-level-1 {
+  max-height: 100px;
 }
 </style>

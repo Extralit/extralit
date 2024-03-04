@@ -45,7 +45,6 @@ export const useQuestionFormViewModel = () => {
 
     duration += durationWrapper.value;
     durationWrapper.value = 0; // reset duration for upstream caller to indicate it's been consumed
-
     return duration;
   }
 

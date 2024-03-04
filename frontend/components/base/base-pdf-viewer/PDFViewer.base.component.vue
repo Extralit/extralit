@@ -5,7 +5,7 @@
       :fileName="fileName" 
       :sidebarFeatureVisible=true 
       :scale.sync="scale"
-      :pageNumber="localPageNumber || pageNumber"
+      :pageNumber="localPageNumber"
       ref="pdfView"
       class="PDFView"
     >
@@ -46,7 +46,7 @@ export default {
 
   data() {
     return {
-      scale: "1.25",
+      scale: "1.50",
       localPageNumber: this.pageNumber,
     }
   },

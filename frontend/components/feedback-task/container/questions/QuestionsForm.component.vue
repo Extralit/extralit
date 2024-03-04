@@ -142,7 +142,12 @@ export default {
       deep: true,
       immediate: true,
       handler() {
-        if (this.record.isModified) this.saveDraft(this.record);
+        if (this.record.isModified) {
+          let durationWrapper = { value: this.duration };
+          this.saveDraft(this.record, durationWrapper).then(() => {
+            this.duration = durationWrapper.value;
+          });
+        }
 
         this.isTouched = this.record.isSubmitted && this.record.isModified;
       },
@@ -170,9 +175,6 @@ export default {
   beforeDestroy() {
     this.stopTimer();
     document.removeEventListener('visibilitychange', this.handleVisibilityChange);
-  },
-
-  destroyed() {
     document.removeEventListener("keydown", this.handleGlobalKeys);
   },
 
@@ -195,16 +197,15 @@ export default {
       this.userComesFromOutside = true;
     },
     handleGlobalKeys(event) {
-      return
       const { code, ctrlKey, metaKey, shiftKey } = event;
 
       if (shiftKey) return;
 
-      if (code === "Tab" && this.userComesFromOutside) {
-        this.focusOnFirstQuestion(event);
+      // if (code === "Tab" && this.userComesFromOutside) {
+      //   this.focusOnFirstQuestion(event);
 
-        return;
-      }
+      //   return;
+      // }
 
       switch (code) {
         case "KeyS": {
