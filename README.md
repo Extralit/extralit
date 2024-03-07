@@ -6,7 +6,7 @@
   <br>
 </h1>
 
-<h2 align="center">Open-source feedback layer for LLM-based data extractions</h2>
+<h2 align="center">Open-source feedback layer for LLM-assisted data extractions</h2>
 
 <h3>
 <p align="center">
