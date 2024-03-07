@@ -15,6 +15,7 @@ export default {
 <style lang="scss" scoped>
 .tag {
   text-align: left;
+  white-space: nowrap;
   border: 1px solid $black-10;
   display: inline-block;
   border-radius: 20px;

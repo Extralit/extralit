@@ -1,6 +1,6 @@
 import { Answer, AnswerCombinations } from "../IAnswer";
 
-export type RecordStatus = "pending" | "submitted" | "discarded" | "draft";
+export type RecordStatus = "valid" | "pending" | "submitted" | "discarded" | "draft";
 
 export class RecordAnswer implements Answer {
   constructor(

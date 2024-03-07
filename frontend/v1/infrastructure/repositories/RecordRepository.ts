@@ -450,14 +450,16 @@ export class RecordRepository {
     params.append("offset", offset);
     params.append("limit", howMany.toString());
 
-    // add 'valid' status to query all non-discarded records
     if (status === "pending") {
       params.append("response_status", 'missing');
       params.append("response_status", 'draft');
+
     } else if (status === "valid") {
+      // add 'valid' status to query all non-discarded records
       params.append("response_status", 'missing');
       params.append("response_status", 'submitted');
       params.append("response_status", 'draft');
+      
     } else {
       params.append("response_status", status);
     }

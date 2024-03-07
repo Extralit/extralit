@@ -80,7 +80,7 @@
 
 <script>
 // NOTE - this threshold is used to show the search filter component for component from questionForm component
-const OPTIONS_THRESHOLD_TO_ENABLE_SEARCH = 3;
+const OPTIONS_THRESHOLD_TO_ENABLE_SEARCH = 10;
 import "assets/icons/chevron-down";
 import "assets/icons/chevron-up";
 export default {
@@ -186,7 +186,10 @@ export default {
       return this.filteredOptions.length > this.maxOptionsToShowBeforeCollapse;
     },
     showSearch() {
-      return this.showCollapseButton;
+      return (
+        this.options.length >= OPTIONS_THRESHOLD_TO_ENABLE_SEARCH ||
+        this.showCollapseButton
+      );
     },
     textToShowInTheCollapseButton() {
       if (this.isExpanded) {

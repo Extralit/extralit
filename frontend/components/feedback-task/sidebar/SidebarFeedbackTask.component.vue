@@ -47,12 +47,27 @@ export default {
       required: true,
     },
   },
+
   data: () => ({
     currentPanel: null,
     currentMode: "annotate",
     isPanelVisible: false,
     metadata: null,
+    documentTooltip: 'Document Viewer',
   }),
+
+  watch: {
+    'document.file_name'(newFileName) {
+      // Update the tooltip of the "document" button
+      this.documentTooltip = newFileName;
+
+      // Reset the tooltip after 5 seconds
+      // setTimeout(() => {
+      //   this.documentTooltip = 'Document Viewer';
+      // }, 5000);
+    },
+  },
+
   computed: {
     hasDocumentLoaded() {
       return this.document.id !== null;
@@ -69,6 +84,7 @@ export default {
       return this.sidebarItems;
     },
   },
+
   created() {
     this.sidebarItems = {
       documentGroup: {
@@ -76,7 +92,7 @@ export default {
         buttons: [
           {
             id: "document",
-            tooltip: "Document Viewer",
+            tooltip: this.documentTooltip, 
             icon: "search",
             action: "show-document",
             type: "expandable",
@@ -125,9 +141,11 @@ export default {
       },
     };
   },
+
   setup() {
     return useDocumentViewModel();
   },
+
   mounted() {
     this.$nuxt.$on('on-change-record-metadata', (metadata) => {
       if (!metadata) { return; }
@@ -157,9 +175,11 @@ export default {
       }
     });
   },
+
   destroyed() {
     this.$nuxt.$off('on-change-record-metadata');
   },
+
   methods: {
     onClickSidebarAction(group, info) {
       switch (group.toUpperCase()) {
@@ -206,4 +226,4 @@ export default {
     pointer-events: none;
   }
 }
-</style>~/components/feedback-task/sidebar/useDocumentViewModel
+</style>

@@ -58,7 +58,7 @@ export default {
         breaks: true,
       });
 
-      html = html.replace(/<a href="#(.*?)">(.*?)<\/a>/g, '<button @click.prevent="handleClick(\'#$1\')">$2</button>');
+      html = html.replace(/<a href="#(.*?)">(.*?)<\/a>/g, '<button type="button" @click.prevent="handleClick(\'#$1\')">$2</button>');
 
       return html;
     },
@@ -67,7 +67,6 @@ export default {
         template: `<div>${this.markdownToHtml}</div>`,
         methods: {
           handleClick(hash) {
-            console.log('hash', hash)
             window.location.hash = hash;
           },
         },

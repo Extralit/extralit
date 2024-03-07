@@ -145,7 +145,7 @@ export class RecordCriteria {
     this.isChangingAutomatically = true;
 
     this.page = Number(page ?? 1);
-    this.status = status ?? "pending";
+    this.status = status ?? "valid";
     this.searchText = searchText ?? "";
 
     this.metadata.complete(metadata);
