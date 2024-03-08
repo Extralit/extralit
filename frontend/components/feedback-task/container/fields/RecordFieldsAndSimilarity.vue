@@ -59,6 +59,7 @@ export default {
     background: palette(white);
     display: flex;
     justify-content: space-between;
+    flex-wrap: wrap;
 
     #{$this}__header {
       padding: $base-space $base-space * 2;
@@ -68,6 +69,7 @@ export default {
       display: flex;
       align-items: center;
       gap: $base-space;
+      flex-wrap: wrap;
     }
 
     &--right {

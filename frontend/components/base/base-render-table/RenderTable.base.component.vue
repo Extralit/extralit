@@ -142,6 +142,39 @@ export default {
       }
       return configs;
     },
+    groupConfigs() {
+      if (this.groupbyColumns.length === 0) {
+        return {};
+      }
+
+      return {
+        groupBy: this.groupbyColumns,
+        groupToggleElement: "arrow",
+        groupHeader: this.groupHeader,
+        groupUpdateOnCellEdit: true,
+        groupContextMenu: [
+          {
+            label: "Show reference",
+            action: (e, group) => {
+              group.popup(`${group._group.field}: ${group._group.key}`, "right");
+            }
+          },
+          {
+            separator: true,
+          },
+          {
+            label: "Delete group of rows",
+            disabled: !this.editable,
+            action: (e, group) => {
+              group._group.rows.forEach((row) => {
+                row.delete();
+              });
+              this.updateTableJsonData(true);
+            }
+          },
+        ],
+      };
+    },
     referenceValues() {
       // First get the metadata.reference from the current table by checking the first row's _ref columns, 
       // then use refValues to find the matching tables from other records and get the dict of reference values to rows
@@ -164,7 +197,7 @@ export default {
 
       return refToRowDict;
     },
-    columnMenu() {
+    columnContextMenu() {
       let menu = [
         {
           label: "Copy column data",
@@ -174,40 +207,39 @@ export default {
 
             navigator.clipboard.writeText([title, ...values].join("\n"));
           }
-        }
+        },
+        {
+          separator: true,
+        },
+        {
+          label: "Add column",
+          disabled: !this.editable,
+          action: (e, column) => {
+            this.addColumn(column);
+          }
+        },
+        {
+          label: "Rename column",
+          disabled: !this.editable,
+          action: (e, column) => {
+            if (column.getDefinition().frozen) return;
+            column.updateDefinition({
+              editableTitle: !column.getDefinition().editableTitle,
+            });
+          }
+        },
+        {
+          label: "Delete column",
+          disabled: !this.editable,
+          action: (e, column) => {
+            column.delete();
+            this.updateTableJsonData(true);
+          }
+        },
       ];
-      if (this.editable) {
-        menu = [...menu,
-          {
-            separator: true,
-          },
-          {
-            label: "Add column",
-            action: (e, column) => {
-              this.addColumn(column);
-            }
-          },
-          {
-            label: "Rename column",
-              action: (e, column) => {
-                if (column.getDefinition().frozen) return;
-                column.updateDefinition({
-                  editableTitle: !column.getDefinition().editableTitle,
-                });
-              }
-          },
-          {
-            label: "Delete column",
-              action: (e, column) => {
-                column.delete();
-                this.updateTableJsonData(true);
-              }
-          },
-        ];
-      }
       return menu;
     },
-    rowMenu() {
+    rowContextMenu() {
       let menu = [
         {
           label: "Copy row",
@@ -217,49 +249,45 @@ export default {
             navigator.clipboard.writeText(values.join("\t"));
           }
         },
-      ];
+        {
+          label: "Paste",
+          disabled: !this.editable,
+          action: (e, row) => {
+            navigator.clipboard.readText().then((text) => {
+              const values = text.trim().split("\t");
+              const currentRow = row.getData();
 
-      if (this.editable) {
-        // extend the menu with additional options
-        menu = [...menu, 
-          {
-            label: "Paste",
-            action: (e, row) => {
-              navigator.clipboard.readText().then((text) => {
-                const values = text.trim().split("\t");
-                const currentRow = row.getData();
-
-                Object.keys(currentRow)
-                  .filter(columnName => this.isRefColumn(columnName) || this.columns.includes(columnName))
-                  .forEach((columnName, index) => {
-                    if (values[index] === undefined) return;
-                    currentRow[columnName] = values[index];
-                  });
-                row.update(currentRow);
-                this.updateTableJsonData();
-              });
-            }
-          },
-          {
-            separator: true,
-          },
-          {
-            label: "Add row below",
-            action: (e, row) => {
-              this.selectRow(row);
-              this.addRow();
-            }
-          },
-          {
-            label: "Delete row",
-            action: (e, row) => {
-              row.delete();
-              this.updateTableJsonData(true)
-            }
+              Object.keys(currentRow)
+                .filter(columnName => this.isRefColumn(columnName) || this.columns.includes(columnName))
+                .forEach((columnName, index) => {
+                  if (values[index] === undefined) return;
+                  currentRow[columnName] = values[index];
+                });
+              row.update(currentRow);
+              this.updateTableJsonData();
+            });
           }
-        ]
-      }
-
+        },
+        {
+          separator: true,
+        },
+        {
+          label: "Add row below",
+          disabled: !this.editable,
+          action: (e, row) => {
+            this.selectRow(row);
+            this.addRow();
+          }
+        },
+        {
+          label: "Delete row",
+          disabled: !this.editable,
+          action: (e, row) => {
+            row.delete();
+            this.updateTableJsonData(true)
+          }
+        },
+      ];
       return menu;
     }
   },
@@ -368,7 +396,7 @@ export default {
               }
             }];
           }
-          return this.columnMenu;
+          return this.columnContextMenu;
         },
         cellEdited: (cell) => {
           this.updateTableJsonData();
@@ -402,7 +430,7 @@ export default {
       } else if (this.refColumns?.includes(fieldName)) {
         config.editor = "autocomplete";
 
-        if (this.referenceValues.hasOwnProperty(fieldName)) {
+        if (this.referenceValues?.hasOwnProperty(fieldName)) {
           config.editorParams = {
             search: true,
             values: this.referenceValues[fieldName],
@@ -656,43 +684,20 @@ export default {
           tooltip: this.cellTooltip.bind(this),
           headerTooltip: this.headerTooltip.bind(this),
           headerWordWrap: true,
-          headerContextMenu: this.columnMenu,
+          headerContextMenu: this.columnContextMenu,
           // maxWidth: 200,
         },
         columns: this.columnsConfig,
         index: this.columnsConfig.find((column) => column.field === "reference")
         ? "reference"
         : null,
-        groupBy: this.groupbyColumns,
-        groupToggleElement: "header",
-        groupHeader: this.groupHeader,
-        groupUpdateOnCellEdit: true,
-        groupContextMenu: [
-          {
-            label: "Show reference",
-            action: (e, group) => {
-              group.popup(`${group._group.field}: ${group._group.key}`, "right");
-            }
-          },
-          {
-            separator: true,
-          },
-          {
-            label: "Delete group of rows",
-            action: (e, group) => {
-              group._group.rows.forEach((row) => {
-                row.delete();
-              });
-              this.updateTableJsonData(true);
-            }
-          },
-        ],
+        ...this.groupConfigs,
         // selectable: 1,
         // selectablePersistence: true,
         validationMode: "highlight",
         movableRows: this.editable,
         movableColumns: this.editable,
-        rowContextMenu: this.rowMenu,
+        rowContextMenu: this.rowContextMenu,
         history: true,
       });
 
@@ -708,7 +713,7 @@ export default {
         this.table.setColumns(this.columnsConfig);
         this.validateTable();
 
-        this.$nuxt.$on("on-table-highlight-row", this.selectRow.bind(this));
+        // this.$nuxt.$on("on-table-highlight-row", this.selectRow.bind(this));
       }); 
 
     } catch (error) {
@@ -758,7 +763,14 @@ export default {
 //   white-space: normal;
 // }
 
-.tabulator-group-level-1 {
+.tabulator .tabulator-group-level-1 {
   max-height: 100px;
+}
+
+.tabulator .tabulator-group .tabulator-group-value {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>
