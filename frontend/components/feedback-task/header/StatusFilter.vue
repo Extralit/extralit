@@ -45,7 +45,7 @@ export default {
         },
         {
           id: "valid",
-          name: "All Valid",
+          name: "All Data",
         },
         {
           id: "draft",

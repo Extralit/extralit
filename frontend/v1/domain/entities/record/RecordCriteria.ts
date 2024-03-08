@@ -173,7 +173,7 @@ export class RecordCriteria {
     sortByCommitted.witValue(this.sortBy.value);
     responseCommitted.withValue(this.response.value);
     suggestionCommitted.withValue(this.suggestion.value);
-
+  
     this.committed = {
       page: this.page,
       status: this.status,

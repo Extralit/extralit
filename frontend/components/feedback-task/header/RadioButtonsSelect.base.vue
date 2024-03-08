@@ -142,7 +142,7 @@ $selector-width: 140px;
       background: lighten($submitted-color, 44%);
     }
   }
-  &.pending {
+  &.pending, &.valid {
     &:hover,
     &:focus-within {
       background: lighten($pending-color, 54%);

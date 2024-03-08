@@ -10,18 +10,48 @@
     <div ref="table" class="--table" />
 
     <div class="--table-buttons">
-      <BaseButton v-show="columns && columnValidators && Object.keys(columnValidators).length" @click.prevent="validateTable({ showErrors: true, scrollToError: true })">
-        ✅ Check data
-      </BaseButton>
-      <BaseButton v-show="editable && columns && columnValidators && Object.keys(columnValidators).length" @click.prevent="$emit('updateValidValues', true);">
-        Ignore checks
-      </BaseButton>
-      <BaseButton v-show="editable" @click.prevent="table.undo();">
-        Undo
-      </BaseButton>
-      <BaseButton v-show="editable" @click.prevent="addColumn">
-        ➕ Add column
-      </BaseButton>
+      <BaseDropdown 
+        v-show="editable"
+        :visible="visibleEditDropdown">
+        <span slot="dropdown-header">
+          <BaseButton @click.prevent="visibleEditDropdown=!visibleEditDropdown">
+            Edit table 
+            <svgicon name="chevron-down" width="8" height="8" />
+          </BaseButton>
+        </span>
+        <span slot="dropdown-content">
+          <BaseButton v-show="editable" @click.prevent="table.undo();">
+            ↩️ Undo
+          </BaseButton>
+
+          <BaseButton v-show="editable" @click.prevent="table.redo();">
+            ↪️ Redo
+          </BaseButton>
+
+          <BaseButton @click.prevent="addColumn">
+            ➕ Add Column
+          </BaseButton>
+
+          <BaseButton @click.prevent="addRow">
+            ➕ Add Row
+          </BaseButton>
+        </span>
+      </BaseDropdown>
+
+      <BaseDropdown 
+        v-show="editable && columns && columnValidators && Object.keys(columnValidators).length"
+        :visible="visibleCheckropdown">
+        <span slot="dropdown-header">
+          <BaseButton @click.prevent="validateTable({ showErrors: true, scrollToError: true }); visibleCheckropdown=!visibleCheckropdown">
+            ✅ Check data
+          </BaseButton>
+        </span>
+        <span slot="dropdown-content">
+          <BaseButton @click.prevent="$emit('updateValidValues', true);">
+            ⏭️ Ignore errors
+          </BaseButton>
+        </span>
+      </BaseDropdown>
     </div>
   </div>
 </template>
@@ -68,6 +98,8 @@ export default {
       table: null,
       showRefColumns: false,
       isLoaded: false,
+      visibleCheckropdown: false,
+      visibleEditDropdown: false,
     };
   },
 
@@ -742,7 +774,7 @@ export default {
   flex-flow: column;
   position: relative;
   max-width: 100%;
-  overflow: auto;
+  // overflow-x: auto;
   // background: inherit;
 
   .--table-buttons {
@@ -752,6 +784,14 @@ export default {
     color: white;
     border-radius: 5px;
     text-decoration: none;
+
+    .button {
+      cursor: pointer;
+      &:hover,
+      &--active {
+        background: $black-4;
+      }
+    }
   }
 
   .--table {
@@ -773,4 +813,5 @@ export default {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
 </style>
