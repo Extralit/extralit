@@ -13,7 +13,7 @@
       :value="question.answer.value"
       :editable="true"
       :originalValue="question.answer.originalValue"
-      :placeholder="question.settings.placeholder"
+      :placeholder="placeholder"
       :isFocused="isEditionModeActive"
       @change-text="onChangeTextArea"
       @on-change-focus="onChangeFocus"
@@ -39,7 +39,7 @@
       class="textarea"
       :value="question.answer.value"
       :originalValue="question.answer.originalValue"
-      :placeholder="question.settings.placeholder"
+      :placeholder="placeholder"
       :isFocused="isEditionModeActive"
       @change-text="onChangeTextArea"
       @on-change-focus="onChangeFocus"
@@ -144,6 +144,12 @@ export default {
       const value = this.question.answer?.value?.trimStart();
 
       return value?.startsWith("<") && !value?.startsWith("<img") && !value?.startsWith("<iframe");
+    },
+    placeholder() {
+      if (this.question.settings.use_table) {
+        return this.$t("Copy and paste a table you'd like to edit here.");
+      }
+      return ""
     }
   },
   mounted() {

@@ -21,11 +21,11 @@
         </span>
         <span slot="dropdown-content">
           <BaseButton v-show="editable" @click.prevent="table.undo();">
-            ↩️ Undo
+            Undo
           </BaseButton>
 
           <BaseButton v-show="editable" @click.prevent="table.redo();">
-            ↪️ Redo
+            Redo
           </BaseButton>
 
           <BaseButton @click.prevent="addColumn">
@@ -43,12 +43,12 @@
         :visible="visibleCheckropdown">
         <span slot="dropdown-header">
           <BaseButton @click.prevent="validateTable({ showErrors: true, scrollToError: true }); visibleCheckropdown=!visibleCheckropdown">
-            ✅ Check data
+            Check data
           </BaseButton>
         </span>
         <span slot="dropdown-content">
           <BaseButton @click.prevent="$emit('updateValidValues', true);">
-            ⏭️ Ignore errors
+            Ignore errors
           </BaseButton>
         </span>
       </BaseDropdown>

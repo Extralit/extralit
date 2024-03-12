@@ -41,7 +41,7 @@ docker_build(
     context='.',
 build_args={'ENV': ENV, 'USERS_DB': USERS_DB},
     dockerfile='./docker/api.dockerfile',
-    only=['./src', './dist', './docker/scripts', './setup.py', './pyproject.toml', './requirements.txt', './scripts/'],
+    only=['./src', './docker/scripts', './setup.py', './pyproject.toml', './requirements.txt', './scripts/'],
     ignore=['**/__pycache__', 'src/argilla.egg-info', 'frontend/.nuxt', 'frontend/node_modules', 'frontend/package-lock.json'],
     live_update=[
         # Sync the source code to the container
