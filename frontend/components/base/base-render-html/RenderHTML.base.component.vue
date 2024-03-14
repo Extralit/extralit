@@ -2,81 +2,81 @@
 	<div v-if="editor" class="editor-container">
 		<div v-if="editable" :editor="editor">
 			<div class="menubar">
-				<button class="menubar__button" @click.prevent="editor.chain().focus().addColumnBefore().run()" 
+				<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().addColumnBefore().run()" 
 					:disabled="!editor.can().addColumnBefore()"
 				>
 					➕ Column
-				</button>
-				<button class="menubar__button" @click.prevent="editor.chain().focus().deleteColumn().run()" 
+				</BaseButton>
+				<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().deleteColumn().run()" 
 					:disabled="!editor.can().deleteColumn()"
 				>
 					➖ Column
-				</button>
-				<!-- <button class="menubar__button" @click.prevent="editor.chain().focus().addRowBefore().run()" 
+				</BaseButton>
+				<!-- <BaseButton class="menubar__button" @click.prevent="editor.chain().focus().addRowBefore().run()" 
 					:disabled="!editor.can().addRowBefore()"
 				>
 					➕ RowBefore
-				</button> -->
-				<button class="menubar__button" @click.prevent="editor.chain().focus().addRowAfter().run()" 
+				</BaseButton> -->
+				<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().addRowAfter().run()" 
 					:disabled="!editor.can().addRowAfter()"
 				>
 					➕ Row
-				</button>
-				<button class="menubar__button" @click.prevent="editor.chain().focus().deleteRow().run()" 
+				</BaseButton>
+				<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().deleteRow().run()" 
 					:disabled="!editor.can().deleteRow()"
 				>
 					➖ Row
-				</button>
-				<button class="menubar__button" @click.prevent="editor.chain().focus().mergeCells().run()" 
+				</BaseButton>
+				<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().mergeCells().run()" 
 					:disabled="!editor.can().mergeCells()"
 				>
 					Merge Cells
-				</button>
-				<button class="menubar__button" @click.prevent="editor.chain().focus().splitCell().run()" 
+				</BaseButton>
+				<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().splitCell().run()" 
 					:disabled="!editor.can().splitCell()"
 				>
 					Split Cell
-				</button>
-				<!-- <button class="menubar__button" @click.prevent="editor.chain().focus().mergeOrSplit().run()" 
+				</BaseButton>
+				<!-- <BaseButton class="menubar__button" @click.prevent="editor.chain().focus().mergeOrSplit().run()" 
 						:disabled="!editor.can().mergeOrSplit()"
 					>
 					merge Or Split
-				</button> -->
-				<button class="menubar__button" @click.prevent="editor.chain().focus().toggleHeaderColumn().run()" 
+				</BaseButton> -->
+				<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().toggleHeaderColumn().run()" 
 					:disabled="!editor.can().toggleHeaderColumn()"
 				>
 					Toggle Index
-				</button>
-				<button class="menubar__button" @click.prevent="editor.chain().focus().toggleHeaderRow().run()" 
+				</BaseButton>
+				<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().toggleHeaderRow().run()" 
 					:disabled="!editor.can().toggleHeaderRow()"
 				>
 					Toggle Header
-				</button>
-				<button class="menubar__button" @click.prevent="editor.chain().focus().toggleHeaderCell().run()" 
+				</BaseButton>
+				<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().toggleHeaderCell().run()" 
 					:disabled="!editor.can().toggleHeaderCell()"
 				>
 					Toggle Header Cell
-				</button>
-				<!-- <button class="menubar__button" @click.prevent="editor.chain().focus().fixTables().run()" 
+				</BaseButton>
+				<!-- <BaseButton class="menubar__button" @click.prevent="editor.chain().focus().fixTables().run()" 
 					:disabled="!editor.can().fixTables()"
 				>
 					Fix Tables
-				</button> -->
+				</BaseButton> -->
 
-				<BaseDropdown :visible="searchReplaceDropdownVisible" class="dropdown" style="width: auto; padding: 0px;">
-					<span slot="dropdown-header" @click.prevent="toggleDropdown">
-						<BaseButton>
+				<BaseDropdown :visible="searchReplaceDropdownVisible" class="dropdown">
+					<span slot="dropdown-header">
+						<BaseButton @click.prevent="searchReplaceDropdownVisible = !searchReplaceDropdownVisible">
 							Find & Replace
 						</BaseButton> 
 					</span>
-					<span slot="dropdown-content" style="padding: 5px;">
+					<span slot="dropdown-content" class="dropdown-content">
 						<label for="searchTerm" class="dropdown-label">Search:</label>
 						<input id="searchTerm" v-model="searchTerm" type="text" class="dropdown-input" />
 	
 						<label for="replaceTerm" class="dropdown-label">Replace:</label>
 						<input id="replaceTerm" v-model="replaceTerm" type="text" class="dropdown-input" />
 	
-						<button @click.prevent="replaceAll" class="dropdown-button">Find/Replace All</button>
+						<BaseButton @click.prevent="replaceAll" class="dropdown-button">Find/Replace All</BaseButton>
 
 					</span>
 				</BaseDropdown>
@@ -85,7 +85,7 @@
 
 		<editor-content 
 			:editor="editor"
-			class="editor-content"
+			class="editor-container__content"
 			@focus="setFocus(true)"
 			@blur="setFocus(false)"
 			@contextmenu.prevent="openContextMenu($event, rowIndex, cellIndex)"
@@ -228,9 +228,6 @@ export default {
 			
 			this.editor.commands.replaceAll();
 		},
-		toggleDropdown() {
-			this.searchReplaceDropdownVisible = !this.searchReplaceDropdownVisible;
-		},
 		shouldShowBubbleMenu(props) {
 			const isCellSelection = props.state.selection?.constructor?.name.includes('CellSelection');
 			if (isCellSelection) {
@@ -291,7 +288,10 @@ export default {
 	width: 100%;
 
   &__content {
-    padding: 4rem 1rem;
+    // padding: 4rem 1rem;
+		// min-width: 40vw;
+		max-height: 60vh;
+		overflow-x: scroll;
   }
 
   &__footer {
@@ -315,18 +315,18 @@ export default {
 		display: flex;
 		flex-wrap: wrap;
 		justify-content: space-between;
-		padding: 5px 5px 0px 0px;
+		// padding: 5px 5px 0px 0px;
 		color: white;
 		text-decoration: none;
 
 		.menubar__button {
 			background-color: transparent;
 			border: none;
-			border-radius: 0.4rem;
+			// border-radius: 0.4rem;
 			cursor: pointer;
 			height: 1.75rem;
-			margin-right: 0.25rem;
-			padding: 0.25rem;
+			// margin-right: 0.25rem;
+			// padding: 0.25rem;
 
 			svg {
 				fill: currentColor;
@@ -336,7 +336,7 @@ export default {
 
 			&:hover,
 			&.is-active {
-				background-color: #858585;
+				background-color: $black-4;
 			}
 
 			&:disabled {
@@ -347,46 +347,17 @@ export default {
 		}
 
 		.dropdown {
-			display: flex;
-			flex-direction: column;
-			width: 200px;
-			background-color: #f9f9f9;
-			border: 1px solid #ccc;
-			padding: 10px;
-			border-radius: 4px;
+			.button {
+				cursor: pointer;
+				&:hover,
+				&--active {
+					background: $black-4;
+				}
+			}
+			.dropdown-content {
+				align-items: center;
+			}
 		}
-
-		.dropdown label {
-			margin-bottom: 5px;
-			font-size: 14px;
-			color: #333;
-		}
-
-		.dropdown input {
-			margin-bottom: 10px;
-			padding: 5px;
-			border: 1px solid #ccc;
-			border-radius: 4px;
-		}
-
-		.dropdown button {
-			padding: 5px 10px;
-			background-color: #4CAF50;
-			color: white;
-			border: none;
-			border-radius: 4px;
-			cursor: pointer;
-		}
-
-		.dropdown button:hover {
-			background-color: #45a049;
-		}
-	}
-
-	.editor-content {
-		// min-width: 40vw;
-		max-height: 60vh;
-		overflow-x: scroll;
 	}
 }
 
