@@ -68,7 +68,6 @@ k8s_resource(
   resource_deps=['main-db', 'elasticsearch'],
   port_forwards=['6901:6900'],
   labels=['argilla-server'],
-  links=['10.24.49.60'],
 )
 
 k8s_yaml(['./k8s/argilla-loadbalancer-service.yaml'])

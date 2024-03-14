@@ -59,7 +59,7 @@ export default {
     isValidHTML() {
       const value = this.text?.trimStart();
 
-      return value?.startsWith("<") && !value?.startsWith("<img") && !value?.startsWith("<iframe");
+      return value?.startsWith("<table") && !value?.startsWith("<img") && !value?.startsWith("<iframe");
     }
   },
   setup(props) {

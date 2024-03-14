@@ -31,6 +31,7 @@
           <slot></slot>
         </transition>
       </div>
+      <div class="sidebar__edge"></div>
     </aside>
   </transition>
 </template>
@@ -154,6 +155,32 @@ export default {
     @include font-size(13px);
     &:first-child {
       padding-top: 0;
+    }
+  }
+
+  &__edge {
+    position: absolute;
+    top: 50px;
+    left: 0;
+    bottom: 0;
+    width: 5px; 
+    background: transparent;
+    z-index: 1;
+    transition: background 0.3s ease;
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -30px; // Adjust this to change the hover area width
+      bottom: 0;
+      width: 60px;
+      background: transparent;
+      z-index: -1;
+    }
+
+    &:hover {
+      background: $primary-lighten-color;
     }
   }
 }

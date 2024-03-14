@@ -87,9 +87,9 @@ helm_resource(
 if 'kind' not in k8s_context():
     k8s_yaml(['./k8s/argilla-frontend-service.yaml', './k8s/argilla-frontend-ingress.yaml'])
 
-k8s_yaml('./k8s/grobid-deployment.yaml')
-k8s_resource(
-  'grobid-deployment',
-  port_forwards=['8070', '8081'],
-  labels=['grobid'],
-)
+# k8s_yaml('./k8s/grobid-deployment.yaml')
+# k8s_resource(
+#   'grobid-deployment',
+#   port_forwards=['8070', '8081'],
+#   labels=['grobid'],
+# )

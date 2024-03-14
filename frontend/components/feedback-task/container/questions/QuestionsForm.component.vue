@@ -6,6 +6,7 @@
     v-click-outside="onClickOutside"
     @click="focusOnFirstQuestionFromOutside"
   >
+    <div class="questions-form__edge"></div>
     <div class="questions-form__content">
       <div class="questions-form__header">
         <div class="draft">
@@ -292,6 +293,7 @@ export default {
 
 <style lang="scss" scoped>
 .questions-form {
+  position: relative;
   display: flex;
   flex-direction: column;
   flex-basis: clamp(40%, 30vw, 80%);
@@ -301,7 +303,7 @@ export default {
   max-height: 100%;
   min-width: 0;
   justify-content: space-between;
-border-radius: $border-radius-m;
+  border-radius: $border-radius-m;
   border: 1px solid transparent;
   background: palette(white);
   margin-bottom: auto;
@@ -335,6 +337,31 @@ border-radius: $border-radius-m;
     overflow: auto;
     scroll-behavior: smooth;
     }
+  &__edge {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 3px;
+    z-index: 1;
+    background: transparent;
+    transition: background 0.3s ease;
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: -15px;
+      width: 30px;
+      background: transparent;
+      z-index: -1;
+    }
+
+    &:hover {
+      background: linear-gradient(to bottom, transparent 0%, $primary-lighten-color 1%, $primary-lighten-color 99%, transparent 100%);
+    }
+  }
 
   &.--pending,
   &.--draft {

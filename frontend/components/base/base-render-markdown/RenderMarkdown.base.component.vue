@@ -81,6 +81,7 @@ export default {
   },
 };
 </script>
+
 <style lang="scss" scoped>
 .markdown-render {
   white-space: normal;
@@ -135,7 +136,8 @@ export default {
       overflow-x: auto;
       border-collapse: collapse;
       width: 100%;
-      table-layout: fixed;
+      // table-layout: fixed;
+      border: 0px;
 
       th, td {
         border: 1px solid #ddd;
@@ -147,11 +149,6 @@ export default {
         overflow: hidden;
         text-overflow: ellipsis; // Display '...' for overflow content
         vertical-align: middle;  // Center content vertically
-        
-        table {
-          max-height: 120px;
-          overflow-y: scroll;
-        }
       }
 
       th {
@@ -163,7 +160,7 @@ export default {
       }
 
       // tbody tr:nth-child(even) {
-      //     background-color: #ebebeb; // Lighter gray for odd rows
+      //   background-color: #ebebeb; // Lighter gray for odd rows
       // }
     }
   }
