@@ -136,8 +136,9 @@ export default {
       overflow-x: auto;
       border-collapse: collapse;
       width: 100%;
-      // table-layout: fixed;
+      table-layout: auto;
       border: 0px;
+      @include overflow-scrollbar;
 
       th, td {
         border: 1px solid #ddd;
@@ -147,21 +148,16 @@ export default {
         font-size: 13px;
         max-width: 200px;
         overflow: hidden;
-        text-overflow: ellipsis; // Display '...' for overflow content
-        vertical-align: middle;  // Center content vertically
+        text-overflow: ellipsis;
+        vertical-align: middle; 
       }
 
       th {
         padding: 2px 5px;
-        background-color: #cccccc; // Light gray background for header
+        background-color: #cccccc;
         font-size: 14px;
-        font-weight: 600; // Bold font for headers
-
+        font-weight: 600;
       }
-
-      // tbody tr:nth-child(even) {
-      //   background-color: #ebebeb; // Lighter gray for odd rows
-      // }
     }
   }
 }

@@ -288,7 +288,7 @@ export default {
 .editor-container {
   position: relative;
 	flex-flow: column;
-	overflow-x: auto;
+	width: 100%;
 
   &__content {
     padding: 4rem 1rem;
@@ -318,7 +318,6 @@ export default {
 		padding: 5px 5px 0px 0px;
 		color: white;
 		text-decoration: none;
-		overflow-x: visible;
 
 		.menubar__button {
 			background-color: transparent;
@@ -385,9 +384,9 @@ export default {
 	}
 
 	.editor-content {
-		min-width: 40vw;
+		// min-width: 40vw;
 		max-height: 60vh;
-		overflow-x: auto;
+		overflow-x: scroll;
 	}
 }
 
@@ -460,16 +459,14 @@ input[type="checkbox"] {
 			background-color: rgba(13, 255, 0, 0.5);
 		}
 	}
-}
 
-/* Table-specific styling */
-.tiptap {
   table {
     border-collapse: collapse;
-    table-layout: fixed;
+    table-layout: auto;
     margin: 0;
     overflow: hidden;
 		overflow-x: auto;
+		@include overflow-scrollbar;
 
     td,
     th {
@@ -519,7 +516,6 @@ input[type="checkbox"] {
     }
   }
 }
-
 
 .resize-cursor {
   cursor: ew-resize;
