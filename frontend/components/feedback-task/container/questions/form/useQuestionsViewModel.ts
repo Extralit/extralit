@@ -43,15 +43,15 @@ export const useQuestionsViewModel = () => {
     clearTimeout(timeout);
   };
 
-  onBeforeMount(() => {
-    document.addEventListener("keydown", trackOnKeyDown);
-    document.addEventListener("keyup", trackOnKeyUp);
-  });
+  // onBeforeMount(() => {
+  //   document.addEventListener("keydown", trackOnKeyDown);
+  //   document.addEventListener("keyup", trackOnKeyUp);
+  // });
 
-  onBeforeUnmount(() => {
-    document.removeEventListener("keydown", trackOnKeyDown);
-    document.removeEventListener("keyup", trackOnKeyUp);
-  });
+  // onBeforeUnmount(() => {
+  //   document.removeEventListener("keydown", trackOnKeyDown);
+  //   document.removeEventListener("keyup", trackOnKeyUp);
+  // });
 
-  return { showShortcutsHelper };
+  return { showShortcutsHelper, toggleShortcutsHelper };
 };

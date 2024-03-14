@@ -7,12 +7,19 @@
       class="shortcuts__content"
       :content="content"
     />
+
+    <BaseSwitch @change="toggleShortcutsHelper" v-model="showShortcutsHelper" class="shortcuts__footer">
+      Show key shortcuts
+    </BaseSwitch>
   </div>
 </template>
 
 <script>
+import { useQuestionsViewModel } from "@/components/feedback-task/container/questions/form/useQuestionsViewModel.ts";
+
 export default {
   name: "HelpShortcut",
+
   data() {
     return {
       content: {
@@ -20,6 +27,7 @@ export default {
       },
     };
   },
+
   methods: {
     async getShortcutsDocumentation() {
       const folderContent = require.context(
@@ -57,6 +65,7 @@ export default {
       return manipulatedByPlatform.join("\n");
     },
   },
+
   async fetch() {
     try {
       this.content.tabs.push({
@@ -67,6 +76,10 @@ export default {
     } catch (e) {
       console.log(e);
     }
+  },
+
+  setup() {
+    return useQuestionsViewModel();
   },
 };
 </script>
@@ -84,7 +97,14 @@ export default {
       width: auto;
     }
   }
+  &__footer {
+    position: fixed;
+    bottom: 1em;
+    padding: $base-space;
+    text-align: center;
+  }
 }
+
 :deep(.snippet) {
   max-height: calc(100vh - $topbarHeight * 2 - $base-space * 2);
   overflow: auto;
