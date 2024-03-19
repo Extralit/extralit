@@ -2,8 +2,8 @@
   <div class="table-container">
     <div class="--table-buttons">
       <BaseButton v-show="refColumns?.length || columns.includes('reference')" @click.prevent="toggleShowRefColumns">
-        <span v-if="!showRefColumns">⬇️ Show reference columns</span>
-        <span v-else>⬅️ Hide reference columns</span>
+        <span v-if="!showRefColumns">Show references</span>
+        <span v-else>Hide references</span>
       </BaseButton>
     </div>
 
@@ -222,7 +222,7 @@ export default {
       }, {});
       if (!refValues) return null;
   
-      const publication_ref = firstRow.publication_ref || firstRow[this.refColumns[0]]?.split('-')[0];
+      const publication_ref = this.tableJSON?.publication_ref || firstRow.publication_ref || firstRow[this.refColumns[0]]?.split('-')[0];
       if (!publication_ref) return null;
       let recordTables = getTablesFromRecords((record) => record?.metadata?.reference == publication_ref, publication_ref)
       const refToRowDict = findMatchingRefValues(refValues, recordTables)
