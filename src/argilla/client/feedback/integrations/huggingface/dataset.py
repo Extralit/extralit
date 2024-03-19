@@ -69,13 +69,13 @@ class HuggingFaceDatasetMixin:
                 hf_dataset[field.name] = []
 
         for question in dataset.questions:
-            if question.type in [QuestionTypes.text, QuestionTypes.label_selection]:
+            if question.type in [QuestionTypes.text, QuestionTypes.label_selection, QuestionTypes.dynamic_label_selection]:
                 value = Value(dtype="string", id="question")
             elif question.type == QuestionTypes.rating:
                 value = Value(dtype="int32", id="question")
             elif question.type == QuestionTypes.ranking:
                 value = Sequence({"rank": Value(dtype="uint8"), "value": Value(dtype="string")}, id="question")
-            elif question.type in [QuestionTypes.multi_label_selection, QuestionTypes.interactive_multi_label_selection]:
+            elif question.type in [QuestionTypes.multi_label_selection, QuestionTypes.dynamic_multi_label_selection]:
                 value = Sequence(Value(dtype="string"), id="question")
             else:
                 raise ValueError(

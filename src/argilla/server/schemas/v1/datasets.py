@@ -277,7 +277,7 @@ class ValueTextQuestionSettingsOption(BaseModel):
 
 
 class LabelSelectionQuestionSettingsCreate(UniqueValuesCheckerMixin):
-    type: Literal[QuestionType.label_selection]
+    type: Literal[QuestionType.label_selection, QuestionType.dynamic_label_selection]
     options: conlist(
         item_type=ValueTextQuestionSettingsOption,
         min_items=LABEL_SELECTION_OPTIONS_MIN_ITEMS,
@@ -299,7 +299,7 @@ class LabelSelectionQuestionSettingsCreate(UniqueValuesCheckerMixin):
 
 
 class MultiLabelSelectionQuestionSettingsCreate(LabelSelectionQuestionSettingsCreate):
-    type: Literal[QuestionType.multi_label_selection, QuestionType.interactive_multi_label_selection]
+    type: Literal[QuestionType.multi_label_selection, QuestionType.dynamic_multi_label_selection]
 
 
 class RankingQuestionSettingsCreate(UniqueValuesCheckerMixin):

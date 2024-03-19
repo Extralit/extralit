@@ -130,9 +130,9 @@ class ArgillaMixin:
             question = RemoteRatingQuestion.from_api(question)
         elif question.settings["type"] == QuestionTypes.text:
             question = RemoteTextQuestion.from_api(question)
-        elif question.settings["type"] == QuestionTypes.label_selection:
+        elif question.settings["type"] in [QuestionTypes.label_selection, QuestionTypes.dynamic_label_selection]:
             question = RemoteLabelQuestion.from_api(question)
-        elif question.settings["type"] in [QuestionTypes.multi_label_selection, QuestionTypes.interactive_multi_label_selection]:
+        elif question.settings["type"] in [QuestionTypes.multi_label_selection, QuestionTypes.dynamic_multi_label_selection]:
             question = RemoteMultiLabelQuestion.from_api(question)
         elif question.settings["type"] == QuestionTypes.ranking:
             question = RemoteRankingQuestion.from_api(question)

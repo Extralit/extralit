@@ -72,11 +72,11 @@ export class Question {
   }
 
   public get isMultiLabelType(): boolean {
-    return this.type === "multi_label_selection" || this.type === "interactive_multi_label_selection";
+    return this.type === "multi_label_selection" || this.type === "dynamic_multi_label_selection";
   }
 
   public get isSingleLabelType(): boolean {
-    return this.type === "label_selection";
+    return this.type === "label_selection" || this.type === "dynamic_label_selection";
   }
 
   public get isTextType(): boolean {
@@ -165,15 +165,38 @@ export class Question {
   addSuggestion(suggestion: Suggestion) {
     if (!suggestion) return;
 
-    if (this.type == "interactive_multi_label_selection" && Array.isArray(suggestion?.suggestedAnswer) && suggestion.suggestedAnswer.length > 0) {
-      this.settings.options = suggestion.suggestedAnswer.map(value => ({ text: value, value: value, description: null }));
+    if (
+      ["dynamic_multi_label_selection", "dynamic_label_selection"].includes(this.type) &&
+      suggestion.agent === "selection" &&
+      Array.isArray(suggestion?.suggestedAnswer) &&
+      suggestion.suggestedAnswer?.length > 0
+    ) {
 
-      this.answer = new MultiLabelQuestionAnswer(
-      this.type,
-      this.name,
-      this.settings.options
-      );
+      let selections = [
+        ...this.settings.options,
+        ...suggestion.suggestedAnswer
+          .filter(value => 
+            !this.settings.options.some(existingOption => existingOption.value === value))
+          .map((value) => ({
+            text: value,
+            value: value,
+            description: null,
+          })),
+      ]
 
+      if (this.isMultiLabelType) {
+        this.answer = new MultiLabelQuestionAnswer(
+          this.type,
+          this.name,
+          selections
+        );
+      } else if (this.isSingleLabelType) {
+        this.answer = new SingleLabelQuestionAnswer(
+          this.type,
+          this.name,
+          selections
+        );
+      }
     } else {
       this.suggestion = suggestion;
     }

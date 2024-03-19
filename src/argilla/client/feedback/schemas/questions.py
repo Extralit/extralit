@@ -157,7 +157,7 @@ class _LabelQuestion(QuestionSchema, LabelMappingMixin):
             which means all the labels will be shown, or 3 or greater.
     """
 
-    labels: Union[conlist(str, unique_items=True, min_items=2), Dict[str, str]]
+    labels: Union[conlist(str, unique_items=True, min_items=0), Dict[str, str]]
     visible_labels: Union[UndefinedType, conint(ge=3), None] = UNDEFINED
 
     @validator("labels", pre=True, always=True)
@@ -221,8 +221,8 @@ class LabelQuestion(_LabelQuestion):
     only select one label.
 
     Args:
-        type: The type of the question. Defaults to 'label_selection' and cannot/shouldn't
-            be modified.
+        type: The type of the question, which is either 'label_selection' or 'dynamic_label_selection'. When using
+            'dynamic_label_selection', the labels will be fetched from the Record's Suggestions when the question is shown in the UI.
         labels: The list of labels of the label question. The labels must be unique, and
             the list must contain at least two unique labels. Additionally, `labels` can
             also be a dictionary of labels, where the keys are the labels, and the values
@@ -235,7 +235,8 @@ class LabelQuestion(_LabelQuestion):
         >>> LabelQuestion(name="label_question", title="Label Question", labels=["label_1", "label_2"])
     """
 
-    type: Literal[QuestionTypes.label_selection] = Field(QuestionTypes.label_selection.value, allow_mutation=False)
+    type: Literal[QuestionTypes.label_selection, QuestionTypes.dynamic_label_selection] = Field(
+        QuestionTypes.label_selection.value, allow_mutation=False)
 
 
 class MultiLabelQuestion(_LabelQuestion):
@@ -244,8 +245,8 @@ class MultiLabelQuestion(_LabelQuestion):
     select multiple labels.
 
     Args:
-        type: The type of the question. Defaults to 'multi_label_selection' and
-            cannot/shouldn't be modified.
+        type: The type of the question, which is either 'multi_label_selection' or 'dynamic_multi_label_selection'. When using
+            'dynamic_multi_label_selection', the labels will be fetched from the Record's Suggestions when the question is shown in the UI.
         labels: The list of labels of the label question. The labels must be unique, and
             the list must contain at least two unique labels. Additionally, `labels` can
             also be a dictionary of labels, where the keys are the labels, and the values
@@ -258,7 +259,7 @@ class MultiLabelQuestion(_LabelQuestion):
         >>> MultiLabelQuestion(name="multi_label_question", title="Multi Label Question", labels=["label_1", "label_2"])
     """
 
-    type: Literal[QuestionTypes.multi_label_selection, QuestionTypes.interactive_multi_label_selection] = Field(
+    type: Literal[QuestionTypes.multi_label_selection, QuestionTypes.dynamic_multi_label_selection] = Field(
         QuestionTypes.multi_label_selection.value, allow_mutation=False
     )
 

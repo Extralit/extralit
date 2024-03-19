@@ -22,6 +22,6 @@ class SuggestionModel(BaseModel):
     id: UUID
     question_id: UUID
     value: Any
-    type: Optional[Literal["model", "human"]] = None
+    type: Optional[Literal["model", "human", "selection"]] = None
     score: Optional[float] = None
     agent: Optional[str] = None

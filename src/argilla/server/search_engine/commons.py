@@ -166,7 +166,8 @@ def es_mapping_for_question(question: Question) -> dict:
         #  See https://www.elastic.co/guide/en/elasticsearch/reference/current/keyword.html
         #  See https://www.elastic.co/guide/en/elasticsearch/reference/current/text.html
         return {"type": "text", "index": False}
-    elif question_type in [QuestionType.label_selection, QuestionType.multi_label_selection, QuestionType.interactive_multi_label_selection]:
+    elif question_type in [QuestionType.label_selection, QuestionType.dynamic_label_selection,
+                           QuestionType.multi_label_selection, QuestionType.dynamic_multi_label_selection]:
         return {"type": "keyword"}
     elif question_type == QuestionType.ranking:
         return {"type": "nested", "properties": {"rank": {"type": "integer"}, "value": {"type": "keyword"}}}

@@ -6,8 +6,9 @@ export type QuestionType =
   | "rating"
   | "ranking"
   | "label_selection"
+  | "dynamic_label_selection"
   | "multi_label_selection"
-  | "interactive_multi_label_selection";
+  | "dynamic_multi_label_selection";
 export abstract class QuestionAnswer {
   private answer: Answer;
   constructor(public readonly type: QuestionType) {}

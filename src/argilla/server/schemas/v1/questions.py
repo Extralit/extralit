@@ -51,13 +51,13 @@ class ValueTextQuestionSettingsOption(BaseModel):
 
 
 class LabelSelectionQuestionSettings(BaseModel):
-    type: Literal[QuestionType.label_selection]
+    type: Literal[QuestionType.label_selection, QuestionType.dynamic_label_selection]
     options: conlist(item_type=ValueTextQuestionSettingsOption)
     visible_options: Optional[int] = None
 
 
 class MultiLabelSelectionQuestionSettings(LabelSelectionQuestionSettings):
-    type: Literal[QuestionType.multi_label_selection, QuestionType.interactive_multi_label_selection]
+    type: Literal[QuestionType.multi_label_selection, QuestionType.dynamic_multi_label_selection]
 
 
 class RankingQuestionSettings(BaseModel):
@@ -105,12 +105,12 @@ class RatingQuestionSettingsUpdate(UpdateSchema):
 
 
 class LabelSelectionSettingsUpdate(UpdateSchema):
-    type: Literal[QuestionType.label_selection]
+    type: Literal[QuestionType.label_selection, QuestionType.dynamic_label_selection]
     visible_options: Optional[PositiveInt]
 
 
 class MultiLabelSelectionQuestionSettingsUpdate(LabelSelectionSettingsUpdate):
-    type: Literal[QuestionType.multi_label_selection, QuestionType.interactive_multi_label_selection]
+    type: Literal[QuestionType.multi_label_selection, QuestionType.dynamic_multi_label_selection]
 
 
 class RankingQuestionSettingsUpdate(UpdateSchema):

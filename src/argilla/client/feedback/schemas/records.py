@@ -102,7 +102,7 @@ class SuggestionSchema(BaseModel):
 
     Args:
         question_name: name of the question in the `FeedbackDataset`.
-        type: type of the question. Defaults to None. Possible values are `model` or `human`.
+        type: type of the question. Defaults to None. Possible values are `model`, `human`, or `selection`.
         score: score of the suggestion. Defaults to None.
         value: value of the suggestion, which should match the type of the question.
         agent: agent that generated the suggestion. Defaults to None.
@@ -119,7 +119,7 @@ class SuggestionSchema(BaseModel):
     """
 
     question_name: str
-    type: Optional[Literal["model", "human"]] = None
+    type: Optional[Literal["model", "human", "selection"]] = None
     score: Optional[float] = None
     value: Any
     agent: Optional[str] = None

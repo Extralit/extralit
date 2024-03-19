@@ -56,8 +56,9 @@ class ValidOptionCheckerMixin(BaseQuestionSettings, Generic[T]):
         return [option.value for option in self.options]
 
     def check_response(self, response: ResponseValue, status: Optional[ResponseStatus] = None):
-        if response.value not in self.option_values:
-            raise ValueError(f"{response.value!r} is not a valid option.\nValid options are: {self.option_values!r}")
+        if self.type != QuestionType.dynamic_label_selection:
+            if response.value not in self.option_values:
+                raise ValueError(f"{response.value!r} is not a valid option.\nValid options are: {self.option_values!r}")
 
 
 class RatingQuestionSettings(ValidOptionCheckerMixin[int]):
@@ -72,7 +73,7 @@ class ValueTextQuestionSettingsOption(BaseModel):
 
 
 class LabelSelectionQuestionSettings(ValidOptionCheckerMixin[str]):
-    type: Literal[QuestionType.label_selection]
+    type: Literal[QuestionType.label_selection, QuestionType.dynamic_label_selection]
     options: List[ValueTextQuestionSettingsOption]
     visible_options: Optional[int] = None
 
@@ -82,7 +83,7 @@ def _are_all_elements_in_list(elements: List[T], list_: List[T]) -> List[T]:
 
 
 class MultiLabelSelectionQuestionSettings(LabelSelectionQuestionSettings):
-    type: Literal[QuestionType.multi_label_selection, QuestionType.interactive_multi_label_selection]
+    type: Literal[QuestionType.multi_label_selection, QuestionType.dynamic_multi_label_selection]
 
     def check_response(self, response: ResponseValue, status: Optional[ResponseStatus] = None):
         if not isinstance(response.value, list):
@@ -96,10 +97,10 @@ class MultiLabelSelectionQuestionSettings(LabelSelectionQuestionSettings):
         unique_values = set(response.value)
         if len(unique_values) != len(response.value):
             raise ValueError(
-                "This MultiLabelSelection question expects a list of unique values, but duplicates were found"
+                "This MultiLabelSelection question expects a list of unique values, but duplicates were found,"
             )
 
-        if self.type != QuestionType.interactive_multi_label_selection:
+        if self.type != QuestionType.dynamic_multi_label_selection:
             invalid_options = _are_all_elements_in_list(response.value, self.option_values)
             if invalid_options:
                 raise ValueError(

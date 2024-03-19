@@ -28,7 +28,7 @@ down_revision = "8c574ada5e5f"
 branch_labels = None
 depends_on = None
 
-suggestion_type_enum = sa.Enum("model", "human", name="suggestion_type_enum")
+suggestion_type_enum = sa.Enum("model", "human", "selection", name="suggestion_type_enum")
 
 
 def upgrade() -> None:
