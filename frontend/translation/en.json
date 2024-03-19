@@ -1,5 +1,6 @@
 {
   "multi_label_selection": "Multi-label",
+  "interactive_multi_label_selection": "Multi-label (interactive)",
   "ranking": "Ranking",
   "label_selection": "Label",
   "text": "Text",

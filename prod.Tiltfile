@@ -39,9 +39,9 @@ helm_resource(
 docker_build(
     "{DOCKER_REPO}/extralit-argilla-server".format(DOCKER_REPO=DOCKER_REPO),
     context='.',
-build_args={'ENV': ENV, 'USERS_DB': USERS_DB},
+    build_args={'ENV': ENV, 'USERS_DB': USERS_DB},
     dockerfile='./docker/api.dockerfile',
-    only=['./src', './docker/scripts', './setup.py', './pyproject.toml', './requirements.txt', './scripts/'],
+    only=['./src', './dist', './docker/scripts', './setup.py', './pyproject.toml', './requirements.txt', './scripts/'],
     ignore=['**/__pycache__', 'src/argilla.egg-info', 'frontend/.nuxt', 'frontend/node_modules', 'frontend/package-lock.json'],
     live_update=[
         # Sync the source code to the container

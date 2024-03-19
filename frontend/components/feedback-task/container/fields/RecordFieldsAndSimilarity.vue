@@ -5,8 +5,8 @@
     <RecordFields v-if="!!record" :key="`${record.id}_fields`" :fields="record.fields">
       <div class="fields__header">
         <div class="fields__header--left">
-          <BaseBadge v-if="record.metadata?.reference" :text="record.metadata?.reference" />
-          <BaseTag v-if="record.metadata?.type" :name="record.metadata?.type" />
+          <BaseBadge v-if="record.metadata?.reference" :text="`Reference: ${record.metadata?.reference}`" />
+          <BaseTag v-if="record.metadata?.type" :name="`Type: ${record.metadata?.type}`" />
           <BaseTag v-if="record.metadata?.number" :name="record.metadata?.number" />
         </div>
         <div class="fields__header--right">

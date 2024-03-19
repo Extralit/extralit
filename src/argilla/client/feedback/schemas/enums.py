@@ -24,6 +24,7 @@ class QuestionTypes(str, Enum):
     rating = "rating"
     label_selection = "label_selection"
     multi_label_selection = "multi_label_selection"
+    interactive_multi_label_selection = "interactive_multi_label_selection"
     ranking = "ranking"
 
 

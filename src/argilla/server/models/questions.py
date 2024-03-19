@@ -82,7 +82,7 @@ def _are_all_elements_in_list(elements: List[T], list_: List[T]) -> List[T]:
 
 
 class MultiLabelSelectionQuestionSettings(LabelSelectionQuestionSettings):
-    type: Literal[QuestionType.multi_label_selection]
+    type: Literal[QuestionType.multi_label_selection, QuestionType.interactive_multi_label_selection]
 
     def check_response(self, response: ResponseValue, status: Optional[ResponseStatus] = None):
         if not isinstance(response.value, list):
@@ -99,12 +99,13 @@ class MultiLabelSelectionQuestionSettings(LabelSelectionQuestionSettings):
                 "This MultiLabelSelection question expects a list of unique values, but duplicates were found"
             )
 
-        invalid_options = _are_all_elements_in_list(response.value, self.option_values)
-        if invalid_options:
-            raise ValueError(
-                f"{invalid_options!r} are not valid options for this MultiLabelSelection question.\nValid options are:"
-                f" {self.option_values!r}"
-            )
+        if self.type != QuestionType.interactive_multi_label_selection:
+            invalid_options = _are_all_elements_in_list(response.value, self.option_values)
+            if invalid_options:
+                raise ValueError(
+                    f"{invalid_options!r} are not valid options for this MultiLabelSelection question.\nValid options are:"
+                    f" {self.option_values!r}"
+                )
 
 
 class RankingQuestionSettings(ValidOptionCheckerMixin[str]):

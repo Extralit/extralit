@@ -57,7 +57,7 @@ class LabelSelectionQuestionSettings(BaseModel):
 
 
 class MultiLabelSelectionQuestionSettings(LabelSelectionQuestionSettings):
-    type: Literal[QuestionType.multi_label_selection]
+    type: Literal[QuestionType.multi_label_selection, QuestionType.interactive_multi_label_selection]
 
 
 class RankingQuestionSettings(BaseModel):
@@ -110,7 +110,7 @@ class LabelSelectionSettingsUpdate(UpdateSchema):
 
 
 class MultiLabelSelectionQuestionSettingsUpdate(LabelSelectionSettingsUpdate):
-    type: Literal[QuestionType.multi_label_selection]
+    type: Literal[QuestionType.multi_label_selection, QuestionType.interactive_multi_label_selection]
 
 
 class RankingQuestionSettingsUpdate(UpdateSchema):

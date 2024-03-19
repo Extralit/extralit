@@ -81,7 +81,7 @@ VALUE_TEXT_OPTION_TEXT_MAX_LENGTH = 500
 VALUE_TEXT_OPTION_DESCRIPTION_MIN_LENGTH = 1
 VALUE_TEXT_OPTION_DESCRIPTION_MAX_LENGTH = 1000
 
-LABEL_SELECTION_OPTIONS_MIN_ITEMS = 2
+LABEL_SELECTION_OPTIONS_MIN_ITEMS = 0
 LABEL_SELECTION_OPTIONS_MAX_ITEMS = 250
 LABEL_SELECTION_MIN_VISIBLE_OPTIONS = 3
 
@@ -299,7 +299,7 @@ class LabelSelectionQuestionSettingsCreate(UniqueValuesCheckerMixin):
 
 
 class MultiLabelSelectionQuestionSettingsCreate(LabelSelectionQuestionSettingsCreate):
-    type: Literal[QuestionType.multi_label_selection]
+    type: Literal[QuestionType.multi_label_selection, QuestionType.interactive_multi_label_selection]
 
 
 class RankingQuestionSettingsCreate(UniqueValuesCheckerMixin):

@@ -100,8 +100,6 @@ class TextQuestion(QuestionSchema):
     use_markdown: bool = False
     use_table: bool = False
 
-    assert not (use_markdown and use_table), "Ensure that only one of these is True"
-
     @property
     def server_settings(self) -> Dict[str, Any]:
         return {
@@ -260,7 +258,7 @@ class MultiLabelQuestion(_LabelQuestion):
         >>> MultiLabelQuestion(name="multi_label_question", title="Multi Label Question", labels=["label_1", "label_2"])
     """
 
-    type: Literal[QuestionTypes.multi_label_selection] = Field(
+    type: Literal[QuestionTypes.multi_label_selection, QuestionTypes.interactive_multi_label_selection] = Field(
         QuestionTypes.multi_label_selection.value, allow_mutation=False
     )
 

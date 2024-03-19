@@ -1,7 +1,7 @@
 <template>
   <div class="pagination">
     <span class="pagination__info" v-if="!!items">
-      {{ currentPaginationRange }} of {{ items }}</span
+      {{ currentPaginationRange }} of {{ items }} records</span
     >
     <div class="pagination__buttons">
       <BaseButton
@@ -121,13 +121,16 @@ export default {
   gap: $base-space;
   justify-content: right;
   align-items: center;
+  width: 100%;
   &__buttons {
     display: flex;
     gap: $base-space;
+    flex-shrink: 0;
   }
   &__info {
     @include font-size(13px);
     color: $black-37;
+    flex-shrink: 0;
   }
   &__button.button {
     justify-content: center;

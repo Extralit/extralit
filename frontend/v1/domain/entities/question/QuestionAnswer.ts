@@ -6,7 +6,8 @@ export type QuestionType =
   | "rating"
   | "ranking"
   | "label_selection"
-  | "multi_label_selection";
+  | "multi_label_selection"
+  | "interactive_multi_label_selection";
 export abstract class QuestionAnswer {
   private answer: Answer;
   constructor(public readonly type: QuestionType) {}
@@ -132,7 +133,7 @@ export class MultiLabelQuestionAnswer extends QuestionAnswer {
   constructor(
     public readonly type: QuestionType,
     questionName: string,
-    value: MultiLabelValue[]
+    value: MultiLabelValue[],
   ) {
     super(type);
     this.values = value.map((label) => ({

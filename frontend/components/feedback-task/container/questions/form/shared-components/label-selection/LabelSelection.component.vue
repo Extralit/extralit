@@ -140,11 +140,11 @@ export default {
         if (newValue) {
           this.$nextTick(() => {
             const options = this.$refs?.options;
-            if (options.some((o) => o.contains(document.activeElement))) {
+            if (options?.some((o) => o.contains(document.activeElement))) {
               return;
             }
 
-            if (options.length > 0) {
+            if (options?.length > 0) {
               options[0].focus();
             } else {
               this.$refs.searchComponentRef?.searchInputRef.focus();

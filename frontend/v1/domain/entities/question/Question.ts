@@ -72,7 +72,7 @@ export class Question {
   }
 
   public get isMultiLabelType(): boolean {
-    return this.type === "multi_label_selection";
+    return this.type === "multi_label_selection" || this.type === "interactive_multi_label_selection";
   }
 
   public get isSingleLabelType(): boolean {
@@ -165,7 +165,18 @@ export class Question {
   addSuggestion(suggestion: Suggestion) {
     if (!suggestion) return;
 
-    this.suggestion = suggestion;
+    if (this.type == "interactive_multi_label_selection" && Array.isArray(suggestion?.suggestedAnswer) && suggestion.suggestedAnswer.length > 0) {
+      this.settings.options = suggestion.suggestedAnswer.map(value => ({ text: value, value: value, description: null }));
+
+      this.answer = new MultiLabelQuestionAnswer(
+      this.type,
+      this.name,
+      this.settings.options
+      );
+
+    } else {
+      this.suggestion = suggestion;
+    }
   }
 
   private createEmptyAnswers(): QuestionAnswer {
