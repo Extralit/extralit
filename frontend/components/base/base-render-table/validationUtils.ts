@@ -52,6 +52,12 @@ var between = (cell: any, value: any, parameters: { lower: string, upper: string
 export type Validator = string | { type: (cell: any, value: string, parameters: any) => boolean; parameters?: any };
 export type ColumnValidators = Record<string, Validator[]>;
 
+/**
+ * Retrieves the Tabulator validators based on the provided Pandera DataFrameSchema serialized json.
+ * 
+ * @param tableJSON - The table JSON containing the validation information.
+ * @returns An object containing the column validators.
+ */
 export function getColumnValidators(tableJSON: DataFrame): ColumnValidators {
 	const schemaColumns = tableJSON.validation?.columns; // Pandera yaml schema
 	const indexColumns: SchemaColumns = tableJSON.validation?.index.reduce((acc, curr) => ({ ...acc, [curr.name]: curr }), {}) || {};
@@ -95,7 +101,6 @@ export function getColumnValidators(tableJSON: DataFrame): ColumnValidators {
 	}
 
 	addDataFrameChecks(tableJSON.validation.checks, columnValidators);
-	console.log('columnValidators', columnValidators)
 	return columnValidators;
 }
 

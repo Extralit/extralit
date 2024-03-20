@@ -698,8 +698,6 @@ export default {
   mounted() {
     if (!this.tableJSON?.data?.length || !this.tableJSON?.schema) return;
 
-    console.log("tableJSON:", this.tableJSON);
-
     try {
       const layout = this.columnsConfig.length <= 2 ? "fitDataStretch" : "fitDataTable";
       

@@ -190,23 +190,33 @@ export function columnSchemaToDesc(fieldName: string, tableJSON: DataFrame, colu
   var desc;
   if (tableJSON?.validation?.columns.hasOwnProperty(fieldName)) {
     const panderaSchema = tableJSON?.validation.columns[fieldName];
-    desc = panderaSchema.description;
+    desc = panderaSchema.description || "";
 
     if (columnValidators.hasOwnProperty(fieldName)) {
       const stringAndFunctionNames = columnValidators[fieldName]
         .map((value) => {
+          let result = null;
           if (typeof value === "string") {
-            return value;
+            result = value.replace('string', 'text');
           } else if (typeof value === "function") {
-            return value.name;
+            result = `<b>${value.name}</b>`;
           } else if (typeof value === "object" && value?.type?.name) {
-            return value?.parameters != null
-              ? `${value.type.name}: ${JSON.stringify(value.parameters)}`
-              : `${value.type.name}`;
+            result = `<b>${value.type.name}</b>`;
+
+            if (value.parameters != null && typeof value.parameters !== 'object') {
+              result += `: ${value.parameters}`;
+            } else if (value.parameters != null && typeof value.parameters === 'object') {
+              const parameters = JSON.stringify(value.parameters)
+                .replace(/[{""}]/g, '').replace(/:/g, '=').replace(/,/g, ', ')
+                .replace('=true', '').replace('column=', '');
+              result += `(${parameters})`;
+            }
+
           }
+          return result;
         })
         .filter((value) => value != null);
-      desc += `<br/><br/>Checks: ${stringAndFunctionNames}`
+      desc += `<br/><br/>Checks: ${stringAndFunctionNames.join(', ')}`
         .replace(/,/g, ", ")
         .replace(/:/g, ": ");
     }
