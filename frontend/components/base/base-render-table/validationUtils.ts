@@ -1,4 +1,4 @@
-import { DataFrame, SchemaColumns, Check } from "./tableUtils";
+import { DataFrame, SchemaColumns, Check, Validator, ColumnValidators } from "./types";
 
 var integer = (cell: any, value: string, parameters: { nullable: boolean }): boolean => 
 	(parameters.nullable && value == "NA") || /^-?\d+$/.test(value);
@@ -48,9 +48,6 @@ var between = (cell: any, value: any, parameters: { lower: string, upper: string
       value > value_lower && value < value_upper
     );
 };
-
-export type Validator = string | { type: (cell: any, value: string, parameters: any) => boolean; parameters?: any };
-export type ColumnValidators = Record<string, Validator[]>;
 
 /**
  * Retrieves the Tabulator validators based on the provided Pandera DataFrameSchema serialized json.

@@ -665,7 +665,7 @@ export default {
     headerTooltip(e, column, onRendered) {
       try {
         const fieldName = column?.getDefinition()?.field;
-        const desc = columnSchemaToDesc(fieldName, this.tableJSON, this.columnValidators)
+        const desc = columnSchemaToDesc(fieldName, this.tableJSON?.validation, this.columnValidators)
 
         if (!desc) return null;
         return desc;

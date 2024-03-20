@@ -1,54 +1,6 @@
 import { useRecordFeedbackTaskViewModel } from '@/components/feedback-task/container/useRecordFeedbackTaskViewModel';
 import { Record as FeedbackRecord } from '~/v1/domain/entities/record/Record';
-
-export type DataFrame = {
-  data: Record<string, any>[];
-  schema: {
-    fields: { name: string, type: string, extDtype: string }[];
-    primaryKey: string[];
-  };
-  reference?: string;
-  validation?: Validation;
-};
-
-export type Validation = {
-  columns: SchemaColumns;
-  index: SchemaIndexColumns[];
-  name: string;
-  checks?: Record<string, Check>;
-};
-
-export type Check = {
-  columns_a?: string[];
-  columns_b?: string[];
-  columns_target?: string[];
-  columns_lower?: string[];
-  columns_upper?: string[];
-  or_equal?: boolean[];
-};
-
-export type SchemaColumns = {
-	[columnName: string]: {
-		required: boolean;
-    description: string;
-		dtype: string;
-		nullable: boolean;
-		unique: boolean;
-		checks: any;
-	};
-};
-
-
-export type SchemaIndexColumns = {
-  name: string;
-  required: boolean;
-  description: string;
-  dtype: string;
-  nullable: boolean;
-  unique: boolean;
-  checks: any;
-};
-
+import { DataFrame, Validation, ColumnValidators } from './types';
 
 
 export function isTableJSON(value: string): boolean {
@@ -181,46 +133,50 @@ export function getTableDataFromRecords(filter_fn: (record: FeedbackRecord) => b
   return recordTables;
 }
 
-export function columnSchemaToDesc(fieldName: string, tableJSON: DataFrame, columnValidators: any): string | undefined {
+export function columnSchemaToDesc(fieldName: string, validation: Validation, columnValidators: ColumnValidators): string | undefined {
   // tableJSON is an object of the form {data: [{column: value, ...}], validation: {columns: {column: panderaSchema, ...}}}
   // columnValidators is an object of the form {column: [validator, ...]}
   // returns a string describing the column schema and validators
-  if (!tableJSON) return;
+  if (!validation) return;
   
-  var desc;
-  if (tableJSON?.validation?.columns.hasOwnProperty(fieldName)) {
-    const panderaSchema = tableJSON?.validation.columns[fieldName];
-    desc = panderaSchema.description || "";
-
-    if (columnValidators.hasOwnProperty(fieldName)) {
-      const stringAndFunctionNames = columnValidators[fieldName]
-        .map((value) => {
-          let result = null;
-          if (typeof value === "string") {
-            result = value.replace('string', 'text');
-          } else if (typeof value === "function") {
-            result = `<b>${value.name}</b>`;
-          } else if (typeof value === "object" && value?.type?.name) {
-            result = `<b>${value.type.name}</b>`;
-
-            if (value.parameters != null && typeof value.parameters !== 'object') {
-              result += `: ${value.parameters}`;
-            } else if (value.parameters != null && typeof value.parameters === 'object') {
-              const parameters = JSON.stringify(value.parameters)
-                .replace(/[{""}]/g, '').replace(/:/g, '=').replace(/,/g, ', ')
-                .replace('=true', '').replace('column=', '');
-              result += `(${parameters})`;
-            }
-
-          }
-          return result;
-        })
-        .filter((value) => value != null);
-      desc += `<br/><br/>Checks: ${stringAndFunctionNames.join(', ')}`
-        .replace(/,/g, ", ")
-        .replace(/:/g, ": ");
-    }
+  var desc = `<b>${fieldName}</b>: ` || "";
+  if (validation.columns.hasOwnProperty(fieldName)) {
+    const column = validation.columns[fieldName];
+    desc += column.description || "";
+  } else if (validation.index.find((index) => index.name === fieldName)) {
+    const index = validation.index.find((index) => index.name === fieldName);
+    desc += index.description || "";
   }
+
+  if (columnValidators.hasOwnProperty(fieldName)) {
+    const criteriaSpecs = columnValidators[fieldName]
+      .map((value) => {
+        let s = null;
+        if (typeof value === "string") {
+          s = value.replace('string', 'text');
+          
+        } else if (typeof value === "function") {
+          s = `${value.name}`;
+
+        } else if (typeof value === "object" && value?.type?.name) {
+          s = `${value.type.name}`;
+
+          if (value.parameters != null && typeof value.parameters !== 'object') {
+            s += `: ${value.parameters}`;
+          } else if (!['integer', 'decimal'].includes(value?.type?.name) && value.parameters != null && typeof value.parameters === 'object') {
+            const parameters = JSON.stringify(value.parameters)
+              .replace(/[{""}]/g, '').replace(/:/g, '=').replace(/,/g, ', ')
+              .replace('=true', '').replace('column=', '');
+            s += `(${parameters})`;
+          }
+        }
+        return s;
+      })
+      .filter((value) => value != null);
+    desc += `<br/><br/>Checks: ${criteriaSpecs.join(', ')}`
+      .replace(/,/g, ", ").replace(/:/g, ": ");
+  }
+
   return desc;
 }
 
