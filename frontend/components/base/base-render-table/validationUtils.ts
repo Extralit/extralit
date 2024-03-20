@@ -1,34 +1,74 @@
+import { DataFrame, SchemaColumns, Check } from "./tableUtils";
+
 var integer = (cell: any, value: string, parameters: { nullable: boolean }): boolean => 
 	(parameters.nullable && value == "NA") || /^-?\d+$/.test(value);
 var decimal = (cell: any, value: string, parameters: { nullable: boolean }): boolean => 
 	(parameters.nullable && value == "NA") || /^-?\d*(\.\d+)?$/.test(value);
 var greater_equal = (cell: any, value: string, parameters: number): boolean => 
-	value == "NA" || parseFloat(value) >= parameters;
+	value == null || value == "NA" || parseFloat(value) >= parameters;
 var less_equal = (cell: any, value: string, parameters: number): boolean => 
-	value == "NA" || parseFloat(value) <= parameters;
+	value == null || value == "NA" || parseFloat(value) <= parameters;
 
-type SchemaColumns = {
-	[columnName: string]: {
-		required: boolean;
-		dtype: string;
-		nullable: boolean;
-		unique: boolean;
-		checks: any;
-	};
+var unique = (cell: any, value: string, parameters: any): boolean => {
+  const columnValues = cell
+    .getTable()
+    .getData()
+    .map((row) => row[cell.getField()]);
+  return columnValues.filter((v) => v === value).length === 1;
+};
+	
+var less_than = (cell: any, value: any, parameters: { column: string, or_equal: boolean }): boolean => {
+  const row = cell.getRow().getData();
+  const other = row[parameters.column];
+	if (value == null || other == null) return true;
+	if (value == "NA" || other == "NA") return true;
+
+  return (parameters.or_equal ? parseFloat(value) <= parseFloat(other) : parseFloat(value) < parseFloat(other));
 };
 
-export function getColumnValidators(tableJSON: any): any {
-	const schemaColumns: SchemaColumns = tableJSON.validation?.columns; // Pandera yaml schema
+var greater_than = (cell: any, value: any, parameters: { column: string, or_equal: boolean }): boolean => {
+  const row = cell.getRow().getData();
+  const other = row[parameters.column];
+	if (value == null || other == null) return true;
+	if (value == "NA" || other == "NA") return true;
+
+  return (parameters.or_equal ? parseFloat(value) >= parseFloat(other) : parseFloat(value) > parseFloat(other));
+};
+
+var between = (cell: any, value: any, parameters: { lower: string, upper: string, or_equal: boolean }): boolean => {
+  const row = cell.getRow().getData();
+	if (value == null || row[parameters.lower] == null || row[parameters.upper] == null) return true;
+	if (value == "NA" || row[parameters.lower] == "NA" || row[parameters.upper] == "NA") return true;
+
+  value = parseFloat(value);
+  const value_lower = parseFloat(row[parameters.lower]);
+  const value_upper = parseFloat(row[parameters.upper]);
+  return (parameters.or_equal ? 
+      value >= value_lower && value <= value_upper :
+      value > value_lower && value < value_upper
+    );
+};
+
+export type Validator = string | { type: (cell: any, value: string, parameters: any) => boolean; parameters?: any };
+export type ColumnValidators = Record<string, Validator[]>;
+
+export function getColumnValidators(tableJSON: DataFrame): ColumnValidators {
+	const schemaColumns = tableJSON.validation?.columns; // Pandera yaml schema
+	const indexColumns: SchemaColumns = tableJSON.validation?.index.reduce((acc, curr) => ({ ...acc, [curr.name]: curr }), {}) || {};
 	if (schemaColumns == null) return {};
 	const tableColumns = tableJSON.schema.fields.map((col) => col.name);
 	
-	const tabulatorValidators = {};
-	for (const [columnName, columnSchema] of Object.entries(schemaColumns)) {
+	const columnValidators: ColumnValidators = {};
+	for (const [columnName, columnSchema] of Object.entries({...schemaColumns, ...indexColumns})) {
 		if (!tableColumns.includes(columnName)) continue;
-		const validators = [];
+		const validators: Validator[] = [];
 
 		if (columnSchema.required) {
 			validators.push("required");
+		}
+
+		if (columnSchema.unique) {
+			validators.push({ type: unique });
 		}
 
 		if (columnSchema.dtype === "str") {
@@ -51,21 +91,59 @@ export function getColumnValidators(tableJSON: any): any {
 			}
 		}
 
-		// Custom validator example for unique check
-		if (columnSchema.unique) {
-			const uniqueValidator = {
-				type: function (cell: any, value: string, parameters: any): boolean {
-					const columnValues = cell
-					.getTable()
-					.getData()
-					.map((row) => row[cell.getField()]);
-						return columnValues.filter((v) => v === value).length === 1;
-					},
-			};
-			validators.push(uniqueValidator);
-		}
-		tabulatorValidators[columnName] = validators;
+		columnValidators[columnName] = validators;
 	}
 
-	return tabulatorValidators;
+	addDataFrameChecks(tableJSON.validation.checks, columnValidators);
+	console.log('columnValidators', columnValidators)
+	return columnValidators;
+}
+
+
+function addDataFrameChecks(checks: Record<string, Check>, columnValidators: ColumnValidators) {
+  if (checks?.check_less_than && Object.values(checks.check_less_than).every(Array.isArray)) {
+    checks.check_less_than.columns_a.forEach((columnName, index) => {
+			if (!columnValidators[columnName]) {
+        columnValidators[columnName] = [];
+      }			
+      columnValidators[columnName].push({
+        type: less_than,
+        parameters: {
+          column: checks.check_less_than.columns_b[index],
+          or_equal: checks.check_less_than.or_equal[index]
+        }
+      });
+    });
+  }
+
+  if (checks?.check_greater_than && Object.values(checks.check_greater_than).every(Array.isArray)) {
+    checks.check_greater_than.columns_a.forEach((columnName, index) => {
+			if (!columnValidators[columnName]) {
+        columnValidators[columnName] = [];
+      }
+      columnValidators[columnName].push({
+        type: greater_than,
+        parameters: {
+          column: checks.check_greater_than.columns_b[index],
+          or_equal: checks.check_greater_than.or_equal[index]
+        }
+      });
+    });
+  }
+
+  if (checks?.check_between && Object.values(checks.check_between).every(Array.isArray)) {
+    checks.check_between.columns_target.forEach((columnName, index) => {
+			if (!columnValidators[columnName]) {
+        columnValidators[columnName] = [];
+      }
+      columnValidators[columnName].push({
+        type: between,
+        parameters: {
+          lower: checks.check_between.columns_lower[index],
+          upper: checks.check_between.columns_upper[index],
+          or_equal: checks.check_between.or_equal[index]
+        }
+      });
+    });
+  }
 }

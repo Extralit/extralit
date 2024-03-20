@@ -38,9 +38,7 @@
         </span>
       </BaseDropdown>
 
-      <BaseDropdown 
-        v-show="editable && columns && columnValidators && Object.keys(columnValidators).length"
-        :visible="visibleCheckropdown">
+      <BaseDropdown v-show="columnValidators && Object.keys(columnValidators).length" :visible="editable && visibleCheckropdown">
         <span slot="dropdown-header">
           <BaseButton @click.prevent="validateTable({ showErrors: true, scrollToError: true }); visibleCheckropdown=!visibleCheckropdown">
             Check data
@@ -62,6 +60,7 @@ import { TabulatorFull as Tabulator } from "tabulator-tables";
 import "tabulator-tables/dist/css/tabulator.min.css";
 import { getColumnValidators } from "./validationUtils";
 import { 
+  DataFrame,
   columnSchemaToDesc, 
   getTableDataFromRecords as getTablesFromRecords, 
   findMatchingRefValues,
@@ -225,9 +224,7 @@ export default {
       const publication_ref = this.tableJSON?.reference || firstRow.publication_ref || firstRow[this.refColumns[0]]?.split('-')[0];
       if (!publication_ref) return null;
       let recordTables = getTablesFromRecords((record) => record?.metadata?.reference == publication_ref, publication_ref)
-      console.log('recordTables', recordTables, 'refValues', refValues)
       const refToRowDict = findMatchingRefValues(refValues, recordTables)
-      console.log('refToRowDict', refToRowDict)
 
       return refToRowDict;
     },
@@ -700,6 +697,8 @@ export default {
 
   mounted() {
     if (!this.tableJSON?.data?.length || !this.tableJSON?.schema) return;
+
+    console.log("tableJSON:", this.tableJSON);
 
     try {
       const layout = this.columnsConfig.length <= 2 ? "fitDataStretch" : "fitDataTable";

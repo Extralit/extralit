@@ -1,6 +1,55 @@
 import { useRecordFeedbackTaskViewModel } from '@/components/feedback-task/container/useRecordFeedbackTaskViewModel';
 import { Record as FeedbackRecord } from '~/v1/domain/entities/record/Record';
 
+export type DataFrame = {
+  data: Record<string, any>[];
+  schema: {
+    fields: { name: string, type: string, extDtype: string }[];
+    primaryKey: string[];
+  };
+  reference?: string;
+  validation?: Validation;
+};
+
+export type Validation = {
+  columns: SchemaColumns;
+  index: SchemaIndexColumns[];
+  name: string;
+  checks?: Record<string, Check>;
+};
+
+export type Check = {
+  columns_a?: string[];
+  columns_b?: string[];
+  columns_target?: string[];
+  columns_lower?: string[];
+  columns_upper?: string[];
+  or_equal?: boolean[];
+};
+
+export type SchemaColumns = {
+	[columnName: string]: {
+		required: boolean;
+    description: string;
+		dtype: string;
+		nullable: boolean;
+		unique: boolean;
+		checks: any;
+	};
+};
+
+
+export type SchemaIndexColumns = {
+  name: string;
+  required: boolean;
+  description: string;
+  dtype: string;
+  nullable: boolean;
+  unique: boolean;
+  checks: any;
+};
+
+
 
 export function isTableJSON(value: string): boolean {
   if (!value?.length || (!value.startsWith('{') && !value.startsWith('['))) { return false; }
@@ -14,7 +63,7 @@ export function isTableJSON(value: string): boolean {
   }
 }
 
-export function columnUniqueCounts(tableJSON: any): any {
+export function columnUniqueCounts(tableJSON: DataFrame): any {
   // tableJSON is an object of the form {data: [{column: value, ...}, ...]}
   // returns an object of the form {column: uniqueCount, ...}
   let uniqueCounts = {};
@@ -132,7 +181,7 @@ export function getTableDataFromRecords(filter_fn: (record: FeedbackRecord) => b
   return recordTables;
 }
 
-export function columnSchemaToDesc(fieldName: string, tableJSON: any, columnValidators: any): string | undefined {
+export function columnSchemaToDesc(fieldName: string, tableJSON: DataFrame, columnValidators: any): string | undefined {
   // tableJSON is an object of the form {data: [{column: value, ...}], validation: {columns: {column: panderaSchema, ...}}}
   // columnValidators is an object of the form {column: [validator, ...]}
   // returns a string describing the column schema and validators
@@ -164,3 +213,5 @@ export function columnSchemaToDesc(fieldName: string, tableJSON: any, columnVali
   }
   return desc;
 }
+
+
