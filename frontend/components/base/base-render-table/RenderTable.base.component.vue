@@ -222,10 +222,12 @@ export default {
       }, {});
       if (!refValues) return null;
   
-      const publication_ref = this.tableJSON?.publication_ref || firstRow.publication_ref || firstRow[this.refColumns[0]]?.split('-')[0];
+      const publication_ref = this.tableJSON?.reference || firstRow.publication_ref || firstRow[this.refColumns[0]]?.split('-')[0];
       if (!publication_ref) return null;
       let recordTables = getTablesFromRecords((record) => record?.metadata?.reference == publication_ref, publication_ref)
+      console.log('recordTables', recordTables, 'refValues', refValues)
       const refToRowDict = findMatchingRefValues(refValues, recordTables)
+      console.log('refToRowDict', refToRowDict)
 
       return refToRowDict;
     },
@@ -685,8 +687,10 @@ export default {
           .join(', ');
 
         if (keyValues.length > 0) {
-          header = `<small style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" text="${value}">${keyValues}</small>`
+          header = `<small style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" text="${value}">${keyValues}</small>`;
         }
+      } else {
+        header = `<small style="color: red; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" text="${value}">${value} (not matched)</small>`;
       }
 
       if (count > 1) header = header + `<span style='color:black; margin-left:10px;'>(${count})</span>`;
@@ -717,6 +721,7 @@ export default {
           headerTooltip: this.headerTooltip.bind(this),
           headerWordWrap: true,
           headerContextMenu: this.columnContextMenu,
+          editorEmptyValue: "NA",
           // maxWidth: 200,
         },
         columns: this.columnsConfig,

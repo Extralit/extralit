@@ -1,11 +1,11 @@
 {
-  "name": "argilla",
+  "name": "extralit",
   "version": "1.21.0",
   "private": true,
   "scripts": {
     "dev": "nuxt",
-    "yarn-dev:argilla": "cross-env API_URL_CUSTOM=$base_router nuxt",
-    "npm-dev:argilla": "cross-env API_URL_CUSTOM=$npm_config_base_router nuxt",
+    "yarn-dev:extralit": "cross-env API_URL_CUSTOM=$base_router nuxt",
+    "npm-dev:extralit": "cross-env API_URL_CUSTOM=$npm_config_base_router nuxt",
     "build": "rimraf dist && nuxt build",
     "start": "nuxt start",
     "generate": "nuxt generate",

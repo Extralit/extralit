@@ -51,7 +51,10 @@ export function findMatchingRefValues(refValues: Record<string, string>, records
     for (const recordTables of records) {
       if (!recordTables) continue;
       const matchingTable = Object.values(recordTables)
-        .find((table) => table.data.find((row) => row["reference"] === refValue));
+        .find((table) => 
+          (!table?.validation?.name || table?.validation?.name.toLowerCase() === field.split("_")[0]) &&
+          table.data.find((row) => row["reference"] === refValue)
+        );
       if (!matchingTable) continue;
 
       if (!matchingTable.hasOwnProperty('columnUniqueCounts')) {
@@ -72,7 +75,7 @@ export function findMatchingRefValues(refValues: Record<string, string>, records
       }, {});
 
       matchingRefValues[field] = refRows;
-      break;
+      break; // only need to find the first matching table
       }
   }
 
@@ -113,7 +116,7 @@ export function getTableDataFromRecords(filter_fn: (record: FeedbackRecord) => b
         .reduce((acc, field) => {
           try {
             acc[field.name] = JSON.parse(field.content);
-            delete acc[field.name].validation;
+            delete acc[field.name].validation.columns;
           } finally {
             return acc;
           }

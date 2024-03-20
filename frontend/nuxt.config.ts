@@ -34,7 +34,7 @@ const config: NuxtConfig = {
 
   // Global page headers (https://go.nuxtjs.dev/config-head)
   head: {
-    title: "Argilla",
+    title: "Extralit",
     meta: [
       { charset: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },

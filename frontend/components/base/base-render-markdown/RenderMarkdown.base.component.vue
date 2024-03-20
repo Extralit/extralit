@@ -136,6 +136,7 @@ export default {
       overflow-x: auto;
       border-collapse: collapse;
       width: 100%;
+      max-height: 300px;
       table-layout: auto;
       border: 0px;
       @include overflow-scrollbar;
