@@ -171,18 +171,26 @@ export class Question {
       Array.isArray(suggestion?.suggestedAnswer) &&
       suggestion.suggestedAnswer?.length > 0
     ) {
-
-      let selections = [
-        ...this.settings.options,
-        ...suggestion.suggestedAnswer
-          .filter(value => 
-            !this.settings.options.some(existingOption => existingOption.value === value))
-          .map((value) => ({
-            text: value,
-            value: value,
-            description: null,
-          })),
-      ]
+      const suggestedOptions: string[] = suggestion.suggestedAnswer.map((answer) => answer.toString());
+      
+      let selections = [];
+      if (this.settings.options.some((option: any) => suggestedOptions.includes(option.value))) {
+        selections = this.settings.options.filter(option => 
+          suggestedOptions.some((value: string) => value === option.value)
+        );
+      } else {
+        selections = [
+          ...this.settings.options,
+          ...suggestedOptions
+            .filter(value => 
+              !this.settings.options.some(existingOption => existingOption.value === value))
+            .map((value) => ({
+              text: value,
+              value: value,
+              description: null,
+            })),
+        ]
+      }
 
       if (this.isMultiLabelType) {
         this.answer = new MultiLabelQuestionAnswer(

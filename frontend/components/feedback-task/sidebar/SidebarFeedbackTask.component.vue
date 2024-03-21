@@ -11,7 +11,7 @@
       />
 
       <PDFViewerBaseComponent 
-        v-else-if="currentPanel === 'document' && document.id != null"
+        v-else-if="currentPanel === 'document'"
         :pdf-data="document.file_data" 
         :file-name="document.file_name"
         :pageNumber="document.page_number"

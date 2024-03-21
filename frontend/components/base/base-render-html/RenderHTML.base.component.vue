@@ -2,14 +2,12 @@
 	<div v-if="editor" class="editor-container">
 		<div v-if="editable" :editor="editor">
 			<div class="menubar">
-				<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().addColumnBefore().run()" 
-					:disabled="!editor.can().addColumnBefore()"
-				>
+				<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().addColumnAfter().run()"
+					:disabled="!editor.can().addColumnAfter()">
 					➕ Column
 				</BaseButton>
-				<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().deleteColumn().run()" 
-					:disabled="!editor.can().deleteColumn()"
-				>
+				<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().deleteColumn().run()"
+					:disabled="!editor.can().deleteColumn()">
 					➖ Column
 				</BaseButton>
 				<!-- <BaseButton class="menubar__button" @click.prevent="editor.chain().focus().addRowBefore().run()" 
@@ -17,24 +15,20 @@
 				>
 					➕ RowBefore
 				</BaseButton> -->
-				<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().addRowAfter().run()" 
-					:disabled="!editor.can().addRowAfter()"
-				>
+				<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().addRowAfter().run()"
+					:disabled="!editor.can().addRowAfter()">
 					➕ Row
 				</BaseButton>
-				<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().deleteRow().run()" 
-					:disabled="!editor.can().deleteRow()"
-				>
+				<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().deleteRow().run()"
+					:disabled="!editor.can().deleteRow()">
 					➖ Row
 				</BaseButton>
-				<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().mergeCells().run()" 
-					:disabled="!editor.can().mergeCells()"
-				>
+				<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().mergeCells().run()"
+					:disabled="!editor.can().mergeCells()">
 					Merge Cells
 				</BaseButton>
-				<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().splitCell().run()" 
-					:disabled="!editor.can().splitCell()"
-				>
+				<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().splitCell().run()"
+					:disabled="!editor.can().splitCell()">
 					Split Cell
 				</BaseButton>
 				<!-- <BaseButton class="menubar__button" @click.prevent="editor.chain().focus().mergeOrSplit().run()" 
@@ -42,19 +36,19 @@
 					>
 					merge Or Split
 				</BaseButton> -->
-				<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().toggleHeaderColumn().run()" 
-					:disabled="!editor.can().toggleHeaderColumn()"
-				>
+				<!-- <BaseButton class="menubar__button" @click.prevent="splitRow" :disabled="!editor.can().mergeCells()">
+					Split Row
+				</BaseButton> -->
+				<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().toggleHeaderColumn().run()"
+					:disabled="!editor.can().toggleHeaderColumn()">
 					Toggle Index
 				</BaseButton>
-				<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().toggleHeaderRow().run()" 
-					:disabled="!editor.can().toggleHeaderRow()"
-				>
+				<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().toggleHeaderRow().run()"
+					:disabled="!editor.can().toggleHeaderRow()">
 					Toggle Header
 				</BaseButton>
-				<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().toggleHeaderCell().run()" 
-					:disabled="!editor.can().toggleHeaderCell()"
-				>
+				<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().toggleHeaderCell().run()"
+					:disabled="!editor.can().toggleHeaderCell()">
 					Toggle Header Cell
 				</BaseButton>
 				<!-- <BaseButton class="menubar__button" @click.prevent="editor.chain().focus().fixTables().run()" 
@@ -67,15 +61,15 @@
 					<span slot="dropdown-header">
 						<BaseButton @click.prevent="searchReplaceDropdownVisible = !searchReplaceDropdownVisible">
 							Find & Replace
-						</BaseButton> 
+						</BaseButton>
 					</span>
 					<span slot="dropdown-content" class="dropdown-content">
 						<label for="searchTerm" class="dropdown-label">Search:</label>
 						<input id="searchTerm" v-model="searchTerm" type="text" class="dropdown-input" />
-	
+
 						<label for="replaceTerm" class="dropdown-label">Replace:</label>
 						<input id="replaceTerm" v-model="replaceTerm" type="text" class="dropdown-input" />
-	
+
 						<BaseButton @click.prevent="replaceAll" class="dropdown-button">Find/Replace All</BaseButton>
 
 					</span>
@@ -83,13 +77,8 @@
 			</div>
 		</div>
 
-		<editor-content 
-			:editor="editor"
-			class="editor-container__content"
-			@focus="setFocus(true)"
-			@blur="setFocus(false)"
-			@contextmenu.prevent="openContextMenu($event, rowIndex, cellIndex)"
-		/>
+		<editor-content :editor="editor" class="editor-container__content" @focus="setFocus(true)" @blur="setFocus(false)"
+			@contextmenu.prevent="openContextMenu($event, rowIndex, cellIndex)" />
 	</div>
 </template>
 
@@ -227,6 +216,34 @@ export default {
 			this.editor.storage.searchAndReplace.replaceTerm = this.replaceTerm;
 			
 			this.editor.commands.replaceAll();
+		},
+		splitRow() {
+			const { state, dispatch } = this.editor;
+			const { selection } = state;
+			const { $anchor, $head } = selection;
+			const start = $anchor.start($anchor.depth - 1);
+			const end = $head.start($head.depth - 1);
+			const cells = [];
+			state.doc.nodesBetween(start, end, (node, pos) => {
+				if (node.type.name === "tableCell") {
+					cells.push({ node, pos });
+				}
+			});
+			const tr = state.tr;
+
+			cells.forEach(({ node, pos }) => {
+				const texts = node.textContent.split(/\s+/);
+				texts.forEach((text, i) => {
+					if (i > 0) {
+						tr.insert(pos, state.schema.nodes.tableRow.create(null, [
+							state.schema.nodes.tableCell.create(null, state.schema.text(text))
+						]));
+					} else {
+						tr.setNodeMarkup(pos, null, null, state.schema.text(text));
+					}
+				});
+			});
+			dispatch(tr);
 		},
 		shouldShowBubbleMenu(props) {
 			const isCellSelection = props.state.selection?.constructor?.name.includes('CellSelection');

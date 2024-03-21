@@ -6,8 +6,8 @@
       <div class="fields__header">
         <div class="fields__header--left">
           <BaseBadge v-if="record.metadata?.reference" :text="`Reference: ${record.metadata?.reference}`" />
-          <BaseTag v-if="record.metadata?.type" :name="`Type: ${record.metadata?.type}`" />
           <BaseTag v-if="record.metadata?.number" :name="record.metadata?.number" />
+          <BaseTag v-else-if="record.metadata?.type" :name="record.metadata?.type" />
         </div>
         <div class="fields__header--right">
           <SimilarityScorePercentage v-if="recordCriteria.isFilteringBySimilarity && record.score.percentage

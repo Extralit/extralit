@@ -19,7 +19,7 @@
   <div class="container">
     <BaseLoading v-if="hasAuthToken" />
     <form class="form" @submit.prevent="onLoginUser">
-      <brand-logo class="form__logo" />
+      <!-- <brand-logo class="form__logo" /> -->
       <div class="form__content">
         <p class="form__title">Welcome</p>
         <p class="form__text">Please enter your details to login.</p>
@@ -53,11 +53,12 @@
       </div>
     </form>
     <div class="login--right">
-      <p class="login__claim">Build, improve, and monitor data for NLP</p>
-      <geometric-shape-a />
+      <p class="login__claim">
+        <b>Extra</b>ct data for <b>Lit</b>erature review</p>
+        <geometric-shape-a />
       <p class="login__text">
-        To get support from the community, join us on
-        <a :href="$config.slackCommunity" target="_blank">Slack</a>
+        For best experience, please expand your browser window to full width.
+        <!-- <a :href="$config.slackCommunity" target="_blank">Slack</a> -->
       </p>
     </div>
   </div>

@@ -43,7 +43,10 @@ export default {
   border-radius: $border-radius-rounded;
   margin: 0;
   @include font-size(12px);
-  @include line-height(12px);
+  @include line-height(12px); 
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   &.--clickable {
     cursor: pointer;
     background-color: $black-4;
