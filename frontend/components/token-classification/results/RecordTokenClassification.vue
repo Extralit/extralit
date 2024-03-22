@@ -289,7 +289,7 @@ export default {
 
 <style lang="scss" scoped>
 .record {
-  padding: $base-space * 4 200px 20px 20px;
+  padding: $base-space * 4 20px 20px 20px;
   display: block;
   margin-bottom: 0;
   @include font-size(16px);
@@ -303,7 +303,7 @@ export default {
   position: relative;
   white-space: pre-line;
   &__input {
-    padding-right: 200px;
+    padding-right: 20px;
   }
   .record--image-area {
     margin-bottom: 1em;

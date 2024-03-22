@@ -2,6 +2,9 @@ import { useRecordFeedbackTaskViewModel } from '@/components/feedback-task/conta
 import { Record as FeedbackRecord } from '~/v1/domain/entities/record/Record';
 import { DataFrame, Validation, ColumnValidators } from './types';
 
+type RecordDataFrames = Record<string, DataFrame>;
+type RecordDataFramesArray = RecordDataFrames[];
+
 
 export function isTableJSON(value: string): boolean {
   if (!value?.length || (!value.startsWith('{') && !value.startsWith('['))) { return false; }
@@ -15,10 +18,10 @@ export function isTableJSON(value: string): boolean {
   }
 }
 
-export function columnUniqueCounts(tableJSON: DataFrame): any {
+export function columnUniqueCounts(tableJSON: DataFrame): Record<string, number> {
   // tableJSON is an object of the form {data: [{column: value, ...}, ...]}
   // returns an object of the form {column: uniqueCount, ...}
-  let uniqueCounts = {};
+  let uniqueCounts: Record<string, number> = {};
   for (let key of Object.keys(tableJSON.data[0])) {
     let values = tableJSON.data.map(row => row[key]);
     let filteredValues = values.filter(value => value != null && value !== 'NA' && value);
@@ -42,20 +45,17 @@ export function incrementReferenceStr(reference: string): string {
   return newReference;
 }
 
-export function findMatchingRefValues(refValues: Record<string, string>, records: FeedbackRecord[]): any {
+export function findMatchingRefValues(refColumns: string[], records: RecordDataFramesArray): Record<string, Record<string, any>> {
   // refValues is an object of the form {field: refValue}
   // records is an array of objects of the form {table_name: {data: [{reference: refValue, ...}, ...]}}
   // returns an object of the form {field: {refValue: {column: value, ...}, ...}, ...}
-  const matchingRefValues = {};
+  const matchingRefValues: Record<string, Record<string, any>> = {};
 
-  for (const [field, refValue] of Object.entries(refValues)) {
+  for (const field of refColumns) {
     for (const recordTables of records) {
       if (!recordTables) continue;
       const matchingTable = Object.values(recordTables)
-        .find((table) => 
-          (!table?.validation?.name || table?.validation?.name.toLowerCase() === field.split("_")[0]) &&
-          table.data.find((row) => row["reference"] === refValue)
-        );
+        .find((table) => table?.validation?.name.toLowerCase() === field.replace(/_ref$/, '').toLowerCase());
       if (!matchingTable) continue;
 
       if (!matchingTable.hasOwnProperty('columnUniqueCounts')) {
@@ -63,7 +63,7 @@ export function findMatchingRefValues(refValues: Record<string, string>, records
       }
 
       const refRows = matchingTable.data.reduce((acc, row) => {
-        const filteredRowValues = Object.entries(row)
+        const filteredRowValues: Record<string, any> = Object.entries(row)
           .filter(([key, value]) => 
             key != "reference" &&
             (matchingTable.data.length <= 1 || !matchingTable?.columnUniqueCounts?.hasOwnProperty(key) || matchingTable.columnUniqueCounts[key] > 1))
@@ -74,19 +74,18 @@ export function findMatchingRefValues(refValues: Record<string, string>, records
         acc[row.reference] = filteredRowValues;
         return acc;
       }, {});
-
       matchingRefValues[field] = refRows;
-      break; // only need to find the first matching table
+      break; // only need to find the first matching table, since the recordTables is already sorted that the first table is the corrected version
       }
   }
 
-  return matchingRefValues
+  return matchingRefValues;
 }
 
-export function getTableDataFromRecords(filter_fn: (record: FeedbackRecord) => boolean): any[] {
+export function getTableDataFromRecords(filter_fn: (record: FeedbackRecord) => boolean): RecordDataFramesArray {
   // filter_fn is a function that takes a record and returns true if it should be included in the table
   // returns an array of objects of the form {field: {refValue: {column: value, ...}, ...}, ...}
-  let recordTables = useRecordFeedbackTaskViewModel({recordCriteria: null})?.records.records
+  let recordTables: RecordDataFramesArray = useRecordFeedbackTaskViewModel({recordCriteria: null})?.records.records
     .filter(filter_fn)
     .map((rec) => {
       let answer_tables = rec?.answer?.value || {};

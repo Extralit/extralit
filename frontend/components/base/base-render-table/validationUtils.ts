@@ -57,7 +57,8 @@ var between = (cell: any, value: any, parameters: { lower: string, upper: string
  */
 export function getColumnValidators(tableJSON: DataFrame): ColumnValidators {
 	const schemaColumns = tableJSON.validation?.columns; // Pandera yaml schema
-	const indexColumns: SchemaColumns = tableJSON.validation?.index.reduce((acc, curr) => ({ ...acc, [curr.name]: curr }), {}) || {};
+	const indexColumns: SchemaColumns = tableJSON.validation?.index
+    .reduce((acc, curr) => ({ ...acc, [curr.name]: curr }), {}) || {};
 	if (schemaColumns == null) return {};
 	const tableColumns = tableJSON.schema.fields.map((col) => col.name);
 	

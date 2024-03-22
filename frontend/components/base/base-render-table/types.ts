@@ -6,6 +6,7 @@ export type DataFrame = {
   };
   reference?: string;
   validation?: Validation;
+  columnUniqueCounts?: Record<string, number>;
 };
 
 export type Validation = {

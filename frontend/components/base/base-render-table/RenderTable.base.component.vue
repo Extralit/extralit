@@ -210,21 +210,11 @@ export default {
       // First get the metadata.reference from the current table by checking the first row's _ref columns, 
       // then use refValues to find the matching tables from other records and get the dict of reference values to rows
       if (!this.refColumns) return null;
-      const firstRow = this.tableJSON?.data?.find((row) => 
-        this.refColumns.some((refColumn) => row[refColumn] !== undefined)
-      )
-      if (!firstRow) return null;
       
-      const refValues = this.refColumns.reduce((acc, refColumn, index) => {
-        acc[refColumn] = firstRow[refColumn];
-        return acc;
-      }, {});
-      if (!refValues) return null;
-  
-      const publication_ref = this.tableJSON?.reference || firstRow.publication_ref || firstRow[this.refColumns[0]]?.split('-')[0];
+      const publication_ref = this.tableJSON?.reference;
       if (!publication_ref) return null;
       let recordTables = getTablesFromRecords((record) => record?.metadata?.reference == publication_ref, publication_ref)
-      const refToRowDict = findMatchingRefValues(refValues, recordTables)
+      const refToRowDict = findMatchingRefValues(this.refColumns, recordTables)
 
       return refToRowDict;
     },
@@ -463,15 +453,19 @@ export default {
 
         if (this.referenceValues?.hasOwnProperty(fieldName)) {
           config.editorParams = {
-            search: true,
-            values: this.referenceValues[fieldName],
+            values: Object.entries(this.referenceValues[fieldName]).map(([key, value]) => ({
+              label: key,
+              value: key,
+              data: value
+            })),
             itemFormatter: (label, value, item, element) => {
-              const keyValues = Object.entries(label)
-                .filter(([key, value]) => key !== "reference" && value !== 'NA' && value !== null)
-                .map(([key, value]) => `<span style="font-weight:normal; color:black; margin-left:0;">${key}:</span> ${value}`)
+              const keyValues = Object.entries(item.data)
+                .filter(([key, v]) => key !== "reference" && v !== 'NA' && v !== null)
+                .map(([key, v]) => `<span style="font-weight:normal; color:black; margin-left:0;">${key}:</span> ${v}`)
                 .join(', ');
-              return "<strong>" + value + "</strong>: <div>" + keyValues + "</div>";
+              return `<strong>${label}</strong>: <div>${keyValues}</div>`;
             },
+            allowEmpty: true,
             showListOnEmpty: true,
             freetext: true,
           };
@@ -485,15 +479,15 @@ export default {
         }
       }
 
-    //   config.editorParams.filterFunc = (term, label, value, item) => {
-    //     //term - the string value from the input element
-    //     //label - the text lable for the item
-    //     //value - the value for the item
-    //     //item - the original value object for the item
-    //     if (value == "NA") return false;
+      // config.editorParams.filterFunc = (term, label, value, item) => {
+      //   //term - the string value from the input element
+      //   //label - the text lable for the item
+      //   //value - the value for the item
+      //   //item - the original value object for the item
+      //   if (value == "NA") return false;
 
-    //     return term === value;
-    // }
+      //   return term === value;
+      // }
 
       return config;
     },
