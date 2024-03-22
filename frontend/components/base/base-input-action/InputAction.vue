@@ -18,19 +18,18 @@
 <template>
   <div class="new-label__container">
     <base-button
-      v-if="!showLabelCreation"
       class="new-label__main-button secondary text"
       @click="openLabelCreation()"
       >{{ text }}</base-button
     >
-    <div v-else class="new-label">
+    <div v-if="showLabelCreation" class="new-label">
       <input
         ref="labelCreation"
         v-model="label"
         autofocus
         class="new-label__input"
         type="text"
-        placeholder="New label"
+        :placeholder="placeholder"
         @keyup.enter="createNewLabel(label)"
       />
       <svgicon class="new-label__close" name="close" @click="reset()" />
@@ -38,7 +37,7 @@
         class="new-label__button primary small"
         :disabled="!label"
         @click="createNewLabel(label)"
-        >Create</base-button
+        >{{ button }}</base-button
       >
     </div>
   </div>
@@ -49,7 +48,17 @@ export default {
     text: {
       type: String,
       required: false,
-      default: "Create label",
+      default: "Create new",
+    },
+    button: {
+      type: String,
+      required: false,
+      default: "Submit",
+    },
+    placeholder: {
+      type: String,
+      required: false,
+      default: "Input",
     },
   },
   data: () => ({
@@ -63,7 +72,7 @@ export default {
         // If no label, nothing to do
         return;
       }
-      this.$emit("new-label", label);
+      this.$emit("input", label);
       this.reset();
     },
     openLabelCreation() {
@@ -81,6 +90,7 @@ export default {
 </script>
 <style lang="scss" scoped>
 .new-label {
+  z-index: 1;
   width: 180px;
   border-radius: $border-radius;
   box-shadow: $shadow;

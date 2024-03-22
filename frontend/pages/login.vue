@@ -54,7 +54,7 @@
     </form>
     <div class="login--right">
       <p class="login__claim">
-        <b>Extra</b>ct data for <b>Lit</b>erature review</p>
+        Extract data for lit reviews</p>
         <geometric-shape-a />
       <p class="login__text">
         For best experience, please expand your browser window to full width.

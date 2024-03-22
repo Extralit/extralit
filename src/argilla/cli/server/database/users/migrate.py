@@ -116,22 +116,27 @@ class UsersMigrator:
         await session.commit()
 
     def _build_user_create(self, user: dict) -> UserCreate:
-        role = self._user_role(user)
         first_name, _, last_name = user.get("full_name", "").partition(" ")
         
         return UserCreate(
             first_name=first_name,
             last_name=last_name,
             username=user["username"],
-            role=role,
+            role=self._user_role(user),
             api_key=user["api_key"],
             password_hash=user["hashed_password"],
             workspaces=[WorkspaceCreate(name=workspace_name) for workspace_name in self._user_workspace_names(user)],
         )
 
     def _user_role(self, user: dict) -> UserRole:
-        if user.get("workspaces") is None:
+        if user.get("role") == 'owner':
             return UserRole.owner
+
+        elif user.get("role") == 'admin':
+            return UserRole.admin
+        
+        elif user.get("role") == 'annotator':
+            return UserRole.annotator
 
         return UserRole.annotator
 

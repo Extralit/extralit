@@ -27,10 +27,10 @@ export default {
   },
   computed: {
     getStatusInfo() {
-      switch (this.recordStatus) {
+      switch (this.recordStatus?.toLowerCase()) {
         case "validated":
           return {
-            name: "Validate",
+            name: "Validated",
             icon: "validate",
             class: "--validated",
           };
@@ -67,6 +67,14 @@ export default {
             name: "Submitted",
             icon: "validate",
             class: "--submitted",
+          };
+
+        default:
+          console.log("Unknown record status", this.recordStatus)
+          return {
+            name: "Unknown",
+            icon: null,
+            class: "--pending",
           };
       }
     },

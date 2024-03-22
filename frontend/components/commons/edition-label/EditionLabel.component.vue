@@ -6,33 +6,22 @@
     <div class="content">
       <BaseSpinner v-if="isLoading" />
 
-      <BaseFeedbackComponent
-        v-if="isFeedbackVisible && !isLoading"
-        :feedbackInput="feedbackInput"
-        @on-click="feedbackAction"
-        class="feedback-area"
-      />
+      <BaseFeedbackComponent v-if="isFeedbackVisible && !isLoading" :feedbackInput="feedbackInput"
+        @on-click="feedbackAction" class="feedback-area" />
 
-      <TokenClassificationGlobalLabelsComponent
-        v-if="isTaskTokenClassification && numberOfLabels && !isLoading"
-        :labels="labels"
-        :showAllLabels="showAllLabels"
-        @on-toggle-show-less-more-labels="showAllLabels = !showAllLabels"
-      />
+      <TokenClassificationGlobalLabelsComponent v-if="isTaskTokenClassification && numberOfLabels && !isLoading"
+        :labels="labels" :showAllLabels="showAllLabels"
+        @on-toggle-show-less-more-labels="showAllLabels = !showAllLabels" />
 
-      <TextClassificationGlobalLabelsComponent
-        v-if="isTaskTextClassification && numberOfLabels && !isLoading"
-        :labels="labels"
-        :showAllLabels="showAllLabels"
-        @on-toggle-show-less-more-labels="showAllLabels = !showAllLabels"
-      />
+      <TextClassificationGlobalLabelsComponent v-if="isTaskTextClassification && numberOfLabels && !isLoading"
+        :labels="labels" :showAllLabels="showAllLabels"
+        @on-toggle-show-less-more-labels="showAllLabels = !showAllLabels" />
 
-      <div class="buttons-area">
-        <CreateNewAction
-          text="+ Create label"
-          v-if="allowAddNewLabel"
-          @new-label="onAddNewLabels"
-        />
+      <div class="buttons-area" v-if="allowAddNewLabel">
+        <InputAction text="+ Add label" placeholder="New label" button="Create" @input="onAddNewLabels" />
+        <!-- <InputAction text="- Remove label" placeholder="Label to remove" button="Remove"
+          @input="onRemoveNewLabels" /> -->
+        <!-- <BaseButton @on-click.prevent="test">TEST</BaseButton> -->
       </div>
     </div>
   </div>
@@ -40,6 +29,7 @@
 
 <script>
 import { mapActions } from "vuex";
+import { useRole } from "@/v1/infrastructure/services";
 import { getDatasetFromORM } from "@/models/dataset.utilities";
 import {
   getAllLabelsByDatasetId,
@@ -71,7 +61,6 @@ export default {
     return {
       isSortAsc: true,
       sortBy: "order",
-      allowAddNewLabel: true,
       characterToSeparateLabels: null,
       saveLabelsButtonLabel: "Save labels",
       inputForSaveSchemaFeedback: {
@@ -91,6 +80,9 @@ export default {
     };
   },
   computed: {
+    allowAddNewLabel() {
+      return this.isAdminOrOwnerRole;
+    },
     dataset() {
       return getDatasetFromORM(this.datasetId, this.datasetTask, false);
     },
@@ -198,6 +190,14 @@ export default {
       }
       return null;
     },
+    test() {
+      console.log("TEST");
+      console.log(this.datasetId);
+    },
+  },
+  setup() {
+    const { isAdminOrOwnerRole } = useRole();
+    return { isAdminOrOwnerRole };
   },
 };
 </script>
@@ -224,7 +224,8 @@ export default {
 }
 
 .buttons-area {
-  display: inline-flex;
+  display: flex;
   align-items: baseline;
+  gap: 100px;
 }
 </style>
