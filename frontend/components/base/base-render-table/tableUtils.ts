@@ -55,7 +55,8 @@ export function findMatchingRefValues(refColumns: string[], records: RecordDataF
     for (const recordTables of records) {
       if (!recordTables) continue;
       const matchingTable = Object.values(recordTables)
-        .find((table) => table?.validation?.name.toLowerCase() === field.replace(/_ref$/, '').toLowerCase());
+      .find((table) => table?.validation?.name.toLowerCase() === field.replace(/_ref$/, ''));
+
       if (!matchingTable) continue;
 
       if (!matchingTable.hasOwnProperty('columnUniqueCounts')) {
@@ -100,7 +101,7 @@ export function getTableDataFromRecords(filter_fn: (record: FeedbackRecord) => b
               try {
                 const value = (obj as { value: string }).value;
                 const table = JSON.parse(value);
-                delete table.validation;
+                delete table.validation.columns;
                 return [key, table]
               } catch (e) {
                 console.error(e);
@@ -122,12 +123,10 @@ export function getTableDataFromRecords(filter_fn: (record: FeedbackRecord) => b
           }
         }, {});
 
-      return {
-        ...answer_tables, // ensures that answer tables are prioritized over field tables
-        ...field_table,
-      }
-    })
-    .filter((obj) => Object.keys(obj).length > 0);
+      // ensures that answer tables are prioritized over field tables
+      let tables = Object.keys(answer_tables).length ? answer_tables: field_table; 
+      return tables;
+    }).filter((obj) => Object.keys(obj).length > 0);
 
   return recordTables;
 }
@@ -136,7 +135,7 @@ export function columnSchemaToDesc(fieldName: string, validation: Validation, co
   // tableJSON is an object of the form {data: [{column: value, ...}], validation: {columns: {column: panderaSchema, ...}}}
   // columnValidators is an object of the form {column: [validator, ...]}
   // returns a string describing the column schema and validators
-  if (!validation) return;
+  if (!validation || !fieldName) return;
   
   var desc = `<b>${fieldName}</b>: ` || "";
   if (validation.columns.hasOwnProperty(fieldName)) {

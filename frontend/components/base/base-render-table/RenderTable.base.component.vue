@@ -163,14 +163,6 @@ export default {
           ...this.getColumnEditableConfig(column.name),
         }
       });
-      if (this.editable) {
-        configs.unshift({ 
-          rowHandle: true, 
-          formatter: "rowSelection", 
-          headerSort: false, frozen: false, hozAlign: "center", width: 30, minWidth: 30,
-        });
-        // configs.push({ formatter: "buttonCross", width: 30, hozAlign: "center" })
-      }
       return configs;
     },
     groupConfigs() {
@@ -211,9 +203,9 @@ export default {
       // then use refValues to find the matching tables from other records and get the dict of reference values to rows
       if (!this.refColumns) return null;
       
-      const publication_ref = this.tableJSON?.reference;
-      if (!publication_ref) return null;
-      let recordTables = getTablesFromRecords((record) => record?.metadata?.reference == publication_ref, publication_ref)
+      const reference = this.tableJSON?.reference;
+      if (!reference) return null;
+      let recordTables = getTablesFromRecords((record) => record?.metadata?.reference == reference)
       const refToRowDict = findMatchingRefValues(this.refColumns, recordTables)
 
       return refToRowDict;
@@ -393,9 +385,7 @@ export default {
 
       // Default editable config for a column
       var config = {
-        editor: "input",
         editorParams: {
-          selectContents: true,
           search: true,
           autocomplete: true,
         },
@@ -453,27 +443,37 @@ export default {
 
         if (this.referenceValues?.hasOwnProperty(fieldName)) {
           config.editorParams = {
+            valuesLookup: false,
             values: Object.entries(this.referenceValues[fieldName]).map(([key, value]) => ({
               label: key,
               value: key,
               data: value
             })),
-            itemFormatter: (label, value, item, element) => {
+            placeholderEmpty: "Type to search by keyword...",
+            itemFormatter: function (label, value, item, element) {
               const keyValues = Object.entries(item.data)
                 .filter(([key, v]) => key !== "reference" && v !== 'NA' && v !== null)
                 .map(([key, v]) => `<span style="font-weight:normal; color:black; margin-left:0;">${key}:</span> ${v}`)
                 .join(', ');
               return `<strong>${label}</strong>: <div>${keyValues}</div>`;
             },
+            filterFunc: function (term, label, value, item) {
+              if (String(label).startsWith(term) || value == term) {
+                return true;
+              } else if (term.length >= 3) {
+                return JSON.stringify(item.data).toLowerCase().match(term.toLowerCase());              
+              }
+              return label === term;
+            },
             allowEmpty: true,
-            showListOnEmpty: true,
+            listOnEmpty: true,
             freetext: true,
           };
         } else {
           config.editorParams = {
             search: true,
             valuesLookup: 'active',
-            showListOnEmpty: true,
+            listOnEmpty: true,
             freetext: true,
           };
         }
@@ -703,11 +703,24 @@ export default {
         // renderHorizontal: "virtual",
         // persistence: { columns: true },
         // layoutColumnsOnNewData: true,
-        reactiveData: true,
-        clipboard: true,
+        // reactiveData: true,
+
+        // selectableRows: true,
+        movableRows: this.editable,
+        rowHeader: { 
+          headerSort: false, resizable: false, rowHandle: true, 
+          minWidth: 30, width: 30, headerHozAlign: "center", hozAlign: "center", 
+          // formatter: "handle",
+          formatter: "rowSelection", titleFormatter: "rowSelection", titleFormatterParams: {
+            rowRange: "active" //only toggle the values of the active filtered rows
+          },
+        },
+
         columnDefaults: {
-          resizable: true,
+          editor: "input",
+          selectContents: true,
           headerSort: false,
+          resizable: 'header',
           tooltip: this.cellTooltip.bind(this),
           headerTooltip: this.headerTooltip.bind(this),
           headerWordWrap: true,
@@ -716,14 +729,32 @@ export default {
           // maxWidth: 200,
         },
         columns: this.columnsConfig,
-        index: this.columnsConfig.find((column) => column.field === "reference")
-        ? "reference"
-        : null,
+        index: this.indexColumns + this.refColumns,
         ...this.groupConfigs,
         // selectable: 1,
         // selectablePersistence: true,
+
+        //enable range selection
+        selectableRange: 1,
+        selectableRangeColumns: true,
+        selectableRangeRows: true,
+        selectableRangeClearCells: true,
+
+        //change edit trigger mode to make cell navigation smoother
+        editTriggerEvent: "dblclick",
+
+        //configure clipboard to allow copy and paste of range format data
+        clipboard: true,
+        clipboardCopyStyled: false,
+        clipboardCopyConfig: {
+          rowHeaders: false,
+          columnHeaders: false,
+        },
+        clipboardCopyRowRange: "range",
+        clipboardPasteParser: "range",
+        clipboardPasteAction: "range",
+
         validationMode: "highlight",
-        movableRows: this.editable,
         movableColumns: this.editable,
         rowContextMenu: this.rowContextMenu,
         history: true,
@@ -731,18 +762,18 @@ export default {
 
       // this.table.on("rowClick", this.clickRow.bind(this));
 
-      if (this.editable) {
-        this.table.on("columnTitleChanged", this.columnTitleChanged.bind(this));
-        this.table.on("columnMoved", this.columnMoved.bind(this));
-      }
+      // if (this.editable) {
+      //   this.table.on("columnTitleChanged", this.columnTitleChanged.bind(this));
+      //   this.table.on("columnMoved", this.columnMoved.bind(this));
+      // }
 
-      this.table.on("tableBuilt", () => {
-        this.isLoaded = true;
-        this.table.setColumns(this.columnsConfig);
-        this.validateTable();
+      // this.table.on("tableBuilt", () => {
+      //   this.isLoaded = true;
+      //   this.table.setColumns(this.columnsConfig);
+      //   this.validateTable();
 
-        // this.$nuxt.$on("on-table-highlight-row", this.selectRow.bind(this));
-      }); 
+      //   // this.$nuxt.$on("on-table-highlight-row", this.selectRow.bind(this));
+      // }); 
 
     } catch (error) {
       const message = `Failed to load table: ${error}`;

@@ -154,13 +154,28 @@ const config: NuxtConfig = {
       config.module.rules.push({
         test: /\.mjs$/,
         include: /node_modules\/pdfjs-dist/,
-        type: 'javascript/auto',
+      });
+      config.module.rules.push({
+        test: /\.js$/,
+        include: /node_modules\/tabulator-tables/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['@babel/preset-env'],
+            compact: false,
+          },
+        },
       });
     },
     babel: {
+      presets: [
+        ['@babel/preset-env', { targets: { node: 'current' } }],
+      ],
       plugins: [
         ['@babel/plugin-transform-private-methods', { loose: true }],
         ['@babel/plugin-transform-class-properties', { loose: true }],
+        ['@babel/plugin-proposal-class-properties', { loose: true }],
+        ["@babel/plugin-transform-private-property-in-object", { "loose": true }],
       ],
     },
     transpile: ['pdfjs-dist'],

@@ -49,7 +49,7 @@
           type="button"
           class="primary text"
           @click.prevent="onClear"
-          :title="$t('shortcuts.questions_form.clear')"
+          :title="$t('questions_form.clear')"
         >
           <span v-text="'Clear'" />
         </BaseButton>
@@ -60,7 +60,7 @@
           class="primary outline"
           @on-click="onDiscard"
         :disabled="record.isDiscarded"
-          :title="$t('shortcuts.questions_form.discard')"
+          :title="$t('questions_form.discard')"
         >
           <span v-text="'Discard'" />
         </BaseButton>
@@ -68,7 +68,7 @@
           type="submit"
           class="primary"
           :disabled="isSubmitButtonDisabled"
-          :title="$t('shortcuts.questions_form.submit')"
+          :title="$t('questions_form.submit')"
         >
           <span v-text="'Submit'" />
         </BaseButton>

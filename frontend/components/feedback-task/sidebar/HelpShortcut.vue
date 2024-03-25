@@ -8,6 +8,8 @@
       :content="content"
     />
 
+    <br/>
+
     <BaseSwitch @change="toggleShortcutsHelper" v-model="showShortcutsHelper" class="shortcuts__footer">
       Show key shortcuts
     </BaseSwitch>
