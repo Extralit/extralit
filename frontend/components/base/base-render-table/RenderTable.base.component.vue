@@ -420,7 +420,7 @@ export default {
         const columnSchema = this.tableJSON.validation?.columns[fieldName];
 
         if (columnSchema.dtype === "str") {
-          config.editor = "autocomplete";
+          config.editor = "list";
           config.editorParams.defaultValue = "NA";
           config.editorParams.emptyValue = "NA";
           config.editorParams.valuesLookup = 'active';
@@ -439,7 +439,7 @@ export default {
         }
 
       } else if (this.refColumns?.includes(fieldName)) {
-        config.editor = "autocomplete";
+        config.editor = "list";
 
         if (this.referenceValues?.hasOwnProperty(fieldName)) {
           config.editorParams = {
