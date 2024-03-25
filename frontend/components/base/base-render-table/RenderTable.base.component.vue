@@ -388,6 +388,7 @@ export default {
         editorParams: {
           search: true,
           autocomplete: true,
+          selectContents: true,
         },
         headerDblClick: (e, column) => {
           // Enable editable title on double click
@@ -443,6 +444,7 @@ export default {
 
         if (this.referenceValues?.hasOwnProperty(fieldName)) {
           config.editorParams = {
+            ...config.editorParams,
             valuesLookup: false,
             values: Object.entries(this.referenceValues[fieldName]).map(([key, value]) => ({
               label: key,
@@ -471,6 +473,7 @@ export default {
           };
         } else {
           config.editorParams = {
+            ...config.editorParams,
             search: true,
             valuesLookup: 'active',
             listOnEmpty: true,
@@ -478,17 +481,6 @@ export default {
           };
         }
       }
-
-      // config.editorParams.filterFunc = (term, label, value, item) => {
-      //   //term - the string value from the input element
-      //   //label - the text lable for the item
-      //   //value - the value for the item
-      //   //item - the original value object for the item
-      //   if (value == "NA") return false;
-
-      //   return term === value;
-      // }
-
       return config;
     },
     validateTable(options) {
@@ -678,13 +670,13 @@ export default {
           .join(', ');
 
         if (keyValues.length > 0) {
-          header = `<small style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" text="${value}">${keyValues}</small>`;
+          header = `<small text="${value}">${keyValues}</small>`;
         }
       } else {
-        header = `<small style="color: red; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" text="${value}">${value} (not matched)</small>`;
+        header = `<small style="color: red;" text="${value}">${value} (not matched)</small>`;
       }
 
-      if (count > 1) header = header + `<span style='color:black; margin-left:10px;'>(${count})</span>`;
+      if (count > 1) header = header + `<span style='font-weight:normal; color:black; margin-left:10px;'>(${count})</span>`;
       return header;
     },
   },
@@ -707,18 +699,17 @@ export default {
 
         // selectableRows: true,
         movableRows: this.editable,
-        rowHeader: { 
-          headerSort: false, resizable: false, rowHandle: true, 
+        rowHeader: this.editable? { 
+          headerSort: false, resizable: false, rowHandle: true, editor: false,
           minWidth: 30, width: 30, headerHozAlign: "center", hozAlign: "center", 
-          // formatter: "handle",
-          formatter: "rowSelection", titleFormatter: "rowSelection", titleFormatterParams: {
-            rowRange: "active" //only toggle the values of the active filtered rows
-          },
-        },
+          formatter: "handle",
+          // formatter: "rowSelection", titleFormatter: "rowSelection", titleFormatterParams: {
+          //   rowRange: "active"
+          // },
+        } : false,
 
         columnDefaults: {
           editor: "input",
-          selectContents: true,
           headerSort: false,
           resizable: 'header',
           tooltip: this.cellTooltip.bind(this),
@@ -830,15 +821,80 @@ export default {
 //   white-space: normal;
 // }
 
-.tabulator .tabulator-group-level-1 {
-  max-height: 100px;
-}
+.tabulator .tabulator-group {
+  display: grid;
+  grid-auto-flow: column;
+  justify-content: start;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  // border: none;
+  background-color: transparent;
 
-.tabulator .tabulator-group .tabulator-group-value {
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  span, small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-decoration: none;
+  }
+
+  @media (hover:hover) and (pointer:fine) {
+    &:hover {
+      cursor: auto;
+      background-color: transparent;
+    }
+  }
+
+  &.tabulator-group-visible {
+    .tabulator-arrow {
+      width: 10px;
+      
+      &:before {
+        content: "";
+        position: absolute;
+        top: -20px;
+        bottom: -20px;
+        left: -20px;
+        right: -20px;
+      }
+
+      &:hover {
+        cursor: pointer;
+        border-top: 6px solid black;
+      }
+    }
+  }
+
+  .tabulator-arrow {
+    position: relative;
+
+    &:before {
+      content: "";
+      position: absolute;
+      top: -20px;
+      bottom: -20px;
+      left: -20px;
+      right: -20px;
+    }
+
+    &:hover {
+      cursor: pointer;
+    }
+  }
+
+  // &.tabulator-group-level-2,
+  // &.tabulator-group-level-3,
+  // &.tabulator-group-level-4,
+  // &.tabulator-group-level-5 {
+  //   overflow: hidden;
+  //   text-overflow: ellipsis;
+  //   white-space: nowrap;
+  // }
+
+  // .tabulator-group-toggle {
+  //   display: inline-block;
+  // }
+
+  
 }
 
 </style>
