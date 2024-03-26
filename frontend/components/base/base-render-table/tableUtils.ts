@@ -1,5 +1,5 @@
 import { DataFrame, Validation, ValidationSpec, ValidationSpecs } from './types';
-import { CellComponent, GroupComponent } from "tabulator-tables";
+import { CellComponent, ColumnComponent, GroupComponent } from "tabulator-tables";
 
 type RecordDataFrames = Record<string, DataFrame>;
 export type RecordDataFramesArray = RecordDataFrames[];
@@ -19,7 +19,8 @@ export function isTableJSON(value: string): boolean {
 
 export function cellTooltip(e, cell: CellComponent, onRendered) {
   var message = null;
-  let errors = cell._cell?.modules?.validate?.invalid;
+
+  let errors = (cell as any)._cell?.modules?.validate?.invalid;
 
   if (cell.getValue()?.length > 100) {
     message = cell.getValue() + '\n\n';
@@ -33,8 +34,8 @@ export function cellTooltip(e, cell: CellComponent, onRendered) {
 }
 
 
-export function groupHeader(value, count, data, group: GroupComponent, referenceValues: Record<string, Record<string, Record<string, any>>>, refColumns: string[]) {
-  const field = group._group.field
+export function groupHeader(value: string, count: number, data, group: GroupComponent, referenceValues: Record<string, Record<string, Record<string, any>>>, refColumns: string[]) {
+  const field = (group as any)._group.field
   let header = value
   if (referenceValues?.[field]?.hasOwnProperty(value)) {
     const keyValues = Object.entries(referenceValues[field][value])
@@ -53,7 +54,7 @@ export function groupHeader(value, count, data, group: GroupComponent, reference
   return header;
 }
 
-export function headerTooltip(e, column: CellComponent, onRendered, validation: Validation, columnValidators: ValidationSpecs) {
+export function headerTooltip(e, column: ColumnComponent, onRendered, validation: Validation, columnValidators: ValidationSpecs) {
   try {
     const fieldName = column?.getDefinition()?.field;
     const desc = columnSchemaToDesc(fieldName, validation, columnValidators)

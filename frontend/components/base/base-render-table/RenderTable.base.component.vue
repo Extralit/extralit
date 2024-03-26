@@ -578,7 +578,6 @@ export default {
       this.table = new Tabulator(this.$refs.table, {
         data: this.tableJSON.data,
         layout: layout,
-        minHeight: "200px",
         maxHeight: "100%",
         // renderHorizontal: "virtual",
         // persistence: { columns: true },
@@ -669,6 +668,15 @@ export default {
   max-width: 100%;
   // overflow-x: auto;
   // background: inherit;
+  resize: vertical;
+  overflow: auto;
+  position: relative;
+  height: 50vh;
+
+  .--table {
+    overflow: auto;
+    white-space: normal;
+  }
   
   .--table-buttons {
     display: flex;
@@ -685,15 +693,6 @@ export default {
         background: $black-4;
       }
     }
-  }
-
-  .--table {
-    overflow: auto;
-    white-space: normal;
-    resize: vertical;
-    overflow: auto;
-    position: relative;
-    height: 50vh;
   }
 }
 // .tabulator .tabulator-header .tabulator-col .tabulator-col-content .tabulator-col-title {
@@ -719,7 +718,6 @@ export default {
   @media (hover:hover) and (pointer:fine) {
     &:hover {
       cursor: auto;
-      background-color: transparent;
     }
   }
 
@@ -760,20 +758,12 @@ export default {
     }
   }
 
-  // &.tabulator-group-level-2,
-  // &.tabulator-group-level-3,
-  // &.tabulator-group-level-4,
-  // &.tabulator-group-level-5 {
-  //   overflow: hidden;
-  //   text-overflow: ellipsis;
-  //   white-space: nowrap;
-  // }
-
-  // .tabulator-group-toggle {
-  //   display: inline-block;
-  // }
-
-  
+  &.tabulator-group-level-2,
+  &.tabulator-group-level-3,
+  &.tabulator-group-level-4,
+  &.tabulator-group-level-5 {
+    border: none;
+  }
 }
 
 </style>
