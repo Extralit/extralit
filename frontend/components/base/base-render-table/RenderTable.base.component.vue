@@ -10,12 +10,10 @@
     <div ref="table" class="--table" />
 
     <div class="--table-buttons">
-      <BaseDropdown 
-        v-show="editable"
-        :visible="visibleEditDropdown">
+      <BaseDropdown v-show="editable" :visible="visibleEditDropdown">
         <span slot="dropdown-header">
           <BaseButton @click.prevent="visibleEditDropdown=!visibleEditDropdown">
-            Edit table 
+            Edit table
             <svgicon name="chevron-down" width="8" height="8" />
           </BaseButton>
         </span>
@@ -38,9 +36,11 @@
         </span>
       </BaseDropdown>
 
-      <BaseDropdown v-show="columnValidators && Object.keys(columnValidators).length" :visible="editable && visibleCheckropdown">
+      <BaseDropdown v-show="columnValidators && Object.keys(columnValidators).length"
+        :visible="editable && visibleCheckropdown">
         <span slot="dropdown-header">
-          <BaseButton @click.prevent="validateTable({ showErrors: true, scrollToError: true }); visibleCheckropdown=!visibleCheckropdown">
+          <BaseButton
+            @click.prevent="validateTable({ showErrors: true, scrollToError: true }); visibleCheckropdown=!visibleCheckropdown">
             Check data
           </BaseButton>
         </span>
@@ -58,16 +58,14 @@
 import { Notification } from "@/models/Notifications";
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 import "tabulator-tables/dist/css/tabulator.min.css";
+import {
+  getTableDataFromRecords, findMatchingRefValues, incrementReferenceStr, getMaxStringValue, } from './dataUtils';
 import { getColumnValidators } from "./validationUtils";
 import { 
-  DataFrame,
   columnSchemaToDesc, 
-  getTableDataFromRecords as getTablesFromRecords, 
-  findMatchingRefValues,
-  incrementReferenceStr,
-  getMaxStringValue,
+  cellTooltip,
+  headerTooltip,
 } from "./tableUtils"; 
-import { del } from "vue";
 
 export default {
   name: "RenderTableBaseComponent",
@@ -144,24 +142,9 @@ export default {
       if (!this.tableJSON?.schema) return [];
 
       const configs = this.tableJSON.schema.fields.map((column) => {
-        const hide = !this.showRefColumns && this.isRefColumn(column.name) || column.name == 'publication_ref';
-
-        return {
-          title: column.name,
-          field: column.name,
-          visible: !hide,
-          validator: this.columnValidators.hasOwnProperty(column.name)
-            ? this.columnValidators[column.name]
-            : null,
-          formatter: this.isRefColumn(column.name) ? (cell, formatterParams) => {
-            const value = cell.getValue();
-            if (!value) return value;
-            else {
-              return "<span style='font-weight:bold;'>" + value + "</span>";
-            }
-          } : null,
-          ...this.getColumnEditableConfig(column.name),
-        }
+        const commonConfig = this.generateCommonConfig(column);
+        const editableConfig = this.generateColumnEditableConfig(column);
+        return { ...commonConfig, ...editableConfig };
       });
       return configs;
     },
@@ -205,22 +188,13 @@ export default {
       
       const reference = this.tableJSON?.reference;
       if (!reference) return null;
-      let recordTables = getTablesFromRecords((record) => record?.metadata?.reference == reference)
+      let recordTables = getTableDataFromRecords((record) => record?.metadata?.reference == reference)
       const refToRowDict = findMatchingRefValues(this.refColumns, recordTables)
 
       return refToRowDict;
     },
     columnContextMenu() {
       let menu = [
-        {
-          label: "Copy column data",
-          action: (e, column) => {
-            let title = column.getDefinition().title
-            let values = column.getCells().map((cell) => cell.getValue());
-
-            navigator.clipboard.writeText([title, ...values].join("\n"));
-          }
-        },
         {
           separator: true,
         },
@@ -255,41 +229,10 @@ export default {
     rowContextMenu() {
       let menu = [
         {
-          label: "Copy row",
-          action: (e, row) => {
-            let rowData = row.getData();
-            let values = this.columns.map((column) => rowData[column]);
-            navigator.clipboard.writeText(values.join("\t"));
-          }
-        },
-        {
-          label: "Paste",
-          disabled: !this.editable,
-          action: (e, row) => {
-            navigator.clipboard.readText().then((text) => {
-              const values = text.trim().split("\t");
-              const currentRow = row.getData();
-
-              Object.keys(currentRow)
-                .filter(columnName => this.isRefColumn(columnName) || this.columns.includes(columnName))
-                .forEach((columnName, index) => {
-                  if (values[index] === undefined) return;
-                  currentRow[columnName] = values[index];
-                });
-              row.update(currentRow);
-              this.updateTableJsonData();
-            });
-          }
-        },
-        {
-          separator: true,
-        },
-        {
           label: "Add row below",
           disabled: !this.editable,
           action: (e, row) => {
-            this.selectRow(row);
-            this.addRow();
+            this.addRow(row);
           }
         },
         {
@@ -313,7 +256,6 @@ export default {
           .map((field) => field.name);
           
         if (removeColumns.length > 0) {
-          console.log('removeColumns', removeColumns)
           // Remove removeColumns from this.tableJSON.schema
           this.tableJSON.schema.fields = this.tableJSON.schema.fields.filter(
             (field) => !removeColumns.includes(field.name)
@@ -370,8 +312,6 @@ export default {
           }
           return field;
         });
-
-        console.log("update:", 'data', data, 'tableJSON.schema.fields', this.tableJSON.schema.fields, 'currentColumns', this.columns);
       }
 
       this.tableJSON.data = this.table.getData();
@@ -380,7 +320,27 @@ export default {
     isRefColumn(field) { 
       return field == "reference" || this.refColumns?.includes(field);
     },
-    getColumnEditableConfig(fieldName) {
+    generateCommonConfig(column) {
+      const hide = !this.showRefColumns && this.isRefColumn(column.name);
+      const commonConfig = {
+        title: column.name,
+        field: column.name,
+        visible: !hide,
+        width: this.isRefColumn(column.name) ? 50 : undefined,
+        validator: this.columnValidators.hasOwnProperty(column.name)
+          ? this.columnValidators[column.name]
+          : null,
+        formatter: this.isRefColumn(column.name) ? (cell, formatterParams) => {
+          const value = cell.getValue();
+          if (!value) return value;
+          else {
+            return "<span style='font-weight:bold;'>" + value + "</span>";
+          }
+        } : null,
+      };
+      return commonConfig;
+    },
+    generateColumnEditableConfig(fieldName) {
       if (!this.editable) return {};
 
       // Default editable config for a column
@@ -520,34 +480,7 @@ export default {
       });
       this.tableJSON = this.tableJSON; // Trigger the setter
     },
-    clickRow(e, row) {
-      row.toggleSelect();
-      this.$nuxt.$emit("on-table-highlight-row", row);
-    },
-    selectRow(row) {
-      let selectedRow = row;
-      // if (this.columns.includes("reference")) {
-      //   // Highlight all rows with the same index accross different tables
-      //   selectedRow = this.table
-      //     .getRows()
-      //     .find(
-      //       (tableRow) => tableRow.getData().reference == row._row.data.reference
-      //     );
-      // } else {
-      //   selectedRow = this.table.getRows().find((tableRow) => tableRow._row.data == row._row.data);
-      // }
-      
-      // // Only highlight if the row is not already selected
-      // if (selectedRow === undefined) return;
-      // if (this.table.getSelectedRows().indexOf(selectedRow) != -1) return;
-      
-      this.table.scrollToRow(selectedRow, null, false);
-      this.table.deselectRow("visible");
-      this.table.toggleSelectRow(selectedRow._row);
-    },
-    addRow() {
-      const selectedRow = this.table.getSelectedRows()?.[0];
-
+    addRow(selectedRow) {
       const requiredFields = this.refColumns || [];
       if (this.tableJSON.schema.fields.some((field) => field.name === "reference")) {
         requiredFields.push("reference");
@@ -555,7 +488,7 @@ export default {
       
       const newRow = {};
       for (const field of this.columns) {
-        if (requiredFields.includes(field) && selectedRow._row.data[field]) {
+        if (requiredFields.includes(field) && selectedRow?._row?.data[field]) {
           newRow[field] = selectedRow._row.data[field]
           // const maxRefValue = getMaxStringValue(field, this.table.getData());
           // newRow[field] = incrementReferenceStr(maxRefValue);
@@ -596,10 +529,9 @@ export default {
       }
 
       this.table.addColumn({
-        title: newFieldName,
-        field: newFieldName,
+        ...this.generateCommonConfig(newFieldName),
+        ...this.generateColumnEditableConfig(newFieldName),
         editableTitle: true,
-        ...this.getColumnEditableConfig(newFieldName),
       }, false, selectedColumnField)
 
       this.updateTableJsonData(false, true);
@@ -634,32 +566,7 @@ export default {
       this.updateTableJsonData(false, false, true, newFieldName, oldFieldName);
       // this.table.setColumns(this.columnsConfig);
     },
-    cellTooltip(e, cell, onRendered) {
-      var text = cell.getValue();
 
-      if (text?.length > 100) {
-        return text;
-      } else if (
-        cell._cell?.column.field === "index" &&
-        this.tableJSON?.validation.columns.hasOwnProperty(text)
-      ) {
-        const column_schema = this.tableJSON.validation.columns[text];
-        return column_schema.description;
-      }
-      return null;
-    },
-    headerTooltip(e, column, onRendered) {
-      try {
-        const fieldName = column?.getDefinition()?.field;
-        const desc = columnSchemaToDesc(fieldName, this.tableJSON?.validation, this.columnValidators)
-
-        if (!desc) return null;
-        return desc;
-      } catch (error) {
-        console.log(error);
-        console.log(error.stack);
-      }
-    },
     groupHeader(value, count, data, group) {
       const field = group._group.field
       let header = value
@@ -676,7 +583,7 @@ export default {
         header = `<small style="color: red;" text="${value}">${value} (not matched)</small>`;
       }
 
-      if (count > 1) header = header + `<span style='font-weight:normal; color:black; margin-left:10px;'>(${count})</span>`;
+      if (count > 1) header = header + `<small style='font-weight:normal; color:black; margin-left:10px;'>(${count})</small>`;
       return header;
     },
   },
@@ -686,7 +593,7 @@ export default {
 
     try {
       const layout = this.columnsConfig.length <= 2 ? "fitDataStretch" : "fitDataTable";
-      
+      Tabulator.extendModule("keybindings", "bindings");
       this.table = new Tabulator(this.$refs.table, {
         data: this.tableJSON.data,
         layout: layout,
@@ -707,23 +614,23 @@ export default {
           //   rowRange: "active"
           // },
         } : false,
+        rowContextMenu: this.rowContextMenu,
 
+        columns: this.columnsConfig,
+        index: this.indexColumns + this.refColumns,
+        ...this.groupConfigs,
+        movableColumns: this.editable,
+        resizableColumnGuide: true,
         columnDefaults: {
           editor: "input",
           headerSort: false,
           resizable: 'header',
-          tooltip: this.cellTooltip.bind(this),
-          headerTooltip: this.headerTooltip.bind(this),
+          tooltip: cellTooltip,
+          headerTooltip: (...args) => headerTooltip(...args, this.tableJSON.validation, this.columnValidators),
           headerWordWrap: true,
           headerContextMenu: this.columnContextMenu,
           editorEmptyValue: "NA",
-          // maxWidth: 200,
         },
-        columns: this.columnsConfig,
-        index: this.indexColumns + this.refColumns,
-        ...this.groupConfigs,
-        // selectable: 1,
-        // selectablePersistence: true,
 
         //enable range selection
         selectableRange: 1,
@@ -746,25 +653,19 @@ export default {
         clipboardPasteAction: "range",
 
         validationMode: "highlight",
-        movableColumns: this.editable,
-        rowContextMenu: this.rowContextMenu,
         history: true,
       });
 
-      // this.table.on("rowClick", this.clickRow.bind(this));
+      if (this.editable) {
+        this.table.on("columnTitleChanged", this.columnTitleChanged.bind(this));
+        this.table.on("columnMoved", this.columnMoved.bind(this));
+      }
 
-      // if (this.editable) {
-      //   this.table.on("columnTitleChanged", this.columnTitleChanged.bind(this));
-      //   this.table.on("columnMoved", this.columnMoved.bind(this));
-      // }
-
-      // this.table.on("tableBuilt", () => {
-      //   this.isLoaded = true;
-      //   this.table.setColumns(this.columnsConfig);
-      //   this.validateTable();
-
-      //   // this.$nuxt.$on("on-table-highlight-row", this.selectRow.bind(this));
-      // }); 
+      this.table.on("tableBuilt", () => {
+        this.isLoaded = true;
+        this.table.setColumns(this.columnsConfig);
+        this.validateTable();
+      }); 
 
     } catch (error) {
       const message = `Failed to load table: ${error}`;
@@ -778,10 +679,6 @@ export default {
       });
       console.error("Failed to mount table:", error);
     }
-  },
-
-  beforeDestroy() {
-    this.$nuxt.$off("on-table-highlight-row");
   },
 };
 </script>
@@ -825,8 +722,8 @@ export default {
   display: grid;
   grid-auto-flow: column;
   justify-content: start;
-  padding-top: 2px;
-  padding-bottom: 2px;
+  // padding-top: 3px;
+  // padding-bottom: 3px;
   // border: none;
   background-color: transparent;
 
@@ -898,3 +795,4 @@ export default {
 }
 
 </style>
+./dataUtils

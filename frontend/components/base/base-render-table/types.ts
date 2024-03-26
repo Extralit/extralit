@@ -48,5 +48,5 @@ export type SchemaIndexColumns = {
 };
 
 
-export type Validator = string | CallableFunction | { type: (cell: any, value: string, parameters: any) => boolean; parameters?: any };
-export type ColumnValidators = Record<string, Validator[]>;
+export type ValidationSpec = string | CallableFunction | { type: (cell: any, value: string, parameters: any) => boolean; parameters?: any };
+export type ValidationSpecs = Record<string, ValidationSpec[]>;

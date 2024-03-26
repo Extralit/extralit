@@ -1,4 +1,4 @@
-import { DataFrame, SchemaColumns, Check, Validator, ColumnValidators } from "./types";
+import { DataFrame, SchemaColumns, Check, ValidationSpec, ValidationSpecs } from "./types";
 
 var integer = (cell: any, value: string, parameters: { nullable: boolean }): boolean => 
 	(parameters.nullable && value == "NA") || /^-?\d+$/.test(value);
@@ -55,17 +55,17 @@ var between = (cell: any, value: any, parameters: { lower: string, upper: string
  * @param tableJSON - The table JSON containing the validation information.
  * @returns An object containing the column validators.
  */
-export function getColumnValidators(tableJSON: DataFrame): ColumnValidators {
+export function getColumnValidators(tableJSON: DataFrame): ValidationSpecs {
 	const schemaColumns = tableJSON.validation?.columns; // Pandera yaml schema
 	const indexColumns: SchemaColumns = tableJSON.validation?.index
     .reduce((acc, curr) => ({ ...acc, [curr.name]: curr }), {}) || {};
 	if (schemaColumns == null) return {};
 	const tableColumns = tableJSON.schema.fields.map((col) => col.name);
 	
-	const columnValidators: ColumnValidators = {};
+	const columnValidators: ValidationSpecs = {};
 	for (const [columnName, columnSchema] of Object.entries({...schemaColumns, ...indexColumns})) {
 		if (!tableColumns.includes(columnName)) continue;
-		const validators: Validator[] = [];
+		const validators: ValidationSpec[] = [];
 
 		if (columnSchema.required) {
 			validators.push("required");
@@ -103,7 +103,7 @@ export function getColumnValidators(tableJSON: DataFrame): ColumnValidators {
 }
 
 
-function addDataFrameChecks(checks: Record<string, Check>, columnValidators: ColumnValidators) {
+function addDataFrameChecks(checks: Record<string, Check>, columnValidators: ValidationSpecs) {
   if (checks?.check_less_than && Object.values(checks.check_less_than).every(Array.isArray)) {
     checks.check_less_than.columns_a.forEach((columnName, index) => {
 			if (!columnValidators[columnName]) {
