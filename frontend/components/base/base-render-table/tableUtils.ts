@@ -1,5 +1,5 @@
 import { DataFrame, Validation, ValidationSpec, ValidationSpecs } from './types';
-import { CellComponent } from "tabulator-tables";
+import { CellComponent, GroupComponent } from "tabulator-tables";
 
 type RecordDataFrames = Record<string, DataFrame>;
 export type RecordDataFramesArray = RecordDataFrames[];
@@ -33,7 +33,25 @@ export function cellTooltip(e, cell: CellComponent, onRendered) {
 }
 
 
+export function groupHeader(value, count, data, group: GroupComponent, referenceValues: Record<string, Record<string, Record<string, any>>>, refColumns: string[]) {
+  const field = group._group.field
+  let header = value
+  if (referenceValues?.[field]?.hasOwnProperty(value)) {
+    const keyValues = Object.entries(referenceValues[field][value])
+      .filter(([key, value]) => key !== "reference" && !refColumns?.includes(key) && value !== 'NA' && value)
+      .map(([key, value]) => `<span style="font-weight:normal; color:black; margin-left:0;">${key}:</span> ${value}`)
+      .join(', ');
 
+    if (keyValues.length > 0) {
+      header = `<small text="${value}">${keyValues}</small>`;
+    }
+  } else {
+    header = `<small style="color: red;" text="${value}">${value} (not matched)</small>`;
+  }
+
+  if (count > 1) header = header + `<small style='font-weight:normal; color:black; margin-left:10px;'>(${count})</small>`;
+  return header;
+}
 
 export function headerTooltip(e, column: CellComponent, onRendered, validation: Validation, columnValidators: ValidationSpecs) {
   try {

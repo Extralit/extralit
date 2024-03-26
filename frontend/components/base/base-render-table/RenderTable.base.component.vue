@@ -65,6 +65,7 @@ import {
   columnSchemaToDesc, 
   cellTooltip,
   headerTooltip,
+  groupHeader,
 } from "./tableUtils"; 
 
 export default {
@@ -156,7 +157,7 @@ export default {
       return {
         groupBy: this.groupbyColumns,
         groupToggleElement: "arrow",
-        groupHeader: this.groupHeader,
+        groupHeader: (...args) => groupHeader(...args, this.referenceValues, this.refColumns),
         groupUpdateOnCellEdit: true,
         groupContextMenu: [
           {
@@ -566,26 +567,6 @@ export default {
       this.updateTableJsonData(false, false, true, newFieldName, oldFieldName);
       // this.table.setColumns(this.columnsConfig);
     },
-
-    groupHeader(value, count, data, group) {
-      const field = group._group.field
-      let header = value
-      if (this.referenceValues?.[field]?.hasOwnProperty(value)) {
-        const keyValues = Object.entries(this.referenceValues[field][value])
-          .filter(([key, value]) => key !== "reference" && !this.refColumns?.includes(key) && value !== 'NA' && value)
-          .map(([key, value]) => `<span style="font-weight:normal; color:black; margin-left:0;">${key}:</span> ${value}`)
-          .join(', ');
-
-        if (keyValues.length > 0) {
-          header = `<small text="${value}">${keyValues}</small>`;
-        }
-      } else {
-        header = `<small style="color: red;" text="${value}">${value} (not matched)</small>`;
-      }
-
-      if (count > 1) header = header + `<small style='font-weight:normal; color:black; margin-left:10px;'>(${count})</small>`;
-      return header;
-    },
   },
 
   mounted() {
@@ -598,22 +579,19 @@ export default {
         data: this.tableJSON.data,
         layout: layout,
         minHeight: "200px",
-        maxHeight: "50vh",
+        maxHeight: "100%",
         // renderHorizontal: "virtual",
         // persistence: { columns: true },
         // layoutColumnsOnNewData: true,
         // reactiveData: true,
 
         // selectableRows: true,
-        movableRows: this.editable,
-        rowHeader: this.editable? { 
+        movableRows: true,
+        rowHeader: { 
           headerSort: false, resizable: false, rowHandle: true, editor: false,
           minWidth: 30, width: 30, headerHozAlign: "center", hozAlign: "center", 
           formatter: "handle",
-          // formatter: "rowSelection", titleFormatter: "rowSelection", titleFormatterParams: {
-          //   rowRange: "active"
-          // },
-        } : false,
+        },
         rowContextMenu: this.rowContextMenu,
 
         columns: this.columnsConfig,
@@ -691,7 +669,7 @@ export default {
   max-width: 100%;
   // overflow-x: auto;
   // background: inherit;
-
+  
   .--table-buttons {
     display: flex;
     justify-content: space-between;
@@ -712,6 +690,10 @@ export default {
   .--table {
     overflow: auto;
     white-space: normal;
+    resize: vertical;
+    overflow: auto;
+    position: relative;
+    height: 50vh;
   }
 }
 // .tabulator .tabulator-header .tabulator-col .tabulator-col-content .tabulator-col-title {

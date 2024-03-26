@@ -16,7 +16,7 @@ export function columnUniqueCounts(tableJSON: DataFrame): Record<string, number>
   return uniqueCounts;
 }
 
-export function findMatchingRefValues(refColumns: string[], records: RecordDataFramesArray): Record<string, Record<string, any>> {
+export function findMatchingRefValues(refColumns: string[], records: RecordDataFramesArray): Record<string, Record<string, Record<string, any>>> {
   // refValues is an object of the form {field: refValue}
   // records is an array of objects of the form {table_name: {data: [{reference: refValue, ...}, ...]}}
   // returns an object of the form {field: {refValue: {column: value, ...}, ...}, ...}
