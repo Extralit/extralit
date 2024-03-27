@@ -35,6 +35,7 @@ class ResponseStatusFilter(str, Enum):
 class SuggestionType(str, Enum):
     model = "model"
     human = "human"
+    selection = "selection"
 
 
 class DatasetStatus(str, Enum):
