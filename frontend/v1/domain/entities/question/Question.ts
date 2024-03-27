@@ -167,7 +167,7 @@ export class Question {
 
     if (
       ["dynamic_multi_label_selection", "dynamic_label_selection"].includes(this.type) &&
-      suggestion.agent === "selection" &&
+      suggestion.type === "selection" &&
       Array.isArray(suggestion?.suggestedAnswer) &&
       suggestion.suggestedAnswer?.length > 0
     ) {
