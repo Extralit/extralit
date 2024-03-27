@@ -578,7 +578,8 @@ export default {
       this.table = new Tabulator(this.$refs.table, {
         data: this.tableJSON.data,
         layout: layout,
-        maxHeight: "100%",
+        minHeight: "200px",
+        height: this.tableJSON?.data?.length >= 15 ? "50vh": 'auto',
         // renderHorizontal: "virtual",
         // persistence: { columns: true },
         // layoutColumnsOnNewData: true,
@@ -668,14 +669,14 @@ export default {
   max-width: 100%;
   // overflow-x: auto;
   // background: inherit;
-  resize: vertical;
-  overflow: auto;
-  position: relative;
-  height: 50vh;
 
   .--table {
     overflow: auto;
     white-space: normal;
+    resize: vertical;
+    overflow: auto;
+    position: relative;
+    height: auto;
   }
   
   .--table-buttons {

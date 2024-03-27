@@ -12,6 +12,7 @@ interface BackendSuggestion {
   value: BackendAnswerCombinations;
   score: number;
   agent: string;
+  type: string;
 }
 export type BackendRecordStatus = "submitted" | "discarded" | "draft";
 

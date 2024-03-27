@@ -53,9 +53,9 @@ export default {
       return !!this.question.description?.length;
     },
     suggestionTooltipText() {
-      return `This question contains a suggestion \n agent: ${
-        this.question.suggestion.agent || "-"
-      } \n score: ${this.question.suggestion.score || "-"}`;
+      return `This question contains a suggestion 
+      \n agent: ${this.question.suggestion.agent || "-"} 
+      \n score: ${this.question.suggestion.score || "-"}`;
     },
   },
   watch: {

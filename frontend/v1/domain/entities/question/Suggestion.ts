@@ -6,7 +6,8 @@ export class Suggestion implements Answer {
     public readonly questionId: string,
     public readonly suggestedAnswer: AnswerCombinations,
     public readonly score: number,
-    public readonly agent: string
+    public readonly agent: string,
+    public readonly type: string,
   ) {}
 
   get value() {

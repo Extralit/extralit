@@ -133,7 +133,8 @@ export class LoadRecordsToAnnotateUseCase {
             suggestion.question_id,
             suggestion.value,
             suggestion.score,
-            suggestion.agent
+            suggestion.agent,
+            suggestion.type,
           );
         });
 

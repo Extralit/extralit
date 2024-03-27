@@ -60,7 +60,7 @@ export default {
       const { status } = this.recordCriteria.committed;
 
       if (this.recordCriteria.isFilteredByText)
-        return `You have no ${status} records matching the search input`;
+        return `You have no ${status} records matching the search input and filters`;
 
       return `You have no ${status} records`;
     },
