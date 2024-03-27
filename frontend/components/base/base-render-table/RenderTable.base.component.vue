@@ -617,7 +617,7 @@ export default {
         selectableRangeClearCells: true,
 
         //change edit trigger mode to make cell navigation smoother
-        editTriggerEvent: "dblclick",
+        editTriggerEvent: this.editable ? "dblclick" : false,
 
         //configure clipboard to allow copy and paste of range format data
         clipboard: true,
@@ -683,7 +683,7 @@ export default {
     display: flex;
     justify-content: space-between;
     padding: 5px 5px 10px 0;
-    color: white;
+    // color: white;
     border-radius: 5px;
     text-decoration: none;
 

@@ -63,6 +63,10 @@ export class Question {
     return this.answer.hasValidValues;
   }
 
+  public get hasSuggestion(): boolean {
+    return !!this.suggestion;
+  }
+
   public get type(): QuestionType {
     return this.settings.type.toLowerCase();
   }
@@ -165,20 +169,25 @@ export class Question {
   addSuggestion(suggestion: Suggestion) {
     if (!suggestion) return;
 
-    if (
-      ["dynamic_multi_label_selection", "dynamic_label_selection"].includes(this.type) &&
-      suggestion.type === "selection" &&
-      Array.isArray(suggestion?.suggestedAnswer) &&
-      suggestion.suggestedAnswer?.length > 0
-    ) {
+    if (["dynamic_multi_label_selection", "dynamic_label_selection"].includes(this.type)) {
+      this.addDynamicSelectionToLabelQuestion(suggestion)
+    } else {
+      this.suggestion = suggestion;
+    }
+  }
+
+  addDynamicSelectionToLabelQuestion(suggestion: Suggestion) {
+    if (suggestion.type === "selection" && Array.isArray(suggestion?.suggestedAnswer) && suggestion.suggestedAnswer?.length > 0) {
       const suggestedOptions: string[] = suggestion.suggestedAnswer.map((answer) => answer.toString());
       
       let selections = [];
       if (this.settings.options.some((option: any) => suggestedOptions.includes(option.value))) {
+        // Subset of options
         selections = this.settings.options.filter(option => 
           suggestedOptions.some((value: string) => value === option.value)
         );
       } else {
+        // Add new options
         selections = [
           ...this.settings.options,
           ...suggestedOptions
@@ -205,8 +214,6 @@ export class Question {
           selections
         );
       }
-    } else {
-      this.suggestion = suggestion;
     }
   }
 

@@ -79,7 +79,7 @@ export default {
     }
   }
   &__content {
-    padding: $base-space * 2;
+    padding: $base-space;
     border-top-right-radius: $border-radius;
     border-bottom-left-radius: $border-radius;
     border-bottom-right-radius: $border-radius;

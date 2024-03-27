@@ -1,8 +1,16 @@
 <template>
   <div class="container">
+    <BaseActionTooltip tooltip="Copied" class="button-copy">
+      <BaseButton
+        @on-click="$copyToClipboard(question.suggestion?.suggestedAnswer)"
+      >
+        <svgicon name="copy" width="16" height="16" />
+      </BaseButton>
+    </BaseActionTooltip>
     <RenderTableBaseComponent
       v-if="question.settings.use_table && isValidTableJSON"
       class="textarea"
+      :editable="true"
       :tableData="question.suggestion?.suggestedAnswer"
     />
     <RenderHTMLBaseComponent
@@ -15,13 +23,6 @@
       class="textarea--markdown"
       :markdown="question.suggestion?.suggestedAnswer"
     />
-    <BaseActionTooltip tooltip="Copied" class="button-copy">
-      <BaseButton
-        @on-click="$copyToClipboard(question.suggestion?.suggestedAnswer)"
-      >
-        <svgicon name="copy" width="16" height="16" />
-      </BaseButton>
-    </BaseActionTooltip>
   </div>
 </template>
 
@@ -39,12 +40,12 @@ export default {
   },
   computed: {
     isValidHTML() {
-      const value = this.question.answer?.suggestedAnswer?.trimStart();
+      const value = this.question.suggestion?.suggestedAnswer?.trimStart();
 
       return value?.startsWith("<") && !value?.startsWith("<img") && !value?.startsWith("<iframe");
     },
     isValidTableJSON() {
-      return isTableJSON(this.question.answer?.suggestedAnswer);
+      return isTableJSON(this.question.suggestion?.suggestedAnswer);
     },
   },
 };
@@ -69,7 +70,7 @@ export default {
   display: none;
   position: absolute;
   right: $base-space * 2;
-  bottom: $base-space * 2;
+  top: $base-space * 2;
   .button {
     padding: 0;
   }
