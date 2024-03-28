@@ -142,6 +142,10 @@ class SuggestionSchema(BaseModel):
             payload["agent"] = self.agent
         return payload
 
+    def __repr__(self):
+        value_repr = str(self.value)[:10] + '...' if len(str(self.value)) > 10 else str(self.value)
+        return f"SuggestionSchema(question_name={self.question_name}, type={self.type}, agent={self.agent}, score={self.score}, value={value_repr})"
+    
 
 class FeedbackRecord(BaseModel):
     """Schema for the records of a `FeedbackDataset`.
@@ -214,7 +218,7 @@ class FeedbackRecord(BaseModel):
             elif name in ["responses"] and value is not None:
                 repr_args[i] = (name, {v.user_id: list(v.values.keys()) for v in value})
             elif name in ["suggestions"] and value is not None:
-                repr_args[i] = (name, [v.dict().keys() for v in value])
+                repr_args[i] = (name, [v.question_name for v in value])
 
         return repr_args
     

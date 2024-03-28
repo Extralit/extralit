@@ -471,7 +471,7 @@ export default {
     toggleShowRefColumns() {
       this.showRefColumns = !this.showRefColumns;
       // this.table.setGroupBy(this.showRefColumns ? this.groupbyColumns : null);
-      this.table.setColumns(this.columnsConfig);
+      this.table?.setColumns(this.columnsConfig);
     },
     columnMoved(column, columns) {
       this.tableJSON.schema.fields.sort((a, b) => {
@@ -565,7 +565,7 @@ export default {
       }
 
       this.updateTableJsonData(false, false, true, newFieldName, oldFieldName);
-      // this.table.setColumns(this.columnsConfig);
+      // this.table?.setColumns(this.columnsConfig);
     },
   },
 
@@ -578,8 +578,8 @@ export default {
       this.table = new Tabulator(this.$refs.table, {
         data: this.tableJSON.data,
         layout: layout,
-        minHeight: "200px",
-        height: this.tableJSON?.data?.length >= 15 ? "50vh": 'auto',
+        // minHeight: "50px",
+        height: this.tableJSON.data.length >= 15 ? "50vh": 'auto',
         // renderHorizontal: "virtual",
         // persistence: { columns: true },
         // layoutColumnsOnNewData: true,
@@ -597,7 +597,7 @@ export default {
         columns: this.columnsConfig,
         index: this.indexColumns + this.refColumns,
         ...this.groupConfigs,
-        movableColumns: this.editable,
+        movableColumns: true,
         resizableColumnGuide: true,
         columnDefaults: {
           editor: "input",
@@ -615,8 +615,6 @@ export default {
         selectableRangeColumns: true,
         selectableRangeRows: true,
         selectableRangeClearCells: true,
-
-        //change edit trigger mode to make cell navigation smoother
         editTriggerEvent: this.editable ? "dblclick" : false,
 
         //configure clipboard to allow copy and paste of range format data
@@ -627,11 +625,11 @@ export default {
           columnHeaders: false,
         },
         clipboardCopyRowRange: "range",
-        clipboardPasteParser: "range",
-        clipboardPasteAction: "range",
+        clipboardPasteParser: this.editable ? "range" : null,
+        clipboardPasteAction: this.editable ? "range" : null,
 
         validationMode: "highlight",
-        history: true,
+        history: this.editable,
       });
 
       if (this.editable) {
@@ -641,7 +639,7 @@ export default {
 
       this.table.on("tableBuilt", () => {
         this.isLoaded = true;
-        this.table.setColumns(this.columnsConfig);
+        this.table?.setColumns(this.columnsConfig);
         this.validateTable();
       }); 
 
@@ -667,8 +665,7 @@ export default {
   flex-flow: column;
   position: relative;
   max-width: 100%;
-  // overflow-x: auto;
-  // background: inherit;
+  margin-bottom: 0;
 
   .--table {
     overflow: auto;
@@ -682,8 +679,8 @@ export default {
   .--table-buttons {
     display: flex;
     justify-content: space-between;
-    padding: 5px 5px 10px 0;
-    // color: white;
+    padding: 5px 5px 0 0;
+    margin-bottom: 0;
     border-radius: 5px;
     text-decoration: none;
 

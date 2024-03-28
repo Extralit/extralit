@@ -29,6 +29,7 @@
             v-model="login.username"
             type="text"
             placeholder="Enter your username"
+            autocomplete="username"
           />
         </div>
         <div class="form__input" :class="{ active: login.password }">
@@ -37,6 +38,7 @@
             v-model="login.password"
             type="password"
             placeholder="Enter your password"
+            autocomplete="current-password"
           />
         </div>
         <p v-if="deployment === 'quickstart'">

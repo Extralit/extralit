@@ -1,12 +1,12 @@
 <template>
   <div v-if="$auth.loggedIn" v-click-outside="close" class="user">
     <a class="user__button" @click.prevent="showSelector">
-      {{ firstChar(user.username) }}
+      {{ firstChar(user.first_name, user.last_name) }}
     </a>
     <div v-if="visibleSelector && user" class="user__content">
       <div class="head">
         <div class="left-head">
-          <span v-circle v-text="firstChar(user.username)" />
+          <span v-circle v-text="firstChar(user.first_name, user.last_name)" />
         </div>
         <div class="right-head">
           <div class="item">
@@ -30,7 +30,7 @@
         <a class="user__link" @click.prevent="logout" v-text="'Log out'" />
       </div>
       <span class="copyright"
-        >© {{ currentYear }} Argilla ({{ $config.clientVersion }})</span
+        >© {{ currentYear }} Extralit ({{ $config.clientVersion }})</span
       >
     </div>
   </div>
@@ -59,8 +59,12 @@ export default {
     },
   },
   methods: {
-    firstChar(name) {
-      return name.slice(0, 2);
+    firstChar(firstname, lastname) {
+      if (lastname) {
+        return firstname.charAt(0) + lastname.charAt(0);
+      } else {
+        return firstname.slice(0, 2);
+      }
     },
     showSelector() {
       this.visibleSelector = !this.visibleSelector;
