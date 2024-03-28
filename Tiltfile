@@ -42,7 +42,7 @@ docker_build(
     build_args={'ENV': ENV, 'USERS_DB': USERS_DB},
     dockerfile='./docker/api.dockerfile',
     only=['./src', './dist', './docker/scripts', './setup.py', './pyproject.toml', './requirements.txt', './scripts/'],
-    ignore=['**/__pycache__'],
+    ignore=['**/__pycache__', 'src/argilla.egg-info', 'frontend/.nuxt', 'frontend/node_modules', 'frontend/package-lock.json'],
     live_update=[
         # Sync the source code to the container
         sync('./src/', '/home/argilla/src/'),
@@ -66,10 +66,10 @@ k8s_yaml([
 k8s_resource(
   'argilla-server-deployment',
   resource_deps=['main-db', 'elasticsearch'],
-  port_forwards=['6900'],
+  port_forwards=['6901' if 'kind' in k8s_context() else '6900'],
   labels=['argilla-server'],
 )
-
+k8s_yaml(['./k8s/argilla-loadbalancer-service.yaml'])
 
 # PostgreSQL is the database for argilla-server
 helm_resource(
@@ -79,17 +79,6 @@ helm_resource(
         '--version=13.2.0',
         '--values=./k8s/helm/postgres-helm.yaml'],
     deps=['./k8s/helm/postgres-helm.yaml'],
-    port_forwards=['5432'],
+    port_forwards=['5433' if 'kind' in k8s_context() else '5432'],
     labels=['argilla-server']
 )
-
-# If using prod K8s context, deploy argilla-frontend service and ingress
-if 'kind' not in k8s_context():
-    k8s_yaml(['./k8s/argilla-frontend-service.yaml', './k8s/argilla-frontend-ingress.yaml'])
-
-# k8s_yaml('./k8s/grobid-deployment.yaml')
-# k8s_resource(
-#   'grobid-deployment',
-#   port_forwards=['8070', '8081'],
-#   labels=['grobid'],
-# )

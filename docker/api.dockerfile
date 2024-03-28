@@ -7,11 +7,11 @@ COPY dist/*.whl /packages/
 ARG ENV=dev
 ARG USERS_DB=/config/users.yaml
 ENV ENV=$ENV
+ENV ARGILLA_LOCAL_AUTH_USERS_DB_FILE=$USERS_DB
 ENV ARGILLA_HOME_PATH=/var/lib/argilla
 ENV DEFAULT_USER_ENABLED=true
 ENV DEFAULT_USER_PASSWORD=1234
 ENV DEFAULT_USER_API_KEY=argilla.apikey
-ENV USERS_DB=$ENV
 ENV UVICORN_PORT=6900
 
 # Create a user and a volume for argilla
