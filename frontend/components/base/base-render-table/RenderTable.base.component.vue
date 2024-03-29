@@ -666,6 +666,7 @@ export default {
   position: relative;
   max-width: 100%;
   margin-bottom: 0;
+  height: 100%;
 
   .--table {
     overflow: auto;
