@@ -3,17 +3,34 @@
     <div class="record__content">
       <slot></slot>
       <div
-        v-for="{ id, title, content, isTextType, settings } in fields"
-        :key="id"
+        v-for="group in fieldsWithTabs"
       >
         <TextFieldComponent
-          v-if="isTextType"
-          :title="title"
-          :fieldText="content"
-          :useMarkdown="settings.use_markdown"
-          :useTable="settings.use_table"
+          v-if="group.length == 1"
+          :title="group[0].title"
+          :fieldText="group[0].content"
+          :useMarkdown="group[0].settings.use_markdown"
+          :useTable="group[0].settings.use_table"
           :stringToHighlight="searchValue"
         />
+        
+        <BaseCardWithTabs 
+          v-else-if="group.length > 1" 
+          :tabs="group.map(field => ({ id: field.name, name: field.title, component: 'TextFieldComponent' }))"
+        >
+          <template v-slot="{ currentComponent, currentTabId }">
+            <component
+              :is="currentComponent"
+              :key="currentTabId"
+              :title="group.find(field => field.name === currentTabId).title"
+              :fieldText="group.find(field => field.name === currentTabId).content"
+              :useMarkdown="group.find(field => field.name === currentTabId).settings.use_markdown"
+              :useTable="group.find(field => field.name === currentTabId).settings.use_table"
+              :stringToHighlight="searchValue"
+            />
+          </template>
+        </BaseCardWithTabs>
+        
       </div>
     </div>
   </div>
@@ -29,6 +46,18 @@ export default {
   computed: {
     searchValue() {
       return this.$route.query?._search ?? "";
+    },
+    fieldsWithTabs() {
+      const fieldGroups = this.fields.reduce((groups, field) => {
+        const prefix = field.name.split('-')[0];
+        if (!groups[prefix]) {
+          groups[prefix] = [];
+        }
+        groups[prefix].push(field);
+        return groups;
+      }, {});
+
+      return Object.values(fieldGroups);
     },
   },
 };

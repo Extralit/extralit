@@ -7,13 +7,15 @@
         v-for="tab in tabs"
         :key="tab.id"
       >
-        <base-button class="small" @on-click="changeTab(tab)">{{
-          tab.name
-        }}</base-button>
+        <base-button class="medium" @on-click="changeTab(tab)">
+          {{ tab.name }}
+        </base-button>
       </li>
     </ul>
     <div class="card-with-tabs__content">
-      <slot :current-component="currentComponent" />
+      <keep-alive>
+        <slot :current-component="currentComponent" :currentTabId="currentTab.id" />
+      </keep-alive>
     </div>
   </div>
 </template>
@@ -85,6 +87,7 @@ export default {
     border-bottom-right-radius: $border-radius;
     background: palette(white);
     border: 1px solid palette(grey, 600);
+    overflow: auto;
   }
 }
 </style>
