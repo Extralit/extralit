@@ -2,7 +2,7 @@
   <div class="wrapper">
     <QuestionHeaderComponent :question="question" />
     <TextAreaContents v-if="!question.suggestion" :question="question" :is-focused="isFocused" />
-    <BaseCardWithTabs v-else :tabs="tabs">
+    <BaseCardWithTabs v-else :tabs="tabs" tabSize="small">
       <template v-slot="{ currentComponent }">
         <component :question="question" :is-focused="isFocused" :is="currentComponent" :key="currentComponent" />
       </template>
