@@ -2,9 +2,7 @@
   <div class="record">
     <div class="record__content">
       <slot></slot>
-      <div
-        v-for="group in fieldsWithTabs"
-      >
+      <div v-for="group in fieldsWithTabs">
         <TextFieldComponent
           v-if="group.length == 1"
           :title="group[0].title"
@@ -16,7 +14,7 @@
         
         <BaseCardWithTabs 
           v-else-if="group.length > 1" 
-          :tabs="group.map(field => ({ id: field.name, name: field.title, component: 'TextFieldComponent' }))"
+          :tabs="group.map(field => ({ id: field.name, name: field.title, class: '--field', component: 'TextFieldComponent' }))"
         >
           <template v-slot="{ currentComponent, currentTabId }">
             <component
@@ -77,6 +75,14 @@ export default {
     gap: $base-space * 2;
     padding: $base-space * 2;
     border-radius: $border-radius-m;
+  }
+}
+.card-with-tabs {
+  :deep(.card-with-tabs__tab.--field) {
+    .button {
+      font-weight: bold;
+      color: palette(grey, 300);
+    }
   }
 }
 </style>

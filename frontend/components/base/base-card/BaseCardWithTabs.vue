@@ -7,7 +7,7 @@
         v-for="tab in tabs"
         :key="tab.id"
       >
-        <base-button class="medium" @on-click="changeTab(tab)">
+        <base-button :class="tabSize" @on-click="changeTab(tab)">
           {{ tab.name }}
         </base-button>
       </li>
@@ -27,6 +27,10 @@ export default {
     tabs: {
       type: Array,
       required: true,
+    },
+    tabSize: {
+      type: String,
+      default: "medium",
     },
   },
   data() {

@@ -34,6 +34,10 @@ module.exports = {
     "prefer-const": "error",
     "prefer-arrow-callback": "error",
     "no-unused-vars": ["error", { ignoreRestSiblings: true }],
+    "vue/attributes-order": ["error", {
+      "order": ["DEFINITION", "LIST_RENDERING", "CONDITIONALS", "RENDER_MODIFIERS", "GLOBAL", "UNIQUE", "TWO_WAY_BINDING", "OTHER_DIRECTIVES", "OTHER_ATTR", "EVENTS", "CONTENT"],
+      "alphabetical": false
+    }],
   },
   globals: {
     $nuxt: true,
