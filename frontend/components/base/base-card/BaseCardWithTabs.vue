@@ -91,7 +91,6 @@ export default {
     border-bottom-right-radius: $border-radius;
     background: palette(white);
     border: 1px solid palette(grey, 600);
-    overflow: auto;
   }
 }
 </style>
