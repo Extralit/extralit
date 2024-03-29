@@ -95,8 +95,12 @@ export default {
   }
   &__title-content {
     word-break: break-word;
+    padding: 10px;
+    border-bottom: 1px solid #333;
+    font-size: 16px;
     font-weight: 600;
     width: calc(100% - 30px);
+    user-select: none;
   }
   &__tooltip {
     display: flex;
