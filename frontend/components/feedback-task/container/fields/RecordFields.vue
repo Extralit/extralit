@@ -20,10 +20,10 @@
             <component
               :is="currentComponent"
               :key="currentTabId"
-              :title="group.find(field => field.name === currentTabId).title"
-              :fieldText="group.find(field => field.name === currentTabId).content"
-              :useMarkdown="group.find(field => field.name === currentTabId).settings.use_markdown"
-              :useTable="group.find(field => field.name === currentTabId).settings.use_table"
+              :title="group.find(field => field.name === currentTabId)?.title"
+              :fieldText="group.find(field => field.name === currentTabId)?.content"
+              :useMarkdown="group.find(field => field.name === currentTabId)?.settings.use_markdown"
+              :useTable="group.find(field => field.name === currentTabId)?.settings.use_table"
               :stringToHighlight="searchValue"
             />
           </template>

@@ -12,7 +12,7 @@
           class="text_field_component__copy-button"
           @click.prevent="$copyToClipboard(fieldText)"
         >
-          <svgicon color="#acacac" name="copy" width="18" height="18" />
+          <svgicon color="#acacac" name="copy" width="20" height="20" />
         </BaseButton>
       </BaseActionTooltip>
     </div>
@@ -95,12 +95,11 @@ export default {
   }
   &__title-content {
     word-break: break-word;
-    padding: 10px;
+    padding-bottom: 10px;
     border-bottom: 1px solid #333;
     font-size: 16px;
     font-weight: 600;
     width: calc(100% - 30px);
-    user-select: none;
   }
   &__tooltip {
     display: flex;

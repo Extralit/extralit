@@ -1,8 +1,7 @@
 import { computed, ComputedRef } from "vue-demi";
 
 const replaceHtmlChars = (text: string): string => {
-  return text
-    .toString()
+  return text?.toString()
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
@@ -46,7 +45,7 @@ export const useTextFieldViewModel = (props: {
     };
 
     const replaceText = () => {
-      return sentence.replace(createFindWordsRegex(), (matched) =>
+      return sentence?.replace(createFindWordsRegex(), (matched) =>
         matched ? htmlHighlightText(matched) : matched
       );
     };
