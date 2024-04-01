@@ -13,7 +13,9 @@
     </ul>
     <div class="card-with-tabs__content" >
       <keep-alive>
-        <slot :current-component="currentComponent" :currentTabId="currentTab.id" />
+        <transition name="fade">
+          <slot :current-component="currentComponent" :currentTabId="currentTab.id" />
+        </transition>
       </keep-alive>
     </div>
   </div>
@@ -90,8 +92,14 @@ export default {
     border-bottom-right-radius: $border-radius;
     background: palette(white);
     border: 1px solid palette(grey, 600);
-    min-height: 50px;
-    overflow: auto;
   }
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.1s ease;
+}
+
+.fade-enter, .fade-leave-to {
+  opacity: 0;
 }
 </style>
