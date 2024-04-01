@@ -1,0 +1,14 @@
+secrets:
+  name: extralit-minio-configuration
+  accessKey: minio
+  secretKey: minio123
+  mode: standalone
+
+operator:
+  replicaCount: 1
+
+console:
+  enabled: true
+  ingress:
+    enabled: true
+

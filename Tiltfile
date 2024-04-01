@@ -82,3 +82,19 @@ helm_resource(
     port_forwards=['5433' if 'kind' in k8s_context() else '5432'],
     labels=['argilla-server']
 )
+
+
+# Add the MinIO Helm repository
+helm_repo('minio-operator', 'https://operator.min.io/', labels=['minio'])
+# Deploy the MinIO operator
+k8s_yaml('./k8s/minio-tenant.yaml')
+helm_resource(
+    name='extralit-minio', 
+    chart='minio-operator/minio-operator', 
+    flags=[
+        '--version=4.3.7',
+        '--values=./k8s/helm/minio-operator-helm.yaml'],
+    deps=['./k8s/helm/minio-operator-helm.yaml'],
+    port_forwards=['9090', '9443'],
+    labels=['minio']
+)

@@ -1,0 +1,19 @@
+apiVersion: minio.min.io/v2
+kind: Tenant
+metadata:
+  name: extralit-minio-tenant
+spec:
+  image: quay.io/minio/minio:RELEASE.2024-03-15T01-07-19Z
+  credsSecret:
+    name: extralit-minio-configuration
+  pools:
+    - servers: 1
+      volumesPerServer: 1
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 10Gi
+          storageClassName: k8s-storage-policy
