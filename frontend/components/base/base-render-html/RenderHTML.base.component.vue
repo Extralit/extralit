@@ -295,6 +295,11 @@ export default {
 			this.setFocus(false);
 		},
 	},
+	errorCaptured(err, component, info) {
+    this.error = err;
+    console.error(`Error caught from ${component}: ${err}`);
+    return false; // stops the error from propagating further
+  },
 }
 </script>
 
@@ -475,6 +480,10 @@ input[type="checkbox"] {
     }
 
     th {
+			position: sticky;
+    	top: 0;
+    	z-index: 1;
+
       font-weight: bold;
       text-align: left;
       background-color: #f1f3f5;

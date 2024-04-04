@@ -112,7 +112,7 @@ export default {
         }
       },
       set(json) {
-        this.$nuxt.$emit("on-update-response-tabledata", JSON.stringify(json));
+        this.$emit("onUpdateAnswer", JSON.stringify(json));
       },
     },
     indexColumns() {
@@ -579,7 +579,7 @@ export default {
         data: this.tableJSON.data,
         layout: layout,
         // minHeight: "50px",
-        height: this.tableJSON.data.length >= 15 ? "50vh": 'auto',
+        height: this.tableJSON.data.length >= 20 ? "60vh": 'auto',
         // renderHorizontal: "virtual",
         // persistence: { columns: true },
         // layoutColumnsOnNewData: true,

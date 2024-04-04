@@ -8,10 +8,11 @@
       </BaseButton>
     </BaseActionTooltip>
     <RenderTableBaseComponent
-      v-if="question.settings.use_table && isValidTableJSON"
+      v-if="question.settings.use_table && isValidTableJSON && false"
       class="textarea"
-      :editable="true"
       :tableData="question.suggestion?.suggestedAnswer"
+      :editable="true"
+      @onUpdateAnswer="onUpdateAnswer"
     />
     <RenderHTMLBaseComponent
       v-else-if="question.settings.use_table && isValidHTML"
@@ -48,6 +49,12 @@ export default {
       return isTableJSON(this.question.suggestion?.suggestedAnswer);
     },
   },
+  methods: {
+    onUpdateAnswer(tableJsonString) {
+      console.log('onUpdateAnswer', this.question)
+      this.question.value = tableJsonString;
+    },
+  }
 };
 </script>
 

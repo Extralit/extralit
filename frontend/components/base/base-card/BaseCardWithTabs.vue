@@ -62,6 +62,7 @@ export default {
     align-items: center;
     margin: 0;
     padding: 0;
+    flex-wrap: wrap;
   }
   &__tab {
     list-style: none;
@@ -83,6 +84,13 @@ export default {
     }
     &:last-child:not(:first-child) {
       margin-left: -1px;
+    }
+    @media (max-width: 600px) {
+      padding: 5px; 
+      min-width: 100px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
   }
   &__content {

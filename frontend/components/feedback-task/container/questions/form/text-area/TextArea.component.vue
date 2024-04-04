@@ -1,10 +1,19 @@
 <template>
   <div class="wrapper">
     <QuestionHeaderComponent :question="question" />
-    <TextAreaContents v-if="!question.suggestion" :question="question" :is-focused="isFocused" />
+    <TextAreaContents
+      v-if="!question.suggestion"
+      :question="question"
+      :is-focused="isFocused"
+    />
     <BaseCardWithTabs v-else :tabs="tabs" tabSize="small">
       <template v-slot="{ currentComponent }">
-        <component :question="question" :is-focused="isFocused" :is="currentComponent" :key="currentComponent" />
+        <component
+          :question="question"
+          :is-focused="isFocused"
+          :is="currentComponent"
+          :key="currentComponent"
+        />
       </template>
     </BaseCardWithTabs>
   </div>
@@ -45,6 +54,12 @@ export default {
       ];
     },
   },
+  mounted() {
+    if (this.question.suggestion){
+      console.log('TextArea', this.tabs)
+      console.log('TextArea', this.question)
+    }
+  }
 };
 </script>
 

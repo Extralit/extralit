@@ -98,7 +98,7 @@ export default {
     padding-bottom: 10px;
     border-bottom: 1px solid #333;
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 500;
     width: calc(100% - 30px);
   }
   &__tooltip {

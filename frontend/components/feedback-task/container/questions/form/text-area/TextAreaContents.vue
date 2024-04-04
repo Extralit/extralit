@@ -24,6 +24,7 @@
       class="textarea"
       :tableData="question.answer.value"
       :editable="true"
+      @onUpdateAnswer="onUpdateAnswer"
       @click.native="onFocus"
       @on-change-focus="onChangeFocus"
       v-model="question.answer.hasValidValues"
@@ -125,6 +126,9 @@ export default {
       this.isEditionModeActive = true;
       this.isExitedFromEditionModeWithKeyboard = false;
     },
+    onUpdateAnswer(tableJsonString) {
+      this.question.answer.value = tableJsonString;
+    },
   },
   computed: {
     classes() {
@@ -151,16 +155,6 @@ export default {
       }
       return ""
     }
-  },
-  mounted() {
-    this.$nuxt.$on('on-update-response-tabledata', (tableJsonString) => {
-      if (this.question.settings.use_table) {
-        this.question.answer.value = tableJsonString;
-      }
-    });
-  },
-  destroyed() {
-    this.$nuxt.$off('on-update-response-tabledata');
   },
 };
 </script>
