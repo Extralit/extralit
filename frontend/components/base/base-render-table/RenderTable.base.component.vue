@@ -26,11 +26,11 @@
             Redo
           </BaseButton>
 
-          <BaseButton @click.prevent="addColumn">
+          <BaseButton @click.prevent="addColumn()">
             ➕ Add Column
           </BaseButton>
 
-          <BaseButton @click.prevent="addRow">
+          <BaseButton @click.prevent="addRow()">
             ➕ Add Row
           </BaseButton>
         </span>
@@ -143,8 +143,8 @@ export default {
       if (!this.tableJSON?.schema) return [];
 
       const configs = this.tableJSON.schema.fields.map((column) => {
-        const commonConfig = this.generateCommonConfig(column);
-        const editableConfig = this.generateColumnEditableConfig(column);
+        const commonConfig = this.generateCommonConfig(column.name);
+        const editableConfig = this.generateColumnEditableConfig(column.name);
         return { ...commonConfig, ...editableConfig };
       });
       return configs;
@@ -321,17 +321,17 @@ export default {
     isRefColumn(field) { 
       return field == "reference" || this.refColumns?.includes(field);
     },
-    generateCommonConfig(column) {
-      const hide = !this.showRefColumns && this.isRefColumn(column.name);
+    generateCommonConfig(fieldName) {
+      const hide = !this.showRefColumns && this.isRefColumn(fieldName);
       const commonConfig = {
-        title: column.name,
-        field: column.name,
+        title: fieldName,
+        field: fieldName,
         visible: !hide,
-        width: this.isRefColumn(column.name) ? 50 : undefined,
-        validator: this.columnValidators.hasOwnProperty(column.name)
-          ? this.columnValidators[column.name]
+        width: this.isRefColumn(fieldName) ? 50 : undefined,
+        validator: this.columnValidators.hasOwnProperty(fieldName)
+          ? this.columnValidators[fieldName]
           : null,
-        formatter: this.isRefColumn(column.name) ? (cell, formatterParams) => {
+        formatter: this.isRefColumn(fieldName) ? (cell, formatterParams) => {
           const value = cell.getValue();
           if (!value) return value;
           else {
@@ -522,11 +522,10 @@ export default {
         newFieldName = `newColumn${count}`;
         count++;
       }
-
+      
       let selectedColumnField = null;
-      if (selectedColumn && selectedColumn.hasOwnProperty('getDefinition')) {
-        let selectedColumnField = selectedColumn?.getDefinition()?.field;
-        console.log("selectedColumnField:", selectedColumnField)
+      if (selectedColumn && selectedColumn?._column?.field) {
+        selectedColumnField = selectedColumn?._column?.field;
       }
 
       this.table.addColumn({
