@@ -381,7 +381,7 @@ export default {
             column.updateDefinition({ editableTitle: true });
           }
         },
-        headerMenu: (e, column) => {
+        headerMenu: !this.refColumns?.includes(fieldName) ? (e, column) => {
           if (column.getDefinition().editableTitle) {
             return [{
               label: "Accept",
@@ -392,9 +392,9 @@ export default {
                 });
               }
             }];
-          }
+          } 
           return this.columnContextMenu;
-        },
+        } : null,
         cellEdited: (cell) => {
           this.updateTableJsonData();
           this.validateTable();
@@ -611,10 +611,20 @@ export default {
       this.table = new Tabulator(this.$refs.table, {
         data: this.tableJSON.data,
         layout: layout,
-        // minHeight: "50px",
         height: this.tableJSON.data.length >= 20 ? "60vh": 'auto',
+        persistence:{
+          sort: true,
+          filter: true,
+          headerFilter: true,
+          columns: ["width", "frozen"], 
+          group:{
+            groupBy: true,
+            groupStartOpen: false,
+            groupHeader: false,
+          },
+          page: true,
+        },
         // renderHorizontal: "virtual",
-        // persistence: { columns: true },
         // layoutColumnsOnNewData: true,
         // reactiveData: true,
         placeholder: () => {
@@ -625,17 +635,16 @@ export default {
           p.textContent = 'No data available';
           div.appendChild(p);
           
-          if (Object.keys(this.referenceValues)?.length) {
+          if (this.referenceValues) {
             const button = document.createElement('button');
             button.textContent = 'Generate empty rows for every reference';
             // button.style.display = 'inline';
             button.addEventListener('click', this.addEmptyReferenceRows);
             div.appendChild(button);
           }
-
           return div;
         },
-        // selectableRows: true,
+
         movableRows: true,
         rowHeader: { 
           headerSort: false, resizable: false, rowHandle: true, editor: false,
@@ -648,7 +657,6 @@ export default {
         index: this.indexColumns + this.refColumns,
         ...this.groupConfigs,
         movableColumns: true,
-        resizableColumnGuide: true,
         columnDefaults: {
           editor: "input",
           headerSort: false,
@@ -765,8 +773,7 @@ export default {
 }
 
 .tabulator .tabulator-tableholder .tabulator-placeholder .tabulator-placeholder-contents {
-  display: inline-block;
-  justify-items: left;
+  justify-content: left;
   text-align: left;
 }
 
