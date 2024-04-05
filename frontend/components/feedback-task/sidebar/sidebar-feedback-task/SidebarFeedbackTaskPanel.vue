@@ -87,7 +87,7 @@ export default {
       })
       .on('resizemove', event => {
         let target = event.target;
-        target.style.width = event.rect.width + 'px';
+        target.style.width = Math.min(event.rect.width, parseInt(window.innerWidth * 0.50)) + 'px';
         document.documentElement.style.setProperty('--sidebar-width', target.style.width);
       });
   },

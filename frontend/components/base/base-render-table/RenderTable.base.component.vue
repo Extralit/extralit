@@ -25,16 +25,31 @@
           <BaseButton v-show="editable" @click.prevent="table.redo();">
             Redo
           </BaseButton>
+        </span>
+      </BaseDropdown>
 
-          <BaseButton @click.prevent="addColumn()">
+      <BaseDropdown v-show="editable" :visible="visibleColumnDropdown" class="add-columns-dropdown">
+        <span slot="dropdown-header">
+          <BaseButton @click.prevent="visibleColumnDropdown=!visibleColumnDropdown">
             ➕ Add Column
+            <svgicon name="chevron-down" width="8" height="8" />
           </BaseButton>
-
-          <BaseButton @click.prevent="addRow()">
-            ➕ Add Row
+        </span>
+        <span slot="dropdown-content" class="--content">
+          <BaseButton
+            v-for="column in schemaColumns.filter(col => !columns.includes(col))"
+            :key="column"
+            @click.prevent="addColumn(null, column); visibleColumnDropdown=false"
+          >
+            {{ column }}
           </BaseButton>
         </span>
       </BaseDropdown>
+
+
+      <BaseButton v-show="editable" @click.prevent="addRow()">
+        ➕ Add Row
+      </BaseButton>
 
       <BaseDropdown v-show="columnValidators && Object.keys(columnValidators).length"
         :visible="editable && visibleCheckropdown">
@@ -98,6 +113,7 @@ export default {
       isLoaded: false,
       visibleCheckropdown: false,
       visibleEditDropdown: false,
+      visibleColumnDropdown: false,
     };
   },
 
@@ -114,6 +130,9 @@ export default {
       set(json) {
         this.$emit("onUpdateAnswer", JSON.stringify(json));
       },
+    },
+    schemaColumns() {
+      return (this.tableJSON?.validation?.columns ? Object.keys(this.tableJSON.validation.columns) : [])
     },
     indexColumns() {
       return this.tableJSON?.schema?.primaryKey || [];
@@ -514,8 +533,7 @@ export default {
       // Update this.tableJSON to reflect the current data in the table
       this.updateTableJsonData();
     },
-    addColumn(selectedColumn) {
-      let newFieldName = "newColumn";
+    addColumn(selectedColumn, newFieldName = "newColumn") {
       // Assign a unique name to the new column
       let count = 1;
       while (this.columns.includes(newFieldName)) {
@@ -531,7 +549,7 @@ export default {
       this.table.addColumn({
         ...this.generateCommonConfig(newFieldName),
         ...this.generateColumnEditableConfig(newFieldName),
-        editableTitle: true,
+        editableTitle: newFieldName.includes("newColumn"),
       }, false, selectedColumnField)
 
       this.updateTableJsonData(false, true);
@@ -602,6 +620,7 @@ export default {
           editor: "input",
           headerSort: false,
           resizable: 'header',
+          maxInitialWidth: 350,
           tooltip: cellTooltip,
           headerTooltip: (...args) => headerTooltip(...args, this.tableJSON.validation, this.columnValidators),
           headerWordWrap: true,
@@ -692,6 +711,16 @@ export default {
       }
     }
   }
+
+  .add-columns-dropdown {
+    position: relative;
+    z-index: 1; 
+
+    .__content {
+      max-height: 100px; 
+      overflow-y: auto; 
+    }
+  }
 }
 // .tabulator .tabulator-header .tabulator-col .tabulator-col-content .tabulator-col-title {
 //   white-space: normal;
@@ -765,4 +794,3 @@ export default {
 }
 
 </style>
-./dataUtils
