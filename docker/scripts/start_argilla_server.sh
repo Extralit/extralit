@@ -3,7 +3,6 @@ set -e
 
 export ARGILLA_ELASTICSEARCH=https://elastic:$ELASTIC_PASSWORD@$ARGILLA_ELASTICSEARCH_HOST
 export ARGILLA_DATABASE_URL=postgresql+asyncpg://postgres:$POSTGRES_PASSWORD@$POSTGRES_HOST/postgres
-echo $ARGILLA_DATABASE_URL
 export ARGILLA_ENABLE_TELEMETRY=0
 
 # Run database migrations

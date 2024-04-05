@@ -18,17 +18,21 @@
           </BaseButton>
         </span>
         <span slot="dropdown-content">
-          <BaseButton v-show="editable" @click.prevent="table.undo();">
+          <BaseButton v-show="editable && table" @click.prevent="table.undo();">
             Undo
           </BaseButton>
 
-          <BaseButton v-show="editable" @click.prevent="table.redo();">
+          <BaseButton v-show="editable && table" @click.prevent="table.redo();">
             Redo
+          </BaseButton>
+
+          <BaseButton v-show="editable" @click.prevent="clearTable(); visibleEditDropdown=false">
+            Clear data
           </BaseButton>
         </span>
       </BaseDropdown>
 
-      <BaseDropdown v-show="editable" :visible="visibleColumnDropdown" class="add-columns-dropdown">
+      <BaseDropdown v-show="editable && table" :visible="visibleColumnDropdown" class="add-columns-dropdown">
         <span slot="dropdown-header">
           <BaseButton @click.prevent="visibleColumnDropdown=!visibleColumnDropdown">
             ➕ Add Column
@@ -47,11 +51,11 @@
       </BaseDropdown>
 
 
-      <BaseButton v-show="editable" @click.prevent="addRow()">
+      <BaseButton v-show="editable && table" @click.prevent="addRow()">
         ➕ Add Row
       </BaseButton>
 
-      <BaseDropdown v-show="columnValidators && Object.keys(columnValidators).length"
+      <BaseDropdown v-show="table && columnValidators && Object.keys(columnValidators).length"
         :visible="editable && visibleCheckropdown">
         <span slot="dropdown-header">
           <BaseButton
@@ -74,7 +78,7 @@ import { Notification } from "@/models/Notifications";
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 import "tabulator-tables/dist/css/tabulator.min.css";
 import {
-  getTableDataFromRecords, findMatchingRefValues, incrementReferenceStr, getMaxStringValue, } from './dataUtils';
+  getTableDataFromRecords, findMatchingRefValues, generateCombinations, incrementReferenceStr, getMaxStringValue, } from './dataUtils';
 import { getColumnValidators } from "./validationUtils";
 import { 
   columnSchemaToDesc, 
@@ -109,7 +113,7 @@ export default {
   data() {
     return {
       table: null,
-      showRefColumns: false,
+      showRefColumns: this.editable,
       isLoaded: false,
       visibleCheckropdown: false,
       visibleEditDropdown: false,
@@ -274,6 +278,7 @@ export default {
         const removeColumns = this.tableJSON.schema.fields
           .filter((field) => !this.columns.includes(field.name))
           .map((field) => field.name);
+        console.log('removeColumns:', removeColumns)
           
         if (removeColumns.length > 0) {
           // Remove removeColumns from this.tableJSON.schema
@@ -500,23 +505,24 @@ export default {
       });
       this.tableJSON = this.tableJSON; // Trigger the setter
     },
-    addRow(selectedRow) {
+    addRow(selectedRow, rowData={}) {
       const requiredFields = this.refColumns || [];
       if (this.tableJSON.schema.fields.some((field) => field.name === "reference")) {
         requiredFields.push("reference");
       }
       
-      const newRow = {};
       for (const field of this.columns) {
-        if (requiredFields.includes(field) && selectedRow?._row?.data[field]) {
-          newRow[field] = selectedRow._row.data[field]
+        if (rowData[field]) {
+          continue
+        } else if (requiredFields.includes(field) && selectedRow?._row?.data[field]) {
+          rowData[field] = selectedRow._row.data[field]
           // const maxRefValue = getMaxStringValue(field, this.table.getData());
           // newRow[field] = incrementReferenceStr(maxRefValue);
         } else {
-          newRow[field] = undefined;
+          rowData[field] = undefined;
         }
       }
-      this.table.addRow(newRow, false, selectedRow);
+      this.table.addRow(rowData, false, selectedRow);
       this.updateTableJsonData();
       this.validateTable();
       if (!this.showRefColumns) this.toggleShowRefColumns();
@@ -584,6 +590,16 @@ export default {
       this.updateTableJsonData(false, false, true, newFieldName, oldFieldName);
       // this.table?.setColumns(this.columnsConfig);
     },
+    clearTable() {
+      this.table?.clearData()
+    },
+    addEmptyReferenceRows() {
+      const combinations = generateCombinations(this.referenceValues);
+
+      combinations.forEach(refValues => {
+        this.addRow(null, refValues);
+      });
+    },
   },
 
   mounted() {
@@ -601,12 +617,29 @@ export default {
         // persistence: { columns: true },
         // layoutColumnsOnNewData: true,
         // reactiveData: true,
+        placeholder: () => {
+          const div = document.createElement('div');
+          div.classList.add('tabulator-placeholder-contents');
 
+          const p = document.createElement('p');
+          p.textContent = 'No data available';
+          div.appendChild(p);
+          
+          if (Object.keys(this.referenceValues)?.length) {
+            const button = document.createElement('button');
+            button.textContent = 'Generate empty rows for every reference';
+            // button.style.display = 'inline';
+            button.addEventListener('click', this.addEmptyReferenceRows);
+            div.appendChild(button);
+          }
+
+          return div;
+        },
         // selectableRows: true,
         movableRows: true,
         rowHeader: { 
           headerSort: false, resizable: false, rowHandle: true, editor: false,
-          minWidth: 30, width: 30, headerHozAlign: "center", hozAlign: "center", 
+          minWidth: 30, width: 30, maxWidth: 30, headerHozAlign: "center", hozAlign: "center", 
           formatter: "handle",
         },
         rowContextMenu: this.rowContextMenu,
@@ -674,6 +707,11 @@ export default {
       console.error("Failed to mount table:", error);
     }
   },
+  errorCaptured(err, component, info) {
+    this.error = err;
+    console.error(`Error caught from ${component}: ${err}`);
+    return false; // stops the error from propagating further
+  },
 };
 </script>
 
@@ -722,18 +760,24 @@ export default {
     }
   }
 }
-// .tabulator .tabulator-header .tabulator-col .tabulator-col-content .tabulator-col-title {
-//   white-space: normal;
-// }
+.tabulator .tabulator-header .tabulator-col .tabulator-col-content .tabulator-col-title {
+  white-space: normal;
+}
+
+.tabulator .tabulator-tableholder .tabulator-placeholder .tabulator-placeholder-contents {
+  display: inline-block;
+  justify-items: left;
+  text-align: left;
+}
 
 .tabulator .tabulator-group {
   display: grid;
   grid-auto-flow: column;
   justify-content: start;
+  background-color: transparent;
   // padding-top: 3px;
   // padding-bottom: 3px;
   // border: none;
-  background-color: transparent;
 
   span, small {
     overflow: hidden;
@@ -789,7 +833,7 @@ export default {
   &.tabulator-group-level-3,
   &.tabulator-group-level-4,
   &.tabulator-group-level-5 {
-    border: none;
+    border-top: none;
   }
 }
 

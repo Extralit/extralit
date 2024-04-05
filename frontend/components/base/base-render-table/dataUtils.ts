@@ -117,3 +117,26 @@ export function incrementReferenceStr(reference: string): string {
 
   return newReference;
 }
+
+export function generateCombinations(referenceValues: Record<string, Record<string, any>>): Record<string, string>[] {
+  const referenceKeys: Record<string, string[]> = Object.keys(referenceValues).reduce((acc, key) => {
+    acc[key] = Object.keys(referenceValues[key]);
+    return acc;
+  }, {});
+
+  const refKeys = Object.keys(referenceKeys);
+  const refValueCombinations = cartesianProduct(refKeys.map(key => referenceKeys[key]));
+
+  const refCombinations = refValueCombinations.map(refValues => {
+    return refValues.reduce((acc, value, index) => {
+      acc[refKeys[index]] = value;
+      return acc;
+    }, {} as Record<string, string>);
+  });
+
+  return refCombinations;
+}
+
+function cartesianProduct(arr: any[][]): any[][] {
+  return arr.reduce((a, b) => a.flatMap((x: any[]) => b.map((y: any) => [...x, y])), [[]]);
+}
