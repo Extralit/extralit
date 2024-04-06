@@ -773,8 +773,12 @@ export default {
 }
 
 .tabulator .tabulator-tableholder .tabulator-placeholder .tabulator-placeholder-contents {
-  justify-content: left;
+  display: block;
+  align-items: center;
+  justify-content: flex-start;
   text-align: left;
+  margin-right: auto;
+  margin-left: 20px;
 }
 
 .tabulator .tabulator-group {
