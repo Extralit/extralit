@@ -53,5 +53,10 @@ export default {
   setup() {
     return useAnnotationModeViewModel();
   },
+  head() {
+    return {
+      title: this.dataset.name
+    }
+  }
 };
 </script>

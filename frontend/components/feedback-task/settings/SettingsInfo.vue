@@ -1,14 +1,14 @@
 <template>
   <div class="settings__container">
     <div class="settings__content">
-      <h2 class="--heading5 --medium">Dataset info</h2>
+      <h2 class="--heading5 --medium">Dataset information</h2>
       <div class="settings__area">
         <div class="settings__row">
           <div class="settings__item">
+            <p class="settings__dataset-name --body1">Name:</p>
             <p
               class="settings__dataset-name --body1"
-              v-html="settings.dataset.name"
-            />
+            >{{ settings.dataset.name }}</p>
             <BaseBadge :text="settings.dataset.task" />
           </div>
           <base-action-tooltip tooltip="Copied">
@@ -20,6 +20,33 @@
               Copy link
             </base-button>
           </base-action-tooltip>
+        </div>
+        <br/>
+        <div class="settings__row">
+          <div class="settings__item">
+            <p class="settings__dataset-name --body1">Workspace:</p>
+            <p class="settings__dataset-name --body1">{{ settings.dataset.workspaceName }}</p>
+          </div>
+        </div>
+        <div class="settings__row">
+          <div class="settings__item">
+            <p class="settings__dataset-name --body1">Created:</p>
+            <BaseDate
+              class="settings__dataset-name --body1"
+              format="date-local"
+              :date="settings.dataset.createdAt"
+            />
+          </div>
+        </div>
+        <div class="settings__row">
+          <div class="settings__item">
+            <p class="settings__dataset-name --body1">Last activity:</p>
+            <BaseDate
+              class="settings__dataset-name --body1"
+              format="date-local"
+              :date="settings.dataset.lastActivityAt"
+            />
+          </div>
         </div>
       </div>
       <div class="settings__area">
@@ -132,4 +159,3 @@ export default {
   }
 }
 </styles>
-./useSettingInfoViewModel
