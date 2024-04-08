@@ -1,12 +1,18 @@
 <template>
   <div class="container">
-    <BaseActionTooltip tooltip="Copied" class="button-copy">
+    <BaseActionTooltip
+      class="button-copy"
+      tooltip="Copied"
+      tooltip-position="left"
+    >
       <BaseButton
-        @on-click="$copyToClipboard(question.suggestion?.suggestedAnswer)"
+        title="Copy to clipboard"
+        @click.prevent="$copyToClipboard(question.suggestion?.suggestedAnswer)"
       >
-        <svgicon name="copy" width="16" height="16" />
+        <svgicon color="#acacac" name="copy" width="20" height="20" />
       </BaseButton>
     </BaseActionTooltip>
+
     <RenderTableBaseComponent
       v-if="question.settings.use_table && isValidTableJSON"
       class="textarea"
@@ -51,8 +57,8 @@ export default {
   },
   methods: {
     onUpdateAnswer(tableJsonString) {
-      console.log('onUpdateAnswer', this.question)
-      this.question.value = tableJsonString;
+      console.log('TextAreaSuggestion onUpdateAnswer', JSON.parse(tableJsonString))
+      this.question.answer.value = tableJsonString;
     },
   }
 };
@@ -69,20 +75,19 @@ export default {
   background: palette(white);
   &:hover {
     .button-copy {
-      display: block;
+      opacity: 1;
     }
   }
 }
 .button-copy {
-  display: none;
+  opacity: 0;
   position: absolute;
+  z-index: 1;
   right: $base-space * 2;
   top: $base-space * 2;
   .button {
     padding: 0;
-  }
-  .svg-icon {
-    color: $black-37;
+    flex-shrink: 0;
   }
 }
 </style>

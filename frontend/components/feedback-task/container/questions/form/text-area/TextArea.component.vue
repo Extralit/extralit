@@ -54,12 +54,6 @@ export default {
       ];
     },
   },
-  mounted() {
-    if (this.question.suggestion){
-      console.log('TextArea', this.tabs)
-      console.log('TextArea', this.question)
-    }
-  }
 };
 </script>
 
