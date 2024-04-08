@@ -30,6 +30,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 # Copy the scripts and install uvicorn
 COPY docker/scripts/start_argilla_server.sh /home/argilla/
 
+
 # Copy the entire repository into /home/argilla in the container
 COPY . /home/argilla/
 
