@@ -35,7 +35,6 @@ COPY . /home/argilla/
 
 # Change the ownership of the /home/argilla directory to the new user
 RUN chown -R argilla:argilla /home/argilla
-# Set the working directory
 WORKDIR /home/argilla/
 
 RUN chmod +x /home/argilla/start_argilla_server.sh && \

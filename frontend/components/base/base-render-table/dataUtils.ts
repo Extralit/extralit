@@ -109,11 +109,12 @@ export function getMaxStringValue(columnName: string, data: any[]): string {
 }
 
 export function incrementReferenceStr(reference: string): string {
-  const parts = reference.split("-");
-  const lastPart = parts[parts.length - 1];
-  const suffix = lastPart.slice(-1);
-  const incrementedDigits = String(parseInt(lastPart) + 1).padStart(lastPart.length - suffix.length, '0');
-  const newReference = `${parts.slice(0, -1).join("-")}-${incrementedDigits}${suffix}`;
+  if (!reference) return undefined;
+  const prefix = reference.slice(0, 1);
+
+  const numericalPart = reference.slice(1);
+  const incrementedDigits = String(parseInt(numericalPart) + 1).padStart(numericalPart.length, '0');
+  const newReference = `${prefix}${incrementedDigits}`;
 
   return newReference;
 }

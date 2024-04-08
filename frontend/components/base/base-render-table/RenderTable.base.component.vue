@@ -1,16 +1,16 @@
 <template>
   <div class="table-container">
-    <div class="--table-buttons">
+    <div class="__table-buttons">
       <BaseButton v-show="refColumns?.length || columns.includes('reference')" @click.prevent="toggleShowRefColumns">
         <span v-if="!showRefColumns">Show references</span>
         <span v-else>Hide references</span>
       </BaseButton>
     </div>
 
-    <div ref="table" class="--table" />
+    <div ref="table" class="__table" />
 
-    <div class="--table-buttons">
-      <BaseDropdown v-show="editable" :visible="visibleEditDropdown">
+    <div class="__table-buttons">
+      <BaseDropdown v-show="editable" :visible="visibleEditDropdown" boundary="viewport">
         <span slot="dropdown-header">
           <BaseButton @click.prevent="visibleEditDropdown=!visibleEditDropdown">
             Edit table
@@ -21,18 +21,16 @@
           <BaseButton v-show="editable && table" @click.prevent="table.undo();">
             Undo
           </BaseButton>
-
           <BaseButton v-show="editable && table" @click.prevent="table.redo();">
             Redo
           </BaseButton>
-
           <BaseButton v-show="editable" @click.prevent="clearTable(); visibleEditDropdown=false">
-            Clear data
+            {{ table?.getDataCount() > 0 ? 'Clear data' : 'Delete table' }}
           </BaseButton>
         </span>
       </BaseDropdown>
 
-      <BaseDropdown v-show="editable && table" :visible="visibleColumnDropdown" class="add-columns-dropdown">
+      <BaseDropdown v-show="editable && table" :visible="visibleColumnDropdown" class="add-columns-dropdown" boundary="viewport" >
         <span slot="dropdown-header">
           <BaseButton @click.prevent="visibleColumnDropdown=!visibleColumnDropdown">
             ➕ Add Column
@@ -50,16 +48,15 @@
         </span>
       </BaseDropdown>
 
-
       <BaseButton v-show="editable && table" @click.prevent="addRow()">
         ➕ Add Row
       </BaseButton>
 
       <BaseDropdown v-show="table && columnValidators && Object.keys(columnValidators).length"
-        :visible="editable && visibleCheckropdown">
+        :visible="editable && visibleCheckropdown" boundary="viewport">
         <span slot="dropdown-header">
           <BaseButton
-            @click.prevent="validateTable({ showErrors: true, scrollToError: true }); visibleCheckropdown=!visibleCheckropdown">
+            @click.prevent="validateTable({ scrollToError: true }); visibleCheckropdown=!visibleCheckropdown">
             Check data
           </BaseButton>
         </span>
@@ -69,6 +66,7 @@
           </BaseButton>
         </span>
       </BaseDropdown>
+      
     </div>
   </div>
 </template>
@@ -118,6 +116,7 @@ export default {
       visibleCheckropdown: false,
       visibleEditDropdown: false,
       visibleColumnDropdown: false,
+      addColumnSearchText: null,
     };
   },
 
@@ -154,7 +153,7 @@ export default {
       }
     },
     groupbyColumns() {
-      return this.refColumns?.filter((column) => column != 'publication_ref');
+      return this.refColumns || null;
     },
     columns() {
       return this.table?.getColumns()?.map((col) => col.getField()) || [];
@@ -342,20 +341,20 @@ export default {
       this.tableJSON.data = this.table.getData();
       this.tableJSON = this.tableJSON; // Trigger the setter
     },
-    isRefColumn(field) { 
-      return field == "reference" || this.refColumns?.includes(field);
+    isIndexRefColumn(field) { 
+      return this.indexColumns?.includes(field) || this.refColumns?.includes(field);
     },
     generateCommonConfig(fieldName) {
-      const hide = !this.showRefColumns && this.isRefColumn(fieldName);
+      const hide = !this.showRefColumns && this.isIndexRefColumn(fieldName);
       const commonConfig = {
         title: fieldName,
         field: fieldName,
         visible: !hide,
-        width: this.isRefColumn(fieldName) ? 50 : undefined,
+        width: this.isIndexRefColumn(fieldName) ? 50 : undefined,
         validator: this.columnValidators.hasOwnProperty(fieldName)
           ? this.columnValidators[fieldName]
           : null,
-        formatter: this.isRefColumn(fieldName) ? (cell, formatterParams) => {
+        formatter: this.isIndexRefColumn(fieldName) ? (cell, formatterParams) => {
           const value = cell.getValue();
           if (!value) return value;
           else {
@@ -381,7 +380,7 @@ export default {
             column.updateDefinition({ editableTitle: true });
           }
         },
-        headerMenu: !this.refColumns?.includes(fieldName) ? (e, column) => {
+        headerMenu: !this.isIndexRefColumn(fieldName) ? (e, column) => {
           if (column.getDefinition().editableTitle) {
             return [{
               label: "Accept",
@@ -407,7 +406,6 @@ export default {
 
         if (columnSchema.dtype === "str") {
           config.editor = "list";
-          config.editorParams.defaultValue = "NA";
           config.editorParams.emptyValue = "NA";
           config.editorParams.valuesLookup = 'active';
           config.editorParams.valuesLookupField = fieldName;
@@ -424,7 +422,7 @@ export default {
           config.hozAlign = "right";
         }
 
-      } else if (this.refColumns?.includes(fieldName)) {
+      } else if (this.isIndexRefColumn(fieldName)) {
         config.editor = "list";
 
         if (this.referenceValues?.hasOwnProperty(fieldName)) {
@@ -439,7 +437,7 @@ export default {
             placeholderEmpty: "Type to search by keyword...",
             itemFormatter: function (label, value, item, element) {
               const keyValues = Object.entries(item.data)
-                .filter(([key, v]) => key !== "reference" && v !== 'NA' && v !== null)
+                .filter(([key, v]) => this.indexColumns.includes(key) && v !== 'NA' && v !== null)
                 .map(([key, v]) => `<span style="font-weight:normal; color:black; margin-left:0;">${key}:</span> ${v}`)
                 .join(', ');
               return `<strong>${label}</strong>: <div>${keyValues}</div>`;
@@ -480,21 +478,10 @@ export default {
         this.table.scrollToColumn(firstErrorCell._cell.column.field, 'middle');
       }
 
-      if (options?.showErrors) {
-        var errorValues = {};
-        errorValues = validErrors.reduce((acc, cell) => {
-          const failedChecks = cell.validate();
-          acc[`${cell._cell.column.field}: ${cell._cell.value}`] = failedChecks;
-          return acc;
-        }, {});
-        console.log("validateTable errors:", errorValues);
-      }
-
       return isValid;
     },
     toggleShowRefColumns() {
       this.showRefColumns = !this.showRefColumns;
-      // this.table.setGroupBy(this.showRefColumns ? this.groupbyColumns : null);
       this.table?.setColumns(this.columnsConfig);
     },
     columnMoved(column, columns) {
@@ -506,18 +493,17 @@ export default {
       this.tableJSON = this.tableJSON; // Trigger the setter
     },
     addRow(selectedRow, rowData={}) {
-      const requiredFields = this.refColumns || [];
-      if (this.tableJSON.schema.fields.some((field) => field.name === "reference")) {
-        requiredFields.push("reference");
-      }
+      const requiredFields = this.refColumns || this.indexColumns;
       
       for (const field of this.columns) {
         if (rowData[field]) {
           continue
-        } else if (requiredFields.includes(field) && selectedRow?._row?.data[field]) {
+        } else if (this.indexColumns.includes(field) && selectedRow?._row?.data[field]) {
+          const maxRefValue = getMaxStringValue(field, this.table.getData());
+          rowData[field] = incrementReferenceStr(maxRefValue);
+        } else if (this.refColumns.includes(field) && selectedRow?._row?.data[field]) {
           rowData[field] = selectedRow._row.data[field]
-          // const maxRefValue = getMaxStringValue(field, this.table.getData());
-          // newRow[field] = incrementReferenceStr(maxRefValue);
+          rowData[field] = incrementReferenceStr(maxRefValue);
         } else {
           rowData[field] = undefined;
         }
@@ -591,7 +577,16 @@ export default {
       // this.table?.setColumns(this.columnsConfig);
     },
     clearTable() {
+      if (this.table?.getDataCount() == 0) {
+        this.tableJSON = undefined;
+        return;
+      }
       this.table?.clearData()
+      this.columns?.forEach((column) => {
+        if (!this.refColumns.includes(column)) {
+          this.table?.deleteColumn(column);
+        }
+      });
     },
     addEmptyReferenceRows() {
       const combinations = generateCombinations(this.referenceValues);
@@ -611,7 +606,7 @@ export default {
       this.table = new Tabulator(this.$refs.table, {
         data: this.tableJSON.data,
         layout: layout,
-        height: this.tableJSON.data.length >= 20 ? "60vh": 'auto',
+        maxHeight: "60vh",
         persistence:{
           sort: true,
           filter: true,
@@ -694,6 +689,10 @@ export default {
       if (this.editable) {
         this.table.on("columnTitleChanged", this.columnTitleChanged.bind(this));
         this.table.on("columnMoved", this.columnMoved.bind(this));
+        this.table.on("clipboardPasted", (clipboard, rowData, rows) => {
+          this.updateTableJsonData();
+          this.validateTable();
+        });
       }
 
       this.table.on("tableBuilt", () => {
@@ -732,16 +731,15 @@ export default {
   margin-bottom: 0;
   height: 100%;
 
-  .--table {
-    overflow: auto;
+  .__table {
     white-space: normal;
-    resize: vertical;
-    overflow: auto;
     position: relative;
     height: auto;
+    resize: vertical;
+    overflow: auto;
   }
   
-  .--table-buttons {
+  .__table-buttons {
     display: flex;
     justify-content: space-between;
     padding: 5px 5px 0 0;
@@ -762,9 +760,13 @@ export default {
     position: relative;
     z-index: 1; 
 
-    .__content {
-      max-height: 100px; 
-      overflow-y: auto; 
+    .dropdown__content {
+      max-height: 290px;
+      overflow-y: auto;
+
+      .button {
+        width: 100%;
+      }
     }
   }
 }
