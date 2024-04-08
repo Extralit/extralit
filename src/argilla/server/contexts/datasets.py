@@ -790,8 +790,6 @@ async def _update_record(
     if record_update.suggestions is not None:
         params.pop("suggestions")
         questions_ids = [suggestion.question_id for suggestion in record_update.suggestions]
-        if len(questions_ids) != len(set(questions_ids)):
-            raise ValueError("found duplicate suggestions question IDs")
         suggestions, caches["questions"] = await _build_record_suggestions(db, record_update, caches["questions"])
 
     if record_update.vectors is not None:

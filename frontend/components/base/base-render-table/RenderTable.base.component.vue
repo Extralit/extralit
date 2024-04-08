@@ -666,7 +666,7 @@ export default {
 
         //enable range selection
         selectableRange: 1,
-        selectableRangeColumns: true,
+        selectableRangeColumns: false,
         selectableRangeRows: true,
         selectableRangeClearCells: true,
         editTriggerEvent: this.editable ? "dblclick" : false,

@@ -382,11 +382,11 @@ export default {
 }
 
 .footer-form {
-      display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    padding: $base-space * 2 $base-space * 3;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: $base-space * 2 $base-space * 3;
   border-top: 1px solid $black-10;
   &__left-area {
     display: inline-flex;

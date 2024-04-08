@@ -8,7 +8,7 @@
       </BaseButton>
     </BaseActionTooltip>
     <RenderTableBaseComponent
-      v-if="question.settings.use_table && isValidTableJSON && false"
+      v-if="question.settings.use_table && isValidTableJSON"
       class="textarea"
       :tableData="question.suggestion?.suggestedAnswer"
       :editable="true"

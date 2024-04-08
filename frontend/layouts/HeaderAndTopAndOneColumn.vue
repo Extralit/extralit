@@ -52,7 +52,7 @@ $gap-width: $base-space * 2;
     "center sidebar";
   height: 100vh;
   transition: 0.4s ease-in-out;
-  @include media("<tablet") {
+  @include media("<desktop") {
     height: 100svh;
     grid-template-areas:
       "header header"
@@ -61,7 +61,7 @@ $gap-width: $base-space * 2;
   &.--panel {
     @include media(">desktop") {
       grid-template-columns: 1fr var(--sidebar-width);
-      transition: 0.4s ease-out;
+      transition: none;
     }
   }
 }
