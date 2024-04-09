@@ -156,21 +156,28 @@ export default {
       @include overflow-scrollbar;
 
       th, td {
-        border: 1px solid #ddd;
         padding: 1.5px 5px;
         text-align: left;
         white-space: nowrap;
-        font-size: 13px;
-        max-width: 200px;
+        // font-size: 13px;
+        // max-width: 200px;
         overflow: hidden;
-        text-overflow: ellipsis;
+        text-overflow: wrap;
+        white-space: normal;
+        word-wrap: break-word;
         vertical-align: middle; 
+      }
+
+      tr {
+        th {
+          white-space: nowrap;
+        }
       }
 
       th {
         padding: 2px 5px;
         background-color: #cccccc;
-        font-size: 14px;
+        // font-size: 14px;
         font-weight: 600;
       }
     }

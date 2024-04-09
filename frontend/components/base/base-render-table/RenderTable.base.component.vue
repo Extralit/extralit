@@ -722,7 +722,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .table-container {
   display: flex;
   flex-flow: column;
@@ -788,8 +788,8 @@ export default {
   grid-auto-flow: column;
   justify-content: start;
   background-color: transparent;
-  // padding-top: 3px;
-  // padding-bottom: 3px;
+  padding-top: 3px;
+  padding-bottom: 3px;
   // border: none;
 
   span, small {

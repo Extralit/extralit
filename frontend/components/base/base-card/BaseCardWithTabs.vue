@@ -12,11 +12,9 @@
       </li>
     </ul>
     <div class="card-with-tabs__content" >
-      <keep-alive>
-        <transition name="fade">
-          <slot :current-component="currentComponent" :currentTabId="currentTab.id" />
-        </transition>
-      </keep-alive>
+      <transition name="fade">
+        <slot :current-component="currentComponent" :currentTabId="currentTab.id" />
+      </transition>
     </div>
   </div>
 </template>
