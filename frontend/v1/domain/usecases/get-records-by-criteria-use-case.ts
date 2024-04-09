@@ -84,7 +84,8 @@ export class GetRecordsByCriteriaUseCase {
                 question.type,
                 suggestion.value,
                 suggestion.score,
-                suggestion.agent
+                suggestion.agent,
+                suggestion.type,
               );
             })
           : [];
@@ -97,7 +98,8 @@ export class GetRecordsByCriteriaUseCase {
           answer,
           suggestions,
           record.query_score,
-          recordPage
+          recordPage,
+          record.metadata,
         );
       }
     );

@@ -459,10 +459,10 @@ export class RecordRepository {
       items: [],
     };
 
-    records.forEach(({ id, questions }) => {
+    records.forEach((record) => {
       request.items.push({
-        ...this.createRequest(status, questions),
-        record_id: id,
+        ...this.createRequest(status, record),
+        record_id: record.id,
       });
     });
 
@@ -473,7 +473,7 @@ export class RecordRepository {
     status: BackendRecordStatus,
     record: Record,
     duration?: number
-  ): Omit<BackendResponse, "id" | "updated_at"> {
+  ): BackendResponseRequest {
     const values = {} as BackendAnswerCombinations;
 
     record.questions
@@ -504,11 +504,7 @@ export class RecordRepository {
     params.append("offset", offset);
     params.append("limit", howMany.toString());
 
-    if (status === "pending") {
-      params.append("response_status", 'missing');
-      params.append("response_status", 'draft');
-
-    } else if (status === "valid") {
+    if (status === "valid") {
       // add 'valid' status to query all non-discarded records
       params.append("response_status", 'missing');
       params.append("response_status", 'submitted');

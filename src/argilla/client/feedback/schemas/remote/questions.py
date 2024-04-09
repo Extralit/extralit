@@ -194,7 +194,9 @@ QUESTION_TYPE_TO_QUESTION = {
     QuestionTypes.text: RemoteTextQuestion,
     QuestionTypes.rating: RemoteRatingQuestion,
     QuestionTypes.label_selection: RemoteLabelQuestion,
+    QuestionTypes.dynamic_label_selection: RemoteLabelQuestion,
     QuestionTypes.multi_label_selection: RemoteMultiLabelQuestion,
+    QuestionTypes.dynamic_multi_label_selection: RemoteMultiLabelQuestion,
     QuestionTypes.ranking: RemoteRankingQuestion,
     QuestionTypes.span: RemoteSpanQuestion,
 }

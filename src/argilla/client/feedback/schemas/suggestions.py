@@ -50,7 +50,7 @@ class SuggestionSchema(BaseModel):
     question_name: str
     value: ResponseValue
     score: Optional[confloat(ge=0, le=1)] = None
-    type: Optional[Literal["model", "human"]] = None
+    type: Optional[Literal["model", "human", "selection"]] = None
     agent: Optional[str] = None
 
     _normalize_value = validator("value", allow_reuse=True, always=True)(normalize_response_value)
@@ -66,3 +66,9 @@ class SuggestionSchema(BaseModel):
         payload["question_id"] = str(question_name_to_id[self.question_name])
 
         return payload
+    
+    def __repr__(self):
+        value_repr = str(self.value)[:10] + '...' if len(str(self.value)) > 10 else str(self.value)
+        return f"SuggestionSchema(question_name={self.question_name}, type={self.type}, agent={self.agent}, score={self.score}, value={value_repr})"
+    
+

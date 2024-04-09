@@ -26,20 +26,32 @@ export const useFocusAnnotationViewModel = () => {
     isDiscarding.value = false;
   };
 
-  const submit = async (record: Record) => {
-    isSubmitting.value = true;
+  const incrementDuration = (record: Record, durationWrapper: { value: number }): number => {
+    if (!durationWrapper || !record.hasAnyQuestionAnswered || !record.answer) return null;
 
-    await submitUseCase.execute(record);
+    let duration = record.answer?.duration || 0;
+
+    duration += durationWrapper.value;
+    durationWrapper.value = 0; // reset duration for upstream caller to indicate it's been consumed
+    return duration;
+  }
+
+  const submit = async (record: Record, durationWrapper?: any) => {
+    isSubmitting.value = true;
+    let duration = incrementDuration(record, durationWrapper);
+
+    await submitUseCase.execute(record, duration);
 
     await debounceForSubmit.wait();
 
     isSubmitting.value = false;
   };
 
-  const saveAsDraft = async (record: Record) => {
+  const saveAsDraft = async (record: Record, durationWrapper?: any) => {
     isDraftSaving.value = true;
+    let duration = incrementDuration(record, durationWrapper);
 
-    await saveDraftUseCase.execute(record);
+    await saveDraftUseCase.execute(record, duration);
 
     await debounceForSubmit.wait();
 

@@ -9,6 +9,9 @@
         :value="selectedRecords.includes(record)"
         @input="onSelectedRecord"
       />
+      <BaseBadge v-if="record.metadata?.reference" :text="`Reference: ${record.metadata?.reference}`" />
+      <BaseTag v-if="record.metadata?.number" :name="record.metadata?.number" />
+      <BaseTag v-else-if="record.metadata?.type" :name="record.metadata?.type" />
     </div>
     <div class="fields__header--right">
       <SimilarityScorePercentage

@@ -77,6 +77,9 @@ export default {
       return Object.values(fieldGroups);
     },
   },
+  mounted() {
+    console.log('fieldsWithTabs', this.fieldsWithTabs)
+  },
 };
 </script>
 <style lang="scss" scoped>

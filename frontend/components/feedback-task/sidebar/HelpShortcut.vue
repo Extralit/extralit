@@ -8,15 +8,13 @@
       :content="content"
     />
     <br/>
-    <BaseSwitch @change="toggleShortcutsHelper" v-model="showShortcutsHelper" class="shortcuts__footer">
+    <!-- <BaseSwitch @change="toggleShortcutsHelper" v-model="showShortcutsHelper" class="shortcuts__footer">
       Show key shortcuts
-    </BaseSwitch>
+    </BaseSwitch> -->
   </div>
 </template>
 
 <script>
-import { useQuestionsViewModel } from "@/components/feedback-task/container/questions/form/useQuestionsViewModel.ts";
-
 export default {
   name: "HelpShortcut",
 
@@ -78,9 +76,6 @@ export default {
     }
   },
 
-  setup() {
-    return useQuestionsViewModel();
-  },
 };
 </script>
 

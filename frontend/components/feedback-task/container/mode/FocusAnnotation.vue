@@ -76,8 +76,8 @@ export default {
     },
   },
   methods: {
-    async onSubmit() {
-      await this.submit(this.record);
+    async onSubmit(durationWrapper) {
+      await this.submit(this.record, durationWrapper);
       this.$emit("on-submit-responses");
     },
     async onDiscard() {
@@ -86,8 +86,8 @@ export default {
       await this.discard(this.record);
       this.$emit("on-discard-responses");
     },
-    async onSaveDraft() {
-      await this.saveAsDraft(this.record);
+    async onSaveDraft(durationWrapper) {
+      await this.saveAsDraft(this.record, durationWrapper);
     },
   },
   setup() {

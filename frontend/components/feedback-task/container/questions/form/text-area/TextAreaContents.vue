@@ -27,7 +27,6 @@
       @onUpdateAnswer="onUpdateAnswer"
       @click.native="onFocus"
       @on-change-focus="onChangeFocus"
-      v-model="question.answer.hasValidValues"
     />
     <RenderMarkdownBaseComponent
       v-else-if="question.settings.use_markdown && !isEditionModeActive"

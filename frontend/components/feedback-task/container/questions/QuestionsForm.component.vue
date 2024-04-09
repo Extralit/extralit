@@ -2,19 +2,19 @@
   <form
     class="questions-form"
     :class="questionFormClass"
-    @submit.prevent="onSubmit"
+    @submit.stop.prevent=""
     v-click-outside="onClickOutside"
     @click="focusOnFirstQuestionFromOutside"
   >
-    <div class="questions-form__edge"></div>
     <div class="questions-form__content">
+      <div class="questions-form__content__edge"></div>
       <div class="questions-form__header">
-        <div class="draft">
-          <p v-if="draftSaving" >
+        <p class="questions-form__guidelines-link">
+          <div v-if="isDraftSaving" class="questions-form__status">
             <svgicon color="#0000005e" name="refresh" />
             {{ $t("saving") }}
-          </p>
-          <p v-else-if="record.isDraft">
+          </div>
+          <div v-else-if="record.isDraft" class="questions-form__status">
             {{ $t("saved") }}
             <BaseDate
               class="tooltip"
@@ -22,10 +22,8 @@
               format="date-relative-now"
               :updateEverySecond="10"
             />
-          </p>
-        </div>
-        <p class="questions-form__guidelines-link">
-          Read the
+          </div>
+
           <NuxtLink
             :to="{
               name: 'dataset-id-settings',
@@ -46,7 +44,7 @@
       />
     </div>
     <div class="footer-form">
-      <div class="footer-form__left-footer">
+      <div class="footer-form__content">
         <BaseButton
           v-if="showDiscardButton || isDiscarding"
           type="button"
@@ -58,31 +56,29 @@
           :data-title="!isSaving ? draftSavingTooltip : null"
           @on-click="onDiscard"
         >
-        <span
-          v-if="!isDiscarding"
-          class="button__shortcuts"
-          v-text="'⌫'"
-        /><span v-text="$t('questions_form.discard')" />
-
-        <span v-text="'Clear'" />
+          <span
+            v-if="!isDiscarding"
+            class="button__shortcuts"
+            v-text="'⌫'"
+          /><span v-text="$t('questions_form.discard')" />
         </BaseButton>
-      </div>
-      <div class="footer-form__right-area">
         <BaseButton
           type="button"
           class="button--draft"
           :class="isDraftSaving ? '--button--saving-draft' : null"
+          :loading="isDraftSaving"
+          :loading-progress="progress"
+          :disabled="isDraftSaveDisabled || isSaving"
+          :data-title="!isSaving ? draftSavingTooltip : null"
           @on-click="onSaveDraft"
         >
-          <span class="button__shortcuts-group">
-            <span
+          <span v-if="!isDraftSaving"
+            ><span
               class="button__shortcuts"
-              v-text="$platform.isMac ? '⌘' : 'ctrl'" 
-              />
-              <span
+              v-text="$platform.isMac ? '⌘' : 'ctrl'" /><span
               class="button__shortcuts"
-              v-text="'S'"/>
-          </span>
+              v-text="'S'"
+          /></span>
           <span v-text="$t('questions_form.draft')" />
         </BaseButton>
         <BaseButton
@@ -186,22 +182,28 @@ export default {
       default: false,
     },
   },
+  
   data() {
     return {
       autofocusPosition: 0,
       interactionCount: 0,
-      isTouched: false,
+      isSubmittedTouched: false,
       userComesFromOutside: false,
       timer: null,
       duration: 0,
     };
   },
+
   computed: {
     questionFormClass() {
-      if (this.isSubmitting) return "--submitted --waiting";
-      if (this.isDiscarding) return "--discarded --waiting";
-      
-      if (this.isTouched || (this.formHasFocus && this.interactionCount > 1))
+      if (this.isSubmitting) return "--submitting --waiting";
+      if (this.isDiscarding) return "--discarding --waiting";
+      if (this.isDraftSaving) return "--saving-draft";
+
+      if (
+        this.isSubmittedTouched ||
+        (this.formHasFocus && this.interactionCount > 1)
+      )
         return "--focused-form";
     },
     formHasFocus() {
@@ -224,13 +226,10 @@ export default {
       immediate: true,
       handler() {
         if (this.record.isModified) {
-          let durationWrapper = { value: this.duration };
-          this.saveDraft(this.record, durationWrapper).then(() => {
-            this.duration = durationWrapper.value;
-          });
+          this.onSaveDraft();
         }
 
-        this.isTouched = this.record.isSubmitted && this.record.isModified;
+        this.isSubmittedTouched = this.record.isSubmitted && this.record.isModified;
       },
     },
   },
@@ -328,6 +327,7 @@ export default {
           break;
         }
         default: {
+          this.autoSubmitWithKeyboard();
           break;
         }
       }
@@ -340,7 +340,8 @@ export default {
       )
         return;
 
-      this.$emit("on-submit-responses");
+      let durationWrapper = { value: this.duration };
+      this.$emit("on-submit-responses", durationWrapper);
     },
     onDiscard() {
       if (this.isDiscardDisabled || this.isSaving) return;
@@ -350,7 +351,8 @@ export default {
     onSaveDraft() {
       if (this.isDraftSaveDisabled || this.isSaving) return;
 
-      this.$emit("on-save-draft");
+      let durationWrapper = { value: this.duration };
+      this.$emit("on-save-draft", durationWrapper);
     },
     updateQuestionAutofocus(index) {
       this.interactionCount++;
@@ -384,29 +386,26 @@ export default {
 
 <style lang="scss" scoped>
 .questions-form {
-  position: relative;
   display: flex;
   flex-direction: column;
-  flex-basis: clamp(40%, 30vw, 80%);
-  // @include media(">desktopLarge") {
-  //   max-width: clamp(40%, 45vw, 80%);
-  // }
+  flex-basis: clamp(33%, 520px, 40%);
+  gap: $base-space;
   max-height: 100%;
   min-width: 0;
   justify-content: space-between;
-  border-radius: $border-radius-m;
-  border: 1px solid transparent;
-  background: palette(white);
   margin-bottom: auto;
   @include media("<desktop") {
     justify-content: flex-start;
   }
   &__header {
-    align-items: baseline;
+    display: flex;
+    justify-content: right;
   }
-  &__title {
-    margin: 0 0 calc($base-space / 2) 0;
-    color: $black-87;
+  &__status {
+    position: absolute;
+    left: $base-space * 2;
+    @include font-size(14px);
+    color: $black-37;
   }
   &__guidelines-link {
     margin: 0;
@@ -427,52 +426,65 @@ export default {
     position: relative;
     display: flex;
     flex-direction: column;
-    gap: $base-space * 4;
-    padding: $base-space * 3;
+    gap: $base-space * 2;
+    padding: $base-space * 2;
     overflow: auto;
     scroll-behavior: smooth;
-    }
-  &__edge {
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    width: 3px;
-    z-index: 1;
-    background: transparent;
-    transition: background 0.3s ease;
-
-    &::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: -15px;
-      width: 30px;
-      background: transparent;
-      z-index: -1;
-    }
-
-    &:hover {
-      background: linear-gradient(to bottom, transparent 0%, $primary-lighten-color 1%, $primary-lighten-color 99%, transparent 100%);
-    }
-  }
-
-  &.--pending,
-  &.--draft {
+    border-radius: $border-radius-m;
+    border: 1px solid transparent;
+    background: palette(white);
+    .--pending & {
       border-color: $black-10;
     }
-    &.--discarded {
+    .--draft &,
+    .--saving-draft & {
+      border-color: $draft-color;
+    }
+    .--discarded &,
+    .--discarding & {
       border-color: $discarded-color;
     }
-    &.--submitted {
+    .--submitted &,
+    .--submitting & {
       border-color: $submitted-color;
     }
-    &.--focused-form {
-      border-color: palette(brown);
+    .--saving-draft & {
+      box-shadow: 0 0 0 1px $draft-color;
     }
-    &.--waiting .questions-form__content {
+    .--discarding & {
+      box-shadow: 0 0 0 1px $discarded-color;
+    }
+    .--submitting & {
+      box-shadow: 0 0 0 1px $submitted-color;
+    }
+    .--waiting & {
       opacity: 0.7;
+    }
+    &__edge {
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 3px;
+      z-index: 1;
+      background: transparent;
+      transition: background 0.3s ease;
+
+      &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: -15px;
+        width: 30px;
+        background: transparent;
+        z-index: -1;
+      }
+
+      &:hover {
+        background: linear-gradient(to bottom, transparent 0%, $primary-lighten-color 1%, $primary-lighten-color 99%, transparent 100%);
+      }
+    }
   }
 }
 
@@ -578,45 +590,10 @@ export default {
   }
 }
 
-.draft {
-  position: absolute;
-  right: $base-space * 2;
-  top: $base-space;
-  user-select: none;
-  display: flex;
-  flex-direction: row;
-  gap: 5px;
-  align-items: center;
-  margin: 0;
-  @include font-size(12px);
-  color: $black-37;
-  font-weight: 500;
-  p {
-    margin: 0;
-    &:hover {
-      .tooltip {
-        opacity: 1;
-        height: auto;
-        width: auto;
-        overflow: visible;
-      }
-    }
-  }
-  .tooltip {
-    opacity: 0;
-    height: auto;
-    width: 0;
-    @extend %tooltip;
-    top: 50%;
-    transform: translateY(-50%);
-    right: calc(100% + 10px);
-    overflow: hidden;
-    &:before {
-      position: absolute;
-      @extend %triangle-right;
-      left: 100%;
-    }
-  }
+[data-title] {
+  position: relative;
+  overflow: visible;
+  @include tooltip-mini("top");
 }
 
 @container (max-width: 500px) {

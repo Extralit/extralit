@@ -1,7 +1,9 @@
 export default {
   multi_label_selection: "Multi-label",
+  dynamic_multi_label_selection: "Multi-label (dynamic)",
   ranking: "Ranking",
   label_selection: "Label",
+  dynamic_label_selection: "Label (dynamic)",
   text: "Text",
   rating: "Rating",
   minimize: "Minimize",

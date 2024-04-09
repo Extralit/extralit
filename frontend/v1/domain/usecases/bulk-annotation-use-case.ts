@@ -7,7 +7,7 @@ import { GetRecordsByCriteriaUseCase } from "./get-records-by-criteria-use-case"
 import { LoadRecordsToAnnotateUseCase } from "./load-records-to-annotate-use-case";
 import { RecordRepository } from "~/v1/infrastructure/repositories";
 
-export type AvailableStatus = Exclude<RecordStatus, "pending">;
+export type AvailableStatus = Exclude<RecordStatus, "pending" | "valid">;
 
 type Progress = (value: number) => void;
 
