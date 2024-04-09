@@ -48,30 +48,37 @@
           type="checkbox"
           :name="option.text"
           :id="option.id"
-          :data-keyboard="index + 1"
+          :data-keyboard="keyboards[option.id]"
           v-model="option.isSelected"
           @change="onSelect(option)"
           @focus="onFocus"
           @keydown.tab="expandLabelsOnTab(index)"
         />
-        <label
-          class="label-text"
-          :class="{
-            'label-active': option.isSelected,
-            '--suggestion': hasSuggestion(option.text),
-            square: multiple,
-            round: !multiple,
-          }"
-          :for="option.id"
-          :title="
-            hasSuggestion(option.text)
-              ? `${$t('suggestion.name')}: ${option.text}`
-              : option.text
+        <BaseTooltip
+          :text="
+            isSuggested(option)
+              ? `<img src='icons/suggestion.svg' /> ${$t('suggestion.name')}: ${
+                  option.text
+                }`
+              : null
           "
+          minimalist
         >
-          <span class="key" v-if="showShortcutsHelper" v-text="index + 1" />
-          <span>{{ option.text }}</span>
-        </label>
+          <label
+            class="label-text"
+            :class="{
+              'label-active': option.isSelected,
+              '--suggestion': isSuggested(option),
+              square: multiple,
+              round: !multiple,
+            }"
+            :for="option.id"
+            :title="option.text"
+          >
+            <span class="key" v-text="keyboards[option.id]" />
+            <span>{{ option.text }}</span>
+          </label></BaseTooltip
+        >
       </div>
     </transition-group>
     <i class="no-result" v-if="!filteredOptions.length" />
@@ -83,19 +90,22 @@
 const OPTIONS_THRESHOLD_TO_ENABLE_SEARCH = 10;
 import "assets/icons/chevron-down";
 import "assets/icons/chevron-up";
+
+import { useLabelSelectionViewModel } from "./useLabelSelectionViewModel";
+
 export default {
   name: "LabelSelectionComponent",
   props: {
     maxOptionsToShowBeforeCollapse: {
       type: Number,
-      default: () => -1,
+      required: true,
     },
     options: {
       type: Array,
       required: true,
     },
-    suggestions: {
-      type: [Array, String],
+    suggestion: {
+      type: Object,
     },
     placeholder: {
       type: String,
@@ -113,10 +123,6 @@ export default {
       type: Boolean,
       default: () => false,
     },
-    showShortcutsHelper: {
-      type: Boolean,
-      default: () => false,
-    },
   },
   model: {
     prop: "options",
@@ -125,7 +131,6 @@ export default {
   data() {
     return {
       searchInput: "",
-      isExpanded: false,
       timer: null,
       keyCode: "",
     };
@@ -145,7 +150,9 @@ export default {
             }
 
             if (options?.length > 0) {
-              options[0].focus();
+              options[0].focus({
+                preventScroll: true,
+              });
             } else {
               this.$refs.searchComponentRef?.searchInputRef.focus();
             }
@@ -155,6 +162,12 @@ export default {
     },
   },
   computed: {
+    keyboards() {
+      return this.options.reduce((acc, option, index) => {
+        acc[option.id] = index + 1;
+        return acc;
+      }, {});
+    },
     filteredOptions() {
       return this.options.filter((option) =>
         String(option.text)
@@ -168,21 +181,16 @@ export default {
         .filter((option) => option.isSelected);
     },
     visibleOptions() {
-      if (this.maxOptionsToShowBeforeCollapse === -1 || this.isExpanded)
-        return this.filteredOptions;
+      if (this.isExpanded) return this.filteredOptions;
 
       return this.filteredOptions
         .slice(0, this.maxOptionsToShowBeforeCollapse)
         .concat(this.remainingVisibleOptions);
     },
-    noResultMessage() {
-      return `There is no result matching: ${this.searchInput}`;
-    },
     numberToShowInTheCollapseButton() {
       return this.filteredOptions.length - this.visibleOptions.length;
     },
     showCollapseButton() {
-      if (this.maxOptionsToShowBeforeCollapse === -1) return false;
       return this.filteredOptions.length > this.maxOptionsToShowBeforeCollapse;
     },
     showSearch() {
@@ -193,8 +201,9 @@ export default {
     },
     textToShowInTheCollapseButton() {
       if (this.isExpanded) {
-        return "Less";
+        return this.$t("less");
       }
+
       return `+${this.numberToShowInTheCollapseButton}`;
     },
     iconToShowInTheCollapseButton() {
@@ -209,11 +218,17 @@ export default {
         $event.key === "Tab" ||
         $event.key === "Enter" ||
         $event.key === "Backspace" ||
+        $event.key === "ArrowLeft" ||
+        $event.key === "ArrowRight" ||
+        $event.key === "ArrowUp" ||
+        $event.key === "ArrowDown" ||
         $event.shiftKey ||
         $event.ctrlKey ||
         $event.metaKey
       )
         return;
+
+      $event.stopPropagation();
 
       const isSearchActive =
         document.activeElement ===
@@ -223,6 +238,8 @@ export default {
 
       if ($event.code == "Space") {
         $event.preventDefault();
+        $event.stopPropagation();
+
         document.activeElement.click();
 
         return;
@@ -261,6 +278,7 @@ export default {
 
       if (match) {
         $event.preventDefault();
+        $event.stopPropagation();
 
         match.click();
       }
@@ -285,16 +303,18 @@ export default {
       this.$emit("on-focus");
     },
     expandLabelsOnTab(index) {
-      if (!this.showCollapseButton) {
-        return;
-      }
+      if (!this.showCollapseButton) return;
+
       if (index === this.maxOptionsToShowBeforeCollapse - 1) {
         this.isExpanded = true;
       }
     },
-    hasSuggestion(value) {
-      return this.suggestions?.includes(value) || false;
+    isSuggested(option) {
+      return this.suggestion?.isSuggested(option.value);
     },
+  },
+  setup(props) {
+    return useLabelSelectionViewModel(props);
   },
 };
 </script>
@@ -308,9 +328,11 @@ $label-dark-color: palette(purple, 200);
   flex-direction: column;
   gap: $base-space * 2;
   .component-header {
-    display: grid;
-    grid-template-columns: 1fr auto;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
     align-items: center;
+    height: 28px;
   }
   .inputs-area {
     display: inline-flex;
@@ -322,6 +344,10 @@ $label-dark-color: palette(purple, 200);
     &:hover {
       border-color: darken($label-color, 12%);
     }
+  }
+
+  .input-button {
+    max-width: 100%;
   }
 }
 
@@ -356,9 +382,8 @@ $label-dark-color: palette(purple, 200);
   justify-content: center;
   gap: $base-space;
   width: 100%;
-  height: 32px;
+  min-height: $base-space * 4;
   min-width: 50px;
-  max-width: 200px;
   text-align: center;
   padding-inline: $base-space;
   background: $label-color;
@@ -368,11 +393,15 @@ $label-dark-color: palette(purple, 200);
   border: 2px solid transparent;
   border-radius: $border-radius-rounded;
   cursor: pointer;
+  user-select: none;
   span {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     min-width: 0;
+    &:hover {
+      direction: rtl;
+    }
   }
   &.--suggestion {
     background: $suggestion-color;
@@ -402,7 +431,7 @@ $label-dark-color: palette(purple, 200);
 input[type="checkbox"] {
   @extend %visuallyhidden;
   &:focus {
-    & + .label-text {
+    & + div .label-text {
       outline: 2px solid $primary-color;
     }
   }
@@ -410,7 +439,7 @@ input[type="checkbox"] {
 .input-button:not(:first-of-type) {
   input[type="checkbox"] {
     &:focus:not(:focus-visible) {
-      & + .label-text {
+      & + div .label-text {
         outline: none;
         &.label-active {
           outline: none;

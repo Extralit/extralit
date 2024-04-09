@@ -7,6 +7,7 @@ You can speed up your annotation by using these keyboard shortcuts:
 | Select and unselect label              | `1`, `2`, `3`                     |
 | Move between labels or ranking options | `⇥ Tab` or `⇧ Shift` `⇥ Tab`      |
 | Select rating and rank                 | `1`, `2`, `3`                     |
+| Fit span to character selection        | Hold `⇧ Shift`                    |
 | Activate text area                     | `⇧ Shift` `↵ Enter`               |
 | Exit text area                         | `Esc`                             |
 | Discard (Mac os)                       | `⌘ Cmd` `⌫ Backspace`             |

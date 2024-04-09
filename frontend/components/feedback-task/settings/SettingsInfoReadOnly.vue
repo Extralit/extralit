@@ -46,8 +46,7 @@ export default {
     },
     guidelines() {
       return (
-        this.settings.dataset.guidelines ||
-        "This dataset has no annotation guidelines"
+        this.settings.dataset.guidelines || this.$t("noAnnotationGuidelines")
       );
     },
   },
@@ -72,6 +71,7 @@ export default {
     display: flex;
     align-items: center;
     gap: $base-space * 3;
+    flex-wrap: wrap;
   }
 
   &__dataset-name {

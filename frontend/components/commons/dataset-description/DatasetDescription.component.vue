@@ -2,7 +2,7 @@
   <div class="description">
     <h2
       class="--heading5 --medium description__title"
-      v-text="'Guidelines'"
+      v-text="$t('annotationGuidelines')"
     />
     <BaseCardWithTabs :tabs="tabs">
       <template v-slot="{ currentComponent }">

@@ -1,7 +1,7 @@
 <template>
   <div class="settings__container">
     <div class="settings__edition-form">
-      <h2 class="--heading5 --medium">Edit fields</h2>
+      <h2 class="--heading5 --medium" v-text="$t('settings.editFields')" />
       <div v-for="field in settings.fields" :key="field.id">
         <form
           @submit.prevent="onSubmit(field)"
@@ -15,16 +15,12 @@
             :validations="field.validate().title"
             class="settings__edition-form__group"
           >
-            <label for="field.id">Title</label>
+            <label for="field.id" v-text="$t('title')" />
             <input type="text" id="field.id" v-model="field.title" />
           </Validation>
 
           <BaseSwitch v-model="field.settings.use_markdown"
-            >Render Markdown</BaseSwitch
-          >
-
-          <BaseSwitch v-model="field.settings.use_table"
-            >Render Table</BaseSwitch
+            >{{ $t("useMarkdown") }}</BaseSwitch
           >
 
           <div class="settings__edition-form__footer">
@@ -34,14 +30,14 @@
               @on-click="restore(field)"
               :disabled="!field.isModified"
             >
-              <span v-text="'Cancel'" />
+              <span v-text="$t('cancel')" />
             </BaseButton>
             <BaseButton
               type="submit"
               class="primary small"
               :disabled="!field.isModified || !field.isFieldValid"
             >
-              <span v-text="'Update'" />
+              <span v-text="$t('update')" />
             </BaseButton>
           </div>
         </form>
@@ -104,9 +100,6 @@ export default {
       gap: $base-space * 2;
       h4 {
         margin: 0;
-      }
-      p {
-        color: $black-54;
       }
     }
 

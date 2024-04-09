@@ -16,7 +16,12 @@ interface BackendSuggestion {
 }
 export type BackendRecordStatus = "submitted" | "discarded" | "draft";
 
-export interface BackendResponse {
+export interface BackendResponseRequest {
+  status: BackendRecordStatus;
+  values: BackendAnswerCombinations;
+}
+
+export interface BackendResponseResponse {
   id: string;
   status: BackendRecordStatus;
   values: BackendAnswerCombinations;
@@ -26,7 +31,7 @@ export interface BackendResponse {
 export interface BackedRecord {
   id: string;
   suggestions: BackendSuggestion[];
-  responses: BackendResponse[];
+  responses: BackendResponseResponse[];
   fields: { [key: string]: string };
   updated_at: string;
   query_score: number;
@@ -81,4 +86,21 @@ export interface BackendAdvanceSearchQuery {
     and: AndFilterBackendSearchQuery[];
   };
   sort?: BackendSort[];
+}
+
+export interface BackendResponseBulkRequest {
+  items: {
+    status: BackendRecordStatus;
+    values: BackendAnswerCombinations;
+    record_id: string;
+  }[];
+}
+
+export interface BackendResponseBulkResponse {
+  items: {
+    item: BackendResponseResponse & { record_id: string };
+    error: {
+      detail?: string;
+    };
+  }[];
 }

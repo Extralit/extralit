@@ -2,7 +2,7 @@
   <SynchronizeScroll class="settings__container">
     <div class="settings__edition-form">
       <div class="settings__edition-form__content">
-        <h2 class="--heading5 --medium">Edit questions</h2>
+        <h2 class="--heading5 --medium" v-text="$t('settings.editQuestions')" />
         <div v-for="question in settings.questions" :key="question.id">
           <form
             @submit.prevent="onSubmit(question)"
@@ -17,7 +17,7 @@
               :validations="question.validate().title"
               class="settings__edition-form__group"
             >
-              <label :for="`title-${question.id}`">Title</label>
+              <label :for="`title-${question.id}`" v-text="$t('title')" />
               <input
                 type="type"
                 :id="`title-${question.id}`"
@@ -29,19 +29,53 @@
               :validations="question.validate().description"
               class="settings__edition-form__group"
             >
-              <label :for="`description-${question.id}`">Description</label>
+              <label
+                :for="`description-${question.id}`"
+                v-text="$t('description')"
+              />
               <textarea
                 :id="`description-${question.id}`"
                 v-model="question.description"
               />
             </Validation>
 
+            <div
+              class="settings__edition-form__group"
+              v-if="
+                question.isMultiLabelType ||
+                question.isSingleLabelType ||
+                question.isSpanType
+              "
+            >
+              <label :for="`options-${question.id}`" v-text="$t('labels')" />
+              <draggable
+                class="label__container"
+                ghost-class="label__item__ghost"
+                :list="question.settings.options"
+                :group="{ name: question.name }"
+                @end="question.reloadAnswerFromOptions()"
+              >
+                <div
+                  v-for="option in question.settings.options"
+                  :key="option.value"
+                >
+                  <label class="label__item">
+                    <svgicon
+                      width="6"
+                      name="draggable"
+                      :id="`${option.value}-icon`"
+                    />
+                    <span>{{ option.text }}</span>
+                  </label>
+                </div>
+              </draggable>
+            </div>
+
             <BaseSwitch
               v-if="question.isTextType"
               :id="`use-markdown-${question.id}`"
               v-model="question.settings.use_markdown"
-              >Render Markdown Text</BaseSwitch
-            >
+              >{{ $t("useMarkdown") }}</BaseSwitch>
 
             <BaseSwitch
               v-if="question.isTextType"
@@ -51,15 +85,12 @@
             >
 
             <BaseRangeSlider
-              v-if="
-                !!question.settings.visible_options &&
-                question.settings.options.length > 3
-              "
+              v-if="question.settings.options?.length > 3"
               :id="`visible_options-${question.id}`"
               :min="3"
               :max="question.settings.options.length"
               v-model="question.settings.visible_options"
-              >Visible options</BaseRangeSlider
+              >{{ $t("visibleLabels") }}</BaseRangeSlider
             >
 
             <div class="settings__edition-form__footer">
@@ -69,14 +100,14 @@
                 @on-click="restore(question)"
                 :disabled="!question.isModified"
               >
-                <span v-text="'Cancel'" />
+                <span v-text="$t('cancel')" />
               </BaseButton>
               <BaseButton
                 type="submit"
                 class="primary small"
                 :disabled="!question.isModified || !question.isQuestionValid"
               >
-                <span v-text="'Update'" />
+                <span v-text="$t('update')" />
               </BaseButton>
             </div>
           </form>
@@ -165,7 +196,7 @@ export default {
       width: 100%;
       gap: $base-space;
 
-      & label {
+      & > label {
         width: fit-content;
         height: 14px;
         color: $black-54;
@@ -189,7 +220,7 @@ export default {
 
       & textarea {
         resize: vertical;
-        min-height: 100px;
+        min-height: 50px;
         max-height: 300px;
         padding: 16px;
         background: palette(white);
@@ -226,6 +257,53 @@ export default {
       border-radius: $border-radius-m;
       margin: $base-space 0;
     }
+  }
+}
+
+$label-color: palette(grey, 700);
+$label-dark-color: $black-54;
+
+.label__container {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: calc($base-space / 2);
+}
+
+.label__item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc($base-space / 2);
+  width: 100%;
+  padding: calc($base-space / 4);
+  border-radius: $border-radius-s;
+  min-width: 50px;
+  text-align: center;
+  color: $label-dark-color;
+  font-weight: 500;
+  outline: none;
+  border: 2px solid transparent;
+  cursor: grab;
+  user-select: none;
+  transition: background 0.2s ease;
+  @include font-size(12px);
+  span {
+    border-radius: calc($border-radius-s - 2px);
+    background: $black-6;
+    padding: 2px 4px;
+    line-height: 1.2;
+  }
+  svg {
+    fill: $black-20;
+  }
+  &:hover {
+    background: $label-color;
+    transition: background 0.2s ease;
+  }
+
+  &__ghost {
+    opacity: 0.2;
   }
 }
 </style>

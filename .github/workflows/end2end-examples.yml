@@ -85,10 +85,10 @@ jobs:
         env:
           ARGILLA_ENABLE_TELEMETRY: 0
         run: |
-          pip install -e .
+          pip install -e ".[server]"
           python -m argilla server database migrate
           python -m argilla server database users create_default
-          uvicorn argilla.server.app:app --port 6900 --host 0.0.0.0 &
+          python -m argilla server start &
       - name: Run end2end examples 📈
         env:
           ARGILLA_ENABLE_TELEMETRY: 0

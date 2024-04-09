@@ -1,11 +1,11 @@
 <template>
   <span
     :key="recordStatus"
-    :class="['status-tag', getStatusInfo.class, { '--minimal': minimal }]"
+    :class="['status-tag', getStatusInfo.class]"
     :title="getStatusInfo.name"
   >
     <svgicon
-      v-if="getStatusInfo.icon && !minimal"
+      v-if="getStatusInfo.icon"
       :name="getStatusInfo.icon"
       width="14"
       height="14"

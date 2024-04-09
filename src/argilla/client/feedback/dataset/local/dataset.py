@@ -45,13 +45,6 @@ from argilla.client.feedback.training.schemas.base import (
     TrainingTaskForTextClassification,
     TrainingTaskTypes,
 )
-from argilla.client.feedback.unification import (
-    LabelQuestionStrategy,
-    MultiLabelQuestionStrategy,
-    RankingQuestionStrategy,
-    RatingQuestionStrategy,
-    TextQuestionStrategy,
-)
 from argilla.client.models import Framework
 
 if TYPE_CHECKING:
@@ -232,6 +225,7 @@ class FeedbackDataset(
             + textwrap.indent(f"\nquestions={self.questions}", indent)
             + textwrap.indent(f"\nguidelines={self.guidelines})", indent)
             + textwrap.indent(f"\nmetadata_properties={self.metadata_properties})", indent)
+            + textwrap.indent(f"\nvectors_settings={self.vectors_settings})", indent)
             + "\n)"
         )
 
@@ -329,13 +323,6 @@ class FeedbackDataset(
         self._unique_metadata_property(metadata_property)
         self._metadata_properties.append(metadata_property)
         return metadata_property
-
-    def vector_settings_by_name(self, name: str) -> VectorSettings:
-        vector_settings = self._vectors_settings.get(name)
-        if not vector_settings:
-            raise KeyError(f"Vector settings with name '{name!r}' does not exist in the dataset.")
-
-        return vector_settings
 
     def add_vector_settings(self, vector_settings: VectorSettings) -> VectorSettings:
         if self._vectors_settings.get(vector_settings.name):

@@ -6,26 +6,32 @@
         v-for="option in options"
         :key="option.id"
         @keydown.enter.prevent
-        :title="suggestions === option.value ? $t('suggestion.name') : null"
       >
-        <input
-          ref="options"
-          type="checkbox"
-          :name="option.value"
-          :id="option.id"
-          v-model="option.isSelected"
-          @change="onSelect(option)"
-          @focus="onFocus"
-        />
-        <label
-          class="label-text"
-          :class="{
-            'label-active': option.isSelected,
-            '--suggestion': suggestions === option.value,
-          }"
-          :for="option.id"
-          v-text="option.value"
-        />
+        <BaseTooltip
+          :text="
+            suggestions === option.value
+              ? `<img src='/icons/suggestion.svg' /> ${$t('suggestion.name')}`
+              : null
+          "
+          minimalist
+        >
+          <input
+            ref="options"
+            type="checkbox"
+            :name="option.value"
+            :id="option.id"
+            v-model="option.isSelected"
+            @change="onSelect(option)"
+            @focus="onFocus" />
+          <label
+            class="label-text"
+            :class="{
+              'label-active': option.isSelected,
+              '--suggestion': suggestions === option.value,
+            }"
+            :for="option.id"
+            v-text="option.value"
+        /></BaseTooltip>
       </div>
     </div>
   </div>
@@ -154,5 +160,11 @@ input[type="checkbox"] {
       }
     }
   }
+}
+
+[data-title] {
+  position: relative;
+  overflow: visible;
+  @include tooltip-mini("top");
 }
 </style>

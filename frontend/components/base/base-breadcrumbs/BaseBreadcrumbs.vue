@@ -33,11 +33,10 @@
         >
       </li>
     </ul>
-    <base-action-tooltip tooltip="Copied">
+    <base-action-tooltip :tooltip="$t('copied')">
       <a
         v-if="copyButton"
         class="breadcrumbs__copy"
-        href="#"
         @click.prevent="
           $copyToClipboard(
             filteredBreadcrumbs[filteredBreadcrumbs.length - 1].name
@@ -81,10 +80,16 @@ export default {
     padding-left: 0;
     font-weight: normal;
     list-style: none;
+    @include media("<=tablet") {
+      flex-wrap: wrap;
+    }
   }
   li {
     margin: auto 0.5em auto auto;
     white-space: nowrap;
+    @include media("<=tablet") {
+      margin: 0;
+    }
     &:not(:last-child):after {
       content: "/";
       margin-left: 0.5em;
@@ -100,6 +105,11 @@ export default {
     }
   }
   &__copy {
+    user-select: none;
+    cursor: pointer;
+    @include media("<=tablet") {
+      display: none;
+    }
     &:hover {
       .svg-icon {
         fill: darken(palette(white), 10%);

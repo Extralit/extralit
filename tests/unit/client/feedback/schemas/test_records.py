@@ -11,8 +11,8 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-
-from typing import Any, Dict, List, Optional, Union
+import warnings
+from typing import Any, Dict, List, Optional, Type, Union
 
 import pytest
 from argilla.client.feedback.schemas.records import (
@@ -23,7 +23,8 @@ from argilla.client.feedback.schemas.records import (
     SuggestionSchema,
     ValueSchema,
 )
-from pydantic import ValidationError
+
+from tests.pydantic_v1 import ValidationError
 
 
 @pytest.mark.parametrize(
@@ -135,12 +136,18 @@ def test_feedback_record(schema_kwargs: Dict[str, Any]) -> None:
 def test_feedback_record_update(
     schema_kwargs: Dict[str, Any],
     suggestions: Union[SuggestionSchema, List[SuggestionSchema], Dict[str, Any], List[Dict[str, Any]]],
-    expected_warning: Optional[Warning],
+    expected_warning: Optional[Type[Warning]],
     warning_match: Optional[str],
 ) -> None:
     record = FeedbackRecord(**schema_kwargs)
-    with pytest.warns(expected_warning, match=warning_match):
-        record.update(suggestions)
+
+    if expected_warning is None:
+        with warnings.catch_warnings(record=True) as record_:
+            record.update(suggestions)
+            assert len(record_) == 0
+    else:
+        with pytest.warns(expected_warning, match=warning_match):
+            record.update(suggestions)
 
 
 @pytest.mark.parametrize(

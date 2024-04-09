@@ -1,50 +1,31 @@
-import { Answer, RankingAnswer } from "../IAnswer";
-import { Suggestion } from "./Suggestion";
+import { Answer, RankingAnswer, SpanAnswer } from "../IAnswer";
+import { QuestionType } from "./QuestionType";
 
-export type QuestionType =
-  | "text"
-  | "rating"
-  | "ranking"
-  | "label_selection"
-  | "dynamic_label_selection"
-  | "multi_label_selection"
-  | "dynamic_multi_label_selection";
 export abstract class QuestionAnswer {
-  private answer: Answer;
+  private _answer: Answer;
   constructor(public readonly type: QuestionType) {}
-  private _hasValidValues: boolean = true;
-
-  complete(answer: Answer) {
-    if (this.answer) return;
-
-    this.answer = answer;
-    this.fill(answer);
-  }
-
-  forceComplete(answer: Answer) {
-    this.answer = answer;
-    this.fill(answer);
-  }
-
-  protected abstract fill(answer: Answer);
-  abstract clear();
-  abstract get isValid(): boolean;
 
   get isPartiallyValid(): boolean {
     return false;
   }
 
   get hasValidValues(): boolean {
-    return this._hasValidValues;
+    return true;
   }
 
-  set hasValidValues(value: boolean) {
-    this._hasValidValues = value;
+  get answer() {
+    return this._answer;
   }
 
+  response(answer: Answer) {
+    this._answer = answer;
+    this.fill(this._answer);
+  }
+
+  protected abstract fill(answer: Answer);
+  abstract clear();
+  abstract get isValid(): boolean;
   abstract get valuesAnswered();
-
-  abstract matchSuggestion(suggestion: Suggestion): boolean;
 }
 export class TextQuestionAnswer extends QuestionAnswer {
   public originalValue: string;
@@ -67,11 +48,53 @@ export class TextQuestionAnswer extends QuestionAnswer {
   get valuesAnswered() {
     return this.value;
   }
+}
 
-  matchSuggestion(suggestion: Suggestion): boolean {
-    return this.valuesAnswered === suggestion.suggestedAnswer;
+type Option = {
+  id: string;
+  value: string;
+  text: string;
+  color: string;
+  isSelected: boolean;
+};
+
+export class SpanQuestionAnswer extends QuestionAnswer {
+  public readonly options: Option[] = [];
+  private values: SpanAnswer[] = [];
+
+  constructor(
+    public readonly type: QuestionType,
+    private questionName: string,
+    options: Omit<Option, "isSelected" | "id">[]
+  ) {
+    super(type);
+
+    this.options = options.map((e) => ({
+      ...e,
+      id: `${questionName}-${e.value}`,
+      isSelected: false,
+    }));
+
+    this.clear();
+  }
+
+  protected fill(answer: Answer) {
+    this.values = answer.value as SpanAnswer[];
+  }
+
+  clear() {
+    this.values = [];
+  }
+
+  get isValid(): boolean {
+    return true;
+  }
+
+  get valuesAnswered(): SpanAnswer[] {
+    return this.values;
   }
 }
+
 type SingleLabelValue = {
   id: string;
   text: string;
@@ -115,10 +138,6 @@ export class SingleLabelQuestionAnswer extends QuestionAnswer {
 
   get valuesAnswered(): string {
     return this.values.filter((label) => label.isSelected)[0]?.value;
-  }
-
-  matchSuggestion(suggestion: Suggestion): boolean {
-    return this.valuesAnswered === suggestion.suggestedAnswer;
   }
 }
 type MultiLabelValue = {
@@ -168,17 +187,6 @@ export class MultiLabelQuestionAnswer extends QuestionAnswer {
       .filter((label) => label.isSelected)
       .map((label) => label.value);
   }
-
-  matchSuggestion(suggestion: Suggestion): boolean {
-    const valuesSuggested = suggestion.suggestedAnswer as string[];
-
-    const equal =
-      valuesSuggested.every((answered) =>
-        this.valuesAnswered.includes(answered)
-      ) && valuesSuggested.length === this.valuesAnswered.length;
-
-    return equal;
-  }
 }
 type RatingValue = {
   id: string;
@@ -221,10 +229,6 @@ export class RatingLabelQuestionAnswer extends QuestionAnswer {
 
   get valuesAnswered(): number {
     return this.values.filter((rating) => rating.isSelected)[0]?.value;
-  }
-
-  matchSuggestion(suggestion: Suggestion): boolean {
-    return this.valuesAnswered === suggestion.suggestedAnswer;
   }
 }
 type RankingValue = {
@@ -282,14 +286,5 @@ export class RankingQuestionAnswer extends QuestionAnswer {
 
   get valuesAnswered(): RankingValue[] {
     return this.values;
-  }
-
-  matchSuggestion(suggestion: Suggestion): boolean {
-    const suggestedAnswers = suggestion.suggestedAnswer as RankingAnswer[];
-    return suggestedAnswers.every(
-      (suggested) =>
-        this.values.find((value) => value.value === suggested.value)?.rank ===
-        suggested.rank
-    );
   }
 }

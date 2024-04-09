@@ -1,26 +1,26 @@
 <template>
-  <div
-    v-if="text"
-    ref="tooltipWrapper"
-    class="tooltip"
-    @mouseenter="show"
-    @mouseleave="hide"
-  >
-    <slot></slot>
+  <div class="tooltip">
+    <div v-if="text" ref="tooltipWrapper" @mouseenter="show" @mouseleave="hide">
+      <slot></slot>
 
-    <div
-      ref="tooltipText"
-      :class="[
-        'tooltip-content',
-        positionClass,
-        showTooltip ? 'tooltip-content--show' : 'tooltip-content--hide',
-      ]"
-      :style="{
-        top: tooltipPosition.top + 'px',
-        left: tooltipPosition.left + 'px',
-      }"
-      v-text="text"
-    />
+      <div
+        ref="tooltipText"
+        :class="[
+          'tooltip-content',
+          positionClass,
+          minimalist ? 'tooltip-content--minimalist' : null,
+          showTooltip ? 'tooltip-content--show' : 'tooltip-content--hide',
+        ]"
+        :style="{
+          top: tooltipPosition.top + 'px',
+          left: tooltipPosition.left + 'px',
+        }"
+        v-html="text"
+      />
+    </div>
+    <div v-else>
+      <slot></slot>
+    </div>
   </div>
 </template>
 
@@ -38,7 +38,6 @@ export default {
   props: {
     text: {
       type: String,
-      required: true,
     },
     position: {
       type: String,
@@ -46,7 +45,11 @@ export default {
     },
     offset: {
       type: Number,
-      default: 8,
+      default: 4,
+    },
+    minimalist: {
+      type: Boolean,
+      default: true,
     },
   },
   methods: {
@@ -117,6 +120,7 @@ export default {
 .tooltip {
   position: relative;
   display: inline-block;
+  max-width: 100%;
 }
 
 .tooltip-content {
@@ -134,6 +138,11 @@ export default {
   @include font-size($tooltip-font-size);
   font-weight: 500;
   white-space: pre;
+  &--minimalist {
+    background: palette(grey, 150);
+    @include font-size(12px);
+    padding: calc($base-space / 2);
+  }
   &--hide {
     opacity: 0;
     pointer-events: none;
@@ -145,7 +154,7 @@ export default {
   }
 }
 
-.tooltip-content {
+.tooltip-content:not(.tooltip-content--minimalist) {
   &.position-top {
     &::after {
       content: "";

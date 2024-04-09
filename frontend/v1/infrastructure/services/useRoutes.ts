@@ -1,33 +1,64 @@
-import { useRoute, useRouter } from "@nuxtjs/composition-api";
+import { useContext, useRoute, useRouter } from "@nuxtjs/composition-api";
 import { Dataset } from "@/v1/domain/entities/Dataset";
 
 type KindOfParam =
-  | "_status"
-  | "_page"
-  | "_search"
-  | "_metadata"
-  | "_sort"
-  | "_response"
-  | "_suggestion"
-  | "_similarity";
+  | "status"
+  | "page"
+  | "search"
+  | "metadata"
+  | "sort"
+  | "response"
+  | "suggestion"
+  | "similarity";
+
+type QueryParam = {
+  key: KindOfParam;
+  value: string;
+  encode?: boolean;
+};
 
 export const ROUTES = {
   datasets: "datasets",
+  annotationPage: {
+    oldDataset: (workspace: string, name: string) =>
+      `/datasets/${workspace}/${name}`,
+    feedbackDataset: (datasetId: string) =>
+      `/dataset/${datasetId}/annotation-mode`,
+  },
 };
+
+const isOldTask = (task: string) => {
+  return ["TokenClassification", "TextClassification", "Text2Text"].includes(
+    task
+  );
+};
+
 export const useRoutes = () => {
+  const context = useContext();
   const router = useRouter();
   const route = useRoute();
 
-  const isOldTask = (task: string) => {
-    return ["TokenClassification", "TextClassification", "Text2Text"].includes(
-      task
-    );
+  const getPreviousRoute = (): string => {
+    return context.from.value.fullPath;
+  };
+
+  const previousRouteMatchWith = (value: string): boolean => {
+    const previousRoute = getPreviousRoute();
+    const currentRoute = route.value.fullPath;
+
+    if (previousRoute !== currentRoute) return previousRoute.includes(value);
+
+    return false;
   };
 
   const getDatasetLink = ({ task, name, workspace, id }: Dataset): string => {
     return isOldTask(task)
-      ? `/datasets/${workspace}/${name}`
-      : `/dataset/${id}/annotation-mode`;
+      ? ROUTES.annotationPage.oldDataset(workspace, name)
+      : ROUTES.annotationPage.feedbackDataset(id);
+  };
+
+  const goToFeedbackTaskAnnotationPage = (datasetId: string) => {
+    router.push(ROUTES.annotationPage.feedbackDataset(datasetId));
   };
 
   const goToSetting = ({ task, workspace, name, id }: Dataset) => {
@@ -49,12 +80,6 @@ export const useRoutes = () => {
 
   const goToDatasetsList = () => {
     router.push({ path: `/${ROUTES.datasets}` });
-  };
-
-  type QueryParam = {
-    key: KindOfParam;
-    value: string;
-    encode?: boolean;
   };
 
   const setQueryParams = async (...params: QueryParam[]) => {
@@ -86,12 +111,49 @@ export const useRoutes = () => {
     return decodeURIComponent(value) as T;
   };
 
+  const getParams = () => {
+    return route.value.params;
+  };
+
+  const go = (
+    where: string,
+    params: { external: boolean; newWindow: boolean } = {
+      external: false,
+      newWindow: false,
+    }
+  ) => {
+    if (params.external) {
+      if (params.newWindow) {
+        window.open(where);
+      } else {
+        window.location.href = where;
+      }
+    }
+
+    router.push(where);
+  };
+
+  const getQuery = () => {
+    return route.value.query;
+  };
+
+  const goBack = () => {
+    router.go(-1);
+  };
+
   return {
+    go,
+    goBack,
+    getQuery,
+    goToFeedbackTaskAnnotationPage,
     goToDatasetsList,
     goToSetting,
     getDatasetLink,
     setQueryParams,
     getQueryParams,
+    getParams,
+    getPreviousRoute,
+    previousRouteMatchWith,
     watchBrowserNavigation: (callBack: () => void) => {
       window.addEventListener("popstate", callBack);
     },

@@ -60,13 +60,10 @@ app.add_typer(users_app, name="users")
 app.add_typer(whoami_app, name="whoami")
 app.add_typer(workspaces_app, name="workspaces")
 
-if is_package_with_extras_installed("argilla", ["server"]) or True:
-    from argilla.cli.callback import deprecated_database_cmd_callback
-    from argilla.cli.server import app as server_app
-    from argilla.cli.server.database import app as deprecated_app
+if is_package_with_extras_installed("argilla", ["server"]):
+    from argilla_server.cli import app as server_app
 
     app.add_typer(server_app, name="server")
-    app.add_typer(deprecated_app, name="database", callback=deprecated_database_cmd_callback, deprecated=True)
 
 if __name__ == "__main__":
     app()

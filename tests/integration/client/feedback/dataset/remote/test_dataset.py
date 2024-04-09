@@ -19,12 +19,9 @@ from uuid import UUID
 import argilla as rg
 import argilla.client.singleton
 import pytest
-from argilla import (
-    FeedbackRecord,
-)
+from argilla import FeedbackRecord, SuggestionSchema
 from argilla.client.feedback.dataset import FeedbackDataset
 from argilla.client.feedback.dataset.remote.dataset import RemoteFeedbackDataset
-from argilla.client.feedback.schemas import SuggestionSchema
 from argilla.client.feedback.schemas.fields import TextField
 from argilla.client.feedback.schemas.metadata import (
     FloatMetadataProperty,
@@ -48,10 +45,10 @@ from argilla.client.feedback.schemas.vector_settings import VectorSettings
 from argilla.client.sdk.commons.errors import ValidationApiError
 from argilla.client.sdk.users.models import UserRole
 from argilla.client.workspaces import Workspace
-from argilla.server.models import User as ServerUser
+from argilla_server.models import User as ServerUser
+from argilla_server.settings import settings
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from argilla.server.settings import settings
 from tests.factories import (
     DatasetFactory,
     RecordFactory,
@@ -165,12 +162,11 @@ class TestRemoteFeedbackDataset:
         )
 
         remote = test_dataset_with_metadata_properties.push_to_argilla(name="test_dataset", workspace=ws)
+        question = remote.question_by_name("question")
 
         records = []
         for record in remote:
-            record.suggestions = [
-                SuggestionSchema(question_name="question", value=f"Hello world! for {record.fields['text']}")
-            ]
+            record.suggestions = [question.suggestion(f"Hello world! for {record.fields['text']}")]
             records.append(record)
 
         remote.update_records(records)
@@ -191,14 +187,17 @@ class TestRemoteFeedbackDataset:
         ws = rg.Workspace.create(name="test-workspace")
 
         remote = test_dataset_with_metadata_properties.push_to_argilla(name="test_dataset", workspace=ws)
+        question = remote.question_by_name("question")
 
         remote.add_records(
             [
                 FeedbackRecord(
-                    fields={"text": "Hello world!"}, suggestions=[{"question_name": "question", "value": "test"}]
+                    fields={"text": "Hello world!"},
+                    suggestions=[question.suggestion("test")],
                 ),
                 FeedbackRecord(
-                    fields={"text": "Another record"}, suggestions=[{"question_name": "question", "value": "test"}]
+                    fields={"text": "Another record"},
+                    suggestions=[question.suggestion(value="test")],
                 ),
             ]
         )
@@ -841,3 +840,50 @@ class TestRemoteFeedbackDataset:
                 match="A local `FeedbackDataset` returned because `prepare_for_training` is not supported for `RemoteFeedbackDataset`. ",
             ):
                 ds.prepare_for_training(framework=None, task=None)
+
+    async def test_add_records_with_metadata_including_nan_values(
+        self, owner: "User", feedback_dataset: FeedbackDataset
+    ):
+        argilla.client.singleton.init(api_key=owner.api_key)
+        workspace = Workspace.create(name="test-workspace")
+
+        remote_dataset = feedback_dataset.push_to_argilla(name="test_dataset", workspace=workspace)
+
+        records = [
+            FeedbackRecord(
+                external_id=str(i),
+                fields={"text": "Hello world!", "text-2": "Hello world!"},
+                metadata={"float-metadata": float("nan")},
+            )
+            for i in range(1, 20)
+        ]
+
+        with pytest.raises(ValueError, match="NaN values are not allowed"):
+            remote_dataset.add_records(records)
+
+    async def test_add_records_with_metadata_including_none_values(
+        self, owner: "User", feedback_dataset: FeedbackDataset
+    ):
+        argilla.client.singleton.init(api_key=owner.api_key)
+        workspace = Workspace.create(name="test-workspace")
+
+        feedback_dataset.add_records(
+            [
+                FeedbackRecord(
+                    fields={"text": "Hello world!"},
+                    metadata={
+                        "terms-metadata": None,
+                        "integer-metadata": None,
+                        "float-metadata": None,
+                    },
+                )
+            ]
+        )
+
+        remote_dataset = feedback_dataset.push_to_argilla(name="test_dataset", workspace=workspace)
+        assert len(remote_dataset.records) == 1
+        assert remote_dataset.records[0].metadata == {
+            "terms-metadata": None,
+            "integer-metadata": None,
+            "float-metadata": None,
+        }

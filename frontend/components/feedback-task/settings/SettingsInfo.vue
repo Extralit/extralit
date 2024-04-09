@@ -65,14 +65,14 @@
               @on-click="restore(settings.dataset)"
               :disabled="!settings.dataset.isModified"
             >
-              <span v-text="'Cancel'" />
+              <span v-text="$t('cancel')" />
             </BaseButton>
             <BaseButton
               type="submit"
               class="primary small"
               :disabled="!settings.dataset.isModified"
             >
-              <span v-text="'Update'" />
+              <span v-text="$t('update')" />
             </BaseButton>
           </div>
         </form>
@@ -140,6 +140,7 @@ export default {
     display: flex;
     align-items: center;
     gap: $base-space * 3;
+    flex-wrap: wrap;
   }
 
   &__dataset-name {

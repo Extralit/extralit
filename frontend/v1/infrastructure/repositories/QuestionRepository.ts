@@ -45,15 +45,13 @@ export class QuestionRepository {
     title,
     settings,
   }: Question): Partial<BackendQuestion> {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { options, ...rest } = settings;
+    const newDescription =
+      description?.trim() !== "" ? description.trim() : null;
 
     return {
       title,
-      description,
-      settings: {
-        ...rest,
-      },
+      description: newDescription,
+      settings,
     };
   }
 }

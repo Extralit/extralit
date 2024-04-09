@@ -55,6 +55,8 @@ spec:
           env:
             - name: ARGILLA_ELASTICSEARCH_HOST
               value: "elasticsearch-master:9200"
+            - name: ARGILLA_AUTH_SECRET_KEY
+              value: "CHANGE_ME"
             - name: ARGILLA_CORS_ORIGINS
               value: '["*", "argilla-frontend"]'
             - name: POSTGRES_HOST

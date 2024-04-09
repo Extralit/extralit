@@ -16,11 +16,11 @@
         </BaseButton>
       </BaseActionTooltip>
     </div>
-    <div class="content-area">
+    <div class="content-area --body1">
       <RenderTableBaseComponent v-if="useTable && isValidTableJSON" :tableData="text" />
       <RenderHTMLBaseComponent v-else-if="isValidHTML" style="display: block; white-space: pre-wrap; max-width: 100%; overflow-x: auto !important;" :value="text" :editable="false" />
       <RenderMarkdownBaseComponent v-else-if="useMarkdown" :markdown="text" />
-      <div v-else v-html="text" />
+      <div :class="classes" v-else v-html="text" />
     </div>
   </div>
 </template>
@@ -61,6 +61,11 @@ export default {
 
       return value?.startsWith("<table") && !value?.startsWith("<img") && !value?.startsWith("<iframe");
     }
+  },
+  computed: {
+    classes() {
+      return this.$language.isRTL(this.text) ? "--rtl" : "--ltr";
+    },
   },
   setup(props) {
     return useTextFieldViewModel(props);

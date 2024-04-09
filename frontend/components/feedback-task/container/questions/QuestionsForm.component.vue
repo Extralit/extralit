@@ -32,7 +32,8 @@
               params: { id: datasetId },
             }"
             target="_blank"
-            >guidelines <svgicon name="external-link" width="12" />
+            >{{ $t("annotationGuidelines") }}
+            <svgicon name="external-link" width="12" />
           </NuxtLink>
         </p>
       </div>
@@ -40,37 +41,73 @@
       <QuestionsComponent
         :questions="record.questions"
         :autofocusPosition="autofocusPosition"
+        :is-bulk-mode="isBulkMode"
         @on-focus="updateQuestionAutofocus"
       />
     </div>
     <div class="footer-form">
       <div class="footer-form__left-footer">
         <BaseButton
+          v-if="showDiscardButton || isDiscarding"
           type="button"
-          class="primary text"
-          @click.prevent="onClear"
-          :title="$t('questions_form.clear')"
+          class="button--discard"
+          :class="isDiscarding ? '--button--discarding' : null"
+          :loading="isDiscarding"
+          :loading-progress="progress"
+          :disabled="isDiscardDisabled || isSaving"
+          :data-title="!isSaving ? draftSavingTooltip : null"
+          @on-click="onDiscard"
         >
-          <span v-text="'Clear'" />
+        <span
+          v-if="!isDiscarding"
+          class="button__shortcuts"
+          v-text="'⌫'"
+        /><span v-text="$t('questions_form.discard')" />
+
+        <span v-text="'Clear'" />
         </BaseButton>
       </div>
       <div class="footer-form__right-area">
         <BaseButton
-                    type="button"
-          class="primary outline"
-          @on-click="onDiscard"
-        :disabled="record.isDiscarded"
-          :title="$t('questions_form.discard')"
+          type="button"
+          class="button--draft"
+          :class="isDraftSaving ? '--button--saving-draft' : null"
+          @on-click="onSaveDraft"
         >
-          <span v-text="'Discard'" />
+          <span class="button__shortcuts-group">
+            <span
+              class="button__shortcuts"
+              v-text="$platform.isMac ? '⌘' : 'ctrl'" 
+              />
+              <span
+              class="button__shortcuts"
+              v-text="'S'"/>
+          </span>
+          <span v-text="$t('questions_form.draft')" />
         </BaseButton>
         <BaseButton
           type="submit"
-          class="primary"
-          :disabled="isSubmitButtonDisabled"
-          :title="$t('questions_form.submit')"
+          class="button--submit"
+          :class="[
+            isSubmitting ? '--button--submitting' : null,
+            isDiscarding || isDraftSaving ? '--button--remove-bg' : null,
+          ]"
+          :loading-progress="progress"
+          :loading="isSubmitting"
+          :disabled="
+            !questionAreCompletedCorrectly || isSubmitDisabled || isSaving
+          "
+          :data-title="
+            !isSaving
+              ? !questionAreCompletedCorrectly && !isSubmitDisabled
+                ? $t('to_submit_complete_required')
+                : submitTooltip
+              : null
+          "
+          @on-click="onSubmit"
         >
-          <span v-text="'Submit'" />
+          <span v-if="!isSubmitting" class="button__shortcuts" v-text="'↵'" />
+          <span v-text="$t('questions_form.submit')" />
         </BaseButton>
       </div>
     </div>
@@ -82,11 +119,7 @@ import "assets/icons/external-link";
 import "assets/icons/refresh";
 import interact from 'interactjs'
 
-import { useQuestionFormViewModel } from "./useQuestionsFormViewModel";
-
 export default {
-  name: "QuestionsFormComponent",
-
   props: {
     datasetId: {
       type: String,
@@ -96,8 +129,63 @@ export default {
       type: Object,
       required: true,
     },
+    showDiscardButton: {
+      type: Boolean,
+      default: true,
+    },
+    areActionsEnabled: {
+      type: Boolean,
+      default: true,
+    },
+    isSubmitting: {
+      type: Boolean,
+      required: true,
+    },
+    isDiscarding: {
+      type: Boolean,
+      required: true,
+    },
+    isDraftSaving: {
+      type: Boolean,
+      required: true,
+    },
+    isSubmitDisabled: {
+      type: Boolean,
+      default: false,
+    },
+    isDiscardDisabled: {
+      type: Boolean,
+      default: false,
+    },
+    isDraftSaveDisabled: {
+      type: Boolean,
+      default: false,
+    },
+    submitTooltip: {
+      type: String,
+      default: null,
+    },
+    discardTooltip: {
+      type: String,
+      default: null,
+    },
+    draftSavingTooltip: {
+      type: String,
+      default: null,
+    },
+    progress: {
+      type: Number,
+      default: 0,
+    },
+    enableAutoSubmitWithKeyboard: {
+      type: Boolean,
+      default: false,
+    },
+    isBulkMode: {
+      type: Boolean,
+      default: false,
+    },
   },
-
   data() {
     return {
       autofocusPosition: 0,
@@ -108,11 +196,6 @@ export default {
       duration: 0,
     };
   },
-
-  setup() {
-    return useQuestionFormViewModel();
-  },
-
   computed: {
     questionFormClass() {
       if (this.isSubmitting) return "--submitted --waiting";
@@ -130,11 +213,8 @@ export default {
     questionAreCompletedCorrectly() {
       return this.record.questionAreCompletedCorrectly();
     },
-    isSubmitButtonDisabled() {
-    if (this.record.isSubmitted)
-        return !this.isTouched || !this.questionAreCompletedCorrectly;
-
-      return !this.questionAreCompletedCorrectly;
+    isSaving() {
+      return this.isDraftSaving || this.isDiscarding || this.isSubmitting;
     },
   },
 
@@ -180,6 +260,17 @@ export default {
   },
 
   methods: {
+    async autoSubmitWithKeyboard() {
+      if (!this.enableAutoSubmitWithKeyboard) return;
+      if (!this.record.isModified) return;
+      if (this.record.questions.length > 1) return;
+
+      const question = this.record.questions[0];
+
+      if (question.isSingleLabelType || question.isRatingType) {
+        await this.onSubmit();
+      }
+    },
     focusOnFirstQuestionFromOutside(event) {
       // Prevents jumping around when the user clicks on a button or interacting with the table
       return
@@ -208,14 +299,18 @@ export default {
       //   return;
       // }
 
+      if (!this.areActionsEnabled) return;
+
       switch (code) {
         case "KeyS": {
           if (this.$platform.isMac) {
             if (!metaKey) return;
           } else if (!ctrlKey) return;
+
           event.preventDefault();
           event.stopPropagation();
-          this.onSaveDraftImmediately();
+          this.onSaveDraft();
+
           break;
         }
         case "Enter": {
@@ -237,29 +332,25 @@ export default {
         }
       }
     },
-    async onDiscard() {
-      if (this.record.isDiscarded) return;
-
-      await this.discard(this.record);
-
-      this.$emit("on-discard-responses");
-    },
-    async onSubmit() {
-      if (this.isSubmitButtonDisabled) return;
-
-      let durationWrapper = { value: this.duration };
-      await this.submit(this.record, durationWrapper);
-      this.duration = durationWrapper.value; 
+    onSubmit() {
+      if (
+        this.isSubmitDisabled ||
+        this.isSaving ||
+        !this.questionAreCompletedCorrectly
+      )
+        return;
 
       this.$emit("on-submit-responses");
     },
-    async onClear() {
-      await this.clear(this.record);
+    onDiscard() {
+      if (this.isDiscardDisabled || this.isSaving) return;
+
+      this.$emit("on-discard-responses");
     },
-    async onSaveDraftImmediately() {
-      let durationWrapper = { value: this.duration };
-      await this.saveDraftImmediately(this.record, durationWrapper);
-      this.duration = durationWrapper.value;
+    onSaveDraft() {
+      if (this.isDraftSaveDisabled || this.isSaving) return;
+
+      this.$emit("on-save-draft");
     },
     updateQuestionAutofocus(index) {
       this.interactionCount++;
@@ -307,6 +398,9 @@ export default {
   border: 1px solid transparent;
   background: palette(white);
   margin-bottom: auto;
+  @include media("<desktop") {
+    justify-content: flex-start;
+  }
   &__header {
     align-items: baseline;
   }
@@ -324,7 +418,8 @@ export default {
       text-decoration: none;
       &:hover,
       &:focus {
-        text-decoration: underline;
+        color: $black-54;
+        transition: color 0.2s ease-in-out;
       }
     }
   }
@@ -382,18 +477,104 @@ export default {
 }
 
 .footer-form {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  padding: $base-space * 2 $base-space * 3;
-  border-top: 1px solid $black-10;
-  &__left-area {
-    display: inline-flex;
+  &__content {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: stretch;
+    border-radius: $border-radius-m;
+    background: #f0f2fa;
+    container-type: inline-size;
+    &:hover {
+      .button--submit:not(:hover) {
+        background: transparent;
+      }
     }
-  &__right-area {
+  }
+}
+
+.button {
+  &__shortcuts {
     display: inline-flex;
-    gap: $base-space * 2;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    gap: 4px;
+    height: $base-space * 2;
+    border-radius: $border-radius;
+    border-width: 1px 1px 3px 1px;
+    border-color: $black-20;
+    border-style: solid;
+    box-sizing: content-box;
+    color: $black-87;
+    background: palette(white);
+    @include font-size(11px);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+      "Open Sans", "Helvetica Neue", sans-serif;
+    padding: 0 4px;
+  }
+  &__shortcuts-group {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+  }
+  &--submit,
+  &--draft,
+  &--discard {
+    width: 100%;
+    justify-content: center;
+    color: $black-87;
+    min-height: $base-space * 6;
+    border-radius: $border-radius-m - 1;
+    padding: $base-space;
+    &:hover {
+      color: $black-87;
+    }
+    &:disabled {
+      pointer-events: visible;
+      cursor: not-allowed;
+      opacity: 1;
+      & > * {
+        opacity: 0.5;
+      }
+    }
+  }
+  &--submit {
+    &:not([disabled]) {
+      background: $submitted-color-light;
+    }
+    &:hover:not([disabled]) {
+      background: darken($submitted-color-light, 2%);
+    }
+    &:active:not([disabled]),
+    &.--button--submitting,
+    &.--button--submitting:hover {
+      background: $submitted-color-medium;
+    }
+    &.--button--remove-bg {
+      background: transparent;
+    }
+  }
+  &--draft {
+    &:hover:not([disabled]) {
+      background: $draft-color-light;
+    }
+    &:active:not([disabled]),
+    &.--button--saving-draft,
+    &.--button--saving-draft:hover {
+      background: $draft-color-medium;
+    }
+  }
+  &--discard {
+    &:hover:not([disabled]) {
+      background: $discarded-color-light;
+    }
+    &:active:not([disabled]),
+    &.--button--discarding,
+    &.--button--discarding:hover {
+      background: $discarded-color-medium;
+    }
   }
 }
 
@@ -434,6 +615,16 @@ export default {
       position: absolute;
       @extend %triangle-right;
       left: 100%;
+    }
+  }
+}
+
+@container (max-width: 500px) {
+  .button {
+    &--submit,
+    &--draft,
+    &--discard {
+      flex-direction: column;
     }
   }
 }

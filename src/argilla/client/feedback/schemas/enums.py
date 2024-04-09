@@ -11,8 +11,8 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-
 from enum import Enum
+from typing import List
 
 
 class FieldTypes(str, Enum):
@@ -27,6 +27,11 @@ class QuestionTypes(str, Enum):
     multi_label_selection = "multi_label_selection"
     dynamic_multi_label_selection = "dynamic_multi_label_selection"
     ranking = "ranking"
+    span = "span"
+
+    @classmethod
+    def values(cls) -> List[str]:
+        return [_type.value for _type in cls]
 
 
 class MetadataPropertyTypes(str, Enum):
@@ -55,4 +60,4 @@ class ResponseStatusFilter(str, Enum):
     draft = "draft"
     submitted = "submitted"
     discarded = "discarded"
-    missing = "missing"
+    pending = "pending"

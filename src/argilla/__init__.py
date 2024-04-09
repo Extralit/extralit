@@ -74,6 +74,7 @@ if _TYPE_CHECKING:
         configure_dataset_settings,
         load_dataset_settings,
     )
+    from argilla.feedback import *  # noqa
     from argilla.feedback import (
         FeedbackDataset,
         FeedbackRecord,
@@ -100,7 +101,6 @@ if _TYPE_CHECKING:
     )
     from argilla.listeners import Metrics, RGListenerContext, Search, listener
     from argilla.monitoring.model_monitor import monitor
-    from argilla.server.server import app
 
 
 # TODO: remove me
@@ -116,7 +116,10 @@ _import_structure = {
         "MultiLabelQuestion",
         "RatingQuestion",
         "RankingQuestion",
+        "SpanQuestion",
+        "SpanLabelOption",
         "ResponseSchema",
+        "ResponseStatusFilter",
         "TextField",
         "TextQuestion",
         "ValueSchema",

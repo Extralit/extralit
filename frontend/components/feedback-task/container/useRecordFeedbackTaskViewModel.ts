@@ -12,25 +12,29 @@ export const useRecordFeedbackTaskViewModel = ({
   recordCriteria: RecordCriteria;
 }) => {
   const getDatasetVectorsUseCase = useResolve(GetDatasetVectorsUseCase);
-  const getRecords = useResolve(LoadRecordsToAnnotateUseCase);
+  const loadRecordsUseCase = useResolve(LoadRecordsToAnnotateUseCase);
 
   const datasetVectors = ref<DatasetVector[]>([]);
   const { state: records } = useRecords();
 
   const loadRecords = async (criteria: RecordCriteria) => {
     try {
-      await getRecords.load(criteria);
+      await loadRecordsUseCase.load(criteria);
     } catch (err) {
       criteria.reset();
     }
   };
 
-  const paginateRecords = (criteria: RecordCriteria) => {
+  const paginateRecords = async (criteria: RecordCriteria) => {
+    let isNextRecordExist = false;
+
     try {
-      return getRecords.paginate(criteria);
+      isNextRecordExist = await loadRecordsUseCase.paginate(criteria);
     } catch (err) {
       criteria.reset();
     }
+
+    return isNextRecordExist;
   };
 
   const loadVectors = async () => {
