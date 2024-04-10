@@ -166,7 +166,6 @@ export default {
     width: 5px; 
     background: transparent;
     z-index: 1;
-    transition: background 0.3s ease;
 
     &::before {
       content: "";

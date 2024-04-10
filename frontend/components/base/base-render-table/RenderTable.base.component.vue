@@ -606,7 +606,7 @@ export default {
       this.table = new Tabulator(this.$refs.table, {
         data: this.tableJSON.data,
         layout: layout,
-        maxHeight: "60vh",
+        height: this.tableJSON.data.length >= 20 ? "60vh": 'auto',
         persistence:{
           sort: true,
           filter: true,

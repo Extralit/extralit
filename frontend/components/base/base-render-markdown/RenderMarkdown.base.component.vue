@@ -148,20 +148,20 @@ export default {
     }
     table {
       display: block;
+      table-layout: auto;
       overflow-x: auto;
       border-collapse: collapse;
       width: 100%;
-      table-layout: auto;
       border: 0px;
       @include overflow-scrollbar;
 
-      th, td {
+      td {
         padding: 1.5px 5px;
+        border: 1px solid #ddd;
         text-align: left;
-        white-space: nowrap;
-        // font-size: 13px;
-        // max-width: 200px;
+        font-size: 14px;
         overflow: hidden;
+        max-width: 350px;
         text-overflow: wrap;
         white-space: normal;
         word-wrap: break-word;
@@ -175,9 +175,9 @@ export default {
       }
 
       th {
-        padding: 2px 5px;
+        padding: 0px 5px;
+        white-space: nowrap;
         background-color: #cccccc;
-        // font-size: 14px;
         font-weight: 600;
       }
     }

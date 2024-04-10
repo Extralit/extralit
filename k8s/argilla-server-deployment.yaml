@@ -80,5 +80,3 @@ spec:
         - name: elasticsearch-master-certs
           secret:
             secretName: elasticsearch-master-certs
-      imagePullSecrets:
-      - name: regcred
