@@ -165,6 +165,7 @@ export class DatasetRepository implements IDatasetRepository {
 
       return data.items;
     } catch (err) {
+      console.log(err);
       throw {
         response: DATASET_API_ERRORS.ERROR_FETCHING_WORKSPACES,
       };
