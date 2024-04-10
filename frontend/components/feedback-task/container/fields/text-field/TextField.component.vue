@@ -17,8 +17,12 @@
       </BaseActionTooltip>
     </div>
     <div class="content-area --body1">
-      <RenderTableBaseComponent v-if="useTable" :tableData="text" />
-      <RenderHTMLBaseComponent v-else-if="isValidHTML" style="display: block; white-space: pre-wrap; max-width: 100%; overflow-x: auto !important;" :value="text" :editable="false" />
+      <RenderTableBaseComponent v-if="useTable && isValidTableJSON" :tableData="text" />
+      <RenderHTMLBaseComponent 
+        v-else-if="isValidHTML" 
+        style="display: block; white-space: pre-wrap; max-width: 100%; overflow-x: auto !important;" 
+        :value="text" 
+        :editable="false" />
       <RenderMarkdownBaseComponent v-else-if="useMarkdown" :markdown="text" />
       <div :class="classes" v-else v-html="text" />
     </div>
@@ -58,11 +62,8 @@ export default {
     },
     isValidHTML() {
       const value = this.text?.trimStart();
-
       return value?.startsWith("<table") && !value?.startsWith("<img") && !value?.startsWith("<iframe");
-    }
-  },
-  computed: {
+    },
     classes() {
       return this.$language.isRTL(this.text) ? "--rtl" : "--ltr";
     },

@@ -39,7 +39,7 @@
         class="breadcrumbs__copy"
         @click.prevent="
           $copyToClipboard(
-            filteredBreadcrumbs[filteredBreadcrumbs.length - 1].name
+            filteredBreadcrumbs.slice(1).map(breadcrumb => breadcrumb.name).join('/')
           )
         "
       >

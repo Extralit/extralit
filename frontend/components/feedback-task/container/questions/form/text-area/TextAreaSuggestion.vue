@@ -57,7 +57,6 @@ export default {
   },
   methods: {
     onUpdateAnswer(tableJsonString) {
-      console.log('TextAreaSuggestion onUpdateAnswer', JSON.parse(tableJsonString))
       this.question.answer.value = tableJsonString;
     },
   }
