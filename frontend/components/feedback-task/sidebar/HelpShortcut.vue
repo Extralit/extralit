@@ -8,13 +8,16 @@
       :content="content"
     />
     <br/>
-    <!-- <BaseSwitch @change="toggleShortcutsHelper" v-model="showShortcutsHelper" class="shortcuts__footer">
+    <BaseSwitch @change="toggleShortcutsHelper" v-model="showShortcutsHelper" class="shortcuts__footer">
       Show key shortcuts
-    </BaseSwitch> -->
+    </BaseSwitch>
   </div>
 </template>
 
 <script>
+import { ref, onMounted } from 'vue';
+import { useLocalStorage } from "@/v1/infrastructure/services/useLocalStorage.ts";
+
 export default {
   name: "HelpShortcut",
 
@@ -52,9 +55,9 @@ export default {
       const manipulatedByPlatform = shortcuts
         .map((row) => {
           if (row.includes(otherOS))
-            return this.$platform.isMac ? undefined : row.replace(otherOS, "");
+            return this.$platform?.isMac ? undefined : row.replace(otherOS, "");
           if (row.includes(macOsX))
-            return this.$platform.isMac ? row.replace(macOsX, "") : undefined;
+            return this.$platform?.isMac ? row.replace(macOsX, "") : undefined;
 
           return row;
         })
@@ -75,7 +78,24 @@ export default {
       console.log(e);
     }
   },
+  setup() {
+    const localStorage = useLocalStorage();
+    const showShortcutsHelper = ref(null);
 
+    onMounted(() => {
+      showShortcutsHelper.value = localStorage.get('showShortcutsHelper');
+    });
+
+    const toggleShortcutsHelper = (newValue) => {
+      localStorage.set('showShortcutsHelper', newValue);
+      showShortcutsHelper.value = newValue;
+    };
+
+    return {
+      showShortcutsHelper,
+      toggleShortcutsHelper
+    };
+  },
 };
 </script>
 

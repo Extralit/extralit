@@ -4,6 +4,7 @@ export default {
   ranking: "Ranking",
   label_selection: "Label",
   dynamic_label_selection: "Label (dynamic)",
+  table_form_placeholder: "Copy and paste a table you'd like to edit here",
   text: "Text",
   rating: "Rating",
   minimize: "Minimize",
@@ -81,6 +82,8 @@ export default {
       draft: "saved as draft",
     },
   },
+  saving: "Saving...",
+  saved: "Saved",
   shortcuts: {
     label: "Shortcuts",
     pagination: {

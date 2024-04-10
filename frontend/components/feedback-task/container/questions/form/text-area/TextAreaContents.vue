@@ -150,7 +150,7 @@ export default {
     },
     placeholder() {
       if (this.question.settings.use_table) {
-        return this.$t("Copy and paste a table you'd like to edit here.");
+        return this.$t("table_form_placeholder");
       }
       return ""
     }

@@ -271,8 +271,6 @@ export default {
       }
     },
     focusOnFirstQuestionFromOutside(event) {
-      // Prevents jumping around when the user clicks on a button or interacting with the table
-      return
       if (!this.userComesFromOutside) return;
       if (event.srcElement.id || event.srcElement.getAttribute("for")) return;
 
@@ -292,11 +290,11 @@ export default {
 
       if (shiftKey) return;
 
-      // if (code === "Tab" && this.userComesFromOutside) {
-      //   this.focusOnFirstQuestion(event);
+      if (code === "Tab" && this.userComesFromOutside) {
+        this.focusOnFirstQuestion(event);
 
-      //   return;
-      // }
+        return;
+      }
 
       if (!this.areActionsEnabled) return;
 

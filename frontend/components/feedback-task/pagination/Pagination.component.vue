@@ -70,16 +70,18 @@ export default {
     onPressKeyboardShortcuts(event) {
       const { code, ctrlKey, metaKey, shiftKey } = event;
 
-      if (ctrlKey || metaKey || shiftKey) return;
+      if (shiftKey) return;
 
       switch (code) {
         case "ArrowRight": {
+          if (!ctrlKey && !metaKey) return;
           this.stopPropagationForNativeBehavior(event);
           const elem = this.$refs.nextButton.$el;
           elem.click();
           break;
         }
         case "ArrowLeft": {
+          if (!ctrlKey && !metaKey) return;
           this.stopPropagationForNativeBehavior(event);
           const elem = this.$refs.prevButton.$el;
           elem.click();
