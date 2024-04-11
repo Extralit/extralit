@@ -6,19 +6,34 @@
     <div class="content">
       <BaseSpinner v-if="isLoading" />
 
-      <BaseFeedbackComponent v-if="isFeedbackVisible && !isLoading" :feedbackInput="feedbackInput"
-        @on-click="feedbackAction" class="feedback-area" />
+      <BaseFeedbackComponent
+        v-if="isFeedbackVisible && !isLoading"
+        :feedbackInput="feedbackInput"
+        @on-click="feedbackAction"
+        class="feedback-area"
+      />
 
-      <TokenClassificationGlobalLabelsComponent v-if="isTaskTokenClassification && numberOfLabels && !isLoading"
-        :labels="labels" :showAllLabels="showAllLabels"
-        @on-toggle-show-less-more-labels="showAllLabels = !showAllLabels" />
+      <TokenClassificationGlobalLabelsComponent
+        v-if="isTaskTokenClassification && numberOfLabels && !isLoading"
+        :labels="labels"
+        :showAllLabels="showAllLabels"
+        @on-toggle-show-less-more-labels="showAllLabels = !showAllLabels"
+      />
 
-      <TextClassificationGlobalLabelsComponent v-if="isTaskTextClassification && numberOfLabels && !isLoading"
-        :labels="labels" :showAllLabels="showAllLabels"
-        @on-toggle-show-less-more-labels="showAllLabels = !showAllLabels" />
+      <TextClassificationGlobalLabelsComponent
+        v-if="isTaskTextClassification && numberOfLabels && !isLoading"
+        :labels="labels"
+        :showAllLabels="showAllLabels"
+        @on-toggle-show-less-more-labels="showAllLabels = !showAllLabels"
+      />
 
       <div class="buttons-area" v-if="allowAddNewLabel">
-        <InputAction text="+ Add label" placeholder="New label" button="Create" @input="onAddNewLabels" />
+        <InputAction 
+          text="+ Add label" 
+          placeholder="New label" 
+          button="Create" 
+          @input="onAddNewLabels" />
+
         <!-- <InputAction text="- Remove label" placeholder="Label to remove" button="Remove"
           @input="onRemoveNewLabels" /> -->
         <!-- <BaseButton @on-click.prevent="test">TEST</BaseButton> -->
@@ -189,10 +204,6 @@ export default {
         return this.onSaveLabelsNotPersisted();
       }
       return null;
-    },
-    test() {
-      console.log("TEST");
-      console.log(this.datasetId);
     },
   },
   setup() {

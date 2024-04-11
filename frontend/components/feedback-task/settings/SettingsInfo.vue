@@ -6,9 +6,7 @@
         <div class="settings__row">
           <div class="settings__item">
             <p class="settings__dataset-name --body1">Name:</p>
-            <p
-              class="settings__dataset-name --body1"
-            >{{ settings.dataset.name }}</p>
+            <p class="settings__dataset-name --body1">{{ settings.dataset.name }}</p>
             <BaseBadge :text="settings.dataset.task" />
           </div>
           <base-action-tooltip tooltip="Copied">

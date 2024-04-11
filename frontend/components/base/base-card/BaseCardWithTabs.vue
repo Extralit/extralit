@@ -2,9 +2,9 @@
   <div :class="['card-with-tabs', tabClass]">
     <ul class="card-with-tabs__tabs">
       <li
-        v-for="tab in tabs"
         class="card-with-tabs__tab"
         :class="[{ '--active': tab.id === currentTab.id }, tab?.class]"
+        v-for="tab in tabs"
       >
         <base-button :class="tabSize" @on-click="changeTab(tab)">
           {{ tab.name }}

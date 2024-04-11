@@ -551,9 +551,9 @@ describe("RecordCriteria", () => {
       expect(criteria.searchText).toEqual(criteria.committed.searchText);
       expect(criteria.metadata).toEqual(criteria.committed.metadata);
       expect(criteria.sortBy).toEqual(criteria.committed.sortBy);
-      // expect(criteria.similaritySearch).toEqual(
-      //   criteria.committed.similaritySearch
-      // );
+      expect(criteria.similaritySearch).toEqual(
+        criteria.committed.similaritySearch
+      );
     });
   });
 

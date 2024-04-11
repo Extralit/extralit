@@ -49,8 +49,12 @@ export default {
   },
   computed: {
     fieldsPreview() {
-      const firstFieldText = (index) =>
-        `${this.fields[index].title}: ${this.fields[index].content}`;
+      const firstFieldText = (index) =>{
+        let content = this.fields[index].content;
+        content = content.replace(/<[^>]*>?/gm, ''); 
+        content = content.replace(/\s+/g, ' '); 
+        return `${this.fields[index].title}: ${content}`;
+      };
       return this.fields.length > 1
         ? [firstFieldText(0), firstFieldText(1)]
         : [firstFieldText(0)];

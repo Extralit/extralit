@@ -17,9 +17,15 @@
 
 <template>
   <div class="sidebar" v-if="expandedComponent !== 'document'" :class="expandedComponent && '--expanded'">
-    <SidebarFeedbackTaskButtonGroup v-for="group in sidebarGroups" :key="group" :group-name="group"
-      :group-button-type="getButtonType(group)" :groupItems="filteredSidebarItemsByGroup(group)"
-      :active-buttons="activeButtons" @on-click-sidebar-action="onClickSidebarAction" />
+    <SidebarFeedbackTaskButtonGroup 
+      v-for="group in sidebarGroups" 
+      :key="group" 
+      :group-name="group"
+      :group-button-type="getButtonType(group)" 
+      :groupItems="filteredSidebarItemsByGroup(group)"
+      :active-buttons="activeButtons" 
+      @on-click-sidebar-action="onClickSidebarAction" 
+    />
   </div>
 </template>
 
@@ -77,25 +83,21 @@ $sidebar-button-size: 45px;
   transition: box-shadow 0.2s ease-in-out 0.4s;
   // TODO - Only for MVP
   padding-top: $base-space * 2;
-
   &.--expanded {
     box-shadow: inset 1px 1px 5px -2px #c7c7c7;
     transition: box-shadow 0.2s ease-in-out;
   }
-
   p {
     text-align: center;
     font-weight: 600;
     @include font-size(12px);
     margin-bottom: 0.5em;
   }
-
   a {
     position: relative;
     display: block;
     outline: none;
   }
-
   &__info {
     position: relative;
   }

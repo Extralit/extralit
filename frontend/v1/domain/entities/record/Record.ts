@@ -55,6 +55,11 @@ export class Record {
     return !!original && !isEqual(original, rest);
   }
 
+  get isAnswerModified() {
+    console.log('isAnswerModified', this.original.answer, this.answer)
+    return !!this.original && !isEqual(this.original.answer, this.answer);
+  }
+
   discard(answer: RecordAnswer) {
     this.answer = answer;
     this.updatedAt = answer.updatedAt;

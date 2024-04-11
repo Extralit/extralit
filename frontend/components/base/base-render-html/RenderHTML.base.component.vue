@@ -475,6 +475,12 @@ input[type="checkbox"] {
       }
     }
 
+		tr {
+			th {
+				white-space: nowrap;
+			}
+		}
+
 		td[colspan], th[colspan] {
 			vertical-align: middle;
     }

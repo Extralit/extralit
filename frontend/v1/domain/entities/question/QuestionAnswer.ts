@@ -153,7 +153,7 @@ export class MultiLabelQuestionAnswer extends QuestionAnswer {
   constructor(
     public readonly type: QuestionType,
     questionName: string,
-    value: MultiLabelValue[],
+    value: MultiLabelValue[]
   ) {
     super(type);
     this.values = value.map((label) => ({

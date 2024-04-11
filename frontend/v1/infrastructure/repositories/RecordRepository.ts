@@ -79,7 +79,7 @@ export class RecordRepository {
     return this.createRecordResponse(record, "discarded");
   }
 
-  submitNewRecordResponse(record: Record, duration?: number): Promise<RecordAnswer> {
+  submitRecordResponse(record: Record, duration?: number): Promise<RecordAnswer> {
     if (record.answer) return this.updateRecordResponse(record, "submitted", duration);
 
     return this.createRecordResponse(record, "submitted", duration);

@@ -109,7 +109,6 @@ export default {
   },
   methods: {
     handleKeyboardToMoveLoop(parent) {
-      return
       return (e) => {
         if (e.key !== "Tab") return;
         const isShiftKeyPressed = e.shiftKey;

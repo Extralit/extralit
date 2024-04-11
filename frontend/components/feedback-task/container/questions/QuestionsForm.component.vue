@@ -225,11 +225,10 @@ export default {
       deep: true,
       immediate: true,
       handler() {
+        this.isSubmittedTouched = this.record.isSubmitted && this.record.isModified;
         if (this.record.isModified) {
           this.onSaveDraft();
         }
-
-        this.isSubmittedTouched = this.record.isSubmitted && this.record.isModified;
       },
     },
   },

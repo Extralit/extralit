@@ -83,6 +83,7 @@ export const useSpanAnnotationTextFieldViewModel = ({
   };
 
   const convertResponseToSpans = (response: SpanAnswer[]): LoadedSpan[] => {
+    if (!response) return [];
     return response
       .map((v) => {
         const option = answer.options.find((e) => e.value === v.label);

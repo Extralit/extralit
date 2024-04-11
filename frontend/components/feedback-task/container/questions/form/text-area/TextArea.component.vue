@@ -46,13 +46,13 @@ export default {
         },
         ...(!this.isSuggested
           ? [
-            {
-              id: "1",
-              name: "Suggestion",
-              class: "--suggestion",
-              component: "TextAreaSuggestion",
-            },
-          ]
+              {
+                id: "1",
+                name: "Suggestion",
+                class: "--suggestion",
+                component: "TextAreaSuggestion",
+              },
+            ]
           : []),
       ];
     },
@@ -69,7 +69,6 @@ $suggestion-color-lighten: lighten($suggestion-color, 24%);
   flex-direction: column;
   gap: $base-space;
 }
-
 .card-with-tabs {
   &.--suggestion {
     :deep(.card-with-tabs__content) {
@@ -77,13 +76,11 @@ $suggestion-color-lighten: lighten($suggestion-color, 24%);
       background: $suggestion-color-lighten;
     }
   }
-
   :deep(.card-with-tabs__tab.--suggestion) {
     border-top-color: $suggestion-color;
     border-left-color: $suggestion-color;
     border-right-color: $suggestion-color;
     border-bottom-color: $suggestion-color-lighten;
-
     .button {
       background: $suggestion-color-lighten;
     }

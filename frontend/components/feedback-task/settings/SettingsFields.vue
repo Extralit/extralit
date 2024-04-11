@@ -19,9 +19,9 @@
             <input type="text" id="field.id" v-model="field.title" />
           </Validation>
 
-          <BaseSwitch v-model="field.settings.use_markdown"
-            >{{ $t("useMarkdown") }}</BaseSwitch
-          >
+          <BaseSwitch v-model="field.settings.use_markdown">
+            {{ $t("useMarkdown") }}
+          </BaseSwitch>
 
           <div class="settings__edition-form__footer">
             <BaseButton

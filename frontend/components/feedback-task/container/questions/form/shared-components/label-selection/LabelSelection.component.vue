@@ -86,7 +86,6 @@
 </template>
 
 <script>
-// NOTE - this threshold is used to show the search filter component for component from questionForm component
 const OPTIONS_THRESHOLD_TO_ENABLE_SEARCH = 10;
 import "assets/icons/chevron-down";
 import "assets/icons/chevron-up";

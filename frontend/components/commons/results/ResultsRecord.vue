@@ -22,8 +22,12 @@
         <template>
           <template>
             <div class="record__header--left" v-if="!isReferenceRecord">
-              <base-checkbox v-if="!isPageSizeEqualOne" class="list__checkbox" :value="record.selected"
-                @change="onCheckboxChanged($event, record.id)">
+              <base-checkbox
+                v-if="!isPageSizeEqualOne"
+                class="list__checkbox"
+                :value="record.selected"
+                @change="onCheckboxChanged($event, record.id)"
+              >
               </base-checkbox>
               <status-tag v-if="record.status !== 'Default'" :recordStatus="record.status" />
               <div>
@@ -33,28 +37,65 @@
               </div>
             </div>
           </template>
-          <base-date class="record__date" v-if="record.event_timestamp" :date="record.event_timestamp"
-            data-title="Event Timestamp" />
-          <similarity-search-component class="record__similarity-search" v-if="formattedVectors.length"
-            :formattedVectors="formattedVectors" :isReferenceRecord="isReferenceRecord"
-            @search-records="searchRecords" />
-          <base-button v-else data-title="To use this function you need to have a vector associated with this record"
-            class="small similarity-search__button--disabled">
+          <base-date
+            class="record__date"
+            v-if="record.event_timestamp"
+            :date="record.event_timestamp"
+            data-title="Event Timestamp"
+          />
+          <similarity-search-component
+            class="record__similarity-search"
+            v-if="formattedVectors.length"
+            :formattedVectors="formattedVectors"
+            :isReferenceRecord="isReferenceRecord"
+            @search-records="searchRecords"
+          />
+          <base-button
+            v-else
+            data-title="To use this function you need to have a vector associated with this record"
+            class="small similarity-search__button--disabled"
+          >
             Find similar
           </base-button>
         </template>
-        <record-extra-actions :key="record.id" :datasetName="dataset.name" :recordId="record.id"
-          :recordClipboardText="record.clipboardText" @show-record-info-modal="onShowRecordInfoModal" />
+        <record-extra-actions
+          :key="record.id"
+          :datasetName="dataset.name"
+          :recordId="record.id"
+          :recordClipboardText="record.clipboardText"
+          @show-record-info-modal="onShowRecordInfoModal"
+        />
       </div>
-      <RecordTextClassification v-if="datasetTask === 'TextClassification'" :viewSettings="viewSettings"
-        :isMultiLabel="dataset.isMultiLabel" :datasetId="datasetId" :datasetName="dataset.name" :record="record"
-        :isReferenceRecord="isReferenceRecord" @discard="onDiscard()" />
-      <RecordText2Text v-if="datasetTask === 'Text2Text'" :viewSettings="viewSettings" :datasetId="datasetId"
-        :datasetName="dataset.name" :record="record" :isReferenceRecord="isReferenceRecord" @discard="onDiscard()" />
-      <RecordTokenClassification v-if="datasetTask === 'TokenClassification'" :datasetId="datasetId"
-        :datasetName="dataset.name" :datasetQuery="dataset.query"
-        :datasetLastSelectedEntity="dataset.lastSelectedEntity" :viewSettings="viewSettings" :record="record"
-        :isReferenceRecord="isReferenceRecord" @discard="onDiscard()" />
+      <RecordTextClassification
+        v-if="datasetTask === 'TextClassification'"
+        :viewSettings="viewSettings"
+        :isMultiLabel="dataset.isMultiLabel"
+        :datasetId="datasetId"
+        :datasetName="dataset.name"
+        :record="record"
+        :isReferenceRecord="isReferenceRecord"
+        @discard="onDiscard()"
+      />
+      <RecordText2Text
+        v-if="datasetTask === 'Text2Text'"
+        :viewSettings="viewSettings"
+        :datasetId="datasetId"
+        :datasetName="dataset.name"
+        :record="record"
+        :isReferenceRecord="isReferenceRecord"
+        @discard="onDiscard()"
+      />
+      <RecordTokenClassification
+        v-if="datasetTask === 'TokenClassification'"
+        :datasetId="datasetId"
+        :datasetName="dataset.name"
+        :datasetQuery="dataset.query"
+        :datasetLastSelectedEntity="dataset.lastSelectedEntity"
+        :viewSettings="viewSettings"
+        :record="record"
+        :isReferenceRecord="isReferenceRecord"
+        @discard="onDiscard()"
+      />
     </div>
   </div>
 </template>
