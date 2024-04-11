@@ -1,4 +1,4 @@
-import { isEqual, cloneDeep } from "lodash";
+import { isEqual, cloneDeep, isObject, transform } from "lodash";
 import { Field } from "../field/Field";
 import { Question } from "../question/Question";
 import { Suggestion } from "../question/Suggestion";
@@ -7,6 +7,17 @@ import { RecordAnswer } from "./RecordAnswer";
 import { Metadata } from "../metadata/Metadata";
 
 const DEFAULT_STATUS = "pending";
+
+function difference(object: any, base: any) {
+  function changes(object: any, base: any) {
+    return transform(object, function(result: any, value: any, key: any) {
+      if (!isEqual(value, base[key])) {
+        result[key] = (isObject(value) && isObject(base[key])) ? changes(value, base[key]) : value;
+      }
+    });
+  }
+  return changes(object, base);
+}
 
 export class Record {
   // eslint-disable-next-line no-use-before-define
@@ -55,9 +66,10 @@ export class Record {
     return !!original && !isEqual(original, rest);
   }
 
-  get isAnswerModified() {
-    console.log('isAnswerModified', this.original.answer, this.answer)
-    return !!this.original && !isEqual(this.original.answer, this.answer);
+  get getModified() {
+    const { original, ...rest } = this;
+
+    return !!original ? difference(original, rest) : {};
   }
 
   discard(answer: RecordAnswer) {

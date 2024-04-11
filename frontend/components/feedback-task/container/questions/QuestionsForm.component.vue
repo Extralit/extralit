@@ -226,9 +226,7 @@ export default {
       immediate: true,
       handler() {
         this.isSubmittedTouched = this.record.isSubmitted && this.record.isModified;
-        if (this.record.isModified) {
-          this.onSaveDraft();
-        }
+        this.checkAndSaveDraft();
       },
     },
   },
@@ -344,6 +342,17 @@ export default {
       if (this.isDiscardDisabled || this.isSaving) return;
 
       this.$emit("on-discard-responses");
+    },
+    checkAndSaveDraft() {
+      const modified = this.record.getModified;
+      const condition = modified?.questions?.some(
+        question => question && question.answer && (
+          question.answer?.value || 
+          question.answer?.values?.some(value => !!value)));
+
+      if (modified && condition) {
+        this.onSaveDraft();
+      }
     },
     onSaveDraft() {
       if (this.isDraftSaveDisabled || this.isSaving) return;
