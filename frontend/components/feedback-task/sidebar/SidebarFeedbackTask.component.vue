@@ -8,12 +8,15 @@
         :datasetId="datasetId"
       />
 
-      <PDFViewerBaseComponent 
-        v-else-if="currentPanel === 'document'"
-        :pdf-data="document.file_data" 
-        :file-name="document.file_name"
-        :pageNumber="document.page_number"
-      />
+      <div v-if="currentPanel === 'document'">
+        <div v-if="isLoading">Loading...</div>
+        <PDFViewerBaseComponent 
+          v-else
+          :pdf-data="document.file_data" 
+          :file-name="document.file_name"
+          :pageNumber="document.page_number"
+        />
+      </div>
 
     </SidebarFeedbackTaskPanel>
 
@@ -45,6 +48,7 @@ export default {
     currentMode: "annotate",
     isPanelVisible: false,
     metadata: null,
+    isLoading: false,
   }),
 
   watch: {
@@ -165,6 +169,8 @@ export default {
       $nuxt.$emit("on-sidebar-panel", this.currentPanel);
     },
     fetchDocument() {
+      this.isLoading = true;
+
       try {
         if (this.metadata?.pmid != null && this.document.pmid !== this.metadata.pmid) {
           this.setDocumentByPubmedID(this.metadata.pmid);
@@ -180,6 +186,7 @@ export default {
       } catch (error) {
         console.log(error)
       } finally {
+        this.isLoading = false;
         if (!this.hasDocument) {
           this.closePanel();
         }

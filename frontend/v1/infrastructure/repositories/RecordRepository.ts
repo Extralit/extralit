@@ -133,6 +133,10 @@ export class RecordRepository {
   ) {
     try {
       const request = this.createRequest(status, record, duration);
+      if (!request) {
+        console.log('updateRecordResponse: request is null', request)
+        return;
+      }
 
       const { data } = await this.axios.put<BackendResponseResponse>(
         `/v1/responses/${record.answer.id}`,
@@ -154,6 +158,10 @@ export class RecordRepository {
   ) {
     try {
       const request = this.createRequest(status, record, duration);
+      if (!request) {
+        console.log('updateRecordResponse: request is null', request)
+        return;
+      }
 
       const { data } = await this.axios.post<BackendResponseResponse>(
         `/v1/records/${record.id}/responses`,
