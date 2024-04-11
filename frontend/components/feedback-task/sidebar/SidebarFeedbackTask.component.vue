@@ -45,22 +45,25 @@ export default {
     currentMode: "annotate",
     isPanelVisible: false,
     metadata: null,
-    documentTooltip: 'Document Viewer',
   }),
 
   watch: {
-    'document.file_name'(newFileName) {
-      // Update the tooltip of the "document" button
-      this.documentTooltip = newFileName;
-
-      // Reset the tooltip after 5 seconds
-      // setTimeout(() => {
-      //   this.documentTooltip = 'Document Viewer';
-      // }, 5000);
+    metadata(newMetadata, oldMetadata) {
+      if ((newMetadata !== oldMetadata || !this.document) && this.currentPanel === 'document') {
+        this.fetchDocument();
+      }
+    },
+    currentPanel(newPanel, oldPanel) {
+      if (newPanel === 'document' && this.metadata && (this.document.pmid !== this.metadata.pmid || this.document.id !== this.metadata.doc_id)) {
+        this.fetchDocument();
+      }
     },
   },
 
   computed: {
+    documentTooltip() {
+      return this.document.file_name || 'Document Viewer';
+    },
     hasDocumentLoaded() {
       return this.document.id !== null;
     },
@@ -134,44 +137,6 @@ export default {
     };
   },
 
-  setup() {
-    return useDocumentViewModel();
-  },
-
-  mounted() {
-    this.$nuxt.$on('on-change-record-metadata', (metadata) => {
-      if (!metadata) { return; }
-      this.metadata = metadata;
-
-      try {
-        if (metadata?.pmid != null && this.document.pmid !== metadata.pmid) {
-          this.setDocumentByPubmedID(metadata.pmid);
-
-        } else if (metadata?.doc_id != null && this.document.id !== metadata.doc_id) {
-          this.setDocumentByID(metadata.doc_id);
-          
-        // Metadata is null, and this.document is not, so we clear the document
-        } else if (!metadata?.pmid && !metadata?.doc_id && this.hasDocumentLoaded) {
-          this.clearDocument();
-        }
-
-        if (metadata?.page_number != null) {
-          this.setDocumentPageNumber(metadata.page_number);
-        }
-      } catch (error) {
-        console.log(error)
-      } finally {
-        if (!this.hasDocument) {
-          this.closePanel();
-        }
-      }
-    });
-  },
-
-  destroyed() {
-    this.$nuxt.$off('on-change-record-metadata');
-  },
-
   methods: {
     onClickSidebarAction(group, info) {
       switch (group.toUpperCase()) {
@@ -199,11 +164,47 @@ export default {
 
       $nuxt.$emit("on-sidebar-panel", this.currentPanel);
     },
+    fetchDocument() {
+      try {
+        if (this.metadata?.pmid != null && this.document.pmid !== this.metadata.pmid) {
+          this.setDocumentByPubmedID(this.metadata.pmid);
+        } else if (this.metadata?.doc_id != null && this.document.id !== this.metadata.doc_id) {
+          this.setDocumentByID(this.metadata.doc_id);
+        } else if (!this.metadata?.pmid && !this.metadata?.doc_id && this.hasDocumentLoaded) {
+          this.clearDocument();
+        }
+
+        if (this.metadata?.page_number != null) {
+          this.setDocumentPageNumber(this.metadata.page_number);
+        }
+      } catch (error) {
+        console.log(error)
+      } finally {
+        if (!this.hasDocument) {
+          this.closePanel();
+        }
+      }
+    },
     closePanel() {
       this.isPanelVisible = false;
       this.currentPanel = null;
       $nuxt.$emit("on-sidebar-panel", null);
     },
+  },
+
+  mounted() {
+    this.$nuxt.$on('on-change-record-metadata', (metadata) => {
+      if (!metadata) { return; }
+      this.metadata = metadata;
+    });
+  },
+
+  destroyed() {
+    this.$nuxt.$off('on-change-record-metadata');
+  },
+
+  setup() {
+    return useDocumentViewModel();
   },
 };
 </script>
