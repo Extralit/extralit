@@ -154,16 +154,15 @@ export default {
       border: 0px;
       @include overflow-scrollbar;
 
-      td {
-        padding: 1.5px 5px;
+      th, td {
         border: 1px solid #ddd;
+        padding: 1.5px 5px;
         text-align: left;
-        font-size: 14px;
-        overflow: hidden;
+        white-space: nowrap;
+        font-size: 13px;
         max-width: 350px;
-        text-overflow: wrap;
-        white-space: normal;
-        word-wrap: break-word;
+        overflow: hidden;
+        text-overflow: ellipsis;
         vertical-align: middle; 
       }
 
@@ -174,8 +173,7 @@ export default {
       }
 
       th {
-        padding: 0px 5px;
-        white-space: nowrap;
+        padding: 2px 5px;
         background-color: #cccccc;
         font-weight: 600;
       }

@@ -142,11 +142,9 @@ export class Record {
 
   private completeQuestion() {
     return this.questions.map((question) => {
-      const answer = this.answer?.value[question.name];
       for (const suggestion of this.suggestions || []) {
         if (suggestion.questionId === question.id) {
-    
-      question.addSuggestion(suggestion);
+          question.addSuggestion(suggestion);
           if (question.hasSuggestion) {
             break;
           }
@@ -156,6 +154,7 @@ export class Record {
       if (this.isPending && question.hasSuggestion) {
         question.response(question.suggestion);
       } else {
+        const answer = this.answer?.value[question.name];
         question.response(answer);
       }
 

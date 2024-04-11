@@ -8,15 +8,15 @@
       :content="content"
     />
     <br/>
-    <BaseSwitch @change="toggleShortcutsHelper" v-model="showShortcutsHelper" class="shortcuts__footer">
+    <!-- <BaseSwitch @change="toggleShortcutsHelper" v-model="showShortcutsHelper" class="shortcuts__footer">
       Show key shortcuts
-    </BaseSwitch>
+    </BaseSwitch> -->
   </div>
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
-import { useLocalStorage } from "@/v1/infrastructure/services/useLocalStorage.ts";
+// import { ref, onMounted } from 'vue';
+// import { useLocalStorage } from "@/v1/infrastructure/services/useLocalStorage.ts";
 
 export default {
   name: "HelpShortcut",
@@ -78,24 +78,24 @@ export default {
       console.log(e);
     }
   },
-  setup() {
-    const localStorage = useLocalStorage();
-    const showShortcutsHelper = ref(null);
+  // setup() {
+  //   const localStorage = useLocalStorage();
+  //   const showShortcutsHelper = ref(null);
 
-    onMounted(() => {
-      showShortcutsHelper.value = localStorage.get('showShortcutsHelper');
-    });
+  //   onMounted(() => {
+  //     showShortcutsHelper.value = localStorage.get('showShortcutsHelper');
+  //   });
 
-    const toggleShortcutsHelper = (newValue) => {
-      localStorage.set('showShortcutsHelper', newValue);
-      showShortcutsHelper.value = newValue;
-    };
+  //   const toggleShortcutsHelper = (newValue) => {
+  //     localStorage.set('showShortcutsHelper', newValue);
+  //     showShortcutsHelper.value = newValue;
+  //   };
 
-    return {
-      showShortcutsHelper,
-      toggleShortcutsHelper
-    };
-  },
+  //   return {
+  //     showShortcutsHelper,
+  //     toggleShortcutsHelper
+  //   };
+  // },
 };
 </script>
 
