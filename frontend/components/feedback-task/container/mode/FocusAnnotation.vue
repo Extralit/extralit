@@ -87,7 +87,11 @@ export default {
       this.$emit("on-discard-responses");
     },
     async onSaveDraft(durationWrapper) {
-      await this.saveAsDraft(this.record, durationWrapper);
+      try {
+        await this.saveAsDraft(this.record, durationWrapper);
+      } catch (error) {
+        console.log("Error saving draft", error, this.record);
+      }
     },
   },
   setup() {
