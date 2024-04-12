@@ -361,8 +361,6 @@ export default {
 	width: 100%;
 
   &__content {
-    // padding: 4rem 1rem;
-		// min-width: 40vw;
 		max-height: 60vh;
 		overflow-x: scroll;
   }
@@ -417,16 +415,19 @@ export default {
 	.dropdown {
 		position: relative;
 
+		&__content {
+			position: absolute;
+			top: calc(100%);
+			.button {
+				width: 100%;
+			}
+		}
+
 		.button {
 			cursor: pointer;
 			&:hover,
 			&--active {
 				background: $black-4;
-			}
-		}
-		.dropdown-content {
-			.button {
-				width: 100%;
 			}
 		}
 	}
