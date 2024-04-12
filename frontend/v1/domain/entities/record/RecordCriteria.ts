@@ -191,7 +191,7 @@ export class RecordCriteria implements IRecordCriteria {
   ) {
     this.isChangingAutomatically = true;
 
-    this.status = status ?? "valid";
+    this.status = status ?? "pending";
     this.searchText = searchText ?? "";
 
     this.page.complete(page);

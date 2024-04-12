@@ -792,6 +792,7 @@ export default {
   padding-top: 3px;
   padding-bottom: 3px;
   // border: none;
+  // box-shadow: 0 0 0 1px #999;
 
   span, small {
     overflow: hidden;
@@ -843,11 +844,13 @@ export default {
     }
   }
 
+  
   &.tabulator-group-level-2,
   &.tabulator-group-level-3,
   &.tabulator-group-level-4,
   &.tabulator-group-level-5 {
-    border-top: none;
+    // border: none;
+    // box-shadow: 0 0 0 1px #999;
   }
 }
 

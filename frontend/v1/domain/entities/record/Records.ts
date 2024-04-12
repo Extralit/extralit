@@ -20,7 +20,11 @@ export class Records {
   }
 
   getRecordOn(criteria: PageCriteria) {
-    return this.records.find((record) => record.page === criteria.client.page);
+    let record = this.records.find((record) => record.page === criteria.client.page);
+    if (!record) {
+      console.log('Criteria client page:', criteria.client.page);
+    }
+    return record;
   }
 
   hasNecessaryBuffering(criteria: PageCriteria) {

@@ -186,7 +186,7 @@ $selector-width: 140px;
       background: $submitted-color;
     }
   }
-  &.pending {
+  &.pending, &.valid {
     color: $pending-color;
     border: 1px solid $pending-color;
     &:before {

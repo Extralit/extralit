@@ -48,7 +48,6 @@ export class LoadRecordsToAnnotateUseCase {
 
       isNextRecordExist = records.existsRecordOn(page);
 
-      console.log('paginate', isNextRecordExist, page, records.lastRecord.page, records.lastRecord.page + 1);
       this.recordsStorage.save(records);
     }
 

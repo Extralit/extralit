@@ -143,6 +143,11 @@ export class RecordRepository {
         request
       );
 
+      if (!data) {
+        console.log('createRecordResponse: data is null', data)
+        return;
+      }
+
       return new RecordAnswer(data.id, status, data.values, data.updated_at);
     } catch (error) {
       throw {
@@ -167,6 +172,11 @@ export class RecordRepository {
         `/v1/records/${record.id}/responses`,
         request
       );
+
+      if (!data) {
+        console.log('createRecordResponse: data is null', data)
+        return;
+      }
 
       return new RecordAnswer(
         data.id,
@@ -512,11 +522,13 @@ export class RecordRepository {
     params.append("offset", offset);
     params.append("limit", howMany.toString());
 
-    if (status === "valid") {
-      // add 'valid' status to query all non-discarded records
-      params.append("response_status", 'missing');
+    if (status === "pending") {
+      params.append("response_status", 'pending');
       params.append("response_status", 'submitted');
       params.append("response_status", 'draft');
+
+    } else if (status === "valid") {
+      params.append("response_status", 'pending');      
       
     } else {
       params.append("response_status", status);

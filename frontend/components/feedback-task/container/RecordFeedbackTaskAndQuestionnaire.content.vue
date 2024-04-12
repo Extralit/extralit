@@ -48,7 +48,13 @@ export default {
   },
   computed: {
     record() {
-      return this.records.getRecordOn(this.recordCriteria.committed.page);
+      let thisRecord = this.records.getRecordOn(this.recordCriteria.committed.page);
+      if (!thisRecord) {
+        console.log('Record not found', this.recordCriteria.committed.page.client.page);
+        console.log('All record pages:', this.records.records.map(record => record.page));
+        thisRecord = this.records.records[this.recordCriteria.committed.page.client.page-1];
+      }
+      return thisRecord;
     },
     metadata() {
       return this.record?.metadata;

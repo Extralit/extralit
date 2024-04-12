@@ -41,11 +41,11 @@ export default {
       options: [
         {
           id: "pending",
-          name: "Pending",
+          name: "All data",
         },
         {
           id: "valid",
-          name: "All Data",
+          name: "Pending",
         },
         {
           id: "draft",

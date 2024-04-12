@@ -31,7 +31,7 @@ export const useFocusAnnotationViewModel = () => {
 
     let duration = record.answer?.duration || 0;
 
-    duration += durationWrapper.value;
+    duration += durationWrapper?.value || 0;
     durationWrapper.value = 0; // reset duration for upstream caller to indicate it's been consumed
     return duration;
   }
