@@ -10,9 +10,9 @@
     <div ref="table" class="__table" />
 
     <div class="__table-buttons">
-      <BaseDropdown v-show="editable" :visible="visibleEditDropdown" boundary="viewport">
+      <BaseDropdown v-show="editable" :visible="dropdownEditTableVisible" boundary="viewport">
         <span slot="dropdown-header">
-          <BaseButton @click.prevent="visibleEditDropdown=!visibleEditDropdown">
+          <BaseButton @click.prevent="dropdownEditTableVisible=!dropdownEditTableVisible">
             Edit table
             <svgicon name="chevron-down" width="8" height="8" />
           </BaseButton>
@@ -24,20 +24,20 @@
           <BaseButton v-show="editable && table" @click.prevent="table.redo();">
             Redo
           </BaseButton>
-          <BaseButton v-show="editable" @click.prevent="clearTable(); visibleEditDropdown=false">
+          <BaseButton v-show="editable" @click.prevent="clearTable(); dropdownEditTableVisible=false">
             {{ table?.getDataCount() > 0 ? 'Clear data' : 'Delete table' }}
           </BaseButton>
         </span>
       </BaseDropdown>
 
-      <BaseDropdown v-show="editable && table" :visible="visibleColumnDropdown" class="add-columns-dropdown" boundary="viewport" >
+      <BaseDropdown v-show="editable && table" :visible="visibleColumnDropdown" class="dropdown" boundary="viewport" >
         <span slot="dropdown-header">
           <BaseButton @click.prevent="visibleColumnDropdown=!visibleColumnDropdown">
             ➕ Add Column
             <svgicon name="chevron-down" width="8" height="8" />
           </BaseButton>
         </span>
-        <span slot="dropdown-content" class="--content">
+        <span slot="dropdown-content">
           <BaseButton
             v-for="column in schemaColumns.filter(col => !columns.includes(col))"
             :key="column"
@@ -114,7 +114,7 @@ export default {
       showRefColumns: this.editable,
       isLoaded: false,
       visibleCheckropdown: false,
-      visibleEditDropdown: false,
+      dropdownEditTableVisible: false,
       visibleColumnDropdown: false,
       addColumnSearchText: null,
     };
@@ -756,7 +756,7 @@ export default {
     }
   }
 
-  .add-columns-dropdown {
+  .dropdown {
     position: relative;
     z-index: 1; 
 
@@ -770,6 +770,7 @@ export default {
     }
   }
 }
+
 .tabulator .tabulator-header .tabulator-col .tabulator-col-content .tabulator-col-title {
   white-space: normal;
 }

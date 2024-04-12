@@ -2,64 +2,108 @@
 	<div v-if="editor" class="editor-container">
 		<div v-if="editable" :editor="editor">
 			<div class="menubar">
-				<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().addColumnAfter().run()"
-					:disabled="!editor.can().addColumnAfter()">
-					➕ Column
-				</BaseButton>
-				<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().deleteColumn().run()"
-					:disabled="!editor.can().deleteColumn()">
-					➖ Column
-				</BaseButton>
-				<!-- <BaseButton class="menubar__button" @click.prevent="editor.chain().focus().addRowBefore().run()" 
-					:disabled="!editor.can().addRowBefore()"
+				<BaseDropdown 
+					class="dropdown" 
+					:visible="dropdownAddVisible" 
+					@mouseover.native="dropdownAddVisible = true"
+					@mouseleave.native="dropdownAddVisible = false"
 				>
-					➕ RowBefore
-				</BaseButton> -->
-				<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().addRowAfter().run()"
-					:disabled="!editor.can().addRowAfter()">
-					➕ Row
-				</BaseButton>
-				<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().deleteRow().run()"
-					:disabled="!editor.can().deleteRow()">
-					➖ Row
-				</BaseButton>
-				<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().mergeCells().run()"
-					:disabled="!editor.can().mergeCells()">
-					Merge Cells
-				</BaseButton>
-				<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().splitCell().run()"
-					:disabled="!editor.can().splitCell()">
-					Split Cell
-				</BaseButton>
-				<!-- <BaseButton class="menubar__button" @click.prevent="editor.chain().focus().mergeOrSplit().run()" 
-						:disabled="!editor.can().mergeOrSplit()"
-					>
-					merge Or Split
-				</BaseButton> -->
-				<!-- <BaseButton class="menubar__button" @click.prevent="splitRow" :disabled="!editor.can().mergeCells()">
-					Split Row
-				</BaseButton> -->
-				<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().toggleHeaderColumn().run()"
-					:disabled="!editor.can().toggleHeaderColumn()">
-					Toggle Index
-				</BaseButton>
-				<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().toggleHeaderRow().run()"
-					:disabled="!editor.can().toggleHeaderRow()">
-					Toggle Header
-				</BaseButton>
-				<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().toggleHeaderCell().run()"
-					:disabled="!editor.can().toggleHeaderCell()">
-					Toggle Header Cell
-				</BaseButton>
-				<!-- <BaseButton class="menubar__button" @click.prevent="editor.chain().focus().fixTables().run()" 
-					:disabled="!editor.can().fixTables()"
-				>
-					Fix Tables
-				</BaseButton> -->
-
-				<BaseDropdown :visible="searchReplaceDropdownVisible" class="dropdown">
 					<span slot="dropdown-header">
-						<BaseButton @click.prevent="searchReplaceDropdownVisible = !searchReplaceDropdownVisible">
+						<BaseButton 
+							slot="dropdown-header" 
+							class="dropdown-header" 
+							@click.prevent="dropdownAddVisible = !dropdownAddVisible"
+						>
+							Add
+							<svgicon name="chevron-down" width="8" height="8" />
+						</BaseButton>
+					</span>
+					<span slot="dropdown-content">
+						<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().addColumnBefore().run()"
+							:disabled="!editor.can().addColumnBefore()">
+							➕ Column ←
+						</BaseButton>
+						<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().addColumnAfter().run()"
+							:disabled="!editor.can().addColumnAfter()">
+							➕ Column →
+						</BaseButton>
+						<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().addRowBefore().run()" 
+							:disabled="!editor.can().addRowBefore()">
+							➕ Row ↑
+						</BaseButton>
+						<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().addRowAfter().run()"
+							:disabled="!editor.can().addRowAfter()">
+							➕ Row ↓
+						</BaseButton>
+					</span>
+				</BaseDropdown>
+
+				<BaseDropdown 
+					class="dropdown" 
+					:visible="dropdownRemoveVisible"
+					@mouseover.native="dropdownRemoveVisible = true"
+					@mouseleave.native="dropdownRemoveVisible = false"
+				>
+					<span slot="dropdown-header">
+						<BaseButton slot="dropdown-header" class="dropdown-header" @click.prevent="dropdownRemoveVisible = !dropdownRemoveVisible">
+							Remove
+							<svgicon name="chevron-down" width="8" height="8" />
+						</BaseButton>
+					</span>
+					<span slot="dropdown-content">
+						<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().deleteColumn().run()"
+							:disabled="!editor.can().deleteColumn()">
+							➖ Column
+						</BaseButton>
+						<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().deleteRow().run()"
+							:disabled="!editor.can().deleteRow()">
+							➖ Row
+						</BaseButton>
+					</span>
+				</BaseDropdown>
+
+				<BaseDropdown 
+					class="dropdown" 
+					:visible="dropdownToggleVisible"
+					@mouseover.native="dropdownToggleVisible = true"
+					@mouseleave.native="dropdownToggleVisible = false"
+				>
+					<span slot="dropdown-header">
+						<BaseButton slot="dropdown-header" class="dropdown-header" @click.prevent="dropdownToggleVisible = !dropdownToggleVisible">
+							Toggle selected
+							<svgicon name="chevron-down" width="8" height="8" />
+						</BaseButton>
+					</span>
+					<span slot="dropdown-content">
+						<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().toggleHeaderColumn().run()"
+							:disabled="!editor.can().toggleHeaderColumn()">
+							As Row Header
+						</BaseButton>
+						<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().toggleHeaderRow().run()"
+							:disabled="!editor.can().toggleHeaderRow()">
+							As Column Header
+						</BaseButton>
+						<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().toggleHeaderCell().run()"
+							:disabled="!editor.can().toggleHeaderCell()">
+							As Selected as Header
+						</BaseButton>
+						<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().mergeCells().run()"
+							:disabled="!editor.can().mergeCells()">
+							Merge Cells
+						</BaseButton>
+						<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().splitCell().run()"
+							:disabled="!editor.can().splitCell()">
+							Split Cell
+						</BaseButton>
+						<!-- <BaseButton class="menubar__button" @click.prevent="splitRow" :disabled="!editor.can().mergeCells()">
+							Split Row
+						</BaseButton> -->
+					</span>
+				</BaseDropdown>
+
+				<BaseDropdown class="dropdown" :visible="dropdownSearchReplaceVisible" >
+					<span slot="dropdown-header">
+						<BaseButton @click.prevent="dropdownSearchReplaceVisible = !dropdownSearchReplaceVisible">
 							Find & Replace
 						</BaseButton>
 					</span>
@@ -131,7 +175,10 @@ export default {
 			editor: null,
 			sanitizedCurrentValue: null,
 			currentValue: null,
-			searchReplaceDropdownVisible: false,
+			dropdownSearchReplaceVisible: false,
+			dropdownAddVisible: false,
+			dropdownRemoveVisible: false,
+			dropdownToggleVisible: false,
 			searchTerm: "",
 			replaceTerm: "",
 			contextMenu: {
@@ -203,6 +250,10 @@ export default {
 			},
 		})
 		this.reset();
+
+		if (this.editable && this.editor.can().fixTables()) {
+			this.editor.chain().focus().fixTables().run();
+		}
 	},
 
 	beforeUnmount() {
@@ -332,52 +383,50 @@ export default {
     border-radius: 5px;
     padding: 0.2rem 0.5rem;
   }
+}
 
-	.menubar {
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: space-between;
-		// padding: 5px 5px 0px 0px;
-		color: white;
-		text-decoration: none;
+.menubar {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	padding: 5px 5px 0px 0px;
+	color: white;
+	text-decoration: none;
 
-		.menubar__button {
-			background-color: transparent;
-			border: none;
-			// border-radius: 0.4rem;
-			cursor: pointer;
-			height: 1.75rem;
-			// margin-right: 0.25rem;
-			// padding: 0.25rem;
+	.menubar__button {
+		background-color: transparent;
+		border: none;
+		cursor: pointer;
 
-			svg {
-				fill: currentColor;
-				height: 100%;
-				width: 100%;
-			}
-
-			&:hover,
-			&.is-active {
-				background-color: $black-4;
-			}
-
-			&:disabled {
-				background-color: #ccc;  // Adjust as needed
-				color: #888;  // Adjust as needed
-				cursor: not-allowed;
-			}
+		svg {
+			fill: currentColor;
+			height: 100%;
+			width: 100%;
 		}
 
-		.dropdown {
-			.button {
-				cursor: pointer;
-				&:hover,
-				&--active {
-					background: $black-4;
-				}
+		&:hover,
+		&.is-active {
+			background-color: $black-4;
+		}
+
+		&:disabled {
+			cursor: not-allowed;
+		}
+	}
+
+	.dropdown {
+		position: relative;
+
+		.button {
+			cursor: pointer;
+			&:hover,
+			&--active {
+				background: $black-4;
 			}
-			.dropdown-content {
-				align-items: center;
+		}
+		.dropdown-content {
+			.button {
+				width: 100%;
 			}
 		}
 	}
