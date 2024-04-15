@@ -1,127 +1,124 @@
 <template>
-	<div v-if="editor" class="editor-container">
-		<div v-if="editable" :editor="editor">
-			<div class="menubar">
-				<BaseDropdown 
-					class="dropdown" 
-					:visible="dropdownAddVisible" 
-					@mouseover.native="dropdownAddVisible = true"
-					@mouseleave.native="dropdownAddVisible = false"
-				>
-					<span slot="dropdown-header">
-						<BaseButton 
-							slot="dropdown-header" 
-							class="dropdown-header" 
-							@click.prevent="dropdownAddVisible = !dropdownAddVisible"
-						>
-							Add
-							<svgicon name="chevron-down" width="8" height="8" />
-						</BaseButton>
-					</span>
-					<span slot="dropdown-content">
-						<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().addColumnBefore().run()"
-							:disabled="!editor.can().addColumnBefore()">
-							➕ Column ←
-						</BaseButton>
-						<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().addColumnAfter().run()"
-							:disabled="!editor.can().addColumnAfter()">
-							➕ Column →
-						</BaseButton>
-						<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().addRowBefore().run()" 
-							:disabled="!editor.can().addRowBefore()">
-							➕ Row ↑
-						</BaseButton>
-						<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().addRowAfter().run()"
-							:disabled="!editor.can().addRowAfter()">
-							➕ Row ↓
-						</BaseButton>
-					</span>
-				</BaseDropdown>
+	<div v-if="editor" class="editor-container" @focusin="setFocus(true)" @focusout="setFocus(false)">
+		<div class="menubar" v-if="editable">
+			<BaseDropdown 
+				class="dropdown" 
+				:visible="dropdownAddVisible" 
+				@mouseover.native="dropdownAddVisible = true"
+				@mouseleave.native="dropdownAddVisible = false"
+			>
+				<span slot="dropdown-header">
+					<BaseButton 
+						slot="dropdown-header" 
+						class="dropdown-header" 
+						@click.prevent="dropdownAddVisible = !dropdownAddVisible"
+					>
+						Add
+						<svgicon name="chevron-down" width="8" height="8" />
+					</BaseButton>
+				</span>
+				<span slot="dropdown-content">
+					<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().addColumnBefore().run()"
+						:disabled="!editor.can().addColumnBefore()">
+						➕ Column ←
+					</BaseButton>
+					<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().addColumnAfter().run()"
+						:disabled="!editor.can().addColumnAfter()">
+						➕ Column →
+					</BaseButton>
+					<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().addRowBefore().run()" 
+						:disabled="!editor.can().addRowBefore()">
+						➕ Row ↑
+					</BaseButton>
+					<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().addRowAfter().run()"
+						:disabled="!editor.can().addRowAfter()">
+						➕ Row ↓
+					</BaseButton>
+				</span>
+			</BaseDropdown>
 
-				<BaseDropdown 
-					class="dropdown" 
-					:visible="dropdownRemoveVisible"
-					@mouseover.native="dropdownRemoveVisible = true"
-					@mouseleave.native="dropdownRemoveVisible = false"
-				>
-					<span slot="dropdown-header">
-						<BaseButton slot="dropdown-header" class="dropdown-header" @click.prevent="dropdownRemoveVisible = !dropdownRemoveVisible">
-							Remove
-							<svgicon name="chevron-down" width="8" height="8" />
-						</BaseButton>
-					</span>
-					<span slot="dropdown-content">
-						<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().deleteColumn().run()"
-							:disabled="!editor.can().deleteColumn()">
-							➖ Column
-						</BaseButton>
-						<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().deleteRow().run()"
-							:disabled="!editor.can().deleteRow()">
-							➖ Row
-						</BaseButton>
-					</span>
-				</BaseDropdown>
+			<BaseDropdown 
+				class="dropdown" 
+				:visible="dropdownRemoveVisible"
+				@mouseover.native="dropdownRemoveVisible = true"
+				@mouseleave.native="dropdownRemoveVisible = false"
+			>
+				<span slot="dropdown-header">
+					<BaseButton slot="dropdown-header" class="dropdown-header" @click.prevent="dropdownRemoveVisible = !dropdownRemoveVisible">
+						Remove
+						<svgicon name="chevron-down" width="8" height="8" />
+					</BaseButton>
+				</span>
+				<span slot="dropdown-content">
+					<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().deleteColumn().run()"
+						:disabled="!editor.can().deleteColumn()">
+						➖ Column
+					</BaseButton>
+					<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().deleteRow().run()"
+						:disabled="!editor.can().deleteRow()">
+						➖ Row
+					</BaseButton>
+					<BaseButton class="menubar__button" @click.prevent="deleteTable">
+						Delete Table
+					</BaseButton>
+				</span>
+			</BaseDropdown>
 
-				<BaseDropdown 
-					class="dropdown" 
-					:visible="dropdownToggleVisible"
-					@mouseover.native="dropdownToggleVisible = true"
-					@mouseleave.native="dropdownToggleVisible = false"
-				>
-					<span slot="dropdown-header">
-						<BaseButton slot="dropdown-header" class="dropdown-header" @click.prevent="dropdownToggleVisible = !dropdownToggleVisible">
-							Toggle selected
-							<svgicon name="chevron-down" width="8" height="8" />
-						</BaseButton>
-					</span>
-					<span slot="dropdown-content">
-						<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().toggleHeaderColumn().run()"
-							:disabled="!editor.can().toggleHeaderColumn()">
-							As Row Header
-						</BaseButton>
-						<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().toggleHeaderRow().run()"
-							:disabled="!editor.can().toggleHeaderRow()">
-							As Column Header
-						</BaseButton>
-						<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().toggleHeaderCell().run()"
-							:disabled="!editor.can().toggleHeaderCell()">
-							As Selected as Header
-						</BaseButton>
-						<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().mergeCells().run()"
-							:disabled="!editor.can().mergeCells()">
-							Merge Cells
-						</BaseButton>
-						<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().splitCell().run()"
-							:disabled="!editor.can().splitCell()">
-							Split Cell
-						</BaseButton>
-						<!-- <BaseButton class="menubar__button" @click.prevent="splitRow" :disabled="!editor.can().mergeCells()">
-							Split Row
-						</BaseButton> -->
-					</span>
-				</BaseDropdown>
+			<BaseDropdown 
+				class="dropdown" 
+				:visible="dropdownToggleVisible"
+				@mouseover.native="dropdownToggleVisible = true"
+				@mouseleave.native="dropdownToggleVisible = false"
+			>
+				<span slot="dropdown-header">
+					<BaseButton slot="dropdown-header" class="dropdown-header" @click.prevent="dropdownToggleVisible = !dropdownToggleVisible">
+						Toggle
+						<svgicon name="chevron-down" width="8" height="8" />
+					</BaseButton>
+				</span>
+				<span slot="dropdown-content">
+					<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().toggleHeaderCell().run()"
+						:disabled="!editor.can().toggleHeaderCell()">
+						Toggle Selected as Header
+					</BaseButton>
+					<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().toggleHeaderColumn().run()"
+						:disabled="!editor.can().toggleHeaderColumn()">
+						Toggle Row Header
+					</BaseButton>
+					<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().mergeCells().run()"
+						:disabled="!editor.can().mergeCells()">
+						Merge Cells
+					</BaseButton>
+					<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().splitCell().run()"
+						:disabled="!editor.can().splitCell()">
+						Split Cell
+					</BaseButton>
+					<!-- <BaseButton class="menubar__button" @click.prevent="splitRow" :disabled="!editor.can().mergeCells()">
+						Split Row
+					</BaseButton> -->
+				</span>
+			</BaseDropdown>
 
-				<BaseDropdown class="dropdown" :visible="dropdownSearchReplaceVisible" >
-					<span slot="dropdown-header">
-						<BaseButton @click.prevent="dropdownSearchReplaceVisible = !dropdownSearchReplaceVisible">
-							Find & Replace
-						</BaseButton>
-					</span>
-					<span slot="dropdown-content" class="dropdown-content">
-						<label for="searchTerm" class="dropdown-label">Search:</label>
-						<input id="searchTerm" v-model="searchTerm" type="text" class="dropdown-input" />
+			<BaseDropdown class="dropdown" :visible="dropdownSearchReplaceVisible" >
+				<span slot="dropdown-header">
+					<BaseButton @click.prevent="dropdownSearchReplaceVisible = !dropdownSearchReplaceVisible">
+						Find & Replace
+					</BaseButton>
+				</span>
+				<span slot="dropdown-content" class="dropdown-content">
+					<label for="searchTerm" class="dropdown-label">Search:</label>
+					<input id="searchTerm" v-model="searchTerm" type="text" class="dropdown-input" />
 
-						<label for="replaceTerm" class="dropdown-label">Replace:</label>
-						<input id="replaceTerm" v-model="replaceTerm" type="text" class="dropdown-input" />
+					<label for="replaceTerm" class="dropdown-label">Replace:</label>
+					<input id="replaceTerm" v-model="replaceTerm" type="text" class="dropdown-input" />
 
-						<BaseButton @click.prevent="replaceAll" class="dropdown-button">Find/Replace All</BaseButton>
+					<BaseButton @click.prevent="replaceAll" class="dropdown-button">Find/Replace All</BaseButton>
 
-					</span>
-				</BaseDropdown>
-			</div>
+				</span>
+			</BaseDropdown>
 		</div>
 
-		<editor-content :editor="editor" class="editor-container__content" @focus="setFocus(true)" @blur="setFocus(false)"
+		<editor-content :editor="editor" class="editor-container__content"
 			@contextmenu.prevent="openContextMenu($event, rowIndex, cellIndex)" />
 	</div>
 </template>
@@ -232,7 +229,9 @@ export default {
 				TableCell.extend({
 					addKeyboardShortcuts() {
 						return {
-							'Mod-m': () => this.editor.chain().focus().mergeCells().run(),
+							'Mod-g': () => this.editor.chain().focus().mergeCells().run(),
+							'Mod-shift-g': () => this.editor.chain().focus().splitCell().run(),
+							'Mod-h': () => this.editor.chain().focus().toggleHeaderCell().run(),
 						}
 					}
 				}),
@@ -251,8 +250,9 @@ export default {
 		})
 		this.reset();
 
-		if (this.editable && this.editor.can().fixTables()) {
-			this.editor.chain().focus().fixTables().run();
+		if (this.editable) {
+			this.fixTablesIfPossible();
+			this.addTableHeaderIfMissing();
 		}
 	},
 
@@ -345,6 +345,21 @@ export default {
 		onClickOutside() {
 			this.setFocus(false);
 		},
+		fixTablesIfPossible() {
+			if (this.editor.can().fixTables()) {
+				this.editor.chain().focus().fixTables().run();
+			}
+		},
+
+		addTableHeaderIfMissing() {
+			const html = this.editor.getHTML();
+			if (!(html.includes('<th') || html.includes('<thead')) && this.editor.can().toggleHeaderRow()) {
+				this.editor.chain().focus().toggleHeaderRow().run();
+			}
+		},
+		deleteTable() {
+			this.onChangeText('');
+		},
 	},
 	errorCaptured(err, component, info) {
     this.error = err;
@@ -362,12 +377,7 @@ export default {
 
   &__content {
 		max-height: 60vh;
-		overflow-x: scroll;
-  }
-
-  &__footer {
-    text-align: center;
-    margin-bottom: 2rem;
+    overflow: auto;
   }
 
   &__source-link {
@@ -511,9 +521,8 @@ input[type="checkbox"] {
 		overflow-x: auto;
 		@include overflow-scrollbar;
 
-    td,
-    th {
-      min-width: 1em;
+    td, th {
+      min-width: 35px;
       border: 2px solid #ced4da;
       padding: 3px 5px;
       vertical-align: top;
@@ -523,22 +532,20 @@ input[type="checkbox"] {
       > * {
         margin-bottom: 0;
       }
-    }
 
-		tr {
-			th {
-				white-space: nowrap;
+			&[colspan="2"], &[colspan="3"], &[colspan="4"] {
+				text-align: center;
 			}
-		}
-
-		td[colspan], th[colspan] {
-			vertical-align: middle;
+			&[rowspan] {
+				vertical-align: middle;
+			}
     }
 
     th {
-			position: sticky;
-    	top: 0;
+			// position: sticky;
+    	// top: 0;
     	z-index: 1;
+			white-space: normal;
 
       font-weight: bold;
       text-align: left;

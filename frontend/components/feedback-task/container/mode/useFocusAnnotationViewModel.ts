@@ -8,6 +8,7 @@ import { useDebounce } from "~/v1/infrastructure/services/useDebounce";
 
 export const useFocusAnnotationViewModel = () => {
   const debounceForSubmit = useDebounce(300);
+  const debounceForSaveDraft = useDebounce(1000);
 
   const isDraftSaving = ref(false);
   const isDiscarding = ref(false);
@@ -51,9 +52,8 @@ export const useFocusAnnotationViewModel = () => {
     isDraftSaving.value = true;
     let duration = incrementDuration(record, durationWrapper);
 
+    await debounceForSaveDraft.wait();
     await saveDraftUseCase.execute(record, duration);
-
-    await debounceForSubmit.wait();
 
     isDraftSaving.value = false;
   };

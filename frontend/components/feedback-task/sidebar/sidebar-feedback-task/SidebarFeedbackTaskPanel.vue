@@ -69,7 +69,7 @@ export default {
         edges: { left: true, right: false, bottom: false, top: false },
         modifiers: [
           interact.modifiers.restrictSize({
-            min: { width: 200, height: 0 },
+            min: { width: 300, height: 0 },
           }),
         ],
       })

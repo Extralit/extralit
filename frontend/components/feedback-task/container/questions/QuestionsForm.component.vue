@@ -226,7 +226,7 @@ export default {
       immediate: true,
       handler() {
         this.isSubmittedTouched = this.record.isSubmitted && this.record.isModified;
-        // this.checkAndSaveDraft();
+        this.checkAndSaveDraft();
       },
     },
   },
@@ -355,6 +355,7 @@ export default {
     },
     checkAndSaveDraft() {
       const modified = this.record.getModified;
+      
       const condition = modified?.questions?.some(
         question => question && question.answer && (
           question.answer?.value || 

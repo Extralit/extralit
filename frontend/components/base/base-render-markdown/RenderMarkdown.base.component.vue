@@ -144,6 +144,12 @@ export default {
     }
     img {
       max-width: 100%;
+      max-height: 100%;
+      object-fit: contain; 
+
+      @media (min-height: 400px) {
+        max-height: 50vh;
+      }
     }
     table {
       display: block;

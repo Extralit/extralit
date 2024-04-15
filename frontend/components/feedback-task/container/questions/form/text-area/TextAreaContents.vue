@@ -132,7 +132,6 @@ export default {
   computed: {
     classes() {
       if (this.question.settings.use_table && (this.isValidHTML || this.isValidTableJSON)) {
-        // This first clause prevents the table from having --table or --editing class
         return "--table";
       } else if (this.isEditionModeActive) {
         return "--editing";

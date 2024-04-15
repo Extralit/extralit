@@ -60,7 +60,9 @@ export default {
     align-items: center;
     margin: 0;
     padding: 0;
-    flex-wrap: wrap;
+    flex-wrap: wrap-reverse;
+    flex-direction: row-reverse;
+    direction: rtl;
   }
   &__tab {
     list-style: none;

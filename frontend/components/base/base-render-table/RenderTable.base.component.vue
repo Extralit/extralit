@@ -640,6 +640,7 @@ export default {
           return div;
         },
 
+        // Row 
         movableRows: true,
         rowHeader: { 
           headerSort: false, resizable: false, rowHandle: true, editor: false,
@@ -648,6 +649,7 @@ export default {
         },
         rowContextMenu: this.rowContextMenu,
 
+        // Column
         columns: this.columnsConfig,
         index: this.indexColumns + this.refColumns,
         ...this.groupConfigs,
