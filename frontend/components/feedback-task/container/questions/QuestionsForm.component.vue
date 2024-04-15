@@ -232,21 +232,31 @@ export default {
   },
 
   mounted() {
+    // Listen for visibility change events
     document.addEventListener("keydown", this.handleGlobalKeys);
+    this.startTimer();
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
+
     interact(this.$el)
       .resizable({
         edges: { left: true, right: false, bottom: false, top: false },
+        modifiers: [
+          interact.modifiers.restrictSize({
+            min: { width: 200, height: 0 },
+          }),
+        ],
       })
       .on('resizemove', event => {
         let target = event.target;
         let newWidth = event.rect.width;
-        let clampedWidth = Math.max(Math.min(newWidth, 0.8 * target.parentElement.offsetWidth), 0.4 * target.parentElement.offsetWidth);
-        target.style.flexBasis = clampedWidth + 'px';
+        let parentWidth = target.parentElement.offsetWidth;
+        let clampedWidth = Math.max(Math.min(newWidth, 0.8 * parentWidth), 0.25 * parentWidth);
+
+        requestAnimationFrame(() => {
+          target.style.width = clampedWidth + 'px';
+          document.documentElement.style.setProperty('--questions-form-width', target.style.width);
+        });
       });
-      
-    // Listen for visibility change events
-    this.startTimer();
-    document.addEventListener('visibilitychange', this.handleVisibilityChange);
   },
 
   beforeDestroy() {
@@ -394,7 +404,9 @@ export default {
 .questions-form {
   display: flex;
   flex-direction: column;
-  flex-basis: clamp(33%, 520px, 40%);
+  // flex-basis: clamp(33%, var(--questions-form-width), 50%);
+  width: var(--questions-form-width);
+  flex-shrink: 0;
   gap: $base-space;
   max-height: 100%;
   min-width: 0;

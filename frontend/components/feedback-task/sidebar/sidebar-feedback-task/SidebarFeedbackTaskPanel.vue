@@ -57,14 +57,6 @@ export default {
       this.$emit("close-panel");
       this.animated = true;
     },
-    getPanelWidth() {
-      let panelWidth = parseInt(getComputedStyle(this.$el).width);
-      // if (this.currentPanel != 'document') {
-      //   const sidebarPanelWidth = 70; // Replace with your actual value of $sidebarPanelWidth
-      //   panelWidth += sidebarPanelWidth;
-      // }
-      return panelWidth + 'px';
-    },
   },
   computed: {
     layoutClass() {
@@ -72,10 +64,6 @@ export default {
     },
   },
   mounted() {
-    // Set the initial sidebar width
-    this.$el.style.width = this.getPanelWidth();
-    document.documentElement.style.setProperty('--sidebar-width', this.$el.style.width);
-
     interact(this.$el)
       .resizable({
         edges: { left: true, right: false, bottom: false, top: false },
@@ -87,8 +75,10 @@ export default {
       })
       .on('resizemove', event => {
         let target = event.target;
-        target.style.width = Math.min(event.rect.width, parseInt(window.innerWidth * 0.50)) + 'px';
-        document.documentElement.style.setProperty('--sidebar-width', target.style.width);
+        requestAnimationFrame(() => {
+          target.style.width = Math.min(event.rect.width, parseInt(window.innerWidth * 0.50)) + 'px';
+          document.documentElement.style.setProperty('--sidebar-width', target.style.width);
+        });
       });
   },
 };
@@ -166,6 +156,7 @@ export default {
     width: 5px; 
     background: transparent;
     z-index: 1;
+    transition: background 0.3s ease;
 
     &::before {
       content: "";

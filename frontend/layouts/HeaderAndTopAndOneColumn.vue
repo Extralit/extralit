@@ -37,9 +37,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-:root {
-  --sidebar-width: $sidebarPanelWidth + $sidebarMenuWidth + $sidebarDocumentAdditionalWidth;
-}
 $gap-width: $base-space * 2;
 .layout {
   display: grid;

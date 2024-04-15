@@ -239,7 +239,7 @@ export default {
           }
         },
         {
-          label: "Delete column",
+          label: "<i class='fas fa-trash'></i> Delete column",
           disabled: !this.editable,
           action: (e, column) => {
             column.delete();
@@ -259,7 +259,7 @@ export default {
           }
         },
         {
-          label: "Delete row",
+          label: "<i class='fas fa-trash'></i> Delete row",
           disabled: !this.editable,
           action: (e, row) => {
             row.delete();
@@ -605,6 +605,7 @@ export default {
       Tabulator.extendModule("keybindings", "bindings");
       this.table = new Tabulator(this.$refs.table, {
         data: this.tableJSON.data,
+        reactiveData: true,
         layout: layout,
         height: this.tableJSON.data.length >= 8 ? "60vh": 'auto',
         persistence:{
@@ -621,7 +622,6 @@ export default {
         },
         // renderHorizontal: "virtual",
         // layoutColumnsOnNewData: true,
-        // reactiveData: true,
         placeholder: () => {
           const div = document.createElement('div');
           div.classList.add('tabulator-placeholder-contents');

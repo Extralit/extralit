@@ -202,6 +202,9 @@ $swift-linear: all $swift-linear-duration $swift-linear-timing-function !default
 // topbar
 $topbarHeight: 56px;
 
+// question-form
+$questionFormWidth: 520px;
+
 // sidebar
 $sidebarPanelWidth: 280px;
 $sidebarMenuWidth: 70px;
@@ -215,3 +218,8 @@ $sidebarRightMenuWidth: 50px;
 // record
 $record-reference-border-color: palette(apricot, dark);
 $record-reference-background-color: palette(apricot, light);
+
+:root {
+  --sidebar-width: #{$sidebarPanelWidth + $sidebarMenuWidth + $sidebarDocumentAdditionalWidth};
+  --questions-form-width: #{$questionFormWidth};
+}
