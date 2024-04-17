@@ -75,6 +75,7 @@ export function columnSchemaToDesc(fieldName: string, validation: PanderaSchema,
   if (!validation || !fieldName) return;
   
   var desc = `<b>${fieldName}</b>: ` || "";
+  
   if (validation.columns.hasOwnProperty(fieldName)) {
     const column = validation.columns[fieldName];
     desc += column.description || "";
@@ -89,6 +90,10 @@ export function columnSchemaToDesc(fieldName: string, validation: PanderaSchema,
       .filter((value) => value != null);
     desc += `<br/><br/>Checks: ${criteriaSpecs.join(', ')}`
       .replace(/,/g, ", ").replace(/:/g, ": ");
+  }
+
+  if (validation.columns[fieldName]?.checks?.multiselect?.delimiter) {
+    desc += ', multiselect'
   }
 
   return desc;

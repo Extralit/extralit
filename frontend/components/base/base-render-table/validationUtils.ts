@@ -173,8 +173,8 @@ export function getColumnEditorParams(
       config.editor = "list";
       config.editorParams.emptyValue = "NA";
       config.editorParams.autocomplete = true;
-      config.editorParams.listOnEmpty = true;
       config.editorParams.freetext = true;
+      config.editorParams.listOnEmpty = true;
 
       if (columnValidators?.checks?.isin) {
         config.editorParams.values = columnValidators?.checks?.isin;
@@ -200,13 +200,17 @@ export function getColumnEditorParams(
         config.editorParams.valuesLookupField = fieldName;
       }
 
-      if (columnValidators.checks?.multiselect?.delimiter) {
-        config.editorParams.multiselect = true;
-        config.editorParams.autocomplete = false;
-      }
-
       if (config.editorParams.values) {
         config.hozAlign = "center";
+      }
+
+      if (columnValidators.checks?.multiselect?.delimiter) {
+        if (config.editorParams.values) {
+          config.editorParams.multiselect = true;
+          config.editorParams.autocomplete = false;
+        } else {
+          config.editorParams.separator = columnValidators.checks.multiselect.delimiter;
+        }
       }
 
     } else if (columnValidators.dtype.includes("int") || columnValidators.dtype.includes("float")) {
