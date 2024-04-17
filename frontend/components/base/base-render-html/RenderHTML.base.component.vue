@@ -81,10 +81,6 @@
 						:disabled="!editor.can().toggleHeaderCell()">
 						Toggle Selected as Header
 					</BaseButton>
-					<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().toggleHeaderColumn().run()"
-						:disabled="!editor.can().toggleHeaderColumn()">
-						Toggle Row Header
-					</BaseButton>
 					<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().mergeCells().run()"
 						:disabled="!editor.can().mergeCells()">
 						Merge Cells
@@ -95,6 +91,9 @@
 					</BaseButton>
 					<!-- <BaseButton class="menubar__button" @click.prevent="splitRow" :disabled="!editor.can().mergeCells()">
 						Split Row
+					</BaseButton> -->
+					<!-- <BaseButton @click.prevent="editor.chain().focus().fixTables().run()">
+						Fix Table
 					</BaseButton> -->
 				</span>
 			</BaseDropdown>
@@ -373,7 +372,7 @@ export default {
 .editor-container {
   position: relative;
 	flex-flow: column;
-	width: 100%;
+	// width: 100%;
 
   &__content {
 		max-height: 60vh;
@@ -491,7 +490,8 @@ input[type="checkbox"] {
 
   img {
     max-width: 100%;
-    height: auto;
+		max-height: 100%;
+		object-fit: contain; 
   }
 
   blockquote {
