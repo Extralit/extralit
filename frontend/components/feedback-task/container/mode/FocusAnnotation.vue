@@ -49,6 +49,7 @@
 </template>
 <script>
 import { useFocusAnnotationViewModel } from "./useFocusAnnotationViewModel";
+import { Notification } from "@/models/Notifications";
 export default {
   props: {
     recordCriteria: {
@@ -91,7 +92,18 @@ export default {
       try {
         await this.saveAsDraft(this.record, durationWrapper);
       } catch (error) {
+        const message = this.$t('errors.saving', { error: error?.response || error.toString() });
+        Notification.dispatch("notify", {
+          message: message,
+          numberOfChars: message.length,
+          type: "error",
+          onClick() {
+            Notification.dispatch("clear");
+          },
+        });
         console.log("Error saving draft", error, this.record);
+
+        this.isDraftSaving = false;
       }
     },
   },

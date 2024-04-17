@@ -182,4 +182,8 @@ export default {
       },
     },
   },
+
+  errors: {
+    saving: `Failed to save draft due to "{error}"<br/> Please try again or save your work to avoid losing your progress`,
+  }
 };

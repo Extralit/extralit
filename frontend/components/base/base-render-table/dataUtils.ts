@@ -1,7 +1,7 @@
 import { useRecordFeedbackTaskViewModel } from '@/components/feedback-task/container/useRecordFeedbackTaskViewModel';
 import { Record as FeedbackRecord } from '~/v1/domain/entities/record/Record';
 import { RecordDataFramesArray } from './tableUtils';
-import { DataFrame, Validation, ValidationSpec, ValidationSpecs } from './types';
+import { DataFrame, PanderaSchema, Validator, Validators } from './types';
 
 export function columnUniqueCounts(tableJSON: DataFrame): Record<string, number> {
   // tableJSON is an object of the form {data: [{column: value, ...}, ...]}

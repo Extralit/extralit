@@ -1,4 +1,4 @@
-import { DataFrame, SchemaColumns, Check, ValidationSpec, ValidationSpecs } from "./types";
+import { DataFrame, SchemaColumns, Checks, PanderaSchema, Validator, Validators, ReferenceValues } from "./types";
 
 var integer = (cell: any, value: string, parameters: { nullable: boolean }): boolean => 
 	(parameters.nullable && value == "NA") || /^-?\d+$/.test(value);
@@ -55,17 +55,17 @@ var between = (cell: any, value: any, parameters: { lower: string, upper: string
  * @param tableJSON - The table JSON containing the validation information.
  * @returns An object containing the column validators.
  */
-export function getColumnValidators(tableJSON: DataFrame): ValidationSpecs {
+export function getColumnValidators(tableJSON: DataFrame): Validators {
 	const schemaColumns = tableJSON.validation?.columns; // Pandera yaml schema
 	const indexColumns: SchemaColumns = tableJSON.validation?.index
     .reduce((acc, curr) => ({ ...acc, [curr.name]: curr }), {}) || {};
 	if (schemaColumns == null) return {};
 	const tableColumns = tableJSON.schema.fields.map((col) => col.name);
 	
-	const columnValidators: ValidationSpecs = {};
+	const columnValidators: Validators = {};
 	for (const [columnName, columnSchema] of Object.entries({...schemaColumns, ...indexColumns})) {
 		if (!tableColumns.includes(columnName)) continue;
-		const validators: ValidationSpec[] = [];
+		const validators: Validator[] = [];
 
 		if (columnSchema.required) {
 			validators.push("required");
@@ -103,7 +103,13 @@ export function getColumnValidators(tableJSON: DataFrame): ValidationSpecs {
 }
 
 
-function addDataFrameChecks(checks: Record<string, Check>, columnValidators: ValidationSpecs) {
+/**
+ * Adds dataframe-level checks to the column validators.
+ * 
+ * @param checks - The checks to be added.
+ * @param columnValidators - The column validators to add the checks to.
+ */
+function addDataFrameChecks(checks: Checks, columnValidators: Validators) {
   if (checks?.check_less_than && Object.values(checks.check_less_than).every(Array.isArray)) {
     checks.check_less_than.columns_a.forEach((columnName, index) => {
 			if (!columnValidators[columnName]) {
@@ -149,4 +155,108 @@ function addDataFrameChecks(checks: Record<string, Check>, columnValidators: Val
       });
     });
   }
+}
+
+
+export function getColumnEditorParams(
+  fieldName: string,
+  validation: PanderaSchema,
+  refColumns: string[],
+  referenceValues: ReferenceValues,
+): any {
+  let config: any = { editorParams: {} };
+
+  if (validation?.columns?.hasOwnProperty(fieldName)) {
+    const columnValidators = validation.columns[fieldName];
+
+    if (columnValidators?.dtype === "str") {
+      config.editor = "list";
+      config.editorParams.emptyValue = "NA";
+      config.editorParams.autocomplete = true;
+      config.editorParams.listOnEmpty = true;
+      config.editorParams.freetext = true;
+
+      if (columnValidators?.checks?.isin) {
+        config.editorParams.values = columnValidators?.checks?.isin;
+
+      } else if (columnValidators?.checks?.suggestion) {
+        const suggestions = columnValidators.checks.suggestion;
+        if (Array.isArray(suggestions)) {
+          config.editorParams.values = suggestions;
+        } else if (typeof suggestions === 'object') {
+          config.editorParams.values = Object.entries(suggestions).map(([key, value]) => ({
+            label: key, value: key, data: value
+          }));
+          config.editorParams.itemFormatter = function (label, value, item, element) {
+            const keyValues = Object.entries(item.data)
+              .map(([key, v]) => `<span style="font-weight:normal; color:black; margin-left:0;">${key}:</span> ${v}`)
+              .join(', ');
+            return `<strong>${label}</strong>: <div>${keyValues}</div>`;
+          };
+        }
+
+      } else {
+        config.editorParams.valuesLookup = 'active';
+        config.editorParams.valuesLookupField = fieldName;
+      }
+
+      if (columnValidators.checks?.multiselect?.delimiter) {
+        config.editorParams.multiselect = true;
+        config.editorParams.autocomplete = false;
+      }
+
+      if (config.editorParams.values) {
+        config.hozAlign = "center";
+      }
+
+    } else if (columnValidators.dtype.includes("int") || columnValidators.dtype.includes("float")) {
+      config.hozAlign = "right";
+    }
+
+  } else if (refColumns?.includes(fieldName)) {
+    config.editor = "list";
+
+    if (referenceValues?.hasOwnProperty(fieldName)) {
+      config.editorParams = {
+        ...config.editorParams,
+        valuesLookup: false,
+        values: Object.entries(referenceValues[fieldName]).map(([key, value]) => ({
+          label: key,
+          value: key,
+          data: value
+        })),
+        placeholderEmpty: "Type to search by keyword...",
+        itemFormatter: function (label, value, item, element) {
+          const keyValues = Object.entries(item.data)
+            .filter(([key, v]) => refColumns.includes(key) && v !== 'NA' && v !== null)
+            .map(([key, v]) => `<span style="font-weight:normal; color:black; margin-left:0;">${key}:</span> ${v}`)
+            .join(', ');
+          return `<strong>${label}</strong>: <div>${keyValues}</div>`;
+        },
+        filterFunc: function (term, label, value, item) {
+          if (String(label).startsWith(term) || value == term) {
+            return true;
+          } else if (term.length >= 3) {
+            return JSON.stringify(item.data).toLowerCase().match(term.toLowerCase());              
+          }
+          return label === term;
+        },
+        allowEmpty: true,
+        listOnEmpty: true,
+        freetext: true,
+      };
+
+    } else {
+      // Default editor params for reference columns
+      config.editorParams = {
+        ...config.editorParams,
+        search: true,
+        valuesLookup: 'active',
+        listOnEmpty: true,
+        freetext: true,
+      };
+    }
+  }
+
+  return config;
 }

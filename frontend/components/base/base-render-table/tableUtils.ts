@@ -1,4 +1,4 @@
-import { DataFrame, Validation, ValidationSpec, ValidationSpecs } from './types';
+import { DataFrame, PanderaSchema, Validator, Validators, ReferenceValues } from './types';
 import { CellComponent, ColumnComponent, GroupComponent } from "tabulator-tables";
 
 type RecordDataFrames = Record<string, DataFrame>;
@@ -27,14 +27,15 @@ export function cellTooltip(e, cell: CellComponent, onRendered) {
   }
 
   if (errors?.length > 0) {
-    message = errors.map(stringifyCriteriaSpec).join(', ');
+    message = errors.map(stringifyValidator).join(', ');
   }
 
   return message;
 }
 
 
-export function groupHeader(value: string, count: number, data, group: GroupComponent, referenceValues: Record<string, Record<string, Record<string, any>>>, refColumns: string[]) {
+
+export function groupHeader(value: string, count: number, data, group: GroupComponent, referenceValues: ReferenceValues, refColumns: string[]) {
   const field = (group as any)._group.field
   let header = value
   if (referenceValues?.[field]?.hasOwnProperty(value)) {
@@ -54,7 +55,7 @@ export function groupHeader(value: string, count: number, data, group: GroupComp
   return header;
 }
 
-export function headerTooltip(e, column: ColumnComponent, onRendered, validation: Validation, columnValidators: ValidationSpecs) {
+export function headerTooltip(e, column: ColumnComponent, onRendered, validation: PanderaSchema, columnValidators: Validators) {
   try {
     const fieldName = column?.getDefinition()?.field;
     const desc = columnSchemaToDesc(fieldName, validation, columnValidators)
@@ -67,7 +68,7 @@ export function headerTooltip(e, column: ColumnComponent, onRendered, validation
   }
 }
 
-export function columnSchemaToDesc(fieldName: string, validation: Validation, columnValidators: ValidationSpecs): string | undefined {
+export function columnSchemaToDesc(fieldName: string, validation: PanderaSchema, columnValidators: Validators): string | undefined {
   // tableJSON is an object of the form {data: [{column: value, ...}], validation: {columns: {column: panderaSchema, ...}}}
   // columnValidators is an object of the form {column: [validator, ...]}
   // returns a string describing the column schema and validators
@@ -84,7 +85,7 @@ export function columnSchemaToDesc(fieldName: string, validation: Validation, co
 
   if (columnValidators.hasOwnProperty(fieldName)) {
     const criteriaSpecs = columnValidators[fieldName]
-      .map(stringifyCriteriaSpec)
+      .map(stringifyValidator)
       .filter((value) => value != null);
     desc += `<br/><br/>Checks: ${criteriaSpecs.join(', ')}`
       .replace(/,/g, ", ").replace(/:/g, ": ");
@@ -93,7 +94,7 @@ export function columnSchemaToDesc(fieldName: string, validation: Validation, co
   return desc;
 }
 
-function stringifyCriteriaSpec(value: ValidationSpec): string | null {
+function stringifyValidator(value: Validator): string | null {
   let s = null;
 
   if (typeof value === 'string') {
@@ -104,7 +105,6 @@ function stringifyCriteriaSpec(value: ValidationSpec): string | null {
 
   } else if (typeof value === 'object' && value?.type?.name) {
     s = `${value.type.name}`;
-
     if (value?.parameters != null && typeof value.parameters !== 'object') {
       s += `: ${value.parameters}`;
     } else if (!['integer', 'decimal'].includes(value?.type?.name) && value.parameters != null && typeof value.parameters === 'object') {
@@ -121,6 +121,10 @@ function stringifyCriteriaSpec(value: ValidationSpec): string | null {
         .replace('=true', '').replace('column=', '');;
     } else {
       s = `${value.type}`;
+
+      if (value?.parameters != null && typeof value.parameters !== 'object') {
+        s += `: ${value.parameters}`;
+      }
     }
   }
 

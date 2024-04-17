@@ -77,7 +77,7 @@ import { TabulatorFull as Tabulator } from "tabulator-tables";
 import "tabulator-tables/dist/css/tabulator.min.css";
 import {
   getTableDataFromRecords, findMatchingRefValues, generateCombinations, incrementReferenceStr, getMaxStringValue, } from './dataUtils';
-import { getColumnValidators } from "./validationUtils";
+import { getColumnValidators, getColumnEditorParams } from "./validationUtils";
 import { 
   columnSchemaToDesc, 
   cellTooltip,
@@ -400,70 +400,11 @@ export default {
         },
       };
 
-      if (this.tableJSON.validation?.columns?.hasOwnProperty(fieldName)) {
-        // Add custom editor params for a column based on the Pandera validation schema
-        const columnSchema = this.tableJSON.validation?.columns[fieldName];
-
-        if (columnSchema.dtype === "str") {
-          config.editor = "list";
-          config.editorParams.emptyValue = "NA";
-          config.editorParams.valuesLookup = 'active';
-          config.editorParams.valuesLookupField = fieldName;
-          config.editorParams.autocomplete = true;
-          // config.editorParams.sort = (a, b) => a.length - b.length;
-          // config.editorParams.multiselect = true;
-          config.editorParams.listOnEmpty = true;
-          config.editorParams.freetext = true;
-          config.editorParams.values = (columnSchema.checks?.isin?.length) ? columnSchema.checks.isin : config.editorParams.values;
-          if (config.editorParams.values) {
-            config.hozAlign = "center";
-          }
-        } else if (columnSchema.dtype.includes("int") || columnSchema.dtype.includes("float")) {
-          config.hozAlign = "right";
-        }
-
-      } else if (this.isIndexRefColumn(fieldName)) {
-        config.editor = "list";
-
-        if (this.referenceValues?.hasOwnProperty(fieldName)) {
-          config.editorParams = {
-            ...config.editorParams,
-            valuesLookup: false,
-            values: Object.entries(this.referenceValues[fieldName]).map(([key, value]) => ({
-              label: key,
-              value: key,
-              data: value
-            })),
-            placeholderEmpty: "Type to search by keyword...",
-            itemFormatter: function (label, value, item, element) {
-              const keyValues = Object.entries(item.data)
-                .filter(([key, v]) => this.indexColumns.includes(key) && v !== 'NA' && v !== null)
-                .map(([key, v]) => `<span style="font-weight:normal; color:black; margin-left:0;">${key}:</span> ${v}`)
-                .join(', ');
-              return `<strong>${label}</strong>: <div>${keyValues}</div>`;
-            },
-            filterFunc: function (term, label, value, item) {
-              if (String(label).startsWith(term) || value == term) {
-                return true;
-              } else if (term.length >= 3) {
-                return JSON.stringify(item.data).toLowerCase().match(term.toLowerCase());              
-              }
-              return label === term;
-            },
-            allowEmpty: true,
-            listOnEmpty: true,
-            freetext: true,
-          };
-        } else {
-          config.editorParams = {
-            ...config.editorParams,
-            search: true,
-            valuesLookup: 'active',
-            listOnEmpty: true,
-            freetext: true,
-          };
-        }
+      config = {
+        ...config,
+        ...getColumnEditorParams(fieldName, this.tableJSON.validation, this.refColumns, this.referenceValues)
       }
+
       return config;
     },
     validateTable(options) {
@@ -612,7 +553,7 @@ export default {
           sort: true,
           filter: true,
           headerFilter: true,
-          columns: ["width", "frozen"], 
+          columns: ["frozen"], 
           group:{
             groupBy: true,
             groupStartOpen: false,
@@ -622,6 +563,7 @@ export default {
         },
         // renderHorizontal: "virtual",
         // layoutColumnsOnNewData: true,
+        // autoResize: false,
         placeholder: () => {
           const div = document.createElement('div');
           div.classList.add('tabulator-placeholder-contents');
@@ -773,46 +715,76 @@ export default {
   }
 }
 
-.tabulator .tabulator-header .tabulator-col .tabulator-col-content .tabulator-col-title {
-  white-space: normal;
-}
-
-.tabulator .tabulator-tableholder .tabulator-placeholder .tabulator-placeholder-contents {
-  display: block;
-  align-items: center;
-  justify-content: flex-start;
-  text-align: left;
-  margin-right: auto;
-  margin-left: 20px;
-}
-
-.tabulator .tabulator-group {
-  display: grid;
-  grid-auto-flow: column;
-  justify-content: start;
-  background-color: transparent;
-  padding-top: 3px;
-  padding-bottom: 3px;
-  // border: none;
-  // box-shadow: 0 0 0 1px #999;
-
-  span, small {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    text-decoration: none;
+.tabulator {
+  
+  .tabulator-header .tabulator-col .tabulator-col-content .tabulator-col-title {
+    white-space: normal;
   }
 
-  @media (hover:hover) and (pointer:fine) {
-    &:hover {
-      cursor: auto;
+  .tabulator-row {
+    min-height: none;
+    
+    .tabulator-cell {
+      white-space: normal;
+      overflow: auto;
+      text-overflow: ellipsis;
     }
   }
+  .tabulator-tableholder .tabulator-placeholder .tabulator-placeholder-contents {
+    display: block;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: left;
+    margin-right: auto;
+    margin-left: 20px;
+  }
 
-  &.tabulator-group-visible {
+  .tabulator-group {
+    display: grid;
+    grid-auto-flow: column;
+    justify-content: start;
+    background-color: transparent;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    // border: none;
+    // box-shadow: 0 0 0 1px #999;
+
+    span, small {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+
+    @media (hover:hover) and (pointer:fine) {
+      &:hover {
+        cursor: auto;
+      }
+    }
+
+    &.tabulator-group-visible {
+      .tabulator-arrow {
+        width: 10px;
+        
+        &:before {
+          content: "";
+          position: absolute;
+          top: -20px;
+          bottom: -20px;
+          left: -20px;
+          right: -20px;
+        }
+
+        &:hover {
+          cursor: pointer;
+          border-top: 6px solid black;
+        }
+      }
+    }
+
     .tabulator-arrow {
-      width: 10px;
-      
+      position: relative;
+
       &:before {
         content: "";
         position: absolute;
@@ -824,35 +796,17 @@ export default {
 
       &:hover {
         cursor: pointer;
-        border-top: 6px solid black;
       }
     }
-  }
 
-  .tabulator-arrow {
-    position: relative;
-
-    &:before {
-      content: "";
-      position: absolute;
-      top: -20px;
-      bottom: -20px;
-      left: -20px;
-      right: -20px;
+    
+    &.tabulator-group-level-2,
+    &.tabulator-group-level-3,
+    &.tabulator-group-level-4,
+    &.tabulator-group-level-5 {
+      // border: none;
+      // box-shadow: 0 0 0 1px #999;
     }
-
-    &:hover {
-      cursor: pointer;
-    }
-  }
-
-  
-  &.tabulator-group-level-2,
-  &.tabulator-group-level-3,
-  &.tabulator-group-level-4,
-  &.tabulator-group-level-5 {
-    // border: none;
-    // box-shadow: 0 0 0 1px #999;
   }
 }
 
