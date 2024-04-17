@@ -226,7 +226,9 @@ export default {
       immediate: true,
       handler() {
         this.isSubmittedTouched = this.record.isSubmitted && this.record.isModified;
-        this.checkAndSaveDraft();
+        if (this.duration > 1){
+          this.checkAndSaveDraft();
+        }
       },
     },
   },
