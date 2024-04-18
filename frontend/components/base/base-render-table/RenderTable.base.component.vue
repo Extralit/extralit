@@ -72,8 +72,9 @@
 </template>
 
 <script>
-import { Notification } from "@/models/Notifications";
+import { merge } from 'lodash';
 import { TabulatorFull as Tabulator } from "tabulator-tables";
+import { Notification } from "@/models/Notifications";
 import "tabulator-tables/dist/css/tabulator.min.css";
 import {
   getTableDataFromRecords, findMatchingRefValues, generateCombinations, incrementReferenceStr, getMaxStringValue, } from './dataUtils';
@@ -400,10 +401,7 @@ export default {
         },
       };
 
-      config = {
-        ...config,
-        ...getColumnEditorParams(fieldName, this.tableJSON.validation, this.refColumns, this.referenceValues)
-      }
+      config = merge({}, config, getColumnEditorParams(fieldName, this.tableJSON.validation, this.refColumns, this.referenceValues));
 
       return config;
     },
@@ -726,7 +724,7 @@ export default {
     
     .tabulator-cell {
       white-space: normal;
-      overflow: auto;
+      overflow: visible;
       text-overflow: ellipsis;
     }
   }

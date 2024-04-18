@@ -171,7 +171,7 @@ export function getColumnEditorParams(
 
     if (columnValidators?.dtype === "str") {
       config.editor = "list";
-      config.editorParams.emptyValue = null;
+      config.editorParams.emptyValue = "NA";
       config.editorParams.selectContents = true;
       config.editorParams.autocomplete = true;
       config.editorParams.freetext = true;
