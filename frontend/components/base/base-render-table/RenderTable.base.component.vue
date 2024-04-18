@@ -441,7 +441,7 @@ export default {
           const maxRefValue = getMaxStringValue(field, this.table.getData());
           rowData[field] = incrementReferenceStr(maxRefValue);
         } else if (this.refColumns.includes(field) && selectedRow?._row?.data[field]) {
-          rowData[field] = selectedRow._row.data[field]
+          rowData[field] = selectedRow._row.data[field];
         } else {
           rowData[field] = undefined;
         }
