@@ -368,7 +368,7 @@ export default {
       if (!this.editable) return {};
 
       // Default editable config for a column
-      var config = {
+      let config = {
         editorParams: {
           search: true,
           autocomplete: true,

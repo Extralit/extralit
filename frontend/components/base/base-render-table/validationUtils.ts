@@ -171,7 +171,8 @@ export function getColumnEditorParams(
 
     if (columnValidators?.dtype === "str") {
       config.editor = "list";
-      config.editorParams.emptyValue = "NA";
+      // config.editorParams.emptyValue = "NA";
+      config.editorParamsselectContents = true;
       config.editorParams.autocomplete = true;
       config.editorParams.freetext = true;
       config.editorParams.listOnEmpty = true;
@@ -207,9 +208,8 @@ export function getColumnEditorParams(
       if (columnValidators.checks?.multiselect?.delimiter) {
         if (config.editorParams.values) {
           config.editorParams.multiselect = true;
-          config.editorParams.autocomplete = false;
         } else {
-          config.editorParams.separator = columnValidators.checks.multiselect.delimiter;
+          // config.editorParams.separator = columnValidators.checks.multiselect.delimiter;
         }
       }
 
