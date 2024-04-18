@@ -489,21 +489,23 @@ export default {
       width: 3px;
       z-index: 1;
       background: transparent;
-      transition: background 0.3s ease;
+      opacity: 0;
+      transition: background 0.3s ease, opacity 0.3s ease;
 
       &::before {
         content: "";
         position: absolute;
         top: 0;
         bottom: 0;
-        left: -15px;
-        width: 30px;
+        left: -12px;
+        width: 24px;
         background: transparent;
         z-index: -1;
       }
 
       &:hover {
         background: linear-gradient(to bottom, transparent 0%, $primary-lighten-color 1%, $primary-lighten-color 99%, transparent 100%);
+        opacity: 1;
       }
     }
   }
