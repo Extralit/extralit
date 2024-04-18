@@ -49,7 +49,7 @@ export const useFocusAnnotationViewModel = () => {
   };
 
   const saveAsDraft = async (record: Record, durationWrapper?: any) => {
-    isDraftSaving.value = true;
+    // isDraftSaving.value = true; // Causes issues with the UI
     let duration = incrementDuration(record, durationWrapper);
 
     await debounceForSaveDraft.wait();
