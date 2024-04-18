@@ -208,6 +208,7 @@ export function getColumnEditorParams(
       if (columnValidators.checks?.multiselect?.delimiter) {
         if (config.editorParams.values) {
           config.editorParams.multiselect = true;
+          config.editorParams.autocomplete = false;
         } else {
           // config.editorParams.separator = columnValidators.checks.multiselect.delimiter;
         }
@@ -222,7 +223,6 @@ export function getColumnEditorParams(
 
     if (referenceValues?.hasOwnProperty(fieldName)) {
       config.editorParams = {
-        ...config.editorParams,
         valuesLookup: false,
         values: Object.entries(referenceValues[fieldName]).map(([key, value]) => ({
           label: key,
@@ -232,7 +232,7 @@ export function getColumnEditorParams(
         placeholderEmpty: "Type to search by keyword...",
         itemFormatter: function (label, value, item, element) {
           const keyValues = Object.entries(item.data)
-            .filter(([key, v]) => refColumns.includes(key) && v !== 'NA' && v !== null)
+            .filter(([key, v]) => v !== 'NA' && v !== null)
             .map(([key, v]) => `<span style="font-weight:normal; color:black; margin-left:0;">${key}:</span> ${v}`)
             .join(', ');
           return `<strong>${label}</strong>: <div>${keyValues}</div>`;

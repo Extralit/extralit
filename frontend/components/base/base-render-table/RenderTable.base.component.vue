@@ -442,7 +442,6 @@ export default {
           rowData[field] = incrementReferenceStr(maxRefValue);
         } else if (this.refColumns.includes(field) && selectedRow?._row?.data[field]) {
           rowData[field] = selectedRow._row.data[field]
-          rowData[field] = incrementReferenceStr(maxRefValue);
         } else {
           rowData[field] = undefined;
         }
@@ -724,7 +723,7 @@ export default {
     
     .tabulator-cell {
       white-space: normal;
-      overflow: visible;
+      overflow: hidden;
       text-overflow: ellipsis;
     }
   }
