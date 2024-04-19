@@ -10,7 +10,7 @@
     <div ref="table" class="__table" />
 
     <div class="__table-buttons">
-      <BaseDropdown v-show="editable" :visible="dropdownEditTableVisible" boundary="viewport">
+      <BaseDropdown v-show="editable" :visible="dropdownEditTableVisible" >
         <span slot="dropdown-header">
           <BaseButton @click.prevent="dropdownEditTableVisible=!dropdownEditTableVisible">
             Edit table
@@ -30,7 +30,7 @@
         </span>
       </BaseDropdown>
 
-      <BaseDropdown v-show="editable && table" :visible="visibleColumnDropdown" class="dropdown" boundary="viewport" >
+      <BaseDropdown v-show="editable && table" :visible="visibleColumnDropdown" class="dropdown"  >
         <span slot="dropdown-header">
           <BaseButton @click.prevent="visibleColumnDropdown=!visibleColumnDropdown">
             ➕ Add Column
@@ -39,11 +39,12 @@
         </span>
         <span slot="dropdown-content">
           <BaseButton
-            v-for="column in schemaColumns.filter(col => !columns.includes(col))"
-            :key="column"
-            @click.prevent="addColumn(null, column); visibleColumnDropdown=false"
+            v-for="(attrs, field) in remainingSchemaColumns"
+            :key="field"
+            :title="attrs?.description"
+            @click.prevent="addColumn(null, field); visibleColumnDropdown=false"
           >
-            {{ column }}
+            {{ field }}
           </BaseButton>
         </span>
       </BaseDropdown>
@@ -53,7 +54,7 @@
       </BaseButton>
 
       <BaseDropdown v-show="table && columnValidators && Object.keys(columnValidators).length"
-        :visible="editable && visibleCheckropdown" boundary="viewport">
+        :visible="editable && visibleCheckropdown" >
         <span slot="dropdown-header">
           <BaseButton
             @click.prevent="validateTable({ scrollToError: true }); visibleCheckropdown=!visibleCheckropdown">
@@ -71,7 +72,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import { merge } from 'lodash';
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 import { Notification } from "@/models/Notifications";
@@ -135,8 +136,11 @@ export default {
         this.$emit("onUpdateAnswer", JSON.stringify(json));
       },
     },
-    schemaColumns() {
-      return (this.tableJSON?.validation?.columns ? Object.keys(this.tableJSON.validation.columns) : [])
+    remainingSchemaColumns() {
+      const filteredColumns = Object.fromEntries(
+        Object.entries(this.tableJSON?.validation?.columns).filter(([field, attrs]) => !this.columns.includes(field))
+      );
+      return filteredColumns || {};
     },
     indexColumns() {
       return this.tableJSON?.schema?.primaryKey || [];
@@ -698,7 +702,6 @@ export default {
   }
 
   .dropdown {
-    position: relative;
     z-index: 1; 
 
     .dropdown__content {
