@@ -35,7 +35,7 @@ export function cellTooltip(e, cell: CellComponent, onRendered) {
 
 
 
-export function groupHeader(value: string, count: number, data, group: GroupComponent, referenceValues: ReferenceValues, refColumns: string[]) {
+export function groupHeader(value: string, count: number, data: any, group: GroupComponent, referenceValues: ReferenceValues, refColumns: string[]) {
   const field = (group as any)._group.field
   let header = value
   if (referenceValues?.[field]?.hasOwnProperty(value)) {

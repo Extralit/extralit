@@ -75,6 +75,7 @@
 <script lang="ts">
 import { merge } from 'lodash';
 import { TabulatorFull as Tabulator } from "tabulator-tables";
+import { Record } from "@/v1/domain/entities/record/Record.ts"
 import { Notification } from "@/models/Notifications";
 import "tabulator-tables/dist/css/tabulator.min.css";
 import {
@@ -184,7 +185,7 @@ export default {
       return {
         groupBy: this.groupbyColumns,
         groupToggleElement: "arrow",
-        groupHeader: (...args) => groupHeader(...args, this.referenceValues, this.refColumns),
+        groupHeader: (...args: any[]) => groupHeader(...args, this.referenceValues, this.refColumns),
         groupUpdateOnCellEdit: true,
         groupContextMenu: [
           {
@@ -216,7 +217,7 @@ export default {
       
       const reference = this.tableJSON?.reference;
       if (!reference) return null;
-      let recordTables = getTableDataFromRecords((record) => record?.metadata?.reference == reference)
+      let recordTables = getTableDataFromRecords((record: Record) => record?.metadata?.reference == reference)
       const refToRowDict = findMatchingRefValues(this.refColumns, recordTables)
 
       return refToRowDict;
@@ -544,7 +545,7 @@ export default {
 
     try {
       const layout = this.columnsConfig.length <= 2 ? "fitDataStretch" : "fitDataTable";
-      Tabulator.extendModule("keybindings", "bindings");
+      Tabulator.extendModule("keybindings", "bindings", null);
       this.table = new Tabulator(this.$refs.table, {
         data: this.tableJSON.data,
         reactiveData: true,
@@ -603,7 +604,7 @@ export default {
           resizable: 'header',
           maxInitialWidth: 350,
           tooltip: cellTooltip,
-          headerTooltip: (...args) => headerTooltip(...args, this.tableJSON.validation, this.columnValidators),
+          headerTooltip: (...args: any[]) => headerTooltip(...args, this.tableJSON.validation, this.columnValidators),
           headerWordWrap: true,
           headerContextMenu: this.columnContextMenu,
           editorEmptyValue: "NA",
