@@ -75,7 +75,6 @@
 <script lang="ts">
 import { merge } from 'lodash';
 import { TabulatorFull as Tabulator } from "tabulator-tables";
-import { Record } from "@/v1/domain/entities/record/Record.ts"
 import { Notification } from "@/models/Notifications";
 import "tabulator-tables/dist/css/tabulator.min.css";
 import {
@@ -185,6 +184,7 @@ export default {
       return {
         groupBy: this.groupbyColumns,
         groupToggleElement: "arrow",
+        // @ts-ignore
         groupHeader: (...args: any[]) => groupHeader(...args, this.referenceValues, this.refColumns),
         groupUpdateOnCellEdit: true,
         groupContextMenu: [
@@ -217,7 +217,7 @@ export default {
       
       const reference = this.tableJSON?.reference;
       if (!reference) return null;
-      let recordTables = getTableDataFromRecords((record: Record) => record?.metadata?.reference == reference)
+      let recordTables = getTableDataFromRecords((record: any) => record?.metadata?.reference == reference)
       const refToRowDict = findMatchingRefValues(this.refColumns, recordTables)
 
       return refToRowDict;
@@ -604,6 +604,7 @@ export default {
           resizable: 'header',
           maxInitialWidth: 350,
           tooltip: cellTooltip,
+          // @ts-ignore
           headerTooltip: (...args: any[]) => headerTooltip(...args, this.tableJSON.validation, this.columnValidators),
           headerWordWrap: true,
           headerContextMenu: this.columnContextMenu,
