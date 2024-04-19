@@ -68,9 +68,10 @@ export function headerTooltip(e, column: ColumnComponent, onRendered, validation
   }
 }
 
-export function columnSchemaToDesc(fieldName: string, validation: PanderaSchema, columnValidators: Validators): string | undefined {
-  // tableJSON is an object of the form {data: [{column: value, ...}], validation: {columns: {column: panderaSchema, ...}}}
-  // columnValidators is an object of the form {column: [validator, ...]}
+export function columnSchemaToDesc(
+  fieldName: string, 
+  validation: PanderaSchema, 
+  columnValidators: Validators): string | undefined {
   // returns a string describing the column schema and validators
   if (!validation || !fieldName) return;
   
@@ -106,7 +107,7 @@ function stringifyValidator(value: Validator): string | null {
     s = value.replace('string', 'text');
 
   } else if (typeof value === 'function') {
-    s = `${value.name}`;
+    s = `${value.name}`.replace('nullable', 'optional');
 
   } else if (typeof value === 'object' && value?.type?.name) {
     s = `${value.type.name}`;

@@ -50,10 +50,11 @@ $gap-width: $base-space * 2;
   height: 100vh;
   transition: 0.4s ease-in-out;
   @include media("<desktop") {
-    height: 100svh;
+    grid-template-columns: 1fr;
     grid-template-areas:
-      "header header"
-      "center center";
+      "header"
+      "center"
+      "sidebar";
   }
   &.--panel {
     @include media(">desktop") {

@@ -185,14 +185,13 @@ export function getColumnEditorParams(
         if (Array.isArray(suggestions)) {
           config.editorParams.values = suggestions;
         } else if (typeof suggestions === 'object') {
-          config.editorParams.values = Object.entries(suggestions).map(([key, value]) => ({
-            label: key, value: key, data: value
-          }));
+          config.editorParams.values = Object.entries(suggestions)
+            .map(([key, value]) => ({ label: key, value: key, data: value }));
           config.editorParams.itemFormatter = function (label, value, item, element) {
             const keyValues = Object.entries(item.data)
               .map(([key, v]) => `<span style="font-weight:normal; color:black; margin-left:0;">${key}:</span> ${v}`)
               .join(', ');
-            return `<strong>${label}</strong>: <div>${keyValues}</div>`;
+            return `<strong>${label}</strong>: ${keyValues}`;
           };
         }
 
@@ -208,7 +207,7 @@ export function getColumnEditorParams(
       if (columnValidators.checks?.multiselect?.delimiter) {
         if (config.editorParams.values) {
           config.editorParams.multiselect = true;
-          config.editorParams.autocomplete = false;
+          config.editorParams.autocomplete = true;
         } else {
           // config.editorParams.separator = columnValidators.checks.multiselect.delimiter;
         }
@@ -235,7 +234,7 @@ export function getColumnEditorParams(
             .filter(([key, v]) => v !== 'NA' && v !== null)
             .map(([key, v]) => `<span style="font-weight:normal; color:black; margin-left:0;">${key}:</span> ${v}`)
             .join(', ');
-          return `<strong>${label}</strong>: <div>${keyValues}</div>`;
+          return `<strong>${label}</strong>: ${keyValues}`;
         },
         filterFunc: function (term, label, value, item) {
           if (String(label).startsWith(term) || value == term) {

@@ -40,7 +40,7 @@
       :is-draft-saving="isDraftSaving"
       :is-submitting="isSubmitting"
       :is-discarding="isDiscarding"
-      :enableAutoSubmitWithKeyboard="false"
+      :enableAutoSubmitWithKeyboard="true"
       @on-submit-responses="onSubmit"
       @on-discard-responses="onDiscard"
       @on-save-draft="onSaveDraft"
@@ -119,6 +119,7 @@ export default {
   display: flex;
   flex-wrap: wrap;
   height: 100%;
+  overflow: auto;
   gap: $base-space * 2;
   padding: $base-space * 2;
   @include media("<desktop") {

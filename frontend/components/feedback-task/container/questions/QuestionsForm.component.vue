@@ -407,7 +407,6 @@ export default {
 .questions-form {
   display: flex;
   flex-direction: column;
-  // flex-basis: clamp(33%, var(--questions-form-width), 50%);
   width: var(--questions-form-width);
   flex-shrink: 0;
   gap: $base-space;
@@ -417,6 +416,7 @@ export default {
   margin-bottom: auto;
   @include media("<desktop") {
     justify-content: flex-start;
+    width: 100%;
   }
   &__header {
     display: flex;

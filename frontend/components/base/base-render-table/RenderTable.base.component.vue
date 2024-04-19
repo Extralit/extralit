@@ -702,7 +702,7 @@ export default {
   }
 
   .dropdown {
-    z-index: 1; 
+    z-index: 1;
 
     .dropdown__content {
       max-height: 290px;
