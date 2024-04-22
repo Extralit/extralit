@@ -72,7 +72,7 @@ export function getColumnValidators(tableJSON: DataFrame): Validators {
 		}
 
 		if (columnSchema.unique) {
-			validators.push({ type: unique });
+			validators.push('unique' );
 		}
 
 		if (columnSchema.dtype === "str") {

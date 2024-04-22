@@ -36,11 +36,14 @@ export default {
     isSuggested() {
       return this.question.suggestion?.isSuggested(this.question.answer.value);
     },
+    suggestionAgent() {
+      return this.question.suggestion?.agent;
+    },
     tabs() {
       return [
         {
           id: "0",
-          name: this.isSuggested ? "Suggestion" : "Write",
+          name: this.isSuggested ? `Use: ${this.suggestionAgent}` : "Write",
           class: this.isSuggested ? "--suggestion" : null,
           component: "TextAreaContents",
         },
@@ -48,7 +51,7 @@ export default {
           ? [
               {
                 id: "1",
-                name: "Suggestion",
+                name: `Suggestion: ${this.suggestionAgent}`,
                 class: "--suggestion",
                 component: "TextAreaSuggestion",
               },

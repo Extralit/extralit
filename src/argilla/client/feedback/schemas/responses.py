@@ -16,6 +16,7 @@ import warnings
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from uuid import UUID
 
+import argilla
 from argilla.client.feedback.schemas.enums import ResponseStatus
 from argilla.client.feedback.schemas.response_values import (
     ResponseValue,
@@ -62,6 +63,17 @@ class ResponseSchema(BaseModel):
     user_id: Optional[UUID] = None
     values: Union[List[Dict[str, ValueSchema]], Dict[str, ValueSchema], None]
     status: Union[ResponseStatus, str] = ResponseStatus.submitted
+
+    def __repr_args__(self):
+        repr_args = super().__repr_args__()
+
+        for i, (name, value) in enumerate(repr_args):
+            if name == "values" and value is not None:
+                keyvals = {k: str(v.value)[:10] + '...' if len(str(v.value)) > 10 else str(v.value) for k, v in value.items()}
+                repr_args[i] = (name, keyvals)
+            elif name in ["user_id"] and value is not None:
+                repr_args[i] = ('username', argilla.User.from_id(value).username)
+        return repr_args
 
     @validator("values", always=True)
     def normalize_values(cls, values):

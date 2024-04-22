@@ -142,14 +142,22 @@ export class Record {
 
   private completeQuestion() {
     return this.questions.map((question) => {
-      for (const suggestion of this.suggestions || []) {
+
+      // Ensures that the `selection` are added to initialize the question options first, then add `human` and `model` suggestions to the question
+      (this.suggestions || []).sort((a, b) => {
+        if (a.type == "selection") return -1;
+        if (b.type == "selection") return 1;
+        return 0;
+      }).forEach((suggestion) => {
         if (suggestion.questionId === question.id) {
-          question.addSuggestion(suggestion);
-          if (question.hasSuggestion) {
-            break;
+          if (["dynamic_multi_label_selection", "dynamic_label_selection"].includes(question.settings.type) && 
+              suggestion.type == "selection") {
+            question.addDynamicSelectionToLabelQuestion(suggestion)
+          } else if (!question.hasSuggestion) {
+            question.addSuggestion(suggestion);
           }
         }
-      }
+      });
 
       if (this.isPending && question.hasSuggestion) {
         question.response(question.suggestion);
@@ -157,7 +165,6 @@ export class Record {
         const answer = this.answer?.value[question.name];
         question.response(answer);
       }
-
       return question;
     });
   }

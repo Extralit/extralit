@@ -57,9 +57,7 @@
         <BaseTooltip
           :text="
             isSuggested(option)
-              ? `<img src='icons/suggestion.svg' /> ${$t('suggestion.name')}: ${
-                  option.text
-                }`
+              ? `<img src='icons/suggestion.svg' /> ${$t('suggestion.name')}: ${suggestionAgent}`
               : null
           "
           minimalist
@@ -207,6 +205,9 @@ export default {
     },
     iconToShowInTheCollapseButton() {
       return this.isExpanded ? "chevron-up" : "chevron-down";
+    },
+    suggestionAgent() {
+      return `${this?.suggestion?.agent}`
     },
   },
   methods: {

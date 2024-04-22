@@ -171,16 +171,11 @@ export class Question {
 
   addSuggestion(suggestion: Suggestion) {
     if (!suggestion) return;
-
-    if (["dynamic_multi_label_selection", "dynamic_label_selection"].includes(this.settings.type)) {
-      this.addDynamicSelectionToLabelQuestion(suggestion)
-    } else {
-      this.suggestion = suggestion;
-    }
+    this.suggestion = suggestion;
   }
 
   addDynamicSelectionToLabelQuestion(suggestion: Suggestion) {
-    if (suggestion.type === "selection" && Array.isArray(suggestion?.suggestedAnswer) && suggestion.suggestedAnswer?.length > 0) {
+    if (Array.isArray(suggestion?.suggestedAnswer) && suggestion.suggestedAnswer?.length > 0) {
       const suggestedOptions: string[] = suggestion.suggestedAnswer.map((answer) => answer.toString());
       
       let selections = [];

@@ -201,9 +201,7 @@ export default {
             label: "Delete group of rows",
             disabled: !this.editable,
             action: (e, group) => {
-              group._group.rows.forEach((row) => {
-                row.delete();
-              });
+              this.deleteGroupRows(group);
               this.updateTableJsonData(true);
             }
           },
@@ -262,6 +260,17 @@ export default {
           disabled: !this.editable,
           action: (e, row) => {
             this.addRow(row);
+          }
+        },
+        {
+          label: "Duplicate row",
+          disabled: !this.editable,
+          action: (e, row) => {
+            let newRowData = { ...row.getData() };
+            this.indexColumns.forEach((field) => {
+              newRowData[field] = undefined;
+            });
+            this.addRow(row, newRowData);
           }
         },
         {
@@ -436,17 +445,18 @@ export default {
       });
       this.tableJSON = this.tableJSON; // Trigger the setter
     },
-    addRow(selectedRow, rowData={}) {
+    addRow(selectedRow, rowData: any={}) {
       const requiredFields = this.refColumns || this.indexColumns;
       
       for (const field of this.columns) {
-        if (rowData[field]) {
+        if (rowData[field] != undefined) {
           continue
-        } else if (this.indexColumns.includes(field) && selectedRow?._row?.data[field]) {
+        } else if (this.indexColumns.includes(field) && !this.refColumns.includes(field) && 
+            selectedRow?.getData()[field]) {
           const maxRefValue = getMaxStringValue(field, this.table.getData());
           rowData[field] = incrementReferenceStr(maxRefValue);
-        } else if (this.refColumns.includes(field) && selectedRow?._row?.data[field]) {
-          rowData[field] = selectedRow._row.data[field];
+        } else if (this.refColumns.includes(field) && selectedRow?.getData()[field]) {
+          rowData[field] = selectedRow?.getData()[field];
         } else {
           rowData[field] = undefined;
         }
@@ -467,6 +477,15 @@ export default {
 
       // Update this.tableJSON to reflect the current data in the table
       this.updateTableJsonData();
+    },
+    deleteGroupRows(group) {
+      group?.getRows()?.forEach((row) => {
+        row?.delete();
+      });
+
+      group?.getSubGroups()?.forEach((subGroup) => {
+        this.deleteGroupRows(subGroup);
+      });
     },
     addColumn(selectedColumn, newFieldName = "newColumn") {
       // Assign a unique name to the new column
@@ -544,7 +563,7 @@ export default {
     if (!this.tableJSON?.data?.length || !this.tableJSON?.schema) return;
 
     try {
-      const layout = this.columnsConfig.length <= 2 ? "fitDataStretch" : "fitDataTable";
+      const layout = this.columns.length <= 2 ? "fitData" : "fitDataTable";
       Tabulator.extendModule("keybindings", "bindings", null);
       this.table = new Tabulator(this.$refs.table, {
         data: this.tableJSON.data,
