@@ -8,6 +8,7 @@
       >
         <base-button :class="tabSize" @on-click="changeTab(tab)">
           {{ tab.name }}
+          <svgicon v-if="tab.icon" :name="tab.icon" width="10" height="10" />
         </base-button>
       </li>
     </ul>

@@ -104,7 +104,7 @@ export default {
         buttons: [
           {
             id: "metrics",
-            tooltip: "Progress",
+            tooltip: this.$t("sidebar.progressTooltip"),
             icon: "progress",
             action: "show-metrics",
             type: "expandable",
@@ -117,9 +117,9 @@ export default {
         buttons: [
           {
             id: "refresh",
-            tooltip: "Refresh",
+            tooltip: this.$t("sidebar.refreshTooltip"),
             icon: "refresh",
-            group: "Refresh",
+            group: this.$t("refresh"),
             type: "non-expandable",
             action: "refresh",
           },
@@ -130,7 +130,7 @@ export default {
         buttons: [
           {
             id: "help-shortcut",
-            tooltip: "Shortcuts",
+            tooltip: this.$t("sidebar.shortcutsTooltip"),
             icon: "shortcuts",
             action: "show-help",
             type: "custom-expandable",
