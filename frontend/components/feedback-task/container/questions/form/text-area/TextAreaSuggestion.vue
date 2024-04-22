@@ -67,7 +67,7 @@ export default {
 .container {
   position: relative;
   display: flex;
-  padding: $base-space * 2;
+  padding: $base-space;
   border: 1px solid $black-20;
   border-radius: $border-radius-s;
   min-height: 10em;

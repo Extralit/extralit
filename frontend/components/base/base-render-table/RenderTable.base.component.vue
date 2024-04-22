@@ -569,7 +569,7 @@ export default {
         data: this.tableJSON.data,
         reactiveData: true,
         layout: layout,
-        height: this.tableJSON.data.length >= 8 ? "60vh": 'auto',
+        height: this.tableJSON.data.length >= 10 ? "60vh": 'auto',
         persistence:{
           sort: true,
           filter: true,
