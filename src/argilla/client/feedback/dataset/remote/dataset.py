@@ -917,6 +917,7 @@ class RemoteFeedbackDataset(FeedbackDatasetBase[RemoteFeedbackRecord], MetricsMi
         """
         assert document.pmid or document.doi or document.id, "Document must have either id, pmid or doi."
         
+        # Fetch the cached document list they already exist in the database for this dataset
         if (document.pmid or document.doi) in self._documents:
             return self._documents[(document.pmid or document.doi)]
 
@@ -924,7 +925,7 @@ class RemoteFeedbackDataset(FeedbackDatasetBase[RemoteFeedbackRecord], MetricsMi
         try:
             uploaded_document_id = datasets_api_v1.upload_document(
                 client=self._client,
-            document=document,
+                document=document,
             ).parsed
 
             self._documents[(document.pmid or document.doi)] = document
@@ -932,6 +933,33 @@ class RemoteFeedbackDataset(FeedbackDatasetBase[RemoteFeedbackRecord], MetricsMi
             raise ValueError(f"Document with name {document.file_name!r} already exists.")
         document.id = uploaded_document_id
         return document
+    
+    @allowed_for_roles(roles=[UserRole.owner, UserRole.admin])
+    def delete_document(self, document: Document) -> None:
+        """Deletes a document from the current `FeedbackDataset` in Argilla.
+
+        Args:
+            document: the document to delete.
+
+        Raises:
+            PermissionError: if the user does not have either `owner` or `admin` role.
+            ValueError: if the document does not exist in the dataset in Argilla.
+        """
+        assert document.pmid or document.doi or document.id, "Document must have either id, pmid or doi."
+
+        if not (document.url or document.pmid or document.doi or document.id):
+            raise ValueError(f"Provided Document object must have either url, id {document.id!r}, pmid {document.pmid!r}, or doi {document.doi!r} to query for deletion.")
+        
+        document.workspace_id = self.workspace.id
+        try:
+            datasets_api_v1.delete_document(
+                client=self._client,
+                document=document,
+            )
+
+            del self._documents[(document.pmid or document.doi)]
+        except Exception as e:
+            raise ValueError(f"Document with id {document.id!r}, pmid {document.pmid!r}, or doi {document.doi!r} does not exist or cannot be deleted. \nError: {e}")
 
 
     def filter_by(

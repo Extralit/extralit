@@ -656,6 +656,37 @@ def upload_document(
     return handle_response_error(response)
 
 
+def delete_document(
+    client: httpx.Client,
+    document: FeedbackDocumentModel,
+) -> Response[Union[None, ErrorMessage, HTTPValidationError]]:
+    """Sends a DELETE request to `/api/v1/documents/workspace/{workspace_id}` endpoint to delete documents in a workspace.
+
+    Args:
+        client: the authenticated client to be used to send the request to the API.
+        workspace_id: the UUID of the workspace whose documents will be deleted.
+        document: the document to be deleted. Optional.
+
+    Returns:
+        A `Response` object containing a `parsed` attribute with the parsed response if the
+        request was successful, which is None for a successful delete operation.
+    """
+    if document is None or getattr(document, 'workspace_id', None) is None:
+        raise ValueError("Document must be provided")
+
+    workspace_id = document.workspace_id
+    endpoint = f"/api/v1/documents/workspace/{workspace_id}"
+    response = client.delete(
+        url=endpoint, 
+        params=document.dict(exclude={'file_data', 'inserted_at', 'file_name', 'workspace_id'}))
+
+    if response.status_code == 200:
+        response_obj = Response.from_httpx_response(response)
+        response_obj.parsed = None
+        return response_obj
+    return handle_response_error(response)
+
+
 def list_documents(
     client: httpx.Client,
     workspace_id: UUID,

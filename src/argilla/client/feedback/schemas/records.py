@@ -18,6 +18,7 @@ from uuid import UUID
 
 from argilla.client.feedback.schemas.enums import RecordSortField, SortOrder
 
+import argilla as rg
 # Support backward compatibility for import of RankingValueSchema from records module
 from argilla.client.feedback.schemas.response_values import RankingValueSchema  # noqa
 from argilla.client.feedback.schemas.responses import ResponseSchema, ValueSchema  # noqa
@@ -98,7 +99,7 @@ class FeedbackRecord(BaseModel):
             if name == "fields" and value is not None:
                 repr_args[i] = (name, list(value.keys()))
             elif name in ["responses"] and value is not None:
-                repr_args[i] = (name, {v.user_id: list(v.values.keys()) for v in value})
+                repr_args[i] = (name, {rg.User.from_id(v.user_id).username: list(v.values.keys()) for v in value})
             elif name in ["suggestions"] and value is not None:
                 repr_args[i] = (name, [v.question_name for v in value])
 
