@@ -24,9 +24,9 @@
       class="textarea"
       :tableData="question.answer.value"
       :editable="true"
-      @onUpdateAnswer="onUpdateAnswer"
-      @click.native="onFocus"
+      @change-text="onChangeTextArea"
       @on-change-focus="onChangeFocus"
+      @on-exit-edition-mode="onExitEditionMode"
     />
     <RenderMarkdownBaseComponent
       v-else-if="question.settings.use_markdown && !isEditionModeActive"

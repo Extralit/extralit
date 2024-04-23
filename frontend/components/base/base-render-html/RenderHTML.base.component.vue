@@ -1,5 +1,10 @@
 <template>
-	<div v-if="editor" class="editor-container" @focusin="setFocus(true)" @focusout="setFocus(false)">
+	<div v-if="editor" class="editor-container" 
+		@focusin="setFocus(true)" 
+		@focusout="setFocus(false)"
+		@keydown.stop=""
+    @keydown.esc.exact="exitEditionMode"
+	>
 		<div class="menubar" v-if="editable">
 			<BaseDropdown 
 				class="dropdown" 
@@ -78,15 +83,15 @@
 				</span>
 				<span slot="dropdown-content">
 					<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().toggleHeaderCell().run()"
-						:disabled="!editor.can().toggleHeaderCell()">
+						:disabled="!editor.can().toggleHeaderCell()" title="Cmd + H">
 						Toggle Selected as Header
 					</BaseButton>
 					<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().mergeCells().run()"
-						:disabled="!editor.can().mergeCells()">
+						:disabled="!editor.can().mergeCells()" title="Cmd + G">
 						Merge Cells
 					</BaseButton>
 					<BaseButton class="menubar__button" @click.prevent="editor.chain().focus().splitCell().run()"
-						:disabled="!editor.can().splitCell()">
+						:disabled="!editor.can().splitCell()" title="Cmd + Shift + G">
 						Split Cell
 					</BaseButton>
 					<!-- <BaseButton class="menubar__button" @click.prevent="splitRow" :disabled="!editor.can().mergeCells()">
@@ -324,7 +329,7 @@ export default {
 			});
 		},
 		exitEditionMode() {
-			this.editor.blur();
+			this.setFocus(false)
 			this.$emit("on-exit-edition-mode");
 		},
 		onChangeText(value) {
@@ -551,6 +556,10 @@ input[type="checkbox"] {
       text-align: left;
       background-color: #f1f3f5;
     }
+
+		td {
+			text-align: right;
+		}
 
     .selectedCell:after {
       z-index: 2;

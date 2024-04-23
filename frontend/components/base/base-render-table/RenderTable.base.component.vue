@@ -1,5 +1,10 @@
 <template>
-  <div class="table-container">
+  <div class="table-container"
+    @focusin="setFocus(true)" 
+    @focusout="setFocus(false)"
+    @keydown.stop=""
+    @keydown.esc.exact="exitEditionMode"
+  >
     <div class="__table-buttons">
       <BaseButton v-show="refColumns?.length || columns.includes('reference')" @click.prevent="toggleShowRefColumns">
         <span v-if="!showRefColumns">Show references</span>
@@ -133,7 +138,7 @@ export default {
         }
       },
       set(json) {
-        this.$emit("onUpdateAnswer", JSON.stringify(json));
+        this.$emit("change-text", JSON.stringify(json));
       },
     },
     remainingSchemaColumns() {
@@ -287,6 +292,13 @@ export default {
   },
 
   methods: {
+    setFocus(isFocus) {
+			this.$emit("on-change-focus", isFocus);
+		},
+    exitEditionMode() {
+			this.setFocus(false)
+			this.$emit("on-exit-edition-mode");
+		},
     updateTableJsonData(remove = false, add = false, update = false, newFieldName=null, oldFieldName=null) {
       if (remove) {
         const removeColumns = this.tableJSON.schema.fields
