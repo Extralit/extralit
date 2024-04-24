@@ -495,7 +495,7 @@ export default {
       background: transparent;
       opacity: 0;
       height: 100vh;
-      transition: background 0.3s ease, opacity 0.3s ease;
+      transition: background 0.3s ease;
 
       &::before {
         content: "";

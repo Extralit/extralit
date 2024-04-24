@@ -154,6 +154,7 @@ export default {
     left: 0;
     bottom: 0;
     width: 5px; 
+    height: 100vh;
     background: transparent;
     z-index: 1;
     transition: background 0.3s ease;
@@ -162,9 +163,10 @@ export default {
       content: "";
       position: absolute;
       top: 0;
-      left: -30px; // Adjust this to change the hover area width
       bottom: 0;
-      width: 60px;
+      left: -20px;
+      width: 40px;
+      height: 100vh;
       background: transparent;
       z-index: -1;
     }
