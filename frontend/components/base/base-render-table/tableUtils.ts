@@ -94,7 +94,7 @@ export function columnSchemaToDesc(
   }
 
   if (validation.columns[fieldName]?.checks?.multiselect?.delimiter) {
-    desc += ', multiselect'
+    desc += `, multivalues(delimiter="${validation.columns[fieldName]?.checks?.multiselect?.delimiter}")`
   }
 
   return desc;

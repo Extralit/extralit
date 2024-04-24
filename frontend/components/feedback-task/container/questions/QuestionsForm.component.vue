@@ -494,6 +494,7 @@ export default {
       z-index: 1;
       background: transparent;
       opacity: 0;
+      height: 100vh;
       transition: background 0.3s ease, opacity 0.3s ease;
 
       &::before {
@@ -501,14 +502,15 @@ export default {
         position: absolute;
         top: 0;
         bottom: 0;
-        left: -12px;
-        width: 24px;
+        left: -15px;
+        width: 30px;
+        height: 100vh;
         background: transparent;
         z-index: -1;
       }
 
       &:hover {
-        background: linear-gradient(to bottom, transparent 0%, $primary-lighten-color 1%, $primary-lighten-color 99%, transparent 100%);
+        background: $primary-lighten-color;
         opacity: 1;
       }
     }

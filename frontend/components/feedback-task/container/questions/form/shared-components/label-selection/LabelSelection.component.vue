@@ -207,7 +207,7 @@ export default {
       return this.isExpanded ? "chevron-up" : "chevron-down";
     },
     suggestionAgent() {
-      return `${this?.suggestion?.agent}`
+      return this?.suggestion?.agent || "";
     },
   },
   methods: {
