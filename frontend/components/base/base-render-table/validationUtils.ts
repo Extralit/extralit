@@ -184,7 +184,7 @@ export function getColumnEditorParams(
         const suggestions = columnValidators.checks.suggestion;
         if (Array.isArray(suggestions)) {
           config.editorParams.values = suggestions;
-          
+
         } else if (typeof suggestions === 'object') {
           config.editorParams.values = Object.entries(suggestions)
             .map(([key, value]) => ({ label: key, value: key, data: value }));
@@ -197,7 +197,7 @@ export function getColumnEditorParams(
         }
       } 
 
-      if (config.editorParams.values && !columnValidators.checks?.isin) {
+      if (!columnValidators.checks?.isin) {
         config.editorParams.valuesLookup = 'active';
         config.editorParams.valuesLookupField = fieldName;
       }

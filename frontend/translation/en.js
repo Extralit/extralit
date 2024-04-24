@@ -239,6 +239,6 @@ export default {
   },
 
   errors: {
-    saving: `Failed to save draft due to "{error}"<br/> Please try again or save your work to avoid losing your progress`,
+    saving: `Failed to save draft due to "{error}"<br/> Please try again and save your work if this persists to avoid losing your progress`,
   }
 };
