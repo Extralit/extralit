@@ -184,6 +184,7 @@ export function getColumnEditorParams(
         const suggestions = columnValidators.checks.suggestion;
         if (Array.isArray(suggestions)) {
           config.editorParams.values = suggestions;
+          
         } else if (typeof suggestions === 'object') {
           config.editorParams.values = Object.entries(suggestions)
             .map(([key, value]) => ({ label: key, value: key, data: value }));
@@ -194,8 +195,9 @@ export function getColumnEditorParams(
             return `<strong>${label}</strong>: ${keyValues}`;
           };
         }
+      } 
 
-      } else {
+      if (config.editorParams.values && !columnValidators.checks?.isin) {
         config.editorParams.valuesLookup = 'active';
         config.editorParams.valuesLookupField = fieldName;
       }
@@ -215,6 +217,8 @@ export function getColumnEditorParams(
 
     } else if (columnValidators.dtype.includes("int") || columnValidators.dtype.includes("float")) {
       config.hozAlign = "right";
+      config.editorParams.valuesLookup = 'active';
+      config.editorParams.valuesLookupField = fieldName;
     }
 
   } else if (refColumns?.includes(fieldName)) {

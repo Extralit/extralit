@@ -203,7 +203,7 @@ export default {
             separator: true,
           },
           {
-            label: "Delete group of rows",
+            label: "Delete rows group",
             disabled: !this.editable,
             action: (e, group) => {
               this.deleteGroupRows(group);

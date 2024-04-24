@@ -8,6 +8,13 @@ import { Metadata } from "../metadata/Metadata";
 
 const DEFAULT_STATUS = "pending";
 
+/**
+ * Returns the changes in `object` that's different from `base`.
+ * 
+ * @param object - The object to compare.
+ * @param base - The base object to compare against.
+ * @returns An object containing the differences between the two objects.
+ */
 function difference(object: any, base: any) {
   function changes(object: any, base: any) {
     return transform(object, function(result: any, value: any, key: any) {
@@ -69,7 +76,7 @@ export class Record {
   get getModified() {
     const { original, ...rest } = this;
 
-    return !!original ? difference(original, rest) : {};
+    return !!original ? difference(rest, original) : {};
   }
 
   discard(answer: RecordAnswer) {

@@ -84,8 +84,8 @@ export default {
         }
       },
     },
-    value() {
-      if (this.value !== this.currentValue) {
+    value(newValue, oldValue) {
+      if (newValue !== oldValue && this.$refs.text !== document.activeElement) {
         this.reset();
       }
     },

@@ -65,8 +65,6 @@
         <BaseButton
           type="button"
           class="button--draft"
-          :class="isDraftSaving ? '--button--saving-draft' : null"
-          :loading="isDraftSaving"
           :loading-progress="progress"
           :disabled="isDraftSaveDisabled || isSaving"
           :data-title="!isSaving ? draftSavingTooltip : null"
@@ -198,7 +196,7 @@ export default {
     questionFormClass() {
       if (this.isSubmitting) return "--submitting --waiting";
       if (this.isDiscarding) return "--discarding --waiting";
-      if (this.isDraftSaving) return "--saving-draft";
+      // if (this.isDraftSaving) return "--saving-draft";
 
       if (
         this.isSubmittedTouched ||
@@ -230,11 +228,6 @@ export default {
           this.checkAndSaveDraft();
         }
       },
-    },
-    interactionCount() {
-      if (this.duration > 1) {
-        this.checkAndSaveDraft();
-      }
     },
   },
 
@@ -361,12 +354,18 @@ export default {
       this.$emit("on-discard-responses");
     },
     checkAndSaveDraft() {
+      if (this.isDraftSaveDisabled || this.isSaving) {
+        return;
+      }
       const modified = this.record.getModified;
-      
       const condition = modified?.questions?.some(
-        question => question && question.answer && (
-          question.answer?.value || 
-          question.answer?.values?.some(value => !!value)));
+        question => {
+          const conditionForThisQuestion = question && question.answer && (
+            question.answer?.value || 
+            question.answer?.values?.some(value => !!value)
+          );
+          return conditionForThisQuestion;
+        });
 
       if (modified && condition) {
         this.onSaveDraft();

@@ -37,7 +37,7 @@ export default {
       return this.question.suggestion?.isSuggested(this.question.answer.value);
     },
     suggestionAgent() {
-      return this.question.suggestion?.agent;
+      return this.question.suggestion?.agent || 'Suggestion';
     },
     tabs() {
       return [
