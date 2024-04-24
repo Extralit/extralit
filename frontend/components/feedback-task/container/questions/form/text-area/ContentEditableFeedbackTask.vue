@@ -163,9 +163,8 @@ export default {
     white-space: pre-wrap;
     margin: 0;
     word-break: break-word;
-    font-style: italic;
+    font-style: normal;
     &.--edited-text {
-      font-style: normal;
     }
   }
 }
