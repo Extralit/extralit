@@ -226,10 +226,15 @@ export default {
       immediate: true,
       handler() {
         this.isSubmittedTouched = this.record.isSubmitted && this.record.isModified;
-        if (this.duration > 1){
+        if (this.duration > 1) {
           this.checkAndSaveDraft();
         }
       },
+    },
+    interactionCount() {
+      if (this.duration > 1) {
+        this.checkAndSaveDraft();
+      }
     },
   },
 

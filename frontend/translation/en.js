@@ -124,8 +124,8 @@ export default {
   shortcuts: {
     label: "Shortcuts",
     pagination: {
-      go_to_previous_record: "Previous (←)",
-      go_to_next_record: "Next (→)",
+      go_to_previous_record: "Previous (⌘ + ←)",
+      go_to_next_record: "Next (⌘ + →)",
     },
   },
   questions_form: {
