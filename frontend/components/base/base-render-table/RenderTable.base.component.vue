@@ -519,6 +519,7 @@ export default {
       }, false, selectedColumnField)
 
       this.updateTableJsonData(false, true);
+      this.columnMoved(null, this.table.getColumns());
       this.table.scrollToColumn(newFieldName, null, false);
     },
     columnTitleChanged(column) {

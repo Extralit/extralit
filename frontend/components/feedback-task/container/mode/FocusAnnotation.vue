@@ -101,7 +101,6 @@ export default {
             Notification.dispatch("clear");
           },
         });
-        console.log("Error saving draft", error, this.record);
 
         this.isDraftSaving = false;
       }
