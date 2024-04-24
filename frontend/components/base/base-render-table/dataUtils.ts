@@ -113,6 +113,8 @@ export function incrementReferenceStr(reference: string): string {
   const prefix = reference.slice(0, 1);
 
   const numericalPart = reference.slice(1);
+  if (!/^\d+$/.test(numericalPart)) return undefined; 
+
   const incrementedDigits = String(parseInt(numericalPart) + 1).padStart(numericalPart.length, '0');
   const newReference = `${prefix}${incrementedDigits}`;
 

@@ -538,7 +538,7 @@ input[type="checkbox"] {
         margin-bottom: 0;
       }
 
-			&[colspan="2"], &[colspan="3"], &[colspan="4"] {
+			&[colspan="2"], &[colspan="3"], &[colspan="4"], &[colspan="5"], &[colspan="6"], &[colspan="7"], &[colspan="8"], &[colspan="9"], &[colspan="10"] {
 				text-align: center;
 			}
 			&[rowspan] {

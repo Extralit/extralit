@@ -72,7 +72,7 @@ export function getColumnValidators(tableJSON: DataFrame): Validators {
 		}
 
 		if (columnSchema.unique) {
-			validators.push('unique' );
+			validators.push('unique');
 		}
 
 		if (columnSchema.dtype === "str") {
@@ -222,6 +222,10 @@ export function getColumnEditorParams(
 
     if (referenceValues?.hasOwnProperty(fieldName)) {
       config.editorParams = {
+        allowEmpty: true,
+        listOnEmpty: true,
+        freetext: true,
+        emptyValue: null,
         valuesLookup: false,
         values: Object.entries(referenceValues[fieldName]).map(([key, value]) => ({
           label: key,
@@ -244,9 +248,6 @@ export function getColumnEditorParams(
           }
           return label === term;
         },
-        allowEmpty: true,
-        listOnEmpty: true,
-        freetext: true,
       };
 
     } else {
