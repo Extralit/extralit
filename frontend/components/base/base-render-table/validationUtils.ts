@@ -1,3 +1,4 @@
+import { CellComponent } from "tabulator-tables";
 import { DataFrame, SchemaColumns, Checks, PanderaSchema, Validator, Validators, ReferenceValues } from "./types";
 
 var integer = (cell: any, value: string, parameters: { nullable: boolean }): boolean => 
@@ -168,6 +169,8 @@ export function getColumnEditorParams(
 
   if (validation?.columns?.hasOwnProperty(fieldName)) {
     const columnValidators = validation.columns[fieldName];
+    const suggestions = columnValidators?.checks?.suggestion;
+    const isinValues = columnValidators?.checks?.isin;
 
     if (columnValidators?.dtype === "str") {
       config.editor = "list";
@@ -176,42 +179,37 @@ export function getColumnEditorParams(
       config.editorParams.autocomplete = true;
       config.editorParams.freetext = true;
       config.editorParams.listOnEmpty = true;
+      config.editorParams.valuesLookupField = fieldName;
 
-      if (columnValidators?.checks?.isin) {
-        config.editorParams.values = columnValidators?.checks?.isin;
+      if (isinValues) {
+        config.editorParams.values = columnValidators.checks.isin;
+        config.hozAlign = "center";
 
-      } else if (columnValidators?.checks?.suggestion) {
-        const suggestions = columnValidators.checks.suggestion;
+      } else if (suggestions) {
+        let suggestionValues: any[] = [];
         if (Array.isArray(suggestions)) {
-          config.editorParams.values = suggestions;
-
+          suggestionValues = suggestions.map((value) => ({ label: value, value: value }));
         } else if (typeof suggestions === 'object') {
-          config.editorParams.values = Object.entries(suggestions)
+          suggestionValues = Object.entries(suggestions)
             .map(([key, value]) => ({ label: key, value: key, data: value }));
-          config.editorParams.itemFormatter = function (label, value, item, element) {
-            const keyValues = Object.entries(item.data)
-              .map(([key, v]) => `<span style="font-weight:normal; color:black; margin-left:0;">${key}:</span> ${v}`)
-              .join(', ');
-            return `<strong>${label}</strong>: ${keyValues}`;
-          };
+        }
+        if (suggestionValues.length) {
+          config.editorParams.valuesLookup = (cell: CellComponent, filterTerm: string) => {
+            let values = cell.getColumn().getCells()
+              .map((c) => c.getValue())
+              .filter(value => value != null && value !== 'NA' && !suggestionValues.some(item => item.value === value))
+
+            return [...new Set(values), ...suggestionValues]
+          }
+        } else {
+          config.editorParams.valuesLookup = 'active';
         }
       } 
-
-      if (!columnValidators.checks?.isin) {
-        config.editorParams.valuesLookup = 'active';
-        config.editorParams.valuesLookupField = fieldName;
-      }
-
-      if (config.editorParams.values) {
-        config.hozAlign = "center";
-      }
 
       if (columnValidators.checks?.multiselect?.delimiter) {
         if (config.editorParams.values) {
           config.editorParams.multiselect = true;
           config.editorParams.autocomplete = true;
-        } else {
-          // config.editorParams.separator = columnValidators.checks.multiselect.delimiter;
         }
       }
 
@@ -231,39 +229,46 @@ export function getColumnEditorParams(
         freetext: true,
         emptyValue: null,
         valuesLookup: false,
-        values: Object.entries(referenceValues[fieldName]).map(([key, value]) => ({
-          label: key,
-          value: key,
-          data: value
-        })),
-        placeholderEmpty: "Type to search by keyword...",
-        itemFormatter: function (label, value, item, element) {
-          const keyValues = Object.entries(item.data)
-            .filter(([key, v]) => v !== 'NA' && v !== null)
-            .map(([key, v]) => `<span style="font-weight:normal; color:black; margin-left:0;">${key}:</span> ${v}`)
-            .join(', ');
-          return `<strong>${label}</strong>: ${keyValues}`;
-        },
-        filterFunc: function (term, label, value, item) {
-          if (String(label).startsWith(term) || value == term) {
-            return true;
-          } else if (term.length >= 3) {
-            return JSON.stringify(item.data).toLowerCase().match(term.toLowerCase());              
-          }
-          return label === term;
-        },
+        values: Object.entries(referenceValues[fieldName]).map(
+          ([key, value]) => ({ label: key, value: key, data: value})
+        ),
       };
 
     } else {
       // Default editor params for reference columns
       config.editorParams = {
-        ...config.editorParams,
         search: true,
         valuesLookup: 'active',
         listOnEmpty: true,
         freetext: true,
       };
     }
+  }
+
+  const hasSuggestedValues = config.editorParams?.values || typeof config.editorParams?.valuesLookup == 'function';
+  if (hasSuggestedValues) {
+    config.editorParams.itemFormatter = function (label, value, item, element) {
+      if (item.data && typeof item.data === 'object') {
+        const keyValues = Object.entries(item.data)
+          .filter(([key, v]) => v !== 'NA' && v !== null)
+          .map(([key, v]) => `<span style="font-weight:normal; color:black; margin-left:0;">${key}:</span> ${v}`)
+          .join(', ');
+
+        return `<strong>${label}</strong>: ${keyValues}`;
+      } 
+      return label;
+    };
+
+    config.editorParams.filterFunc = function (term, label, value, item) {
+      if (String(label).startsWith(term) || value.includes(term)) {
+        return true;
+      } else if (term.length >= 3 && item.data) {
+        return JSON.stringify(item.data).toLowerCase().match(term.toLowerCase());              
+      }
+      return label === term;
+    };
+
+    config.editorParams.placeholderEmpty = "Type to search by keyword...";
   }
 
   return config;

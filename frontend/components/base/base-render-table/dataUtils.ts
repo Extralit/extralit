@@ -8,9 +8,10 @@ export function columnUniqueCounts(tableJSON: DataFrame): Record<string, number>
   // returns an object of the form {column: uniqueCount, ...}
   let uniqueCounts: Record<string, number> = {};
   for (let key of Object.keys(tableJSON.data[0])) {
-    let values = tableJSON.data.map(row => row[key]);
-    let filteredValues = values.filter(value => value != null && value !== 'NA' && value);
-    uniqueCounts[key] = new Set(filteredValues).size;
+    let values = tableJSON.data
+      .map(row => row[key])
+      .filter(value => value != null && value !== 'NA');
+    uniqueCounts[key] = new Set(values).size;
   }
 
   return uniqueCounts;
