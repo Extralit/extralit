@@ -46,7 +46,7 @@
           <BaseButton
             v-for="(attrs, field) in remainingSchemaColumns"
             :key="field"
-            :title="attrs?.description"
+            :title="`${field}: ${attrs?.description}`"
             @click.prevent="addColumn(null, field); visibleColumnDropdown=false"
           >
             {{ field }}
@@ -304,7 +304,6 @@ export default {
         const removeColumns = this.tableJSON.schema.fields
           .filter((field) => !this.columns.includes(field.name))
           .map((field) => field.name);
-        console.log('removeColumns:', removeColumns)
           
         if (removeColumns.length > 0) {
           // Remove removeColumns from this.tableJSON.schema
@@ -354,6 +353,8 @@ export default {
         this.table.updateColumnDefinition(oldFieldName, {
           field: newFieldName,
           title: newFieldName,
+          ...this.generateCommonConfig(newFieldName),
+          ...this.generateColumnEditableConfig(newFieldName),
         });
 
         // Update the field name in the schema
@@ -540,7 +541,6 @@ export default {
         }, 500);
         return;
       }
-      console.log("columnTitleChanged:", oldFieldName, newFieldName)
 
       if (column.getDefinition().editableTitle) {
         column.updateDefinition({
@@ -576,8 +576,9 @@ export default {
     if (!this.tableJSON?.data?.length || !this.tableJSON?.schema) return;
 
     try {
-      const layout = this.columns.length <= 2 ? "fitData" : "fitDataTable";
       Tabulator.extendModule("keybindings", "bindings", null);
+
+      const layout = this.columns.length <= 2 ? "fitData" : "fitDataTable";
       this.table = new Tabulator(this.$refs.table, {
         data: this.tableJSON.data,
         reactiveData: true,
@@ -596,8 +597,8 @@ export default {
           page: true,
         },
         // renderHorizontal: "virtual",
-        // layoutColumnsOnNewData: true,
-        // autoResize: false,
+        layoutColumnsOnNewData: true,
+        autoResize: false,
         placeholder: () => {
           const div = document.createElement('div');
           div.classList.add('tabulator-placeholder-contents');
@@ -708,12 +709,10 @@ export default {
   position: relative;
   max-width: 100%;
   margin-bottom: 0;
-  height: 100%;
 
   .__table {
     white-space: normal;
     position: relative;
-    height: auto;
     resize: vertical;
     overflow: auto;
   }
@@ -760,8 +759,9 @@ export default {
     
     .tabulator-cell {
       white-space: normal;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      overflow: visible;
+      text-overflow: clip;
+      word-break: break-word;
     }
   }
   .tabulator-tableholder .tabulator-placeholder .tabulator-placeholder-contents {
