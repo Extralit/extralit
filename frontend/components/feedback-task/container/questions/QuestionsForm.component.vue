@@ -487,14 +487,14 @@ export default {
     }
     &__edge {
       position: absolute;
-      top: 0;
       left: 0;
+      top: 0;
       bottom: 0;
       width: 3px;
+      height: 100%;
       z-index: 1;
       background: transparent;
       opacity: 0;
-      height: 100vh;
       transition: background 0.3s ease;
 
       &::before {
@@ -504,9 +504,8 @@ export default {
         bottom: 0;
         left: -15px;
         width: 30px;
-        height: 100vh;
+        height: 100%;
         background: transparent;
-        z-index: -1;
       }
 
       &:hover {

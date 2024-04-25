@@ -154,7 +154,7 @@ export default {
     left: 0;
     bottom: 0;
     width: 5px; 
-    height: 100vh;
+    height: 100%;
     background: transparent;
     z-index: 1;
     transition: background 0.3s ease;
@@ -166,7 +166,7 @@ export default {
       bottom: 0;
       left: -20px;
       width: 40px;
-      height: 100vh;
+      height: 100%;
       background: transparent;
       z-index: -1;
     }

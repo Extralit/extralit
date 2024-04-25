@@ -18,7 +18,7 @@
         v-text="sanitizedCurrentValue"
         @focus="setFocus(true)"
         @blur="setFocus(false)"
-        @keydown.stop=""
+        @keydown.stop="onKeyDown"
         @keydown.esc.exact="exitEditionMode"
         @paste="pastePlainText"
       />
@@ -122,6 +122,30 @@ export default {
     },
     onClickOutside() {
       this.setFocus(false);
+    },
+    onKeyDown(event) {
+      const bracketKeys = {
+        '(': ')',
+        '[': ']',
+        '*': '*',
+        '_': '_',
+        '`': '`',
+        '"': '"',
+        "'": "'",
+      };
+      const closingBracket = bracketKeys[event.key];
+      if (closingBracket) {
+        const selection = window.getSelection();
+        if (selection.rangeCount > 0) {
+          const range = selection.getRangeAt(0);
+          const selectedText = range.toString();
+          if (selectedText) {
+            event.preventDefault();
+            const newText = event.key + selectedText + closingBracket;
+            document.execCommand('insertText', false, newText);
+          }
+        }
+      }
     },
   },
 };
