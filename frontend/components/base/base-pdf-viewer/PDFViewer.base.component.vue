@@ -46,7 +46,7 @@ export default {
 
   data() {
     return {
-      scale: "1.50",
+      scale: "auto",
       localPageNumber: this.pageNumber,
     }
   },

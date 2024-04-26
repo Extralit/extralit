@@ -16,7 +16,7 @@
   -->
 
 <template>
-  <transition name="show-panel" appear>
+  <transition :name="layoutClass === '--document-panel' ? '' : 'show-panel'" appear>
     <aside class="sidebar" :class="layoutClass">
       <div class="sidebar__content">
         <base-button
@@ -52,10 +52,20 @@ export default {
       animated: false,
     };
   },
+  watch: {
+    currentPanel() {
+      this.initializeSidebarWidth();
+    },
+  },
   methods: {
     closePanel() {
       this.$emit("close-panel");
       this.animated = true;
+    },
+    initializeSidebarWidth() {
+      let target = this.$el;
+      let minWidth = this.currentPanel == 'document'? '40vw': target.offsetWidth  + 'px';
+      document.documentElement.style.setProperty('--sidebar-width', minWidth);
     },
   },
   computed: {
@@ -64,6 +74,8 @@ export default {
     },
   },
   mounted() {
+    this.initializeSidebarWidth();
+
     interact(this.$el)
       .resizable({
         edges: { left: true, right: false, bottom: false, top: false },
@@ -97,7 +109,7 @@ export default {
   overflow: visible;
   pointer-events: all;
   &.--document-panel {
-    width: calc($sidebarWidth + $sidebarDocumentAdditionalWidth);
+    width: var(--sidebar-width);
     padding: 0 0 0 0;
   }
   &:hover {

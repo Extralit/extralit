@@ -212,15 +212,13 @@ $sidebarMenuWidth: 70px;
 $sidebarWidth: $sidebarPanelWidth + $sidebarMenuWidth;
 
 // sidebar pdf viewer
-$sidebarDocumentAdditionalWidth: 200px;
-$sidebarPdfViewerWidth: 50vw;
-$sidebarRightMenuWidth: 50px;
+$sidebarPdfViewerWidth: 40vw;
 
 // record
 $record-reference-border-color: palette(apricot, dark);
 $record-reference-background-color: palette(apricot, light);
 
 :root {
-  --sidebar-width: #{$sidebarPanelWidth + $sidebarMenuWidth + $sidebarDocumentAdditionalWidth};
+  --sidebar-width: #{$sidebarPdfViewerWidth};
   --questions-form-width: #{$questionFormWidth};
 }

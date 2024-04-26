@@ -58,7 +58,7 @@ export default {
       }
     },
     currentPanel(newPanel, oldPanel) {
-      if (newPanel === 'document' && this.metadata && (this.document.pmid !== this.metadata.pmid || this.document.id !== this.metadata.doc_id)) {
+      if (newPanel === 'document' && this.metadata && (this.document.pmid != this.metadata.pmid || this.document.id != this.metadata.doc_id)) {
         this.fetchDocument();
       }
     },
@@ -172,8 +172,10 @@ export default {
       this.isLoading = true;
 
       try {
-        if (this.metadata?.pmid != null && this.document.pmid !== this.metadata.pmid) {
-          this.setDocumentByPubmedID(this.metadata.pmid);
+        if (this.metadata?.pmid != null) {
+          if (this.document.pmid !== this.metadata.pmid){
+            this.setDocumentByPubmedID(this.metadata.pmid);
+          }
         } else if (this.metadata?.doc_id != null && this.document.id !== this.metadata.doc_id) {
           this.setDocumentByID(this.metadata.doc_id);
         } else if (!this.metadata?.pmid && !this.metadata?.doc_id && this.hasDocumentLoaded) {

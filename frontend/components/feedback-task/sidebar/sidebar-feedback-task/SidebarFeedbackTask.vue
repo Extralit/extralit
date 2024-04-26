@@ -66,7 +66,6 @@ export default {
 
 <style lang="scss" scoped>
 $sidebar-button-size: 45px;
-
 .sidebar {
   display: flex;
   flex-direction: column;

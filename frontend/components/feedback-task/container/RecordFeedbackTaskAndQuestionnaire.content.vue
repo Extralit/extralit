@@ -190,10 +190,6 @@ export default {
     flex-flow: column;
     overflow: auto;
   }
-  &.--document-panel {
-    flex-flow: column;
-    overflow: auto;
-  }
   &__records,
   &__form {
     @include media("<desktop") {
