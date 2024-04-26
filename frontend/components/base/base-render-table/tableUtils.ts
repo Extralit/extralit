@@ -38,17 +38,18 @@ export function cellTooltip(e, cell: CellComponent, onRendered) {
 export function groupHeader(value: string, count: number, data: any, group: GroupComponent, referenceValues: ReferenceValues, refColumns: string[]) {
   const field = (group as any)._group.field
   let header = value
+  let keyValues = '';
   if (referenceValues?.[field]?.hasOwnProperty(value)) {
-    const keyValues = Object.entries(referenceValues[field][value])
+    keyValues = Object.entries(referenceValues[field][value])
       .filter(([key, value]) => key !== "reference" && !refColumns?.includes(key) && value !== 'NA' && value)
       .map(([key, value]) => `<span style="font-weight:normal; color:black; margin-left:0;">${key}:</span> ${value}`)
       .join(', ');
+  }
 
-    if (keyValues.length > 0) {
-      header = `<small text="${value}">${keyValues}</small>`;
-    }
+  if (keyValues.length > 0) {
+    header = `<small text="${value}">${keyValues}</small>`;
   } else {
-    header = `<small style="color: red;" text="${value}">${value} (not matched)</small>`;
+    header = `<small style="color: red;">${value} (key not matched to ${field.replace(/_ref$/, '')})</small>`;
   }
 
   if (count > 1) header = header + `<small style='font-weight:normal; color:black; margin-left:10px;'>(${count})</small>`;

@@ -27,7 +27,7 @@ export function findMatchingRefValues(refColumns: string[], records: RecordDataF
     for (const recordTables of records) {
       if (!recordTables) continue;
       const matchingTable = Object.values(recordTables)
-      .find((table) => table?.validation?.name.toLowerCase() === field.replace(/_ref$/, ''));
+        .find((table) => table?.validation?.name.toLowerCase() === field.replace(/_ref$/, ''));
 
       if (!matchingTable) continue;
 
