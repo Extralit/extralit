@@ -41,7 +41,7 @@ export function groupHeader(value: string, count: number, data: any, group: Grou
   let keyValues = '';
   if (referenceValues?.[field]?.hasOwnProperty(value)) {
     keyValues = Object.entries(referenceValues[field][value])
-      .filter(([key, value]) => key !== "reference" && !refColumns?.includes(key) && value !== 'NA' && value)
+      .filter(([key, value]) => key !== "reference" && !refColumns?.includes(key) && value != null && value != 'NA')
       .map(([key, value]) => `<span style="font-weight:normal; color:black; margin-left:0;">${key}:</span> ${value}`)
       .join(', ');
   }

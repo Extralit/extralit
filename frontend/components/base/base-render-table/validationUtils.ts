@@ -193,6 +193,7 @@ export function getColumnEditorParams(
           suggestionValues = Object.entries(suggestions)
             .map(([key, value]) => ({ label: key, value: key, data: value }));
         }
+
         if (suggestionValues.length) {
           config.editorParams.valuesLookup = (cell: CellComponent, filterTerm: string) => {
             let values = cell.getColumn().getCells()

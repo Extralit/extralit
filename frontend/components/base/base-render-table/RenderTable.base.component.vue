@@ -591,7 +591,7 @@ export default {
           columns: ["frozen"], 
           group:{
             groupBy: true,
-            groupStartOpen: false,
+            groupStartOpen: true,
             groupHeader: false,
           },
           page: true,
@@ -777,11 +777,12 @@ export default {
     display: grid;
     grid-auto-flow: column;
     justify-content: start;
-    background-color: transparent;
+    background-color: white;
     padding-top: 3px;
     padding-bottom: 3px;
     // border: none;
     // box-shadow: 0 0 0 1px #999;
+    $group-header-height: 27px;
 
     span, small {
       overflow: hidden;
@@ -833,13 +834,37 @@ export default {
       }
     }
 
-    
+    &.tabulator-group-level-0,
+    &.tabulator-group-level-1,
     &.tabulator-group-level-2,
     &.tabulator-group-level-3,
     &.tabulator-group-level-4,
     &.tabulator-group-level-5 {
-      // border: none;
-      // box-shadow: 0 0 0 1px #999;
+      position: -webkit-sticky;
+      position: sticky;
+      z-index: 1;
+      border: none;
+      box-shadow: 0 0 0 1px #999;
+    }
+
+    &.tabulator-group-level-0 {
+      top: 0;
+      
+    }
+    &.tabulator-group-level-1 {
+      top: calc(1 * #{$group-header-height});
+    }
+    &.tabulator-group-level-2 {
+      top: calc(2 * #{$group-header-height});
+    }
+    &.tabulator-group-level-3 {
+      top: calc(3 * #{$group-header-height});
+    }
+    &.tabulator-group-level-4 {
+      top: calc(4 * #{$group-header-height});
+    }
+    &.tabulator-group-level-5 {
+      top: calc(5 * #{$group-header-height});
     }
   }
 }
