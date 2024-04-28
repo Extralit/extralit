@@ -597,6 +597,7 @@ export default {
           page: true,
         },
         // renderHorizontal: "virtual",
+        renderVertical:"basic",
         layoutColumnsOnNewData: true,
         autoResize: false,
         placeholder: () => {
@@ -777,7 +778,7 @@ export default {
     display: grid;
     grid-auto-flow: column;
     justify-content: start;
-    background-color: white;
+    background-color: palette(white);
     padding-top: 3px;
     padding-bottom: 3px;
     // border: none;
@@ -794,6 +795,7 @@ export default {
     @media (hover:hover) and (pointer:fine) {
       &:hover {
         cursor: auto;
+        background: palette(white);
       }
     }
 
@@ -842,14 +844,11 @@ export default {
     &.tabulator-group-level-5 {
       position: -webkit-sticky;
       position: sticky;
-      z-index: 1;
-      border: none;
-      box-shadow: 0 0 0 1px #999;
+      z-index: 100;
     }
 
     &.tabulator-group-level-0 {
       top: 0;
-      
     }
     &.tabulator-group-level-1 {
       top: calc(1 * #{$group-header-height});
