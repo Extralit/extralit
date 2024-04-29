@@ -1,5 +1,5 @@
 import { CellComponent } from "tabulator-tables";
-import { DataFrame, SchemaColumns, Checks, PanderaSchema, Validator, Validators, ReferenceValues } from "./types";
+import { DataFrame, SchemaColumns, Checks, PanderaSchema, Validator, Validators, ReferenceValues, SuggestionCheck } from "./types";
 
 var integer = (cell: any, value: string, parameters: { nullable: boolean }): boolean => 
 	(parameters.nullable && value == "NA") || /^-?\d+$/.test(value);
@@ -19,8 +19,8 @@ var unique = (cell: any, value: string, parameters: any): boolean => {
 };
 	
 var less_than = (cell: any, value: any, parameters: { column: string, or_equal: boolean }): boolean => {
-  const row = cell.getRow().getData();
-  const other = row[parameters.column];
+  const rowData = cell.getRow().getData();
+  const other = rowData[parameters.column];
 	if (value == null || other == null) return true;
 	if (value == "NA" || other == "NA") return true;
 
@@ -28,8 +28,8 @@ var less_than = (cell: any, value: any, parameters: { column: string, or_equal: 
 };
 
 var greater_than = (cell: any, value: any, parameters: { column: string, or_equal: boolean }): boolean => {
-  const row = cell.getRow().getData();
-  const other = row[parameters.column];
+  const rowData = cell.getRow().getData();
+  const other = rowData[parameters.column];
 	if (value == null || other == null) return true;
 	if (value == "NA" || other == "NA") return true;
 
@@ -91,8 +91,12 @@ export function getColumnValidators(tableJSON: DataFrame): Validators {
 				validators.push({ type: greater_equal, parameters: value });
 			} else if (key === "less_than_or_equal_to") {
 				validators.push({ type: less_equal, parameters: value });
-			} else if (key === "isin" && value.length) {
-				validators.push(`in:${[...value, "NA"].join("|")}`);
+			} else if (key === "isin" && value != null) {
+        if (Array.isArray(value) && value.length) {
+          validators.push(`in:${[...value].join("|")}`);
+        } else if (typeof value === 'object' && value !== null) {
+          validators.push(`in:${[...Object.keys(value)].join("|")}`);
+        }
 			}
 		}
 
@@ -158,6 +162,19 @@ function addDataFrameChecks(checks: Checks, columnValidators: Validators) {
   }
 }
 
+function getListAutocompleteValues(values: SuggestionCheck): any[] {
+  let editorParamsValues: any[] = [];
+
+  if (Array.isArray(values)) {
+    editorParamsValues = values.map((value) => ({ label: value, value: value }));
+
+  } else if (typeof values === 'object') {
+    editorParamsValues = Object.entries(values)
+      .map(([key, value]) => ({ label: key, value: key, data: value }));
+  }
+  return editorParamsValues;
+}
+
 
 export function getColumnEditorParams(
   fieldName: string,
@@ -182,17 +199,15 @@ export function getColumnEditorParams(
       config.editorParams.valuesLookupField = fieldName;
 
       if (isinValues) {
-        config.editorParams.values = columnValidators.checks.isin;
-        config.hozAlign = "center";
+        const allowedValues = getListAutocompleteValues(isinValues);
+        if (allowedValues.length) {
+          config.editorParams.valuesLookup = (cell: CellComponent, filterTerm: string) => {
+            return allowedValues
+          }
+        } 
 
       } else if (suggestions) {
-        let suggestionValues: any[] = [];
-        if (Array.isArray(suggestions)) {
-          suggestionValues = suggestions.map((value) => ({ label: value, value: value }));
-        } else if (typeof suggestions === 'object') {
-          suggestionValues = Object.entries(suggestions)
-            .map(([key, value]) => ({ label: key, value: key, data: value }));
-        }
+        let suggestionValues: any[] = getListAutocompleteValues(suggestions);
 
         if (suggestionValues.length) {
           config.editorParams.valuesLookup = (cell: CellComponent, filterTerm: string) => {
@@ -208,9 +223,9 @@ export function getColumnEditorParams(
       } 
 
       if (columnValidators.checks?.multiselect?.delimiter) {
-        if (config.editorParams.values) {
+        if (isinValues) {
           config.editorParams.multiselect = true;
-          config.editorParams.autocomplete = true;
+          config.editorParams.autocomplete = false;
         }
       }
 
@@ -274,3 +289,4 @@ export function getColumnEditorParams(
 
   return config;
 }
+

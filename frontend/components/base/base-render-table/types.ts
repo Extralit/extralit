@@ -32,7 +32,7 @@ export type Checks = {
   check_less_than?: ColumnsConsistencyCheck;
   check_greater_than?: ColumnsConsistencyCheck;
   check_between?: ColumnsConsistencyCheck;
-  isin?: string[];
+  isin?: SuggestionCheck;
   suggestion?: SuggestionCheck;
   multiselect?: MultiselectCheck;
 };

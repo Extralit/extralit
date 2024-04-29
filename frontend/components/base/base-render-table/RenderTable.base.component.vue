@@ -759,10 +759,10 @@ export default {
     min-height: none;
     
     .tabulator-cell {
-      white-space: normal;
-      overflow: visible;
-      text-overflow: clip;
-      word-break: break-word;
+      // white-space: normal;
+      // overflow: visible;
+      // text-overflow: clip;
+      // word-break: break-word;
     }
   }
   .tabulator-tableholder .tabulator-placeholder .tabulator-placeholder-contents {
