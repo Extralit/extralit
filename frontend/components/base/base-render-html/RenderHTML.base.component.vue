@@ -116,6 +116,9 @@
 					<label for="replaceTerm" class="dropdown-label">Replace:</label>
 					<input id="replaceTerm" v-model="replaceTerm" type="text" class="dropdown-input" />
 
+					<label for="searchUseRegex" class="dropdown-label">Use Regex:</label>
+      		<input id="searchUseRegex" v-model="searchUseRegex" type="checkbox" class="dropdown-input" />
+
 					<BaseButton @click.prevent="replaceAll" class="dropdown-button">Find/Replace All</BaseButton>
 
 				</span>
@@ -131,6 +134,7 @@
 import Document from '@tiptap/extension-document'
 import Gapcursor from '@tiptap/extension-gapcursor'
 import Paragraph from '@tiptap/extension-paragraph'
+import HardBreak from '@tiptap/extension-hard-break'
 import Table from '@tiptap/extension-table'
 import TableCell from '@tiptap/extension-table-cell'
 import TableHeader from '@tiptap/extension-table-header'
@@ -182,6 +186,7 @@ export default {
 			dropdownToggleVisible: false,
 			searchTerm: "",
 			replaceTerm: "",
+			searchUseRegex: true,
 			contextMenu: {
 				visible: false,
 				x: 0,
@@ -215,13 +220,26 @@ export default {
 		editable(value) {
 			this.editor.setEditable(value)
 		},
+		searchUseRegex(value) {
+			const extension = this.editor.extensionManager.extensions.find(extension => extension.name == 'searchAndReplace')
+			if (extension?.options) {
+				extension.options.disableRegex = !value;
+			}
+		},
+		
 	},
-
 	mounted() {
 		this.editor = new Editor({
 			extensions: [
 				Document,
-				Paragraph,
+				Paragraph.extend({
+					addKeyboardShortcuts() {
+						return {
+							'Enter': () => this.editor.commands.setHardBreak(),
+						}
+					},
+				}),
+				HardBreak,
 				Text,
 				History,
 				Gapcursor,
@@ -242,7 +260,7 @@ export default {
 				SearchAndReplace.configure({
 					searchResultClass: "search-result",
 					caseSensitive: true,
-					disableRegex: true, 
+					disableRegex: !this.searchUseRegex, 
 				}),
 
 			],
@@ -267,9 +285,12 @@ export default {
 	methods: {
 		replaceAll() {
 			if (!this.editor.isActive || !this.searchTerm) return;
+			if (this.editor.storage.searchAndReplace.results?.length && this.searchTerm !== this.editor.storage.searchAndReplace.searchTerm) {
+				this.editor.storage.searchAndReplace.results = [];
+			}
 			this.editor.storage.searchAndReplace.searchTerm = this.searchTerm;
 			this.editor.storage.searchAndReplace.replaceTerm = this.replaceTerm;
-			
+
 			this.editor.commands.replaceAll();
 		},
 		splitRow() {
@@ -354,7 +375,6 @@ export default {
 				this.editor.chain().focus().fixTables().run();
 			}
 		},
-
 		addTableHeaderIfMissing() {
 			const html = this.editor.getHTML();
 			if (!(html.includes('<th') || html.includes('<thead')) && this.editor.can().toggleHeaderRow()) {
@@ -377,7 +397,7 @@ export default {
 .editor-container {
   position: relative;
 	flex-flow: column;
-	// width: 100%;
+	width: 100%;
 
   &__content {
 		max-height: 60vh;

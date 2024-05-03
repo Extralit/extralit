@@ -79,7 +79,7 @@ export default {
       handler(newValue) {
         if (newValue) {
           this.$nextTick(() => {
-            this.$refs.text.focus();
+            this.$refs.text?.focus();
           });
         }
       },
