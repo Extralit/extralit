@@ -52,7 +52,7 @@ export default {
 
   data() {
     return {
-      scale: "auto",
+      scale: "1.50",
       currentPageNumber: this.pageNumber,
     }
   },

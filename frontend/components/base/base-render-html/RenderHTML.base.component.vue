@@ -372,13 +372,13 @@ export default {
 		},
 		fixTablesIfPossible() {
 			if (this.editor.can().fixTables()) {
-				this.editor.chain().focus().fixTables().run();
+				this.editor.chain().fixTables().run();
 			}
 		},
 		addTableHeaderIfMissing() {
 			const html = this.editor.getHTML();
 			if (!(html.includes('<th') || html.includes('<thead')) && this.editor.can().toggleHeaderRow()) {
-				this.editor.chain().focus().toggleHeaderRow().run();
+				this.editor.chain().toggleHeaderRow().run();
 			}
 		},
 		deleteTable() {
