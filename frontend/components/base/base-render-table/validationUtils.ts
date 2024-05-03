@@ -89,15 +89,19 @@ export function getColumnValidators(tableJSON: DataFrame): Validators {
 
 			if (key === "greater_than_or_equal_to") {
 				validators.push({ type: greater_equal, parameters: value });
+
 			} else if (key === "less_than_or_equal_to") {
 				validators.push({ type: less_equal, parameters: value });
+
 			} else if (key === "isin" && value != null) {
         if (Array.isArray(value) && value.length) {
           validators.push(`in:${[...value].join("|")}`);
         } else if (typeof value === 'object' && value !== null) {
           validators.push(`in:${[...Object.keys(value)].join("|")}`);
         }
-			}
+			} else if (key === "str_matches" && value != null) {
+        validators.push(`regex:${value}`);
+      }
 		}
 
 		columnValidators[columnName] = validators;

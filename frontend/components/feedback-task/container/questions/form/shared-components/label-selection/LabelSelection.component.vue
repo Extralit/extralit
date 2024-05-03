@@ -67,7 +67,7 @@
               round: !multiple,
             }"
             :for="option.id"
-            :title="option.text"
+            :title="option.text + (option.description ? ': \n' + option.description : '')"
           >
             <span class="key" v-text="keyboards[option.id]" />
             <span>{{ option.text }}</span>

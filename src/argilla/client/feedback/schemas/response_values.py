@@ -77,7 +77,9 @@ ResponseValue = Union[
 RESPONSE_VALUE_FOR_QUESTION_TYPE = {
     QuestionTypes.text: str,
     QuestionTypes.label_selection: str,
+    QuestionTypes.dynamic_label_selection: str,
     QuestionTypes.multi_label_selection: List[str],
+    QuestionTypes.dynamic_multi_label_selection: List[str],
     QuestionTypes.ranking: List[RankingValueSchema],
     QuestionTypes.rating: int,
     QuestionTypes.span: List[SpanValueSchema],
@@ -105,6 +107,8 @@ def normalize_response_value(value: ResponseValue) -> ResponseValue:
     for v in value:
         if "start" in v and "end" in v:
             new_value.append(SpanValueSchema(**v))
+        elif isinstance(v, dict) and ("value" in v and "text" in v or "description" in v):
+            new_value.append(v)
         elif "value" in v:
             new_value.append(RankingValueSchema(**v))
         else:

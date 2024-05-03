@@ -169,7 +169,7 @@ class _LabelQuestion(QuestionSchema, LabelMappingMixin):
             which means all the labels will be shown, or 3 or greater.
     """
 
-    labels: Union[conlist(str, unique_items=True, min_items=0), Dict[str, str]]
+    labels: Union[conlist(str, unique_items=True, min_items=0), Dict[str, str], List[Dict[str, str]]]
     visible_labels: Union[UndefinedType, conint(ge=3), None] = UNDEFINED
 
     @validator("labels", pre=True, always=True)
@@ -222,7 +222,8 @@ class _LabelQuestion(QuestionSchema, LabelMappingMixin):
         if isinstance(self.labels, dict):
             settings["options"] = [{"value": key, "text": value} for key, value in self.labels.items()]
         elif isinstance(self.labels, list):
-            settings["options"] = [{"value": label, "text": label} for label in self.labels]
+            settings["options"] = [label if isinstance(label, dict) else {"value": label, "text": label} \
+                                   for label in self.labels]
         settings["visible_options"] = self.visible_labels
         return settings
 
@@ -248,7 +249,6 @@ class LabelQuestion(_LabelQuestion):
     """
 
     type: Literal[QuestionTypes.label_selection, QuestionTypes.dynamic_label_selection] = Field(
-        
         QuestionTypes.label_selection.value, allow_mutation=False, const=True
     )
 

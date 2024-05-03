@@ -5,7 +5,7 @@
       :fileName="fileName" 
       :sidebarFeatureVisible=true 
       :scale.sync="scale"
-      :pageNumber="localPageNumber"
+      :pageNumber="currentPageNumber"
       ref="pdfView"
       class="PDFView"
     >
@@ -44,10 +44,16 @@ export default {
     },
   },
 
+  watch: {
+    pageNumber(newPageNumber) {
+      this.currentPageNumber = newPageNumber;
+    },
+  },
+
   data() {
     return {
       scale: "auto",
-      localPageNumber: this.pageNumber,
+      currentPageNumber: this.pageNumber,
     }
   },
   
@@ -61,7 +67,7 @@ export default {
       const hash = window.location.hash.substring(1); // Remove the '#' from the hash
       const [key, value] = hash.split('.');
       if (key === 'page_number' && !isNaN(value)) {
-        this.localPageNumber = Number(value); 
+        this.currentPageNumber = Number(value); 
       }
     },
   },
