@@ -1,7 +1,7 @@
 <template>
   <div class="pdf-container">
     <PDFView 
-      :src.sync="pdfData" 
+      :src.sync="url" 
       :fileName="fileName" 
       :sidebarFeatureVisible=true 
       :scale.sync="scale"
@@ -30,8 +30,8 @@ export default {
   },
 
   props:{
-    pdfData: {
-      type: Uint8Array,
+    url: {
+      type: String,
       required: true,
     },
     fileName: {

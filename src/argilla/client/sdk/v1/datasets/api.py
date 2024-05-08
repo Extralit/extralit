@@ -12,6 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import base64
 import warnings, json
 from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
@@ -31,8 +32,10 @@ from argilla.client.sdk.v1.datasets.models import (
     FeedbackRecordsSearchModel,
     FeedbackRecordsSearchVectorQuery,
     FeedbackVectorSettingsModel,
-    FeedbackDocumentModel
+    FeedbackDocumentModel,
+    FileObjectModel,
 )
+from argilla.client.feedback.schemas.documents import Document
 
 def create_dataset(
     client: httpx.Client,
@@ -629,7 +632,7 @@ def get_metrics(
 
 def upload_document(
     client: httpx.Client,
-    document: FeedbackDocumentModel,
+    document: Document,
 ) -> Response[Union[UUID, ErrorMessage, HTTPValidationError]]:
     """Sends a POST request to `/api/v1/documents` endpoint to create a new `Document`.
 
@@ -647,7 +650,15 @@ def upload_document(
         request was successful, which is the UUID of the created document.
     """
     endpoint = "/api/v1/documents"
-    response = client.post(url=endpoint, json=document.to_server_payload())
+    document_payload = document.to_server_payload()
+
+    if document.file_path:
+        with open(document.file_path, 'rb') as f:
+            file_data = f.read()
+            base64_encoded_data = base64.b64encode(file_data).decode()
+            document_payload["file_data"] = base64_encoded_data
+
+    response = client.post(url=endpoint, json=document_payload)
 
     if response.status_code == 201:
         response_obj = Response.from_httpx_response(response)
@@ -714,3 +725,74 @@ def list_documents(
         return response_obj
     
     return handle_response_error(response)
+
+def get_file(client: httpx.Client, file: FileObjectModel) -> Response:
+    """Sends a GET request to `/file/{bucket}/{object}` endpoint to get a file.
+
+    Args:
+        client: the authenticated client to be used to send the request to the API.
+        bucket: the name of the bucket.
+        object: the name of the object.
+        version_id: the version id of the object. Optional.
+
+    Returns:
+        A `Response` object containing the response from the server.
+    """
+    endpoint = f"/api/v1/file/{file.bucket}/{file.object}"
+    params = {"version_id": file.version_id} if file.version_id else {}
+    response = client.get(url=endpoint, params=params)
+    return response
+
+
+def put_file(client: httpx.Client, file: FileObjectModel) -> Response:
+    """Sends a POST request to `/file/{bucket}/{object}` endpoint to upload a file.
+
+    Args:
+        client: the authenticated client to be used to send the request to the API.
+        bucket: the name of the bucket.
+        object: the name of the object.
+        file: the file to be uploaded.
+
+    Returns:
+        A `Response` object containing the response from the server.
+    """
+    endpoint = f"/api/v1/file/{file.bucket}/{file.object}"
+    files = {"file": (file.file_name, file.data, file.content_type)}
+    response = client.post(url=endpoint, files=files)
+    return response
+
+
+def list_objects(client: httpx.Client, bucket: str, prefix: str = "", include_version=True) -> Response:
+    """Sends a GET request to `/files/{bucket}/{prefix}` endpoint to list objects.
+
+    Args:
+        client: the authenticated client to be used to send the request to the API.
+        bucket: the name of the bucket.
+        prefix: the prefix of the objects. Optional.
+        include_version: whether to include version information. Optional.
+
+    Returns:
+        A `Response` object containing the response from the server.
+    """
+    endpoint = f"/api/v1/files/{bucket}/{prefix}"
+    params = {"include_version": include_version}
+    response = client.get(url=endpoint, params=params)
+    return response
+
+
+def delete_files(client: httpx.Client, bucket: str, object: str, version_id: Optional[str] = None) -> Response:
+    """Sends a DELETE request to `/files/{bucket}/{object}` endpoint to delete a file.
+
+    Args:
+        client: the authenticated client to be used to send the request to the API.
+        bucket: the name of the bucket.
+        object: the name of the object.
+        version_id: the version id of the object. Optional.
+
+    Returns:
+        A `Response` object containing the response from the server.
+    """
+    endpoint = f"/api/v1/files/{bucket}/{object}"
+    params = {"version_id": version_id} if version_id else {}
+    response = client.delete(url=endpoint, params=params)
+    return response

@@ -12,7 +12,7 @@
         <div v-if="isLoading">Loading...</div>
         <PDFViewerBaseComponent 
           v-else
-          :pdf-data="document.file_data" 
+          :url="document.url" 
           :file-name="document.file_name"
           :pageNumber="document.page_number"
         />

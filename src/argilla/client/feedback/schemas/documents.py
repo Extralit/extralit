@@ -3,8 +3,9 @@ import base64
 from urllib.parse import urlparse, unquote
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Literal, Optional, Union
+import uuid
 
-from pydantic import BaseModel, Field, Extra
+from argilla.pydantic_v1 import BaseModel, Field, Extra
 from uuid import UUID
 
 class Document(BaseModel, ABC):
@@ -19,13 +20,13 @@ class Document(BaseModel, ABC):
         workspace_id: The workspace ID of the document. Required.
     """
 
+    id: Union[UUID, str] = Field(default_factory=uuid.uuid4(), description="The ID of the document, which gets assigned after database insertion")
     doi: Optional[str] = None
     pmid: Optional[str] = None
     file_name: str = Field(...)
     url: Optional[str] = None
-    file_data: Optional[str] = Field(None, description="Base64 encoded file data")
+    file_path: Optional[str] = Field(None, description="Focal file path")
     workspace_id: Optional[UUID] = Field(None, description="The workspace ID to which the document belongs to")
-    id: Optional[UUID] = Field(None, description="The ID of the document, which gets assigned after databse insertion")
 
     class Config:
         validate_assignment = True
@@ -40,12 +41,10 @@ class Document(BaseModel, ABC):
         url = None
 
         if os.path.exists(file_path):
-            with open(file_path, "rb") as file:
-                file_data = base64.b64encode(file.read()).decode()
             file_name = file_path.split("/")[-1]
 
         elif urlparse(file_path).scheme:
-            file_data = None
+            file_path = None
             url = file_path
             parsed_url = urlparse(file_path)
             path = parsed_url.path
@@ -54,10 +53,10 @@ class Document(BaseModel, ABC):
             raise ValueError(f"File path {file_path} does not exist")
 
         return cls(
-            file_data=file_data,
+            file_path=file_path,
             file_name=file_name if isinstance(file_name, str) else None,
             url=url if isinstance(url, str) else None,
-            id=UUID(id) if isinstance(id, str) else None,
+            id=id or None,
             pmid=str(pmid) if isinstance(pmid, int) or isinstance(pmid, str) and len(pmid)>3 else None,
             doi=doi if isinstance(doi, str) else None,
             workspace_id=workspace_id,
@@ -68,7 +67,6 @@ class Document(BaseModel, ABC):
         to create a field in the `FeedbackDataset`.
         """
         json = {
-            "file_data": self.file_data,
             "url": self.url,
             "file_name": self.file_name,
             "pmid": self.pmid,

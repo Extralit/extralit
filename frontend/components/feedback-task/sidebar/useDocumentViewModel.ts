@@ -17,7 +17,7 @@ export const useDocumentViewModel = () => {
         message: `Error fetching document with ID ${id}`,
         type: 'error',
       });
-      setDocument({ id: null, file_data: null, file_name: null, pmid: null });
+      setDocument({ id: null, url: null, file_name: null, pmid: null });
     }
   };
 
@@ -29,7 +29,7 @@ export const useDocumentViewModel = () => {
         message: `Error fetching document with pmid "${pmid}"`,
         type: 'error',
       });
-      setDocument({ id: null, file_data: null, file_name: null, pmid: null });
+      setDocument({ id: null, url: null, file_name: null, pmid: null });
     }
   };
 

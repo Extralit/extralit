@@ -168,12 +168,13 @@ class FeedbackListVectorSettingsModel(BaseModel):
 class FeedbackMetricsModel(BaseModel):
     records: FeedbackRecordsMetricsModel
 
+
 class FeedbackDocumentModel(BaseModel):
+    id: Optional[UUID]
     url: Optional[str]
     file_name: Optional[str]
     pmid: Optional[str]
     doi: Optional[str]
-    id: Optional[UUID]
     workspace_id: Optional[UUID]
     inserted_at: datetime
 
@@ -181,3 +182,15 @@ class FeedbackDocumentModel(BaseModel):
         json_encoders = {
             UUID: str
         }
+
+
+class FileObjectModel(BaseModel):
+    bucket: str
+    object: str
+    data: Optional[str]
+    file_name: Optional[str]
+    version_id: Optional[str]
+    size: Optional[int]
+    content_type: Optional[str]
+
+

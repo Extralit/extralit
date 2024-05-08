@@ -12,15 +12,15 @@ export class DocumentRepository {
 
   async getDocumentByPubmedID(pmid: string): Promise<Document>  {
     try {
-      const response = await this.axios.get(`/v1/documents/by-pmid/${pmid}`, {
-        responseType: 'arraybuffer',
-      });
-      const documentId = response.headers['x-document-id'];
-      const documentFileName = response.headers['x-document-file-name'];
+      const response = await this.axios.get(`/v1/documents/by-pmid/${pmid}`);
+      const url = response.data.url
 
-      const dataUint8Array = new Uint8Array(response.data);
+      return new Document(
+        response.data.id, 
+        url, 
+        response.data.file_name, 
+        response.data.pmid);
 
-      return new Document(documentId, dataUint8Array, documentFileName, pmid);
     } catch (error) {
       throw {
         response: DOCUMENT_API_ERRORS.ERROR_FETCHING_DOCUMENT,
@@ -30,15 +30,15 @@ export class DocumentRepository {
 
   async getDocumentById(id: string): Promise<Document> {
     try {
-      const response = await this.axios.get(`/v1/documents/by-id/${id}`, {
-        responseType: 'arraybuffer',
-      });
-      const documentId = response.headers['x-document-id'];
-      const documentFileName = response.headers['x-document-file-name'];
+      const response = await this.axios.get(`/v1/documents/by-id/${id}`);
+      const url = response.data.url
 
-      const dataUint8Array = new Uint8Array(response.data);
+      return new Document(
+        response.data.id, 
+        url, 
+        response.data.file_name, 
+        response.data.pmid);   
 
-      return new Document(documentId, dataUint8Array, documentFileName, null);   
     } catch (error) {
       throw {
         response: DOCUMENT_API_ERRORS.ERROR_FETCHING_DOCUMENT,
