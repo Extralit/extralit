@@ -186,7 +186,7 @@ export default {
 			dropdownToggleVisible: false,
 			searchTerm: "",
 			replaceTerm: "",
-			searchUseRegex: true,
+			searchUseRegex: false,
 			contextMenu: {
 				visible: false,
 				x: 0,
