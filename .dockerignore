@@ -11,8 +11,13 @@
 !docker/quickstart.requirements.txt
 
 # Egg-info directories
-*.egg-info
+**/.egg-info
+**/.DS_Store
+**/__pycache__
+**/.ipynb_checkpoints
+**/.pdm-build
+**/.venv
+**/.github
 
-*.DS_Store
-
-*/node_modules
+**/node_modules
+**/_nuxt
