@@ -750,7 +750,6 @@ export default {
 }
 
 .tabulator {
-  
   .tabulator-header .tabulator-col .tabulator-col-content .tabulator-col-title {
     white-space: normal;
   }

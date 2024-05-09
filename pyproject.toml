@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "argilla"
+name = "extralit"
 description = "Open-source tool for exploring, labeling, and monitoring data for NLP projects."
 readme = "README.md"
 requires-python = ">=3.8,<3.12"
@@ -33,7 +33,7 @@ dependencies = [
     # monitoring
     "wrapt >= 1.13,< 1.15",
     # weaksupervision
-    "numpy < 1.24.0",
+    "numpy",
     # for progressbars
     "tqdm >= 4.27.0",
     # monitor background consumers
