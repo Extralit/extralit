@@ -355,7 +355,7 @@ class ArgillaMixin:
         workspace: Optional[str] = None,
         id: Optional[Union[UUID, str]] = None,
         with_vectors: Union[Literal[INCLUDE_ALL_VECTORS_PARAM], List[str], None] = None,
-    ) -> RemoteFeedbackDataset:
+        with_documents: bool=True) -> RemoteFeedbackDataset:
         """Retrieves an existing `FeedbackDataset` from Argilla (must have been pushed in advance).
 
         Note that even though no argument is mandatory, you must provide either the `name`,
@@ -396,7 +396,10 @@ class ArgillaMixin:
 
         fields = ArgillaMixin.__get_fields(client=httpx_client, id=existing_dataset.id)
         questions = ArgillaMixin.__get_questions(client=httpx_client, id=existing_dataset.id)
-        documents = ArgillaMixin.__get_documents(client=httpx_client, workspace_id=existing_dataset.workspace_id)
+        if with_documents:
+            documents = ArgillaMixin.__get_documents(client=httpx_client, workspace_id=existing_dataset.workspace_id)
+        else:
+            documents = {}
 
         return RemoteFeedbackDataset(
             client=httpx_client,
