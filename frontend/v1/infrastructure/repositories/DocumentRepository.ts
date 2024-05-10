@@ -15,8 +15,6 @@ export class DocumentRepository {
       const response = await this.axios.get(`/v1/documents/by-pmid/${pmid}`);
       const url = response.data.url
 
-      console.log(await this.axios.get(`/v1/models/schemas/itn-recalibration`))
-
       return new Document(
         response.data.id, 
         url, 
