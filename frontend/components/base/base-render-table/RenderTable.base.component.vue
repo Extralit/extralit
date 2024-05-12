@@ -83,7 +83,7 @@ import { TabulatorFull as Tabulator } from "tabulator-tables";
 import { Notification } from "@/models/Notifications";
 import "tabulator-tables/dist/css/tabulator.min.css";
 import {
-  getTableDataFromRecords, findMatchingRefValues, generateCombinations, incrementReferenceStr, getMaxStringValue, } from './dataUtils';
+  getRangeData, getTableDataFromRecords, findMatchingRefValues, generateCombinations, incrementReferenceStr, getMaxStringValue, } from './dataUtils';
 import { getColumnValidators, getColumnEditorParams } from "./validationUtils";
 import { 
   columnSchemaToDesc, 
@@ -148,19 +148,12 @@ export default {
       return filteredColumns || {};
     },
     indexColumns() {
-      return this.tableJSON?.schema?.primaryKey || [];
+      return this.tableJSON?.schema?.primaryKey || ['_id'];
     },
     refColumns() {
-      try {
-        const ref_columns = this.tableJSON.schema.fields
-          .map(field => field.name)
-          .filter(name => typeof name === 'string' && name.endsWith('_ref'));
-          
-        return ref_columns;
-      } catch (error) {
-        console.error("Failed to get refColumns:", error);
-        return [];
-      }
+      return this.tableJSON?.schema?.fields
+        .map(field => field.name)
+        .filter(name => typeof name === 'string' && name.endsWith('_ref')) ?? [];
     },
     groupbyColumns() {
       return this.refColumns || null;
@@ -179,7 +172,20 @@ export default {
         const editableConfig = this.generateColumnEditableConfig(column.name);
         return { ...commonConfig, ...editableConfig };
       });
-      return configs;
+
+      var rownum = 0;
+
+      const idColumn = {
+        title: "_id",
+        field: "_id",
+        // visible: false,
+        // accessor: "rownum",
+        mutator: function(value, data, type, params, component) {
+          return rownum++;
+        }
+      };
+
+      return [idColumn, ...configs];
     },
     groupConfigs() {
       if (this.groupbyColumns.length === 0) {
@@ -261,6 +267,20 @@ export default {
     rowContextMenu() {
       let menu = [
         {
+          label: "Hey 🤖, yeet this!",
+          disabled: !this.editable,
+          action: (e, row) => {
+            var rangeData = getRangeData(this.table)
+
+            // selected_ids.forEach(id => {
+            //   this.table.updateData([{_id: id, Anoph_spp: "bob", Dead: 0}]);
+            // });
+
+            console.log('rangeData', rangeData);
+            console.log('referenceValues', this.referenceValues)
+          }
+        },
+        {
           label: "Add row below",
           disabled: !this.editable,
           action: (e, row) => {
@@ -325,7 +345,7 @@ export default {
           (field) => !this.tableJSON.schema.fields.map((field) => field.name).includes(field) && field != undefined);
 
         // Add the new field to the schema
-        const data = this.table.getData()
+        const data = this.table.getData().map(({ _id, ...rest }) => rest)
         data.forEach((item) => {
           addColumns.forEach((column) => {
             item[column] = null;
@@ -343,7 +363,7 @@ export default {
 
       if (update) {
         // Update the field name for all data
-        const data = this.table.getData()
+        const data = this.table.getData().map(({ _id, ...rest }) => rest)
         data.forEach((row) => {
           row[newFieldName] = row[oldFieldName];
           delete row[oldFieldName];
@@ -366,7 +386,7 @@ export default {
         });
       }
 
-      this.tableJSON.data = this.table.getData();
+      this.tableJSON.data = this.table.getData().map(({ _id, ...rest }) => rest);
       this.tableJSON = this.tableJSON; // Trigger the setter
     },
     isIndexRefColumn(field) { 
@@ -629,7 +649,7 @@ export default {
 
         // Column
         columns: this.columnsConfig,
-        index: this.indexColumns + this.refColumns,
+        index: this.indexColumns[0],
         ...this.groupConfigs,
         movableColumns: true,
         columnDefaults: {
@@ -647,7 +667,7 @@ export default {
 
         //enable range selection
         selectableRange: 1,
-        selectableRangeColumns: false,
+        selectableRangeColumns: true,
         selectableRangeRows: true,
         selectableRangeClearCells: true,
         editTriggerEvent: this.editable ? "dblclick" : false,
@@ -692,7 +712,6 @@ export default {
           Notification.dispatch("clear");
         },
       });
-      console.error("Failed to mount table:", error);
     }
   },
   errorCaptured(err, component, info) {

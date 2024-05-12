@@ -2,6 +2,21 @@ import { useRecordFeedbackTaskViewModel } from '@/components/feedback-task/conta
 import { Record as FeedbackRecord } from '~/v1/domain/entities/record/Record';
 import { RecordDataFramesArray } from './tableUtils';
 import { DataFrame, PanderaSchema, Validator, Validators } from './types';
+import { Tabulator, RangeComponent, RowComponent } from "tabulator-tables";
+
+export function getRangeData(table: Tabulator): Record<string, any> {
+  const ranges = table.getRanges().map((range: RangeComponent) => {
+    const selected_ids = range.getRows().map((row: RowComponent) => row.getIndex());
+    // const selected_data = range.getData();
+    const selected_data = range.getRows().map((row: RowComponent) => row.getData());
+
+    return selected_ids.reduce((acc, id: number, index) => {
+      acc[id] = selected_data[index];
+      return acc;
+    }, {});
+  });
+  return ranges[0];
+}
 
 export function columnUniqueCounts(tableJSON: DataFrame): Record<string, number> {
   // tableJSON is an object of the form {data: [{column: value, ...}, ...]}
