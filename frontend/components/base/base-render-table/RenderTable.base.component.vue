@@ -78,17 +78,15 @@
 </template>
 
 <script lang="ts">
-import { ref } from 'vue';
 import { merge } from 'lodash';
 import { Notification } from "@/models/Notifications";
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 import "tabulator-tables/dist/css/tabulator.min.css";
-import {
-  findMatchingRefValues, generateCombinations, incrementReferenceStr, getMaxStringValue, } from './dataUtils';
+import { generateCombinations, incrementReferenceStr, getMaxStringValue } from './dataUtils';
 import { getColumnValidators, getColumnEditorParams } from "./validationUtils";
 import { cellTooltip, headerTooltip, groupHeader } from "./tableUtils"; 
 import { useExtractionTableViewModel } from "./useExtractionTableViewModel";
-import { Question } from "~/v1/domain/entities/question/Question";
+import { Question } from "@/v1/domain/entities/question/Question";
 
 export default {
   name: "RenderTableBaseComponent",
@@ -231,7 +229,7 @@ export default {
       const reference = this.tableJSON?.reference;
       if (!reference) return null;
       let recordTables = this.getTableDataFromRecords((record: any) => record?.metadata?.reference == reference)
-      const refToRowDict = findMatchingRefValues(this.refColumns, recordTables)
+      const refToRowDict = this.findMatchingRefValues(this.refColumns, recordTables)
 
       return refToRowDict;
     },

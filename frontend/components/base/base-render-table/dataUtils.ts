@@ -19,47 +19,6 @@ export function columnUniqueCounts(tableJSON: DataFrame): Record<string, number>
   return uniqueCounts;
 }
 
-export function findMatchingRefValues(refColumns: string[], records: RecordDataFramesArray): Record<string, Record<string, Record<string, any>>> {
-  // refValues is an object of the form {field: refValue}
-  // records is an array of objects of the form {table_name: {data: [{reference: refValue, ...}, ...]}}
-  // returns an object of the form {field: {refValue: {column: value, ...}, ...}, ...}
-  const matchingRefValues: Record<string, Record<string, any>> = {};
-
-  for (const field of refColumns) {
-    for (const recordTables of records) {
-      if (!recordTables) continue;
-      const matchingTable = Object.values(recordTables)
-        .find((table) => table?.validation?.name.toLowerCase() === field.replace(/_ref$/, ''));
-
-      if (!matchingTable) continue;
-
-      if (!matchingTable.hasOwnProperty('columnUniqueCounts')) {
-        matchingTable.columnUniqueCounts = columnUniqueCounts(matchingTable)
-      }
-
-      const refRows = matchingTable.data.reduce((acc, row) => {
-        const filteredRowValues: Record<string, any> = Object.entries(row)
-          .filter(([key, value]) => 
-            key != "reference" &&
-            (matchingTable.data.length <= 1 || !matchingTable?.columnUniqueCounts?.hasOwnProperty(key) || matchingTable.columnUniqueCounts[key] > 1))
-          .reduce((obj, [key, value]) => {
-            obj[key] = value;
-            return obj;
-          }, {});
-        acc[row.reference] = filteredRowValues;
-        return acc;
-      }, {});
-      matchingRefValues[field] = refRows;
-      break; // only need to find the first matching table, since the recordTables is already sorted that the first table is the corrected version
-      }
-  }
-
-  return matchingRefValues;
-}
-
-
-
-
 
 export function getMaxStringValue(columnName: string, data: any[]): string {
   return data.reduce((max, row) => row[columnName] > max ? row[columnName] : max, "");
