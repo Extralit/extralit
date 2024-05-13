@@ -78,19 +78,17 @@
 </template>
 
 <script lang="ts">
+import { ref } from 'vue';
 import { merge } from 'lodash';
-import { TabulatorFull as Tabulator } from "tabulator-tables";
 import { Notification } from "@/models/Notifications";
+import { TabulatorFull as Tabulator } from "tabulator-tables";
 import "tabulator-tables/dist/css/tabulator.min.css";
 import {
-  getRangeData, getTableDataFromRecords, findMatchingRefValues, generateCombinations, incrementReferenceStr, getMaxStringValue, } from './dataUtils';
+  findMatchingRefValues, generateCombinations, incrementReferenceStr, getMaxStringValue, } from './dataUtils';
 import { getColumnValidators, getColumnEditorParams } from "./validationUtils";
-import { 
-  columnSchemaToDesc, 
-  cellTooltip,
-  headerTooltip,
-  groupHeader,
-} from "./tableUtils"; 
+import { cellTooltip, headerTooltip, groupHeader } from "./tableUtils"; 
+import { useExtractionTableViewModel } from "./useExtractionTableViewModel";
+import { Question } from "~/v1/domain/entities/question/Question";
 
 export default {
   name: "RenderTableBaseComponent",
@@ -107,6 +105,10 @@ export default {
     hasValidValues: {
       type: Boolean,
       default: false,
+    },
+    questions: {
+      type: Array as () => Question[],
+      default: () => [],
     },
   },
 
@@ -127,20 +129,16 @@ export default {
     };
   },
 
-  computed: {
+  watch: {
     tableJSON: {
-      get() {
-        try {
-          return JSON.parse(this.tableData);
-        } catch (error) {
-          console.error("Failed to parse JSON:", error);
-          return null;
-        }
-      },
-      set(json) {
-        this.$emit("change-text", JSON.stringify(json));
+      deep: true,
+      handler(newValue, oldValue) {
+        this.$emit("change-text", JSON.stringify(newValue));
       },
     },
+  },
+
+  computed: {
     remainingSchemaColumns() {
       const filteredColumns = Object.fromEntries(
         Object.entries(this.tableJSON?.validation?.columns).filter(([field, attrs]) => !this.columns.includes(field))
@@ -167,14 +165,20 @@ export default {
     columnsConfig() {
       if (!this.tableJSON?.schema) return [];
 
-      const configs = this.tableJSON.schema.fields.map((column) => {
+      var configs = this.tableJSON.schema.fields.map((column) => {
         const commonConfig = this.generateCommonConfig(column.name);
         const editableConfig = this.generateColumnEditableConfig(column.name);
         return { ...commonConfig, ...editableConfig };
       });
 
-      var rownum = 0;
+      // If `_id` is already in the schema, remove it
+      if (!this.editable) {
+        return configs;
+      } else if (this.columns.includes("_id")) {
+        configs = configs.filter((column) => column.field !== "_id");
+      }
 
+      var rownum = 0;
       const idColumn = {
         title: "_id",
         field: "_id",
@@ -226,7 +230,7 @@ export default {
       
       const reference = this.tableJSON?.reference;
       if (!reference) return null;
-      let recordTables = getTableDataFromRecords((record: any) => record?.metadata?.reference == reference)
+      let recordTables = this.getTableDataFromRecords((record: any) => record?.metadata?.reference == reference)
       const refToRowDict = findMatchingRefValues(this.refColumns, recordTables)
 
       return refToRowDict;
@@ -270,11 +274,14 @@ export default {
           label: "Hey 🤖, yeet this!",
           disabled: !this.editable,
           action: (e, row) => {
-            var rangeData = getRangeData(this.table)
+            var rangeData = this.getRangeData(this.table)
 
             // selected_ids.forEach(id => {
             //   this.table.updateData([{_id: id, Anoph_spp: "bob", Dead: 0}]);
             // });
+
+            console.log('questions', this.getQuestionsAnswers())
+            // console.log('questions', this.questions.map(q => q.answer.valuesAnswered).filter(values => Array.isArray(values)))
 
             console.log('rangeData', rangeData);
             console.log('referenceValues', this.referenceValues)
@@ -387,7 +394,6 @@ export default {
       }
 
       this.tableJSON.data = this.table.getData().map(({ _id, ...rest }) => rest);
-      this.tableJSON = this.tableJSON; // Trigger the setter
     },
     isIndexRefColumn(field) { 
       return this.indexColumns?.includes(field) || this.refColumns?.includes(field);
@@ -476,7 +482,6 @@ export default {
         const bIndex = columns.findIndex((col) => col.getField() === b.name);
         return aIndex - bIndex;
       });
-      this.tableJSON = this.tableJSON; // Trigger the setter
     },
     addRow(selectedRow, rowData: any={}) {
       const requiredFields = this.refColumns || this.indexColumns;
@@ -714,6 +719,11 @@ export default {
       });
     }
   },
+
+  setup(props) {
+    return useExtractionTableViewModel(props);
+  },
+
   errorCaptured(err, component, info) {
     this.error = err;
     console.error(`Error caught from ${component}: ${err}`);

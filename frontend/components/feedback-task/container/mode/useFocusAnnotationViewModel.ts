@@ -35,7 +35,7 @@ export const useFocusAnnotationViewModel = () => {
     duration += durationWrapper?.value || 0;
     durationWrapper.value = 0; // reset duration for upstream caller to indicate it's been consumed
     return duration;
-  }
+  };
 
   const submit = async (record: Record, durationWrapper?: any) => {
     isSubmitting.value = true;

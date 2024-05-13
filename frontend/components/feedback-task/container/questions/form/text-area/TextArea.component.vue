@@ -4,12 +4,14 @@
     <TextAreaContents
       v-if="!question.suggestion"
       :question="question"
+      :questions="questions"
       :is-focused="isFocused"
     />
     <BaseCardWithTabs v-else :tabs="tabs" tabSize="small">
       <template v-slot="{ currentComponent }">
         <component
           :question="question"
+          :questions="questions"
           :is-focused="isFocused"
           :is="currentComponent"
           :key="currentComponent"
@@ -25,6 +27,10 @@ export default {
   props: {
     question: {
       type: Object,
+      required: true,
+    },
+    questions: {
+      type: Array,
       required: true,
     },
     isFocused: {

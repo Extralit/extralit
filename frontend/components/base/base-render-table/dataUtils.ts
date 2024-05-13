@@ -1,22 +1,9 @@
-import { useRecordFeedbackTaskViewModel } from '@/components/feedback-task/container/useRecordFeedbackTaskViewModel';
+
 import { Record as FeedbackRecord } from '~/v1/domain/entities/record/Record';
 import { RecordDataFramesArray } from './tableUtils';
 import { DataFrame, PanderaSchema, Validator, Validators } from './types';
 import { Tabulator, RangeComponent, RowComponent } from "tabulator-tables";
 
-export function getRangeData(table: Tabulator): Record<string, any> {
-  const ranges = table.getRanges().map((range: RangeComponent) => {
-    const selected_ids = range.getRows().map((row: RowComponent) => row.getIndex());
-    // const selected_data = range.getData();
-    const selected_data = range.getRows().map((row: RowComponent) => row.getData());
-
-    return selected_ids.reduce((acc, id: number, index) => {
-      acc[id] = selected_data[index];
-      return acc;
-    }, {});
-  });
-  return ranges[0];
-}
 
 export function columnUniqueCounts(tableJSON: DataFrame): Record<string, number> {
   // tableJSON is an object of the form {data: [{column: value, ...}, ...]}
@@ -71,53 +58,7 @@ export function findMatchingRefValues(refColumns: string[], records: RecordDataF
 }
 
 
-export function getTableDataFromRecords(filter_fn: (record: FeedbackRecord) => boolean): RecordDataFramesArray {
-  // filter_fn is a function that takes a record and returns true if it should be included in the table
-  // returns an array of objects of the form {field: {refValue: {column: value, ...}, ...}, ...}
-  let recordTables: RecordDataFramesArray = useRecordFeedbackTaskViewModel({ recordCriteria: null })?.records.records
-    .filter(filter_fn)
-    .map((rec) => {
-      let answer_tables = rec?.answer?.value || {};
-      if (answer_tables) {
-        answer_tables = Object.fromEntries(
-          Object.entries(answer_tables)
-            .filter(([key, obj]) => {
-              const value = (obj as { value: string; }).value;
-              return (typeof value === 'string') && (value.startsWith('{'));
-            })
-            .map(([key, obj]) => {
-              try {
-                const value = (obj as { value: string; }).value;
-                const table = JSON.parse(value);
-                delete table.validation.columns;
-                return [key, table];
-              } catch (e) {
-                console.error(e);
-                return [key, {}];
-              }
-            })
-            .filter(([key, obj]) => Object.keys(obj).length > 0)
-        );
-      }
 
-      let field_table = rec.fields
-        .filter((field) => field?.settings?.use_table && field?.content.startsWith('{'))
-        .reduce((acc, field) => {
-          try {
-            acc[field.name] = JSON.parse(field.content);
-            delete acc[field.name].validation.columns;
-          } finally {
-            return acc;
-          }
-        }, {});
-
-      // ensures that answer tables are prioritized over field tables
-      let tables = Object.keys(answer_tables).length ? answer_tables : field_table;
-      return tables;
-    }).filter((obj) => Object.keys(obj).length > 0);
-
-  return recordTables;
-}
 
 
 export function getMaxStringValue(columnName: string, data: any[]): string {

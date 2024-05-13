@@ -24,6 +24,7 @@
       class="textarea"
       :tableData="question.answer.value"
       :editable="true"
+      :questions="questions"
       @change-text="onChangeTextArea"
       @on-change-focus="onChangeFocus"
       @on-exit-edition-mode="onExitEditionMode"
@@ -56,6 +57,10 @@ export default {
   props: {
     question: {
       type: Object,
+      required: true,
+    },
+    questions: {
+      type: Array,
       required: true,
     },
     isFocused: {
