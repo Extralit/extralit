@@ -1,6 +1,5 @@
-import { ref, computed, ComputedRef, onMounted, Ref } from "vue-demi";
+import { ref } from "vue-demi";
 import { useResolve } from "ts-injecty";
-import { Tabulator, RowComponent, RangeComponent } from 'tabulator-tables';
 
 import { Record as FeedbackRecord } from '~/v1/domain/entities/record/Record';
 import { Question } from "@/v1/domain/entities/question/Question";
@@ -8,7 +7,7 @@ import { Records } from "@/v1/domain/entities/record/Records";
 import { useRecords } from "@/v1/infrastructure/storage/RecordsStorage";
 import { GetLLMExtractionUseCase } from "@/v1/domain/usecases/get-llm-extraction-use-case";
 
-import { DataFrame, Data, ReferenceValues, SuggestionCheck } from "./types";
+import { DataFrame, Data, ReferenceValues } from "./types";
 import { RecordDataFramesArray } from './tableUtils';
 import { columnUniqueCounts } from './dataUtils';
 import { useDataset } from "@/v1/infrastructure/storage/DatasetStorage";
@@ -27,20 +26,6 @@ export const useExtractionTableViewModel = (
   const { state: records }: { state: Records } = useRecords();
   const { state: dataset } = useDataset();
 
-  const getRangeRowData = (range: RangeComponent): Record<string, Record<string, any>> => {
-    const rangeData = range.getRows().reduce((acc, row: RowComponent) => {
-        acc[row.getIndex()] = row.getData();
-        return acc;
-      }, {});
-
-    return rangeData;
-  };
-
-  const getRangeColumns = (range: RangeComponent): string[] => {
-    const columns = range.getColumns().map((col) => col.getField());
-    return columns;
-  }
-
   const getSelectionQuestionAnswers = (): Record<string, Array<string>> => {
     let questionAnswers = props.questions
       ?.filter(q => Array.isArray(q.answer.valuesAnswered))
@@ -53,7 +38,7 @@ export const useExtractionTableViewModel = (
   };
 
   const completeExtraction = async (
-    selectedRowData: Array<Record<string, any>>,
+    selectedRowData: Data,
     columns: Array<string>, 
     referenceValues: ReferenceValues,
     headers_question_name: string = 'context-relevant',
@@ -180,8 +165,6 @@ export const useExtractionTableViewModel = (
 
   return {
     tableJSON,
-    getRangeRowData,
-    getRangeColumns,
     getSelectionQuestionAnswers,
     getTableDataFromRecords,
     findMatchingRefValues,

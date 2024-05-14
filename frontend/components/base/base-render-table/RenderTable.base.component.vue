@@ -83,7 +83,7 @@ import { RangeComponent, TabulatorFull as Tabulator } from "tabulator-tables";
 import "tabulator-tables/dist/css/tabulator.min.css";
 import { generateCombinations, incrementReferenceStr, getMaxValue } from './dataUtils';
 import { getColumnValidators, getColumnEditorParams } from "./validationUtils";
-import { cellTooltip, headerTooltip, groupHeader } from "./tableUtils"; 
+import { cellTooltip, headerTooltip, groupHeader, getRangeRowData, getRangeColumns } from "./tableUtils"; 
 import { useExtractionTableViewModel } from "./useExtractionTableViewModel";
 import { Question } from "@/v1/domain/entities/question/Question";
 import { Data } from './types';
@@ -600,13 +600,13 @@ export default {
       });
     },
     async completionRange(range: RangeComponent) {
-      const rangeData = this.getRangeRowData(range)
-      const rangeColumns = this.getRangeColumns(range);
+      const rangeData = getRangeRowData(range)
+      const rangeColumns = getRangeColumns(range);
       const selectedRowData: Record<string, any> = Object.values(rangeData).map(({ _id, ...rest }) => rest);
       const predictedRowData: Data = await this.completeExtraction(selectedRowData, rangeColumns, this.referenceValues)
       
       try {
-        this.updateTableData(predictedRowData, range)
+        this.updateRangeData(predictedRowData, range)
       } catch (error) {
         console.error(error);
         console.log('predictedData', predictedRowData);
@@ -614,8 +614,8 @@ export default {
     },
 
     updateRangeData(updateRowsData: Data, range: RangeComponent) {
-      const rangeData = this.getRangeRowData(range)
-      const rangeColumns = this.getRangeColumns(range);
+      const rangeData = getRangeRowData(range)
+      const rangeColumns = getRangeColumns(range);
       const selectedIndices = Object.keys(rangeData);
 
       selectedIndices.forEach((_id: string, i: number) => {

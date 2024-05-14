@@ -1,5 +1,5 @@
 import { DataFrame, PanderaSchema, Validator, Validators, ReferenceValues } from './types';
-import { CellComponent, ColumnComponent, GroupComponent } from "tabulator-tables";
+import { CellComponent, ColumnComponent, GroupComponent, RangeComponent, RowComponent } from "tabulator-tables";
 
 type RecordDataFrames = Record<string, DataFrame>;
 export type RecordDataFramesArray = RecordDataFrames[];
@@ -139,3 +139,16 @@ function stringifyValidator(value: Validator): string | null {
   return s;
 }
 
+export function getRangeRowData(range: RangeComponent): Record<string, Record<string, any>> {
+    const rangeData = range.getRows().reduce((acc, row: RowComponent) => {
+        acc[row.getIndex()] = row.getData();
+        return acc;
+      }, {});
+
+    return rangeData;
+  };
+
+export function getRangeColumns(range: RangeComponent): string[] {
+  const columns = range.getColumns().map((col) => col.getField());
+  return columns;
+}
