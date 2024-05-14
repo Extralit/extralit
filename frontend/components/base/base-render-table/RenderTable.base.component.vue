@@ -79,13 +79,14 @@
 <script lang="ts">
 import { merge } from 'lodash';
 import { Notification } from "@/models/Notifications";
-import { TabulatorFull as Tabulator } from "tabulator-tables";
+import { RangeComponent, TabulatorFull as Tabulator } from "tabulator-tables";
 import "tabulator-tables/dist/css/tabulator.min.css";
 import { generateCombinations, incrementReferenceStr, getMaxValue } from './dataUtils';
 import { getColumnValidators, getColumnEditorParams } from "./validationUtils";
 import { cellTooltip, headerTooltip, groupHeader } from "./tableUtils"; 
 import { useExtractionTableViewModel } from "./useExtractionTableViewModel";
 import { Question } from "@/v1/domain/entities/question/Question";
+import { Data } from './types';
 
 export default {
   name: "RenderTableBaseComponent",
@@ -280,10 +281,11 @@ export default {
     rowContextMenu() {
       let menu = [
         {
-          label: "Hey 🤖, extract this!",
+          label: "Hey 🤖, yeet this!",
           disabled: !this.editable,
           action: (e, row) => {
-            this.completionExtraction()
+            const range = this.table.getRanges()[0];
+            this.completionRange(range)
           },
         },
         {
@@ -597,31 +599,48 @@ export default {
         this.addRow(null, refValues);
       });
     },
-    async completionExtraction() {
-      const range = this.table.getRanges()[0];
+    async completionRange(range: RangeComponent) {
       const rangeData = this.getRangeRowData(range)
       const rangeColumns = this.getRangeColumns(range);
-
-      const selectedIndices = Object.keys(rangeData);
       const selectedRowData: Record<string, any> = Object.values(rangeData).map(({ _id, ...rest }) => rest);
-      const predictedData = await this.completeExtraction(selectedRowData, rangeColumns, this.referenceValues)
+      const predictedRowData: Data = await this.completeExtraction(selectedRowData, rangeColumns, this.referenceValues)
       
       try {
-        selectedIndices.forEach((_id, i) => {
-          if (!predictedData[i]) return;
-          const data = Object.keys(predictedData[i])
-            ?.filter(key => rangeColumns.includes(key))
-            ?.reduce((obj, key) => {
-              obj[key] = predictedData[i][key];
-              return obj;
-            }, {});
-          if (data) this.table.updateData([{_id: _id, ...data}]);
-        });
+        this.updateTableData(predictedRowData, range)
       } catch (error) {
         console.error(error);
-        console.log(predictedData);
+        console.log('predictedData', predictedRowData);
       }
     },
+
+    updateTableData(updateRowsData: Data, range: RangeComponent) {
+      const rangeData = this.getRangeRowData(range)
+      const rangeColumns = this.getRangeColumns(range);
+      const selectedIndices = Object.keys(rangeData);
+
+      selectedIndices.forEach((_id: string, i: number) => {
+        const predictedRow = updateRowsData[i]
+        if (!predictedRow) return;
+
+        const data = Object.keys(predictedRow)
+          ?.filter(field => rangeColumns.includes(field))
+          ?.reduce((acc, field) => {
+            // Create a history entry for each cell value
+            // @ts-ignore
+            const cell = range.getRows()[i].getCell(field)._cell;
+            this.table.modules.history.action("cellEdit", cell, {
+              oldValue: cell.getValue(),
+              newValue: predictedRow[field],
+              type: "cellEdit"
+            });
+
+            acc[field] = predictedRow[field];
+            return acc;
+          }, {});
+
+        if (data) this.table.updateData([{_id: _id, ...data}]);
+      });
+    }
   },
 
   mounted() {

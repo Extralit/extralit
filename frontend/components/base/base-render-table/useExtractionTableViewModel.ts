@@ -23,11 +23,11 @@ export const useExtractionTableViewModel = (
   }, 
 ) => {
   const tableJSON = ref<DataFrame>(JSON.parse(props.tableData));
-  const { state: records }: { state: Records } = useRecords();
   const getExtraction = useResolve(GetLLMExtractionUseCase);
+  const { state: records }: { state: Records } = useRecords();
   const { state: dataset } = useDataset();
 
-  const getRangeRowData = (range: RangeComponent): Record<string, any> => {
+  const getRangeRowData = (range: RangeComponent): Record<string, Record<string, any>> => {
     const rangeData = range.getRows().reduce((acc, row: RowComponent) => {
         acc[row.getIndex()] = row.getData();
         return acc;
