@@ -1,8 +1,5 @@
 
-import { Record as FeedbackRecord } from '~/v1/domain/entities/record/Record';
-import { RecordDataFramesArray } from './tableUtils';
-import { DataFrame, PanderaSchema, Validator, Validators } from './types';
-import { Tabulator, RangeComponent, RowComponent } from "tabulator-tables";
+import { Data, DataFrame, PanderaSchema, ReferenceValues, Validator, Validators } from './types';
 
 
 export function columnUniqueCounts(tableJSON: DataFrame): Record<string, number> {
@@ -20,12 +17,12 @@ export function columnUniqueCounts(tableJSON: DataFrame): Record<string, number>
 }
 
 
-export function getMaxStringValue(columnName: string, data: any[]): string {
-  return data.reduce((max, row) => row[columnName] > max ? row[columnName] : max, "");
+export function getMaxValue(columnName: string, data: Data) {
+  return data.reduce((max, row) => row[columnName] > max ? row[columnName] : max, null);
 }
 
 export function incrementReferenceStr(reference: string): string {
-  if (!reference) return undefined;
+  if (typeof reference !== 'string') return undefined;
   const prefix = reference.slice(0, 1);
 
   const numericalPart = reference.slice(1);
@@ -37,7 +34,7 @@ export function incrementReferenceStr(reference: string): string {
   return newReference;
 }
 
-export function generateCombinations(referenceValues: Record<string, Record<string, any>>): Record<string, string>[] {
+export function generateCombinations(referenceValues: ReferenceValues): Data {
   const referenceKeys: Record<string, string[]> = Object.keys(referenceValues).reduce((acc, key) => {
     acc[key] = Object.keys(referenceValues[key]);
     return acc;

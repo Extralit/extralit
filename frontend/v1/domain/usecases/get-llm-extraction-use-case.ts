@@ -23,10 +23,11 @@ export class GetLLMExtractionUseCase {
     workspaceName?: string
   ): Promise<BackendExtractionResponse> {
     try {
-      const params = this.createRequest(reference, schema_name, selectedRowData, extractions, columns, headers, types, workspaceName);
+      const json = this.createRequest(reference, schema_name, selectedRowData, extractions, columns, headers, types, workspaceName);
+      const params = { workspace: workspaceName };
+      
       const { data } = await this.axios.post<DataFrame>(
-        `/v1/models/completion/${workspaceName}`, 
-        params
+        `/v1/models/completion`, json, { params: params }
       );
 
       return data;

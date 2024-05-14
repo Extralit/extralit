@@ -2,7 +2,6 @@
   <div class="table-container"
     @focusin="setFocus(true)" 
     @focusout="setFocus(false)"
-    @keydown.stop=""
     @keydown.esc.exact="exitEditionMode"
   >
     <div class="__table-buttons">
@@ -82,7 +81,7 @@ import { merge } from 'lodash';
 import { Notification } from "@/models/Notifications";
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 import "tabulator-tables/dist/css/tabulator.min.css";
-import { generateCombinations, incrementReferenceStr, getMaxStringValue } from './dataUtils';
+import { generateCombinations, incrementReferenceStr, getMaxValue } from './dataUtils';
 import { getColumnValidators, getColumnEditorParams } from "./validationUtils";
 import { cellTooltip, headerTooltip, groupHeader } from "./tableUtils"; 
 import { useExtractionTableViewModel } from "./useExtractionTableViewModel";
@@ -155,7 +154,9 @@ export default {
       return this.refColumns || null;
     },
     columns() {
-      return this.table?.getColumns()?.map((col) => col.getField()) || [];
+      return this.table?.getColumns()
+        ?.map((col) => col.getField())
+        ?.filter(field => field && !field.startsWith('_')) || [];
     },
     columnValidators() { 
       return getColumnValidators(this.tableJSON);
@@ -169,10 +170,10 @@ export default {
         return { ...commonConfig, ...editableConfig };
       });
 
-      // If `_id` is already in the schema, remove it
       if (!this.editable) {
         return configs;
       } else if (this.columns.includes("_id")) {
+        // If `_id` is already in the schema, remove it
         configs = configs.filter((column) => column.field !== "_id");
       }
 
@@ -183,11 +184,15 @@ export default {
         visible: this.showRefColumns,
         // accessor: "rownum",
         validator: 'unique',
-        mutator: function(value, data, type, params, component) {
+        mutator: (value, data, type, params, component) => {
           if (type === "edit") {
             return value;
           } else if (value != null) {
             return value;
+          }
+          const maxRefValue = getMaxValue(component.getField(), this.table.getData());
+          if (rownum < maxRefValue) {
+            rownum = maxRefValue+1;
           }
           return rownum++;
         },
@@ -275,11 +280,14 @@ export default {
     rowContextMenu() {
       let menu = [
         {
-          label: "Hey 🤖, yeet this!",
+          label: "Hey 🤖, extract this!",
           disabled: !this.editable,
           action: (e, row) => {
             this.completionExtraction()
           },
+        },
+        {
+          separator: true,
         },
         {
           label: "Add row below",
@@ -485,7 +493,7 @@ export default {
           continue
         } else if (this.indexColumns.includes(field) && !this.refColumns.includes(field) && 
             selectedRow?.getData()[field]) {
-          const maxRefValue = getMaxStringValue(field, this.table.getData());
+          const maxRefValue = getMaxValue(field, this.table.getData());
           rowData[field] = incrementReferenceStr(maxRefValue);
         } else if (this.refColumns.includes(field) && selectedRow?.getData()[field]) {
           rowData[field] = selectedRow?.getData()[field];
