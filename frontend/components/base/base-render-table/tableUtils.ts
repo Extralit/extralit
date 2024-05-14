@@ -35,21 +35,22 @@ export function cellTooltip(e, cell: CellComponent, onRendered) {
 
 
 
-export function groupHeader(value: string, count: number, data: any, group: GroupComponent, referenceValues: ReferenceValues, refColumns: string[]) {
-  const field = (group as any)._group.field
-  let header = value
+export function groupHeader(index: string, count: number, data: any, group: GroupComponent, referenceValues: ReferenceValues, refColumns: string[]) {
+  const schema_ref = (group as any)._group.field
+  let header = index
   let keyValues = '';
-  if (referenceValues?.[field]?.hasOwnProperty(value)) {
-    keyValues = Object.entries(referenceValues[field][value])
-      .filter(([key, value]) => key !== "reference" && !refColumns?.includes(key) && value != null && value != 'NA')
-      .map(([key, value]) => `<span style="font-weight:normal; color:black; margin-left:0;">${key}:</span> ${value}`)
+  if (referenceValues?.[schema_ref]?.hasOwnProperty(index)) {
+    keyValues = Object.entries(referenceValues[schema_ref][index])
+      // @ts-ignore
+      .filter(([key, v]) => key !== "reference" && !refColumns?.includes(key) && v != null && v !== 'NA')
+      .map(([key, v]) => `<span style="font-weight:normal; color:black; margin-left:0;">${key}:</span> ${v}`)
       .join(', ');
   }
 
   if (keyValues.length > 0) {
-    header = `<small text="${value}">${keyValues}</small>`;
+    header = `<small text="${index}">${keyValues}</small>`;
   } else {
-    header = `<small style="color: red;">${value} (key not matched to ${field.replace(/_ref$/, '')})</small>`;
+    header = `<small style="color: red;">${index} (key not matched to ${schema_ref.replace(/_ref$/, '')})</small>`;
   }
 
   if (count > 1) header = header + `<small style='font-weight:normal; color:black; margin-left:10px;'>(${count})</small>`;

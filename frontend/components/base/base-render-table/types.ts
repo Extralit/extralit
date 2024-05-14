@@ -17,7 +17,6 @@ export interface DataFrame {
   columnUniqueCounts?: Record<string, number>;
 };
 
-
 export interface PanderaSchema {
   name: string;
   columns: SchemaColumns;

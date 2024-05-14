@@ -182,6 +182,7 @@ export default {
         field: "_id",
         visible: this.showRefColumns,
         // accessor: "rownum",
+        validator: 'unique',
         mutator: function(value, data, type, params, component) {
           if (type === "edit") {
             return value;
