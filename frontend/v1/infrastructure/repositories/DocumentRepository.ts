@@ -13,11 +13,10 @@ export class DocumentRepository {
   async getDocumentByPubmedID(pmid: string): Promise<Document>  {
     try {
       const response = await this.axios.get(`/v1/documents/by-pmid/${pmid}`);
-      const url = response.data.url
 
       return new Document(
         response.data.id, 
-        url, 
+        response.data.url, 
         response.data.file_name, 
         response.data.pmid);
 
@@ -31,11 +30,10 @@ export class DocumentRepository {
   async getDocumentById(id: string): Promise<Document> {
     try {
       const response = await this.axios.get(`/v1/documents/by-id/${id}`);
-      const url = response.data.url
 
       return new Document(
         response.data.id, 
-        url, 
+        response.data.url, 
         response.data.file_name, 
         response.data.pmid);   
 

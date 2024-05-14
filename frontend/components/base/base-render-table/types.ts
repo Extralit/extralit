@@ -1,9 +1,17 @@
+export interface DataFrameSchema {
+  fields: {
+    name: string;
+    type: string;
+    extDtype?: string;
+  }[];
+  primaryKey: string[];
+}
+
+export interface Data extends Array<{[field: string]: any}> {}
+
 export interface DataFrame {
-  data: Record<string, any>[];
-  schema: {
-    fields: { name: string, type: string, extDtype: string }[];
-    primaryKey: string[];
-  };
+  data: Data;
+  schema: DataFrameSchema;
   reference?: string;
   validation?: PanderaSchema;
   columnUniqueCounts?: Record<string, number>;
@@ -11,9 +19,9 @@ export interface DataFrame {
 
 
 export interface PanderaSchema {
+  name: string;
   columns: SchemaColumns;
   index: SchemaIndexColumns[];
-  name: string;
   checks?: Checks;
 };
 
@@ -70,4 +78,4 @@ export type MultiselectCheck = {
 export type Validator = string | CallableFunction | { type: (cell: any, value: string, parameters: any) => boolean; parameters?: any };
 export type Validators = Record<string, Validator[]>;
 
-export type ReferenceValues = Record<string, Record<string, Record<string, any>>>;
+export type ReferenceValues = Record<string, Record<string, Data>>;

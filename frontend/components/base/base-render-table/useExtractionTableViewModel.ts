@@ -1,13 +1,18 @@
-import { ref, computed, ComputedRef, onMounted, Data, Ref } from "vue-demi";
+import { ref, computed, ComputedRef, onMounted, Ref } from "vue-demi";
+import { useResolve } from "ts-injecty";
 import { Tabulator, RowComponent, RangeComponent } from 'tabulator-tables';
-import { columnUniqueCounts } from './dataUtils';
+
 import { Record as FeedbackRecord } from '~/v1/domain/entities/record/Record';
-import { RecordDataFramesArray } from './tableUtils';
-import { DataFrame, SchemaColumns, Checks, PanderaSchema, Validator, Validators, ReferenceValues, SuggestionCheck } from "./types";
-import { getColumnValidators, } from "./validationUtils";
 import { Question } from "@/v1/domain/entities/question/Question";
 import { Records } from "@/v1/domain/entities/record/Records";
 import { useRecords } from "@/v1/infrastructure/storage/RecordsStorage";
+import { GetLLMExtractionUseCase } from "@/v1/domain/usecases/get-llm-extraction-use-case";
+
+import { DataFrame, Data, ReferenceValues, SuggestionCheck } from "./types";
+import { RecordDataFramesArray } from './tableUtils';
+import { columnUniqueCounts } from './dataUtils';
+import { useDataset } from "@/v1/infrastructure/storage/DatasetStorage";
+
 
 export const useExtractionTableViewModel = (
   props: { 
@@ -17,32 +22,56 @@ export const useExtractionTableViewModel = (
     questions: Question[],
   }, 
 ) => {
-  const tableJSON = ref(JSON.parse(props.tableData));
-  const { state: records } = useRecords();
+  const tableJSON = ref<DataFrame>(JSON.parse(props.tableData));
+  const { state: records }: { state: Records } = useRecords();
+  const getExtraction = useResolve(GetLLMExtractionUseCase);
+  const { state: dataset } = useDataset();
 
-  const getRangeData = (table: Tabulator): Record<string, any> => {
-    const ranges = table.getRanges();
-    const columns = ranges[0].getColumns().map((col) => col.getField());
-
-    const rangeData = ranges.map((range: RangeComponent) => {
-      // const selected_data = range.getData();
-      return range.getRows().reduce((acc, row: RowComponent) => {
+  const getRangeRowData = (range: RangeComponent): Record<string, any> => {
+    const rangeData = range.getRows().reduce((acc, row: RowComponent) => {
         acc[row.getIndex()] = row.getData();
         return acc;
       }, {});
-    });
-    
-    return rangeData[0];
+
+    return rangeData;
   };
 
-  const getQuestionsAnswers = () => {
-    let questionAnswers = props.questions?.filter(q => Array.isArray(q.answer.valuesAnswered))
+  const getRangeColumns = (range: RangeComponent): string[] => {
+    const columns = range.getColumns().map((col) => col.getField());
+    return columns;
+  }
+
+  const getSelectionQuestionAnswers = (): Record<string, Array<string>> => {
+    let questionAnswers = props.questions
+      ?.filter(q => Array.isArray(q.answer.valuesAnswered))
       .reduce((acc, q) => {
         acc[q.name] = q.answer.valuesAnswered;
         return acc;
       }, {});
 
     return questionAnswers;
+  };
+
+  const completeExtraction = async (
+    selectedRowData: Array<Record<string, any>>,
+    columns: Array<string>, 
+    referenceValues: ReferenceValues,
+    headers_question_name: string = 'context-relevant',
+    types_question_name: string = 'extraction-source',
+  ): Promise<Data> => {
+    const selectionQuestionAnswers = getSelectionQuestionAnswers();
+    const headers = selectionQuestionAnswers[headers_question_name].filter((value) => value != 'Not listed');
+    const types = selectionQuestionAnswers[types_question_name].filter((value) => value.toLowerCase());
+    const reference = tableJSON.value.reference;
+    const schema_name = tableJSON.value.validation?.name;
+
+    try {
+      const predictedData = await getExtraction.completion(reference, schema_name, selectedRowData, referenceValues, columns, headers, types, dataset.workspaceName);
+      return predictedData.data;
+    } catch (error) {
+      console.log('error', error);
+      return [];
+    }
   };
 
   const getTableDataFromRecords = (filter_fn: (record: FeedbackRecord) => boolean): RecordDataFramesArray => {
@@ -141,9 +170,11 @@ export const useExtractionTableViewModel = (
 
   return {
     tableJSON,
-    getRangeData,
-    getQuestionsAnswers,
+    getRangeRowData,
+    getRangeColumns,
+    getSelectionQuestionAnswers,
     getTableDataFromRecords,
     findMatchingRefValues,
+    completeExtraction,
   }
 }

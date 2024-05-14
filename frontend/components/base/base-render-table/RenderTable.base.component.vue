@@ -59,10 +59,10 @@
       </BaseButton>
 
       <BaseDropdown v-show="table && columnValidators && Object.keys(columnValidators).length"
-        :visible="editable && visibleCheckropdown" >
+        :visible="editable && visibleCheckdropdown" >
         <span slot="dropdown-header">
           <BaseButton
-            @click.prevent="validateTable({ scrollToError: true }); visibleCheckropdown=!visibleCheckropdown">
+            @click.prevent="validateTable({ scrollToError: true }); visibleCheckdropdown=!visibleCheckdropdown">
             Check data
           </BaseButton>
         </span>
@@ -120,7 +120,7 @@ export default {
       table: null,
       showRefColumns: this.editable,
       isLoaded: false,
-      visibleCheckropdown: false,
+      visibleCheckdropdown: false,
       dropdownEditTableVisible: false,
       visibleColumnDropdown: false,
       addColumnSearchText: null,
@@ -180,11 +180,16 @@ export default {
       const idColumn = {
         title: "_id",
         field: "_id",
-        // visible: false,
+        visible: this.showRefColumns,
         // accessor: "rownum",
         mutator: function(value, data, type, params, component) {
+          if (type === "edit") {
+            return value;
+          } else if (value != null) {
+            return value;
+          }
           return rownum++;
-        }
+        },
       };
 
       return [idColumn, ...configs];
@@ -272,18 +277,8 @@ export default {
           label: "Hey 🤖, yeet this!",
           disabled: !this.editable,
           action: (e, row) => {
-            var rangeData = this.getRangeData(this.table)
-
-            // selected_ids.forEach(id => {
-            //   this.table.updateData([{_id: id, Anoph_spp: "bob", Dead: 0}]);
-            // });
-
-            console.log('questions', this.getQuestionsAnswers())
-            // console.log('questions', this.questions.map(q => q.answer.valuesAnswered).filter(values => Array.isArray(values)))
-
-            console.log('rangeData', rangeData);
-            console.log('referenceValues', this.referenceValues)
-          }
+            this.completionExtraction()
+          },
         },
         {
           label: "Add row below",
@@ -593,6 +588,31 @@ export default {
         this.addRow(null, refValues);
       });
     },
+    async completionExtraction() {
+      const range = this.table.getRanges()[0];
+      const rangeData = this.getRangeRowData(range)
+      const rangeColumns = this.getRangeColumns(range);
+
+      const selectedIndices = Object.keys(rangeData);
+      const selectedRowData: Record<string, any> = Object.values(rangeData).map(({ _id, ...rest }) => rest);
+      const predictedData = await this.completeExtraction(selectedRowData, rangeColumns, this.referenceValues)
+      
+      try {
+        selectedIndices.forEach((_id, i) => {
+          if (!predictedData[i]) return;
+          const data = Object.keys(predictedData[i])
+            ?.filter(key => rangeColumns.includes(key))
+            ?.reduce((obj, key) => {
+              obj[key] = predictedData[i][key];
+              return obj;
+            }, {});
+          if (data) this.table.updateData([{_id: _id, ...data}]);
+        });
+      } catch (error) {
+        console.error(error);
+        console.log(predictedData);
+      }
+    },
   },
 
   mounted() {
@@ -641,7 +661,7 @@ export default {
           return div;
         },
 
-        // Row 
+        // Row
         movableRows: true,
         rowHeader: { 
           headerSort: false, resizable: false, rowHandle: true, editor: false,
@@ -668,14 +688,14 @@ export default {
           editorEmptyValue: "NA",
         },
 
-        //enable range selection
+        // enable range selection
         selectableRange: 1,
         selectableRangeColumns: true,
         selectableRangeRows: true,
         selectableRangeClearCells: true,
         editTriggerEvent: this.editable ? "dblclick" : false,
 
-        //configure clipboard to allow copy and paste of range format data
+        // configure clipboard to allow copy and paste of range format data
         clipboard: true,
         clipboardCopyStyled: false,
         clipboardCopyConfig: {
