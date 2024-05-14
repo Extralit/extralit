@@ -613,7 +613,7 @@ export default {
       }
     },
 
-    updateTableData(updateRowsData: Data, range: RangeComponent) {
+    updateRangeData(updateRowsData: Data, range: RangeComponent) {
       const rangeData = this.getRangeRowData(range)
       const rangeColumns = this.getRangeColumns(range);
       const selectedIndices = Object.keys(rangeData);
@@ -622,23 +622,28 @@ export default {
         const predictedRow = updateRowsData[i]
         if (!predictedRow) return;
 
-        const data = Object.keys(predictedRow)
+        const dataUpdate = Object.keys(predictedRow)
           ?.filter(field => rangeColumns.includes(field))
           ?.reduce((acc, field) => {
-            // Create a history entry for each cell value
-            // @ts-ignore
-            const cell = range.getRows()[i].getCell(field)._cell;
-            this.table.modules.history.action("cellEdit", cell, {
-              oldValue: cell.getValue(),
-              newValue: predictedRow[field],
-              type: "cellEdit"
-            });
+            try {
+              // Create a history entry for each cell value
+              // @ts-ignore
+              const cell = range.getRows()[i].getCell(field)._cell;
+              this.table.modules.history.action("cellEdit", cell, {
+                oldValue: cell.getValue(),
+                newValue: predictedRow[field],
+                type: "cellEdit"
+              });
+            } catch (error) {
+            }
 
             acc[field] = predictedRow[field];
             return acc;
           }, {});
 
-        if (data) this.table.updateData([{_id: _id, ...data}]);
+        if (dataUpdate) {
+          this.table.updateData([{_id: _id, ...dataUpdate}]);
+        }
       });
     }
   },
