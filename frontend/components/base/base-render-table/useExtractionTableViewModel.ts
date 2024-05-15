@@ -119,7 +119,7 @@ export const useExtractionTableViewModel = (
   const findMatchingRefValues = (
     refColumns: string[], 
     records: RecordDataFramesArray,
-    filterByColumnUniqueCounts: boolean = false,
+    filterByColumnUniqueCounts: boolean = true,
   ): Record<string, Record<string, Record<string, any>>> => {
     // refValues is an object of the form {field: refValue}
     // records is an array of objects of the form {table_name: {data: [{reference: refValue, ...}, ...]}}

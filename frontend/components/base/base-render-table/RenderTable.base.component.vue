@@ -61,7 +61,7 @@
         :visible="editable && visibleCheckdropdown" >
         <span slot="dropdown-header">
           <BaseButton
-            @click.prevent="validateTable({ scrollToError: true }); visibleCheckdropdown=!visibleCheckdropdown">
+            @click.prevent="validateTable({ scrollToError: true, saveData: true }); visibleCheckdropdown=!visibleCheckdropdown">
             Check data
           </BaseButton>
         </span>
@@ -472,6 +472,10 @@ export default {
         const firstErrorCell = validErrors[0];
         this.table.scrollToRow(firstErrorCell._cell.row);
         this.table.scrollToColumn(firstErrorCell._cell.column.field, 'middle');
+      }
+
+      if (options?.saveData == true) {
+        this.updateTableJsonData();
       }
 
       return isValid;
