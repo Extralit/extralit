@@ -17,8 +17,8 @@ export function columnUniqueCounts(tableJSON: DataFrame): Record<string, number>
 }
 
 
-export function getMaxValue(columnName: string, data: Data) {
-  return data.reduce((max, row) => row[columnName] > max ? row[columnName] : max, null);
+export function getMaxValue(columnName: string, data: Data): any {
+  return data.reduce((max, row) => !max || row[columnName] > max ? row[columnName] : max, null);
 }
 
 export function incrementReferenceStr(reference: string): string {

@@ -25,6 +25,8 @@ const actions = {
   ) {
     actions.clear();
 
+    numberOfChars = numberOfChars || message.length;
+
     return setTimeout(() => {
       Vue.$toast.open({
         message,

@@ -50,23 +50,18 @@ export const useExtractionTableViewModel = (
     const reference = tableJSON.value.reference;
     const schema_name = tableJSON.value.validation?.name;
 
-    try {
-      const predictedData = await getExtraction.completion(
-        reference, 
-        schema_name, 
-        selectedRowData, 
-        referenceValues, 
-        columns, 
-        headers, 
-        types, 
-        dataset.workspaceName
-      );
+    const predictedData = await getExtraction.completion(
+      reference, 
+      schema_name, 
+      selectedRowData, 
+      referenceValues,
+      columns, 
+      headers, 
+      types, 
+      dataset.workspaceName
+    );
 
-      return predictedData.data;
-    } catch (error) {
-      console.log('error', error);
-      return [];
-    }
+    return predictedData.data;
   };
 
   const getTableDataFromRecords = (filter_fn: (record: FeedbackRecord) => boolean): RecordDataFramesArray => {

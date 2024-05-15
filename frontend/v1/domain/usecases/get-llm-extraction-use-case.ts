@@ -32,8 +32,20 @@ export class GetLLMExtractionUseCase {
 
       return data;
     } catch (error) {
+      let errorMessage = error.message;
+      if (error.response.data.detail) {
+        errorMessage = error.response.data.detail;
+      } else if (error.response.data.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response.data) {
+        errorMessage = error.response.data;
+      } else if (error.response) {
+        errorMessage = error.response;
+      }
+
       throw {
         response: LLM_EXTRACTION_API_ERRORS.ERROR_FETCHING_LLM_EXTRACTION,
+        message: errorMessage
       }
     }
   }
@@ -42,7 +54,7 @@ export class GetLLMExtractionUseCase {
     reference: string, 
     schema_name: string, 
     selectedRowData: Data,
-    referenceValues: ReferenceValues, 
+    referenceValues?: ReferenceValues, 
     columns?: Array<string>,
     headers?: Array<string>,
     types?: Array<string>,
@@ -62,6 +74,9 @@ export class GetLLMExtractionUseCase {
         ]
       )
     );
+    if (!extractions) {
+      extractions = {};
+    }
 
     extractions[schema_name] = selectedRowData;
 
