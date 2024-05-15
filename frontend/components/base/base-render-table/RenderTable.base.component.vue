@@ -171,18 +171,18 @@ export default {
         return { ...commonConfig, ...editableConfig };
       });
 
-      if (!this.editable) {
+      if (!this.editable || !this.indexColumns.includes("_id")) {
         return configs;
-      } else if (this.columns.includes("_id")) {
-        // If `_id` is already in the schema, remove it
+      } 
+      
+      if (this.columns.includes("_id")) {
         configs = configs.filter((column) => column.field !== "_id");
       }
-
       var rownum = 0;
       const idColumn = {
         title: "_id",
         field: "_id",
-        visible: false,
+        visible: this.showRefColumns,
         validator: 'unique',
         mutator: (value, data, type, params, component) => {
           if (type === "edit") {
@@ -611,8 +611,15 @@ export default {
       try {
         this.updateRangeData(predictedRowData, range)
       } catch (error) {
-        console.error(error);
-        console.log('predictedData', predictedRowData);
+        const message = `Failed to complete extraction data due to ${error}: \n${JSON.stringify(predictedRowData)}`;
+        Notification.dispatch("notify", {
+          message: message,
+          numberOfChars: message.length,
+          type: "error",
+          onClick() {
+            Notification.dispatch("clear");
+          },
+        });
       }
     },
 
@@ -621,11 +628,11 @@ export default {
       const rangeColumns = getRangeColumns(range);
       const selectedIndices = Object.keys(rangeData);
 
-      selectedIndices.forEach((_id: string, i: number) => {
+      selectedIndices.forEach((index: string, i: number) => {
         const predictedRow = updateRowsData[i]
         if (!predictedRow) return;
-
-        const dataUpdate = Object.keys(predictedRow)
+        
+        const dataUpdate: Record<string, any> = Object.keys(predictedRow)
           ?.filter(field => rangeColumns.includes(field))
           ?.reduce((acc, field) => {
             try {
@@ -638,6 +645,7 @@ export default {
                 type: "cellEdit"
               });
             } catch (error) {
+              console.log(`Failed to create history entry: ${error.message} \n${JSON.stringify(predictedRow)}`);
             }
 
             acc[field] = predictedRow[field];
@@ -645,7 +653,13 @@ export default {
           }, {});
 
         if (dataUpdate) {
-          this.table.updateData([{_id: _id, ...dataUpdate}]);
+          let indexField = this.indexColumns[0];
+          this.table.updateData([{[indexField]: index, ...dataUpdate}])
+            .catch(function(error) {
+              console.error(error);
+              console.log('predictedRow', predictedRow, {[indexField]: index, ...dataUpdate})
+              throw new Error(`Failed to update data: ${error.message} \n${JSON.stringify({[indexField]: index, ...dataUpdate})}`);
+            });
         }
       });
     }
