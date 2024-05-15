@@ -182,8 +182,7 @@ export default {
       const idColumn = {
         title: "_id",
         field: "_id",
-        visible: this.showRefColumns,
-        // accessor: "rownum",
+        visible: false,
         validator: 'unique',
         mutator: (value, data, type, params, component) => {
           if (type === "edit") {
