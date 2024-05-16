@@ -276,8 +276,10 @@ export function getColumnEditorParams(
 
         return `<strong>${label}</strong>: ${keyValues}`;
       } 
-      return label;
+      return `<strong>${label}</strong>`;
     };
+
+    config.editorParams.maxWidth = '500px'
 
     config.editorParams.filterFunc = function (term, label, value, item) {
       if (String(label).startsWith(term) || value.includes(term)) {
