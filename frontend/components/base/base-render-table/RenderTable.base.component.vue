@@ -131,9 +131,8 @@ export default {
   watch: {
     tableJSON: {
       deep: true,
-      handler(newTableJSON: DataFrame) {
+      handler(newTableJSON: DataFrame, oldTableJSON: DataFrame) {
         if (!this.editable) return;
-        // @ts-ignore
         if (newTableJSON?.schema?.schemaName && newTableJSON?.validation?.name) {
           this.$emit("change-text", JSON.stringify({...newTableJSON, validation: undefined}));
         } else {
@@ -232,7 +231,7 @@ export default {
         groupBy: this.groupbyColumns,
         groupToggleElement: "arrow",
         // @ts-ignore
-        groupHeader: (...args: any[]) => groupHeader(...args, this.referenceValues, this.refColumns),
+        groupHeader: (...args: any[]) => groupHeader(...args, this.referenceValues, [...this.refColumns, ...this.indexColumns]),
         groupUpdateOnCellEdit: true,
         groupContextMenu: [
           {

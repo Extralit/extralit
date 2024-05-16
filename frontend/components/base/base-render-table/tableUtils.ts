@@ -42,7 +42,7 @@ export function groupHeader(index: string, count: number, data: any, group: Grou
   if (referenceValues?.[schema_ref]?.hasOwnProperty(index)) {
     keyValues = Object.entries(referenceValues[schema_ref][index])
       // @ts-ignore
-      .filter(([key, v]) => key !== "reference" && !refColumns?.includes(key) && v != null && v !== 'NA')
+      .filter(([key, v]) => !!key && key !== "_id" && !refColumns?.includes(key) && v != null && v !== 'NA')
       .map(([key, v]) => `<span style="font-weight:normal; color:black; margin-left:0;">${key}:</span> ${v}`)
       .join(', ');
   }
