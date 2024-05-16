@@ -196,11 +196,13 @@ export function getColumnEditorParams(
     if (columnValidators?.dtype === "str") {
       config.editor = "list";
       config.editorParams.emptyValue = "NA";
-      config.editorParams.selectContents = true;
       config.editorParams.autocomplete = true;
       config.editorParams.freetext = true;
       config.editorParams.listOnEmpty = true;
+      config.editorParams.selectContents = true;
+      config.editorParams.clearable = true;
       config.editorParams.valuesLookupField = fieldName;
+      config.editorParams.verticalNavigation = 'editor';
 
       if (isinValues) {
         const allowedValues = getListAutocompleteValues(isinValues);

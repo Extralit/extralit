@@ -85,7 +85,7 @@
 <script lang="ts">
 import { merge } from 'lodash';
 import { Notification } from "@/models/Notifications";
-import { ColumnComponent, RangeComponent, TabulatorFull as Tabulator } from "tabulator-tables";
+import { CellComponent, ColumnComponent, RangeComponent, TabulatorFull as Tabulator } from "tabulator-tables";
 import "tabulator-tables/dist/css/tabulator.min.css";
 import { generateCombinations, incrementReferenceStr, getMaxValue } from './dataUtils';
 import { getColumnValidators, getColumnEditorParams } from "./validationUtils";
@@ -420,9 +420,17 @@ export default {
     },
     validateTable(options) {
       var validErrors = this.table.validate();
+
       const isValid = validErrors === true;
       this.$emit("updateValidValues", isValid);
-      if (isValid) return true;
+      if (isValid) {
+        return true;
+      } else {
+        const cellsWithNA = validErrors.filter((cell: CellComponent) => cell.getValue() == "NA");
+        if (cellsWithNA.length > 0) {
+          this.table.clearCellValidation(cellsWithNA);
+        }
+      }
 
       if (options?.scrollToError == true) {
         const firstErrorCell = validErrors[0];
