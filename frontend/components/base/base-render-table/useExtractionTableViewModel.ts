@@ -36,14 +36,22 @@ export const useExtractionTableViewModel = (
       .filter(name => typeof name === 'string' && name.endsWith('_ref')) || []
   );
   const groupbyColumns = ref(refColumns.value || null);
-  const columns = ref(
-    tableJSON.value?.schema?.fields?.map((field) => field.name).filter(name => name && !name.startsWith('_')) || []
-  );
 
+  const waitForWorkspaceName = (interval=100) => {
+    return new Promise((resolve, reject) => {
+      const checkInterval = setInterval(() => {
+        if (dataset.workspaceName) {
+          clearInterval(checkInterval);
+          resolve(true);
+        }
+      }, interval);
+    });
+  };
 
   const fetchValidation = async () => {
     var schemaName: string = tableJSON.value.schema?.schemaName;
     var version_id: string = tableJSON.value.schema?.version_id;
+    await waitForWorkspaceName();
     
     if (!tableJSON.value.schema.schemaName) {
       schemaName = tableJSON.value?.validation?.name;
@@ -197,7 +205,6 @@ export const useExtractionTableViewModel = (
     indexColumns,
     refColumns,
     groupbyColumns,
-    columns,
     fetchValidation,
     getSelectionQuestionAnswers,
     getTableDataFromRecords,

@@ -79,7 +79,7 @@
 <script lang="ts">
 import { merge } from 'lodash';
 import { Notification } from "@/models/Notifications";
-import { RangeComponent, TabulatorFull as Tabulator } from "tabulator-tables";
+import { ColumnComponent, RangeComponent, TabulatorFull as Tabulator } from "tabulator-tables";
 import "tabulator-tables/dist/css/tabulator.min.css";
 import { generateCombinations, incrementReferenceStr, getMaxValue } from './dataUtils';
 import { getColumnValidators, getColumnEditorParams } from "./validationUtils";
@@ -87,6 +87,7 @@ import { cellTooltip, headerTooltip, groupHeader, getRangeRowData, getRangeColum
 import { useExtractionTableViewModel } from "./useExtractionTableViewModel";
 import { Question } from "@/v1/domain/entities/question/Question";
 import { Data, DataFrame } from './types';
+import { difference } from '~/v1/domain/entities/record/Record';
 
 export default {
   name: "RenderTableBaseComponent",
@@ -134,7 +135,6 @@ export default {
         if (!this.editable) return;
         // @ts-ignore
         if (newTableJSON?.schema?.schemaName && newTableJSON?.validation?.name) {
-          console.log('update tableJSON: omitting `validation` on JSON.stringify')
           this.$emit("change-text", JSON.stringify({...newTableJSON, validation: undefined}));
         } else {
           this.$emit("change-text", JSON.stringify(newTableJSON));
@@ -143,10 +143,9 @@ export default {
     },
     columnsConfig: {
       deep: true,
-      handler(newColumnsConfig) {
+      handler(newColumnsConfig, oldColumnsConfig) {
         if (this.isLoaded) {
-          this.table?.setColumns(newColumnsConfig);
-          this.validateTable();
+          console.warn('Changes columns config', difference(newColumnsConfig, oldColumnsConfig));
         }
       },
     },
@@ -154,7 +153,13 @@ export default {
 
   created() {
     try {
-      this.fetchValidation()
+      this.fetchValidation().then(() => {
+        if (this.isLoaded) {
+          console.log('Updating columns config');
+          this.table?.setColumns(this.columnsConfig);
+          this.validateTable();
+        }
+      });
     } catch (error) {
       Notification.dispatch("notify", {
         message: `${error.response}: ${error.message}`,
@@ -175,6 +180,11 @@ export default {
     },
     columnValidators() { 
       return getColumnValidators(this.tableJSON, this.validation);
+    },
+    columns() {
+      return this.table?.getColumns()
+        ?.map((col) => col.getField())
+        ?.filter(field => field && !field.startsWith('_')) || [];
     },
     columnsConfig() {
       if (!this.tableJSON?.schema) return [];
@@ -273,7 +283,7 @@ export default {
         const removeColumns = this.tableJSON.schema.fields
           .filter((field) => !this.columns.includes(field.name))
           .map((field) => field.name);
-          
+
         if (removeColumns.length > 0) {
           // Remove removeColumns from this.tableJSON.schema
           this.tableJSON.schema.fields = this.tableJSON.schema.fields.filter(
@@ -370,13 +380,13 @@ export default {
           autocomplete: true,
           selectContents: true,
         },
-        headerDblClick: (e, column) => {
+        headerDblClick: function(e, column) {
           // Enable editable title on double click
           if (!column.getDefinition().frozen && !column.getDefinition().editableTitle) {
             column.updateDefinition({ editableTitle: true });
           }
         },
-        headerMenu: !this.isIndexRefColumn(fieldName) ? (e, column) => {
+        headerMenu: !this.isIndexRefColumn(fieldName) ? function(e, column) {
           if (column.getDefinition().editableTitle) {
             return [{
               label: "Accept",
@@ -620,10 +630,11 @@ export default {
           }
         },
         {
-          label: "<i class='fas fa-trash'></i> Delete column",
+          label: "Delete column",
           disabled: !this.editable,
-          action: (e, column) => {
+          action: (e, column: ColumnComponent) => {
             column.delete();
+            console.log('deleted',column)
             this.updateTableJsonData(true);
           }
         },
@@ -662,7 +673,7 @@ export default {
           }
         },
         {
-          label: "<i class='fas fa-trash'></i> Delete row",
+          label: "Delete row",
           disabled: !this.editable,
           action: (e, row) => {
             row.delete();
