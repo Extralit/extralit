@@ -22,11 +22,10 @@ export class GetExtractionSchemaUseCase {
       const response = await this.axios.get<PanderaSchema>(url, {
         params: {
           version_id: versionId,
-        }
+        },
       });
       const headers = response.headers;
       const schema = response.data;
-
       const isLatest = headers.get('is-latest');
       const boolIsLatest = isLatest === 'true' ? true : isLatest === 'false' ? false : null;
 

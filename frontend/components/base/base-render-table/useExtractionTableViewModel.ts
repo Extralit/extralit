@@ -48,9 +48,9 @@ export const useExtractionTableViewModel = (
     });
   };
 
-  const fetchValidation = async () => {
+  const fetchValidation = async ({ latest = false }: { latest?: boolean } = {}) => {
     var schemaName: string = tableJSON.value.schema?.schemaName;
-    var version_id: string = tableJSON.value.schema?.version_id;
+    var version_id: string = latest ? null : tableJSON.value.schema?.version_id;
     await waitForWorkspaceName();
     
     if (!tableJSON.value.schema.schemaName) {

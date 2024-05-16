@@ -69,6 +69,12 @@
           <BaseButton @click.prevent="$emit('updateValidValues', true);">
             Ignore errors
           </BaseButton>
+          <BaseButton 
+            v-if="tableJSON.schema.is_latest === false" 
+            @click.prevent="fetchValidation({ latest: true });"
+          >
+            Fetch latest schema
+          </BaseButton>
         </span>
       </BaseDropdown>
       
@@ -148,26 +154,29 @@ export default {
         }
       },
     },
-  },
-
-  created() {
-    try {
-      this.fetchValidation().then(() => {
+    validation: {
+      handler(newValidation, oldValidation) {
         if (this.isLoaded) {
-          console.log('Updating columns config');
+          console.warn('Changes validation');
           this.table?.setColumns(this.columnsConfig);
           this.validateTable();
         }
-      });
-    } catch (error) {
-      Notification.dispatch("notify", {
-        message: `${error.response}: ${error.message}`,
-        type: "error",
-        onClick() {
-          Notification.dispatch("clear");
-        },
-      });
-    }
+      },
+    },
+  },
+
+  created() {
+    this.fetchValidation()
+      .catch((error) => {
+        console.error(`Failed to fetch validation: ${error}`);
+        Notification.dispatch("notify", {
+          message: `${error.response}: ${error.message}`,
+          type: "error",
+          onClick() {
+            Notification.dispatch("clear");
+          },
+        });
+      })
   },
 
   computed: {
