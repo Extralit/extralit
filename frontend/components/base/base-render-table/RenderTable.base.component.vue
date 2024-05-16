@@ -62,7 +62,7 @@
         <span slot="dropdown-header">
           <BaseButton
             @click.prevent="validateTable({ scrollToError: true, saveData: true }); visibleCheckdropdown=!visibleCheckdropdown">
-            Check data
+            Check data <i v-if="tableJSON.schema.is_latest === false">!</i>
           </BaseButton>
         </span>
         <span slot="dropdown-content">
@@ -212,6 +212,38 @@ export default {
       };
 
       return [idColumn, ...configs];
+    },
+    groupConfigs() {
+      if (this.groupbyColumns.length === 0) {
+        return {};
+      }
+
+      return {
+        groupBy: this.groupbyColumns,
+        groupToggleElement: "arrow",
+        // @ts-ignore
+        groupHeader: (...args: any[]) => groupHeader(...args, this.referenceValues, this.refColumns),
+        groupUpdateOnCellEdit: true,
+        groupContextMenu: [
+          {
+            label: "Show reference",
+            action: (e, group) => {
+              group.popup(`${group._group.field}: ${group._group.key}`, "right");
+            }
+          },
+          {
+            separator: true,
+          },
+          {
+            label: "Delete rows group",
+            disabled: !this.editable,
+            action: (e, group) => {
+              this.deleteGroupRows(group);
+              this.updateTableJsonData(true);
+            }
+          },
+        ],
+      };
     },
     referenceValues() {
       // First get the metadata.reference from the current table by checking the first row's _ref columns, 
@@ -430,38 +462,6 @@ export default {
 
       // Update this.tableJSON to reflect the current data in the table
       this.updateTableJsonData();
-    },
-    groupConfigs() {
-      if (this.groupbyColumns.length === 0) {
-        return {};
-      }
-
-      return {
-        groupBy: this.groupbyColumns,
-        groupToggleElement: "arrow",
-        // @ts-ignore
-        groupHeader: (...args: any[]) => groupHeader(...args, this.referenceValues, this.refColumns),
-        groupUpdateOnCellEdit: true,
-        groupContextMenu: [
-          {
-            label: "Show reference",
-            action: (e, group) => {
-              group.popup(`${group._group.field}: ${group._group.key}`, "right");
-            }
-          },
-          {
-            separator: true,
-          },
-          {
-            label: "Delete rows group",
-            disabled: !this.editable,
-            action: (e, group) => {
-              this.deleteGroupRows(group);
-              this.updateTableJsonData(true);
-            }
-          },
-        ],
-      };
     },
     deleteGroupRows(group) {
       group?.getRows()?.forEach((row) => {

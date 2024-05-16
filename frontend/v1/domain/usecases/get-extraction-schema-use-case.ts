@@ -27,12 +27,16 @@ export class GetExtractionSchemaUseCase {
       const headers = response.headers;
       const schema = response.data;
 
+      const isLatest = headers.get('is-latest');
+      const boolIsLatest = isLatest === 'true' ? true : isLatest === 'false' ? false : null;
+
       const SchemaMetadata: SchemaMetadata = {
         schemaName: schemaName,
         etag: headers.get('etag'),
         version_id: headers.get('version-id'),
         version_tag: headers.get('version-tag'),
-        last_modified: new Date(new Date(headers.get('last-modified') || '').toISOString()),
+        is_latest: boolIsLatest,
+        last_modified: new Date(headers.get('last-modified') || ''),
       };
 
       return [schema, SchemaMetadata];

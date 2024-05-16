@@ -13,6 +13,7 @@ export interface SchemaMetadata {
   version_id?: string;
   last_modified?: Date;
   version_tag?: string;
+  is_latest?: boolean;
 }
 
 export type DataFrameSchemaWithMetadata = DataFrameSchema & SchemaMetadata;
