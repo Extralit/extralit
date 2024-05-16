@@ -346,7 +346,7 @@ $label-dark-color: palette(purple, 200);
   }
 
   .input-button {
-    max-width: 100%;
+    max-width: 350px;
   }
 }
 
