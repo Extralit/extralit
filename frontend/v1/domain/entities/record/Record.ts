@@ -15,7 +15,7 @@ const DEFAULT_STATUS = "pending";
  * @param base - The base object to compare against.
  * @returns An object containing the differences between the two objects.
  */
-function difference(object: any, base: any) {
+export function difference(object: any, base: any) {
   function changes(object: any, base: any) {
     return transform(object, function(result: any, value: any, key: any) {
       if (!isEqual(value, base[key])) {

@@ -27,7 +27,8 @@ import { useDatasetSetting } from "@/v1/infrastructure/storage/DatasetSettingSto
 import { GetDatasetsUseCase } from "@/v1/domain/usecases/get-datasets-use-case";
 import { GetDatasetByIdUseCase } from "@/v1/domain/usecases/get-dataset-by-id-use-case";
 import { GetDocumentByIdUseCase } from "@/v1/domain/usecases/get-document-by-id-use-case";
-import { GetLLMExtractionUseCase } from "@/v1/domain/usecases/get-llm-extraction-use-case";
+import { GetLLMExtractionUseCase } from "@/v1/domain/usecases/get-extraction-completion-use-case";
+import { GetExtractionSchemaUseCase } from "@/v1/domain/usecases/get-extraction-schema-use-case";
 import { GetDatasetProgressUseCase } from "@/v1/domain/usecases/get-dataset-progress-use-case";
 import { DeleteDatasetUseCase } from "@/v1/domain/usecases/delete-dataset-use-case";
 import { GetRecordsByCriteriaUseCase } from "@/v1/domain/usecases/get-records-by-criteria-use-case";
@@ -87,6 +88,10 @@ export const loadDependencyContainer = (context: Context) => {
       .build(),
 
     register(GetLLMExtractionUseCase)
+      .withDependency(useAxios)
+      .build(),
+
+    register(GetExtractionSchemaUseCase)
       .withDependency(useAxios)
       .build(),
 

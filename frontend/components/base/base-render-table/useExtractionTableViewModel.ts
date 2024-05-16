@@ -1,13 +1,14 @@
-import { ref } from "vue-demi";
+import { ref, onBeforeMount } from "vue-demi";
 import { useResolve } from "ts-injecty";
 
 import { Record as FeedbackRecord } from '~/v1/domain/entities/record/Record';
 import { Question } from "@/v1/domain/entities/question/Question";
 import { Records } from "@/v1/domain/entities/record/Records";
 import { useRecords } from "@/v1/infrastructure/storage/RecordsStorage";
-import { GetLLMExtractionUseCase } from "@/v1/domain/usecases/get-llm-extraction-use-case";
+import { GetLLMExtractionUseCase } from "@/v1/domain/usecases/get-extraction-completion-use-case";
+import { GetExtractionSchemaUseCase } from "@/v1/domain/usecases/get-extraction-schema-use-case";
 
-import { DataFrame, Data, ReferenceValues } from "./types";
+import { DataFrame, Data, ReferenceValues, PanderaSchema } from "./types";
 import { RecordDataFramesArray } from './tableUtils';
 import { columnUniqueCounts } from './dataUtils';
 import { useDataset } from "@/v1/infrastructure/storage/DatasetStorage";
@@ -21,10 +22,40 @@ export const useExtractionTableViewModel = (
     questions: Question[],
   }, 
 ) => {
-  const tableJSON = ref<DataFrame>(JSON.parse(props.tableData));
   const getExtraction = useResolve(GetLLMExtractionUseCase);
+  const getSchema = useResolve(GetExtractionSchemaUseCase);
   const { state: records }: { state: Records } = useRecords();
   const { state: dataset } = useDataset();
+
+  const tableJSON = ref<DataFrame>(JSON.parse(props.tableData));
+  const validation = ref<PanderaSchema | null>(null);
+  const indexColumns = ref(tableJSON.value?.schema?.primaryKey || []);
+  const refColumns = ref(
+    tableJSON.value?.schema?.fields
+      .map(field => field.name)
+      .filter(name => typeof name === 'string' && name.endsWith('_ref')) || []
+  );
+  const groupbyColumns = ref(refColumns.value || null);
+  const columns = ref(
+    tableJSON.value?.schema?.fields?.map((field) => field.name).filter(name => name && !name.startsWith('_')) || []
+  );
+
+
+  const fetchValidation = async () => {
+    var schemaName: string = tableJSON.value.schema?.schemaName;
+    var version_id: string = tableJSON.value.schema?.version_id;
+    
+    if (!tableJSON.value.schema.schemaName) {
+      schemaName = tableJSON.value?.validation?.name;
+    }
+    const [schema, fileMetadata] = await getSchema.fetch(dataset.workspaceName, schemaName, version_id);
+
+    tableJSON.value.schema = {
+      ...tableJSON.value.schema,
+      ...fileMetadata
+    };
+    validation.value = schema;
+  };
 
   const getSelectionQuestionAnswers = (): Record<string, Array<string>> => {
     let questionAnswers = props.questions
@@ -48,7 +79,7 @@ export const useExtractionTableViewModel = (
     const headers = selectionQuestionAnswers[headers_question_name].filter((value) => value != 'Not listed');
     const types = selectionQuestionAnswers[types_question_name].filter((value) => value.toLowerCase());
     const reference = tableJSON.value.reference;
-    const schema_name = tableJSON.value.validation?.name;
+    const schema_name = tableJSON.value.schema?.schemaName || tableJSON.value.validation?.name;
 
     const predictedData = await getExtraction.completion(
       reference, 
@@ -81,7 +112,6 @@ export const useExtractionTableViewModel = (
                 try {
                   const value = (obj as { value: string; }).value;
                   const table = JSON.parse(value);
-                  delete table.validation.columns;
                   return [key, table];
                 } catch (e) {
                   console.error(e);
@@ -127,7 +157,10 @@ export const useExtractionTableViewModel = (
       for (const recordTables of records) {
         if (!recordTables) continue;
         const matchingTable = Object.values(recordTables)
-          .find((table) => table?.validation?.name.toLowerCase() === field.replace(/_ref$/, ''));
+          .find((table: DataFrame) => {
+            const schemaName = table?.schema?.schemaName || table?.validation?.name;
+            return schemaName.toLowerCase() === field.replace(/_ref$/, '')
+          });
 
         if (!matchingTable) continue;
 
@@ -160,6 +193,12 @@ export const useExtractionTableViewModel = (
 
   return {
     tableJSON,
+    validation,
+    indexColumns,
+    refColumns,
+    groupbyColumns,
+    columns,
+    fetchValidation,
     getSelectionQuestionAnswers,
     getTableDataFromRecords,
     findMatchingRefValues,

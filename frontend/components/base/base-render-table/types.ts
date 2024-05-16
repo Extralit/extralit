@@ -7,11 +7,20 @@ export interface DataFrameSchema {
   primaryKey: string[];
 }
 
+export interface SchemaMetadata {
+  schemaName?: string;
+  etag?: string;
+  version_id?: string;
+  last_modified?: Date;
+  version_tag?: string;
+}
+
+export type DataFrameSchemaWithMetadata = DataFrameSchema & SchemaMetadata;
 export interface Data extends Array<{[field: string]: any}> {}
 
 export interface DataFrame {
   data: Data;
-  schema: DataFrameSchema;
+  schema: DataFrameSchemaWithMetadata;
   reference?: string;
   validation?: PanderaSchema;
   columnUniqueCounts?: Record<string, number>;

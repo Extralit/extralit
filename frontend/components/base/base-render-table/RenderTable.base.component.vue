@@ -86,7 +86,7 @@ import { getColumnValidators, getColumnEditorParams } from "./validationUtils";
 import { cellTooltip, headerTooltip, groupHeader, getRangeRowData, getRangeColumns } from "./tableUtils"; 
 import { useExtractionTableViewModel } from "./useExtractionTableViewModel";
 import { Question } from "@/v1/domain/entities/question/Question";
-import { Data } from './types';
+import { Data, DataFrame } from './types';
 
 export default {
   name: "RenderTableBaseComponent",
@@ -130,37 +130,51 @@ export default {
   watch: {
     tableJSON: {
       deep: true,
-      handler(newValue, oldValue) {
-        this.$emit("change-text", JSON.stringify(newValue));
+      handler(newTableJSON: DataFrame) {
+        if (!this.editable) return;
+        // @ts-ignore
+        if (newTableJSON?.schema?.schemaName && newTableJSON?.validation?.name) {
+          console.log('update tableJSON: omitting `validation` on JSON.stringify')
+          this.$emit("change-text", JSON.stringify({...newTableJSON, validation: undefined}));
+        } else {
+          this.$emit("change-text", JSON.stringify(newTableJSON));
+        }
       },
     },
+    columnsConfig: {
+      deep: true,
+      handler(newColumnsConfig) {
+        if (this.isLoaded) {
+          this.table?.setColumns(newColumnsConfig);
+          this.validateTable();
+        }
+      },
+    },
+  },
+
+  created() {
+    try {
+      this.fetchValidation()
+    } catch (error) {
+      Notification.dispatch("notify", {
+        message: `${error.response}: ${error.message}`,
+        type: "error",
+        onClick() {
+          Notification.dispatch("clear");
+        },
+      });
+    }
   },
 
   computed: {
     remainingSchemaColumns() {
       const filteredColumns = Object.fromEntries(
-        Object.entries(this.tableJSON?.validation?.columns).filter(([field, attrs]) => !this.columns.includes(field))
+        Object.entries(this?.validation?.columns || {}).filter(([field, attrs]) => !this.columns.includes(field))
       );
       return filteredColumns || {};
     },
-    indexColumns() {
-      return this.tableJSON?.schema?.primaryKey || [];
-    },
-    refColumns() {
-      return this.tableJSON?.schema?.fields
-        .map(field => field.name)
-        .filter(name => typeof name === 'string' && name.endsWith('_ref')) ?? [];
-    },
-    groupbyColumns() {
-      return this.refColumns || null;
-    },
-    columns() {
-      return this.table?.getColumns()
-        ?.map((col) => col.getField())
-        ?.filter(field => field && !field.startsWith('_')) || [];
-    },
     columnValidators() { 
-      return getColumnValidators(this.tableJSON);
+      return getColumnValidators(this.tableJSON, this.validation);
     },
     columnsConfig() {
       if (!this.tableJSON?.schema) return [];
@@ -199,38 +213,6 @@ export default {
 
       return [idColumn, ...configs];
     },
-    groupConfigs() {
-      if (this.groupbyColumns.length === 0) {
-        return {};
-      }
-
-      return {
-        groupBy: this.groupbyColumns,
-        groupToggleElement: "arrow",
-        // @ts-ignore
-        groupHeader: (...args: any[]) => groupHeader(...args, this.referenceValues, this.refColumns),
-        groupUpdateOnCellEdit: true,
-        groupContextMenu: [
-          {
-            label: "Show reference",
-            action: (e, group) => {
-              group.popup(`${group._group.field}: ${group._group.key}`, "right");
-            }
-          },
-          {
-            separator: true,
-          },
-          {
-            label: "Delete rows group",
-            disabled: !this.editable,
-            action: (e, group) => {
-              this.deleteGroupRows(group);
-              this.updateTableJsonData(true);
-            }
-          },
-        ],
-      };
-    },
     referenceValues() {
       // First get the metadata.reference from the current table by checking the first row's _ref columns, 
       // then use refValues to find the matching tables from other records and get the dict of reference values to rows
@@ -243,81 +225,7 @@ export default {
 
       return refToRowDict;
     },
-    columnContextMenu() {
-      let menu = [
-        {
-          separator: true,
-        },
-        {
-          label: "Add column",
-          disabled: !this.editable,
-          action: (e, column) => {
-            this.addColumn(column);
-          }
-        },
-        {
-          label: "Rename column",
-          disabled: !this.editable,
-          action: (e, column) => {
-            if (column.getDefinition().frozen) return;
-            column.updateDefinition({
-              editableTitle: !column.getDefinition().editableTitle,
-            });
-          }
-        },
-        {
-          label: "<i class='fas fa-trash'></i> Delete column",
-          disabled: !this.editable,
-          action: (e, column) => {
-            column.delete();
-            this.updateTableJsonData(true);
-          }
-        },
-      ];
-      return menu;
-    },
-    rowContextMenu() {
-      let menu = [
-        {
-          label: "Hey 🤖, yeet this!",
-          disabled: !this.editable,
-          action: (e, row) => {
-            const range = this.table.getRanges()[0];
-            this.completionRange(range)
-          },
-        },
-        {
-          separator: true,
-        },
-        {
-          label: "Add row below",
-          disabled: !this.editable,
-          action: (e, row) => {
-            this.addRow(row);
-          }
-        },
-        {
-          label: "Duplicate row",
-          disabled: !this.editable,
-          action: (e, row) => {
-            let newRowData = { ...row.getData() };
-            this.indexColumns.forEach((field) => {
-              newRowData[field] = undefined;
-            });
-            this.addRow(row, newRowData);
-          }
-        },
-        {
-          label: "<i class='fas fa-trash'></i> Delete row",
-          disabled: !this.editable,
-          action: (e, row) => {
-            row.delete();
-            this.updateTableJsonData(true)
-          }
-        },
-      ];
-      return menu;
-    }
+  
   },
 
   methods: {
@@ -456,7 +364,7 @@ export default {
         },
       };
 
-      config = merge({}, config, getColumnEditorParams(fieldName, this.tableJSON.validation, this.refColumns, this.referenceValues));
+      config = merge({}, config, getColumnEditorParams(fieldName, this.validation, this.refColumns, this.referenceValues));
 
       return config;
     },
@@ -523,6 +431,38 @@ export default {
       // Update this.tableJSON to reflect the current data in the table
       this.updateTableJsonData();
     },
+    groupConfigs() {
+      if (this.groupbyColumns.length === 0) {
+        return {};
+      }
+
+      return {
+        groupBy: this.groupbyColumns,
+        groupToggleElement: "arrow",
+        // @ts-ignore
+        groupHeader: (...args: any[]) => groupHeader(...args, this.referenceValues, this.refColumns),
+        groupUpdateOnCellEdit: true,
+        groupContextMenu: [
+          {
+            label: "Show reference",
+            action: (e, group) => {
+              group.popup(`${group._group.field}: ${group._group.key}`, "right");
+            }
+          },
+          {
+            separator: true,
+          },
+          {
+            label: "Delete rows group",
+            disabled: !this.editable,
+            action: (e, group) => {
+              this.deleteGroupRows(group);
+              this.updateTableJsonData(true);
+            }
+          },
+        ],
+      };
+    },
     deleteGroupRows(group) {
       group?.getRows()?.forEach((row) => {
         row?.delete();
@@ -561,10 +501,8 @@ export default {
       if (!newFieldName?.length || newFieldName == oldFieldName) return;
       if (this.columns.includes(newFieldName)) {
         setTimeout(() => {
-          const message = `Column name '${newFieldName}' already exists. Please choose a different name.`;
           Notification.dispatch("notify", {
-            message: message,
-            numberOfChars: message.length,
+            message: `Column name '${newFieldName}' already exists. Please choose a different name.`,
             type: "warning",
             onClick() {
               Notification.dispatch("clear");
@@ -658,7 +596,82 @@ export default {
             });
         }
       });
-    }
+    },
+    columnContextMenu() {
+      let menu = [
+        {
+          separator: true,
+        },
+        {
+          label: "Add column",
+          disabled: !this.editable,
+          action: (e, column) => {
+            this.addColumn(column);
+          }
+        },
+        {
+          label: "Rename column",
+          disabled: !this.editable,
+          action: function(e, column) {
+            if (column.getDefinition().frozen) return;
+            column.updateDefinition({
+              editableTitle: !column.getDefinition().editableTitle,
+            });
+          }
+        },
+        {
+          label: "<i class='fas fa-trash'></i> Delete column",
+          disabled: !this.editable,
+          action: (e, column) => {
+            column.delete();
+            this.updateTableJsonData(true);
+          }
+        },
+      ];
+      return menu;
+    },
+    rowContextMenu() {
+      let menu = [
+        {
+          label: "Hey 🤖, yeet this!",
+          disabled: !this.editable,
+          action: (e, row) => {
+            const range = this.table.getRanges()[0];
+            this.completionRange(range)
+          },
+        },
+        {
+          separator: true,
+        },
+        {
+          label: "Add row below",
+          disabled: !this.editable,
+          action: (e, row) => {
+            this.addRow(row);
+          }
+        },
+        {
+          label: "Duplicate row",
+          disabled: !this.editable,
+          action: (e, row) => {
+            let newRowData = { ...row.getData() };
+            this.indexColumns.forEach((field) => {
+              newRowData[field] = undefined;
+            });
+            this.addRow(row, newRowData);
+          }
+        },
+        {
+          label: "<i class='fas fa-trash'></i> Delete row",
+          disabled: !this.editable,
+          action: (e, row) => {
+            row.delete();
+            this.updateTableJsonData(true)
+          }
+        },
+      ];
+      return menu;
+    },
   },
 
   mounted() {
@@ -715,10 +728,10 @@ export default {
           formatter: "handle",
         },
         rowContextMenu: this.rowContextMenu,
+        index: "_id",
 
         // Column
         columns: this.columnsConfig,
-        index: "_id",
         ...this.groupConfigs,
         movableColumns: true,
         columnDefaults: {
@@ -728,7 +741,7 @@ export default {
           maxInitialWidth: 350,
           tooltip: cellTooltip,
           // @ts-ignore
-          headerTooltip: (...args: any[]) => headerTooltip(...args, this.tableJSON.validation, this.columnValidators),
+          headerTooltip: (...args: any[]) => headerTooltip(...args, this.validation, this.columnValidators),
           headerWordWrap: true,
           headerContextMenu: this.columnContextMenu,
           editorEmptyValue: "NA",
