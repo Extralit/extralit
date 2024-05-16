@@ -170,7 +170,7 @@ function getListAutocompleteValues(values: SuggestionCheck): any[] {
   let editorParamsValues: any[] = [];
 
   if (Array.isArray(values)) {
-    editorParamsValues = values.map((value) => ({ label: value, value: value }));
+    editorParamsValues = values.map((value) => ({ label: value, value: value, data: {} }));
 
   } else if (typeof values === 'object') {
     editorParamsValues = Object.entries(values)
@@ -278,7 +278,7 @@ export function getColumnEditorParams(
 
         return `<strong>${label}</strong>: ${keyValues}`;
       } 
-      return `<strong>${label}</strong>`;
+      return label;
     };
 
     config.editorParams.maxWidth = '500px'
