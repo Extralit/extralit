@@ -27,6 +27,7 @@
       @keydown.delete.exact.stop=""
       @keydown.enter.exact.stop=""
       @keydown.backspace.exact.stop=""
+      autocomplete="off"
     />
     <BaseIconWithBadge
       v-if="value"

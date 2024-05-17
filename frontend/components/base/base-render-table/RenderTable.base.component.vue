@@ -86,7 +86,7 @@
 <script lang="ts">
 import { merge } from 'lodash';
 import { Notification } from "@/models/Notifications";
-import { CellComponent, ColumnComponent, RangeComponent, RowComponent, TabulatorFull as Tabulator } from "tabulator-tables";
+import { CellComponent, ColumnComponent, GroupComponent, RangeComponent, RowComponent, TabulatorFull as Tabulator } from "tabulator-tables";
 import "tabulator-tables/dist/css/tabulator.min.css";
 import { generateCombinations, incrementReferenceStr, getMaxValue } from './dataUtils';
 import { getColumnValidators, getColumnEditorParams } from "./validationUtils";
@@ -473,7 +473,7 @@ export default {
       this.validateTable();
       if (!this.showRefColumns) this.toggleShowRefColumns();
     },
-    deleteGroupRows(group) {
+    deleteGroupRows(group: GroupComponent) {
       group?.getRows()?.forEach((row) => {
         row?.delete();
       });
@@ -482,7 +482,13 @@ export default {
         this.deleteGroupRows(subGroup);
       });
     },
-    addColumn(selectedColumn, newFieldName = "newColumn") {
+    addColumn(selectedColumn?: ColumnComponent, newFieldName = "newColumn") {
+      if (!selectedColumn) {
+        const range = this.tabulator.getRanges()[0];
+        if (range) {
+          selectedColumn = range.getColumns()[0]
+        }
+      }
       // Assign a unique name to the new column
       let count = 1;
       while (this.columns.includes(newFieldName)) {
@@ -491,8 +497,8 @@ export default {
       }
       
       let selectedColumnField = null;
-      if (selectedColumn && selectedColumn?._column?.field) {
-        selectedColumnField = selectedColumn?._column?.field;
+      if (selectedColumn && selectedColumn?.getField()) {
+        selectedColumnField = selectedColumn?.getField();
       }
 
       this.tabulator.addColumn({
