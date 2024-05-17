@@ -2,18 +2,13 @@
   <div class="table-container"
     @focusin="setFocus(true)" 
     @focusout="setFocus(false)"
-    @keydown.esc.exact="exitEditionMode"
   >
     <div class="__table-buttons">
-      <BaseButton v-show="refColumns?.length || columns.includes('reference')" @click.prevent="toggleShowRefColumns">
+      <!-- <BaseButton v-show="refColumns?.length || columns.includes('reference')" @click.prevent="toggleShowRefColumns">
         <span v-if="!showRefColumns">Show references</span>
         <span v-else>Hide references</span>
-      </BaseButton>
-    </div>
+      </BaseButton> -->
 
-    <div ref="table" class="__table" />
-
-    <div class="__table-buttons">
       <BaseDropdown v-show="editable" :visible="dropdownEditTableVisible" >
         <span slot="dropdown-header">
           <BaseButton @click.prevent="dropdownEditTableVisible=!dropdownEditTableVisible">
@@ -22,19 +17,19 @@
           </BaseButton>
         </span>
         <span slot="dropdown-content">
-          <BaseButton v-show="editable && table" @click.prevent="table.undo();">
+          <BaseButton v-show="editable && tabulator" @click.prevent="tabulator.undo();">
             Undo
           </BaseButton>
-          <BaseButton v-show="editable && table" @click.prevent="table.redo();">
+          <BaseButton v-show="editable && tabulator" @click.prevent="tabulator.redo();">
             Redo
           </BaseButton>
           <BaseButton v-show="editable" @click.prevent="clearTable(); dropdownEditTableVisible=false">
-            {{ table?.getDataCount() > 0 ? 'Clear data' : 'Delete table' }}
+            {{ tabulator?.getDataCount() > 0 ? 'Clear data' : 'Delete table' }}
           </BaseButton>
         </span>
       </BaseDropdown>
 
-      <BaseDropdown v-show="editable && table" :visible="visibleColumnDropdown" class="dropdown"  >
+      <BaseDropdown v-show="editable && tabulator" :visible="visibleColumnDropdown" class="dropdown"  >
         <span slot="dropdown-header">
           <BaseButton @click.prevent="visibleColumnDropdown=!visibleColumnDropdown">
             ➕ Add Column
@@ -53,11 +48,11 @@
         </span>
       </BaseDropdown>
 
-      <BaseButton v-show="editable && table" @click.prevent="addRow()">
+      <BaseButton v-show="editable && tabulator" @click.prevent="addRow()">
         ➕ Add Row
       </BaseButton>
 
-      <BaseDropdown v-show="table && columnValidators && Object.keys(columnValidators).length"
+      <BaseDropdown v-show="tabulator && columnValidators && Object.keys(columnValidators).length"
         :visible="editable && visibleCheckdropdown" >
         <span slot="dropdown-header">
           <BaseButton
@@ -77,15 +72,17 @@
           </BaseButton>
         </span>
       </BaseDropdown>
-      
     </div>
+
+    <div ref="tabulator" class="__table" />
+
   </div>
 </template>
 
 <script lang="ts">
 import { merge } from 'lodash';
 import { Notification } from "@/models/Notifications";
-import { CellComponent, ColumnComponent, RangeComponent, TabulatorFull as Tabulator } from "tabulator-tables";
+import { CellComponent, ColumnComponent, RangeComponent, RowComponent, TabulatorFull as Tabulator } from "tabulator-tables";
 import "tabulator-tables/dist/css/tabulator.min.css";
 import { generateCombinations, incrementReferenceStr, getMaxValue } from './dataUtils';
 import { getColumnValidators, getColumnEditorParams } from "./validationUtils";
@@ -124,7 +121,7 @@ export default {
 
   data() {
     return {
-      table: null,
+      tabulator: null,
       showRefColumns: this.editable,
       isLoaded: false,
       visibleCheckdropdown: false,
@@ -158,7 +155,7 @@ export default {
       handler(newValidation, oldValidation) {
         if (this.isLoaded) {
           console.warn('Changes validation');
-          this.table?.setColumns(this.columnsConfig);
+          this.tabulator?.setColumns(this.columnsConfig);
           this.validateTable();
         }
       },
@@ -190,7 +187,7 @@ export default {
       return getColumnValidators(this.tableJSON, this.validation);
     },
     columns() {
-      return this.table?.getColumns()
+      return this.tabulator?.getColumns()
         ?.map((col) => col.getField())
         ?.filter(field => field && !field.startsWith('_')) || [];
     },
@@ -221,7 +218,7 @@ export default {
           } else if (value != null) {
             return value;
           }
-          const maxRefValue = getMaxValue(component.getField(), this.table.getData());
+          const maxRefValue = getMaxValue(component.getField(), this.tabulator.getData());
           if (rownum < maxRefValue) {
             rownum = maxRefValue+1;
           }
@@ -298,10 +295,17 @@ export default {
             (field) => !removeColumns.includes(field.name)
           );
 
+          this.tabulator.rowManager.rows.forEach((row)=>{
+            removeColumns.forEach((field) => {
+              row.deleteCell(field);
+              this.$delete(row.data, field)
+            });
+          })
+
           // Remove removeColumns from this.tableJSON.data
           this.tableJSON.data.forEach((row) => {
-            removeColumns.forEach((column) => {
-              delete row[column];
+            removeColumns.forEach((field) => {
+              this.$delete(row, field);
             });
           });
         }
@@ -312,14 +316,14 @@ export default {
           (field) => !this.tableJSON.schema.fields.map((field) => field.name).includes(field) && field != undefined);
 
         // Add the new field to the schema
-        const data = this.table.getData().map(({ _id, ...rest }) => rest)
+        const data = this.tabulator.getData().map(({ _id, ...rest }) => rest)
         data.forEach((item) => {
           addColumns.forEach((column) => {
             item[column] = null;
           });
         });
 
-        this.table.setData(data);
+        this.tabulator.setData(data);
         addColumns.forEach((column) => {
           this.tableJSON.schema.fields.push({
             name: column,
@@ -330,14 +334,14 @@ export default {
 
       if (update) {
         // Update the field name for all data
-        const data = this.table.getData().map(({ _id, ...rest }) => rest)
+        const data = this.tabulator.getData().map(({ _id, ...rest }) => rest)
         data.forEach((row) => {
           row[newFieldName] = row[oldFieldName];
           delete row[oldFieldName];
         });
-        this.table.setData(data);
+        this.tabulator.setData(data);
 
-        this.table.updateColumnDefinition(oldFieldName, {
+        this.tabulator.updateColumnDefinition(oldFieldName, {
           field: newFieldName,
           title: newFieldName,
           ...this.generateCommonConfig(newFieldName),
@@ -352,8 +356,8 @@ export default {
           return field;
         });
       }
-
-      this.tableJSON.data = this.table.getData().map(({ _id, ...rest }) => rest);
+      
+      this.tableJSON.data = this.tabulator.getData().map(({ _id, ...rest }) => rest);
     },
     isIndexRefColumn(field) { 
       return this.indexColumns?.includes(field) || this.refColumns?.includes(field);
@@ -419,7 +423,7 @@ export default {
       return config;
     },
     validateTable(options) {
-      var validErrors = this.table.validate();
+      var validErrors = this.tabulator.validate();
 
       const isValid = validErrors === true;
       this.$emit("updateValidValues", isValid);
@@ -428,14 +432,14 @@ export default {
       } else {
         const cellsWithNA = validErrors.filter((cell: CellComponent) => cell.getValue() == "NA");
         if (cellsWithNA.length > 0) {
-          this.table.clearCellValidation(cellsWithNA);
+          this.tabulator.clearCellValidation(cellsWithNA);
         }
       }
 
       if (options?.scrollToError == true) {
         const firstErrorCell = validErrors[0];
-        this.table.scrollToRow(firstErrorCell._cell.row);
-        this.table.scrollToColumn(firstErrorCell._cell.column.field, 'middle');
+        this.tabulator.scrollToRow(firstErrorCell._cell.row);
+        this.tabulator.scrollToColumn(firstErrorCell._cell.column.field, 'middle');
       }
 
       if (options?.saveData == true) {
@@ -446,7 +450,7 @@ export default {
     },
     toggleShowRefColumns() {
       this.showRefColumns = !this.showRefColumns;
-      this.table?.setColumns(this.columnsConfig);
+      this.tabulator?.setColumns(this.columnsConfig);
     },
     columnMoved(column, columns) {
       this.tableJSON.schema.fields.sort((a, b) => {
@@ -464,7 +468,7 @@ export default {
           continue
         } else if (this.indexColumns.includes(field) && !this.refColumns.includes(field) && 
             selectedRow?.getData()[field]) {
-          const maxRefValue = getMaxValue(field, this.table.getData());
+          const maxRefValue = getMaxValue(field, this.tabulator.getData());
           rowData[field] = incrementReferenceStr(maxRefValue);
         } else if (this.refColumns.includes(field) && selectedRow?.getData()[field]) {
           rowData[field] = selectedRow?.getData()[field];
@@ -472,22 +476,10 @@ export default {
           rowData[field] = undefined;
         }
       }
-      this.table.addRow(rowData, false, selectedRow);
+      this.tabulator.addRow(rowData, false, selectedRow);
       this.updateTableJsonData();
       this.validateTable();
       if (!this.showRefColumns) this.toggleShowRefColumns();
-    },
-    dropRow() {
-      // Get the selected rows
-      const selectedRows = this.table.getSelectedRows();
-
-      // Delete each selected row from the table
-      selectedRows.forEach((row) => {
-        this.table.deleteRow(row);
-      });
-
-      // Update this.tableJSON to reflect the current data in the table
-      this.updateTableJsonData();
     },
     deleteGroupRows(group) {
       group?.getRows()?.forEach((row) => {
@@ -511,15 +503,15 @@ export default {
         selectedColumnField = selectedColumn?._column?.field;
       }
 
-      this.table.addColumn({
+      this.tabulator.addColumn({
         ...this.generateCommonConfig(newFieldName),
         ...this.generateColumnEditableConfig(newFieldName),
         editableTitle: newFieldName.includes("newColumn"),
       }, false, selectedColumnField)
 
       this.updateTableJsonData(false, true);
-      this.columnMoved(null, this.table.getColumns());
-      this.table.scrollToColumn(newFieldName, null, false);
+      this.columnMoved(null, this.tabulator.getColumns());
+      this.tabulator.scrollToColumn(newFieldName, null, false);
     },
     columnTitleChanged(column) {
       const newFieldName = column.getDefinition().title.replace('.', ' ');
@@ -545,17 +537,17 @@ export default {
       }
 
       this.updateTableJsonData(false, false, true, newFieldName, oldFieldName);
-      // this.table?.setColumns(this.columnsConfig);
+      // this.tabulator?.setColumns(this.columnsConfig);
     },
     clearTable() {
-      if (this.table?.getDataCount() == 0) {
+      if (this.tabulator?.getDataCount() == 0) {
         this.tableJSON = undefined;
         return;
       }
-      this.table?.clearData()
+      this.tabulator?.clearData()
       this.columns?.forEach((column) => {
         if (!this.refColumns.includes(column)) {
-          this.table?.deleteColumn(column);
+          this.tabulator?.deleteColumn(column);
         }
       });
     },
@@ -602,7 +594,7 @@ export default {
             try {
               // @ts-ignore
               const cell = range.getRows()[i].getCell(field)._cell;
-              this.table.modules.history.action("cellEdit", cell, {
+              this.tabulator.modules.history.action("cellEdit", cell, {
                 oldValue: cell.getValue(),
                 newValue: predictedRow[field],
                 type: "cellEdit"
@@ -616,7 +608,7 @@ export default {
           }, {});
 
         if (dataUpdate) {
-          this.table.updateData([{_id: index, ...dataUpdate}])
+          this.tabulator.updateData([{_id: index, ...dataUpdate}])
             .catch(function(error) {
               throw new Error(`Failed to update data: ${error.message} \n${JSON.stringify({_id: index, ...dataUpdate})}`);
             });
@@ -646,11 +638,17 @@ export default {
           }
         },
         {
-          label: "Delete column",
+          label: "Delete column(s)",
           disabled: !this.editable,
           action: (e, column: ColumnComponent) => {
-            column.delete();
-            console.log('deleted',column)
+            const range: RangeComponent = this.tabulator.getRanges()[0];
+            if (range.getColumns().length > 1) {
+              range.getColumns().forEach((column) => {
+                column.delete();
+              });
+            } else {
+              column.delete();
+            }
             this.updateTableJsonData(true);
           }
         },
@@ -663,7 +661,7 @@ export default {
           label: "Hey 🤖, yeet this!",
           disabled: !this.editable,
           action: (e, row) => {
-            const range = this.table.getRanges()[0];
+            const range = this.tabulator.getRanges()[0];
             this.completionRange(range)
           },
         },
@@ -680,7 +678,7 @@ export default {
         {
           label: "Duplicate row",
           disabled: !this.editable,
-          action: (e, row) => {
+          action: (e, row: RowComponent) => {
             let newRowData = { ...row.getData() };
             this.indexColumns.forEach((field) => {
               newRowData[field] = undefined;
@@ -689,10 +687,19 @@ export default {
           }
         },
         {
-          label: "Delete row",
+          label: "Delete row(s)",
           disabled: !this.editable,
-          action: (e, row) => {
-            row.delete();
+          action: (e, row: RowComponent) => {
+            const range: RangeComponent = this.tabulator.getRanges()[0];
+
+            if (range.getRows().length > 1) {
+              range.getRows().forEach((row) => {
+                row.delete();
+              });
+            } else {
+              row.delete();
+            }
+            
             this.updateTableJsonData(true)
           }
         },
@@ -708,7 +715,7 @@ export default {
       Tabulator.extendModule("keybindings", "bindings", null);
 
       const layout = this.columns.length <= 2 ? "fitData" : "fitDataTable";
-      this.table = new Tabulator(this.$refs.table, {
+      this.tabulator = new Tabulator(this.$refs.tabulator, {
         data: this.tableJSON.data,
         reactiveData: true,
         layout: layout,
@@ -752,7 +759,7 @@ export default {
         rowHeader: { 
           headerSort: false, resizable: false, rowHandle: true, editor: false,
           minWidth: 30, width: 30, maxWidth: 30, headerHozAlign: "center", hozAlign: "center", 
-          formatter: "handle",
+          formatter: "rownum",
         },
         rowContextMenu: this.rowContextMenu,
         index: "_id",
@@ -776,7 +783,7 @@ export default {
 
         // enable range selection
         selectableRange: 1,
-        selectableRangeColumns: false,
+        selectableRangeColumns: true,
         selectableRangeRows: true,
         selectableRangeClearCells: true,
         editTriggerEvent: this.editable ? "dblclick" : false,
@@ -797,17 +804,17 @@ export default {
       });
 
       if (this.editable) {
-        this.table.on("columnTitleChanged", this.columnTitleChanged.bind(this));
-        this.table.on("columnMoved", this.columnMoved.bind(this));
-        this.table.on("clipboardPasted", (clipboard, rowData, rows) => {
+        this.tabulator.on("columnTitleChanged", this.columnTitleChanged.bind(this));
+        this.tabulator.on("columnMoved", this.columnMoved.bind(this));
+        this.tabulator.on("clipboardPasted", (clipboard, rowData, rows) => {
           this.updateTableJsonData();
           this.validateTable();
         });
       }
 
-      this.table.on("tableBuilt", () => {
+      this.tabulator.on("tableBuilt", () => {
         this.isLoaded = true;
-        this.table?.setColumns(this.columnsConfig);
+        this.tabulator?.setColumns(this.columnsConfig);
         this.validateTable();
       }); 
 
@@ -855,7 +862,7 @@ export default {
     display: flex;
     justify-content: space-between;
     padding: 5px 5px 0 0;
-    margin-bottom: 0;
+    margin-bottom: 5px;
     border-radius: 5px;
     text-decoration: none;
 
