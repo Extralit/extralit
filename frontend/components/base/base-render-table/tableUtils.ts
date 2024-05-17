@@ -102,36 +102,39 @@ export function columnSchemaToDesc(
   return desc;
 }
 
-function stringifyValidator(value: Validator): string | null {
+function stringifyValidator(validator: Validator): string | null {
   let s = null;
 
-  if (typeof value === 'string') {
-    s = value.replace('string', 'text');
+  if (typeof validator === 'string') {
+    s = validator.replace('string', 'text');
+    if (validator.startsWith('regex:')) {
+      s = regexToHumanReadable(validator);
+    }
 
-  } else if (typeof value === 'function') {
-    s = `${value.name}`.replace('nullable', 'optional');
+  } else if (typeof validator === 'function') {
+    s = `${validator.name}`.replace('nullable', 'optional');
 
-  } else if (typeof value === 'object' && value?.type?.name) {
-    s = `${value.type.name}`;
-    if (value?.parameters != null && typeof value.parameters !== 'object') {
-      s += `: ${value.parameters}`;
-    } else if (!['integer', 'decimal'].includes(value?.type?.name) && value.parameters != null && typeof value.parameters === 'object') {
-      const parameters = JSON.stringify(value.parameters)
+  } else if (typeof validator === 'object' && validator?.type?.name) {
+    s = `${validator.type.name}`;
+    if (validator?.parameters != null && typeof validator.parameters !== 'object') {
+      s += `: ${validator.parameters}`;
+
+    } else if (!['integer', 'decimal'].includes(validator?.type?.name) && validator.parameters != null && typeof validator.parameters === 'object') {
+      const parameters = JSON.stringify(validator.parameters)
         .replace(/[{""}]/g, '').replace(/:/g, '=').replace(/,/g, ', ')
         .replace('=true', '').replace('column=', '');
       s += `(${parameters})`;
     }
 
-  } else if (typeof value === 'object' && typeof value?.type === 'string') {
-    if (value.type === "function") {
-      s = JSON.stringify(value.parameters)
+  } else if (typeof validator === 'object' && typeof validator?.type === 'string') {
+    if (validator.type === "function") {
+      s = JSON.stringify(validator.parameters)
         .replace(/[{""}]/g, '').replace(/:/g, '=').replace(/,/g, ', ')
         .replace('=true', '').replace('column=', '');;
     } else {
-      s = `${value.type}`;
-
-      if (value?.parameters != null && typeof value.parameters !== 'object') {
-        s += `: ${value.parameters}`;
+      console.log(s)
+      if (validator?.parameters != null && typeof validator.parameters !== 'object') {
+        s += `: ${validator.parameters}`;
       }
     }
   }
@@ -151,4 +154,17 @@ export function getRangeRowData(range: RangeComponent): Record<string, Record<st
 export function getRangeColumns(range: RangeComponent): string[] {
   const columns = range.getColumns().map((col) => col.getField());
   return columns;
+}
+
+function regexToHumanReadable(regex: string): string {
+  let example = regex;
+  // Replace common regex patterns with example strings
+  example = example.replace(/\\d/g, '1');
+  example = example.replace(/\\w/g, 'a');
+  example = example.replace(/\\s/g, ' ');
+
+  // Remove non-capturing characters
+  example = example.replace(/[\^\$\.\*\+\?\{\}\[\]\\\(\)]/g, '');
+
+  return example;
 }

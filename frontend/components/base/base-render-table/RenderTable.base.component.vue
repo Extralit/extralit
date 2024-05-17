@@ -449,6 +449,10 @@ export default {
     },
     addRow(selectedRow, rowData: Record<string, any>={}) {
       // const requiredFields = this.refColumns || this.indexColumns;
+      // Select the last row if no row is selected
+      if (!selectedRow) {
+        selectedRow = this.tabulator.getRows()[this.tabulator.getRows().length - 1];
+      }
       delete rowData._id;
       
       for (const field of this.columns) {
@@ -791,6 +795,7 @@ export default {
         },
 
         // enable range selection
+        selectableRows: false,
         selectableRange: 1,
         selectableRangeColumns: true,
         selectableRangeRows: true,
@@ -800,8 +805,8 @@ export default {
         // configure clipboard to allow copy and paste of range format data
         clipboard: true,
         clipboardCopyRowRange: "range",
-        clipboardPasteParser: this.editable ? "range" : null,
         clipboardPasteAction: this.editable ? "range" : null,
+        clipboardPasteParser: this.editable ? "range" : null,
         clipboardCopyConfig: {
           rowHeaders: false,
           columnHeaders: false,
@@ -820,6 +825,10 @@ export default {
           this.validateTable();
         });
       }
+
+      this.tabulator.on("clipboardPasted", (clipboard, rowData, rows) => {
+        this.validateTable();
+      });
 
       this.tabulator.on("tableBuilt", () => {
         this.isLoaded = true;
