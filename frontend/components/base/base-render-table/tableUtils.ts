@@ -17,7 +17,7 @@ export function isTableJSON(value: string): boolean {
   }
 }
 
-export function cellTooltip(e, cell: CellComponent, onRendered) {
+export function cellTooltip(e, cell: CellComponent, onRendered): string {
   var message = null;
 
   let errors = (cell as any)._cell?.modules?.validate?.invalid;

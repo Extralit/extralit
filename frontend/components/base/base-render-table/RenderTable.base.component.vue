@@ -74,7 +74,11 @@
       </BaseDropdown>
     </div>
 
-    <div ref="tabulator" class="__table" />
+    <div 
+      ref="tabulator" 
+      class="__table" 
+      @keydown.enter.prevent
+    />
 
   </div>
 </template>
@@ -362,17 +366,17 @@ export default {
     isIndexRefColumn(field) { 
       return this.indexColumns?.includes(field) || this.refColumns?.includes(field);
     },
-    generateCommonConfig(fieldName) {
-      const hide = !this.showRefColumns && this.isIndexRefColumn(fieldName);
+    generateCommonConfig(field) {
+      const hide = !this.showRefColumns && this.isIndexRefColumn(field);
       const commonConfig = {
-        title: fieldName,
-        field: fieldName,
+        title: field,
+        field: field,
         visible: !hide,
-        width: this.isIndexRefColumn(fieldName) ? 50 : undefined,
-        validator: this.columnValidators.hasOwnProperty(fieldName)
-          ? this.columnValidators[fieldName]
+        width: this.isIndexRefColumn(field) ? 50 : undefined,
+        validator: this.columnValidators.hasOwnProperty(field)
+          ? this.columnValidators[field]
           : null,
-        formatter: this.isIndexRefColumn(fieldName) ? (cell, formatterParams) => {
+        formatter: this.isIndexRefColumn(field) ? (cell, formatterParams) => {
           const value = cell.getValue();
           if (!value) return value;
           else {
@@ -392,29 +396,13 @@ export default {
           autocomplete: true,
           selectContents: true,
         },
-        headerDblClick: function(e, column) {
-          // Enable editable title on double click
-          if (!column.getDefinition().frozen && !column.getDefinition().editableTitle) {
-            column.updateDefinition({ editableTitle: true });
-          }
-        },
-        headerMenu: !this.isIndexRefColumn(fieldName) ? function(e, column) {
-          if (column.getDefinition().editableTitle) {
-            return [{
-              label: "Accept",
-              action: (e, column) => {
-                if (column.getDefinition().frozen) return;
-                column.updateDefinition({
-                  editableTitle: !column.getDefinition().editableTitle,
-                });
-              }
-            }];
-          } 
-          return this.columnContextMenu;
-        } : null,
-        cellEdited: (cell) => {
+        // headerDblClick: function(e, column) {
+        //   // Enable editable title on double click
+        //   if (column.getDefinition().frozen || column.getDefinition().editableTitle) return
+        //   column.updateDefinition({ editableTitle: true });
+        // },
+        cellEdited: (cell: CellComponent) => {
           this.updateTableJsonData();
-          this.validateTable();
         },
       };
 
@@ -618,10 +606,18 @@ export default {
     columnContextMenu() {
       let menu = [
         {
+          label: "Freeze column",
+          action: (e, column) => {
+            column.updateDefinition({
+              frozen: !column.getDefinition().frozen,
+            });
+          }
+        },
+        {
           separator: true,
         },
         {
-          label: "Add column",
+          label: "Add column ➡️",
           disabled: !this.editable,
           action: (e, column) => {
             this.addColumn(column);
@@ -630,10 +626,24 @@ export default {
         {
           label: "Rename column",
           disabled: !this.editable,
-          action: function(e, column) {
+          action: function(e, column: ColumnComponent) {
             if (column.getDefinition().frozen) return;
+
             column.updateDefinition({
               editableTitle: !column.getDefinition().editableTitle,
+              // @ts-ignore
+              headerMenu: function(e, column) {
+                return column.getDefinition().editableTitle ? [{
+                  label: "Accept",
+                  action: (e, column) => {
+                    if (column.getDefinition().frozen) return;
+                    column.updateDefinition({
+                      editableTitle: !column.getDefinition().editableTitle,
+                      headerMenu: null,
+                    });
+                  }
+                }] : null;
+              },
             });
           }
         },
@@ -714,11 +724,10 @@ export default {
     try {
       Tabulator.extendModule("keybindings", "bindings", null);
 
-      const layout = this.columns.length <= 2 ? "fitData" : "fitDataTable";
       this.tabulator = new Tabulator(this.$refs.tabulator, {
         data: this.tableJSON.data,
         reactiveData: true,
-        layout: layout,
+        layout: this.columns.length <= 2 ? "fitData" : "fitDataTable",
         height: this.tableJSON.data.length >= 10 ? "60vh": 'auto',
         persistence:{
           sort: true,
@@ -763,10 +772,10 @@ export default {
         },
         rowContextMenu: this.rowContextMenu,
         index: "_id",
+        ...this.groupConfigs,
 
         // Column
         columns: this.columnsConfig,
-        ...this.groupConfigs,
         movableColumns: true,
         columnDefaults: {
           editor: "input",
@@ -790,14 +799,14 @@ export default {
 
         // configure clipboard to allow copy and paste of range format data
         clipboard: true,
-        clipboardCopyStyled: false,
+        clipboardCopyRowRange: "range",
+        clipboardPasteParser: this.editable ? "range" : null,
+        clipboardPasteAction: this.editable ? "range" : null,
         clipboardCopyConfig: {
           rowHeaders: false,
           columnHeaders: false,
         },
-        clipboardCopyRowRange: "range",
-        clipboardPasteParser: this.editable ? "range" : null,
-        clipboardPasteAction: this.editable ? "range" : null,
+        clipboardCopyStyled: false,
 
         validationMode: "highlight",
         history: this.editable,
@@ -849,6 +858,7 @@ export default {
   flex-flow: column;
   position: relative;
   max-width: 100%;
+  max-height: 80vh;
   margin-bottom: 0;
 
   .__table {
