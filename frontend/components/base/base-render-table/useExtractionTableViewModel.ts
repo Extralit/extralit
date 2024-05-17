@@ -65,15 +65,22 @@ export const useExtractionTableViewModel = (
     validation.value = schema;
   };
 
-  const getSelectionQuestionAnswers = (): Record<string, Array<string>> => {
+  const getSelectionQuestionAnswer = (question_name: string): Array<string> | undefined => {
     let questionAnswers = props.questions
-      ?.filter(q => Array.isArray(q.answer.valuesAnswered))
-      .reduce((acc, q) => {
-        acc[q.name] = q.answer.valuesAnswered;
-        return acc;
-      }, {});
+      ?.filter(q => q.name === question_name && Array.isArray(q.answer.valuesAnswered))
+      .map(q => q.answer.valuesAnswered)
+      .shift();
 
     return questionAnswers;
+  };
+
+  const getTextQuestionAnswer = (question_name: string): string | undefined => {
+    let questionAnswer = props.questions
+      ?.filter(q => q.name === question_name && typeof q.answer.valuesAnswered === 'string')
+      .map(q => q.answer.valuesAnswered)
+      .shift();
+
+    return questionAnswer;
   };
 
   const completeExtraction = async (
@@ -82,22 +89,24 @@ export const useExtractionTableViewModel = (
     referenceValues: ReferenceValues,
     headers_question_name: string = 'context-relevant',
     types_question_name: string = 'extraction-source',
+    prompt_question_name: string = 'notes',
   ): Promise<Data> => {
-    const selectionQuestionAnswers = getSelectionQuestionAnswers();
-    const headers = selectionQuestionAnswers[headers_question_name].filter((value) => value != 'Not listed');
-    const types = selectionQuestionAnswers[types_question_name].filter((value) => value.toLowerCase());
     const reference = tableJSON.value.reference;
     const schema_name = tableJSON.value.schema?.schemaName || tableJSON.value.validation?.name;
+    const headers = getSelectionQuestionAnswer(headers_question_name).filter((value) => value != 'Not listed');
+    const types = getSelectionQuestionAnswer(types_question_name).filter((value) => value.toLowerCase());
+    const prompt = getTextQuestionAnswer(prompt_question_name);
 
     const predictedData = await getExtraction.completion(
       reference, 
       schema_name, 
+      dataset.workspaceName,
       selectedRowData, 
       referenceValues,
       columns, 
       headers, 
       types, 
-      dataset.workspaceName
+      prompt,
     );
 
     return predictedData.data;
@@ -206,7 +215,6 @@ export const useExtractionTableViewModel = (
     refColumns,
     groupbyColumns,
     fetchValidation,
-    getSelectionQuestionAnswers,
     getTableDataFromRecords,
     findMatchingRefValues,
     completeExtraction,

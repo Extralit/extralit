@@ -15,15 +15,16 @@ export class GetLLMExtractionUseCase {
   async completion(
     reference: string, 
     schema_name: string, 
+    workspaceName: string,
     selectedRowData: Data,
     extractions: ReferenceValues, 
     columns?: Array<string>,
     headers?: Array<string>,
     types?: Array<string>,
-    workspaceName?: string
+    prompt?: string,
   ): Promise<BackendExtractionResponse> {
     try {
-      const json = this.createRequest(reference, schema_name, selectedRowData, extractions, columns, headers, types, workspaceName);
+      const json = this.createRequest(reference, schema_name, selectedRowData, extractions, columns, headers, types, prompt);
       const params = { workspace: workspaceName };
       
       const { data } = await this.axios.post<DataFrame>(
@@ -58,7 +59,7 @@ export class GetLLMExtractionUseCase {
     columns?: Array<string>,
     headers?: Array<string>,
     types?: Array<string>,
-    workspace?: string
+    prompt?: string
   ): BackendExtractionRequest {
 
     var extractions: Record<string, Data> = Object.fromEntries(
@@ -87,7 +88,7 @@ export class GetLLMExtractionUseCase {
       columns,
       headers,
       types,
-      workspace,
+      prompt,
     };
   }
 

@@ -576,9 +576,9 @@ export default {
           this.updateRangeData(predictedRowData, range);
         })
         .catch((error) => {
-          console.log(error)
+          console.error(error)
           Notification.dispatch("notify", {
-            message: `${error.response}: ${error.message}`,
+            message: `${error.message}`,
             type: "error",
             onClick() {
               Notification.dispatch("clear");

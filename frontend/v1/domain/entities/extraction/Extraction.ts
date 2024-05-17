@@ -7,7 +7,7 @@ export interface BackendExtractionRequest {
   columns?: Array<string>;
   headers?: Array<string>;
   types?: Array<string>;
-  workspace?: string;
+  prompt?: string;
 }
 
 

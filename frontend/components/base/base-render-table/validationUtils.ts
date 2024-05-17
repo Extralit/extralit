@@ -276,7 +276,7 @@ export function getColumnEditorParams(
           .map(([key, v]) => `<span style="font-weight:normal; color:black; margin-left:0;">${key}:</span> ${v}`)
           .join(', ');
 
-        return `<strong>${label}</strong>: ${keyValues}`;
+        return `<strong>${label}</strong>${keyValues ? `: ${keyValues}` : ''}`;
       } 
       return label;
     };
