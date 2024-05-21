@@ -678,7 +678,7 @@ export default {
     rowContextMenu() {
       let menu = [
         {
-          label: "Hey 🤖, yeet this!",
+          label: "YEET",
           disabled: !this.editable,
           action: (e, row) => {
             const range = this.tabulator.getRanges()[0];
