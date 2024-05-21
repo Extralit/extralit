@@ -73,7 +73,7 @@ export class Record {
     return !!original && !isEqual(original, rest);
   }
 
-  get getModified() {
+  getModified() {
     const { original, ...rest } = this;
 
     return !!original ? difference(rest, original) : {};

@@ -357,7 +357,7 @@ export default {
       if (this.isDraftSaveDisabled || this.isSaving) {
         return;
       }
-      const modified = this.record.getModified;
+      const modified = this.record.getModified();
       const condition = modified?.questions?.some(
         question => {
           const conditionForThisQuestion = question && question.answer && (

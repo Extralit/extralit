@@ -81,6 +81,13 @@ export class GetLLMExtractionUseCase {
 
     extractions[schema_name] = selectedRowData;
 
+    if (prompt) {
+      prompt = prompt.trim();
+      if (prompt === '') {
+        prompt = null;
+      }
+    }
+
     return {
       reference,
       schema_name,

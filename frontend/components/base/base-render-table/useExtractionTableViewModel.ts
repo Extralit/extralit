@@ -1,3 +1,4 @@
+import { isEqual } from "lodash";
 import { ref, onBeforeMount } from "vue-demi";
 import { useResolve } from "ts-injecty";
 
@@ -58,10 +59,13 @@ export const useExtractionTableViewModel = (
     }
     const [schema, fileMetadata] = await getSchema.fetch(dataset.workspaceName, schemaName, version_id);
 
-    tableJSON.value.schema = {
+    const schemaMetadataUpdate = {
       ...tableJSON.value.schema,
       ...fileMetadata
     };
+    if (!isEqual(tableJSON.value?.schema, schemaMetadataUpdate)) {
+      tableJSON.value.schema = schemaMetadataUpdate;
+    }
     validation.value = schema;
   };
 
@@ -188,14 +192,14 @@ export const useExtractionTableViewModel = (
         const refRows = matchingTable.data.reduce((acc, row) => {
           const filteredRowValues: Record<string, any> = Object.entries(row)
             .filter(([key, value]) => 
-              key != "reference" &&
+              key != "reference" && key != "_id" &&
               (!filterByColumnUniqueCounts || 
                 matchingTable.data.length <= 1 || 
                 !matchingTable?.columnUniqueCounts?.hasOwnProperty(key) || 
                 matchingTable.columnUniqueCounts[key] > 1))
-            .reduce((obj, [key, value]) => {
-              obj[key] = value;
-              return obj;
+            .reduce((acc, [key, value]) => {
+              acc[key] = value;
+              return acc;
             }, {});
           acc[row.reference] = filteredRowValues;
           return acc;
