@@ -93,7 +93,7 @@ import { getColumnValidators, getColumnEditorParams } from "./validationUtils";
 import { cellTooltip, headerTooltip, groupHeader, getRangeRowData, getRangeColumns } from "./tableUtils"; 
 import { useExtractionTableViewModel } from "./useExtractionTableViewModel";
 import { Question } from "@/v1/domain/entities/question/Question";
-import { Data, DataFrame } from './types';
+import { Data, DataFrame, DataFrameField } from './types';
 import { difference } from '~/v1/domain/entities/record/Record';
 
 export default {
@@ -198,7 +198,7 @@ export default {
     columnsConfig() {
       if (!this.tableJSON?.schema) return [];
 
-      var configs = this.tableJSON.schema.fields.map((column) => {
+      var configs = this.tableJSON.schema.fields.map((column: DataFrameField) => {
         const commonConfig = this.generateCommonConfig(column.name);
         const editableConfig = this.generateColumnEditableConfig(column.name);
         return { ...commonConfig, ...editableConfig };
@@ -246,17 +246,45 @@ export default {
         groupContextMenu: [
           {
             label: "Show reference",
-            action: (e, group) => {
-              group.popup(`${group._group.field}: ${group._group.key}`, "right");
+            action: (e, group: GroupComponent) => {
+              group.popup(`${group.getField()}: ${group.getKey()}`, "right");
             }
           },
           {
             separator: true,
           },
           {
+            label: (group) => {
+              const subGroupFields = (this.groupbyColumns.slice(group._group.level + 1));
+              return `Generate empty ${subGroupFields.join(', ')} rows`;
+            },
+            disabled: (group) => {
+              if (!this.editable || !this.referenceValues) {
+                return true;
+              } else if (group._group.level + 1 >= this.groupbyColumns.length) {
+                return true;
+              }
+              return false;
+            },
+            action: (e, group: GroupComponent) => {
+              let parentGroup = group.getParentGroup();
+              const fixedValues: Record<string, string> = { [group.getField()]: group.getKey() };
+
+              while (parentGroup) {
+                fixedValues[parentGroup.getField()] = parentGroup.getKey();
+                parentGroup = parentGroup.getParentGroup();
+              }
+              const combinations = generateCombinations(this.referenceValues, fixedValues);
+
+              combinations.forEach(rowData => {
+                this.addRow(null, rowData);
+              });
+            }
+          },
+          {
             label: "Delete rows group",
             disabled: !this.editable,
-            action: (e, group) => {
+            action: (e, group: GroupComponent) => {
               this.deleteGroupRows(group);
               this.updateTableJsonData(true);
             }
@@ -440,7 +468,7 @@ export default {
       this.showRefColumns = !this.showRefColumns;
       this.tabulator?.setColumns(this.columnsConfig);
     },
-    columnMoved(column, columns) {
+    columnMoved(column: ColumnComponent, columns: ColumnComponent[]) {
       this.tableJSON.schema.fields.sort((a, b) => {
         const aIndex = columns.findIndex((col) => col.getField() === a.name);
         const bIndex = columns.findIndex((col) => col.getField() === b.name);
@@ -505,11 +533,13 @@ export default {
         ...this.generateCommonConfig(newFieldName),
         ...this.generateColumnEditableConfig(newFieldName),
         editableTitle: newFieldName.includes("newColumn"),
-      }, false, selectedColumnField)
+      }, false, selectedColumnField).then((column: ColumnComponent) => {
+        column.getCells()[0]?.edit();
+      });
 
       this.updateTableJsonData(false, true);
       this.columnMoved(null, this.tabulator.getColumns());
-      this.tabulator.scrollToColumn(newFieldName, null, false);
+      // this.tabulator.scrollToColumn(newFieldName, null, false);
     },
     columnTitleChanged(column) {
       const newFieldName = column.getDefinition().title.replace('.', ' ');
@@ -552,8 +582,8 @@ export default {
     addEmptyReferenceRows() {
       const combinations = generateCombinations(this.referenceValues);
 
-      combinations.forEach(refValues => {
-        this.addRow(null, refValues);
+      combinations.forEach(rowData => {
+        this.addRow(null, rowData);
       });
     },
     async completionRange(range: RangeComponent) {

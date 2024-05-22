@@ -1,9 +1,11 @@
+export interface DataFrameField {
+  name: string;
+  type: string;
+  extDtype?: string;
+}
+
 export interface DataFrameSchema {
-  fields: {
-    name: string;
-    type: string;
-    extDtype?: string;
-  }[];
+  fields: DataFrameField[];
   primaryKey: string[];
 }
 

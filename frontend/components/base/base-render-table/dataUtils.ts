@@ -34,23 +34,25 @@ export function incrementReferenceStr(reference: string): string {
   return newReference;
 }
 
-export function generateCombinations(referenceValues: ReferenceValues): Data {
-  const referenceKeys: Record<string, string[]> = Object.keys(referenceValues).reduce((acc, key) => {
-    acc[key] = Object.keys(referenceValues[key]);
+export function generateCombinations(columnValues: ReferenceValues, fixedValues: Record<string, string> = {}): Data {
+  const possibleKeyValues: Record<string, string[]> = Object.keys(columnValues).reduce((acc, key) => {
+    if (!fixedValues[key]) {
+      acc[key] = Object.keys(columnValues[key]);
+    }
     return acc;
   }, {});
 
-  const refKeys = Object.keys(referenceKeys);
-  const refValueCombinations = cartesianProduct(refKeys.map(key => referenceKeys[key]));
+  const keys = Object.keys(possibleKeyValues);
+  const valueCombinations = cartesianProduct(keys.map(key => possibleKeyValues[key]));
 
-  const refCombinations = refValueCombinations.map(refValues => {
-    return refValues.reduce((acc, value, index) => {
-      acc[refKeys[index]] = value;
+  const keyValueCombinations = valueCombinations.map(values => {
+    return values.reduce((acc, value, index) => {
+      acc[keys[index]] = value;
       return acc;
-    }, {} as Record<string, string>);
+    }, {...fixedValues} as Record<string, string>);
   });
 
-  return refCombinations;
+  return keyValueCombinations;
 }
 
 function cartesianProduct(arr: any[][]): any[][] {

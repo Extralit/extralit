@@ -202,7 +202,6 @@ export function getColumnEditorParams(
       config.editorParams.selectContents = true;
       config.editorParams.clearable = true;
       config.editorParams.valuesLookupField = fieldName;
-      config.editorParams.verticalNavigation = 'editor';
 
       if (isinValues) {
         const allowedValues = getListAutocompleteValues(isinValues);
