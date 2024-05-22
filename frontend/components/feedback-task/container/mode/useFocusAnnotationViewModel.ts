@@ -37,7 +37,7 @@ export const useFocusAnnotationViewModel = () => {
     return duration;
   };
 
-  const submit = async (record: Record, durationWrapper?: any) => {
+  const submit = async (record: Record, durationWrapper?: { value: number }) => {
     isSubmitting.value = true;
     let duration = incrementDuration(record, durationWrapper);
 
@@ -48,7 +48,7 @@ export const useFocusAnnotationViewModel = () => {
     isSubmitting.value = false;
   };
 
-  const saveAsDraft = async (record: Record, durationWrapper?: any) => {
+  const saveAsDraft = async (record: Record, durationWrapper?: { value: number }) => {
     isDraftSaving.value = true;
     let duration = incrementDuration(record, durationWrapper);
 

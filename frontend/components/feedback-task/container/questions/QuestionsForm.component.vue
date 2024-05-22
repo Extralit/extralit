@@ -188,7 +188,7 @@ export default {
       isSubmittedTouched: false,
       userComesFromOutside: false,
       timer: null,
-      duration: 0,
+      duration: { value: 0 },
     };
   },
 
@@ -224,7 +224,7 @@ export default {
       immediate: true,
       handler() {
         this.isSubmittedTouched = this.record.isSubmitted && this.record.isModified;
-        if (this.duration > 1) {
+        if (this.duration.value > 1) {
           this.checkAndSaveDraft();
         }
       },
@@ -345,8 +345,7 @@ export default {
       )
         return;
 
-      let durationWrapper = { value: this.duration };
-      this.$emit("on-submit-responses", durationWrapper);
+        this.$emit("on-submit-responses", this.duration);
     },
     onDiscard() {
       if (this.isDiscardDisabled || this.isSaving) return;
@@ -374,8 +373,7 @@ export default {
     onSaveDraft() {
       if (this.isDraftSaveDisabled || this.isSaving) return;
 
-      let durationWrapper = { value: this.duration };
-      this.$emit("on-save-draft", durationWrapper);
+      this.$emit("on-save-draft", this.duration);
     },
     updateQuestionAutofocus(index) {
       this.interactionCount++;
@@ -386,7 +384,7 @@ export default {
     },
     startTimer() {
       this.timer = setInterval(() => {
-        this.duration++;
+        this.duration.value++;
       }, 1000);
     },
     stopTimer() {
@@ -394,7 +392,7 @@ export default {
       this.timer = null;
     },
     resetTimer() {
-      this.duration = 0;
+      this.duration.value = 0;
     },
     handleVisibilityChange() {
       if (document.hidden) {

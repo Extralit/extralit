@@ -77,8 +77,8 @@ export default {
     },
   },
   methods: {
-    async onSubmit(durationWrapper) {
-      await this.submit(this.record, durationWrapper);
+    async onSubmit(duration) {
+      await this.submit(this.record, duration);
       this.$emit("on-submit-responses");
     },
     async onDiscard() {
@@ -87,10 +87,10 @@ export default {
       await this.discard(this.record);
       this.$emit("on-discard-responses");
     },
-    async onSaveDraft(durationWrapper) {
+    async onSaveDraft(duration) {
       if (this.isDraftSaving) return;
       try {
-        await this.saveAsDraft(this.record, durationWrapper);
+        await this.saveAsDraft(this.record, duration);
       } catch (error) {
         const message = this.$t('errors.saving', { error: error?.response || error.toString() });
         Notification.dispatch("notify", {

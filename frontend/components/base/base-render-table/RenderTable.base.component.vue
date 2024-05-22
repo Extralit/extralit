@@ -612,6 +612,8 @@ export default {
             });
         }
       });
+
+      this.updateTableJsonData();
     },
     columnContextMenu() {
       let menu = [

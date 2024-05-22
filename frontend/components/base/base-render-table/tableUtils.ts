@@ -108,7 +108,7 @@ function stringifyValidator(validator: Validator): string | null {
   if (typeof validator === 'string') {
     s = validator.replace('string', 'text');
     if (validator.startsWith('regex:')) {
-      s = regexToHumanReadable(validator);
+      s = `regex: "${regexToHumanReadable(validator.replace("regex:", ''))}"`;
     }
 
   } else if (typeof validator === 'function') {
@@ -132,7 +132,6 @@ function stringifyValidator(validator: Validator): string | null {
         .replace(/[{""}]/g, '').replace(/:/g, '=').replace(/,/g, ', ')
         .replace('=true', '').replace('column=', '');;
     } else {
-      console.log(s)
       if (validator?.parameters != null && typeof validator.parameters !== 'object') {
         s += `: ${validator.parameters}`;
       }
@@ -157,13 +156,13 @@ export function getRangeColumns(range: RangeComponent): string[] {
 }
 
 function regexToHumanReadable(regex: string): string {
+  // Replace regex patterns with example strings
   let example = regex;
-  // Replace common regex patterns with example strings
+  
   example = example.replace(/\\d/g, '1');
   example = example.replace(/\\w/g, 'a');
   example = example.replace(/\\s/g, ' ');
 
-  // Remove non-capturing characters
   example = example.replace(/[\^\$\.\*\+\?\{\}\[\]\\\(\)]/g, '');
 
   return example;
