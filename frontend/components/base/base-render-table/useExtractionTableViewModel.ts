@@ -97,7 +97,7 @@ export const useExtractionTableViewModel = (
   ): Promise<Data> => {
     const reference = tableJSON.value.reference;
     const schema_name = tableJSON.value.schema?.schemaName || tableJSON.value.validation?.name;
-    const headers = getSelectionQuestionAnswer(headers_question_name).filter((value) => value != 'Not listed');
+    const headers = getSelectionQuestionAnswer(headers_question_name)?.filter((value) => value != 'Not listed');
     const types = getSelectionQuestionAnswer(types_question_name);
     const prompt = getTextQuestionAnswer(prompt_question_name);
 

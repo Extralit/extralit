@@ -34,11 +34,11 @@ export class GetLLMExtractionUseCase {
       return data;
     } catch (error) {
       let errorMessage = error.message;
-      if (error.response.data.detail) {
+      if (error.response?.data?.detail) {
         errorMessage = error.response.data.detail;
-      } else if (error.response.data.message) {
+      } else if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
-      } else if (error.response.data) {
+      } else if (error.response?.data) {
         errorMessage = error.response.data;
       } else if (error.response) {
         errorMessage = error.response;

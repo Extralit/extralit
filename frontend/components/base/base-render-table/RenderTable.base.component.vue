@@ -648,7 +648,9 @@ export default {
     columnContextMenu() {
       let menu = [
         {
-          label: "Freeze column",
+          label: function(column: ColumnComponent) {
+            return !column.getDefinition().frozen ? "Freeze column": "Unfreeze column";
+          },
           action: (e, column) => {
             column.updateDefinition({
               frozen: !column.getDefinition().frozen,
