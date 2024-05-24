@@ -236,6 +236,9 @@ export default {
       if (this.groupbyColumns.length === 0) {
         return {};
       }
+      if (this.editable) {
+        console.log("Grouping is not supported in editable mode")
+      }
 
       return {
         groupBy: this.groupbyColumns,
@@ -256,7 +259,7 @@ export default {
           {
             label: (group) => {
               const subGroupFields = (this.groupbyColumns.slice(group._group.level + 1));
-              return `Generate empty ${subGroupFields.join(', ')} rows`;
+              return `Add missing <b>${subGroupFields.join(', ')}</b> subgroups`;
             },
             disabled: (group) => {
               if (!this.editable || !this.referenceValues) {
@@ -270,13 +273,19 @@ export default {
               let parentGroup = group.getParentGroup();
               const fixedValues: Record<string, string> = { [group.getField()]: group.getKey() };
 
+              console.log(this.referenceValues)
+
               while (parentGroup) {
                 fixedValues[parentGroup.getField()] = parentGroup.getKey();
                 parentGroup = parentGroup.getParentGroup();
               }
               const combinations = generateCombinations(this.referenceValues, fixedValues);
 
-              combinations.forEach(rowData => {
+              combinations.filter((rowData) => {
+                return !group.getSubGroups().some((subGroup: GroupComponent) => {
+                  return subGroup.getKey() === rowData[subGroup.getField()];
+                });
+              }).forEach(rowData => {
                 this.addRow(null, rowData);
               });
             }
@@ -693,7 +702,12 @@ export default {
         },
         {
           label: "Delete column(s)",
-          disabled: !this.editable,
+          disabled: (column: ColumnComponent) => {
+            if (!this.editable || column.getField() === "_id" || this.indexColumns.includes(column.getField()) || this.refColumns.includes(column.getField())) {
+              return true;
+            }
+            return false;
+          },
           action: (e, column: ColumnComponent) => {
             const range: RangeComponent = this.tabulator.getRanges()[0];
             if (range.getColumns().length > 1) {

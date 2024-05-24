@@ -180,7 +180,7 @@ export const useExtractionTableViewModel = (
         const matchingTable = Object.values(recordTables)
           .find((table: DataFrame) => {
             const schemaName = table?.schema?.schemaName || table?.validation?.name;
-            return schemaName.toLowerCase() === field.replace(/_ref$/, '')
+            return schemaName?.toLowerCase() === field.replace(/_ref$/, '')
           });
 
         if (!matchingTable) continue;
