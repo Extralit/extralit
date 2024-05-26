@@ -200,7 +200,6 @@ export function getColumnEditorParams(
       config.editorParams.freetext = true;
       config.editorParams.listOnEmpty = true;
       config.editorParams.selectContents = true;
-      config.editorParams.clearable = true;
       config.editorParams.valuesLookupField = fieldName;
 
       if (isinValues) {

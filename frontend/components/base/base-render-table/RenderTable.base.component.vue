@@ -4,11 +4,6 @@
     @focusout="setFocus(false)"
   >
     <div class="__table-buttons">
-      <!-- <BaseButton v-show="refColumns?.length || columns.includes('reference')" @click.prevent="toggleShowRefColumns">
-        <span v-if="!showRefColumns">Show references</span>
-        <span v-else>Hide references</span>
-      </BaseButton> -->
-
       <BaseDropdown v-show="editable" :visible="dropdownEditTableVisible" >
         <span slot="dropdown-header">
           <BaseButton @click.prevent="dropdownEditTableVisible=!dropdownEditTableVisible">
@@ -138,6 +133,7 @@ export default {
   watch: {
     tableJSON: {
       deep: true,
+      immediate: false,
       handler(newTableJSON: DataFrame, oldTableJSON: DataFrame) {
         if (!this.editable) return;
         if (newTableJSON?.schema?.schemaName && newTableJSON?.validation?.name) {
@@ -151,14 +147,14 @@ export default {
       deep: true,
       handler(newColumnsConfig, oldColumnsConfig) {
         if (this.isLoaded) {
-          console.warn('Changes columns config', difference(newColumnsConfig, oldColumnsConfig));
+          if (this.editable) console.log('Changes columns config', difference(newColumnsConfig, oldColumnsConfig));
         }
       },
     },
     validation: {
       handler(newValidation, oldValidation) {
         if (this.isLoaded) {
-          console.warn('Changes validation');
+          if (this.editable) console.log('Changes validation');
           this.tabulator?.setColumns(this.columnsConfig);
           this.validateTable();
         }
@@ -484,7 +480,7 @@ export default {
         return aIndex - bIndex;
       });
     },
-    addRow(selectedRow, rowData: Record<string, any>={}) {
+    async addRow(selectedRow, rowData: Record<string, any>={}): Promise<RowComponent> {
       // const requiredFields = this.refColumns || this.indexColumns;
       // Select the last row if no row is selected
       if (!selectedRow) {
@@ -505,10 +501,11 @@ export default {
           rowData[field] = undefined;
         }
       }
-      this.tabulator.addRow(rowData, false, selectedRow);
+      const row: RowComponent = await this.tabulator.addRow(rowData, false, selectedRow);
       this.updateTableJsonData();
       this.validateTable();
       if (!this.showRefColumns) this.toggleShowRefColumns();
+      return row;
     },
     deleteGroupRows(group: GroupComponent) {
       group?.getRows()?.forEach((row) => {
@@ -519,7 +516,7 @@ export default {
         this.deleteGroupRows(subGroup);
       });
     },
-    addColumn(selectedColumn?: ColumnComponent, newFieldName = "newColumn") {
+    async addColumn(selectedColumn?: ColumnComponent, newFieldName = "newColumn"): Promise<ColumnComponent> {
       if (!selectedColumn) {
         const range = this.tabulator.getRanges()[0];
         if (range) {
@@ -538,19 +535,22 @@ export default {
         selectedColumnField = selectedColumn?.getField();
       }
 
-      this.tabulator.addColumn({
-        ...this.generateCommonConfig(newFieldName),
-        ...this.generateColumnEditableConfig(newFieldName),
-        editableTitle: newFieldName.includes("newColumn"),
-      }, false, selectedColumnField).then((column: ColumnComponent) => {
-        column.getCells()[0]?.edit();
-      });
+      const column: ColumnComponent = await this.tabulator.addColumn(
+        {
+          ...this.generateCommonConfig(newFieldName),
+          ...this.generateColumnEditableConfig(newFieldName),
+          editableTitle: newFieldName.includes("newColumn"),
+        }, 
+        false, 
+        selectedColumnField)
 
       this.updateTableJsonData(false, true);
       this.columnMoved(null, this.tabulator.getColumns());
-      // this.tabulator.scrollToColumn(newFieldName, null, false);
+      column.getCells()[0]?.edit();
+      return column;
+
     },
-    columnTitleChanged(column) {
+    columnTitleChanged(column: ColumnComponent) {
       const newFieldName = column.getDefinition().title.replace('.', ' ');
       const oldFieldName = column.getDefinition().field;
       if (!newFieldName?.length || newFieldName == oldFieldName) return;
@@ -568,9 +568,8 @@ export default {
       }
 
       if (column.getDefinition().editableTitle) {
-        column.updateDefinition({
-          editableTitle: false
-        });
+        // @ts-ignore
+        column.updateDefinition({ editableTitle: false });
       }
 
       this.updateTableJsonData(false, false, true, newFieldName, oldFieldName);
@@ -726,7 +725,7 @@ export default {
     rowContextMenu() {
       let menu = [
         {
-          label: "YEET",
+          label: "LLM fill-in",
           disabled: !this.editable,
           action: (e, row) => {
             const range = this.tabulator.getRanges()[0];
@@ -744,14 +743,30 @@ export default {
           }
         },
         {
-          label: "Duplicate row",
+          label: "Duplicate row(s)",
           disabled: !this.editable,
           action: (e, row: RowComponent) => {
-            let newRowData = { ...row.getData() };
-            this.indexColumns.forEach((field) => {
-              newRowData[field] = undefined;
-            });
-            this.addRow(row, newRowData);
+            const duplicateRows: RowComponent[] = this.tabulator.getRanges()[0]?.getRows();
+            if (duplicateRows?.length > 0) {
+              // A range of rows is selected
+              var lastRowInSelection = duplicateRows[duplicateRows.length - 1];
+
+              duplicateRows.reverse().forEach((row: RowComponent) => {
+                const newRowData = { ...row.getData() };
+                this.indexColumns.forEach((field) => {
+                  newRowData[field] = undefined;
+                });
+                
+                this.addRow(lastRowInSelection, newRowData);
+              });
+            } else {
+              // Only a single row is selected
+              const newRowData = { ...row.getData() };
+              this.indexColumns.forEach((field) => {
+                newRowData[field] = undefined;
+              });
+              this.addRow(row, newRowData);
+            }
           }
         },
         {
@@ -799,7 +814,6 @@ export default {
           },
           page: true,
         },
-        // renderHorizontal: "virtual",
         renderVertical:"basic",
         layoutColumnsOnNewData: true,
         autoResize: false,
@@ -852,7 +866,7 @@ export default {
         selectableRows: false,
         selectableRange: 1,
         selectableRangeColumns: true,
-        selectableRangeRows: true,
+        selectableRangeRows: false,
         selectableRangeClearCells: true,
         editTriggerEvent: this.editable ? "dblclick" : false,
 
@@ -879,10 +893,6 @@ export default {
           this.validateTable();
         });
       }
-
-      this.tabulator.on("clipboardPasted", (clipboard, rowData, rows) => {
-        this.validateTable();
-      });
 
       this.tabulator.on("tableBuilt", () => {
         this.isLoaded = true;
