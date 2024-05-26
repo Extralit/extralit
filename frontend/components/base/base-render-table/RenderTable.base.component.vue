@@ -52,7 +52,7 @@
         <span slot="dropdown-header">
           <BaseButton
             @click.prevent="validateTable({ scrollToError: true, saveData: true }); visibleCheckdropdown=!visibleCheckdropdown">
-            Check data <i v-if="tableJSON.schema.is_latest === false">!</i>
+            Check data <i v-if="tableJSON?.schema?.is_latest === false">!</i>
           </BaseButton>
         </span>
         <span slot="dropdown-content">
@@ -60,7 +60,7 @@
             Ignore errors
           </BaseButton>
           <BaseButton 
-            v-if="tableJSON.schema.is_latest === false" 
+            v-if="tableJSON?.schema?.is_latest === false" 
             @click.prevent="fetchValidation({ latest: true });"
           >
             Fetch latest schema
@@ -86,7 +86,9 @@ import "tabulator-tables/dist/css/tabulator.min.css";
 import { generateCombinations, incrementReferenceStr, getMaxValue } from './dataUtils';
 import { getColumnValidators, getColumnEditorParams } from "./validationUtils";
 import { cellTooltip, headerTooltip, groupHeader, getRangeRowData, getRangeColumns } from "./tableUtils"; 
-import { useExtractionTableViewModel } from "./useExtractionTableViewModel";
+import { useSchemaTableViewModel } from "./useSchemaTableViewModel";
+import { useLLMExtractionViewModel } from "./useLLMExtractionViewModel";
+import { useReferenceTablesViewModel } from "./useReferenceTablesViewModel";
 import { Question } from "@/v1/domain/entities/question/Question";
 import { Data, DataFrame, DataFrameField } from './types';
 import { difference } from '~/v1/domain/entities/record/Record';
@@ -154,7 +156,7 @@ export default {
     validation: {
       handler(newValidation, oldValidation) {
         if (this.isLoaded) {
-          if (this.editable) console.log('Changes validation');
+          if (this.editable) console.log('Changes validation', this.tableJSON.schema.schemaName, this.tableJSON.schema.version_tag);
           this.tabulator?.setColumns(this.columnsConfig);
           this.validateTable();
         }
@@ -208,7 +210,7 @@ export default {
         configs = configs.filter((column) => column.field !== "_id");
       }
       var rownum = 0;
-      const idColumn = {
+      const indexerColumn = {
         title: "_id",
         field: "_id",
         visible: false,
@@ -226,7 +228,7 @@ export default {
         },
       };
 
-      return [idColumn, ...configs];
+      return [indexerColumn, ...configs];
     },
     groupConfigs() {
       if (this.groupbyColumns.length === 0) {
@@ -309,7 +311,6 @@ export default {
 
       return refToRowDict;
     },
-  
   },
 
   methods: {
@@ -434,9 +435,6 @@ export default {
         //   if (column.getDefinition().frozen || column.getDefinition().editableTitle) return
         //   column.updateDefinition({ editableTitle: true });
         // },
-        cellEdited: (cell: CellComponent) => {
-          this.updateTableJsonData();
-        },
       };
 
       config = merge({}, config, getColumnEditorParams(fieldName, this.validation, this.refColumns, this.referenceValues));
@@ -888,6 +886,9 @@ export default {
       if (this.editable) {
         this.tabulator.on("columnTitleChanged", this.columnTitleChanged.bind(this));
         this.tabulator.on("columnMoved", this.columnMoved.bind(this));
+        this.tabulator.on("cellEdited", (cell: CellComponent) => {
+          this.updateTableJsonData();
+        });
         this.tabulator.on("clipboardPasted", (clipboard, rowData, rows) => {
           this.updateTableJsonData();
           this.validateTable();
@@ -914,7 +915,12 @@ export default {
   },
 
   setup(props) {
-    return useExtractionTableViewModel(props);
+    const schemaTableViewModel = useSchemaTableViewModel(props);
+    return {
+      ...schemaTableViewModel,
+      ...useReferenceTablesViewModel(props, schemaTableViewModel),
+      ...useLLMExtractionViewModel(props, schemaTableViewModel),
+    };
   },
 
   errorCaptured(err, component, info) {
@@ -1091,3 +1097,4 @@ export default {
 }
 
 </style>
+./useSchemaViewModel

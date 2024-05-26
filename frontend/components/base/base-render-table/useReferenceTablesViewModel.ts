@@ -1,120 +1,22 @@
-import { isEqual } from "lodash";
-import { ref, onBeforeMount } from "vue-demi";
-import { useResolve } from "ts-injecty";
-
 import { Record as FeedbackRecord } from '~/v1/domain/entities/record/Record';
 import { Question } from "@/v1/domain/entities/question/Question";
 import { Records } from "@/v1/domain/entities/record/Records";
 import { useRecords } from "@/v1/infrastructure/storage/RecordsStorage";
-import { GetLLMExtractionUseCase } from "@/v1/domain/usecases/get-extraction-completion-use-case";
-import { GetExtractionSchemaUseCase } from "@/v1/domain/usecases/get-extraction-schema-use-case";
 
 import { DataFrame, Data, ReferenceValues, PanderaSchema } from "./types";
 import { RecordDataFramesArray } from './tableUtils';
 import { columnUniqueCounts } from './dataUtils';
-import { useDataset } from "@/v1/infrastructure/storage/DatasetStorage";
 
+import { SchemaTableViewModel } from "./useSchemaTableViewModel";
 
-export const useExtractionTableViewModel = (
+export const useReferenceTablesViewModel = (
   props: { 
     tableData: string, 
     editable: boolean, 
-    hasValidValues: boolean,
-    questions: Question[],
   }, 
-) => {
-  const getExtraction = useResolve(GetLLMExtractionUseCase);
-  const getSchema = useResolve(GetExtractionSchemaUseCase);
+  schemaTableViewModel: SchemaTableViewModel) => {
+
   const { state: records }: { state: Records } = useRecords();
-  const { state: dataset } = useDataset();
-
-  const tableJSON = ref<DataFrame>(JSON.parse(props.tableData));
-  const validation = ref<PanderaSchema | null>(null);
-  const indexColumns = ref(tableJSON.value?.schema?.primaryKey || []);
-  const refColumns = ref(
-    tableJSON.value?.schema?.fields
-      .map(field => field.name)
-      .filter(name => typeof name === 'string' && name.endsWith('_ref')) || []
-  );
-  const groupbyColumns = ref(refColumns.value || null);
-
-  const waitForWorkspaceName = (interval=100) => {
-    return new Promise((resolve, reject) => {
-      const checkInterval = setInterval(() => {
-        if (dataset.workspaceName) {
-          clearInterval(checkInterval);
-          resolve(true);
-        }
-      }, interval);
-    });
-  };
-
-  const fetchValidation = async ({ latest = false }: { latest?: boolean } = {}) => {
-    var schemaName: string = tableJSON.value.schema?.schemaName;
-    var version_id: string = latest ? null : tableJSON.value.schema?.version_id;
-    await waitForWorkspaceName();
-    
-    if (!tableJSON.value.schema.schemaName) {
-      schemaName = tableJSON.value?.validation?.name;
-    }
-    const [schema, fileMetadata] = await getSchema.fetch(dataset.workspaceName, schemaName, version_id);
-
-    const schemaMetadataUpdate = {
-      ...tableJSON.value.schema,
-      ...fileMetadata
-    };
-    if (!isEqual(tableJSON.value?.schema, schemaMetadataUpdate)) {
-      tableJSON.value.schema = schemaMetadataUpdate;
-    }
-    validation.value = schema;
-  };
-
-  const getSelectionQuestionAnswer = (question_name: string): Array<string> | undefined => {
-    let questionAnswers = props.questions
-      ?.filter(q => q.name === question_name && Array.isArray(q.answer.valuesAnswered))
-      .map(q => q.answer.valuesAnswered)
-      .shift();
-
-    return questionAnswers;
-  };
-
-  const getTextQuestionAnswer = (question_name: string): string | undefined => {
-    let questionAnswer = props.questions
-      ?.filter(q => q.name === question_name && typeof q.answer.valuesAnswered === 'string')
-      .map(q => q.answer.valuesAnswered)
-      .shift();
-
-    return questionAnswer;
-  };
-
-  const completeExtraction = async (
-    selectedRowData: Data,
-    columns: Array<string>, 
-    referenceValues: ReferenceValues,
-    headers_question_name: string = 'context-relevant',
-    types_question_name: string = 'extraction-source',
-    prompt_question_name: string = 'notes',
-  ): Promise<Data> => {
-    const reference = tableJSON.value.reference;
-    const schema_name = tableJSON.value.schema?.schemaName || tableJSON.value.validation?.name;
-    const headers = getSelectionQuestionAnswer(headers_question_name)?.filter((value) => value != 'Not listed');
-    const types = getSelectionQuestionAnswer(types_question_name);
-    const prompt = getTextQuestionAnswer(prompt_question_name);
-
-    const predictedData = await getExtraction.completion(
-      reference, 
-      schema_name, 
-      dataset.workspaceName,
-      selectedRowData, 
-      referenceValues,
-      columns, 
-      headers, 
-      types, 
-      prompt,
-    );
-
-    return predictedData.data;
-  };
 
   const getTableDataFromRecords = (filter_fn: (record: FeedbackRecord) => boolean): RecordDataFramesArray => {
     // filter_fn is a function that takes a record and returns true if it should be included in the table
@@ -213,14 +115,7 @@ export const useExtractionTableViewModel = (
   };
 
   return {
-    tableJSON,
-    validation,
-    indexColumns,
-    refColumns,
-    groupbyColumns,
-    fetchValidation,
     getTableDataFromRecords,
     findMatchingRefValues,
-    completeExtraction,
   }
-}
+};
