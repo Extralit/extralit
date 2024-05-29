@@ -197,6 +197,7 @@ export default {
       if (this.isSubmitting) return "--submitting --waiting";
       if (this.isDiscarding) return "--discarding --waiting";
       // if (this.isDraftSaving) return "--saving-draft";
+      if (this.isDraftSaving) return;
 
       if (
         this.isSubmittedTouched ||

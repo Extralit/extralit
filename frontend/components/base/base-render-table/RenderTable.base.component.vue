@@ -82,15 +82,15 @@
 import { merge } from 'lodash';
 import { Notification } from "@/models/Notifications";
 import { CellComponent, ColumnComponent, GroupComponent, RangeComponent, RowComponent, TabulatorFull as Tabulator } from "tabulator-tables";
-import "tabulator-tables/dist/css/tabulator.min.css";
 import { generateCombinations, incrementReferenceStr, getMaxValue } from './dataUtils';
+import "tabulator-tables/dist/css/tabulator.min.css";
 import { getColumnValidators, getColumnEditorParams } from "./validationUtils";
 import { cellTooltip, headerTooltip, groupHeader, getRangeRowData, getRangeColumns } from "./tableUtils"; 
 import { useSchemaTableViewModel } from "./useSchemaTableViewModel";
 import { useLLMExtractionViewModel } from "./useLLMExtractionViewModel";
 import { useReferenceTablesViewModel } from "./useReferenceTablesViewModel";
 import { Question } from "@/v1/domain/entities/question/Question";
-import { Data, DataFrame, DataFrameField } from './types';
+import { Data, DataFrame, DataFrameField, Validators } from './types';
 import { difference } from '~/v1/domain/entities/record/Record';
 
 export default {
@@ -138,6 +138,7 @@ export default {
       immediate: false,
       handler(newTableJSON: DataFrame, oldTableJSON: DataFrame) {
         if (!this.editable) return;
+        console.log('Changes table data');
         if (newTableJSON?.schema?.schemaName && newTableJSON?.validation?.name) {
           this.$emit("change-text", JSON.stringify({...newTableJSON, validation: undefined}));
         } else {
@@ -149,14 +150,14 @@ export default {
       deep: true,
       handler(newColumnsConfig, oldColumnsConfig) {
         if (this.isLoaded) {
-          if (this.editable) console.log('Changes columns config', difference(newColumnsConfig, oldColumnsConfig));
+          if (this.editable) console.warn('Changes columns config', difference(newColumnsConfig, oldColumnsConfig));
         }
       },
     },
     validation: {
       handler(newValidation, oldValidation) {
         if (this.isLoaded) {
-          if (this.editable) console.log('Changes validation', this.tableJSON.schema.schemaName, this.tableJSON.schema.version_tag);
+          if (this.editable) console.warn('Changes validation', this.tableJSON.schema.schemaName, this.tableJSON.schema.version_tag);
           this.tabulator?.setColumns(this.columnsConfig);
           this.validateTable();
         }
@@ -190,14 +191,14 @@ export default {
     },
     columns() {
       return this.tabulator?.getColumns()
-        ?.map((col) => col.getField())
-        ?.filter(field => field && !field.startsWith('_')) || [];
+        ?.map((col: ColumnComponent) => col.getField())
+        ?.filter((field: string) => field && !field.startsWith('_')) || [];
     },
     columnsConfig() {
       if (!this.tableJSON?.schema) return [];
 
       var configs = this.tableJSON.schema.fields.map((column: DataFrameField) => {
-        const commonConfig = this.generateCommonConfig(column.name);
+        const commonConfig = this.generateColumnConfig(column.name);
         const editableConfig = this.generateColumnEditableConfig(column.name);
         return { ...commonConfig, ...editableConfig };
       });
@@ -234,10 +235,6 @@ export default {
       if (this.groupbyColumns.length === 0) {
         return {};
       }
-      if (this.editable) {
-        console.log("Grouping is not supported in editable mode")
-      }
-
       return {
         groupBy: this.groupbyColumns,
         groupToggleElement: "arrow",
@@ -257,7 +254,7 @@ export default {
           {
             label: (group) => {
               const subGroupFields = (this.groupbyColumns.slice(group._group.level + 1));
-              return `Add missing <b>${subGroupFields.join(', ')}</b> subgroups`;
+              return `Add missing <b>${subGroupFields.join(', ')}</b> references`;
             },
             disabled: (group) => {
               if (!this.editable || !this.referenceValues) {
@@ -270,8 +267,6 @@ export default {
             action: (e, group: GroupComponent) => {
               let parentGroup = group.getParentGroup();
               const fixedValues: Record<string, string> = { [group.getField()]: group.getKey() };
-
-              console.log(this.referenceValues)
 
               while (parentGroup) {
                 fixedValues[parentGroup.getField()] = parentGroup.getKey();
@@ -293,7 +288,7 @@ export default {
             disabled: !this.editable,
             action: (e, group: GroupComponent) => {
               this.deleteGroupRows(group);
-              this.updateTableJsonData(true);
+              this.updateTableJsonData();
             }
           },
         ],
@@ -382,7 +377,7 @@ export default {
         this.tabulator.updateColumnDefinition(oldFieldName, {
           field: newFieldName,
           title: newFieldName,
-          ...this.generateCommonConfig(newFieldName),
+          ...this.generateColumnConfig(newFieldName),
           ...this.generateColumnEditableConfig(newFieldName),
         });
 
@@ -397,30 +392,33 @@ export default {
       
       this.tableJSON.data = this.tabulator.getData().map(({ _id, ...rest }) => rest);
     },
-    isIndexRefColumn(field) { 
+    isIndexRefColumn(field: string) { 
       return this.indexColumns?.includes(field) || this.refColumns?.includes(field);
     },
-    generateCommonConfig(field) {
+    generateColumnConfig(field: string) {
       const hide = !this.showRefColumns && this.isIndexRefColumn(field);
       const commonConfig = {
         title: field,
         field: field,
         visible: !hide,
         width: this.isIndexRefColumn(field) ? 50 : undefined,
-        validator: this.columnValidators.hasOwnProperty(field)
-          ? this.columnValidators[field]
-          : null,
-        formatter: this.isIndexRefColumn(field) ? (cell, formatterParams) => {
+        validator: this.columnValidators[field],
+        formatter: (cell: CellComponent, formatterParams, onRendered): any => {
           const value = cell.getValue();
-          if (!value) return value;
-          else {
-            return "<span style='font-weight:bold;'>" + value + "</span>";
+          const cellElement = cell.getElement();
+          if (this.isIndexRefColumn(field)) {
+            cellElement.style.fontWeight = "bold";
+          } else if (value === "NA" || value === "ND") {
+            cellElement.style.color = "#999";
+          } else {
+            cellElement.style.color = "";
           }
-        } : null,
+          return value;
+        },
       };
       return commonConfig;
     },
-    generateColumnEditableConfig(fieldName) {
+    generateColumnEditableConfig(field: string) {
       if (!this.editable) return {};
 
       // Default editable config for a column
@@ -437,11 +435,11 @@ export default {
         // },
       };
 
-      config = merge({}, config, getColumnEditorParams(fieldName, this.validation, this.refColumns, this.referenceValues));
+      config = merge({}, config, getColumnEditorParams(field, this.validation, this.refColumns, this.referenceValues));
 
       return config;
     },
-    validateTable(options) {
+    validateTable(options: { scrollToError?: boolean, saveData?: boolean }): boolean {
       var validErrors = this.tabulator.validate();
 
       const isValid = validErrors === true;
@@ -478,7 +476,7 @@ export default {
         return aIndex - bIndex;
       });
     },
-    async addRow(selectedRow, rowData: Record<string, any>={}): Promise<RowComponent> {
+    async addRow(selectedRow?: RowComponent, rowData: Record<string, any>={}): Promise<RowComponent> {
       // const requiredFields = this.refColumns || this.indexColumns;
       // Select the last row if no row is selected
       if (!selectedRow) {
@@ -499,24 +497,30 @@ export default {
           rowData[field] = undefined;
         }
       }
-      const row: RowComponent = await this.tabulator.addRow(rowData, false, selectedRow);
+      const addedRow: RowComponent = await this.tabulator.addRow(rowData, false, selectedRow);
       this.updateTableJsonData();
       this.validateTable();
       if (!this.showRefColumns) this.toggleShowRefColumns();
-      return row;
+      return addedRow;
+      // const rowPos: number | boolean = selectedRow.getPosition()
+      // if (typeof rowPos != 'number' || rowPos < 0 || rowPos > this.tableJSON.data.length) return
+      // this.tableJSON.data.splice(rowPos-1, 0, rowData);
+      // const addedRow: RowComponent = this.tabulator.getRowFromPosition(rowPos-1);
+      // addedRow.validate();
+      // return addedRow;
     },
     deleteGroupRows(group: GroupComponent) {
-      group?.getRows()?.forEach((row) => {
+      group?.getRows()?.forEach((row: RowComponent) => {
         row?.delete();
       });
 
-      group?.getSubGroups()?.forEach((subGroup) => {
+      group?.getSubGroups()?.forEach((subGroup: GroupComponent) => {
         this.deleteGroupRows(subGroup);
       });
     },
     async addColumn(selectedColumn?: ColumnComponent, newFieldName = "newColumn"): Promise<ColumnComponent> {
+      const range: RangeComponent = this.tabulator.getRanges()[0];
       if (!selectedColumn) {
-        const range = this.tabulator.getRanges()[0];
         if (range) {
           selectedColumn = range.getColumns()[0]
         }
@@ -535,7 +539,7 @@ export default {
 
       const column: ColumnComponent = await this.tabulator.addColumn(
         {
-          ...this.generateCommonConfig(newFieldName),
+          ...this.generateColumnConfig(newFieldName),
           ...this.generateColumnEditableConfig(newFieldName),
           editableTitle: newFieldName.includes("newColumn"),
         }, 
@@ -544,7 +548,12 @@ export default {
 
       this.updateTableJsonData(false, true);
       this.columnMoved(null, this.tabulator.getColumns());
-      column.getCells()[0]?.edit();
+
+      if (range) {
+        const firstRow = range.getRows()[0];
+        const cell = firstRow.getCell(newFieldName);
+        cell.edit();
+      }
       return column;
 
     },
@@ -650,6 +659,7 @@ export default {
       });
 
       this.updateTableJsonData();
+      this.validateTable();
     },
     columnContextMenu() {
       let menu = [
@@ -751,7 +761,7 @@ export default {
 
               duplicateRows.reverse().forEach((row: RowComponent) => {
                 const newRowData = { ...row.getData() };
-                this.indexColumns.forEach((field) => {
+                this.indexColumns.forEach((field: string) => {
                   newRowData[field] = undefined;
                 });
                 
@@ -760,7 +770,7 @@ export default {
             } else {
               // Only a single row is selected
               const newRowData = { ...row.getData() };
-              this.indexColumns.forEach((field) => {
+              this.indexColumns.forEach((field: string) => {
                 newRowData[field] = undefined;
               });
               this.addRow(row, newRowData);
@@ -799,21 +809,9 @@ export default {
         data: this.tableJSON.data,
         reactiveData: true,
         layout: this.columns.length <= 2 ? "fitData" : "fitDataTable",
-        height: this.tableJSON.data.length >= 10 ? "60vh": 'auto',
-        persistence:{
-          sort: true,
-          filter: true,
-          headerFilter: true,
-          columns: ["frozen"], 
-          group:{
-            groupBy: true,
-            groupStartOpen: true,
-            groupHeader: false,
-          },
-          page: true,
-        },
-        renderVertical:"basic",
-        layoutColumnsOnNewData: true,
+        height: 'auto',
+        // renderVertical: "basic",
+        layoutColumnsOnNewData: false,
         autoResize: false,
         placeholder: () => {
           const div = document.createElement('div');
@@ -838,7 +836,7 @@ export default {
         rowHeader: { 
           headerSort: false, resizable: false, rowHandle: true, editor: false,
           minWidth: 30, width: 30, maxWidth: 30, headerHozAlign: "center", hozAlign: "center", 
-          formatter: "rownum",
+          formatter: "rownum", cssClass:"range-header-col",
         },
         rowContextMenu: this.rowContextMenu,
         index: "_id",
@@ -879,19 +877,56 @@ export default {
         },
         clipboardCopyStyled: false,
 
+        // persistence
+        persistence: this.editable ? {
+          sort: true,
+          filter: true,
+          headerFilter: true,
+          // columns: ["frozen"], 
+          group: {
+            groupBy: true,
+            groupStartOpen: true,
+            groupHeader: true,
+          },
+          page: true,
+        } : false,
+        persistenceID: `tabulator-${this.tableJSON.schema.schemaName}-${this.tableJSON.reference}`,
+
         validationMode: "highlight",
         history: this.editable,
       });
 
       if (this.editable) {
         this.tabulator.on("columnTitleChanged", this.columnTitleChanged.bind(this));
+
         this.tabulator.on("columnMoved", this.columnMoved.bind(this));
+
         this.tabulator.on("cellEdited", (cell: CellComponent) => {
           this.updateTableJsonData();
+          // const rowPos: number | boolean = cell.getRow().getPosition();
+          // if (typeof rowPos != 'number' || rowPos < 0 || rowPos > this.tableJSON.data.length) return;
+          // this.$set(this.tableJSON.data[rowPos-1], cell.getColumn().getField(), cell.getValue());
         });
+
         this.tabulator.on("clipboardPasted", (clipboard, rowData, rows) => {
           this.updateTableJsonData();
           this.validateTable();
+        });
+
+        this.tabulator.on("historyUndo", (clipboard, rowData, rows) => {
+          this.updateTableJsonData();
+          this.validateTable();
+        });
+
+        this.tabulator.on("historyRedo", (clipboard, rowData, rows) => {
+          this.updateTableJsonData();
+          this.validateTable();
+        });
+
+        this.tabulator.on("validationFailed", function(cell: CellComponent, value, validators: Validators) {
+          if (value === "NA") {
+            cell.clearValidation();
+          }
         });
       }
 

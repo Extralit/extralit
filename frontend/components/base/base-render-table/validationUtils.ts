@@ -281,7 +281,7 @@ export function getColumnEditorParams(
 
     config.editorParams.maxWidth = '500px'
 
-    config.editorParams.filterFunc = function (term, label, value, item) {
+    config.editorParams.filterFunc = function (term: string, label: string, value, item) {
       if (String(label).startsWith(term) || value.includes(term)) {
         return true;
       } else if (term.length >= 3 && item.data) {
