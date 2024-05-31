@@ -8,3 +8,4 @@ export * from "./useQueue";
 export * from "./useRole";
 export * from "./useRoutes";
 export * from "./useTranslate";
+export * from "./useWait";

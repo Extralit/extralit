@@ -5,9 +5,12 @@ import {
 import { useDocument } from "@/v1/infrastructure/storage/DocumentStorage";
 import { Notification } from "@/models/Notifications";
 import { Segment } from "@/v1/domain/entities/document/Document";
+import { useDataset } from "@/v1/infrastructure/storage/DatasetStorage";
+import { waitForCondition } from "@/v1/infrastructure/services/useWait";
 
 export const useDocumentViewModel = () => {
   const getDocument = useResolve(GetDocumentByIdUseCase);
+  const { state: dataset } = useDataset();
   const { state: document, set: setDocument, clear: clearDocument } = useDocument();
 
   const fetchDocumentByID = async (id: string) => {
@@ -38,9 +41,10 @@ export const useDocumentViewModel = () => {
     setDocument({ ...document, page_number: pageNumber });
   };
 
-  const fetchDocumentSegments = async (workspace: string, reference: string): Promise<Segment[]> => {
+  const fetchDocumentSegments = async (reference: string): Promise<Segment[]> => {
+    await waitForCondition(() => dataset.workspaceName);
     try {
-      const segments = await getDocument.setSegments(workspace, reference);
+      const segments = await getDocument.setSegments(dataset.workspaceName, reference);
       return segments;
     } catch (e) {
       Notification.dispatch("notify", {

@@ -35,10 +35,7 @@ export class DocumentRepository {
   async getDocumentSegments(workspace: string, reference: string): Promise<Segment[]> {
     try {
       const { data } = await this.axios.get<Segments>('/v1/models/segments/', {
-        params: {
-          workspace,
-          reference
-        }
+        params: { workspace, reference }
       });
 
       return data.items;

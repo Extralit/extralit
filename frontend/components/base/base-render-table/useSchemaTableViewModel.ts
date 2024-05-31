@@ -7,18 +7,7 @@ import { GetExtractionSchemaUseCase } from "@/v1/domain/usecases/get-extraction-
 
 import { DataFrame, Data, ReferenceValues, PanderaSchema } from "./types";
 import { useDataset } from "@/v1/infrastructure/storage/DatasetStorage";
-
-
-export default function waitForCondition(getValue: () => any, interval=100) {
-  return new Promise((resolve, reject) => {
-    const checkInterval = setInterval(() => {
-      if (getValue()) {
-        clearInterval(checkInterval);
-        resolve(true);
-      }
-    }, interval);
-  });
-};
+import { waitForCondition } from "~/v1/infrastructure/services/useWait";
 
 export interface SchemaTableViewModel {
   tableJSON: Ref<DataFrame>;
