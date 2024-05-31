@@ -1,5 +1,6 @@
 import { DocumentRepository } from "@/v1/infrastructure/repositories/DocumentRepository";
 import { IDocumentStorage } from "../services/IDocumentStorage";
+import { Segment } from "../entities/document/Document";
 
 export class GetDocumentByIdUseCase {
   constructor(
@@ -19,7 +20,14 @@ export class GetDocumentByIdUseCase {
     this.documentStorage.set(document);
   }
 
-  async get() {
+  async setSegments(workspace: string, reference: string): Promise<Segment[]> {
+    const segments = await this.documentRepository.getDocumentSegments(workspace, reference);
+
+    this.documentStorage.setSegments(segments)
+    return segments
+  }
+
+  get() {
     return this.documentStorage.get()
   }
 }

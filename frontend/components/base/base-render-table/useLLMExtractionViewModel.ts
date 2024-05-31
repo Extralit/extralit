@@ -5,6 +5,7 @@ import { GetLLMExtractionUseCase } from "@/v1/domain/usecases/get-extraction-com
 
 import { DataFrame, Data, ReferenceValues, PanderaSchema } from "./types";
 import { useDataset } from "@/v1/infrastructure/storage/DatasetStorage";
+import { useDocument } from "@/v1/infrastructure/storage/DocumentStorage";
 import { SchemaTableViewModel } from "./useSchemaTableViewModel";
 
 export const useLLMExtractionViewModel = (
@@ -17,6 +18,9 @@ export const useLLMExtractionViewModel = (
   schemaTableViewModel: SchemaTableViewModel) => {
     const getExtraction = useResolve(GetLLMExtractionUseCase);
     const { state: dataset } = useDataset();
+    const { state: document, set: setDocument, clear: clearDocument } = useDocument();
+
+  console.log('questions', props.questions)
 
   const completeExtraction = async (
     selectedRowData: Data,
@@ -67,5 +71,6 @@ export const useLLMExtractionViewModel = (
 
   return {
     completeExtraction,
+    document,
   }
 };

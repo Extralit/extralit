@@ -1,4 +1,4 @@
-import { Document } from "@/v1/domain/entities/document/Document";
+import { Document, Segment } from "@/v1/domain/entities/document/Document";
 import { IDocumentStorage } from "@/v1/domain/services/IDocumentStorage";
 import { useStoreFor } from "@/v1/store/create";
 
@@ -9,7 +9,19 @@ export const useDocument = () => {
   const state = useStoreForDocument();
 
   const set = (document: Document): void => {
-    state.save(document)
+    const currentDocument = get();
+    if (currentDocument && currentDocument.segments.length > 0 && !currentDocument) {
+      document.segments = currentDocument.segments;
+    }
+    state.save(document);
+  }
+
+  const setSegments = (segments: Segment[]): void => {
+    const document = get();
+    if (document) {
+      document.segments = segments;
+      set(document);
+    }
   }
 
   const get = (): Document | null => {
@@ -24,7 +36,8 @@ export const useDocument = () => {
     ...state,
     set,
     get,
-    clear
+    clear,
+    setSegments,
   };
 };
 

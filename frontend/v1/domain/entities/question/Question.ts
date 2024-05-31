@@ -174,7 +174,7 @@ export class Question {
     this.suggestion = suggestion;
   }
 
-  addDynamicSelectionToLabelQuestion(suggestion: Suggestion) {
+  public addDynamicSelectionToLabelQuestion(suggestion: Suggestion) {
     if (Array.isArray(suggestion?.suggestedAnswer) && suggestion.suggestedAnswer?.length > 0) {
       const suggestedOptions: string[] = suggestion.suggestedAnswer.map((answer) => answer.toString());
       

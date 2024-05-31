@@ -1,5 +1,5 @@
 import { type NuxtAxiosInstance } from "@nuxtjs/axios";
-import { Document } from "@/v1/domain/entities/document/Document";
+import { Document, Segment, Segments } from "@/v1/domain/entities/document/Document";
 
 const DOCUMENT_API_ERRORS = {
   ERROR_FETCHING_DOCUMENT: "ERROR_FETCHING_DOCUMENT",
@@ -12,14 +12,8 @@ export class DocumentRepository {
 
   async getDocumentByPubmedID(pmid: string): Promise<Document>  {
     try {
-      const response = await this.axios.get(`/v1/documents/by-pmid/${pmid}`);
-
-      return new Document(
-        response.data.id, 
-        response.data.url, 
-        response.data.file_name, 
-        response.data.pmid);
-
+      const { data } = await this.axios.get<Document>(`/v1/documents/by-pmid/${pmid}`);
+      return data;
     } catch (error) {
       throw {
         response: DOCUMENT_API_ERRORS.ERROR_FETCHING_DOCUMENT,
@@ -29,14 +23,25 @@ export class DocumentRepository {
 
   async getDocumentById(id: string): Promise<Document> {
     try {
-      const response = await this.axios.get(`/v1/documents/by-id/${id}`);
+      const { data } = await this.axios.get<Document>(`/v1/documents/by-id/${id}`);
+      return data;   
+    } catch (error) {
+      throw {
+        response: DOCUMENT_API_ERRORS.ERROR_FETCHING_DOCUMENT,
+      }
+    }
+  }
 
-      return new Document(
-        response.data.id, 
-        response.data.url, 
-        response.data.file_name, 
-        response.data.pmid);   
+  async getDocumentSegments(workspace: string, reference: string): Promise<Segment[]> {
+    try {
+      const { data } = await this.axios.get<Segments>('/v1/models/segments/', {
+        params: {
+          workspace,
+          reference
+        }
+      });
 
+      return data.items;
     } catch (error) {
       throw {
         response: DOCUMENT_API_ERRORS.ERROR_FETCHING_DOCUMENT,

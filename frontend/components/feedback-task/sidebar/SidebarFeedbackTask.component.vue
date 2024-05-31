@@ -174,16 +174,16 @@ export default {
       try {
         if (this.metadata?.pmid != null) {
           if (this.document.pmid !== this.metadata.pmid){
-            this.setDocumentByPubmedID(this.metadata.pmid);
+            this.fetchDocumentByPubmedID(this.metadata.pmid);
           }
         } else if (this.metadata?.doc_id != null && this.document.id !== this.metadata.doc_id) {
-          this.setDocumentByID(this.metadata.doc_id);
+          this.fetchDocumentByID(this.metadata.doc_id);
         } else if (!this.metadata?.pmid && !this.metadata?.doc_id && this.hasDocumentLoaded) {
           this.clearDocument();
         }
 
         if (this.metadata?.page_number != null) {
-          this.setDocumentPageNumber(this.metadata.page_number);
+          this.focusDocumentPageNumber(this.metadata.page_number);
         }
       } catch (error) {
         console.log(error)

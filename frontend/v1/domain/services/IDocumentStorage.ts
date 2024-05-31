@@ -1,6 +1,7 @@
-import { Document } from "../entities/document/Document";
+import { Document, Segment } from "../entities/document/Document";
 
 export interface IDocumentStorage {
   set(document: Document): void;
   get(): Document | null;
+  setSegments(segments: Segment[]): void;
 }

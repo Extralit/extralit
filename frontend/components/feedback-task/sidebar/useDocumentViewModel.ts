@@ -1,15 +1,16 @@
 import { useResolve } from "ts-injecty";
 import {
   GetDocumentByIdUseCase,
-} from "~/v1/domain/usecases/get-document-by-id-use-case";
+} from "@/v1/domain/usecases/get-document-by-id-use-case";
 import { useDocument } from "@/v1/infrastructure/storage/DocumentStorage";
 import { Notification } from "@/models/Notifications";
+import { Segment } from "@/v1/domain/entities/document/Document";
 
 export const useDocumentViewModel = () => {
   const getDocument = useResolve(GetDocumentByIdUseCase);
   const { state: document, set: setDocument, clear: clearDocument } = useDocument();
 
-  const setDocumentByID = async (id: string) => {
+  const fetchDocumentByID = async (id: string) => {
     try {
       await getDocument.setDocumentByID(id);
     } catch (e) {
@@ -21,7 +22,7 @@ export const useDocumentViewModel = () => {
     }
   };
 
-  const setDocumentByPubmedID = async (pmid: string) => {
+  const fetchDocumentByPubmedID = async (pmid: string) => {
     try {
       await getDocument.setDocumentByPubmedID(pmid);
     } catch (e) {
@@ -33,16 +34,29 @@ export const useDocumentViewModel = () => {
     }
   };
 
-  const setDocumentPageNumber = (pageNumber: number | string) => {
+  const focusDocumentPageNumber = (pageNumber: number | string) => {
     setDocument({ ...document, page_number: pageNumber });
+  };
+
+  const fetchDocumentSegments = async (workspace: string, reference: string): Promise<Segment[]> => {
+    try {
+      const segments = await getDocument.setSegments(workspace, reference);
+      return segments;
+    } catch (e) {
+      Notification.dispatch("notify", {
+        message: `Error fetching document segments`,
+        type: 'error',
+      });
+    }
   };
 
   return {
     document,
-    setDocumentByID: setDocumentByID,
-    setDocumentByPubmedID: setDocumentByPubmedID,
-    clearDocument: clearDocument,
-    setDocumentPageNumber: setDocumentPageNumber,
+    fetchDocumentByID,
+    fetchDocumentByPubmedID,
+    fetchDocumentSegments,
+    focusDocumentPageNumber,
+    clearDocument,
   };
 };
 
