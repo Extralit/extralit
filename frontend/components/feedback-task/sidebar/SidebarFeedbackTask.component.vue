@@ -56,6 +56,10 @@ export default {
       if ((newMetadata !== oldMetadata || !this.document) && this.currentPanel === 'document') {
         this.fetchDocument();
       }
+      if (newMetadata.reference && oldMetadata?.reference !== newMetadata.reference) {
+        this.fetchDocumentSegments(newMetadata.reference);
+      }
+
     },
     currentPanel(newPanel, oldPanel) {
       if (newPanel === 'document' && this.metadata && (this.document.pmid != this.metadata.pmid || this.document.id != this.metadata.doc_id)) {
@@ -204,9 +208,6 @@ export default {
   mounted() {
     this.$nuxt.$on('on-change-record-metadata', (metadata) => {
       if (!metadata) { return; }
-      if (metadata.reference && this.metadata?.reference !== metadata.reference) {
-        this.fetchDocumentSegments(metadata.reference);
-      }
       this.metadata = metadata;
     });
   },

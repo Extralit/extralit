@@ -28,7 +28,6 @@ export const useFocusAnnotationViewModel = (
 
   watch([() => document.segments, () => props.record], () => {
     const selections = document.getQuestionSelections();
-    console.log('document.segments', selections)
 
     props.record.questions.forEach((question: Question) => {
       if (selections && question.name == 'context-relevant' && 

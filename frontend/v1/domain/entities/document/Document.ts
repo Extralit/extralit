@@ -32,6 +32,10 @@ export class Document {
 
 		const selections = this.segments
 			?.filter((segment: Segment) => segment?.header)
+			?.reduce((unique: Segment[], segment: Segment) => {
+				if (!segment?.header || unique.some(item => item.header === segment.header)) return unique;
+				return [...unique, segment];
+			}, [])
 			.map((segment: Segment) => 
 				({ value: segment.header, text: segment.header, description: `Page ${segment.page_number}`}));
 		
