@@ -18,9 +18,6 @@ export const useLLMExtractionViewModel = (
   schemaTableViewModel: SchemaTableViewModel) => {
     const getExtraction = useResolve(GetLLMExtractionUseCase);
     const { state: dataset } = useDataset();
-    const { state: document, set: setDocument, clear: clearDocument } = useDocument();
-
-  console.log('questions', props.questions)
 
   const completeExtraction = async (
     selectedRowData: Data,

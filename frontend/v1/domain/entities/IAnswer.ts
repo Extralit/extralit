@@ -6,12 +6,19 @@ export type SpanAnswer = {
   label: string;
 };
 
+export type LabelAnswer = {
+  value: string;
+  label: string;
+  description?: string;
+};
+
 export type AnswerCombinations =
   | string
   | string[]
   | number
   | RankingAnswer[]
-  | SpanAnswer[];
+  | SpanAnswer[]
+  | LabelAnswer[];
 
 export interface Answer {
   value: AnswerCombinations;

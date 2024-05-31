@@ -159,7 +159,7 @@ export class Record {
         if (suggestion.questionId === question.id) {
           if (["dynamic_multi_label_selection", "dynamic_label_selection"].includes(question.settings.type) && 
               suggestion.type == "selection") {
-            question.addDynamicSelectionToLabelQuestion(suggestion)
+            // question.addDynamicSelectionToLabelQuestion(suggestion)
           } else if (!question.hasSuggestion) {
             question.addSuggestion(suggestion);
           }

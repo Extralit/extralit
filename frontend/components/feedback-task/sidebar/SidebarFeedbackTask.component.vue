@@ -205,6 +205,9 @@ export default {
     this.$nuxt.$on('on-change-record-metadata', (metadata) => {
       if (!metadata) { return; }
       this.metadata = metadata;
+      if (metadata.reference) {
+        this.fetchDocumentSegments(metadata.reference);
+      }
     });
   },
 

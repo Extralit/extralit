@@ -1,3 +1,5 @@
+import { Suggestion } from "../question/Suggestion";
+
 export class Segment {
   constructor(
     public readonly doc_id: string | number,
@@ -21,5 +23,26 @@ export class Document {
 		public segments?: Segment[],
 	) {
 		this.segments = segments || [];
+	}
+
+	getQuestionSelectionSuggestion(): Suggestion | null {
+		if (!this.segments) {
+			return null;
+		}
+
+		const selections = this.segments.map((segment: Segment) => {
+			return { value: segment.header, text: segment.header, description: `Page ${segment.page_number}`}
+		});
+		
+		return {
+			id: this.id,
+			questionId: null,
+			questionType: null,
+			// @ts-ignore
+			suggestedAnswer: selections,
+			score: null,
+			agent: null,
+			type: "selection"
+		};
 	}
 }

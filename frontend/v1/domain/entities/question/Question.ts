@@ -1,4 +1,4 @@
-import { Answer } from "../IAnswer";
+import { Answer, LabelAnswer } from "../IAnswer";
 import { Guard } from "../error";
 import { Color } from "./Color";
 import {
@@ -175,43 +175,32 @@ export class Question {
   }
 
   public addDynamicSelectionToLabelQuestion(suggestion: Suggestion) {
-    if (Array.isArray(suggestion?.suggestedAnswer) && suggestion.suggestedAnswer?.length > 0) {
-      const suggestedOptions: string[] = suggestion.suggestedAnswer.map((answer) => answer.toString());
-      
-      let selections = [];
-      if (this.settings.options.some((option: any) => suggestedOptions.includes(option.value))) {
-        // Subset of options
-        selections = this.settings.options.filter(option => 
-          suggestedOptions.some((value: string) => value === option.value)
-        );
-      } else {
-        // Add new options
-        selections = [
-          ...this.settings.options,
-          ...suggestedOptions
-            .filter(value => 
-              !this.settings.options.some(existingOption => existingOption.value === value))
-            .map((value) => ({
-              text: value,
-              value: value,
-              description: null,
-            })),
-        ]
-      }
+    if (!Array.isArray(suggestion?.suggestedAnswer) || !suggestion.suggestedAnswer?.length) return
+    const suggestedOptions = suggestion.suggestedAnswer;
 
-      if (this.isMultiLabelType) {
-        this.answer = new MultiLabelQuestionAnswer(
-          this.type,
-          this.name,
-          selections
-        );
-      } else if (this.isSingleLabelType) {
-        this.answer = new SingleLabelQuestionAnswer(
-          this.type,
-          this.name,
-          selections
-        );
-      }
+    let existingOptionsValues = new Set(this.settings.options.map((option: LabelAnswer) => option.value));
+    let selections = [
+      ...this.settings.options,
+      ...suggestedOptions
+        .filter((option: LabelAnswer) => !existingOptionsValues.has(option.value ))
+        .map((option: LabelAnswer) => {
+          if (typeof option === 'string') return { text: option, value: option, description: null }
+          else return option;
+        }),
+    ]
+
+    if (this.isMultiLabelType) {
+      this.answer = new MultiLabelQuestionAnswer(
+        this.type,
+        this.name,
+        selections
+      );
+    } else if (this.isSingleLabelType) {
+      this.answer = new SingleLabelQuestionAnswer(
+        this.type,
+        this.name,
+        selections
+      );
     }
   }
 

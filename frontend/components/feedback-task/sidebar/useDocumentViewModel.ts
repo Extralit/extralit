@@ -21,7 +21,7 @@ export const useDocumentViewModel = () => {
         message: `Error fetching document with ID ${id}`,
         type: 'error',
       });
-      setDocument({ id: null, url: null, file_name: null, pmid: null });
+      clearDocument();
     }
   };
 
@@ -33,11 +33,12 @@ export const useDocumentViewModel = () => {
         message: `Error fetching document with pmid "${pmid}"`,
         type: 'error',
       });
-      setDocument({ id: null, url: null, file_name: null, pmid: null });
+      clearDocument();
     }
   };
 
   const focusDocumentPageNumber = (pageNumber: number | string) => {
+    // @ts-ignore
     setDocument({ ...document, page_number: pageNumber });
   };
 
