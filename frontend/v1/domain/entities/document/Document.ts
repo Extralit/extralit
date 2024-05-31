@@ -1,4 +1,4 @@
-import { Suggestion } from "../question/Suggestion";
+import { LabelAnswer } from "../IAnswer";
 
 export class Segment {
   constructor(
@@ -25,24 +25,16 @@ export class Document {
 		this.segments = segments || [];
 	}
 
-	getQuestionSelectionSuggestion(): Suggestion | null {
+	getQuestionSelections(): LabelAnswer[] {
 		if (!this.segments) {
 			return null;
 		}
 
-		const selections = this.segments.map((segment: Segment) => {
-			return { value: segment.header, text: segment.header, description: `Page ${segment.page_number}`}
-		});
+		const selections = this.segments
+			?.filter((segment: Segment) => segment?.header)
+			.map((segment: Segment) => 
+				({ value: segment.header, text: segment.header, description: `Page ${segment.page_number}`}));
 		
-		return {
-			id: this.id,
-			questionId: null,
-			questionType: null,
-			// @ts-ignore
-			suggestedAnswer: selections,
-			score: null,
-			agent: null,
-			type: "selection"
-		};
+		return selections;
 	}
 }

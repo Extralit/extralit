@@ -1,12 +1,19 @@
 import { useResolve } from "ts-injecty";
-import { ref } from "vue-demi";
+import { ref, watch } from "vue-demi";
 import { Record } from "~/v1/domain/entities/record/Record";
+import { Question } from "~/v1/domain/entities/question/Question";
 import { DiscardRecordUseCase } from "~/v1/domain/usecases/discard-record-use-case";
 import { SubmitRecordUseCase } from "~/v1/domain/usecases/submit-record-use-case";
 import { SaveDraftUseCase } from "~/v1/domain/usecases/save-draft-use-case";
 import { useDebounce } from "~/v1/infrastructure/services/useDebounce";
+import { useDocument } from "~/v1/infrastructure/storage/DocumentStorage";
 
-export const useFocusAnnotationViewModel = () => {
+export const useFocusAnnotationViewModel = (
+  props: { 
+    datasetId: string,
+    record: Record,
+  },
+) => {
   const debounceForSubmit = useDebounce(300);
   const debounceForSaveDraft = useDebounce(1000);
 
@@ -16,6 +23,29 @@ export const useFocusAnnotationViewModel = () => {
   const discardUseCase = useResolve(DiscardRecordUseCase);
   const submitUseCase = useResolve(SubmitRecordUseCase);
   const saveDraftUseCase = useResolve(SaveDraftUseCase);
+
+  const { state: document } = useDocument();
+
+  watch([() => document.segments, () => props.record], () => {
+    const selections = document.getQuestionSelections();
+    console.log('document.segments', selections)
+
+    props.record.questions.forEach((question: Question) => {
+      if (selections && question.name == 'context-relevant' && 
+          ["dynamic_multi_label_selection", "dynamic_label_selection"].includes(question.settings.type)){
+
+        question.addDynamicSelectionToLabelQuestion(selections)
+
+        if (props.record.isPending && question.hasSuggestion) {
+          question.response(question.suggestion);
+        } else {
+          const answer = props.record.answer?.value[question.name];
+          question.response(answer);
+        }
+      }
+    });
+  }, { deep: false, immediate: true });
+
 
   const discard = async (record: Record) => {
     isDiscarding.value = true;

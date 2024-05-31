@@ -8,7 +8,7 @@ export type SpanAnswer = {
 
 export type LabelAnswer = {
   value: string;
-  label: string;
+  text: string;
   description?: string;
 };
 

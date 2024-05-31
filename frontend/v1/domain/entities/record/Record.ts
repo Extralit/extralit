@@ -148,19 +148,11 @@ export class Record {
   }
 
   private completeQuestion() {
-    return this.questions.map((question) => {
-
+    return this.questions.map((question: Question) => {
       // Ensures that the `selection` are added to initialize the question options first, then add `human` and `model` suggestions to the question
-      (this.suggestions || []).sort((a, b) => {
-        if (a.type == "selection") return -1;
-        if (b.type == "selection") return 1;
-        return 0;
-      }).forEach((suggestion) => {
+      (this.suggestions || []).forEach((suggestion: Suggestion) => {
         if (suggestion.questionId === question.id) {
-          if (["dynamic_multi_label_selection", "dynamic_label_selection"].includes(question.settings.type) && 
-              suggestion.type == "selection") {
-            // question.addDynamicSelectionToLabelQuestion(suggestion)
-          } else if (!question.hasSuggestion) {
+          if (!question.hasSuggestion && suggestion.type != "selection") {
             question.addSuggestion(suggestion);
           }
         }

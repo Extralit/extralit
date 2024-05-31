@@ -174,9 +174,8 @@ export class Question {
     this.suggestion = suggestion;
   }
 
-  public addDynamicSelectionToLabelQuestion(suggestion: Suggestion) {
-    if (!Array.isArray(suggestion?.suggestedAnswer) || !suggestion.suggestedAnswer?.length) return
-    const suggestedOptions = suggestion.suggestedAnswer;
+  public addDynamicSelectionToLabelQuestion(suggestedOptions: LabelAnswer[]) {
+    if (!Array.isArray(suggestedOptions) || !suggestedOptions?.length) return
 
     let existingOptionsValues = new Set(this.settings.options.map((option: LabelAnswer) => option.value));
     let selections = [

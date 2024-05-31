@@ -43,8 +43,8 @@ export const useDocumentViewModel = () => {
   };
 
   const fetchDocumentSegments = async (reference: string): Promise<Segment[]> => {
-    await waitForCondition(() => dataset.workspaceName);
     try {
+      await waitForCondition(() => dataset.workspaceName);
       const segments = await getDocument.setSegments(dataset.workspaceName, reference);
       return segments;
     } catch (e) {

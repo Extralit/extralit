@@ -106,8 +106,8 @@ export default {
       }
     },
   },
-  setup() {
-    return useFocusAnnotationViewModel();
+  setup(props) {
+    return useFocusAnnotationViewModel(props);
   },
 };
 </script>

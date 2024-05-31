@@ -204,10 +204,10 @@ export default {
   mounted() {
     this.$nuxt.$on('on-change-record-metadata', (metadata) => {
       if (!metadata) { return; }
-      this.metadata = metadata;
-      if (metadata.reference) {
+      if (metadata.reference && this.metadata?.reference !== metadata.reference) {
         this.fetchDocumentSegments(metadata.reference);
       }
+      this.metadata = metadata;
     });
   },
 
