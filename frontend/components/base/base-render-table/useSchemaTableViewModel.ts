@@ -1,13 +1,13 @@
 import { isEqual } from "lodash";
-import { ref, Ref, onBeforeMount } from "vue-demi";
+import { ref, Ref } from "vue-demi";
 import { useResolve } from "ts-injecty";
 
 import { Question } from "@/v1/domain/entities/question/Question";
 import { GetExtractionSchemaUseCase } from "@/v1/domain/usecases/get-extraction-schema-use-case";
 
-import { DataFrame, Data, ReferenceValues, PanderaSchema } from "./types";
+import { DataFrame, PanderaSchema } from "./types";
 import { useDataset } from "@/v1/infrastructure/storage/DatasetStorage";
-import { waitForCondition } from "~/v1/infrastructure/services/useWait";
+import { waitForAsyncValue } from "~/v1/infrastructure/services/useWait";
 
 export interface SchemaTableViewModel {
   tableJSON: Ref<DataFrame>;
@@ -41,7 +41,7 @@ export const useSchemaTableViewModel = (
   const fetchValidation = async ({ latest = false }: { latest?: boolean } = {}) => {
     var schemaName: string = tableJSON.value.schema?.schemaName;
     var version_id: string = latest ? null : tableJSON.value.schema?.version_id;
-    await waitForCondition(() => dataset.workspaceName);
+    await waitForAsyncValue(() => dataset.workspaceName);
     
     if (!tableJSON.value.schema.schemaName) {
       schemaName = tableJSON.value?.validation?.name;

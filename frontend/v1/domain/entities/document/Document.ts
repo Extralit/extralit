@@ -20,6 +20,7 @@ export class Document {
 		public readonly file_name?: string,
 		public readonly pmid?: string,
 		public readonly page_number?: number | string,
+		public reference?: string,
 		public segments?: Segment[],
 	) {
 		this.segments = segments || [];

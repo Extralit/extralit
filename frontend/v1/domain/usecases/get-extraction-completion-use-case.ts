@@ -62,22 +62,22 @@ export class GetLLMExtractionUseCase {
     prompt?: string
   ): BackendExtractionRequest {
 
-    var extractions: Record<string, Data> = Object.fromEntries(
-      Object.entries(referenceValues).map(([schema_ref_field, dataframe]) => 
-        [
-          schema_ref_field.replace('_ref', ''), 
-          Object.entries(dataframe)
-            .filter(([key, value]) => selectedRowData.some(row => row[schema_ref_field] === key))
-            .map(([key, value]) => ({
-              reference: key,
-              ...value
-            }))
-        ]
-      )
-    );
-    if (!extractions) {
-      extractions = {};
+    var extractions: Record<string, Data> = {}
+
+    if (referenceValues) {
+      extractions = Object.fromEntries(
+        Object.entries(referenceValues).map(([schema_ref_field, dataframe]: [string, Record<string, Data>]) => 
+          [
+            schema_ref_field.replace('_ref', ''), 
+            Object.entries(dataframe)
+              .filter(([key, data]) => selectedRowData.some((row) => row[schema_ref_field] === key))
+              .map(([key, data]) => ({ reference: key, ...data }))
+          ]
+        )
+      );
     }
+
+    console.log('extractions', extractions)
 
     extractions[schema_name] = selectedRowData;
 

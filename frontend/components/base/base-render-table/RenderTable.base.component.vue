@@ -604,10 +604,11 @@ export default {
     async completionRange(range: RangeComponent) {
       const rangeData = getRangeRowData(range)
       const rangeColumns = getRangeColumns(range);
-      const selectedRowData: Record<string, any> = Object.values(rangeData).map(({ _id, ...rest }) => rest);
+      const selectedRowData: Record<string, any> = Object.values(rangeData)
+        .map(({ _id, ...rest }) => rest);
 
       this.completeExtraction(selectedRowData, rangeColumns, this.referenceValues)
-        .then((predictedRowData) => {
+        .then((predictedRowData: Data) => {
           this.updateRangeData(predictedRowData, range);
         })
         .catch((error) => {

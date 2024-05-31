@@ -6,7 +6,7 @@ import { useDocument } from "@/v1/infrastructure/storage/DocumentStorage";
 import { Notification } from "@/models/Notifications";
 import { Segment } from "@/v1/domain/entities/document/Document";
 import { useDataset } from "@/v1/infrastructure/storage/DatasetStorage";
-import { waitForCondition } from "@/v1/infrastructure/services/useWait";
+import { waitForAsyncValue } from "@/v1/infrastructure/services/useWait";
 
 export const useDocumentViewModel = () => {
   const getDocument = useResolve(GetDocumentByIdUseCase);
@@ -44,7 +44,7 @@ export const useDocumentViewModel = () => {
 
   const fetchDocumentSegments = async (reference: string): Promise<Segment[]> => {
     try {
-      await waitForCondition(() => dataset.workspaceName);
+      await waitForAsyncValue(() => dataset.workspaceName);
       const segments = await getDocument.setSegments(dataset.workspaceName, reference);
       return segments;
     } catch (e) {

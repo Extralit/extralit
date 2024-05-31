@@ -3,10 +3,10 @@ import { useResolve } from "ts-injecty";
 import { Question } from "@/v1/domain/entities/question/Question";
 import { GetLLMExtractionUseCase } from "@/v1/domain/usecases/get-extraction-completion-use-case";
 
-import { DataFrame, Data, ReferenceValues, PanderaSchema } from "./types";
+import { Data, ReferenceValues } from "./types";
+import { SchemaTableViewModel } from "./useSchemaTableViewModel";
 import { useDataset } from "@/v1/infrastructure/storage/DatasetStorage";
 import { useDocument } from "@/v1/infrastructure/storage/DocumentStorage";
-import { SchemaTableViewModel } from "./useSchemaTableViewModel";
 
 export const useLLMExtractionViewModel = (
   props: { 
@@ -18,6 +18,7 @@ export const useLLMExtractionViewModel = (
   schemaTableViewModel: SchemaTableViewModel) => {
     const getExtraction = useResolve(GetLLMExtractionUseCase);
     const { state: dataset } = useDataset();
+    const { state: document } = useDocument();
 
   const completeExtraction = async (
     selectedRowData: Data,
@@ -27,7 +28,7 @@ export const useLLMExtractionViewModel = (
     types_question_name: string = 'extraction-source',
     prompt_question_name: string = 'notes',
   ): Promise<Data> => {
-    const reference = schemaTableViewModel.tableJSON.value.reference;
+    const reference = schemaTableViewModel.tableJSON.value.reference || document.reference;
     const schema_name = schemaTableViewModel.tableJSON.value.schema?.schemaName || schemaTableViewModel.tableJSON.value.validation?.name;
     const headers = getSelectionQuestionAnswer(headers_question_name)?.filter((value) => value != 'Not listed');
     const types = getSelectionQuestionAnswer(types_question_name);
