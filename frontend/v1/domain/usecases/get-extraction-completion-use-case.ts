@@ -12,7 +12,7 @@ export class GetLLMExtractionUseCase {
     private readonly axios: NuxtAxiosInstance,
   ) {}
 
-  async completion(
+  async getExtractionCompletion(
     reference: string, 
     schema_name: string, 
     workspaceName: string,
@@ -28,7 +28,7 @@ export class GetLLMExtractionUseCase {
       const params = { workspace: workspaceName };
       
       const { data } = await this.axios.post<DataFrame>(
-        `/v1/models/completion`, json, { params: params }
+        `/v1/models/extraction`, json, { params: params }
       );
 
       return data;
@@ -76,8 +76,6 @@ export class GetLLMExtractionUseCase {
         )
       );
     }
-
-    console.log('extractions', extractions)
 
     extractions[schema_name] = selectedRowData;
 

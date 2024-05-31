@@ -34,7 +34,7 @@ export const useLLMExtractionViewModel = (
     const types = getSelectionQuestionAnswer(types_question_name);
     const prompt = getTextQuestionAnswer(prompt_question_name);
 
-    const predictedData = await getExtraction.completion(
+    const predictedData = await getExtraction.getExtractionCompletion(
       reference, 
       schema_name, 
       dataset.workspaceName,

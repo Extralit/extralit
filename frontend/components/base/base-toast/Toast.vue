@@ -22,11 +22,15 @@
   >
     <div
       v-show="isActive"
+      ref="toast"
       role="alert"
       class="toast"
       :class="[`toast-${type}`, `is-${position}`]"
       @mouseover="toggleTimer(true)"
       @mouseleave="toggleTimer(false)"
+      @keyup.esc="whenClosed"
+      @keyup.enter="whenClicked"
+      tabindex="0"
     >
       <div class="toast-icon"></div>
       <p class="toast-text" v-html="message"></p>
@@ -49,6 +53,7 @@ import eventBus from "./bus";
 
 export default {
   name: "Toast",
+
   props: {
     message: {
       type: [String, Error],
@@ -72,7 +77,7 @@ export default {
     },
     position: {
       type: String,
-      default: Positions.BOTTOM_RIGHT,
+      default: Positions.TOP_RIGHT,
       validator(value) {
         return Object.values(Positions).includes(value);
       },
@@ -99,6 +104,7 @@ export default {
       default: true,
     },
   },
+
   data() {
     return {
       isActive: false,
@@ -107,6 +113,17 @@ export default {
       isHovered: false,
     };
   },
+
+  watch: {
+    isActive(newVal) {
+      if (newVal) {
+        this.$nextTick(() => {
+          this.$refs.toast.focus();
+        });
+      }
+    },
+  },
+
   computed: {
     correctParent() {
       switch (this.position) {
@@ -309,6 +326,7 @@ $toast-colors: map-merge(
   pointer-events: auto;
   background: palette(white) !important;
   min-height: 3em;
+  max-width: 700px;
   .toast-text {
     margin: 0;
     padding: 1.5em;
