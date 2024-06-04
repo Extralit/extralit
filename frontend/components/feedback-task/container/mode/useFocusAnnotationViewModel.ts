@@ -27,9 +27,9 @@ export const useFocusAnnotationViewModel = (
   const { state: document } = useDocument();
 
   watch([() => document.segments, () => props.record], () => {
-    const selections = document.getQuestionSelections();
+    const selections = document?.getQuestionSelections();
 
-    props.record.questions.forEach((question: Question) => {
+    props.record?.questions?.forEach((question: Question) => {
       if (selections && question.name == 'context-relevant' && 
           ["dynamic_multi_label_selection", "dynamic_label_selection"].includes(question.settings.type)){
 
