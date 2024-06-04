@@ -27,6 +27,7 @@ export const useFocusAnnotationViewModel = (
   const { state: document } = useDocument();
 
   watch([() => document.segments, () => props.record], () => {
+    if (!document || !props.record) return;
     const selections = document?.getQuestionSelections();
 
     props.record?.questions?.forEach((question: Question) => {
