@@ -32,7 +32,9 @@ export class GetLLMExtractionUseCase {
       );
 
       return data;
+
     } catch (error) {
+      console.log('error', error)
       let errorMessage = error.message;
       if (error.response?.data?.detail) {
         errorMessage = error.response.data.detail;

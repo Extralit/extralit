@@ -675,6 +675,15 @@ export default {
           }
         },
         {
+          label: "Filter values",
+          action: (e, column: ColumnComponent) => {
+            column.updateDefinition({
+              // @ts-ignore
+              headerFilter: !column.getDefinition().headerFilter,
+            });
+          }
+        },
+        {
           separator: true,
         },
         {
@@ -693,7 +702,7 @@ export default {
             column.updateDefinition({
               editableTitle: !column.getDefinition().editableTitle,
               // @ts-ignore
-              headerMenu: function(e, column) {
+              headerMenu: function(e, column: ColumnComponent) {
                 return column.getDefinition().editableTitle ? [{
                   label: "Accept",
                   action: (e, column) => {

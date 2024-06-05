@@ -60,8 +60,8 @@ export const useLLMExtractionViewModel = (
 
   const getTextQuestionAnswer = (question_name: string): string | undefined => {
     let questionAnswer = props.questions
-      ?.filter(q => q.name === question_name && typeof q.answer.valuesAnswered === 'string')
-      .map(q => q.answer.valuesAnswered)
+      ?.filter((q: Question) => q.name === question_name && typeof q.answer.valuesAnswered === 'string')
+      .map((q: Question) => q.answer.valuesAnswered)
       .shift();
 
     return questionAnswer;
