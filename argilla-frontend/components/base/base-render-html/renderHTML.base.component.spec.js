@@ -1,11 +1,11 @@
 import { shallowMount } from "@vue/test-utils";
-import RenderHTML from './RenderHTML.base.component';
+import RenderHTMLBaseComponent from './RenderHTML.base.component';
 import BaseButton from '../base-button/BaseButton.vue';
 import BaseDropdown from '../base-dropdown/BaseDropdown.vue';
 
 
 const options = {
-  components: { RenderHTML, BaseButton, BaseDropdown },
+  components: { RenderHTMLBaseComponent, BaseButton, BaseDropdown },
   propsData: {
     value: '<p>Test</p>',
     placeholder: 'Enter text...',
@@ -16,11 +16,11 @@ const options = {
 };
 
 
-describe('RenderHTML', () => {
+describe('RenderHTMLBaseComponent', () => {
   let wrapper
 
   beforeEach(() => {
-    wrapper = shallowMount(RenderHTML, options)
+    wrapper = shallowMount(RenderHTMLBaseComponent, options)
   })
 
   it('renders correctly with initial props', () => {

@@ -146,7 +146,7 @@ import { Editor, EditorContent } from '@tiptap/vue-2'
 
 
 export default {
-	name: "RenderHTML",
+	name: "RenderHTMLBaseComponent",
 
 	components: {
 		EditorContent,
