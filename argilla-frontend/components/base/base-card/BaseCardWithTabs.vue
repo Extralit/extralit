@@ -6,10 +6,17 @@
         :class="[{ '--active': tab.id === currentTab.id }, tab?.class]"
         v-for="tab in tabs"
       >
-        <base-button :class="tabSize" @on-click="changeTab(tab)">
-          {{ tab.name }}
-          <svgicon v-if="tab.icon" :name="tab.icon" width="10" height="10" />
-        </base-button>
+        <BaseTooltip :title="tab.tooltipTitle" :text="tab.tooltipText">
+          <BaseButton :class="tabSize" @on-click="changeTab(tab)">
+            {{ tab.name }}
+            <svgicon v-if="tab.icon" :name="tab.icon" width="10" height="10" />
+            <span
+              class="card-with-tabs__info"
+              v-if="tab.info"
+              v-text="tab.info"
+            />
+          </BaseButton>
+        </BaseTooltip>
       </li>
     </ul>
     <div class="card-with-tabs__content" >
@@ -86,13 +93,21 @@ export default {
     &:last-child:not(:first-child) {
       margin-left: -1px;
     }
-    @media (max-width: 600px) {
-      padding: 5px; 
-      min-width: 100px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
+    // @media (max-width: 600px) {
+    //   padding: 5px; 
+    //   min-width: 100px;
+    //   overflow: hidden;
+    //   text-overflow: ellipsis;
+    //   white-space: nowrap;
+    // }
+  }
+  &__info {
+    @include font-size(11px);
+    margin-left: -4px;
+  }
+  &__info {
+    @include font-size(11px);
+    margin-left: -4px;
   }
   &__content {
     padding: $base-space;

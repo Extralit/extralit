@@ -32,7 +32,10 @@
         <SidebarFeedbackTaskComponent :datasetId="datasetId" @refresh="refresh()" />
       </template>
       <template v-slot:center>
-        <RecordFeedbackTaskAndQuestionnaireContent :recordCriteria="recordCriteria" />
+        <PersistentStorageBanner />
+        <RecordFeedbackTaskAndQuestionnaireContent
+          :recordCriteria="recordCriteria"
+        />
       </template>
     </HeaderAndTopAndOneColumn>
   </div>

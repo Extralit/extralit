@@ -14,6 +14,7 @@ import {
   BackendResponseRequest,
   BackendResponseBulkResponse,
 } from "../types";
+import { revalidateCache } from "./AxiosCache";
 import { RecordAnswer } from "@/v1/domain/entities/record/RecordAnswer";
 import { Record } from "@/v1/domain/entities/record/Record";
 import { Question } from "@/v1/domain/entities/question/Question";
@@ -163,20 +164,13 @@ export class RecordRepository {
   ) {
     try {
       const request = this.createRequest(status, record, duration);
-      if (!request) {
-        console.log('updateRecordResponse: request is null', request)
-        return;
-      }
 
       const { data } = await this.axios.post<BackendResponseResponse>(
         `/v1/records/${record.id}/responses`,
         request
       );
 
-      if (!data) {
-        console.log('createRecordResponse: data is null', data)
-        return;
-      }
+      revalidateCache(`/v1/datasets/${record.datasetId}/progress`);
 
       return new RecordAnswer(
         data.id,

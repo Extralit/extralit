@@ -388,9 +388,11 @@ export default {
 <style lang="scss" scoped>
 .table-info {
   $this: &;
+  display: flex;
+  flex-direction: column;
   padding: 0;
+  min-height: 0;
   list-style: none;
-  margin-bottom: 5em;
   color: $black-54;
   ul {
     list-style: none;
@@ -444,8 +446,8 @@ export default {
   }
   &__body {
     overflow: auto;
-    height: calc(100vh - 203px);
     padding-bottom: 0.5em;
+    min-height: 250px;
     @extend %hide-scrollbar;
     #{$this}__item {
       margin-bottom: -1px;

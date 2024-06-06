@@ -30,7 +30,7 @@
       >
         <BaseButton
           class="span-entity__close-button"
-          @click="removeSelectedOption"
+          @click.stop="removeSelectedSpan(span)"
         >
           <svgicon name="close" width="10" height="10" color="#fff"
         /></BaseButton>
@@ -40,7 +40,7 @@
         <svgicon
           v-if="!!suggestion"
           :class="
-            suggestionScore
+            suggestedScore
               ? 'span-entity__suggestion--score'
               : 'span-entity__suggestion'
           "
@@ -49,20 +49,31 @@
           height="8"
         />
         <span
-          v-if="suggestionScore"
+          v-if="suggestedScore"
           class="span-entity__score"
-          v-text="suggestionScore"
+          v-text="suggestedScore"
         />
       </div>
-      <EntityComponentDropdown
-        v-else
-        :style="entityFixedPosition"
-        :selectedOption="selectedOption"
-        :options="options"
-        @on-replace-option="selectOption"
-        @on-remove-option="removeSelectedOption"
-        v-click-outside="hideDropdown"
-      />
+      <template v-else>
+        <EntityDropdownOverlapping
+          v-if="allowOverlapping"
+          :style="overlappingDropdownPosition"
+          :selectedOption="selectedOption"
+          :options="options"
+          :spanInRange="spanInRange"
+          @on-add-span-base-on="addSpanBaseOn"
+          @on-remove-span="removeSelectedSpan"
+          v-click-outside="hideDropdown"
+        />
+        <EntityDropdown
+          v-else
+          :style="entityFixedPosition"
+          :selectedOption="selectedOption"
+          :options="options"
+          @on-replace-entity="selectEntity"
+          v-click-outside="hideDropdown"
+        />
+      </template>
     </div>
   </span>
 </template>
@@ -74,6 +85,10 @@ import "assets/icons/suggestion";
 export default {
   name: "EntityComponent",
   props: {
+    span: {
+      type: Object,
+      required: true,
+    },
     entity: {
       type: Object,
       required: true,
@@ -87,6 +102,10 @@ export default {
     },
     entityPosition: {
       type: Object,
+      required: true,
+    },
+    spanInRange: {
+      type: Array,
       required: true,
     },
   },
@@ -109,8 +128,8 @@ export default {
     singleOption() {
       return this.options.length === 1;
     },
-    suggestionScore() {
-      return this.suggestion?.score?.toFixed(1);
+    suggestedScore() {
+      return this.suggestion?.value.score?.fixed;
     },
     entityColor() {
       return this.entity.color;
@@ -155,17 +174,35 @@ export default {
         top: `${this.spanEntityPosition.top}px`,
       };
     },
+    getLevelInEntitiesInRange() {
+      return this.spanInRange.findIndex(
+        ({ entity }) => entity.id === this.entity.id
+      );
+    },
+    overlappingDropdownPosition() {
+      return {
+        left: `${this.spanEntityPosition.left}px`,
+        top: `${
+          this.spanEntityPosition.top -
+          this.getLevelInEntitiesInRange * this.entityPosition.baseEntityGap
+        }px`,
+      };
+    },
   },
   methods: {
     getNumberOfLines(space) {
       return Math.floor(space / this.entityPosition.lineHeight + 1);
     },
-    selectOption(option) {
-      this.$emit("on-replace-option", option);
+    addSpanBaseOn(span, entity) {
+      this.$emit("on-add-span-base-on", span, entity);
       this.hideDropdown();
     },
-    removeSelectedOption() {
-      this.$emit("on-remove-option");
+    selectEntity(entity) {
+      this.$emit("on-replace-entity", entity);
+      this.hideDropdown();
+    },
+    removeSelectedSpan(span) {
+      this.$emit("on-remove-span", span);
       this.hideDropdown();
     },
     hoverSpan(isHovered) {
@@ -276,6 +313,7 @@ export default {
   }
   &__suggestion {
     margin-right: calc($base-space / 2);
+    flex-shrink: 0;
     &--score {
       display: none;
       margin-right: calc($base-space / 2);
