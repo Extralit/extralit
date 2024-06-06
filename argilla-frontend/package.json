@@ -1,6 +1,6 @@
 {
   "name": "extralit",
-  "version": "1.29.0",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "dev": "nuxt",
