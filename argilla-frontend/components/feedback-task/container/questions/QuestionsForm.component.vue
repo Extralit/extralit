@@ -19,7 +19,7 @@
             <BaseDate
               class="tooltip"
               v-if="record.updatedAt"
-              :date="record.updatedAt"
+              :date="record.updatedAt?.toLocaleString()"
               format="date-relative-now"
               :updateEverySecond="10"
             />
