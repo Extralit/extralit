@@ -8,14 +8,16 @@
         :title="group[0].title"
         :fieldText="group[0].content"
         :spanQuestion="getSpanQuestion(group[0].name)"
+        :searchText="recordCriteria.committed.searchText.value.text"
       />
       <TextFieldComponent
         v-else-if="group.length == 1"
+        :name="group[0].name"
         :title="group[0].title"
         :fieldText="group[0].content"
         :useMarkdown="group[0].settings.use_markdown"
         :useTable="group[0].settings.use_table"
-        :stringToHighlight="searchValue"
+        :searchText="recordCriteria.committed.searchText.value.text"
       />
       
       <BaseCardWithTabs 
@@ -26,11 +28,12 @@
           <component
             :is="currentComponent"
             :key="currentTabId"
+            :name="group.find(field => field.name === currentTabId)?.name"
             :title="group.find(field => field.name === currentTabId)?.title"
             :fieldText="group.find(field => field.name === currentTabId)?.content"
             :useMarkdown="group.find(field => field.name === currentTabId)?.settings.use_markdown"
             :useTable="group.find(field => field.name === currentTabId)?.settings.use_table"
-            :stringToHighlight="searchValue"
+            :searchText="recordCriteria.committed.searchText.value.text"
           />
         </template>
       </BaseCardWithTabs>
@@ -48,6 +51,10 @@ export default {
       type: Array,
       required: true,
     },
+    recordCriteria: {
+      type: Object,
+      required: true,
+    },
   },
   methods: {
     getSpanQuestion(fieldName) {
@@ -60,9 +67,6 @@ export default {
   computed: {
     spanQuestions() {
       return this.record?.questions.filter((q) => q.isSpanType);
-    },
-    searchValue() {
-      return this.$route.query?._search ?? "";
     },
     fieldsWithTabs() {
       const fieldGroups = this.fields.reduce((groups, field) => {

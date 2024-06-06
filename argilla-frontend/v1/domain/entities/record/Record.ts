@@ -1,35 +1,16 @@
-import { isEqual, cloneDeep, isObject, transform } from "lodash";
+import { isEqual, cloneDeep } from "lodash";
 import { Field } from "../field/Field";
 import { Question } from "../question/Question";
 import { Suggestion } from "../question/Suggestion";
 import { Score } from "../similarity/Score";
+import { MetadataRecord } from "../metadata/MetadataRecord";
 import { RecordAnswer } from "./RecordAnswer";
-import { Metadata } from "../metadata/Metadata";
 
 const DEFAULT_STATUS = "pending";
-
-/**
- * Returns the changes in `object` that's different from `base`.
- * 
- * @param object - The object to compare.
- * @param base - The base object to compare against.
- * @returns An object containing the differences between the two objects.
- */
-export function difference(object: any, base: any) {
-  function changes(object: any, base: any) {
-    return transform(object, function(result: any, value: any, key: any) {
-      if (!isEqual(value, base[key])) {
-        result[key] = (isObject(value) && isObject(base[key])) ? changes(value, base[key]) : value;
-      }
-    });
-  }
-  return changes(object, base);
-}
 
 export class Record {
   // eslint-disable-next-line no-use-before-define
   private original: Record;
-  public updatedAt?: string;
   public readonly score: Score;
   constructor(
     public readonly id: string,
@@ -40,7 +21,9 @@ export class Record {
     private readonly suggestions: Suggestion[],
     score: number,
     public readonly page: number,
-    public readonly metadata?: Metadata,
+    public readonly metadata: MetadataRecord,
+    public readonly insertedAt: Date,
+    public readonly updatedAt?: Date
   ) {
     this.completeQuestion();
     this.updatedAt = answer?.updatedAt;
@@ -71,12 +54,6 @@ export class Record {
     const { original, ...rest } = this;
 
     return !!original && !isEqual(original, rest);
-  }
-
-  getModified() {
-    const { original, ...rest } = this;
-
-    return !!original ? difference(rest, original) : {};
   }
 
   discard(answer: RecordAnswer) {
@@ -146,23 +123,22 @@ export class Record {
       optionalQuestionsCompletedAreCorrectlyEntered
     );
   }
-  private completeQuestion() {
-    return this.questions.map((question: Question) => {
-      // Ensures that the `selection` are added to initialize the question options first, then add `human` and `model` suggestions to the question
-      (this.suggestions || []).forEach((suggestion: Suggestion) => {
-        if (suggestion.questionId === question.id) {
-          if (!!question.suggestion && suggestion.type != "selection") {
-            question.addSuggestion(suggestion);
-          }
-        }
-      });
 
-      if (this.isPending && !!question.suggestion) {
-        question.response(question.suggestion);
+  private completeQuestion() {
+    return this.questions.map((question) => {
+      const answer = this.answer?.value[question.name];
+      const suggestion = this.suggestions?.find(
+        (s) => s.questionId === question.id
+      );
+
+      question.addSuggestion(suggestion);
+
+      if (this.isPending) {
+        question.response(suggestion);
       } else {
-        const answer = this.answer?.value[question.name];
         question.response(answer);
       }
+
       return question;
     });
   }

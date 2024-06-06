@@ -13,7 +13,11 @@
         @on-select-record="onSelectedRecord"
       />
       <div class="record__content">
-        <RecordFields :record="record" :fields="record.fields" />
+        <RecordFields
+          :record="record"
+          :fields="record.fields"
+          :recordCriteria="recordCriteria"
+        />
       </div>
     </div>
   </div>
@@ -57,9 +61,9 @@ export default {
   background: palette(white);
   border: 1px solid palette(grey, 600);
   border-radius: $border-radius-m;
-  &--focus {
-    overflow-y: auto;
-    overflow-x: hidden;
+  &:has(.dropdown__content),
+  &:has(.checkbox.checked) {
+    border-color: $black-20;
   }
   &__wrapper {
     flex: 1;
@@ -82,6 +86,10 @@ export default {
     .record--bulk & {
       height: 100%;
       overflow: auto;
+    }
+    .record--focus & {
+      overflow-y: auto;
+      overflow-x: hidden;
     }
   }
   &__fixed-header {

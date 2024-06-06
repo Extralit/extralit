@@ -46,7 +46,6 @@ export const useFocusAnnotationViewModel = (
     });
   }, { deep: false, immediate: true });
 
-
   const discard = async (record: Record) => {
     isDiscarding.value = true;
 
@@ -72,7 +71,6 @@ export const useFocusAnnotationViewModel = (
     let duration = incrementDuration(record, durationWrapper);
 
     await submitUseCase.execute(record, duration);
-
     await debounceForSubmit.wait();
 
     isSubmitting.value = false;

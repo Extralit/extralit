@@ -183,7 +183,6 @@ _import_structure = {
         "TextClassificationSettings",
         "TokenClassificationSettings",
     ],
-    "server.app": ["app"],
 }
 
 _sys.modules[__name__] = _LazyargillaModule(

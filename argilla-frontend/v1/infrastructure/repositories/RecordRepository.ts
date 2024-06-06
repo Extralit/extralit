@@ -1,12 +1,12 @@
 import { type NuxtAxiosInstance } from "@nuxtjs/axios";
 import {
-  BackedRecord,
+  BackendRecord,
   BackendAnswerCombinations,
   BackendResponseResponse,
   BackendSearchRecords,
   BackendAdvanceSearchQuery,
   ResponseWithTotal,
-  BackedRecords,
+  BackendRecords,
   BackendRecordStatus,
   BackendSimilaritySearchOrder,
   BackendSort,
@@ -41,18 +41,18 @@ const BACKEND_ORDER: {
 export class RecordRepository {
   constructor(private readonly axios: NuxtAxiosInstance) {}
 
-  getRecords(criteria: RecordCriteria): Promise<BackedRecords> {
+  getRecords(criteria: RecordCriteria): Promise<BackendRecords> {
     if (criteria.isFilteringByAdvanceSearch)
       return this.getRecordsByAdvanceSearch(criteria);
 
     return this.getRecordsByDatasetId(criteria);
   }
 
-  async getRecord(recordId: string): Promise<BackedRecord> {
+  async getRecord(recordId: string): Promise<BackendRecord> {
     try {
       const url = `/v1/records/${recordId}`;
 
-      const { data } = await this.axios.get<BackedRecord>(url);
+      const { data } = await this.axios.get<BackendRecord>(url);
 
       return data;
     } catch (err) {
@@ -187,7 +187,7 @@ export class RecordRepository {
 
   private async getRecordsByDatasetId(
     criteria: RecordCriteria
-  ): Promise<BackedRecords> {
+  ): Promise<BackendRecords> {
     const { datasetId, status, page } = criteria;
     const { from, many } = page.server;
     try {
@@ -195,7 +195,7 @@ export class RecordRepository {
 
       const params = this.createParams(from, many, status);
 
-      const { data } = await this.axios.get<ResponseWithTotal<BackedRecord[]>>(
+      const { data } = await this.axios.get<ResponseWithTotal<BackendRecord[]>>(
         url,
         {
           params,
@@ -216,7 +216,7 @@ export class RecordRepository {
 
   private async getRecordsByAdvanceSearch(
     criteria: RecordCriteria
-  ): Promise<BackedRecords> {
+  ): Promise<BackendRecords> {
     const {
       datasetId,
       page,
@@ -254,7 +254,10 @@ export class RecordRepository {
 
       if (isFilteringByText) {
         body.query.text = {
-          q: searchText,
+          q: searchText.value.text,
+          field: searchText.isFilteringByField
+            ? searchText.value.field
+            : undefined,
         };
       }
 

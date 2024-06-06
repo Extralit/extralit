@@ -3,10 +3,10 @@ requires = ["setuptools>=61.0.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "extralit-client"
+name = "argilla"
 description = "Open-source tool for exploring, labeling, and monitoring data for NLP projects."
 readme = "README.md"
-requires-python = ">=3.8,<3.12"
+requires-python = ">=3.8,<3.13"
 license = { text = "Apache-2.0" }
 keywords = [
     "data-science",
@@ -19,14 +19,8 @@ keywords = [
     "human-in-the-loop",
     "mlops",
 ]
-authors = [
-    { name = "Jonny Tran", email = "nhat.c.tran@gmail.com" },
-    { name = "argilla", email = "contact@argilla.io" }
-]
-maintainers = [
-    { name = "Jonny Tran", email = "nhat.c.tran@gmail.com" },
-    { name = "argilla", email = "contact@argilla.io" }
-]
+authors = [{ name = "argilla", email = "contact@argilla.io" }]
+maintainers = [{ name = "argilla", email = "contact@argilla.io" }]
 dependencies = [
     # Client
     "httpx >= 0.15,<= 0.26",
@@ -37,9 +31,9 @@ dependencies = [
     # Aligned pydantic version with server fastAPI
     "pydantic >= 1.10.7",
     # monitoring
-    "wrapt >= 1.13,< 1.15",
+    "wrapt >= 1.14,< 1.15",
     # weaksupervision
-    "numpy",
+    "numpy < 1.27.0",
     # for progressbars
     "tqdm >= 4.27.0",
     # monitor background consumers
@@ -53,8 +47,16 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
-server = ["argilla-server ~= 1.28.0"]
-server-postgresql = ["argilla-server[postgresql] ~= 1.28.0"]
+server = [
+    # "argilla-server"
+    # Comment previous line and uncomment the next line when we have a release
+    "argilla-server ~= 1.29.0"
+]
+server-postgresql = [
+    # "argilla-server[postgresql]"
+    # Comment previos line and uncomment the next line when we have a release
+    "argilla-server[postgresql] ~= 1.29.0"
+]
 listeners = ["schedule ~= 1.1.0"]
 integrations = [
     "PyYAML >= 5.4.1,< 6.1.0", # Required by `argilla.client.feedback.config` just used in `HuggingFaceDatasetMixin`

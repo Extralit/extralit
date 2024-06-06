@@ -7,13 +7,16 @@ export default {
   minimize: "Minimieren",
   select: "Auswählen",
   search: "Suchen",
+  searchPlaceholder: "Eingabe einer Abfrage",
   searchDatasets: "Durchsuche Datensätze",
   expand: "Erweitern",
   copied: "Kopiert",
   copyClipboard: "In Zwischenablage kopieren",
   copyLink: "Link kopieren",
+  copyRecord: "Eintrag kopieren",
   refresh: "Refresh",
   typeYourText: "Type your text",
+  all: "Alle",
   sidebar: {
     progressTooltip: "Fortschritt",
     refreshTooltip: "Aktualisieren",
@@ -214,6 +217,11 @@ export default {
   },
 
   validations: {
+    businessLogic: {
+      missing_vector: {
+        message: "Vektor nicht im ausgewählten Datensatz gefunden",
+      },
+    },
     http: {
       401: {
         message: "Anmeldedaten konnten nicht überprüft werden",

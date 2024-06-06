@@ -16,6 +16,22 @@ These are the section headers that we use:
 
 ## [Unreleased]()
 
+## [1.29.0](https://github.com/argilla-io/argilla/compare/v1.28.0...v1.29.0)
+
+### Added
+
+- Added support for rating questions to include `0` as a valid value. ([#4860](https://github.com/argilla-io/argilla/pull/4860))
+- Added support for Python 3.12. ([#4837](https://github.com/argilla-io/argilla/pull/4837))
+- Added search by field in the `FeedbackDataset` UI search. ([#4746](https://github.com/argilla-io/argilla/issues/4746))
+- Added record metadata info in the `FeedbackDataset` UI. ([#4851](https://github.com/argilla-io/argilla/pull/4851))
+- Added highlight on search results in the `FeedbackDataset` UI. ([#4747](https://github.com/argilla-io/argilla/issues/4747))
+
+### Fixed
+
+- Fix wildcard import for the whole argilla module. ([#4874](https://github.com/argilla-io/argilla/pull/4874))
+- Fix issue when record does not have vectors related. ([#4856](https://github.com/argilla-io/argilla/pull/4856))
+- Fix issue on character level. ([#4836](https://github.com/argilla-io/argilla/pull/4836))
+
 ## [1.28.0](https://github.com/argilla-io/argilla/compare/v1.27.0...v1.28.0)
 
 ### Added
@@ -34,6 +50,10 @@ These are the section headers that we use:
 ### Fixed
 
 - Fixed Korean character reversed. ([#4753](https://github.com/argilla-io/argilla/pull/4753))
+
+### Fixed
+
+- Fixed requirements for version of wrapt library conflicting with Python 3.11 ([#4693](https://github.com/argilla-io/argilla/pull/4693))
 
 ## [1.27.0](https://github.com/argilla-io/argilla/compare/v1.26.1...v1.27.0)
 

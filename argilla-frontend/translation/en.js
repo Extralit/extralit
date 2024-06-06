@@ -10,18 +10,22 @@ export default {
   minimize: "Minimize",
   select: "Select",
   search: "Search",
+  searchPlaceholder: "Introduce a query",
   searchDatasets: "Search datasets",
   expand: "Expand",
   copied: "Copied",
   copyClipboard: "Copy to clipboard",
   copyLink: "Copy link",
+  copyRecord: "Copy record",
   refresh: "Refresh",
   typeYourText: "Type your text",
+  all: "All",
   sidebar: {
     progressTooltip: "Progress",
     refreshTooltip: "Refresh",
     shortcutsTooltip: "Shortcuts",
   },
+  value: "Value",
   title: "Title",
   description: "Description",
   labels: "Labels",
@@ -29,6 +33,8 @@ export default {
   useMarkdown: "Use Markdown",
   suggestionFirst: "Show suggestions first",
   visibleForAnnotators: "Visible for annotators",
+  recordInfo: "Record info",
+  viewMetadata: "View metadata",
   allowExtraMetadata: "Allow extra metadata",
   extraMetadata: "Extra metadata",
   dimension: "Dimension",
@@ -231,6 +237,11 @@ export default {
       "Persistent storage is not enabled. All data will be lost if this space restarts.",
   },
   validations: {
+    businessLogic: {
+      missing_vector: {
+        message: "Vector not found for the selected record",
+      },
+    },
     http: {
       401: {
         message: "Could not validate credentials",

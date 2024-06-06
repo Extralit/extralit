@@ -268,10 +268,11 @@ export default {
   },
 
   methods: {
-    async autoSubmitWithKeyboard() {
+    async autoSubmitWithKeyboard(key) {
       if (!this.enableAutoSubmitWithKeyboard) return;
       if (!this.record.isModified) return;
       if (this.record.questions.length > 1) return;
+      if (isNaN(parseInt(key))) return;
 
       const question = this.record.questions[0];
 
@@ -295,7 +296,7 @@ export default {
       this.userComesFromOutside = true;
     },
     handleGlobalKeys(event) {
-      const { code, ctrlKey, metaKey, shiftKey } = event;
+      const { code, ctrlKey, metaKey, shiftKey, key } = event;
 
       if (shiftKey) return;
 
@@ -334,7 +335,7 @@ export default {
           break;
         }
         default: {
-          this.autoSubmitWithKeyboard();
+          this.autoSubmitWithKeyboard(key);
           break;
         }
       }

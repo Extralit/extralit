@@ -28,23 +28,25 @@ export interface BackendResponseResponse {
   updated_at: string;
 }
 
-export interface BackedRecord {
+export interface BackendRecord {
   id: string;
   suggestions: BackendSuggestion[];
   responses: BackendResponseResponse[];
   fields: { [key: string]: string };
-  updated_at: string;
+  updated_at: Date;
+  inserted_at: Date;
+  metadata?: { [key: string]: string };
   query_score: number;
   metadata?: any;
 }
 
-export interface BackedRecords {
-  records: BackedRecord[];
+export interface BackendRecords {
+  records: BackendRecord[];
   total: number;
 }
 
 export interface BackendSearchRecords {
-  record: BackedRecord;
+  record: BackendRecord;
   query_score: number;
 }
 
@@ -80,6 +82,7 @@ export interface BackendAdvanceSearchQuery {
     };
     text?: {
       q: string;
+      field?: string;
     };
   };
   filters?: {

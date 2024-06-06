@@ -2,12 +2,10 @@
   <div class="sidebar__container">
     <SidebarFeedbackTaskPanel v-if="isPanelVisible" @close-panel="closePanel" :currentPanel="currentPanel">
       <HelpShortcut v-if="currentPanel === 'help-shortcut'" />
-
       <FeedbackTaskProgress
         v-else-if="currentPanel === 'metrics'"
         :datasetId="datasetId"
       />
-
       <div v-if="currentPanel === 'document'">
         <div v-if="isLoading">Loading...</div>
         <PDFViewerBaseComponent 
@@ -42,7 +40,6 @@ export default {
       required: true,
     },
   },
-
   data: () => ({
     currentPanel: null,
     currentMode: "annotate",
@@ -144,7 +141,7 @@ export default {
       },
     };
   },
-
+  
   methods: {
     onClickSidebarAction(group, info) {
       switch (group.toUpperCase()) {
@@ -167,7 +164,6 @@ export default {
     togglePanel(panelContent) {
       this.currentPanel =
         this.currentPanel !== panelContent ? panelContent : null;
-      
       this.isPanelVisible = !!this.currentPanel;
 
       $nuxt.$emit("on-sidebar-panel", this.currentPanel);

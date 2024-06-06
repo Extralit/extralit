@@ -16,15 +16,22 @@
         </BaseButton>
       </BaseActionTooltip>
     </div>
-    <div class="content-area --body1">
-      <RenderTableBaseComponent v-if="useTable && isValidTableJSON" :tableData="text" />
+    <div id="`fields-content-${name}`" class="content-area --body1">
+      <RenderTableBaseComponent v-if="useTable && isValidTableJSON" :tableData="fieldText" />
       <RenderHTMLBaseComponent 
         v-else-if="isValidHTML" 
         style="display: block; white-space: pre-wrap; max-width: 100%; overflow-x: auto !important;" 
-        :value="text" 
+        :value="fieldText" 
         :editable="false" />
-      <RenderMarkdownBaseComponent v-else-if="useMarkdown" :markdown="text" />
-      <div :class="classes" v-else v-html="text" />
+      <RenderMarkdownBaseComponent v-else-if="useMarkdown" :markdown="fieldText" />
+      <div :class="classes" v-else v-html="fieldText" />
+      <template>
+        <style :key="name" scoped>
+          ::highlight(search-text-highlight-{{name}}) {
+            color: #ff675f;
+          }
+        </style>
+      </template>
     </div>
   </div>
 </template>
@@ -35,11 +42,15 @@ import { isTableJSON } from "@/components/base/base-render-table/tableUtils";
 export default {
   name: "TextFieldComponent",
   props: {
+    name: {
+      type: String,
+      required: true,
+    },
     title: {
       type: String,
       required: true,
     },
-    stringToHighlight: {
+    searchText: {
       type: String,
       default: "",
     },
@@ -65,7 +76,7 @@ export default {
       return value?.startsWith("<table") && !value?.startsWith("<img") && !value?.startsWith("<iframe");
     },
     classes() {
-      return this.$language.isRTL(this.text) ? "--rtl" : "--ltr";
+      return this.$language.isRTL(this.fieldText) ? "--rtl" : "--ltr";
     },
   },
   setup(props) {
