@@ -28,7 +28,15 @@ export const useSchemaTableViewModel = (
   const getSchema = useResolve(GetExtractionSchemaUseCase);
   const { state: dataset } = useDataset();
 
-  const tableJSON = ref<DataFrame>(JSON.parse(props.tableData));
+  const tableJSON = ref<DataFrame>();
+
+  try {
+    tableJSON.value = JSON.parse(props.tableData);
+  } catch (error) {
+    console.error("Failed to parse tableData:", error);
+    tableJSON.value = {data: [], schema: { fields: [], primaryKey: [] }};
+  }
+
   const validation = ref<PanderaSchema | null>(null);
   const indexColumns = ref(tableJSON.value?.schema?.primaryKey || []);
   const refColumns = ref(
@@ -39,13 +47,13 @@ export const useSchemaTableViewModel = (
   const groupbyColumns = ref(refColumns.value || null);
 
   const fetchValidation = async ({ latest = false }: { latest?: boolean } = {}) => {
-    var schemaName: string = tableJSON.value.schema?.schemaName;
+    var schemaName: string = tableJSON.value.schema?.schemaName || tableJSON.value?.validation?.name;
+    if (!schemaName) {
+      return;
+    }
     var version_id: string = latest ? null : tableJSON.value.schema?.version_id;
     await waitForAsyncValue(() => dataset.workspaceName);
     
-    if (!tableJSON.value.schema.schemaName) {
-      schemaName = tableJSON.value?.validation?.name;
-    }
     const [schema, fileMetadata] = await getSchema.fetch(dataset.workspaceName, schemaName, version_id);
 
     const schemaMetadataUpdate = {

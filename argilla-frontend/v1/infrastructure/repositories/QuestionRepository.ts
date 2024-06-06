@@ -54,6 +54,7 @@ export class QuestionRepository {
     return {
       title,
       description: newDescription,
+      // @ts-ignore
       settings,
     };
   }

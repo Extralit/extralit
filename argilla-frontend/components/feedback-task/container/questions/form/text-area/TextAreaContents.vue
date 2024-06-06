@@ -20,7 +20,7 @@
       @on-exit-edition-mode="onExitEditionMode"
     />
     <RenderTableBaseComponent
-      v-else-if="question.settings.use_table && isValidTableJSON"
+      v-else-if="question.settings.settings.use_table && isValidTableJSON"
       class="textarea"
       :tableData="question.answer.value"
       :editable="true"
@@ -123,7 +123,7 @@ export default {
     },
     onFocus(event) {
       if (event.defaultPrevented) return;
-      if (this.question.settings.use_table) {
+      if (this.question.settings.settings.use_table) {
         this.$emit("on-focus");
       }
 
@@ -136,7 +136,7 @@ export default {
   },
   computed: {
     classes() {
-      if (this.question.settings.use_table && (this.isValidHTML || this.isValidTableJSON)) {
+      if (this.question.settings.settings.use_table && (this.isValidHTML || this.isValidTableJSON)) {
         return "--table";
       } else if (this.isEditionModeActive) {
         return "--editing";
@@ -160,7 +160,7 @@ export default {
     }
   },
   mounted() {
-    console.log(this.question.name, this.question.settings, this.question.settings.use_table && this.isValidTableJSON)
+    console.log(this.question.name, this.question.settings, this.question.settings.settings.use_table, this.isValidTableJSON)
   },
 };
 </script>
