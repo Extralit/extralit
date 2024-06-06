@@ -20,11 +20,11 @@ class Document(BaseModel, ABC):
         workspace_id: The workspace ID of the document. Required.
     """
 
-    id: Union[UUID, str] = Field(default_factory=uuid.uuid4(), description="The ID of the document, which gets assigned after database insertion")
+    id: Union[UUID, str] = Field(default_factory=uuid.uuid4(), description="The ID of the document, which gets assigned randomly if not provided.")
+    file_name: str = Field(...)
     reference: Optional[str] = None
     doi: Optional[str] = None
     pmid: Optional[str] = None
-    file_name: str = Field(...)
     url: Optional[str] = None
     file_path: Optional[str] = Field(None, description="Local file path")
     workspace_id: Optional[UUID] = Field(None, description="The workspace ID to which the document belongs to")
