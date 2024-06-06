@@ -37,7 +37,6 @@ export interface BackendRecord {
   inserted_at: Date;
   metadata?: { [key: string]: string };
   query_score: number;
-  metadata?: any;
 }
 
 export interface BackendRecords {

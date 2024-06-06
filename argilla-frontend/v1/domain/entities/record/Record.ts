@@ -1,4 +1,4 @@
-import { isEqual, cloneDeep } from "lodash";
+import { isEqual, cloneDeep, isObject, transform } from "lodash";
 import { Field } from "../field/Field";
 import { Question } from "../question/Question";
 import { Suggestion } from "../question/Suggestion";
@@ -7,6 +7,24 @@ import { MetadataRecord } from "../metadata/MetadataRecord";
 import { RecordAnswer } from "./RecordAnswer";
 
 const DEFAULT_STATUS = "pending";
+
+/**
+ * Returns the changes in `object` that's different from `base`.
+ * 
+ * @param object - The object to compare.
+ * @param base - The base object to compare against.
+ * @returns An object containing the differences between the two objects.
+ */
+export function difference(object: any, base: any) {
+  function changes(object: any, base: any) {
+    return transform(object, function(result: any, value: any, key: any) {
+      if (!isEqual(value, base[key])) {
+        result[key] = (isObject(value) && isObject(base[key])) ? changes(value, base[key]) : value;
+      }
+    });
+  }
+  return changes(object, base);
+}
 
 export class Record {
   // eslint-disable-next-line no-use-before-define
@@ -23,10 +41,10 @@ export class Record {
     public readonly page: number,
     public readonly metadata: MetadataRecord,
     public readonly insertedAt: Date,
-    public readonly updatedAt?: Date
+    public updatedAt?: Date
   ) {
     this.completeQuestion();
-    this.updatedAt = answer?.updatedAt;
+    this.updatedAt = new Date(answer?.updatedAt) ?? null;
     this.score = new Score(score);
   }
 
@@ -56,16 +74,22 @@ export class Record {
     return !!original && !isEqual(original, rest);
   }
 
+  getModified() {
+    const { original, ...rest } = this;
+
+    return !!original ? difference(rest, original) : {};
+  }
+
   discard(answer: RecordAnswer) {
     this.answer = answer;
-    this.updatedAt = answer.updatedAt;
+    this.updatedAt = new Date(answer.updatedAt) || null;
 
     this.initialize();
   }
 
   submit(answer: RecordAnswer) {
     this.answer = answer;
-    this.updatedAt = answer.updatedAt;
+    this.updatedAt = new Date(answer.updatedAt) || null;
 
     this.initialize();
   }
