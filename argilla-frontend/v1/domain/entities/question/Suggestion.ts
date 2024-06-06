@@ -41,7 +41,7 @@ export class Suggestion implements Answer {
     private readonly suggestedAnswer: AnswerCombinations,
     private readonly score: number | number[],
     private readonly agent: string,
-    public readonly type: string,
+    public readonly type?: string,
   ) {}
 
   get value() {

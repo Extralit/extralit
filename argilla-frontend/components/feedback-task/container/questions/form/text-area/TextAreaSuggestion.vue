@@ -1,42 +1,19 @@
 <template>
   <div class="container">
-    <BaseActionTooltip
-      class="button-copy"
-      tooltip="Copied"
-      tooltip-position="left"
-    >
-      <BaseButton
-        title="Copy to clipboard"
-        @click.prevent="$copyToClipboard(question.suggestion?.suggestedAnswer)"
-      >
-        <svgicon color="#acacac" name="copy" width="20" height="20" />
-      </BaseButton>
-    </BaseActionTooltip>
-
-    <RenderTableBaseComponent
-      v-if="question.settings.use_table && isValidTableJSON"
-      class="textarea"
-      :tableData="question.suggestion?.suggestedAnswer"
-      :editable="true"
-      @onUpdateAnswer="onUpdateAnswer"
-    />
-    <RenderHTMLBaseComponent
-      v-else-if="question.settings.use_table && isValidHTML"
-      class="textarea"
-      :value="question.suggestion?.suggestedAnswer"
-    />
     <RenderMarkdownBaseComponent
-      v-else
       class="textarea--markdown"
       :markdown="question.suggestion?.suggestedAnswer"
     />
+    <BaseActionTooltip tooltip="Copied" class="button-copy">
+      <BaseButton @on-click="$copyToClipboard(question.suggestion?.suggestedAnswer)">
+        <svgicon name="copy" width="16" height="16" />
+      </BaseButton>
+    </BaseActionTooltip>
   </div>
 </template>
 
 <script>
-import "assets/icons/copy";
-import { isTableJSON } from "@/components/base/base-render-table/tableUtils";
-
+import "assets/icons/copy"  ;
 export default {
   name: "TextAreaComponent",
   props: {
@@ -45,21 +22,6 @@ export default {
       required: true,
     },
   },
-  computed: {
-    isValidHTML() {
-      const value = this.question.suggestion?.suggestedAnswer?.trimStart();
-
-      return value?.startsWith("<") && !value?.startsWith("<img") && !value?.startsWith("<iframe");
-    },
-    isValidTableJSON() {
-      return isTableJSON(this.question.suggestion?.suggestedAnswer);
-    },
-  },
-  methods: {
-    onUpdateAnswer(tableJsonString) {
-      this.question.answer.value = tableJsonString;
-    },
-  }
 };
 </script>
 
@@ -67,26 +29,27 @@ export default {
 .container {
   position: relative;
   display: flex;
-  padding: $base-space;
+  padding: $base-space * 2;
   border: 1px solid $black-20;
   border-radius: $border-radius-s;
   min-height: 10em;
   background: palette(white);
   &:hover {
     .button-copy {
-      opacity: 1;
+      display: block;
     }
   }
 }
 .button-copy {
-  opacity: 0;
+  display: none;
   position: absolute;
-  z-index: 1;
   right: $base-space * 2;
-  top: $base-space * 2;
+  bottom: $base-space * 2;
   .button {
     padding: 0;
-    flex-shrink: 0;
+  }
+  .svg-icon {
+    color: $black-37;
   }
 }
 </style>

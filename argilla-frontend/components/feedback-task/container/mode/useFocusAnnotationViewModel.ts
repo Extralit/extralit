@@ -36,7 +36,7 @@ export const useFocusAnnotationViewModel = (
 
         question.addDynamicSelectionToLabelQuestion(selections)
 
-        if (props.record.isPending && question.hasSuggestion) {
+        if (props.record.isPending && !!question.suggestion) {
           question.response(question.suggestion);
         } else {
           const answer = props.record.answer?.value[question.name];

@@ -70,10 +70,6 @@ export class Question {
     return this.answer.hasValidValues;
   }
 
-  public get hasSuggestion(): boolean {
-    return !!this.suggestion;
-  }
-
   public get type(): QuestionType {
     return QuestionType.from(this.settings.type);
   }
@@ -180,6 +176,7 @@ export class Question {
 
   addSuggestion(suggestion: Suggestion) {
     if (!suggestion) return;
+
     this.suggestion = suggestion;
   }
 

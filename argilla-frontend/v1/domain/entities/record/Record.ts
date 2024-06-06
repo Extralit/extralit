@@ -43,7 +43,6 @@ export class Record {
     public readonly metadata?: Metadata,
   ) {
     this.completeQuestion();
-    this.updatedAt = answer?.updatedAt;
     this.score = new Score(score);
   }
 
@@ -81,14 +80,12 @@ export class Record {
 
   discard(answer: RecordAnswer) {
     this.answer = answer;
-    this.updatedAt = answer.updatedAt;
 
     this.initialize();
   }
 
   submit(answer: RecordAnswer) {
     this.answer = answer;
-    this.updatedAt = answer.updatedAt;
 
     this.initialize();
   }
@@ -148,22 +145,20 @@ export class Record {
   }
 
   private completeQuestion() {
-    return this.questions.map((question: Question) => {
-      // Ensures that the `selection` are added to initialize the question options first, then add `human` and `model` suggestions to the question
-      (this.suggestions || []).forEach((suggestion: Suggestion) => {
-        if (suggestion.questionId === question.id) {
-          if (!question.hasSuggestion && suggestion.type != "selection") {
-            question.addSuggestion(suggestion);
-          }
-        }
-      });
+    return this.questions.map((question) => {
+      const answer = this.answer?.value[question.name];
+      const suggestion = this.suggestions?.find(
+        (s) => s.questionId === question.id
+      );
 
-      if (this.isPending && question.hasSuggestion) {
-        question.response(question.suggestion);
+      question.addSuggestion(suggestion);
+
+      if (this.isPending) {
+        question.response(suggestion);
       } else {
-        const answer = this.answer?.value[question.name];
         question.response(answer);
       }
+
       return question;
     });
   }
