@@ -165,7 +165,7 @@ export default {
       agent: "Agent",
     },
     plural: "Suggestions",
-    name: `Suggestion by {agent}`,
+    name: `Suggestion`,
   },
   similarity: {
     "record-number": "Record number",

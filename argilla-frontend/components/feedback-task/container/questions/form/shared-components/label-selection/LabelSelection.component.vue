@@ -56,7 +56,7 @@
           @keydown.tab="expandLabelsOnTab(index)"
         />
         <BaseTooltip
-          :title="isSuggested(option) ? $t('suggestion.name', {agent: suggestionAgent}) : ''"
+          :title="isSuggested(option) ? $t('suggestion.name') : ''"
           :text="getSuggestedAgent(option)"
           minimalist
         >
@@ -237,9 +237,6 @@ export default {
     iconToShowInTheCollapseButton() {
       return this.isExpanded ? "chevron-up" : "chevron-down";
     },
-    suggestionAgent() {
-      return this?.suggestion?.agent || "";
-    },
   },
   methods: {
     keyboardHandler($event) {
@@ -380,7 +377,7 @@ $label-dark-color: palette(purple, 200);
   }
 
   .input-button {
-    max-width: 350px;
+    max-width: 50%;
   }
 }
 
