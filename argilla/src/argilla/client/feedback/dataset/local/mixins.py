@@ -328,7 +328,15 @@ class ArgillaMixin:
     @staticmethod
     def __get_documents(client: "httpx.Client", workspace_id: UUID) -> Dict[str, "Document"]:
         documents = {}
-        for json in datasets_api_v1.list_documents(client=client, workspace_id=workspace_id).parsed:
+        try:
+            document_responses = datasets_api_v1.list_documents(client=client, workspace_id=workspace_id).parsed
+        except Exception as e:
+            _LOGGER.error(
+                f"Failed while listing the `Documents` in Argilla with exception: {e}"
+            )
+            return documents
+        
+        for json in document_responses:
             doc = Document(**json)
             documents[json['id']] = doc
             if json['pmid']:

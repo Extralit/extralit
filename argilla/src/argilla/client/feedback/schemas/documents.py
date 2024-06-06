@@ -21,11 +21,12 @@ class Document(BaseModel, ABC):
     """
 
     id: Union[UUID, str] = Field(default_factory=uuid.uuid4(), description="The ID of the document, which gets assigned after database insertion")
+    reference: Optional[str] = None
     doi: Optional[str] = None
     pmid: Optional[str] = None
     file_name: str = Field(...)
     url: Optional[str] = None
-    file_path: Optional[str] = Field(None, description="Focal file path")
+    file_path: Optional[str] = Field(None, description="Local file path")
     workspace_id: Optional[UUID] = Field(None, description="The workspace ID to which the document belongs to")
 
     class Config:
@@ -36,7 +37,7 @@ class Document(BaseModel, ABC):
         }
 
     @classmethod
-    def from_file(cls, file_path: str, id: Optional[str] = None, pmid: Optional[str] = None, doi: Optional[str] = None, workspace_id: Optional[UUID] = None) -> "Document":
+    def from_file(cls, file_path: str, reference: str, id: Optional[str] = None, pmid: Optional[str] = None, doi: Optional[str] = None, workspace_id: Optional[UUID] = None) -> "Document":
         assert doi or id or pmid, "Either `pmid`, `doi`, or `id` must be provided"
         url = None
 
@@ -54,6 +55,7 @@ class Document(BaseModel, ABC):
 
         return cls(
             file_path=file_path,
+            reference=reference,
             file_name=file_name if isinstance(file_name, str) else None,
             url=url if isinstance(url, str) else None,
             id=id or None,
@@ -71,6 +73,7 @@ class Document(BaseModel, ABC):
             "file_name": self.file_name,
             "pmid": self.pmid,
             "doi": self.doi,
+            "reference": self.reference,
             "workspace_id": str(self.workspace_id),
         }
         if self.id:

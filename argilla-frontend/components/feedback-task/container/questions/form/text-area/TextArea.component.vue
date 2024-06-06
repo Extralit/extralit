@@ -52,7 +52,7 @@ export default {
       return [
         {
           id: "0",
-          name: this.isSuggested ? `Use: ${this.suggestionAgent}` : this.$nuxt.$t("questions_form.write"),
+          name: this.isSuggested ? `Use: ${this.suggestedAgent}` : this.$nuxt.$t("questions_form.write"),
           icon: this.isSuggested ? "suggestion" : "",
           info: this.isSuggested ? this.suggestedScore : "",
           tooltipTitle: this.isSuggested
@@ -65,7 +65,7 @@ export default {
           ? [
               {
                 id: "1",
-                name: `Suggestion: ${this.suggestionAgent}`,
+                name: `Suggestion: ${this.suggestedAgent}`,
                 icon: "suggestion",
                 info: this.suggestedScore,
                 tooltipTitle: this.$nuxt.$t("suggestion.name"),

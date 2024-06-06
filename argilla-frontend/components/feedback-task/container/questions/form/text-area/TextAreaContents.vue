@@ -159,6 +159,9 @@ export default {
       return ""
     }
   },
+  mounted() {
+    console.log(this.question.name, this.question.settings, this.question.settings.use_table && this.isValidTableJSON)
+  },
 };
 </script>
 
