@@ -69,10 +69,10 @@ export default {
   },
   computed: {
     isValidTableJSON() {
-      return isTableJSON(this.text);
+      return isTableJSON(this.fieldText);
     },
     isValidHTML() {
-      const value = this.text?.trimStart();
+      const value = this.fieldText?.trimStart();
       return value?.startsWith("<table") && !value?.startsWith("<img") && !value?.startsWith("<iframe");
     },
     classes() {
@@ -81,6 +81,9 @@ export default {
   },
   setup(props) {
     return useTextFieldViewModel(props);
+  },
+  mounted() {
+    console.log(this.name, this.useMarkdown, this.useTable)
   },
 };
 </script>
