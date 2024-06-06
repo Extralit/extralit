@@ -156,11 +156,8 @@ export default {
       if (this.question.settings.use_table) {
         return this.$t("table_form_placeholder");
       }
-      return ""
+      return this.question.settings.placeholder;
     }
-  },
-  mounted() {
-    console.log(this.question.name, this.question.settings, this.question.settings.settings.use_table, this.isValidTableJSON)
   },
 };
 </script>

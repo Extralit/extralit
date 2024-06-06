@@ -50,9 +50,16 @@ export default {
     record() {
       let thisRecord = this.records.getRecordOn(this.recordCriteria.committed.page);
       if (!thisRecord) {
-        console.log('Record not found for recordCriteria.committed.page.client.page:', this.recordCriteria.committed.page.client.page);
-        console.log('All record pages:', this.records.records.map(record => record.page));
-        thisRecord = this.records.records[this.recordCriteria.committed.page.client.page-1];
+        console.log(`Record not found for recordCriteria.committed.page.client.page: ${this.recordCriteria.committed.page.client.page}, records length ${this.records.records.length}`);
+
+        const higherPageRecords = this.records.records.filter(record => record.page >= this.recordCriteria.committed.page.client.page);
+        if (higherPageRecords.length > 0) {
+          thisRecord = higherPageRecords.reduce((closest, current) => {
+            return (closest === null || current.page - this.recordCriteria.committed.page.client.page < closest.page - this.recordCriteria.committed.page.client.page) ? current : closest;
+          }, null);
+        } else {
+          console.log('All record pages:', this.records.records.map(record => record.page));
+        }
       }
       return thisRecord;
     },

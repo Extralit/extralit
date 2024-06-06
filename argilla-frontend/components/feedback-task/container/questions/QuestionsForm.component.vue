@@ -18,6 +18,7 @@
             {{ $t("saved") }}
             <BaseDate
               class="tooltip"
+              v-if="record.updatedAt"
               :date="record.updatedAt"
               format="date-relative-now"
               :updateEverySecond="10"
