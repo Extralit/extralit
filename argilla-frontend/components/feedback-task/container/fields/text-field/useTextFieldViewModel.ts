@@ -1,57 +1,20 @@
-import { computed, ComputedRef } from "vue-demi";
-
-const replaceHtmlChars = (text: string): string => {
-  return text?.toString()
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replaceAll("/*", "&#x2F;&#42;")
-    .replaceAll("*/", "&#42;&#x2F;");
-};
+import { onMounted, watch } from "vue-demi";
+import { useSearchTextHighlight } from "../useSearchTextHighlight";
 
 export const useTextFieldViewModel = (props: {
-  fieldText: string;
-  stringToHighlight: string;
-  useMarkdown: boolean;
-  useTable: boolean;
+  name: string;
+  searchText: string;
 }) => {
-  const text: ComputedRef<string> = computed(() => {
-    if (props.useMarkdown || props.useTable) return props.fieldText;
+  const { highlightText } = useSearchTextHighlight(props.name);
 
-    const sanitizeSentence = replaceHtmlChars(props.fieldText);
-    const sanitizeStringToHighlight = replaceHtmlChars(props.stringToHighlight);
+  watch(
+    () => props.searchText,
+    (newValue) => {
+      highlightText(newValue);
+    }
+  );
 
-    return highlightText(sanitizeSentence, sanitizeStringToHighlight);
+  onMounted(() => {
+    highlightText(props.searchText);
   });
-
-  const highlightText = (sentence: string, sentenceToMatch: string): string => {
-    const htmlHighlightText = (text: string) => {
-      return `<span class="highlight-text">${text}</span>`;
-    };
-
-    const createFindWordsRegex = () => {
-      const betweenSpecialSymbols = sentenceToMatch
-        .split(" ")
-        .map((word) => `(?!\\w)${word}(?!\\w)`)
-        .join("|");
-
-      const exactMatchWord = sentenceToMatch
-        .split(" ")
-        .map((word) => `\\b${word}\\b`)
-        .join("|");
-
-      return new RegExp(`${betweenSpecialSymbols}|${exactMatchWord}`, "gmi");
-    };
-
-    const replaceText = () => {
-      return sentence?.replace(createFindWordsRegex(), (matched) =>
-        matched ? htmlHighlightText(matched) : matched
-      );
-    };
-
-    return replaceText();
-  };
-
-  return { text };
 };

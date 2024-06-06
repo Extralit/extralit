@@ -16,7 +16,7 @@
         </BaseButton>
       </BaseActionTooltip>
     </div>
-    <div id="`fields-content-${name}`" class="content-area --body1">
+    <div :id="`fields-content-${name}`" class="content-area --body1">
       <RenderTableBaseComponent v-if="useTable && isValidTableJSON" :tableData="fieldText" />
       <RenderHTMLBaseComponent 
         v-else-if="isValidHTML" 
@@ -121,7 +121,6 @@ export default {
   &__tooltip {
     display: flex;
     align-self: flex-start;
-    z-index: 1;
   }
   &__copy-button {
     flex-shrink: 0;
