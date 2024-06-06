@@ -72,15 +72,14 @@ export default {
       padding: $base-space $base-space * 2;
     }
 
-    &--left {
+    &--left, &--right {
       display: flex;
       align-items: center;
       gap: $base-space;
     }
+
     &--right {
-      display: flex;
-      align-items: center;
-      gap: $base-space;
+      margin-left: auto;
     }
   }
   &__checkbox {
@@ -92,6 +91,22 @@ export default {
     :deep(.checkbox__container) {
       border-color: $black-20;
     }
+  }
+}
+
+.fields__header {
+  position: relative;
+  min-width: 0;
+  
+  &--left {
+    flex-shrink: 1; 
+    min-width: 0; 
+    overflow: hidden; 
+  }
+
+  &--right {
+    flex-shrink: 0; 
+    z-index: 2; 
   }
 }
 
