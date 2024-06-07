@@ -1,19 +1,42 @@
 <template>
   <div class="container">
+    <BaseActionTooltip
+      class="button-copy"
+      tooltip="Copied"
+      tooltip-position="left"
+    >
+      <BaseButton
+        title="Copy to clipboard"
+        @click.prevent="$copyToClipboard(question.suggestion?.suggestedAnswer)"
+      >
+        <svgicon color="#acacac" name="copy" width="20" height="20" />
+      </BaseButton>
+    </BaseActionTooltip>
+
+    <RenderTableBaseComponent
+      v-if="question.settings.settings.use_table && isValidTableJSON"
+      class="textarea"
+      :tableData="question.suggestion?.suggestedAnswer"
+      :editable="true"
+      @onUpdateAnswer="onUpdateAnswer"
+    />
+    <RenderHTMLBaseComponent
+      v-else-if="question.settings.settings.use_table && isValidHTML"
+      class="textarea"
+      :value="question.suggestion?.suggestedAnswer"
+    />
     <RenderMarkdownBaseComponent
+      v-else
       class="textarea--markdown"
       :markdown="question.suggestion?.suggestedAnswer"
     />
-    <BaseActionTooltip tooltip="Copied" class="button-copy">
-      <BaseButton @on-click="$copyToClipboard(question.suggestion?.suggestedAnswer)">
-        <svgicon name="copy" width="16" height="16" />
-      </BaseButton>
-    </BaseActionTooltip>
   </div>
 </template>
 
 <script>
-import "assets/icons/copy"  ;
+import "assets/icons/copy";
+import { isTableJSON } from "@/components/base/base-render-table/tableUtils";
+
 export default {
   name: "TextAreaComponent",
   props: {
@@ -22,6 +45,22 @@ export default {
       required: true,
     },
   },
+  computed: {
+    isValidHTML() {
+      const value = this.question.suggestion?.suggestedAnswer?.trimStart();
+
+      return value?.startsWith("<") && !value?.startsWith("<img") && !value?.startsWith("<iframe");
+    },
+    isValidTableJSON() {
+      return isTableJSON(this.question.suggestion?.suggestedAnswer);
+    },
+  },
+  methods: {
+    onUpdateAnswer(tableJsonString) {
+      this.question.answer.value = tableJsonString;
+    },
+  }
+
 };
 </script>
 

@@ -100,6 +100,8 @@ class TextQuestion(QuestionSchema):
             modified.
         use_markdown: Whether the question should be rendered using markdown or not.
             Defaults to False.
+        use_table: Whether the question should be rendered using a table editor or not.
+            Defaults to False.
 
     Examples:
         >>> from argilla.client.feedback.schemas.questions import TextQuestion
@@ -108,12 +110,14 @@ class TextQuestion(QuestionSchema):
 
     type: Literal[QuestionTypes.text] = Field(QuestionTypes.text.value, allow_mutation=False, const=True)
     use_markdown: bool = False
+    use_table: bool = False
 
     @property
     def server_settings(self) -> Dict[str, Any]:
         return {
             "type": self.type,
             "use_markdown": self.use_markdown,
+            "use_table": self.use_table,
         }
 
 
@@ -126,7 +130,7 @@ class RatingQuestion(QuestionSchema, LabelMappingMixin):
             modified.
         values: The list of integer values of the rating question. There is not need
             for the values to be sequential, but they must be unique, contain at least two
-            unique integers in the range [0, 10].
+            unique integers.
 
     Examples:
         >>> from argilla.client.feedback.schemas.questions import RatingQuestion
@@ -134,7 +138,7 @@ class RatingQuestion(QuestionSchema, LabelMappingMixin):
     """
 
     type: Literal[QuestionTypes.rating] = Field(QuestionTypes.rating.value, allow_mutation=False, const=True)
-    values: List[int] = Field(..., unique_items=True, ge=0, le=10, min_items=2)
+    values: List[int] = Field(..., unique_items=True, min_items=2)
 
     @property
     def server_settings(self) -> Dict[str, Any]:
@@ -165,7 +169,7 @@ class _LabelQuestion(QuestionSchema, LabelMappingMixin):
             which means all the labels will be shown, or 3 or greater.
     """
 
-    labels: Union[conlist(str, unique_items=True, min_items=2), Dict[str, str]]
+    labels: Union[conlist(str, unique_items=True, min_items=0), Dict[str, str]]
     visible_labels: Union[UndefinedType, conint(ge=3), None] = UNDEFINED
 
     @validator("labels", pre=True, always=True)
@@ -200,7 +204,7 @@ class _LabelQuestion(QuestionSchema, LabelMappingMixin):
                         stacklevel=1,
                     )
                     visible_labels = total_labels
-                else:
+                elif type != QuestionTypes.dynamic_label_selection and type != QuestionTypes.dynamic_multi_label_selection:
                     warnings.warn(
                         f"`labels={values.get('labels')}` has less than 3 labels, so `visible_labels`"
                         " will be set to `None`, which means that all the labels will be visible.",
@@ -218,7 +222,8 @@ class _LabelQuestion(QuestionSchema, LabelMappingMixin):
         if isinstance(self.labels, dict):
             settings["options"] = [{"value": key, "text": value} for key, value in self.labels.items()]
         elif isinstance(self.labels, list):
-            settings["options"] = [{"value": label, "text": label} for label in self.labels]
+            settings["options"] = [label if isinstance(label, dict) else {"value": label, "text": label} \
+                                   for label in self.labels]
         settings["visible_options"] = self.visible_labels
         return settings
 
@@ -229,8 +234,8 @@ class LabelQuestion(_LabelQuestion):
     only select one label.
 
     Args:
-        type: The type of the question. Defaults to 'label_selection' and cannot/shouldn't
-            be modified.
+        type: The type of the question, which is either 'label_selection' or 'dynamic_label_selection'. When using
+            'dynamic_label_selection', the labels will be fetched from the Record's Suggestions when the question is shown in the UI.
         labels: The list of labels of the label question. The labels must be unique, and
             the list must contain at least two unique labels. Additionally, `labels` can
             also be a dictionary of labels, where the keys are the labels, and the values
@@ -243,7 +248,7 @@ class LabelQuestion(_LabelQuestion):
         >>> LabelQuestion(name="label_question", title="Label Question", labels=["label_1", "label_2"])
     """
 
-    type: Literal[QuestionTypes.label_selection] = Field(
+    type: Literal[QuestionTypes.label_selection, QuestionTypes.dynamic_label_selection] = Field(
         QuestionTypes.label_selection.value, allow_mutation=False, const=True
     )
 
@@ -254,8 +259,8 @@ class MultiLabelQuestion(_LabelQuestion):
     select multiple labels.
 
     Args:
-        type: The type of the question. Defaults to 'multi_label_selection' and
-            cannot/shouldn't be modified.
+        type: The type of the question, which is either 'multi_label_selection' or 'dynamic_multi_label_selection'. When using
+            'dynamic_multi_label_selection', the labels will be fetched from the Record's Suggestions when the question is shown in the UI.
         labels: The list of labels of the label question. The labels must be unique, and
             the list must contain at least two unique labels. Additionally, `labels` can
             also be a dictionary of labels, where the keys are the labels, and the values
@@ -274,7 +279,7 @@ class MultiLabelQuestion(_LabelQuestion):
         >>> MultiLabelQuestion(name="multi_label_question", title="Multi Label Question", labels=["label_1", "label_2"])
     """
 
-    type: Literal[QuestionTypes.multi_label_selection] = Field(
+    type: Literal[QuestionTypes.multi_label_selection, QuestionTypes.dynamic_multi_label_selection] = Field(
         QuestionTypes.multi_label_selection.value, allow_mutation=False, const=True
     )
     labels_order: LabelsOrder = Field(LabelsOrder.natural, description="The order of the labels in the UI.")
