@@ -82,9 +82,6 @@ export default {
   setup(props) {
     return useTextFieldViewModel(props);
   },
-  mounted() {
-    console.log(this.name, this.useMarkdown, this.useTable)
-  },
 };
 </script>
 

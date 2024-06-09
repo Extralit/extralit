@@ -65,7 +65,7 @@ export default {
           ? [
               {
                 id: "1",
-                name: `Suggestion: ${this.suggestedAgent}`,
+                name: `${this.suggestedAgent}`,
                 icon: "suggestion",
                 info: this.suggestedScore,
                 tooltipTitle: this.$nuxt.$t("suggestion.name"),

@@ -37,7 +37,7 @@ class Document(BaseModel, ABC):
         }
 
     @classmethod
-    def from_file(cls, file_path: str, reference: str, id: Optional[str] = None, pmid: Optional[str] = None, doi: Optional[str] = None, workspace_id: Optional[UUID] = None) -> "Document":
+    def from_file(cls, file_path: str, *, reference: str, id: Optional[str] = None, pmid: Optional[str] = None, doi: Optional[str] = None, workspace_id: Optional[UUID] = None) -> "Document":
         assert doi or id or pmid, "Either `pmid`, `doi`, or `id` must be provided"
         url = None
 
