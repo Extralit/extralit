@@ -133,21 +133,12 @@ export class RecordRepository {
     duration?: number
   ) {
     try {
-      const request = this.createRequest(status, record, duration);
-      if (!request) {
-        console.log('updateRecordResponse: request is null', request)
-        return;
-      }
+      const request = this.createRequest(status, record.questions, duration);
 
       const { data } = await this.axios.put<BackendResponseResponse>(
         `/v1/responses/${record.answer.id}`,
         request
       );
-
-      if (!data) {
-        console.log('createRecordResponse: data is null', data)
-        return;
-      }
 
       return new RecordAnswer(data.id, status, data.values, data.updated_at);
     } catch (error) {
@@ -163,7 +154,7 @@ export class RecordRepository {
     duration?: number
   ) {
     try {
-      const request = this.createRequest(status, record, duration);
+      const request = this.createRequest(status, record.questions, duration);
 
       const { data } = await this.axios.post<BackendResponseResponse>(
         `/v1/records/${record.id}/responses`,
@@ -474,10 +465,10 @@ export class RecordRepository {
       items: [],
     };
 
-    records.forEach((record) => {
+    records.forEach(({ id, questions }) => {
       request.items.push({
-        ...this.createRequest(status, record),
-        record_id: record.id,
+        ...this.createRequest(status, questions),
+        record_id: id,
       });
     });
 
@@ -486,12 +477,12 @@ export class RecordRepository {
 
   private createRequest(
     status: BackendRecordStatus,
-    record: Record,
+    questions: Question[],
     duration?: number
   ): BackendResponseRequest {
     const values = {} as BackendAnswerCombinations;
 
-    record.questions
+    questions
       .filter(
         (question) =>
           question.answer.isValid || question.answer.isPartiallyValid
@@ -519,17 +510,17 @@ export class RecordRepository {
     params.append("offset", offset);
     params.append("limit", howMany.toString());
 
-    if (status === "pending") {
-      params.append("response_status", 'pending');
-      params.append("response_status", 'submitted');
-      params.append("response_status", 'draft');
+    // if (status === "pending") {
+    //   params.append("response_status", 'pending');
+    //   params.append("response_status", 'submitted');
+    //   params.append("response_status", 'draft');
 
-    } else if (status === "valid") {
-      params.append("response_status", 'pending');      
+    // } else if (status === "valid") {
+    //   params.append("response_status", 'pending');      
       
-    } else {
-      params.append("response_status", status);
-    }
+    // } else {
+    params.append("response_status", status);
+    // }
 
     return params;
   }
