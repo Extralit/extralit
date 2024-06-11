@@ -515,9 +515,6 @@ export class RecordRepository {
       params.append("response_status", 'pending');
       params.append("response_status", 'submitted');
       params.append("response_status", 'draft');
-    } else if (status === "pending") {
-      params.append("response_status", 'pending');
-      params.append("response_status", 'draft');
     } else {
       params.append("response_status", status);
     }
