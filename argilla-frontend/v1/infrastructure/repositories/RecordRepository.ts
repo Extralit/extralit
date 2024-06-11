@@ -511,17 +511,16 @@ export class RecordRepository {
     params.append("offset", offset);
     params.append("limit", howMany.toString());
 
-    // if (status === "pending") {
-    //   params.append("response_status", 'pending');
-    //   params.append("response_status", 'submitted');
-    //   params.append("response_status", 'draft');
-
-    // } else if (status === "valid") {
-    //   params.append("response_status", 'pending');      
-      
-    // } else {
-    params.append("response_status", status);
-    // }
+    if (status === "valid") {
+      params.append("response_status", 'pending');
+      params.append("response_status", 'submitted');
+      params.append("response_status", 'draft');
+    } else if (status === "pending") {
+      params.append("response_status", 'pending');
+      params.append("response_status", 'draft');
+    } else {
+      params.append("response_status", status);
+    }
 
     return params;
   }

@@ -41,11 +41,11 @@ export default {
       options: [
         {
           id: "pending",
-          name: "All data",
+          name: this.$t("recordStatus.pending"),
         },
         {
           id: "valid",
-          name: this.$t("recordStatus.pending"),
+          name: "All data",
         },
         {
           id: "draft",
