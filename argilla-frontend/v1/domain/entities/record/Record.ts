@@ -159,7 +159,7 @@ export class Record {
         }
       });
 
-      if (this.isPending && !!question.suggestion) {
+      if (this.isPending && !!question.suggestion && question.settings.type != "text") {
         question.response(question.suggestion);
       } else {
         const answer = this.answer?.value[question.name];

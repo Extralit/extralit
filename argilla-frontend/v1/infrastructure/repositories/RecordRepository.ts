@@ -507,6 +507,7 @@ export class RecordRepository {
 
     params.append("include", "responses");
     params.append("include", "suggestions");
+    params.append("include", "response_suggestions");
     params.append("offset", offset);
     params.append("limit", howMany.toString());
 
