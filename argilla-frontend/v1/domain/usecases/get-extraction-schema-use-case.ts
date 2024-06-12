@@ -18,7 +18,8 @@ export class GetExtractionSchemaUseCase {
   ): Promise<[PanderaSchema, SchemaMetadata]> {
 
     try {
-      const url = `/v1/file/${workspaceName}/schemas/${schemaName.toLocaleLowerCase()}.json`;
+      const url = `/v1/file/${workspaceName}/schemas/${schemaName}`;
+      console.log("url", url);
       const response = await this.axios.get<PanderaSchema>(url, {
         params: {
           version_id: versionId,
