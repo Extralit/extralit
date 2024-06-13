@@ -23,13 +23,14 @@ from argilla.cli import (
     users_app,
     whoami_app,
     workspaces_app,
+    extraction_app,
 )
 from argilla.cli.typer_ext import ArgillaTyper
 from argilla.utils.dependency import is_package_with_extras_installed
 
 warnings.simplefilter("ignore", UserWarning)
 
-app = ArgillaTyper(help="Argilla CLI", no_args_is_help=True)
+app = ArgillaTyper(help="Extralit CLI", no_args_is_help=True)
 
 
 @app.error_handler(PermissionError)
@@ -51,6 +52,7 @@ def handler_permission_error(e: PermissionError) -> None:
     sys.exit(1)
 
 
+app.add_typer(extraction_app, name="extraction")
 app.add_typer(datasets_app, name="datasets")
 app.add_typer(info_app, name="info")
 app.add_typer(login_app, name="login")

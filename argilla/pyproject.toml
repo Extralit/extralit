@@ -110,7 +110,7 @@ documentation = "https://docs.argilla.io"
 repository = "https://github.com/argilla-io/argilla"
 
 [project.scripts]
-argilla = "argilla.cli.app:app"
+extralit = "argilla.cli.app:app"
 
 [tool.setuptools.packages.find]
 where = ["src"]
