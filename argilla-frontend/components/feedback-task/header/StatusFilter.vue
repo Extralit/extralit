@@ -44,16 +44,16 @@ export default {
           name: this.$t("recordStatus.pending"),
         },
         {
-          id: "valid",
-          name: "All data",
-        },
-        {
           id: "draft",
           name: this.$t("recordStatus.draft"),
         },
         {
           id: "submitted",
           name: this.$t("recordStatus.submitted"),
+        },
+        {
+          id: "valid",
+          name: "All data",
         },
         {
           id: "discarded",
