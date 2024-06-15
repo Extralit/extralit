@@ -62,6 +62,11 @@ export class GetRecordsByCriteriaUseCase {
           );
         });
 
+        const questionLookup = questions.reduce((lookup: any, question) => {
+          lookup[question.id] = question;
+          return lookup;
+        });
+
         const userAnswer = record.responses[0];
         const answer = userAnswer
           ? new RecordAnswer(
@@ -74,10 +79,9 @@ export class GetRecordsByCriteriaUseCase {
 
         const suggestions = !criteria.page.isBulkMode
           ? record.suggestions.map((suggestion) => {
-              const question = questions.find(
-                (q) => q.id === suggestion.question_id
-              );
-
+              const question = questionLookup[suggestion.question_id];
+              if (!question) return null;
+              
               return new Suggestion(
                 suggestion.id,
                 suggestion.question_id,
@@ -86,8 +90,10 @@ export class GetRecordsByCriteriaUseCase {
                 suggestion.score,
                 suggestion.agent,
                 suggestion.type,
+                new Date(suggestion.inserted_at),
+                new Date(suggestion.updated_at),
               );
-            })
+            }).filter(suggestion => suggestion !== null)
           : [];
 
         return new Record(

@@ -57,7 +57,7 @@
         />
         <BaseTooltip
           :title="isSuggested(option) ? $t('suggestion.name') : ''"
-          :text="getSuggestedAgent(option)"
+          :text="getSuggestedAgentAndDate(option)"
           minimalist
         >
           <label
@@ -343,6 +343,14 @@ export default {
     getSuggestedAgent(option) {
       return this.suggestion?.getSuggestion(option.value)?.agent;
     },
+    getSuggestedAgentAndDate(option) {
+      const suggestion = this.suggestion?.getSuggestion(option.value);
+      if (suggestion?.updated_at) {
+        return `${suggestion?.agent} (${suggestion?.updated_at.toLocaleDateString()})`;
+      } else {
+        return suggestion?.agent;
+      }
+    },
   },
   setup(props) {
     return useLabelSelectionViewModel(props);
@@ -377,7 +385,7 @@ $label-dark-color: palette(purple, 200);
   }
 
   .input-button {
-    max-width: 50%;
+    max-width: 100%;
   }
 }
 

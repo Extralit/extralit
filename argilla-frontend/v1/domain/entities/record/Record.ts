@@ -158,8 +158,13 @@ export class Record {
           }
         }
       });
-
-      if (this.isPending && !!question.suggestion && question.settings.type != "text") {
+      
+      if (
+        this.isPending && 
+        !!question.suggestion &&
+        // @ts-ignore
+        !question.settings?.settings?.use_table
+      ) {
         question.response(question.suggestion);
       } else {
         const answer = this.answer?.value[question.name];

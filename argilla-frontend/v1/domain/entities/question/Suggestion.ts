@@ -27,7 +27,8 @@ export class SuggestionValue {
   constructor(
     public readonly value: AnswerValue,
     score: number,
-    public readonly agent: string
+    public readonly agent: string,
+    public readonly updated_at?: Date,
   ) {
     this.score = score ? SuggestionScore.from(score) : undefined;
   }
@@ -42,6 +43,8 @@ export class Suggestion implements Answer {
     private readonly score: number | number[],
     private readonly agent: string,
     public readonly type?: string,
+    public readonly inserted_at?: Date,
+    public readonly updated_at?: Date,
   ) {}
 
   get value() {
@@ -59,7 +62,7 @@ export class Suggestion implements Answer {
       this.questionType.isRatingType
     ) {
       if (this.value === answer) {
-        return new SuggestionValue(answer, this.score as number, this.agent);
+        return new SuggestionValue(answer, this.score as number, this.agent, this.updated_at,);
       }
     }
 
@@ -73,7 +76,8 @@ export class Suggestion implements Answer {
         return new SuggestionValue(
           answerValue,
           this.score?.[indexOf],
-          this.agent
+          this.agent,
+          this.updated_at,
         );
       }
     }
@@ -93,7 +97,8 @@ export class Suggestion implements Answer {
         return new SuggestionValue(
           spanSuggested,
           this.score?.[indexOf],
-          this.agent
+          this.agent,
+          this.updated_at,
         );
       }
     }
@@ -112,7 +117,8 @@ export class Suggestion implements Answer {
         return new SuggestionValue(
           rankingSuggested,
           this.score?.[indexOf],
-          this.agent
+          this.agent,
+          this.updated_at || this.inserted_at,
         );
       }
     }

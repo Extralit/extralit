@@ -19,7 +19,6 @@ export class GetExtractionSchemaUseCase {
 
     try {
       const url = `/v1/file/${workspaceName}/schemas/${schemaName}`;
-      console.log("url", url);
       const response = await this.axios.get<PanderaSchema>(url, {
         params: {
           version_id: versionId,
@@ -27,15 +26,20 @@ export class GetExtractionSchemaUseCase {
       });
       const headers = response.headers;
       const schema = response.data;
-      const isLatest = headers.get('is-latest');
-      const boolIsLatest = isLatest === 'true' ? true : isLatest === 'false' ? false : null;
+      let isLatest = null;
+      const headerValue = headers.get('is-latest');
+      if (headerValue === 'true') {
+        isLatest = true;
+      } else if (headerValue === 'false') {
+        isLatest = false;
+      }
 
       const SchemaMetadata: SchemaMetadata = {
         schemaName: schemaName,
         etag: headers.get('etag'),
         version_id: headers.get('version-id'),
         version_tag: headers.get('version-tag'),
-        is_latest: boolIsLatest,
+        is_latest: isLatest,
         last_modified: new Date(headers.get('last-modified') || ''),
       };
 

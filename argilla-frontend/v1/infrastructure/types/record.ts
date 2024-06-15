@@ -13,6 +13,8 @@ interface BackendSuggestion {
   score: number;
   agent: string;
   type: string;
+  inserted_at: string;
+  updated_at: string;
 }
 export type BackendRecordStatus = "submitted" | "discarded" | "draft";
 
