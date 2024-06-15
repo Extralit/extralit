@@ -56,8 +56,8 @@
           @keydown.tab="expandLabelsOnTab(index)"
         />
         <BaseTooltip
-          :title="isSuggested(option) ? $t('suggestion.name') : ''"
-          :text="getSuggestedAgentAndDate(option)"
+          :title="isSuggested(option) ? $t('suggestion.name') : option?.text"
+          :text="getOptionTooltip(option)"
           minimalist
         >
           <label
@@ -68,7 +68,7 @@
               round: !multiple,
             }"
             :for="option.id"
-            :title="option.text + (option.description ? ': \n' + option.description : '')"
+            :title="option.text"
           >
             <span class="key" v-text="keyboards[option.id]" />
             <span class="label-text__text">{{ option.text }}</span>
@@ -341,15 +341,22 @@ export default {
       return this.suggestion?.getSuggestion(option.value)?.score?.fixed;
     },
     getSuggestedAgent(option) {
-      return this.suggestion?.getSuggestion(option.value)?.agent;
-    },
-    getSuggestedAgentAndDate(option) {
       const suggestion = this.suggestion?.getSuggestion(option.value);
-      if (suggestion?.updated_at) {
+      if (!suggestion) {
+        return;
+      } else if (suggestion?.updated_at) {
         return `${suggestion?.agent} (${suggestion?.updated_at.toLocaleDateString()})`;
       } else {
         return suggestion?.agent;
       }
+    },
+    getOptionTooltip(option) {
+      let tooltip = option.description || "";
+
+      if (this.isSuggested(option)) {
+        tooltip += this.getSuggestedAgent(option)
+      }
+      return tooltip;
     },
   },
   setup(props) {

@@ -22,7 +22,6 @@ export class GetDocumentByIdUseCase {
 
   async setSegments(workspace: string, reference: string): Promise<Segment[]> {
     const segments = await this.documentRepository.getDocumentSegments(workspace, reference);
-
     this.documentStorage.setSegments(segments, reference)
     return segments
   }

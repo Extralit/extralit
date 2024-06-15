@@ -1,12 +1,20 @@
 import { LabelAnswer } from "../IAnswer";
 
 export class Segment {
-  constructor(
-    public readonly doc_id: string | number,
-    public readonly header: string | null,
-    public readonly page_number: number | null,
-    public readonly type: string | null,
-  ) {}
+	constructor(
+		public readonly doc_id: string | number,
+		public readonly header: string | null,
+		public readonly page_number: number | null,
+		public readonly type: string | null,
+	) {}
+
+	public static getDescription(segment: Segment): string {
+			let segmentDescription = Object.entries(segment)
+					.filter(([key, value]) => !['header', 'doc_id'].includes(key))
+					.map(([key, value]) => `${key}: ${value}`)
+					.join('\n');
+			return segmentDescription;
+	}
 }
 
 export interface Segments {
@@ -32,13 +40,18 @@ export class Document {
 		}
 
 		const selections = this.segments
-			?.filter((segment: Segment) => segment?.header)
-			?.reduce((unique: Segment[], segment: Segment) => {
+			?.filter((segment) => segment?.header)
+			?.reduce((unique, segment) => {
 				if (!segment?.header || unique.some(item => item.header === segment.header)) return unique;
 				return [...unique, segment];
 			}, [])
-			.map((segment: Segment) => 
-				({ value: segment.header, text: segment.header, description: `Page ${segment.page_number}`}));
+			.map((segment) => {
+				return { 
+					value: segment.header, 
+					text: segment.header, 
+					description: Segment.getDescription(segment),
+				}
+			});
 		
 		return selections;
 	}
