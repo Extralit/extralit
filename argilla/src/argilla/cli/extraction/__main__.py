@@ -4,6 +4,8 @@ from argilla.cli.callback import init_callback
 
 import typer
 
+from argilla.cli.extraction.export import export_data
+
 _COMMANDS_REQUIRING_WORKSPACE = ["export"]
 
 def callback(
@@ -46,7 +48,7 @@ def callback(
 
 app = typer.Typer(help="Commands for extraction data management", no_args_is_help=True, callback=callback)
 
-# app.command(name="list", help="List datasets linked to user's workspaces")(list_datasets)
+app.command(name="export", help="List datasets linked to user's workspaces")(export_data)
 # app.command(name="delete", help="Deletes a dataset")(delete_dataset)
 
 

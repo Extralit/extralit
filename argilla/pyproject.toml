@@ -53,6 +53,11 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
+extraction = [
+    # "extralit-server"
+    # Comment previous line and uncomment the next line when we have a release
+    "extralit-server[extraction]",
+]
 server = [
     # "argilla-server"
     # Comment previous line and uncomment the next line when we have a release
