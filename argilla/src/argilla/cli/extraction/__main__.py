@@ -10,6 +10,7 @@ def callback(
     ctx: typer.Context,
     name: Optional[str] = typer.Option(None, help="Name of the workspace to which apply the command."),
 ) -> None:
+    from argilla.client.singleton import active_client
     init_callback()
 
     if ctx.invoked_subcommand not in _COMMANDS_REQUIRING_WORKSPACE:

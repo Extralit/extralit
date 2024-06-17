@@ -138,7 +138,7 @@ jobs:
           repository_url: https://test.pypi.org/legacy/
 
       - name: Test Installing 🍿
-        run: pip install --index-url https://test.pypi.org/simple --no-deps argilla==${GITHUB_REF#refs/*/v}
+        run: pip install --index-url https://test.pypi.org/simple --no-deps extralit==${GITHUB_REF#refs/*/v}
 
       - name: Publish Package to PyPI 🥩
         uses: pypa/gh-action-pypi-publish@release/v1
