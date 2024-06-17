@@ -7,28 +7,35 @@ import typer
 from argilla.cli.extraction.export import export_data
 
 _COMMANDS_REQUIRING_WORKSPACE = ["export"]
+_COMMANDS_REQUIRING_ENVFILE = ["export"]
 
 def callback(
     ctx: typer.Context,
-    name: Optional[str] = typer.Option(None, help="Name of the workspace to which apply the command."),
+    workspace: str = typer.Option(None, help="Name of the workspace to which apply the command."),
+    env_file: str = typer.Option(None, help="Path to .env file with environment variables containing S3 credentials."),
 ) -> None:
     from argilla.client.singleton import active_client
     init_callback()
 
+    if ctx.invoked_subcommand not in _COMMANDS_REQUIRING_ENVFILE:
+        return
+
     if ctx.invoked_subcommand not in _COMMANDS_REQUIRING_WORKSPACE:
         return
 
-    if name is None:
-        raise typer.BadParameter("The command requires a workspace name provided using '--name' option")
+    if workspace is None:
+        raise typer.BadParameter("The command requires a workspace name provided using '--workspace' option")
+    elif env_file is None:
+        raise typer.BadParameter("The command requires a .env file path provided using '--env-file' option")
 
     from argilla.cli.rich import echo_in_panel
     from argilla.client.workspaces import Workspace
 
     try:
-        workspace = Workspace.from_name(name)
+        workspace = Workspace.from_name(workspace)
     except ValueError as e:
         echo_in_panel(
-            f"Workspace with name={name} does not exist.",
+            f"Workspace with name={workspace} does not exist.",
             title="Workspace not found",
             title_align="left",
             success=False,
@@ -42,8 +49,18 @@ def callback(
             success=False,
         )
         raise typer.Exit(code=1) from e
+    
+    from dotenv import load_dotenv
+    if env_file is not None:
+        load_dotenv(env_file)
 
-    ctx.obj = workspace
+    from extralit.server.context.files import get_minio_client
+
+    minio_client = get_minio_client()
+    ctx.obj = {
+        "workspace": workspace,
+        "minio_client": minio_client,
+    }
 
 
 app = typer.Typer(help="Commands for extraction data management", no_args_is_help=True, callback=callback)
