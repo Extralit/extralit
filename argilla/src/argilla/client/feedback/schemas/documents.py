@@ -38,7 +38,6 @@ class Document(BaseModel, ABC):
 
     @classmethod
     def from_file(cls, file_path: str, *, reference: str, id: Optional[str] = None, pmid: Optional[str] = None, doi: Optional[str] = None, workspace_id: Optional[UUID] = None) -> "Document":
-        assert doi or id or pmid, "Either `pmid`, `doi`, or `id` must be provided"
         url = None
 
         if os.path.exists(file_path):
@@ -58,7 +57,7 @@ class Document(BaseModel, ABC):
             reference=reference,
             file_name=file_name if isinstance(file_name, str) else None,
             url=url if isinstance(url, str) else None,
-            id=id or None,
+            id=id or uuid.uuid4(),
             pmid=str(pmid) if isinstance(pmid, int) or isinstance(pmid, str) and len(pmid)>3 else None,
             doi=doi if isinstance(doi, str) else None,
             workspace_id=workspace_id,

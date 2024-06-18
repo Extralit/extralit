@@ -138,7 +138,6 @@ export default {
       immediate: false,
       handler(newTableJSON: DataFrame, oldTableJSON: DataFrame) {
         if (!this.editable) return;
-        console.log('Changes table data');
         if (newTableJSON?.schema?.schemaName && newTableJSON?.validation?.name) {
           this.$emit("change-text", JSON.stringify({...newTableJSON, validation: undefined}));
         } else {
