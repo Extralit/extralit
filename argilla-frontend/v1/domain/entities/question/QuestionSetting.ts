@@ -4,9 +4,12 @@ export class QuestionSetting {
     | "ranking"
     | "multi_label_selection"
     | "label_selection"
+    | "dynamic_multi_label_selection"
+    | "dynamic_label_selection"
     | "span";
 
   use_markdown: boolean;
+  use_table: boolean;
   visible_options: number;
   allow_overlapping: boolean;
   allow_character_annotation: boolean;
@@ -18,6 +21,7 @@ export class QuestionSetting {
     this.type = settings.type;
 
     this.use_markdown = settings.use_markdown;
+    this.use_table = settings.use_table;
     this.visible_options = settings.visible_options;
     this.options = settings.options;
     this.options_order = settings.options_order;
@@ -43,6 +47,7 @@ export class QuestionSetting {
   isEqual(setting: QuestionSetting) {
     return (
       this.use_markdown === setting.use_markdown &&
+      this.use_table === setting.use_table &&
       this.visible_options === setting.visible_options &&
       this.options_order === setting.options_order &&
       JSON.stringify(this.options) === JSON.stringify(setting.options)

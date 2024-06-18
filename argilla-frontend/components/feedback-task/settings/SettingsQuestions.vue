@@ -102,6 +102,7 @@
 
             <BaseSwitch
               v-if="question.isTextType"
+              class="settings__edition-form__switch"
               :id="`use-table-${question.id}`"
               v-model="question.settings.use_table"
               >Render Editable Table</BaseSwitch
