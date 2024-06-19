@@ -82,7 +82,7 @@ export const useReferenceTablesViewModel = (
         const matchingTable = Object.values(recordTables)
           .find((table: DataFrame) => {
             const schemaName = table?.schema?.schemaName || table?.validation?.name;
-            return schemaName?.toLowerCase() === field.replace(/_ref$/, '')
+            return schemaName?.toLowerCase() === field.replace(/(_ref|_ID)$/, '').toLowerCase();
           });
 
         if (!matchingTable) continue;
@@ -103,7 +103,8 @@ export const useReferenceTablesViewModel = (
               acc[key] = value;
               return acc;
             }, {});
-          acc[row.reference] = filteredRowValues;
+          console.log(field, row.reference || row[field])
+          acc[row.reference || row[field]] = filteredRowValues;
           return acc;
         }, {});
         matchingRefValues[field] = refRows;

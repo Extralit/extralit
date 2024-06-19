@@ -42,7 +42,7 @@ export const useSchemaTableViewModel = (
   const refColumns = ref(
     tableJSON.value?.schema?.fields
       .map(field => field.name)
-      .filter(name => typeof name === 'string' && name.endsWith('_ref')) || []
+      .filter(name => typeof name === 'string' && (name.endsWith('_ref') || (name.endsWith('_ID') && !name.toLowerCase().startsWith(tableJSON.value?.schema?.schemaName?.toLowerCase())))) || []
   );
   const groupbyColumns = ref(refColumns.value || null);
 

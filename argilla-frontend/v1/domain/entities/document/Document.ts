@@ -34,7 +34,7 @@ export class Document {
 		this.segments = segments || [];
 	}
 
-	getQuestionSelections(): LabelAnswer[] {
+	getSegmentSelections(): LabelAnswer[] {
 		if (!this.segments) {
 			return null;
 		}
