@@ -2,7 +2,7 @@
 <h1 align="center">
   <a href=""><img src="https://github.com/dvsrepo/imgs/raw/main/rg.svg" alt="Argilla" width="150"></a>
   <br>
-  Argilla
+  Extralit
   <br>
 </h1>
 
@@ -10,7 +10,7 @@
 
 <h3>
 <p align="center">
-<a href="https://docs.argilla.io">📄 Documentation</a> | </span>
+<a href="#">📄 Documentation</a> | </span>
 <a href="#-quickstart">🚀 Quickstart</a> <span> | </span>
 <a href="#-project-architecture">🛠️ Architecture</a> <span> | </span>
 </p>
