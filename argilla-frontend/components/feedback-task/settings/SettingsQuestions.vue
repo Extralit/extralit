@@ -105,7 +105,7 @@
               class="settings__edition-form__switch"
               :id="`use-table-${question.id}`"
               v-model="question.settings.use_table"
-              >Render Editable Table</BaseSwitch
+              >{{ $t("useTable") }}</BaseSwitch
             >
 
             <div class="settings__edition-form__footer">

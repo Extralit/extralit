@@ -31,6 +31,7 @@ export default {
   labels: "Labels",
   order: "Order",
   useMarkdown: "Use Markdown",
+  useTable: "Use Table",
   suggestionFirst: "Show suggestions first",
   visibleForAnnotators: "Visible for annotators",
   recordInfo: "Record info",

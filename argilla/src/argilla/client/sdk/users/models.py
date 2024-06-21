@@ -46,3 +46,6 @@ class UserModel(BaseModel):
     api_key: str
     inserted_at: datetime
     updated_at: datetime
+
+    def __repr__(self):
+        return f"UserModel(id={self.id}, first_name={self.first_name}, last_name={self.last_name}, full_name={self.full_name}, username={self.username}, role={self.role}, workspaces={self.workspaces}, inserted_at={self.inserted_at}, updated_at={self.updated_at})"

@@ -149,7 +149,8 @@ class FeedbackRecord(BaseModel):
             payload["responses"] = [response.to_server_payload() for response in self.responses]
         if question_name_to_id:
             payload["suggestions"] = [
-                suggestion.to_server_payload(question_name_to_id) for suggestion in self.suggestions
+                suggestion.to_server_payload(question_name_to_id) for suggestion in self.suggestions \
+                if suggestion.question_name in question_name_to_id
             ]
 
         if self.vectors:

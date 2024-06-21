@@ -51,7 +51,7 @@ dependencies = [
     "typer >= 0.6.0, < 0.10.0", # spaCy only supports typer<0.10.0
     # for environment variables
     "python-dotenv",
-    "extralit-server[extraction]",
+    "extralit-server",
 ]
 dynamic = ["version"]
 

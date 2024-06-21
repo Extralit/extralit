@@ -204,7 +204,8 @@ class _LabelQuestion(QuestionSchema, LabelMappingMixin):
                         stacklevel=1,
                     )
                     visible_labels = total_labels
-                elif type != QuestionTypes.dynamic_label_selection and type != QuestionTypes.dynamic_multi_label_selection:
+                elif values.get('type') != QuestionTypes.dynamic_label_selection and \
+                    values.get('type') != QuestionTypes.dynamic_multi_label_selection:
                     warnings.warn(
                         f"`labels={values.get('labels')}` has less than 3 labels, so `visible_labels`"
                         " will be set to `None`, which means that all the labels will be visible.",
@@ -249,7 +250,7 @@ class LabelQuestion(_LabelQuestion):
     """
 
     type: Literal[QuestionTypes.label_selection, QuestionTypes.dynamic_label_selection] = Field(
-        QuestionTypes.label_selection.value, allow_mutation=False, const=True
+        QuestionTypes.label_selection.value, allow_mutation=False
     )
 
 
@@ -280,7 +281,7 @@ class MultiLabelQuestion(_LabelQuestion):
     """
 
     type: Literal[QuestionTypes.multi_label_selection, QuestionTypes.dynamic_multi_label_selection] = Field(
-        QuestionTypes.multi_label_selection.value, allow_mutation=False, const=True
+        QuestionTypes.multi_label_selection.value, allow_mutation=False
     )
     labels_order: LabelsOrder = Field(LabelsOrder.natural, description="The order of the labels in the UI.")
 
