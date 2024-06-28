@@ -187,7 +187,7 @@ jobs:
 
       - name: Test Installing 🍿
         run: |
-          pip install --index-url https://test.pypi.org/simple --no-deps argilla-server==${GITHUB_REF#refs/*/v}
+          pip install --index-url https://test.pypi.org/simple --no-deps extralit-server==${GITHUB_REF#refs/*/v}
 
       - name: Publish Package to PyPI 🥩
         run: |
