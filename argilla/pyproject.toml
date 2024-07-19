@@ -59,7 +59,7 @@ dynamic = ["version"]
 server = [
     # "argilla-server"
     # Comment previous line and uncomment the next line when we have a release
-    "extralit-server[argilla_server]"
+    "extralit-server"
 ]
 server-postgresql = [
     # "argilla-server[postgresql]"

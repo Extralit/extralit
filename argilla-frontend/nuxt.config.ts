@@ -165,7 +165,15 @@ const config: NuxtConfig = {
       });
       config.module.rules.push({
         test: /\.mjs$/,
-        include: /node_modules\/pdfjs-dist/,
+        include: /node_modules/,
+        type: 'javascript/auto',
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['@babel/preset-env'],
+            compact: false,
+          },
+        },
       });
       config.module.rules.push({
         test: /\.js$/,
