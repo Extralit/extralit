@@ -12,7 +12,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from typing import List, Union
+import os, hashlib
+from pathlib import Path
+from typing import List, Union, Optional
 from uuid import UUID
 
 import httpx
@@ -20,6 +22,16 @@ import httpx
 from argilla.client.sdk.commons.errors_handler import handle_response_error
 from argilla.client.sdk.commons.models import ErrorMessage, HTTPValidationError, Response
 from argilla.client.sdk.v1.workspaces.models import WorkspaceModel
+from argilla.client.sdk.v1.files.models import ObjectMetadata, ListObjectsResponse, FileObject
+
+
+def calculate_file_hash(file_path: Path) -> str:
+    """Calculate the MD5 hash of a file."""
+    hash_md5 = hashlib.md5()
+    with open(file_path, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()
 
 
 def get_workspace(client: httpx.Client, id: UUID) -> Response[Union[WorkspaceModel, ErrorMessage, HTTPValidationError]]:
@@ -65,6 +77,133 @@ def delete_workspace_documents(
 
     response = client.delete(url=url)
 
+    if response.status_code == 200:
+        response_obj = Response.from_httpx_response(response)
+        return response_obj
+    return handle_response_error(response)
+
+
+def get_file(
+    client: httpx.Client, workspace_name: str, path: str, version_id: Optional[str] = None
+) -> Response[Union[FileObject, ErrorMessage, HTTPValidationError]]:
+    """Sends a GET request to `/file/{bucket}/{object}` endpoint to get a file.
+
+    Args:
+        client: the authenticated client to be used to send the request to the API.
+        workspace_name: the name of the bucket.
+        path: the name of the object.
+        version_id: the version id of the object. Optional.
+
+    Returns:
+        A `Response` object containing the response from the server.
+    """
+    endpoint = f"/api/v1/file/{workspace_name}/{path}"
+    params = {"version_id": version_id} if version_id else {}
+    response = client.get(url=endpoint, params=params)
+
+    if response.status_code == 200:
+        response_obj = Response.from_httpx_response(response)
+        response_obj.parsed = FileObject(**response.json())
+        return response_obj
+    return handle_response_error(response)
+
+
+def list_workspace_files(
+    client: httpx.Client, workspace_name: str, path: str, include_version=True
+) -> Response[Union[ListObjectsResponse, ErrorMessage, HTTPValidationError]]:
+    """Sends a GET request to `/files/{bucket}/{prefix}` endpoint to list objects.
+
+    Args:
+        client: the authenticated client to be used to send the request to the API.
+        workspace_name: the name of the bucket.
+        prefix: the prefix of the objects. Optional.
+        include_version: whether to include version information. Optional.
+
+    Returns:
+        A `Response` object containing the response from the server.
+    """
+    endpoint = f"/api/v1/files/{workspace_name}/{path}"
+    params = {"include_version": include_version}
+    response = client.get(url=endpoint, params=params)
+
+    if response.status_code == 200:
+        response_obj = Response.from_httpx_response(response)
+        response_obj.parsed = ListObjectsResponse(**response.json())
+        return response_obj
+    return handle_response_error(response)
+
+
+def exist_workspace_file(client: httpx.Client, workspace_name: str, path: str, file_path: Path) -> Optional[ObjectMetadata]:
+    """Check if the given `file_path` with the same hash already exists in the workspace.
+
+    Args:
+        client: The HTTP client used for making requests.
+        workspace_name: The name of the workspace.
+        path: The path in the workspace where the file would be located.
+        file_path: The local path of the file to check.
+
+    Returns:
+        True if a matching file exists, False otherwise.
+    """
+    try:
+        existing_files_response = list_workspace_files(client, workspace_name, path)
+        if existing_files_response.status_code == 200:
+            existing_files: ListObjectsResponse = existing_files_response.parsed
+            file_hash = calculate_file_hash(file_path)
+            for file in existing_files.objects:
+                if file.object_name.endswith(file_path.name) and file.etag.strip('"') == file_hash:
+                    return file
+                
+    except Exception as e:
+        print(f"Error while checking if file exists: {e}")
+        return None
+            
+    return None
+
+
+def put_workspace_file(
+    client: httpx.Client, workspace_name: str, path: str, file_path: Path
+) -> Response[Union[ObjectMetadata, ErrorMessage, HTTPValidationError]]:
+    """Sends a POST request to `/file/{bucket}/{object}` endpoint to upload a file.
+
+    Args:
+        client: the authenticated client to be used to send the request to the API.
+        workspace_name: the name of the bucket.
+        path: the name of the object.
+        file_path: the file to be uploaded.
+
+    Returns:
+        A `Response` object containing the response from the server.
+    """
+    endpoint = f"/api/v1/file/{workspace_name}/{path}"
+    file_name = os.path.basename(file_path)
+    with open(file_path, 'rb') as file_data:
+        files = {"file": (file_name, file_data, "application/octet-stream")}
+        response = client.post(url=endpoint, files=files)
+
+    if response.status_code == 200:
+        response_obj = Response.from_httpx_response(response)
+        response_obj.parsed = ObjectMetadata(**response.json())
+        return response_obj
+    return handle_response_error(response)
+
+
+def delete_workspace_file(client: httpx.Client, workspace_name: str, path: str, version_id: Optional[str] = None) -> Response:
+    """Sends a DELETE request to `/files/{bucket}/{object}` endpoint to delete a file.
+
+    Args:
+        client: the authenticated client to be used to send the request to the API.
+        bucket: the name of the bucket.
+        path: the name of the object.
+        version_id: the version id of the object. Optional.
+
+    Returns:
+        A `Response` object containing the response from the server.
+    """
+    endpoint = f"/api/v1/file/{workspace_name}/{path}"
+    params = {"version_id": version_id} if version_id else {}
+    response = client.delete(url=endpoint, params=params)
+    
     if response.status_code == 200:
         response_obj = Response.from_httpx_response(response)
         return response_obj

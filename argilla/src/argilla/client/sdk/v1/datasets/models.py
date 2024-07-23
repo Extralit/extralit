@@ -182,15 +182,3 @@ class FeedbackDocumentModel(BaseModel):
         json_encoders = {
             UUID: str
         }
-
-
-class FileObjectModel(BaseModel):
-    bucket: str
-    object: str
-    data: Optional[str]
-    file_name: Optional[str]
-    version_id: Optional[str]
-    size: Optional[int]
-    content_type: Optional[str]
-
-

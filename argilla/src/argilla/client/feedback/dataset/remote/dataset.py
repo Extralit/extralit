@@ -957,7 +957,7 @@ class RemoteFeedbackDataset(FeedbackDatasetBase[RemoteFeedbackRecord], MetricsMi
 
             del self._documents[(document.pmid or document.doi)]
         except Exception as e:
-            raise ValueError(f"Document with id {document.id!r}, pmid {document.pmid!r}, or doi {document.doi!r} does not exist or cannot be deleted. \nError: {e}")
+            raise ValueError(f"Document {document} does not exist or cannot be deleted. \nError: {e}")
 
 
     def filter_by(

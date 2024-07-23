@@ -12,6 +12,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import os
+from pathlib import Path
 import warnings
 from datetime import datetime
 from typing import TYPE_CHECKING, Iterator, List, Optional, Union
@@ -34,8 +36,10 @@ from argilla.client.utils import allowed_for_roles
 
 if TYPE_CHECKING:
     import httpx
+    import pandera as pa
 
     from argilla.client.sdk.users.models import UserModel
+    from extralit.extraction.models import SchemaStructure
 
 
 class Workspace:
@@ -259,6 +263,55 @@ class Workspace:
             ) from e
         except BaseClientError as e:
             raise RuntimeError(f"Error while deleting workspace with id {self.id!r}.") from e
+        
+    @allowed_for_roles(roles=[UserRole.owner, UserRole.admin])
+    def add_schema(self, schema: Optional["pa.DataFrameSchema"], prefix: str = 'schemas/'):
+        """
+        Adds new schemas to the workspace.
+
+        Args:
+            client: The HTTP client used for making requests.
+            workspace_name: The name of the workspace where the schemas will be added.
+            new_schemas: A list of new DataFrameSchema objects to be added.
+            prefix: The prefix used for storing schemas in the workspace.
+        """
+        assert schema is not None, "Schema cannot be None."
+        object_path = os.path.join(prefix, schema.name)
+        file_path = Path('/tmp') / schema.name
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(schema.to_json())
+        
+        try:
+            if workspaces_api_v1.exist_workspace_file(self._client, workspace_name=self.name, path=object_path, file_path=file_path):
+                raise ValueError(f"Schema with name=`{schema.name}` already exists in workspace with id=`{self.id}`.")
+            
+            workspaces_api_v1.put_workspace_file(self._client, workspace_name=self.name, path=object_path, file_path=file_path)
+        except Exception as e:
+            raise RuntimeError(
+                f"Error adding schema with name=`{schema.name}` to workspace with id=`{self.id}`."
+            ) from e
+
+
+    @allowed_for_roles(roles=[UserRole.owner, UserRole.admin])
+    def update_schemas(self, schemas: SchemaStructure, prefix: str = 'schemas/'):
+        """
+        Updates existing schemas in the workspace.
+        """
+        for schema in schemas.schemas:
+            object_path = os.path.join(prefix, schema.name)
+            file_path = Path('/tmp') / schema.name
+            with open(file_path, 'w', encoding='utf-8') as f:
+                f.write(schema.to_json())
+            
+            try:
+                if workspaces_api_v1.exist_workspace_file(self._client, workspace_name=self.name, path=object_path, file_path=file_path):
+                    print(f"Existing schema with name=`{schema.name}` in workspace is unmodified.")
+                    continue
+                workspaces_api_v1.put_workspace_file(self._client, workspace_name=self.name, path=object_path, file_path=file_path)
+            except Exception as e:
+                raise RuntimeError(
+                    f"Error adding schema with name=`{schema.name}` to workspace with id=`{self.id}`."
+                ) from e
         
     @staticmethod
     def __active_client() -> "httpx.Client":

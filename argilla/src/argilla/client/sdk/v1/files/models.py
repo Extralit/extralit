@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional
 from uuid import UUID
 from pydantic.v1 import BaseModel, Field, Extra
 
+
 class ObjectMetadata(BaseModel):
     bucket_name: str
     object_name: str
@@ -12,6 +13,12 @@ class ObjectMetadata(BaseModel):
     size: Optional[int]
     content_type: Optional[str]
     version_id: Optional[str]
+    version_tag: Optional[str]
+    metadata: Optional[Dict[str, Any]]
+
+
+class ListObjectsResponse(BaseModel):
+    objects: List[ObjectMetadata] = Field(default_factory=list)
 
 
 class FileObject(BaseModel):
@@ -19,12 +26,13 @@ class FileObject(BaseModel):
 
     Args:
         file_data: The file data of the document. Required.
-        metadata: The metadata of the file. Required.
+        metadata: The metadata of the current file. Optional.
+        versions: The metadata of other file versions. Optional.
     """
 
     file_data: Optional[bytes] = Field(None, description="Base64 encoded file data", repr=False)
-    metadata: ObjectMetadata
-    versions: List[ObjectMetadata]
+    metadata: Optional[ObjectMetadata]
+    versions: Optional[ListObjectsResponse]
 
     class Config:
         validate_assignment = True
