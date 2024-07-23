@@ -125,7 +125,7 @@ jobs:
       - build
     with:
       download-python-package: true
-      image-name: argilla/argilla-server
+      image-name: extralit/extralit-server
       dockerfile: argilla-server/docker/server/Dockerfile
       context: argilla-server/docker/server
       readme: argilla-server/README.md
@@ -138,7 +138,7 @@ jobs:
     needs: build_server_docker_image
     with:
       download-python-package: false
-      image-name: argilla/argilla-quickstart
+      image-name: extralit/extralit-quickstart
       dockerfile: argilla-server/docker/quickstart/Dockerfile
       context: argilla-server/docker/quickstart
       readme: argilla-server/docker/quickstart/README.md
