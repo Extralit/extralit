@@ -1,4 +1,4 @@
-name: Build Argilla server package
+name: Build Extralit server package
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

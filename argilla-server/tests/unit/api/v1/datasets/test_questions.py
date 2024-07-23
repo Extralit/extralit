@@ -51,7 +51,7 @@ class TestDatasetQuestions:
         ("settings", "expected_settings"),
         [
             ({"type": "text"}, {"type": "text", "use_markdown": False}),
-            ({"type": "text", "use_markdown": True}, {"type": "text", "use_markdown": True}),
+            ({"type": "text", "use_markdown": True, "use_table": False}, {"type": "text", "use_markdown": True, "use_table": False}),
             ({"type": "text", "use_markdown": False}, {"type": "text", "use_markdown": False}),
             (
                 {
