@@ -156,3 +156,7 @@ class ElasticSearchEngine(BaseElasticAndOpenSearchEngine):
 
     async def _refresh_index_request(self, index_name: str):
         await self.client.indices.refresh(index=index_name)
+
+    async def get_all_index_names(self) -> List[str]:
+        indices = await self.client.indices.get_alias(index="*")
+        return list(indices)

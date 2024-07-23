@@ -1,0 +1,60 @@
+# postgres-deployment.yml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:14-alpine
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_DB
+          value: argilla
+        - name: POSTGRES_USER
+          value: argilla
+        - name: POSTGRES_PASSWORD
+          value: password
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: postgresdb
+      volumes:
+      - name: postgresdb
+        persistentVolumeClaim:
+          claimName: postgres-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: k8s-storage-policy
+  resources:
+    requests:
+      storage: 4Gi
+  volumeName: postgres-pv
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: postgres-pv
+spec:
+  capacity:
+    storage: 4Gi  # specify the size of the volume
+  volumeMode: Filesystem  # can also be Block
+  accessModes:
+    - ReadWriteOnce  # The volume can be mounted as read-write by a single node
+  storageClassName: k8s-storage-policy  # name of the StorageClass
+  persistentVolumeReclaimPolicy: Retain  # Retain the volume data when the PVC is deleted

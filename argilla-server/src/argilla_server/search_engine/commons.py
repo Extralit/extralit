@@ -165,7 +165,8 @@ def es_mapping_for_question(question: Question) -> dict:
     if question_type == QuestionType.rating:
         # See https://www.elastic.co/guide/en/elasticsearch/reference/current/number.html
         return {"type": "integer"}
-    elif question_type in [QuestionType.label_selection, QuestionType.multi_label_selection]:
+    elif question_type in [QuestionType.label_selection, QuestionType.dynamic_label_selection,
+                           QuestionType.multi_label_selection, QuestionType.dynamic_multi_label_selection]:
         return {"type": "keyword"}
     else:
         # The rest of the question types will be ignored for now. Once we have a filters feat we can design

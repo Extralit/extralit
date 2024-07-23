@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aim-deployment
+  labels:
+    app: aim-observability
+spec:
+  selector:
+    matchLabels:
+      app: aim-observability
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: aim-observability
+    spec:
+      containers:
+        - name: aim-server
+          image: extralit-aim-server
+          ports:
+            - containerPort: 43800
+              protocol: TCP
+          resources:
+            limits:
+              cpu: "1"
+              memory: 2Gi
+            requests:
+              cpu: 100m
+              memory: 1Gi
+          volumeMounts:
+            - mountPath: /aim
+              name: aim-runs
+      volumes:
+        - name: aim-runs
+          persistentVolumeClaim:
+            claimName: aim-runs-claim

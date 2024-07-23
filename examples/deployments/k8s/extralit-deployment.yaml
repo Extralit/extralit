@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: extralit-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: extralit
+  template:
+    metadata:
+      labels:
+        app: extralit
+    spec:
+      containers:
+      - name: extralit-server
+        image: extralit-server
+        ports:
+        - containerPort: 5555
+        env:
+          - name: OPENAI_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: extralit-secrets
+                key: OPENAI_API_KEY
+          - name: ARGILLA_BASE_URL
+            value: "http://argilla-server:6900"
+          - name: ARGILLA_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: extralit-secrets
+                key: ARGILLA_API_KEY
+          - name: WCS_HTTP_URL
+            value: "weaviate"
+          - name: WCS_GRPC_URL
+            value: "weaviate-grpc"
+          - name: WCS_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: weaviate-api-keys
+                key: AUTHENTICATION_APIKEY_ALLOWED_KEYS
+          - name: S3_ENDPOINT
+            valueFrom:
+              secretKeyRef:
+                name: extralit-secrets
+                key: S3_ENDPOINT
+          - name: S3_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: extralit-secrets
+                key: S3_ACCESS_KEY
+          - name: S3_SECRET_KEY
+            valueFrom:
+              secretKeyRef:
+                name: extralit-secrets
+                key: S3_SECRET_KEY
+          - name: LANGFUSE_HOST
+            value: "http://langfuse-server:4000"
+          - name: LANGFUSE_SECRET_KEY
+            valueFrom:
+              secretKeyRef:
+                name: extralit-secrets
+                key: LANGFUSE_SECRET_KEY
+          - name: LANGFUSE_PUBLIC_KEY
+            valueFrom:
+              secretKeyRef:
+                name: extralit-secrets
+                key: LANGFUSE_PUBLIC_KEY
+        # volumeMounts:
+        #   - name: extralit-storage
+        #     mountPath: /tmp/
+      # volumes:
+      # - name: extralit-storage
+      #   persistentVolumeClaim:
+      #     claimName: extralit-pvc 
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            preference:
+              matchExpressions:
+              - key: role
+                operator: In
+                values:
+                - extralit

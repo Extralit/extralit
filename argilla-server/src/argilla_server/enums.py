@@ -36,6 +36,7 @@ class ResponseStatusFilter(str, Enum):
 class SuggestionType(str, Enum):
     model = "model"
     human = "human"
+    selection = "selection"
 
 
 class DatasetStatus(str, Enum):
@@ -53,13 +54,16 @@ class RecordInclude(str, Enum):
     responses = "responses"
     suggestions = "suggestions"
     vectors = "vectors"
+    response_suggestions = "response_suggestions"
 
 
 class QuestionType(str, Enum):
     text = "text"
     rating = "rating"
     label_selection = "label_selection"
+    dynamic_label_selection = "dynamic_label_selection"
     multi_label_selection = "multi_label_selection"
+    dynamic_multi_label_selection = "dynamic_multi_label_selection"
     ranking = "ranking"
     span = "span"
 

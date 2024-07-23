@@ -28,14 +28,14 @@ spec:
               - key: role
                 operator: In
                 values:
-                - backend
+                - argilla-server
       initContainers:
         - name: wait-for-elasticsearch
           image: alpine/curl:latest
           command: [ "sh", "-c",
-            "ELASTICSEARCH_URL='https://elastic:$(ELASTIC_PASSWORD)@elasticsearch-master:9200'; status_code=$(curl -s -o /dev/null -w '%{http_code}' $ELASTICSEARCH_URL);
-            while [ $status_code -ne 200 ]; do sleep 5; status_code=$(curl -s -o /dev/null -w '%{http_code}' $ELASTICSEARCH_URL);
-            echo Sleeping...; done; echo Elasticsearch Connected " ]
+            "ELASTICSEARCH_URL='https://elastic:$(ELASTIC_PASSWORD)@elasticsearch-master:9200'; status_code=$(curl -s -k -o /dev/null -w '%{http_code}' $ELASTICSEARCH_URL);
+          while [ $status_code -ne 200 ]; do sleep 5; status_code=$(curl -s -o /dev/null -w '%{http_code}' $ELASTICSEARCH_URL);
+          echo Sleeping...; done; echo Elasticsearch Connected " ]
           env:
             - name: ELASTIC_PASSWORD
               valueFrom:
@@ -49,16 +49,35 @@ spec:
             - containerPort: 6900
           resources:
             requests:
-              cpu: "1"
+              memory: 1024Mi
+              cpu: 1000m
             limits:
-              cpu: "2"
+              memory: 6144Mi
+              cpu: 4000m
           env:
             - name: ARGILLA_ELASTICSEARCH_HOST
               value: "elasticsearch-master:9200"
             - name: ARGILLA_AUTH_SECRET_KEY
               value: "CHANGE_ME"
             - name: ARGILLA_CORS_ORIGINS
-              value: '["*", "argilla-frontend"]'
+              value: '["*"]'
+            - name: EXTRALIT_URL
+              value: "http://extralit-server:5555"
+            - name: S3_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: extralit-secrets
+                  key: S3_ENDPOINT
+            - name: S3_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: extralit-secrets
+                  key: S3_ACCESS_KEY
+            - name: S3_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: extralit-secrets
+                  key: S3_SECRET_KEY
             - name: POSTGRES_HOST
               value: "main-db:5432"
             - name: POSTGRES_PASSWORD
@@ -80,3 +99,4 @@ spec:
         - name: elasticsearch-master-certs
           secret:
             secretName: elasticsearch-master-certs
+            

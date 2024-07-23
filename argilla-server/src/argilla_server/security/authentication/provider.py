@@ -62,6 +62,26 @@ class AuthenticationProvider:
             raise UnauthorizedError()
 
         return user
+    
+    async def get_optional_current_user(
+        self,
+        security_scopes: SecurityScopes,  # noqa
+        request: Request,
+        db: AsyncSession = Depends(get_async_db),
+        _api_key: Optional[str] = Depends(APIKeyAuthenticationBackend.scheme),
+        _bearer: Optional[str] = Depends(BearerTokenAuthenticationBackend.scheme),
+    ) -> Optional[User]:
+        """Get the current user from the request, or None if authentication fails."""
+
+        userinfo = await self._authenticate_request_user(db, request)
+        if not userinfo:
+            return None
+
+        user = await accounts.get_user_by_username(db, userinfo.username)
+        if not user:
+            return None
+
+        return user
 
     async def _authenticate_request_user(self, db: AsyncSession, request: Request) -> Optional[UserInfo]:
         # This db will be used by the backends. Ideally this should be done as a global dependency

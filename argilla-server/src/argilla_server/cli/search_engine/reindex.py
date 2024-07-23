@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 import asyncio
-from typing import AsyncGenerator, Optional
+from typing import AsyncGenerator, List, Optional
 from uuid import UUID
 
 import typer
@@ -101,6 +101,11 @@ class Reindexer:
     @classmethod
     async def count_dataset_records(cls, db: AsyncSession, dataset: Dataset) -> int:
         return (await db.execute(select(func.count(Record.id)).filter_by(dataset_id=dataset.id))).scalar_one()
+    
+    @classmethod
+    async def get_all_index_names(cls, search_engine: SearchEngine) -> List[str]:
+        index_names = await search_engine.get_all_index_names()
+        return index_names
 
 
 async def _reindex_dataset(db: AsyncSession, search_engine: SearchEngine, progress: Progress, dataset_id: UUID) -> None:
@@ -153,12 +158,20 @@ async def _reindex(feedback_dataset_id: Optional[UUID] = None) -> None:
                 else:
                     await _reindex_datasets(db, search_engine, progress)
 
+async def list_indexes() -> None:
+    async for search_engine in get_search_engine():
+        index_names = await Reindexer.get_all_index_names(search_engine)
+        for index_name in index_names or []:
+            typer.echo(index_name)
+
 
 def reindex(
     feedback_dataset_id: Optional[UUID] = typer.Option(None, help="The id of a feedback dataset to be reindexed")
 ) -> None:
     asyncio.run(_reindex(feedback_dataset_id))
 
+def list() -> None:
+    asyncio.run(list_indexes())
 
 if __name__ == "__main__":
     typer.run(reindex)

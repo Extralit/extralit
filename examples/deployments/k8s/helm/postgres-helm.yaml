@@ -1,0 +1,26 @@
+global:
+  storageClass: "k8s-storage-policy"
+
+nameOverride: "main-db"
+fullnameOverride: "main-db"
+# Rename to `extralit-db` and change the default database name to `extralit-db`
+
+postgresql:
+  persistence:
+    enabled: true
+    storageClass: "k8s-storage-policy"
+    size: 2Gi
+  backup:
+    size: 1Gi
+  nodeAffinity: 
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 1
+      preference:
+        matchExpressions:
+        - key: role
+          operator: In
+          values:
+          - storage
+  volumePermissions:
+    enabled: true
+

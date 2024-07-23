@@ -5,6 +5,7 @@ set -e
 echo "Running database migrations"
 python -m argilla_server database migrate
 
+if [ -n "$OWNER_USERNAME" ]; then
 echo "Creating owner user"
 python -m argilla_server database users create \
 	--first-name "Owner" \
@@ -13,7 +14,9 @@ python -m argilla_server database users create \
 	--api-key "$OWNER_API_KEY" \
 	--role owner \
 	--workspace "$ARGILLA_WORKSPACE"
+fi
 
+if [ -n "$ADMIN_USERNAME" ]; then
 echo "Creating admin user"
 python -m argilla_server database users create \
 	--first-name "Admin" \
@@ -22,7 +25,9 @@ python -m argilla_server database users create \
 	--api-key "$ADMIN_API_KEY" \
 	--role admin \
 	--workspace "$ARGILLA_WORKSPACE"
+fi
 
+if [ -n "$ANNOTATOR_USERNAME" ]; then
 echo "Creating annotator user"
 python -m argilla_server database users create \
 	--first-name "Annotator" \
@@ -30,6 +35,7 @@ python -m argilla_server database users create \
 	--password "$ANNOTATOR_PASSWORD" \
 	--role annotator \
 	--workspace "$ARGILLA_WORKSPACE"
+fi
 
 if [ "$REINDEX_DATASETS" == "true" ] || [ "$REINDEX_DATASETS" == "1" ]; then
   echo "Reindexing existing datasets"

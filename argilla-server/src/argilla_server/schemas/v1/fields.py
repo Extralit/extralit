@@ -53,11 +53,13 @@ FieldTitle = Annotated[
 class TextFieldSettings(BaseModel):
     type: Literal[FieldType.text]
     use_markdown: bool = False
+    use_table: bool = False
 
 
 class TextFieldSettingsUpdate(UpdateSchema):
     type: Literal[FieldType.text]
     use_markdown: bool
+    use_table: bool
 
 
 class Field(BaseModel):

@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: langfuse-deployment
+  labels:
+    app: langfuse
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: langfuse
+  template:
+    metadata:
+      labels:
+        app: langfuse
+    spec:
+      containers:
+      - name: langfuse
+        image: langfuse/langfuse:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: DATABASE_HOST
+          value: main-db:5432
+        - name: DATABASE_USERNAME
+          value: postgres
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: main-db
+              key: postgres-password
+        - name: DATABASE_NAME
+          value: "langfuse"
+        - name: NEXTAUTH_URL
+          value: "http://localhost:3000"
+        - name: HOSTNAME
+          value: "0.0.0.0"
+        - name: NEXTAUTH_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: langfuse-secrets
+              key: NEXTAUTH_SECRET
+        - name: SALT
+          valueFrom:
+            secretKeyRef:
+              name: langfuse-secrets
+              key: SALT
+        - name: ENABLE_EVENT_LOG
+          value: "false"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: langfuse-server
+spec:
+  selector:
+    app: langfuse
+  ports:
+    - protocol: TCP
+      port: 4000
+      targetPort: 3000

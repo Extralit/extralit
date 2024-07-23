@@ -72,6 +72,15 @@ from argilla_server.apis.v1.handlers import (
 from argilla_server.apis.v1.handlers import (
     workspaces as workspaces_v1,
 )
+from argilla_server.apis.v1.handlers import (
+    documents as documents_v1,
+)
+from argilla_server.apis.v1.handlers import (
+    files as files_v1,
+)
+from argilla_server.apis.v1.handlers import (
+    models as models_v1,
+)
 from argilla_server.errors import APIErrorHandler
 from argilla_server.errors.base_errors import __ALL__
 
@@ -132,6 +141,9 @@ def create_api_v1():
         workspaces_v1.router,
         oauth2_v1.router,
         settings_v1.router,
+        documents_v1.router,
+        files_v1.router,
+        models_v1.router,
     ]:
         api_v1.include_router(router)
 

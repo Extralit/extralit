@@ -72,6 +72,12 @@ class Settings(BaseSettings):
     base_url: Optional[str] = Field(description="The default base url where server will be deployed")
     database_url: Optional[str] = Field(description="The database url that argilla will use as data store")
 
+    s3_endpoint: Optional[str] = Field(description="The S3 endpoint for data storage")
+    s3_access_key: Optional[str] = Field(description="The access key for the S3 storage")
+    s3_secret_key: Optional[str] = Field(description="The secret key for the S3 storage")
+
+    extralit_url: Optional[str] = Field(description="The extralit server url for LLM serving endpoint")
+
     elasticsearch: str = "http://localhost:9200"
     elasticsearch_ssl_verify: bool = True
     elasticsearch_ca_path: Optional[str] = None
@@ -169,7 +175,10 @@ class Settings(BaseSettings):
                 )
                 return re.sub(regex, "sqlite+aiosqlite", database_url)
 
-        if "postgresql" in database_url:
+        if "postgres" in database_url:
+            if "postgres://" in database_url:
+                raise ValueError("The database URL must use 'postgresql://' protocol, not 'postgres://'.")
+
             regex = re.compile(r"postgresql(?!\+asyncpg)(\+psycopg2)?")
             if regex.match(database_url):
                 warnings.warn(
@@ -180,6 +189,15 @@ class Settings(BaseSettings):
                 return re.sub(regex, "postgresql+asyncpg", database_url)
 
         return database_url
+    
+    @root_validator(pre=True)
+    def set_s3_credentials(cls, values):
+        values["s3_endpoint"] = os.getenv("S3_ENDPOINT", values.get("s3_endpoint"))
+        values["s3_access_key"] = os.getenv("S3_ACCESS_KEY", values.get("s3_access_key"))
+        values["s3_secret_key"] = os.getenv("S3_SECRET_KEY", values.get("s3_secret_key"))
+
+        values['extralit_url'] = os.getenv("EXTRALIT_URL", values.get("extralit_url"))
+        return values
 
     @root_validator(skip_on_failure=True)
     def create_home_path(cls, values):

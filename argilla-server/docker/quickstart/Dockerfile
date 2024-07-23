@@ -1,6 +1,6 @@
 # TODO(gabrielmbmb): update this `Dockerfile` to multi-staged build to reduce the image size
 ARG ARGILLA_VERSION=latest
-FROM argilla/argilla-server:${ARGILLA_VERSION}
+FROM extralit/extralit-server:${ARGILLA_VERSION}
 
 USER root
 
@@ -66,6 +66,12 @@ ENV ANNOTATOR_PASSWORD=12345678
 
 ENV ARGILLA_HOME_PATH=/data/argilla
 ENV ARGILLA_WORKSPACE=$ADMIN_USERNAME
+
+ENV ARGILLA_DATABASE_URL=""
+ENV S3_ENDPOINT=""
+ENV S3_ACCESS_KEY=""
+ENV S3_SECRET_KEY=""
+ENV EXTRALIT_URL=""
 
 ENV UVICORN_PORT=6900
 

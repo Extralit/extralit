@@ -298,6 +298,10 @@ class SearchEngine(metaclass=ABCMeta):
                 await engine.close()
 
     @abstractmethod
+    async def get_all_index_names(self) -> List[str]:
+        pass
+
+    @abstractmethod
     async def create_index(self, dataset: Dataset):
         pass
 

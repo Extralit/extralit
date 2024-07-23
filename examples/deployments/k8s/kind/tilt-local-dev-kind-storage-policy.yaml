@@ -1,0 +1,107 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: k8-storage-policy
+provisioner: rancher.io/local-path
+reclaimPolicy: Retain
+volumeBindingMode: Immediate
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: elastic-pv
+  labels:
+    app: elasticsearch-master
+spec:
+  capacity:
+    storage: 8Gi  # specify the size of the volume
+  volumeMode: Filesystem  # can also be Block
+  accessModes:
+    - ReadWriteOnce  # The volume can be mounted as read-write by a single node
+  storageClassName: k8s-storage-policy
+  persistentVolumeReclaimPolicy: Retain
+  local:
+    path: "/usr/share/elasticsearch/data"  
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - kind-control-plane  # replace with your node name
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: postgres-pv
+  labels:
+    app: main-db
+spec:
+  capacity:
+    storage: 2Gi  # specify the size of the volume
+  volumeMode: Filesystem  # can also be Block
+  accessModes:
+    - ReadWriteOnce  # The volume can be mounted as read-write by a single node
+  storageClassName: k8s-storage-policy
+  persistentVolumeReclaimPolicy: Retain
+  local:
+    path: "/var/lib/postgresql/data"
+  nodeAffinity: 
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In  
+          values:
+          - kind-control-plane
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: minio-pv
+  labels:
+    app: minio-storage-claim
+spec:
+  capacity:
+    storage: 10Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: k8s-storage-policy
+  persistentVolumeReclaimPolicy: Retain
+  local:
+    path: "/var/lib/minio/data"
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - kind-control-plane
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: weaviate-data-weaviate-0
+  labels:
+    app: weaviate
+spec:
+  capacity:
+    storage: 8Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: k8s-storage-policy
+  persistentVolumeReclaimPolicy: Retain
+  local:
+    path: "/var/lib/weaviate/data"
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - kind-control-plane

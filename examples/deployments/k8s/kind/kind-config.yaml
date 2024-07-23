@@ -1,0 +1,27 @@
+apiVersion: ctlptl.dev/v1alpha1
+kind: Cluster
+product: kind
+registry: ctlptl-registry
+kindV1Alpha4Cluster:
+  name: kind
+  nodes:
+  - role: control-plane
+    extraMounts:
+    - hostPath: /tmp/kind-volumes/elasticsearch
+      containerPath: /usr/share/elasticsearch/data
+    - hostPath: /tmp/kind-volumes/postgresql
+      containerPath: /var/lib/postgresql/data
+    - hostPath: /tmp/kind-volumes/minio
+      containerPath: /var/lib/minio/data
+    - hostPath: /tmp/kind-volumes/weaviate
+      containerPath: /var/lib/weaviate/data
+  - role: worker
+    extraMounts:
+    - hostPath: /tmp/kind-volumes/elasticsearch-worker
+      containerPath: /usr/share/elasticsearch/data
+    - hostPath: /tmp/kind-volumes/postgresql-worker
+      containerPath: /var/lib/postgresql/data
+    - hostPath: /tmp/kind-volumes/minio
+      containerPath: /var/lib/minio/data
+    - hostPath: /tmp/kind-volumes/weaviate
+      containerPath: /var/lib/weaviate/data

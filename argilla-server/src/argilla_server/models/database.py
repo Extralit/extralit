@@ -17,7 +17,7 @@ from datetime import datetime
 from typing import Any, List, Optional, Union
 from uuid import UUID
 
-from sqlalchemy import JSON, ForeignKey, String, Text, UniqueConstraint, and_, sql
+from sqlalchemy import JSON, ForeignKey, String, Text, UniqueConstraint, and_, sql, LargeBinary
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.engine.default import DefaultExecutionContext
 from sqlalchemy.ext.mutable import MutableDict, MutableList
@@ -51,6 +51,7 @@ __all__ = [
     "MetadataProperty",
     "Vector",
     "VectorSettings",
+    "Document",
 ]
 
 _USER_API_KEY_BYTES_LENGTH = 80
@@ -121,7 +122,7 @@ class Suggestion(DatabaseModel):
     record: Mapped["Record"] = relationship(back_populates="suggestions")
     question: Mapped["Question"] = relationship(back_populates="suggestions")
 
-    __table_args__ = (UniqueConstraint("record_id", "question_id", name="suggestion_record_id_question_id_uq"),)
+    __table_args__ = (UniqueConstraint("record_id", "question_id", "type", "agent", name="suggestion_record_id_question_id_uq"),)
     __upsertable_columns__ = {"value", "score", "agent", "type"}
 
     def __repr__(self) -> str:
@@ -467,3 +468,21 @@ class User(DatabaseModel):
             f"username={self.username!r}, role={self.role.value!r}, "
             f"inserted_at={str(self.inserted_at)!r}, updated_at={str(self.updated_at)!r})"
         )
+
+
+class Document(DatabaseModel):
+    __tablename__ = "documents"
+
+    url: Mapped[str] = mapped_column(String, nullable=True)
+    file_name: Mapped[str] = mapped_column(String, nullable=False)
+    reference: Mapped[str] = mapped_column(String, index=True, nullable=True)
+    pmid: Mapped[str] = mapped_column(String, index=True, nullable=True)
+    doi: Mapped[str] = mapped_column(String, index=True, nullable=True)
+    workspace_id: Mapped[UUID] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
+
+    def __repr__(self):
+        return (
+            f"Document(id={str(self.id)!r}, workspace_id={str(self.workspace_id)!r}, reference={self.reference!r},"
+            f"pmid={self.pmid!r}, doi={self.doi!r}, file_name={self.file_name!r}, url={self.url!r})"
+        )
+    

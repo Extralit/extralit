@@ -46,16 +46,16 @@ VALUE_TEXT_OPTION_TEXT_MAX_LENGTH = 500
 VALUE_TEXT_OPTION_DESCRIPTION_MIN_LENGTH = 1
 VALUE_TEXT_OPTION_DESCRIPTION_MAX_LENGTH = 1000
 
-LABEL_SELECTION_OPTIONS_MIN_ITEMS = 2
+LABEL_SELECTION_OPTIONS_MIN_ITEMS = 0
 LABEL_SELECTION_MIN_VISIBLE_OPTIONS = 3
 
 RANKING_OPTIONS_MIN_ITEMS = 2
 RANKING_OPTIONS_MAX_ITEMS = 50
 
 RATING_OPTIONS_MIN_ITEMS = 2
-RATING_OPTIONS_MAX_ITEMS = 11
+RATING_OPTIONS_MAX_ITEMS = 20
 RATING_VALUE_GREATER_THAN_OR_EQUAL = 0
-RATING_VALUE_LESS_THAN_OR_EQUAL = 10
+RATING_VALUE_LESS_THAN_OR_EQUAL = 100
 
 SPAN_OPTIONS_MIN_ITEMS = 1
 SPAN_MIN_VISIBLE_OPTIONS = 3
@@ -105,18 +105,21 @@ class OptionSettingsCreate(BaseModel):
 class TextQuestionSettings(BaseModel):
     type: Literal[QuestionType.text]
     use_markdown: bool = False
+    use_table: bool = False
 
 
 class TextQuestionSettingsCreate(BaseModel):
     type: Literal[QuestionType.text]
     use_markdown: bool = False
+    use_table: bool = False
 
 
 class TextQuestionSettingsUpdate(UpdateSchema):
     type: Literal[QuestionType.text]
     use_markdown: Optional[bool]
+    use_table: Optional[bool]
 
-    __non_nullable_fields__ = {"use_markdown"}
+    __non_nullable_fields__ = {"use_markdown", "use_table"}
 
 
 # Rating question
@@ -140,6 +143,17 @@ class RatingQuestionSettingsCreate(UniqueValuesCheckerMixin):
         max_items=RATING_OPTIONS_MAX_ITEMS,
     )
 
+    @validator("options")
+    def check_option_value_range(cls, options: List[RatingQuestionSettingsOption]):
+        """Validator to control all values are in allowed range 1 <= x <= 10"""
+        for option in options:
+            if not RATING_VALUE_GREATER_THAN_OR_EQUAL <= option.value <= RATING_VALUE_LESS_THAN_OR_EQUAL:
+                raise ValueError(
+                    f"Option value {option.value!r} out of range "
+                    f"[{RATING_VALUE_GREATER_THAN_OR_EQUAL!r}, {RATING_VALUE_LESS_THAN_OR_EQUAL!r}]"
+                )
+        return options
+
 
 class RatingQuestionSettingsUpdate(UpdateSchema):
     type: Literal[QuestionType.rating]
@@ -147,13 +161,13 @@ class RatingQuestionSettingsUpdate(UpdateSchema):
 
 # Label selection question
 class LabelSelectionQuestionSettings(BaseModel):
-    type: Literal[QuestionType.label_selection]
+    type: Literal[QuestionType.label_selection, QuestionType.dynamic_label_selection]
     options: List[OptionSettings]
     visible_options: Optional[int] = None
 
 
 class LabelSelectionQuestionSettingsCreate(UniqueValuesCheckerMixin):
-    type: Literal[QuestionType.label_selection]
+    type: Literal[QuestionType.label_selection, QuestionType.dynamic_label_selection]
     options: conlist(
         item_type=OptionSettingsCreate,
         min_items=LABEL_SELECTION_OPTIONS_MIN_ITEMS,
@@ -166,7 +180,7 @@ class LabelSelectionQuestionSettingsCreate(UniqueValuesCheckerMixin):
         visible_options = values.get("visible_options")
         if visible_options is not None:
             num_options = len(values["options"])
-            if visible_options > num_options:
+            if visible_options > num_options and "dynamic" not in values.get("type", ''):
                 raise ValueError(
                     "the value for 'visible_options' must be less or equal to the number of items in 'options'"
                     f" ({num_options})"
@@ -176,8 +190,8 @@ class LabelSelectionQuestionSettingsCreate(UniqueValuesCheckerMixin):
 
 
 class LabelSelectionSettingsUpdate(UpdateSchema):
-    type: Literal[QuestionType.label_selection]
-    visible_options: Optional[int] = Field(None, ge=LABEL_SELECTION_MIN_VISIBLE_OPTIONS)
+    type: Literal[QuestionType.label_selection, QuestionType.dynamic_label_selection]
+    visible_options: Optional[int] = Field(None)
     options: Optional[
         conlist(
             item_type=OptionSettings,
@@ -189,17 +203,17 @@ class LabelSelectionSettingsUpdate(UpdateSchema):
 
 # Multi-label selection question
 class MultiLabelSelectionQuestionSettings(LabelSelectionQuestionSettings):
-    type: Literal[QuestionType.multi_label_selection]
+    type: Literal[QuestionType.multi_label_selection, QuestionType.dynamic_multi_label_selection]
     options_order: OptionsOrder = OptionsOrder.natural
 
 
 class MultiLabelSelectionQuestionSettingsCreate(LabelSelectionQuestionSettingsCreate):
-    type: Literal[QuestionType.multi_label_selection]
+    type: Literal[QuestionType.multi_label_selection, QuestionType.dynamic_multi_label_selection]
     options_order: OptionsOrder = OptionsOrder.natural
 
 
 class MultiLabelSelectionQuestionSettingsUpdate(LabelSelectionSettingsUpdate):
-    type: Literal[QuestionType.multi_label_selection]
+    type: Literal[QuestionType.multi_label_selection, QuestionType.dynamic_multi_label_selection]
     options_order: Optional[OptionsOrder]
 
     __non_nullable_fields__ = {"options_order"}

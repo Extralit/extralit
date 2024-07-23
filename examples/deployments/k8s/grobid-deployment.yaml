@@ -1,0 +1,79 @@
+# grobid-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grobid-deployment
+  labels:
+    app: grobid
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grobid
+  template:
+    metadata:
+      labels:
+        app: grobid
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            preference:
+              matchExpressions:
+              - key: role
+                operator: In
+                values:
+                - pipeline
+      containers:
+      - name: grobid
+        image: lfoppiano/grobid:0.8.0
+        ports:
+        - containerPort: 8070
+          name: grobid-port
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 3000
+          capabilities:
+            add:
+              - SYS_RESOURCE
+        volumeMounts:
+        - name: grobid-storage
+          mountPath: /opt/grobid/grobid-home/tmp
+      initContainers:
+      - name: volume-permissions
+        image: busybox
+        command: ["sh", "-c", "chown -R 1000:3000 /opt/grobid/grobid-home/tmp && chmod -R 777 /opt/grobid/grobid-home/tmp"]
+        volumeMounts:
+        - name: grobid-storage
+          mountPath: /opt/grobid/grobid-home/tmp
+      volumes:
+      - name: grobid-storage
+        persistentVolumeClaim:
+          claimName: grobid-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grobid-service
+spec:
+  selector:
+    app: grobid
+  ports:
+    - protocol: TCP
+      port: 8070
+      targetPort: 8070
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grobid-pvc
+  labels:
+    app: grobid
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: k8s-storage-policy
+  resources:
+    requests:
+      storage: 5Gi

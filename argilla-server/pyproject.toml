@@ -1,23 +1,26 @@
 [project]
-name = "argilla-server"
+name = "extralit-server"
 dynamic = ["version"]
-description = "Open-source tool for exploring, labeling, and monitoring data for NLP projects."
+description = "Open-source tool for accurate & fast scientific literature data extraction with LLM and human-in-the-loop."
 readme = "README.md"
 requires-python = ">=3.8,<3.11"
 license = { text = "Apache-2.0" }
 keywords = [
-    "data-science",
-    "natural-language-processing",
-    "text-labeling",
+    "literature-review",
     "data-annotation",
     "artificial-intelligence",
-    "knowledged-graph",
-    "developers-tools",
+    "machine-learning",
     "human-in-the-loop",
     "mlops",
 ]
-authors = [{ name = "argilla", email = "contact@argilla.io" }]
-maintainers = [{ name = "argilla", email = "contact@argilla.io" }]
+authors = [
+    { name = "Jonny Tran", email = "nhat.c.tran@gmail.com" },
+    { name = "argilla", email = "contact@argilla.io" }
+]
+maintainers = [
+    { name = "Jonny Tran", email = "nhat.c.tran@gmail.com" },
+    { name = "argilla", email = "contact@argilla.io" }
+]
 dependencies = [
     # Basic dependencies
     "fastapi >= 0.103.1,< 1.0.0",
@@ -55,6 +58,8 @@ dependencies = [
     # for CLI
     "typer >= 0.6.0, < 0.10.0", # spaCy only supports typer<0.10.0
     "packaging>=23.2",
+    # For file storage
+    "minio>=7.2.7",
 ]
 
 [project.optional-dependencies]
@@ -62,6 +67,58 @@ postgresql = [
     "psycopg2 ~= 2.9.5",
     # Async PostgreSQL
     "asyncpg >=0.27.0",
+]
+extraction = [
+    "pydantic >= 2.5.0",
+    "rich != 13.1.0",
+    "tqdm",
+    "python-dotenv",
+    "minio",
+    "hypothesis",
+    "html5lib",
+    "fastapi < 1.0.0",
+    "pypandoc ~= 1.13",
+    "weaviate-client >= 4",
+    "beautifulsoup4 ~= 4.12.2",
+    "pandas ~= 2.2.2",
+    "pandera[io] ~= 0.19.3",
+    "numpy ~= 1.26.4",
+    "spacy ~= 3.7.2",
+    "pyarrow == 14.*",
+    "natsort ~= 8.4.0",
+    "rapidfuzz ~= 3.8.1",
+    "dill ~= 0.3.8",
+    "json-repair ~= 0.19.2",
+    "fastparquet",
+    "tiktoken"
+]
+nlp = [
+    "textdescriptives",
+    "setfit ~= 0.7.0",
+]
+ocr = [
+    "nougat-ocr[api]",
+    "timm == 0.5.4",
+    "transformers ~= 4.25.1"
+]
+pdf = [
+    "unstructured[pdf] ~= 0.12.3",
+    "deepdoctection ~= 0.31.0",
+    "llmsherpa ~= 0.1.3",
+    "python-doctr ~= 0.8.1",
+    "pypdf",
+    "pypdfium2",
+    "pymupdf",
+    "pdf2image ~= 1.16.0",
+]
+llm = [
+    "llama-index ~= 0.10.40",
+    "llama-index-core ~= 0.10.40",
+    "llama-index-vector-stores-weaviate ~= 1.0.0",
+    "llama-index-callbacks-langfuse ~= 0.1.4",
+    "llama-index-llms-openai",
+    "llama-index-embeddings-openai",
+    "llama-index-multi-modal-llms-openai",
 ]
 
 [project.urls]
@@ -170,5 +227,5 @@ server = { cmd = "uvicorn argilla_server:app --reload" }
 migrate = { cmd = "alembic upgrade head" }
 test = { cmd = "pytest", env_file = ".env.test" }
 
-build-server-image = { shell = "cp -R dist docker/server && docker build -t argilla/argilla-server:local docker/server" }
-build-quickstart-image = { shell = "docker build --build-arg ARGILLA_VERSION=local -t argilla/argilla-quickstart:local docker/quickstart" }
+build-server-image = { shell = "cp -R dist docker/server && docker build -t extralit/extralit-server:local docker/server" }
+build-quickstart-image = { shell = "docker build --build-arg ARGILLA_VERSION=local -t extralit/extralit-quickstart:local docker/quickstart" }

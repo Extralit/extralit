@@ -1,0 +1,71 @@
+# portkey-gateway-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: arizephoenix
+  labels:
+    app: arizephoenix
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: arizephoenix
+  template:
+    metadata:
+      labels:
+        app: arizephoenix
+    spec:
+      containers:
+      - name: arizephoenix
+        image: arizephoenix/phoenix:latest
+        ports:
+        - containerPort: 6006
+        env:
+        - name: ENV_PHOENIX_WORKING_DIR
+          value: "/phoenix/projects"
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openai-api-key-secret
+              key: OPENAI_API_KEY
+        - name: COLLECTOR_ENDPOINT
+          value: "http://arizephoenix:6006/v1/traces"
+        - name: PROD_CORS_ORIGIN
+          value: "http://localhost:3000"
+        - name: INSTRUMENT_LLAMA_INDEX
+          value: "true"
+        - name: PATH
+          value: "/bin:/usr/bin:/sbin:/usr/sbin"
+        volumeMounts:
+        - name: storage
+          mountPath: /phoenix/projects
+      volumes:
+      - name: storage
+        persistentVolumeClaim:
+          claimName: arizephoenix-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: arizephoenix
+spec:
+  selector:
+    app: arizephoenix
+  ports:
+    - protocol: TCP
+      port: 6006
+      targetPort: 6006
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: arizephoenix-pvc
+  labels:
+    app: arizephoenix
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: k8s-storage-policy
+  resources:
+    requests:
+      storage: 2Gi

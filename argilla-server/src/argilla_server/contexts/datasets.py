@@ -33,7 +33,7 @@ from uuid import UUID
 
 import sqlalchemy
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy import Select, and_, case, func, select
+from sqlalchemy import Select, and_, or_, case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import contains_eager, joinedload, selectinload
 
@@ -51,6 +51,7 @@ from argilla_server.models import (
     Suggestion,
     Vector,
     VectorSettings,
+    Document,
 )
 from argilla_server.models.suggestions import SuggestionCreateWithRecordId
 from argilla_server.schemas.v0.users import User
@@ -71,6 +72,7 @@ from argilla_server.schemas.v1.responses import (
     ResponseCreate,
     ResponseUpdate,
     ResponseUpsert,
+    ResponseValueUpdate,
     UserResponseCreate,
 )
 from argilla_server.schemas.v1.vector_settings import (
@@ -79,6 +81,7 @@ from argilla_server.schemas.v1.vector_settings import (
 from argilla_server.schemas.v1.vector_settings import (
     VectorSettingsCreate,
 )
+from argilla_server.schemas.v1.documents import DocumentCreate, DocumentListItem
 from argilla_server.schemas.v1.vectors import Vector as VectorSchema
 from argilla_server.search_engine import SearchEngine
 from argilla_server.validators.responses import (
@@ -366,6 +369,7 @@ async def get_record_by_id(
     with_dataset: bool = False,
     with_suggestions: bool = False,
     with_vectors: bool = False,
+    with_responses: bool = False,
 ) -> Union[Record, None]:
     query = select(Record).filter_by(id=record_id)
     if with_dataset:
@@ -376,11 +380,19 @@ async def get_record_by_id(
 
     if with_suggestions:
         query = query.options(selectinload(Record.suggestions))
+    if with_responses:
+        query = query.options(selectinload(Record.responses))
     if with_vectors:
         query = query.options(selectinload(Record.vectors))
     result = await db.execute(query)
 
-    return result.scalar_one_or_none()
+    record = result.scalar_one_or_none()
+
+    if record and with_responses:
+        record.responses = [response for response in record.responses \
+                            if response.status in [ResponseStatus.submitted, ResponseStatus.discarded]]
+
+    return record
 
 
 async def get_records_by_ids(
@@ -389,6 +401,7 @@ async def get_records_by_ids(
     dataset_id: Optional[UUID] = None,
     include: Optional["RecordIncludeParam"] = None,
     user_id: Optional[UUID] = None,
+    workspace_user_ids: Optional[Iterable[UUID]] = None,
 ) -> List[Union[Record, None]]:
     query = select(Record)
 
@@ -400,6 +413,20 @@ async def get_records_by_ids(
     if include and include.with_responses:
         if not user_id:
             query = query.options(joinedload(Record.responses))
+        elif include.with_response_suggestions and workspace_user_ids:
+            query = query.outerjoin(
+                Response, 
+                and_(
+                    Response.record_id == Record.id,
+                    or_(
+                        Response.user_id == user_id,
+                        and_(
+                            Response.user_id.in_(workspace_user_ids),
+                            Response.status.in_([ResponseStatus.submitted, ResponseStatus.discarded])
+                        )
+                    )
+                )
+            ).options(contains_eager(Record.responses)).order_by(case((Response.user_id == user_id, 0), else_=1))
         else:
             query = query.outerjoin(
                 Response, and_(Response.record_id == Record.id, Response.user_id == user_id)
@@ -780,9 +807,6 @@ async def _build_record_update(
 
     if record_update.suggestions is not None:
         params.pop("suggestions")
-        questions_ids = [suggestion.question_id for suggestion in record_update.suggestions]
-        if len(questions_ids) != len(set(questions_ids)):
-            raise ValueError("found duplicate suggestions question IDs")
         suggestions = await _build_record_suggestions(db, record, record_update.suggestions, caches["questions"])
 
     if record_update.vectors is not None:
@@ -1026,6 +1050,13 @@ async def update_response(
 ):
     ResponseUpdateValidator(response_update).validate_for(response.record)
 
+    if 'duration' in response.values:
+        if 'duration' in response_update.values:
+            response_update.values['duration'].value = \
+                response.values['duration']['value'] + response_update.values['duration'].value
+        else:
+            response_update.values['duration'] = ResponseValueUpdate(value=response.values['duration']['value'])
+
     async with db.begin_nested():
         response = await response.update(
             db,
@@ -1048,6 +1079,14 @@ async def upsert_response(
     db: AsyncSession, search_engine: SearchEngine, record: Record, user: User, response_upsert: ResponseUpsert
 ) -> Response:
     ResponseUpsertValidator(response_upsert).validate_for(record)
+
+    if 'duration' in response.values:
+        if 'duration' in response_update.values:
+            response_update.values['duration'].value = \
+                response.values['duration']['value'] + response_update.values['duration'].value
+        else:
+            response_update.values['duration'] = ResponseValueUpdate(value=response.values['duration']['value'])
+
 
     schema = {
         "values": jsonable_encoder(response_upsert.values),
@@ -1164,6 +1203,7 @@ async def get_suggestion_by_id(db: AsyncSession, suggestion_id: "UUID") -> Union
         .options(
             selectinload(Suggestion.record).selectinload(Record.dataset),
             selectinload(Suggestion.question),
+            selectinload(Suggestion.type),
         )
     )
 
@@ -1179,6 +1219,7 @@ async def list_suggestions_by_id_and_record_id(
         .options(
             selectinload(Suggestion.record).selectinload(Record.dataset),
             selectinload(Suggestion.question),
+            selectinload(Suggestion.type),
         )
     )
 
@@ -1200,3 +1241,49 @@ async def get_metadata_property_by_id(db: AsyncSession, metadata_property_id: UU
         select(MetadataProperty).filter_by(id=metadata_property_id).options(selectinload(MetadataProperty.dataset))
     )
     return result.scalar_one_or_none()
+
+
+async def create_document(db: "AsyncSession", dataset_create: DocumentCreate) -> DocumentListItem:
+    document = await Document.create(
+        db,
+        id=dataset_create.id,
+        reference=dataset_create.reference,
+        url=dataset_create.url,
+        file_name=dataset_create.file_name,
+        pmid=dataset_create.pmid,
+        doi=dataset_create.doi,
+        workspace_id=dataset_create.workspace_id,
+        )
+
+    return DocumentListItem.from_orm(document)
+
+
+async def delete_documents(
+    db: "AsyncSession", workspace_id: UUID, id: UUID = None, pmid: str = None, doi: str = None, url: str = None, reference: str = None
+) -> List[DocumentListItem]:
+    async with db.begin_nested():
+        params = [Document.workspace_id == workspace_id]
+        if id is not None and id != '':
+            params.append(Document.id == id)
+        if pmid:
+            params.append(Document.pmid == pmid)
+        if doi:
+            params.append(Document.doi == doi)
+        if reference:
+            params.append(Document.reference == reference)
+        documents = await Document.delete_many(db=db, params=params, autocommit=False)
+
+    await db.commit()
+    documents = [DocumentListItem(**doc.__dict__) for doc in documents]
+    return documents
+
+
+async def list_documents(
+    db: "AsyncSession", workspace_id: UUID
+) -> List[DocumentListItem]:
+
+    result = await db.execute(select(Document).filter_by(workspace_id=workspace_id))
+    documents: List[Document] = result.scalars().all()
+    documents = [DocumentListItem.from_orm(doc) for doc in documents]
+
+    return documents

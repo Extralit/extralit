@@ -129,7 +129,7 @@ class QuestionUpdateValidator:
             return
 
         number_of_options = len(question_settings.options)
-        if question_settings_update.visible_options > number_of_options:
+        if question_settings_update.visible_options > number_of_options and 'dynamic' not in question_settings_update.type:
             raise InvalidQuestionSettings(
                 f"the value for 'visible_options' must be less or equal to the number of items in 'options' ({number_of_options})"
             )

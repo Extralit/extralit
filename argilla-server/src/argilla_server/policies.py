@@ -179,6 +179,79 @@ class UserPolicyV1:
         return actor.is_owner
 
 
+class DocumentPolicy:
+    @classmethod
+    def create(cls) -> PolicyAction:
+        async def is_allowed(actor: User) -> bool:
+            return actor.is_owner or actor.is_admin or actor.is_annotator
+
+        return is_allowed
+    
+    @classmethod
+    def get(cls) -> PolicyAction:
+        async def is_allowed(actor: User) -> bool:
+            return actor.is_owner or actor.is_admin or actor.is_annotator
+
+        return is_allowed
+    
+    @classmethod
+    def delete(cls, workspace_id: UUID) -> PolicyAction:
+        async def is_allowed(actor: User) -> bool:
+            return actor.is_owner or actor.is_admin and await _exists_workspace_user_by_user_and_workspace_id(actor, workspace_id)
+
+        return is_allowed
+    
+    @classmethod
+    def list(cls, workspace_id: UUID) -> PolicyAction:
+        async def is_allowed(actor: User) -> bool:
+            return actor.is_owner or actor.is_admin and await _exists_workspace_user_by_user_and_workspace_id(actor, workspace_id)
+
+        return is_allowed
+        
+
+class FilePolicy:
+    @classmethod
+    def get(cls, workspace_name: str) -> PolicyAction:
+        async def is_allowed(actor: User) -> bool:
+            return await _exists_workspace_user_by_user_and_workspace_name(actor, workspace_name)
+
+        return is_allowed
+    
+    @classmethod
+    def list(cls, workspace_name: str) -> PolicyAction:
+        async def is_allowed(actor: User) -> bool:
+            return await _exists_workspace_user_by_user_and_workspace_name(actor, workspace_name)
+
+        return is_allowed
+    
+    @classmethod
+    def put_object(cls, workspace_name: str) -> PolicyAction:
+        async def is_allowed(actor: User) -> bool:
+            return actor.is_owner or (
+                actor.is_admin and await _exists_workspace_user_by_user_and_workspace_name(actor, workspace_name)
+            )
+
+        return is_allowed
+    
+    @classmethod
+    def create(cls, workspace_name: str) -> PolicyAction:
+        async def is_allowed(actor: User) -> bool:
+            return actor.is_owner or (
+                actor.is_admin and await _exists_workspace_user_by_user_and_workspace_name(actor, workspace_name)
+            )
+
+        return is_allowed
+    
+    @classmethod
+    def delete(cls, workspace_name: str) -> PolicyAction:
+        async def is_allowed(actor: User) -> bool:
+            return actor.is_owner or (
+                actor.is_admin and await _exists_workspace_user_by_user_and_workspace_name(actor, workspace_name)
+            )
+
+        return is_allowed
+
+
 class DatasetPolicy:
     @classmethod
     async def list(cls, user: User) -> bool:

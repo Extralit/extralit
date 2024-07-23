@@ -13,10 +13,11 @@
 #  limitations under the License.
 from typer import Typer
 
-from .reindex import reindex
+from .reindex import reindex, list
 
 app = Typer(help="Commands for Argilla server search engine management", no_args_is_help=True)
 
+app.command(name="list", help="List existing indexes in Elasticsearch.")(list)
 app.command(name="reindex", help="Reindex all Argilla entities into search engine.")(reindex)
 
 if __name__ == "__main__":

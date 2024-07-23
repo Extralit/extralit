@@ -5,13 +5,18 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
+  tls:
+  - hosts:
+    - argilla-hostname
+    secretName: argilla-server-tls
   rules:
-    - http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: argilla-server
-                port:
-                  number: 6900
+  - host: argilla-hostname
+    http:
+      paths:
+        - path: "/"
+          pathType: Prefix
+          backend:
+            service:
+              name: argilla-server
+              port:
+                number: 6900

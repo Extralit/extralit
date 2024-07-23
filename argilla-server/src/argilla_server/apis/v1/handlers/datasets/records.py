@@ -22,13 +22,14 @@ from typing_extensions import Annotated
 
 import argilla_server.errors.future as errors
 import argilla_server.search_engine as search_engine
+from argilla_server.apis.v1.handlers.workspaces import list_workspace_users
 from argilla_server.apis.v1.handlers.datasets.datasets import _get_dataset_or_raise
 from argilla_server.contexts import datasets, search
 from argilla_server.database import get_async_db
-from argilla_server.enums import MetadataPropertyType, RecordSortField, ResponseStatusFilter, SortOrder
+from argilla_server.enums import MetadataPropertyType, RecordSortField, ResponseStatus, ResponseStatusFilter, SortOrder
 from argilla_server.errors.future.base_errors import MISSING_VECTOR_ERROR_CODE
 from argilla_server.models import Dataset as DatasetModel
-from argilla_server.models import Record, User
+from argilla_server.models import Record, User, Suggestion
 from argilla_server.policies import DatasetPolicyV1, RecordPolicyV1, authorize, is_authorized
 from argilla_server.schemas.v1.datasets import Dataset
 from argilla_server.schemas.v1.records import (
@@ -116,6 +117,7 @@ async def _filter_records_using_search_engine(
     response_statuses: Optional[List[ResponseStatusFilter]] = None,
     include: Optional[RecordIncludeParam] = None,
     sort_by_query_param: Optional[Dict[str, str]] = None,
+    workspace_user_ids: Optional[List[UUID]] = None,
 ) -> Tuple[List["Record"], int]:
     search_responses = await _get_search_responses(
         db=db,
@@ -126,7 +128,7 @@ async def _filter_records_using_search_engine(
         user=user,
         parsed_metadata=parsed_metadata,
         response_statuses=response_statuses,
-        sort_by_query_param=sort_by_query_param,
+        sort_by_query_param=sort_by_query_param or LIST_DATASET_RECORDS_DEFAULT_SORT_BY,
     )
 
     record_ids = [response.record_id for response in search_responses.items]
@@ -134,7 +136,7 @@ async def _filter_records_using_search_engine(
 
     return (
         await datasets.get_records_by_ids(
-            db=db, dataset_id=dataset.id, user_id=user_id, records_ids=record_ids, include=include
+            db=db, dataset_id=dataset.id, user_id=user_id, records_ids=record_ids, include=include, workspace_user_ids=workspace_user_ids
         ),
         search_responses.total,
     )
@@ -395,6 +397,45 @@ async def _get_vector_settings_by_name_or_raise(
     return vector_settings
 
 
+def convert_workspace_users_response_suggestions(
+        records: Records,
+        current_user: User, 
+        workspace_users: List[User], 
+        dataset: Dataset, 
+        ):
+    user_id2name = {user.id: user.username for user in workspace_users.items}
+    question_name2id = {question.name: question for question in dataset.questions}
+    
+    for record in records:
+        suggestion_responses = [response for response in record.responses \
+                                if response.user_id != current_user.id]
+
+        for response in suggestion_responses:
+            if response.status == ResponseStatus.discarded: continue
+
+            for question_name, suggestion_value in response.values.items():
+                if question_name not in question_name2id or \
+                    not suggestion_value or not suggestion_value.get("value"): continue
+                question = question_name2id.get(question_name)
+
+                suggestion = Suggestion(
+                    id=response.id,
+                    question_id=question.id,
+                    type="human",
+                    value=suggestion_value.get("value"),
+                    agent=user_id2name.get(response.user_id),
+                    score=None,
+                    inserted_at=response.inserted_at,
+                    updated_at=response.updated_at
+                )
+                record.suggestions.append(suggestion)
+
+        if record.responses and record.responses[0].user_id == current_user.id:
+            record.responses = [record.responses[0]]
+        else:
+            record.responses = []
+
+
 @router.get("/me/datasets/{dataset_id}/records", response_model=Records, response_model_exclude_unset=True)
 async def list_current_user_dataset_records(
     *,
@@ -409,7 +450,12 @@ async def list_current_user_dataset_records(
     limit: int = Query(default=LIST_DATASET_RECORDS_LIMIT_DEFAULT, ge=1, le=LIST_DATASET_RECORDS_LIMIT_LE),
     current_user: User = Security(auth.get_current_user),
 ):
-    dataset = await _get_dataset_or_raise(db, dataset_id, with_metadata_properties=True)
+    dataset = await _get_dataset_or_raise(db, dataset_id, with_metadata_properties=True, with_questions=True)
+    if include and include.with_response_suggestions:
+        workspace_users = await list_workspace_users(db=db, workspace_id=dataset.workspace_id, current_user=current_user)
+        workspace_user_ids = [user.id for user in workspace_users.items]
+    else:
+        workspace_user_ids = None
 
     await authorize(current_user, DatasetPolicyV1.get(dataset))
 
@@ -423,12 +469,16 @@ async def list_current_user_dataset_records(
         user=current_user,
         response_statuses=response_statuses,
         include=include,
-        sort_by_query_param=sort_by_query_param,
+        sort_by_query_param=sort_by_query_param or LIST_DATASET_RECORDS_DEFAULT_SORT_BY,
+        workspace_user_ids=workspace_user_ids,
     )
 
     for record in records:
         record.dataset = dataset
         record.metadata_ = await _filter_record_metadata_for_user(record, current_user)
+
+    if include and include.with_response_suggestions:
+        convert_workspace_users_response_suggestions(records, current_user, workspace_users, dataset)
 
     return Records(items=records, total=total)
 
@@ -573,7 +623,14 @@ async def search_current_user_dataset_records(
     limit: int = Query(default=LIST_DATASET_RECORDS_LIMIT_DEFAULT, ge=1, le=LIST_DATASET_RECORDS_LIMIT_LE),
     current_user: User = Security(auth.get_current_user),
 ):
-    dataset = await _get_dataset_or_raise(db, dataset_id, with_fields=True, with_metadata_properties=True)
+    dataset = await _get_dataset_or_raise(db, dataset_id, with_fields=True, with_metadata_properties=True, with_questions=True)
+    if include and include.with_response_suggestions:
+        workspace_users = await list_workspace_users(db=db, workspace_id=dataset.workspace_id, current_user=current_user)
+        workspace_user_ids = [user.id for user in workspace_users.items]
+    else:
+        workspace_user_ids = None
+
+
     await authorize(current_user, DatasetPolicyV1.search_records(dataset))
 
     await _validate_search_records_query(db, body, dataset_id)
@@ -588,7 +645,7 @@ async def search_current_user_dataset_records(
         offset=offset,
         user=current_user,
         response_statuses=response_statuses,
-        sort_by_query_param=sort_by_query_param,
+        sort_by_query_param=sort_by_query_param or LIST_DATASET_RECORDS_DEFAULT_SORT_BY,
     )
 
     record_id_score_map: Dict[UUID, Dict[str, Union[float, SearchRecord, None]]] = {
@@ -602,7 +659,11 @@ async def search_current_user_dataset_records(
         records_ids=list(record_id_score_map.keys()),
         include=include,
         user_id=current_user.id,
+        workspace_user_ids=workspace_user_ids,
     )
+
+    if include and include.with_response_suggestions:
+        convert_workspace_users_response_suggestions(records, current_user, workspace_users, dataset)
 
     for record in records:
         record.dataset = dataset
@@ -652,7 +713,7 @@ async def search_dataset_records(
         offset=offset,
         parsed_metadata=metadata.metadata_parsed,
         response_statuses=response_statuses,
-        sort_by_query_param=sort_by_query_param,
+        sort_by_query_param=sort_by_query_param or LIST_DATASET_RECORDS_DEFAULT_SORT_BY
     )
 
     record_id_score_map = {
