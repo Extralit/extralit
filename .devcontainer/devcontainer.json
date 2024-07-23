@@ -1,0 +1,66 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/anaconda
+{
+  "name": "Docker, Tilt, Python",
+
+  "build": { 
+    "context": "..",
+    "dockerfile": "Dockerfile"
+  },
+  
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-azuretools.vscode-docker",
+        "tilt-dev.tilt",
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "github.vscode-github-actions",
+        "ms-python.python",
+        "ms-toolsai.jupyter",
+        "ms-python.vscode-pylance",
+        "tamasfe.even-better-toml",
+        "eamodio.gitlens"
+      ]
+    },
+    "settings": {}
+  },
+
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  "forwardPorts": [
+    8000,
+    10350,
+    5005
+  ],
+
+  // Features to add to the dev container. More info: https://containers.dev/features.
+  "features": {
+    "docker-in-docker": "latest",
+    "ghcr.io/mamba-org/devcontainer-features/micromamba:1": {
+      "autoActivate": true,
+      "version": "latest",
+      "channels": "pytorch conda-forge nvidia huggingface plotly defaults",
+      "packages": "python==3.10 nodejs=18.6.0 uvicorn uv pdm jupyterlab",
+      "envFile": "",
+      "envName": ""
+    }
+  },
+
+  // Use 'postCreateCommand' to run commands after the container is created.
+  "postCreateCommand": "git submodule update --remote --recursive --init",
+
+  // "postCreateCommand": "tilt up",
+  "shutdownAction": "stopCompose",
+  
+  // Configure tool-specific properties.
+  // "customizations": {},
+
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "16gb",
+    "storage": "32gb"
+  }
+
+  // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+  // "remoteUser": "root"
+}
