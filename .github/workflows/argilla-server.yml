@@ -33,7 +33,7 @@ on:
 
 jobs:
   build:
-    name: Build `argilla-server` package
+    name: Build `extralit-server` package
     runs-on: ubuntu-latest
 
     services:
@@ -119,7 +119,7 @@ jobs:
           path: argilla-server/dist
 
   build_server_docker_image:
-    name: Build Argilla server docker image
+    name: Build Extralit server docker image
     uses: ./.github/workflows/argilla-server.build-docker-image.yml
     needs:
       - build
@@ -133,7 +133,7 @@ jobs:
     secrets: inherit
 
   build_quickstart_docker_image:
-    name: Build Argilla quickstart docker image
+    name: Build Extralit quickstart docker image
     uses: ./.github/workflows/argilla-server.build-docker-image.yml
     needs: build_server_docker_image
     with:
@@ -147,7 +147,7 @@ jobs:
         ARGILLA_VERSION=${{ needs.build_server_docker_image.outputs.version }}
     secrets: inherit
 
-  # This job will publish argilla-server python package into PyPI repository
+  # This job will publish extralit-server python package into PyPI repository
   publish_release:
     name: Publish Release
     runs-on: ubuntu-latest

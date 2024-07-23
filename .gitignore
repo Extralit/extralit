@@ -6,6 +6,7 @@ dist/
 .pyre/
 # pyenv
 .python-version
+.pdm-build/
 
 # Environments
 .env
