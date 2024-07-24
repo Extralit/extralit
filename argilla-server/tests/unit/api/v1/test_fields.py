@@ -38,7 +38,7 @@ if TYPE_CHECKING:
     "payload, expected_settings",
     [
         (
-            {"title": "New Title", "settings": {"type": "text", "use_markdown": True, "use_table": False}},
+            {"title": "New Title", "settings": {"type": "text", "use_markdown": True}},
             {"type": "text", "use_markdown": True, "use_table": False},
         ),
         ({"title": "New Title"}, {"type": "text", "use_markdown": False}),
@@ -130,7 +130,7 @@ async def test_update_field_non_existent(async_client: "AsyncClient", owner_auth
     response = await async_client.patch(
         f"/api/v1/fields/{uuid4()}",
         headers=owner_auth_header,
-        json={"title": "New Title", "settings": {"type": "text", "use_markdown": True, "use_table": False}},
+        json={"title": "New Title", "settings": {"type": "text", "use_markdown": True}},
     )
 
     assert response.status_code == 404
@@ -144,7 +144,7 @@ async def test_update_field_as_admin_from_different_workspace(async_client: "Asy
     response = await async_client.patch(
         f"/api/v1/fields/{field.id}",
         headers={API_KEY_HEADER_NAME: user.api_key},
-        json={"title": "New Title", "settings": {"type": "text", "use_markdown": True, "use_table": False}},
+        json={"title": "New Title", "settings": {"type": "text", "use_markdown": True}},
     )
 
     assert response.status_code == 403
@@ -158,7 +158,7 @@ async def test_update_field_as_annotator(async_client: "AsyncClient"):
     response = await async_client.patch(
         f"/api/v1/fields/{field.id}",
         headers={API_KEY_HEADER_NAME: user.api_key},
-        json={"title": "New Title", "settings": {"type": "text", "use_markdown": True, "use_table": False}},
+        json={"title": "New Title", "settings": {"type": "text", "use_markdown": True}},
     )
 
     assert response.status_code == 403

@@ -49,7 +49,7 @@ if TYPE_CHECKING:
             {
                 "title": "New Title",
                 "description": "New Description",
-                "settings": {"type": "text", "use_markdown": True, "use_table": False},
+                "settings": {"type": "text", "use_markdown": True},
             },
             {"type": "text", "use_markdown": True, "use_table": False},
         ),
@@ -438,7 +438,7 @@ async def test_update_question_non_existent(async_client: "AsyncClient", owner_a
     response = await async_client.patch(
         f"/api/v1/questions/{uuid4()}",
         headers=owner_auth_header,
-        json={"title": "New Title", "settings": {"type": "text", "use_markdown": True, "use_table": False}},
+        json={"title": "New Title", "settings": {"type": "text", "use_markdown": True}},
     )
 
     assert response.status_code == 404
@@ -452,7 +452,7 @@ async def test_update_question_as_admin_from_different_workspace(async_client: "
     response = await async_client.patch(
         f"/api/v1/questions/{question.id}",
         headers={API_KEY_HEADER_NAME: user.api_key},
-        json={"title": "New Title", "settings": {"type": "text", "use_markdown": True, "use_table": False}},
+        json={"title": "New Title", "settings": {"type": "text", "use_markdown": True}},
     )
 
     assert response.status_code == 403
@@ -466,7 +466,7 @@ async def test_update_question_as_annotator(async_client: "AsyncClient"):
     response = await async_client.patch(
         f"/api/v1/questions/{question.id}",
         headers={API_KEY_HEADER_NAME: user.api_key},
-        json={"title": "New Title", "settings": {"type": "text", "use_markdown": True, "use_table": False}},
+        json={"title": "New Title", "settings": {"type": "text", "use_markdown": True}},
     )
 
     assert response.status_code == 403
