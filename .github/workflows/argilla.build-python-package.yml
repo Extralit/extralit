@@ -1,4 +1,4 @@
-name: Build Argilla package
+name: Build Extralit package
 
 on:
   workflow_call:
