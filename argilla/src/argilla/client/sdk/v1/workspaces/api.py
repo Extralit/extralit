@@ -14,7 +14,7 @@
 
 import os, hashlib
 from pathlib import Path
-from typing import List, Union, Optional
+from typing import Dict, List, Union, Optional
 from uuid import UUID
 
 import httpx
@@ -22,7 +22,7 @@ import httpx
 from argilla.client.sdk.commons.errors_handler import handle_response_error
 from argilla.client.sdk.commons.models import ErrorMessage, HTTPValidationError, Response
 from argilla.client.sdk.v1.workspaces.models import WorkspaceModel
-from argilla.client.sdk.v1.files.models import ObjectMetadata, ListObjectsResponse, FileObject
+from argilla.client.sdk.v1.files.models import ObjectMetadata, ListObjectsResponse, FileObjectResponse
 
 
 def calculate_file_hash(file_path: Path) -> str:
@@ -83,9 +83,9 @@ def delete_workspace_documents(
     return handle_response_error(response)
 
 
-def get_file(
+def get_workspace_file(
     client: httpx.Client, workspace_name: str, path: str, version_id: Optional[str] = None
-) -> Response[Union[FileObject, ErrorMessage, HTTPValidationError]]:
+) -> Response[Union[str, ErrorMessage, HTTPValidationError]]:
     """Sends a GET request to `/file/{bucket}/{object}` endpoint to get a file.
 
     Args:
@@ -103,7 +103,7 @@ def get_file(
 
     if response.status_code == 200:
         response_obj = Response.from_httpx_response(response)
-        response_obj.parsed = FileObject(**response.json())
+        response_obj.parsed = response.text
         return response_obj
     return handle_response_error(response)
 
