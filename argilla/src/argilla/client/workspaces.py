@@ -26,6 +26,7 @@ from argilla.client.sdk.commons.errors import (
     ValidationApiError,
 )
 from argilla.client.sdk.users.models import UserRole
+from argilla.client.sdk.v1.files.models import FileObjectResponse, ListObjectsResponse
 from argilla.client.sdk.v1.workspaces import api as workspaces_api_v1
 from argilla.client.sdk.v1.workspaces.models import WorkspaceModel as WorkspaceModelV1
 from argilla.client.sdk.workspaces import api as workspaces_api
@@ -34,12 +35,14 @@ from argilla.client.singleton import active_client
 from argilla.client.users import User
 from argilla.client.utils import allowed_for_roles
 
+from extralit.extraction.models.schema import DEFAULT_SCHEMA_S3_PATH
+import pandera as pa
+from extralit.extraction.models import SchemaStructure
+
 if TYPE_CHECKING:
     import httpx
-    import pandera as pa
 
     from argilla.client.sdk.users.models import UserModel
-    from extralit.extraction.models import SchemaStructure
 
 
 class Workspace:
@@ -264,8 +267,47 @@ class Workspace:
         except BaseClientError as e:
             raise RuntimeError(f"Error while deleting workspace with id {self.id!r}.") from e
         
+    def get_schemas(self, prefix: str = DEFAULT_SCHEMA_S3_PATH, exclude: Optional[List[str]]=None) -> SchemaStructure:
+        """
+        Get the schemas from the workspace.
+
+        Args:
+            prefix: The prefix used for storing schemas in the workspace.
+            exclude: A list of schema names to exclude from the schema structure.
+        """
+        schemas = {}
+        try:
+            workspace_files: ListObjectsResponse = workspaces_api_v1.list_workspace_files(
+                self._client, workspace_name=self.name, path=prefix).parsed
+
+            for file_metadata in workspace_files.objects:
+                _, file_ext = os.path.splitext(file_metadata.object_name)
+                if file_ext or not file_metadata.is_latest:
+                    continue
+
+                try:
+                    file_content: str = workspaces_api_v1.get_workspace_file(
+                        self._client, workspace_name=self.name, path=file_metadata.object_name, version_id=file_metadata.version_id).parsed
+                    schema = pa.io.from_json(file_content)
+                    
+                    if schema.name in schemas or (exclude and schema.name in exclude):
+                        continue
+
+                except Exception as e:
+                    print(f"Error getting schema with name=`{file_metadata.object_name}` from workspace with name=`{self.name}`: {e}")
+                    continue
+
+                schemas[schema.name] = schema
+
+        except Exception as e:
+            raise RuntimeError(
+                f"Error getting schemas from workspace with name=`{self.name}`."
+            ) from e
+        
+        return SchemaStructure(schemas=list(schemas.values()))
+        
     @allowed_for_roles(roles=[UserRole.owner, UserRole.admin])
-    def add_schema(self, schema: Optional["pa.DataFrameSchema"], prefix: str = 'schemas/'):
+    def add_schema(self, schema: Optional["pa.DataFrameSchema"], prefix: str = DEFAULT_SCHEMA_S3_PATH):
         """
         Adds new schemas to the workspace.
 
@@ -293,7 +335,7 @@ class Workspace:
 
 
     @allowed_for_roles(roles=[UserRole.owner, UserRole.admin])
-    def update_schemas(self, schemas: SchemaStructure, prefix: str = 'schemas/'):
+    def update_schemas(self, schemas: SchemaStructure, prefix: str = DEFAULT_SCHEMA_S3_PATH):
         """
         Updates existing schemas in the workspace.
         """

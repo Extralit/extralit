@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 from pydantic.v1 import BaseModel, Field, Extra
 
@@ -21,7 +21,7 @@ class ListObjectsResponse(BaseModel):
     objects: List[ObjectMetadata] = Field(default_factory=list)
 
 
-class FileObject(BaseModel):
+class FileObjectResponse(BaseModel):
     """Schema for the `FileObject` model.
 
     Args:
@@ -30,7 +30,7 @@ class FileObject(BaseModel):
         versions: The metadata of other file versions. Optional.
     """
 
-    file_data: Optional[bytes] = Field(None, description="Base64 encoded file data", repr=False)
+    response: bytes = Field(None, description="Base64 encoded file data", repr=False)
     metadata: Optional[ObjectMetadata]
     versions: Optional[ListObjectsResponse]
 
@@ -39,13 +39,3 @@ class FileObject(BaseModel):
         json_encoders = {
             UUID: str
         }
-
-    def to_server_payload(self) -> Dict[str, Any]:
-        """Method that will be used to create the payload that will be sent to the server."""
-        return {
-            "file_data": self.file_data,
-            "metadata": self.metadata.dict(),
-        }
-
-    def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(metadata={self.metadata!r})"
