@@ -6,7 +6,7 @@ on:
       runsOn:
         required: false
         type: string
-        default: extended-runner
+        default: ubuntu-latest
       searchEngineDockerImage:
         description: "The name of the Docker image of the search engine to use."
         default: docker.elastic.co/elasticsearch/elasticsearch:8.8.2
