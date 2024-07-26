@@ -6,7 +6,7 @@ on:
       runsOn:
         required: false
         type: string
-        default: extended-runner
+        default: ubuntu-latest
       pytestArgs:
         description: "Provide extra args to pytest command line"
         required: true
