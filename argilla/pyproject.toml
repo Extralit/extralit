@@ -50,7 +50,6 @@ dependencies = [
     # for environment variables
     "python-dotenv",
     # for extralit
-    "pydantic >= 2.5.0",
     "minio",
     "html5lib",
     "fastapi < 1.0.0",
