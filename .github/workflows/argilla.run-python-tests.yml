@@ -75,7 +75,7 @@ jobs:
 
       - name: Update environment
         if: steps.cache.outputs.cache-hit != 'true'
-        run: mamba env update -n argilla -f environment_dev.yml
+        run: mamba env update -n extralit -f environment_dev.yml
 
       - name: Cache pip 👜
         uses: actions/cache@v3
