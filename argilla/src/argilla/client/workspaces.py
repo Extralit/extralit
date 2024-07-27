@@ -35,8 +35,8 @@ from argilla.client.singleton import active_client
 from argilla.client.users import User
 from argilla.client.utils import allowed_for_roles
 
-from extralit.extraction.models.schema import DEFAULT_SCHEMA_S3_PATH
 import pandera as pa
+from extralit.extraction.models.schema import DEFAULT_SCHEMA_S3_PATH
 from extralit.extraction.models import SchemaStructure
 
 if TYPE_CHECKING:
