@@ -101,10 +101,10 @@ pdf = [
     "pdf2image ~= 1.16.0",
 ]
 server = [
-    "extralit-server"
+    "extralit-server ~= 0.2.0"
 ]
 server-postgresql = [
-    "extralit-server[postgresql]"
+    "extralit-server[postgresql] ~= 0.2.0"
 ]
 listeners = ["schedule ~= 1.1.0"]
 integrations = [
