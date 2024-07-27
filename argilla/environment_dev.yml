@@ -1,4 +1,4 @@
-name: extralit
+name: argilla
 
 channels:
   - conda-forge
