@@ -36,8 +36,7 @@ from argilla.client.users import User
 from argilla.client.utils import allowed_for_roles
 
 import pandera as pa
-from extralit.extraction.models.schema import DEFAULT_SCHEMA_S3_PATH
-from extralit.extraction.models import SchemaStructure
+from extralit.extraction.models import SchemaStructure, DEFAULT_SCHEMA_S3_PATH
 
 if TYPE_CHECKING:
     import httpx
@@ -266,8 +265,8 @@ class Workspace:
             ) from e
         except BaseClientError as e:
             raise RuntimeError(f"Error while deleting workspace with id {self.id!r}.") from e
+    def get_schemas(self, prefix: str = DEFAULT_SCHEMA_S3_PATH, exclude: Optional[List[str]]=None) -> "SchemaStructure":
         
-    def get_schemas(self, prefix: str = DEFAULT_SCHEMA_S3_PATH, exclude: Optional[List[str]]=None) -> SchemaStructure:
         """
         Get the schemas from the workspace.
 
@@ -303,8 +302,8 @@ class Workspace:
             raise RuntimeError(
                 f"Error getting schemas from workspace with name=`{self.name}`."
             ) from e
-        
         return SchemaStructure(schemas=list(schemas.values()))
+        
         
     @allowed_for_roles(roles=[UserRole.owner, UserRole.admin])
     def add_schema(self, schema: Optional["pa.DataFrameSchema"], prefix: str = DEFAULT_SCHEMA_S3_PATH):
@@ -335,7 +334,7 @@ class Workspace:
 
 
     @allowed_for_roles(roles=[UserRole.owner, UserRole.admin])
-    def update_schemas(self, schemas: SchemaStructure, prefix: str = DEFAULT_SCHEMA_S3_PATH):
+    def update_schemas(self, schemas: "SchemaStructure", prefix: str = DEFAULT_SCHEMA_S3_PATH):
         """
         Updates existing schemas in the workspace.
         """
