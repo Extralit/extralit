@@ -66,13 +66,13 @@ class SchemaStructure(BaseModel):
         return cls(schemas=list(schemas.values()))
     
     @classmethod
-    def from_workspace(cls, workspace: rg.Workspace, prefix: str = DEFAULT_SCHEMA_S3_PATH, 
+    def from_workspace(cls, workspace: "rg.Workspace", prefix: str = DEFAULT_SCHEMA_S3_PATH, 
                        exclude: List[str] = []):
         return workspace.get_schemas(prefix=prefix, exclude=exclude)
 
 
     @classmethod
-    def from_s3(cls, workspace: str, minio_client: Minio, prefix: str = DEFAULT_SCHEMA_S3_PATH,
+    def from_s3(cls, workspace_name: str, minio_client: Minio, prefix: str = DEFAULT_SCHEMA_S3_PATH,
                 exclude: List[str] = [], verbose: bool = True):
         """
         Load a SchemaStructure from a Minio bucket containing pandera DataFrameSchema .json files.
@@ -88,7 +88,7 @@ class SchemaStructure(BaseModel):
             SchemaStructure
         """
         schemas = {}
-        objects = minio_client.list_objects(workspace, prefix=prefix, include_version=False)
+        objects = minio_client.list_objects(workspace_name, prefix=prefix, include_version=False)
 
         # Sort the objects by file extension
         objects = sorted(objects, key=lambda obj: (
@@ -99,7 +99,7 @@ class SchemaStructure(BaseModel):
             file_extension = os.path.splitext(filepath)[1]
 
             try:
-                data = minio_client.get_object(workspace, filepath)
+                data = minio_client.get_object(workspace_name, filepath)
                 file_data = BytesIO(data.read())
 
                 if not file_extension or file_extension == '.json':
@@ -119,7 +119,7 @@ class SchemaStructure(BaseModel):
 
         return cls(schemas=list(schemas.values()))
 
-    def to_s3(self, workspace: str, minio_client: Minio, prefix: str = 'schemas/', delete_excluded: bool = False):
+    def to_s3(self, workspace_name: str, minio_client: Minio, prefix: str = 'schemas/', delete_excluded: bool = False):
         """
         This method is used to upload the schemas to an S3 bucket and optionally delete the excluded schemas.
 
@@ -145,7 +145,7 @@ class SchemaStructure(BaseModel):
 
             # Upload the BytesIO object to the S3 bucket
             minio_client.put_object(
-                bucket_name=workspace,
+                bucket_name=workspace_name,
                 object_name=object_name,
                 data=schema_bytes,
                 length=schema_bytes.getbuffer().nbytes,
@@ -153,13 +153,13 @@ class SchemaStructure(BaseModel):
             )
 
         if delete_excluded:
-            objects = minio_client.list_objects(workspace, prefix=prefix, include_version=False)
+            objects = minio_client.list_objects(workspace_name, prefix=prefix, include_version=False)
             bucket_schema_paths = [os.path.splitext(obj.object_name)[0] for obj in objects]
             self_schema_paths = [os.path.join(prefix, schema.name) for schema in self.schemas]
             schemas_to_delete = set(bucket_schema_paths) - set(self_schema_paths)
             print('Deleting schemas:', schemas_to_delete)
             for schema_path in schemas_to_delete:
-                minio_client.remove_object(workspace, schema_path)
+                minio_client.remove_object(workspace_name, schema_path)
 
     def get_joined_schema(self, schema_name: str):
         combined_columns = {}
