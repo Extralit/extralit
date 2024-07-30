@@ -3,8 +3,8 @@
 ## Getting started
 Ensure you have the development environment setup by running the following commands:
 ```bash
-conda env create -n argilla -f environment_dev.yml
-conda activate argilla
+conda env create -n extralit -f environment_dev.yml
+conda activate extralit
 ```
 
 ## Updating the database schema

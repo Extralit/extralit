@@ -24,6 +24,7 @@ from argilla.cli import (
     whoami_app,
     workspaces_app,
     extraction_app,
+    schemas_app,
 )
 from argilla.cli.typer_ext import ArgillaTyper
 from argilla.utils.dependency import is_package_with_extras_installed
@@ -53,6 +54,7 @@ def handler_permission_error(e: PermissionError) -> None:
 
 
 app.add_typer(extraction_app, name="extraction")
+app.add_typer(schemas_app, name="schemas")
 app.add_typer(datasets_app, name="datasets")
 app.add_typer(info_app, name="info")
 app.add_typer(login_app, name="login")
@@ -62,7 +64,7 @@ app.add_typer(users_app, name="users")
 app.add_typer(whoami_app, name="whoami")
 app.add_typer(workspaces_app, name="workspaces")
 
-if is_package_with_extras_installed("argilla", ["server"]):
+if is_package_with_extras_installed("extralit", ["server"]):
     from argilla_server.cli import app as server_app
 
     app.add_typer(server_app, name="server")

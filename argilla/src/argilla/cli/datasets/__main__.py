@@ -38,7 +38,7 @@ def callback(
         return
 
     if name is None:
-        raise typer.BadParameter("The command requires a workspace name provided using '--name' option")
+        raise typer.BadParameter(f"The command requires a workspace name provided using '--name' option before the the {typer.style(ctx.invoked_subcommand, bold=True)} keyword")
 
     try:
         dataset = FeedbackDataset.from_argilla(name=name, workspace=workspace)

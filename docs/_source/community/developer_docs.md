@@ -232,7 +232,7 @@ then, activate it:
 
 ```sh
 conda env create -f environment_dev.yml
-conda activate argilla
+conda activate extralit
 ```
 
 In the new Conda environment, Argilla will already be installed in editable mode with all the server dependencies. But

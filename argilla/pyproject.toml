@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "extralit"
 description = "Open-source tool for accurate & fast scientific literature data extraction with LLM and human-in-the-loop."
 readme = "README.md"
-requires-python = ">=3.8,<3.13"
+requires-python = ">=3.8,!=3.10.0,<3.13"
 license = { text = "Apache-2.0" }
 keywords = [
     "literature-review",
@@ -50,7 +50,6 @@ dependencies = [
     # for environment variables
     "python-dotenv",
     # for extralit
-    "pydantic >= 2.5.0",
     "minio",
     "html5lib",
     "fastapi < 1.0.0",
@@ -102,10 +101,10 @@ pdf = [
     "pdf2image ~= 1.16.0",
 ]
 server = [
-    "extralit-server"
+    "extralit-server ~= 0.2.0"
 ]
 server-postgresql = [
-    "extralit-server[postgresql]"
+    "extralit-server[postgresql] ~= 0.2.0"
 ]
 listeners = ["schedule ~= 1.1.0"]
 integrations = [
