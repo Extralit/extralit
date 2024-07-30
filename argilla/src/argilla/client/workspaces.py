@@ -367,9 +367,14 @@ class Workspace:
 
 
     @allowed_for_roles(roles=[UserRole.owner, UserRole.admin])
-    def update_schemas(self, schemas: "SchemaStructure", prefix: str = DEFAULT_SCHEMA_S3_PATH) -> ListObjectsResponse:
+    def update_schemas(self, schemas: "SchemaStructure", check_existing=True, prefix: str = DEFAULT_SCHEMA_S3_PATH) -> ListObjectsResponse:
         """
         Updates existing schemas in the workspace.
+
+        Args:
+            schemas: A SchemaStructure objects containing schemas to be updated.
+            check_existing: Whether to check if the unmodified schemas should skipped.
+            prefix: The prefix used for storing schemas in the workspace.
         """
         output_metadata = []
         for schema in schemas.schemas:
@@ -379,7 +384,7 @@ class Workspace:
                 f.write(schema.to_json())
             
             try:
-                if workspaces_api_v1.exist_workspace_file(self._client, workspace_name=self.name, path=object_path, file_path=file_path):
+                if check_existing and workspaces_api_v1.exist_workspace_file(self._client, workspace_name=self.name, path=object_path, file_path=file_path):
                     _LOGGER.warning(f"Skipping schema name='{schema.name}' update since it's unmodified in workspace with name='{self.name}'.")
                     continue
                 response = workspaces_api_v1.put_workspace_file(self._client, workspace_name=self.name, path=object_path, file_path=file_path)

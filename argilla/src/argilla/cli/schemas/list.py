@@ -25,16 +25,15 @@ def list_schemas(
         workspace: Workspace = ctx.obj["workspace"]
         workspace_schemas = workspace.list_files(path, include_version=True)
 
-        table = get_argilla_themed_table(title="Workspace Schemas", show_lines=True)
-        for column in ("Workspace", "Schema Name", "Version ID", "Version Tag", "Last Update Date", "Metadata"):
+        table = get_argilla_themed_table(title=f"Workspace (name='{workspace.name}') Schemas", show_lines=True)
+        for column in ("Schema Name", "Version ID", "Version Tag", "Last Update Date", "Metadata"):
             table.add_column(column, justify="left")
 
         for file_object in workspace_schemas.objects:            
-            if not file_object.version_id or file_object.last_modified is None:
+            if not file_object.etag:
                 continue
 
             table.add_row(
-                file_object.bucket_name,
                 file_object.object_name.split("/", 1)[-1],
                 file_object.version_id,
                 file_object.version_tag,

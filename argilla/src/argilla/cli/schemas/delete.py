@@ -8,12 +8,9 @@ from extralit.extraction.models import SchemaStructure, DEFAULT_SCHEMA_S3_PATH
 
 def delete_schema(
     ctx: typer.Context,
-    schema_name: str = typer.Option(
+    name: str = typer.Argument(
         ...,
-        "--schema",
-        "-s",
-        help="The schema name contained in the Workspace.",
-        show_default=True,
+        help="The schema name (case-sensitive) to delete from the Workspace.",
     ),
     version_id: Optional[str] = typer.Option(
         None,
@@ -21,17 +18,23 @@ def delete_schema(
         "-v",
         help="The version ID of the schema to delete.",
     ),
+    prefix: str = typer.Option(
+        DEFAULT_SCHEMA_S3_PATH,
+        "--prefix",
+        help="The directory prefix containing the schema files in the Workspace's S3 bucket.",
+        hidden=True,
+    ),
 ) -> None:
     from argilla.cli.rich import echo_in_panel, get_argilla_themed_table
     from rich.console import Console
 
     try:
         workspace: Workspace = ctx.obj["workspace"]
-        path = os.path.join(DEFAULT_SCHEMA_S3_PATH, schema_name)
+        path = os.path.join(prefix, name)
         workspace.delete_file(path, version_id=version_id)
 
         echo_in_panel(
-            f"Schema (name='{schema_name}') in workspace '{workspace.name}' have been deleted successfully.",
+            f"Schema (name='{name}') in workspace '{workspace.name}' have been deleted successfully.",
             title="File deleted",
             title_align="left",
         )
