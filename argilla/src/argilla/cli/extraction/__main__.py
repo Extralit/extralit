@@ -24,7 +24,7 @@ def callback(
         return
 
     if workspace is None:
-        raise typer.BadParameter("The command requires a workspace name provided using '--workspace' option")
+        raise typer.BadParameter("The command requires a workspace name provided using '--workspace' option the {typer.style(ctx.invoked_subcommand, bold=True)} keyword")
     elif env_file is None:
         raise typer.BadParameter("The command requires a .env file path provided using '--env-file' option")
 

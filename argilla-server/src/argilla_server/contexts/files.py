@@ -44,9 +44,9 @@ def get_minio_client() -> Optional[Minio]:
         return None
 
 
-def list_objects(client: Minio, bucket: str, prefix: Optional[str] = None, include_version=True) -> ListObjectsResponse:
+def list_objects(client: Minio, bucket: str, prefix: Optional[str] = None, include_version=True, recursive=True, start_after: Optional[str]=None) -> ListObjectsResponse:
     try:
-        objects = client.list_objects(bucket, prefix=prefix, include_version=include_version)
+        objects = client.list_objects(bucket, prefix=prefix, recursive=recursive, include_version=include_version, start_after=start_after)
         objects = [ObjectMetadata.from_minio_object(obj) for obj in objects]
         return ListObjectsResponse(objects=objects)
     

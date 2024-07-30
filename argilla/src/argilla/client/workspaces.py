@@ -12,9 +12,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import os
+import os, logging, warnings
 from pathlib import Path
-import warnings
 from datetime import datetime
 from typing import TYPE_CHECKING, Iterator, List, Optional, Union
 from uuid import UUID
@@ -43,6 +42,7 @@ if TYPE_CHECKING:
 
     from argilla.client.sdk.users.models import UserModel
 
+_LOGGER = logging.getLogger(__name__)
 
 class Workspace:
     """The `Workspace` class is used to manage workspaces in Argilla. It provides
@@ -265,6 +265,7 @@ class Workspace:
             ) from e
         except BaseClientError as e:
             raise RuntimeError(f"Error while deleting workspace with id {self.id!r}.") from e
+        
     def get_schemas(self, prefix: str = DEFAULT_SCHEMA_S3_PATH, exclude: Optional[List[str]]=None) -> "SchemaStructure":
         
         """
@@ -300,10 +301,42 @@ class Workspace:
 
         except Exception as e:
             raise RuntimeError(
-                f"Error getting schemas from workspace with name=`{self.name}`."
+                f"Error getting schemas from workspace with name=`{self.name}` due to: `{e}`."
             ) from e
         return SchemaStructure(schemas=list(schemas.values()))
+    
+    @allowed_for_roles(roles=[UserRole.owner, UserRole.admin])
+    def list_files(self, path: str, recursive=True, include_version=True) -> ListObjectsResponse:
+        """
+        List files in the workspace.
+
+        Args:
+
+        """
+        try:
+            return workspaces_api_v1.list_workspace_files(
+                self._client, workspace_name=self.name, path=path, recursive=recursive, include_version=include_version).parsed
+        except Exception as e:
+            raise RuntimeError(
+                f"Error listing files in workspace with name=`{self.name}` due to: `{e}`."
+            ) from e
         
+    @allowed_for_roles(roles=[UserRole.owner, UserRole.admin])
+    def delete_file(self, path: str, version_id: Optional[str]=None) -> None:
+        """
+        Deletes schemas from the workspace.
+
+        Args:
+            path: The path of the file to be deleted from the workspace.
+        """
+        try:
+            workspaces_api_v1.delete_workspace_file(
+                self._client, workspace_name=self.name, path=path, version_id=version_id)
+        except Exception as e:
+            raise RuntimeError(
+                f"Error deleting file `{path}` from workspace"
+            ) from e
+
         
     @allowed_for_roles(roles=[UserRole.owner, UserRole.admin])
     def add_schema(self, schema: Optional["pa.DataFrameSchema"], prefix: str = DEFAULT_SCHEMA_S3_PATH):
@@ -334,10 +367,11 @@ class Workspace:
 
 
     @allowed_for_roles(roles=[UserRole.owner, UserRole.admin])
-    def update_schemas(self, schemas: "SchemaStructure", prefix: str = DEFAULT_SCHEMA_S3_PATH):
+    def update_schemas(self, schemas: "SchemaStructure", prefix: str = DEFAULT_SCHEMA_S3_PATH) -> ListObjectsResponse:
         """
         Updates existing schemas in the workspace.
         """
+        output_metadata = []
         for schema in schemas.schemas:
             object_path = os.path.join(prefix, schema.name)
             file_path = Path('/tmp') / schema.name
@@ -346,13 +380,16 @@ class Workspace:
             
             try:
                 if workspaces_api_v1.exist_workspace_file(self._client, workspace_name=self.name, path=object_path, file_path=file_path):
-                    print(f"Existing schema with name=`{schema.name}` in workspace is unmodified.")
+                    _LOGGER.warning(f"Skipping schema name='{schema.name}' update since it's unmodified in workspace with name='{self.name}'.")
                     continue
-                workspaces_api_v1.put_workspace_file(self._client, workspace_name=self.name, path=object_path, file_path=file_path)
+                response = workspaces_api_v1.put_workspace_file(self._client, workspace_name=self.name, path=object_path, file_path=file_path)
+                output_metadata.append(response.parsed)
             except Exception as e:
                 raise RuntimeError(
-                    f"Error adding schema with name=`{schema.name}` to workspace with id=`{self.id}`."
+                    f"Error adding schema with name='{schema.name}' to workspace."
                 ) from e
+            
+        return ListObjectsResponse(objects=output_metadata)
         
     @staticmethod
     def __active_client() -> "httpx.Client":
