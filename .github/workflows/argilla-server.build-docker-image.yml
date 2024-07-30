@@ -1,4 +1,4 @@
-name: Build Extralit server docker image
+name: Build Extralit Server docker image
 
 on:
   workflow_call:
