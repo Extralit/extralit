@@ -60,7 +60,7 @@ async def load_minio_client():
 async def schemas(
         workspace: str = 'itn-recalibration',
 ):
-    ss = SchemaStructure.from_s3(workspace=workspace, minio_client=minio_client)
+    ss = SchemaStructure.from_s3(workspace_name=workspace, minio_client=minio_client)
     return ss.ordering
 
 
@@ -130,7 +130,7 @@ async def extraction(
         prompt_template: str = "completion",
         langfuse_callback: Optional[LlamaIndexCallbackHandler] = Depends(get_langfuse_callback),
 ):
-    schemas = SchemaStructure.from_s3(workspace=workspace, minio_client=minio_client)
+    schemas = SchemaStructure.from_s3(workspace_name=workspace, minio_client=minio_client)
     schema = schemas[extraction_request.schema_name]
 
     extraction_dfs = {}

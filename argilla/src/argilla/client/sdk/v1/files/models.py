@@ -18,6 +18,12 @@ class ObjectMetadata(BaseModel):
 
 
 class ListObjectsResponse(BaseModel):
+    """
+    Represents the response for listing objects.
+
+    Attributes:
+        objects (List[ObjectMetadata]): A list of ObjectMetadata objects representing the objects in the response.
+    """
     objects: List[ObjectMetadata] = Field(default_factory=list)
 
 
