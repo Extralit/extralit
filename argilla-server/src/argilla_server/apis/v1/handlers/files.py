@@ -73,6 +73,8 @@ async def list_objects(
     bucket: str,
     prefix: str,
     include_version=True,
+    recursive = True,
+    start_after: Optional[str] = None,
     client: Minio = Depends(files.get_minio_client),
     current_user: User = Security(auth.get_current_user),
     ):
@@ -80,7 +82,7 @@ async def list_objects(
     await authorize(current_user, FilePolicy.list(bucket))
 
     try:
-        objects = files.list_objects(client, bucket, prefix=prefix, include_version=include_version)
+        objects = files.list_objects(client, bucket, prefix=prefix, include_version=include_version, recursive=recursive, start_after=start_after)
         return objects
     except S3Error as se:
         raise HTTPException(status_code=404, detail=f"No objects at prefix '{bucket}/{prefix}' were found")

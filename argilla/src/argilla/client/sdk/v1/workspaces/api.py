@@ -109,7 +109,7 @@ def get_workspace_file(
 
 
 def list_workspace_files(
-    client: httpx.Client, workspace_name: str, path: str, include_version=True
+    client: httpx.Client, workspace_name: str, path: str, recursive=True, include_version=True
 ) -> Response[Union[ListObjectsResponse, ErrorMessage, HTTPValidationError]]:
     """Sends a GET request to `/files/{bucket}/{prefix}` endpoint to list objects.
 
@@ -123,7 +123,7 @@ def list_workspace_files(
         A `Response` object containing the response from the server.
     """
     endpoint = f"/api/v1/files/{workspace_name}/{path}"
-    params = {"include_version": include_version}
+    params = {"include_version": include_version, "recursive": recursive}
     response = client.get(url=endpoint, params=params)
 
     if response.status_code == 200:
@@ -151,7 +151,7 @@ def exist_workspace_file(client: httpx.Client, workspace_name: str, path: str, f
             existing_files: ListObjectsResponse = existing_files_response.parsed
             file_hash = calculate_file_hash(file_path)
             for file in existing_files.objects:
-                if file.object_name.endswith(file_path.name) and file.etag.strip('"') == file_hash:
+                if file.etag and file.object_name.endswith(file_path.name) and file.etag.strip('"') == file_hash:
                     return file
                 
     except Exception as e:

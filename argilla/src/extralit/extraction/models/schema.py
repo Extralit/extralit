@@ -3,6 +3,7 @@ import os
 from collections import deque
 from glob import glob
 from io import BytesIO
+from pathlib import Path
 from typing import List, Optional, Union, Dict
 
 import pandera as pa
@@ -31,7 +32,7 @@ class SchemaStructure(BaseModel):
         return schema
 
     @classmethod
-    def from_dir(cls, dir_path: str, exclude: Optional[List[str]]=None):
+    def from_dir(cls, dir_path: Path, exclude: Optional[List[str]]=None):
         """
         Load a SchemaStructure from a directory containing pandera DataFrameSchema .json files.
         Args:
