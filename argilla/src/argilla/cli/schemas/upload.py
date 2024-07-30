@@ -7,12 +7,16 @@ from extralit.extraction.models import SchemaStructure
 
 def upload_schemas(
     ctx: typer.Context,
-    path: Path = typer.Option(
+    path: Path = typer.Argument(
         ...,
-        "--path",
-        "-p",
         help="The directory containing the JSON schema files to be updated to the Workspace files.",
-        show_default=True,
+    ),
+    overwrite: bool = typer.Option(
+        False,
+        "--overwrite",
+        is_flag=True,
+        help="Force overwrite of existing schemas in the workspace.",
+        show_choices=True,
     ),
     exclude: Optional[List[str]] = typer.Option(
         None,
@@ -34,7 +38,7 @@ def upload_schemas(
         if not update_schemas.schemas:
             raise FileNotFoundError(f"No schemas found in directory '{path}'.")
         
-        uploaded_files = workspace.update_schemas(update_schemas)
+        uploaded_files = workspace.update_schemas(update_schemas, check_existing=not overwrite)
 
         if uploaded_files.objects:
             echo_in_panel(
@@ -43,8 +47,8 @@ def upload_schemas(
                 title_align="left",
             )
 
-        table = get_argilla_themed_table(title="Updated Workspace Schemas", show_lines=True)
-        for column in ("Workspace", "Schema Name", "Version ID", "Version Tag", "Last Update Date"):
+        table = get_argilla_themed_table(title=f"Updated Workspace (name='{workspace.name}') Schemas", show_lines=True)
+        for column in ("Schema Name", "Version ID", "Version Tag", "Last Update Date"):
             table.add_column(column, justify="left")
 
         for uploaded_file in uploaded_files.objects:
@@ -52,7 +56,6 @@ def upload_schemas(
             if updated_schema.objects:
                 file_object = updated_schema.objects[0]
                 table.add_row(
-                    file_object.bucket_name,
                     file_object.object_name.split("/", 1)[-1],
                     file_object.version_id,
                     file_object.version_tag,

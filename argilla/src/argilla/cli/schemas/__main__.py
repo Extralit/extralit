@@ -57,9 +57,9 @@ def callback(
 
 app = typer.Typer(help="Commands for schemas file management", no_args_is_help=True, callback=callback)
 
-app.command(name="upload", help="Upload or update existing schemas to the Workspace using JSON schema files from a specified directory.")(upload_schemas)
-app.command(name="list", help="List all schemas available in the Workspace.")(list_schemas)
-app.command(name="delete", help="Delete a schema from the Workspace.")(delete_schema)
+app.command(name="upload", help="Upload or update schemas from files in a specified directory.")(upload_schemas)
+app.command(name="list", help="List schemas.")(list_schemas)
+app.command(name="delete", help="Delete a schema.")(delete_schema)
 
 
 if __name__ == "__main__":
