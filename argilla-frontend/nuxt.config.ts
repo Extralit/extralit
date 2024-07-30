@@ -249,7 +249,7 @@ const config: NuxtConfig = {
 
   publicRuntimeConfig: {
     clientVersion: pkg.version,
-    slackCommunity:
+    communityLink:
       "https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ",
     documentationSite: "https://docs.argilla.io/",
     documentationSiteQuickStart:
