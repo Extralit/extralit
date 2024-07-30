@@ -43,7 +43,7 @@ def init_callback() -> None:
 
 def deprecated_database_cmd_callback(ctx: typer.Context) -> None:
     echo_in_panel(
-        f"Instead you should run `argilla server database {ctx.invoked_subcommand}`",
+        f"Instead you should run `argilla server database the {typer.style(ctx.invoked_subcommand, bold=True)}`",
         title="Deprecated command",
         title_align="left",
         success=False,
