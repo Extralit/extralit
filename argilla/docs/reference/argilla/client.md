@@ -43,10 +43,3 @@ for dataset in my_workspace.datasets:
 
 
 ---
-
-##  `rg.Argilla`
-
-::: src.argilla.client.Argilla
-    options:
-        heading_level: 3
-        show_root_toc_entry: false
