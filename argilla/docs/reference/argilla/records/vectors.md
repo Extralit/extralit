@@ -69,7 +69,3 @@ dataset.records.log(
 
 ## `rg.Vector`
 
-::: src.argilla.vectors.Vector
-    options:
-        heading_level: 3
-        show_root_toc_entry: false

@@ -138,7 +138,3 @@ Depending on the `Question` type, responses might need to be formatted in a slig
 
 ## `rg.Response`
 
-::: src.argilla.responses.Response
-    options:
-        heading_level: 3
-        show_root_toc_entry: false
