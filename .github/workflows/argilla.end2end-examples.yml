@@ -94,7 +94,8 @@ jobs:
         env:
           ARGILLA_ENABLE_TELEMETRY: 0
         run: |
-          pip install -e ".[server]"
+          pip install extralit_server
+          pip install -e "."
           python -m argilla server database migrate
           python -m argilla server database users create_default
           python -m argilla server start &
