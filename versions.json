@@ -5,14 +5,6 @@
     "aliases": []
   },
   {
-    "version": "docs_v0.2.0",
-    "title": "docs_v0.2.0",
-    "aliases": [],
-    "properties": {
-      "hidden": true
-    }
-  },
-  {
     "version": "docs_init_mkdocs",
     "title": "docs_init_mkdocs",
     "aliases": [],
