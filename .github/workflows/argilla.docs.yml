@@ -96,6 +96,7 @@ jobs:
         run: |
             git config --global user.name "${{ github.actor }}"
             git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+            git remote set-url origin https://x-access-token:${{ secrets.GH_ACCESS_TOKEN }}@github.com/${{ github.repository }}
             pdm run mike deploy ${{ steps.extract_branch_name.outputs.branch_name }} --prop-set hidden=true --push
         if: startsWith(github.ref, 'refs/heads/docs') || startsWith(github.head_ref, 'docs/')
 
