@@ -74,7 +74,7 @@ jobs:
         env:
           TAG_VERSION: ${{ github.ref_name }}
 
-      - name: Delete Argilla docs (versions 'docs_*')
+      - name: Delete Extralit docs (versions 'docs_*')
         id: delete_deployment
         run: |
           versions=$(pdm run mike list)
@@ -92,7 +92,7 @@ jobs:
         shell: bash
         run: echo "branch_name=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" | sed 's/\//_/g'  >> $GITHUB_OUTPUT
 
-      - name: Deploy Argilla docs (branch /docs/*)
+      - name: Deploy Extralit docs (branch /docs/*)
         run: pdm run mike deploy ${{ steps.extract_branch_name.outputs.branch_name }} --prop-set hidden=true --push
         if: startsWith(github.ref, 'refs/heads/docs') || startsWith(github.head_ref, 'docs/')
 
