@@ -19,7 +19,7 @@ import mkdocs_gen_files
 import pandas as pd
 import requests
 
-REPOSITORY = "argilla-io/argilla"
+REPOSITORY = "extralit/extralit"
 DATA_PATH = "community/popular_issues.md"
 
 GITHUB_ACCESS_TOKEN = os.getenv("GH_ACCESS_TOKEN")  # public_repo and read:org scopes are required
