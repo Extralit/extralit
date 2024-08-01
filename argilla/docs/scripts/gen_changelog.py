@@ -18,7 +18,7 @@ import os
 import mkdocs_gen_files
 import requests
 
-REPOSITORY = "argilla-io/argilla"
+REPOSITORY = "extralit/extralit"
 CHANGELOG_PATH = "argilla/CHANGELOG.md"
 RETRIEVED_BRANCH = "develop"
 

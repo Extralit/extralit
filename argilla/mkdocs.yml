@@ -1,13 +1,13 @@
 # Project information
-site_name: Argilla Docs
+site_name: Extralit Docs
 site_url: https://docs.argilla.io/
-site_author: Argilla, Inc.
+site_author: Extralit
 site_description: Data-centric tool for AI builders
-copyright: Copyright &copy; 2017 - 2024 Argilla
+copyright: Copyright &copy; 2023 - 2024 Extralit
 
 # Repository
-repo_name: argilla-io/argilla
-repo_url: https://github.com/argilla-io/argilla/
+repo_name: extralit/extralit
+repo_url: https://github.com/extralit/extralit/
 edit_uri: edit/main/argilla/docs/
 
 extra:
