@@ -14,14 +14,8 @@ extra:
   version:
     provider: mike
   social:
-    - icon: fontawesome/brands/linkedin
-      link: https://www.linkedin.com/company/argilla-io
-    - icon: fontawesome/brands/x-twitter
-      link: https://twitter.com/argilla_io
-    - icon: fontawesome/brands/youtube
-      link: https://www.youtube.com/channel/UCAIz8TmvQQrLqbD7sd-5S2A
-    - icon: fontawesome/brands/discord
-      link: http://hf.co/join/discord
+    - icon: fontawesome/brands/slack
+      link: https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ
 
 extra_css:
   - stylesheets/extra.css
