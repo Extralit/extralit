@@ -94,9 +94,9 @@ markdown_extensions:
 plugins:
   - search
   - open-in-new-tab
-  # - gen-files:
-  #     scripts:
-  #       - docs/scripts/gen_changelog.py
+  - gen-files:
+      scripts:
+        - docs/scripts/gen_changelog.py
         # - docs/scripts/gen_popular_issues.py
         # - docs/scripts/gen_ref_pages.py
   - literate-nav:
