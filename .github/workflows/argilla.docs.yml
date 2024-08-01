@@ -15,6 +15,9 @@ on:
       - "develop"
       - "docs/**"
 
+permissions:
+  contents: write
+
 defaults:
   run:
     working-directory: argilla

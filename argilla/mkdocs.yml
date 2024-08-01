@@ -1,6 +1,6 @@
 # Project information
 site_name: Extralit Docs
-site_url: https://docs.argilla.io/
+site_url: https://docs.extralit.ai/
 site_author: Extralit
 site_description: Data-centric tool for AI builders
 copyright: Copyright &copy; 2023 - 2024 Extralit
@@ -94,9 +94,9 @@ markdown_extensions:
 plugins:
   - search
   - open-in-new-tab
-  - gen-files:
-      scripts:
-        - docs/scripts/gen_changelog.py
+  # - gen-files:
+  #     scripts:
+  #       - docs/scripts/gen_changelog.py
         # - docs/scripts/gen_popular_issues.py
         # - docs/scripts/gen_ref_pages.py
   - literate-nav:
@@ -158,4 +158,4 @@ nav:
       - Issue dashboard: community/popular_issues.md
       - Changelog: community/changelog.md
   - UI Demo ↗:
-      - https://demo.argilla.io/sign-in?auth=ZGVtbzoxMjM0NTY3OA==
+      - https://extralit-public-demo.hf.space
