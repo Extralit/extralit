@@ -113,41 +113,6 @@ files = [
 ]
 
 [[package]]
-name = "argilla-v1"
-version = "1.29.0a0"
-requires_python = "<3.13,>=3.8"
-path = "../argilla-v1"
-summary = "Open-source tool for exploring, labeling, and monitoring data for NLP projects."
-groups = ["dev"]
-dependencies = [
-    "backoff",
-    "deprecated~=1.2.0",
-    "httpx<=0.26,>=0.15",
-    "monotonic",
-    "numpy<1.27.0",
-    "packaging>=20.0",
-    "pandas>=1.0.0",
-    "pydantic>=1.10.7",
-    "rich!=13.1.0",
-    "tqdm>=4.27.0",
-    "typer<0.10.0,>=0.6.0",
-    "wrapt<1.15,>=1.14",
-]
-
-[[package]]
-name = "argilla-v1"
-version = "1.29.0a0"
-extras = ["listeners"]
-requires_python = "<3.13,>=3.8"
-path = "../argilla-v1"
-summary = "Open-source tool for exploring, labeling, and monitoring data for NLP projects."
-groups = ["dev"]
-dependencies = [
-    "argilla-v1 @ file:///${PROJECT_ROOT}/../argilla-v1",
-    "schedule~=1.1.0",
-]
-
-[[package]]
 name = "asttokens"
 version = "2.4.1"
 summary = "Annotate AST trees with source code positions"
