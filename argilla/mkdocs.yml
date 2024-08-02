@@ -22,7 +22,7 @@ extra_css:
 
 theme:
   name: material
-  logo: assets/logo.svg
+  logo: assets/logo.png
   favicon: assets/favicon.ico
   features:
     - navigation.instant
@@ -122,7 +122,7 @@ plugins:
   - mknotebooks
 
 nav:
-  - Argilla: index.md
+  - Extralit: index.md
   - Getting started:
       - Quickstart: getting_started/quickstart.md
       - Deploy with Docker: getting_started/how-to-deploy-argilla-with-docker.md
