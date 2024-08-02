@@ -11,5 +11,10 @@
     "properties": {
       "hidden": true
     }
+  },
+  {
+    "version": "dev",
+    "title": "dev",
+    "aliases": []
   }
 ]
