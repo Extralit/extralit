@@ -36,6 +36,7 @@ theme:
     - content.code.copy
     - content.code.annotate
     - content.action.edit
+    - content.tooltips
     - search.suggest
     - search.highlight
     - search.share
@@ -69,6 +70,7 @@ watch:
 
 # Extensions
 markdown_extensions:
+  - abbr
   - attr_list
   - md_in_html
   - admonition
@@ -77,7 +79,9 @@ markdown_extensions:
       line_spans: __span
       pygments_lang_class: true
   - pymdownx.inlinehilite
-  - pymdownx.snippets
+  - pymdownx.snippets:
+      auto_append:
+        - docs/glossary.md
   - pymdownx.superfences
   - pymdownx.details
   - pymdownx.tabbed:
@@ -121,14 +125,19 @@ plugins:
   - social
   - mknotebooks
 
+# Documentation Structure
 nav:
-  - Extralit: index.md
-  - Getting started:
+  - Overview: index.md
+  - Getting Started:
+      - Installation: getting_started/installation.md
       - Quickstart: getting_started/quickstart.md
+      - Basic concepts and terminology: getting_started/basic_concepts.md
       - Deploy with Docker: getting_started/how-to-deploy-argilla-with-docker.md
       - Hugging Face Spaces settings: getting_started/how-to-configure-argilla-on-huggingface.md
       - FAQ: getting_started/faq.md
-  - How-to guides:
+  - User Guide:
+      - user_guide/index.md
+  - Administrator Guide:
       - how_to_guides/index.md
       - Basic:
         - Manage users and credentials: how_to_guides/user.md
