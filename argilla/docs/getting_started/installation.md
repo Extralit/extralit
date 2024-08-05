@@ -7,7 +7,7 @@ description: Installation of the Argilla SDK.
 ## Install the SDK with pip
 
 ```console
-pip install argilla
+pip install extralit
 ```
 
 ## Run the Argilla server
