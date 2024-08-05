@@ -5,7 +5,8 @@
   --md-text-font: "Source Serif Pro", serif;
   --md-admonition-icon--huggingface: url("../assets/images/huggingface-mark.svg");
   --md-admonition-icon--docker: url("../assets/images/docker-mark-blue.svg");
-  --iframe-scale-factor: 0.75
+  --iframe-scale-factor: 0.75;
+  --md-tooltip-width: 600px;
 }
 
 .md-header-nav__title {
@@ -28,7 +29,7 @@ code, pre {
   --md-typeset-a-code-color: var(--md-default-fg-color--light);
   --md-accent-typeset-a-code-color: var(--md-default-fg-color--lighter);
   --md-typeset-a-color: #5859c0;
-  --md-accent-fg-color: #6366fa;
+  --md-accent-fg-color: #CCEE00;
   --md-huggingface-fg-color: #fcf1c7;
   --md-huggingface-accent-color: #FFD21E;
   --md-docker-fg-color: #c7e4fc;
