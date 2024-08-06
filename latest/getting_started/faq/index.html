@@ -65,6 +65,16 @@
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
+  
+
+
+  
+  
+
+<script id="__analytics">function __md_analytics(){function n(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],n("js",new Date),n("config","G-SQHP22W3F6"),document.addEventListener("DOMContentLoaded",function(){document.forms.search&&document.forms.search.query.addEventListener("blur",function(){this.value&&n("event","search",{search_term:this.value})}),document$.subscribe(function(){var a=document.forms.feedback;if(void 0!==a)for(var e of a.querySelectorAll("[type=submit]"))e.addEventListener("click",function(e){e.preventDefault();var t=document.location.pathname,e=this.getAttribute("data-md-value");n("event","feedback",{page:t,data:e}),a.firstElementChild.disabled=!0;e=a.querySelector(".md-feedback__note [data-md-value='"+e+"']");e&&(e.hidden=!1)}),a.hidden=!1}),location$.subscribe(function(e){n("config","G-SQHP22W3F6",{page_path:e.pathname})})});var e=document.createElement("script");e.async=!0,e.src="https://www.googletagmanager.com/gtag/js?id=G-SQHP22W3F6",document.getElementById("__analytics").insertAdjacentElement("afterEnd",e)}</script>
+  
+    <script>"undefined"!=typeof __md_analytics&&__md_analytics()</script>
+  
 
     
     
@@ -2595,12 +2605,12 @@
 <details class="question">
 <summary>How does Argilla differ from competitors like Lilac, Snorkel, Prodigy and Scale?</summary>
 <p>Argilla distinguishes itself for its focus on specific use cases and human-in-the-loop approaches. While it does offer programmatic features, Argilla’s core value lies in actively involving human experts in the tool-building process, setting it apart from other competitors.</p>
-<p>Furthermore, Argilla places particular emphasis on smooth integration with other tools in the community, particularly within the realms of MLOps and <abbr title="Natural Language Processing, a field of artificial intelligence that focuses on the interaction between computers and humans using natural language.">NLP</abbr>. So, its compatibility with popular frameworks like spaCy and Hugging Face makes it exceptionally user-friendly and accessible.</p>
-<p>Finally, platforms like Snorkel, Prodigy or Scale, while more comprehensive, often require a significant commitment. Argilla, on the other hand, works more as a tool within the MLOps ecosystem, allowing users to begin with specific use cases and then scale up as needed. This flexibility is particularly beneficial for users and customers who prefer to start small and expand their applications over time, as opposed to committing to an all-encompassing tool from the outset.</p>
+<p>Furthermore, Argilla places particular emphasis on smooth integration with other tools in the community, particularly within the realms of <abbr title="Machine Learning Operations. Practices and processes to manage the lifecycle of ML models.">MLOps</abbr> and <abbr title="Natural Language Processing, a field of artificial intelligence that focuses on the interaction between computers and humans using natural language.">NLP</abbr>. So, its compatibility with popular frameworks like spaCy and Hugging Face makes it exceptionally user-friendly and accessible.</p>
+<p>Finally, platforms like Snorkel, Prodigy or Scale, while more comprehensive, often require a significant commitment. Argilla, on the other hand, works more as a tool within the <abbr title="Machine Learning Operations. Practices and processes to manage the lifecycle of ML models.">MLOps</abbr> ecosystem, allowing users to begin with specific use cases and then scale up as needed. This flexibility is particularly beneficial for users and customers who prefer to start small and expand their applications over time, as opposed to committing to an all-encompassing tool from the outset.</p>
 </details>
 <details class="question">
 <summary>What is the difference between Argilla 2.0 and the legacy datasets in 1.0?</summary>
-<p>Argilla 1.0 relied on 3 main task datasets: <code>DatasetForTextClassification</code>, <code>DatasetForTokenClassification</code>, and <code>DatasetForText2Text</code>. These tasks were designed to be simple, easy to use and high in functionality but they were limited in adaptability. With the introduction of Large Language Models (LLMs) and the increasing complexity of <abbr title="Natural Language Processing, a field of artificial intelligence that focuses on the interaction between computers and humans using natural language.">NLP</abbr> tasks, we realized that we needed to expand the capabilities of Argilla to support more advanced feedback mechanisms which led to the introduction of the <code>FeedbackDataset</code>. Compared to its predecessor it was high in adaptability but still limited in functionality. After having ported all of the functionality of the legacy tasks to the new <code>FeedbackDataset</code>, we decided to deprecate the legacy tasks in favor of a brand new SDK with the <code>FeedbackDataset</code> at its core.</p>
+<p>Argilla 1.0 relied on 3 main task datasets: <code>DatasetForTextClassification</code>, <code>DatasetForTokenClassification</code>, and <code>DatasetForText2Text</code>. These tasks were designed to be simple, easy to use and high in functionality but they were limited in adaptability. With the introduction of Large Language Models (<abbr title="Large Language Model, an AI system trained on vast amounts of text data.">LLMs</abbr>) and the increasing complexity of <abbr title="Natural Language Processing, a field of artificial intelligence that focuses on the interaction between computers and humans using natural language.">NLP</abbr> tasks, we realized that we needed to expand the capabilities of Argilla to support more advanced feedback mechanisms which led to the introduction of the <code>FeedbackDataset</code>. Compared to its predecessor it was high in adaptability but still limited in functionality. After having ported all of the functionality of the legacy tasks to the new <code>FeedbackDataset</code>, we decided to deprecate the legacy tasks in favor of a brand new SDK with the <code>FeedbackDataset</code> at its core.</p>
 </details>
 
 
@@ -2613,6 +2623,8 @@
   
 
 
+
+  
 
 
   
