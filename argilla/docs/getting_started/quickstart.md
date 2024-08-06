@@ -1,38 +1,69 @@
 ---
-description: Get started with Argilla in less 10 minutes
+description: Get started with Extralit in less 10 minutes
 ---
 
 # Quickstart
+>:warning: This page is currently under construction. Please check back later for updates.
 
-Argilla is a free, open-source, self-hosted tool. This means you need to deploy its UI to start using it. There is two main ways to deploy Argilla:
+Extralit is a free, open-source, self-hosted tool. This means you need to deploy its UI to start using it. There is two main ways to deploy Extralit:
 
 !!! huggingface "Deploy on the Hugging Face Hub"
 
     The **recommended choice to get started**. You can get up and running in under 5 minutes and don't need to maintain a server or run any commands.
 
-    If you're just getting started with Argilla, click the deploy button below:
+    If you're just getting started with Extralit, click the deploy button below:
 
     <div style="margin: 5px">
-            <a href="http://huggingface.co/new-space?template=argilla/argilla-template-space&name=my-argilla" target="_blank">
-                <img src="https://huggingface.co/datasets/huggingface/badges/raw/main/deploy-to-spaces-lg.svg" />
-            </a>
+        <a href="https://huggingface.co/spaces/extralit/public-demo?duplicate=true" target="_blank">
+            <img src="https://huggingface.co/datasets/huggingface/badges/raw/main/deploy-to-spaces-lg.svg" />
+        </a>
     </div>
+    
     You can use the default values following these steps:
 
-    - Leave the default Space owner (your personal account)
-    - Leave `USERNAME` and `PASSWORD` secrets empty since you'll sign in with your HF user as the Argilla Space `owner`.
-    - Click create Space to launch Argilla 🚀.
-    - Once you see the Argilla UI, [go to the Sign in into the Argilla UI section](#sign-in-into-the-argilla-ui). If you see the `Building` message for longer than 2-3 min refresh the page.
+    - Leave the default owner if using your personal account
+      - Leave `ADMIN_USERNAME` and `ADMIN_PASSWORD` secrets empty since you'll sign in with your HF user as the Argilla Space `owner`.
+    
+    - You must fill out the following Space secrets fields:
+      - `OAUTH2_HUGGINGFACE_CLIENT_ID` and `OAUTH2_HUGGINGFACE_CLIENT_SECRET`: The Oauth.
+      - `ARGILLA_DATABASE_URL`: The URL of the PostgreSQL database where the data will be stored. If you leave it blank, the data will be lost when the Space restarts.
+      - `S3_ENDPOINT`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`: The name of the S3 bucket where papers and data extraction artifacts will be stored. If you leave it blank, the data will be lost when the Space restarts.
+    - Click Duplicate Space to build an Extralit instance 🚀.
+    - Once you see the UI, [go to the Sign in into the UI section](#sign-in-into-the-argilla-ui). If you see the `Building` message for longer than 2-3 min refresh the page.
 
-    !!! warning "Persistent storage `SMALL`"
-        Not setting persistent storage to `SMALL` means that **you will loose your data when the Space restarts**. Spaces get restarted due to maintainance, inactivity, and every time you change your Spaces settings. If you want to **use the Space just for testing** you can use `FREE` temporarily.
-    If you want to deploy Argilla within a Hugging Face organization, setup a more stable Space, or understand the settings, [check out the HF Spaces settings guide](how-to-configure-argilla-on-huggingface.md).
+
+    !!! warning "Database persistent storage"
+        Not setting the `ARGILLA_DATABASE_URL` Space secret that **you will loose your data when the Space restarts**. Spaces get restarted due to maintainance, inactivity, and every time you change your Spaces settings. If you want to **use the Space just for testing** you can leave it blank temporarily.
+
+    If you want to deploy Extralit within a Hugging Face organization, setup a more stable Space, or understand the settings, [check out the HF Spaces settings guide](how-to-configure-argilla-on-huggingface.md).
+
+    - Setting up HF Authentication
+
+        From version `1.23.0` you can enable Hugging Face authentication for your Extralit Space. This feature allows you to give access to your Extralit Space to users that are logged in to the Hugging Face Hub.
+
+        >
+        This feature is specially useful for public crowdsourcing projects. If you would like to have more control over who can log in to the Space, you can set this up on a private space so that only members of your Organization can sign in. Alternatively, you may want to [create users](/getting_started/installation/configurations/user_management.md#create-a-user) and use their credentials instead.
+
+        To enable this feature, you will first need to [create an OAuth App in Hugging Face](https://huggingface.co/docs/hub/oauth#creating-an-oauth-app). To do that, go to your user settings in Hugging Face and select *Connected Apps* > *Create App*. Once inside, choose a name for your app and complete the form with the following information:
+
+        * **Homepage URL:** [Your Extralit Space Direct URL](/getting_started/installation/deployments/huggingface-spaces.md#your-argilla-space-url).
+        * **Logo URL:** `[Your Extralit Space Direct URL]/favicon.ico`
+        * **Scopes:** `openid` and `profile`.
+        * **Redirect URL:** `[Your Extralit Space Direct URL]/oauth/huggingface/callback`
+
+        This will create a Client ID and an App Secret that you will need to add as variables of your Space. To do this, go to the Space *Settings* > *Variables and Secrets* and save the Client ID and App Secret as environment secrets like so:
+
+        1. **Name:** `OAUTH2_HUGGINGFACE_CLIENT_ID` - **Value:** [Your Client ID]
+        2. **Name:** `OAUTH2_HUGGINGFACE_CLIENT_SECRET` - **Value:** [Your App Secret]
+
+    
+
 
 !!! docker "Deploy with Docker"
-     If you want to **run Argilla locally on your machine or a server**, or tune the server configuration, choose this option. To use this option, [check this guide](how-to-deploy-argilla-with-docker.md).
+     If you want to **run Extralit locally on your machine or a server**, or tune the server configuration, choose this option. To use this option, [check this guide](how-to-deploy-argilla-with-docker.md).
 
-## Sign in into the Argilla UI
-If everything went well, you should see the Argilla sign in page that looks like this:
+## Sign in into the Extralit UI
+If everything went well, you should see the Extralit sign in page that looks like this:
 
 ![Focus view](../assets/images/getting_started/signin-hf-page.png){ width=100% height=100% }
 
@@ -55,7 +86,7 @@ Congrats! Your Argilla server is ready to start your first project using the Pyt
 To manage workspaces and datasets in Argilla, you need to use the Argilla Python SDK. You can install it with pip as follows:
 
 ```console
-pip install argilla
+pip install extralit
 ```
 
 ## Create your first dataset
@@ -70,7 +101,7 @@ To start interacting with your Argilla server, you need to create a instantiate 
 ```python
 import argilla as rg
 
-client = rg.Argilla(
+client = rg.client(
     api_url="<api_url>",
     api_key="<api_key>"
 )
@@ -133,7 +164,7 @@ dataset.records.log(records=data, mapping={"text": "review"})
 🎉 You have successfully created your first dataset with Argilla. You can now access it in the Argilla UI and start annotating the records.
 
 ## Next steps
-- To learn how to create your datasets, workspace, and manage users, check the [how-to guides](../how_to_guides/index.md).
+- To learn how to create your datasets, workspace, and manage users, check the [how-to guides](../admin_guide/index.md).
 
 - To learn Argilla with hands-on examples, check the [Tutorials section](../tutorials/index.md).
 

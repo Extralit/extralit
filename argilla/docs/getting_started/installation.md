@@ -1,25 +1,25 @@
 ---
-description: Installation of the Argilla SDK.
+description: Installation of the Extralit package.
 ---
 
 # Installation
 
-## Install the SDK with pip
+## Install the Extralit package with pip
 
 ```console
 pip install extralit
 ```
 
-## Run the Argilla server
+## Run the Extralit server
 
-If you have already deployed Argilla Server, you can skip this step. Otherwise, you can quickly deploy it in two different ways:
+If you have already deployed Extralit server, you can skip this step. Otherwise, you can quickly deploy it in two different ways:
 
-* Using a [HF Space](https://huggingface.co/new-space?template=argilla/argilla-template-space).
+* [Using a HF Space](./how-to-configure-argilla-on-huggingface.md).
 
 * [Locally with Docker](./how-to-deploy-argilla-with-docker.md).
 
 
-## Connect to the Argilla server
+## Connect to the Extralit server
 
 Get your `<api_url>`:
 
@@ -34,38 +34,10 @@ Get your `<api_key>` in `My Settings` in the Argilla UI (by default owner.apikey
 ```python
 import argilla as rg
 
-client = rg.Argilla(
+client = rg.init(
     api_url="<api_url>",
     api_key="<api_key>",
     # headers={"Authorization": f"Bearer {HF_TOKEN}"}
 )
 ```
 
-## Developer documentation
-
-If you want to contribute to the development of the SDK, you can follow the instructions below.
-
-### Installation
-
-To install the development dependencies, run the following commands:
-
-```console
-# Install pdm (https://github.com/pdm-project/pdm)
-pip install pdm
-
-# Install the package in editable mode
-pip install -e .
-
-# Install the development dependencies with pdm
-pdm install --dev
-```
-
-### Generating documentation
-
-To generate the docs you will need to install the development dependencies, and run the following command to create the development server with `mkdocs`:
-
-```console
-mkdocs serve
-```
-
-You will find the built documentation in `http://localhost:8000/argilla-python/`.
