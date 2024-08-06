@@ -1,9 +1,6 @@
 
 <h1 align="center">
-  <a href=""><img src="https://github.com/dvsrepo/imgs/raw/main/rg.svg" alt="Argilla" width="150"></a>
-  <br>
-  Extralit
-  <br>
+  <a href=""><img src="https://github.com/extralit/extralit/blob/develop/argilla/docs/assets/logo.png" alt="Extralit" width="500"></a>
 </h1>
 
 <h2 align="center">Open-source feedback layer for LLM-assisted data extractions</h2>
@@ -36,23 +33,20 @@ With a Python SDK and adaptable UI, you can create human and model-in-the-loop w
 Install the client package
 
 ```bash
-git clone https://github.com/extralit/extralit-frontend
-cd extralit/argilla
-# Set up a virtual python environment is recommended
-pip install -e .
+pip install extralit
 ```
-After installing this client package, you can manage your extraction workspace through the CLI
+After installing this client package, you can manage your extraction workspace through the CLI.
 
 ```base
 extralit login --api-url http://<path_to_the_webserver>
-# You will be prompted an API key to login to your account, which can be provided by the Extralit server engineer
+# You will be prompted an API key to login to your account, which can be obtained from User Settings in the web interface
 ```
 
 ## 🛠️ Project Architecture
 
 Argilla is built on 5 core components:
 
-- **Python SDK**: A Python SDK which is installable with `pip install argilla`. To interact with the Argilla Server and the Argilla UI. It provides an API to manage the data, configuration and annotation workflows.
+- **Python SDK**: A Python SDK which is installable with `pip install extralit`. To interact with the Argilla Server and the Argilla UI. It provides an API to manage the data, configuration and annotation workflows.
 - **FastAPI Server**: The core of Argilla is a *Python FastAPI* server that manages the data, by pre-processing it and storing it in the vector database. Also, it stores application information in the relational database. It provides a REST API to interact with the data from the Python SDK and the Argilla UI. It also provides a web interface to visualize the data.
 - **Relational Database**: A relational database to store the metadata of the records and the annotations. *SQLite* is used as the default built-in option and is deployed separately with the Argilla Server but a separate *PostgreSQL* can be used too.
 - **Vector Database**: A vector database to store the records data and perform scalable vector similarity searches and basic document searches. We currently support *ElasticSearch* and *AWS OpenSearch* and they can be deployed as separate Docker images.

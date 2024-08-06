@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "extralit"
 description = "Open-source tool for accurate & fast scientific literature data extraction with LLM and human-in-the-loop."
 readme = "README.md"
-requires-python = ">=3.8,!=3.10.0,<3.13"
+requires-python = ">=3.9,!=3.10.0,<3.13"
 license = { text = "Apache-2.0" }
 keywords = [
     "literature-review",
@@ -30,14 +30,10 @@ dependencies = [
     "httpx >= 0.15,<= 0.26",
     "deprecated ~= 1.2.0",
     "packaging >= 20.0",
-    # pandas -> For data loading
-    "pandas >=1.0.0",
     # Aligned pydantic version with server fastAPI
     "pydantic >= 1.10.7",
     # monitoring
     "wrapt >= 1.14,< 1.15",
-    # weaksupervision
-    "numpy < 1.27.0",
     # for progressbars
     "tqdm >= 4.27.0",
     # monitor background consumers
@@ -230,3 +226,33 @@ line-length = 120
 
 [tool.black]
 line-length = 120
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "ipython>=8.12.3",
+    "pytest>=7.4.4",
+    "flake8>=5.0.4",
+    "ruff>=0.1.12",
+    "pytest-mock>=3.12.0",
+    "pytest-httpx>=0.26.0",
+    "black>=23.12.1",
+    "build>=1.0.3",
+    "pre-commit>=3.5.0",
+    "mkdocs-material >= 9.5.17",
+    "mkdocstrings[python] >= 0.24.0",
+    "mkdocs-literate-nav >= 0.6.1",
+    "mkdocs-section-index >= 0.3.8",
+    "mkdocs-gen-files >= 0.5.0",
+    "mkdocs-open-in-new-tab >= 1.0.3",
+    "mike >= 2.0.0",
+    "Pillow >= 9.5.0",
+    "CairoSVG >= 2.7.1",
+    "mknotebooks >= 0.8.0",
+    "pytest-retry>=1.5",
+]
+
+[tool.pdm.scripts]
+test = { cmd = "pytest tests", env_file = ".env.test" }
+lint = "ruff check"
+format = "black ."
+all = {composite = ["format", "lint", "test"]}
