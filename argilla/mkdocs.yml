@@ -18,6 +18,10 @@ extra:
       link: 'https://github.com/extralit'
     - icon: fontawesome/brands/slack
       link: https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ
+  analytics:
+    provider: google
+    property: G-SQHP22W3F6
+
 
 extra_css:
   - stylesheets/extra.css
@@ -69,10 +73,6 @@ theme:
 
 watch:
   - src/argilla
-
-google_analytics:
-  - 'G-SQHP22W3F6'
-  - 'auto'
 
 # Extensions
 markdown_extensions:
