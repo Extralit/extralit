@@ -131,40 +131,61 @@ nav:
   - Getting Started:
       - Installation: getting_started/installation.md
       - Quickstart: getting_started/quickstart.md
-      - Basic concepts and terminology: getting_started/basic_concepts.md
       - Deploy with Docker: getting_started/how-to-deploy-argilla-with-docker.md
-      - Hugging Face Spaces settings: getting_started/how-to-configure-argilla-on-huggingface.md
-      - FAQ: getting_started/faq.md
+      - Deploy with Hugging Face Spaces: getting_started/how-to-configure-argilla-on-huggingface.md
   - User Guide:
       - user_guide/index.md
+      - Core concepts: user_guide/basic_concepts.md
+      - Data Pipeline:
+        - PDF preprocessing: user_guide/pdf_preprocessing.md
+        - Text and table extraction: user_guide/text_table_extraction.md
+        - LLM-assisted extraction: user_guide/llm_extraction.md
+        - Consensus review: user_guide/consensus_review.md
+        - Data validation: user_guide/data_validation.md
+        - Extraction status: user_guide/extraction_status.md
+      - User Interface:
+        - Navigation and layout: user_guide/navigation_layout.md
+        - Create and manage workspace: user_guide/create_manage_workspace.md
+        - Search and filter records: user_guide/search_filter.md
+        - Performing extractions: user_guide/performing_extractions.md
+        - Reviewing and validating data: user_guide/review_validate_data.md
+      - Advanced Usage:
+        - Customizing extraction schemas: user_guide/customizing_schemas.md
+        - Optimizing LLM performance: user_guide/optimizing_llm_performance.md
+        - Using the API: user_guide/using_the_api.md
+
   - Administrator Guide:
-      - how_to_guides/index.md
-      - Basic:
-        - Manage users and credentials: how_to_guides/user.md
-        - Manage workspaces: how_to_guides/workspace.md
-        - Create, update and delete datasets: how_to_guides/dataset.md
-        - Add, update, and delete records: how_to_guides/record.md
-        - Distribute the annotation task: how_to_guides/distribution.md
-        - Annotate datasets: how_to_guides/annotate.md
-        - Query and filter records: how_to_guides/query.md
-        - Import and export datasets: how_to_guides/import_export.md
+      - admin_guide/index.md
+      - Setup & Deployment:
+        - Installation & configuration: admin_guide/installation.md
+        - K8s deployment: admin_guide/k8s_deployment.md
+        - Database setup: admin_guide/configuration.md
+        - File storage configuration: admin_guide/file_storage.md
+      - Server Management:
+        - Developer installation: admin_guide/installation.md
+        - Manage users and credentials: admin_guide/user.md
+        - Manage workspaces: admin_guide/workspace.md
+        - Create, update and delete datasets: admin_guide/dataset.md
+        - Add, update, and delete records: admin_guide/record.md
+        - Distribute the annotation task: admin_guide/distribution.md
+        - Annotate datasets: admin_guide/annotate.md
+        - Query and filter records: admin_guide/query.md
+        - Import and export datasets: admin_guide/import_export.md
       - Advanced:
-        - Use Markdown to format rich content: how_to_guides/use_markdown_to_format_rich_content.md
-        - Migrate your legacy datasets to Argilla V2: how_to_guides/migrate_from_legacy_datasets.md
+        - Use Markdown to format rich content: admin_guide/use_markdown_to_format_rich_content.md
+        - Migrate your legacy datasets to Argilla V2: admin_guide/migrate_from_legacy_datasets.md
   - Tutorials:
       - tutorials/index.md
-      - Text classification: tutorials/text_classification.ipynb
-      - Token classification: tutorials/token_classification.ipynb
   - API Reference:
       - Python SDK: reference/argilla/
       - FastAPI Server:
         - Server configuration: reference/argilla-server/configuration.md
       - Telemetry:
         - Server Telemetry: reference/argilla-server/telemetry.md
+  - FAQ: getting_started/faq.md
   - Community:
       - community/index.md
       - How to contribute?: community/contributor.md
       - Issue dashboard: community/popular_issues.md
       - Changelog: community/changelog.md
-  - UI Demo ↗:
-      - https://extralit-public-demo.hf.space
+

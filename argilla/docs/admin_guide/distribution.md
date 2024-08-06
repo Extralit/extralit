@@ -10,7 +10,7 @@ Owners and admins can define the minimum number of submitted responses expected 
 
 When a record has met the minimum number of submissions, the status of the record will change to `completed`, and the record will be removed from the `Pending` queue of all team members so they can focus on providing responses where they are most needed. The dataset’s annotation task will be fully completed once all records have the `completed` status.
 
-![Task Distribution diagram](../assets/images/how_to_guides/distribution/taskdistribution.svg)
+![Task Distribution diagram](../assets/images/admin_guide/distribution/taskdistribution.svg)
 
 !!! note
     The status of a record can be either `completed`, when it has the required number of responses with `submitted` status, or `pending`, when it doesn’t meet this requirement.
@@ -53,7 +53,7 @@ settings = rg.Settings(
 )
 ```
 
-> Learn more about configuring dataset settings in the [Dataset management guide](../how_to_guides/dataset.md).
+> Learn more about configuring dataset settings in the [Dataset management guide](../admin_guide/dataset.md).
 
 !!! tip
     Increase the number of minimum subsmissions if you’d like to ensure you get more than one submitted response per record. Make sure that this number is never higher than the number of members in your team. Note that the lower this number is, the faster the task will be completed.

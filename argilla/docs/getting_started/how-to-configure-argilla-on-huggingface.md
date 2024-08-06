@@ -1,13 +1,16 @@
 ---
-description: Configure Argilla on Hugging Face Spaces
+description: Configure Extralit on Hugging Face Spaces
 title: Hugging Face Spaces Settings
 ---
 
-This section details how to configure and deploy Argilla on Hugging Face Spaces. It covers:
+>:warning: This page is currently under construction. Please check back later for updates.
 
-- Persistent storage
-- How to deploy Argilla under a Hugging Face Organization
-- How to configure and disable HF OAuth access
+This section details how to configure and deploy Extralit on Hugging Face Spaces. It covers:
+
+- How to configure persistent storage and database services
+- How to configure Extralit 
+- How to deploy Extralit under a Hugging Face Organization
+- How to configure and enable HF OAuth access
 - How to use Private Spaces
 
 !!! tip "Looking to get started easily?"
@@ -31,8 +34,8 @@ If you want to disable the persistence storage warning, you can set the environm
 !!! warning "Read this if you have datasets and want to enable persistent storage"
     If you want to enable persistent storage `Small PAID` and you have created datasets, users, or workspaces, follow this process:
 
-    - First, **make a local or remote copy of your datasets**, following the [Import and Export guide](../how_to_guides/import_export.md). This is the most important step, because changing the settings of your Space leads to a restart and thus a data loss.
-    - If you have created users (not signed in with Hugging Face login), **consider storing a copy of users** following the [manage users guide](../how_to_guides/user.md).
+    - First, **make a local or remote copy of your datasets**, following the [Import and Export guide](../admin_guide/import_export.md). This is the most important step, because changing the settings of your Space leads to a restart and thus a data loss.
+    - If you have created users (not signed in with Hugging Face login), **consider storing a copy of users** following the [manage users guide](../admin_guide/user.md).
     - **Once you have stored all your data safely, go to you Space Settings Tab** and select `Small`.
     - **Your Space will be restarted and existing data will be lost**. From now on, all the new data you create in Argilla will be kept safely
     - **Recover your data**, by following the above mentioned guides.

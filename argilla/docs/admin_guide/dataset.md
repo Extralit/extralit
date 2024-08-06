@@ -162,7 +162,7 @@ rg.TextField(
     use_markdown=False
 )
 ```
-![TextField](../assets/images/how_to_guides/dataset/fields.png)
+![TextField](../assets/images/admin_guide/dataset/fields.png)
 
 ### Questions
 
@@ -186,7 +186,7 @@ To collect feedback for your dataset, you need to formulate questions that annot
         labels={"YES": "Yes", "NO": "No"}, # or ["YES", "NO"]
     )
     ```
-    ![LabelQuestion](../assets/images/how_to_guides/dataset/label_question.png)
+    ![LabelQuestion](../assets/images/admin_guide/dataset/label_question.png)
 
 === "Multi-label"
     A `MultiLabelQuestion` asks annotators to choose all applicable labels from a list of options. This type is useful for multi-label text classification tasks. In the UI, they will have a squared shape. It has the following configuration:
@@ -217,7 +217,7 @@ To collect feedback for your dataset, you need to formulate questions that annot
     )
 
     ```
-    ![MultiLabelQuestion](../assets/images/how_to_guides/dataset/multilabel_question.png)
+    ![MultiLabelQuestion](../assets/images/admin_guide/dataset/multilabel_question.png)
 
 === "Ranking"
     A `RankingQuestion` asks annotators to order a list of options. It is useful to gather information on the preference or relevance of a set of options. Ties are allowed and all options will need to be ranked. It has the following configuration:
@@ -242,7 +242,7 @@ To collect feedback for your dataset, you need to formulate questions that annot
     )
     ```
 
-    ![RankingQuestion](../assets/images/how_to_guides/dataset/ranking_question.png)
+    ![RankingQuestion](../assets/images/admin_guide/dataset/ranking_question.png)
 
 === "Rating"
     A `RatingQuestion` asks annotators to select one option from a list of integer values. This type is useful for collecting numerical scores. It has the following configuration:
@@ -263,7 +263,7 @@ To collect feedback for your dataset, you need to formulate questions that annot
     )
     ```
 
-    ![RatingQuestion](../assets/images/how_to_guides/dataset/rating_question.png)
+    ![RatingQuestion](../assets/images/admin_guide/dataset/rating_question.png)
 
 === "Span"
     A `SpanQuestion` asks annotators to select a portion of the text of a specific field and apply a label to it. This type of question is useful for named entity recognition or information extraction tasks. It has the following configuration:
@@ -295,7 +295,7 @@ To collect feedback for your dataset, you need to formulate questions that annot
     )
     ```
 
-    ![SpanQuestion](../assets/images/how_to_guides/dataset/span_question.png)
+    ![SpanQuestion](../assets/images/admin_guide/dataset/span_question.png)
 
 === "Text"
     A `TextQuestion` offers to annotators a free-text area where they can enter any text. This type is useful for collecting natural language data, such as corrections or explanations. It has the following configuration:
@@ -316,7 +316,7 @@ To collect feedback for your dataset, you need to formulate questions that annot
     )
     ```
 
-    ![TextQuestion](../assets/images/how_to_guides/dataset/text_question.png)
+    ![TextQuestion](../assets/images/admin_guide/dataset/text_question.png)
 
 ### Metadata
 
@@ -336,7 +336,7 @@ Metadata properties allow you to configure the use of metadata information for t
         options=["group-a", "group-b", "group-c"]
     )
     ```
-    ![TermsMetadataProperty](../assets/images/how_to_guides/dataset/term_metadata.png)
+    ![TermsMetadataProperty](../assets/images/admin_guide/dataset/term_metadata.png)
 
 === "Integer"
     An `IntegerMetadataProperty` allows to add integer values as metadata. It has the following configuration:
@@ -354,7 +354,7 @@ Metadata properties allow you to configure the use of metadata information for t
         max=1984,
     )
     ```
-    ![IntegerMetadataProperty](../assets/images/how_to_guides/dataset/integer_metadata.png)
+    ![IntegerMetadataProperty](../assets/images/admin_guide/dataset/integer_metadata.png)
 
 === "Float"
     A `FloatMetadataProperty` allows to add float values as metadata. It has the following configuration:
@@ -372,7 +372,7 @@ Metadata properties allow you to configure the use of metadata information for t
         max=119.6975,
     )
     ```
-    ![FloatMetadataProperty](../assets/images/how_to_guides/dataset/float_metadata.png)
+    ![FloatMetadataProperty](../assets/images/admin_guide/dataset/float_metadata.png)
 
 !!! note
     You can also set the `allow_extra_metadata` argument in the dataset to `True` to specify whether the dataset will allow metadata fields in the records other than those specified under metadata. Note that these will not be accessible from the UI for any user, only retrievable using the Python SDK.
@@ -392,7 +392,7 @@ rg.VectorField(
     dimensions=768
 ),
 ```
-![VectorField](../assets/images/how_to_guides/dataset/vectors.png)
+![VectorField](../assets/images/admin_guide/dataset/vectors.png)
 
 ### Guidelines
 
@@ -402,10 +402,10 @@ Once you have decided on the data to show and the questions to ask, it's importa
 ```python
 guidelines = "In this dataset, you will find a collection of records that show a category, an instruction, a context and a response to that instruction. [...]"
 ```
-![Guidelines](../assets/images/how_to_guides/dataset/guidelines.png)
+![Guidelines](../assets/images/admin_guide/dataset/guidelines.png)
 
 * As question descriptions: these are added as an argument when you create questions in the Python SDK. This text will appear in a tooltip next to the question in the UI.
-![Guidelines as descriptions](../assets/images/how_to_guides/dataset/guidelines_description.png)
+![Guidelines as descriptions](../assets/images/admin_guide/dataset/guidelines_description.png)
 
 It is good practice to use at least the dataset guidelines if not both methods. Question descriptions should be short and provide context to a specific question. They can be a summary of the guidelines to that question, but often that is not sufficient to align the whole annotation team. In the guidelines, you can include a description of the project, details on how to answer each question with examples, instructions on when to discard a record, etc.
 
@@ -422,7 +422,7 @@ rg.TaskDistribution(
 )
 ```
 
-> To learn more about how to distribute the task among team members in the [Distribute the annotation guide](../how_to_guides/distribution.md).
+> To learn more about how to distribute the task among team members in the [Distribute the annotation guide](../admin_guide/distribution.md).
 
 
 ## List datasets
