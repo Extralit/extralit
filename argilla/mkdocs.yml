@@ -70,6 +70,10 @@ theme:
 watch:
   - src/argilla
 
+google_analytics:
+  - 'G-SQHP22W3F6'
+  - 'auto'
+
 # Extensions
 markdown_extensions:
   - abbr
