@@ -72,7 +72,9 @@ async def _create(
             typer.echo(f"User with username {username!r} already exists in database. Skipping...")
             return
 
-        if await accounts.get_user_by_api_key(session, api_key):
+        if not api_key:
+            api_key = None
+        elif await accounts.get_user_by_api_key(session, api_key):
             typer.echo(f"User with api_key {api_key!r} already exists in database. Skipping...")
             return
 
