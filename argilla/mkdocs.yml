@@ -14,6 +14,8 @@ extra:
   version:
     provider: mike
   social:
+    - icon: fontawesome/brands/github
+      link: 'https://github.com/extralit'
     - icon: fontawesome/brands/slack
       link: https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ
 
