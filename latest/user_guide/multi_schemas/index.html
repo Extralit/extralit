@@ -6,16 +6,16 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Data-centric tool for AI builders">
+        <meta name="description" content="Learn how to define schemas in Extralit to extract structured data from scientific papers.">
       
       
         <meta name="author" content="Extralit">
       
       
-        <link rel="canonical" href="https://docs.extralit.ai/latest/user_guide/basic_concepts/">
+        <link rel="canonical" href="https://docs.extralit.ai/latest/user_guide/multi_schemas/">
       
       
-        <link rel="prev" href="../">
+        <link rel="prev" href="../schema_definition/">
       
       
         <link rel="next" href="../../admin_guide/">
@@ -26,7 +26,7 @@
     
     
       
-        <title>Core concepts - Extralit Docs</title>
+        <title>Customizing multiple extraction schemas - Extralit Docs</title>
       
     
     
@@ -81,11 +81,11 @@
       
         <meta  property="og:type"  content="website" >
       
-        <meta  property="og:title"  content="Core concepts - Extralit Docs" >
+        <meta  property="og:title"  content="Customizing multiple extraction schemas - Extralit Docs" >
       
-        <meta  property="og:description"  content="Data-centric tool for AI builders" >
+        <meta  property="og:description"  content="Learn how to define schemas in Extralit to extract structured data from scientific papers." >
       
-        <meta  property="og:image"  content="https://docs.extralit.ai/latest/assets/images/social/user_guide/basic_concepts.png" >
+        <meta  property="og:image"  content="https://docs.extralit.ai/latest/assets/images/social/user_guide/multi_schemas.png" >
       
         <meta  property="og:image:type"  content="image/png" >
       
@@ -93,15 +93,15 @@
       
         <meta  property="og:image:height"  content="630" >
       
-        <meta  property="og:url"  content="https://docs.extralit.ai/latest/user_guide/basic_concepts/" >
+        <meta  property="og:url"  content="https://docs.extralit.ai/latest/user_guide/multi_schemas/" >
       
         <meta  name="twitter:card"  content="summary_large_image" >
       
-        <meta  name="twitter:title"  content="Core concepts - Extralit Docs" >
+        <meta  name="twitter:title"  content="Customizing multiple extraction schemas - Extralit Docs" >
       
-        <meta  name="twitter:description"  content="Data-centric tool for AI builders" >
+        <meta  name="twitter:description"  content="Learn how to define schemas in Extralit to extract structured data from scientific papers." >
       
-        <meta  name="twitter:image"  content="https://docs.extralit.ai/latest/assets/images/social/user_guide/basic_concepts.png" >
+        <meta  name="twitter:image"  content="https://docs.extralit.ai/latest/assets/images/social/user_guide/multi_schemas.png" >
       
     
     
@@ -122,6 +122,11 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
+      
+        
+        <a href="#customizing-multiple-extraction-schemas" class="md-skip">
+          Skip to content
+        </a>
       
     </div>
     <div data-md-component="announce">
@@ -156,7 +161,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Core concepts
+              Customizing multiple extraction schemas
             
           </span>
         </div>
@@ -676,17 +681,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../core_concepts/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -695,7 +693,6 @@
   
 
       </a>
-      
     </li>
   
 
@@ -751,11 +748,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../pdf_preprocessing.md" class="md-nav__link">
+      <a href="../documents_import/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    PDF preprocessing
+    Documents import
   </span>
   
 
@@ -772,11 +769,32 @@
   
   
     <li class="md-nav__item">
-      <a href="../text_table_extraction.md" class="md-nav__link">
+      <a href="../schema_definition/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Text and table extraction
+    Schema definition
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../text_table_ocr.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Text and table OCR
   </span>
   
 
@@ -1038,6 +1056,8 @@
                 
   
   
+    
+  
   
   
     
@@ -1052,11 +1072,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4" checked>
         
           
           <label class="md-nav__link" for="__nav_3_4" id="__nav_3_4_label" tabindex="">
@@ -1070,7 +1090,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3_4">
             <span class="md-nav__icon md-icon"></span>
             Advanced Usage
@@ -1081,18 +1101,118 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../customizing_schemas.md" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Customizing multiple extraction schemas
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
-    Customizing extraction schemas
+    Customizing multiple extraction schemas
   </span>
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-use-multiple-schemas" class="md-nav__link">
+    <span class="md-ellipsis">
+      Why Use Multiple Schemas?
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Why Use Multiple Schemas?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-1-separating-study-design-and-demographic-information" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example 1: Separating Study Design and Demographic Information
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-2-establishing-relational-schemas" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example 2: Establishing Relational Schemas
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#converting-schemas-to-json" class="md-nav__link">
+    <span class="md-ellipsis">
+      Converting Schemas to JSON
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#uploading-schemas-to-extralit-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      Uploading Schemas to Extralit Server
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices-for-multiple-schemas" class="md-nav__link">
+    <span class="md-ellipsis">
+      Best Practices for Multiple Schemas
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -2560,6 +2680,76 @@
   
   
   
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-use-multiple-schemas" class="md-nav__link">
+    <span class="md-ellipsis">
+      Why Use Multiple Schemas?
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Why Use Multiple Schemas?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-1-separating-study-design-and-demographic-information" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example 1: Separating Study Design and Demographic Information
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-2-establishing-relational-schemas" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example 2: Establishing Relational Schemas
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#converting-schemas-to-json" class="md-nav__link">
+    <span class="md-ellipsis">
+      Converting Schemas to JSON
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#uploading-schemas-to-extralit-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      Uploading Schemas to Extralit Server
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices-for-multiple-schemas" class="md-nav__link">
+    <span class="md-ellipsis">
+      Best Practices for Multiple Schemas
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -2574,7 +2764,7 @@
                   
 
   
-    <a href="https://github.com/extralit/extralit/edit/main/argilla/docs/user_guide/basic_concepts.md" title="Edit this page" class="md-content__button md-icon">
+    <a href="https://github.com/extralit/extralit/edit/main/argilla/docs/user_guide/multi_schemas.md" title="Edit this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4v-2m10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1 2.1 2.1Z"/></svg>
     </a>
@@ -2582,9 +2772,254 @@
   
 
 
-  <h1>Core concepts</h1>
+<h1 id="customizing-multiple-extraction-schemas">Customizing Multiple Extraction Schemas<a class="headerlink" href="#customizing-multiple-extraction-schemas" title="Permanent link">&para;</a></h1>
+<p>While defining a <a href="../schema_definition/">single schema</a> are useful for many extraction tasks, there are scenarios where using multiple schemas can provide better organization and more accurate representation of the data. This guide will walk you through the process of creating and managing multiple schemas in Extralit.</p>
+<h2 id="why-use-multiple-schemas">Why Use Multiple Schemas?<a class="headerlink" href="#why-use-multiple-schemas" title="Permanent link">&para;</a></h2>
+<p>Multiple schemas are beneficial when:</p>
+<ol>
+<li>Different parts of a paper contain distinct types of information.</li>
+<li>There are one-to-many relationships between data points.</li>
+<li>You want to establish relational links between different types of data.</li>
+<li>You need to prevent data duplication and maintain data integrity.</li>
+</ol>
+<h3 id="example-1-separating-study-design-and-demographic-information">Example 1: Separating Study Design and Demographic Information<a class="headerlink" href="#example-1-separating-study-design-and-demographic-information" title="Permanent link">&para;</a></h3>
+<p>Let's consider a scenario where a scientific paper presents information about two studies, each with multiple demographic groups. If we try to capture all this information in a single schema, we might end up with redundant data entry.</p>
+<p>Here's an example of what the data in the paper might look like:</p>
+<table border="1" cellpadding="5" cellspacing="0">
+  <tr>
+    <th>Year</th>
+    <th>Study Type</th>
+    <th>Age Group</th>
+    <th>Gender</th>
+    <th>Count</th>
+  </tr>
+  <tr>
+    <td>2020</td>
+    <td>RCT</td>
+    <td>Child</td>
+    <td>Male</td>
+    <td>50</td>
+  </tr>
+  <tr>
+    <td>2020</td>
+    <td>RCT</td>
+    <td>Child</td>
+    <td>Female</td>
+    <td>55</td>
+  </tr>
+  <tr>
+    <td>2020</td>
+    <td>RCT</td>
+    <td>Adult</td>
+    <td>Male</td>
+    <td>100</td>
+  </tr>
+  <tr>
+    <td>2020</td>
+    <td>RCT</td>
+    <td>Adult</td>
+    <td>Female</td>
+    <td>95</td>
+  </tr>
+  <tr>
+    <td>2021</td>
+    <td>Observational</td>
+    <td>Adult</td>
+    <td>Male</td>
+    <td>75</td>
+  </tr>
+  <tr>
+    <td>2021</td>
+    <td>Observational</td>
+    <td>Adult</td>
+    <td>Female</td>
+    <td>80</td>
+  </tr>
+  <tr>
+    <td>2021</td>
+    <td>Observational</td>
+    <td>Senior</td>
+    <td>Male</td>
+    <td>40</td>
+  </tr>
+  <tr>
+    <td>2021</td>
+    <td>Observational</td>
+    <td>Senior</td>
+    <td>Female</td>
+    <td>45</td>
+  </tr>
+</table>
 
+<p>If we were to use a single schema to capture this information, it might look like this:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span> <span class="nn">pandera</span> <span class="k">as</span> <span class="nn">pa</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span> <span class="nn">pandera.typing</span> <span class="kn">import</span> <span class="n">Series</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="k">class</span> <span class="nc">StudyDemographic</span><span class="p">(</span><span class="n">pa</span><span class="o">.</span><span class="n">DataFrameModel</span><span class="p">):</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">year</span><span class="p">:</span> <span class="n">Series</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">ge</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">le</span><span class="o">=</span><span class="mi">2024</span><span class="p">)</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">study_type</span><span class="p">:</span> <span class="n">Series</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">isin</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;RCT&#39;</span><span class="p">,</span> <span class="s1">&#39;Observational&#39;</span><span class="p">,</span> <span class="s1">&#39;Meta-analysis&#39;</span><span class="p">])</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">age_group</span><span class="p">:</span> <span class="n">Series</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">isin</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Child&#39;</span><span class="p">,</span> <span class="s1">&#39;Adult&#39;</span><span class="p">,</span> <span class="s1">&#39;Senior&#39;</span><span class="p">])</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">gender</span><span class="p">:</span> <span class="n">Series</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">isin</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Male&#39;</span><span class="p">,</span> <span class="s1">&#39;Female&#39;</span><span class="p">,</span> <span class="s1">&#39;Other&#39;</span><span class="p">])</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">count</span><span class="p">:</span> <span class="n">Series</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">gt</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</span></code></pre></div>
+<p>However, using this schema would require redundant manual data entry. Notice how we would have to repeat the study information (year and study_type) for each demographic entry. This redundancy can lead to data inconsistencies that is exacerbated as the number of demographic groups increase, and makes the data more difficult to update/correct.</p>
+<p>To solve this, we can separate our schema into two:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span> <span class="nn">pandera</span> <span class="k">as</span> <span class="nn">pa</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span> <span class="nn">pandera.typing</span> <span class="kn">import</span> <span class="n">Series</span><span class="p">,</span> <span class="n">Index</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="k">class</span> <span class="nc">StudyDesign</span><span class="p">(</span><span class="n">pa</span><span class="o">.</span><span class="n">DataFrameModel</span><span class="p">):</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">StudyDesign_ID</span><span class="p">:</span> <span class="n">Index</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">unique</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">year</span><span class="p">:</span> <span class="n">Series</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">ge</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">le</span><span class="o">=</span><span class="mi">2023</span><span class="p">)</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="n">sample_size</span><span class="p">:</span> <span class="n">Series</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">gt</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="n">study_type</span><span class="p">:</span> <span class="n">Series</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">isin</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;RCT&#39;</span><span class="p">,</span> <span class="s1">&#39;Observational&#39;</span><span class="p">,</span> <span class="s1">&#39;Meta-analysis&#39;</span><span class="p">])</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="k">class</span> <span class="nc">Demographic</span><span class="p">(</span><span class="n">pa</span><span class="o">.</span><span class="n">DataFrameModel</span><span class="p">):</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="n">StudyDesign_ID</span><span class="p">:</span> <span class="n">Series</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>  <span class="c1"># This will be our foreign key</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="n">age_group</span><span class="p">:</span> <span class="n">Series</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">isin</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Child&#39;</span><span class="p">,</span> <span class="s1">&#39;Adult&#39;</span><span class="p">,</span> <span class="s1">&#39;Senior&#39;</span><span class="p">])</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>    <span class="n">gender</span><span class="p">:</span> <span class="n">Series</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">isin</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Male&#39;</span><span class="p">,</span> <span class="s1">&#39;Female&#39;</span><span class="p">,</span> <span class="s1">&#39;Other&#39;</span><span class="p">])</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>    <span class="n">count</span><span class="p">:</span> <span class="n">Series</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">gt</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Note that we've introduced a <code>StudyDesign_ID</code> field in the <code>StudyDesign</code> and <code>Demographic</code> schemas, which serves as a foreign key linking <code>Demographic</code> data to the <code>StudyDesign</code> information.</p>
+<p>Now, we can represent our data more efficiently:</p>
+<h4>Study Design Table</h4>
+<table border="1" cellpadding="5" cellspacing="0">
+  <tr>
+    <th>StudyDesign_ID</th>
+    <th>year</th>
+    <th>study_type</th>
+  </tr>
+  <tr>
+    <td>S01</td>
+    <td>2020</td>
+    <td>RCT</td>
+  </tr>
+  <tr>
+    <td>S02</td>
+    <td>2021</td>
+    <td>Observational</td>
+  </tr>
+</table>
 
+<h4>Demographic Table</h4>
+<table border="1" cellpadding="5" cellspacing="0">
+  <tr>
+    <th>StudyDesign_ID</th>
+    <th>age_group</th>
+    <th>gender</th>
+    <th>count</th>
+  </tr>
+  <tr>
+    <td>S01</td>
+    <td>Child</td>
+    <td>Male</td>
+    <td>50</td>
+  </tr>
+  <tr>
+    <td>S01</td>
+    <td>Child</td>
+    <td>Female</td>
+    <td>55</td>
+  </tr>
+  <tr>
+    <td>S01</td>
+    <td>Adult</td>
+    <td>Male</td>
+    <td>100</td>
+  </tr>
+  <tr>
+    <td>S01</td>
+    <td>Adult</td>
+    <td>Female</td>
+    <td>95</td>
+  </tr>
+  <tr>
+    <td>S02</td>
+    <td>Adult</td>
+    <td>Male</td>
+    <td>75</td>
+  </tr>
+  <tr>
+    <td>S02</td>
+    <td>Adult</td>
+    <td>Female</td>
+    <td>80</td>
+  </tr>
+  <tr>
+    <td>S02</td>
+    <td>Senior</td>
+    <td>Male</td>
+    <td>40</td>
+  </tr>
+  <tr>
+    <td>S02</td>
+    <td>Senior</td>
+    <td>Female</td>
+    <td>45</td>
+  </tr>
+</table>
+
+<p>This approach eliminates redundancy in the study information and allows for a more flexible representation of the data. It's particularly useful when:</p>
+<ul>
+<li>A single study potentially has large number of demographic groups.</li>
+<li>You want to update study information without affecting demographic data.</li>
+<li>You need to analyze demographic data across multiple studies easily.</li>
+</ul>
+<p>In the next sections, we'll explore how to establish relationships between these schemas and how to manage them in Extralit.</p>
+<h3 id="example-2-establishing-relational-schemas">Example 2: Establishing Relational Schemas<a class="headerlink" href="#example-2-establishing-relational-schemas" title="Permanent link">&para;</a></h3>
+<p>Let's extend our example to include a third schema for outcome measures:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">class</span> <span class="nc">OutcomeMeasure</span><span class="p">(</span><span class="n">pa</span><span class="o">.</span><span class="n">DataFrameModel</span><span class="p">):</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="n">measure_id</span><span class="p">:</span> <span class="n">Index</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">unique</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">study_id</span><span class="p">:</span> <span class="n">Series</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>  <span class="c1"># Foreign key to StudyDesign</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">demographic_id</span><span class="p">:</span> <span class="n">Series</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>  <span class="c1"># Foreign key to Demographic</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">measure_type</span><span class="p">:</span> <span class="n">Series</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">isin</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Primary&#39;</span><span class="p">,</span> <span class="s1">&#39;Secondary&#39;</span><span class="p">])</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">value</span><span class="p">:</span> <span class="n">Series</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">ge</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</span></code></pre></div>
+<p>In this schema:</p>
+<ul>
+<li><code>study_id</code> links the outcome to a specific study.</li>
+<li><code>demographic_id</code> optionally links the outcome to a specific demographic group.</li>
+</ul>
+<p>This structure allows for complex querying across all three schemas, enabling analysis of outcomes by study and demographic characteristics.</p>
+<h2 id="converting-schemas-to-json">Converting Schemas to JSON<a class="headerlink" href="#converting-schemas-to-json" title="Permanent link">&para;</a></h2>
+<p>To use these schemas with Extralit's server, we need to convert them to JSON format. Here's how you can do that:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">join</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">target_dir</span> <span class="o">=</span> <span class="s1">&#39;path/to/schemas/&#39;</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">StudyDesign</span><span class="o">.</span><span class="n">to_schema</span><span class="p">()</span><span class="o">.</span><span class="n">to_json</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">target_dir</span><span class="p">,</span> <span class="s1">&#39;study_design_schema.json&#39;</span><span class="p">))</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">Demographic</span><span class="o">.</span><span class="n">to_schema</span><span class="p">()</span><span class="o">.</span><span class="n">to_json</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">target_dir</span><span class="p">,</span> <span class="s1">&#39;demographic_schema.json&#39;</span><span class="p">))</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">OutcomeMeasure</span><span class="o">.</span><span class="n">to_schema</span><span class="p">()</span><span class="o">.</span><span class="n">to_json</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">target_dir</span><span class="p">,</span> <span class="s1">&#39;outcome_measure_schema.json&#39;</span><span class="p">))</span>
+</span></code></pre></div>
+<p>This code will create three JSON files containing the schema definitions.</p>
+<h2 id="uploading-schemas-to-extralit-server">Uploading Schemas to Extralit Server<a class="headerlink" href="#uploading-schemas-to-extralit-server" title="Permanent link">&para;</a></h2>
+<p>Once you have your schema JSON files, you can upload them to your Extralit workspace using the command-line interface:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>extralit<span class="w"> </span>schemas<span class="w"> </span>upload<span class="w"> </span>--workspace<span class="w"> </span><span class="o">{</span>WORKSPACE_NAME<span class="o">}</span><span class="w"> </span>--schemas<span class="w"> </span>path/to/schemas/
+</span></code></pre></div>
+<p>Replace <code>{WORKSPACE_NAME}</code> with the name of your Extralit workspace, and ensure the path to your schema JSON files is correct.</p>
+<h2 id="best-practices-for-multiple-schemas">Best Practices for Multiple Schemas<a class="headerlink" href="#best-practices-for-multiple-schemas" title="Permanent link">&para;</a></h2>
+<ol>
+<li>
+<p><strong>Keep It Simple</strong>: Start with the simplest schema structure that accurately represents your data. You can always add complexity later.</p>
+</li>
+<li>
+<p><strong>Use Meaningful Names</strong>: Choose clear, descriptive names for your schemas and fields.</p>
+</li>
+<li>
+<p><strong>Establish Clear Relationships</strong>: When using multiple schemas, clearly define how they relate to each other (e.g., through foreign keys).</p>
+</li>
+<li>
+<p><strong>Avoid Redundancy</strong>: Don't duplicate information across schemas unnecessarily. Use references (foreign keys) instead.</p>
+</li>
+<li>
+<p><strong>Consider Extraction Efficiency</strong>: Design your schemas to align with how information is typically presented in the papers you're analyzing. This can make the extraction process more straightforward.</p>
+</li>
+<li>
+<p><strong>Validate Relationships</strong>: Implement cross-schema validation to ensure referential integrity (e.g., every <code>study_id</code> in <code>Demographic</code> exists in <code>StudyDesign</code>).</p>
+</li>
+<li>
+<p><strong>Document Your Schema Structure</strong>: Maintain clear documentation of how your schemas relate to each other and what each schema represents.</p>
+</li>
+</ol>
+<p>By thoughtfully designing and implementing multiple schemas, you can create a robust, flexible system for extracting and organizing complex information from scientific papers. This approach allows for more nuanced analysis and can significantly improve the quality and usability of your extracted data.</p>
 
 
 
@@ -2625,7 +3060,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../" class="md-footer__link md-footer__link--prev" aria-label="Previous: User Guide">
+          <a href="../schema_definition/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Schema definition">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
@@ -2635,7 +3070,7 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                User Guide
+                Schema definition
               </div>
             </div>
           </a>
@@ -2677,17 +3112,6 @@
 </div>
       
         <div class="md-social">
-  
-    
-    
-    
-    
-      
-      
-    
-    <a href="https://github.com/extralit" target="_blank" rel="noopener" title="github.com" class="md-social__link">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
-    </a>
   
     
     

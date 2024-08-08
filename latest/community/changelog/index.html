@@ -677,7 +677,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user_guide/basic_concepts/" class="md-nav__link">
+      <a href="../../user_guide/core_concepts/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -738,11 +738,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user_guide/pdf_preprocessing.md" class="md-nav__link">
+      <a href="../../user_guide/documents_import/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    PDF preprocessing
+    Documents import
   </span>
   
 
@@ -759,11 +759,32 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user_guide/text_table_extraction.md" class="md-nav__link">
+      <a href="../../user_guide/schema_definition/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Text and table extraction
+    Schema definition
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user_guide/text_table_ocr.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Text and table OCR
   </span>
   
 
@@ -1065,11 +1086,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user_guide/customizing_schemas.md" class="md-nav__link">
+      <a href="../../user_guide/multi_schemas/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Customizing extraction schemas
+    Customizing multiple extraction schemas
   </span>
   
 
@@ -5575,7 +5596,7 @@ These are the section headers that we use:
 <li>Added multi selection entity dropdown for span annotation overlap. (<a href="https://github.com/argilla-io/argilla/pull/4735">#4735</a>)</li>
 <li>Added pre selection highlight for span annotation. (<a href="https://github.com/argilla-io/argilla/pull/4726">#4726</a>)</li>
 <li>Added banner when persistent storage is not enabled. (<a href="https://github.com/argilla-io/argilla/pull/4744">#4744</a>)</li>
-<li>Added support on Python SDK for new multi-label questions <code>labels_order</code> attribute. (<a href="https://github.com/argilla-io/argilla/pull/4757">#4757</a>)</li>
+<li>Added support on Python <abbr title="Software Development Kit.">SDK</abbr> for new multi-label questions <code>labels_order</code> attribute. (<a href="https://github.com/argilla-io/argilla/pull/4757">#4757</a>)</li>
 </ul>
 <h3 id="changed">Changed<a class="headerlink" href="#changed" title="Permanent link">&para;</a></h3>
 <ul>
@@ -5614,7 +5635,7 @@ These are the section headers that we use:
 <h3 id="added_4">Added<a class="headerlink" href="#added_4" title="Permanent link">&para;</a></h3>
 <ul>
 <li>If you expand the labels of a <code>single or multi</code> label Question, the state is maintained during the entire annotation process. (<a href="https://github.com/argilla-io/argilla/pull/4630">#4630</a>)</li>
-<li>Added support for span questions in the Python SDK. (<a href="https://github.com/argilla-io/argilla/pull/4617">#4617</a>)</li>
+<li>Added support for span questions in the Python <abbr title="Software Development Kit.">SDK</abbr>. (<a href="https://github.com/argilla-io/argilla/pull/4617">#4617</a>)</li>
 <li>Added support for span values in suggestions and responses. (<a href="https://github.com/argilla-io/argilla/pull/4623">#4623</a>)</li>
 <li>Added <code>span</code> questions for <code>FeedbackDataset</code>. (<a href="https://github.com/argilla-io/argilla/pull/4622">#4622</a>)</li>
 <li>Added <code>ARGILLA_CACHE_DIR</code> environment variable to configure the client cache directory. (<a href="https://github.com/argilla-io/argilla/pull/4509">#4509</a>)</li>
@@ -5624,7 +5645,7 @@ These are the section headers that we use:
 <li>Fixed contextualized workspaces. (<a href="https://github.com/argilla-io/argilla/pull/4665">#4665</a>)</li>
 <li>Fixed prepare for training when passing <code>RankingValueSchema</code> instances to suggestions. (<a href="https://github.com/argilla-io/argilla/pull/4628">#4628</a>)</li>
 <li>Fixed parsing ranking values in suggestions from HF datasets. (<a href="https://github.com/argilla-io/argilla/pull/4629">#4629</a>)</li>
-<li>Fixed reading description from API response payload. (<a href="https://github.com/argilla-io/argilla/pull/4632">#4632</a>)</li>
+<li>Fixed reading description from <abbr title="Application Programming Interface.">API</abbr> response payload. (<a href="https://github.com/argilla-io/argilla/pull/4632">#4632</a>)</li>
 <li>Fixed pulling (n*chunk_size)+1 records when using <code>ds.pull</code> or iterating over the dataset. (<a href="https://github.com/argilla-io/argilla/pull/4662">#4662</a>)</li>
 <li>Fixed client's resolution of enum values when calling the Search and Metrics api, to support Python &gt;=3.11 enum handling. (<a href="https://github.com/argilla-io/argilla/pull/4672">#4672</a>)</li>
 </ul>
@@ -5636,7 +5657,7 @@ For changes in the argilla-server module, visit the argilla-server <a href="http
 <h3 id="added_5">Added<a class="headerlink" href="#added_5" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Reorder labels in <code>dataset settings page</code> for single/multi label questions (<a href="https://github.com/argilla-io/argilla/pull/4598">#4598</a>)</li>
-<li>Added pandas v2 support using the python SDK. (<a href="https://github.com/argilla-io/argilla/pull/4600">#4600</a>)</li>
+<li>Added pandas v2 support using the python <abbr title="Software Development Kit.">SDK</abbr>. (<a href="https://github.com/argilla-io/argilla/pull/4600">#4600</a>)</li>
 </ul>
 <h3 id="removed">Removed<a class="headerlink" href="#removed" title="Permanent link">&para;</a></h3>
 <ul>
@@ -5667,12 +5688,12 @@ The package is using the <code>argilla-server</code> dependency defined <a href=
 <ul>
 <li>Added bulk annotation by filter criteria. (<a href="https://github.com/argilla-io/argilla/pull/4516">#4516</a>)</li>
 <li>Automatically fetch new datasets on focus tab. (<a href="https://github.com/argilla-io/argilla/pull/4514">#4514</a>)</li>
-<li>API v1 responses returning <code>Record</code> schema now always include <code>dataset_id</code> as attribute. (<a href="https://github.com/argilla-io/argilla/pull/4482">#4482</a>)</li>
-<li>API v1 responses returning <code>Response</code> schema now always include <code>record_id</code> as attribute. (<a href="https://github.com/argilla-io/argilla/pull/4482">#4482</a>)</li>
-<li>API v1 responses returning <code>Question</code> schema now always include <code>dataset_id</code> attribute. (<a href="https://github.com/argilla-io/argilla/pull/4487">#4487</a>)</li>
-<li>API v1 responses returning <code>Field</code> schema now always include <code>dataset_id</code> attribute. (<a href="https://github.com/argilla-io/argilla/pull/4488">#4488</a>)</li>
-<li>API v1 responses returning <code>MetadataProperty</code> schema now always include <code>dataset_id</code> attribute. (<a href="https://github.com/argilla-io/argilla/pull/4489">#4489</a>)</li>
-<li>API v1 responses returning <code>VectorSettings</code> schema now always include <code>dataset_id</code> attribute. (<a href="https://github.com/argilla-io/argilla/pull/4490">#4490</a>)</li>
+<li><abbr title="Application Programming Interface.">API</abbr> v1 responses returning <code>Record</code> schema now always include <code>dataset_id</code> as attribute. (<a href="https://github.com/argilla-io/argilla/pull/4482">#4482</a>)</li>
+<li><abbr title="Application Programming Interface.">API</abbr> v1 responses returning <code>Response</code> schema now always include <code>record_id</code> as attribute. (<a href="https://github.com/argilla-io/argilla/pull/4482">#4482</a>)</li>
+<li><abbr title="Application Programming Interface.">API</abbr> v1 responses returning <code>Question</code> schema now always include <code>dataset_id</code> attribute. (<a href="https://github.com/argilla-io/argilla/pull/4487">#4487</a>)</li>
+<li><abbr title="Application Programming Interface.">API</abbr> v1 responses returning <code>Field</code> schema now always include <code>dataset_id</code> attribute. (<a href="https://github.com/argilla-io/argilla/pull/4488">#4488</a>)</li>
+<li><abbr title="Application Programming Interface.">API</abbr> v1 responses returning <code>MetadataProperty</code> schema now always include <code>dataset_id</code> attribute. (<a href="https://github.com/argilla-io/argilla/pull/4489">#4489</a>)</li>
+<li><abbr title="Application Programming Interface.">API</abbr> v1 responses returning <code>VectorSettings</code> schema now always include <code>dataset_id</code> attribute. (<a href="https://github.com/argilla-io/argilla/pull/4490">#4490</a>)</li>
 <li>Added <code>pdf_to_html</code> function to <code>.html_utils</code> module that convert PDFs to dataURL to be able to render them in tha Argilla UI. (<a href="https://github.com/argilla-io/argilla/issues/4481#issuecomment-1903695755">#4481</a>)</li>
 <li>Added <code>ARGILLA_AUTH_SECRET_KEY</code> environment variable. (<a href="https://github.com/argilla-io/argilla/pull/4539">#4539</a>)</li>
 <li>Added <code>ARGILLA_AUTH_ALGORITHM</code> environment variable. (<a href="https://github.com/argilla-io/argilla/pull/4539">#4539</a>)</li>
@@ -5690,7 +5711,7 @@ The package is using the <code>argilla-server</code> dependency defined <a href=
 </ul>
 <h3 id="removed_1">Removed<a class="headerlink" href="#removed_1" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Remove sending <code>Authorization</code> header from python SDK requests. (<a href="https://github.com/argilla-io/argilla/pull/4535">#4535</a>)</li>
+<li>Remove sending <code>Authorization</code> header from python <abbr title="Software Development Kit.">SDK</abbr> requests. (<a href="https://github.com/argilla-io/argilla/pull/4535">#4535</a>)</li>
 </ul>
 <h3 id="fixed_7">Fixed<a class="headerlink" href="#fixed_7" title="Permanent link">&para;</a></h3>
 <ul>
@@ -5702,7 +5723,7 @@ The package is using the <code>argilla-server</code> dependency defined <a href=
 <li>Added Bulk annotation support. (<a href="https://github.com/argilla-io/argilla/pull/4333">#4333</a>)</li>
 <li>Restore filters from feedback dataset settings. ([#4461])(https://github.com/argilla-io/argilla/pull/4461)</li>
 <li>Warning on feedback dataset settings when leaving page with unsaved changes. (<a href="https://github.com/argilla-io/argilla/pull/4461">#4461</a>)</li>
-<li>Added pydantic v2 support using the python SDK. (<a href="https://github.com/argilla-io/argilla/pull/4459">#4459</a>)</li>
+<li>Added pydantic v2 support using the python <abbr title="Software Development Kit.">SDK</abbr>. (<a href="https://github.com/argilla-io/argilla/pull/4459">#4459</a>)</li>
 <li>Added <code>vector_settings</code> to the <code>__repr__</code> method of the <code>FeedbackDataset</code> and <code>RemoteFeedbackDataset</code>. (<a href="https://github.com/argilla-io/argilla/pull/4454">#4454</a>)</li>
 <li>Added integration for <code>sentence-transformers</code> using <code>SentenceTransformersExtractor</code> to configure <code>vector_settings</code> in <code>FeedbackDataset</code> and <code>FeedbackRecord</code>. (<a href="https://github.com/argilla-io/argilla/pull/4454">#4454</a>)</li>
 </ul>
@@ -5736,7 +5757,7 @@ The package is using the <code>argilla-server</code> dependency defined <a href=
 <li>Added integration for <code>textdescriptives</code> using <code>TextDescriptivesExtractor</code> to configure <code>metadata_properties</code> in <code>FeedbackDataset</code> and <code>FeedbackRecord</code>. (<a href="https://github.com/argilla-io/argilla/pull/4400">#4400</a>). Contributed by @m-newhauser</li>
 <li>Added <code>POST /api/v1/me/responses/bulk</code> endpoint to create responses in bulk for current user. (<a href="https://github.com/argilla-io/argilla/pull/4380">#4380</a>)</li>
 <li>Added list support for term metadata properties. (Closes <a href="https://github.com/argilla-io/argilla/issues/4359">#4359</a>)</li>
-<li>Added new CLI task to reindex datasets and records into the search engine. (<a href="https://github.com/argilla-io/argilla/pull/4404">#4404</a>)</li>
+<li>Added new <abbr title="Command Line Interface.">CLI</abbr> task to reindex datasets and records into the search engine. (<a href="https://github.com/argilla-io/argilla/pull/4404">#4404</a>)</li>
 <li>Added <code>httpx_extra_kwargs</code> argument to <code>rg.init</code> and <code>Argilla</code> to allow passing extra arguments to <code>httpx.Client</code> used by <code>Argilla</code>. (<a href="https://github.com/argilla-io/argilla/pull/4441">#4440</a>)</li>
 <li>Added <code>ResponseStatusFilter</code> enum in <code>__init__</code> imports of Argilla (<a href="https://github.com/argilla-io/argilla/pull/4463">#4118</a>). Contributed by @Piyush-Kumar-Ghosh.</li>
 </ul>
@@ -5774,7 +5795,7 @@ The package is using the <code>argilla-server</code> dependency defined <a href=
 <li>Fixed error in <code>ArgillaTrainer</code>, when training for <code>sentence-similarity</code> it didn't work with a list of values per record (<a href="https://github.com/argilla-io/argilla/pull/4211">#4211</a>)</li>
 <li>Fixed error in the unification strategy for <code>RankingQuestion</code> (<a href="https://github.com/argilla-io/argilla/pull/4295">#4295</a>)</li>
 <li>Fixed <code>TextClassificationSettings.labels_schema</code> order was not being preserved. Closes <a href="https://github.com/argilla-io/argilla/issues/3828">#3828</a> (<a href="https://github.com/argilla-io/argilla/pull/4332">#4332</a>)</li>
-<li>Fixed error when requesting non-existing API endpoints. Closes <a href="https://github.com/argilla-io/argilla/issues/4073">#4073</a> (<a href="https://github.com/argilla-io/argilla/pull/4325">#4325</a>)</li>
+<li>Fixed error when requesting non-existing <abbr title="Application Programming Interface.">API</abbr> endpoints. Closes <a href="https://github.com/argilla-io/argilla/issues/4073">#4073</a> (<a href="https://github.com/argilla-io/argilla/pull/4325">#4325</a>)</li>
 <li>Fixed error when passing <code>draft</code> responses to create records endpoint. (<a href="https://github.com/argilla-io/argilla/pull/4354">#4354</a>)</li>
 </ul>
 <h3 id="changed_6">Changed<a class="headerlink" href="#changed_6" title="Permanent link">&para;</a></h3>
@@ -5863,7 +5884,7 @@ The package is using the <code>argilla-server</code> dependency defined <a href=
 <li>Added fields <code>inserted_at</code> and <code>updated_at</code> in <code>RemoteResponseSchema</code>. (<a href="https://github.com/argilla-io/argilla/pull/3822">#3822</a>)</li>
 <li>Added support for <code>sort_by</code> for <code>RemoteFeedbackDataset</code> i.e. a <code>FeedbackDataset</code> uploaded to Argilla. (<a href="https://github.com/argilla-io/argilla/pull/3925">#3925</a>)</li>
 <li>Added <code>metadata_properties</code> support for both <code>push_to_huggingface</code> and <code>from_huggingface</code>. (<a href="https://github.com/argilla-io/argilla/pull/3947">#3947</a>)</li>
-<li>Add support for update records (<code>metadata</code>) from Python SDK. (<a href="https://github.com/argilla-io/argilla/pull/3946">#3946</a>)</li>
+<li>Add support for update records (<code>metadata</code>) from Python <abbr title="Software Development Kit.">SDK</abbr>. (<a href="https://github.com/argilla-io/argilla/pull/3946">#3946</a>)</li>
 <li>Added <code>delete_metadata_properties</code> method to delete metadata properties. (<a href="https://github.com/argilla-io/argilla/pull/3932">#3932</a>)</li>
 <li>Added <code>update_metadata_properties</code> method to update <code>metadata_properties</code>. (<a href="https://github.com/argilla-io/argilla/pull/3961">#3961</a>)</li>
 <li>Added automatic model card generation through <code>ArgillaTrainer.save</code> (<a href="https://github.com/argilla-io/argilla/pull/3857">#3857</a>)</li>
@@ -5877,7 +5898,7 @@ The package is using the <code>argilla-server</code> dependency defined <a href=
 <li>Implemented <code>__len__</code> method for filtered datasets to return the number of records matching the provided filters. (<a href="https://github.com/argilla-io/argilla/pull/3916">#3916</a>)</li>
 <li>Increase the default max result window for Elasticsearch created for Feedback datasets. (<a href="https://github.com/argilla-io/argilla/pull/">#3929</a>)</li>
 <li>Force elastic index refresh after records creation. (<a href="https://github.com/argilla-io/argilla/pull/">#3929</a>)</li>
-<li>Validate metadata fields for filtering and sorting in the Python SDK. (<a href="https://github.com/argilla-io/argilla/pull/3993">#3993</a>)</li>
+<li>Validate metadata fields for filtering and sorting in the Python <abbr title="Software Development Kit.">SDK</abbr>. (<a href="https://github.com/argilla-io/argilla/pull/3993">#3993</a>)</li>
 <li>Using metadata property name instead of id for indexing data in search engine index. (<a href="https://github.com/argilla-io/argilla/pull/3994">#3994</a>)</li>
 </ul>
 <h3 id="fixed_12">Fixed<a class="headerlink" href="#fixed_12" title="Permanent link">&para;</a></h3>
@@ -5896,7 +5917,7 @@ The package is using the <code>argilla-server</code> dependency defined <a href=
 <li>Updated <code>Dockerfile</code> to use multi stage build (<a href="https://github.com/argilla-io/argilla/pull/3221">#3221</a> and <a href="https://github.com/argilla-io/argilla/pull/3793">#3793</a>).</li>
 <li>Updated active learning for text classification notebooks to use the most recent small-text version (<a href="https://github.com/argilla-io/argilla/pull/3831">#3831</a>).</li>
 <li>Changed argilla dataset name in the active learning for text classification notebooks to be consistent with the default names in the huggingface spaces (<a href="https://github.com/argilla-io/argilla/pull/3831">#3831</a>).</li>
-<li>FeedbackDataset API methods have been aligned to be accessible through the several implementations (<a href="https://github.com/argilla-io/argilla/pull/3937">#3937</a>).</li>
+<li>FeedbackDataset <abbr title="Application Programming Interface.">API</abbr> methods have been aligned to be accessible through the several implementations (<a href="https://github.com/argilla-io/argilla/pull/3937">#3937</a>).</li>
 <li>The <code>unify_responses</code> support for remote datasets (<a href="https://github.com/argilla-io/argilla/pull/3937">#3937</a>).</li>
 </ul>
 <h3 id="fixed_13">Fixed<a class="headerlink" href="#fixed_13" title="Permanent link">&para;</a></h3>
@@ -5941,19 +5962,19 @@ The package is using the <code>argilla-server</code> dependency defined <a href=
 <li>Added handling <code>PermissionError</code> when executing a command with a logged in user with not enough permissions (<a href="https://github.com/argilla-io/argilla/pull/3717">#3717</a>).</li>
 <li>Added <code>workspaces add-user</code> command to add a user to workspace (<a href="https://github.com/argilla-io/argilla/pull/3712">#3712</a>).</li>
 <li>Added <code>workspace_id</code> param to <code>GET /api/v1/me/datasets</code> endpoint (<a href="https://github.com/argilla-io/argilla/pull/3727">#3727</a>).</li>
-<li>Added <code>workspace_id</code> arg to <code>list_datasets</code> in the Python SDK (<a href="https://github.com/argilla-io/argilla/pull/3727">#3727</a>).</li>
-<li>Added <code>argilla</code> script that allows to execute Argilla CLI using the <code>argilla</code> command (<a href="https://github.com/argilla-io/argilla/pull/3730">#3730</a>).</li>
+<li>Added <code>workspace_id</code> arg to <code>list_datasets</code> in the Python <abbr title="Software Development Kit.">SDK</abbr> (<a href="https://github.com/argilla-io/argilla/pull/3727">#3727</a>).</li>
+<li>Added <code>argilla</code> script that allows to execute Argilla <abbr title="Command Line Interface.">CLI</abbr> using the <code>argilla</code> command (<a href="https://github.com/argilla-io/argilla/pull/3730">#3730</a>).</li>
 <li>Added support for passing already initialized <code>model</code> and <code>tokenizer</code> instances to the <code>ArgillaTrainer</code> (<a href="https://github.com/argilla-io/argilla/pull/3751">#3751</a>)</li>
 <li>Added <code>server_info</code> function to check the Argilla server information (also accessible via <code>rg.server_info</code>) (<a href="https://github.com/argilla-io/argilla/issues/3772">#3772</a>).</li>
 </ul>
 <h3 id="changed_10">Changed<a class="headerlink" href="#changed_10" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Move <code>database</code> commands under <code>server</code> group of commands (<a href="https://github.com/argilla-io/argilla/pull/3710">#3710</a>)</li>
-<li><code>server</code> commands only included in the CLI app when <code>server</code> extra requirements are installed (<a href="https://github.com/argilla-io/argilla/pull/3710">#3710</a>).</li>
+<li><code>server</code> commands only included in the <abbr title="Command Line Interface.">CLI</abbr> app when <code>server</code> extra requirements are installed (<a href="https://github.com/argilla-io/argilla/pull/3710">#3710</a>).</li>
 <li>Updated <code>PUT /api/v1/responses/{response_id}</code> to replace <code>values</code> stored with received <code>values</code> in request (<a href="https://github.com/argilla-io/argilla/pull/3711">#3711</a>).</li>
 <li>Display a <code>UserWarning</code> when the <code>user_id</code> in <code>Workspace.add_user</code> and <code>Workspace.delete_user</code> is the ID of an user with the owner role as they don't require explicit permissions (<a href="https://github.com/argilla-io/argilla/issues/3716">#3716</a>).</li>
 <li>Rename <code>tasks</code> sub-package to <code>cli</code> (<a href="https://github.com/argilla-io/argilla/pull/3723">#3723</a>).</li>
-<li>Changed <code>argilla database</code> command in the CLI to now be accessed via <code>argilla server database</code>, to be deprecated in the upcoming release (<a href="https://github.com/argilla-io/argilla/pull/3754">#3754</a>).</li>
+<li>Changed <code>argilla database</code> command in the <abbr title="Command Line Interface.">CLI</abbr> to now be accessed via <code>argilla server database</code>, to be deprecated in the upcoming release (<a href="https://github.com/argilla-io/argilla/pull/3754">#3754</a>).</li>
 <li>Changed <code>visible_options</code> (of label and multi label selection questions) validation in the backend to check that the provided value is greater or equal than/to 3 and less or equal than/to the number of provided options (<a href="https://github.com/argilla-io/argilla/pull/3773">#3773</a>).</li>
 </ul>
 <h3 id="fixed_14">Fixed<a class="headerlink" href="#fixed_14" title="Permanent link">&para;</a></h3>
@@ -6002,7 +6023,7 @@ The package is using the <code>argilla-server</code> dependency defined <a href=
 <li>Updated <code>RemoteFeedbackDataset.delete_records</code> to use batch delete records endpoint (<a href="https://github.com/argilla-io/argilla/pull/3580">#3580</a>).</li>
 <li>Included <code>allowed_for_roles</code> for some <code>RemoteFeedbackDataset</code>, <code>RemoteFeedbackRecords</code>, and <code>RemoteFeedbackRecord</code> methods that are only allowed for users with roles <code>owner</code> and <code>admin</code> (<a href="https://github.com/argilla-io/argilla/pull/3601">#3601</a>).</li>
 <li>Renamed <code>ArgillaToFromMixin</code> to <code>ArgillaMixin</code> (<a href="https://github.com/argilla-io/argilla/pull/3619">#3619</a>).</li>
-<li>Move <code>users</code> CLI app under <code>database</code> CLI app (<a href="https://github.com/argilla-io/argilla/pull/3593">#3593</a>).</li>
+<li>Move <code>users</code> <abbr title="Command Line Interface.">CLI</abbr> app under <code>database</code> <abbr title="Command Line Interface.">CLI</abbr> app (<a href="https://github.com/argilla-io/argilla/pull/3593">#3593</a>).</li>
 <li>Move server <code>Enum</code> classes to <code>argilla.server.enums</code> module (<a href="https://github.com/argilla-io/argilla/pull/3620">#3620</a>).</li>
 </ul>
 <h3 id="fixed_16">Fixed<a class="headerlink" href="#fixed_16" title="Permanent link">&para;</a></h3>
@@ -6046,7 +6067,7 @@ The package is using the <code>argilla-server</code> dependency defined <a href=
 <li>Improved efficiency of weak labeling when dataset contains vectors (<a href="https://github.com/argilla-io/argilla/pull/3444">#3444</a>).</li>
 <li>Added <code>ArgillaDatasetMixin</code> to detach the Argilla-related functionality from the <code>FeedbackDataset</code> (<a href="https://github.com/argilla-io/argilla/pull/3427">#3427</a>)</li>
 <li>Moved <code>FeedbackDataset</code>-related <code>pydantic.BaseModel</code> schemas to <code>argilla.client.feedback.schemas</code> instead, to be better structured and more scalable and maintainable (<a href="https://github.com/argilla-io/argilla/pull/3427">#3427</a>)</li>
-<li>Update CLI to use database async connection (<a href="https://github.com/argilla-io/argilla/pull/3450">#3450</a>).</li>
+<li>Update <abbr title="Command Line Interface.">CLI</abbr> to use database async connection (<a href="https://github.com/argilla-io/argilla/pull/3450">#3450</a>).</li>
 <li>Limit rating questions values to the positive range [1, 10] (<a href="https://github.com/argilla-io/argilla/issues/3451">#3451</a>).</li>
 <li>Updated <code>POST /api/users</code> endpoint to be able to provide a list of workspace names to which the user should be linked to (<a href="https://github.com/argilla-io/argilla/pull/3462">#3462</a>).</li>
 <li>Updated Python client <code>User.create</code> method to be able to provide a list of workspace names to which the user should be linked to (<a href="https://github.com/argilla-io/argilla/pull/3462">#3462</a>).</li>
@@ -6093,13 +6114,13 @@ The package is using the <code>argilla-server</code> dependency defined <a href=
 <ul>
 <li>Added <code>GET /api/v1/users/{user_id}/workspaces</code> endpoint to list the workspaces to which a user belongs (<a href="https://github.com/argilla-io/argilla/pull/3308">#3308</a> and <a href="https://github.com/argilla-io/argilla/pull/3343">#3343</a>).</li>
 <li>Added <code>HuggingFaceDatasetMixin</code> for internal usage, to detach the <code>FeedbackDataset</code> integrations from the class itself, and use Mixins instead (<a href="https://github.com/argilla-io/argilla/pull/3326">#3326</a>).</li>
-<li>Added <code>GET /api/v1/records/{record_id}/suggestions</code> API endpoint to get the list of suggestions for the responses associated to a record (<a href="https://github.com/argilla-io/argilla/pull/3304">#3304</a>).</li>
-<li>Added <code>POST /api/v1/records/{record_id}/suggestions</code> API endpoint to create a suggestion for a response associated to a record (<a href="https://github.com/argilla-io/argilla/pull/3304">#3304</a>).</li>
+<li>Added <code>GET /api/v1/records/{record_id}/suggestions</code> <abbr title="Application Programming Interface.">API</abbr> endpoint to get the list of suggestions for the responses associated to a record (<a href="https://github.com/argilla-io/argilla/pull/3304">#3304</a>).</li>
+<li>Added <code>POST /api/v1/records/{record_id}/suggestions</code> <abbr title="Application Programming Interface.">API</abbr> endpoint to create a suggestion for a response associated to a record (<a href="https://github.com/argilla-io/argilla/pull/3304">#3304</a>).</li>
 <li>Added support for <code>RankingQuestionStrategy</code>, <code>RankingQuestionUnification</code> and the <code>.for_text_classification</code> method for the <code>TrainingTaskMapping</code> (<a href="https://github.com/argilla-io/argilla/pull/3364">#3364</a>)</li>
-<li>Added <code>PUT /api/v1/records/{record_id}/suggestions</code> API endpoint to create or update a suggestion for a response associated to a record (<a href="https://github.com/argilla-io/argilla/pull/3304">#3304</a> &amp; <a href="https://github.com/argilla-io/argilla/pull/3391">3391</a>).</li>
+<li>Added <code>PUT /api/v1/records/{record_id}/suggestions</code> <abbr title="Application Programming Interface.">API</abbr> endpoint to create or update a suggestion for a response associated to a record (<a href="https://github.com/argilla-io/argilla/pull/3304">#3304</a> &amp; <a href="https://github.com/argilla-io/argilla/pull/3391">3391</a>).</li>
 <li>Added <code>suggestions</code> attribute to <code>FeedbackRecord</code>, and allow adding and retrieving suggestions from the Python client (<a href="https://github.com/argilla-io/argilla/pull/3370">#3370</a>)</li>
 <li>Added <code>allowed_for_roles</code> Python decorator to check whether the current user has the required role to access the decorated function/method for <code>User</code> and <code>Workspace</code> (<a href="https://github.com/argilla-io/argilla/pull/3383">#3383</a>)</li>
-<li>Added API and Python Client support for workspace deletion (Closes <a href="https://github.com/argilla-io/argilla/issues/3260">#3260</a>)</li>
+<li>Added <abbr title="Application Programming Interface.">API</abbr> and Python Client support for workspace deletion (Closes <a href="https://github.com/argilla-io/argilla/issues/3260">#3260</a>)</li>
 <li>Added <code>GET /api/v1/me/workspaces</code> endpoint to list the workspaces of the current active user (<a href="https://github.com/argilla-io/argilla/pull/3390">#3390</a>)</li>
 </ul>
 <h3 id="changed_13">Changed<a class="headerlink" href="#changed_13" title="Permanent link">&para;</a></h3>
@@ -6139,7 +6160,7 @@ The package is using the <code>argilla-server</code> dependency defined <a href=
 <h2 id="1120"><a href="https://github.com/argilla-io/argilla/compare/v1.11.0...v1.12.0">1.12.0</a><a class="headerlink" href="#1120" title="Permanent link">&para;</a></h2>
 <h3 id="added_17">Added<a class="headerlink" href="#added_17" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Added <code>RankingQuestionSettings</code> class allowing to create ranking questions in the API using <code>POST /api/v1/datasets/{dataset_id}/questions</code> endpoint (<a href="https://github.com/argilla-io/argilla/pull/3232">#3232</a>)</li>
+<li>Added <code>RankingQuestionSettings</code> class allowing to create ranking questions in the <abbr title="Application Programming Interface.">API</abbr> using <code>POST /api/v1/datasets/{dataset_id}/questions</code> endpoint (<a href="https://github.com/argilla-io/argilla/pull/3232">#3232</a>)</li>
 <li>Added <code>RankingQuestion</code> in the Python client to create ranking questions (<a href="https://github.com/argilla-io/argilla/issues/3275">#3275</a>).</li>
 <li>Added <code>Ranking</code> component in feedback task question form (<a href="https://github.com/argilla-io/argilla/pull/3177">#3177</a> &amp; <a href="https://github.com/argilla-io/argilla/pull/3246">#3246</a>).</li>
 <li>Added <code>FeedbackDataset.prepare_for_training</code> method for generaring a framework-specific dataset with the responses provided for <code>RatingQuestion</code>, <code>LabelQuestion</code> and <code>MultiLabelQuestion</code> (<a href="https://github.com/argilla-io/argilla/pull/3151">#3151</a>).</li>
@@ -6209,7 +6230,7 @@ The package is using the <code>argilla-server</code> dependency defined <a href=
 </ul>
 <h3 id="fixed_27">Fixed<a class="headerlink" href="#fixed_27" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Replaced Enum for string value in URLs for client API calls (Closes <a href="https://github.com/argilla-io/argilla/issues/3149">#3149</a>)</li>
+<li>Replaced Enum for string value in URLs for client <abbr title="Application Programming Interface.">API</abbr> calls (Closes <a href="https://github.com/argilla-io/argilla/issues/3149">#3149</a>)</li>
 <li>Resolve breaking issue with <code>ArgillaSpanMarkerTrainer</code> for Named Entity Recognition with <code>span_marker</code> v1.1.x onwards.</li>
 <li>Move <code>ArgillaDatasetCard</code> import under <code>@requires_version</code> decorator, so that the <code>ImportError</code> on <code>huggingface_hub</code> is handled properly (<a href="https://github.com/argilla-io/argilla/pull/3174">#3174</a>)</li>
 <li>Allow flow <code>FeedbackDataset.from_argilla</code> -&gt; <code>FeedbackDataset.push_to_argilla</code> under different dataset names and/or workspaces (<a href="https://github.com/argilla-io/argilla/issues/3192">#3192</a>)</li>
@@ -6225,8 +6246,8 @@ The package is using the <code>argilla-server</code> dependency defined <a href=
 <li>Added boolean <code>use_markdown</code> property to <code>TextFieldSettings</code> model.</li>
 <li>Added boolean <code>use_markdown</code> property to <code>TextQuestionSettings</code> model.</li>
 <li>Added new status <code>draft</code> for the <code>Response</code> model.</li>
-<li>Added <code>LabelSelectionQuestionSettings</code> class allowing to create label selection (single-choice) questions in the API (<a href="https://github.com/argilla-io/argilla/pull/3005">#3005</a>)</li>
-<li>Added <code>MultiLabelSelectionQuestionSettings</code> class allowing to create multi-label selection (multi-choice) questions in the API (<a href="https://github.com/argilla-io/argilla/pull/3010">#3010</a>).</li>
+<li>Added <code>LabelSelectionQuestionSettings</code> class allowing to create label selection (single-choice) questions in the <abbr title="Application Programming Interface.">API</abbr> (<a href="https://github.com/argilla-io/argilla/pull/3005">#3005</a>)</li>
+<li>Added <code>MultiLabelSelectionQuestionSettings</code> class allowing to create multi-label selection (multi-choice) questions in the <abbr title="Application Programming Interface.">API</abbr> (<a href="https://github.com/argilla-io/argilla/pull/3010">#3010</a>).</li>
 <li>Added <code>POST /api/v1/me/datasets/{dataset_id}/records/search</code> endpoint (<a href="https://github.com/argilla-io/argilla/pull/3068">#3068</a>).</li>
 <li>Added new components in feedback task Question form: MultiLabel (<a href="https://github.com/argilla-io/argilla/pull/3064">#3064</a>) and SingleLabel (<a href="https://github.com/argilla-io/argilla/pull/3016">#3016</a>).</li>
 <li>Added docstrings to the <code>pydantic.BaseModel</code>s defined at <code>argilla/client/feedback/schemas.py</code> (<a href="https://github.com/argilla-io/argilla/pull/3137">#3137</a>)</li>
@@ -6235,8 +6256,8 @@ The package is using the <code>argilla-server</code> dependency defined <a href=
 <h3 id="changed_17">Changed<a class="headerlink" href="#changed_17" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Updated <code>GET /api/v1/me/datasets/:dataset_id/metrics</code> output payload to include the count of responses with <code>draft</code> status.</li>
-<li>Added <code>LabelSelectionQuestionSettings</code> class allowing to create label selection (single-choice) questions in the API.</li>
-<li>Added <code>MultiLabelSelectionQuestionSettings</code> class allowing to create multi-label selection (multi-choice) questions in the API.</li>
+<li>Added <code>LabelSelectionQuestionSettings</code> class allowing to create label selection (single-choice) questions in the <abbr title="Application Programming Interface.">API</abbr>.</li>
+<li>Added <code>MultiLabelSelectionQuestionSettings</code> class allowing to create multi-label selection (multi-choice) questions in the <abbr title="Application Programming Interface.">API</abbr>.</li>
 <li>Database setup for unit tests. Now the unit tests use a different database than the one used by the local Argilla server (Closes <a href="https://github.com/argilla-io/argilla/issues/2987">#2987</a>).</li>
 <li>Updated <code>alembic</code> setup to be able to autogenerate revision/migration scripts using SQLAlchemy metadata from Argilla server models (<a href="https://github.com/argilla-io/argilla/pull/3044">#3044</a>)</li>
 <li>Improved <code>DatasetCard</code> generation on <code>FeedbackDataset.push_to_huggingface</code> when <code>generate_card=True</code>, following the official HuggingFace Hub template, but suited to <code>FeedbackDataset</code>s from Argilla (<a href="https://github.com/argilla-io/argilla/pull/3100">#3110</a>)</li>
@@ -6309,7 +6330,7 @@ The package is using the <code>argilla-server</code> dependency defined <a href=
 <li>Added <code>prepare_for_training</code> for <code>openai</code> (<a href="https://github.com/argilla-io/argilla/issues/2658">#2658</a>)</li>
 <li>Added <code>ArgillaOpenAITrainer</code> (<a href="https://github.com/argilla-io/argilla/issues/2659">#2659</a>)</li>
 <li>Added <code>ArgillaSpanMarkerTrainer</code> for Named Entity Recognition (<a href="https://github.com/argilla-io/argilla/pull/2693">#2693</a>)</li>
-<li>Added <code>ArgillaTrainer</code> CLI support. Closes (<a href="https://github.com/argilla-io/argilla/issues/2809">#2809</a>)</li>
+<li>Added <code>ArgillaTrainer</code> <abbr title="Command Line Interface.">CLI</abbr> support. Closes (<a href="https://github.com/argilla-io/argilla/issues/2809">#2809</a>)</li>
 </ul>
 <h3 id="fixes_1">Fixes<a class="headerlink" href="#fixes_1" title="Permanent link">&para;</a></h3>
 <ul>
@@ -6319,7 +6340,7 @@ The package is using the <code>argilla-server</code> dependency defined <a href=
 <ul>
 <li>Argilla quickstart image dependencies are externalized into <code>quickstart.requirements.txt</code>. See <a href="https://github.com/argilla-io/argilla/pull/2666">#2666</a></li>
 <li>bulk endpoints will upsert data when record <code>id</code> is present. Closes <a href="https://github.com/argilla-io/argilla/issues/2535">#2535</a></li>
-<li>moved from <code>click</code> to <code>typer</code> CLI support. Closes (<a href="https://github.com/argilla-io/argilla/issues/2815">#2815</a>)</li>
+<li>moved from <code>click</code> to <code>typer</code> <abbr title="Command Line Interface.">CLI</abbr> support. Closes (<a href="https://github.com/argilla-io/argilla/issues/2815">#2815</a>)</li>
 <li>Argilla server docker image is built with PostgreSQL support. Closes <a href="https://github.com/argilla-io/argilla/issues/2686">#2686</a></li>
 <li>The <code>rg.log</code> computes all batches and raise an error for all failed batches.</li>
 <li>The default batch size for <code>rg.log</code> is now 100.</li>
@@ -6362,7 +6383,7 @@ The package is using the <code>argilla-server</code> dependency defined <a href=
 <li><code>ARGILLA_USERS_DB_FILE</code> environment variable now it's only used to migrate users from YAML file to database (<a href="https://github.com/argilla-io/argilla/issues/2564">#2564</a>).</li>
 <li><code>full_name</code> user field is now deprecated and <code>first_name</code> and <code>last_name</code> should be used instead (<a href="https://github.com/argilla-io/argilla/issues/2564">#2564</a>).</li>
 <li><code>password</code> user field now requires a minimum of <code>8</code> and a maximum of <code>100</code> characters in size (<a href="https://github.com/argilla-io/argilla/issues/2564">#2564</a>).</li>
-<li><code>quickstart.Dockerfile</code> image default users from <code>team</code> and <code>argilla</code> to <code>admin</code> and <code>annotator</code> including new passwords and API keys (<a href="https://github.com/argilla-io/argilla/issues/2564">#2564</a>).</li>
+<li><code>quickstart.Dockerfile</code> image default users from <code>team</code> and <code>argilla</code> to <code>admin</code> and <code>annotator</code> including new passwords and <abbr title="Application Programming Interface.">API</abbr> keys (<a href="https://github.com/argilla-io/argilla/issues/2564">#2564</a>).</li>
 <li>Datasets to be managed only by users with <code>admin</code> role (<a href="https://github.com/argilla-io/argilla/issues/2564">#2564</a>).</li>
 <li>The list of rules is now accessible while metrics are computed. Closes<a href="https://github.com/argilla-io/argilla/issues/2117">#2117</a></li>
 <li>Style updates for weak labeling and adding feedback toast when delete rules. See <a href="https://github.com/argilla-io/argilla/pull/2626">#2626</a> and <a href="https://github.com/argilla-io/argilla/pull/2648">#2648</a></li>
@@ -6494,17 +6515,6 @@ The package is using the <code>argilla-server</code> dependency defined <a href=
 </div>
       
         <div class="md-social">
-  
-    
-    
-    
-    
-      
-      
-    
-    <a href="https://github.com/extralit" target="_blank" rel="noopener" title="github.com" class="md-social__link">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
-    </a>
   
     
     
