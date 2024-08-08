@@ -33,7 +33,7 @@ Or, play with the Extralit UI by signing in with your Hugging Face account on th
 
 ## Why use Extralit?
 
-Extralit is a powerful tool designed to helps researchers and data scientists tackle the challenges of processing large volumes of academic papers, ensuring **high-quality data extraction for scientific analysis and meta-studies**. By combining LLMs and advanced ML models with intuitive workflows, Extralit a powerful tool designed to transform unstructured scientific papers into structured, analyzable data. 
+Extralit is designed to helps researchers and data scientists tackle the challenges of processing large volumes of academic papers, ensuring **high-quality data extraction for scientific analysis and meta-studies**. By combining LLMs and advanced ML models with intuitive workflows, Extralit is a powerful tool designed to transform unstructured scientific papers into structured, analyzable data. 
 
 <p style="font-size:20px">Accelerate scientific data extraction</p>
 
