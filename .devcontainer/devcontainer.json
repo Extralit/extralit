@@ -46,9 +46,6 @@
     }
   },
 
-  // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "git submodule update --remote --recursive --init",
-
   // "postCreateCommand": "tilt up",
   "shutdownAction": "stopCompose",
   
