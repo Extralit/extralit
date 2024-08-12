@@ -18,9 +18,9 @@ if not DOCKER_REPO:
 
 
 # Set up the same storage policy for kind as in prod
-if 'kind' in k8s_context():
+if 'kind' in k8s_context() or 'k3d' in k8s_context():
     # Storage policy
-    k8s_yaml('./k8s/kind/tilt-local-dev-kind-storage-policy.yaml')
+    k8s_yaml('examples/deployments/k8s/kind/tilt-local-dev-kind-storage-policy.yaml')
 
 
 # Installing elastic/elasticsearch Helm
@@ -31,8 +31,8 @@ helm_resource(
     chart='elastic/elasticsearch', 
     flags=[
         '--version=8.5.1',
-        '--values=./k8s/helm/elasticsearch-helm.yaml'],
-    deps=['./k8s/helm/elasticsearch-helm.yaml', 'elastic'],
+        '--values=./examples/deployments/k8s/helm/elasticsearch-helm.yaml'],
+    deps=['elastic'],
     port_forwards=['9200'],
     labels=['argilla-server']
 )
@@ -41,20 +41,20 @@ helm_resource(
 # argilla-server is the web backend (FastAPI + SQL database)
 docker_build(
     "{DOCKER_REPO}/extralit-argilla-server".format(DOCKER_REPO=DOCKER_REPO),
-    context='.',
+    context='argilla-server/',
     build_args={'ENV': ENV, 'USERS_DB': USERS_DB},
-    dockerfile='./docker/server/argilla_server.dockerfile',
-    ignore=['k8s/', 'argilla/', '.venv/', '.*', 'src/extralit', 'docker/server/extralit.dockerfile'],
+    dockerfile='argilla-server/docker/server/argilla_server.dockerfile',
+    ignore=['k8s/', 'argilla/', '.venv/', '.*'],
     live_update=[
         # Sync the source code to the container
-        sync('./src/', '/home/argilla/src/'),
-        sync('./docker/server/scripts/start_argilla_server.sh', '/home/argilla/'),
-        sync('./pyproject.toml', '/home/argilla/pyproject.toml'),
+        sync('argilla-server/src/', '/home/argilla/src/'),
+        sync('argilla-server/docker/server/scripts/start_argilla_server.sh', '/home/argilla/'),
+        sync('argilla-server/pyproject.toml', '/home/argilla/pyproject.toml'),
         # Restart the server to pick up code changes
-        run('/bin/bash start_argilla_server.sh', trigger='./docker/server/scripts/start_argilla_server.sh'),
+        run('/bin/bash start_argilla_server.sh', trigger='argilla-server/docker/server/scripts/start_argilla_server.sh'),
     ]
 )
-argilla_server_k8s_yaml = read_yaml_stream('./k8s/argilla-server-deployment.yaml')
+argilla_server_k8s_yaml = read_yaml_stream('examples/deployments/k8s/argilla-server-deployment.yaml')
 for o in argilla_server_k8s_yaml:
     for container in o['spec']['template']['spec']['containers']:
         if container['image'] == 'extralit-argilla-server':
@@ -62,8 +62,8 @@ for o in argilla_server_k8s_yaml:
 
 k8s_yaml([
     encode_yaml_stream(argilla_server_k8s_yaml), 
-    './k8s/argilla-server-service.yaml', 
-    './k8s/argilla-server-ingress.yaml'
+    'examples/deployments/k8s/argilla-server-service.yaml', 
+    'examples/deployments/k8s/argilla-server-ingress.yaml'
     ])
 k8s_resource(
     'argilla-server-deployment',
@@ -71,24 +71,25 @@ k8s_resource(
     port_forwards=['6901:6900' if 'kind' in k8s_context() else '6900'],
     labels=['argilla-server'],
 )
-k8s_yaml(['./k8s/argilla-loadbalancer-service.yaml'])
+k8s_yaml(['examples/deployments/k8s/argilla-loadbalancer-service.yaml'])
 
 
 # PostgreSQL is the database for argilla-server
+helm_repo('bitnami', 'https://charts.bitnami.com/bitnami', labels=['helm'])
 helm_resource(
     name='main-db', 
     chart='bitnami/postgresql', 
     flags=[
         '--version=13.2.0',
-        '--values=./k8s/helm/postgres-helm.yaml'],
-    deps=['./k8s/helm/postgres-helm.yaml'],
+        '--values=examples/deployments/k8s/helm/postgres-helm.yaml'],
+    deps=['examples/deployments/k8s/helm/postgres-helm.yaml'],
     port_forwards=['5433:5432' if 'kind' in k8s_context() else '5432'],
     labels=['argilla-server']
 )
 
 
 # Langfuse Observability server
-k8s_yaml('./k8s/langfuse-deployment.yaml')
+k8s_yaml('examples/deployments/k8s/langfuse-deployment.yaml')
 k8s_resource(
     'langfuse-deployment',
     port_forwards=['4000'],
@@ -96,7 +97,7 @@ k8s_resource(
 )
 
 # # Vector-Admin 
-# k8s_yaml('./k8s/vector-admin-deployment.yaml')
+# k8s_yaml('examples/deployments/k8s/vector-admin-deployment.yaml')
 # k8s_resource(
 #     'vector-admin-deployment',
 #     port_forwards=['3001:3001'],
@@ -111,7 +112,7 @@ k8s_resource(
 #     dockerfile='./docker/services/aim.dockerfile',
 #     only=['./docker/services/'],
 # )
-# aim_server_k8s_yaml = read_yaml_stream('./k8s/aim-server-deployment.yaml')
+# aim_server_k8s_yaml = read_yaml_stream('examples/deployments/k8s/aim-server-deployment.yaml')
 # for o in aim_server_k8s_yaml:
 #     for container in o['spec']['template']['spec']['containers']:
 #         print(container['name'])
@@ -119,7 +120,7 @@ k8s_resource(
 #             container['image'] = "{DOCKER_REPO}/extralit-aim-server".format(DOCKER_REPO=DOCKER_REPO)
 # k8s_yaml([
 #     encode_yaml_stream(aim_server_k8s_yaml), 
-#     './k8s/aim-server-service.yaml', 
+#     'examples/deployments/k8s/aim-server-service.yaml', 
 #     ])
 # k8s_resource(
 #   'aim-deployment',
@@ -131,20 +132,20 @@ k8s_resource(
 # Add the MinIO Helm repository
 # helm_repo('minio', 'https://operator.min.io/', labels=['helm'])
 # Deploy the MinIO operator
-# k8s_yaml('./k8s/minio-tenant.yaml')
+# k8s_yaml('examples/deployments/k8s/minio-tenant.yaml')
 # helm_resource(
 #     name='extralit-minio-operator', 
 #     chart='minio/minio-operator', 
 #     flags=[
 #         '--version=4.3.7',
-#         '--values=./k8s/helm/minio-operator-helm.yaml'],
-#     deps=['./k8s/helm/minio-operator-helm.yaml'],
+#         '--values=examples/deployments/k8s/helm/minio-operator-helm.yaml'],
+#     deps=['examples/deployments/k8s/helm/minio-operator-helm.yaml'],
 #     port_forwards=['9090', '9443'],
 #     labels=['minio']
 # )
 
 # Add the MinIO deployment
-k8s_yaml(['./k8s/minio-dev.yaml', './k8s/minio-standalone-pvc.yaml'])
+k8s_yaml(['examples/deployments/k8s/minio-dev.yaml', 'examples/deployments/k8s/minio-standalone-pvc.yaml'])
 k8s_resource(
   'minio',
   port_forwards=['9000', '9090'],
@@ -159,8 +160,8 @@ helm_resource(
     chart='weaviate/weaviate', 
     flags=[
         '--version=16.8.8',
-        '--values=./k8s/helm/weaviate-helm.yaml'],
-    deps=['./k8s/helm/weaviate-helm.yaml'],
+        '--values=examples/deployments/k8s/helm/weaviate-helm.yaml'],
+    deps=['examples/deployments/k8s/helm/weaviate-helm.yaml'],
     port_forwards=['8080:8080', '50051:50051'],
     labels=['extralit']
 )
@@ -169,25 +170,21 @@ helm_resource(
 # Extralit server
 docker_build(
     "{DOCKER_REPO}/extralit-server".format(DOCKER_REPO=DOCKER_REPO),
-    context='.',
-    dockerfile='./docker/server/extralit.dockerfile',
-    ignore=['k8s/', '.venv/', '.*', 'docker/', 'argilla/frontend/',
-            'src/argilla_server/', '!src/argilla_server/_version.py'],
+    context='argilla/',
+    dockerfile='argilla-server/docker/server/extralit.dockerfile',
+    ignore=['.*', 'argilla-frontend/', 'argilla_server/'],
     live_update=[
         sync('./argilla/', '/home/extralit/argilla/'),
-        sync('./src/', '/home/extralit/src/'),
-        sync('./pyproject.toml', '/home/extralit/pyproject.toml'),
-        run('uv pip install --upgrade -e ".[extraction,llm]"', trigger='./pyproject.toml'),
     ]
 )
-extralit_k8s_yaml = read_yaml_stream('./k8s/extralit-deployment.yaml')
+extralit_k8s_yaml = read_yaml_stream('examples/deployments/k8s/extralit-deployment.yaml')
 for o in extralit_k8s_yaml:
     for container in o['spec']['template']['spec']['containers']:
         if container['name'] == 'extralit-server':
             container['image'] = "{DOCKER_REPO}/extralit-server".format(DOCKER_REPO=DOCKER_REPO)
 k8s_yaml([
     encode_yaml_stream(extralit_k8s_yaml), 
-    './k8s/extralit-storage-service.yaml'
+    'examples/deployments/k8s/extralit-storage-service.yaml'
     ])
 k8s_resource(
     'extralit-server',

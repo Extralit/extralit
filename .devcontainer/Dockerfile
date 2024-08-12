@@ -24,13 +24,8 @@ RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/s
     chmod +x ./kubectl && \
     mv ./kubectl /usr/local/bin/kubectl
 
-# Install kind
-RUN curl -Lo ./kind "https://kind.sigs.k8s.io/dl/v0.11.1/kind-linux-amd64" && \
-    chmod +x ./kind && \
-    mv ./kind /usr/local/bin/kind
-
 # Install ctlptl
-RUN CTLPTL_VERSION="0.8.29" && \
+RUN CTLPTL_VERSION="0.8.31" && \
     curl -fsSL https://github.com/tilt-dev/ctlptl/releases/download/v$CTLPTL_VERSION/ctlptl.$CTLPTL_VERSION.linux.x86_64.tar.gz | \
     tar -xzv -C /usr/local/bin ctlptl
 
