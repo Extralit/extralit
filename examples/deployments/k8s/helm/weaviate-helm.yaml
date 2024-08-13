@@ -107,7 +107,7 @@ clusterDomain: cluster.local.
 # storage.fullnameOverride field set, then the default pvc will not be
 # created, instead the one defined in fullnameOverride will be used
 storage:
-  size: 8Gi
+  size: 1Gi
   storageClassName: "local-path"
 
 # The service controls how weaviate is exposed to the outside world. If you
