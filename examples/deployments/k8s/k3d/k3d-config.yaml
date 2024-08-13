@@ -2,26 +2,14 @@ apiVersion: ctlptl.dev/v1alpha1
 kind: Cluster
 product: k3d
 registry: ctlptl-registry
-k3dV1Alpha4Cluster:
-  name: k3d
-  nodes:
-  - role: control-plane
-    extraMounts:
-    - hostPath: /tmp/k3d-volumes/elasticsearch
-      containerPath: /usr/share/elasticsearch/data
-    - hostPath: /tmp/k3d-volumes/postgresql
-      containerPath: /var/lib/postgresql/data
-    - hostPath: /tmp/k3d-volumes/minio
-      containerPath: /var/lib/minio/data
-    - hostPath: /tmp/k3d-volumes/weaviate
-      containerPath: /var/lib/weaviate/data
-  - role: worker
-    extraMounts:
-    - hostPath: /tmp/k3d-volumes/elasticsearch-worker
-      containerPath: /usr/share/elasticsearch/data
-    - hostPath: /tmp/k3d-volumes/postgresql-worker
-      containerPath: /var/lib/postgresql/data
-    - hostPath: /tmp/k3d-volumes/minio
-      containerPath: /var/lib/minio/data
-    - hostPath: /tmp/k3d-volumes/weaviate
-      containerPath: /var/lib/weaviate/data
+name: k3d-cluster
+k3d:
+  v1alpha5Simple:
+    volumes:
+    - volume: /tmp/k3d-volumes/elasticsearch:/usr/share/elasticsearch/data
+    - volume: /tmp/k3d-volumes/postgresql:/var/lib/postgresql/data
+    - volume: /tmp/k3d-volumes/minio:/var/lib/minio/data
+    - volume: /tmp/k3d-volumes/weaviate:/var/lib/weaviate/data
+    kubeAPI:
+      host: "0.0.0.0"
+      hostPort: "6443"
