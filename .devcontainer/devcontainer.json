@@ -46,9 +46,7 @@
     "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {},
     // Add common utilities and name non-root user.
     "ghcr.io/devcontainers/features/common-utils:2": {
-        "configureZshAsDefaultShell": true
-    },
-    // "docker-in-docker": "latest",
+    }
 
     // "ghcr.io/mamba-org/devcontainer-features/micromamba:1": {
     //   "autoActivate": true,
@@ -61,12 +59,7 @@
   },
 
   // "postCreateCommand": "tilt up",
-
-  "shutdownAction": "stopCompose",
   
-  // Configure tool-specific properties.
-  // "customizations": {},
-
   "hostRequirements": {
     "cpus": 4,
     "memory": "16gb",
