@@ -4,7 +4,7 @@ metadata:
   name: aim-runs
 spec:
   capacity:
-    storage: 5Gi
+    storage: 1Gi
   accessModes:
     - ReadWriteMany
   hostPath:
@@ -22,7 +22,7 @@ spec:
   volumeName: aim-runs
   resources:
     requests:
-      storage: 5Gi
+      storage: 1Gi
 ---
 apiVersion: v1
 kind: Service

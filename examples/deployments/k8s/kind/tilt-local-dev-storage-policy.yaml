@@ -14,7 +14,7 @@ metadata:
     app: elasticsearch-master
 spec:
   capacity:
-    storage: 8Gi  # specify the size of the volume
+    storage: 1Gi  # specify the size of the volume
   volumeMode: Filesystem  # can also be Block
   accessModes:
     - ReadWriteOnce  # The volume can be mounted as read-write by a single node
@@ -39,7 +39,7 @@ metadata:
     app: main-db
 spec:
   capacity:
-    storage: 2Gi  # specify the size of the volume
+    storage: 1Gi  # specify the size of the volume
   volumeMode: Filesystem  # can also be Block
   accessModes:
     - ReadWriteOnce  # The volume can be mounted as read-write by a single node
@@ -64,7 +64,7 @@ metadata:
     app: minio-storage-claim
 spec:
   capacity:
-    storage: 10Gi
+    storage: 1Gi
   volumeMode: Filesystem
   accessModes:
     - ReadWriteOnce
@@ -89,7 +89,7 @@ metadata:
     app: weaviate
 spec:
   capacity:
-    storage: 8Gi
+    storage: 1Gi
   volumeMode: Filesystem
   accessModes:
     - ReadWriteOnce
