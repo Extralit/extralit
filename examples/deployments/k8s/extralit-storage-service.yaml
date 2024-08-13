@@ -21,4 +21,4 @@ spec:
 #   resources:
 #     requests:
 #       storage: 50Gi
-#   storageClassName: k8s-storage-policy
+#   storageClassName: local-path

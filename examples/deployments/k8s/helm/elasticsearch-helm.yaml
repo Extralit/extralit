@@ -116,7 +116,7 @@ networkHost: "0.0.0.0"
 
 volumeClaimTemplate:
   accessModes: ["ReadWriteOnce"]
-  storageClassName: k8s-storage-policy
+  storageClassName: local-path
   resources:
     requests:
       storage: 8Gi

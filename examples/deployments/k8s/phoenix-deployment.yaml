@@ -65,7 +65,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: k8s-storage-policy
+  storageClassName: local-path
   resources:
     requests:
       storage: 2Gi

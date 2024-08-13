@@ -18,7 +18,7 @@ spec:
   volumeMode: Filesystem  # can also be Block
   accessModes:
     - ReadWriteOnce  # The volume can be mounted as read-write by a single node
-  storageClassName: k8s-storage-policy
+  storageClassName: local-path
   persistentVolumeReclaimPolicy: Retain
   local:
     path: "/usr/share/elasticsearch/data"  
@@ -43,7 +43,7 @@ spec:
   volumeMode: Filesystem  # can also be Block
   accessModes:
     - ReadWriteOnce  # The volume can be mounted as read-write by a single node
-  storageClassName: k8s-storage-policy
+  storageClassName: local-path
   persistentVolumeReclaimPolicy: Retain
   local:
     path: "/var/lib/postgresql/data"
@@ -68,7 +68,7 @@ spec:
   volumeMode: Filesystem
   accessModes:
     - ReadWriteOnce
-  storageClassName: k8s-storage-policy
+  storageClassName: local-path
   persistentVolumeReclaimPolicy: Retain
   local:
     path: "/var/lib/minio/data"
@@ -93,7 +93,7 @@ spec:
   volumeMode: Filesystem
   accessModes:
     - ReadWriteOnce
-  storageClassName: k8s-storage-policy
+  storageClassName: local-path
   persistentVolumeReclaimPolicy: Retain
   local:
     path: "/var/lib/weaviate/data"

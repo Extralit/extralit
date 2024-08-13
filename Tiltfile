@@ -18,9 +18,9 @@ if not DOCKER_REPO:
 
 
 # Set up the same storage policy for kind as in prod
-if 'kind' in k8s_context() or 'k3d' in k8s_context():
+if 'kind' in k8s_context():
     # Storage policy
-    k8s_yaml('examples/deployments/k8s/kind/tilt-local-dev-kind-storage-policy.yaml')
+    k8s_yaml('examples/deployments/k8s/kind/tilt-local-dev-storage-policy.yaml')
 
 
 # Installing elastic/elasticsearch Helm
@@ -154,9 +154,9 @@ k8s_resource(
 
 
 # Weaviate vector database
-helm_repo('weaviate-helm', 'https://weaviate.github.io/weaviate-helm', labels=['helm'])
+helm_repo('weaviate', 'https://weaviate.github.io/weaviate-helm', labels=['helm'])
 helm_resource(
-    name='weaviate', 
+    name='weaviate-server', 
     chart='weaviate/weaviate', 
     flags=[
         '--version=16.8.8',
