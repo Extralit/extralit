@@ -39,6 +39,8 @@ helm_resource(
 
 
 # argilla-server is the web backend (FastAPI + SQL database)
+if not local('ls argilla-server/dist/*.whl', quiet=True):
+    local('cd argilla-server && pdm build')
 docker_build(
     "{DOCKER_REPO}/extralit-argilla-server".format(DOCKER_REPO=DOCKER_REPO),
     context='argilla-server/',
@@ -183,7 +185,10 @@ for o in extralit_k8s_yaml:
         if container['name'] == 'extralit-server':
             container['image'] = "{DOCKER_REPO}/extralit-server".format(DOCKER_REPO=DOCKER_REPO)
 
-k8s_yaml([encode_yaml_stream(extralit_k8s_yaml)])
+k8s_yaml([
+    encode_yaml_stream(extralit_k8s_yaml), 
+    'examples/deployments/k8s/extralit-storage-service.yaml'
+    ])
 k8s_resource(
     'extralit-server',
     resource_deps=['minio', 'weaviate'],
