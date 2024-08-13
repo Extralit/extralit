@@ -182,10 +182,8 @@ for o in extralit_k8s_yaml:
     for container in o['spec']['template']['spec']['containers']:
         if container['name'] == 'extralit-server':
             container['image'] = "{DOCKER_REPO}/extralit-server".format(DOCKER_REPO=DOCKER_REPO)
-k8s_yaml([
-    encode_yaml_stream(extralit_k8s_yaml), 
-    'examples/deployments/k8s/extralit-storage-service.yaml'
-    ])
+
+k8s_yaml([encode_yaml_stream(extralit_k8s_yaml)])
 k8s_resource(
     'extralit-server',
     resource_deps=['minio', 'weaviate'],

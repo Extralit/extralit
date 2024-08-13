@@ -43,7 +43,7 @@ spec:
   storageClassName: local-path
   resources:
     requests:
-      storage: 4Gi
+      storage: 1Gi
   volumeName: postgres-pv
 ---
 apiVersion: v1
@@ -52,7 +52,7 @@ metadata:
   name: postgres-pv
 spec:
   capacity:
-    storage: 4Gi  # specify the size of the volume
+    storage: 1Gi  # specify the size of the volume
   volumeMode: Filesystem  # can also be Block
   accessModes:
     - ReadWriteOnce  # The volume can be mounted as read-write by a single node
