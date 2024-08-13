@@ -59,3 +59,12 @@ spec:
     - protocol: TCP
       port: 4000
       targetPort: 3000
+---
+apiVersion: v1
+data:
+  NEXTAUTH_SECRET: UzJjMVRqVlNabFZaTW1jMWRWWm1hSFk1U1RaRU0wMVJTVE5HUm1VMGJubzVlbEYxYzJSSVdtb3daejBL
+  SALT: YkdoNFF6QXdTMnMwVHpJMVVYbFVNVFJVY1c5aFl6aFdjemsyT1hFemFYcDVlWGRxWVZSdVdrVTNRVDBL
+kind: Secret
+metadata:
+  name: langfuse-secrets
+type: Opaque

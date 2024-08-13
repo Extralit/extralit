@@ -9,7 +9,7 @@ spec:
     - ReadWriteMany
   hostPath:
     path: /aim
-  storageClassName: k8s-storage-policy
+  storageClassName: local-path
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -18,7 +18,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteMany
-  storageClassName: k8s-storage-policy
+  storageClassName: local-path
   volumeName: aim-runs
   resources:
     requests:

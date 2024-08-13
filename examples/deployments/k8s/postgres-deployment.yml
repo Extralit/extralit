@@ -40,7 +40,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: k8s-storage-policy
+  storageClassName: local-path
   resources:
     requests:
       storage: 4Gi
@@ -56,5 +56,5 @@ spec:
   volumeMode: Filesystem  # can also be Block
   accessModes:
     - ReadWriteOnce  # The volume can be mounted as read-write by a single node
-  storageClassName: k8s-storage-policy  # name of the StorageClass
+  storageClassName: local-path  # name of the StorageClass
   persistentVolumeReclaimPolicy: Retain  # Retain the volume data when the PVC is deleted

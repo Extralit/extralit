@@ -108,7 +108,7 @@ clusterDomain: cluster.local.
 # created, instead the one defined in fullnameOverride will be used
 storage:
   size: 8Gi
-  storageClassName: "k8s-storage-policy"
+  storageClassName: "local-path"
 
 # The service controls how weaviate is exposed to the outside world. If you
 # don't want a public load balancer, you can also choose 'ClusterIP' to make

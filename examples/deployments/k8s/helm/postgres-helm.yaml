@@ -1,5 +1,5 @@
 global:
-  storageClass: "k8s-storage-policy"
+  storageClass: "local-path"
 
 nameOverride: "main-db"
 fullnameOverride: "main-db"
@@ -8,7 +8,7 @@ fullnameOverride: "main-db"
 postgresql:
   persistence:
     enabled: true
-    storageClass: "k8s-storage-policy"
+    storageClass: "local-path"
     size: 2Gi
   backup:
     size: 1Gi
