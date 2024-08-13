@@ -60,7 +60,7 @@
     }
   },
 
-  // "postCreateCommand": "tilt up",
+  "postCreateCommand": ".devcontainer/setup.sh",
   
   "hostRequirements": {
     "cpus": 4,
