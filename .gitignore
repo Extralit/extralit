@@ -142,3 +142,4 @@ package-lock.json
 
 # App generated files
 argilla-server/src/argilla_server/static
+argilla/site
