@@ -1,5 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@100..600&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Oswald&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&display=swap');
 
 :root {
   --md-text-font: "Inter";
@@ -8,26 +7,28 @@
   --iframe-scale-factor: 0.75;
 }
 
-.md-header-nav__title {
-  font-family: 'Inter', sans-serif;
+.md-tabs__item, .md-nav__item {
+  font-weight: 600;
 }
 
-body {
-  font-family: 'Inter';
-}
+.md-main .md-content {
+  
+  h1, h2, h3, h4, h5, h6 {
+    /* font-family: 'Oswald'; */
+  }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Inter', sans-serif;
-}
+  /* font-family: 'Source Serif 4', serif; */
 
-code, pre {
-  font-family: 'Source Code Pro', monospace;
+  code, pre {
+    /* font-family: 'Source Code Pro', monospace; */
+  }
 }
 
 [data-md-color-scheme="default"] {
   --md-default-bg-color: #fbf7f3;
-  --md-typeset-a-code-color: var(--md-default-fg-color--light);
-  --md-accent-typeset-a-code-color: var(--md-default-fg-color--lighter);
+  /* --md-typeset-a-code-color: var(--md-default-fg-color--light); */
+  /* --md-accent-typeset-a-code-color: var(--md-default-fg-color--lighter); */
+  --md-code-bg-color: #e5e5e5;
   --md-typeset-a-color: #4c5ff4;
   --md-accent-fg-color: #8db49b;
   --md-huggingface-fg-color: #fcf1c7;
@@ -40,10 +41,10 @@ code, pre {
   --md-default-bg-color: #000107;
   --md-primary-fg-color: hsla(var(--md-hue), 15%, 9%, 1);
   --md-primary-fg-color--dark: hsla(var(--md-hue), 15%, 9%, 1);
-  --md-typeset-a-code-color: var(--md-accent-bg-color);
-  --md-accent-typeset-a-code-color: var(--md-default-fg-color);
+  /* --md-typeset-a-code-color: var(--md-accent-bg-color); */
+  /* --md-accent-typeset-a-code-color: var(--md-default-fg-color); */
   --md-typeset-a-color: #8384cc;
-  --md-accent-fg-color: #8db49b;
+  --md-accent-fg-color: #ccee00;
   --md-huggingface-fg-color: #FFD21E30;
   --md-huggingface-accent-color: #FFD21E;
   --md-docker-fg-color: #1e5eff30;
