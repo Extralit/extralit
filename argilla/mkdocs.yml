@@ -14,10 +14,12 @@ extra:
   version:
     provider: mike
   social:
-    - icon: fontawesome/brands/github
-      link: 'https://github.com/extralit'
     - icon: fontawesome/brands/slack
       link: https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ
+  analytics:
+    provider: google
+    property: G-SQHP22W3F6
+
 
 extra_css:
   - stylesheets/extra.css
@@ -137,10 +139,11 @@ nav:
       - Deploy with Hugging Face Spaces: getting_started/how-to-configure-argilla-on-huggingface.md
   - User Guide:
       - user_guide/index.md
-      - Core concepts: user_guide/basic_concepts.md
+      - Core concepts: user_guide/core_concepts.md
       - Data Pipeline:
-        - PDF preprocessing: user_guide/pdf_preprocessing.md
-        - Text and table extraction: user_guide/text_table_extraction.md
+        - Documents import: user_guide/documents_import.md
+        - Schema definition: user_guide/schema_definition.md
+        - Text and table OCR: user_guide/text_table_ocr.md
         - LLM-assisted extraction: user_guide/llm_extraction.md
         - Consensus review: user_guide/consensus_review.md
         - Data validation: user_guide/data_validation.md
@@ -152,7 +155,7 @@ nav:
         - Performing extractions: user_guide/performing_extractions.md
         - Reviewing and validating data: user_guide/review_validate_data.md
       - Advanced Usage:
-        - Customizing extraction schemas: user_guide/customizing_schemas.md
+        - Customizing multiple extraction schemas: user_guide/multi_schemas.md
         - Optimizing LLM performance: user_guide/optimizing_llm_performance.md
         - Using the API: user_guide/using_the_api.md
 
