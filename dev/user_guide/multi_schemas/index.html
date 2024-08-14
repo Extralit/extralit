@@ -6,34 +6,34 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Data-centric tool for AI builders">
+        <meta name="description" content="Learn how to define schemas in Extralit to extract structured data from scientific papers.">
       
       
         <meta name="author" content="Extralit">
       
       
-        <link rel="canonical" href="https://docs.extralit.ai/dev/reference/argilla/settings/vectors/">
+        <link rel="canonical" href="https://docs.extralit.ai/dev/user_guide/multi_schemas/">
       
       
-        <link rel="prev" href="../metadata_property/">
+        <link rel="prev" href="../schema_definition/">
       
       
-        <link rel="next" href="../task_distribution/">
+        <link rel="next" href="../../admin_guide/">
       
       
-      <link rel="icon" href="../../../../assets/favicon.ico">
+      <link rel="icon" href="../../assets/favicon.ico">
       <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.26">
     
     
       
-        <title>Vectors - Extralit Docs</title>
+        <title>Customizing multiple extraction schemas - Extralit Docs</title>
       
     
     
-      <link rel="stylesheet" href="../../../../assets/stylesheets/main.6543a935.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.6543a935.min.css">
       
         
-        <link rel="stylesheet" href="../../../../assets/stylesheets/palette.06af60db.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
       
       
 
@@ -52,17 +52,17 @@
       
     
     
-      <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../../../stylesheets/extra.css">
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
     
-      <link rel="stylesheet" href="../../../../css/ansi-colours.css">
+      <link rel="stylesheet" href="../../css/ansi-colours.css">
     
-      <link rel="stylesheet" href="../../../../css/jupyter-cells.css">
+      <link rel="stylesheet" href="../../css/jupyter-cells.css">
     
-      <link rel="stylesheet" href="../../../../css/pandas-dataframe.css">
+      <link rel="stylesheet" href="../../css/pandas-dataframe.css">
     
-    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
   
@@ -81,11 +81,11 @@
       
         <meta  property="og:type"  content="website" >
       
-        <meta  property="og:title"  content="Vectors - Extralit Docs" >
+        <meta  property="og:title"  content="Customizing multiple extraction schemas - Extralit Docs" >
       
-        <meta  property="og:description"  content="Data-centric tool for AI builders" >
+        <meta  property="og:description"  content="Learn how to define schemas in Extralit to extract structured data from scientific papers." >
       
-        <meta  property="og:image"  content="https://docs.extralit.ai/dev/assets/images/social/reference/argilla/settings/vectors.png" >
+        <meta  property="og:image"  content="https://docs.extralit.ai/dev/assets/images/social/user_guide/multi_schemas.png" >
       
         <meta  property="og:image:type"  content="image/png" >
       
@@ -93,15 +93,15 @@
       
         <meta  property="og:image:height"  content="630" >
       
-        <meta  property="og:url"  content="https://docs.extralit.ai/dev/reference/argilla/settings/vectors/" >
+        <meta  property="og:url"  content="https://docs.extralit.ai/dev/user_guide/multi_schemas/" >
       
         <meta  name="twitter:card"  content="summary_large_image" >
       
-        <meta  name="twitter:title"  content="Vectors - Extralit Docs" >
+        <meta  name="twitter:title"  content="Customizing multiple extraction schemas - Extralit Docs" >
       
-        <meta  name="twitter:description"  content="Data-centric tool for AI builders" >
+        <meta  name="twitter:description"  content="Learn how to define schemas in Extralit to extract structured data from scientific papers." >
       
-        <meta  name="twitter:image"  content="https://docs.extralit.ai/dev/assets/images/social/reference/argilla/settings/vectors.png" >
+        <meta  name="twitter:image"  content="https://docs.extralit.ai/dev/assets/images/social/user_guide/multi_schemas.png" >
       
     
     
@@ -124,7 +124,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#vectors" class="md-skip">
+        <a href="#customizing-multiple-extraction-schemas" class="md-skip">
           Skip to content
         </a>
       
@@ -142,9 +142,9 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../../../.." title="Extralit Docs" class="md-header__button md-logo" aria-label="Extralit Docs" data-md-component="logo">
+    <a href="../.." title="Extralit Docs" class="md-header__button md-logo" aria-label="Extralit Docs" data-md-component="logo">
       
-  <img src="../../../../assets/logo.png" alt="logo">
+  <img src="../../assets/logo.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -161,7 +161,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Vectors
+              Customizing multiple extraction schemas
             
           </span>
         </div>
@@ -285,7 +285,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../.." class="md-tabs__link">
+      <a href="../.." class="md-tabs__link">
         
   
     
@@ -304,7 +304,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../../getting_started/installation/" class="md-tabs__link">
+        <a href="../../getting_started/installation/" class="md-tabs__link">
           
   
   Getting Started
@@ -318,9 +318,11 @@
         
   
   
+    
   
-    <li class="md-tabs__item">
-      <a href="../../../../user_guide/" class="md-tabs__link">
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="../" class="md-tabs__link">
         
   
     
@@ -337,7 +339,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../../admin_guide/" class="md-tabs__link">
+      <a href="../../admin_guide/" class="md-tabs__link">
         
   
     
@@ -354,7 +356,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../../tutorials/" class="md-tabs__link">
+      <a href="../../tutorials/" class="md-tabs__link">
         
   
     
@@ -369,21 +371,17 @@
         
   
   
-    
-  
   
     
     
       
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../../client/" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../reference/argilla/client/" class="md-tabs__link">
           
   
   API Reference
@@ -402,7 +400,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../../getting_started/faq/" class="md-tabs__link">
+      <a href="../../getting_started/faq/" class="md-tabs__link">
         
   
     
@@ -419,7 +417,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../../community/" class="md-tabs__link">
+      <a href="../../community/" class="md-tabs__link">
         
   
     
@@ -442,8 +440,6 @@
           
             
               
-                
-              
               <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
                 <div class="md-sidebar__scrollwrap">
                   <div class="md-sidebar__inner">
@@ -455,9 +451,9 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../../.." title="Extralit Docs" class="md-nav__button md-logo" aria-label="Extralit Docs" data-md-component="logo">
+    <a href="../.." title="Extralit Docs" class="md-nav__button md-logo" aria-label="Extralit Docs" data-md-component="logo">
       
-  <img src="../../../../assets/logo.png" alt="logo">
+  <img src="../../assets/logo.png" alt="logo">
 
     </a>
     Extralit Docs
@@ -484,7 +480,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../.." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -544,7 +540,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../getting_started/installation/" class="md-nav__link">
+      <a href="../../getting_started/installation/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -565,7 +561,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../getting_started/quickstart/" class="md-nav__link">
+      <a href="../../getting_started/quickstart/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -586,7 +582,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../getting_started/how-to-deploy-argilla-with-docker/" class="md-nav__link">
+      <a href="../../getting_started/how-to-deploy-argilla-with-docker/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -607,7 +603,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../getting_started/how-to-configure-argilla-on-huggingface/" class="md-nav__link">
+      <a href="../../getting_started/how-to-configure-argilla-on-huggingface/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -632,27 +628,32 @@
       
   
   
+    
   
   
+  
     
     
     
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../../user_guide/" class="md-nav__link ">
+            <a href="../" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -663,13 +664,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             User Guide
@@ -683,7 +684,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../user_guide/core_concepts/" class="md-nav__link">
+      <a href="../core_concepts/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -709,17 +710,20 @@
       
       
         
+          
+          
+        
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" >
         
           
-          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="">
             
   
   <span class="md-ellipsis">
@@ -744,7 +748,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../user_guide/documents_import/" class="md-nav__link">
+      <a href="../documents_import/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -765,7 +769,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../user_guide/schema_definition/" class="md-nav__link">
+      <a href="../schema_definition/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -786,7 +790,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../user_guide/text_table_ocr.md" class="md-nav__link">
+      <a href="../text_table_ocr.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -807,7 +811,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../user_guide/llm_extraction.md" class="md-nav__link">
+      <a href="../llm_extraction.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -828,7 +832,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../user_guide/consensus_review.md" class="md-nav__link">
+      <a href="../consensus_review.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -849,7 +853,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../user_guide/data_validation.md" class="md-nav__link">
+      <a href="../data_validation.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -870,7 +874,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../user_guide/extraction_status.md" class="md-nav__link">
+      <a href="../extraction_status.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -904,17 +908,20 @@
       
       
         
+          
+          
+        
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3" >
         
           
-          <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="">
             
   
   <span class="md-ellipsis">
@@ -939,7 +946,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../user_guide/navigation_layout.md" class="md-nav__link">
+      <a href="../navigation_layout.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -960,7 +967,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../user_guide/create_manage_workspace.md" class="md-nav__link">
+      <a href="../create_manage_workspace.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -981,7 +988,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../user_guide/search_filter.md" class="md-nav__link">
+      <a href="../search_filter.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1002,7 +1009,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../user_guide/performing_extractions.md" class="md-nav__link">
+      <a href="../performing_extractions.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1023,7 +1030,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../user_guide/review_validate_data.md" class="md-nav__link">
+      <a href="../review_validate_data.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1049,25 +1056,30 @@
                 
   
   
+    
   
   
+  
     
     
     
       
       
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4" >
         
           
-          <label class="md-nav__link" for="__nav_3_4" id="__nav_3_4_label" tabindex="0">
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3_4" id="__nav_3_4_label" tabindex="">
             
   
   <span class="md-ellipsis">
@@ -1078,7 +1090,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3_4">
             <span class="md-nav__icon md-icon"></span>
             Advanced Usage
@@ -1089,10 +1101,30 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../../../user_guide/multi_schemas/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Customizing multiple extraction schemas
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -1101,6 +1133,86 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-use-multiple-schemas" class="md-nav__link">
+    <span class="md-ellipsis">
+      Why Use Multiple Schemas?
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Why Use Multiple Schemas?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-1-separating-study-design-and-demographic-information" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example 1: Separating Study Design and Demographic Information
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-2-establishing-relational-schemas" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example 2: Establishing Relational Schemas
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#converting-schemas-to-json" class="md-nav__link">
+    <span class="md-ellipsis">
+      Converting Schemas to JSON
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#uploading-schemas-to-extralit-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      Uploading Schemas to Extralit Server
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices-for-multiple-schemas" class="md-nav__link">
+    <span class="md-ellipsis">
+      Best Practices for Multiple Schemas
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1113,7 +1225,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../user_guide/optimizing_llm_performance.md" class="md-nav__link">
+      <a href="../optimizing_llm_performance.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1134,7 +1246,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../user_guide/using_the_api.md" class="md-nav__link">
+      <a href="../using_the_api.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1187,7 +1299,7 @@
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../../admin_guide/" class="md-nav__link ">
+            <a href="../../admin_guide/" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -1258,7 +1370,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../admin_guide/installation/" class="md-nav__link">
+      <a href="../../admin_guide/installation/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1279,7 +1391,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../admin_guide/k8s_deployment.md" class="md-nav__link">
+      <a href="../../admin_guide/k8s_deployment.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1300,7 +1412,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../admin_guide/configuration.md" class="md-nav__link">
+      <a href="../../admin_guide/configuration.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1321,7 +1433,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../admin_guide/file_storage.md" class="md-nav__link">
+      <a href="../../admin_guide/file_storage.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1390,7 +1502,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../admin_guide/installation/" class="md-nav__link">
+      <a href="../../admin_guide/installation/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1411,7 +1523,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../admin_guide/user/" class="md-nav__link">
+      <a href="../../admin_guide/user/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1432,7 +1544,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../admin_guide/workspace/" class="md-nav__link">
+      <a href="../../admin_guide/workspace/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1453,7 +1565,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../admin_guide/dataset/" class="md-nav__link">
+      <a href="../../admin_guide/dataset/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1474,7 +1586,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../admin_guide/record/" class="md-nav__link">
+      <a href="../../admin_guide/record/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1495,7 +1607,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../admin_guide/distribution/" class="md-nav__link">
+      <a href="../../admin_guide/distribution/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1516,7 +1628,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../admin_guide/annotate/" class="md-nav__link">
+      <a href="../../admin_guide/annotate/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1537,7 +1649,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../admin_guide/query/" class="md-nav__link">
+      <a href="../../admin_guide/query/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1558,7 +1670,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../admin_guide/import_export/" class="md-nav__link">
+      <a href="../../admin_guide/import_export/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1627,7 +1739,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../admin_guide/use_markdown_to_format_rich_content/" class="md-nav__link">
+      <a href="../../admin_guide/use_markdown_to_format_rich_content/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1648,7 +1760,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../admin_guide/migrate_from_legacy_datasets/" class="md-nav__link">
+      <a href="../../admin_guide/migrate_from_legacy_datasets/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1684,7 +1796,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../tutorials/" class="md-nav__link">
+      <a href="../../tutorials/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1701,30 +1813,25 @@
       
   
   
-    
   
   
-  
     
     
     
-      
-        
-        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
         
           
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
             
   
   <span class="md-ellipsis">
@@ -1735,7 +1842,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             API Reference
@@ -1746,30 +1853,25 @@
                 
   
   
-    
   
   
-  
     
     
     
       
       
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_1" >
         
           
-          
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_1" checked>
-        
-          
-          <label class="md-nav__link" for="__nav_6_1" id="__nav_6_1_label" tabindex="">
+          <label class="md-nav__link" for="__nav_6_1" id="__nav_6_1_label" tabindex="0">
             
   
   <span class="md-ellipsis">
@@ -1780,7 +1882,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_1_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_1_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_6_1">
             <span class="md-nav__icon md-icon"></span>
             Python SDK
@@ -1794,7 +1896,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../client/" class="md-nav__link">
+      <a href="../../reference/argilla/client/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1815,7 +1917,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../workspaces/" class="md-nav__link">
+      <a href="../../reference/argilla/workspaces/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1836,7 +1938,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../users/" class="md-nav__link">
+      <a href="../../reference/argilla/users/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1874,7 +1976,7 @@
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../datasets/datasets/" class="md-nav__link ">
+            <a href="../../reference/argilla/datasets/datasets/" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -1905,7 +2007,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../datasets/dataset_records/" class="md-nav__link">
+      <a href="../../reference/argilla/datasets/dataset_records/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1931,8 +2033,6 @@
                 
   
   
-    
-  
   
   
     
@@ -1944,16 +2044,16 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_1_5" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_1_5" >
         
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="../settings/" class="md-nav__link ">
+            <a href="../../reference/argilla/settings/settings/" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -1970,7 +2070,7 @@
             
           </div>
         
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_6_1_5_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_6_1_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_6_1_5">
             <span class="md-nav__icon md-icon"></span>
             rg.Settings
@@ -1984,7 +2084,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../fields/" class="md-nav__link">
+      <a href="../../reference/argilla/settings/fields/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2005,7 +2105,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../questions/" class="md-nav__link">
+      <a href="../../reference/argilla/settings/questions/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2026,7 +2126,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../metadata_property/" class="md-nav__link">
+      <a href="../../reference/argilla/settings/metadata_property/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2044,30 +2144,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Vectors
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../reference/argilla/settings/vectors/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2076,44 +2156,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#usage-examples" class="md-nav__link">
-    <span class="md-ellipsis">
-      Usage Examples
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#rgvectorfield" class="md-nav__link">
-    <span class="md-ellipsis">
-      rg.VectorField
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -2126,7 +2168,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../task_distribution/" class="md-nav__link">
+      <a href="../../reference/argilla/settings/task_distribution/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2172,7 +2214,7 @@
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../records/records/" class="md-nav__link ">
+            <a href="../../reference/argilla/records/records/" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -2203,7 +2245,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../records/responses/" class="md-nav__link">
+      <a href="../../reference/argilla/records/responses/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2224,7 +2266,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../records/suggestions/" class="md-nav__link">
+      <a href="../../reference/argilla/records/suggestions/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2245,7 +2287,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../records/vectors/" class="md-nav__link">
+      <a href="../../reference/argilla/records/vectors/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2266,7 +2308,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../records/metadata/" class="md-nav__link">
+      <a href="../../reference/argilla/records/metadata/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2295,7 +2337,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../search/" class="md-nav__link">
+      <a href="../../reference/argilla/search/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2316,7 +2358,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../markdown/" class="md-nav__link">
+      <a href="../../reference/argilla/markdown/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2350,20 +2392,17 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_2" >
         
           
-          <label class="md-nav__link" for="__nav_6_2" id="__nav_6_2_label" tabindex="">
+          <label class="md-nav__link" for="__nav_6_2" id="__nav_6_2_label" tabindex="0">
             
   
   <span class="md-ellipsis">
@@ -2388,7 +2427,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../argilla-server/configuration/" class="md-nav__link">
+      <a href="../../reference/argilla-server/configuration/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2422,20 +2461,17 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_3" >
         
           
-          <label class="md-nav__link" for="__nav_6_3" id="__nav_6_3_label" tabindex="">
+          <label class="md-nav__link" for="__nav_6_3" id="__nav_6_3_label" tabindex="0">
             
   
   <span class="md-ellipsis">
@@ -2460,7 +2496,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../argilla-server/telemetry/" class="md-nav__link">
+      <a href="../../reference/argilla-server/telemetry/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2496,7 +2532,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../getting_started/faq/" class="md-nav__link">
+      <a href="../../getting_started/faq/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2533,7 +2569,7 @@
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../../community/" class="md-nav__link ">
+            <a href="../../community/" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -2564,7 +2600,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../community/contributor/" class="md-nav__link">
+      <a href="../../community/contributor/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2585,7 +2621,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../community/popular_issues.md" class="md-nav__link">
+      <a href="../../community/popular_issues.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2606,7 +2642,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../community/changelog/" class="md-nav__link">
+      <a href="../../community/changelog/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -2635,8 +2671,6 @@
             
             
               
-                
-              
               <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
                 <div class="md-sidebar__scrollwrap">
                   <div class="md-sidebar__inner">
@@ -2656,18 +2690,60 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#usage-examples" class="md-nav__link">
+  <a href="#why-use-multiple-schemas" class="md-nav__link">
     <span class="md-ellipsis">
-      Usage Examples
+      Why Use Multiple Schemas?
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Why Use Multiple Schemas?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-1-separating-study-design-and-demographic-information" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example 1: Separating Study Design and Demographic Information
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-2-establishing-relational-schemas" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example 2: Establishing Relational Schemas
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#converting-schemas-to-json" class="md-nav__link">
+    <span class="md-ellipsis">
+      Converting Schemas to JSON
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#rgvectorfield" class="md-nav__link">
+  <a href="#uploading-schemas-to-extralit-server" class="md-nav__link">
     <span class="md-ellipsis">
-      rg.VectorField
+      Uploading Schemas to Extralit Server
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices-for-multiple-schemas" class="md-nav__link">
+    <span class="md-ellipsis">
+      Best Practices for Multiple Schemas
     </span>
   </a>
   
@@ -2688,7 +2764,7 @@
                   
 
   
-    <a href="https://github.com/extralit/extralit/edit/main/argilla/docs/reference/argilla/settings/vectors.md" title="Edit this page" class="md-content__button md-icon">
+    <a href="https://github.com/extralit/extralit/edit/main/argilla/docs/user_guide/multi_schemas.md" title="Edit this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4v-2m10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1 2.1 2.1Z"/></svg>
     </a>
@@ -2696,28 +2772,254 @@
   
 
 
-<h1 id="vectors">Vectors<a class="headerlink" href="#vectors" title="Permanent link">&para;</a></h1>
-<p>Vector fields in Argilla are used to define the vector form of a record that will be reviewed by a user.</p>
-<h2 id="usage-examples">Usage Examples<a class="headerlink" href="#usage-examples" title="Permanent link">&para;</a></h2>
-<p>To define a vector field, instantiate the <code>VectorField</code> class with a name and dimenstions, then pass it to the <code>vectors</code> parameter of the <code>Settings</code> class.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">settings</span> <span class="o">=</span> <span class="n">rg</span><span class="o">.</span><span class="n">Settings</span><span class="p">(</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">fields</span><span class="o">=</span><span class="p">[</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>        <span class="n">rg</span><span class="o">.</span><span class="n">TextField</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;text&quot;</span><span class="p">),</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="p">],</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">vectors</span><span class="o">=</span><span class="p">[</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>        <span class="n">rg</span><span class="o">.</span><span class="n">VectorField</span><span class="p">(</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;my_vector&quot;</span><span class="p">,</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>            <span class="n">dimension</span><span class="o">=</span><span class="mi">768</span><span class="p">,</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>            <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Document Embedding&quot;</span><span class="p">,</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>        <span class="p">),</span>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="p">],</span>
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="p">)</span>
+<h1 id="customizing-multiple-extraction-schemas">Customizing Multiple Extraction Schemas<a class="headerlink" href="#customizing-multiple-extraction-schemas" title="Permanent link">&para;</a></h1>
+<p>While defining a <a href="../schema_definition/">single schema</a> are useful for many extraction tasks, there are scenarios where using multiple schemas can provide better organization and more accurate representation of the data. This guide will walk you through the process of creating and managing multiple schemas in Extralit.</p>
+<h2 id="why-use-multiple-schemas">Why Use Multiple Schemas?<a class="headerlink" href="#why-use-multiple-schemas" title="Permanent link">&para;</a></h2>
+<p>Multiple schemas are beneficial when:</p>
+<ol>
+<li>Different parts of a paper contain distinct types of information.</li>
+<li>There are one-to-many relationships between data points.</li>
+<li>You want to establish relational links between different types of data.</li>
+<li>You need to prevent data duplication and maintain data integrity.</li>
+</ol>
+<h3 id="example-1-separating-study-design-and-demographic-information">Example 1: Separating Study Design and Demographic Information<a class="headerlink" href="#example-1-separating-study-design-and-demographic-information" title="Permanent link">&para;</a></h3>
+<p>Let's consider a scenario where a scientific paper presents information about two studies, each with multiple demographic groups. If we try to capture all this information in a single schema, we might end up with redundant data entry.</p>
+<p>Here's an example of what the data in the paper might look like:</p>
+<table border="1" cellpadding="5" cellspacing="0">
+  <tr>
+    <th>Year</th>
+    <th>Study Type</th>
+    <th>Age Group</th>
+    <th>Gender</th>
+    <th>Count</th>
+  </tr>
+  <tr>
+    <td>2020</td>
+    <td>RCT</td>
+    <td>Child</td>
+    <td>Male</td>
+    <td>50</td>
+  </tr>
+  <tr>
+    <td>2020</td>
+    <td>RCT</td>
+    <td>Child</td>
+    <td>Female</td>
+    <td>55</td>
+  </tr>
+  <tr>
+    <td>2020</td>
+    <td>RCT</td>
+    <td>Adult</td>
+    <td>Male</td>
+    <td>100</td>
+  </tr>
+  <tr>
+    <td>2020</td>
+    <td>RCT</td>
+    <td>Adult</td>
+    <td>Female</td>
+    <td>95</td>
+  </tr>
+  <tr>
+    <td>2021</td>
+    <td>Observational</td>
+    <td>Adult</td>
+    <td>Male</td>
+    <td>75</td>
+  </tr>
+  <tr>
+    <td>2021</td>
+    <td>Observational</td>
+    <td>Adult</td>
+    <td>Female</td>
+    <td>80</td>
+  </tr>
+  <tr>
+    <td>2021</td>
+    <td>Observational</td>
+    <td>Senior</td>
+    <td>Male</td>
+    <td>40</td>
+  </tr>
+  <tr>
+    <td>2021</td>
+    <td>Observational</td>
+    <td>Senior</td>
+    <td>Female</td>
+    <td>45</td>
+  </tr>
+</table>
+
+<p>If we were to use a single schema to capture this information, it might look like this:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span> <span class="nn">pandera</span> <span class="k">as</span> <span class="nn">pa</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span> <span class="nn">pandera.typing</span> <span class="kn">import</span> <span class="n">Series</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="k">class</span> <span class="nc">StudyDemographic</span><span class="p">(</span><span class="n">pa</span><span class="o">.</span><span class="n">DataFrameModel</span><span class="p">):</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">year</span><span class="p">:</span> <span class="n">Series</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">ge</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">le</span><span class="o">=</span><span class="mi">2024</span><span class="p">)</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">study_type</span><span class="p">:</span> <span class="n">Series</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">isin</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;RCT&#39;</span><span class="p">,</span> <span class="s1">&#39;Observational&#39;</span><span class="p">,</span> <span class="s1">&#39;Meta-analysis&#39;</span><span class="p">])</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">age_group</span><span class="p">:</span> <span class="n">Series</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">isin</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Child&#39;</span><span class="p">,</span> <span class="s1">&#39;Adult&#39;</span><span class="p">,</span> <span class="s1">&#39;Senior&#39;</span><span class="p">])</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">gender</span><span class="p">:</span> <span class="n">Series</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">isin</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Male&#39;</span><span class="p">,</span> <span class="s1">&#39;Female&#39;</span><span class="p">,</span> <span class="s1">&#39;Other&#39;</span><span class="p">])</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">count</span><span class="p">:</span> <span class="n">Series</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">gt</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 </span></code></pre></div>
-<blockquote>
-<p>To add records with vectors, refer to the <a href="../../records/vectors/"><code>rg.Vector</code></a> class documentation.</p>
-</blockquote>
-<hr />
-<h2 id="rgvectorfield"><code>rg.VectorField</code><a class="headerlink" href="#rgvectorfield" title="Permanent link">&para;</a></h2>
+<p>However, using this schema would require redundant manual data entry. Notice how we would have to repeat the study information (year and study_type) for each demographic entry. This redundancy can lead to data inconsistencies that is exacerbated as the number of demographic groups increase, and makes the data more difficult to update/correct.</p>
+<p>To solve this, we can separate our schema into two:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span> <span class="nn">pandera</span> <span class="k">as</span> <span class="nn">pa</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span> <span class="nn">pandera.typing</span> <span class="kn">import</span> <span class="n">Series</span><span class="p">,</span> <span class="n">Index</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="k">class</span> <span class="nc">StudyDesign</span><span class="p">(</span><span class="n">pa</span><span class="o">.</span><span class="n">DataFrameModel</span><span class="p">):</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">StudyDesign_ID</span><span class="p">:</span> <span class="n">Index</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">unique</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">year</span><span class="p">:</span> <span class="n">Series</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">ge</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">le</span><span class="o">=</span><span class="mi">2023</span><span class="p">)</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="n">sample_size</span><span class="p">:</span> <span class="n">Series</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">gt</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="n">study_type</span><span class="p">:</span> <span class="n">Series</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">isin</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;RCT&#39;</span><span class="p">,</span> <span class="s1">&#39;Observational&#39;</span><span class="p">,</span> <span class="s1">&#39;Meta-analysis&#39;</span><span class="p">])</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="k">class</span> <span class="nc">Demographic</span><span class="p">(</span><span class="n">pa</span><span class="o">.</span><span class="n">DataFrameModel</span><span class="p">):</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="n">StudyDesign_ID</span><span class="p">:</span> <span class="n">Series</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>  <span class="c1"># This will be our foreign key</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="n">age_group</span><span class="p">:</span> <span class="n">Series</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">isin</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Child&#39;</span><span class="p">,</span> <span class="s1">&#39;Adult&#39;</span><span class="p">,</span> <span class="s1">&#39;Senior&#39;</span><span class="p">])</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>    <span class="n">gender</span><span class="p">:</span> <span class="n">Series</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">isin</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Male&#39;</span><span class="p">,</span> <span class="s1">&#39;Female&#39;</span><span class="p">,</span> <span class="s1">&#39;Other&#39;</span><span class="p">])</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>    <span class="n">count</span><span class="p">:</span> <span class="n">Series</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">gt</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Note that we've introduced a <code>StudyDesign_ID</code> field in the <code>StudyDesign</code> and <code>Demographic</code> schemas, which serves as a foreign key linking <code>Demographic</code> data to the <code>StudyDesign</code> information.</p>
+<p>Now, we can represent our data more efficiently:</p>
+<h4>Study Design Table</h4>
+<table border="1" cellpadding="5" cellspacing="0">
+  <tr>
+    <th>StudyDesign_ID</th>
+    <th>year</th>
+    <th>study_type</th>
+  </tr>
+  <tr>
+    <td>S01</td>
+    <td>2020</td>
+    <td>RCT</td>
+  </tr>
+  <tr>
+    <td>S02</td>
+    <td>2021</td>
+    <td>Observational</td>
+  </tr>
+</table>
+
+<h4>Demographic Table</h4>
+<table border="1" cellpadding="5" cellspacing="0">
+  <tr>
+    <th>StudyDesign_ID</th>
+    <th>age_group</th>
+    <th>gender</th>
+    <th>count</th>
+  </tr>
+  <tr>
+    <td>S01</td>
+    <td>Child</td>
+    <td>Male</td>
+    <td>50</td>
+  </tr>
+  <tr>
+    <td>S01</td>
+    <td>Child</td>
+    <td>Female</td>
+    <td>55</td>
+  </tr>
+  <tr>
+    <td>S01</td>
+    <td>Adult</td>
+    <td>Male</td>
+    <td>100</td>
+  </tr>
+  <tr>
+    <td>S01</td>
+    <td>Adult</td>
+    <td>Female</td>
+    <td>95</td>
+  </tr>
+  <tr>
+    <td>S02</td>
+    <td>Adult</td>
+    <td>Male</td>
+    <td>75</td>
+  </tr>
+  <tr>
+    <td>S02</td>
+    <td>Adult</td>
+    <td>Female</td>
+    <td>80</td>
+  </tr>
+  <tr>
+    <td>S02</td>
+    <td>Senior</td>
+    <td>Male</td>
+    <td>40</td>
+  </tr>
+  <tr>
+    <td>S02</td>
+    <td>Senior</td>
+    <td>Female</td>
+    <td>45</td>
+  </tr>
+</table>
+
+<p>This approach eliminates redundancy in the study information and allows for a more flexible representation of the data. It's particularly useful when:</p>
+<ul>
+<li>A single study potentially has large number of demographic groups.</li>
+<li>You want to update study information without affecting demographic data.</li>
+<li>You need to analyze demographic data across multiple studies easily.</li>
+</ul>
+<p>In the next sections, we'll explore how to establish relationships between these schemas and how to manage them in Extralit.</p>
+<h3 id="example-2-establishing-relational-schemas">Example 2: Establishing Relational Schemas<a class="headerlink" href="#example-2-establishing-relational-schemas" title="Permanent link">&para;</a></h3>
+<p>Let's extend our example to include a third schema for outcome measures:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">class</span> <span class="nc">OutcomeMeasure</span><span class="p">(</span><span class="n">pa</span><span class="o">.</span><span class="n">DataFrameModel</span><span class="p">):</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="n">measure_id</span><span class="p">:</span> <span class="n">Index</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">unique</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">study_id</span><span class="p">:</span> <span class="n">Series</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>  <span class="c1"># Foreign key to StudyDesign</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">demographic_id</span><span class="p">:</span> <span class="n">Series</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>  <span class="c1"># Foreign key to Demographic</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">measure_type</span><span class="p">:</span> <span class="n">Series</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">isin</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Primary&#39;</span><span class="p">,</span> <span class="s1">&#39;Secondary&#39;</span><span class="p">])</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">value</span><span class="p">:</span> <span class="n">Series</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">ge</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</span></code></pre></div>
+<p>In this schema:</p>
+<ul>
+<li><code>study_id</code> links the outcome to a specific study.</li>
+<li><code>demographic_id</code> optionally links the outcome to a specific demographic group.</li>
+</ul>
+<p>This structure allows for complex querying across all three schemas, enabling analysis of outcomes by study and demographic characteristics.</p>
+<h2 id="converting-schemas-to-json">Converting Schemas to JSON<a class="headerlink" href="#converting-schemas-to-json" title="Permanent link">&para;</a></h2>
+<p>To use these schemas with Extralit's server, we need to convert them to JSON format. Here's how you can do that:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">join</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">target_dir</span> <span class="o">=</span> <span class="s1">&#39;path/to/schemas/&#39;</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">StudyDesign</span><span class="o">.</span><span class="n">to_schema</span><span class="p">()</span><span class="o">.</span><span class="n">to_json</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">target_dir</span><span class="p">,</span> <span class="s1">&#39;study_design_schema.json&#39;</span><span class="p">))</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">Demographic</span><span class="o">.</span><span class="n">to_schema</span><span class="p">()</span><span class="o">.</span><span class="n">to_json</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">target_dir</span><span class="p">,</span> <span class="s1">&#39;demographic_schema.json&#39;</span><span class="p">))</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">OutcomeMeasure</span><span class="o">.</span><span class="n">to_schema</span><span class="p">()</span><span class="o">.</span><span class="n">to_json</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">target_dir</span><span class="p">,</span> <span class="s1">&#39;outcome_measure_schema.json&#39;</span><span class="p">))</span>
+</span></code></pre></div>
+<p>This code will create three JSON files containing the schema definitions.</p>
+<h2 id="uploading-schemas-to-extralit-server">Uploading Schemas to Extralit Server<a class="headerlink" href="#uploading-schemas-to-extralit-server" title="Permanent link">&para;</a></h2>
+<p>Once you have your schema JSON files, you can upload them to your Extralit workspace using the command-line interface:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>extralit<span class="w"> </span>schemas<span class="w"> </span>upload<span class="w"> </span>--workspace<span class="w"> </span><span class="o">{</span>WORKSPACE_NAME<span class="o">}</span><span class="w"> </span>--schemas<span class="w"> </span>path/to/schemas/
+</span></code></pre></div>
+<p>Replace <code>{WORKSPACE_NAME}</code> with the name of your Extralit workspace, and ensure the path to your schema JSON files is correct.</p>
+<h2 id="best-practices-for-multiple-schemas">Best Practices for Multiple Schemas<a class="headerlink" href="#best-practices-for-multiple-schemas" title="Permanent link">&para;</a></h2>
+<ol>
+<li>
+<p><strong>Keep It Simple</strong>: Start with the simplest schema structure that accurately represents your data. You can always add complexity later.</p>
+</li>
+<li>
+<p><strong>Use Meaningful Names</strong>: Choose clear, descriptive names for your schemas and fields.</p>
+</li>
+<li>
+<p><strong>Establish Clear Relationships</strong>: When using multiple schemas, clearly define how they relate to each other (e.g., through foreign keys).</p>
+</li>
+<li>
+<p><strong>Avoid Redundancy</strong>: Don't duplicate information across schemas unnecessarily. Use references (foreign keys) instead.</p>
+</li>
+<li>
+<p><strong>Consider Extraction Efficiency</strong>: Design your schemas to align with how information is typically presented in the papers you're analyzing. This can make the extraction process more straightforward.</p>
+</li>
+<li>
+<p><strong>Validate Relationships</strong>: Implement cross-schema validation to ensure referential integrity (e.g., every <code>study_id</code> in <code>Demographic</code> exists in <code>StudyDesign</code>).</p>
+</li>
+<li>
+<p><strong>Document Your Schema Structure</strong>: Maintain clear documentation of how your schemas relate to each other and what each schema represents.</p>
+</li>
+</ol>
+<p>By thoughtfully designing and implementing multiple schemas, you can create a robust, flexible system for extracting and organizing complex information from scientific papers. This approach allows for more nuanced analysis and can significantly improve the quality and usability of your extracted data.</p>
 
 
 
@@ -2732,8 +3034,6 @@
 
   
 
-
-  
 
 
 
@@ -2757,12 +3057,10 @@
   
     
       
-        
-      
-      <nav class="md-footer__inner md-grid" aria-label="Footer" hidden>
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../metadata_property/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Metadata">
+          <a href="../schema_definition/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Schema definition">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
@@ -2772,20 +3070,20 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Metadata
+                Schema definition
               </div>
             </div>
           </a>
         
         
           
-          <a href="../task_distribution/" class="md-footer__link md-footer__link--next" aria-label="Next: Distribution">
+          <a href="../../admin_guide/" class="md-footer__link md-footer__link--next" aria-label="Next: Administrator Guide">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Distribution
+                Administrator Guide
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -2838,12 +3136,12 @@
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "../../../..", "features": ["navigation.instant", "navigation.sections", "navigation.tabs", "navigation.footer", "navigation.top", "navigation.tracking", "navigation.path", "toc.follow", "content.code.copy", "content.code.annotate", "content.action.edit", "content.tooltips", "search.suggest", "search.highlight", "search.share"], "search": "../../../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.instant", "navigation.sections", "navigation.tabs", "navigation.footer", "navigation.top", "navigation.tracking", "navigation.path", "toc.follow", "content.code.copy", "content.code.annotate", "content.action.edit", "content.tooltips", "search.suggest", "search.highlight", "search.share"], "search": "../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../../../assets/javascripts/bundle.ad660dcc.min.js"></script>
+      <script src="../../assets/javascripts/bundle.ad660dcc.min.js"></script>
       
-        <script src="../../../../js/open_in_new_tab.js"></script>
+        <script src="../../js/open_in_new_tab.js"></script>
       
     
   </body>

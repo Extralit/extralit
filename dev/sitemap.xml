@@ -226,7 +226,22 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://docs.extralit.ai/dev/user_guide/basic_concepts/</loc>
+         <loc>https://docs.extralit.ai/dev/user_guide/core_concepts/</loc>
+         <lastmod>2024-08-14</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://docs.extralit.ai/dev/user_guide/documents_import/</loc>
+         <lastmod>2024-08-14</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://docs.extralit.ai/dev/user_guide/multi_schemas/</loc>
+         <lastmod>2024-08-14</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://docs.extralit.ai/dev/user_guide/schema_definition/</loc>
          <lastmod>2024-08-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
