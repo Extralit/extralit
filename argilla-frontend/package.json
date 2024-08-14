@@ -106,5 +106,8 @@
     "sass-loader": "^10.5.2",
     "typescript": "^5.4.5",
     "vue-jest": "^3.0.7"
+  },
+  "engines": {
+    "node": ">=18.16.1"
   }
 }
