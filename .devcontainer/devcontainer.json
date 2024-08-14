@@ -29,7 +29,6 @@
 
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
   "forwardPorts": [
-    8000,
     10350,
     5005,
     6443
@@ -54,9 +53,9 @@
       "autoActivate": true,
       "version": "latest",
       "channels": "pytorch conda-forge nvidia huggingface plotly defaults",
-      "packages": "python==3.10 nodejs=18.6.0 uvicorn uv pdm jupyterlab",
+      "packages": "python==3.10.14 nodejs=18.16.1 uvicorn uv pdm jupyterlab",
       "envFile": "",
-      "envName": ""
+      "envName": "base"
     }
   },
 

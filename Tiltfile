@@ -8,13 +8,9 @@ allow_k8s_contexts(k8s_context())
 print("Using context:", k8s_context())
 
 # Read the ENV environment variable
-ENV = str(local('echo $ENV')).strip()
+ENV = str(local('echo $ENV')).strip() or 'dev'
 USERS_DB = str(local('echo $USERS_DB')).strip()
-DOCKER_REPO = str(local('echo $DOCKER_REPO')).strip()
-if not DOCKER_REPO:
-    DOCKER_REPO = 'localhost:5005'
-    print('DOCKER_REPO not set, using default: {DOCKER_REPO}'.format(DOCKER_REPO=DOCKER_REPO))
-
+DOCKER_REPO = str(local('echo $DOCKER_REPO')).strip() or 'localhost:5005'
 
 # Set up the same storage policy for kind as in prod
 if 'kind' in k8s_context():
