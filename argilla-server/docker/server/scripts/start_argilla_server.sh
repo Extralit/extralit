@@ -1,6 +1,17 @@
 #!/usr/bin/bash
 set -e
 
+# Set environment variables
+if [ -z "$ARGILLA_ELASTICSEARCH" ]; then
+	echo "Setting ARGILLA_ELASTICSEARCH with https://elastic:ELASTIC_PASSWORD@ARGILLA_ELASTICSEARCH_HOST"
+	export ARGILLA_ELASTICSEARCH=https://elastic:$ELASTIC_PASSWORD@$ARGILLA_ELASTICSEARCH_HOST
+fi
+
+if [ -z "$ARGILLA_DATABASE_URL" ]; then
+	echo "Setting ARGILLA_DATABASE_URL with postgresql+asyncpg://postgres:POSTGRES_PASSWORD@POSTGRES_HOST/postgres"
+	export ARGILLA_DATABASE_URL=postgresql+asyncpg://postgres:$POSTGRES_PASSWORD@$POSTGRES_HOST/postgres
+fi
+
 # Run database migrations
 python -m argilla_server database migrate
 

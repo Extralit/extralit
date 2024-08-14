@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: extralit-server
+spec:
+  selector:
+    app: extralit
+  ports:
+    - protocol: TCP
+      port: 5555
+      targetPort: 5555
+  type: NodePort
+---
+apiVersion: v1
+data:
+  ARGILLA_API_KEY: Mzg2YTU4MDYtMDE4Mi00MWY2LTgwNzYtZjRiNTU3ODE4ZjBi
+  LANGFUSE_PUBLIC_KEY: cGstbGYtNDgxZTdmMTItZmJjOC00MTM2LTk0NDAtNzk2NTdhMTU2NDk5
+  LANGFUSE_SECRET_KEY: c2stbGYtN2JiODM1ODktOTcyOC00MWI5LWI0OWEtYTJmZTYxNTZiYWFk
+  OPENAI_API_KEY: c2std1lGRFlzS2dUYXpmTDRTYTZRekZUM0JsYmtGSmVqSHVkSjhNQU9nT09qRWVNa01O
+  S3_ENDPOINT: aHR0cDovL21pbmlvLXNlcnZpY2U6OTAwMA==
+  S3_ACCESS_KEY: eTRWUWI4VU1rMmJHY2xuRkxZVlQ=
+  S3_SECRET_KEY: S3p2aGhiV2hVR3M4TnJXa3Q3TFdpV1lselI2TndsVG03VUloNGpJbA==
+kind: Secret
+metadata:
+  name: extralit-secrets
+type: Opaque
+---
+apiVersion: v1
+data:
+  AUTHENTICATION_APIKEY_ALLOWED_KEYS: MjI1OWMzNWY3YjBjNGFiM2IwZWI5ZDc3NzFkZTYzNmU3YjUwMDA3ZTQ4YTZiOTRiY2EyNjU3ODZlOTE1ZmMyNQ==
+kind: Secret
+metadata:
+  name: weaviate-api-keys
+type: Opaque
+
+# ---
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: extralit-pvc
+# spec:
+#   accessModes:
+#     - ReadWriteOnce
+#   resources:
+#     requests:
+#       storage: 50Gi
+#   storageClassName: local-path

@@ -137,10 +137,8 @@ sw.*
 yarn.lock
 package-lock.json
 
-# App generated files
-src/**/server/static/
-
 # Old users db file
 .users.yml
 
-argilla/site/
+# App generated files
+argilla-server/src/argilla_server/static
