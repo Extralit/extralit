@@ -1,27 +1,21 @@
 <div class="start-page__intro" markdown="1">
 
-# Welcome to
+# Welcome to Extralit
 
-## Argilla is a platform to build high-quality AI datasets
+## An advanced platform for scientific literature review and data extraction
 
-If you need support join the [Argilla Discord community](http://hf.co/join/discord)
-
+If you need support, join the [Extralit Slack community](https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ)
 </div>
 
 <div class="start-page__content" markdown="1">
 
-Get started by publishing your first dataset.
+Get started by setting up your first literature extraction project.
 
-### 1. Open an IDE, Jupyter or Collab
-
-If you're a Collab user, you can directly use our [introductory tutorial](https://colab.research.google.com/github/argilla-io/argilla/blob/develop/docs/_source/getting_started/quickstart_workflow_feedback.ipynb).
-
-### 2. Install the SDK with pip
-
-To work with Argilla datasets, you need to use the Argilla SDK. You can install the SDK with pip as follows:
+### 1. Install the Extralit SDK
+To work with Extralit, you need to use the Extralit SDK. Install it with pip:
 
 ```sh
-pip install argilla -U
+pip install extralit -U
 ```
 
 ### 3. Connect to your Argilla server
