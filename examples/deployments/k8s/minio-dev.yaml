@@ -35,13 +35,34 @@ spec:
     - -c
     args: 
     - minio server /data --console-address :9090
+    env:
+    - name: MINIO_ACCESS_KEY_FILE
+      value: /etc/minio/S3_ACCESS_KEY
+    - name: MINIO_SECRET_KEY_FILE
+      value: /etc/minio/S3_SECRET_KEY
+    # - name: MINIO_ACCESS_KEY
+    #   valueFrom:
+    #     secretKeyRef:
+    #       name: extralit-secrets
+    #       key: S3_ACCESS_KEY
+    # - name: MINIO_SECRET_KEY
+    #   valueFrom:
+    #     secretKeyRef:
+    #       name: extralit-secrets
+    #       key: S3_SECRET_KEY
     volumeMounts:
     - mountPath: /data
       name: storage
+    - name: minio-secret
+      mountPath: /etc/minio
+      readOnly: true
   volumes:
   - name: storage
     persistentVolumeClaim:
       claimName: minio-pv-claim
+  - name: minio-secret
+    secret:
+      secretName: extralit-secrets
 ---
 apiVersion: v1
 kind: Service

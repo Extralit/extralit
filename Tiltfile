@@ -17,29 +17,40 @@ if 'kind' in k8s_context():
     # Storage policy
     k8s_yaml('examples/deployments/k8s/kind/tilt-local-dev-storage-policy.yaml')
 
+load('ext://helm_resource', 'helm_resource', 'helm_repo')
 
 # Installing elastic/elasticsearch Helm
-load('ext://helm_resource', 'helm_resource', 'helm_repo')
-helm_repo('elastic', 'https://helm.elastic.co', labels=['helm'])
-helm_resource(
-    name='elasticsearch', 
-    chart='elastic/elasticsearch', 
-    flags=[
-        '--version=8.5.1',
-        '--values=./examples/deployments/k8s/helm/elasticsearch-helm.yaml'],
-    deps=['elastic'],
-    port_forwards=['9200'],
-    labels=['argilla-server']
-)
+# helm_repo('elastic', 'https://helm.elastic.co', labels=['helm'])
+# helm_resource(
+#     name='elasticsearch', 
+#     chart='elastic/elasticsearch', 
+#     flags=[
+#         '--version=8.5.1',
+#         '--values=./examples/deployments/k8s/helm/elasticsearch-helm.yaml'],
+#     deps=['elastic'],
+#     port_forwards=['9200'],
+#     labels=['argilla-server']
+# )
 
+# Elasticsearch deployment using k8s_yaml
+k8s_yaml([
+    'examples/deployments/k8s/elasticsearch-deployment.yaml',
+    'examples/deployments/k8s/elasticsearch-pvc.yaml',
+    'examples/deployments/k8s/elasticsearch-service.yaml'
+    ])
+k8s_resource(
+    'elasticsearch',
+    port_forwards=['9200'],
+    labels=['argilla-server'],
+)
 
 # argilla-server is the web backend (FastAPI + SQL database)
 if not os.path.exists('argilla-server/dist/'):
     local('pdm build', dir='argilla-server')
 docker_build(
-    "{DOCKER_REPO}/extralit-argilla-server".format(DOCKER_REPO=DOCKER_REPO),
+    "{DOCKER_REPO}/argilla-server".format(DOCKER_REPO=DOCKER_REPO),
     context='argilla-server/',
-    build_args={'ENV': ENV, 'USERS_DB': USERS_DB},
+    build_args={'ENV': ENV, 'USERS_DB': USERS_DB, 'REINDEX_DATASETS': 'true'},
     dockerfile='argilla-server/docker/server/argilla_server.dockerfile',
     ignore=['examples/', 'argilla/', '.*'],
     live_update=[
@@ -54,8 +65,8 @@ docker_build(
 argilla_server_k8s_yaml = read_yaml_stream('examples/deployments/k8s/argilla-server-deployment.yaml')
 for o in argilla_server_k8s_yaml:
     for container in o['spec']['template']['spec']['containers']:
-        if container['image'] == 'extralit-argilla-server':
-            container['image'] = "{DOCKER_REPO}/extralit-argilla-server".format(DOCKER_REPO=DOCKER_REPO)
+        if container['name'] == 'argilla-server':
+            container['image'] = "{DOCKER_REPO}/argilla-server".format(DOCKER_REPO=DOCKER_REPO)
 
 k8s_yaml([
     encode_yaml_stream(argilla_server_k8s_yaml), 
@@ -95,7 +106,9 @@ k8s_resource(
 )
 
 # Add the MinIO deployment
-k8s_yaml(['examples/deployments/k8s/minio-dev.yaml', 'examples/deployments/k8s/minio-standalone-pvc.yaml'])
+k8s_yaml([
+    'examples/deployments/k8s/minio-dev.yaml', 
+    'examples/deployments/k8s/minio-standalone-pvc.yaml'])
 k8s_resource(
   'minio',
   port_forwards=['9000', '9090'],
