@@ -33,18 +33,12 @@ spec:
         - name: wait-for-elasticsearch
           image: alpine/curl:latest
           command: [ "sh", "-c",
-            "ELASTICSEARCH_URL='https://elastic:$(ELASTIC_PASSWORD)@elasticsearch-master:9200'; status_code=$(curl -s -k -o /dev/null -w '%{http_code}' $ELASTICSEARCH_URL);
+            "ELASTICSEARCH_URL='http://elasticsearch-master:9200'; status_code=$(curl -s -k -o /dev/null -w '%{http_code}' $ELASTICSEARCH_URL);
           while [ $status_code -ne 200 ]; do sleep 5; status_code=$(curl -s -o /dev/null -w '%{http_code}' $ELASTICSEARCH_URL);
           echo Sleeping...; done; echo Elasticsearch Connected " ]
-          env:
-            - name: ELASTIC_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: elasticsearch-master-credentials
-                  key: password
       containers:
         - name: argilla-server
-          image: extralit-argilla-server
+          image: extralit/argilla-server:latest
           ports:
             - containerPort: 6900
           resources:
@@ -55,8 +49,14 @@ spec:
               memory: 6144Mi
               cpu: 4000m
           env:
+            - name: ARGILLA_ELASTICSEARCH_PROTOCOL
+              value: "http"
             - name: ARGILLA_ELASTICSEARCH_HOST
               value: "elasticsearch-master:9200"
+            - name: ARGILLA_ELASTICSEARCH_SSL_VERIFY
+              value: "false"
+            # - name: ARGILLA_ELASTICSEARCH_CA_PATH
+            #   value: /usr/share/elasticsearch/config/certs/ca.crt
             - name: ARGILLA_AUTH_SECRET_KEY
               value: "CHANGE_ME"
             - name: ARGILLA_CORS_ORIGINS
@@ -90,8 +90,8 @@ spec:
                 secretKeyRef:
                   name: elasticsearch-master-credentials
                   key: password
-            - name: ARGILLA_ELASTICSEARCH_CA_PATH
-              value: /usr/share/elasticsearch/config/certs/ca.crt
+                  optional: true
+            
           volumeMounts:
             - name: elasticsearch-master-certs
               mountPath: /usr/share/elasticsearch/config/certs
@@ -99,4 +99,4 @@ spec:
         - name: elasticsearch-master-certs
           secret:
             secretName: elasticsearch-master-certs
-            
+            optional: true
