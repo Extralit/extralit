@@ -16,6 +16,30 @@ These are the section headers that we use:
 
 ## [Unreleased]()
 
+### "Added"
+- Added .devcontainer for "Docker, Tilt, and K8s" local development on GH Codespaces
+- Added examples/deployments/k8s/extralit-configs.yaml for configuring the extralit service and secrets in a K8s cluster
+
+### "Changed"
+
+- Changed elasticsearch deployment from Helm to `docker.elastic.co/elasticsearch/elasticsearch` to fix PVC restarting issues
+
+### "Deprecated"
+
+
+### "Removed"
+
+
+### "Fixed"
+
+- Fixed Tiltfile and [k8s manifests](examples/deployments/k8s/) for mono-repo setup
+- Fixed creating a new Weaviate collection with Weaviate client v4
+
+
+### "Security"
+
+
+
 ## [1.29.0](https://github.com/argilla-io/argilla/compare/v1.28.0...v1.29.0)
 
 ### Added

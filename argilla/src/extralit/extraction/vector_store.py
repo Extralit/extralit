@@ -5,7 +5,7 @@ An index that is built on top of an existing vector store.
 """
 
 import logging
-from typing import Any, List, Optional, Union, Callable
+from typing import Any, List, Dict, Optional, Union, Callable
 
 import weaviate  # noqa
 import weaviate.classes as wvc
@@ -19,10 +19,61 @@ from llama_index.vector_stores.weaviate import WeaviateVectorStore as WeaviateVe
 from llama_index.vector_stores.weaviate.utils import (
     get_all_properties,
     get_node_similarity,
-    to_node, validate_client, NODE_SCHEMA,
+    to_node, validate_client,
 )
 
 _LOGGER = logging.getLogger(__name__)
+
+NODE_SCHEMA: List[Dict] = [
+    {
+        "dataType": ["text"],
+        "description": "Text property",
+        "name": "text",
+    },
+    {
+        "dataType": ["text"],
+        "description": "The ref_doc_id of the Node",
+        "name": "ref_doc_id",
+    },
+    {
+        "dataType": ["text"],
+        "description": "node_info (in JSON)",
+        "name": "node_info",
+    },
+    {
+        "dataType": ["text"],
+        "description": "The relationships of the node (in JSON)",
+        "name": "relationships",
+    },
+    {
+        "dataType": ["text"],
+        "description": "The reference of the Node",
+        "name": "reference",
+    },
+    {
+        "dataType": ["text"],
+        "description": "The type of the Node",
+        "name": "type",
+    },
+    {
+        "dataType": ["text"],
+        "description": "The doc_id of the Node",
+        "name": "doc_id",
+    },
+]
+
+def create_default_schema(client: Any, class_name: str) -> None:
+    """Create default schema."""
+    validate_client(client)
+    class_schema = {
+        "class": class_name,
+        "description": f"Class for {class_name}",
+        "properties": NODE_SCHEMA,
+        'vectorIndexType': 'flat',
+        # "multiTenancyConfig": {"enabled": True},
+    }
+    client.collections.create_from_dict(class_schema)
+
 
 
 def _transform_weaviate_filter_condition(condition: str) -> Callable:
@@ -84,19 +135,6 @@ def _to_weaviate_filter(
         return filters_list[0]
 
     return condition(filters_list)
-
-
-def create_default_schema(client: Any, class_name: str) -> None:
-    """Create default schema."""
-    validate_client(client)
-    class_schema = {
-        "class": class_name,
-        "description": f"Class for {class_name}",
-        "properties": NODE_SCHEMA,
-        'vectorIndexType': 'flat',
-        # "multiTenancyConfig": {"enabled": True},
-    }
-    client.schema.create_class(class_schema)
 
 
 class WeaviateVectorStore(WeaviateVectorStoreV0_10_0):

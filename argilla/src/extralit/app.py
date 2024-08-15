@@ -145,7 +145,7 @@ async def extraction(
 
     # Get the system prompt
     try:
-        system_prompt = langfuse_callback.langfuse.get_prompt(prompt_template, cache_ttl_seconds=3000)
+        system_prompt = langfuse_callback.langfuse.get_prompt(prompt_template, cache_ttl_seconds=3000, max_retries=0)
     except Exception as e:
         _LOGGER.error(f"Failed to get system prompt: {e}")
         system_prompt = None
