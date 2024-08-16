@@ -50,7 +50,7 @@ if not os.path.exists('argilla-server/dist/'):
 docker_build(
     "{DOCKER_REPO}/argilla-server".format(DOCKER_REPO=DOCKER_REPO),
     context='argilla-server/',
-    build_args={'ENV': ENV, 'USERS_DB': USERS_DB, 'REINDEX_DATASETS': 'true'},
+    build_args={'ENV': ENV, 'USERS_DB': USERS_DB},
     dockerfile='argilla-server/docker/server/argilla_server.dockerfile',
     ignore=['examples/', 'argilla/', '.*'],
     live_update=[
