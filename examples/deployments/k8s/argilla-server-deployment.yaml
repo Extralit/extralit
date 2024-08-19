@@ -61,6 +61,8 @@ spec:
               value: "CHANGE_ME"
             - name: ARGILLA_CORS_ORIGINS
               value: '["*"]'
+            - name: REINDEX_DATASETS
+              value: "true"
             - name: EXTRALIT_URL
               value: "http://extralit-server:5555"
             - name: S3_ENDPOINT

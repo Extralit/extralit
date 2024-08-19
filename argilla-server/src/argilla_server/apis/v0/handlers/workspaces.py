@@ -22,7 +22,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from argilla_server.contexts import accounts, files
 from argilla_server.database import get_async_db
-from argilla_server.errors import EntityAlreadyExistsError, EntityNotFoundError
+from argilla_server.errors import EntityAlreadyExistsError, EntityNotFoundError, GenericServerError
 from argilla_server.errors.future import NotUniqueError
 from argilla_server.policies import WorkspacePolicy, WorkspaceUserPolicy, authorize
 from argilla_server.pydantic_v1 import parse_obj_as
@@ -46,11 +46,11 @@ async def create_workspace(
     try:
         files.create_bucket(minio_client, workspace_create.name)
     except Exception as e:
-        raise e
+        raise GenericServerError(e)
 
     try:
         workspace = await accounts.create_workspace(db, workspace_create.dict())
-    except NotUniqueError:
+    except NotUniqueError as e:
         _LOGGER.error(f"Could not create workspace '{workspace_create.name}': {e}")
         raise EntityAlreadyExistsError(name=workspace_create.name, type=Workspace)
 
