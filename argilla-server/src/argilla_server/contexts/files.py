@@ -44,22 +44,25 @@ def get_minio_client() -> Optional[Minio]:
         return None
 
 
+def get_pdf_s3_object_path(id: Union[UUID, str]):
+    if id is None:
+        raise Exception("id cannot be None")
+    elif isinstance(id, UUID):
+        object_path = f'pdf/{str(id)}'
+    else:
+        object_path = f'pdf/{id}'
+
+    return object_path
+
+
+def get_s3_object_url(bucket_name:str, object_name:str)->str:
+    return f'/api/v1/file/{bucket_name}/{object_name}'
+
+
 def list_objects(client: Minio, bucket: str, prefix: Optional[str] = None, include_version=True, recursive=True, start_after: Optional[str]=None) -> ListObjectsResponse:
-    try:
-        objects = client.list_objects(bucket, prefix=prefix, recursive=recursive, include_version=include_version, start_after=start_after)
-        objects = [ObjectMetadata.from_minio_object(obj) for obj in objects]
-        return ListObjectsResponse(objects=objects)
-    
-    except S3Error as se:
-        _LOGGER.error(f"Error listing objects in '{bucket}/{prefix}': {se}")
-        if se.code == "NoSuchBucket":
-            raise HTTPException(status_code=404, detail=f"Bucket '{bucket}' not found") from se
-        else:
-            raise HTTPException(status_code=404, detail=f"Cannot list objects as '{bucket}/{prefix}' is not found") from se
-    except Exception as e:
-        _LOGGER.error(f"Error listing objects in bucket '{bucket}/{prefix}': {e}")
-        raise HTTPException(status_code=500, detail="Internal server error") from e
-    
+    objects = client.list_objects(bucket, prefix=prefix, recursive=recursive, include_version=include_version, start_after=start_after)
+    objects = [ObjectMetadata.from_minio_object(obj) for obj in objects]
+    return ListObjectsResponse(objects=objects)
 
 def get_object(client: Minio, bucket: str, object: str, version_id: Optional[str] = None, 
                include_versions=False) -> FileObjectResponse:
@@ -170,16 +173,3 @@ def delete_bucket(client: Minio, workspace_name: str):
         raise e
 
 
-def get_pdf_s3_object_path(id: Union[UUID, str]):
-    if id is None:
-        raise Exception("id cannot be None")
-    elif isinstance(id, UUID):
-        object_path = f'pdf/{str(id)}'
-    else:
-        object_path = f'pdf/{id}'
-
-    return object_path
-
-
-def get_s3_object_url(bucket_name:str, object_name:str)->str:
-    return f'/api/v1/file/{bucket_name}/{object_name}'

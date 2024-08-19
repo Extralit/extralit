@@ -43,7 +43,7 @@ async def get_file(
     
     except Exception as e:
         _LOGGER.error(f"Error getting object '{bucket}/{object}': {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
     
 @router.post("/file/{bucket}/{object:path}", response_model=ObjectMetadata)
@@ -85,7 +85,11 @@ async def list_objects(
         objects = files.list_objects(client, bucket, prefix=prefix, include_version=include_version, recursive=recursive, start_after=start_after)
         return objects
     except S3Error as se:
-        raise HTTPException(status_code=404, detail=f"No objects at prefix '{bucket}/{prefix}' were found") from se
+        _LOGGER.error(f"Error listing objects in '{bucket}/{prefix}': {se}")
+        if se.code == "NoSuchBucket":
+            raise HTTPException(status_code=404, detail=f"Bucket '{bucket}' not found") from se
+        else:
+            raise HTTPException(status_code=404, detail=f"Cannot list objects as '{bucket}/{prefix}' is not found") from se
     except Exception as e:
         raise e
 
