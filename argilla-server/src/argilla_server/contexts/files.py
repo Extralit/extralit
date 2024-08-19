@@ -52,10 +52,13 @@ def list_objects(client: Minio, bucket: str, prefix: Optional[str] = None, inclu
     
     except S3Error as se:
         _LOGGER.error(f"Error listing objects in '{bucket}/{prefix}': {se}")
-        raise HTTPException(status_code=404, detail=f"Cannot list objects with '{bucket}/{prefix}' not found")
+        if se.code == "NoSuchBucket":
+            raise HTTPException(status_code=404, detail=f"Bucket '{bucket}' not found") from se
+        else:
+            raise HTTPException(status_code=404, detail=f"Cannot list objects as '{bucket}/{prefix}' is not found") from se
     except Exception as e:
         _LOGGER.error(f"Error listing objects in bucket '{bucket}/{prefix}': {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise HTTPException(status_code=500, detail="Internal server error") from e
     
 
 def get_object(client: Minio, bucket: str, object: str, version_id: Optional[str] = None, 

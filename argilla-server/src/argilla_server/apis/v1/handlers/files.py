@@ -64,7 +64,7 @@ async def put_file(
                                     data=file.file, size=file.size, content_type=file.content_type)
         return response
     except S3Error as se:
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise HTTPException(status_code=500, detail="Internal server error") from se
     
 
 @router.get("/files/{bucket}/{prefix:path}", response_model=ListObjectsResponse)
@@ -85,7 +85,7 @@ async def list_objects(
         objects = files.list_objects(client, bucket, prefix=prefix, include_version=include_version, recursive=recursive, start_after=start_after)
         return objects
     except S3Error as se:
-        raise HTTPException(status_code=404, detail=f"No objects at prefix '{bucket}/{prefix}' were found")
+        raise HTTPException(status_code=404, detail=f"No objects at prefix '{bucket}/{prefix}' were found") from se
     except Exception as e:
         raise e
 
