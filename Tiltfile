@@ -71,7 +71,8 @@ for o in argilla_server_k8s_yaml:
 k8s_yaml([
     encode_yaml_stream(argilla_server_k8s_yaml), 
     'examples/deployments/k8s/argilla-server-service.yaml', 
-    'examples/deployments/k8s/argilla-server-ingress.yaml'
+    'examples/deployments/k8s/argilla-server-ingress.yaml',
+    # 'examples/deployments/k8s/argilla-loadbalancer-service.yaml'
     ])
 k8s_resource(
     'argilla-server-deployment',
@@ -79,7 +80,7 @@ k8s_resource(
     port_forwards=['6900'],
     labels=['argilla-server'],
 )
-k8s_yaml(['examples/deployments/k8s/argilla-loadbalancer-service.yaml'])
+
 
 
 # PostgreSQL is the database for argilla-server
