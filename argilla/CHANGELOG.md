@@ -24,6 +24,7 @@ These are the section headers that we use:
 ### "Changed"
 
 - Changed elasticsearch deployment from Helm to `docker.elastic.co/elasticsearch/elasticsearch` to fix PVC restarting issues
+- Updated elasticsearch to 8.15.0
 
 ### "Deprecated"
 
