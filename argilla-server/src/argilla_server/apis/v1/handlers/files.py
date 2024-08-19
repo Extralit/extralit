@@ -39,7 +39,7 @@ async def get_file(
         )
     except S3Error as se:
         _LOGGER.error(f"Error getting object '{bucket}/{object}': {se}")
-        raise HTTPException(status_code=404, detail=f"No object at path '{bucket}/{object}' was found")
+        raise HTTPException(status_code=404, detail=f"No object at path '{bucket}/{object}' was found") from se
     
     except Exception as e:
         _LOGGER.error(f"Error getting object '{bucket}/{object}': {e}")
@@ -112,7 +112,7 @@ async def delete_files(
         files.delete_object(client, bucket, object, version_id=version_id)
         return {"message": "File deleted"}
     except S3Error as se:
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise HTTPException(status_code=500, detail="Internal server error") from se
     except Exception as e:
         raise e
 

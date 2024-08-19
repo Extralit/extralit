@@ -56,6 +56,11 @@ async def load_minio_client():
         minio_client = get_minio_client()
 
 
+@app.get("/health")
+async def health_check():
+    return {"status": "ok"}
+
+
 @app.get("/schemas/{workspace}")
 async def schemas(
         workspace: str = 'itn-recalibration',
