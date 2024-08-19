@@ -17,6 +17,15 @@ spec:
         image: extralit-server
         ports:
         - containerPort: 5555
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5555
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+          successThreshold: 1
         env:
           - name: OPENAI_API_KEY
             valueFrom:

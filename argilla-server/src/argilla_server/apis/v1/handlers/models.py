@@ -53,9 +53,19 @@ async def proxy(request: Request, rest_of_path: str,
         return {"message": "Method not supported"}
 
     async def stream_response():
-        response = await client.send(request, stream=True)
-        async for chunk in response.aiter_raw():
-            yield chunk
+        try:
+            response = await client.send(request, stream=True)
+            async for chunk in response.aiter_raw():
+                yield chunk
+        except httpx.ReadTimeout as exc:
+            _LOGGER.error(f"Request to {exc.request.url!r} timed out.")
+            yield b"Request timed out."
+        except httpx.TimeoutException as exc:
+            _LOGGER.error(f"Request to {exc.request.url!r} timed out.")
+            yield b"Request timed out."
+        except httpx.RequestError as exc:
+            _LOGGER.error(f"An error occurred while requesting {exc.request.url!r}: {exc}")
+            yield b"An error occurred while processing the request."
 
     return StreamingResponse(stream_response(), media_type="text/event-stream")
 
