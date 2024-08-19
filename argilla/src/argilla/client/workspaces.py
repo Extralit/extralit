@@ -416,7 +416,7 @@ class Workspace:
         return instance
 
     @classmethod
-    @allowed_for_roles(roles=[UserRole.owner])
+    @allowed_for_roles(roles=[UserRole.owner, UserRole.admin])
     def create(cls, name: str) -> "Workspace":
         """Creates a new workspace in Argilla.
 
