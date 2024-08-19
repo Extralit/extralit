@@ -61,7 +61,7 @@ def extract_schema(
         headers: Optional[List[str]] = None,
         types: Optional[List[str]] = None,
         similarity_top_k=20,
-        system_prompt: Union[PromptTemplate, TextPromptClient] = DEFAULT_EXTRACTION_PROMPT_TMPL,
+        system_prompt: Optional[Union[PromptTemplate, TextPromptClient]] = DEFAULT_EXTRACTION_PROMPT_TMPL,
         user_prompt: Optional[str] = None,
         verbose=False,
         **kwargs,
