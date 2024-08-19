@@ -15,6 +15,8 @@ _LOGGER = logging.getLogger("models")
 
 router = APIRouter(tags=["models"])
 
+client = httpx.AsyncClient(timeout=10.0)
+
 @router.api_route("/models/{rest_of_path:path}", 
                   methods=["GET", "POST", "PUT", "DELETE"], 
                   response_class=StreamingResponse)
@@ -23,7 +25,8 @@ async def proxy(request: Request, rest_of_path: str,
     url = urljoin(settings.extralit_url, rest_of_path)
     params = dict(request.query_params)
 
-    _LOGGER.info(f'PROXY {url} {params}, {current_user}')
+    print(f'PROXY {url} {params}, {current_user.username}')
+    _LOGGER.info(f'PROXY {url} {params}, {current_user.username}')
 
     if 'workspace' not in params or not params['workspace']:
         raise HTTPException(status_code=500, detail="`workspace` is required in query parameters")
@@ -36,7 +39,6 @@ async def proxy(request: Request, rest_of_path: str,
                 raise HTTPException(status_code=500,
                                     detail=f"{current_user.username} is not authorized to access workspace {params['workspace']}")
 
-    client = httpx.AsyncClient(timeout=10.0)
     if request.method == "GET":
         request = client.build_request("GET", url, params=params)
     elif request.method == "POST":
@@ -54,7 +56,14 @@ async def proxy(request: Request, rest_of_path: str,
         response = await client.send(request, stream=True)
         async for chunk in response.aiter_raw():
             yield chunk
-        await client.aclose()
 
     return StreamingResponse(stream_response(), media_type="text/event-stream")
-    
+
+@router.on_event("startup")
+async def startup_event():
+    global client
+    client = httpx.AsyncClient(timeout=10.0)
+
+@router.on_event("shutdown")
+async def shutdown():
+    await client.aclose()
