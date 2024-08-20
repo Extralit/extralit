@@ -135,7 +135,6 @@ async def extraction(
         prompt_template: str = "completion",
         langfuse_callback: Optional[LlamaIndexCallbackHandler] = Depends(get_langfuse_callback),
 ):
-    print(extraction_request)
     schemas = SchemaStructure.from_s3(workspace_name=workspace, minio_client=minio_client)
     schema = schemas[extraction_request.schema_name]
 

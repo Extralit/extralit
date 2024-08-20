@@ -16,7 +16,6 @@ def get_langfuse_callback(
             host=os.getenv('LANGFUSE_HOST'),
             public_key=langfuse_public_key if langfuse_public_key else os.getenv('LANGFUSE_PUBLIC_KEY'),
             secret_key=langfuse_secret_key if langfuse_secret_key else os.getenv('LANGFUSE_SECRET_KEY'),
-            timeout=2,
         )
         if not Settings.callback_manager.handlers:
             Settings.callback_manager.add_handler(langfuse_callback_handler)
