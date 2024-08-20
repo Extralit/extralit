@@ -1,3 +1,4 @@
+import logging
 from typing import List, Dict, Any, Optional, Union
 
 from llama_index.core.vector_stores import (
@@ -8,6 +9,9 @@ from llama_index.core.vector_stores import (
 from llama_index.vector_stores.weaviate.base import _to_weaviate_filter
 from llama_index.vector_stores.weaviate.utils import validate_client, class_schema_exists
 from weaviate import WeaviateClient
+from weaviate.exceptions import WeaviateQueryError
+
+_LOGGER = logging.getLogger(__name__)
 
 
 def get_nodes_metadata(weaviate_client: WeaviateClient,
@@ -35,14 +39,20 @@ def get_nodes_metadata(weaviate_client: WeaviateClient,
 
     collection = weaviate_client.collections.get(index_name)
 
-    query_result = collection.query.fetch_objects(
-        filters=_to_weaviate_filter(filters),
-        return_properties=properties,
-        limit=limit,
-    )
+    try:
+        query_result = collection.query.fetch_objects(
+            filters=_to_weaviate_filter(filters),
+            return_properties=properties,
+            limit=limit,
+        )
 
-    entries = [o.properties for o in query_result.objects]
-    return entries
+        entries = [o.properties for o in query_result.objects]
+        return entries
+    
+    except WeaviateQueryError as wqe:
+        _LOGGER.error("Error while querying Weaviate: %s", wqe)
+        return []
+
 
 
 def vectordb_contains_any(reference: str, *, filters: Optional[Dict[str, str]] = None,

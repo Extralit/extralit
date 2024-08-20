@@ -36,6 +36,7 @@ These are the section headers that we use:
 
 - Fixed Tiltfile and [k8s manifests](examples/deployments/k8s/) for mono-repo setup
 - Fixed creating a new Weaviate collection with Weaviate client v4
+- Fixed an error with checking Weaviate collection existence when one doesn't exists
 
 
 ### "Security"
