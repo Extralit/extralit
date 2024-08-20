@@ -25,8 +25,8 @@ async def proxy(request: Request, rest_of_path: str,
     url = urljoin(settings.extralit_url, rest_of_path)
     params = dict(request.query_params)
 
-    print(f'PROXY {url} {params}, {current_user.username}')
-    _LOGGER.info(f'PROXY {url} {params}, {current_user.username}')
+    print(f'PROXY {url} {params}', end='')
+    _LOGGER.info('PROXY %s %s', url, params)
 
     if 'workspace' not in params or not params['workspace']:
         raise HTTPException(status_code=500, detail="`workspace` is required in query parameters")
@@ -43,9 +43,11 @@ async def proxy(request: Request, rest_of_path: str,
         request = client.build_request("GET", url, params=params)
     elif request.method == "POST":
         data = await request.json()
+        print(data)
         request = client.build_request("POST", url, json=data, params=params)
     elif request.method == "PUT":
         data = await request.json()
+        print(data)
         request = client.build_request("PUT", url, data=data, params=params)
     elif request.method == "DELETE":
         request = client.build_request("DELETE", url, params=params)
@@ -58,13 +60,13 @@ async def proxy(request: Request, rest_of_path: str,
             async for chunk in response.aiter_raw():
                 yield chunk
         except httpx.ReadTimeout as exc:
-            _LOGGER.error(f"Request to {exc.request.url!r} timed out.")
+            _LOGGER.error("Request to %s timed out.", exc.request.url)
             yield b"Request timed out."
         except httpx.TimeoutException as exc:
-            _LOGGER.error(f"Request to {exc.request.url!r} timed out.")
+            _LOGGER.error("Request to %s timed out.", exc.request.url)
             yield b"Request timed out."
         except httpx.RequestError as exc:
-            _LOGGER.error(f"An error occurred while requesting {exc.request.url!r}: {exc}")
+            _LOGGER.error("An error occurred while requesting %s: %s", exc.request.url, exc)
             yield b"An error occurred while processing the request."
 
     return StreamingResponse(stream_response(), media_type="text/event-stream")
@@ -72,7 +74,8 @@ async def proxy(request: Request, rest_of_path: str,
 @router.on_event("startup")
 async def startup_event():
     global client
-    client = httpx.AsyncClient(timeout=10.0)
+    if client is None:
+        client = httpx.AsyncClient(timeout=10.0)
 
 @router.on_event("shutdown")
 async def shutdown():
