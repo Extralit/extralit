@@ -16,6 +16,40 @@ These are the section headers that we use:
 
 ## [Unreleased]()
 
+
+### "Added"
+
+
+### "Changed"
+
+
+### "Deprecated"
+
+
+### "Removed"
+
+
+### "Fixed"
+- Fixed an issue with reindexing elasticsearch by exception handling on failed datasets
+
+
+### "Security"
+
+## [v0.2.0]()
+
+### Added
+- Added use_table option to `QuestionSetting`.
+- Added `inserted_at` and `updated_at` fields to `Suggestion`.
+- Added GitHub Codespaces in `.devcontainer`.
+
+### Changed
+- Updated GitHub Actions and updated Docker Hub image name deployments.
+- Updated package names and build configurations for Extralit.
+- Set up mono repo to merge `extralit-server`.
+- Updated README.md with new information.
+- Updated pip dependencies for Python tests.
+
+
 ## [1.29.0](https://github.com/argilla-io/argilla/compare/v1.28.0...v1.29.0)
 
 ### Added

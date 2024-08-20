@@ -44,6 +44,28 @@ These are the section headers that we use:
 - Allow admin role for workspace creation
 
 
+## [v0.2.0]()
+
+### Added
+- Added workspace schema and file management to the Extralit CLI.
+- Introduced the Extralit CLI for improved command-line interactions.
+- Added tooltip in `LabelSelection`.
+- Added use_table option to `QuestionSetting`.
+
+### Changed
+- Refined workspace schema and file management in the Extralit CLI.
+- Updated `rg.Workspace` with `update_schemas` and `get_schemas` methods.
+- Enabled `_ID` reference IDs in schemas.
+- Updated status filter options in `StatusFilter.vue` and `RecordRepository.ts`.
+- Updated translation for "Use Table" option.
+- Updated community links.
+
+### Fixed
+- Fixed import statements in `SchemaStructure` and `Workspace`.
+- Ensured `.mjs` files are properly transpiled with `babel-loader`.
+- Fixed validation errors in `FeedbackRecord` suggestions to server payload.
+- Fixed `RecordRepository.ts` to remove fetching "All data".
+
 
 ## [1.29.0](https://github.com/argilla-io/argilla/compare/v1.28.0...v1.29.0)
 

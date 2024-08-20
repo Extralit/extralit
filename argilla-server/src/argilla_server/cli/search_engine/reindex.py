@@ -132,9 +132,17 @@ async def _reindex_datasets(db: AsyncSession, search_engine: SearchEngine, progr
     task = progress.add_task(f"reindexing feedback datasets...", total=await Reindexer.count_datasets(db))
 
     async for dataset in Reindexer.reindex_datasets(db, search_engine):
-        await _reindex_dataset_records(db, search_engine, progress, dataset)
-
-        progress.advance(task)
+        try:
+            await _reindex_dataset_records(db, search_engine, progress, dataset)
+        except Exception as e:
+            echo_in_panel(
+                f"Failed to reindex dataset `{dataset.name}`: {str(e)}",
+                title="Reindexing Error",
+                title_align="left",
+                success=False,
+            )
+        finally:
+            progress.advance(task)
 
 
 async def _reindex_dataset_records(

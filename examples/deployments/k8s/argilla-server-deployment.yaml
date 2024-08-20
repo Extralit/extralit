@@ -93,7 +93,6 @@ spec:
                   name: elasticsearch-master-credentials
                   key: password
                   optional: true
-            
           volumeMounts:
             - name: elasticsearch-master-certs
               mountPath: /usr/share/elasticsearch/config/certs
