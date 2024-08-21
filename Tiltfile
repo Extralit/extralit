@@ -20,14 +20,14 @@ if 'kind' in k8s_context():
 load('ext://helm_resource', 'helm_resource', 'helm_repo')
 
 # Installing elastic/elasticsearch Helm
-# helm_repo('elastic', 'https://helm.elastic.co', labels=['helm'])
+# helm_repo('elastic', 'https://helm.elastic.co', labels=['helm'], resource_name='elastic-helm')
 # helm_resource(
 #     name='elasticsearch', 
 #     chart='elastic/elasticsearch', 
 #     flags=[
 #         '--version=8.5.1',
 #         '--values=./examples/deployments/k8s/helm/elasticsearch-helm.yaml'],
-#     deps=['elastic'],
+#     deps=['elastic-helm'],
 #     port_forwards=['9200'],
 #     labels=['argilla-server']
 # )
@@ -84,14 +84,14 @@ k8s_resource(
 
 
 # PostgreSQL is the database for argilla-server
-helm_repo('bitnami', 'https://charts.bitnami.com/bitnami', labels=['helm'])
+helm_repo('bitnami', 'https://charts.bitnami.com/bitnami', labels=['helm'], resource_name='postgres-helm')
 helm_resource(
     name='main-db', 
     chart='bitnami/postgresql', 
     flags=[
         '--version=13.2.0',
         '--values=examples/deployments/k8s/helm/postgres-helm.yaml'],
-    deps=['examples/deployments/k8s/helm/postgres-helm.yaml'],
+    deps=['postgres-helm'],
     port_forwards=['5432'],
     labels=['argilla-server']
 )
@@ -117,14 +117,14 @@ k8s_resource(
 )
 
 # Weaviate vector database
-helm_repo('weaviate', 'https://weaviate.github.io/weaviate-helm', labels=['helm'])
+helm_repo('weaviate', 'https://weaviate.github.io/weaviate-helm', labels=['helm'], resource_name='weaviate-helm')
 helm_resource(
     name='weaviate-server', 
     chart='weaviate/weaviate', 
     flags=[
         '--version=16.8.8',
         '--values=examples/deployments/k8s/helm/weaviate-helm.yaml'],
-    deps=['examples/deployments/k8s/helm/weaviate-helm.yaml'],
+    deps=['weaviate-helm'],
     port_forwards=['8080:8080', '50051:50051'],
     labels=['extralit']
 )
@@ -152,7 +152,7 @@ k8s_yaml([
     ])
 k8s_resource(
     'extralit-server',
-    resource_deps=['minio', 'weaviate'],
+    resource_deps=['minio', 'weaviate-server'],
     port_forwards=['5555'],
     labels=['extralit'],
 )
