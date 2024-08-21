@@ -87,7 +87,7 @@ async def list_objects(
     except S3Error as se:
         _LOGGER.error(f"Error listing objects in '{bucket}/{prefix}': {se}")
         if se.code == "NoSuchBucket":
-            raise HTTPException(status_code=404, detail=f"Bucket '{bucket}' not found") from se
+            raise HTTPException(status_code=404, detail=f"Bucket '{bucket}' not found, please run `rg.Workspace.create('{bucket}')` to create the S3 bucket.") from se
         else:
             raise HTTPException(status_code=404, detail=f"Cannot list objects as '{bucket}/{prefix}' is not found") from se
     except Exception as e:

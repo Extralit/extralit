@@ -11,6 +11,9 @@ RUN pip install -q uv && uv venv /opt/venv && source /opt/venv/bin/activate
 ENV PATH="/opt/venv/bin:$PATH"
 ENV VIRTUAL_ENV="/opt/venv"
 
+# Set NLTK_DATA environment variable
+ENV NLTK_DATA="/home/extralit/nltk_data"
+
 # Copy the entire repository into /home/argilla in the container
 COPY . /home/extralit/
 
