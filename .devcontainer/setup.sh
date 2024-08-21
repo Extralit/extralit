@@ -1,5 +1,5 @@
 # Perform the pip editable install
-uv pip install -e /workspaces/extralit/argilla/ &
+uv pip install -e /workspaces/extralit/argilla-server/ && uv pip install -e /workspaces/extralit/argilla/ &
 
 # Create k3d cluster for local development with ctlptl and Tilt
 ctlptl create registry ctlptl-registry --port=5005

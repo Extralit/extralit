@@ -1,4 +1,4 @@
-"""Added Document model and updated Record model
+"""add Document model and update Record model
 
 Revision ID: 7552df94427a
 Revises: ca7293c38970

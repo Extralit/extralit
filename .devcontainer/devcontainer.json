@@ -47,8 +47,8 @@
     // Add python support with micromamba and some packages
     "ghcr.io/mamba-org/devcontainer-features/micromamba": {
       "autoActivate": true,
-      "channels": "conda-forge huggingface defaults",
-      "packages": "python==3.10.14 nodejs=18.16.1 uvicorn uv pdm jupyterlab pyparsing!=3.0.5 pytest pytest-cov pytest-mock pytest-asyncio==0.21.1 pytest-env factory_boy~=3.2.1 pandoc==2.12 ipython<8.0.0 nodejs=18.16.1 pandoc==2.12",
+      "channels": "pytorch conda-forge huggingface defaults",
+      "packages": "python==3.10.14 uvicorn uv pdm jupyterlab pyparsing!=3.0.5 pytest pytest-cov pytest-mock pytest-asyncio==0.21.1 pytest-env factory_boy~=3.2.1 pandoc==2.12 ipython<8.0.0 nodejs=18.16.1 pandoc==2.12 datasets==2.21.0 spacy==3.6.1 pytest-randomly>=3.15.0 sentence-transformers<3.0.0 transformers textdescriptives<3.0.0",
       "envFile": "",
       "envName": "base"
     }
