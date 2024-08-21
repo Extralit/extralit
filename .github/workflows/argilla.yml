@@ -17,8 +17,6 @@ on:
       - releases/**
     paths:
       - "argilla/**"
-    paths-ignore:
-      - "argilla/docs/**"
 
   pull_request:
     paths:
