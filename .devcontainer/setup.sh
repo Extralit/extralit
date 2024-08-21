@@ -1,8 +1,13 @@
 #!/bin/bash
 
 # Perform the pip editable install
-uv pip install "sentence-transformers<3.0.0" transformers "textdescriptives<3.0.0" \
-    -e /workspaces/extralit/argilla-server/ && uv pip install -e /workspaces/extralit/argilla/ &
+if ! pip list | grep -q "extralit"; then
+    echo "Installing required packages and editable installs..."
+    uv pip install "sentence-transformers<3.0.0" transformers "textdescriptives<3.0.0" \
+        -e /workspaces/extralit/argilla-server/ && uv pip install -e /workspaces/extralit/argilla/ &
+else
+    echo "Package 'extralit' is already installed. Skipping installation."
+fi
 
 # Create k3d cluster for local development with ctlptl and Tilt
 if ! ctlptl get registry | grep -q "ctlptl-registry"; then
