@@ -25,6 +25,7 @@ git config --global --add safe.directory /workspaces/extralit
 if ! git remote get-url upstream &>/dev/null; then
     echo "Adding upstream remote..."
     git remote add upstream https://github.com/argilla-io/argilla
+    git fetch upstream --no-tags
 else
     echo "Upstream remote already exists. Skipping addition."
 fi

@@ -1,4 +1,4 @@
-name: Build Extralit Server docker image
+name: Build Argilla server docker image
 
 on:
   workflow_call:

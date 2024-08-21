@@ -25,7 +25,7 @@ These are the section headers that we use:
 
 - Changed elasticsearch deployment from Helm to `docker.elastic.co/elasticsearch/elasticsearch` to fix PVC restarting issues
 - Updated elasticsearch to 8.15.0
-- Refactored extralit dockerfile
+- Refactored extralit dockerfile and Docker Hub images to `extralit/argilla-server` and `extralit/argilla-quickstart`
 
 ### "Deprecated"
 
