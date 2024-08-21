@@ -2,8 +2,8 @@
 FROM debian:bullseye-slim
 
 # Copy the devcontainer setup file into the container
-COPY .devcontainer/setup.sh /workspace/setup.sh
-RUN chmod +x /workspace/setup.sh
+COPY .devcontainer/setup.sh /workspaces/setup.sh
+RUN chmod +x /workspaces/setup.sh
 
 # Install necessary packages including Docker dependencies
 RUN apt-get update && apt-get install -y \
