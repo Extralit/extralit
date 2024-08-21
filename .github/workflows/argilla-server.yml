@@ -18,6 +18,8 @@ on:
       - main
       - develop
       - releases/**
+    paths:
+      - "argilla-server/**"
   pull_request:
     paths:
       - argilla-server/**
