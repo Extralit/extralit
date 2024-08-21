@@ -12,7 +12,6 @@
     "vscode": {
       "extensions": [
         "ms-azuretools.vscode-docker",
-        "tilt-dev.tilt",
         "GitHub.copilot",
         "GitHub.copilot-chat",
         "github.vscode-github-actions",
@@ -45,21 +44,17 @@
     "ghcr.io/rio/features/k3d:1": {},
     "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {},
 
-    // Add common utilities and name non-root user.
-    "ghcr.io/devcontainers/features/common-utils:2": {
-    },
-
-    "ghcr.io/mamba-org/devcontainer-features/micromamba:1": {
+    // Add python support with micromamba and some packages
+    "ghcr.io/mamba-org/devcontainer-features/micromamba": {
       "autoActivate": true,
-      "version": "latest",
-      "channels": "pytorch conda-forge nvidia huggingface plotly defaults",
-      "packages": "python==3.10.14 nodejs=18.16.1 uvicorn uv pdm jupyterlab",
+      "channels": "conda-forge huggingface defaults",
+      "packages": "python==3.10.14 nodejs=18.16.1 uvicorn uv pdm jupyterlab pyparsing!=3.0.5 pytest pytest-cov pytest-mock pytest-asyncio==0.21.1 pytest-env factory_boy~=3.2.1 pandoc==2.12 ipython<8.0.0 nodejs=18.16.1 pandoc==2.12",
       "envFile": "",
       "envName": "base"
     }
   },
 
-  "postCreateCommand": ".devcontainer/setup.sh",
+  "postCreateCommand": "/workspace/setup.sh",
   
   "hostRequirements": {
     "cpus": 4,

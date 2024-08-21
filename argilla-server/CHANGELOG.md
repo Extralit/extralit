@@ -18,6 +18,7 @@ These are the section headers that we use:
 
 
 ### "Added"
+- Pytest and python env setup in GH Codespaces devcontainer
 
 
 ### "Changed"
