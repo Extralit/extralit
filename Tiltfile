@@ -135,7 +135,7 @@ if not os.path.exists('argilla/dist/'):
 docker_build(
     "{DOCKER_REPO}/extralit-server".format(DOCKER_REPO=DOCKER_REPO),
     context='argilla/',
-    dockerfile='argilla-server/docker/server/extralit.dockerfile',
+    dockerfile='argilla/docker/extralit.dockerfile',
     ignore=['.*', 'argilla-frontend/', 'argilla_server/'],
     live_update=[
         sync('./argilla/', '/home/extralit/argilla/'),

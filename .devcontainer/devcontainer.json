@@ -23,7 +23,15 @@
         "tilt-dev.tiltfile"
       ]
     },
-    "settings": {}
+    "settings": {
+      "python.testing.pytestEnabled": true,
+      "python.testing.unittestEnabled": false,
+      "python.testing.nosetestsEnabled": false,
+      "python.testing.pytestArgs": [
+        "argilla/tests",
+        "argilla-server/tests"
+      ]
+    }
   },
 
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
