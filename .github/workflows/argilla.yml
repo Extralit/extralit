@@ -1,4 +1,4 @@
-name: Build Extralit package
+name: Build Argilla package
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -102,7 +102,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
 
   build_python_package:
-    name: Build Extralit python package
+    name: Build Argilla python package
     uses: ./.github/workflows/argilla.build-python-package.yml
     needs:
       - run_unit_tests
