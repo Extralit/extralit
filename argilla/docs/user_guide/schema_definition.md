@@ -88,16 +88,28 @@ These rules ensure that the month is always an integer between 1 and 12.
 
 ## Advanced Usage
 
-Let's extend our schema with more advanced features:
+Let's extend our schema with more advanced features, incorporating best practices to ensure data quality and consistency:
 
 ```python
 class StudyDesign(pa.DataFrameModel):
-    study_id: Series[str] = pa.Field(str_length={'min_length': 5, 'max_length': 10})
-    year: Series[int] = pa.Field(gt=2000, coerce=True)
+    """
+    Study design details for one or more experimental setup that are often found in methodology sections.
+    This schema includes best practices for extracting structured data from scientific papers.
+    """
+    study_id: Index[str] = pa.Field(
+        unique=True, 
+        str_length={'min_length': 5, 'max_length': 10},
+        check_name=True
+    )
+    year: Series[int] = pa.Field(ge=1900, le=2100, coerce=True)
     month: Series[int] = pa.Field(ge=1, le=12, coerce=True)
-    day: Series[int] = pa.Field(ge=0, le=365, coerce=True)
+    day: Series[int] = pa.Field(ge=1, le=31, coerce=True)
     sample_size: Series[int] = pa.Field(gt=0)
-    study_type: Series[str] = pa.Field(isin=['RCT', 'Observational', 'Meta-analysis'])
+    study_type: Series[str] = pa.Field(
+        isin=['RCT', 'Observational', 'Meta-analysis'],
+        description="The type of study conducted",
+        nullable=False
+    )
     
     @pa.check('sample_size')
     def check_sample_size(cls, sample_size: Series[int]) -> Series[bool]:
@@ -111,33 +123,51 @@ class StudyDesign(pa.DataFrameModel):
 New features in this advanced schema:
 
 1. **String Length Validation**: 
-   ```python
-   study_id: Series[str] = pa.Field(str_length={'min_length': 5, 'max_length': 10})
-   ```
-   This ensures the `study_id` is a string between 5 and 10 characters long.
+    ```python
+    study_id: Index[str] = pa.Field(unique=True, str_length={'min_length': 5, 'max_length': 10},check_name=True)
+    ```
+    This ensures the `study_id` is a string between 5 and 10 characters long.
 
-2. **Categorical Validation**:
-   ```python
-   study_type: Series[str] = pa.Field(isin=['RCT', 'Observational', 'Meta-analysis'])
-   ```
-   This restricts `study_type` to only these three values.
+2. **Nullable Fields**:
+     ```python
+     month: Series[int] = pa.Field(ge=1, le=12, nullable=True, coerce=True)
+     ```
+    Allowing certain fields to be nullable acknowledges that not all information may be available in every paper.
 
-3. **Custom Validation Check**:
-   ```python
-   @pa.check('sample_size')
-   def check_sample_size(cls, sample_size: Series[int]) -> Series[bool]:
-       return sample_size % 2 == 0  # Ensure sample size is even
-   ```
-   This custom check ensures that the sample size is always even.
+3. **Categorical Validation**:
+    ```python
+    study_type: Series[str] = pa.Field(isin=['RCT', 'Observational', 'Meta-analysis'])
+    ```
+    This restricts `study_type` to only these three values.
 
-4. **Configuration**:
-   ```python
-   class Config:
-       strict = True
-       coerce = True
-   ```
-   - `strict = True`: Ensures no additional columns are allowed beyond what's defined in the schema.
-   - `coerce = True`: Applies type coercion to all fields by default.
+
+4. **Field Descriptions**:
+    ```python
+    study_type: Series[str] = pa.Field(
+        isin=['RCT', 'Observational', 'Meta-analysis'],
+        description="The type of study conducted",
+        nullable=False
+    )
+    ```
+    Adding descriptions to fields helps guide the extraction process and provides context for the LLM and data annotators.
+
+
+5. **Custom Validation Check**:
+    ```python
+    @pa.check('sample_size')
+    def check_sample_size(cls, sample_size: Series[int]) -> Series[bool]:
+         return sample_size % 2 == 0  # Ensure sample size is even
+    ```
+    This custom check ensures that the sample size is always even.
+
+6. **Configuration**:
+    ```python
+    class Config:
+         strict = True
+         coerce = True
+    ```
+    - `strict = True`: Ensures no additional columns are allowed beyond what's defined in the schema.
+    - `coerce = True`: Applies type coercion to all fields by default.
 
 ## Using the Schema
 
@@ -163,8 +193,19 @@ If the data doesn't meet the schema requirements, Pandera will raise an informat
 ## Best Practices
 
 1. **Start Simple**: Begin with basic type and range validations, then add more complex rules as needed.
+
 2. **Use Descriptive Names**: Choose clear, descriptive names for your schema classes and fields.
-3. **Document Your Schema**: Add docstrings to your schema class and methods to explain the purpose of each field and validation rule.
-4. **Test Your Schema**: Create unit tests to ensure your schema behaves as expected with various input data.
+
+3. **Use Schema Descriptions**: Include a detailed docstring for your schema class. This helps guide the LLM in understanding what type of information to extract and where to find it in the paper.
+
+4. **Leverage Field Metadata**: Use the description parameter in pa.Field() to provide context for each field. This can help guide the extraction process and provide valuable information for data users.
+
+5. **Use Appropriate Data Types**: Choose the most specific data type possible for each field. For example, use int for whole numbers and float for decimal values.
+
+6. **Implement Logical Constraints**: Use multi-field checks to ensure logical consistency between related fields.
+   
+7. **Allow for Flexibility**: Use nullable=True for fields that may not always be present in every paper. This acknowledges the variability in reporting across different studies.
+
+8. **Test Your Schema**: Create validate your schema to a small dataset to ensure the checks behave as expected with various input data.
 
 By defining clear and comprehensive schemas, you ensure that the data extracted by Extralit is consistent, valid, and ready for analysis. This approach significantly reduces data cleaning efforts and improves the overall quality of your research data.
