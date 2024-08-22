@@ -20,6 +20,7 @@ on:
       - releases/**
     paths:
       - "argilla-server/**"
+      - ".github/workflows/**"
   pull_request:
     paths:
       - argilla-server/**
