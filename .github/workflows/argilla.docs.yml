@@ -62,12 +62,13 @@ jobs:
 
       - name: Deploy Extralit docs (branch /main)
         run: |
-          pdm run mike deploy latest --push
-          pdm run mike set-default --push latest
+          pdm run mike deploy stable --push
         if: github.ref == 'refs/heads/main'
 
       - name: Deploy Extralit docs (branch /develop)
-        run: pdm run mike deploy dev --push
+        run: |
+          pdm run mike deploy latest --push
+          pdm run mike set-default --push latest
         if: github.ref == 'refs/heads/develop'
 
       - name: Deploy Extralit docs (release $version)

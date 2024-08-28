@@ -25,7 +25,7 @@ To get started:
 
     Get familiar with the basic workflows of Extralit. Learn how to manage `Users`, `Workspaces`, `Datasets`, and `Records` to set up your data annotation projects.
 
-    [:octicons-arrow-right-24: Learn more](admin_guide/index.md)
+    [:octicons-arrow-right-24: Learn more](user_guide/index.md)
 
 </div>
 
