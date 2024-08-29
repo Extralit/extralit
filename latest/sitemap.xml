@@ -111,6 +111,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://docs.extralit.ai/latest/notebooks/quickstart_workflow_feedback/</loc>
+         <lastmod>2024-08-29</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://docs.extralit.ai/latest/reference/argilla/SUMMARY/</loc>
          <lastmod>2024-08-29</lastmod>
          <changefreq>daily</changefreq>
