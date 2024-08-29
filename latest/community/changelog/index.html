@@ -54,12 +54,6 @@
     
       <link rel="stylesheet" href="../../stylesheets/extra.css">
     
-      <link rel="stylesheet" href="../../css/ansi-colours.css">
-    
-      <link rel="stylesheet" href="../../css/jupyter-cells.css">
-    
-      <link rel="stylesheet" href="../../css/pandas-dataframe.css">
-    
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -5779,6 +5773,7 @@ These are the section headers that we use:
 <h2 id="unreleased"><a href="">Unreleased</a><a class="headerlink" href="#unreleased" title="Permanent link">&para;</a></h2>
 <h3 id="added">"Added"<a class="headerlink" href="#added" title="Permanent link">&para;</a></h3>
 <ul>
+<li>Added singleton schema support in SchemaStructure</li>
 <li>Added .devcontainer for "Docker, Tilt, and <abbr title="Kubernetes, an open-source platform designed to automate deploying, scaling, and operating application containers.">K8s</abbr>" local development on GH Codespaces</li>
 <li>Added examples/deployments/k8s/extralit-configs.yaml for configuring the extralit service and secrets in a <abbr title="Kubernetes, an open-source platform designed to automate deploying, scaling, and operating application containers.">K8s</abbr> cluster</li>
 <li>Added <a href="https://docs.extralit.ai">docs site for the extralit project</a> at <code>argilla/docs/</code> </li>
@@ -5788,6 +5783,7 @@ These are the section headers that we use:
 <li>Changed elasticsearch deployment from Helm to <code>docker.elastic.co/elasticsearch/elasticsearch</code> to fix PVC restarting issues</li>
 <li>Updated elasticsearch to 8.15.0</li>
 <li>Refactored extralit dockerfile and Docker Hub images to <code>extralit/argilla-server</code> and <code>extralit/argilla-quickstart</code></li>
+<li>Changed <code>develop</code> branch changes in argilla/docs to <code>https:/docs.extralit.ai/latest</code> instead of <code>dev</code></li>
 </ul>
 <h3 id="deprecated">"Deprecated"<a class="headerlink" href="#deprecated" title="Permanent link">&para;</a></h3>
 <h3 id="removed">"Removed"<a class="headerlink" href="#removed" title="Permanent link">&para;</a></h3>
