@@ -303,7 +303,7 @@ class Workspace:
             raise RuntimeError(
                 f"Error getting schemas from workspace with name=`{self.name}` due to: `{e}`."
             ) from e
-        return SchemaStructure(schemas=list(schemas.values()))
+        return SchemaStructure(args=list(schemas.values()))
     
     @allowed_for_roles(roles=[UserRole.owner, UserRole.admin])
     def list_files(self, path: str, recursive=True, include_version=True) -> ListObjectsResponse:

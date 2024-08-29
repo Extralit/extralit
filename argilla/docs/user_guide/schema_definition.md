@@ -4,17 +4,44 @@ description: Learn how to define schemas in Extralit to extract structured data 
 
 # Schema Definition
 
-In Extralit, schemas are defined using [Pandera's DataFrameModel](https://pandera.readthedocs.io/en/stable/dataframe_models.html). These schemas specify the structure and validation rules for the data you want to extract from scientific papers. This guide will walk you through the process of defining a schema, explaining each component in detail.
+In Extralit, schemas are defined using [Pandera's DataFrameModel](https://pandera.readthedocs.io/en/stable/dataframe_models.html). These schemas specify the structure and validation rules for the data you want to extract from each scientific paper reference. This guide will walk you through the process of defining a schema, explaining each component in detail.
+
+> **Note**: Before diving into schema definition, make sure you understand the concept of references in Extralit. References are unique identifiers for each scientific paper in your dataset. Learn more about references and other core concepts in the [Core Concepts](../core_concepts.md) guide.
+
 
 ## Basic Usage
 
-Let's start with a basic example of a schema definition:
+Let's start with two basic examples of schema definitions: one for document-level extraction and another for table extraction.
+
+### Document-Level Extraction
+
+This type of schema is used for information that appears only once per paper:
 
 ```python
 import pandas as pd
 import pandera as pa
 from pandera.typing import Index, DataFrame, Series
 
+class Publication(pa.DataFrameModel):
+    """
+    General information about the publication, extracted once per paper.
+    """
+    reference: Index[str] = pa.Field(unique=True, check_name=True)
+    title: Series[str] = pa.Field()
+    authors: Series[str] = pa.Field()
+    journal: Series[str] = pa.Field()
+    publication_year: Series[int] = pa.Field(ge=1900, le=2100)
+    doi: Series[str] = pa.Field(nullable=True)
+    
+    class Config:
+        singleton = {'enabled': True}  # Indicates this is a document-level schema
+```
+
+### Table Extraction
+
+This type of schema is used for information that may appear multiple times in a paper:
+
+```python
 class StudyDesign(pa.DataFrameModel):
     """
     Study design details for one or more experimental setup.
@@ -22,6 +49,7 @@ class StudyDesign(pa.DataFrameModel):
     year: Series[int] = pa.Field(gt=2000, coerce=True)
     month: Series[int] = pa.Field(ge=1, le=12, coerce=True)
     day: Series[int] = pa.Field(ge=0, le=365, coerce=True)
+    sample_size: Series[int] = pa.Field(gt=0)
 ```
 
 Let's break down this schema definition:

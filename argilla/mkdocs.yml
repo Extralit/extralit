@@ -127,7 +127,7 @@ plugins:
             # hide private members
             private: true
   - social
-  - mknotebooks
+  # - mknotebooks
 
 # Documentation Structure
 nav:
