@@ -1,12 +1,12 @@
 [
   {
-    "version": "stable",
-    "title": "stable",
+    "version": "latest",
+    "title": "latest",
     "aliases": []
   },
   {
-    "version": "latest",
-    "title": "latest",
+    "version": "stable",
+    "title": "stable",
     "aliases": []
   },
   {
@@ -16,10 +16,5 @@
     "properties": {
       "hidden": true
     }
-  },
-  {
-    "version": "dev",
-    "title": "dev",
-    "aliases": []
   }
 ]
