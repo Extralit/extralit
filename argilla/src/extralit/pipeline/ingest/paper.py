@@ -15,7 +15,7 @@ def get_paper_extraction_status(references: List[str], schemas: SchemaStructure,
                                 paper_dataset: rg.FeedbackDataset,
                                 extraction_dataset: rg.FeedbackDataset=None,
                                 preprocessing_dataset: rg.FeedbackDataset=None) -> pd.DataFrame:
-    assert schemas.document_schema is not None, "Document schema must be given in the schemas."
+    assert schemas.singleton_schema is not None, "Document schema must be given in the schemas."
     users = rg.Workspace.from_name(paper_dataset.workspace.name).users
     users_id_to_username = {u.id: u.username for u in users}
 
@@ -24,7 +24,7 @@ def get_paper_extraction_status(references: List[str], schemas: SchemaStructure,
             name='reference',
             values=references)).records
 
-    document_schema = schemas.document_schema
+    document_schema = schemas.singleton_schema
     references_data = []
     for record in paper_records:
         reference = record.metadata['reference']

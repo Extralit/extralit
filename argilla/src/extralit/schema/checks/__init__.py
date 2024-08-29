@@ -3,12 +3,16 @@ import pandera as pa
 from pandera.extensions import register_check_method
 
 from .consistency import check_less_than, check_greater_than, check_between
-from .multilabels import is_valid_list_str, is_valid_list_str, multiselect
+from .multilabels import is_valid_list_str, multiselect
 from .suggestion import suggestion
 from .time_elapsed import check_time_difference
+from .dataframe import singleton
 
 
-def register_check_methods():
+def register_check_methods() -> None:
+    """
+    Register Pandera check methods for various check functions, ensuring no duplicate in registered check names.
+    """
     if check_less_than.__name__ not in pa.Check:
         register_check_method(
             statistics=["columns_a", "columns_b", "or_equal"],
@@ -44,8 +48,13 @@ def register_check_methods():
         register_check_method(
             statistics=['field', "start_year", "start_month", "end_year", "end_month", "unit", "margin"],
             check_type='vectorized')(check_time_difference)
+        
+    if singleton.__name__ not in pa.Check:
+        register_check_method(
+            statistics=['enabled'],
+            check_type='vectorized')(singleton)
 
 register_check_methods()
 
 __all__ = ['is_valid_list_str', 'multiselect', 'suggestion', 'check_time_difference', 'check_less_than',
-           'check_greater_than', 'check_between', 'register_check_methods']
+           'check_greater_than', 'check_between', 'singleton', 'register_check_methods']

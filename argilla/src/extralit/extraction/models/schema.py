@@ -17,16 +17,55 @@ DEFAULT_SCHEMA_S3_PATH = 'schemas/'
 
 _LOGGER = logging.getLogger(__name__)
 
+
+def topological_sort(schema_name: str, visited: Dict[str, int], stack: deque,
+                     dependencies: Dict[str, List[str]]) -> None:
+    visited[schema_name] = 1  # Gray
+
+    for i in dependencies.get(schema_name, []):
+        if visited[i] == 1:  # If the node is gray, it means we have a cycle
+            raise ValueError(f"Circular dependency detected: {schema_name} depends on {i} and vice versa")
+        if visited[i] == 0:  # If the node is white, visit it
+            topological_sort(i, visited, stack, dependencies)
+
+    visited[schema_name] = 2  # Black
+    stack.appendleft(schema_name)
+
+
 class SchemaStructure(BaseModel):
-    schemas: List[pa.DataFrameSchema] = Field(default_factory=list)
-    document_schema: Optional[pa.DataFrameSchema] = None
+    """
+    A class representing the structure of a schema.
+    """
+    schemas: List[pa.DataFrameSchema] = Field(
+        default_factory=list, description="A list of all the extraction schemas.")
+    singleton_schema: Optional[pa.DataFrameSchema] = Field(
+        None, repr=True, description="A singleton schema that exists in `schemas` list.")
+
+    def __init__(self, **data):
+        super().__init__(**data)
+
+        # Ensure singleton_schema is in schemas list
+        if self.singleton_schema and self.singleton_schema not in self.schemas:
+            self.schemas.append(self.singleton_schema)
+
+        for schema in self.schemas:
+            is_singleton_schema = any(
+                check.name == "singleton" and check.statistics.get('enabled', True) \
+                    for check in schema.checks
+            )
+                
+            if is_singleton_schema and not self.singleton_schema:
+                self.singleton_schema = schema
+            elif is_singleton_schema and self.singleton_schema and schema != self.singleton_schema:
+                raise ValueError("Only one singleton schema is allowed in the schema structure")
+        
 
     @validator('schemas', pre=True, each_item=True)
     def parse_schema(cls, v: Union[pa.DataFrameModel, pa.DataFrameSchema]):
         return v.to_schema() if hasattr(v, 'to_schema') else v
 
-    @validator('document_schema', pre=True)
-    def parse_document_schema(cls, v: Union[pa.DataFrameModel, pa.DataFrameSchema]):
+    @validator('singleton_schema', pre=True)
+    def parse_singleton_schema(cls, v: Union[pa.DataFrameModel, pa.DataFrameSchema]):
         schema: pa.DataFrameSchema = v.to_schema() if hasattr(v, 'to_schema') else v
         assert all(key.islower() for key in schema.columns.keys()), f"All keys in {schema.name} schema must be lowercased"
         return schema
@@ -237,12 +276,23 @@ class SchemaStructure(BaseModel):
         visited = {schema.name: 0 for schema in self.schemas}
         stack = deque()
 
+        # Ensure singleton_schema is ordered first
+        if self.singleton_schema:
+            stack.append(self.singleton_schema.name)
+            visited[self.singleton_schema.name] = 2  # Mark as visited (black)
+
         for schema in self.schemas:
             if visited[schema.name] == 0:
                 # If the node is white, visit it
                 topological_sort(schema.name, visited, stack, self.downstream_dependencies)
 
-        return list(stack)
+        # Ensure singleton_schema is at the beginning of the list
+        ordered_list = list(stack)
+        if self.singleton_schema and ordered_list[0] != self.singleton_schema.name:
+            ordered_list.remove(self.singleton_schema.name)
+            ordered_list.insert(0, self.singleton_schema.name)
+
+        return ordered_list
 
     def __iter__(self):
         return iter(self.ordering)
@@ -258,24 +308,10 @@ class SchemaStructure(BaseModel):
                 return schema
         raise KeyError(f"No schema found for '{item}'")
 
-    def __repr_args__(self):
-        args = [(s.name, ((s.index.names or [s.index.name]) if s.index else []) + list(s.columns)) \
-                for s in self.schemas]
-        return args
-
     class Config:
         arbitrary_types_allowed = True
 
-
-def topological_sort(schema_name: str, visited: Dict[str, int], stack: deque,
-                     dependencies: Dict[str, List[str]]) -> None:
-    visited[schema_name] = 1  # Gray
-
-    for i in dependencies.get(schema_name, []):
-        if visited[i] == 1:  # If the node is gray, it means we have a cycle
-            raise ValueError(f"Circular dependency detected: {schema_name} depends on {i} and vice versa")
-        if visited[i] == 0:  # If the node is white, visit it
-            topological_sort(i, visited, stack, dependencies)
-
-    visited[schema_name] = 2  # Black
-    stack.appendleft(schema_name)
+    def __repr__(self):
+        schema_names = [schema.name for schema in self.schemas]
+        singleton_schema_name = self.singleton_schema.name if self.singleton_schema else None
+        return f"SchemaStructure(schemas={schema_names}, singleton_schema={singleton_schema_name})"

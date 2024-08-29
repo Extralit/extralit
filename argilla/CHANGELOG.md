@@ -17,6 +17,7 @@ These are the section headers that we use:
 ## [Unreleased]()
 
 ### "Added"
+- Added singleton schema support in SchemaStructure
 - Added .devcontainer for "Docker, Tilt, and K8s" local development on GH Codespaces
 - Added examples/deployments/k8s/extralit-configs.yaml for configuring the extralit service and secrets in a K8s cluster
 - Added [docs site for the extralit project](https://docs.extralit.ai) at `argilla/docs/` 
@@ -26,6 +27,7 @@ These are the section headers that we use:
 - Changed elasticsearch deployment from Helm to `docker.elastic.co/elasticsearch/elasticsearch` to fix PVC restarting issues
 - Updated elasticsearch to 8.15.0
 - Refactored extralit dockerfile and Docker Hub images to `extralit/argilla-server` and `extralit/argilla-quickstart`
+- Changed `develop` branch changes in argilla/docs to `https:/docs.extralit.ai/latest` instead of `dev`
 
 ### "Deprecated"
 

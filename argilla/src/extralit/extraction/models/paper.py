@@ -10,10 +10,8 @@ from pandera.api.base.model import MetaModel
 from pydantic.v1 import BaseModel, Field
 
 from extralit.extraction.models.schema import SchemaStructure
-from extralit.schema.checks import register_check_methods
 
 _LOGGER = logging.getLogger(__name__)
-register_check_methods()
 
 
 class PaperExtraction(BaseModel):
