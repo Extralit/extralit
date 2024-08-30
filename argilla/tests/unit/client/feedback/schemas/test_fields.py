@@ -26,19 +26,23 @@ from tests.pydantic_v1 import ValidationError
     [
         (
             {"name": "a"},
-            {"name": "a", "title": "A", "required": True, "settings": {"type": "text", "use_markdown": False}},
+            {"name": "a", "title": "A", "required": True, "settings": {"type": "text", "use_markdown": False, "use_table": False}},
         ),
         (
             {"name": "a", "title": "b"},
-            {"name": "a", "title": "b", "required": True, "settings": {"type": "text", "use_markdown": False}},
+            {"name": "a", "title": "b", "required": True, "settings": {"type": "text", "use_markdown": False, "use_table": False}},
         ),
         (
             {"name": "a", "title": "b", "required": False},
-            {"name": "a", "title": "b", "required": False, "settings": {"type": "text", "use_markdown": False}},
+            {"name": "a", "title": "b", "required": False, "settings": {"type": "text", "use_markdown": False, "use_table": False}},
         ),
         (
             {"name": "a", "title": "b", "required": False, "use_markdown": True},
-            {"name": "a", "title": "b", "required": False, "settings": {"type": "text", "use_markdown": True}},
+            {"name": "a", "title": "b", "required": False, "settings": {"type": "text", "use_markdown": True, "use_table": False}},
+        ),
+        (
+            {"name": "a", "title": "b", "required": False, "use_table": True},
+            {"name": "a", "title": "b", "required": False, "settings": {"type": "text", "use_markdown": False, "use_table": True}},
         ),
     ],
 )

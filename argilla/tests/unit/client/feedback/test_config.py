@@ -111,7 +111,7 @@ def test_dataset_config_json_deprecated(
                         "name": "field-1",
                         "title": "Field-1",
                         "required": True,
-                        "settings": {"type": "text", "use_markdown": False},
+                        "settings": {"type": "text", "use_markdown": False, "use_table": False},
                         "id": "14585f01-2c97-4756-92cc-cc7af17bc342",
                         "inserted_at": "2023-10-10T16:20:23",
                         "updated_at": "2023-10-10T16:20:23",
@@ -120,7 +120,7 @@ def test_dataset_config_json_deprecated(
                         "name": "field-2",
                         "title": "Field-2",
                         "required": False,
-                        "settings": {"type": "text", "use_markdown": False},
+                        "settings": {"type": "text", "use_markdown": False, "use_table": False},
                         "id": "aaaddedc-a273-478a-a27a-b0970b61a7ef",
                         "inserted_at": "2023-10-10T16:20:23",
                         "updated_at": "2023-10-10T16:20:23",
@@ -132,7 +132,7 @@ def test_dataset_config_json_deprecated(
                         "title": "Question-1",
                         "description": None,
                         "required": True,
-                        "settings": {"type": "text", "use_markdown": False},
+                        "settings": {"type": "text", "use_markdown": False, "use_table": False},
                         "id": "421982f2-b1e6-4725-91d6-8e8b908a9b6b",
                         "inserted_at": "2023-10-10T16:20:23",
                         "updated_at": "2023-10-10T16:20:23",
@@ -162,7 +162,7 @@ def test_dataset_config_json_deprecated(
                         "name": "field-1",
                         "title": "Field-1",
                         "required": True,
-                        "settings": {"type": "text", "use_markdown": False},
+                        "settings": {"type": "text", "use_markdown": False, "use_table": False},
                         "use_markdown": False,
                         "id": "71b3b494-a8fa-4fb7-98e5-d1d73a3f5f81",
                         "inserted_at": "2023-10-10T16:18:15",
@@ -172,7 +172,7 @@ def test_dataset_config_json_deprecated(
                         "name": "field-2",
                         "title": "Field-2",
                         "required": False,
-                        "settings": {"type": "text", "use_markdown": False},
+                        "settings": {"type": "text", "use_markdown": False, "use_table": False},
                         "use_markdown": False,
                         "id": "29ae19df-5fc1-4f65-892f-5bc03df3066b",
                         "inserted_at": "2023-10-10T16:18:15",
@@ -185,7 +185,7 @@ def test_dataset_config_json_deprecated(
                         "title": "Question-1",
                         "description": None,
                         "required": True,
-                        "settings": {"type": "text", "use_markdown": False},
+                        "settings": {"type": "text", "use_markdown": False, "use_table": False},
                         "use_markdown": False,
                         "id": "98672849-651b-4c00-ab2a-7f29087c5b22",
                         "inserted_at": "2023-10-10T16:18:15",
@@ -255,7 +255,7 @@ def test_dataset_config_json_deprecated(
                         "name": "field-1",
                         "title": "Field-1",
                         "required": True,
-                        "settings": {"type": "text", "use_markdown": False},
+                        "settings": {"type": "text", "use_markdown": False, "use_table": False},
                         "use_markdown": False,
                         "id": "f2b70656-4d00-48e5-8309-a45bfd2bfb5a",
                         "inserted_at": "2023-10-10T16:17:05",
@@ -265,7 +265,7 @@ def test_dataset_config_json_deprecated(
                         "name": "field-2",
                         "title": "Field-2",
                         "required": False,
-                        "settings": {"type": "text", "use_markdown": False},
+                        "settings": {"type": "text", "use_markdown": False, "use_table": False},
                         "use_markdown": False,
                         "id": "8082835f-446f-4ae5-9e0a-426232eb50b1",
                         "inserted_at": "2023-10-10T16:17:06",
@@ -278,7 +278,7 @@ def test_dataset_config_json_deprecated(
                         "title": "Question-1",
                         "description": None,
                         "required": True,
-                        "settings": {"type": "text", "use_markdown": False},
+                        "settings": {"type": "text", "use_markdown": False, "use_table": False},
                         "use_markdown": False,
                         "id": "d30e8ec1-9c96-4f8a-9cfe-2082738602ad",
                         "inserted_at": "2023-10-10T16:17:06",
@@ -348,14 +348,14 @@ def test_dataset_config_json_deprecated(
                         "name": "field-1",
                         "title": "Field-1",
                         "required": True,
-                        "settings": {"type": "text", "use_markdown": False},
+                        "settings": {"type": "text", "use_markdown": False, "use_table": False},
                         "use_markdown": False,
                     },
                     {
                         "name": "field-2",
                         "title": "Field-2",
                         "required": False,
-                        "settings": {"type": "text", "use_markdown": False},
+                        "settings": {"type": "text", "use_markdown": False, "use_table": False},
                         "use_markdown": False,
                     },
                 ],
@@ -365,7 +365,7 @@ def test_dataset_config_json_deprecated(
                         "title": "Question-1",
                         "description": None,
                         "required": True,
-                        "settings": {"type": "text", "use_markdown": False},
+                        "settings": {"type": "text", "use_markdown": False, "use_table": False},
                         "use_markdown": False,
                     },
                     {
@@ -426,14 +426,14 @@ def test_dataset_config_json_deprecated(
                         "name": "field-1",
                         "title": "Field-1",
                         "required": True,
-                        "settings": {"type": "text", "use_markdown": False},
+                        "settings": {"type": "text", "use_markdown": False, "use_table": False},
                         "use_markdown": False,
                     },
                     {
                         "name": "field-2",
                         "title": "Field-2",
                         "required": False,
-                        "settings": {"type": "text", "use_markdown": False},
+                        "settings": {"type": "text", "use_markdown": False, "use_table": False},
                         "use_markdown": False,
                     },
                 ],
@@ -443,7 +443,7 @@ def test_dataset_config_json_deprecated(
                         "title": "Question-1",
                         "description": None,
                         "required": True,
-                        "settings": {"type": "text", "use_markdown": False},
+                        "settings": {"type": "text", "use_markdown": False, "use_table": False},
                         "use_markdown": False,
                     },
                     {
@@ -570,6 +570,7 @@ def test_dataset_config_backwards_compatibility_argilla_cfg(
               settings:
                 type: text
                 use_markdown: false
+                use_table: false
               title: Field-1
               type: text
               use_markdown: false
@@ -580,6 +581,7 @@ def test_dataset_config_backwards_compatibility_argilla_cfg(
               settings:
                 type: text
                 use_markdown: false
+                use_table: false
               title: Field-2
               type: text
               use_markdown: false
@@ -593,6 +595,7 @@ def test_dataset_config_backwards_compatibility_argilla_cfg(
               settings:
                 type: text
                 use_markdown: false
+                use_table: false
               title: Question-1
               type: text
               use_markdown: false
@@ -694,6 +697,7 @@ def test_dataset_config_backwards_compatibility_argilla_cfg(
               settings:
                 type: text
                 use_markdown: false
+                use_table: false
               title: Field-1
               type: text
               use_markdown: false
@@ -702,6 +706,7 @@ def test_dataset_config_backwards_compatibility_argilla_cfg(
               settings:
                 type: text
                 use_markdown: false
+                use_table: false
               title: Field-2
               type: text
               use_markdown: false
@@ -713,6 +718,7 @@ def test_dataset_config_backwards_compatibility_argilla_cfg(
               settings:
                 type: text
                 use_markdown: false
+                use_table: false
               title: Question-1
               type: text
               use_markdown: false

@@ -138,7 +138,7 @@ class RatingQuestion(QuestionSchema, LabelMappingMixin):
     """
 
     type: Literal[QuestionTypes.rating] = Field(QuestionTypes.rating.value, allow_mutation=False, const=True)
-    values: List[int] = Field(..., unique_items=True, min_items=2)
+    values: List[int] = Field(..., unique_items=True, ge=0, le=10, min_items=2)
 
     @property
     def server_settings(self) -> Dict[str, Any]:
