@@ -45,13 +45,6 @@ jobs:
     secrets: inherit
 
   run_end2end_tests:
-    strategy:
-      matrix:
-        include:
-          - searchEngineDockerImage: docker.elastic.co/elasticsearch/elasticsearch:8.8.2
-            searchEngineDockerEnv: '{"discovery.type": "single-node", "xpack.security.enabled": "false"}'
-            runsOn: ubuntu-latest
-
     name: Run end2end tests
     uses: ./.github/workflows/argilla.end2end-examples.yml
     with:
@@ -59,6 +52,12 @@ jobs:
       searchEngineDockerImage: ${{ matrix.searchEngineDockerImage }}
       searchEngineDockerEnv: ${{ matrix.searchEngineDockerEnv }}
     secrets: inherit
+    strategy:
+      matrix:
+        include:
+          - searchEngineDockerImage: docker.elastic.co/elasticsearch/elasticsearch:8.8.2
+            searchEngineDockerEnv: '{"discovery.type": "single-node", "xpack.security.enabled": "false"}'
+            runsOn: ubuntu-latest
 
   run_integration_tests:
     name: Run integration tests
@@ -68,7 +67,7 @@ jobs:
     with:
       runsOn: ubuntu-latest
       coverageReport: coverage-extra
-      pytestArgs: "tests/integration --maxfail=1 --disable-warnings -v"
+      pytestArgs: tests/integration
     secrets: inherit
 
   push_coverage:
