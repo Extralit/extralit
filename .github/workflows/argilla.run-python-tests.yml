@@ -107,7 +107,7 @@ jobs:
         run: |
           pip install -qqq extralit_server
           pip install -qqq -e ".[listeners]"
-          pytest --cov=argilla --cov-report=xml:${{ env.COVERAGE_REPORT }}.xml ${{ inputs.pytestArgs }} -vs
+          pytest --cov=argilla --cov-report=xml:${{ env.COVERAGE_REPORT }}.xml --junitxml=junit.xml -o junit_family=legacy ${{ inputs.pytestArgs }} -vs
 
       - name: Upload coverage report artifact
         uses: actions/upload-artifact@v3
