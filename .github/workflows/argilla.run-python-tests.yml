@@ -47,6 +47,7 @@ jobs:
     env:
       COVERAGE_REPORT: ${{ inputs.coverageReport }}
       ARGILLA_ENABLE_TELEMETRY: 0
+      CONDA: /usr/share/miniconda3
 
     steps:
       - name: Checkout Code 🛎
