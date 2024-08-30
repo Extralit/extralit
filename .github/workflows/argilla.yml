@@ -68,7 +68,7 @@ jobs:
     with:
       runsOn: ubuntu-latest
       coverageReport: coverage-extra
-      pytestArgs: tests/integration
+      pytestArgs: "tests/integration --maxfail=1 --disable-warnings -v"
     secrets: inherit
 
   push_coverage:

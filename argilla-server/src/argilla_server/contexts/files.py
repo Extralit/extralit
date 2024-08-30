@@ -1,6 +1,5 @@
 import io
 import logging
-import os
 from typing import Any, BinaryIO, Dict, List, Optional, Union
 from urllib.parse import urlparse
 from uuid import UUID
