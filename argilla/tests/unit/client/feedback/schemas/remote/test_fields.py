@@ -28,19 +28,23 @@ from argilla.client.sdk.v1.datasets.models import FeedbackFieldModel
     [
         (
             {"name": "a"},
-            {"name": "a", "title": "A", "required": True, "settings": {"type": "text", "use_markdown": False}},
+            {"name": "a", "title": "A", "required": True, "settings": {"type": "text", "use_markdown": False, "use_table": False}},
         ),
         (
             {"name": "a", "title": "b"},
-            {"name": "a", "title": "b", "required": True, "settings": {"type": "text", "use_markdown": False}},
+            {"name": "a", "title": "b", "required": True, "settings": {"type": "text", "use_markdown": False, "use_table": False}},
         ),
         (
             {"name": "a", "title": "b", "required": False},
-            {"name": "a", "title": "b", "required": False, "settings": {"type": "text", "use_markdown": False}},
+            {"name": "a", "title": "b", "required": False, "settings": {"type": "text", "use_markdown": False, "use_table": False}},
         ),
         (
             {"name": "a", "title": "b", "required": False, "use_markdown": True},
-            {"name": "a", "title": "b", "required": False, "settings": {"type": "text", "use_markdown": True}},
+            {"name": "a", "title": "b", "required": False, "settings": {"type": "text", "use_markdown": True, "use_table": False}},
+        ),
+        (
+            {"name": "a", "title": "b", "required": False, "use_table": True},
+            {"name": "a", "title": "b", "required": False, "settings": {"type": "text", "use_markdown": False, "use_table": True}},
         ),
     ],
 )
@@ -65,7 +69,7 @@ def test_remote_text_field(schema_kwargs: Dict[str, Any], server_payload: Dict[s
             name="a",
             title="A",
             required=True,
-            settings={"type": "text", "use_markdown": False},
+            settings={"type": "text", "use_markdown": False, "use_table": False},
             inserted_at=datetime.now(),
             updated_at=datetime.now(),
         ),
@@ -74,7 +78,16 @@ def test_remote_text_field(schema_kwargs: Dict[str, Any], server_payload: Dict[s
             name="b",
             title="B",
             required=False,
-            settings={"type": "text", "use_markdown": True},
+            settings={"type": "text", "use_markdown": True, "use_table": False},
+            inserted_at=datetime.now(),
+            updated_at=datetime.now(),
+        ),
+        FeedbackFieldModel(
+            id=uuid4(),
+            name="b",
+            title="B",
+            required=False,
+            settings={"type": "text", "use_markdown": False, "use_table": True},
             inserted_at=datetime.now(),
             updated_at=datetime.now(),
         ),

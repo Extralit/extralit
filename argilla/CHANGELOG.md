@@ -21,6 +21,7 @@ These are the section headers that we use:
 - Added .devcontainer for "Docker, Tilt, and K8s" local development on GH Codespaces
 - Added examples/deployments/k8s/extralit-configs.yaml for configuring the extralit service and secrets in a K8s cluster
 - Added [docs site for the extralit project](https://docs.extralit.ai) at `argilla/docs/` 
+- Added pytest-xdist for parallel testing
 
 ### "Changed"
 
