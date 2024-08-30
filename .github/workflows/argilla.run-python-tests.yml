@@ -75,7 +75,7 @@ jobs:
       - name: Update environment
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
-          mamba env update -n argilla -f environment_dev.yml
+          mamba env update -n argilla -f environment_dev.yml -q
           python -c "import nltk; nltk.download('punkt')"
 
       - name: Cache pip 👜
@@ -104,9 +104,9 @@ jobs:
 
       - name: Run tests 📈
         run: |
-          pip install extralit_server
-          pip install -e ".[listeners]"
-          pytest --cov=argilla --cov-report=xml:${{ env.COVERAGE_REPORT }}.xml ${{ inputs.pytestArgs }} -vs -n auto
+          pip install -qqq extralit_server
+          pip install -qqq -e ".[listeners]"
+          pytest --cov=argilla --cov-report=xml:${{ env.COVERAGE_REPORT }}.xml ${{ inputs.pytestArgs }} -vs
 
       - name: Upload coverage report artifact
         uses: actions/upload-artifact@v3
@@ -116,10 +116,10 @@ jobs:
 
       - name: Run tests with pandas v2 📈
         run: |
-          pip install "pandas~=2.0" pytest-custom_exit_code
+          pip install -qqq "pandas~=2.0" pytest-custom_exit_code
           pytest --suppress-no-test-exit-code ${{ inputs.pytestArgs }} -vs -n auto
 
       - name: Run tests with pydantic v2 📈
         run: |
-          pip install "pydantic~=2.0" pytest-custom_exit_code
+          pip install -qqq "pydantic~=2.0" pytest-custom_exit_code
           pytest --suppress-no-test-exit-code ${{ inputs.pytestArgs }} -vs -n auto
