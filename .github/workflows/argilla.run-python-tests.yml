@@ -33,7 +33,6 @@ jobs:
   run-python-tests:
     name: Argilla python tests
     runs-on: ${{ inputs.runsOn }}
-    continue-on-error: true
     timeout-minutes: 30
     services:
       search_engine:
@@ -105,7 +104,7 @@ jobs:
         run: |
           pip install extralit_server
           pip install -e ".[listeners]"
-          pytest --cov=argilla --cov-report=xml:${{ env.COVERAGE_REPORT }}.xml ${{ inputs.pytestArgs }} -vs
+          pytest --cov=argilla --cov-report=xml:${{ env.COVERAGE_REPORT }}.xml ${{ inputs.pytestArgs }} -vs -n auto
 
       - name: Upload coverage report artifact
         uses: actions/upload-artifact@v3
@@ -116,9 +115,9 @@ jobs:
       - name: Run tests with pandas v2 📈
         run: |
           pip install "pandas~=2.0" pytest-custom_exit_code
-          pytest --suppress-no-test-exit-code ${{ inputs.pytestArgs }} -vs
+          pytest --suppress-no-test-exit-code ${{ inputs.pytestArgs }} -vs -n auto
 
       - name: Run tests with pydantic v2 📈
         run: |
           pip install "pydantic~=2.0" pytest-custom_exit_code
-          pytest --suppress-no-test-exit-code ${{ inputs.pytestArgs }} -vs
+          pytest --suppress-no-test-exit-code ${{ inputs.pytestArgs }} -vs -n auto
