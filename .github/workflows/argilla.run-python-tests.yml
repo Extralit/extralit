@@ -47,7 +47,6 @@ jobs:
     env:
       COVERAGE_REPORT: ${{ inputs.coverageReport }}
       ARGILLA_ENABLE_TELEMETRY: 0
-      CONDA: /usr/share/miniconda3
 
     steps:
       - name: Checkout Code 🛎
@@ -75,7 +74,9 @@ jobs:
 
       - name: Update environment
         if: steps.cache.outputs.cache-hit != 'true'
-        run: mamba env update -n argilla -f environment_dev.yml
+        run: |
+          mamba env update -n argilla -f environment_dev.yml
+          python -c "import nltk; nltk.download('punkt')"
 
       - name: Cache pip 👜
         uses: actions/cache@v3
