@@ -101,6 +101,13 @@ jobs:
           flags: argilla
           token: ${{ secrets.CODECOV_TOKEN }}
 
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          flags: argilla
+          token: ${{ secrets.CODECOV_TOKEN }}
+
   build_python_package:
     name: Build Argilla python package
     uses: ./.github/workflows/argilla.build-python-package.yml
