@@ -21,14 +21,17 @@ components_management:
       name: argilla
       paths:
         - argilla/src/argilla
+
     - component_id: extralit
       name: extralit
       paths:
         - argilla/src/extralit
+
     - component_id: argilla-server
       name: argilla-server
       paths:
         - argilla-server
+        
     - component_id: argilla-frontend
       name: argilla-frontend
       paths:
