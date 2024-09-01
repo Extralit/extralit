@@ -8,6 +8,14 @@ from extralit.extraction.models import SchemaStructure, DEFAULT_SCHEMA_S3_PATH
 
 def list_schemas(
     ctx: typer.Context,
+    include_version: bool = typer.Option(
+        False,
+        "--versions",
+        "-v",
+        help="Whether to list multiple schema versions.",
+        show_default=True,
+        is_flag=True,
+    ),
     path: Path = typer.Option(
         DEFAULT_SCHEMA_S3_PATH,
         "--path",
@@ -23,18 +31,27 @@ def list_schemas(
 
     try:
         workspace: Workspace = ctx.obj["workspace"]
-        workspace_schemas = workspace.list_files(path, include_version=True)
+        workspace_schemas = workspace.list_files(path, include_version=include_version)
 
         table = get_argilla_themed_table(title=f"Workspace (name='{workspace.name}') Schemas", show_lines=True)
         for column in ("Schema Name", "Version ID", "Version Tag", "Last Update Date", "Metadata"):
             table.add_column(column, justify="left")
 
+        schema_names = set()
         for file_object in workspace_schemas.objects:            
             if not file_object.etag:
+                # Skip alias files
                 continue
 
+            schema_name = file_object.object_name.split("/", 1)[-1]
+
+            if not include_version:
+                if schema_name in schema_names:
+                    continue
+                schema_names.add(schema_name)
+
             table.add_row(
-                file_object.object_name.split("/", 1)[-1],
+                schema_name,
                 file_object.version_id,
                 file_object.version_tag,
                 file_object.last_modified.isoformat(sep=" "),
