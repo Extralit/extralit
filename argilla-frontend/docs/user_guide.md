@@ -28,7 +28,7 @@ conda activate extralit
 Install the extralit client and clone the repository.
 ```bash
 pip install --upgrade "extralit[extraction]"
-# or for editable install, in the `argilla/` directory of the `extralit/extralit-server` repo
+# or for editable install, in the `argilla0server/` directory
 pip install --upgrade -e ".[extraction]"
 ```
 
