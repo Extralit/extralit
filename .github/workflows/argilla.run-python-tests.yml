@@ -17,7 +17,7 @@ on:
         default: coverage
       searchEngineDockerImage:
         description: "The name of the Docker image of the search engine to use."
-        default: docker.elastic.co/elasticsearch/elasticsearch:8.8.2
+        default: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
         required: false
         type: string
       searchEngineDockerEnv:
