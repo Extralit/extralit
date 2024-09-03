@@ -25,8 +25,9 @@ try:
     es_wrapper = GenericElasticEngineBackend.get_instance()
     records = DatasetRecordsDAO.get_instance(es_wrapper)
     dao = DatasetsDAO.get_instance(es_wrapper, records)
+    
 except Exception as e:
-    print(e)
+    raise ConnectionError("Error connecting to elasticsearch") from e
 
 
 def test_retrieve_ownered_dataset_for_no_owner_user():
