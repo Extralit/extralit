@@ -1,7 +1,7 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/anaconda
 {
-  "name": "Docker, Tilt, Python",
+  "name": "Docker & Tilt for K8s development",
 
   "build": { 
     "context": "..",
@@ -38,7 +38,7 @@
   "forwardPorts": [
     10350,
     5005,
-    6443
+    6443,
   ],
 
   // Features to add to the dev container. More info: https://containers.dev/features.
@@ -59,7 +59,8 @@
       "packages": "python==3.10.14 uvicorn uv pdm jupyterlab pyparsing!=3.0.5 pytest pytest-cov pytest-mock pytest-asyncio==0.21.1 pytest-env factory_boy~=3.2.1 pandoc==2.12 ipython<8.0.0 nodejs=18.16.1 pandoc==2.12 datasets==2.21.0 spacy==3.6.1 pytest-randomly>=3.15.0",
       "envFile": "",
       "envName": "base"
-    }
+    },
+
   },
 
   "postCreateCommand": "/workspaces/setup.sh",

@@ -22,6 +22,7 @@ These are the section headers that we use:
 - Added examples/deployments/k8s/extralit-configs.yaml for configuring the extralit service and secrets in a K8s cluster
 - Added [docs site for the extralit project](https://docs.extralit.ai) at `argilla/docs/` 
 - Added pytest-xdist for parallel testing
+- Added docker-compose devcontainer
 
 ### "Changed"
 
