@@ -17,7 +17,7 @@ on:
       - releases/**
     paths:
       - "argilla/**"
-      - ".github/workflows/**"
+      - ".github/workflows/argilla.*"
 
   pull_request:
     paths:
