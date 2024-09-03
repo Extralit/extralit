@@ -176,5 +176,5 @@ server = { cmd = "uvicorn argilla_server:app --reload" }
 migrate = { cmd = "alembic upgrade head" }
 test = { cmd = "pytest", env_file = ".env.test" }
 
-build-server-image = { shell = "cp -R dist docker/server && docker build -t extralit/extralit-server:local docker/server" }
-build-quickstart-image = { shell = "docker build --build-arg ARGILLA_VERSION=local -t extralit/extralit-quickstart:local docker/quickstart" }
+build-server-image = { shell = "cp -R dist docker/server && docker build -t extralit/argilla-server:local docker/server" }
+build-quickstart-image = { shell = "docker build --build-arg ARGILLA_VERSION=local -t extralit/argilla-quickstart:local docker/quickstart" }
