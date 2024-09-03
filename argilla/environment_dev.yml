@@ -23,6 +23,8 @@ dependencies:
   - ipython<8.0.0
   # for building the frontend
   - nodejs~=18.16.0
+  # for fast pip installs
+  - uv
   - pip:
       # docs
       - sphinx==4.5.0

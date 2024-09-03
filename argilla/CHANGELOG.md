@@ -25,8 +25,8 @@ These are the section headers that we use:
 
 ### "Changed"
 
-- Changed elasticsearch deployment from Helm to `docker.elastic.co/elasticsearch/elasticsearch` to fix PVC restarting issues
 - Updated elasticsearch to 8.15.0
+- Changed K8s elasticsearch deployment from Helm to `docker.elastic.co/elasticsearch/elasticsearch` to fix PVC restarting issues
 - Refactored extralit dockerfile and Docker Hub images to `extralit/argilla-server` and `extralit/argilla-quickstart`
 - Changed `develop` branch changes in argilla/docs to `https:/docs.extralit.ai/latest` instead of `dev`
 

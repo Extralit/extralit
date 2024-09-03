@@ -94,8 +94,8 @@ jobs:
         env:
           ARGILLA_ENABLE_TELEMETRY: 0
         run: |
-          pip install -qqq -e "."
-          pip install -qqq extralit_server
+          uv pip install -qqq -e "."
+          uv pip install -qqq extralit_server
           python -m argilla server database migrate
           python -m argilla server database users create_default
           python -m argilla server start &
@@ -105,5 +105,5 @@ jobs:
           ARGILLA_ENABLE_TELEMETRY: 0
           HF_HUB_ACCESS_TOKEN: ${{ secrets.HF_HUB_ACCESS_TOKEN }}
         run: |
-          pip install papermill
+          uv pip install papermill
           python scripts/end2end_examples.py
