@@ -9,6 +9,9 @@ services:
       - ../..:/workspaces:cached      
     network_mode: service:elasticsearch
     command: sleep infinity
+    depends_on:
+      - elasticsearch
+      - postgres
       
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
