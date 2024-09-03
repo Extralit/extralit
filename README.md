@@ -52,3 +52,7 @@ Argilla is built on 5 core components:
 - **Vector Database**: A vector database to store the records data and perform scalable vector similarity searches and basic document searches. We currently support *ElasticSearch* and *AWS OpenSearch* and they can be deployed as separate Docker images.
 - **Vue.js UI**: A web application to visualize and annotate your data, users and teams. It is built with *Vue.js* and is directly deployed alongside the Argilla Server within our Argilla Docker image.
 
+## Repo Activity
+
+![Alt](https://repobeats.axiom.co/api/embed/503055f15ba7ac2f51d697153f7c146ae81c6c04.svg "Repobeats analytics image")
+
