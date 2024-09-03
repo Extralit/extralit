@@ -105,8 +105,8 @@ jobs:
       - name: Run tests 📈
         continue-on-error: true
         run: |
-          pip install -qqq extralit_server
-          pip install -qqq -e ".[listeners]"
+          uv pip install -qqq extralit_server
+          uv pip install -qqq -e ".[listeners]"
           pytest --cov=argilla --cov-report=xml:${{ env.COVERAGE_REPORT }}.xml --junitxml=junit.xml -o junit_family=legacy ${{ inputs.pytestArgs }} -vs
 
       - name: Upload coverage report artifact
@@ -117,10 +117,10 @@ jobs:
 
       - name: Run tests with pandas v2 📈
         run: |
-          pip install -qqq "pandas~=2.0" pytest-custom_exit_code
+          uv pip install -qqq "pandas~=2.0" pytest-custom_exit_code
           pytest --suppress-no-test-exit-code ${{ inputs.pytestArgs }} -vs
 
       # - name: Run tests with pydantic v2 📈
       #   run: |
-      #     pip install -qqq "pydantic~=2.0" pytest-custom_exit_code
+      #     uv pip install -qqq "pydantic~=2.0" pytest-custom_exit_code
       #     pytest --suppress-no-test-exit-code ${{ inputs.pytestArgs }} -vs

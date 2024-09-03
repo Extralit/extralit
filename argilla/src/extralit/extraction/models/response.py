@@ -8,7 +8,6 @@ from llama_index.core.schema import TextNode
 from pydantic.v1 import BaseModel, validator, Field
 from typing_extensions import TypedDict
 
-from extralit.extraction.query import get_nodes_metadata
 from extralit.extraction.staging import to_df
 
 
@@ -73,7 +72,10 @@ class ResponseResults(BaseModel):
 
     def init_docs_from_index(self, index: VectorStoreIndex, reference: str):
         if type(index.vector_store).__name__ == 'WeaviateVectorStore':
+            from extralit.extraction.query import get_nodes_metadata
+            
             weaviate_client = index.vector_store.client
+
             results = get_nodes_metadata(weaviate_client, index_name=index.vector_store.index_name,
                                          properties=['reference', 'header', 'doc_id', 'page_number'],
                                          filters={'reference': reference})
