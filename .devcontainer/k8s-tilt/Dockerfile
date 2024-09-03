@@ -2,7 +2,7 @@
 FROM debian:bullseye-slim
 
 # Copy the devcontainer setup file into the container
-COPY .devcontainer/setup.sh /workspaces/setup.sh
+COPY .devcontainer/k8s-tilt/setup.sh /workspaces/setup.sh
 RUN chmod +x /workspaces/setup.sh
 
 # Install necessary packages including Docker dependencies
