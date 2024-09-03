@@ -4,7 +4,6 @@ import pandas as pd
 import tiktoken
 from llama_index.core import VectorStoreIndex
 from llama_index.core.schema import TextNode
-from extralit.extraction.vector_store import WeaviateVectorStore
 
 from pydantic.v1 import BaseModel, validator, Field
 from typing_extensions import TypedDict
@@ -73,7 +72,7 @@ class ResponseResults(BaseModel):
         default_factory=dict, description="Metadata for all nodes in the RAG index")
 
     def init_docs_from_index(self, index: VectorStoreIndex, reference: str):
-        if isinstance(index.vector_store, WeaviateVectorStore):
+        if type(index.vector_store).__name__ == 'WeaviateVectorStore':
             weaviate_client = index.vector_store.client
             results = get_nodes_metadata(weaviate_client, index_name=index.vector_store.index_name,
                                          properties=['reference', 'header', 'doc_id', 'page_number'],
