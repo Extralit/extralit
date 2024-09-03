@@ -27,7 +27,7 @@ RUN \
     # Create a directory where Elasticsearch and Argilla will store their data
     mkdir /data && \
     # Install Elasticsearch and configure it
-    apt-get update && apt-get install -y elasticsearch=8.8.2 && \
+    apt-get update && apt-get install -y elasticsearch=8.15.0 && \
     chown -R argilla:argilla /usr/share/elasticsearch /etc/elasticsearch /var/lib/elasticsearch /var/log/elasticsearch && \
     chown argilla:argilla /etc/default/elasticsearch && \
     # Install quickstart image dependencies

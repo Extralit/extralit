@@ -55,7 +55,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - searchEngineDockerImage: docker.elastic.co/elasticsearch/elasticsearch:8.8.2
+          - searchEngineDockerImage: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
             searchEngineDockerEnv: '{"discovery.type": "single-node", "xpack.security.enabled": "false"}'
             runsOn: ubuntu-latest
 
