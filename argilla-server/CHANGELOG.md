@@ -22,7 +22,7 @@ These are the section headers that we use:
 
 
 ### "Changed"
-
+- Updated elasticsearch to 8.15.0
 
 ### "Deprecated"
 
