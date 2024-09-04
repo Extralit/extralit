@@ -9,7 +9,7 @@ dist/
 .pdm-build/
 
 # Environments
-./.env
+.env
 .venv
 
 # mypy
