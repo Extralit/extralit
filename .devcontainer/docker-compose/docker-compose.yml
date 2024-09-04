@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
     env_file:
-      - .env
+      - .env.dev
     volumes:
       - ../../..:/workspaces:cached      
     command: sleep infinity
@@ -14,11 +14,7 @@ services:
       - elasticsearch
       - postgres
       - minio
-    ports:
-      - "9200:9200"  # Elasticsearch
-      - "5432:5432"  # Postgres
-      - "9000:9000"  # Minio
-    network_mode: service:elasticsearch
+    network_mode: host
       
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
@@ -53,7 +49,9 @@ services:
 
   minio:
     image: quay.io/minio/minio:latest
-    command: /bin/bash -c "minio server /data"
+    command: minio server /data --console-address :9090
+    env_file:
+      - .env.dev
     environment:
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
@@ -62,8 +60,7 @@ services:
       - ./secrets:/etc/minio:ro
     ports:
       - "9000:9000"
-    networks:
-      - argilla
+    network_mode: host
 
 networks:
   argilla:

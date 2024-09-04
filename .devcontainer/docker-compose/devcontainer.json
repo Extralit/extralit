@@ -40,7 +40,7 @@
       "requireLocalPort": true,
       "onAutoForward": "ignore"
     },
-    "9000": {
+    "9005": {
       "label": "minio",
       "requireLocalPort": true,
       "onAutoForward": "ignore"
