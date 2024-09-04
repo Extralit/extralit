@@ -2,5 +2,5 @@
 FROM mcr.microsoft.com/devcontainers/base:ubuntu
 
 # Copy the devcontainer setup file into the container
-COPY .devcontainer/docker-compose/setup.sh /workspaces/setup.sh
+COPY setup.sh /workspaces/setup.sh
 RUN chmod +x /workspaces/setup.sh
