@@ -35,7 +35,7 @@
 
   },
 
-  "postCreateCommand": "/workspaces/setup.sh",
+  "postCreateCommand": "/workspace/setup.sh",
 
   "customizations": {
     "vscode": {

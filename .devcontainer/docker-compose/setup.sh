@@ -3,15 +3,12 @@
 # Perform the pip editable install
 if ! pip list | grep -q "extralit"; then
     echo "Installing required packages and editable installs..."
-    uv pip install "sentence-transformers<3.0.0" transformers "textdescriptives<3.0.0" \
+    uv pip install -q "sentence-transformers<3.0.0" transformers "textdescriptives<3.0.0" \
         -e /workspaces/extralit/argilla/ && \
-        uv pip install -e /workspaces/extralit/argilla-server/ &
+        uv pip install -q -e /workspaces/extralit/argilla-server/
 else
     echo "Package 'extralit' is already installed. Skipping installation."
 fi
-
-# Clean up disk space
-docker image prune -af
 
 # Check if the upstream remote already exists
 git config --global --add safe.directory /workspaces/extralit
