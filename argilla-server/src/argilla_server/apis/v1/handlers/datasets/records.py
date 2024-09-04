@@ -128,7 +128,7 @@ async def _filter_records_using_search_engine(
         user=user,
         parsed_metadata=parsed_metadata,
         response_statuses=response_statuses,
-        sort_by_query_param=sort_by_query_param or LIST_DATASET_RECORDS_DEFAULT_SORT_BY,
+        sort_by_query_param=sort_by_query_param,
     )
 
     record_ids = [response.record_id for response in search_responses.items]
@@ -469,7 +469,7 @@ async def list_current_user_dataset_records(
         user=current_user,
         response_statuses=response_statuses,
         include=include,
-        sort_by_query_param=sort_by_query_param or LIST_DATASET_RECORDS_DEFAULT_SORT_BY,
+        sort_by_query_param=sort_by_query_param,
         workspace_user_ids=workspace_user_ids,
     )
 
@@ -645,7 +645,7 @@ async def search_current_user_dataset_records(
         offset=offset,
         user=current_user,
         response_statuses=response_statuses,
-        sort_by_query_param=sort_by_query_param or LIST_DATASET_RECORDS_DEFAULT_SORT_BY,
+        sort_by_query_param=sort_by_query_param,
     )
 
     record_id_score_map: Dict[UUID, Dict[str, Union[float, SearchRecord, None]]] = {
@@ -713,7 +713,7 @@ async def search_dataset_records(
         offset=offset,
         parsed_metadata=metadata.metadata_parsed,
         response_statuses=response_statuses,
-        sort_by_query_param=sort_by_query_param or LIST_DATASET_RECORDS_DEFAULT_SORT_BY
+        sort_by_query_param=sort_by_query_param,
     )
 
     record_id_score_map = {

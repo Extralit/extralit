@@ -7,23 +7,53 @@
   "service": "devcontainer",
   "runServices": [
     "elasticsearch",
-    "postgres"
+    "postgres",
+    "minio"
   ],
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
 
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
   "forwardPorts": [
     9200,
-    5432
+    5432,
+    9005,
+    9090
   ],
+  "portsAttributes": {
+    "8888": {
+      "label": "Jupyter",
+      "requireLocalPort": true,
+      "onAutoForward": "ignore"
+    },
+    "5601": {
+      "label": "Kibana",
+      "requireLocalPort": true,
+      "onAutoForward": "ignore"
+    },
+    "9200": {
+      "label": "elastic",
+      "requireLocalPort": true,
+      "onAutoForward": "ignore"
+    },
+    "5432": {
+      "label": "postgres",
+      "requireLocalPort": true,
+      "onAutoForward": "ignore"
+    },
+    "9000": {
+      "label": "minio",
+      "requireLocalPort": true,
+      "onAutoForward": "ignore"
+    },
+    "9090": {
+      "label": "minio-console",
+      "requireLocalPort": true,
+      "onAutoForward": "ignore"
+    }
+  },
 
   // Features to add to the dev container. More info: https://containers.dev/features.
   "features": {
-    // Add Docker-in-Docker support. A Debian base requires the proprietary Docker engine.
-    // "ghcr.io/devcontainers/features/docker-in-docker:2": {
-    //   "moby": "false"
-    // },
-    
     // Add python support with micromamba and some packages
     "ghcr.io/mamba-org/devcontainer-features/micromamba": {
       "autoActivate": true,
