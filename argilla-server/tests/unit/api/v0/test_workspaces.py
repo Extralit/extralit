@@ -29,11 +29,15 @@ from tests.factories import (
 )
 
 if TYPE_CHECKING:
+    from httpx import AsyncClient
     from sqlalchemy.ext.asyncio import AsyncSession
+    from pytest_mock import MockerFixture
 
 
 @pytest.mark.asyncio
-async def test_create_workspace(async_client: "AsyncClient", db: "AsyncSession", owner_auth_header: dict):
+async def test_create_workspace(async_client: "AsyncClient", db: "AsyncSession", owner_auth_header: dict, mocker: "MockerFixture"):
+    create_bucket_mock = mocker.patch("argilla_server.contexts.files.create_bucket", return_value=None)
+
     response = await async_client.post("/api/workspaces", headers=owner_auth_header, json={"name": "workspace"})
 
     assert response.status_code == 200
@@ -53,15 +57,17 @@ async def test_create_workspace_without_authentication(async_client: "AsyncClien
 
 
 @pytest.mark.asyncio
-async def test_create_workspace_as_admin(async_client: "AsyncClient", db: "AsyncSession"):
+async def test_create_workspace_as_admin(async_client: "AsyncClient", db: "AsyncSession", mocker: "MockerFixture"):
+    create_bucket_mock = mocker.patch("argilla_server.contexts.files.create_bucket", return_value=None)
+
     admin = await AdminFactory.create()
 
     response = await async_client.post(
         "/api/workspaces", headers={API_KEY_HEADER_NAME: admin.api_key}, json={"name": "workspaces"}
     )
 
-    assert response.status_code == 403
-    assert (await db.execute(select(func.count(Workspace.id)))).scalar() == 0
+    assert response.status_code == 200
+    assert (await db.execute(select(func.count(Workspace.id)))).scalar() == 1
 
 
 @pytest.mark.asyncio
@@ -78,8 +84,9 @@ async def test_create_workspace_as_annotator(async_client: "AsyncClient", db: "A
 
 @pytest.mark.asyncio
 async def test_create_workspace_with_existent_name(
-    async_client: "AsyncClient", db: "AsyncSession", owner_auth_header: dict
+    async_client: "AsyncClient", db: "AsyncSession", owner_auth_header: dict, mocker: "MockerFixture"
 ):
+    create_bucket_mock = mocker.patch("argilla_server.contexts.files.create_bucket", return_value=None)
     await WorkspaceFactory.create(name="workspace")
 
     response = await async_client.post("/api/workspaces", headers=owner_auth_header, json={"name": "workspace"})

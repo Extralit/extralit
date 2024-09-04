@@ -5,19 +5,23 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile
+    env_file:
+      - .env
     volumes:
       - ../../..:/workspaces:cached      
     command: sleep infinity
     depends_on:
       - elasticsearch
       - postgres
-    networks:
-      - argilla
+      - minio
+    ports:
+      - "9200:9200"  # Elasticsearch
+      - "5432:5432"  # Postgres
+      - "9000:9000"  # Minio
+    network_mode: service:elasticsearch
       
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
-    networks:
-      - argilla
     ports:
       - "9200:9200"
       - "9300:9300"
@@ -27,6 +31,8 @@ services:
       xpack.security.enabled: false
       xpack.security.transport.ssl.enabled: false
       xpack.security.http.ssl.enabled: false
+    networks:
+      - argilla
 
   postgres:
     image: postgres:14
@@ -40,10 +46,24 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    networks:
-      - argilla
     ports:
       - "5432:5432"
+    networks:
+      - argilla
+
+  minio:
+    image: quay.io/minio/minio:latest
+    command: /bin/bash -c "minio server /data"
+    environment:
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+    volumes:
+      - ./data:/data
+      - ./secrets:/etc/minio:ro
+    ports:
+      - "9000:9000"
+    networks:
+      - argilla
 
 networks:
   argilla:
