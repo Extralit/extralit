@@ -114,8 +114,8 @@ class Suggestion(DatabaseModel):
 
     value: Mapped[Any] = mapped_column(JSON)
     score: Mapped[Optional[Union[float, List[float]]]] = mapped_column(JSON, nullable=True)
-    agent: Mapped[Optional[str]] = mapped_column(nullable=True)
-    type: Mapped[Optional[SuggestionType]] = mapped_column(SuggestionTypeEnum, nullable=True, index=True)
+    agent: Mapped[Optional[str]] = mapped_column(nullable=True, default=None)
+    type: Mapped[Optional[SuggestionType]] = mapped_column(SuggestionTypeEnum, nullable=True, index=True, default=None)
     record_id: Mapped[UUID] = mapped_column(ForeignKey("records.id", ondelete="CASCADE"), index=True)
     question_id: Mapped[UUID] = mapped_column(ForeignKey("questions.id", ondelete="CASCADE"), index=True)
 
