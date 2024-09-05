@@ -143,6 +143,10 @@ package-lock.json
 
 .hypothesis/
 
+# Devcontainer
+.devcontainer/*/data
+.devcontainer/*/secrets
+
 # App generated files
 argilla-server/src/argilla_server/static
 argilla/site

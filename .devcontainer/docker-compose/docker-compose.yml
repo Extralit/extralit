@@ -29,6 +29,10 @@ services:
       xpack.security.http.ssl.enabled: false
     networks:
       - argilla
+    deploy:
+      resources:
+        limits:
+          memory: 512M
 
   postgres:
     image: postgres:14
@@ -46,6 +50,10 @@ services:
       - "5432:5432"
     networks:
       - argilla
+    deploy:
+      resources:
+        limits:
+          memory: 256M
 
   minio:
     image: quay.io/minio/minio:latest
@@ -53,14 +61,17 @@ services:
     env_file:
       - .env.dev
     environment:
-      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
-      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_ACCESS_KEY_FILE: /run/secrets/access_key
+      MINIO_SECRET_KEY_FILE: /run/secrets/secret_key
     volumes:
-      - ./data:/data
-      - ./secrets:/etc/minio:ro
+      - ./secrets:/run/secrets:ro
     ports:
       - "9000:9000"
     network_mode: host
+    deploy:
+      resources:
+        limits:
+          memory: 256M
 
 networks:
   argilla:
