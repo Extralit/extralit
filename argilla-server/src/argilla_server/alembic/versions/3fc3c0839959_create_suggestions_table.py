@@ -28,7 +28,7 @@ down_revision = "8c574ada5e5f"
 branch_labels = None
 depends_on = None
 
-suggestion_type_enum = sa.Enum("model", "human", name="suggestion_type_enum")
+suggestion_type_enum = sa.Enum("model", "human", "selection", name="suggestion_type_enum")
 
 
 def upgrade() -> None:
@@ -38,8 +38,8 @@ def upgrade() -> None:
         sa.Column("id", sa.Uuid(), nullable=False),
         sa.Column("value", sa.JSON(), nullable=False),
         sa.Column("score", sa.Float(), nullable=True),
-        sa.Column("agent", sa.String(), nullable=True, default=None),
-        sa.Column("type", sa.Enum(name="suggestion_type_enum"), nullable=True, default=None),
+        sa.Column("agent", sa.String(), nullable=True),
+        sa.Column("type", sa.Enum(name="suggestion_type_enum"), nullable=True),
         sa.Column("record_id", sa.Uuid(), nullable=False),
         sa.Column("question_id", sa.Uuid(), nullable=False),
         sa.Column("inserted_at", sa.DateTime(), nullable=False),
