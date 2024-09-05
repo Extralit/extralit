@@ -9,7 +9,7 @@ services:
       - .env.dev
     volumes:
       - ../../..:/workspaces:cached      
-    command: sleep infinity
+    command: ["sh", "-c", "trap 'exit 0' SIGTERM; while :; do sleep 1; done"]
     depends_on:
       - elasticsearch
       - postgres
