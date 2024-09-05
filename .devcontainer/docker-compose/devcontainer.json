@@ -70,12 +70,9 @@
   "customizations": {
     "vscode": {
       "extensions": [
-        "ms-azuretools.vscode-docker",
         "GitHub.copilot",
         "GitHub.copilot-chat",
-        "github.vscode-github-actions",
         "ms-python.python",
-        "ms-toolsai.jupyter",
         "ms-python.vscode-pylance",
         "tamasfe.even-better-toml",
         "eamodio.gitlens",
