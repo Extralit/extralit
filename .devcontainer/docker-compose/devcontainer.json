@@ -39,11 +39,6 @@
       "requireLocalPort": true,
       "onAutoForward": "ignore"
     },
-    "9000": {
-      "label": "minio",
-      "requireLocalPort": true,
-      "onAutoForward": "ignore"
-    },
     "9090": {
       "label": "minio-console",
       "requireLocalPort": true,
