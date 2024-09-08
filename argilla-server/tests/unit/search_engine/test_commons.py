@@ -445,7 +445,7 @@ class TestBaseElasticAndOpenSearchEngine:
 
     @pytest.mark.parametrize(
         argnames=("text_ann_size", "rating_ann_size"),
-        argvalues=[(random.randint(1, 9), random.randint(1, 9)) for _ in range(1, 5)],
+        argvalues=[(7, 8), (1, 9), (9, 1), (1, 1)],
     )
     async def test_create_index_for_dataset_with_questions(
         self,
