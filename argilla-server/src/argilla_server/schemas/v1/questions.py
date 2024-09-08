@@ -200,6 +200,15 @@ class LabelSelectionSettingsUpdate(UpdateSchema):
         )
     ]
 
+    @root_validator(skip_on_failure=True)
+    def check_visible_options_value(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        visible_options = values.get("visible_options")
+        if visible_options is not None and "dynamic" not in values.get("type", '') and visible_options < LABEL_SELECTION_MIN_VISIBLE_OPTIONS:
+            raise ValueError(
+                f"The value for 'visible_options' must be greater than or equal to {LABEL_SELECTION_MIN_VISIBLE_OPTIONS}"
+            )
+        return values
+
 
 # Multi-label selection question
 class MultiLabelSelectionQuestionSettings(LabelSelectionQuestionSettings):
