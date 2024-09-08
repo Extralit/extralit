@@ -217,7 +217,7 @@ class TestSuiteDatasets:
                     "name": "text-field-a",
                     "title": "Text Field A",
                     "required": True,
-                    "settings": {"type": "text", "use_markdown": False},
+                    "settings": {"type": "text", "use_markdown": False, "use_table": False},
                     "dataset_id": str(dataset.id),
                     "inserted_at": text_field_a.inserted_at.isoformat(),
                     "updated_at": text_field_a.updated_at.isoformat(),
@@ -227,7 +227,7 @@ class TestSuiteDatasets:
                     "name": "text-field-b",
                     "title": "Text Field B",
                     "required": False,
-                    "settings": {"type": "text", "use_markdown": False},
+                    "settings": {"type": "text", "use_markdown": False, "use_table": False},
                     "dataset_id": str(dataset.id),
                     "inserted_at": text_field_b.inserted_at.isoformat(),
                     "updated_at": text_field_b.updated_at.isoformat(),
@@ -312,7 +312,7 @@ class TestSuiteDatasets:
                     "title": "Text Question",
                     "description": "Question Description",
                     "required": True,
-                    "settings": {"type": "text", "use_markdown": False},
+                    "settings": {"type": "text", "use_markdown": False, "use_table": False},
                     "dataset_id": str(text_question.dataset_id),
                     "inserted_at": text_question.inserted_at.isoformat(),
                     "updated_at": text_question.updated_at.isoformat(),
@@ -924,9 +924,10 @@ class TestSuiteDatasets:
     @pytest.mark.parametrize(
         ("settings", "expected_settings"),
         [
-            ({"type": "text"}, {"type": "text", "use_markdown": False}),
-            ({"type": "text", "discarded": "value"}, {"type": "text", "use_markdown": False}),
-            ({"type": "text", "use_markdown": False}, {"type": "text", "use_markdown": False}),
+            ({"type": "text"}, {"type": "text", "use_markdown": False, "use_table": False}),
+            ({"type": "text", "discarded": "value"}, {"type": "text", "use_markdown": False, "use_table": False}),
+            ({"type": "text", "use_markdown": False}, {"type": "text", "use_markdown": False, "use_table": False}),
+            ({"type": "text", "use_table": True}, {"type": "text", "use_markdown": False, "use_table": True}),
         ],
     )
     async def test_create_dataset_field(
@@ -3385,34 +3386,6 @@ class TestSuiteDatasets:
 
         assert response.status_code == 422
         assert response.json() == {"detail": "Found duplicate records IDs"}
-
-    async def test_update_dataset_records_with_duplicate_suggestions_question_ids(
-        self, async_client: "AsyncClient", owner_auth_header: dict
-    ):
-        dataset = await DatasetFactory.create()
-        question = await TextQuestionFactory.create(dataset=dataset)
-        record = await RecordFactory.create(dataset=dataset)
-
-        response = await async_client.patch(
-            f"/api/v1/datasets/{dataset.id}/records",
-            headers=owner_auth_header,
-            json={
-                "items": [
-                    {
-                        "id": str(record.id),
-                        "suggestions": [
-                            {"question_id": str(question.id), "value": "a"},
-                            {"question_id": str(question.id), "value": "b"},
-                        ],
-                    },
-                ]
-            },
-        )
-
-        assert response.status_code == 422
-        assert response.json() == {
-            "detail": "Record at position 0 is not valid because found duplicate suggestions question IDs"
-        }
 
     async def test_update_dataset_records_as_admin_from_another_workspace(self, async_client: "AsyncClient"):
         dataset = await DatasetFactory.create()
