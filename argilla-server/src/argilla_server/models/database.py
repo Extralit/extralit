@@ -126,11 +126,15 @@ class Suggestion(DatabaseModel):
     __upsertable_columns__ = {"value", "score", "agent", "type"}
 
     def __repr__(self) -> str:
-        return (
-            f"Suggestion(id={self.id}, score={self.score}, agent={self.agent}, type={self.type}, "
-            f"record_id={self.record_id}, question_id={self.question_id}, inserted_at={self.inserted_at}, "
-            f"updated_at={self.updated_at})"
-        )
+        attrs = []
+        for attr in ["id", "score", "agent", "type", "record_id", "question_id", "inserted_at", "updated_at", "value"]:
+            value = getattr(self, attr)
+            if value is not None:
+                if attr == "value" and len(value) > 20:
+                    value = value[:20] + '...'
+                attrs.append(f"{attr}={value}")
+        
+        return f"Suggestion({', '.join(attrs)})"
 
 
 class Vector(DatabaseModel):

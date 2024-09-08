@@ -154,7 +154,7 @@ async def upsert_suggestion(
             detail=f"Question with id `{suggestion_create.question_id}` not found",
         )
 
-    if await datasets.get_suggestion_by_record_id_and_question_id(db, record_id, suggestion_create.question_id):
+    if await datasets.get_suggestion_by_record_id_and_question_id(db, record_id, suggestion_create.question_id, type=suggestion_create.type, agent=suggestion_create.agent):
         # There is already a suggestion for this record and question, so we update it.
         response.status_code = status.HTTP_200_OK
 

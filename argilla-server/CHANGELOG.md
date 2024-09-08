@@ -23,6 +23,7 @@ These are the section headers that we use:
 
 ### "Changed"
 - Updated elasticsearch to 8.15.0
+- Changed Suggestion table's  unique constraint on "record_id", "question_id", "type", "agent" on upsert
 - Disabled adding `LIST_DATASET_RECORDS_DEFAULT_SORT_BY` when there's no sort-by on GET records
 
 ### "Deprecated"
