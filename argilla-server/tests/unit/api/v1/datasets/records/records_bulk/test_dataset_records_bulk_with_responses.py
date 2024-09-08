@@ -287,7 +287,6 @@ class TestDatasetRecordsBulkWithResponses:
                 },
             ]
 
-    @pytest.mark.skip(reason="Skipping this test temporarily")
     async def test_create_record_with_with_wrong_response_question(
         self, async_client: AsyncClient, owner_auth_header: dict
     ):
