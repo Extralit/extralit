@@ -1080,14 +1080,6 @@ async def upsert_response(
 ) -> Response:
     ResponseUpsertValidator(response_upsert).validate_for(record)
 
-    if 'duration' in response.values:
-        if 'duration' in response_update.values:
-            response_update.values['duration'].value = \
-                response.values['duration']['value'] + response_update.values['duration'].value
-        else:
-            response_update.values['duration'] = ResponseValueUpdate(value=response.values['duration']['value'])
-
-
     schema = {
         "values": jsonable_encoder(response_upsert.values),
         "status": response_upsert.status,
@@ -1204,6 +1196,7 @@ async def get_suggestion_by_id(db: AsyncSession, suggestion_id: "UUID") -> Union
             selectinload(Suggestion.record).selectinload(Record.dataset),
             selectinload(Suggestion.question),
             selectinload(Suggestion.type),
+            selectinload(Suggestion.agent),
         )
     )
 

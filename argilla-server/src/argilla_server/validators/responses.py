@@ -41,15 +41,14 @@ class ResponseValidator:
     def _validate_required_questions_have_values(self, record: Record) -> None:
         for question in record.dataset.questions:
             if self._is_submitted_response and question.required and question.name not in self._response_change.values:
-                continue
                 raise ValueError(f"missing response value for required question with name={question.name!r}")
 
     def _validate_values_have_configured_questions(self, record: Record) -> None:
         question_names = [question.name for question in record.dataset.questions]
 
-        # for value_question_name in self._response_change.values or []:
-        #     if value_question_name not in question_names and value_question_name != 'duration':
-        #         raise ValueError(f"found response value for non configured question with name={value_question_name!r}")
+        for value_question_name in self._response_change.values or []:
+            if value_question_name not in question_names and value_question_name != 'duration':
+                raise ValueError(f"found response value for non configured question with name={value_question_name!r}")
 
     def _validate_values(self, record: Record) -> None:
         if not self._response_change.values:
