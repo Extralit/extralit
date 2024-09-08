@@ -69,7 +69,8 @@
         "ms-python.vscode-pylance",
         "tamasfe.even-better-toml",
         "eamodio.gitlens",
-        "tilt-dev.tiltfile"
+        "tilt-dev.tiltfile",
+        "Codecov.codecov"
       ]
     },
     "settings": {

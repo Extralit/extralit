@@ -39,7 +39,7 @@ from sqlalchemy.orm import contains_eager, joinedload, selectinload
 
 import argilla_server.errors.future as errors
 from argilla_server.contexts import accounts, questions
-from argilla_server.enums import DatasetStatus, RecordInclude, UserRole
+from argilla_server.enums import DatasetStatus, RecordInclude, UserRole, SuggestionType
 from argilla_server.models import (
     Dataset,
     Field,
@@ -1141,9 +1141,9 @@ def _validate_record_fields(dataset: Dataset, fields: Dict[str, Any]):
 
 
 async def get_suggestion_by_record_id_and_question_id(
-    db: AsyncSession, record_id: UUID, question_id: UUID
+    db: AsyncSession, record_id: UUID, question_id: UUID, type: Optional[SuggestionType] = None, agent: Optional[str] = None
 ) -> Union[Suggestion, None]:
-    result = await db.execute(select(Suggestion).filter_by(record_id=record_id, question_id=question_id))
+    result = await db.execute(select(Suggestion).filter_by(record_id=record_id, question_id=question_id, type=type, agent=agent))
     return result.scalar_one_or_none()
 
 
@@ -1171,7 +1171,7 @@ async def upsert_suggestion(
         suggestion = await Suggestion.upsert(
             db,
             schema=SuggestionCreateWithRecordId(record_id=record.id, **suggestion_create.dict()),
-            constraints=[Suggestion.record_id, Suggestion.question_id],
+            constraints=[Suggestion.record_id, Suggestion.question_id, Suggestion.type, Suggestion.agent],
             autocommit=False,
         )
         await _preload_suggestion_relationships_before_index(db, suggestion)
