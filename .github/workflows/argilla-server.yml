@@ -82,7 +82,6 @@ jobs:
         run: pdm install
 
       - name: Run tests 📈
-        continue-on-error: true
         run: |
           ARGILLA_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/argilla
           ARGILLA_ELASTICSEARCH=http://localhost:9200
