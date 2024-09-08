@@ -122,7 +122,7 @@ class Suggestion(DatabaseModel):
     record: Mapped["Record"] = relationship(back_populates="suggestions")
     question: Mapped["Question"] = relationship(back_populates="suggestions")
 
-    __table_args__ = (UniqueConstraint("record_id", "question_id", "type", "agent", name="suggestion_record_id_question_id_uq"),)
+    __table_args__ = (UniqueConstraint("record_id", "question_id", name="suggestion_record_id_question_id_uq"),)
     __upsertable_columns__ = {"value", "score", "agent", "type"}
 
     def __repr__(self) -> str:

@@ -39,7 +39,7 @@ from sqlalchemy.orm import contains_eager, joinedload, selectinload
 
 import argilla_server.errors.future as errors
 from argilla_server.contexts import accounts, questions
-from argilla_server.enums import DatasetStatus, RecordInclude, UserRole, SuggestionType
+from argilla_server.enums import DatasetStatus, RecordInclude, UserRole
 from argilla_server.models import (
     Dataset,
     Field,
@@ -807,6 +807,9 @@ async def _build_record_update(
 
     if record_update.suggestions is not None:
         params.pop("suggestions")
+        questions_ids = [suggestion.question_id for suggestion in record_update.suggestions]
+        if len(questions_ids) != len(set(questions_ids)):
+            raise ValueError("found duplicate suggestions question IDs")
         suggestions = await _build_record_suggestions(db, record, record_update.suggestions, caches["questions"])
 
     if record_update.vectors is not None:
@@ -1050,8 +1053,8 @@ async def update_response(
 ):
     ResponseUpdateValidator(response_update).validate_for(response.record)
 
-    if 'duration' in response.values:
-        if 'duration' in response_update.values:
+    if response.values and 'duration' in response.values:
+        if response_update.values and 'duration' in response_update.values:
             response_update.values['duration'].value = \
                 response.values['duration']['value'] + response_update.values['duration'].value
         else:
@@ -1133,9 +1136,9 @@ def _validate_record_fields(dataset: Dataset, fields: Dict[str, Any]):
 
 
 async def get_suggestion_by_record_id_and_question_id(
-    db: AsyncSession, record_id: UUID, question_id: UUID, type: Optional[SuggestionType] = None, agent: Optional[str] = None
+    db: AsyncSession, record_id: UUID, question_id: UUID
 ) -> Union[Suggestion, None]:
-    result = await db.execute(select(Suggestion).filter_by(record_id=record_id, question_id=question_id, type=type, agent=agent))
+    result = await db.execute(select(Suggestion).filter_by(record_id=record_id, question_id=question_id))
     return result.scalar_one_or_none()
 
 
@@ -1163,7 +1166,7 @@ async def upsert_suggestion(
         suggestion = await Suggestion.upsert(
             db,
             schema=SuggestionCreateWithRecordId(record_id=record.id, **suggestion_create.dict()),
-            constraints=[Suggestion.record_id, Suggestion.question_id, Suggestion.type, Suggestion.agent],
+            constraints=[Suggestion.record_id, Suggestion.question_id],
             autocommit=False,
         )
         await _preload_suggestion_relationships_before_index(db, suggestion)
@@ -1195,8 +1198,6 @@ async def get_suggestion_by_id(db: AsyncSession, suggestion_id: "UUID") -> Union
         .options(
             selectinload(Suggestion.record).selectinload(Record.dataset),
             selectinload(Suggestion.question),
-            selectinload(Suggestion.type),
-            selectinload(Suggestion.agent),
         )
     )
 
@@ -1212,7 +1213,6 @@ async def list_suggestions_by_id_and_record_id(
         .options(
             selectinload(Suggestion.record).selectinload(Record.dataset),
             selectinload(Suggestion.question),
-            selectinload(Suggestion.type),
         )
     )
 

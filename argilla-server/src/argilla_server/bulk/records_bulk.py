@@ -111,7 +111,7 @@ class CreateRecordsBulk:
         return await Suggestion.upsert_many(
             self._db,
             objects=upsert_many_suggestions,
-            constraints=[Suggestion.record_id, Suggestion.question_id, Suggestion.type, Suggestion.agent],
+            constraints=[Suggestion.record_id, Suggestion.question_id],
             autocommit=False,
         )
 
