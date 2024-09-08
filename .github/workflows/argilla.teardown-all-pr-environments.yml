@@ -8,8 +8,8 @@ jobs:
   teardown_pr_environments:
     name: Teardown Cloud Run PR environments
     runs-on: ubuntu-latest
-    if: secrets.GOOGLE_CLOUD_WIP != '' && secrets.GOOGLE_CLOUD_SERVICE_ACCOUNT != ''
-
+    if: ${{ secrets.GOOGLE_CLOUD_WIP != '' && secrets.GOOGLE_CLOUD_SERVICE_ACCOUNT != '' }}
+    
     # Grant permissions to `GITHUB_TOKEN` for Google Cloud Workload Identity Provider
     permissions:
       contents: read
