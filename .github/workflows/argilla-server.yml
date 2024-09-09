@@ -64,8 +64,21 @@ jobs:
         ports:
           - 5432:5432
 
+      minio:
+        image: quay.io/minio/minio:latest
+        env:
+          MINIO_ACCESS_KEY: access_key
+          MINIO_SECRET_KEY: secret_key
+        ports:
+          - 9000:9000
+
     env:
       ARGILLA_ENABLE_TELEMETRY: 0
+      S3_ENDPOINT: http://localhost:9000
+      S3_ACCESS_KEY: access_key
+      S3_SECRET_KEY: secret_key
+      MINIO_ACCESS_KEY: access_key
+      MINIO_SECRET_KEY: secret_key
 
     steps:
       - name: Checkout Code 🛎
