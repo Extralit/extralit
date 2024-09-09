@@ -60,11 +60,6 @@ services:
     command: minio server /data --console-address :9090
     env_file:
       - .env.dev
-    environment:
-      MINIO_ACCESS_KEY_FILE: /run/secrets/access_key
-      MINIO_SECRET_KEY_FILE: /run/secrets/secret_key
-    volumes:
-      - ./secrets:/run/secrets:ro
     ports:
       - "9000:9000"
     network_mode: host
