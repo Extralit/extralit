@@ -65,12 +65,13 @@ jobs:
           - 5432:5432
 
       minio:
-        image: minio/minio
-        options: >-
-          --health-cmd "curl -f http://localhost:9000/minio/health/live" 
-          --health-interval 10s 
-          --health-timeout 5s 
-          --health-retries 5
+        image: lazybit/minio
+        volumes:
+          - ${{ github.workspace }}/data:/data
+        env:
+          MINIO_ACCESS_KEY: minioadmin
+          MINIO_SECRET_KEY: minioadmin
+        options: --name=minio --health-cmd "curl http://localhost:9000/minio/health/live"
         ports:
           - 9000:9000
 
