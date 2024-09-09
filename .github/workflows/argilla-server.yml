@@ -66,8 +66,6 @@ jobs:
 
       minio:
         image: minio/minio
-        volumes:
-          - /data
         env:
           MINIO_ACCESS_KEY: access_key
           MINIO_SECRET_KEY: secret_key
