@@ -70,7 +70,8 @@
         "tamasfe.even-better-toml",
         "eamodio.gitlens",
         "tilt-dev.tiltfile",
-        "Codecov.codecov"
+        "Codecov.codecov",
+        "github.vscode-github-actions"
       ]
     },
     "settings": {
