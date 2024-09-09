@@ -67,7 +67,6 @@ jobs:
       minio:
         image: minio/minio
         options: >-
-          --entrypoint "minio server /data" 
           --health-cmd "curl -f http://localhost:9000/minio/health/live" 
           --health-interval 10s 
           --health-timeout 5s 
