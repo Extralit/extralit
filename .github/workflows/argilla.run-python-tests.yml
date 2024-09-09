@@ -105,7 +105,7 @@ jobs:
       - name: Run tests 📈
         continue-on-error: true
         run: |
-          uv pip install -q extralit_server
+          uv pip install -q ../argilla-server/
           uv pip install -q -e ".[listeners]"
           pytest --cov=argilla --cov-report=xml:${{ env.COVERAGE_REPORT }}.xml --junitxml=junit.xml -o junit_family=legacy ${{ inputs.pytestArgs }} -vs
 

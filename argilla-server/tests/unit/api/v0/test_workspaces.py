@@ -35,9 +35,7 @@ if TYPE_CHECKING:
 
 
 @pytest.mark.asyncio
-async def test_create_workspace(async_client: "AsyncClient", db: "AsyncSession", owner_auth_header: dict, mocker: "MockerFixture"):
-    create_bucket_mock = mocker.patch("argilla_server.contexts.files.create_bucket", return_value=None)
-
+async def test_create_workspace(async_client: "AsyncClient", db: "AsyncSession", owner_auth_header: dict):
     response = await async_client.post("/api/workspaces", headers=owner_auth_header, json={"name": "workspace"})
 
     assert response.status_code == 200
@@ -57,9 +55,7 @@ async def test_create_workspace_without_authentication(async_client: "AsyncClien
 
 
 @pytest.mark.asyncio
-async def test_create_workspace_as_admin(async_client: "AsyncClient", db: "AsyncSession", mocker: "MockerFixture"):
-    create_bucket_mock = mocker.patch("argilla_server.contexts.files.create_bucket", return_value=None)
-
+async def test_create_workspace_as_admin(async_client: "AsyncClient", db: "AsyncSession"):
     admin = await AdminFactory.create()
 
     response = await async_client.post(
@@ -86,7 +82,6 @@ async def test_create_workspace_as_annotator(async_client: "AsyncClient", db: "A
 async def test_create_workspace_with_existent_name(
     async_client: "AsyncClient", db: "AsyncSession", owner_auth_header: dict, mocker: "MockerFixture"
 ):
-    create_bucket_mock = mocker.patch("argilla_server.contexts.files.create_bucket", return_value=None)
     await WorkspaceFactory.create(name="workspace")
 
     response = await async_client.post("/api/workspaces", headers=owner_auth_header, json={"name": "workspace"})
