@@ -56,7 +56,7 @@ services:
           memory: 256M
 
   minio:
-    image: quay.io/minio/minio:latest
+    image: quay.io/minio/minio:RELEASE.2024-08-29T01-40-52Z
     command: minio server /data --console-address :9090
     env_file:
       - .env.dev
