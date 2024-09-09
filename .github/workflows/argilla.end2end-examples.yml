@@ -95,7 +95,7 @@ jobs:
           ARGILLA_ENABLE_TELEMETRY: 0
         run: |
           uv pip install -q -e "."
-          uv pip install -q extralit_server
+          uv pip install -q ../argilla-server/
           python -m argilla server database migrate
           python -m argilla server database users create_default
           python -m argilla server start &
