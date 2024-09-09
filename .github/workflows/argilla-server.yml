@@ -65,14 +65,18 @@ jobs:
           - 5432:5432
 
       minio:
-        image: quay.io/minio/minio:latest
+        image: quay.io/minio/minio:RELEASE.2024-08-29T01-40-52Z
+        command: minio server /data
         env:
           MINIO_ACCESS_KEY: access_key
           MINIO_SECRET_KEY: secret_key
-          MINIO_ACCESS_KEY_FILE: access_key
-          MINIO_SECRET_KEY_FILE: secret_key
         ports:
           - 9000:9000
+        options: >-
+          --health-cmd "curl -f http://localhost:9000/minio/health/live || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     env:
       ARGILLA_ENABLE_TELEMETRY: 0
