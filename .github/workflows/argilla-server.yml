@@ -67,7 +67,7 @@ jobs:
       minio:
         image: lazybit/minio
         volumes:
-          - ${{ github.workspace }}/data:/data
+          - /data:/data
         env:
           MINIO_ACCESS_KEY: minioadmin
           MINIO_SECRET_KEY: minioadmin
