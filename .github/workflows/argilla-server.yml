@@ -66,18 +66,20 @@ jobs:
 
       minio:
         image: minio/minio
-        env:
-          MINIO_ACCESS_KEY: access_key
-          MINIO_SECRET_KEY: secret_key
-        options: --entrypoint "minio server /data" --health-cmd "curl -f http://localhost:9000/minio/health/live" --health-interval 10s --health-timeout 5s --health-retries 5
+        options: >-
+          --entrypoint "minio server /data" 
+          --health-cmd "curl -f http://localhost:9000/minio/health/live" 
+          --health-interval 10s 
+          --health-timeout 5s 
+          --health-retries 5
         ports:
           - 9000:9000
 
     env:
       ARGILLA_ENABLE_TELEMETRY: 0
       S3_ENDPOINT: http://localhost:9000
-      S3_ACCESS_KEY: access_key
-      S3_SECRET_KEY: secret_key
+      S3_ACCESS_KEY: minioadmin
+      S3_SECRET_KEY: minioadmin
 
     steps:
       - name: Checkout Code 🛎
