@@ -21,7 +21,7 @@ from minio import Minio
 from argilla_server import models
 from argilla_server.contexts import accounts, datasets, files
 from argilla_server.database import get_async_db
-from argilla_server.errors import EntityAlreadyExistsError
+from argilla_server.errors import EntityAlreadyExistsError, GenericServerError
 from argilla_server.errors.future import NotUniqueError
 from argilla_server.models import User
 from argilla_server.policies import WorkspacePolicyV1, WorkspaceUserPolicyV1, authorize
@@ -58,8 +58,14 @@ async def create_workspace(
     db: AsyncSession = Depends(get_async_db),
     workspace_create: WorkspaceCreate,
     current_user: models.User = Security(auth.get_current_user),
+    minio_client: Minio = Depends(files.get_minio_client),
 ):
     await authorize(current_user, WorkspacePolicyV1.create)
+
+    try:
+        files.create_bucket(minio_client, workspace_create.name)
+    except Exception as e:
+        raise GenericServerError(e)
 
     try:
         workspace = await accounts.create_workspace(db, workspace_create.dict())

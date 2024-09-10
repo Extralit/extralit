@@ -19,7 +19,9 @@ These are the section headers that we use:
 
 ### "Added"
 - Pytest and python env setup in GH Codespaces devcontainer
-- Added Response update duration tests
+- Added tests
+  - Response: update duration
+  - Files: get, put, list, delete
 
 ### "Changed"
 - Updated elasticsearch to 8.15.0
