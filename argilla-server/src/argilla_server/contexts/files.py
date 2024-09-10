@@ -4,7 +4,6 @@ from typing import Any, BinaryIO, Dict, List, Optional, Union
 from urllib.parse import urlparse
 from uuid import UUID
 
-from minio.commonconfig import ENABLED
 
 from argilla_server.schemas.v1.files import ListObjectsResponse, ObjectMetadata, FileObjectResponse
 from argilla_server.settings import settings
@@ -12,6 +11,7 @@ from fastapi import HTTPException
 from minio import Minio, S3Error
 from minio.helpers import ObjectWriteResult
 from minio.versioningconfig import VersioningConfig
+from minio.commonconfig import ENABLED
 from minio.datatypes import Object
 
 EXCLUDED_VERSIONING_PREFIXES = ['pdf']
@@ -160,6 +160,10 @@ def create_bucket(client: Minio, workspace_name: str, excluded_prefixes: List[st
 
 def delete_bucket(client: Minio, workspace_name: str):
     try:
+        objects = client.list_objects(workspace_name, prefix="", recursive=True, include_version=True)
+        for obj in objects:
+            client.remove_object(workspace_name, obj.object_name, version_id=obj.version_id)
+
         client.remove_bucket(workspace_name)
     except S3Error as se:
         if se.code == "NoSuchBucket":

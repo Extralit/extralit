@@ -232,16 +232,7 @@ class FilePolicy:
             )
 
         return is_allowed
-    
-    @classmethod
-    def create(cls, workspace_name: str) -> PolicyAction:
-        async def is_allowed(actor: User) -> bool:
-            return actor.is_owner or (
-                actor.is_admin and await _exists_workspace_user_by_user_and_workspace_name(actor, workspace_name)
-            )
-
-        return is_allowed
-    
+        
     @classmethod
     def delete(cls, workspace_name: str) -> PolicyAction:
         async def is_allowed(actor: User) -> bool:
