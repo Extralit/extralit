@@ -414,6 +414,11 @@ class Workspace(DatabaseModel):
     users: Mapped[List["User"]] = relationship(
         secondary="workspaces_users", back_populates="workspaces", order_by=WorkspaceUser.inserted_at.asc()
     )
+    documents: Mapped[List["Document"]] = relationship(
+        back_populates="workspace",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
 
     def __repr__(self):
         return (
@@ -483,6 +488,8 @@ class Document(DatabaseModel):
     pmid: Mapped[str] = mapped_column(String, index=True, nullable=True)
     doi: Mapped[str] = mapped_column(String, index=True, nullable=True)
     workspace_id: Mapped[UUID] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
+
+    workspace: Mapped["Workspace"] = relationship("Workspace", back_populates="documents")
 
     def __repr__(self):
         return (
