@@ -13,6 +13,7 @@
 #  limitations under the License.
 
 import base64
+import os
 import warnings, json
 from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
@@ -652,19 +653,21 @@ def upload_document(
     document_payload = document.to_server_payload()
 
     if document.file_path:
-        with open(document.file_path, 'rb') as f:
-            file_data = f.read()
-            base64_encoded_data = base64.b64encode(file_data).decode()
-            document_payload["file_data"] = base64_encoded_data
+        file_name = os.path.basename(document.file_path)
+        files = {
+            "file_data": (file_name, open(document.file_path, 'rb'), "application/pdf"),
+        }
+    else:
+        files = None
 
-    response = client.post(url=endpoint, json=document_payload)
+    response = client.post(url=endpoint, params=document_payload, files=files)
 
     if response.status_code == 201:
         response_obj = Response.from_httpx_response(response)
         response_obj.parsed = UUID(response.json())
         return response_obj
+    
     return handle_response_error(response)
-
 
 def delete_document(
     client: httpx.Client,

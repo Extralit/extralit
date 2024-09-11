@@ -1,5 +1,7 @@
+import hashlib
 import io
 import logging
+from pathlib import Path
 from typing import Any, BinaryIO, Dict, List, Optional, Union
 from urllib.parse import urlparse
 from uuid import UUID
@@ -43,9 +45,14 @@ def get_minio_client() -> Optional[Minio]:
         return None
 
 
-def get_pdf_s3_object_path(id: Union[UUID, str]):
-    if id is None:
+def compute_hash(data: bytes) -> str:
+    return hashlib.md5(data).hexdigest()
+
+
+def get_pdf_s3_object_path(id: Union[UUID, str]) -> str:
+    if not id:
         raise Exception("id cannot be None")
+    
     elif isinstance(id, UUID):
         object_path = f'pdf/{str(id)}'
     else:
@@ -54,8 +61,8 @@ def get_pdf_s3_object_path(id: Union[UUID, str]):
     return object_path
 
 
-def get_s3_object_url(bucket_name:str, object_name:str)->str:
-    return f'/api/v1/file/{bucket_name}/{object_name}'
+def get_s3_object_url(bucket_name: str, object_path: str) -> str:
+    return f'/api/v1/file/{bucket_name}/{object_path}'
 
 
 def list_objects(client: Minio, bucket: str, prefix: Optional[str] = None, include_version=True, recursive=True, start_after: Optional[str]=None) -> ListObjectsResponse:

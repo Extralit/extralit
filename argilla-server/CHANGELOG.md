@@ -27,6 +27,7 @@ These are the section headers that we use:
 - Updated elasticsearch to 8.15.0
 - Reverted Suggestion table's unique constraint only "record_id", "question_id", fixing the test suites
 - Disabled adding `LIST_DATASET_RECORDS_DEFAULT_SORT_BY` when there's no sort-by on GET records
+- Changed the `/api/v1/documents` post endpoint to use `UploadFile`
 
 ### "Deprecated"
 
