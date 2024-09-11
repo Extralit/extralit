@@ -52,7 +52,7 @@
     "ghcr.io/mamba-org/devcontainer-features/micromamba": {
       "autoActivate": true,
       "channels": "pytorch conda-forge huggingface defaults",
-      "packages": "python==3.10.14 uvicorn uv pdm pyparsing!=3.0.5 pytest pytest-cov pytest-mock pytest-xdist pytest-asyncio==0.21.1 pytest-env factory_boy~=3.2.1 nodejs=18.16.1 datasets==2.21.0 spacy==3.6.1 pytest-randomly>=3.15.0",
+      "packages": "python==3.10.14 uvicorn uv pdm pyparsing!=3.0.5 pytest pytest-cov pytest-mock pytest-xdist pytest-asyncio==0.21.1 pytest-env pytest-watch factory_boy~=3.2.1 nodejs=18.16.1 datasets==2.21.0 spacy==3.6.1 pytest-randomly>=3.15.0",
       "envFile": "",
       "envName": "base"
     }
@@ -77,7 +77,8 @@
         "eamodio.gitlens",
         "tilt-dev.tiltfile",
         "github.vscode-github-actions",
-        "codecov.codecov"
+        "codecov.codecov",
+        "ryanluker.vscode-coverage-gutters"
       ]
     },
     "settings": {
@@ -85,7 +86,9 @@
       "python.testing.cwd": "${workspaceFolder}/argilla-server/",
       "python.testing.pytestArgs": [
         "-vvs",
-        "--disable-warnings"
+        "--disable-warnings",
+        "--cov=argilla-server",
+        "--cov-report=xml:coverage.xml",
       ],
       "python.defaultInterpreterPath": "/opt/conda/bin/python",
       "python.condaPath": "/usr/local/bin/micromamba",

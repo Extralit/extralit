@@ -397,12 +397,12 @@ async def _get_vector_settings_by_name_or_raise(
     return vector_settings
 
 
-def convert_workspace_users_response_suggestions(
+def convert_user_responses_to_suggestions(
         records: Records,
         current_user: User, 
         workspace_users: List[User], 
         dataset: Dataset, 
-        ):
+    ) -> Records:
     user_id2name = {user.id: user.username for user in workspace_users.items}
     question_name2id = {question.name: question for question in dataset.questions}
     
@@ -434,6 +434,8 @@ def convert_workspace_users_response_suggestions(
             record.responses = [record.responses[0]]
         else:
             record.responses = []
+    
+    return records
 
 
 @router.get("/me/datasets/{dataset_id}/records", response_model=Records, response_model_exclude_unset=True)
@@ -478,7 +480,7 @@ async def list_current_user_dataset_records(
         record.metadata_ = await _filter_record_metadata_for_user(record, current_user)
 
     if include and include.with_response_suggestions:
-        convert_workspace_users_response_suggestions(records, current_user, workspace_users, dataset)
+        records = convert_user_responses_to_suggestions(records, current_user, workspace_users, dataset)
 
     return Records(items=records, total=total)
 
@@ -663,7 +665,7 @@ async def search_current_user_dataset_records(
     )
 
     if include and include.with_response_suggestions:
-        convert_workspace_users_response_suggestions(records, current_user, workspace_users, dataset)
+        records = convert_user_responses_to_suggestions(records, current_user, workspace_users, dataset)
 
     for record in records:
         record.dataset = dataset
