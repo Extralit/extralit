@@ -81,7 +81,7 @@ from argilla_server.schemas.v1.vector_settings import (
 from argilla_server.schemas.v1.vector_settings import (
     VectorSettingsCreate,
 )
-from argilla_server.schemas.v1.documents import DocumentCreate, DocumentListItem
+from argilla_server.schemas.v1.documents import DocumentCreateRequest, DocumentListItem
 from argilla_server.schemas.v1.vectors import Vector as VectorSchema
 from argilla_server.search_engine import SearchEngine
 from argilla_server.validators.responses import (
@@ -1236,7 +1236,7 @@ async def get_metadata_property_by_id(db: AsyncSession, metadata_property_id: UU
     return result.scalar_one_or_none()
 
 
-async def create_document(db: "AsyncSession", dataset_create: DocumentCreate) -> DocumentListItem:
+async def create_document(db: "AsyncSession", dataset_create: DocumentCreateRequest) -> DocumentListItem:
     document = await Document.create(
         db,
         id=dataset_create.id,

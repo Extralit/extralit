@@ -71,17 +71,19 @@
         "eamodio.gitlens",
         "tilt-dev.tiltfile",
         "Codecov.codecov",
-        "github.vscode-github-actions"
+        "github.vscode-github-actions",
+        "codecov.codecov"
       ]
     },
     "settings": {
       "python.testing.pytestEnabled": true,
-      "python.testing.cwd": "argilla-server/tests",
+      "python.testing.cwd": "${workspaceFolder}/argilla-server/",
       "python.testing.pytestArgs": [
-        "-vs",
+        "-vvs",
         "--disable-warnings"
       ],
       "python.defaultInterpreterPath": "/opt/conda/bin/python",
+      "python.condaPath": "/usr/local/bin/micromamba",
     }
   }
 }

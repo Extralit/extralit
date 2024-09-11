@@ -36,7 +36,7 @@ These are the section headers that we use:
 
 ### "Fixed"
 - Fixed an issue with reindexing elasticsearch by exception handling on failed datasets
-
+- Added Workspace relationship Document to enable cascade delete
 
 ### "Security"
 
