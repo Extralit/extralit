@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 
 revision = '7552df94427a'
-down_revision = 'ca7293c38970'  # set to latest revision identifiers on updates from from argilla-io/argilla upstream repo.
+down_revision = 'ca7293c38970'  # TODO set to latest revision identifiers on updates from from argilla-io/argilla upstream repo.
 branch_labels = None
 depends_on = None
 
