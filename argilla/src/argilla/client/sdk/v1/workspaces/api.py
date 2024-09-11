@@ -25,7 +25,7 @@ from argilla.client.sdk.v1.workspaces.models import WorkspaceModel
 from argilla.client.sdk.v1.files.models import ObjectMetadata, ListObjectsResponse, FileObjectResponse
 
 
-def calculate_file_hash(file_path: Path) -> str:
+def compute_file_hash(file_path: Path) -> str:
     """Calculate the MD5 hash of a file."""
     hash_md5 = hashlib.md5()
     with open(file_path, "rb") as f:
@@ -149,7 +149,7 @@ def exist_workspace_file(client: httpx.Client, workspace_name: str, path: str, f
         existing_files_response = list_workspace_files(client, workspace_name, path)
         if existing_files_response.status_code == 200:
             existing_files: ListObjectsResponse = existing_files_response.parsed
-            file_hash = calculate_file_hash(file_path)
+            file_hash = compute_file_hash(file_path)
             for file in existing_files.objects:
                 if file.etag and file.object_name.endswith(file_path.name) and file.etag.strip('"') == file_hash:
                     return file
