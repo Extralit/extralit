@@ -1,16 +1,13 @@
 import io
-from typing import TYPE_CHECKING, AsyncGenerator, Type, Tuple
+from typing import TYPE_CHECKING
 from uuid import uuid4
 from unittest.mock import patch, MagicMock
 
+import pytest
 from argilla_server.contexts.files import delete_bucket, get_minio_client
 from argilla_server.schemas.v1.files import ListObjectsResponse, ObjectMetadata
-from fastapi import UploadFile
-from minio import S3Error
-import pytest
 from argilla_server.constants import API_KEY_HEADER_NAME
 from argilla_server.schemas.v1.questions import QUESTION_CREATE_DESCRIPTION_MAX_LENGTH, QUESTION_CREATE_TITLE_MAX_LENGTH
-from sqlalchemy import func, select
 
 from tests.factories import (
     MinioFileFactory,
@@ -22,7 +19,6 @@ from tests.factories import (
 if TYPE_CHECKING:
     from httpx import AsyncClient
     from sqlalchemy.ext.asyncio import AsyncSession
-    from pytest_mock import MockerFixture
 
 
 @pytest.mark.asyncio
