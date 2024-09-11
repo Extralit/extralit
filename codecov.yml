@@ -1,7 +1,5 @@
 comment:
   require_changes: true
-  layout: "header, diff, flags, components"
-
 coverage:
   status:
     project:
@@ -13,7 +11,7 @@ coverage:
         target: auto
         threshold: 2%
 
-components_management:
+component_management:
   default_rules:
     statuses:
       - type: project
@@ -23,16 +21,16 @@ components_management:
     - component_id: argilla
       name: argilla
       paths:
-        - "argilla/src/argilla/**"
+        - argilla/src/argilla/**
 
     - component_id: extralit
       paths:
-        - "argilla/src/extralit/**"
+        - argilla/src/extralit/**
 
     - component_id: argilla-server
       paths:
-        - "argilla-server/**"
+        - argilla-server/**
         
     - component_id: argilla-frontend
       paths:
-        - "argilla-frontend/**"
+        - argilla-frontend/**
