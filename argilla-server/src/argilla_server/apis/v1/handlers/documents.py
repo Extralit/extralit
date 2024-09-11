@@ -61,7 +61,7 @@ async def check_existing_document(db: AsyncSession, document_create: DocumentCre
 async def upload_document(
     *,
     document_create: DocumentCreateRequest = Depends(),
-    file_data: UploadFile | None = File(None),
+    file_data: UploadFile = File(None),
     db: AsyncSession = Depends(get_async_db),
     client: Minio = Depends(files.get_minio_client),
     current_user: User = Security(auth.get_current_user)
