@@ -14,7 +14,7 @@ These are the section headers that we use:
 * "Security" in case of vulnerabilities.
 -->
 
-## [Unreleased]()
+## [v0.2.1](https://github.com/extralit/extralit/compare/v0.2.1...v0.2.0)
 
 ### "Added"
 - Added singleton schema support in SchemaStructure
@@ -48,7 +48,7 @@ These are the section headers that we use:
 - Allow admin role for workspace creation
 
 
-## [v0.2.0]()
+## [v0.2.0](https://github.com/extralit/extralit/compare/v0.2.0...v1.27.0a)
 
 ### Added
 - Added workspace schema and file management to the Extralit CLI.
