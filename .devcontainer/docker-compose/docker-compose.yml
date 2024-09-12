@@ -34,7 +34,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-    restart: always
+    restart: unless-stopped
 
   postgres:
     image: postgres:14
@@ -55,6 +55,7 @@ services:
       resources:
         limits:
           memory: 256M
+    restart: unless-stopped
 
   minio:
     image: quay.io/minio/minio:RELEASE.2024-08-29T01-40-52Z

@@ -78,7 +78,8 @@
         "tilt-dev.tiltfile",
         "github.vscode-github-actions",
         "codecov.codecov",
-        "ryanluker.vscode-coverage-gutters"
+        "ryanluker.vscode-coverage-gutters",
+        "ms-vscode.live-server"
       ]
     },
     "settings": {

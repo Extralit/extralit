@@ -173,7 +173,7 @@ def delete_bucket(client: Minio, workspace_name: str):
 
         client.remove_bucket(workspace_name)
     except S3Error as se:
-        if se.code == "NoSuchBucket":
+        if se.code in {"NoSuchBucket", "NotImplemented"}:
             pass
         else:
             _LOGGER.error(f"Error creating bucket {workspace_name}: {se}")
