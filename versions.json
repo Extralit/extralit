@@ -10,14 +10,6 @@
     "aliases": []
   },
   {
-    "version": "docs_init_mkdocs",
-    "title": "docs_init_mkdocs",
-    "aliases": [],
-    "properties": {
-      "hidden": true
-    }
-  },
-  {
     "version": "v0.2",
     "title": "v0.2",
     "aliases": []
