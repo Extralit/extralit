@@ -23,6 +23,7 @@ These are the section headers that we use:
   - Response: update duration
   - Files: get, put, list, delete
   - Models: get, post, put, delete
+  - Records: include response_suggestions
 
 ### "Changed"
 - Updated elasticsearch to 8.15.0

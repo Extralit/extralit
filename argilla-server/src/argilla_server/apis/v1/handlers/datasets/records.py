@@ -29,7 +29,7 @@ from argilla_server.database import get_async_db
 from argilla_server.enums import MetadataPropertyType, RecordSortField, ResponseStatus, ResponseStatusFilter, SortOrder
 from argilla_server.errors.future.base_errors import MISSING_VECTOR_ERROR_CODE
 from argilla_server.models import Dataset as DatasetModel
-from argilla_server.models import Record, User, Suggestion
+from argilla_server.models import Record, User, Suggestion, Response, Question
 from argilla_server.policies import DatasetPolicyV1, RecordPolicyV1, authorize, is_authorized
 from argilla_server.schemas.v1.datasets import Dataset
 from argilla_server.schemas.v1.records import (
@@ -397,38 +397,22 @@ async def _get_vector_settings_by_name_or_raise(
     return vector_settings
 
 
-def convert_user_responses_to_suggestions(
-        records: Records,
+def add_suggestions_from_responses(
+        records: List[Record],
         current_user: User, 
         workspace_users: List[User], 
         dataset: Dataset, 
     ) -> Records:
     user_id2name = {user.id: user.username for user in workspace_users.items}
-    question_name2id = {question.name: question for question in dataset.questions}
+    questions_name_map = {question.name: question for question in dataset.questions}
     
     for record in records:
         suggestion_responses = [response for response in record.responses \
                                 if response.user_id != current_user.id]
 
         for response in suggestion_responses:
-            if response.status == ResponseStatus.discarded: continue
-
-            for question_name, suggestion_value in response.values.items():
-                if question_name not in question_name2id or \
-                    not suggestion_value or not suggestion_value.get("value"): continue
-                question = question_name2id.get(question_name)
-
-                suggestion = Suggestion(
-                    id=response.id,
-                    question_id=question.id,
-                    type="human",
-                    value=suggestion_value.get("value"),
-                    agent=user_id2name.get(response.user_id),
-                    score=None,
-                    inserted_at=response.inserted_at,
-                    updated_at=response.updated_at
-                )
-                record.suggestions.append(suggestion)
+            suggestions = generate_suggestions_from_response(response, current_user, questions_name_map, user_id2name)
+            record.suggestions.extend(suggestions)
 
         if record.responses and record.responses[0].user_id == current_user.id:
             record.responses = [record.responses[0]]
@@ -436,6 +420,36 @@ def convert_user_responses_to_suggestions(
             record.responses = []
     
     return records
+
+
+def generate_suggestions_from_response(
+        response: Response,
+        current_user: User,
+        questions_name_map: Dict[str, Question],
+        workspace_users_id2name: Dict[UUID, str]
+    ) -> List[Suggestion]:
+    suggestions = []
+    if response.user_id == current_user.id or response.status == ResponseStatus.discarded:
+        return suggestions
+
+    for question_name, suggestion_value in response.values.items():
+        if question_name not in questions_name_map or not suggestion_value or not suggestion_value.get("value"):
+            continue
+        question = questions_name_map.get(question_name)
+
+        suggestion = Suggestion(
+            id=response.id,
+            question_id=question.id,
+            type="human",
+            value=suggestion_value.get("value"),
+            agent=workspace_users_id2name.get(response.user_id),
+            score=None,
+            inserted_at=response.inserted_at,
+            updated_at=response.updated_at
+        )
+        suggestions.append(suggestion)
+    
+    return suggestions
 
 
 @router.get("/me/datasets/{dataset_id}/records", response_model=Records, response_model_exclude_unset=True)
@@ -480,7 +494,7 @@ async def list_current_user_dataset_records(
         record.metadata_ = await _filter_record_metadata_for_user(record, current_user)
 
     if include and include.with_response_suggestions:
-        records = convert_user_responses_to_suggestions(records, current_user, workspace_users, dataset)
+        records = add_suggestions_from_responses(records, current_user, workspace_users, dataset)
 
     return Records(items=records, total=total)
 
@@ -665,7 +679,7 @@ async def search_current_user_dataset_records(
     )
 
     if include and include.with_response_suggestions:
-        records = convert_user_responses_to_suggestions(records, current_user, workspace_users, dataset)
+        records = add_suggestions_from_responses(records, current_user, workspace_users, dataset)
 
     for record in records:
         record.dataset = dataset
