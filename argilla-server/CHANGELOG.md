@@ -14,8 +14,7 @@ These are the section headers that we use:
 * "Security" in case of vulnerabilities.
 -->
 
-## [Unreleased]()
-
+## [v0.2.1](https://github.com/extralit/extralit/compare/v0.2.1...v0.2.0)
 
 ### "Added"
 - Pytest and python env setup in GH Codespaces devcontainer
@@ -43,7 +42,7 @@ These are the section headers that we use:
 
 ### "Security"
 
-## [v0.2.0]()
+## [v0.2.0](https://github.com/extralit/extralit/compare/v0.2.0...v1.27.0a)
 
 ### Added
 - Added use_table option to `QuestionSetting`.

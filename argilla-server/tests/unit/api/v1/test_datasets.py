@@ -4160,6 +4160,7 @@ class TestSuiteDatasets:
                 "inserted_at": suggestion_b.inserted_at.isoformat(),
                 "updated_at": suggestion_b.updated_at.isoformat(),
             },
+            # Expecting no suggestions for the second record as the other user's response has `discarded` status
             *[
                 {
                     "id": str(s.id),
@@ -5149,10 +5150,14 @@ class TestSuiteDatasets:
         ]
 
         responses = [
-            await ResponseFactory.create(values={"input_ok": {"value": "yes"}, "output_ok": {"value": "yes"}}, record=records[0], user=annotator),
-            await ResponseFactory.create(values={"input_ok": {"value": "no"}, "output_ok": {"value": "no"}}, record=records[0], user=user),
-            await ResponseFactory.create(values={"input_ok": {"value": "yes"}, "output_ok": {"value": "no"}}, record=records[1], user=annotator),
-            await ResponseFactory.create(values={"input_ok": {"value": "no"}, "output_ok": {"value": "no"}}, record=records[1], user=user),
+            await ResponseFactory.create(values={"input_ok": {"value": "yes"}, "output_ok": {"value": "yes"}}, 
+                record=records[0], user=annotator, status=ResponseStatus.submitted),
+            await ResponseFactory.create(values={"input_ok": {"value": "no"}, "output_ok": {"value": "no"}}, 
+                record=records[0], user=user),
+            await ResponseFactory.create(values={"input_ok": {"value": "yes"}, "output_ok": {"value": "no"}}, 
+                record=records[1], user=annotator, status=ResponseStatus.discarded),
+            await ResponseFactory.create(values={"input_ok": {"value": "no"}, "output_ok": {"value": "no"}}, 
+                record=records[1], user=user),
         ]
 
         suggestions = [
