@@ -14,7 +14,7 @@ These are the section headers that we use:
 * "Security" in case of vulnerabilities.
 -->
 
-## [v0.2.1](https://github.com/extralit/extralit/compare/v0.2.1...v0.2.0)
+## [v0.2.1](https://github.com/extralit/extralit/compare/v0.2.0...v0.2.1)
 
 ### "Added"
 - Added singleton schema support in SchemaStructure
@@ -31,12 +31,6 @@ These are the section headers that we use:
 - Refactored extralit dockerfile and Docker Hub images to `extralit/argilla-server` and `extralit/argilla-quickstart`
 - Changed `develop` branch changes in argilla/docs to `https:/docs.extralit.ai/latest` instead of `dev`
 
-### "Deprecated"
-
-
-### "Removed"
-
-
 ### "Fixed"
 
 - Fixed Tiltfile and [k8s manifests](examples/deployments/k8s/) for mono-repo setup
@@ -48,7 +42,7 @@ These are the section headers that we use:
 - Allow admin role for workspace creation
 
 
-## [v0.2.0](https://github.com/extralit/extralit/compare/v0.2.0...v1.27.0a)
+## [v0.2.0](https://github.com/extralit/extralit/compare/v1.27.0a...v0.2.0)
 
 ### Added
 - Added workspace schema and file management to the Extralit CLI.
