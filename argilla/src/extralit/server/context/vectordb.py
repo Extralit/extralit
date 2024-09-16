@@ -1,11 +1,17 @@
-import os
 from typing import Optional
+import os
+
 import weaviate
 from weaviate import WeaviateClient
+from weaviate.exceptions import WeaviateStartUpError
 
 
 def get_weaviate_client(http_port=80, http_secure=False, grpc_port=50051, grpc_secure=False) -> Optional[WeaviateClient]:
-    if 'WCS_HTTP_URL' in os.environ:
+    if 'WCS_HTTP_URL' not in os.environ:
+        print("WCS_HTTP_URL not set")
+        return None
+
+    try:
         api_keys = os.getenv('WCS_API_KEY', '').split(',')
 
         weaviate_client = weaviate.connect_to_custom(
@@ -22,5 +28,12 @@ def get_weaviate_client(http_port=80, http_secure=False, grpc_port=50051, grpc_s
         )
 
         return weaviate_client
+    
+    except WeaviateStartUpError as wsue:
+        print(f"Failed to start Weaviate: {wsue}")
+    
+    except Exception as e:
+        raise e
+
 
     return None
