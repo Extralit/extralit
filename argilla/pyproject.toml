@@ -35,7 +35,7 @@ dependencies = [
     # monitoring
     "wrapt >= 1.14,< 1.15",
     # for progressbars
-    "tqdm >= 4.27.0",
+    "tqdm >= 4.66.1, < 5.0.0",
     # monitor background consumers
     "backoff",
     "monotonic",
@@ -88,9 +88,9 @@ ocr = [
 ]
 pdf = [
     "unstructured[pdf] ~= 0.12.3",
-    "deepdoctection ~= 0.31.0",
     "llmsherpa ~= 0.1.3",
     "python-doctr ~= 0.8.1",
+    "deepdoctection",
     "pypdf",
     "pypdfium2",
     "pymupdf",
