@@ -45,6 +45,13 @@ jobs:
     secrets: inherit
 
   run_end2end_tests:
+    strategy:
+      matrix:
+        include:
+          - searchEngineDockerImage: docker.elastic.co/elasticsearch/elasticsearch:8.8.2
+            searchEngineDockerEnv: '{"discovery.type": "single-node", "xpack.security.enabled": "false"}'
+            runsOn: extended-runner
+
     name: Run end2end tests
     uses: ./.github/workflows/argilla.end2end-examples.yml
     with:
@@ -52,12 +59,6 @@ jobs:
       searchEngineDockerImage: ${{ matrix.searchEngineDockerImage }}
       searchEngineDockerEnv: ${{ matrix.searchEngineDockerEnv }}
     secrets: inherit
-    strategy:
-      matrix:
-        include:
-          - searchEngineDockerImage: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
-            searchEngineDockerEnv: '{"discovery.type": "single-node", "xpack.security.enabled": "false"}'
-            runsOn: ubuntu-latest
 
   run_integration_tests:
     name: Run integration tests
@@ -137,7 +138,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: python-package
-          path: dist
+          path: argilla/dist
 
       - name: Publish Package to TestPyPI 🥪
         uses: pypa/gh-action-pypi-publish@release/v1
