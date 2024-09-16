@@ -37,7 +37,7 @@ These are the section headers that we use:
 - Fixed creating a new Weaviate collection with Weaviate client v4
 - Fixed an error with checking Weaviate collection existence when one doesn't exists
 - Fixed `extralit[pdf]` installation error by changing deepdoctection requirement
-- 
+- Fixed extralit CLI with [server] package option
 
 ### "Security"
 
