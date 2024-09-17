@@ -110,7 +110,7 @@ jobs:
           pytest --cov=argilla --cov-report=xml:${{ env.COVERAGE_REPORT }}.xml --junitxml=junit.xml -o junit_family=legacy ${{ inputs.pytestArgs }} -vs
 
       - name: Upload coverage report artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: coverage-report-${{ env.COVERAGE_REPORT }}
           path: argilla/${{ env.COVERAGE_REPORT }}.xml
