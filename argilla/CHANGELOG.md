@@ -38,6 +38,7 @@ These are the section headers that we use:
 - Fixed an error with checking Weaviate collection existence when one doesn't exists
 - Fixed `extralit[pdf]` installation error by changing deepdoctection requirement
 - Fixed extralit CLI with [server] package option
+- Fixed an issue with llama-index v0.11.0
 
 ### "Security"
 

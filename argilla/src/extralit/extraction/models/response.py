@@ -1,12 +1,11 @@
 from typing import Union, List, Dict, Any, Optional
+from pydantic.v1 import BaseModel, validator, Field
+from typing_extensions import TypedDict
 
 import pandas as pd
 import tiktoken
 from llama_index.core import VectorStoreIndex
 from llama_index.core.schema import TextNode
-
-from pydantic.v1 import BaseModel, validator, Field
-from typing_extensions import TypedDict
 
 from extralit.extraction.staging import to_df
 
@@ -21,6 +20,9 @@ class BaseModelForLlamaIndexResponse(BaseModel):
 class SourceNode(TypedDict):
     node: Union[TextNode, Dict[str, Union[str, Dict[str, str]]]]
     score: Optional[float]
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class ResponseResult(BaseModel):
@@ -64,6 +66,8 @@ class ResponseResult(BaseModel):
 
         return context_df
 
+    class Config:
+        arbitrary_types_allowed = True
 
 class ResponseResults(BaseModel):
     items: Dict[str, ResponseResult] = Field(default_factory=dict)
@@ -111,3 +115,6 @@ class ResponseResults(BaseModel):
 
     def __setitem__(self, key, value):
         self.items[key] = value
+
+    class Config:
+        arbitrary_types_allowed = True
