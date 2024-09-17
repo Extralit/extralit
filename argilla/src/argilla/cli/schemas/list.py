@@ -23,8 +23,14 @@ def list_schemas(
         help="The directory prefix containing the schema files in the Workspace's S3 bucket.",
         show_default=True,
     ),
+    csv_path: Optional[Path] = typer.Option(
+        None,
+        "--csv",
+        help="Path to export the output as a CSV file.",
+        show_default=False,
+    ),
 ) -> None:
-    from argilla.cli.rich import echo_in_panel, get_argilla_themed_table
+    from argilla.cli.rich import echo_in_panel, get_argilla_themed_table, console_table_to_pandas_df
     from rich.console import Console
 
     console = Console()
@@ -34,11 +40,12 @@ def list_schemas(
         workspace_schemas = workspace.list_files(path, include_version=include_version)
 
         table = get_argilla_themed_table(title=f"Workspace (name='{workspace.name}') Schemas", show_lines=True)
-        for column in ("Schema Name", "Version ID", "Version Tag", "Last Update Date", "Metadata"):
+        column_names = ["Schema Name", "Version ID", "Version Tag", "Last Update Date", "Metadata"]
+        for column in column_names:
             table.add_column(column, justify="left")
 
         schema_names = set()
-        for file_object in workspace_schemas.objects:            
+        for file_object in workspace_schemas.objects:
             if not file_object.etag:
                 # Skip alias files
                 continue
@@ -58,7 +65,13 @@ def list_schemas(
                 str(file_object.metadata),
             )
 
-        console.print(table)
+        if csv_path:
+            df = console_table_to_pandas_df(table)
+            # Export to CSV
+            df.to_csv(csv_path, index=False)
+        
+        else:
+            console.print(table)
 
     except Exception as e:
         echo_in_panel(
