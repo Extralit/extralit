@@ -208,7 +208,7 @@ jobs:
 
       - name: Publish Package to PyPI test environment 🥪
         run: |
-          pdm publish --no-build --repository testpypi
+          pdm publish --no-build --repository testpypi --username __token__ --password ${{ secrets.AR_TEST_PYPI_API_TOKEN }}
 
       - name: Test Installing 🍿
         run: |
@@ -216,4 +216,4 @@ jobs:
 
       - name: Publish Package to PyPI 🥩
         run: |
-          pdm publish --no-build
+          pdm publish --no-build --username __token__ --password ${{ secrets.AR_PYPI_API_TOKEN }}
