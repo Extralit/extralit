@@ -70,6 +70,22 @@ services:
         limits:
           memory: 256M
 
+  weaviate:
+    image: cr.weaviate.io/semitechnologies/weaviate:1.26.4
+    environment:
+      QUERY_DEFAULTS_LIMIT: 20
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true'
+    ports:
+      - "8080:8080"
+      - "50051:50051"
+    network_mode: host
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/v1/.well-known/live || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
 networks:
   argilla:
     driver: bridge

@@ -8,7 +8,8 @@
   "runServices": [
     "elasticsearch",
     "postgres",
-    "minio"
+    "minio",
+    "weaviate"
   ],
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
 
@@ -16,7 +17,9 @@
   "forwardPorts": [
     9200,
     5432,
-    9090
+    9090,
+    8080,
+    50051
   ],
   "portsAttributes": {
     "8888": {
@@ -41,6 +44,16 @@
     },
     "9090": {
       "label": "minio-console",
+      "requireLocalPort": true,
+      "onAutoForward": "ignore"
+    },
+    "8080": {
+      "label": "weaviate",
+      "requireLocalPort": true,
+      "onAutoForward": "ignore"
+    },
+    "50051": {
+      "label": "weaviate-grpc",
       "requireLocalPort": true,
       "onAutoForward": "ignore"
     }
