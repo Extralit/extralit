@@ -67,7 +67,6 @@ def list_schemas(
 
         if csv_path:
             df = console_table_to_pandas_df(table)
-            # Export to CSV
             df.to_csv(csv_path, index=False)
         
         else:

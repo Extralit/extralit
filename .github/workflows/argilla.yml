@@ -50,7 +50,7 @@ jobs:
         include:
           - searchEngineDockerImage: docker.elastic.co/elasticsearch/elasticsearch:8.8.2
             searchEngineDockerEnv: '{"discovery.type": "single-node", "xpack.security.enabled": "false"}'
-            runsOn: extended-runner
+            runsOn: ubuntu-latest
 
     name: Run end2end tests
     uses: ./.github/workflows/argilla.end2end-examples.yml
