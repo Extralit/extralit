@@ -14,8 +14,7 @@ class ExtractionRequest(BaseModel):
     schema_name: str
     extractions: Extractions = Field(
         default_factory=dict,
-        description="All of the extraction data for previously extracted as well as the extraction table of "
-                    "`schema_name` to be extracted."
+        description="All previously extracted data."
     )
     columns: Optional[List[str]] = None
     headers: Optional[List[str]] = None

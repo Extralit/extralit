@@ -4,8 +4,8 @@
 if ! pip list | grep -q "extralit"; then
     echo "Installing required packages and editable installs..."
     uv pip install -q "sentence-transformers<3.0.0" transformers "textdescriptives<3.0.0" \
-        -e /workspaces/extralit/argilla/ && \
-        uv pip install -q -e /workspaces/extralit/argilla-server/
+        -e /workspaces/extralit/argilla-server/ && \
+        uv pip install -q -e /workspaces/extralit/argilla/
 else
     echo "Package 'extralit' is already installed. Skipping installation."
 fi

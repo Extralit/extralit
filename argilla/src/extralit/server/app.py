@@ -63,7 +63,7 @@ async def health_check():
 
 @app.get("/schemas/{workspace}")
 async def schemas(
-        workspace: str = 'itn-recalibration',
+    workspace: str = 'itn-recalibration',
 ):
     ss = SchemaStructure.from_s3(workspace_name=workspace, minio_client=minio_client)
     return ss.ordering
@@ -71,15 +71,15 @@ async def schemas(
 
 @app.get("/chat", status_code=status.HTTP_200_OK, response_class=StreamingResponse)
 async def chat(
-        query: str = Query(...),
-        workspace: str = Query(...),
-        reference: str = Query(...),
-        similarity_top_k: int = Query(5, alias="k"),
-        chat_mode: ChatMode = Query(ChatMode.BEST),
-        llm_model: str = Query("gpt-3.5-turbo"),
-        username: Optional[Union[str, UUID]] = None,
-        prompt_template: str = "chat",
-        langfuse_callback: Optional[LlamaIndexCallbackHandler] = Depends(get_langfuse_callback),
+    query: str = Query(...),
+    workspace: str = Query(...),
+    reference: str = Query(...),
+    similarity_top_k: int = Query(5, alias="k"),
+    chat_mode: ChatMode = Query(ChatMode.BEST),
+    llm_model: str = Query("gpt-3.5-turbo"),
+    username: Optional[Union[str, UUID]] = None,
+    prompt_template: str = "chat",
+    langfuse_callback: Optional[LlamaIndexCallbackHandler] = Depends(get_langfuse_callback),
 ):
     index = load_index(paper=pd.Series(name=reference), llm_model=llm_model, embed_model='text-embedding-3-small',
                        weaviate_client=weaviate_client, index_name="LlamaIndexDocumentSections")
@@ -126,14 +126,14 @@ async def chat(
 
 @app.post("/extraction", status_code=status.HTTP_201_CREATED, response_model=ExtractionResponse)
 async def extraction(
-        *,
-        extraction_request: ExtractionRequest = Body(...),
-        workspace: str = Query(...),
-        model: str = "gpt-4o",
-        similarity_top_k: int = 8,
-        username: Optional[Union[str, UUID]] = None,
-        prompt_template: str = "completion",
-        langfuse_callback: Optional[LlamaIndexCallbackHandler] = Depends(get_langfuse_callback),
+    *,
+    extraction_request: ExtractionRequest = Body(...),
+    workspace: str = Query(...),
+    model: str = "gpt-4o",
+    similarity_top_k: int = 8,
+    username: Optional[Union[str, UUID]] = None,
+    prompt_template: str = "completion",
+    langfuse_callback: Optional[LlamaIndexCallbackHandler] = Depends(get_langfuse_callback),
 ):
     schemas = SchemaStructure.from_s3(workspace_name=workspace, minio_client=minio_client)
     schema = schemas[extraction_request.schema_name]
@@ -146,7 +146,8 @@ async def extraction(
     extractions = PaperExtraction(
         reference=extraction_request.reference,
         extractions=extraction_dfs,
-        schemas=schemas)
+        schemas=schemas
+    )
 
     # Get the system prompt
     try:
@@ -207,12 +208,12 @@ async def extraction(
 
 @app.get("/segments/", status_code=status.HTTP_200_OK, response_model=SegmentsResponse)
 async def segments(
-        *,
-        workspace: str = Query(...),
-        reference: str = Query(...),
-        types: Optional[List[Literal['text', 'table', 'figure']]] = Query(None),
-        username: Optional[Union[str, UUID]] = Query(None),
-        limit=100,
+    *,
+    workspace: str = Query(...),
+    reference: str = Query(...),
+    types: Optional[List[Literal['text', 'table', 'figure']]] = Query(None),
+    username: Optional[Union[str, UUID]] = Query(None),
+    limit=100,
 ):
     filters = []
 
