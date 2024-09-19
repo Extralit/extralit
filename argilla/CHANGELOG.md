@@ -14,6 +14,15 @@ These are the section headers that we use:
 * "Security" in case of vulnerabilities.
 -->
 
+## [Unreleased]()
+
+### "Added"
+- Added tests and mocks for extralit FastAPI endpoints
+
+### "Changed"
+- Changed from "extralit.app:app" to "extralit.server.app:app".
+
+
 ## [v0.2.1](https://github.com/extralit/extralit/compare/v0.2.0...v0.2.1)
 
 ### "Added"
