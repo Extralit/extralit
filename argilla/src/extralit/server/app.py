@@ -135,18 +135,18 @@ async def extraction(
     prompt_template: str = "completion",
     langfuse_callback: Optional[LlamaIndexCallbackHandler] = Depends(get_langfuse_callback),
 ):
-    schemas = SchemaStructure.from_s3(workspace_name=workspace, minio_client=minio_client)
-    schema = schemas[extraction_request.schema_name]
+    schema_structure = SchemaStructure.from_s3(workspace_name=workspace, minio_client=minio_client)
+    schema = schema_structure[extraction_request.schema_name]
 
     extraction_dfs = {}
     for schema_name, extraction_dict in extraction_request.extractions.items():
-        schema = schemas[schema_name]
+        schema = schema_structure[schema_name]
         extraction_dfs[schema.name] = json_to_df(extraction_dict, schema=schema)
 
     extractions = PaperExtraction(
         reference=extraction_request.reference,
         extractions=extraction_dfs,
-        schemas=schemas
+        schemas=schema_structure
     )
 
     # Get the system prompt
