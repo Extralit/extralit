@@ -5,6 +5,7 @@ import pandas as pd
 import pytest
 from unittest.mock import MagicMock, patch
 
+from extralit.extraction.models.schema import SchemaStructure
 
 if TYPE_CHECKING:
     from fastapi.testclient import TestClient
@@ -98,25 +99,31 @@ def test_chat(
         MockSyncOpenAI.assert_called_once()
 
 
-def test_extraction(client: "TestClient", mocker: "MockerFixture"):
+def test_extraction(
+    client: "TestClient", 
+    mocker: "MockerFixture", 
+    schema_structure: "SchemaStructure"
+):
     with CachedOpenAIApiKeys(set_fake_key=True):
-        mock_load_index = mocker.patch("extralit.server.app.load_index")
+        # mock_load_index = mocker.patch("extralit.server.app.load_index")
         
         mock_extract_schema = mocker.patch("extralit.server.app.extract_schema")
         mock_extract_schema.return_value = (pd.DataFrame({"col": ["value"]}), MagicMock())
         
         mock_schema_structure = mocker.patch("extralit.server.app.SchemaStructure.from_s3")
-        mock_schema_structure.return_value = {"mock_schema": MagicMock()}
+        mock_schema_structure.return_value = schema_structure
 
         response = client.post(
             "/extraction", 
             json={
-                "schema_name": "mock_schema",
                 "reference": "test-reference",
-                "extractions": {"mock_schema": [{"key": "value"}]},
+                "schema_name": "MockSchema",
+                "extractions": {
+                    "MockSchema": [{"key": "value"}]
+                },
                 "columns": ["col"],
                 "headers": ["header"],
-                "types": ["type"],
+                "types": None,
                 "prompt": "test prompt",
             }, 
             params={
@@ -127,7 +134,17 @@ def test_extraction(client: "TestClient", mocker: "MockerFixture"):
         )
         
         assert response.status_code == 201
-        assert response.json() == {"data": [{"col": "value"}]}
+        assert response.json() == {
+            "data": [{"col": "value", "index": 0}],
+            'schema': {
+                'fields': [
+                    {'extDtype': None, 'name': 'index', 'type': 'integer'},
+                    {'extDtype': None, 'name': 'col','type': 'string'}
+                ],
+                'pandas_version': '1.4.0',
+                'primaryKey': ['index']
+            },
+        }
 
 
 def test_segments(client: "TestClient", mocker: "MockerFixture"):
@@ -146,4 +163,7 @@ def test_segments(client: "TestClient", mocker: "MockerFixture"):
         "limit": 100
     })
     assert response.status_code == 200
-    assert response.json() == {'items': [{'doc_id': 'test-doc-id', 'header': 'test-header', 'page_number': 1, 'type': None}]}
+    assert response.json() == {'items': [
+        {'doc_id': 'test-doc-id', 'header': 'test-header', 'page_number': 1, 'type': None}
+        ]
+    }
