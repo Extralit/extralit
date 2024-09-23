@@ -20,7 +20,7 @@ from extralit.extraction.models.paper import PaperExtraction
 from extralit.extraction.models.schema import SchemaStructure
 from extralit.extraction.prompts import DEFAULT_CHAT_PROMPT_TMPL, CHAT_SYSTEM_PROMPT
 from extralit.extraction.query import get_nodes_metadata, vectordb_contains_any
-from extralit.extraction.vector_index import load_index
+from extralit.extraction.vector_index import create_vector_index, load_index
 from extralit.server.context.files import get_minio_client
 from extralit.server.context.llamaindex import get_langfuse_callback
 from extralit.server.context.vectordb import get_weaviate_client
@@ -228,3 +228,26 @@ async def segments(
     )
 
     return SegmentsResponse(items=entries)
+
+
+@app.post("/index/", status_code=status.HTTP_201_CREATED)
+async def create_index(
+    workspace: str = Query(...),
+    reference: str = Query(...),
+    embed_model: str = Query("text-embedding-3-small"),
+    username: Optional[Union[str, UUID]] = Query(None),
+):
+    try:
+        index = create_vector_index(
+            paper=pd.Series(name=reference),
+            weaviate_client=weaviate_client,
+            # preprocessing_dataset=request.preprocessing_dataset,
+            # preprocessing_path=request.preprocessing_path,
+            index_name="LlamaIndexDocumentSections",
+            embed_model=embed_model,
+        )
+
+        return {"status": "index created"}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

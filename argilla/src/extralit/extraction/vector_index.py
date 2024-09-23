@@ -76,19 +76,20 @@ def create_local_index(paper: pd.Series,
     return index
 
 
-def create_vector_index(paper: pd.Series,
-                        weaviate_client: WeaviateClient,
-                        preprocessing_dataset: Optional[rg.FeedbackDataset] = None,
-                        preprocessing_path='data/preprocessing/nougat/',
-                        index_name: Optional[str] = "LlamaIndexDocumentSections",
-                        embed_model='text-embedding-3-small',
-                        dimensions=1536,
-                        retrieval_mode=DEFAULT_RETRIEVAL_MODE,
-                        overwrite: Literal[True, 'text', 'table', 'figure']='table',
-                        chunk_size=4096,
-                        chunk_overlap=200,
-                        verbose=True, ) \
-        -> VectorStoreIndex:
+def create_vector_index(
+    paper: pd.Series,
+    weaviate_client: WeaviateClient,
+    preprocessing_dataset: Optional[rg.FeedbackDataset] = None,
+    preprocessing_path='data/preprocessing/nougat/',
+    index_name: Optional[str] = "LlamaIndexDocumentSections",
+    embed_model='text-embedding-3-small',
+    dimensions=1536,
+    retrieval_mode=DEFAULT_RETRIEVAL_MODE,
+    overwrite: Literal[True, 'text', 'table', 'figure']='table',
+    chunk_size=4096,
+    chunk_overlap=200,
+    verbose=True, 
+) -> VectorStoreIndex:
     """
     Creates a VectorStoreIndex for a given paper and uploading .
 
@@ -162,7 +163,8 @@ def create_vector_index(paper: pd.Series,
 
 def load_index(paper: pd.Series, llm_model="gpt-4o", embed_model='text-embedding-3-small',
                weaviate_client: Optional[WeaviateClient] = None,
-               index_name: Optional[str] = "LlamaIndexDocumentSections", persist_dir='data/interim/vectorstore/',
+               index_name: Optional[str] = "LlamaIndexDocumentSections", 
+               persist_dir='data/interim/vectorstore/',
                **kwargs) -> VectorStoreIndex:
     """
     Creates or loads a VectorStoreIndex for a given paper.
