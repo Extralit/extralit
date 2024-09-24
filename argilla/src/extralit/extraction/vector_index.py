@@ -6,6 +6,7 @@ from typing import Optional, Literal
 import warnings
 
 import argilla as rg
+from extralit.storage.files import StorageType
 import pandas as pd
 from llama_index.core import VectorStoreIndex, load_index_from_storage, global_handler
 from llama_index.core.node_parser import SentenceSplitter, JSONNodeParser
@@ -26,20 +27,22 @@ _LOGGER = logging.getLogger(__name__)
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
-def create_local_index(paper: pd.Series,
-                       preprocessing_path='data/preprocessing/nougat/',
-                       preprocessing_dataset: rg.FeedbackDataset = None,
-                       persist_dir: Optional[str] = None,
-                       embed_model='text-embedding-3-small',
-                       dimensions=1536,
-                       retrieval_mode=DEFAULT_RETRIEVAL_MODE,
-                       chunk_size=4096,
-                       chunk_overlap=200,
-                       verbose=True, ) \
-        -> VectorStoreIndex:
+def create_local_index(
+    paper: pd.Series,
+    preprocessing_path='data/preprocessing/nougat/',
+    preprocessing_dataset: rg.FeedbackDataset = None,
+    persist_dir: Optional[str] = None,
+    embed_model='text-embedding-3-small',
+    dimensions=1536,
+    retrieval_mode=DEFAULT_RETRIEVAL_MODE,
+    chunk_size=4096,
+    chunk_overlap=200,
+    verbose=True, 
+) -> VectorStoreIndex:
     text_nodes, table_nodes = create_nodes(
         paper, preprocessing_path=preprocessing_path,
-        preprocessing_dataset=preprocessing_dataset)
+        preprocessing_dataset=preprocessing_dataset, 
+        storage_type=StorageType.FILE)
 
     _LOGGER.info(
         f"Creating index with {len(text_nodes)} text and {len(table_nodes)} table segments, `persist_dir={persist_dir}`")
@@ -88,10 +91,12 @@ def create_vector_index(
     overwrite: Literal[True, 'text', 'table', 'figure']='table',
     chunk_size=4096,
     chunk_overlap=200,
+    storage_type: StorageType=StorageType.FILE,
+    bucket_name: Optional[str]=None,
     verbose=True, 
 ) -> VectorStoreIndex:
     """
-    Creates a VectorStoreIndex for a given paper and uploading .
+    Creates a VectorStoreIndex for a given paper and loads it into a vector db.
 
     Args:
         paper (pd.Series): The paper to be indexed.
@@ -117,7 +122,8 @@ def create_vector_index(
 
     text_nodes, table_nodes = create_nodes(
         paper, preprocessing_path=preprocessing_path,
-        preprocessing_dataset=preprocessing_dataset)
+        preprocessing_dataset=preprocessing_dataset, 
+        storage_type=storage_type, bucket_name=bucket_name)
 
     if global_handler and hasattr(global_handler, 'set_trace_params'):
         global_handler.set_trace_params(

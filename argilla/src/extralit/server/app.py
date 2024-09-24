@@ -14,6 +14,7 @@ from llama_index.core.vector_stores import MetadataFilters, MetadataFilter, Filt
 from minio import Minio
 from weaviate import WeaviateClient
 
+import argilla as rg
 from extralit.convert.json_table import json_to_df
 from extralit.extraction.extraction import extract_schema
 from extralit.extraction.models.paper import PaperExtraction
@@ -30,13 +31,13 @@ from extralit.server.models.segments import SegmentsResponse
 _LOGGER = logging.getLogger(__name__)
 app = FastAPI()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://argilla-server"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=["http://argilla-server"],
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
 
 weaviate_client: WeaviateClient = None
 minio_client: Minio = None
@@ -234,20 +235,27 @@ async def segments(
 async def create_index(
     workspace: str = Query(...),
     reference: str = Query(...),
+    preprocessing_dataset: str = Query(None),
     embed_model: str = Query("text-embedding-3-small"),
     username: Optional[Union[str, UUID]] = Query(None),
 ):
     try:
+        preprocessing_dataset = rg.FeedbackDataset.from_argilla(name=preprocessing_dataset, workspace=workspace) \
+            if preprocessing_dataset else None
+    except Exception as e:
+        preprocessing_dataset = None
+
+    try:
         index = create_vector_index(
             paper=pd.Series(name=reference),
             weaviate_client=weaviate_client,
-            # preprocessing_dataset=request.preprocessing_dataset,
-            # preprocessing_path=request.preprocessing_path,
+            preprocessing_dataset=preprocessing_dataset,
+            preprocessing_path="data/preprocessing/nougat/",
             index_name="LlamaIndexDocumentSections",
             embed_model=embed_model,
         )
 
-        return {"status": "index created"}
+        return index.index_id
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

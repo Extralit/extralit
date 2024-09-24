@@ -18,6 +18,7 @@ These are the section headers that we use:
 
 ### "Added"
 - Added tests and mocks for extralit FastAPI endpoints
+- Added FileHandler for handling file read/write from disk or S3 to document
 
 ### "Changed"
 - Changed from "extralit.app:app" to "extralit.server.app:app".
