@@ -8,16 +8,16 @@ from argilla.client.sdk.users.models import UserModel
 from extralit.convert.json_table import is_json_table
 from extralit.pipeline.update.suggestion import get_record_suggestion_value
 
-def get_record_data(record: Union[RemoteFeedbackRecord, rg.FeedbackRecord],
-                    fields: Optional[Union[List[str], str]] = None,
-                    answers: Optional[Union[List[str], str]] = None,
-                    suggestions: Optional[Union[List[str], str]] = None,
-                    metadatas: Optional[Union[List[str], str]] = None,
-                    users: Optional[Union[List[rg.User], rg.User]] = None,
-                    include_user_id:bool=False,
-                    status: Optional[List[Literal['submitted', 'draft', 'pending', 'discarded']]] = ['submitted', 'draft'],
-                    ) \
-        -> Dict[str, Any]:
+def get_record_data(
+    record: Union[RemoteFeedbackRecord, rg.FeedbackRecord],
+    fields: Optional[Union[List[str], str]] = None,
+    answers: Optional[Union[List[str], str]] = None,
+    suggestions: Optional[Union[List[str], str]] = None,
+    metadatas: Optional[Union[List[str], str]] = None,
+    users: Optional[Union[List[rg.User], rg.User]] = None,
+    include_user_id:bool=False,
+    status: Optional[List[Literal['submitted', 'draft', 'pending', 'discarded']]] = ['submitted', 'draft'],
+) -> Dict[str, Any]:
     """
     Extracts data from a feedback record based on the specified parameters.
 

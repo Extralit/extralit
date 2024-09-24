@@ -10,14 +10,15 @@ from extralit.metrics.grits import grits_from_html
 from extralit.metrics.utils import harmonize_columns, reorder_rows, convert_metrics_to_df
 
 
-def grits_from_batch(true_batch: Dict[str, PaperExtraction],
-                     pred_batch: Dict[str, PaperExtraction],
-                     exclude_columns: List[str] = [],
-                     pairwise=False,
-                     index_names: List[str] = ['Reference', 'Schema', 'Field'],
-                     compute_mean: Optional[str] = None,
-                     **kwargs) \
-        -> pd.DataFrame:
+def grits_from_batch(
+    true_batch: Dict[str, PaperExtraction],
+    pred_batch: Dict[str, PaperExtraction],
+    exclude_columns: List[str] = [],
+    pairwise=False,
+    index_names: List[str] = ['Reference', 'Schema', 'Field'],
+    compute_mean: Optional[str] = None,
+    **kwargs
+) -> pd.DataFrame:
     metrics = defaultdict(lambda: {})
 
     if pairwise:
@@ -58,13 +59,14 @@ def grits_from_batch(true_batch: Dict[str, PaperExtraction],
     return metrics_df
 
 
-def grits_paper(true_extractions: PaperExtraction,
-                pred_extractions: PaperExtraction,
-                exclude_columns=['Site'],
-                verbose=False,
-                metrics: List[Literal['top', 'con', 'upper_bound', 'alignment']] = ['con'],
-                **kwargs) \
-        -> Dict[str, Union[pd.Series, Dict[str, float]]]:
+def grits_paper(
+    true_extractions: PaperExtraction,
+    pred_extractions: PaperExtraction,
+    exclude_columns=['Site'],
+    verbose=False,
+    metrics: List[Literal['top', 'con', 'upper_bound', 'alignment']] = ['con'],
+    **kwargs
+) -> Dict[str, Union[pd.Series, Dict[str, float]]]:
     exclude_columns = exclude_columns or []
 
     output = {}

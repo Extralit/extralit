@@ -168,10 +168,11 @@ def align_2d_outer(true_shape, pred_shape, reward_lookup):
     return aligned_true_indices, aligned_pred_indices, score
 
 
-def factored_2dmss(true_cell_grid: np.ndarray,
-                   pred_cell_grid: np.ndarray,
-                   reward_function: Callable, return_substructures=False) \
-        -> Tuple[float, float, float, float]:
+def factored_2dmss(
+    true_cell_grid: np.ndarray,
+    pred_cell_grid: np.ndarray,
+    reward_function: Callable, return_substructures=False
+) -> Tuple[float, float, float, float]:
     """
     Factored 2D-MSS: Factored two-dimensional most-similar substructures
 

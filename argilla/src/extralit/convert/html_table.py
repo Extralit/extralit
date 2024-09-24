@@ -24,9 +24,9 @@ def html_table_to_json(s: str) -> str:
 
 
 def html_to_df(
-        s: Union[io.StringIO, str],
-        flatten_columns=True, convert_spanning_rows=False, remove_markdown=False, rename_duplicate_columns=True) \
-        -> pd.DataFrame:
+    s: Union[io.StringIO, str],
+    flatten_columns=True, convert_spanning_rows=False, remove_markdown=False, rename_duplicate_columns=True
+) -> pd.DataFrame:
     if not isinstance(s, io.StringIO):
         s = io.StringIO(s.replace('</p><p>', '<br>'))
 

@@ -16,13 +16,13 @@ EXCLUDE_LLM_METADATA_KEYS = ['type', 'page_number', 'reference', 'level']
 
 
 def create_nodes(
-        paper: pd.Series,
-        preprocessing_path='data/preprocessing/nougat/',
-        preprocessing_dataset: Optional[rg.FeedbackDataset] = None,
-        response_status=['submitted'],
-        exclude_llm_metadata_keys=EXCLUDE_LLM_METADATA_KEYS,
-        **nougat_kwargs) \
-        -> Tuple[List[Document], List[Document]]:
+    paper: pd.Series,
+    preprocessing_path='data/preprocessing/nougat/',
+    preprocessing_dataset: Optional[rg.FeedbackDataset] = None,
+    response_status=['submitted'],
+    exclude_llm_metadata_keys=EXCLUDE_LLM_METADATA_KEYS,
+    **nougat_kwargs,
+) -> Tuple[List[Document], List[Document]]:
     """
     Create or load the documents from the paper segments.
 
@@ -65,9 +65,10 @@ def create_nodes(
     return text_nodes, table_nodes
 
 
-def create_text_nodes(text_segments: Segments, extra_metadata: Optional[Dict[str, Any]],
-                      exclude_llm_metadata_keys: Iterable) \
-        -> List[Document]:
+def create_text_nodes(
+    text_segments: Segments, extra_metadata: Optional[Dict[str, Any]],
+    exclude_llm_metadata_keys: Iterable
+) -> List[Document]:
     text_documents = []
     for i, segment in enumerate(text_segments.items):
         if i == 0:
@@ -102,7 +103,9 @@ def create_text_nodes(text_segments: Segments, extra_metadata: Optional[Dict[str
     return text_documents
 
 
-def create_table_nodes(table_segments, extra_metadata: Optional[Dict[str, Any]], exclude_llm_metadata_keys: Iterable):
+def create_table_nodes(
+    table_segments: Segments, extra_metadata: Optional[Dict[str, Any]], exclude_llm_metadata_keys: Iterable
+) -> List[Document]:
     table_documents = []
     for segment in table_segments.items:
         if not segment.html:

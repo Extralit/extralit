@@ -8,9 +8,9 @@ from argilla.client.feedback.schemas.remote.records import RemoteFeedbackRecord
 
 
 def update_record_suggestions(
-        record: RemoteFeedbackRecord,
-        suggestions: Union[rg.SuggestionSchema, List[rg.SuggestionSchema]]) \
-        -> rg.FeedbackRecord:
+    record: RemoteFeedbackRecord,
+    suggestions: Union[rg.SuggestionSchema, List[rg.SuggestionSchema]]
+) -> rg.FeedbackRecord:
     if not isinstance(suggestions, list):
         suggestions = [suggestions]
 
@@ -32,8 +32,9 @@ def update_record_suggestions(
     return record
 
 
-def get_record_suggestion_value(record: RemoteFeedbackRecord, question_name: str, users: List[rg.User]=None) \
-        -> Optional[str]:
+def get_record_suggestion_value(
+    record: RemoteFeedbackRecord, question_name: str, users: List[rg.User]=None
+) -> Optional[str]:
     usernames = {user.username for user in users} if users else None
     for suggestion in record.suggestions:
         if suggestion.question_name == question_name and (not usernames or suggestion.agent in usernames):
