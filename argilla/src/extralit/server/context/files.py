@@ -12,7 +12,7 @@ def get_minio_client() -> Optional[Minio]:
     s3_access_key = os.getenv('S3_ACCESS_KEY')
     s3_secret_key = os.getenv('S3_SECRET_KEY')
 
-    if None in [s3_endpoint, s3_access_key, s3_secret_key]:
+    if s3_endpoint is None:
         return None
 
     try:

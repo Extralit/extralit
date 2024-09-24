@@ -47,15 +47,16 @@ def create_nodes(
     assert len(paper.name) > 0, f"Paper name must be given, given {paper.name}"
     reference = paper.name
 
+    file_handler = FileHandler(preprocessing_path, storage_type, bucket_name)
+
     if preprocessing_dataset is not None:
         # Load the segments from the manually annotated preprocessing dataset
-        text_segments, _, _ = create_or_load_nougat_segments(paper, storage_type=storage_type, bucket_name=bucket_name, **nougat_kwargs)
+        text_segments, _, _ = create_or_load_nougat_segments(paper, file_handler=file_handler, **nougat_kwargs)
         table_segments = get_paper_tables(paper, preprocessing_dataset, response_status=response_status)
     else:
         # Load the segments from `nougat` preprocessed data
         texts_path = join(preprocessing_path, reference, 'texts.json')
         tables_path = join(preprocessing_path, reference, 'tables.json')
-        file_handler = FileHandler(preprocessing_path, storage_type, bucket_name)
         text_segments = Segments.parse_raw(file_handler.read_text(texts_path)) if file_handler.exists(texts_path) else Segments()
         table_segments = Segments.parse_raw(file_handler.read_text(tables_path)) if file_handler.exists(tables_path) else Segments()
 

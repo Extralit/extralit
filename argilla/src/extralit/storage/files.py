@@ -100,3 +100,17 @@ class FileHandler:
 
         elif self.storage_type == StorageType.S3:
             self.client.put_object(self.bucket_name, full_path, data.encode('utf-8'), len(data))
+
+    def delete(self, path: str):
+        full_path = self._get_full_path(path)
+        if self.storage_type == StorageType.FILE:
+            if os.path.exists(full_path):
+                os.remove(full_path)
+            else:
+                raise FileNotFoundError(f"The file {full_path} does not exist.")
+        
+        elif self.storage_type == StorageType.S3:
+            try:
+                self.client.remove_object(self.bucket_name, full_path)
+            except S3Error as e:
+                raise FileNotFoundError(f"The object {full_path} does not exist in bucket {self.bucket_name}.") from e

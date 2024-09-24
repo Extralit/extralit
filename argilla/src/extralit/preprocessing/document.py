@@ -34,16 +34,14 @@ def load_segments(file_handler: FileHandler, path: str) -> Tuple[Segments, Segme
 
 
 def create_or_load_unstructured_segments(
-    paper: pd.Series, preprocessing_path='data/preprocessing/',
+    paper: pd.Series, file_handler: FileHandler, preprocessing_path='data/preprocessing/',
     load_only=True, redo=False, save=True,
-    storage_type: StorageType=StorageType.FILE, bucket_name: Optional[str]=None,
 ) -> Tuple[Optional[Segments], Optional[Segments], Optional[Segments]]:
     from unstructured.partition.pdf import partition_pdf
     from unstructured.staging.base import elements_to_json, elements_from_json
     from extralit.preprocessing.methods import unstructured
 
-    file_handler = FileHandler(preprocessing_path, storage_type, bucket_name)
-    cache_path = join(preprocessing_path, 'unstructured', paper.name)
+    cache_path: str = join(preprocessing_path, 'unstructured', paper.name)
     model_output_path = join(cache_path, 'elements.json')
     figures_path = join(cache_path, 'figures')
 
@@ -85,15 +83,13 @@ def create_or_load_unstructured_segments(
 
 
 def create_or_load_llmsherpa_segments(
-    paper: pd.Series, preprocessing_path='data/preprocessing/',
+    paper: pd.Series, file_handler: FileHandler, preprocessing_path='data/preprocessing/',
     load_only=True, redo=False, save=True,
-    storage_type: StorageType=StorageType.FILE, bucket_name=None
 ) -> Tuple[Optional[Segments], Optional[Segments], Optional[Segments]]:
     from llmsherpa.readers import LayoutPDFReader
     from extralit.preprocessing.methods import llmsherpa
 
-    file_handler = FileHandler(preprocessing_path, storage_type, bucket_name)
-    cache_path = join(preprocessing_path, 'llmsherpa', paper.name)
+    cache_path: str = join(preprocessing_path, 'llmsherpa', paper.name)
     model_output_path = join(cache_path, 'document.pkl')
 
     if file_handler.exists(cache_path) and load_only:
@@ -127,19 +123,17 @@ def create_or_load_llmsherpa_segments(
 
 
 def create_or_load_nougat_segments(
-    paper: pd.Series, preprocessing_path='data/preprocessing/',
+    paper: pd.Series, file_handler: FileHandler, preprocessing_path='data/preprocessing/',
     nougat_model=None,
     load_only=True, redo=False, save=True,
-    storage_type: StorageType=StorageType.FILE, bucket_name: Optional[str]=None,
 ) -> Tuple[Optional[Segments], Optional[Segments], Optional[Segments]]:
     from extralit.preprocessing.methods import nougat
 
-    file_handler = FileHandler(preprocessing_path, storage_type, bucket_name)
-    cache_path = join(preprocessing_path, 'nougat', paper.name)
+    cache_path: str = join(preprocessing_path, 'nougat', paper.name)
     model_output_path = join(cache_path, 'predictions.json')
 
     if file_handler.exists(cache_path) and load_only:
-        return load_segments(cache_path)
+        return load_segments(file_handler, cache_path)
 
     if not file_handler.exists(model_output_path) or redo:
         from extralit.preprocessing.text import NougatOCR
@@ -168,17 +162,15 @@ def create_or_load_nougat_segments(
 def create_or_load_pdffigures2_segments(
     paper, preprocessing_path='data/preprocessing/', 
     jar_path='~/bin/pdffigures2.jar', load_only=True, redo=False, save=True,
-    storage_type: StorageType=StorageType.FILE, bucket_name: Optional[str]=None,
 ) -> Tuple[Optional[Segments], Optional[Segments], Optional[Segments]]:
     
-    file_handler = FileHandler(preprocessing_path, storage_type, bucket_name)
-    cache_path = join(preprocessing_path, 'pdffigure2', paper.name)
+    cache_path: str = join(preprocessing_path, 'pdffigure2', paper.name)
     _, file_name_ext = os.path.split(paper.file_path)
     file_name, _ = os.path.splitext(file_name_ext)
     model_output_path = join(cache_path, f'{file_name}.json')
 
     if file_handler.exists(join(cache_path, 'figures.json')) and load_only:
-        return load_segments(cache_path)
+        return load_segments(file_handler, cache_path)
 
     if not file_handler.exists(model_output_path) or redo:
         print(f"pdffigures2 {paper.name}: {cache_path}", flush=True)
@@ -211,19 +203,17 @@ def create_or_load_pdffigures2_segments(
 
 
 def create_or_load_deepdoctection_segments(
-    paper: pd.Series, preprocessing_path='data/preprocessing/',
+    paper: pd.Series, file_handler: FileHandler, preprocessing_path='data/preprocessing/',
     load_only=True, redo=False, save=True,
-    storage_type: StorageType=StorageType.FILE, bucket_name: Optional[str]=None,
 ) -> Tuple[Optional[Segments], Optional[Segments], Optional[Segments]]:
-    import deepdoctection as dd
     from extralit.preprocessing.methods import deepdoctection
+    import deepdoctection as dd
 
-    file_handler = FileHandler(preprocessing_path, storage_type, bucket_name)
-    cache_path = join(preprocessing_path, 'deepdoctection', paper.name)
+    cache_path: str = join(preprocessing_path, 'deepdoctection', paper.name)
     model_output_path = join(cache_path, 'page_1.json')
 
     if file_handler.exists(cache_path) and load_only:
-        return load_segments(cache_path)
+        return load_segments(file_handler, cache_path)
 
     if not file_handler.exists(model_output_path) or redo:
         print(f"Deepdoctection {paper.name}: {cache_path}", flush=True)
@@ -244,7 +234,7 @@ def create_or_load_deepdoctection_segments(
             df = analyzer.analyze(path=paper.file_path)
             df.reset_state()
         except Exception as e:
-            print(e, paper.file_path)
+            print(e)
             return None, None, None
 
         doc = iter(df)

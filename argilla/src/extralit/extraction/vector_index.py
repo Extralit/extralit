@@ -114,6 +114,8 @@ def create_vector_index(
             which overwrites all nodes for the reference.
         chunk_size (int): The size of the chunks to split the text into. Defaults to 4096.
         chunk_overlap (int): The size of the overlap between chunks. Defaults to 200.
+        storage_type (StorageType): The storage type to use. Defaults to StorageType.FILE.
+        bucket_name (Optional[str]): The name of the S3 bucket (i.e. workspace name) to use. Defaults to None.
         verbose (bool): Whether to print verbose output. Defaults to True.
 
     Returns:
