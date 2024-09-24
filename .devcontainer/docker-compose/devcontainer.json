@@ -97,11 +97,11 @@
     },
     "settings": {
       "python.testing.pytestEnabled": true,
-      "python.testing.cwd": "${workspaceFolder}/argilla-server/",
+      "python.testing.cwd": "${workspaceFolder}/argilla/",
       "python.testing.pytestArgs": [
-        "-vvs",
+        "-vv",
         "--disable-warnings",
-        "--cov=argilla-server",
+        "--cov",
         "--cov-report=xml:coverage.xml",
       ],
       "python.defaultInterpreterPath": "/opt/conda/bin/python",

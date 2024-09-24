@@ -1,13 +1,18 @@
 from typing import Any, Generator, Optional
+from extralit.preprocessing.segment import Segments
+from minio import S3Error
 import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import MagicMock
 from pytest_mock import MockerFixture
 
+import pandas as pd
 import pandera as pa
 from pandera.typing import Index, Series
+
 from extralit.schema.checks import register_check_methods
 from extralit.extraction.models.schema import SchemaStructure
+from extralit.storage.files import FileHandler, StorageType
 
 register_check_methods()
 
@@ -57,3 +62,22 @@ def singleton_schema() -> pa.DataFrameModel:
 @pytest.fixture
 def schema_structure(singleton_schema: pa.DataFrameModel) -> SchemaStructure:
     return SchemaStructure(schemas=[singleton_schema])
+
+
+@pytest.fixture
+def mock_paper() -> pd.Series:
+    return pd.Series({"file_path": "/tmp/test_pdf.pdf"}, name="test-paper")
+
+
+@pytest.fixture
+def local_file_handler() -> FileHandler:
+    return MagicMock(spec=FileHandler)
+
+
+@pytest.fixture
+def s3_file_handler() -> FileHandler:
+    # Create a mock FileHandler with S3 storage type
+    file_handler = FileHandler(base_path='data/preprocessing/', storage_type=StorageType.S3, bucket_name='test-workspace')
+    file_handler.client = MagicMock()
+    
+    return file_handler
