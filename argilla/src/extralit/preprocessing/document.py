@@ -37,9 +37,9 @@ def create_or_load_unstructured_segments(
     paper: pd.Series, file_handler: FileHandler, preprocessing_path='data/preprocessing/',
     load_only=True, redo=False, save=True,
 ) -> Tuple[Optional[Segments], Optional[Segments], Optional[Segments]]:
+    from extralit.preprocessing.methods import unstructured
     from unstructured.partition.pdf import partition_pdf
     from unstructured.staging.base import elements_to_json, elements_from_json
-    from extralit.preprocessing.methods import unstructured
 
     cache_path: str = join(preprocessing_path, 'unstructured', paper.name)
     model_output_path = join(cache_path, 'elements.json')
@@ -86,8 +86,8 @@ def create_or_load_llmsherpa_segments(
     paper: pd.Series, file_handler: FileHandler, preprocessing_path='data/preprocessing/',
     load_only=True, redo=False, save=True,
 ) -> Tuple[Optional[Segments], Optional[Segments], Optional[Segments]]:
-    from llmsherpa.readers import LayoutPDFReader
     from extralit.preprocessing.methods import llmsherpa
+    from llmsherpa.readers import LayoutPDFReader
 
     cache_path: str = join(preprocessing_path, 'llmsherpa', paper.name)
     model_output_path = join(cache_path, 'document.pkl')
@@ -143,9 +143,7 @@ def create_or_load_nougat_segments(
         predictions = nougat_model.predict(paper.file_path)
         output = nougat.NougatOutput(reference=paper.name, pages=predictions)
         if save:
-            os.makedirs(cache_path, exist_ok=True)
-            with open(model_output_path, 'w') as file:
-                file.write(output.json())
+            file_handler.write_text(model_output_path, output.json())
     else:
         output = nougat.NougatOutput.parse_file(model_output_path)
 
@@ -160,9 +158,11 @@ def create_or_load_nougat_segments(
 
 
 def create_or_load_pdffigures2_segments(
-    paper, preprocessing_path='data/preprocessing/', 
+    paper: pd.Series, file_handler: FileHandler, preprocessing_path='data/preprocessing/', 
     jar_path='~/bin/pdffigures2.jar', load_only=True, redo=False, save=True,
 ) -> Tuple[Optional[Segments], Optional[Segments], Optional[Segments]]:
+    if not os.path.exists(jar_path):
+        raise FileNotFoundError(f"pdffigures2 jar not found: {jar_path}")
     
     cache_path: str = join(preprocessing_path, 'pdffigure2', paper.name)
     _, file_name_ext = os.path.split(paper.file_path)

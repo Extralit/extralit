@@ -16,8 +16,8 @@ try:
     from nougat.utils.dataset import LazyDataset, ImageDataset
     from nougat.utils.device import default_batch_size, move_to_device
     from torch.utils.data import ConcatDataset
-except ImportError:
-    raise ImportError("It seems like you're missing some dependencies. Please run `pip install extralit['ocr']` to install them.")
+except ImportError as ie:
+    raise ImportError("Please run `pip install extralit['ocr']` to install them.") from ie
 
 
 class NougatOCR:
