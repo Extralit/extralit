@@ -1,0 +1,128 @@
+schema_type: dataframe
+version: 0.18.3
+columns:
+  Author:
+    title: null
+    description: The last name of the first author of the publication
+    dtype: str
+    nullable: false
+    checks: null
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  Pub_year:
+    title: null
+    description: Publication year
+    dtype: int64
+    nullable: false
+    checks:
+      greater_than_or_equal_to: 0
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  Title:
+    title: null
+    description: Title of publication
+    dtype: str
+    nullable: false
+    checks: null
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  Journal:
+    title: null
+    description: Name of publication source
+    dtype: str
+    nullable: false
+    checks: null
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  Measured_outcome:
+    title: null
+    description: What is the primary outcome being measured in the study - mosquito
+      mortality? Mosquito knockdown? Human prevalence?
+    dtype: str
+    nullable: true
+    checks: null
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  Num_rows_approx:
+    title: null
+    description: null
+    dtype: int64
+    nullable: true
+    checks:
+      greater_than_or_equal_to: 0
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  Num_tables:
+    title: null
+    description: null
+    dtype: int64
+    nullable: true
+    checks: null
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  Needs_digitization:
+    title: null
+    description: null
+    dtype: bool
+    nullable: false
+    checks: null
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  IDM_check1:
+    title: null
+    description: Initials of the team member doing the checks of first round of data
+      extraction
+    dtype: str
+    nullable: true
+    checks: null
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  Notes:
+    title: null
+    description: null
+    dtype: str
+    nullable: true
+    checks: null
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+checks: null
+index:
+  - title: null
+    description: null
+    dtype: str
+    nullable: false
+    checks: null
+    name: null
+    unique: true
+    coerce: false
+dtype: null
+coerce: true
+strict: false
+name: Publication
+ordered: false
+unique: null
+report_duplicates: all
+unique_column_names: false
+add_missing_columns: false
+title: null
+description: null
