@@ -103,7 +103,6 @@ jobs:
           echo "Configure opensearch engine"
 
       - name: Run tests 📈
-        continue-on-error: true
         run: |
           uv pip install -q ../argilla-server/
           uv pip install -q -e ".[listeners]"
