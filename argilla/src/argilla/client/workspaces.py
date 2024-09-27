@@ -282,7 +282,7 @@ class Workspace:
 
             for file_metadata in workspace_files.objects:
                 _, file_ext = os.path.splitext(file_metadata.object_name)
-                if file_ext or not file_metadata.is_latest:
+                if file_ext or not file_metadata.etag or not file_metadata.is_latest:
                     continue
 
                 try:
@@ -294,7 +294,7 @@ class Workspace:
                         continue
 
                 except Exception as e:
-                    _LOGGER.warning(f"Unable to fetch schema at `{file_metadata.object_name}`")
+                    _LOGGER.warning(f"Unable to fetch schema at `{file_metadata.object_name}`: {e}")
                     continue
 
                 schemas[schema.name] = schema
@@ -389,7 +389,7 @@ class Workspace:
             
             try:
                 if check_existing and workspaces_api_v1.exist_workspace_file(self._client, workspace_name=self.name, path=object_path, file_path=file_path):
-                    _LOGGER.warning(f"Skipping schema name='{schema.name}' update since it's unmodified in workspace with name='{self.name}'.")
+                    _LOGGER.info(f"Skipping schema name='{schema.name}' update since it's unmodified in workspace with name='{self.name}'.")
                     continue
                 response = workspaces_api_v1.put_workspace_file(self._client, workspace_name=self.name, path=object_path, file_path=file_path)
                 output_metadata.append(response.parsed)
