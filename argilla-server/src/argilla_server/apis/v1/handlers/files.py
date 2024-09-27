@@ -39,7 +39,7 @@ async def get_file(
         )
     except S3Error as se:
         _LOGGER.error(f"Error getting object '{bucket}/{object}': {se}")
-        raise HTTPException(status_code=404, detail=f"No object at path '{bucket}/{object}' was found") from se
+        raise HTTPException(status_code=404, detail=f"No object at path '{object}' was found") from se
     
     except Exception as e:
         _LOGGER.error(f"Error getting object '{bucket}/{object}': {e}")
