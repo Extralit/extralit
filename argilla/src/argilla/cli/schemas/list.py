@@ -44,7 +44,7 @@ def list_schemas(
         for column in column_names:
             table.add_column(column, justify="left")
 
-        schema_names = set()
+        visited = set()
         for file_object in workspace_schemas.objects:
             if not file_object.etag:
                 # Skip alias files
@@ -53,9 +53,9 @@ def list_schemas(
             schema_name = file_object.object_name.split("/", 1)[-1]
 
             if not include_version:
-                if schema_name in schema_names:
+                if schema_name in visited:
                     continue
-                schema_names.add(schema_name)
+                visited.add(schema_name)
 
             table.add_row(
                 schema_name,

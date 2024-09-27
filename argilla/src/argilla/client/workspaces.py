@@ -294,7 +294,7 @@ class Workspace:
                         continue
 
                 except Exception as e:
-                    print(f"Error getting schema with name=`{file_metadata.object_name}` from workspace with name=`{self.name}`: {e}")
+                    _LOGGER.warning(f"Unable to fetch schema at `{file_metadata.object_name}`")
                     continue
 
                 schemas[schema.name] = schema
@@ -303,7 +303,8 @@ class Workspace:
             raise RuntimeError(
                 f"Error getting schemas from workspace with name=`{self.name}` due to: `{e}`."
             ) from e
-        return SchemaStructure(args=list(schemas.values()))
+
+        return SchemaStructure(schemas=list(schemas.values()))
     
     @allowed_for_roles(roles=[UserRole.owner, UserRole.admin])
     def list_files(self, path: str, recursive=True, include_version=True) -> ListObjectsResponse:
@@ -311,6 +312,9 @@ class Workspace:
         List files in the workspace.
 
         Args:
+            path: The path of the file to be listed from the workspace.
+            recursive: Whether to list all files recursively within the `path` directory.
+            include_version: Whether to include the version tag of the files.
 
         """
         try:
