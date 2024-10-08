@@ -1262,11 +1262,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../../admin_guide/installation/" class="md-nav__link">
+      <a href="../../admin_guide/docker_deployment/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Installation & configuration
+    HF Spaces & Docker deployment
   </span>
   
 
@@ -1283,7 +1283,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../admin_guide/k8s_deployment.md" class="md-nav__link">
+      <a href="../../admin_guide/k8s_deployment/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1304,32 +1304,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../../admin_guide/configuration.md" class="md-nav__link">
+      <a href="../../admin_guide/upgrading/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Database setup
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../admin_guide/file_storage.md" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    File storage configuration
+    Upgrading
   </span>
   
 
@@ -1386,27 +1365,6 @@
             Server Management
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../admin_guide/installation/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Installation & configuration
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
             
               
                 
@@ -1767,7 +1725,7 @@
             
   
   <span class="md-ellipsis">
-    Python SDK
+    Argilla Python SDK
   </span>
   
 
@@ -1777,7 +1735,7 @@
         <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_1_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_6_1">
             <span class="md-nav__icon md-icon"></span>
-            Python SDK
+            Argilla Python SDK
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -2602,10 +2560,10 @@
 <div class="language-console highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="go">mkdir argilla &amp;&amp; cd argilla</span>
 </span></code></pre></div>
 <p>Download <code>docker-compose.yaml</code>:</p>
-<div class="language-console highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="go">wget -O docker-compose.yaml https://raw.githubusercontent.com/argilla-io/argilla/main/examples/deployments/docker/docker-compose.yaml</span>
+<div class="language-console highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="go">wget -O docker-compose.yaml https://raw.githubusercontent.com/extralit/extralit/main/examples/deployments/docker/docker-compose.yaml</span>
 </span></code></pre></div>
 <p>or using curl:
-<div class="language-console highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="go">curl https://raw.githubusercontent.com/argilla-io/argilla/main/examples/deployments/docker/docker-compose.yaml -o docker-compose.yaml</span>
+<div class="language-console highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="go">curl https://raw.githubusercontent.com/extralit/extralit/main/examples/deployments/docker/docker-compose.yaml -o docker-compose.yaml</span>
 </span></code></pre></div></p>
 <p>Run to deploy the server on <code>http://localhost:6900</code>:</p>
 <div class="language-console highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="go">docker compose up -d</span>
