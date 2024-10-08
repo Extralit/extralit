@@ -145,9 +145,11 @@ tests = [
 ]
 
 [project.urls]
-homepage = "https://www.extralit.io"
-documentation = "https://docs.extralit.io"
+homepage = "https://www.extralit.ai"
+documentation = "https://docs.extralit.ai"
+changelog = "https://docs.extralit.ai/latest/community/changelog/"
 repository = "https://github.com/extralit/extralit"
+tracker = "https://github.com/extralit/extralit/issues"
 
 [project.scripts]
 extralit = "argilla.cli.app:app"
