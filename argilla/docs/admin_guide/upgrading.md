@@ -12,7 +12,11 @@ This guide covers the update process for Extralit across different deployment op
 
 ### Kubernetes Deployment Update
 
-1. Update the service code in the `extralit-server` repository.
+1. Update the service code in the `extralit-server` repository from the `main` branch:
+
+    ```bash
+    git pull origin main
+    ```
 
 2. Rebuild the Python package and Docker image:
     ```bash
