@@ -80,17 +80,10 @@ kubectl exec -it deployment/argilla-server-deployment -n {NAMESPACE} -- \
 argilla_server database migrate
 ```
 
-For frontend updates:
+&nbsp;
 
-- Rebuild the frontend:
-
-```bash
-sh scripts/build_frontend.sh
-```
-
-- Trigger a rebuild of the `argilla-server` in the Tilt web interface or reapply the Kubernetes configuration.
-
-### Quickstart Deployment Update
+### \
+Quickstart Deployment Update
 
 1. Pull the latest Extralit image:
 
@@ -113,7 +106,8 @@ sh scripts/build_frontend.sh
      extralit/argilla-quickstart:latest
    ```
 
-### Docker Deployment Update
+### \
+Docker Deployment Update
 
 1. Update the `docker-compose.yml` file with the latest Extralit image version.
 
