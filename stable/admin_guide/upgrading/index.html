@@ -12,10 +12,10 @@
         <meta name="author" content="Extralit">
       
       
-        <link rel="canonical" href="https://docs.extralit.ai/stable/admin_guide/installation/">
+        <link rel="canonical" href="https://docs.extralit.ai/stable/admin_guide/upgrading/">
       
       
-        <link rel="prev" href="./">
+        <link rel="prev" href="../k8s_deployment/">
       
       
         <link rel="next" href="../user/">
@@ -26,7 +26,7 @@
     
     
       
-        <title>Installation & configuration - Extralit Docs</title>
+        <title>Upgrading - Extralit Docs</title>
       
     
     
@@ -56,6 +56,12 @@
     
       <link rel="stylesheet" href="../../stylesheets/extra.css">
     
+      <link rel="stylesheet" href="../../css/ansi-colours.css">
+    
+      <link rel="stylesheet" href="../../css/jupyter-cells.css">
+    
+      <link rel="stylesheet" href="../../css/pandas-dataframe.css">
+    
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -75,11 +81,11 @@
       
         <meta  property="og:type"  content="website" >
       
-        <meta  property="og:title"  content="Installation & configuration - Extralit Docs" >
+        <meta  property="og:title"  content="Upgrading - Extralit Docs" >
       
         <meta  property="og:description"  content="Data-centric tool for AI builders" >
       
-        <meta  property="og:image"  content="https://docs.extralit.ai/stable/assets/images/social/admin_guide/installation.png" >
+        <meta  property="og:image"  content="https://docs.extralit.ai/stable/assets/images/social/admin_guide/upgrading.png" >
       
         <meta  property="og:image:type"  content="image/png" >
       
@@ -87,15 +93,15 @@
       
         <meta  property="og:image:height"  content="630" >
       
-        <meta  property="og:url"  content="https://docs.extralit.ai/stable/admin_guide/installation/" >
+        <meta  property="og:url"  content="https://docs.extralit.ai/stable/admin_guide/upgrading/" >
       
         <meta  name="twitter:card"  content="summary_large_image" >
       
-        <meta  name="twitter:title"  content="Installation & configuration - Extralit Docs" >
+        <meta  name="twitter:title"  content="Upgrading - Extralit Docs" >
       
         <meta  name="twitter:description"  content="Data-centric tool for AI builders" >
       
-        <meta  name="twitter:image"  content="https://docs.extralit.ai/stable/assets/images/social/admin_guide/installation.png" >
+        <meta  name="twitter:image"  content="https://docs.extralit.ai/stable/assets/images/social/admin_guide/upgrading.png" >
       
     
     
@@ -118,7 +124,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#description-installation-of-the-extralit-package" class="md-skip">
+        <a href="#updating-extralit" class="md-skip">
           Skip to content
         </a>
       
@@ -155,7 +161,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Installation & configuration
+              Upgrading
             
           </span>
         </div>
@@ -1210,219 +1216,6 @@
                 
   
   
-  
-  
-    
-    
-    
-      
-      
-        
-          
-          
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_1" >
-        
-          
-          <label class="md-nav__link" for="__nav_4_1" id="__nav_4_1_label" tabindex="">
-            
-  
-  <span class="md-ellipsis">
-    Setup & Deployment
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_1_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_1">
-            <span class="md-nav__icon md-icon"></span>
-            Setup & Deployment
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-    
-  
-  
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Installation & configuration
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
-        
-  
-  <span class="md-ellipsis">
-    Installation & configuration
-  </span>
-  
-
-      </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#description-installation-of-the-extralit-package" class="md-nav__link">
-    <span class="md-ellipsis">
-      description: Installation of the Extralit package.
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#developer-documentation" class="md-nav__link">
-    <span class="md-ellipsis">
-      Developer documentation
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Developer documentation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#installation" class="md-nav__link">
-    <span class="md-ellipsis">
-      Installation
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#generating-documentation" class="md-nav__link">
-    <span class="md-ellipsis">
-      Generating documentation
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../k8s_deployment.md" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    K8s deployment
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../configuration.md" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Database setup
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../file_storage.md" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    File storage configuration
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
     
   
   
@@ -1443,26 +1236,68 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_1" checked>
         
           
-          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="">
+          <label class="md-nav__link" for="__nav_4_1" id="__nav_4_1_label" tabindex="">
             
   
   <span class="md-ellipsis">
-    Server Management
+    Setup & Deployment
   </span>
   
 
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_4_2">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_1_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4_1">
             <span class="md-nav__icon md-icon"></span>
-            Server Management
+            Setup & Deployment
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docker_deployment/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    HF Spaces & Docker deployment
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../k8s_deployment/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    K8s deployment
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -1482,7 +1317,7 @@
           
   
   <span class="md-ellipsis">
-    Installation & configuration
+    Upgrading
   </span>
   
 
@@ -1493,7 +1328,7 @@
         
   
   <span class="md-ellipsis">
-    Installation & configuration
+    Upgrading
   </span>
   
 
@@ -1513,37 +1348,46 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#description-installation-of-the-extralit-package" class="md-nav__link">
+  <a href="#updating-extralit" class="md-nav__link">
     <span class="md-ellipsis">
-      description: Installation of the Extralit package.
+      Updating Extralit
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#developer-documentation" class="md-nav__link">
-    <span class="md-ellipsis">
-      Developer documentation
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Developer documentation">
+    <nav class="md-nav" aria-label="Updating Extralit">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#installation" class="md-nav__link">
+  <a href="#general-update-notes" class="md-nav__link">
     <span class="md-ellipsis">
-      Installation
+      General Update Notes
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#generating-documentation" class="md-nav__link">
+  <a href="#kubernetes-deployment-update" class="md-nav__link">
     <span class="md-ellipsis">
-      Generating documentation
+      Kubernetes Deployment Update
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quickstart-deployment-update" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quickstart Deployment Update
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docker-deployment-update" class="md-nav__link">
+    <span class="md-ellipsis">
+      Docker Deployment Update
     </span>
   </a>
   
@@ -1562,6 +1406,57 @@
   
 
               
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Server Management
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_2">
+            <span class="md-nav__icon md-icon"></span>
+            Server Management
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
                 
@@ -1925,7 +1820,7 @@
             
   
   <span class="md-ellipsis">
-    Python SDK
+    Argilla Python SDK
   </span>
   
 
@@ -1935,7 +1830,7 @@
         <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_1_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_6_1">
             <span class="md-nav__icon md-icon"></span>
-            Python SDK
+            Argilla Python SDK
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -2738,37 +2633,46 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#description-installation-of-the-extralit-package" class="md-nav__link">
+  <a href="#updating-extralit" class="md-nav__link">
     <span class="md-ellipsis">
-      description: Installation of the Extralit package.
+      Updating Extralit
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#developer-documentation" class="md-nav__link">
-    <span class="md-ellipsis">
-      Developer documentation
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Developer documentation">
+    <nav class="md-nav" aria-label="Updating Extralit">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#installation" class="md-nav__link">
+  <a href="#general-update-notes" class="md-nav__link">
     <span class="md-ellipsis">
-      Installation
+      General Update Notes
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#generating-documentation" class="md-nav__link">
+  <a href="#kubernetes-deployment-update" class="md-nav__link">
     <span class="md-ellipsis">
-      Generating documentation
+      Kubernetes Deployment Update
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quickstart-deployment-update" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quickstart Deployment Update
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docker-deployment-update" class="md-nav__link">
+    <span class="md-ellipsis">
+      Docker Deployment Update
     </span>
   </a>
   
@@ -2794,7 +2698,7 @@
                   
 
   
-    <a href="https://github.com/extralit/extralit/edit/main/argilla/docs/admin_guide/installation.md" title="Edit this page" class="md-content__button md-icon">
+    <a href="https://github.com/extralit/extralit/edit/main/argilla/docs/admin_guide/upgrading.md" title="Edit this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4v-2m10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1 2.1 2.1Z"/></svg>
     </a>
@@ -2802,28 +2706,116 @@
   
 
 
-  <h1>Installation & configuration</h1>
+  <h1>Upgrading</h1>
 
-<hr />
-<h2 id="description-installation-of-the-extralit-package">description: Installation of the Extralit package.<a class="headerlink" href="#description-installation-of-the-extralit-package" title="Permanent link">&para;</a></h2>
-<h2 id="developer-documentation">Developer documentation<a class="headerlink" href="#developer-documentation" title="Permanent link">&para;</a></h2>
-<p>If you want to contribute to the development of the <abbr title="Software Development Kit.">SDK</abbr>, you can follow the instructions below.</p>
-<h3 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h3>
-<p>To install the development dependencies, run the following commands:</p>
-<div class="language-console highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="gp"># </span>Install<span class="w"> </span>pdm<span class="w"> </span><span class="o">(</span>https://github.com/pdm-project/pdm<span class="o">)</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="go">pip install pdm</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="gp"># </span>Install<span class="w"> </span>the<span class="w"> </span>package<span class="w"> </span><span class="k">in</span><span class="w"> </span>editable<span class="w"> </span>mode
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="go">pip install -e .</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="gp"># </span>Install<span class="w"> </span>the<span class="w"> </span>development<span class="w"> </span>dependencies<span class="w"> </span>with<span class="w"> </span>pdm
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="go">pdm install --dev</span>
+<h2 id="updating-extralit">Updating Extralit<a class="headerlink" href="#updating-extralit" title="Permanent link">&para;</a></h2>
+<p>This guide covers the update process for Extralit across different deployment options: quickstart, Docker, and Kubernetes.</p>
+<h3 id="general-update-notes">General Update Notes<a class="headerlink" href="#general-update-notes" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Always backup your data before performing updates.</li>
+<li>Test updates in a development environment before applying to production.</li>
+<li>Check the Extralit release notes for any specific update instructions or breaking changes.</li>
+<li>After updating, verify that all services are functioning correctly and that data is accessible.</li>
+</ul>
+<h3 id="kubernetes-deployment-update">Kubernetes Deployment Update<a class="headerlink" href="#kubernetes-deployment-update" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p>Update the service code in the <code>extralit-server</code> repository from the <code>main</code> branch:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>git<span class="w"> </span>pull<span class="w"> </span>origin<span class="w"> </span>main
 </span></code></pre></div>
-<h3 id="generating-documentation">Generating documentation<a class="headerlink" href="#generating-documentation" title="Permanent link">&para;</a></h3>
-<p>To generate the docs you will need to install the development dependencies, and run the following command to create the development server with <code>mkdocs</code>:</p>
-<div class="language-console highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="go">mkdocs serve</span>
-</span></code></pre></div>
-<p>You will find the built documentation in <code>http://localhost:8000/argilla-python/</code>.</p>
+</li>
+<li>
+<p>Rebuild the Python package and Docker image:
+    <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>sh<span class="w"> </span>scripts/build_distribution.sh
+</span></code></pre></div></p>
+</li>
+<li>
+<p>Update the Docker image tag in the corresponding Kubernetes YAML file or Helm chart values.</p>
+</li>
+<li>
+<p>If using Tilt for development:</p>
+<ul>
+<li>Tilt will automatically detect changes and rebuild/redeploy the service.</li>
+<li>Manually trigger a rebuild using the ↻ button in the Tilt web interface if needed.</li>
+</ul>
+</li>
+<li>
+<p>For production updates without Tilt:</p>
+<ul>
+<li>Push the updated Docker image to your repository:
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>docker<span class="w"> </span>push<span class="w"> </span><span class="o">{</span>DOCKER_REPO<span class="o">}</span>/service-name:tag
+</span></code></pre></div></li>
+<li>Apply the updated Kubernetes configuration:
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>path/to/updated/service-config.yaml<span class="w"> </span>-n<span class="w"> </span><span class="o">{</span>NAMESPACE<span class="o">}</span>
+</span></code></pre></div></li>
+</ul>
+</li>
+<li>
+<p>Monitor the rollout:
+    <div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>kubectl<span class="w"> </span>rollout<span class="w"> </span>status<span class="w"> </span>deployment/service-name<span class="w"> </span>-n<span class="w"> </span><span class="o">{</span>NAMESPACE<span class="o">}</span>
+</span></code></pre></div></p>
+</li>
+<li>
+<p>For database schema changes:</p>
+<ul>
+<li>Run migrations using the <code>argilla_server</code> <abbr title="Command Line Interface.">CLI</abbr>:
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>kubectl<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>deployment/argilla-server<span class="w"> </span>-n<span class="w"> </span><span class="o">{</span>NAMESPACE<span class="o">}</span><span class="w"> </span>--<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>argilla_server<span class="w"> </span>database<span class="w"> </span>migrate
+</span></code></pre></div></li>
+</ul>
+</li>
+<li>
+<p>For frontend updates:</p>
+<ul>
+<li>Rebuild the frontend:
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>sh<span class="w"> </span>scripts/build_frontend.sh
+</span></code></pre></div></li>
+<li>Trigger a rebuild of the <code>argilla-server</code> in the Tilt web interface or reapply the Kubernetes configuration.</li>
+</ul>
+</li>
+</ol>
+<h3 id="quickstart-deployment-update">Quickstart Deployment Update<a class="headerlink" href="#quickstart-deployment-update" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p>Pull the latest Extralit image:
+    <div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>docker<span class="w"> </span>pull<span class="w"> </span>extralit/argilla-quickstart:latest
+</span></code></pre></div></p>
+</li>
+<li>
+<p>Stop and remove the existing container:
+    <div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>docker<span class="w"> </span>stop<span class="w"> </span>extralit-quickstart
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>docker<span class="w"> </span>rm<span class="w"> </span>extralit-quickstart
+</span></code></pre></div></p>
+</li>
+<li>
+<p>Start a new container with the updated image:
+    <div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>--name<span class="w"> </span>extralit-quickstart<span class="w"> </span>-p<span class="w"> </span><span class="m">6900</span>:6900<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span>-e<span class="w"> </span><span class="nv">ARGILLA_AUTH_SECRET_KEY</span><span class="o">=</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-hex<span class="w"> </span><span class="m">32</span><span class="k">)</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">  </span>extralit/argilla-quickstart:latest
+</span></code></pre></div></p>
+</li>
+</ol>
+<h3 id="docker-deployment-update">Docker Deployment Update<a class="headerlink" href="#docker-deployment-update" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p>Update the <code>docker-compose.yml</code> file with the latest Extralit image version.</p>
+</li>
+<li>
+<p>Pull the updated images:
+    <div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>docker-compose<span class="w"> </span>pull
+</span></code></pre></div></p>
+</li>
+<li>
+<p>Restart the services with the new images:
+    <div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>docker-compose<span class="w"> </span>up<span class="w"> </span>-d
+</span></code></pre></div></p>
+</li>
+<li>
+<p>For database schema changes, run migrations:
+    <div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>docker-compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>argilla<span class="w"> </span>argilla_server<span class="w"> </span>database<span class="w"> </span>migrate
+</span></code></pre></div></p>
+</li>
+</ol>
 
 
 
@@ -2864,7 +2856,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="./" class="md-footer__link md-footer__link--prev" aria-label="Previous: Installation &amp; configuration">
+          <a href="../k8s_deployment/" class="md-footer__link md-footer__link--prev" aria-label="Previous: K8s deployment">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
@@ -2874,7 +2866,7 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Installation & configuration
+                K8s deployment
               </div>
             </div>
           </a>
