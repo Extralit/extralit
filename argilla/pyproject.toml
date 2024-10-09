@@ -35,7 +35,7 @@ dependencies = [
     # monitoring
     "wrapt >= 1.14,< 1.15",
     # for progressbars
-    "tqdm >= 4.27.0",
+    "tqdm >= 4.66.1, < 5.0.0",
     # monitor background consumers
     "backoff",
     "monotonic",
@@ -88,19 +88,19 @@ ocr = [
 ]
 pdf = [
     "unstructured[pdf] ~= 0.12.3",
-    "deepdoctection ~= 0.31.0",
     "llmsherpa ~= 0.1.3",
     "python-doctr ~= 0.8.1",
+    "deepdoctection",
     "pypdf",
     "pypdfium2",
     "pymupdf",
     "pdf2image ~= 1.16.0",
 ]
 server = [
-    "extralit-server ~= 0.2.0"
+    "extralit-server ~= 0.2.1"
 ]
 server-postgresql = [
-    "extralit-server[postgresql] ~= 0.2.0"
+    "extralit-server[postgresql] ~= 0.2.1"
 ]
 listeners = ["schedule ~= 1.1.0"]
 integrations = [
@@ -138,15 +138,18 @@ tests = [
     "pytest",
     "pytest-cov",
     "pytest-mock",
+    "pytest-xdist",
     "pytest-asyncio",
     "pytest-env",
     "factory_boy ~= 3.2.1",
 ]
 
 [project.urls]
-homepage = "https://www.extralit.io"
-documentation = "https://docs.extralit.io"
+homepage = "https://www.extralit.ai"
+documentation = "https://docs.extralit.ai"
+changelog = "https://docs.extralit.ai/latest/community/changelog/"
 repository = "https://github.com/extralit/extralit"
+tracker = "https://github.com/extralit/extralit/issues"
 
 [project.scripts]
 extralit = "argilla.cli.app:app"
@@ -235,6 +238,7 @@ dev = [
     "ruff>=0.1.12",
     "pytest-mock>=3.12.0",
     "pytest-httpx>=0.26.0",
+    "pytest-xdist>=3.6.0",
     "black>=23.12.1",
     "build>=1.0.3",
     "pre-commit>=3.5.0",

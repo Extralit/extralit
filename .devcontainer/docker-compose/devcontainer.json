@@ -1,0 +1,111 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/anaconda
+{
+  "name": "PostgreSQL & Elasticsearch for Docker-Compose",
+
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "devcontainer",
+  "runServices": [
+    "elasticsearch",
+    "postgres",
+    "minio",
+    "weaviate"
+  ],
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  "forwardPorts": [
+    9200,
+    5432,
+    9090,
+    8080,
+    50051
+  ],
+  "portsAttributes": {
+    "8888": {
+      "label": "Jupyter",
+      "requireLocalPort": true,
+      "onAutoForward": "ignore"
+    },
+    "5601": {
+      "label": "Kibana",
+      "requireLocalPort": true,
+      "onAutoForward": "ignore"
+    },
+    "9200": {
+      "label": "elastic",
+      "requireLocalPort": true,
+      "onAutoForward": "ignore"
+    },
+    "5432": {
+      "label": "postgres",
+      "requireLocalPort": true,
+      "onAutoForward": "ignore"
+    },
+    "9090": {
+      "label": "minio-console",
+      "requireLocalPort": true,
+      "onAutoForward": "ignore"
+    },
+    "8080": {
+      "label": "weaviate",
+      "requireLocalPort": true,
+      "onAutoForward": "ignore"
+    },
+    "50051": {
+      "label": "weaviate-grpc",
+      "requireLocalPort": true,
+      "onAutoForward": "ignore"
+    }
+  },
+
+  // Features to add to the dev container. More info: https://containers.dev/features.
+  "features": {
+    // Add python support with micromamba and some packages
+    "ghcr.io/mamba-org/devcontainer-features/micromamba": {
+      "autoActivate": true,
+      "channels": "pytorch conda-forge huggingface defaults",
+      "packages": "python==3.10.14 uvicorn uv pdm pyparsing!=3.0.5 pytest pytest-cov pytest-mock pytest-xdist pytest-asyncio==0.21.1 pytest-env pytest-watch factory_boy~=3.2.1 nodejs=18.16.1 datasets==2.21.0 spacy==3.6.1 pytest-randomly>=3.15.0",
+      "envFile": "",
+      "envName": "base"
+    }
+  },
+
+  "postCreateCommand": "/workspace/setup.sh",
+
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "16gb",
+    "storage": "32gb"
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "tamasfe.even-better-toml",
+        "eamodio.gitlens",
+        "tilt-dev.tiltfile",
+        "github.vscode-github-actions",
+        "codecov.codecov",
+        "ryanluker.vscode-coverage-gutters",
+        "ms-vscode.live-server"
+      ]
+    },
+    "settings": {
+      "python.testing.pytestEnabled": true,
+      "python.testing.cwd": "${workspaceFolder}/argilla/",
+      "python.testing.pytestArgs": [
+        "-vv",
+        "--disable-warnings",
+        "--cov",
+        "--cov-report=xml:coverage.xml",
+      ],
+      "python.defaultInterpreterPath": "/opt/conda/bin/python",
+      "python.condaPath": "/usr/local/bin/micromamba",
+    }
+  }
+}

@@ -1,0 +1,161 @@
+schema_type: dataframe
+version: 0.18.3
+columns:
+  Net_type:
+    title: null
+    description: Name of net - each type of net should have a different row per Anopheles
+      species
+    dtype: str
+    nullable: false
+    checks: null
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  Insecticide:
+    title: null
+    description: Enter the insecticide or insecticides combination (in order of concentration,
+      delimited by comma) used in the net type here
+    dtype: str
+    nullable: true
+    checks:
+      multiselect:
+        delimiter: ','
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  Concentration:
+    title: null
+    description: Enter the concentration of the insecticide combination used in the
+      net type here
+    dtype: str
+    nullable: true
+    checks:
+      multiselect:
+        delimiter: ','
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  Net_washed:
+    title: null
+    description: Numerical count of number of net washes - 0 if none and NA if not
+      reported
+    dtype: float64
+    nullable: true
+    checks:
+      greater_than_or_equal_to: 0
+    unique: false
+    coerce: true
+    required: true
+    regex: false
+  Net_holed:
+    title: null
+    description: "Numerical count of the number of holes a net has - 0 if new and\
+      \ NA if not reported\nNote - for tunnel tests there are holes that allow the\
+      \ mosquitoes the option of passing through to feed on the guinea pig. See:\n\
+      https://apps.who.int/iris/bitstream/handle/10665/80270/9789241505277_eng.pdf\n\
+      \u201CThe surface of netting available to the mosquitoes is 400 cm2 (20 cm x\
+      \ 20 cm), with nine holes 1 cm in diameter; one hole is located at the centre\
+      \ of the square, and the other eight are equidistant and located 5 cm from the\
+      \ border\u201D"
+    dtype: float64
+    nullable: true
+    checks:
+      greater_than_or_equal_to: 0
+    unique: false
+    coerce: true
+    required: true
+    regex: false
+  Net_age:
+    title: null
+    description: Age of net in months - if reported (some studies return to villages
+      with nets given 1-2 years prior). For consistency and ease of extraction, please
+      record the age in months without giving the units in text.
+    dtype: float64
+    nullable: true
+    checks: null
+    unique: false
+    coerce: true
+    required: true
+    regex: false
+  pHI_category:
+    title: null
+    description: One of "Good", "Damaged", "Torn", "Serviceable", or "All"
+    dtype: str
+    nullable: true
+    checks:
+      isin:
+        - Good
+        - Damaged
+        - Torn
+        - Serviceable
+        - All
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  median_pHI:
+    title: null
+    description: "Median Proportional hole index: \nUsually provided only for those\
+      \ nets with holes. This value should be provided in the text or a table of the\
+      \ paper. If it requires your own calculations, skip it. Definition: Numerator:\
+      \ Total number of each LN product with at least one hole of size 1\u20134\n\
+      \ Denominator: Total number of each LN product found and assessed in surveyed\n\
+      \ households"
+    dtype: float64
+    nullable: true
+    checks:
+      greater_than_or_equal_to: 0
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  pHI_lower_IQR:
+    title: null
+    description: Lower interquartile range of pHI
+    dtype: float64
+    nullable: true
+    checks:
+      greater_than_or_equal_to: 0
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  pHI_upper_IQR:
+    title: null
+    description: Upper interquartile range of pHI
+    dtype: float64
+    nullable: true
+    checks:
+      greater_than_or_equal_to: 0
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+checks:
+  check_less_than:
+    columns_a: pHI_lower_IQR
+    columns_b: pHI_upper_IQR
+    or_equal: false
+index:
+  - title: null
+    description: null
+    dtype: str
+    nullable: false
+    checks: null
+    name: reference
+    unique: true
+    coerce: false
+dtype: null
+coerce: true
+strict: true
+name: ITNCondition
+ordered: false
+unique: null
+report_duplicates: all
+unique_column_names: false
+add_missing_columns: false
+title: null
+description: null

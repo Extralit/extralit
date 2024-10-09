@@ -22,7 +22,7 @@ from argilla.client.singleton import init
 def init_callback() -> None:
     if not ArgillaCredentials.exists():
         echo_in_panel(
-            "You are not logged in. Please run 'argilla login' to login to an Argilla server.",
+            "You are not logged in. Please run 'extralit login' to login to the Extralit server.",
             title="Not logged in",
             title_align="left",
             success=False,
@@ -33,7 +33,7 @@ def init_callback() -> None:
         init()
     except Exception as e:
         echo_in_panel(
-            "The Argilla Server you are logged in is not available or not responding. Please make sure it's running and try again.",
+            "The Extralit Server you are logged in is not available or not responding. Please make sure it's running and try again.",
             title="Server not available",
             title_align="left",
             success=False,
@@ -43,7 +43,7 @@ def init_callback() -> None:
 
 def deprecated_database_cmd_callback(ctx: typer.Context) -> None:
     echo_in_panel(
-        f"Instead you should run `argilla server database the {typer.style(ctx.invoked_subcommand, bold=True)}`",
+        f"Instead you should run `extralit server database the {typer.style(ctx.invoked_subcommand, bold=True)}`",
         title="Deprecated command",
         title_align="left",
         success=False,

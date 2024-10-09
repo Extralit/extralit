@@ -134,11 +134,18 @@ sw.*
 # Ruff cache
 .ruff_cache/
 
+# yarn & npm
 yarn.lock
 package-lock.json
 
 # Old users db file
 .users.yml
+
+.hypothesis/
+
+# Devcontainer
+.devcontainer/*/data
+.devcontainer/*/secrets
 
 # App generated files
 argilla-server/src/argilla_server/static

@@ -29,4 +29,4 @@ USER extralit
 EXPOSE 5555
 
 # Run the command to start uVicorn server
-CMD ["uvicorn", "extralit.app:app", "--host", "0.0.0.0", "--port", "5555", "--reload"]
+CMD ["uvicorn", "extralit.server.app:app", "--host", "0.0.0.0", "--port", "5555", "--reload"]

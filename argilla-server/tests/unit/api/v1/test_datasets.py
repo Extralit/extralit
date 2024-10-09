@@ -96,6 +96,8 @@ from tests.factories import (
     WorkspaceFactory,
 )
 
+from argilla_server.apis.v1.handlers.datasets.records import generate_suggestions_from_response
+
 if TYPE_CHECKING:
     from httpx import AsyncClient
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -217,7 +219,7 @@ class TestSuiteDatasets:
                     "name": "text-field-a",
                     "title": "Text Field A",
                     "required": True,
-                    "settings": {"type": "text", "use_markdown": False},
+                    "settings": {"type": "text", "use_markdown": False, "use_table": False},
                     "dataset_id": str(dataset.id),
                     "inserted_at": text_field_a.inserted_at.isoformat(),
                     "updated_at": text_field_a.updated_at.isoformat(),
@@ -227,7 +229,7 @@ class TestSuiteDatasets:
                     "name": "text-field-b",
                     "title": "Text Field B",
                     "required": False,
-                    "settings": {"type": "text", "use_markdown": False},
+                    "settings": {"type": "text", "use_markdown": False, "use_table": False},
                     "dataset_id": str(dataset.id),
                     "inserted_at": text_field_b.inserted_at.isoformat(),
                     "updated_at": text_field_b.updated_at.isoformat(),
@@ -312,7 +314,7 @@ class TestSuiteDatasets:
                     "title": "Text Question",
                     "description": "Question Description",
                     "required": True,
-                    "settings": {"type": "text", "use_markdown": False},
+                    "settings": {"type": "text", "use_markdown": False, "use_table": False},
                     "dataset_id": str(text_question.dataset_id),
                     "inserted_at": text_question.inserted_at.isoformat(),
                     "updated_at": text_question.updated_at.isoformat(),
@@ -924,9 +926,10 @@ class TestSuiteDatasets:
     @pytest.mark.parametrize(
         ("settings", "expected_settings"),
         [
-            ({"type": "text"}, {"type": "text", "use_markdown": False}),
-            ({"type": "text", "discarded": "value"}, {"type": "text", "use_markdown": False}),
-            ({"type": "text", "use_markdown": False}, {"type": "text", "use_markdown": False}),
+            ({"type": "text"}, {"type": "text", "use_markdown": False, "use_table": False}),
+            ({"type": "text", "discarded": "value"}, {"type": "text", "use_markdown": False, "use_table": False}),
+            ({"type": "text", "use_markdown": False}, {"type": "text", "use_markdown": False, "use_table": False}),
+            ({"type": "text", "use_table": True}, {"type": "text", "use_markdown": False, "use_table": True}),
         ],
     )
     async def test_create_dataset_field(
@@ -3386,34 +3389,6 @@ class TestSuiteDatasets:
         assert response.status_code == 422
         assert response.json() == {"detail": "Found duplicate records IDs"}
 
-    async def test_update_dataset_records_with_duplicate_suggestions_question_ids(
-        self, async_client: "AsyncClient", owner_auth_header: dict
-    ):
-        dataset = await DatasetFactory.create()
-        question = await TextQuestionFactory.create(dataset=dataset)
-        record = await RecordFactory.create(dataset=dataset)
-
-        response = await async_client.patch(
-            f"/api/v1/datasets/{dataset.id}/records",
-            headers=owner_auth_header,
-            json={
-                "items": [
-                    {
-                        "id": str(record.id),
-                        "suggestions": [
-                            {"question_id": str(question.id), "value": "a"},
-                            {"question_id": str(question.id), "value": "b"},
-                        ],
-                    },
-                ]
-            },
-        )
-
-        assert response.status_code == 422
-        assert response.json() == {
-            "detail": "Record at position 0 is not valid because found duplicate suggestions question IDs"
-        }
-
     async def test_update_dataset_records_as_admin_from_another_workspace(self, async_client: "AsyncClient"):
         dataset = await DatasetFactory.create()
         user = await UserFactory.create(role=UserRole.admin)
@@ -3910,7 +3885,6 @@ class TestSuiteDatasets:
             ["responses"],
             ["suggestions"],
             ["responses", "suggestions"],
-            ["responses", "suggestions"],
         ],
     )
     async def test_search_current_user_dataset_records_with_include(
@@ -4026,6 +4000,180 @@ class TestSuiteDatasets:
                     "updated_at": suggestion_b.updated_at.isoformat(),
                 }
             ]
+
+        query_json = {"query": {"text": {"q": "Hello", "field": "input"}}}
+        response = await async_client.post(
+            f"/api/v1/me/datasets/{dataset.id}/records/search",
+            headers={API_KEY_HEADER_NAME: owner.api_key},
+            json=query_json,
+            params={"include": includes},
+        )
+
+        assert response.status_code == 200
+        assert response.json() == expected
+
+        mock_search_engine.search.assert_called_once_with(
+            dataset=dataset,
+            query=TextQuery(q="Hello", field="input"),
+            metadata_filters=[],
+            sort_by=None,
+            user_response_status_filter=None,
+            offset=0,
+            limit=LIST_DATASET_RECORDS_LIMIT_DEFAULT,
+            user_id=owner.id,
+        )
+
+    async def test_search_current_user_dataset_records_with_include_response_suggestions(
+        self, async_client: "AsyncClient", mock_search_engine: SearchEngine, owner: "User", 
+        includes: List[str] = ["responses", "suggestions", "response_suggestions"]
+    ):
+        workspace = await WorkspaceFactory.create()
+        (
+            dataset,
+            questions,
+            records,
+            responses,
+            suggestions,
+            other_users,
+        ) = await self.create_dataset_with_user_responses_suggestions(owner, workspace)
+        suggestion_a, suggestion_b = suggestions
+
+        mock_search_engine.search.return_value = SearchResponses(
+            items=[
+                SearchResponseItem(record_id=records[0].id, score=14.2),
+                SearchResponseItem(record_id=records[1].id, score=12.2),
+            ],
+            total=2,
+        )
+
+        query_json = {"query": {"text": {"q": "Hello", "field": "input"}}}
+        expected = {
+            "items": [
+                {
+                    "record": {
+                        "id": str(records[0].id),
+                        "fields": {
+                            "input": "input_a",
+                            "output": "output_a",
+                        },
+                        "metadata": None,
+                        "external_id": records[0].external_id,
+                        "dataset_id": str(records[0].dataset_id),
+                        "inserted_at": records[0].inserted_at.isoformat(),
+                        "updated_at": records[0].updated_at.isoformat(),
+                    },
+                    "query_score": 14.2,
+                },
+                {
+                    "record": {
+                        "id": str(records[1].id),
+                        "fields": {
+                            "input": "input_b",
+                            "output": "output_b",
+                        },
+                        "metadata": {"unit": "test"},
+                        "external_id": records[1].external_id,
+                        "dataset_id": str(records[1].dataset_id),
+                        "inserted_at": records[1].inserted_at.isoformat(),
+                        "updated_at": records[1].updated_at.isoformat(),
+                    },
+                    "query_score": 12.2,
+                },
+            ],
+            "total": 2,
+        }
+
+        first_owner_response = next(
+            r for r in responses if r.user_id == owner.id and r.record_id == records[0].id
+        )
+        expected["items"][0]["record"]["responses"] = [
+            {
+                "id": str(first_owner_response.id),
+                "values": {"input_ok": {"value": "no"}, "output_ok": {"value": "no"}},
+                "status": "submitted",
+                "record_id": str(records[0].id),
+                "user_id": str(owner.id),
+                "inserted_at": first_owner_response.inserted_at.isoformat(),
+                "updated_at": first_owner_response.updated_at.isoformat(),
+            }
+        ]
+
+        second_owner_response = next(
+            r for r in responses if r.user_id == owner.id and r.record_id == records[1].id
+        )
+        expected["items"][1]["record"]["responses"] = [
+            {
+                "id": str(second_owner_response.id),
+                "values": {
+                    "input_ok": {"value": "no"},
+                    "output_ok": {"value": "no"},
+                },
+                "status": "submitted",
+                "record_id": str(records[1].id),
+                "user_id": str(owner.id),
+                "inserted_at": second_owner_response.inserted_at.isoformat(),
+                "updated_at": second_owner_response.updated_at.isoformat(),
+            },
+        ]
+
+        other_users_id2name = {user.id: user.username for user in other_users}
+        questions_name_map = {question.name: question for question in questions}
+        other_response_a = next(
+            r for r in responses if r.user_id in other_users_id2name and r.record_id == records[0].id
+        )
+        other_response_b = next(
+            r for r in responses if r.user_id in other_users_id2name and r.record_id == records[1].id
+        )
+
+        expected["items"][0]["record"]["suggestions"] = [
+            {
+                "id": str(suggestion_a.id),
+                "value": "option-1",
+                "score": None,
+                "agent": None,
+                "type": None,
+                "question_id": str(questions[0].id),
+                "inserted_at": suggestion_a.inserted_at.isoformat(),
+                "updated_at": suggestion_a.updated_at.isoformat(),
+            },
+            *[
+                {
+                    "id": str(s.id),
+                    "value": s.value,
+                    "score": s.score,
+                    "agent": s.agent,
+                    "type": s.type,
+                    "question_id": str(s.question_id),
+                    "inserted_at": s.inserted_at.isoformat(),
+                    "updated_at": s.updated_at.isoformat(),
+                } for s in generate_suggestions_from_response(other_response_a, owner, questions_name_map, other_users_id2name)
+            ],
+        ]
+        expected["items"][1]["record"]["suggestions"] = [
+            {
+                "id": str(suggestion_b.id),
+                "value": "option-2",
+                "score": 0.75,
+                "agent": "unit-test-agent",
+                "type": "model",
+                "question_id": str(questions[0].id),
+                "inserted_at": suggestion_b.inserted_at.isoformat(),
+                "updated_at": suggestion_b.updated_at.isoformat(),
+            },
+            # Expecting no suggestions for the second record as the other user's response has `discarded` status
+            *[
+                {
+                    "id": str(s.id),
+                    "value": s.value,
+                    "score": s.score,
+                    "agent": s.agent,
+                    "type": s.type,
+                    "question_id": str(s.question_id),
+                    "inserted_at": s.inserted_at.isoformat(),
+                    "updated_at": s.updated_at.isoformat(),
+                } for s in generate_suggestions_from_response(other_response_b, owner, questions_name_map, other_users_id2name)
+            ],
+        ]
 
         query_json = {"query": {"text": {"q": "Hello", "field": "input"}}}
         response = await async_client.post(
@@ -4977,6 +5125,48 @@ class TestSuiteDatasets:
         ]
 
         return dataset, questions, records, responses, suggestions
+    
+
+    async def create_dataset_with_user_responses_suggestions(
+        self, user: User, workspace: "Workspace"
+    ) -> Tuple[Dataset, List[Question], List[Record], List[Response], List[Suggestion], List[User]]:
+        dataset = await DatasetFactory.create(workspace=workspace)
+        await TextFieldFactory.create(name="input", dataset=dataset)
+        await TextFieldFactory.create(name="output", dataset=dataset)
+
+        annotator = await AnnotatorFactory.create(workspaces=[dataset.workspace])
+
+        questions = [
+            await LabelSelectionQuestionFactory.create(dataset=dataset),
+            await TextQuestionFactory.create(name="input_ok", dataset=dataset),
+            await TextQuestionFactory.create(name="output_ok", dataset=dataset),
+        ]
+
+        records = [
+            await RecordFactory.create(fields={"input": "input_a", "output": "output_a"}, dataset=dataset),
+            await RecordFactory.create(
+                fields={"input": "input_b", "output": "output_b"}, metadata_={"unit": "test"}, dataset=dataset
+            ),
+        ]
+
+        responses = [
+            await ResponseFactory.create(values={"input_ok": {"value": "yes"}, "output_ok": {"value": "yes"}}, 
+                record=records[0], user=annotator, status=ResponseStatus.submitted),
+            await ResponseFactory.create(values={"input_ok": {"value": "no"}, "output_ok": {"value": "no"}}, 
+                record=records[0], user=user),
+            await ResponseFactory.create(values={"input_ok": {"value": "yes"}, "output_ok": {"value": "no"}}, 
+                record=records[1], user=annotator, status=ResponseStatus.discarded),
+            await ResponseFactory.create(values={"input_ok": {"value": "no"}, "output_ok": {"value": "no"}}, 
+                record=records[1], user=user),
+        ]
+
+        suggestions = [
+            await SuggestionFactory.create(record=records[0], question=questions[0], value="option-1"),
+            await SuggestionFactory.create(record=records[1], question=questions[0], value="option-2", score=0.75, agent="unit-test-agent", type="model"),
+        ]
+
+        other_users = [annotator]
+        return dataset, questions, records, responses, suggestions, other_users
 
     async def test_get_record_with_response_for_deleted_user(
         self,

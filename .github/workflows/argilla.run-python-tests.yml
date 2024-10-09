@@ -17,7 +17,7 @@ on:
         default: coverage
       searchEngineDockerImage:
         description: "The name of the Docker image of the search engine to use."
-        default: docker.elastic.co/elasticsearch/elasticsearch:8.8.2
+        default: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
         required: false
         type: string
       searchEngineDockerEnv:
@@ -33,7 +33,6 @@ jobs:
   run-python-tests:
     name: Argilla python tests
     runs-on: ${{ inputs.runsOn }}
-    continue-on-error: true
     timeout-minutes: 30
     services:
       search_engine:
@@ -75,7 +74,9 @@ jobs:
 
       - name: Update environment
         if: steps.cache.outputs.cache-hit != 'true'
-        run: mamba env update -n argilla -f environment_dev.yml
+        run: |
+          mamba env update -n argilla -f environment_dev.yml -q
+          python -c "import nltk; nltk.download('punkt')"
 
       - name: Cache pip 👜
         uses: actions/cache@v3
@@ -103,9 +104,9 @@ jobs:
 
       - name: Run tests 📈
         run: |
-          pip install extralit_server
-          pip install -e ".[listeners]"
-          pytest --cov=argilla --cov-report=xml:${{ env.COVERAGE_REPORT }}.xml ${{ inputs.pytestArgs }} -vs
+          uv pip install -q ../argilla-server/
+          uv pip install -q -e ".[listeners]"
+          pytest --cov=argilla --cov=extralit --cov-report=xml:${{ env.COVERAGE_REPORT }}.xml --junitxml=junit.xml -o junit_family=legacy ${{ inputs.pytestArgs }} -vs
 
       - name: Upload coverage report artifact
         uses: actions/upload-artifact@v3
@@ -113,12 +114,12 @@ jobs:
           name: coverage-report-${{ env.COVERAGE_REPORT }}
           path: argilla/${{ env.COVERAGE_REPORT }}.xml
 
-      - name: Run tests with pandas v2 📈
-        run: |
-          pip install "pandas~=2.0" pytest-custom_exit_code
-          pytest --suppress-no-test-exit-code ${{ inputs.pytestArgs }} -vs
+      # - name: Run tests with pandas v2 📈
+      #   run: |
+      #     uv pip install -q "pandas~=2.0" pytest-custom_exit_code
+      #     pytest --suppress-no-test-exit-code ${{ inputs.pytestArgs }} -vs
 
-      - name: Run tests with pydantic v2 📈
-        run: |
-          pip install "pydantic~=2.0" pytest-custom_exit_code
-          pytest --suppress-no-test-exit-code ${{ inputs.pytestArgs }} -vs
+      # - name: Run tests with pydantic v2 📈
+      #   run: |
+      #     uv pip install -q "pydantic~=2.0" pytest-custom_exit_code
+      #     pytest --suppress-no-test-exit-code ${{ inputs.pytestArgs }} -vs

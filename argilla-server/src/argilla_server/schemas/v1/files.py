@@ -87,7 +87,7 @@ class ListObjectsResponse(BaseModel):
 
         # Assign version_id based on last_modified
         for object_name, object_list in grouped_objects.items():
-            sorted_objects = sorted(object_list, key=lambda o: o.last_modified)
+            sorted_objects = sorted(object_list, key=lambda o: o.last_modified or datetime.min)
 
             for i, obj in enumerate(sorted_objects):
                 obj.version_tag = f"v{i + 1}"

@@ -14,29 +14,28 @@ These are the section headers that we use:
 * "Security" in case of vulnerabilities.
 -->
 
-## [Unreleased]()
-
+## [v0.2.1](https://github.com/extralit/extralit/compare/v0.2.0...v0.2.1)
 
 ### "Added"
 - Pytest and python env setup in GH Codespaces devcontainer
-
+- Added tests
+  - Response: update duration
+  - Files: get, put, list, delete
+  - Models: get, post, put, delete
+  - Records: include response_suggestions
 
 ### "Changed"
-
-
-### "Deprecated"
-
-
-### "Removed"
-
+- Updated elasticsearch to 8.15.0
+- Reverted Suggestion table's unique constraint only "record_id", "question_id", fixing the test suites
+- Disabled adding `LIST_DATASET_RECORDS_DEFAULT_SORT_BY` when there's no sort-by on GET records
+- Changed the `/api/v1/documents` post endpoint to use `UploadFile`
 
 ### "Fixed"
 - Fixed an issue with reindexing elasticsearch by exception handling on failed datasets
+- Added Workspace relationship Document to enable cascade delete
 
 
-### "Security"
-
-## [v0.2.0]()
+## [v0.2.0](https://github.com/extralit/extralit/compare/v1.27.0a...v0.2.0)
 
 ### Added
 - Added use_table option to `QuestionSetting`.

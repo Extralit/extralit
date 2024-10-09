@@ -1,7 +1,7 @@
 name: Build Argilla server package
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.sha }}
   cancel-in-progress: true
 
 defaults:
@@ -20,7 +20,8 @@ on:
       - releases/**
     paths:
       - "argilla-server/**"
-      - ".github/workflows/**"
+      - ".github/workflows/argilla-server.*"
+      
   pull_request:
     paths:
       - argilla-server/**
@@ -41,7 +42,7 @@ jobs:
 
     services:
       elasticsearch:
-        image: docker.elastic.co/elasticsearch/elasticsearch:8.8.2
+        image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
         ports:
           - 9200:9200
         env:
@@ -63,8 +64,22 @@ jobs:
         ports:
           - 5432:5432
 
+      minio:
+        image: lazybit/minio
+        volumes:
+          - /data:/data
+        env:
+          MINIO_ACCESS_KEY: minioadmin
+          MINIO_SECRET_KEY: minioadmin
+        options: --name=minio --health-cmd "curl http://localhost:9000/minio/health/live"
+        ports:
+          - 9000:9000
+
     env:
       ARGILLA_ENABLE_TELEMETRY: 0
+      S3_ENDPOINT: http://localhost:9000
+      S3_ACCESS_KEY: minioadmin
+      S3_SECRET_KEY: minioadmin
 
     steps:
       - name: Checkout Code 🛎
@@ -81,17 +96,23 @@ jobs:
         run: pdm install
 
       - name: Run tests 📈
-        continue-on-error: true
         run: |
           ARGILLA_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/argilla
           ARGILLA_ELASTICSEARCH=http://localhost:9200
           ARGILLA_SEARCH_ENGINE=elasticsearch
-          pdm test tests/unit -vs --cov=argilla_server --cov-report=xml:coverage.xml
+          pdm test tests/unit -vs --cov=argilla_server --cov-report=xml:coverage.xml --junitxml=junit.xml -o junit_family=legacy
 
       - name: Upload test coverage
         uses: codecov/codecov-action@v4
         with:
           file: coverage.xml
+          flags: argilla-server
+          token: ${{ secrets.CODECOV_TOKEN }}
+      
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
           flags: argilla-server
           token: ${{ secrets.CODECOV_TOKEN }}
 
@@ -187,7 +208,7 @@ jobs:
 
       - name: Publish Package to PyPI test environment 🥪
         run: |
-          pdm publish --no-build --repository testpypi
+          pdm publish --no-build --repository testpypi --username __token__ --password ${{ secrets.AR_TEST_PYPI_API_TOKEN }}
 
       - name: Test Installing 🍿
         run: |
@@ -195,4 +216,4 @@ jobs:
 
       - name: Publish Package to PyPI 🥩
         run: |
-          pdm publish --no-build
+          pdm publish --no-build --username __token__ --password ${{ secrets.AR_PYPI_API_TOKEN }}

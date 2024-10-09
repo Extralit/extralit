@@ -21,8 +21,10 @@ import pytest_asyncio
 from argilla_server.cli.database.migrate import migrate_db
 from argilla_server.database import database_url_sync
 from argilla_server.settings import settings
+from argilla_server.contexts.files import delete_bucket, get_minio_client
 from sqlalchemy import NullPool, create_engine
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from minio import S3Error
 
 from tests.database import SyncTestSession, TestSession, set_task
 
@@ -115,3 +117,12 @@ def async_db_proxy(mocker: "MockerFixture", sync_db: "Session") -> "AsyncSession
     async_session.close = mocker.AsyncMock()
 
     return async_session
+
+@pytest.fixture(scope="session", autouse=True)
+def cleanup_minio_bucket():
+    yield
+    minio_client = get_minio_client()
+    bucket_name = "workspace"
+    
+    if minio_client.bucket_exists(bucket_name):
+        delete_bucket(minio_client, bucket_name)

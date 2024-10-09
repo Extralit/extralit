@@ -122,15 +122,19 @@ class Suggestion(DatabaseModel):
     record: Mapped["Record"] = relationship(back_populates="suggestions")
     question: Mapped["Question"] = relationship(back_populates="suggestions")
 
-    __table_args__ = (UniqueConstraint("record_id", "question_id", "type", "agent", name="suggestion_record_id_question_id_uq"),)
+    __table_args__ = (UniqueConstraint("record_id", "question_id", name="suggestion_record_id_question_id_uq"),)
     __upsertable_columns__ = {"value", "score", "agent", "type"}
 
     def __repr__(self) -> str:
-        return (
-            f"Suggestion(id={self.id}, score={self.score}, agent={self.agent}, type={self.type}, "
-            f"record_id={self.record_id}, question_id={self.question_id}, inserted_at={self.inserted_at}, "
-            f"updated_at={self.updated_at})"
-        )
+        attrs = []
+        for attr in ["id", "score", "agent", "type", "record_id", "question_id", "inserted_at", "updated_at", "value"]:
+            value = getattr(self, attr)
+            if value is not None:
+                if attr == "value" and len(value) > 20:
+                    value = value[:20] + '...'
+                attrs.append(f"{attr}={value}")
+        
+        return f"Suggestion({', '.join(attrs)})"
 
 
 class Vector(DatabaseModel):
@@ -410,6 +414,11 @@ class Workspace(DatabaseModel):
     users: Mapped[List["User"]] = relationship(
         secondary="workspaces_users", back_populates="workspaces", order_by=WorkspaceUser.inserted_at.asc()
     )
+    documents: Mapped[List["Document"]] = relationship(
+        back_populates="workspace",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
 
     def __repr__(self):
         return (
@@ -479,6 +488,8 @@ class Document(DatabaseModel):
     pmid: Mapped[str] = mapped_column(String, index=True, nullable=True)
     doi: Mapped[str] = mapped_column(String, index=True, nullable=True)
     workspace_id: Mapped[UUID] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
+
+    workspace: Mapped["Workspace"] = relationship("Workspace", back_populates="documents")
 
     def __repr__(self):
         return (

@@ -7,8 +7,6 @@ assignees: ''
 
 ---
 
-<!--  Ask David for help you to contribute https://calendly.com/argilla-office-hours/30min or feel free to submit a pull request straight away: https://github.com/argilla-io/argilla/pulls or  -->
-
 **Describe the bug**
 A clear and concise description of what the bug is.
 
@@ -29,7 +27,7 @@ If applicable, add screenshots to help explain your problem.
 **Environment (please complete the following information):**
  - OS [e.g. iOS]:
  - Browser [e.g. chrome, safari]:
- - Argilla Version [e.g. 1.0.0]:
+ - Extralit/Argilla Version [e.g. 1.0.0]:
  - ElasticSearch Version [e.g. 7.10.2]:
  - Docker Image (optional) [e.g. argilla:v1.0.0]:
 

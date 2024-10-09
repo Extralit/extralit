@@ -13,7 +13,7 @@
 #  limitations under the License.
 
 import pytest
-from argilla.server.settings import Settings
+from argilla_server.settings import Settings
 from pydantic import ValidationError
 
 
@@ -61,8 +61,9 @@ def test_settings_default_database_url(monkeypatch):
     [
         ("sqlite:///test.db", "sqlite+aiosqlite:///test.db"),
         ("sqlite:///:memory:", "sqlite+aiosqlite:///:memory:"),
-        ("postgresql://user:pass@localhost:5432/db", "postgresql://user:pass@localhost:5432/db"),
+        ("postgresql://user:pass@localhost:5432/db", "postgresql+asyncpg://user:pass@localhost:5432/db"),
         ("postgresql+psycopg2://user:pass@localhost:5432/db", "postgresql+asyncpg://user:pass@localhost:5432/db"),
+        ("postgres://user:pass@localhost:5432/db", "postgresql+asyncpg://user:pass@localhost:5432/db"),
     ],
 )
 def test_settings_database_url(url: str, expected_url: str, monkeypatch):

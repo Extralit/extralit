@@ -1,11 +1,11 @@
+import hashlib
 import io
 import logging
-import os
+from pathlib import Path
 from typing import Any, BinaryIO, Dict, List, Optional, Union
 from urllib.parse import urlparse
 from uuid import UUID
 
-from minio.commonconfig import ENABLED
 
 from argilla_server.schemas.v1.files import ListObjectsResponse, ObjectMetadata, FileObjectResponse
 from argilla_server.settings import settings
@@ -13,6 +13,7 @@ from fastapi import HTTPException
 from minio import Minio, S3Error
 from minio.helpers import ObjectWriteResult
 from minio.versioningconfig import VersioningConfig
+from minio.commonconfig import ENABLED
 from minio.datatypes import Object
 
 EXCLUDED_VERSIONING_PREFIXES = ['pdf']
@@ -44,9 +45,14 @@ def get_minio_client() -> Optional[Minio]:
         return None
 
 
-def get_pdf_s3_object_path(id: Union[UUID, str]):
-    if id is None:
+def compute_hash(data: bytes) -> str:
+    return hashlib.md5(data).hexdigest()
+
+
+def get_pdf_s3_object_path(id: Union[UUID, str]) -> str:
+    if not id:
         raise Exception("id cannot be None")
+    
     elif isinstance(id, UUID):
         object_path = f'pdf/{str(id)}'
     else:
@@ -55,8 +61,8 @@ def get_pdf_s3_object_path(id: Union[UUID, str]):
     return object_path
 
 
-def get_s3_object_url(bucket_name:str, object_name:str)->str:
-    return f'/api/v1/file/{bucket_name}/{object_name}'
+def get_s3_object_url(bucket_name: str, object_path: str) -> str:
+    return f'/api/v1/file/{bucket_name}/{object_path}'
 
 
 def list_objects(client: Minio, bucket: str, prefix: Optional[str] = None, include_version=True, recursive=True, start_after: Optional[str]=None) -> ListObjectsResponse:
@@ -161,9 +167,13 @@ def create_bucket(client: Minio, workspace_name: str, excluded_prefixes: List[st
 
 def delete_bucket(client: Minio, workspace_name: str):
     try:
+        objects = client.list_objects(workspace_name, prefix="", recursive=True, include_version=True)
+        for obj in objects:
+            client.remove_object(workspace_name, obj.object_name, version_id=obj.version_id)
+
         client.remove_bucket(workspace_name)
     except S3Error as se:
-        if se.code == "NoSuchBucket":
+        if se.code in {"NoSuchBucket", "NotImplemented"}:
             pass
         else:
             _LOGGER.error(f"Error creating bucket {workspace_name}: {se}")

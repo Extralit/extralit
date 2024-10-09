@@ -197,7 +197,7 @@ class TestDatasetRecordsBulkWithSuggestions:
         )
 
         assert response.status_code == 200, response.json()
-        assert (await db.execute(select(func.count(Suggestion.id)))).scalar_one() == 1
+        assert (await db.execute(select(func.count(Suggestion.id)))).scalar_one() == 1, f"Expected only 1 Suggestion row, given: \n{(await db.execute(select(Suggestion))).all()}"
         suggestion = (await db.execute(select(Suggestion))).scalar_one()
 
         records = response.json()["items"]
