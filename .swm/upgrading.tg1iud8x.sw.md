@@ -14,7 +14,7 @@ This guide covers the update process for Extralit across different deployment op
 
 ### Kubernetes Deployment Update
 
-1. Update the code in the `extralit` repository from a release version tag, e.g. `v0.2.2`
+1. Update the [extralit repository](https://github.com/extralit/extralit) code from a release version tag, e.g. `v0.2.2`
 
    ```bash
    git fetch origin tag v0.2.2 && git checkout tags/v0.2.2
