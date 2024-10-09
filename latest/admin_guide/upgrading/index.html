@@ -2720,102 +2720,108 @@
 <h3 id="kubernetes-deployment-update">Kubernetes Deployment Update<a class="headerlink" href="#kubernetes-deployment-update" title="Permanent link">&para;</a></h3>
 <ol>
 <li>
-<p>Update the service code in the <code>extralit-server</code> repository from the <code>main</code> branch:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>git<span class="w"> </span>pull<span class="w"> </span>origin<span class="w"> </span>main
+<p>Update the <a href="https://github.com/extralit/extralit">extralit repository</a> code from a release version tag, e.g. <code>v0.2.2</code></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>git<span class="w"> </span>fetch<span class="w"> </span>origin<span class="w"> </span>tag<span class="w"> </span>v0.2.2<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>git<span class="w"> </span>checkout<span class="w"> </span>tags/v0.2.2
 </span></code></pre></div>
 </li>
 <li>
-<p>Rebuild the Python package and Docker image:
-    <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>sh<span class="w"> </span>scripts/build_distribution.sh
-</span></code></pre></div></p>
+<p>Rebuild the  package, which contains the Argilla server and web interface</p>
+<p>First, build the <code>argilla-frontend</code> code</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>npm<span class="w"> </span>install<span class="w"> </span>--prefix<span class="w"> </span>argilla-frontend
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>npm<span class="w"> </span>run<span class="w"> </span>build<span class="w"> </span>--prefix<span class="w"> </span>argilla-frontend
+</span></code></pre></div>
+<p>Finally, build the wheel containing the built argilla-frontend/dist</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>cp<span class="w"> </span>-r<span class="w"> </span>argilla-frontend/dist<span class="w"> </span>argilla-server/src/argilla_server/static
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>rm<span class="w"> </span>-rf<span class="w"> </span>argilla-server/dist<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>build<span class="w"> </span>-s<span class="w"> </span>argilla-server/
+</span></code></pre></div>
 </li>
 <li>
-<p>Update the Docker image tag in the corresponding Kubernetes YAML file or Helm chart values.</p>
+<p>Rebuild the <code>extralit</code> Python client package</p>
 </li>
+</ol>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>rm<span class="w"> </span>-rf<span class="w"> </span>argilla/dist<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>build<span class="w"> </span>-s<span class="w"> </span>argilla/
+</span></code></pre></div>
+<ol>
 <li>
 <p>If using Tilt for development:</p>
-<ul>
-<li>Tilt will automatically detect changes and rebuild/redeploy the service.</li>
-<li>Manually trigger a rebuild using the ↻ button in the Tilt web interface if needed.</li>
-</ul>
+</li>
+<li>
+<p>Tilt will automatically detect changes and rebuild/redeploy the service.</p>
+</li>
+<li>
+<p>Manually trigger a rebuild using the ↻ button in the Tilt web interface if needed.</p>
 </li>
 <li>
 <p>For production updates without Tilt:</p>
+</li>
+<li>
+<p>Push the updated Docker image to your repository:</p>
+</li>
+</ol>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>docker<span class="w"> </span>push<span class="w"> </span><span class="o">{</span>DOCKER_REPO<span class="o">}</span>/argilla-server:tag
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>docker<span class="w"> </span>push<span class="w"> </span><span class="o">{</span>DOCKER_REPO<span class="o">}</span>/extralit-server:tag
+</span></code></pre></div>
 <ul>
-<li>Push the updated Docker image to your repository:
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>docker<span class="w"> </span>push<span class="w"> </span><span class="o">{</span>DOCKER_REPO<span class="o">}</span>/service-name:tag
-</span></code></pre></div></li>
-<li>Apply the updated Kubernetes configuration:
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>path/to/updated/service-config.yaml<span class="w"> </span>-n<span class="w"> </span><span class="o">{</span>NAMESPACE<span class="o">}</span>
-</span></code></pre></div></li>
+<li>Apply the updated Kubernetes configuration:</li>
 </ul>
-</li>
-<li>
-<p>Monitor the rollout:
-    <div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>kubectl<span class="w"> </span>rollout<span class="w"> </span>status<span class="w"> </span>deployment/service-name<span class="w"> </span>-n<span class="w"> </span><span class="o">{</span>NAMESPACE<span class="o">}</span>
-</span></code></pre></div></p>
-</li>
-<li>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>examples/deployments/k8s/argilla-server-deployment.yaml<span class="w"> </span>-n<span class="w"> </span><span class="o">{</span>NAMESPACE<span class="o">}</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>examples/deployments/k8s/extralit-deployment.yaml<span class="w"> </span>-n<span class="w"> </span><span class="o">{</span>NAMESPACE<span class="o">}</span>
+</span></code></pre></div>
+<ol>
+<li>Monitor the rollout:</li>
+</ol>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>kubectl<span class="w"> </span>rollout<span class="w"> </span>status<span class="w"> </span>deployment/argilla-server-deployment<span class="w"> </span>-n<span class="w"> </span><span class="o">{</span>NAMESPACE<span class="o">}</span>
+</span></code></pre></div>
+<p>&nbsp;</p>
 <p>For database schema changes:</p>
 <ul>
-<li>Run migrations using the <code>argilla_server</code> <abbr title="Command Line Interface.">CLI</abbr>:
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>kubectl<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>deployment/argilla-server<span class="w"> </span>-n<span class="w"> </span><span class="o">{</span>NAMESPACE<span class="o">}</span><span class="w"> </span>--<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>argilla_server<span class="w"> </span>database<span class="w"> </span>migrate
-</span></code></pre></div></li>
+<li>Run migrations using the <code>argilla_server</code> <abbr title="Command Line Interface.">CLI</abbr>:</li>
 </ul>
-</li>
-<li>
-<p>For frontend updates:</p>
-<ul>
-<li>Rebuild the frontend:
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>sh<span class="w"> </span>scripts/build_frontend.sh
-</span></code></pre></div></li>
-<li>Trigger a rebuild of the <code>argilla-server</code> in the Tilt web interface or reapply the Kubernetes configuration.</li>
-</ul>
-</li>
-</ol>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>kubectl<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>deployment/argilla-server-deployment<span class="w"> </span>-n<span class="w"> </span><span class="o">{</span>NAMESPACE<span class="o">}</span><span class="w"> </span>--<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>argilla_server<span class="w"> </span>database<span class="w"> </span>migrate
+</span></code></pre></div>
+<p>&nbsp;</p>
 <h3 id="quickstart-deployment-update">Quickstart Deployment Update<a class="headerlink" href="#quickstart-deployment-update" title="Permanent link">&para;</a></h3>
 <ol>
-<li>
-<p>Pull the latest Extralit image:
-    <div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>docker<span class="w"> </span>pull<span class="w"> </span>extralit/argilla-quickstart:latest
-</span></code></pre></div></p>
-</li>
-<li>
-<p>Stop and remove the existing container:
-    <div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>docker<span class="w"> </span>stop<span class="w"> </span>extralit-quickstart
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>docker<span class="w"> </span>rm<span class="w"> </span>extralit-quickstart
-</span></code></pre></div></p>
-</li>
-<li>
-<p>Start a new container with the updated image:
-    <div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>--name<span class="w"> </span>extralit-quickstart<span class="w"> </span>-p<span class="w"> </span><span class="m">6900</span>:6900<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span>-e<span class="w"> </span><span class="nv">ARGILLA_AUTH_SECRET_KEY</span><span class="o">=</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-hex<span class="w"> </span><span class="m">32</span><span class="k">)</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">  </span>extralit/argilla-quickstart:latest
-</span></code></pre></div></p>
-</li>
+<li>Pull the latest Extralit image:</li>
 </ol>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>docker<span class="w"> </span>pull<span class="w"> </span>extralit/argilla-quickstart:latest
+</span></code></pre></div>
+<ol>
+<li>Stop and remove the existing container:</li>
+</ol>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>docker<span class="w"> </span>stop<span class="w"> </span>extralit-quickstart
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>docker<span class="w"> </span>rm<span class="w"> </span>extralit-quickstart
+</span></code></pre></div>
+<ol>
+<li>Start a new container with the updated image:</li>
+</ol>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>--name<span class="w"> </span>extralit-quickstart<span class="w"> </span>-p<span class="w"> </span><span class="m">6900</span>:6900<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span>-e<span class="w"> </span><span class="nv">ARGILLA_AUTH_SECRET_KEY</span><span class="o">=</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-hex<span class="w"> </span><span class="m">32</span><span class="k">)</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">  </span>extralit/argilla-quickstart:latest
+</span></code></pre></div>
 <h3 id="docker-deployment-update">Docker Deployment Update<a class="headerlink" href="#docker-deployment-update" title="Permanent link">&para;</a></h3>
 <ol>
 <li>
 <p>Update the <code>docker-compose.yml</code> file with the latest Extralit image version.</p>
 </li>
 <li>
-<p>Pull the updated images:
-    <div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>docker-compose<span class="w"> </span>pull
-</span></code></pre></div></p>
-</li>
-<li>
-<p>Restart the services with the new images:
-    <div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>docker-compose<span class="w"> </span>up<span class="w"> </span>-d
-</span></code></pre></div></p>
-</li>
-<li>
-<p>For database schema changes, run migrations:
-    <div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>docker-compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>argilla<span class="w"> </span>argilla_server<span class="w"> </span>database<span class="w"> </span>migrate
-</span></code></pre></div></p>
+<p>Pull the updated images:</p>
 </li>
 </ol>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>docker-compose<span class="w"> </span>pull
+</span></code></pre></div>
+<ol>
+<li>Restart the services with the new images:</li>
+</ol>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>docker-compose<span class="w"> </span>up<span class="w"> </span>-d
+</span></code></pre></div>
+<ol>
+<li>For database schema changes, run migrations:</li>
+</ol>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>docker-compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>argilla<span class="w"> </span>argilla_server<span class="w"> </span>database<span class="w"> </span>migrate
+</span></code></pre></div>
+<p><SwmMeta version="3.0.0"><sup>Powered by <a href="https://app.swimm.io/">Swimm</a></sup></SwmMeta></p>
 
 
 
