@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="These are the how-to guides for the Argilla SDK. They provide step-by-step instructions for common scenarios, including detailed explanations and code samples.">
+        <meta name="description" content="These are the how-to guides for the deployment, configuration, and management of the Extralit server. They provide step-by-step instructions for common scenarios, including detailed explanations and code samples.">
       
       
         <meta name="author" content="Extralit">
@@ -83,7 +83,7 @@
       
         <meta  property="og:title"  content="Administrator Guide - Extralit Docs" >
       
-        <meta  property="og:description"  content="These are the how-to guides for the Argilla SDK. They provide step-by-step instructions for common scenarios, including detailed explanations and code samples." >
+        <meta  property="og:description"  content="These are the how-to guides for the deployment, configuration, and management of the Extralit server. They provide step-by-step instructions for common scenarios, including detailed explanations and code samples." >
       
         <meta  property="og:image"  content="https://docs.extralit.ai/latest/assets/images/social/admin_guide/index.png" >
       
@@ -99,7 +99,7 @@
       
         <meta  name="twitter:title"  content="Administrator Guide - Extralit Docs" >
       
-        <meta  name="twitter:description"  content="These are the how-to guides for the Argilla SDK. They provide step-by-step instructions for common scenarios, including detailed explanations and code samples." >
+        <meta  name="twitter:description"  content="These are the how-to guides for the deployment, configuration, and management of the Extralit server. They provide step-by-step instructions for common scenarios, including detailed explanations and code samples." >
       
         <meta  name="twitter:image"  content="https://docs.extralit.ai/latest/assets/images/social/admin_guide/index.png" >
       
@@ -2550,18 +2550,27 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#basic" class="md-nav__link">
+  <a href="#deployment-and-configuration" class="md-nav__link">
     <span class="md-ellipsis">
-      Basic
+      Deployment and configuration
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#advanced" class="md-nav__link">
+  <a href="#server-management" class="md-nav__link">
     <span class="md-ellipsis">
-      Advanced
+      Server management
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-guides" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced guides
     </span>
   </a>
   
@@ -2594,8 +2603,36 @@
 <blockquote>
 <p><img alt="⚠" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.0.3/assets/svg/26a0.svg" title=":warning:" /> This page is currently under construction. Please check back later for updates.</p>
 </blockquote>
-<p>These guides provide step-by-step instructions for common scenarios, including detailed explanations and code samples. They are divided into two categories: basic and advanced. The basic guides will help you get started with the core concepts of Argilla, while the advanced guides will help you explore more advanced features.</p>
-<h2 id="basic">Basic<a class="headerlink" href="#basic" title="Permanent link">&para;</a></h2>
+<h2 id="deployment-and-configuration">Deployment and configuration<a class="headerlink" href="#deployment-and-configuration" title="Permanent link">&para;</a></h2>
+<div class="grid cards">
+<ul>
+<li>
+<p><strong>Deploy with Docker</strong></p>
+<hr />
+<p>Learn how to deploy Extralit using Docker containers for a quick and easy setup.</p>
+<p><a href="docker_deployment/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.22 19.03a.75.75 0 0 1 0-1.06L18.19 13H3.75a.75.75 0 0 1 0-1.5h14.44l-4.97-4.97a.749.749 0 0 1 .326-1.275.749.749 0 0 1 .734.215l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"/></svg></span> How-to guide</a></p>
+</li>
+<li>
+<p><strong>Deploy with Kubernetes</strong></p>
+<hr />
+<p>Discover how to deploy Extralit on a Kubernetes cluster for scalable and managed environments.</p>
+<p><a href="k8s_deployment/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.22 19.03a.75.75 0 0 1 0-1.06L18.19 13H3.75a.75.75 0 0 1 0-1.5h14.44l-4.97-4.97a.749.749 0 0 1 .326-1.275.749.749 0 0 1 .734.215l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"/></svg></span> How-to guide</a></p>
+</li>
+<li>
+<p><strong>Configure Deployments</strong></p>
+<hr />
+<p>Learn how to configure various deployment options and customize Extralit for your specific needs.</p>
+<p><a href="deployment_configuration.md"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.22 19.03a.75.75 0 0 1 0-1.06L18.19 13H3.75a.75.75 0 0 1 0-1.5h14.44l-4.97-4.97a.749.749 0 0 1 .326-1.275.749.749 0 0 1 .734.215l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"/></svg></span> How-to guide</a></p>
+</li>
+<li>
+<p><strong>Upgrade Extralit</strong></p>
+<hr />
+<p>Find out how to safely upgrade your Extralit installation to the latest version.</p>
+<p><a href="upgrading/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.22 19.03a.75.75 0 0 1 0-1.06L18.19 13H3.75a.75.75 0 0 1 0-1.5h14.44l-4.97-4.97a.749.749 0 0 1 .326-1.275.749.749 0 0 1 .734.215l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"/></svg></span> How-to guide</a></p>
+</li>
+</ul>
+</div>
+<h2 id="server-management">Server management<a class="headerlink" href="#server-management" title="Permanent link">&para;</a></h2>
 <div class="grid cards">
 <ul>
 <li>
@@ -2648,7 +2685,7 @@
 </li>
 </ul>
 </div>
-<h2 id="advanced">Advanced<a class="headerlink" href="#advanced" title="Permanent link">&para;</a></h2>
+<h2 id="advanced-guides">Advanced guides<a class="headerlink" href="#advanced-guides" title="Permanent link">&para;</a></h2>
 <div class="grid cards">
 <ul>
 <li>
