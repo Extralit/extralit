@@ -14,15 +14,33 @@ This guide covers the update process for Extralit across different deployment op
 
 ### Kubernetes Deployment Update
 
-1. Update the service code in the `extralit-server` repository.
-
-2. Rebuild the Python package and Docker image:
+1. Update the code in the `extralit` repository from a release version tag, e.g. `v0.2.2`
 
    ```bash
-   sh scripts/build_distribution.sh
+   git fetch origin tag v0.2.2 && git checkout tags/v0.2.2
    ```
 
-3. Update the Docker image tag in the corresponding Kubernetes YAML file or Helm chart values.
+2. Rebuild the  package, which contains the Argilla server and web interface\
+   \
+   First, build the <SwmToken path="/.github/workflows/argilla-frontend.yml" pos="29:6:8" line-data="        working-directory: argilla-frontend" repo-id="Z2l0aHViJTNBJTNBZXh0cmFsaXQlM0ElM0FleHRyYWxpdA==" repo-name="extralit">`argilla-frontend`</SwmToken> code
+
+   ```bash
+   npm install --prefix argilla-frontend
+   npm run build --prefix argilla-frontend
+   ```
+
+   Finally, build the wheel containing the built <SwmToken path="/.github/workflows/argilla-frontend.yml" pos="60:4:8" line-data="          path: argilla-frontend/dist" repo-id="Z2l0aHViJTNBJTNBZXh0cmFsaXQlM0ElM0FleHRyYWxpdA==" repo-name="extralit">`argilla-frontend/dist`</SwmToken>
+
+   ```bash
+   cp -r argilla-frontend/dist argilla-server/src/argilla_server/static
+   rm -rf argilla-server/dist && python -m build -s argilla-server/
+   ```
+
+3. Rebuild the <SwmToken path="/argilla/pyproject.toml" pos="6:5:5" line-data="name = &quot;extralit&quot;" repo-id="Z2l0aHViJTNBJTNBZXh0cmFsaXQlM0ElM0FleHRyYWxpdA==" repo-name="extralit">`extralit`</SwmToken> Python client package
+
+   ```bash
+   rm -rf argilla/dist && python -m build -s argilla/
+   ```
 
 4. If using Tilt for development:
 
@@ -34,39 +52,43 @@ This guide covers the update process for Extralit across different deployment op
    - Push the updated Docker image to your repository:
 
    ```bash
-   docker push {DOCKER_REPO}/service-name:tag
+   docker push {DOCKER_REPO}/argilla-server:tag
+   docker push {DOCKER_REPO}/extralit-server:tag
    ```
 
    - Apply the updated Kubernetes configuration:
 
    ```bash
-   kubectl apply -f path/to/updated/service-config.yaml -n {NAMESPACE}
+   kubectl apply -f examples/deployments/k8s/argilla-server-deployment.yaml -n {NAMESPACE}
+   kubectl apply -f examples/deployments/k8s/extralit-deployment.yaml -n {NAMESPACE}
    ```
 
 6. Monitor the rollout:
 
    ```bash
-   kubectl rollout status deployment/service-name -n {NAMESPACE}
+   kubectl rollout status deployment/argilla-server-deployment -n {NAMESPACE}
    ```
 
-7. For database schema changes:
+   &nbsp;
 
-   - Run migrations using the `argilla_server` CLI:
+For database schema changes:
 
-   ```bash
-   kubectl exec -it deployment/argilla-server -n {NAMESPACE} -- \
-   argilla_server database migrate
-   ```
+- Run migrations using the `argilla_server` CLI:
 
-8. For frontend updates:
+```bash
+kubectl exec -it deployment/argilla-server-deployment -n {NAMESPACE} -- \
+argilla_server database migrate
+```
 
-   - Rebuild the frontend:
+For frontend updates:
 
-   ```bash
-   sh scripts/build_frontend.sh
-   ```
+- Rebuild the frontend:
 
-   - Trigger a rebuild of the `argilla-server` in the Tilt web interface or reapply the Kubernetes configuration.
+```bash
+sh scripts/build_frontend.sh
+```
+
+- Trigger a rebuild of the `argilla-server` in the Tilt web interface or reapply the Kubernetes configuration.
 
 ### Quickstart Deployment Update
 
