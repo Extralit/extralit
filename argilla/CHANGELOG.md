@@ -16,11 +16,12 @@ These are the section headers that we use:
 
 ## [Unreleased]()
 
-### "Added"
+### Added
 - Added tests and mocks for extralit FastAPI endpoints
 - Added FileHandler for handling file read/write from disk or S3 to document
+- Added Swimm documentation for the extralit project
 
-### "Changed"
+### Changed
 - Changed from "extralit.app:app" to "extralit.server.app:app".
 
 ### Fixed
@@ -29,7 +30,7 @@ These are the section headers that we use:
 
 ## [v0.2.1](https://github.com/extralit/extralit/compare/v0.2.0...v0.2.1)
 
-### "Added"
+### Added
 - Added singleton schema support in SchemaStructure
 - Added .devcontainer for "Docker, Tilt, and K8s" local development on GH Codespaces
 - Added examples/deployments/k8s/extralit-configs.yaml for configuring the extralit service and secrets in a K8s cluster
@@ -37,14 +38,14 @@ These are the section headers that we use:
 - Added pytest-xdist for parallel testing
 - Added docker-compose devcontainer
 
-### "Changed"
+### Changed
 
 - Updated elasticsearch to 8.15.0
 - Changed K8s elasticsearch deployment from Helm to `docker.elastic.co/elasticsearch/elasticsearch` to fix PVC restarting issues
 - Refactored extralit dockerfile and Docker Hub images to `extralit/argilla-server` and `extralit/argilla-quickstart`
 - Changed `develop` branch changes in argilla/docs to `https:/docs.extralit.ai/latest` instead of `dev`
 
-### "Fixed"
+### Fixed
 
 - Fixed Tiltfile and [k8s manifests](examples/deployments/k8s/) for mono-repo setup
 - Fixed creating a new Weaviate collection with Weaviate client v4
@@ -53,7 +54,7 @@ These are the section headers that we use:
 - Fixed extralit CLI with [server] package option
 - Fixed an issue with llama-index v0.11.0
 
-### "Security"
+### Security
 
 - Allow admin role for workspace creation
 
