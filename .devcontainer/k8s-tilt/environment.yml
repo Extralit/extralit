@@ -1,0 +1,29 @@
+name: extralit
+channels:
+  - pytorch
+  - conda-forge
+  - huggingface
+  - defaults
+dependencies:
+  - python~=3.9.7
+  - pip>=2.22.0
+  - pdm
+  # pyparsing 3.0.5 seems to be buggy
+  - pyparsing!=3.0.5
+  # tests
+  - pytest
+  - pytest-cov
+  - pytest-mock
+  - pytest-asyncio==0.21.1 # Pinning version 0.21.1, version 0.23.2 is causing problems with GitHub workflows
+  - pytest-env
+  - factory_boy~=3.2.1
+  # docs, pandoc needs conda ...
+  - pandoc==2.12
+  # we need this to ensure syntax highlighting in the notebook code cells for the docs
+  - ipython<8.0.0
+  - nodejs=18.16.1
+  - pandoc==2.12
+  - uv
+  - pip:
+      - spacy~=3.7.2
+      - https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1.tar.gz

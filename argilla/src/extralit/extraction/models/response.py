@@ -1,15 +1,12 @@
 from typing import Union, List, Dict, Any, Optional
+from pydantic.v1 import BaseModel, validator, Field
+from typing_extensions import TypedDict
 
 import pandas as pd
 import tiktoken
 from llama_index.core import VectorStoreIndex
 from llama_index.core.schema import TextNode
-from extralit.extraction.vector_store import WeaviateVectorStore
 
-from pydantic.v1 import BaseModel, validator, Field
-from typing_extensions import TypedDict
-
-from extralit.extraction.query import get_nodes_metadata
 from extralit.extraction.staging import to_df
 
 
@@ -23,6 +20,9 @@ class BaseModelForLlamaIndexResponse(BaseModel):
 class SourceNode(TypedDict):
     node: Union[TextNode, Dict[str, Union[str, Dict[str, str]]]]
     score: Optional[float]
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class ResponseResult(BaseModel):
@@ -66,6 +66,8 @@ class ResponseResult(BaseModel):
 
         return context_df
 
+    class Config:
+        arbitrary_types_allowed = True
 
 class ResponseResults(BaseModel):
     items: Dict[str, ResponseResult] = Field(default_factory=dict)
@@ -73,8 +75,11 @@ class ResponseResults(BaseModel):
         default_factory=dict, description="Metadata for all nodes in the RAG index")
 
     def init_docs_from_index(self, index: VectorStoreIndex, reference: str):
-        if isinstance(index.vector_store, WeaviateVectorStore):
+        if type(index.vector_store).__name__ == 'WeaviateVectorStore':
+            from extralit.extraction.query import get_nodes_metadata
+            
             weaviate_client = index.vector_store.client
+
             results = get_nodes_metadata(weaviate_client, index_name=index.vector_store.index_name,
                                          properties=['reference', 'header', 'doc_id', 'page_number'],
                                          filters={'reference': reference})
@@ -110,3 +115,6 @@ class ResponseResults(BaseModel):
 
     def __setitem__(self, key, value):
         self.items[key] = value
+
+    class Config:
+        arbitrary_types_allowed = True

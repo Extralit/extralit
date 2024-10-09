@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from argilla_server.contexts import accounts
@@ -29,6 +29,9 @@ router = APIRouter(tags=["Authentication"])
 async def create_access_token(
     db: AsyncSession = Depends(get_async_db), form: UserPasswordRequestForm = Depends()
 ) -> Token:
+    if not form.username or not form.password:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Password cannot be empty")
+
     user = await accounts.authenticate_user(db, form.username, form.password)
     if not user:
         raise UnauthorizedError()

@@ -81,7 +81,7 @@ from argilla_server.schemas.v1.vector_settings import (
 from argilla_server.schemas.v1.vector_settings import (
     VectorSettingsCreate,
 )
-from argilla_server.schemas.v1.documents import DocumentCreate, DocumentListItem
+from argilla_server.schemas.v1.documents import DocumentCreateRequest, DocumentListItem
 from argilla_server.schemas.v1.vectors import Vector as VectorSchema
 from argilla_server.search_engine import SearchEngine
 from argilla_server.validators.responses import (
@@ -807,6 +807,9 @@ async def _build_record_update(
 
     if record_update.suggestions is not None:
         params.pop("suggestions")
+        questions_ids = [suggestion.question_id for suggestion in record_update.suggestions]
+        if len(questions_ids) != len(set(questions_ids)):
+            raise ValueError("found duplicate suggestions question IDs")
         suggestions = await _build_record_suggestions(db, record, record_update.suggestions, caches["questions"])
 
     if record_update.vectors is not None:
@@ -1050,8 +1053,8 @@ async def update_response(
 ):
     ResponseUpdateValidator(response_update).validate_for(response.record)
 
-    if 'duration' in response.values:
-        if 'duration' in response_update.values:
+    if response.values and 'duration' in response.values:
+        if response_update.values and 'duration' in response_update.values:
             response_update.values['duration'].value = \
                 response.values['duration']['value'] + response_update.values['duration'].value
         else:
@@ -1079,14 +1082,6 @@ async def upsert_response(
     db: AsyncSession, search_engine: SearchEngine, record: Record, user: User, response_upsert: ResponseUpsert
 ) -> Response:
     ResponseUpsertValidator(response_upsert).validate_for(record)
-
-    if 'duration' in response.values:
-        if 'duration' in response_update.values:
-            response_update.values['duration'].value = \
-                response.values['duration']['value'] + response_update.values['duration'].value
-        else:
-            response_update.values['duration'] = ResponseValueUpdate(value=response.values['duration']['value'])
-
 
     schema = {
         "values": jsonable_encoder(response_upsert.values),
@@ -1203,7 +1198,6 @@ async def get_suggestion_by_id(db: AsyncSession, suggestion_id: "UUID") -> Union
         .options(
             selectinload(Suggestion.record).selectinload(Record.dataset),
             selectinload(Suggestion.question),
-            selectinload(Suggestion.type),
         )
     )
 
@@ -1219,7 +1213,6 @@ async def list_suggestions_by_id_and_record_id(
         .options(
             selectinload(Suggestion.record).selectinload(Record.dataset),
             selectinload(Suggestion.question),
-            selectinload(Suggestion.type),
         )
     )
 
@@ -1243,7 +1236,7 @@ async def get_metadata_property_by_id(db: AsyncSession, metadata_property_id: UU
     return result.scalar_one_or_none()
 
 
-async def create_document(db: "AsyncSession", dataset_create: DocumentCreate) -> DocumentListItem:
+async def create_document(db: "AsyncSession", dataset_create: DocumentCreateRequest) -> DocumentListItem:
     document = await Document.create(
         db,
         id=dataset_create.id,

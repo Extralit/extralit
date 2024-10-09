@@ -20,7 +20,6 @@ extra:
     provider: google
     property: G-SQHP22W3F6
 
-
 extra_css:
   - stylesheets/extra.css
 
@@ -94,8 +93,10 @@ markdown_extensions:
   - tables
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
-      emoji_generator: !!python/name:material.extensions.emoji.to_svg
-  # activating permalink: true makes the anchor link works in the notebooks
+      emoji_generator:
+        !!python/name:material.extensions.emoji.to_svg # activating permalink: true makes the anchor link works in the notebooks
+
+
   - toc:
       permalink: true
 
@@ -107,90 +108,101 @@ plugins:
         - docs/scripts/gen_changelog.py
         # - docs/scripts/gen_popular_issues.py
         # - docs/scripts/gen_ref_pages.py
+      enabled: !ENV [CI, false] # enables the plugin only during continuous integration (CI), disabled on local build
   - literate-nav:
       nav_file: SUMMARY.md
   - section-index
   - mkdocstrings:
       handlers:
         python:
-          selection:
-            inherited_members: true # Allow looking up inherited methods
-          rendering:
-            show_root_toc_entry: true
-            show_root_heading: true # actually display anything at all...
-            # show_root_full_path: true  # display "diffrax.asdf" not just "asdf"
-            show_if_no_docstring: true
-            show_signature_annotations: true
-            show_source: false # don't include source code
+          options:
+            show_inheritance_diagram: false
+            show_source: true # include source code
+            # Headings
+            heading_level: 3
+            show_root_heading: true # show the python path of the class
+            show_root_toc_entry: true # show the toc entry for the root class
+            show_root_full_path: false # display "diffrax.asdf" not just "asdf"
+            show_object_full_path: false # display "diffrax.asdf" not just "asdf"
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            # Members
+            inherited_members: true # allow looking up inherited methods
             members_order: source # order methods according to their order of definition in the source code, not alphabetical order
-            heading_level: 4
-            # hide private members
-            private: true
-  - social
-  # - mknotebooks
+            show_labels: true
+            # Docstring
+            docstring_style: google # more info: https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html
+            show_if_no_docstring: false
+            # Signature
+            separate_signature: false
+            show_signature_annotations: false
+  - social:
+      enabled: !ENV [CI, false] # enables the plugin only during continuous integration (CI), disabled on local build
+  - mknotebooks
 
 # Documentation Structure
 nav:
   - Overview: index.md
+
   - Getting Started:
       - Installation: getting_started/installation.md
       - Quickstart: getting_started/quickstart.md
       - Deploy with Docker: getting_started/how-to-deploy-argilla-with-docker.md
       - Deploy with Hugging Face Spaces: getting_started/how-to-configure-argilla-on-huggingface.md
+
   - User Guide:
       - user_guide/index.md
       - Core concepts: user_guide/core_concepts.md
       - Data Pipeline:
-        - Documents import: user_guide/documents_import.md
-        - Schema definition: user_guide/schema_definition.md
-        - Text and table OCR: user_guide/text_table_ocr.md
-        - LLM-assisted extraction: user_guide/llm_extraction.md
-        - Consensus review: user_guide/consensus_review.md
-        - Data validation: user_guide/data_validation.md
-        - Extraction status: user_guide/extraction_status.md
+          - Documents import: user_guide/documents_import.md
+          - Schema definition: user_guide/schema_definition.md
+          - Text and table OCR: user_guide/text_table_ocr.md
+          - LLM-assisted extraction: user_guide/llm_extraction.md
+          - Consensus review: user_guide/consensus_review.md
+          - Data validation: user_guide/data_validation.md
+          - Extraction status: user_guide/extraction_status.md
       - User Interface:
-        - Navigation and layout: user_guide/navigation_layout.md
-        - Create and manage workspace: user_guide/create_manage_workspace.md
-        - Search and filter records: user_guide/search_filter.md
-        - Performing extractions: user_guide/performing_extractions.md
-        - Reviewing and validating data: user_guide/review_validate_data.md
+          - Navigation and layout: user_guide/navigation_layout.md
+          - Create and manage workspace: user_guide/create_manage_workspace.md
+          - Search and filter records: user_guide/search_filter.md
+          - Performing extractions: user_guide/performing_extractions.md
+          - Reviewing and validating data: user_guide/review_validate_data.md
       - Advanced Usage:
-        - Customizing multiple extraction schemas: user_guide/multi_schemas.md
-        - Optimizing LLM performance: user_guide/optimizing_llm_performance.md
-        - Using the API: user_guide/using_the_api.md
+          - Customizing multiple extraction schemas: user_guide/multi_schemas.md
+          - Optimizing LLM performance: user_guide/optimizing_llm_performance.md
+          - Using the API: user_guide/using_the_api.md
 
   - Administrator Guide:
       - admin_guide/index.md
       - Setup & Deployment:
-        - Installation & configuration: admin_guide/installation.md
-        - K8s deployment: admin_guide/k8s_deployment.md
-        - Database setup: admin_guide/configuration.md
-        - File storage configuration: admin_guide/file_storage.md
+          - HF Spaces & Docker deployment: admin_guide/docker_deployment.md
+          - K8s deployment: admin_guide/k8s_deployment.md
+          - Upgrading: admin_guide/upgrading.md
+          # - File storage configuration: admin_guide/file_storage.md
       - Server Management:
-        - Developer installation: admin_guide/installation.md
-        - Manage users and credentials: admin_guide/user.md
-        - Manage workspaces: admin_guide/workspace.md
-        - Create, update and delete datasets: admin_guide/dataset.md
-        - Add, update, and delete records: admin_guide/record.md
-        - Distribute the annotation task: admin_guide/distribution.md
-        - Annotate datasets: admin_guide/annotate.md
-        - Query and filter records: admin_guide/query.md
-        - Import and export datasets: admin_guide/import_export.md
+          - Manage users and credentials: admin_guide/user.md
+          - Manage workspaces: admin_guide/workspace.md
+          - Create, update and delete datasets: admin_guide/dataset.md
+          - Add, update, and delete records: admin_guide/record.md
+          - Distribute the annotation task: admin_guide/distribution.md
+          - Annotate datasets: admin_guide/annotate.md
+          - Query and filter records: admin_guide/query.md
+          - Import and export datasets: admin_guide/import_export.md
       - Advanced:
-        - Use Markdown to format rich content: admin_guide/use_markdown_to_format_rich_content.md
-        - Migrate your legacy datasets to Argilla V2: admin_guide/migrate_from_legacy_datasets.md
+          - Use Markdown to format rich content: admin_guide/use_markdown_to_format_rich_content.md
+          - Migrate your legacy datasets to Argilla V2: admin_guide/migrate_from_legacy_datasets.md
+
   - Tutorials:
       - tutorials/index.md
   - API Reference:
-      - Python SDK: reference/argilla/
+      - Argilla Python SDK: reference/argilla/
       - FastAPI Server:
-        - Server configuration: reference/argilla-server/configuration.md
+          - Server configuration: reference/argilla-server/configuration.md
       - Telemetry:
-        - Server Telemetry: reference/argilla-server/telemetry.md
+          - Server Telemetry: reference/argilla-server/telemetry.md
   - FAQ: getting_started/faq.md
   - Community:
       - community/index.md
       - How to contribute?: community/contributor.md
       - Issue dashboard: community/popular_issues.md
       - Changelog: community/changelog.md
-

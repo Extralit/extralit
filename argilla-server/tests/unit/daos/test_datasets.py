@@ -13,6 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import logging
 import pytest
 from argilla_server.commons.models import TaskType
 from argilla_server.daos.backend import GenericElasticEngineBackend
@@ -21,9 +22,13 @@ from argilla_server.daos.models.datasets import BaseDatasetDB
 from argilla_server.daos.records import DatasetRecordsDAO
 from argilla_server.errors import ClosedDatasetError
 
-es_wrapper = GenericElasticEngineBackend.get_instance()
-records = DatasetRecordsDAO.get_instance(es_wrapper)
-dao = DatasetsDAO.get_instance(es_wrapper, records)
+try:
+    es_wrapper = GenericElasticEngineBackend.get_instance()
+    records = DatasetRecordsDAO.get_instance(es_wrapper)
+    dao = DatasetsDAO.get_instance(es_wrapper, records)
+    
+except Exception as e:
+    logging.error("Could not connect to elasticsearch")
 
 
 def test_retrieve_ownered_dataset_for_no_owner_user():

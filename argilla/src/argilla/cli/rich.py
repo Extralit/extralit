@@ -14,6 +14,7 @@
 
 from typing import TYPE_CHECKING, Any
 
+import pandas as pd
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
@@ -37,3 +38,11 @@ def get_argilla_themed_panel(renderable: "RenderableType", title: str, success: 
 
 def echo_in_panel(renderable: "RenderableType", title: str, success: bool = True, **kwargs: Any) -> None:
     Console().print(get_argilla_themed_panel(renderable, title, success, **kwargs))
+
+
+def console_table_to_pandas_df(table: Table) -> pd.DataFrame:
+    data = {}
+    for col in table.columns:
+        data[col.header] = [cell for cell in col.cells]
+
+    return pd.DataFrame.from_dict(data, orient='columns')

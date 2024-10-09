@@ -63,6 +63,7 @@ class TestSuiteArgillaDatasetCard:
                     FloatMetadataProperty(name="price", min=0, max=100),
                 ],
                 [VectorSettings(name="float-vector", dimensions=2)],
+                
                 FeedbackRecord(
                     fields={"text-field": "text"},
                     responses=[
@@ -112,9 +113,9 @@ class TestSuiteArgillaDatasetCard:
         fields: List["AllowedFieldTypes"],
         questions: List["AllowedQuestionTypes"],
         guidelines: str,
+        metadata_properties: List[AllowedMetadataPropertyTypes],
         vectors_settings: List[VectorSettings],
         record: FeedbackRecord,
-        metadata_properties: List[AllowedMetadataPropertyTypes],
     ) -> None:
         card = ArgillaDatasetCard.from_template(
             card_data=DatasetCardData(

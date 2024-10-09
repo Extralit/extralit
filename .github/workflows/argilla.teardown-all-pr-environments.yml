@@ -1,14 +1,15 @@
 name: Teardown all the PR environments
 
 on:
-  schedule:
-    - cron: "0 8,20 * * *" # every day at 8:00 and 20:00 UTC
+  workflow_dispatch:
+  # schedule:
+  #   - cron: "0 8,20 * * *" # every day at 8:00 and 20:00 UTC
 
 jobs:
   teardown_pr_environments:
     name: Teardown Cloud Run PR environments
     runs-on: ubuntu-latest
-
+    
     # Grant permissions to `GITHUB_TOKEN` for Google Cloud Workload Identity Provider
     permissions:
       contents: read

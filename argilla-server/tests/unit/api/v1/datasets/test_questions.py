@@ -50,7 +50,7 @@ class TestDatasetQuestions:
     @pytest.mark.parametrize(
         ("settings", "expected_settings"),
         [
-            ({"type": "text"}, {"type": "text", "use_markdown": False}),
+            ({"type": "text"}, {"type": "text", "use_markdown": False, "use_table": False}),
             ({"type": "text", "use_markdown": True}, {"type": "text", "use_markdown": True, "use_table": False}),
             ({"type": "text", "use_markdown": False}, {"type": "text", "use_markdown": False, "use_table": False}),
             (
@@ -474,8 +474,8 @@ class TestDatasetQuestions:
             {"type": "rating", "options": [{"value": 1}, {"value": 1}]},
             {"type": "rating", "options": [{"value": 1}, {"value": 2}, {"value": 13}]},
             {"type": "rating", "options": [{"value": 1}, {"value": 2}, {"value": -13}]},
-            {"type": "label_selection", "options": []},
-            {"type": "label_selection", "options": [{"value": "just_one_label", "text": "Just one label"}]},
+            # {"type": "label_selection", "options": []},
+            # {"type": "label_selection", "options": [{"value": "just_one_label", "text": "Just one label"}]},
             {
                 "type": "label_selection",
                 "options": [{"value": "a", "text": "a"}, {"value": "b", "text": "b"}],

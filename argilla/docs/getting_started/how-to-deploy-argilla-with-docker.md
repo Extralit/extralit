@@ -14,12 +14,12 @@ mkdir argilla && cd argilla
 Download `docker-compose.yaml`:
 
 ```console
-wget -O docker-compose.yaml https://raw.githubusercontent.com/argilla-io/argilla/main/examples/deployments/docker/docker-compose.yaml
+wget -O docker-compose.yaml https://raw.githubusercontent.com/extralit/extralit/main/examples/deployments/docker/docker-compose.yaml
 ```
 
 or using curl:
 ```console
-curl https://raw.githubusercontent.com/argilla-io/argilla/main/examples/deployments/docker/docker-compose.yaml -o docker-compose.yaml
+curl https://raw.githubusercontent.com/extralit/extralit/main/examples/deployments/docker/docker-compose.yaml -o docker-compose.yaml
 ```
 
 Run to deploy the server on `http://localhost:6900`:

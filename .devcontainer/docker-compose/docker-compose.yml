@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  devcontainer:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env.dev
+    volumes:
+      - ../../..:/workspaces:cached      
+    command: ["sh", "-c", "trap 'exit 0' SIGTERM; while :; do sleep 1; done"]
+    depends_on:
+      - elasticsearch
+      - postgres
+      - minio
+    network_mode: host
+      
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      discovery.type: single-node
+      network.host: 0.0.0.0
+      xpack.security.enabled: false
+      xpack.security.transport.ssl.enabled: false
+      xpack.security.http.ssl.enabled: false
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+    network_mode: host
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:14
+    environment:
+      POSTGRES_HOST: localhost
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: argilla
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5432:5432"
+    network_mode: host
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    restart: unless-stopped
+
+  minio:
+    image: quay.io/minio/minio:RELEASE.2024-08-29T01-40-52Z
+    command: minio server /data --console-address :9090
+    env_file:
+      - .env.dev
+    ports:
+      - "9000:9000"
+    network_mode: host
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  weaviate:
+    image: cr.weaviate.io/semitechnologies/weaviate:1.26.4
+    environment:
+      QUERY_DEFAULTS_LIMIT: 20
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true'
+    ports:
+      - "8080:8080"
+      - "50051:50051"
+    network_mode: host
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/v1/.well-known/live || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+networks:
+  argilla:
+    driver: bridge

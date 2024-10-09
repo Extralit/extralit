@@ -16,7 +16,7 @@ import os
 from pathlib import Path
 from typing import Dict, Optional
 
-from argilla.client.sdk.commons.errors import HttpResponseError, UnauthorizedApiError
+from argilla.client.sdk.commons.errors import HttpResponseError, UnauthorizedApiError, WrongResponseError
 from argilla.client.singleton import init
 from argilla.pydantic_v1 import AnyHttpUrl, BaseModel
 
@@ -81,8 +81,10 @@ def login(
         raise ValueError(
             f"Could not reach '{api_url}', make sure that the Argilla Server is running and working as expected"
         ) from e
+    except WrongResponseError as e:
+        raise ValueError(f"Could not login to '{api_url}'. Ensure proper https or http protocol in the API URL") from e
     except UnauthorizedApiError as e:
-        raise ValueError(f"Could not login in '{api_url}' using provided credentials") from e
+        raise ValueError(f"Could not login to '{api_url}' using provided credentials") from e
 
     if not ARGILLA_CACHE_DIR.exists():
         ARGILLA_CACHE_DIR.mkdir(parents=True)

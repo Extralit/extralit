@@ -55,7 +55,7 @@ RANKING_OPTIONS_MAX_ITEMS = 50
 RATING_OPTIONS_MIN_ITEMS = 2
 RATING_OPTIONS_MAX_ITEMS = 20
 RATING_VALUE_GREATER_THAN_OR_EQUAL = 0
-RATING_VALUE_LESS_THAN_OR_EQUAL = 100
+RATING_VALUE_LESS_THAN_OR_EQUAL = 10
 
 SPAN_OPTIONS_MIN_ITEMS = 1
 SPAN_MIN_VISIBLE_OPTIONS = 3
@@ -199,6 +199,15 @@ class LabelSelectionSettingsUpdate(UpdateSchema):
             max_items=settings.label_selection_options_max_items,
         )
     ]
+
+    @root_validator(skip_on_failure=True)
+    def check_visible_options_value(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        visible_options = values.get("visible_options")
+        if visible_options is not None and "dynamic" not in values.get("type", '') and visible_options < LABEL_SELECTION_MIN_VISIBLE_OPTIONS:
+            raise ValueError(
+                f"The value for 'visible_options' must be greater than or equal to {LABEL_SELECTION_MIN_VISIBLE_OPTIONS}"
+            )
+        return values
 
 
 # Multi-label selection question

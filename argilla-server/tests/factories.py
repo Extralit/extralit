@@ -32,11 +32,17 @@ from argilla_server.models import (
     VectorSettings,
     Workspace,
     WorkspaceUser,
+    Document,
 )
+from argilla_server.schemas.v1.files import ObjectMetadata
 from argilla_server.models.base import DatabaseModel
 from factory.alchemy import SESSION_PERSISTENCE_COMMIT, SESSION_PERSISTENCE_FLUSH
 from factory.builder import BuildStep, StepBuilder, parse_declarations
 from sqlalchemy.ext.asyncio import async_object_session
+from argilla_server.contexts.files import get_minio_client
+from minio.error import S3Error
+from minio.versioningconfig import VersioningConfig
+from minio.commonconfig import ENABLED
 
 from tests.database import SyncTestSession, TestSession
 
@@ -157,6 +163,22 @@ class WorkspaceFactory(BaseFactory):
         model = Workspace
 
     name = factory.Sequence(lambda n: f"workspace-{n}")
+
+    @classmethod
+    async def create_with_s3(cls, **kwargs):
+        # Create the Workspace instance
+        workspace = await cls.create(**kwargs)
+        
+        client = get_minio_client()
+
+        if not client.bucket_exists(workspace.name):
+            try:
+                client.make_bucket(workspace.name)
+                client.set_bucket_versioning(workspace.name, VersioningConfig(ENABLED))
+            except S3Error as err:
+                raise RuntimeError(f"Error creating bucket: {err}") from err
+        
+        return workspace
 
 
 class WorkspaceSyncFactory(BaseSyncFactory):
@@ -391,3 +413,53 @@ class SuggestionFactory(BaseFactory):
     record = factory.SubFactory(RecordFactory)
     question = factory.SubFactory(QuestionFactory)
     value = "negative"
+
+
+class DocumentFactory(BaseFactory):
+    class Meta:
+        model = Document
+
+    reference = factory.Sequence(lambda n: f"document-{n}")
+    pmid = factory.Sequence(lambda n: f"pmid-{n}")
+    doi = factory.Sequence(lambda n: f"doi-{n}")
+    url = factory.Sequence(lambda n: f"url-{n}")
+    file_name = factory.Sequence(lambda n: f"file-name-{n}")
+    workspace = factory.SubFactory(WorkspaceFactory)
+
+class MinioFileFactory(factory.Factory):
+    class Meta:
+        model = ObjectMetadata
+
+    bucket_name = "workspace"
+    object_name = factory.Sequence(lambda n: f"file-{n}.txt")
+
+    @factory.post_generation
+    def upload_to_minio(self, create, extracted, **kwargs):
+        client = get_minio_client()
+        if not create:
+            return
+
+        # Create the bucket if not already exist
+        if not client.bucket_exists(self.bucket_name):
+            try:
+                client.make_bucket(self.bucket_name)
+                client.set_bucket_versioning(self.bucket_name, VersioningConfig(ENABLED))
+            except S3Error as err:
+                raise RuntimeError(f"Error creating bucket: {err}") from err
+
+        # Create a dummy file
+        file_path = f"/tmp/{self.object_name.replace('/', '_')}"
+        with open(file_path, "w") as f:
+            f.write("test data")
+
+        # Upload the file to Minio
+        try:
+            result = client.fput_object(
+                self.bucket_name,
+                self.object_name,
+                file_path=file_path
+            )
+
+            self.version_id = result.version_id
+        except S3Error as err:
+            raise RuntimeError(f"Error uploading file to Minio: {err}") from err

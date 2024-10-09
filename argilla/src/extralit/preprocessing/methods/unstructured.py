@@ -11,8 +11,9 @@ from extralit.preprocessing.segment import TableSegment, FigureSegment, TextSegm
 from extralit.preprocessing.tables import table_extraction_qc, get_table_header_footer
 
 
-def get_table_segments(elements: List[Element], max_caption_look_head=5, output_dir=None,
-                       redo=False) -> Segments:
+def get_table_segments(
+    elements: List[Element], max_caption_look_head=5, output_dir=None, redo=False
+) -> Segments:
     try:
         pdf_path = join(elements[0].metadata.file_directory, elements[0].metadata.filename)
         page_image = convert_from_path(pdf_path, dpi=450)
@@ -71,8 +72,9 @@ def get_table_segments(elements: List[Element], max_caption_look_head=5, output_
     return tables
 
 
-def get_figure_segments(elements: List[Element], skip_empty_header=True, max_caption_look_head=5) \
-        -> Segments:
+def get_figure_segments(
+    elements: List[Element], skip_empty_header=True, max_caption_look_head=5
+) -> Segments:
     figures = Segments()
     captions_taken = set()
     for i, elem in enumerate(elements):

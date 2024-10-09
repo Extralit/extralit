@@ -79,7 +79,6 @@ class UsersMigrator:
 
         user_create = self._build_user_create(user)
 
-        # Check if a document with the same pmid, url, or doi already exists
         existing_user = await session.execute(
             select(User).where(User.username == user_create.username).options(selectinload(User.workspaces))
         )

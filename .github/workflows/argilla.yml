@@ -1,7 +1,7 @@
 name: Build Argilla package
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.sha }}
   cancel-in-progress: true
 
 on:
@@ -17,7 +17,7 @@ on:
       - releases/**
     paths:
       - "argilla/**"
-      - ".github/workflows/**"
+      - ".github/workflows/argilla.*"
 
   pull_request:
     paths:
@@ -98,6 +98,13 @@ jobs:
 
       - name: Upload Coverage reports to Codecov 📦
         uses: codecov/codecov-action@v2
+        with:
+          flags: argilla
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
         with:
           flags: argilla
           token: ${{ secrets.CODECOV_TOKEN }}

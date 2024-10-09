@@ -43,8 +43,9 @@ def natural_sort_key_generator(s: pd.Series) -> np.ndarray:
     return np.argsort(index_natsorted(s.fillna(fill_value)))
 
 
-def reorder_rows(true_df: pd.DataFrame, pred_df: pd.DataFrame, index_columns: List[str] = None, verbose=False) \
-        -> Tuple[pd.DataFrame, pd.DataFrame]:
+def reorder_rows(
+    true_df: pd.DataFrame, pred_df: pd.DataFrame, index_columns: List[str] = None, verbose=False
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
     Ensure the same row orders by determining the columns for sorting
 
@@ -74,10 +75,11 @@ def reorder_rows(true_df: pd.DataFrame, pred_df: pd.DataFrame, index_columns: Li
     return true_df, pred_df
 
 
-def convert_metrics_to_df(metrics: Dict[str, float],
-                          format: Literal['series', 'dataframe'] = 'series',
-                          n_levels=2) \
-        -> Union[pd.Series, pd.DataFrame]:
+def convert_metrics_to_df(
+    metrics: Dict[str, float],
+    format: Literal['series', 'dataframe'] = 'series',
+    n_levels=2
+) -> Union[pd.Series, pd.DataFrame]:
     if format in {'series', 'dataframe'}:
         metrics = pd.Series(metrics)
         metrics.index = metrics.index.str.split('_', n=n_levels, expand=True)

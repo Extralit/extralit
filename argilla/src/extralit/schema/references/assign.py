@@ -49,14 +49,14 @@ def get_prefix(schema: pa.DataFrameSchema):
 
 
 def assign_unique_index(
-        df: pd.DataFrame,
-        schema: pa.DataFrameSchema,
-        index_name: str = "reference",
-        prefix: Optional[str] = '',
-        suffix: str = '',
-        n_digits=2,
-        drop_duplicates=False) \
-        -> pd.DataFrame:
+    df: pd.DataFrame,
+    schema: pa.DataFrameSchema,
+    index_name: str = "reference",
+    prefix: Optional[str] = '',
+    suffix: str = '',
+    n_digits=2,
+    drop_duplicates=False
+) -> pd.DataFrame:
     """
     Assign unique reference keys to each entity in `df` of the `model` schema, by enumerating the unique entities.
 

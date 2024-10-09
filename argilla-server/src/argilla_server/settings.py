@@ -176,10 +176,7 @@ class Settings(BaseSettings):
                 return re.sub(regex, "sqlite+aiosqlite", database_url)
 
         if "postgres" in database_url:
-            if "postgres://" in database_url:
-                raise ValueError("The database URL must use 'postgresql://' protocol, not 'postgres://'.")
-
-            regex = re.compile(r"postgresql(?!\+asyncpg)(\+psycopg2)?")
+            regex = re.compile(r"^postgres(?:ql)?(?!\+asyncpg)(\+psycopg2)?")
             if regex.match(database_url):
                 warnings.warn(
                     "From version 1.14.0, Argilla will use `asyncpg` as default PostgreSQL driver. The protocol in the"

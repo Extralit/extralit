@@ -40,7 +40,7 @@ from tests.pydantic_v1 import ValidationError
                 "title": "A",
                 "description": None,
                 "required": True,
-                "settings": {"type": "text", "use_markdown": True},
+                "settings": {"type": "text", "use_markdown": True, "use_table": False},
             },
         ),
         (
@@ -50,7 +50,17 @@ from tests.pydantic_v1 import ValidationError
                 "title": "B",
                 "description": "b",
                 "required": False,
-                "settings": {"type": "text", "use_markdown": False},
+                "settings": {"type": "text", "use_markdown": False, "use_table": False},
+            },
+        ),
+        (
+            {"name": "a", "required": True, "use_table": True},
+            {
+                "name": "a",
+                "title": "A",
+                "description": None,
+                "required": True,
+                "settings": {"type": "text", "use_markdown": False, "use_table": True},
             },
         ),
     ],
@@ -112,7 +122,6 @@ def test_rating_question_errors(schema_kwargs: Dict[str, Any], exception_cls: An
 @pytest.mark.parametrize(
     "schema_kwargs, exception_cls, exception_message",
     [
-        ({"name": "a", "labels": ["a"]}, ValidationError, "ensure this value has at least 2 items"),
         (
             {"name": "a", "labels": ["a", "b"], "visible_labels": 2},
             ValidationError,

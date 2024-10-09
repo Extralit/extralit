@@ -28,7 +28,7 @@ down_revision = "8c574ada5e5f"
 branch_labels = None
 depends_on = None
 
-suggestion_type_enum = sa.Enum("model", "human", name="suggestion_type_enum")
+suggestion_type_enum = sa.Enum("model", "human", "selection", name="suggestion_type_enum")
 
 
 def upgrade() -> None:
@@ -47,7 +47,7 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(["question_id"], ["questions.id"], ondelete="CASCADE"),
         sa.ForeignKeyConstraint(["record_id"], ["records.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("record_id", "question_id", "type", "agent", name="suggestion_record_id_question_id_uq"),
+        sa.UniqueConstraint("record_id", "question_id", name="suggestion_record_id_question_id_uq"),
     )
     op.create_index(op.f("ix_suggestions_question_id"), "suggestions", ["question_id"], unique=False)
     op.create_index(op.f("ix_suggestions_record_id"), "suggestions", ["record_id"], unique=False)

@@ -7,8 +7,9 @@ from PIL import Image
 from extralit.preprocessing.segment import Coordinates
 
 
-def extract_image(pdf_page: Image, coordinates: Coordinates, title: str, output_dir: Path, pad=20, redo=False) \
-        -> Optional[str]:
+def extract_image(
+    pdf_page: Image, coordinates: Coordinates, title: str, output_dir: Path, pad=20, redo=False
+) -> Optional[str]:
     if not coordinates or not coordinates.points:
         return None
 

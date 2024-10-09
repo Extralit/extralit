@@ -15,12 +15,13 @@ from extralit.extraction.models.response import ResponseResults
 _LOGGER = logging.getLogger(__name__)
 
 
-def create_extraction_records(paper_extractions: Dict[str, PaperExtraction],
-                              papers: pd.DataFrame,
-                              responses: Optional[Dict[str, ResponseResults]]=None,
-                              dataset: RemoteFeedbackDataset = None,
-                              metadata: Optional[Dict[str,str]]=None) \
-        -> List[rg.FeedbackRecord]:
+def create_extraction_records(
+    paper_extractions: Dict[str, PaperExtraction],
+    papers: pd.DataFrame,
+    responses: Optional[Dict[str, ResponseResults]]=None,
+    dataset: RemoteFeedbackDataset = None,
+    metadata: Optional[Dict[str,str]]=None
+) -> List[rg.FeedbackRecord]:
     """
     Push the extractions to the Argilla (Preprocessing) FeedbackDataset.
 
@@ -119,12 +120,11 @@ def create_extraction_records(paper_extractions: Dict[str, PaperExtraction],
 
 
 def create_publication_records(
-        papers: pd.DataFrame,
-        schema: pa.DataFrameSchema,
-        dataset: RemoteFeedbackDataset,
-        embed_model='text-embedding-3-large',
-        ) \
-        -> List[rg.FeedbackRecord]:
+    papers: pd.DataFrame,
+    schema: pa.DataFrameSchema,
+    dataset: RemoteFeedbackDataset,
+    embed_model='text-embedding-3-large',
+) -> List[rg.FeedbackRecord]:
     """
     Push the publications to the Argilla (Preprocessing) FeedbackDataset.
     """

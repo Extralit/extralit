@@ -77,7 +77,9 @@ def test_argilla_credentials_remove_raises_error(mocker: "MockFixture"):
         login.ArgillaCredentials.remove()
 
 
-def test_argilla_credentials_load_raises_error():
+def test_argilla_credentials_load_raises_error(mocker: "MockFixture"):
+    path_mock = mocker.patch.object(login.ArgillaCredentials, "exists")
+    path_mock.return_value = False
     with pytest.raises(FileNotFoundError):
         login.ArgillaCredentials.load()
 
