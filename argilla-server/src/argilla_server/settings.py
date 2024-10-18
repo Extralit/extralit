@@ -22,7 +22,7 @@ import re
 import warnings
 from pathlib import Path
 from typing import List, Optional
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlunparse
 
 from argilla_server.constants import (
     DEFAULT_LABEL_SELECTION_OPTIONS_MAX_ITEMS,
@@ -176,15 +176,20 @@ class Settings(BaseSettings):
                 return re.sub(regex, "sqlite+aiosqlite", database_url)
 
         if "postgres" in database_url:
-            regex = re.compile(r"^postgres(?:ql)?(?!\+asyncpg)(\+psycopg2)?")
-            if regex.match(database_url):
+            parsed_url = urlparse(database_url)
+            if parsed_url.scheme in ["postgres", "postgresql"]:
                 warnings.warn(
                     "From version 1.14.0, Argilla will use `asyncpg` as default PostgreSQL driver. The protocol in the"
                     " provided database URL has been automatically replaced from `postgresql` to `postgresql+asyncpg`."
                     " Please, update your database URL to use `postgresql+asyncpg` protocol."
                 )
-                return re.sub(regex, "postgresql+asyncpg", database_url)
+                new_scheme = "postgresql+asyncpg"
+                database_url = urlunparse(parsed_url._replace(scheme=new_scheme))
 
+            if not database_url.startswith('postgresql+asyncpg://'):
+                raise ValueError("Invalid database URL format. Expected format: 'postgresql+asyncpg://...'")
+            
+        logging.debug(f"Using database URL: {database_url}")
         return database_url
     
     @root_validator(pre=True)

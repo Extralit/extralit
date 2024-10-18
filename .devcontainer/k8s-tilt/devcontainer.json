@@ -4,7 +4,7 @@
   "name": "Docker & Tilt for K8s development",
 
   "build": { 
-    "context": "..",
+    "context": ".",
     "dockerfile": "Dockerfile"
   },
   
@@ -60,7 +60,7 @@
 
   },
 
-  "postCreateCommand": "/workspaces/setup.sh",
+  "postCreateCommand": "/workspace/setup.sh",
   
   "hostRequirements": {
     "cpus": 4,
