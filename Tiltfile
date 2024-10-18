@@ -45,6 +45,10 @@ k8s_resource(
 )
 
 # argilla-server is the web backend (FastAPI + SQL database)
+if not os.path.exists('argilla-frontend/dist'):
+    local('npm install && npm run build', dir='argilla-frontend')
+if not os.path.exists('argilla-server/src/argilla_server/static'):
+    local('cp -r argilla-frontend/dist argilla-server/src/argilla_server/static')
 if not os.path.exists('argilla-server/dist/'):
     local('pdm build', dir='argilla-server')
 docker_build(
@@ -58,6 +62,7 @@ docker_build(
         sync('argilla-server/src/', '/home/argilla/src/'),
         sync('argilla-server/docker/server/scripts/start_argilla_server.sh', '/home/argilla/'),
         sync('argilla-server/pyproject.toml', '/home/argilla/pyproject.toml'),
+        sync('argilla-frontend/dist/', '/home/argilla/src/argilla_server/static/'),
         # Restart the server to pick up code changes
         run('/bin/bash start_argilla_server.sh', trigger='argilla-server/docker/server/scripts/start_argilla_server.sh'),
     ]
