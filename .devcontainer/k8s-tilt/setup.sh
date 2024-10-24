@@ -26,7 +26,7 @@ else
 fi
 
 # Set up cron job to prune Docker builder cache every 30minutes to clean up disk space
-(crontab -l ; echo "*/30 * * * * /workspace/prune_docker.sh") | crontab -
+(crontab -l ; echo "*/15 * * * * /workspace/prune_docker.sh") | crontab -
 
 # Check if the upstream remote already exists
 git config --global --add safe.directory /workspaces/extralit

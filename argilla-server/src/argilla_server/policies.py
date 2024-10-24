@@ -214,7 +214,7 @@ class FilePolicy:
     @classmethod
     def get(cls, workspace_name: str) -> PolicyAction:
         async def is_allowed(actor: User) -> bool:
-            return await _exists_workspace_user_by_user_and_workspace_name(actor, workspace_name)
+            return actor.is_owner or await _exists_workspace_user_by_user_and_workspace_name(actor, workspace_name)
 
         return is_allowed
     
