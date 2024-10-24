@@ -14,9 +14,20 @@ These are the section headers that we use:
 * "Security" in case of vulnerabilities.
 -->
 
+## [Unreleased]()
+
+### Added
+
+### Changed
+
+### Fixed
+- Fixed the k8s-tilt devcontainer for extralit
+- Fixed the weaviate url for /examples/deployments/k8s/extralit-deployment.yaml 
+
+
 ## [v0.2.1](https://github.com/extralit/extralit/compare/v0.2.0...v0.2.1)
 
-### "Added"
+### Added
 - Pytest and python env setup in GH Codespaces devcontainer
 - Added tests
   - Response: update duration
@@ -24,13 +35,13 @@ These are the section headers that we use:
   - Models: get, post, put, delete
   - Records: include response_suggestions
 
-### "Changed"
+### Changed
 - Updated elasticsearch to 8.15.0
 - Reverted Suggestion table's unique constraint only "record_id", "question_id", fixing the test suites
 - Disabled adding `LIST_DATASET_RECORDS_DEFAULT_SORT_BY` when there's no sort-by on GET records
 - Changed the `/api/v1/documents` post endpoint to use `UploadFile`
 
-### "Fixed"
+### Fixed
 - Fixed an issue with reindexing elasticsearch by exception handling on failed datasets
 - Added Workspace relationship Document to enable cascade delete
 

@@ -15,19 +15,6 @@ metadata:
 type: Opaque
 ---
 apiVersion: v1
-kind: Service
-metadata:
-  name: extralit-server
-spec:
-  selector:
-    app: extralit
-  ports:
-    - protocol: TCP
-      port: 5555
-      targetPort: 5555
-  type: NodePort
----
-apiVersion: v1
 data:
   AUTHENTICATION_APIKEY_ALLOWED_KEYS: MjI1OWMzNWY3YjBjNGFiM2IwZWI5ZDc3NzFkZTYzNmU3YjUwMDA3ZTQ4YTZiOTRiY2EyNjU3ODZlOTE1ZmMyNQ==
 kind: Secret

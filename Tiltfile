@@ -62,7 +62,6 @@ docker_build(
         sync('argilla-server/src/', '/home/argilla/src/'),
         sync('argilla-server/docker/server/scripts/start_argilla_server.sh', '/home/argilla/'),
         sync('argilla-server/pyproject.toml', '/home/argilla/pyproject.toml'),
-        sync('argilla-frontend/dist/', '/home/argilla/src/argilla_server/static/'),
         # Restart the server to pick up code changes
         run('/bin/bash start_argilla_server.sh', trigger='argilla-server/docker/server/scripts/start_argilla_server.sh'),
     ]
@@ -148,9 +147,11 @@ docker_build(
 )
 extralit_k8s_yaml = read_yaml_stream('examples/deployments/k8s/extralit-deployment.yaml')
 for o in extralit_k8s_yaml:
-    for container in o['spec']['template']['spec']['containers']:
-        if container['name'] == 'extralit-server':
-            container['image'] = "{DOCKER_REPO}/extralit-server".format(DOCKER_REPO=DOCKER_REPO)
+    if o['kind'] == 'Deployment' and o['metadata']['name'] == 'extralit-server':
+        for container in o['spec']['template']['spec']['containers']:
+            if container['name'] == 'extralit-server':
+                container['image'] = "{DOCKER_REPO}/extralit-server".format(DOCKER_REPO=DOCKER_REPO)
+                
 k8s_yaml([
     encode_yaml_stream(extralit_k8s_yaml), 
     'examples/deployments/k8s/extralit-configs.yaml'
