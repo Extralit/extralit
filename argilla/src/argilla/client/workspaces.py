@@ -395,7 +395,7 @@ class Workspace:
                 output_metadata.append(response.parsed)
             except Exception as e:
                 raise RuntimeError(
-                    f"Error adding schema with name='{schema.name}' to workspace."
+                    f"Error adding schema '{schema.name}' to workspace due to `{e}`."
                 ) from e
             
         return ListObjectsResponse(objects=output_metadata)
