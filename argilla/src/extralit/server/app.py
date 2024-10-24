@@ -44,15 +44,10 @@ minio_client: Minio = None
 
 
 @app.on_event("startup")
-async def load_weaviate_client():
-    global weaviate_client
+async def startup():
+    global weaviate_client, minio_client
     if weaviate_client is None:
         weaviate_client = get_weaviate_client()
-
-
-@app.on_event("startup")
-async def load_minio_client():
-    global minio_client
     if minio_client is None:
         minio_client = get_minio_client()
 
@@ -136,6 +131,7 @@ async def extraction(
     prompt_template: str = "completion",
     langfuse_callback: Optional[LlamaIndexCallbackHandler] = Depends(get_langfuse_callback),
 ):
+    print(extraction_request)
     schema_structure = SchemaStructure.from_s3(workspace_name=workspace, minio_client=minio_client)
     schema = schema_structure[extraction_request.schema_name]
 

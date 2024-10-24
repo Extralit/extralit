@@ -36,9 +36,6 @@ def get_weaviate_client(http_port=None, http_secure=None, grpc_port=None, grpc_s
             grpc_secure=grpc_secure,
             auth_credentials=weaviate.auth.AuthApiKey(api_keys[0]) \
                 if api_keys and api_keys[0] else None,
-            headers={
-                "X-OpenAI-Api-Key": os.environ["OPENAI_API_KEY"]
-            } if "OPENAI_API_KEY" in os.environ else None
         )
 
         return weaviate_client
