@@ -9,7 +9,6 @@ from weaviate.exceptions import WeaviateStartUpError
 
 def get_weaviate_client(http_port=None, http_secure=None, grpc_port=None, grpc_secure=None) -> Optional[WeaviateClient]:
     if 'WCS_HTTP_URL' not in os.environ:
-        print("WCS_HTTP_URL not set")
         return None
 
     try:
@@ -25,6 +24,9 @@ def get_weaviate_client(http_port=None, http_secure=None, grpc_port=None, grpc_s
         grpc_port = grpc_port or grpc_url.port
         grpc_secure = grpc_secure or grpc_url.scheme == 'https'
 
+        if not http_url.hostname or not grpc_url.hostname:
+            return None
+
         weaviate_client = weaviate.connect_to_custom(
             http_host=http_url.hostname,
             http_port=http_port,
@@ -32,7 +34,8 @@ def get_weaviate_client(http_port=None, http_secure=None, grpc_port=None, grpc_s
             grpc_host=grpc_url.hostname,
             grpc_port=grpc_port,
             grpc_secure=grpc_secure,
-            auth_credentials=weaviate.auth.AuthApiKey(api_keys[0]),
+            auth_credentials=weaviate.auth.AuthApiKey(api_keys[0]) \
+                if api_keys and api_keys[0] else None,
             headers={
                 "X-OpenAI-Api-Key": os.environ["OPENAI_API_KEY"]
             } if "OPENAI_API_KEY" in os.environ else None
