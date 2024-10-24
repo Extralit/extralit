@@ -2,8 +2,8 @@
 FROM debian:bullseye-slim
 
 # Copy the devcontainer setup file into the container
-COPY setup.sh /workspace/setup.sh
-RUN chmod +x /workspace/setup.sh
+COPY *.sh /workspace/
+RUN chmod +x /workspace/*.sh
 
 # Install necessary packages including Docker dependencies
 RUN apt-get update && apt-get install -y \
@@ -13,11 +13,12 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     gnupg \
     lsb-release \
+    cron \
     && apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Tilt
-RUN curl -fsSL https://github.com/tilt-dev/tilt/releases/download/v0.33.20/tilt.0.33.20.linux.x86_64.tar.gz | tar -xzv tilt && \
+RUN curl -fsSL https://github.com/tilt-dev/tilt/releases/download/v0.33.17/tilt.0.33.17.linux.x86_64.tar.gz | tar -xzv tilt && \
     mv tilt /usr/local/bin/tilt
 
 # Install ctlptl
