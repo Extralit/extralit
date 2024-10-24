@@ -17,8 +17,10 @@ These are the section headers that we use:
 ## [Unreleased]()
 
 ### Added
+- Improved error handling of `extralit schema upload` CLI command.
 
 ### Changed
+- Added FilePolicy allow get and list all files for owners at `/api/v1/files` endpoint.
 
 ### Fixed
 - Fixed the k8s-tilt devcontainer for extralit

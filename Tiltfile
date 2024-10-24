@@ -16,6 +16,8 @@ DOCKER_REPO = str(local('echo $DOCKER_REPO')).strip() or 'localhost:5005'
 if 'kind' in k8s_context():
     # Storage policy
     k8s_yaml('examples/deployments/k8s/kind/tilt-local-dev-storage-policy.yaml')
+if 'k3d' in k8s_context():
+    k8s_yaml('examples/deployments/k8s/k3d/k3d-config.yaml')
 
 load('ext://helm_resource', 'helm_resource', 'helm_repo')
 

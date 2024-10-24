@@ -64,7 +64,7 @@ async def put_file(
                                     data=file.file, size=file.size, content_type=file.content_type)
         return response
     except S3Error as se:
-        raise HTTPException(status_code=500, detail="Internal server error") from se
+        raise HTTPException(status_code=500, detail=f"Internal server error: {se.message}") from se
     
 
 @router.get("/files/{bucket}/{prefix:path}", response_model=ListObjectsResponse)

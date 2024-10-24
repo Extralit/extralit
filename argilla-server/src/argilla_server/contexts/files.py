@@ -76,7 +76,7 @@ def get_object(client: Minio, bucket: str, object: str, version_id: Optional[str
         stat = client.stat_object(bucket, object, version_id=version_id)
     except S3Error as se:
         if version_id:
-            _LOGGER.warn(f"Error getting object {object} from bucket {bucket} with version {version_id}: {se}")
+            _LOGGER.warning(f"Error getting object {object} from bucket {bucket} with version {version_id}: {se}")
             try:
                 _LOGGER.info(f"Retrying without version_id for object {object} in bucket {bucket}")
                 stat = client.stat_object(bucket, object)
@@ -100,7 +100,7 @@ def get_object(client: Minio, bucket: str, object: str, version_id: Optional[str
         raise HTTPException(status_code=404, detail=f"Object {object} not found in bucket {bucket}")
     except Exception as e:
         _LOGGER.error(f"Error getting object {object} from bucket {bucket}: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {e.message}")
     
 
 def put_object(client: Minio, bucket: str, object: str, data: Union[BinaryIO, bytes, str], 
