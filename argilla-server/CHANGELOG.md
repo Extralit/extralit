@@ -16,10 +16,13 @@ These are the section headers that we use:
 
 ## [v0.2.3](https://github.com/extralit/extralit/compare/v0.2.2...v0.2.3)
 
-## [v0.2.2](https://github.com/extralit/extralit/compare/v0.2.1...v0.2.2)
-
 ### Changed
 - Added FilePolicy allow get and list all files for owners at `/api/v1/files` endpoint.
+
+### Fixed
+- Error messages when attempting to access files that doesn't have an existing bucket.
+
+## [v0.2.2](https://github.com/extralit/extralit/compare/v0.2.1...v0.2.2)
 
 ### Fixed
 - Fixed the k8s-tilt devcontainer for extralit
