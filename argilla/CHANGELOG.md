@@ -20,6 +20,7 @@ These are the section headers that we use:
 - Added tests and mocks for extralit FastAPI endpoints
 - Added FileHandler for handling file read/write from disk or S3 to document
 - Added Swimm documentation for the extralit project
+- Improved error handling of `extralit schema upload` CLI command.
 
 ### Changed
 - Changed from "extralit.app:app" to "extralit.server.app:app".
@@ -27,6 +28,7 @@ These are the section headers that we use:
 ### Fixed
 - Fixed vector_store.py and vectordb.py for extralit service
 - Fixed a bug in Workspace.get_schemas() method that was returning an empty list
+- Fixed `create_extraction_records` to handle failure in uploading document before creating records.
 
 
 ## [v0.2.1](https://github.com/extralit/extralit/compare/v0.2.0...v0.2.1)

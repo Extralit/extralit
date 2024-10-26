@@ -16,16 +16,12 @@ These are the section headers that we use:
 
 ## [v0.2.2](https://github.com/extralit/extralit/compare/v0.2.1...v0.2.2)
 
-### Added
-- Improved error handling of `extralit schema upload` CLI command.
-
 ### Changed
 - Added FilePolicy allow get and list all files for owners at `/api/v1/files` endpoint.
 
 ### Fixed
 - Fixed the k8s-tilt devcontainer for extralit
 - Fixed the weaviate url for /examples/deployments/k8s/extralit-deployment.yaml 
-- Fixed `create_extraction_records` to handle failure in uploading document before creating records.
 
 
 ## [v0.2.1](https://github.com/extralit/extralit/compare/v0.2.0...v0.2.1)
