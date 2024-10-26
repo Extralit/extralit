@@ -25,6 +25,7 @@ These are the section headers that we use:
 - Changed from "extralit.app:app" to "extralit.server.app:app".
 
 ### Fixed
+- Fixed vector_store.py and vectordb.py for extralit service
 - Fixed a bug in Workspace.get_schemas() method that was returning an empty list
 
 
