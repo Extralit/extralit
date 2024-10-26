@@ -48,11 +48,14 @@ def create_extraction_records(
 
         if dataset is not None:
             if isinstance(paper.file_path, str):
-                doc = dataset.add_document(
-                    rg.Document.from_file(paper.file_path, reference=ref, pmid=paper.get('pmid'), doi=paper.get('doi'),
-                                          id=paper.get('id')))
+                doc = rg.Document.from_file(paper.file_path, reference=ref, pmid=paper.get('pmid'), doi=paper.get('doi'), id=paper.get('id'))
+
+                try:       
+                    doc = dataset.add_document(doc)
+                except Exception as e:
+                    _LOGGER.warning(f'Unable to upload document: {e}')
             else:
-                raise Exception(f'Unable to load document for {ref}')
+                raise Exception(f'Unable to load document for {ref} because it does not have a valid file path at `file_path`.')
         else:
             doc = rg.Document(file_name='/')
 

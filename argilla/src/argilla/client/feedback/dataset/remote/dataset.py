@@ -927,11 +927,12 @@ class RemoteFeedbackDataset(FeedbackDatasetBase[RemoteFeedbackRecord], MetricsMi
                 client=self._client,
                 document=document,
             ).parsed
+            document.id = uploaded_document_id
 
             self._documents[(document.pmid or document.doi)] = document
         except AlreadyExistsApiError:
             raise ValueError(f"Document with name {document.file_name!r} already exists.")
-        document.id = uploaded_document_id
+        
         return document
     
     @allowed_for_roles(roles=[UserRole.owner, UserRole.admin])
