@@ -26,8 +26,7 @@ def get_storage_context(
     if weaviate_client:
         assert index_name
         validate_client(weaviate_client)
-        schema_exists = class_schema_exists(client=weaviate_client, class_name=index_name)
-        if not schema_exists:
+        if not class_schema_exists(client=weaviate_client, class_name=index_name):
             create_default_schema(client=weaviate_client, class_name=index_name)
 
         vector_store = WeaviateVectorStore(
