@@ -14,6 +14,8 @@ These are the section headers that we use:
 * "Security" in case of vulnerabilities.
 -->
 
+## [v0.2.3](https://github.com/extralit/extralit/compare/v0.2.2...v0.2.3)
+
 ## [v0.2.2](https://github.com/extralit/extralit/compare/v0.2.1...v0.2.2)
 
 ### Changed
