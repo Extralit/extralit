@@ -11,7 +11,6 @@ def test_create_or_load_deepdoctection_segments_load_only(mock_paper: 'pd.Series
 
     texts, tables, figures = create_or_load_deepdoctection_segments(
         paper=mock_paper,
-        preprocessing_path='data/preprocessing/',
         load_only=True,
         file_handler=local_file_handler,
     )
@@ -29,7 +28,6 @@ def test_create_or_load_deepdoctection_segments_redo(mock_paper: 'pd.Series', lo
     with patch("os.makedirs") as mock_makedirs, patch("os.environ", {}):
         texts, tables, figures = create_or_load_deepdoctection_segments(
             paper=mock_paper,
-            preprocessing_path='data/preprocessing/',
             load_only=False,
             redo=True,
             file_handler=local_file_handler,
@@ -49,7 +47,6 @@ def test_create_or_load_deepdoctection_segments_save(mock_paper: 'pd.Series', lo
     with patch("os.makedirs") as mock_makedirs, patch("os.environ", {}):
         texts, tables, figures = create_or_load_deepdoctection_segments(
             paper=mock_paper,
-            preprocessing_path='data/preprocessing/',
             load_only=False,
             redo=False,
             save=True,
@@ -76,7 +73,6 @@ def test_create_or_load_deepdoctection_segments_load_from_s3(mock_paper: 'pd.Ser
     with patch("glob.glob", return_value=['data/preprocessing/deepdoctection/test-paper/page_1.json']):
         texts, tables, figures = create_or_load_deepdoctection_segments(
             paper=mock_paper,
-            preprocessing_path='data/preprocessing/',
             load_only=True,
             file_handler=s3_file_handler,
         )
@@ -93,7 +89,6 @@ def test_create_or_load_nougat_segments_load_only(mock_paper: 'pd.Series', local
 
     texts, tables, figures = create_or_load_nougat_segments(
         paper=mock_paper,
-        preprocessing_path='data/preprocessing/',
         load_only=True,
         file_handler=local_file_handler,
     )
@@ -111,7 +106,6 @@ def test_create_or_load_nougat_segments_redo(mock_paper: 'pd.Series', local_file
     with patch("os.makedirs") as mock_makedirs, patch("os.environ", {}), patch("extralit.preprocessing.document.isinstance", return_value=True):
         texts, tables, figures = create_or_load_nougat_segments(
             paper=mock_paper,
-            preprocessing_path='data/preprocessing/',
             load_only=False,
             redo=True,
             file_handler=local_file_handler,
@@ -132,7 +126,6 @@ def test_create_or_load_nougat_segments_save(mock_paper: 'pd.Series', local_file
     with patch("os.makedirs") as mock_makedirs, patch("os.environ", {}), patch("extralit.preprocessing.document.isinstance", return_value=True):
         texts, tables, figures = create_or_load_nougat_segments(
             paper=mock_paper,
-            preprocessing_path='data/preprocessing/',
             load_only=False,
             redo=False,
             save=True,
@@ -161,7 +154,6 @@ def test_create_or_load_nougat_segments_load_from_s3(mock_paper: 'pd.Series', s3
     with patch("glob.glob", return_value=['data/preprocessing/nougat/test-paper/predictions.json']), patch("extralit.preprocessing.document.isinstance", return_value=True):
         texts, tables, figures = create_or_load_nougat_segments(
             paper=mock_paper,
-            preprocessing_path='data/preprocessing/',
             load_only=True,
             file_handler=s3_file_handler,
         )
