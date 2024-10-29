@@ -19,7 +19,8 @@
         "ms-python.vscode-pylance",
         "tamasfe.even-better-toml",
         "eamodio.gitlens",
-        "tilt-dev.tiltfile"
+        "tilt-dev.tiltfile",
+        "Vue.volar"
       ]
     },
     "settings": {
@@ -30,9 +31,9 @@
     }
   },
 
-  "mounts": [
-    // "source=/var/lib/docker-data,target=/var/lib/docker,type=bind",
-  ],
+  // "mounts": [
+  //   "source=/tmp/docker,target=/var/lib/docker,type=bind"
+  // ],
 
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
   "forwardPorts": [

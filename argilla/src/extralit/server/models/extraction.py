@@ -1,5 +1,5 @@
 from typing import Dict, Optional, List, Any, Union, Annotated, Any
-from pydantic import BaseModel, Field, Extra
+from pydantic import BaseModel, Field
 
 SchemaName = Annotated[str, Field(description="The schema name of the extraction.", examples=["schema_name"])]
 FieldName = Annotated[str, Field(description="The name of the field.", examples=["field_name"])]
@@ -39,4 +39,4 @@ class ExtractionResponse(BaseModel):
     data: Data
 
     class Config:
-        extra = Extra.ignore
+        extra = 'ignore'

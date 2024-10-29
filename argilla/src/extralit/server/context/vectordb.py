@@ -7,10 +7,9 @@ from weaviate import WeaviateClient
 from weaviate.exceptions import WeaviateStartUpError
 
 
-def get_weaviate_client(http_port=8080, http_secure=None, grpc_port=50051, grpc_secure=None) -> Optional[WeaviateClient]:
+def get_weaviate_client(http_port=None, http_secure=None, grpc_port=None, grpc_secure=None) -> Optional[WeaviateClient]:
     if 'WCS_HTTP_URL' not in os.environ:
         return None
-    print("http_url", http_url, "grpc_url", grpc_url, http_port, grpc_port)
 
     try:
         api_keys = os.getenv('WCS_API_KEY', '').split(',')
@@ -24,7 +23,7 @@ def get_weaviate_client(http_port=8080, http_secure=None, grpc_port=50051, grpc_
         grpc_url = urlparse(os.getenv('WCS_GRPC_URL'))
         grpc_port = grpc_port or grpc_url.port
         grpc_secure = grpc_secure or grpc_url.scheme == 'https'
-
+        
         weaviate_client = weaviate.connect_to_custom(
             http_host=http_url.hostname or http_url.path,
             http_port=http_port,
@@ -42,7 +41,7 @@ def get_weaviate_client(http_port=8080, http_secure=None, grpc_port=50051, grpc_
         print(f"Failed to start Weaviate: {wsue}")
     
     except Exception as e:
-        raise e
+        raise Exception(f"Invalid url given: {http_url}") from e
 
 
     return None
