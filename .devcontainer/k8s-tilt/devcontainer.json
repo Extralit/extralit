@@ -31,9 +31,9 @@
     }
   },
 
-  // "mounts": [
-  //   "source=/tmp/docker,target=/var/lib/docker,type=bind"
-  // ],
+  "mounts": [
+    "source=/tmp/docker,target=/var/lib/docker,type=bind"
+  ],
 
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
   "forwardPorts": [

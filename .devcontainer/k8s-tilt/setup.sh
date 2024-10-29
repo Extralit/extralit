@@ -14,9 +14,6 @@ echo '{
   "data-root": "/tmp/docker"
 }' | sudo tee /etc/docker/daemon.json
 
-# Restart Docker to apply the new configuration
-sudo systemctl restart docker
-
 # Create k3d cluster for local development with ctlptl and Tilt
 if ! ctlptl get registry | grep -q "ctlptl-registry"; then
     ctlptl create registry ctlptl-registry --port=5005
