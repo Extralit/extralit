@@ -10,6 +10,7 @@ from weaviate.exceptions import WeaviateStartUpError
 def get_weaviate_client(http_port=8080, http_secure=None, grpc_port=50051, grpc_secure=None) -> Optional[WeaviateClient]:
     if 'WCS_HTTP_URL' not in os.environ:
         return None
+    print("http_url", http_url, "grpc_url", grpc_url, http_port, grpc_port)
 
     try:
         api_keys = os.getenv('WCS_API_KEY', '').split(',')
