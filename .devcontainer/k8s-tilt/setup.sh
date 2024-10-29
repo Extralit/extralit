@@ -10,9 +10,7 @@ else
 fi
 
 # Configure Docker to use /tmp/docker as the data root
-echo '{
-  "data-root": "/tmp/docker"
-}' | sudo tee /etc/docker/daemon.json
+mkdir -p /etc/docker && echo '{"data-root": "/tmp/docker"}' > /etc/docker/daemon.json
 
 # Create k3d cluster for local development with ctlptl and Tilt
 if ! ctlptl get registry | grep -q "ctlptl-registry"; then
