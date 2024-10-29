@@ -9,9 +9,6 @@ else
     echo "Package 'extralit' is already installed. Skipping installation."
 fi
 
-# Configure Docker to use /tmp/docker as the data root
-mkdir -p /etc/docker && echo '{"data-root": "/tmp/docker"}' > /etc/docker/daemon.json
-
 # Create k3d cluster for local development with ctlptl and Tilt
 if ! ctlptl get registry | grep -q "ctlptl-registry"; then
     ctlptl create registry ctlptl-registry --port=5005

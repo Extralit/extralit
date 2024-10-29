@@ -12,7 +12,7 @@ ENV = str(local('echo $ENV')).strip() or 'dev'
 USERS_DB = str(local('echo $USERS_DB')).strip()
 DOCKER_REPO = str(local('echo $DOCKER_REPO')).strip() or 'localhost:5005'
 
-# Set up the same storage policy for kind as in prod
+# Set up policies for kind of k3d development
 if 'kind' in k8s_context():
     # Storage policy
     k8s_yaml('examples/deployments/k8s/kind/tilt-local-dev-storage-policy.yaml')
