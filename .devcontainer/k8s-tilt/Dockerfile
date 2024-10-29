@@ -5,6 +5,8 @@ FROM debian:bullseye-slim
 COPY *.sh /workspace/
 RUN chmod +x /workspace/*.sh
 
+RUN mkdir -p /etc/docker && echo '{"data-root": "/tmp/docker"}' > /etc/docker/daemon.json
+
 # Install necessary packages including Docker dependencies
 RUN apt-get update && apt-get install -y \
     bash \

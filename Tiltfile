@@ -110,9 +110,10 @@ k8s_resource(
     resource_deps=['main-db'],
     port_forwards=['4000'],
     labels=['extralit'],
+    auto_init=False,
 )
 
-# Add the MinIO deployment
+# MinIO S3 storage
 k8s_yaml([
     'examples/deployments/k8s/minio-dev.yaml', 
     'examples/deployments/k8s/minio-standalone-pvc.yaml'])
