@@ -1,18 +1,16 @@
-apiVersion: batch/v1
-kind: CronJob
-metadata:
-  name: purge-evicted-pods
-spec:
-  schedule: "*/5 * * * *"  # Runs every 5 minutes
-  jobTemplate:
-    spec:
-      template:
-        spec:
-          containers:
-          - name: kubectl
-            image: bitnami/kubectl:latest
-            command:
-            - /bin/sh
-            - -c
-            - kubectl delete pod --field-selector=status.phase==Failed
-          restartPolicy: OnFailure
+apiVersion: ctlptl.dev/v1alpha1
+kind: Cluster
+product: k3d
+registry: ctlptl-registry
+name: k3d-cluster
+k3d:
+  v1alpha5Simple:
+    volumes:
+    - volume: /tmp/k3d-volumes/elasticsearch:/usr/share/elasticsearch/data
+    - volume: /tmp/k3d-volumes/postgresql:/var/lib/postgresql/data
+    - volume: /tmp/k3d-volumes/minio:/var/lib/minio/data
+    - volume: /tmp/k3d-volumes/weaviate:/var/lib/weaviate/data
+    kubeAPI:
+      host: "0.0.0.0"
+      hostPort: "6443"
+      
