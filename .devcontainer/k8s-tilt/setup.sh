@@ -1,17 +1,5 @@
 #!/bin/bash
 
-# Perform the pip editable install
-if ! pip list | grep -q "extralit"; then
-    echo "Installing required packages and editable installs..."
-    uv pip install "sentence-transformers<3.0.0" transformers "textdescriptives<3.0.0" \
-        -e /workspaces/extralit/argilla-server/ && uv pip install -e /workspaces/extralit/argilla/ &
-else
-    echo "Package 'extralit' is already installed. Skipping installation."
-fi
-
-# Change permissions for Docker
-chmod -R 777 /tmp/docker
-
 # Create k3d cluster for local development with ctlptl and Tilt
 if ! ctlptl get registry | grep -q "ctlptl-registry"; then
     ctlptl create registry ctlptl-registry --port=5005
@@ -21,7 +9,7 @@ else
 fi
 
 # Set up cron job to prune Docker builder cache every 30minutes to clean up disk space
-(crontab -l ; echo "*/15 * * * * /workspace/prune_docker.sh") | crontab -
+(crontab -l 2>/dev/null; echo "*/15 * * * * /workspace/prune_docker.sh") | crontab -
 
 # Check if the upstream remote already exists
 git config --global --add safe.directory /workspaces/extralit
@@ -31,6 +19,15 @@ if ! git remote get-url upstream &>/dev/null; then
     git fetch upstream --no-tags
 else
     echo "Upstream remote already exists. Skipping addition."
+fi
+
+# Perform the pip editable install
+if ! pip list | grep -q "extralit"; then
+    echo "Installing required packages and editable installs..."
+    uv pip install "sentence-transformers<3.0.0" transformers "textdescriptives<3.0.0" \
+        -e /workspaces/extralit/argilla-server/ && uv pip install -e /workspaces/extralit/argilla/ &
+else
+    echo "Package 'extralit' is already installed. Skipping installation."
 fi
 
 echo "Setup script completed."
