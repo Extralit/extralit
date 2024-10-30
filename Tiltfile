@@ -41,9 +41,9 @@ helm_resource(
     flags=[
         '--version=13.2.0',
         '--values=examples/deployments/k8s/helm/postgres-helm.yaml'],
-    resource_deps=['postgres-helm'],
     port_forwards=['5432'],
-    labels=['argilla-server']
+    labels=['argilla-server'],
+    resource_deps=['postgres-helm'],
 )
 
 # argilla-server is the web backend (FastAPI + SQL database)
@@ -82,19 +82,19 @@ k8s_yaml([
     ])
 k8s_resource(
     'argilla-server-deployment',
-    resource_deps=['main-db', 'elasticsearch'],
     port_forwards=['6900'],
     labels=['argilla-server'],
+    resource_deps=['main-db', 'elasticsearch'],
 )
 
 # Langfuse Observability server
 k8s_yaml('examples/deployments/k8s/langfuse-deployment.yaml')
 k8s_resource(
     'langfuse-deployment',
-    resource_deps=['main-db'],
     port_forwards=['4000'],
     labels=['extralit'],
     auto_init=False,
+    resource_deps=['main-db'],
 )
 
 # MinIO S3 storage
@@ -115,10 +115,10 @@ helm_resource(
     flags=[
         '--version=16.8.8',
         '--values=examples/deployments/k8s/helm/weaviate-helm.yaml'],
-    resource_deps=['weaviate-helm'],
     auto_init=False,
     port_forwards=['8080:8080', '50051:50051'],
-    labels=['extralit']
+    labels=['extralit'],
+    resource_deps=['weaviate-helm'],
 )
 
 # Extralit server
@@ -146,8 +146,8 @@ k8s_yaml([
 ])
 k8s_resource(
     'extralit-server',
-    resource_deps=['minio'],
     port_forwards=['5555'],
     labels=['extralit'],
+    resource_deps=['minio'],
 )
 
