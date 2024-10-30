@@ -1,8 +1,6 @@
 # Use python:3.10.12-slim as the base image
 FROM python:3.10.12-slim
 
-COPY dist/*.whl /packages/
-
 # Set environment variables for the container
 ARG ENV=dev
 ARG USERS_DB=/config/users.yaml
@@ -24,6 +22,7 @@ RUN mkdir -p "$ARGILLA_HOME_PATH" && \
   rm -rf /var/lib/apt/lists/*
 
 # Copy the scripts and install uvicorn
+COPY dist/*.whl /packages/
 COPY docker/server/scripts/ /home/argilla/
 
 # Copy the entire repository into /home/argilla in the container
