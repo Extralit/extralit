@@ -21,19 +21,6 @@ if 'k3d' in k8s_context():
 
 load('ext://helm_resource', 'helm_resource', 'helm_repo')
 
-# Installing elastic/elasticsearch Helm
-# helm_repo('elastic', 'https://helm.elastic.co', labels=['helm'], resource_name='elastic-helm')
-# helm_resource(
-#     name='elasticsearch', 
-#     chart='elastic/elasticsearch', 
-#     flags=[
-#         '--version=8.5.1',
-#         '--values=./examples/deployments/k8s/helm/elasticsearch-helm.yaml'],
-#     deps=['elastic-helm'],
-#     port_forwards=['9200'],
-#     labels=['argilla-server']
-# )
-
 # Elasticsearch deployment using k8s_yaml
 k8s_yaml([
     'examples/deployments/k8s/elasticsearch-deployment.yaml',
@@ -46,13 +33,26 @@ k8s_resource(
     labels=['argilla-server'],
 )
 
+# PostgreSQL is the database for argilla-server
+helm_repo('bitnami', 'https://charts.bitnami.com/bitnami', labels=['helm'], resource_name='postgres-helm')
+helm_resource(
+    name='main-db', 
+    chart='bitnami/postgresql', 
+    flags=[
+        '--version=13.2.0',
+        '--values=examples/deployments/k8s/helm/postgres-helm.yaml'],
+    resource_deps=['postgres-helm'],
+    port_forwards=['5432'],
+    labels=['argilla-server']
+)
+
 # argilla-server is the web backend (FastAPI + SQL database)
 if not os.path.exists('argilla-frontend/dist'):
-    local('npm install && npm run build', dir='argilla-frontend')
+    local('npm install && npm run build', dir='argilla-frontend', quiet=True)
 if not os.path.exists('argilla-server/src/argilla_server/static'):
-    local('cp -r argilla-frontend/dist argilla-server/src/argilla_server/static')
+    local('cp -r argilla-frontend/dist argilla-server/src/argilla_server/static', quiet=True)
 if not os.path.exists('argilla-server/dist/'):
-    local('pdm build', dir='argilla-server')
+    local('pdm build', dir='argilla-server', quiet=True)
 docker_build(
     "{DOCKER_REPO}/argilla-server".format(DOCKER_REPO=DOCKER_REPO),
     context='argilla-server/',
@@ -87,22 +87,6 @@ k8s_resource(
     labels=['argilla-server'],
 )
 
-
-
-# PostgreSQL is the database for argilla-server
-helm_repo('bitnami', 'https://charts.bitnami.com/bitnami', labels=['helm'], resource_name='postgres-helm')
-helm_resource(
-    name='main-db', 
-    chart='bitnami/postgresql', 
-    flags=[
-        '--version=13.2.0',
-        '--values=examples/deployments/k8s/helm/postgres-helm.yaml'],
-    deps=['postgres-helm'],
-    port_forwards=['5432'],
-    labels=['argilla-server']
-)
-
-
 # Langfuse Observability server
 k8s_yaml('examples/deployments/k8s/langfuse-deployment.yaml')
 k8s_resource(
@@ -120,7 +104,7 @@ k8s_yaml([
 k8s_resource(
   'minio',
   port_forwards=['9000', '9090'],
-  labels=['storage'],
+  labels=['extralit'],
 )
 
 # Weaviate vector database
@@ -131,7 +115,8 @@ helm_resource(
     flags=[
         '--version=16.8.8',
         '--values=examples/deployments/k8s/helm/weaviate-helm.yaml'],
-    deps=['weaviate-helm'],
+    resource_deps=['weaviate-helm'],
+    auto_init=False,
     port_forwards=['8080:8080', '50051:50051'],
     labels=['extralit']
 )
@@ -154,14 +139,14 @@ for o in extralit_k8s_yaml:
         for container in o['spec']['template']['spec']['containers']:
             if container['name'] == 'extralit-server':
                 container['image'] = "{DOCKER_REPO}/extralit-server".format(DOCKER_REPO=DOCKER_REPO)
-                
+
 k8s_yaml([
     encode_yaml_stream(extralit_k8s_yaml), 
     'examples/deployments/k8s/extralit-configs.yaml'
-    ])
+])
 k8s_resource(
     'extralit-server',
-    resource_deps=['minio', 'weaviate-server'],
+    resource_deps=['minio'],
     port_forwards=['5555'],
     labels=['extralit'],
 )
