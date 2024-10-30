@@ -11,6 +11,14 @@ fi
 # Set up cron job to prune Docker builder cache every 30minutes to clean up disk space
 (crontab -l 2>/dev/null; echo "*/15 * * * * /workspace/prune_docker.sh") | crontab -
 
+# Perform the pip editable install
+if ! pip list | grep -q "extralit"; then
+    echo "Installing required packages and editable installs..."
+    uv pip install -e /workspaces/extralit/argilla-server/ && uv pip install -e /workspaces/extralit/argilla/ &
+else
+    echo "Package 'extralit' is already installed. Skipping installation."
+fi
+
 # Check if the upstream remote already exists
 git config --global --add safe.directory /workspaces/extralit
 if ! git remote get-url upstream &>/dev/null; then
@@ -21,13 +29,5 @@ else
     echo "Upstream remote already exists. Skipping addition."
 fi
 
-# Perform the pip editable install
-if ! pip list | grep -q "extralit"; then
-    echo "Installing required packages and editable installs..."
-    uv pip install "sentence-transformers<3.0.0" transformers "textdescriptives<3.0.0" \
-        -e /workspaces/extralit/argilla-server/ && uv pip install -e /workspaces/extralit/argilla/ &
-else
-    echo "Package 'extralit' is already installed. Skipping installation."
-fi
 
 echo "Setup script completed."

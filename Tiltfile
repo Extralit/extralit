@@ -52,7 +52,7 @@ if not os.path.exists('argilla-frontend/dist'):
 if not os.path.exists('argilla-server/src/argilla_server/static'):
     local('cp -r argilla-frontend/dist argilla-server/src/argilla_server/static', quiet=True)
 if not os.path.exists('argilla-server/dist/'):
-    local('pdm build', dir='argilla-server', quiet=True)
+    local('pdm build', dir='argilla-server')
 docker_build(
     "{DOCKER_REPO}/argilla-server".format(DOCKER_REPO=DOCKER_REPO),
     context='argilla-server/',

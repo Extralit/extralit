@@ -40,14 +40,11 @@ spec:
                 name: extralit-secrets
                 key: ARGILLA_API_KEY
           - name: WCS_HTTP_URL
-            value: "http://weaviate:80"
+            value: "https://2ki4y9rvswabkstkcqtsmw.c0.us-west3.gcp.weaviate.cloud"
           - name: WCS_GRPC_URL
-            value: "http://weaviate-grpc:50051"
+            value: "https://grpc-2ki4y9rvswabkstkcqtsmw.c0.us-west3.gcp.weaviate.cloud"
           - name: WCS_API_KEY
-            valueFrom:
-              secretKeyRef:
-                name: weaviate-api-keys
-                key: AUTHENTICATION_APIKEY_ALLOWED_KEYS
+            value: "WiJkiK5VpWnu7pvDR72KhV3zJdBWm765VVjb"
           - name: S3_ENDPOINT
             valueFrom:
               secretKeyRef:
