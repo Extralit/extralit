@@ -17,7 +17,7 @@
 
 <img src="docs/_source/_static/images/main/data-extraction-pipeline.jpg" alt="pipeline">
 
-Extralit is a UI interface and platform for LLM-based document data extraction that integrates human and model feedback loops for continuous LLM refinement and data extraction oversight.
+Extralit is a UI interface and platform for LLM-based document data extraction that integrates human and model feedback loops for continuous LLM refinement and collaborative data extraction.
 
 With a Python SDK and adaptable UI, you can create human and model-in-the-loop workflows for:
 
