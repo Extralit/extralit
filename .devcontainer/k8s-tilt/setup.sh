@@ -32,4 +32,4 @@ else
 fi
 
 
-echo "Setup script completed."
+echo "Setup script completed. Run tilt with `tilt up`"

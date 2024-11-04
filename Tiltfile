@@ -1,4 +1,3 @@
-
 # version_settings() enforces a minimum Tilt version
 # https://docs.tilt.dev/api.html#api.version_settings
 version_settings(constraint='>=0.23.4')
@@ -11,6 +10,24 @@ print("Using context:", k8s_context())
 ENV = str(local('echo $ENV')).strip() or 'dev'
 USERS_DB = str(local('echo $USERS_DB')).strip()
 DOCKER_REPO = str(local('echo $DOCKER_REPO')).strip() or 'localhost:5005'
+
+# Inform users about the environment variables
+ARGILLA_DATABASE_URL = str(local('echo $ARGILLA_DATABASE_URL')).strip()
+S3_ENDPOINT = str(local('echo $S3_ENDPOINT')).strip()
+S3_ACCESS_KEY = str(local('echo $S3_ACCESS_KEY')).strip()
+S3_SECRET_KEY = str(local('echo $S3_SECRET_KEY')).strip()
+OPENAI_API_KEY = str(local('echo $OPENAI_API_KEY')).strip()
+WCS_HTTP_URL = str(local('echo $WCS_HTTP_URL')).strip()
+WCS_GRPC_URL = str(local('echo $WCS_GRPC_URL')).strip()
+WCS_API_KEY = str(local('echo $WCS_API_KEY')).strip()
+if ARGILLA_DATABASE_URL:
+    print("Using external database with ARGILLA_DATABASE_URL envvar")
+if S3_ENDPOINT and S3_ACCESS_KEY and S3_SECRET_KEY:
+    print("Using external S3 storage with S3_ENDPOINT envvar")
+if OPENAI_API_KEY:
+    print("Using external OpenAI API key")
+if WCS_HTTP_URL and WCS_API_KEY:
+    print("Using external Weaviate Cloud Service with WCS_HTTP_URL envvar")
 
 # Set up policies for kind of k3d development
 if 'kind' in k8s_context():
@@ -34,17 +51,18 @@ k8s_resource(
 )
 
 # PostgreSQL is the database for argilla-server
-helm_repo('bitnami', 'https://charts.bitnami.com/bitnami', labels=['helm'], resource_name='postgres-helm')
-helm_resource(
-    name='main-db', 
-    chart='bitnami/postgresql', 
-    flags=[
-        '--version=13.2.0',
-        '--values=examples/deployments/k8s/helm/postgres-helm.yaml'],
-    port_forwards=['5432'],
-    labels=['argilla-server'],
-    resource_deps=['postgres-helm'],
-)
+if not ARGILLA_DATABASE_URL:
+    helm_repo('bitnami', 'https://charts.bitnami.com/bitnami', labels=['helm'], resource_name='postgres-helm')
+    helm_resource(
+        name='main-db', 
+        chart='bitnami/postgresql', 
+        flags=[
+            '--version=13.2.0',
+            '--values=examples/deployments/k8s/helm/postgres-helm.yaml'],
+        port_forwards=['5432'],
+        labels=['argilla-server'],
+        resource_deps=['postgres-helm'],
+    )
 
 # argilla-server is the web backend (FastAPI + SQL database)
 if not os.path.exists('argilla-frontend/dist'):
@@ -73,6 +91,11 @@ for o in argilla_server_k8s_yaml:
     for container in o['spec']['template']['spec']['containers']:
         if container['name'] == 'argilla-server':
             container['image'] = "{DOCKER_REPO}/argilla-server".format(DOCKER_REPO=DOCKER_REPO)
+            if ARGILLA_DATABASE_URL:
+                container['env'].append({
+                    'name': 'ARGILLA_DATABASE_URL',
+                    'value': ARGILLA_DATABASE_URL
+                })
 
 k8s_yaml([
     encode_yaml_stream(argilla_server_k8s_yaml), 
@@ -81,10 +104,10 @@ k8s_yaml([
     # 'examples/deployments/k8s/argilla-loadbalancer-service.yaml'
     ])
 k8s_resource(
-    'argilla-server-deployment',
+    'argilla-server',
     port_forwards=['6900'],
     labels=['argilla-server'],
-    resource_deps=['main-db', 'elasticsearch'],
+    resource_deps=['main-db', 'elasticsearch'] if not ARGILLA_DATABASE_URL else ['elasticsearch'],
 )
 
 # Langfuse Observability server
@@ -98,14 +121,15 @@ k8s_resource(
 )
 
 # MinIO S3 storage
-k8s_yaml([
-    'examples/deployments/k8s/minio-dev.yaml', 
-    'examples/deployments/k8s/minio-standalone-pvc.yaml'])
-k8s_resource(
-  'minio',
-  port_forwards=['9000', '9090'],
-  labels=['extralit'],
-)
+if not S3_ENDPOINT or not S3_ACCESS_KEY or not S3_SECRET_KEY:
+    k8s_yaml([
+        'examples/deployments/k8s/minio-dev.yaml', 
+        'examples/deployments/k8s/minio-standalone-pvc.yaml'])
+    k8s_resource(
+      'minio',
+      port_forwards=['9000', '9090'],
+      labels=['extralit'],
+    )
 
 # Weaviate vector database
 helm_repo('weaviate', 'https://weaviate.github.io/weaviate-helm', labels=['helm'], resource_name='weaviate-helm')
@@ -139,6 +163,23 @@ for o in extralit_k8s_yaml:
         for container in o['spec']['template']['spec']['containers']:
             if container['name'] == 'extralit-server':
                 container['image'] = "{DOCKER_REPO}/extralit-server".format(DOCKER_REPO=DOCKER_REPO)
+                if S3_ENDPOINT and S3_ACCESS_KEY and S3_SECRET_KEY:
+                    container['env'].extend([
+                        {'name': 'S3_ENDPOINT', 'value': S3_ENDPOINT},
+                        {'name': 'S3_ACCESS_KEY', 'value': S3_ACCESS_KEY},
+                        {'name': 'S3_SECRET_KEY', 'value': S3_SECRET_KEY}
+                    ])
+                if OPENAI_API_KEY:
+                    container['env'].append({
+                        'name': 'OPENAI_API_KEY',
+                        'value': OPENAI_API_KEY
+                    })
+                if WCS_HTTP_URL and WCS_API_KEY:
+                    container['env'].extend([
+                        {'name': 'WCS_HTTP_URL', 'value': WCS_HTTP_URL},
+                        {'name': 'WCS_GRPC_URL', 'value': WCS_GRPC_URL},
+                        {'name': 'WCS_API_KEY', 'value': WCS_API_KEY}
+                    ])
 
 k8s_yaml([
     encode_yaml_stream(extralit_k8s_yaml), 
@@ -148,6 +189,6 @@ k8s_resource(
     'extralit-server',
     port_forwards=['5555'],
     labels=['extralit'],
-    resource_deps=['minio'],
+    resource_deps=['minio'] if not (S3_ENDPOINT and S3_ACCESS_KEY and S3_SECRET_KEY) else [],
 )
 

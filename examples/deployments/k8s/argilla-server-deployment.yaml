@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: argilla-server-deployment
+  name: argilla-server
   labels:
     app: argilla-server
 spec:
