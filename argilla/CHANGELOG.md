@@ -15,6 +15,9 @@ These are the section headers that we use:
 -->
 ## [Unreleased]()
 
+### Added
+- Added envvar to use external Postgres, Minio, and Weaviate services for "Docker, Tilt, and K8s" devcontainer on GH Codespaces
+
 ### Fixed
 - Add error handling to extralit's create_extraction_prompt
 
