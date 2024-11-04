@@ -128,9 +128,9 @@ docker_build(
     "{DOCKER_REPO}/extralit-server".format(DOCKER_REPO=DOCKER_REPO),
     context='argilla/',
     dockerfile='argilla/docker/extralit.dockerfile',
-    ignore=['.*', 'argilla-frontend/', 'argilla_server/'],
+    ignore=['.*', 'argilla-frontend/', 'argilla-server/', '__pycache__'],
     live_update=[
-        sync('./argilla/', '/home/extralit/argilla/'),
+        sync('argilla/', '/home/extralit/'),
     ]
 )
 extralit_k8s_yaml = read_yaml_stream('examples/deployments/k8s/extralit-deployment.yaml')

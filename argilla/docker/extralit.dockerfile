@@ -12,7 +12,8 @@ ENV PATH="/opt/venv/bin:$PATH"
 ENV VIRTUAL_ENV="/opt/venv"
 
 # Set NLTK_DATA environment variable
-ENV NLTK_DATA="/home/extralit/nltk_data"
+ENV NLTK_DATA="/home/extralit/llama_index_cache"
+ENV LLAMA_INDEX_CACHE_DIR="/home/extralit/llama_index_cache"
 
 # Copy the entire repository into /home/argilla in the container
 COPY . /home/extralit/
