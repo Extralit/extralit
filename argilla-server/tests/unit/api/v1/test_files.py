@@ -62,11 +62,11 @@ async def test_put_file(async_client: "AsyncClient", owner_auth_header: dict):
 
 
 @pytest.mark.asyncio
-async def test_list_objects_without_authentication(async_client: "AsyncClient", owner_auth_header: dict):
+async def test_list_objects_non_workspace_user(async_client: "AsyncClient", annotator_auth_header: dict):
     bucket_name = "workspace"
     prefix = "test_prefix"
 
-    response = await async_client.get(f"/api/v1/files/{bucket_name}/{prefix}", headers=owner_auth_header)
+    response = await async_client.get(f"/api/v1/files/{bucket_name}/{prefix}", headers=annotator_auth_header)
 
     assert response.status_code == 403
 

@@ -80,6 +80,11 @@ def owner_auth_header(owner: User) -> Dict[str, str]:
     return {API_KEY_HEADER_NAME: owner.api_key}
 
 
+@pytest.fixture(scope="function")
+def annotator_auth_header(annotator: User) -> Dict[str, str]:
+    return {API_KEY_HEADER_NAME: annotator.api_key}
+
+
 @pytest_asyncio.fixture(scope="function")
 async def async_client(
     request, mock_search_engine: SearchEngine, mocker: "MockerFixture"
