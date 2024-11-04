@@ -104,8 +104,8 @@ jobs:
 
       - name: Run tests 📈
         run: |
-          uv pip install -q ../argilla-server/
           uv pip install -q -e ".[listeners]"
+          uv pip install -q ../argilla-server/
           pytest --cov=argilla --cov=extralit --cov-report=xml:${{ env.COVERAGE_REPORT }}.xml --junitxml=junit.xml -o junit_family=legacy ${{ inputs.pytestArgs }} -vs
 
       - name: Upload coverage report artifact
