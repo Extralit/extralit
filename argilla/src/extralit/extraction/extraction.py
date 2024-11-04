@@ -84,11 +84,13 @@ def extract_schema(
     Returns:
         Tuple[pd.DataFrame, ResponseResult]: The extracted DataFrame and the ResponseResult.
     """
-
-    if schema.name in extractions.extractions:
-        prompt = create_completion_prompt(schema, extractions, include_fields=include_fields, extra_prompt=user_prompt)
-    else:
-        prompt = create_extraction_prompt(schema, extractions, )
+    try:
+        if schema.name in extractions.extractions:
+            prompt = create_completion_prompt(schema, extractions, include_fields=include_fields, extra_prompt=user_prompt)
+        else:
+            prompt = create_extraction_prompt(schema, extractions, )
+    except Exception as e:
+        raise e
 
     output_cls = get_extraction_schema_model(
         schema, include_fields=include_fields, exclude_fields=['reference'], top_class=schema.name + 's', lower_class=schema.name,
@@ -126,6 +128,7 @@ def extract_schema(
 
     df = convert_response_to_dataframe(response)
     df = generate_reference_columns(df, schema)
+
     try:
         response = ResponseResult(**response.__dict__)
     except Exception as e:

@@ -41,13 +41,13 @@ def get_nodes_metadata(weaviate_client: WeaviateClient,
         metadata = get_nodes_metadata(weaviate_client, filters)
         # Example 2: Retrieve metadata with complex filters
                 MetadataFilter(key='type', value='chapter', operator=FilterOperator.EQ),
-                MetadataFilter(key='reference', value=['ch01', 'ch02'], operator=FilterOperator.IN)
+                MetadataFilter(key='reference', value=['okia2013bioefficacy'], operator=FilterOperator.IN)
             ],
         metadata = get_nodes_metadata(weaviate_client, filters, limit=10)
     """
 
     validate_client(weaviate_client)
-    if not class_schema_exists(weaviate_client, index_name):
+    if not weaviate_client or not class_schema_exists(weaviate_client, index_name):
         return []
 
     if isinstance(filters, dict):

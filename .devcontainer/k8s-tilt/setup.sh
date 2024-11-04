@@ -25,6 +25,8 @@ if ! git remote get-url upstream &>/dev/null; then
     echo "Adding upstream remote..."
     git remote add upstream https://github.com/argilla-io/argilla
     git fetch upstream --no-tags
+    git update-index --assume-unchanged examples/deployments/k8s/extralit-configs.yaml
+    git update-index --assume-unchanged examples/deployments/k8s/extralit-deployment.yaml
 else
     echo "Upstream remote already exists. Skipping addition."
 fi

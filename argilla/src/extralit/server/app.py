@@ -2,6 +2,7 @@ import logging
 from typing import Optional, Union, List, Literal
 from uuid import UUID
 
+from extralit.server.errors import BaseError
 import pandas as pd
 from fastapi import FastAPI, Depends, Body, Query, status, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -131,7 +132,6 @@ async def extraction(
     prompt_template: str = "completion",
     langfuse_callback: Optional[LlamaIndexCallbackHandler] = Depends(get_langfuse_callback),
 ):
-    print(extraction_request)
     schema_structure = SchemaStructure.from_s3(workspace_name=workspace, minio_client=minio_client)
     schema = schema_structure[extraction_request.schema_name]
 
@@ -150,7 +150,6 @@ async def extraction(
     try:
         system_prompt = langfuse_callback.langfuse.get_prompt(prompt_template, cache_ttl_seconds=3000, max_retries=0)
     except Exception as e:
-        _LOGGER.error(f"Failed to get system prompt: {e}")
         system_prompt = None
 
     try:
@@ -183,7 +182,7 @@ async def extraction(
                                           types=extraction_request.types, similarity_top_k=similarity_top_k,
                                           system_prompt=system_prompt, user_prompt=extraction_request.prompt,
                                           vector_store_query_mode="hybrid")
-
+        
         if not isinstance(df, pd.DataFrame) or df.empty:
             if rag_response.source_nodes is None or len(rag_response.source_nodes) == 0:
                 raise HTTPException(
@@ -194,6 +193,7 @@ async def extraction(
                                 detail="No extraction found with the selected context and your query.")
 
         response = ExtractionResponse.parse_raw(df.to_json(orient='table'))
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

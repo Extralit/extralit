@@ -13,6 +13,12 @@ These are the section headers that we use:
 * "Fixed" for any bug fixes.
 * "Security" in case of vulnerabilities.
 -->
+## [Unreleased]()
+
+### Fixed
+- Add error handling to extralit's create_extraction_prompt
+
+
 
 ## [v0.2.3](https://github.com/extralit/extralit/compare/v0.2.2...v0.2.3)
 

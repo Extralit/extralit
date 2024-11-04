@@ -64,11 +64,11 @@ dependencies = [
     "tiktoken",
     "pymupdf",
     # for llama-index
-    "llama-index ~= 0.10.40",
-    "llama-index-core ~= 0.10.40",
-    "llama-index-callbacks-langfuse ~= 0.1.4",
-    "llama-index-llms-openai",
-    "llama-index-embeddings-openai",
+    "llama-index ~= 0.10.68",
+    "llama-index-core ~= 0.10.68",
+    "llama-index-callbacks-langfuse ~= 0.1.6",
+    "llama-index-llms-openai ~= 0.1.31",
+    "llama-index-embeddings-openai ~=0.1.11",
     "llama-index-multi-modal-llms-openai",
     # for weaviate vector db
     "weaviate-client >= 4",
