@@ -69,4 +69,4 @@ def test_settings_default_database_url(monkeypatch):
 def test_settings_database_url(url: str, expected_url: str, monkeypatch):
     monkeypatch.setenv("ARGILLA_DATABASE_URL", url)
     settings = Settings()
-    assert settings.database_url == expected_url
+    assert settings.database_url == expected_url, f"Expected: {expected_url}, got: {settings.database_url}"
