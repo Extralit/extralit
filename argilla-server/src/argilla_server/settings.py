@@ -177,7 +177,7 @@ class Settings(BaseSettings):
 
         if "postgres" in database_url:
             parsed_url = urlparse(database_url)
-            if parsed_url.scheme in ["postgres", "postgresql"]:
+            if parsed_url.scheme in ["postgres", "postgresql", "postgres+psycopg2"]:
                 warnings.warn(
                     "From version 1.14.0, Argilla will use `asyncpg` as default PostgreSQL driver. The protocol in the"
                     " provided database URL has been automatically replaced from `postgresql` to `postgresql+asyncpg`."
@@ -187,7 +187,7 @@ class Settings(BaseSettings):
                 database_url = urlunparse(parsed_url._replace(scheme=new_scheme))
 
             if not database_url.startswith('postgresql+asyncpg://'):
-                raise ValueError("Invalid database URL format. Expected format: 'postgresql+asyncpg://...'")
+                raise ValueError(f"Invalid database URL format. Expected: 'postgresql+asyncpg://...', given '{parsed_url.scheme}'")
             
         logging.debug(f"Using database URL: {database_url}")
         return database_url
