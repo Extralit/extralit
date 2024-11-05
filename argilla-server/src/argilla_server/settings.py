@@ -189,7 +189,6 @@ class Settings(BaseSettings):
             if not database_url.startswith('postgresql+asyncpg://'):
                 raise ValueError(f"Invalid database URL format. Expected: 'postgresql+asyncpg://...', given '{parsed_url.scheme}'")
             
-        logging.debug(f"Using database URL: {database_url}")
         return database_url
     
     @root_validator(pre=True)
