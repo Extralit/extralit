@@ -13,21 +13,21 @@ DOCKER_REPO = str(local('echo $DOCKER_REPO')).strip() or 'localhost:5005'
 
 # Inform users about the environment variables
 ARGILLA_DATABASE_URL = str(local('echo $ARGILLA_DATABASE_URL')).strip()
+if ARGILLA_DATABASE_URL:
+    print("Using external database with ARGILLA_DATABASE_URL envvar, skipping `main-db` deployment")
 S3_ENDPOINT = str(local('echo $S3_ENDPOINT')).strip()
 S3_ACCESS_KEY = str(local('echo $S3_ACCESS_KEY')).strip()
 S3_SECRET_KEY = str(local('echo $S3_SECRET_KEY')).strip()
+if S3_ENDPOINT and S3_ACCESS_KEY and S3_SECRET_KEY:
+    print("Using external S3 storage with S3_ENDPOINT envvar, skipping `minio` deployment")
 OPENAI_API_KEY = str(local('echo $OPENAI_API_KEY')).strip()
+if OPENAI_API_KEY:
+    print("Using external OpenAI API key")
 WCS_HTTP_URL = str(local('echo $WCS_HTTP_URL')).strip()
 WCS_GRPC_URL = str(local('echo $WCS_GRPC_URL')).strip()
 WCS_API_KEY = str(local('echo $WCS_API_KEY')).strip()
-if ARGILLA_DATABASE_URL:
-    print("Using external database with ARGILLA_DATABASE_URL envvar")
-if S3_ENDPOINT and S3_ACCESS_KEY and S3_SECRET_KEY:
-    print("Using external S3 storage with S3_ENDPOINT envvar")
-if OPENAI_API_KEY:
-    print("Using external OpenAI API key")
 if WCS_HTTP_URL and WCS_API_KEY:
-    print("Using external Weaviate Cloud Service with WCS_HTTP_URL envvar")
+    print("Using external Weaviate Cloud Service with WCS_HTTP_URL envvar, skipping `weaviate` deployment")
 
 # Set up policies for kind of k3d development
 if 'kind' in k8s_context():
@@ -92,10 +92,17 @@ for o in argilla_server_k8s_yaml:
         if container['name'] == 'argilla-server':
             container['image'] = "{DOCKER_REPO}/argilla-server".format(DOCKER_REPO=DOCKER_REPO)
             if ARGILLA_DATABASE_URL:
-                container['env'].append({
-                    'name': 'ARGILLA_DATABASE_URL',
-                    'value': ARGILLA_DATABASE_URL
-                })
+                container['env'].extend([
+                    {'name': 'ARGILLA_DATABASE_URL', 'value': ARGILLA_DATABASE_URL},
+                    {'name': 'POSTGRES_HOST', 'value': ""},
+                    {'name': 'POSTGRES_PASSWORD', 'value': ""},
+                ])
+            if S3_ENDPOINT and S3_ACCESS_KEY and S3_SECRET_KEY:
+                container['env'].extend([
+                    {'name': 'S3_ENDPOINT', 'value': S3_ENDPOINT},
+                    {'name': 'S3_ACCESS_KEY', 'value': S3_ACCESS_KEY},
+                    {'name': 'S3_SECRET_KEY', 'value': S3_SECRET_KEY}
+                ])
 
 k8s_yaml([
     encode_yaml_stream(argilla_server_k8s_yaml), 
@@ -117,7 +124,7 @@ k8s_resource(
     port_forwards=['4000'],
     labels=['extralit'],
     auto_init=False,
-    resource_deps=['main-db'],
+    resource_deps=['main-db'] if not ARGILLA_DATABASE_URL else [],
 )
 
 # MinIO S3 storage
@@ -152,7 +159,7 @@ docker_build(
     "{DOCKER_REPO}/extralit-server".format(DOCKER_REPO=DOCKER_REPO),
     context='argilla/',
     dockerfile='argilla/docker/extralit.dockerfile',
-    ignore=['.*', 'argilla-frontend/', 'argilla-server/', '__pycache__'],
+    ignore=['.*', 'argilla-frontend/', 'argilla-server/', '**/__pycache__'],
     live_update=[
         sync('argilla/', '/home/extralit/'),
     ]
@@ -177,7 +184,7 @@ for o in extralit_k8s_yaml:
                 if WCS_HTTP_URL and WCS_API_KEY:
                     container['env'].extend([
                         {'name': 'WCS_HTTP_URL', 'value': WCS_HTTP_URL},
-                        {'name': 'WCS_GRPC_URL', 'value': WCS_GRPC_URL},
+                        {'name': 'WCS_GRPC_URL', 'value': WCS_GRPC_URL or ""},
                         {'name': 'WCS_API_KEY', 'value': WCS_API_KEY}
                     ])
 

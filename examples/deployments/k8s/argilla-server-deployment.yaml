@@ -87,6 +87,7 @@ spec:
                 secretKeyRef:
                   name: main-db
                   key: postgres-password
+                  optional: true
             - name: ELASTIC_PASSWORD
               valueFrom:
                 secretKeyRef:
