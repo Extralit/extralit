@@ -121,13 +121,17 @@ def extract_schema(
                         f"DATA_EXTRACTION_SYSTEM_PROMPT_TMPL.")
         system_prompt = DEFAULT_EXTRACTION_PROMPT_TMPL
 
-    response = query_rag_index(
-        prompt, index=index, output_cls=output_cls,
-        similarity_top_k=similarity_top_k, filters=filters,
-        text_qa_template=system_prompt, response_mode="compact", **kwargs)
+    try:
+        response = query_rag_index(
+            prompt, index=index, output_cls=output_cls,
+            similarity_top_k=similarity_top_k, filters=filters,
+            text_qa_template=system_prompt, response_mode="compact", **kwargs)
 
-    df = convert_response_to_dataframe(response)
-    df = generate_reference_columns(df, schema)
+        df = convert_response_to_dataframe(response)
+        df = generate_reference_columns(df, schema)
+    except Exception as e:
+        _LOGGER.error(f"Failed to extract schema: \n{type(e)} {e}")
+        raise e
 
     try:
         response = ResponseResult(**response.__dict__)

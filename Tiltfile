@@ -76,7 +76,7 @@ docker_build(
     context='argilla-server/',
     build_args={'ENV': ENV, 'USERS_DB': USERS_DB},
     dockerfile='argilla-server/docker/server/argilla_server.dockerfile',
-    ignore=['examples/', 'argilla/', '.*'],
+    ignore=['examples/', 'argilla/', '.*', '**/__pycache__', '*.pyc'],
     live_update=[
         # Sync the source code to the container
         sync('argilla-server/src/', '/home/argilla/src/'),
@@ -159,7 +159,7 @@ docker_build(
     "{DOCKER_REPO}/extralit-server".format(DOCKER_REPO=DOCKER_REPO),
     context='argilla/',
     dockerfile='argilla/docker/extralit.dockerfile',
-    ignore=['.*', 'argilla-frontend/', 'argilla-server/', '**/__pycache__'],
+    ignore=['.*', 'argilla-frontend/', 'argilla-server/', '**/__pycache__', '*.pyc'],
     live_update=[
         sync('argilla/', '/home/extralit/'),
     ]
@@ -172,15 +172,14 @@ for o in extralit_k8s_yaml:
                 container['image'] = "{DOCKER_REPO}/extralit-server".format(DOCKER_REPO=DOCKER_REPO)
                 if S3_ENDPOINT and S3_ACCESS_KEY and S3_SECRET_KEY:
                     container['env'].extend([
-                        {'name': 'S3_ENDPOINT', 'value': S3_ENDPOINT},
-                        {'name': 'S3_ACCESS_KEY', 'value': S3_ACCESS_KEY},
-                        {'name': 'S3_SECRET_KEY', 'value': S3_SECRET_KEY}
+                        {'name': 'S3_ENDPOINT', 'value': S3_ENDPOINT, 'valueFrom': None},
+                        {'name': 'S3_ACCESS_KEY', 'value': S3_ACCESS_KEY, 'valueFrom': None},
+                        {'name': 'S3_SECRET_KEY', 'value': S3_SECRET_KEY, 'valueFrom': None}
                     ])
                 if OPENAI_API_KEY:
-                    container['env'].append({
-                        'name': 'OPENAI_API_KEY',
-                        'value': OPENAI_API_KEY
-                    })
+                    container['env'].extend([
+                        {'name': 'OPENAI_API_KEY', 'value': OPENAI_API_KEY, 'valueFrom': None}
+                    ])
                 if WCS_HTTP_URL and WCS_API_KEY:
                     container['env'].extend([
                         {'name': 'WCS_HTTP_URL', 'value': WCS_HTTP_URL},
