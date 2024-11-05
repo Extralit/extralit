@@ -17,6 +17,7 @@ These are the section headers that we use:
 
 ### Added
 - Added envvar to use external Postgres, Minio, and Weaviate services for "Docker, Tilt, and K8s" devcontainer on GH Codespaces
+- Added client version at `argilla/src/argilla/_version.py` to notify the user when version mismatch occurs
 
 ### Fixed
 - Add error handling to extralit's create_extraction_prompt
