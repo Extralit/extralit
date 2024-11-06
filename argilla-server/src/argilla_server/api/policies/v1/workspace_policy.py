@@ -28,7 +28,7 @@ class WorkspacePolicy:
 
     @classmethod
     async def create(cls, actor: User) -> bool:
-        return actor.is_owner
+        return actor.is_owner or actor.is_admin
 
     @classmethod
     async def delete(cls, actor: User) -> bool:

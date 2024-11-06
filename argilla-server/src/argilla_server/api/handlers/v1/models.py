@@ -7,7 +7,7 @@ from starlette.requests import Request
 from starlette.responses import StreamingResponse
 
 from argilla_server.models import User
-from argilla_server.policies import _exists_workspace_user_by_user_and_workspace_name
+from argilla_server.api.policies.v1 import _exists_workspace_user_by_user_and_workspace_name
 from argilla_server.security import auth
 from argilla_server.settings import settings
 from argilla_server.errors import UnauthorizedError, BadRequestError

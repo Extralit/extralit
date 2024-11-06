@@ -7,8 +7,8 @@ from minio import Minio, S3Error
 
 from argilla_server.contexts import files
 from argilla_server.models import User
-from argilla_server.policies import FilePolicy, authorize
-from argilla_server.schemas.v1.files import ListObjectsResponse, ObjectMetadata
+from argilla_server.api.policies.v1 import FilePolicy, authorize
+from argilla_server.api.schemas.v1.files import ListObjectsResponse, ObjectMetadata
 from argilla_server.security import auth
 
 _LOGGER = logging.getLogger("files")
@@ -25,7 +25,7 @@ async def get_file(
     current_user: Optional[User] = Security(auth.get_optional_current_user)
     ):
 
-    # Check if the current user is in the workspace to have access to the s3 bucket of the same name
+    # TODO Check if the current user is in the workspace to have access to the s3 bucket of the same name
     # if current_user is not None or current_user.role != "owner":
     #     await authorize(current_user, FilePolicy.get(bucket))
 
