@@ -17,25 +17,29 @@ from datetime import datetime
 from typing import Any, List, Optional, Union
 from uuid import UUID
 
-from sqlalchemy import JSON, ForeignKey, String, Text, UniqueConstraint, and_, sql, LargeBinary
+from sqlalchemy import JSON, ForeignKey, String, Text, UniqueConstraint, and_, sql, select, func, text
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.engine.default import DefaultExecutionContext
+from sqlalchemy.ext.asyncio import async_object_session
 from sqlalchemy.ext.mutable import MutableDict, MutableList
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship, column_property
 
+from argilla_server.api.schemas.v1.questions import QuestionSettings
 from argilla_server.enums import (
     DatasetStatus,
     MetadataPropertyType,
     QuestionType,
+    RecordStatus,
     ResponseStatus,
     SuggestionType,
     UserRole,
+    DatasetDistributionStrategy,
+    RecordStatus,
 )
 from argilla_server.models.base import DatabaseModel
 from argilla_server.models.metadata_properties import MetadataPropertySettings
 from argilla_server.models.mixins import inserted_at_current_value
 from argilla_server.pydantic_v1 import parse_obj_as
-from argilla_server.schemas.v1.questions import QuestionSettings
 
 # Include here the data model ref to be accessible for automatic alembic migration scripts
 __all__ = [
@@ -87,7 +91,7 @@ class Response(DatabaseModel):
     values: Mapped[Optional[dict]] = mapped_column(MutableDict.as_mutable(JSON))
     status: Mapped[ResponseStatus] = mapped_column(ResponseStatusEnum, default=ResponseStatus.submitted, index=True)
     record_id: Mapped[UUID] = mapped_column(ForeignKey("records.id", ondelete="CASCADE"), index=True)
-    user_id: Mapped[Optional[UUID]] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), index=True)
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
 
     record: Mapped["Record"] = relationship(back_populates="responses")
     user: Mapped["User"] = relationship(back_populates="responses")
@@ -184,11 +188,17 @@ class VectorSettings(DatabaseModel):
         )
 
 
+RecordStatusEnum = SAEnum(RecordStatus, name="record_status_enum")
+
+
 class Record(DatabaseModel):
     __tablename__ = "records"
 
     fields: Mapped[dict] = mapped_column(JSON, default={})
     metadata_: Mapped[Optional[dict]] = mapped_column("metadata", MutableDict.as_mutable(JSON), nullable=True)
+    status: Mapped[RecordStatus] = mapped_column(
+        RecordStatusEnum, default=RecordStatus.pending, server_default=RecordStatus.pending, index=True
+    )
     external_id: Mapped[Optional[str]] = mapped_column(index=True)
     dataset_id: Mapped[UUID] = mapped_column(ForeignKey("datasets.id", ondelete="CASCADE"), index=True)
 
@@ -197,6 +207,12 @@ class Record(DatabaseModel):
         back_populates="record",
         cascade="all, delete-orphan",
         passive_deletes=True,
+        order_by=Response.inserted_at.asc(),
+    )
+    responses_submitted: Mapped[List["Response"]] = relationship(
+        back_populates="record",
+        viewonly=True,
+        primaryjoin=f"and_(Record.id==Response.record_id, Response.status=='{ResponseStatus.submitted}')",
         order_by=Response.inserted_at.asc(),
     )
     suggestions: Mapped[List["Suggestion"]] = relationship(
@@ -214,16 +230,16 @@ class Record(DatabaseModel):
 
     __table_args__ = (UniqueConstraint("external_id", "dataset_id", name="record_external_id_dataset_id_uq"),)
 
+    def vector_value_by_vector_settings(self, vector_settings: "VectorSettings") -> Union[List[float], None]:
+        for vector in self.vectors:
+            if vector.vector_settings_id == vector_settings.id:
+                return vector.value
+
     def __repr__(self):
         return (
             f"Record(id={str(self.id)!r}, external_id={self.external_id!r}, dataset_id={str(self.dataset_id)!r}, "
             f"inserted_at={str(self.inserted_at)!r}, updated_at={str(self.updated_at)!r})"
         )
-
-    def vector_value_by_vector_settings(self, vector_settings: "VectorSettings") -> Union[List[float], None]:
-        for vector in self.vectors:
-            if vector.vector_settings_id == vector_settings.id:
-                return vector.value
 
 
 class Question(DatabaseModel):
@@ -308,6 +324,7 @@ class Dataset(DatabaseModel):
     guidelines: Mapped[Optional[str]] = mapped_column(Text)
     allow_extra_metadata: Mapped[bool] = mapped_column(default=True, server_default=sql.true())
     status: Mapped[DatasetStatus] = mapped_column(DatasetStatusEnum, default=DatasetStatus.draft, index=True)
+    distribution: Mapped[dict] = mapped_column(MutableDict.as_mutable(JSON))
     workspace_id: Mapped[UUID] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
     inserted_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(default=inserted_at_current_value, onupdate=datetime.utcnow)
@@ -350,12 +367,23 @@ class Dataset(DatabaseModel):
     __table_args__ = (UniqueConstraint("name", "workspace_id", name="dataset_name_workspace_id_uq"),)
 
     @property
+    async def responses_count(self) -> int:
+        # TODO: This should be moved to proper repository
+        return await async_object_session(self).scalar(
+            select(func.count(Response.id)).join(Record).where(Record.dataset_id == self.id)
+        )
+
+    @property
     def is_draft(self):
         return self.status == DatasetStatus.draft
 
     @property
     def is_ready(self):
         return self.status == DatasetStatus.ready
+
+    @property
+    def distribution_strategy(self) -> DatasetDistributionStrategy:
+        return DatasetDistributionStrategy(self.distribution["strategy"])
 
     def metadata_property_by_name(self, name: str) -> Union["MetadataProperty", None]:
         for metadata_property in self.metadata_properties:
@@ -447,7 +475,12 @@ class User(DatabaseModel):
     workspaces: Mapped[List["Workspace"]] = relationship(
         secondary="workspaces_users", back_populates="users", order_by=WorkspaceUser.inserted_at.asc()
     )
-    responses: Mapped[List["Response"]] = relationship(back_populates="user")
+    responses: Mapped[List["Response"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        order_by=Response.inserted_at.asc(),
+    )
     datasets: Mapped[List["Dataset"]] = relationship(
         secondary="workspaces_users",
         primaryjoin="User.id == WorkspaceUser.user_id",
@@ -470,6 +503,27 @@ class User(DatabaseModel):
     @property
     def is_annotator(self):
         return self.role == UserRole.annotator
+
+    async def is_member(self, workspace_id: UUID) -> bool:
+        # TODO: Change query to use exists may improve performance
+        return (
+            await WorkspaceUser.get_by(async_object_session(self), workspace_id=workspace_id, user_id=self.id)
+            is not None
+        )
+    
+    async def is_member_of_workspace_name(self, workspace_name: str) -> bool:
+        session = async_object_session(self)
+        workspace = await Workspace.get_by(session, name=workspace_name)
+        if not workspace:
+            return False
+        return (
+            await WorkspaceUser.get_by(
+                session,
+                workspace_id=workspace.id,
+                user_id=self.id
+            )
+            is not None
+        )
 
     def __repr__(self):
         return (

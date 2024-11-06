@@ -4,7 +4,6 @@ import logging
 from uuid import UUID
 from typing import TYPE_CHECKING, Optional, List, Union
 
-from argilla_server.schemas.v1.files import ObjectMetadata
 from fastapi import APIRouter, Body, Depends, File, HTTPException, UploadFile, Path, status, Security
 from fastapi.responses import StreamingResponse
 from minio import Minio
@@ -14,10 +13,10 @@ from sqlalchemy import and_, func, or_, select
 from argilla_server.database import get_async_db
 from argilla_server.models.database import Document
 from argilla_server.security import auth
-from argilla_server.policies import DocumentPolicy, authorize, is_authorized
-from argilla_server.models import User
+from argilla_server.models import User, Workspace
 from argilla_server.contexts import accounts, datasets, files
-from argilla_server.schemas.v1.documents import DocumentCreateRequest, DocumentDeleteRequest, DocumentListItem
+from argilla_server.api.policies.v1 import DocumentPolicy, authorize, is_authorized
+from argilla_server.api.schemas.v1.documents import DocumentCreateRequest, DocumentDeleteRequest, DocumentListItem
 
 if TYPE_CHECKING:
     from argilla_server.models import Document
@@ -68,7 +67,7 @@ async def upload_document(
 ):
     await authorize(current_user, DocumentPolicy.create())
 
-    workspace = await accounts.get_workspace_by_id(db, document_create.workspace_id)
+    workspace = await Workspace.get(db, document_create.workspace_id)
     if not workspace:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -188,7 +187,7 @@ async def delete_documents_by_workspace_id(*,
     ):
     await authorize(current_user, DocumentPolicy.delete(workspace_id))
 
-    workspace = await accounts.get_workspace_by_id(db, workspace_id)
+    workspace = await Workspace.get(db, workspace_id)
     
     documents = await datasets.delete_documents(
         db,
