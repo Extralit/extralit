@@ -16,9 +16,9 @@ from typing import TYPE_CHECKING
 from uuid import uuid4
 
 import pytest
+from argilla_server.api.schemas.v1.vector_settings import VECTOR_SETTINGS_CREATE_TITLE_MAX_LENGTH
 from argilla_server.constants import API_KEY_HEADER_NAME
 from argilla_server.enums import UserRole
-from argilla_server.schemas.v1.vector_settings import VECTOR_SETTINGS_CREATE_TITLE_MAX_LENGTH
 
 from tests.factories import AdminFactory, AnnotatorFactory, UserFactory, VectorSettingsFactory
 
@@ -80,13 +80,16 @@ class TestSuiteVectorsSettings:
         assert response.status_code == 422
 
     async def test_update_vector_settings_non_existent(self, async_client: "AsyncClient", owner_auth_header: dict):
+        vector_settings_id = uuid4()
+
         response = await async_client.patch(
-            f"/api/v1/vectors-settings/{uuid4()}",
+            f"/api/v1/vectors-settings/{vector_settings_id}",
             headers=owner_auth_header,
             json={"title": "New Title"},
         )
 
         assert response.status_code == 404
+        assert response.json() == {"detail": f"VectorSettings with id `{vector_settings_id}` not found"}
 
     async def test_update_vector_settings_as_admin_from_different_workspace(
         self, async_client: "AsyncClient", owner_auth_header: dict
@@ -135,9 +138,15 @@ class TestSuiteVectorsSettings:
         }
 
     async def test_delete_vector_settings_non_existing(self, async_client: "AsyncClient", owner_auth_header: dict):
-        response = await async_client.delete(f"/api/v1/vectors-settings/{uuid4()}", headers=owner_auth_header)
+        vector_settings_id = uuid4()
+
+        response = await async_client.delete(
+            f"/api/v1/vectors-settings/{vector_settings_id}",
+            headers=owner_auth_header,
+        )
 
         assert response.status_code == 404
+        assert response.json() == {"detail": f"VectorSettings with id `{vector_settings_id}` not found"}
 
     async def test_delete_vector_settings_as_annotator(self, async_client: "AsyncClient"):
         vector_settings = await VectorSettingsFactory.create()

@@ -14,28 +14,19 @@
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Security, status
+from fastapi import APIRouter, Depends, Security
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
+from argilla_server.api.policies.v1 import VectorSettingsPolicy, authorize
+from argilla_server.api.schemas.v1.vector_settings import VectorSettings as VectorSettingsSchema
+from argilla_server.api.schemas.v1.vector_settings import VectorSettingsUpdate
 from argilla_server.contexts import datasets
 from argilla_server.database import get_async_db
 from argilla_server.models import User, VectorSettings
-from argilla_server.policies import VectorSettingsPolicyV1, authorize
-from argilla_server.schemas.v1.vector_settings import VectorSettings as VectorSettingsSchema
-from argilla_server.schemas.v1.vector_settings import VectorSettingsUpdate
 from argilla_server.security import auth
 
 router = APIRouter(tags=["vectors-settings"])
-
-
-async def _get_vector_settings(db: AsyncSession, vector_settings_id: UUID) -> VectorSettings:
-    vector_settings = await datasets.get_vector_settings_by_id(db, vector_settings_id)
-    if not vector_settings:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Vector settings with `{vector_settings_id}` not found",
-        )
-    return vector_settings
 
 
 @router.patch("/vectors-settings/{vector_settings_id}", response_model=VectorSettingsSchema)
@@ -46,9 +37,13 @@ async def update_vector_settings(
     vector_settings_update: VectorSettingsUpdate,
     current_user: User = Security(auth.get_current_user),
 ):
-    vector_settings = await _get_vector_settings(db, vector_settings_id)
+    vector_settings = await VectorSettings.get_or_raise(
+        db,
+        vector_settings_id,
+        options=[selectinload(VectorSettings.dataset)],
+    )
 
-    await authorize(current_user, VectorSettingsPolicyV1.update(vector_settings))
+    await authorize(current_user, VectorSettingsPolicy.update(vector_settings))
 
     return await datasets.update_vector_settings(db, vector_settings, vector_settings_update)
 
@@ -60,8 +55,12 @@ async def delete_vector_settings(
     vector_settings_id: UUID,
     current_user: User = Security(auth.get_current_user),
 ):
-    vector_settings = await _get_vector_settings(db, vector_settings_id)
+    vector_settings = await VectorSettings.get_or_raise(
+        db,
+        vector_settings_id,
+        options=[selectinload(VectorSettings.dataset)],
+    )
 
-    await authorize(current_user, VectorSettingsPolicyV1.delete(vector_settings))
+    await authorize(current_user, VectorSettingsPolicy.delete(vector_settings))
 
     return await datasets.delete_vector_settings(db, vector_settings)

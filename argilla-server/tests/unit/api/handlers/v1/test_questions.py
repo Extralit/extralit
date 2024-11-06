@@ -16,10 +16,13 @@ from typing import TYPE_CHECKING, Type
 from uuid import uuid4
 
 import pytest
+from argilla_server.api.schemas.v1.questions import (
+    QUESTION_CREATE_DESCRIPTION_MAX_LENGTH,
+    QUESTION_CREATE_TITLE_MAX_LENGTH,
+)
 from argilla_server.constants import API_KEY_HEADER_NAME
 from argilla_server.enums import OptionsOrder
 from argilla_server.models import DatasetStatus, Question, UserRole
-from argilla_server.schemas.v1.questions import QUESTION_CREATE_DESCRIPTION_MAX_LENGTH, QUESTION_CREATE_TITLE_MAX_LENGTH
 from sqlalchemy import func, select
 
 from tests.factories import (
@@ -49,16 +52,19 @@ if TYPE_CHECKING:
             {
                 "title": "New Title",
                 "description": "New Description",
-                "settings": {"type": "text", "use_markdown": True, "use_table": False},
+                "settings": {"type": "text", "use_markdown": True},
             },
-            {"type": "text", "use_markdown": True, "use_table": False},
+            {"type": "text", "use_markdown": True},
         ),
         (
             TextQuestionFactory,
-            {"name": "New Name", "required": True, 
-             "dataset_id": str(uuid4()), 
-             "settings": {"type": "text", "use_markdown": False, "use_table": True}},
-            {"type": "text", "use_markdown": False, "use_table": True},
+            {"description": None, "settings": {"type": "text"}},
+            {"type": "text", "use_markdown": False},
+        ),
+        (
+            TextQuestionFactory,
+            {"name": "New Name", "required": True, "dataset_id": str(uuid4()), "settings": {"type": "text"}},
+            {"type": "text", "use_markdown": False},
         ),
         (
             RatingQuestionFactory,
@@ -432,13 +438,16 @@ async def test_update_question_with_invalid_payload(async_client: "AsyncClient",
 
 @pytest.mark.asyncio
 async def test_update_question_non_existent(async_client: "AsyncClient", owner_auth_header: dict):
+    question_id = uuid4()
+
     response = await async_client.patch(
-        f"/api/v1/questions/{uuid4()}",
+        f"/api/v1/questions/{question_id}",
         headers=owner_auth_header,
         json={"title": "New Title", "settings": {"type": "text", "use_markdown": True}},
     )
 
     assert response.status_code == 404
+    assert response.json() == {"detail": f"Question with id `{question_id}` not found"}
 
 
 @pytest.mark.asyncio
@@ -489,7 +498,7 @@ async def test_delete_question(async_client: "AsyncClient", db: "AsyncSession", 
         "title": "title",
         "description": "description",
         "required": False,
-        "settings": {"type": "text", "use_markdown": False, "use_table": False},
+        "settings": {"type": "text", "use_markdown": False},
         "dataset_id": str(question.dataset_id),
         "inserted_at": question.inserted_at.isoformat(),
         "updated_at": question.updated_at.isoformat(),
@@ -550,9 +559,16 @@ async def test_delete_question_belonging_to_published_dataset(
 async def test_delete_question_with_nonexistent_question_id(
     async_client: "AsyncClient", db: "AsyncSession", owner_auth_header: dict
 ):
+    question_id = uuid4()
+
     await TextQuestionFactory.create()
 
-    response = await async_client.delete(f"/api/v1/questions/{uuid4()}", headers=owner_auth_header)
+    response = await async_client.delete(
+        f"/api/v1/questions/{question_id}",
+        headers=owner_auth_header,
+    )
 
     assert response.status_code == 404
+    assert response.json() == {"detail": f"Question with id `{question_id}` not found"}
+
     assert (await db.execute(select(func.count(Question.id)))).scalar() == 1

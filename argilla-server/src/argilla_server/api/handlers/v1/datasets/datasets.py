@@ -15,34 +15,38 @@
 from typing import List, Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Security, status
+from fastapi import APIRouter, Depends, Security, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
-from argilla_server.contexts import accounts, datasets
-from argilla_server.database import get_async_db
-from argilla_server.enums import ResponseStatus
-from argilla_server.models import Dataset as DatasetModel
-from argilla_server.models import User
-from argilla_server.policies import DatasetPolicyV1, MetadataPropertyPolicyV1, authorize, is_authorized
-from argilla_server.schemas.v1.datasets import (
-    Dataset,
+from argilla_server.api.policies.v1 import DatasetPolicy, MetadataPropertyPolicy, authorize, is_authorized
+from argilla_server.api.schemas.v1.datasets import (
+    Dataset as DatasetSchema,
+)
+from argilla_server.api.schemas.v1.datasets import (
     DatasetCreate,
     DatasetMetrics,
     DatasetProgress,
     Datasets,
     DatasetUpdate,
 )
-from argilla_server.schemas.v1.fields import Field, FieldCreate, Fields
-from argilla_server.schemas.v1.metadata_properties import MetadataProperties, MetadataProperty, MetadataPropertyCreate
-from argilla_server.schemas.v1.vector_settings import VectorSettings, VectorSettingsCreate, VectorsSettings
+from argilla_server.api.schemas.v1.fields import Field, FieldCreate, Fields
+from argilla_server.api.schemas.v1.metadata_properties import (
+    MetadataProperties,
+    MetadataProperty,
+    MetadataPropertyCreate,
+)
+from argilla_server.api.schemas.v1.vector_settings import VectorSettings, VectorSettingsCreate, VectorsSettings
+from argilla_server.contexts import datasets
+from argilla_server.database import get_async_db
+from argilla_server.enums import ResponseStatus
+from argilla_server.models import Dataset, User
 from argilla_server.search_engine import (
     SearchEngine,
     get_search_engine,
 )
 from argilla_server.security import auth
 from argilla_server.telemetry import TelemetryClient, get_telemetry_client
-
-CREATE_DATASET_VECTOR_SETTINGS_MAX_COUNT = 5
 
 router = APIRouter()
 
@@ -54,7 +58,7 @@ async def _filter_metadata_properties_by_policy(
 
     for metadata_property in metadata_properties:
         metadata_property_is_authorized = await is_authorized(
-            current_user, MetadataPropertyPolicyV1.get(metadata_property)
+            current_user, MetadataPropertyPolicy.get(metadata_property)
         )
 
         if metadata_property_is_authorized:
@@ -70,7 +74,7 @@ async def list_current_user_datasets(
     workspace_id: Optional[UUID] = None,
     current_user: User = Security(auth.get_current_user),
 ):
-    await authorize(current_user, DatasetPolicyV1.list(workspace_id))
+    await authorize(current_user, DatasetPolicy.list(workspace_id))
 
     if not workspace_id:
         if current_user.is_owner:
@@ -88,9 +92,9 @@ async def list_current_user_datasets(
 async def list_dataset_fields(
     *, db: AsyncSession = Depends(get_async_db), dataset_id: UUID, current_user: User = Security(auth.get_current_user)
 ):
-    dataset = await _get_dataset_or_raise(db, dataset_id, with_fields=True)
+    dataset = await Dataset.get_or_raise(db, dataset_id, options=[selectinload(Dataset.fields)])
 
-    await authorize(current_user, DatasetPolicyV1.get(dataset))
+    await authorize(current_user, DatasetPolicy.get(dataset))
 
     return Fields(items=dataset.fields)
 
@@ -99,9 +103,9 @@ async def list_dataset_fields(
 async def list_dataset_vector_settings(
     *, db: AsyncSession = Depends(get_async_db), dataset_id: UUID, current_user: User = Security(auth.get_current_user)
 ):
-    dataset = await _get_dataset_or_raise(db, dataset_id, with_vectors_settings=True)
+    dataset = await Dataset.get_or_raise(db, dataset_id, options=[selectinload(Dataset.vectors_settings)])
 
-    await authorize(current_user, DatasetPolicyV1.get(dataset))
+    await authorize(current_user, DatasetPolicy.get(dataset))
 
     return VectorsSettings(items=dataset.vectors_settings)
 
@@ -110,9 +114,9 @@ async def list_dataset_vector_settings(
 async def list_current_user_dataset_metadata_properties(
     *, db: AsyncSession = Depends(get_async_db), dataset_id: UUID, current_user: User = Security(auth.get_current_user)
 ):
-    dataset = await _get_dataset_or_raise(db, dataset_id, with_metadata_properties=True)
+    dataset = await Dataset.get_or_raise(db, dataset_id, options=[selectinload(Dataset.metadata_properties)])
 
-    await authorize(current_user, DatasetPolicyV1.get(dataset))
+    await authorize(current_user, DatasetPolicy.get(dataset))
 
     filtered_metadata_properties = await _filter_metadata_properties_by_policy(
         current_user, dataset.metadata_properties
@@ -121,13 +125,13 @@ async def list_current_user_dataset_metadata_properties(
     return MetadataProperties(items=filtered_metadata_properties)
 
 
-@router.get("/datasets/{dataset_id}", response_model=Dataset)
+@router.get("/datasets/{dataset_id}", response_model=DatasetSchema)
 async def get_dataset(
     *, db: AsyncSession = Depends(get_async_db), dataset_id: UUID, current_user: User = Security(auth.get_current_user)
 ):
-    dataset = await _get_dataset_or_raise(db, dataset_id)
+    dataset = await Dataset.get_or_raise(db, dataset_id)
 
-    await authorize(current_user, DatasetPolicyV1.get(dataset))
+    await authorize(current_user, DatasetPolicy.get(dataset))
 
     return dataset
 
@@ -139,27 +143,11 @@ async def get_current_user_dataset_metrics(
     dataset_id: UUID,
     current_user: User = Security(auth.get_current_user),
 ):
-    dataset = await _get_dataset_or_raise(db, dataset_id)
+    dataset = await Dataset.get_or_raise(db, dataset_id)
 
-    await authorize(current_user, DatasetPolicyV1.get(dataset))
+    await authorize(current_user, DatasetPolicy.get(dataset))
 
-    return {
-        "records": {
-            "count": await datasets.count_records_by_dataset_id(db, dataset_id),
-        },
-        "responses": {
-            "count": await datasets.count_responses_by_dataset_id_and_user_id(db, dataset_id, current_user.id),
-            "submitted": await datasets.count_responses_by_dataset_id_and_user_id(
-                db, dataset_id, current_user.id, ResponseStatus.submitted
-            ),
-            "discarded": await datasets.count_responses_by_dataset_id_and_user_id(
-                db, dataset_id, current_user.id, ResponseStatus.discarded
-            ),
-            "draft": await datasets.count_responses_by_dataset_id_and_user_id(
-                db, dataset_id, current_user.id, ResponseStatus.draft
-            ),
-        },
-    }
+    return await datasets.get_user_dataset_metrics(db, current_user.id, dataset.id)
 
 
 @router.get("/datasets/{dataset_id}/progress", response_model=DatasetProgress)
@@ -169,36 +157,23 @@ async def get_dataset_progress(
     dataset_id: UUID,
     current_user: User = Security(auth.get_current_user),
 ):
-    dataset = await _get_dataset_or_raise(db, dataset_id)
+    dataset = await Dataset.get_or_raise(db, dataset_id)
 
-    await authorize(current_user, DatasetPolicyV1.get(dataset))
+    await authorize(current_user, DatasetPolicy.get(dataset))
 
     return await datasets.get_dataset_progress(db, dataset_id)
 
 
-@router.post("/datasets", status_code=status.HTTP_201_CREATED, response_model=Dataset)
+@router.post("/datasets", status_code=status.HTTP_201_CREATED, response_model=DatasetSchema)
 async def create_dataset(
     *,
     db: AsyncSession = Depends(get_async_db),
     dataset_create: DatasetCreate,
     current_user: User = Security(auth.get_current_user),
 ):
-    await authorize(current_user, DatasetPolicyV1.create(dataset_create.workspace_id))
+    await authorize(current_user, DatasetPolicy.create(dataset_create.workspace_id))
 
-    if not await accounts.get_workspace_by_id(db, dataset_create.workspace_id):
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Workspace with id `{dataset_create.workspace_id}` not found",
-        )
-
-    if await datasets.get_dataset_by_name_and_workspace_id(db, dataset_create.name, dataset_create.workspace_id):
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"Dataset with name `{dataset_create.name}` already exists for workspace with id `{dataset_create.workspace_id}`",
-        )
-
-    dataset = await datasets.create_dataset(db, dataset_create)
-    return dataset
+    return await datasets.create_dataset(db, dataset_create.dict())
 
 
 @router.post("/datasets/{dataset_id}/fields", status_code=status.HTTP_201_CREATED, response_model=Field)
@@ -209,23 +184,11 @@ async def create_dataset_field(
     field_create: FieldCreate,
     current_user: User = Security(auth.get_current_user),
 ):
-    dataset = await _get_dataset_or_raise(db, dataset_id)
+    dataset = await Dataset.get_or_raise(db, dataset_id)
 
-    await authorize(current_user, DatasetPolicyV1.create_field(dataset))
+    await authorize(current_user, DatasetPolicy.create_field(dataset))
 
-    if await datasets.get_field_by_name_and_dataset_id(db, field_create.name, dataset_id):
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"Field with name `{field_create.name}` already exists for dataset with id `{dataset_id}`",
-        )
-
-    # TODO: We should split API v1 into different FastAPI apps so we can customize error management.
-    # After mapping ValueError to 422 errors for API v1 then we can remove this try except.
-    try:
-        field = await datasets.create_field(db, dataset, field_create)
-        return field
-    except ValueError as err:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(err))
+    return await datasets.create_field(db, dataset, field_create)
 
 
 @router.post(
@@ -239,26 +202,11 @@ async def create_dataset_metadata_property(
     metadata_property_create: MetadataPropertyCreate,
     current_user: User = Security(auth.get_current_user),
 ):
-    dataset = await _get_dataset_or_raise(db, dataset_id)
+    dataset = await Dataset.get_or_raise(db, dataset_id)
 
-    await authorize(current_user, DatasetPolicyV1.create_metadata_property(dataset))
+    await authorize(current_user, DatasetPolicy.create_metadata_property(dataset))
 
-    if await datasets.get_metadata_property_by_name_and_dataset_id(db, metadata_property_create.name, dataset_id):
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"Metadata property with name `{metadata_property_create.name}` "
-            f"already exists for dataset with id `{dataset_id}`",
-        )
-
-    # TODO: We should split API v1 into different FastAPI apps so we can customize error management.
-    # After mapping ValueError to 422 errors for API v1 then we can remove this try except.
-    try:
-        metadata_property = await datasets.create_metadata_property(
-            db, search_engine, dataset, metadata_property_create
-        )
-        return metadata_property
-    except ValueError as err:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(err))
+    return await datasets.create_metadata_property(db, search_engine, dataset, metadata_property_create)
 
 
 @router.post(
@@ -272,34 +220,14 @@ async def create_dataset_vector_settings(
     vector_settings_create: VectorSettingsCreate,
     current_user: User = Security(auth.get_current_user),
 ):
-    dataset = await _get_dataset_or_raise(db, dataset_id)
+    dataset = await Dataset.get_or_raise(db, dataset_id)
 
-    await authorize(current_user, DatasetPolicyV1.create_vector_settings(dataset))
+    await authorize(current_user, DatasetPolicy.create_vector_settings(dataset))
 
-    count_vectors_settings_by_dataset_id = await datasets.count_vectors_settings_by_dataset_id(db, dataset_id)
-    if count_vectors_settings_by_dataset_id >= CREATE_DATASET_VECTOR_SETTINGS_MAX_COUNT:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"The maximum number of vector settings has been reached for dataset with id `{dataset_id}`",
-        )
-
-    if await datasets.get_vector_settings_by_name_and_dataset_id(db, vector_settings_create.name, dataset_id):
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"Vector settings with name `{vector_settings_create.name}` already exists for dataset with id"
-            f" `{dataset_id}`",
-        )
-
-    try:
-        vector_settings = await datasets.create_vector_settings(
-            db, search_engine, dataset=dataset, vector_settings_create=vector_settings_create
-        )
-        return vector_settings
-    except ValueError as err:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(err))
+    return await datasets.create_vector_settings(db, search_engine, dataset, vector_settings_create)
 
 
-@router.put("/datasets/{dataset_id}/publish", response_model=Dataset)
+@router.put("/datasets/{dataset_id}/publish", response_model=DatasetSchema)
 async def publish_dataset(
     *,
     db: AsyncSession = Depends(get_async_db),
@@ -307,28 +235,31 @@ async def publish_dataset(
     telemetry_client: TelemetryClient = Depends(get_telemetry_client),
     dataset_id: UUID,
     current_user: User = Security(auth.get_current_user),
-) -> DatasetModel:
-    dataset = await _get_dataset_or_raise(
-        db, dataset_id, with_fields=True, with_questions=True, with_metadata_properties=True, with_vectors_settings=True
+) -> Dataset:
+    dataset = await Dataset.get_or_raise(
+        db,
+        dataset_id,
+        options=[
+            selectinload(Dataset.fields),
+            selectinload(Dataset.questions),
+            selectinload(Dataset.metadata_properties),
+            selectinload(Dataset.vectors_settings),
+        ],
     )
 
-    await authorize(current_user, DatasetPolicyV1.publish(dataset))
-    # TODO: We should split API v1 into different FastAPI apps so we can customize error management.
-    #  After mapping ValueError to 422 errors for API v1 then we can remove this try except.
-    try:
-        dataset = await datasets.publish_dataset(db, search_engine, dataset)
+    await authorize(current_user, DatasetPolicy.publish(dataset))
 
-        telemetry_client.track_data(
-            action="PublishedDataset",
-            data={"questions": list(set([question.settings["type"] for question in dataset.questions]))},
-        )
+    dataset = await datasets.publish_dataset(db, search_engine, dataset)
 
-        return dataset
-    except ValueError as err:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(err))
+    telemetry_client.track_data(
+        action="PublishedDataset",
+        data={"questions": list(set([question.settings["type"] for question in dataset.questions]))},
+    )
+
+    return dataset
 
 
-@router.delete("/datasets/{dataset_id}", response_model=Dataset)
+@router.delete("/datasets/{dataset_id}", response_model=DatasetSchema)
 async def delete_dataset(
     *,
     db: AsyncSession = Depends(get_async_db),
@@ -336,16 +267,14 @@ async def delete_dataset(
     dataset_id: UUID,
     current_user: User = Security(auth.get_current_user),
 ):
-    dataset = await _get_dataset_or_raise(db, dataset_id)
+    dataset = await Dataset.get_or_raise(db, dataset_id)
 
-    await authorize(current_user, DatasetPolicyV1.delete(dataset))
+    await authorize(current_user, DatasetPolicy.delete(dataset))
 
-    await datasets.delete_dataset(db, search_engine, dataset=dataset)
-
-    return dataset
+    return await datasets.delete_dataset(db, search_engine, dataset)
 
 
-@router.patch("/datasets/{dataset_id}", response_model=Dataset)
+@router.patch("/datasets/{dataset_id}", response_model=DatasetSchema)
 async def update_dataset(
     *,
     db: AsyncSession = Depends(get_async_db),
@@ -353,34 +282,8 @@ async def update_dataset(
     dataset_update: DatasetUpdate,
     current_user: User = Security(auth.get_current_user),
 ):
-    dataset = await _get_dataset_or_raise(db, dataset_id)
+    dataset = await Dataset.get_or_raise(db, dataset_id)
 
-    await authorize(current_user, DatasetPolicyV1.update(dataset))
+    await authorize(current_user, DatasetPolicy.update(dataset))
 
-    return await datasets.update_dataset(db, dataset=dataset, dataset_update=dataset_update)
-
-
-async def _get_dataset_or_raise(
-    db: AsyncSession,
-    dataset_id: UUID,
-    with_fields: bool = False,
-    with_questions: bool = False,
-    with_metadata_properties: bool = False,
-    with_vectors_settings: bool = False,
-) -> DatasetModel:
-    dataset = await datasets.get_dataset_by_id(
-        db,
-        dataset_id,
-        with_fields=with_fields,
-        with_questions=with_questions,
-        with_metadata_properties=with_metadata_properties,
-        with_vectors_settings=with_vectors_settings,
-    )
-
-    if not dataset:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Dataset with id `{dataset_id}` not found",
-        )
-
-    return dataset
+    return await datasets.update_dataset(db, dataset, dataset_update.dict(exclude_unset=True))

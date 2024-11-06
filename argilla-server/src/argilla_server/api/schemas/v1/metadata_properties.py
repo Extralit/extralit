@@ -13,15 +13,13 @@
 #  limitations under the License.
 
 from datetime import datetime
-from typing import Annotated, Any, Dict, Generic, List, Literal, Optional, TypeVar, Union
+from typing import Any, Dict, Generic, List, Literal, Optional, TypeVar, Union
 from uuid import UUID
 
-from typing_extensions import Annotated
-
+from argilla_server.api.schemas.v1.commons import UpdateSchema
 from argilla_server.enums import MetadataPropertyType
 from argilla_server.pydantic_v1 import BaseModel, Field, constr, root_validator, validator
 from argilla_server.pydantic_v1.generics import GenericModel
-from argilla_server.schemas.base import UpdateSchema
 
 FLOAT_METADATA_METRICS_PRECISION = 5
 

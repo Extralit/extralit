@@ -18,6 +18,7 @@ from uuid import UUID
 
 from opensearchpy import AsyncOpenSearch, helpers
 
+from argilla_server.constants import SEARCH_ENGINE_OPENSEARCH
 from argilla_server.models import VectorSettings
 from argilla_server.search_engine.base import SearchEngine
 from argilla_server.search_engine.commons import (
@@ -29,7 +30,7 @@ from argilla_server.search_engine.commons import (
 from argilla_server.settings import settings
 
 
-@SearchEngine.register(engine_name="opensearch")
+@SearchEngine.register(engine_name=SEARCH_ENGINE_OPENSEARCH)
 @dataclasses.dataclass
 class OpenSearchEngine(BaseElasticAndOpenSearchEngine):
     config: Dict[str, Any] = dataclasses.field(default_factory=dict)
@@ -55,6 +56,9 @@ class OpenSearchEngine(BaseElasticAndOpenSearchEngine):
 
     async def close(self):
         await self.client.close()
+
+    async def ping(self) -> bool:
+        return await self.client.ping()
 
     async def info(self) -> dict:
         return await self.client.info()
@@ -123,12 +127,15 @@ class OpenSearchEngine(BaseElasticAndOpenSearchEngine):
         query: dict,
         size: Optional[int] = None,
         from_: Optional[int] = None,
-        sort: str = None,
+        sort: Optional[dict] = None,
         aggregations: Optional[dict] = None,
     ) -> dict:
         body = {"query": query}
         if aggregations:
             body["aggs"] = aggregations
+
+        if sort:
+            body["sort"] = sort
 
         return await self.client.search(
             index=index,
@@ -136,7 +143,6 @@ class OpenSearchEngine(BaseElasticAndOpenSearchEngine):
             from_=from_,
             size=size,
             _source=False,
-            sort=sort or "_score:desc,id:asc",
             track_total_hits=True,
         )
 

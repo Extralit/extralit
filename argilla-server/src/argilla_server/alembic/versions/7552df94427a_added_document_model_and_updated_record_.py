@@ -1,7 +1,7 @@
 """add Document model and update Record model
 
 Revision ID: 7552df94427a
-Revises: ca7293c38970
+Revises: 237f7c674d74
 Create Date: 2023-11-02 13:54:59.615241
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 
 revision = '7552df94427a'
-down_revision = 'ca7293c38970'  # TODO set to latest revision identifiers on updates from from argilla-io/argilla upstream repo.
+down_revision = '237f7c674d74'  # TODO set to latest revision identifiers on updates from from argilla-io/argilla upstream repo.
 branch_labels = None
 depends_on = None
 

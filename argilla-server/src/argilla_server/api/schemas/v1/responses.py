@@ -17,16 +17,10 @@ from typing import Annotated, Any, Dict, List, Literal, Optional, Union
 from uuid import UUID
 
 from fastapi import Body
-from typing_extensions import Annotated
 
-from argilla_server.models import ResponseStatus
+from argilla_server.api.schemas.v1.questions import QuestionName
+from argilla_server.enums import ResponseStatus
 from argilla_server.pydantic_v1 import BaseModel, Field, StrictInt, StrictStr, root_validator
-from argilla_server.schemas.v1.questions import QuestionName
-
-try:
-    from typing import Annotated
-except ImportError:
-    from typing_extensions import Annotated
 
 RESPONSES_BULK_CREATE_MIN_ITEMS = 1
 RESPONSES_BULK_CREATE_MAX_ITEMS = 100
@@ -96,7 +90,7 @@ class Response(BaseModel):
     values: Optional[ResponseValues]
     status: ResponseStatus
     record_id: UUID
-    user_id: Optional[UUID] = None  # Responses for delete users will have this field as None but still be present
+    user_id: UUID
     inserted_at: datetime
     updated_at: datetime
 

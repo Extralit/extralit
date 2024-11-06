@@ -33,7 +33,6 @@ from tests.factories import (
 
 @pytest.mark.asyncio
 class TestDatasetRecordsBulkWithSuggestions:
-
     def url(self, dataset_id: UUID) -> str:
         return f"/api/v1/datasets/{dataset_id}/records/bulk"
 
@@ -197,7 +196,7 @@ class TestDatasetRecordsBulkWithSuggestions:
         )
 
         assert response.status_code == 200, response.json()
-        assert (await db.execute(select(func.count(Suggestion.id)))).scalar_one() == 1, f"Expected only 1 Suggestion row, given: \n{(await db.execute(select(Suggestion))).all()}"
+        assert (await db.execute(select(func.count(Suggestion.id)))).scalar_one() == 1
         suggestion = (await db.execute(select(Suggestion))).scalar_one()
 
         records = response.json()["items"]
@@ -329,8 +328,8 @@ class TestDatasetRecordsBulkWithSuggestions:
 
         assert response.status_code == 422, response.json()
         assert response.json() == {
-            "detail": f"Record at position 0 does not have valid suggestions because suggestion for question name=label "
-            f"is not valid: 'wrong-label' is not a valid label for label selection question.\n"
+            "detail": "Record at position 0 does not have valid suggestions because suggestion for question name=label "
+            "is not valid: 'wrong-label' is not a valid label for label selection question.\n"
             "Valid labels are: ['label-a', 'label-b']"
         }
 
@@ -389,8 +388,8 @@ class TestDatasetRecordsBulkWithSuggestions:
 
         assert response.status_code == 422, response.json()
         assert response.json() == {
-            "detail": f"Record at position 0 does not have valid suggestions because suggestion for question name=label "
-            f"is not valid: 'wrong-label' is not a valid label for label selection question.\n"
+            "detail": "Record at position 0 does not have valid suggestions because suggestion for question name=label "
+            "is not valid: 'wrong-label' is not a valid label for label selection question.\n"
             "Valid labels are: ['label-a', 'label-b']"
         }
 

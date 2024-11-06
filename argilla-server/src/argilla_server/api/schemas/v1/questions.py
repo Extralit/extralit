@@ -16,11 +16,10 @@ from datetime import datetime
 from typing import Any, Dict, List, Literal, Optional, Union
 from uuid import UUID
 
-from argilla_server.enums import OptionsOrder
-from argilla_server.models import QuestionType
-from argilla_server.pydantic_v1 import BaseModel, Field, conlist, constr, root_validator, validator
-from argilla_server.schemas.base import UpdateSchema
-from argilla_server.schemas.v1.fields import FieldName
+from argilla_server.api.schemas.v1.commons import UpdateSchema
+from argilla_server.api.schemas.v1.fields import FieldName
+from argilla_server.enums import OptionsOrder, QuestionType
+from argilla_server.pydantic_v1 import BaseModel, Field, conlist, constr, root_validator
 from argilla_server.settings import settings
 
 try:
@@ -53,7 +52,7 @@ RANKING_OPTIONS_MIN_ITEMS = 2
 RANKING_OPTIONS_MAX_ITEMS = 50
 
 RATING_OPTIONS_MIN_ITEMS = 2
-RATING_OPTIONS_MAX_ITEMS = 20
+RATING_OPTIONS_MAX_ITEMS = 11
 RATING_VALUE_GREATER_THAN_OR_EQUAL = 0
 RATING_VALUE_LESS_THAN_OR_EQUAL = 10
 
@@ -143,17 +142,6 @@ class RatingQuestionSettingsCreate(UniqueValuesCheckerMixin):
         max_items=RATING_OPTIONS_MAX_ITEMS,
     )
 
-    @validator("options")
-    def check_option_value_range(cls, options: List[RatingQuestionSettingsOption]):
-        """Validator to control all values are in allowed range 1 <= x <= 10"""
-        for option in options:
-            if not RATING_VALUE_GREATER_THAN_OR_EQUAL <= option.value <= RATING_VALUE_LESS_THAN_OR_EQUAL:
-                raise ValueError(
-                    f"Option value {option.value!r} out of range "
-                    f"[{RATING_VALUE_GREATER_THAN_OR_EQUAL!r}, {RATING_VALUE_LESS_THAN_OR_EQUAL!r}]"
-                )
-        return options
-
 
 class RatingQuestionSettingsUpdate(UpdateSchema):
     type: Literal[QuestionType.rating]
@@ -199,15 +187,6 @@ class LabelSelectionSettingsUpdate(UpdateSchema):
             max_items=settings.label_selection_options_max_items,
         )
     ]
-
-    @root_validator(skip_on_failure=True)
-    def check_visible_options_value(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        visible_options = values.get("visible_options")
-        if visible_options is not None and "dynamic" not in values.get("type", '') and visible_options < LABEL_SELECTION_MIN_VISIBLE_OPTIONS:
-            raise ValueError(
-                f"The value for 'visible_options' must be greater than or equal to {LABEL_SELECTION_MIN_VISIBLE_OPTIONS}"
-            )
-        return values
 
 
 # Multi-label selection question

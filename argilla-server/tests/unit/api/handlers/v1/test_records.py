@@ -19,9 +19,9 @@ from uuid import UUID, uuid4
 
 import pytest
 from argilla_server.constants import API_KEY_HEADER_NAME
-from argilla_server.enums import ResponseStatus
+from argilla_server.enums import RecordStatus, ResponseStatus
 from argilla_server.models import Dataset, Record, Response, Suggestion, User, UserRole
-from argilla_server.search_engine import SearchEngine, SearchResponseItem, SearchResponses
+from argilla_server.search_engine import SearchEngine
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -92,6 +92,7 @@ class TestSuiteRecords:
         assert response.status_code == 200
         assert response.json() == {
             "id": str(record.id),
+            "status": RecordStatus.pending,
             "fields": {"text": "This is a text", "sentiment": "neutral"},
             "metadata": None,
             "external_id": record.external_id,
@@ -123,11 +124,17 @@ class TestSuiteRecords:
         assert response.status_code == 403
 
     async def test_get_record_with_nonexistent_record_id(self, async_client: "AsyncClient", owner_auth_header: dict):
+        record_id = uuid4()
+
         await RecordFactory.create()
 
-        response = await async_client.get(f"/api/v1/records/{uuid4()}", headers=owner_auth_header)
+        response = await async_client.get(
+            f"/api/v1/records/{record_id}",
+            headers=owner_auth_header,
+        )
 
         assert response.status_code == 404
+        assert response.json() == {"detail": f"Record with id `{record_id}` not found"}
 
     @pytest.mark.parametrize("role", [UserRole.owner, UserRole.admin])
     async def test_update_record(self, async_client: "AsyncClient", mock_search_engine: SearchEngine, role: UserRole):
@@ -182,6 +189,7 @@ class TestSuiteRecords:
         assert response.status_code == 200
         assert response.json() == {
             "id": str(record.id),
+            "status": RecordStatus.pending,
             "fields": {"text": "This is a text", "sentiment": "neutral"},
             "metadata": {
                 "terms-metadata-property": "c",
@@ -222,6 +230,7 @@ class TestSuiteRecords:
             "inserted_at": record.inserted_at.isoformat(),
             "updated_at": record.updated_at.isoformat(),
         }
+
         mock_search_engine.index_records.assert_called_once_with(dataset, [record])
 
     async def test_update_record_with_null_metadata(
@@ -245,6 +254,7 @@ class TestSuiteRecords:
         assert response.status_code == 200
         assert response.json() == {
             "id": str(record.id),
+            "status": RecordStatus.pending,
             "fields": {"text": "This is a text", "sentiment": "neutral"},
             "metadata": None,
             "external_id": record.external_id,
@@ -272,6 +282,7 @@ class TestSuiteRecords:
         assert response.status_code == 200
         assert response.json() == {
             "id": str(record.id),
+            "status": RecordStatus.pending,
             "fields": {"text": "This is a text", "sentiment": "neutral"},
             "metadata": None,
             "external_id": record.external_id,
@@ -304,6 +315,7 @@ class TestSuiteRecords:
         assert response.status_code == 200
         assert response.json() == {
             "id": str(record.id),
+            "status": RecordStatus.pending,
             "fields": {"text": "This is a text", "sentiment": "neutral"},
             "metadata": {
                 "terms-metadata-property": ["a", "b", "c"],
@@ -333,6 +345,7 @@ class TestSuiteRecords:
         assert response.status_code == 200
         assert response.json() == {
             "id": str(record.id),
+            "status": RecordStatus.pending,
             "fields": {"text": "This is a text", "sentiment": "neutral"},
             "metadata": None,
             "external_id": record.external_id,
@@ -814,6 +827,15 @@ class TestSuiteRecords:
                 create_multi_label_selection_questions,
                 {
                     "values": {
+                        "multi_label_selection_question_1": {"value": ["option1", "option2", "option1"]},
+                    },
+                },
+                "multi label selection questions expect a list of unique values, but duplicates were found",
+            ),
+            (
+                create_multi_label_selection_questions,
+                {
+                    "values": {
                         "multi_label_selection_question_1": {"value": ["option4", "option5"]},
                     },
                 },
@@ -1124,20 +1146,26 @@ class TestSuiteRecords:
         self, async_client: "AsyncClient", db: "AsyncSession", owner: User, owner_auth_header: dict
     ):
         record = await RecordFactory.create()
+
         await ResponseFactory.create(record=record, user=owner)
-        response_json = {
-            "values": {
-                "input_ok": {"value": "yes"},
-                "output_ok": {"value": "yes"},
-            },
-            "status": "submitted",
-        }
 
         response = await async_client.post(
-            f"/api/v1/records/{record.id}/responses", headers=owner_auth_header, json=response_json
+            f"/api/v1/records/{record.id}/responses",
+            headers=owner_auth_header,
+            json={
+                "values": {
+                    "input_ok": {"value": "yes"},
+                    "output_ok": {"value": "yes"},
+                },
+                "status": "submitted",
+            },
         )
 
         assert response.status_code == 409
+        assert response.json() == {
+            "detail": f"Response already exists for record with id `{record.id}` and by user with id `{owner.id}`"
+        }
+
         assert (await db.execute(select(func.count(Response.id)))).scalar() == 1
 
     async def test_create_record_response_with_invalid_values(
@@ -1178,20 +1206,25 @@ class TestSuiteRecords:
     async def test_create_record_response_with_nonexistent_record_id(
         self, async_client: "AsyncClient", db: "AsyncSession", owner_auth_header: dict
     ):
+        record_id = uuid4()
+
         await RecordFactory.create()
-        response_json = {
-            "values": {
-                "input_ok": {"value": "yes"},
-                "output_ok": {"value": "yes"},
-            },
-            "status": "submitted",
-        }
 
         response = await async_client.post(
-            f"/api/v1/records/{uuid4()}/responses", headers=owner_auth_header, json=response_json
+            f"/api/v1/records/{record_id}/responses",
+            headers=owner_auth_header,
+            json={
+                "values": {
+                    "input_ok": {"value": "yes"},
+                    "output_ok": {"value": "yes"},
+                },
+                "status": "submitted",
+            },
         )
 
         assert response.status_code == 404
+        assert response.json() == {"detail": f"Record with id `{record_id}` not found"}
+
         assert (await db.execute(select(func.count(Response.id)))).scalar() == 0
 
     @pytest.mark.parametrize("role", [UserRole.annotator, UserRole.admin, UserRole.owner])
@@ -1344,15 +1377,21 @@ class TestSuiteRecords:
     async def test_create_record_suggestion_for_non_existent_question(
         self, async_client: "AsyncClient", owner_auth_header: dict
     ):
+        question_id = uuid4()
+
         record = await RecordFactory.create()
 
         response = await async_client.put(
             f"/api/v1/records/{record.id}/suggestions",
             headers=owner_auth_header,
-            json={"question_id": str(uuid4()), "value": "This is a unit test suggestion"},
+            json={
+                "question_id": str(question_id),
+                "value": "This is a unit test suggestion",
+            },
         )
 
         assert response.status_code == 422
+        assert response.json() == {"detail": f"Question with id `{question_id}` not found"}
 
     async def test_create_record_suggestion_as_annotator(self, async_client: "AsyncClient"):
         annotator = await UserFactory.create(role=UserRole.annotator)
@@ -1381,6 +1420,7 @@ class TestSuiteRecords:
         assert response.status_code == 200
         assert response.json() == {
             "id": str(record.id),
+            "status": RecordStatus.pending,
             "fields": record.fields,
             "metadata": None,
             "external_id": record.external_id,
@@ -1414,8 +1454,15 @@ class TestSuiteRecords:
         assert response.status_code == 403
 
     async def test_delete_record_non_existent(self, async_client: "AsyncClient", owner_auth_header: dict):
-        response = await async_client.delete(f"/api/v1/records/{uuid4()}", headers=owner_auth_header)
+        record_id = uuid4()
+
+        response = await async_client.delete(
+            f"/api/v1/records/{record_id}",
+            headers=owner_auth_header,
+        )
+
         assert response.status_code == 404
+        assert response.json() == {"detail": f"Record with id `{record_id}` not found"}
 
     @pytest.mark.parametrize("role", [UserRole.admin, UserRole.owner])
     async def test_delete_record_suggestions(

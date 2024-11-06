@@ -12,32 +12,42 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 import random
-from typing import Any, Dict, List, Optional, Union
+import uuid
+from typing import Any, Dict, List, Optional, Union, Sequence
 
 import pytest
 import pytest_asyncio
-from argilla_server.enums import MetadataPropertyType, QuestionType, ResponseStatusFilter, SimilarityOrder
-from argilla_server.models import Dataset, Question, Record, User, VectorSettings
-from argilla_server.search_engine import (
-    FloatMetadataFilter,
-    IntegerMetadataFilter,
-    SortBy,
-    SuggestionFilterScope,
-    TermsFilter,
-    TermsMetadataFilter,
-    TextQuery,
-    UserResponseStatusFilter,
-)
-from argilla_server.search_engine.commons import (
-    ALL_RESPONSES_STATUSES_FIELD,
-    BaseElasticAndOpenSearchEngine,
-    es_index_name_for_dataset,
-)
-from argilla_server.settings import settings as server_settings
 from opensearchpy import OpenSearch
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
+from argilla_server.enums import (
+    MetadataPropertyType,
+    QuestionType,
+    ResponseStatusFilter,
+    SimilarityOrder,
+    RecordStatus,
+    SortOrder,
+)
+from argilla_server.models import Dataset, Question, Record, User, VectorSettings, Vector
+from argilla_server.search_engine import (
+    ResponseFilterScope,
+    SuggestionFilterScope,
+    TermsFilter,
+    TextQuery,
+    Filter,
+    MetadataFilterScope,
+    RangeFilter,
+    Order,
+    RecordFilterScope,
+    AndFilter,
+)
+from argilla_server.search_engine.commons import (
+    BaseElasticAndOpenSearchEngine,
+    es_index_name_for_dataset,
+    es_field_for_vector_settings,
+)
+from argilla_server.settings import settings as server_settings
 from tests.factories import (
     DatasetFactory,
     FloatMetadataPropertyFactory,
@@ -92,8 +102,8 @@ async def dataset_for_pagination(opensearch: OpenSearch):
 @pytest_asyncio.fixture(scope="function")
 @pytest.mark.asyncio
 async def test_banking_sentiment_dataset_non_indexed():
-    text_question = await TextQuestionFactory()
-    rating_question = await RatingQuestionFactory()
+    text_question = await TextQuestionFactory(name="text")
+    rating_question = await RatingQuestionFactory(name="rating")
 
     dataset = await DatasetFactory.create(
         fields=[
@@ -243,12 +253,30 @@ async def test_banking_sentiment_dataset_with_vectors(
             )
         await record.awaitable_attrs.vectors
 
-    await search_engine.set_records_vectors(test_banking_sentiment_dataset, vectors=vectors)
+    await set_records_vectors(search_engine, test_banking_sentiment_dataset, vectors=vectors)
 
     await refresh_dataset(test_banking_sentiment_dataset)
     await test_banking_sentiment_dataset.awaitable_attrs.records
 
     return test_banking_sentiment_dataset
+
+
+async def set_records_vectors(
+    search_engine: BaseElasticAndOpenSearchEngine, dataset: Dataset, vectors: Sequence[Vector]
+):
+    index_name = es_index_name_for_dataset(dataset)
+
+    bulk_actions = [
+        {
+            "_op_type": "update",
+            "_id": vector.record_id,
+            "_index": index_name,
+            "doc": {es_field_for_vector_settings(vector.vector_settings): vector.value},
+        }
+        for vector in vectors
+    ]
+
+    await search_engine._bulk_op_request(bulk_actions)
 
 
 async def refresh_dataset(dataset: Dataset):
@@ -262,6 +290,7 @@ async def refresh_records(records: List[Record]):
     for record in records:
         await record.awaitable_attrs.suggestions
         await record.awaitable_attrs.responses
+        await record.awaitable_attrs.responses_submitted
         await record.awaitable_attrs.vectors
 
 
@@ -276,7 +305,7 @@ def _expected_value_for_question(question: Question) -> Dict[str, Any]:
 
 @pytest.mark.asyncio
 @pytest.mark.skipif(
-    not server_settings.search_engine in ["elasticsearch", "opensearch"],
+    server_settings.search_engine not in ["elasticsearch", "opensearch"],
     reason="Running on elasticsearch/opensearch engine",
 )
 class TestBaseElasticAndOpenSearchEngine:
@@ -303,21 +332,22 @@ class TestBaseElasticAndOpenSearchEngine:
         index = opensearch.indices.get(index=index_name, flat_settings=True)[index_name]
         assert index["mappings"] == {
             "dynamic": "strict",
-            "dynamic_templates": [
-                {
-                    "status_responses": {
-                        "mapping": {"type": "keyword", "copy_to": ALL_RESPONSES_STATUSES_FIELD},
-                        "path_match": "responses.*.status",
-                    }
-                }
-            ],
             "properties": {
                 "id": {"type": "keyword"},
+                "status": {"type": "keyword"},
                 "inserted_at": {"type": "date_nanos"},
                 "updated_at": {"type": "date_nanos"},
-                ALL_RESPONSES_STATUSES_FIELD: {"type": "keyword"},
-                "responses": {"dynamic": "true", "type": "object"},
                 "metadata": {"dynamic": "false", "type": "object"},
+                "responses": {
+                    "dynamic": "strict",
+                    "include_in_root": True,
+                    "properties": {
+                        "id": {"type": "keyword"},
+                        "status": {"type": "keyword"},
+                        "user_id": {"type": "keyword"},
+                    },
+                    "type": "nested",
+                },
             },
         }
 
@@ -345,22 +375,23 @@ class TestBaseElasticAndOpenSearchEngine:
         index = opensearch.indices.get(index=index_name)[index_name]
         assert index["mappings"] == {
             "dynamic": "strict",
-            "dynamic_templates": [
-                {
-                    "status_responses": {
-                        "mapping": {"type": "keyword", "copy_to": ALL_RESPONSES_STATUSES_FIELD},
-                        "path_match": "responses.*.status",
-                    }
-                }
-            ],
             "properties": {
                 "id": {"type": "keyword"},
+                "status": {"type": "keyword"},
                 "inserted_at": {"type": "date_nanos"},
                 "updated_at": {"type": "date_nanos"},
-                ALL_RESPONSES_STATUSES_FIELD: {"type": "keyword"},
                 "fields": {"properties": {field.name: {"type": "text"} for field in dataset.fields}},
-                "responses": {"type": "object", "dynamic": "true"},
                 "metadata": {"dynamic": "false", "type": "object"},
+                "responses": {
+                    "dynamic": "strict",
+                    "include_in_root": True,
+                    "properties": {
+                        "id": {"type": "keyword"},
+                        "status": {"type": "keyword"},
+                        "user_id": {"type": "keyword"},
+                    },
+                    "type": "nested",
+                },
             },
         }
 
@@ -417,21 +448,22 @@ class TestBaseElasticAndOpenSearchEngine:
         index = opensearch.indices.get(index=index_name)[index_name]
         assert index["mappings"] == {
             "dynamic": "strict",
-            "dynamic_templates": [
-                {
-                    "status_responses": {
-                        "mapping": {"type": "keyword", "copy_to": ALL_RESPONSES_STATUSES_FIELD},
-                        "path_match": "responses.*.status",
-                    }
-                }
-            ],
             "properties": {
                 "id": {"type": "keyword"},
+                "status": {"type": "keyword"},
                 "inserted_at": {"type": "date_nanos"},
                 "updated_at": {"type": "date_nanos"},
-                ALL_RESPONSES_STATUSES_FIELD: {"type": "keyword"},
                 "fields": {"properties": {"field": {"type": "text"}}},
-                "responses": {"type": "object", "dynamic": "true"},
+                "responses": {
+                    "dynamic": "strict",
+                    "include_in_root": True,
+                    "properties": {
+                        "id": {"type": "keyword"},
+                        "status": {"type": "keyword"},
+                        "user_id": {"type": "keyword"},
+                    },
+                    "type": "nested",
+                },
                 "metadata": {
                     "dynamic": "false",
                     "properties": {
@@ -445,7 +477,7 @@ class TestBaseElasticAndOpenSearchEngine:
 
     @pytest.mark.parametrize(
         argnames=("text_ann_size", "rating_ann_size"),
-        argvalues=[(7, 8), (1, 9), (9, 1), (1, 1)],
+        argvalues=[(random.randint(1, 9), random.randint(1, 9)) for _ in range(1, 5)],
     )
     async def test_create_index_for_dataset_with_questions(
         self,
@@ -474,11 +506,21 @@ class TestBaseElasticAndOpenSearchEngine:
             "dynamic": "strict",
             "properties": {
                 "id": {"type": "keyword"},
+                "status": {"type": "keyword"},
                 "inserted_at": {"type": "date_nanos"},
                 "updated_at": {"type": "date_nanos"},
-                ALL_RESPONSES_STATUSES_FIELD: {"type": "keyword"},
-                "responses": {"dynamic": "true", "type": "object"},
                 "metadata": {"dynamic": "false", "type": "object"},
+                "responses": {
+                    "dynamic": "strict",
+                    "include_in_root": True,
+                    "properties": {
+                        "id": {"type": "keyword"},
+                        "status": {"type": "keyword"},
+                        "user_id": {"type": "keyword"},
+                        **{question.name: _expected_value_for_question(question) for question in all_questions},
+                    },
+                    "type": "nested",
+                },
                 "suggestions": {
                     "properties": {
                         question.name: {
@@ -493,26 +535,6 @@ class TestBaseElasticAndOpenSearchEngine:
                     }
                 },
             },
-            "dynamic_templates": [
-                {
-                    "status_responses": {
-                        "mapping": {"type": "keyword", "copy_to": ALL_RESPONSES_STATUSES_FIELD},
-                        "path_match": "responses.*.status",
-                    }
-                },
-                *[
-                    config
-                    for question in all_questions
-                    for config in [
-                        {
-                            f"{question.name}_responses": {
-                                "mapping": _expected_value_for_question(question),
-                                "path_match": f"responses.*.values.{question.name}",
-                            }
-                        },
-                    ]
-                ],
-            ],
         }
 
     @pytest.mark.parametrize(
@@ -563,13 +585,13 @@ class TestBaseElasticAndOpenSearchEngine:
         "statuses, expected_items",
         [
             ([], 6),
-            ([ResponseStatusFilter.missing], 6),
+            ([ResponseStatusFilter.pending], 6),
             ([ResponseStatusFilter.draft], 2),
             ([ResponseStatusFilter.submitted], 2),
             ([ResponseStatusFilter.discarded], 2),
-            ([ResponseStatusFilter.missing, ResponseStatusFilter.draft], 6),
+            ([ResponseStatusFilter.pending, ResponseStatusFilter.draft], 6),
             ([ResponseStatusFilter.submitted, ResponseStatusFilter.discarded], 4),
-            ([ResponseStatusFilter.missing, ResponseStatusFilter.draft, ResponseStatusFilter.discarded], 6),
+            ([ResponseStatusFilter.pending, ResponseStatusFilter.draft, ResponseStatusFilter.discarded], 6),
         ],
     )
     async def test_search_with_response_status_filter(
@@ -589,22 +611,66 @@ class TestBaseElasticAndOpenSearchEngine:
         result = await search_engine.search(
             test_banking_sentiment_dataset,
             query=TextQuery(q="payment"),
-            user_response_status_filter=UserResponseStatusFilter(user=user, statuses=statuses),
+            filter=TermsFilter(scope=ResponseFilterScope(property="status"), values=statuses),
         )
         assert len(result.items) == expected_items
         assert result.total == expected_items
+
+    async def test_search_with_response_value_without_user(
+        self,
+        search_engine: BaseElasticAndOpenSearchEngine,
+        opensearch: OpenSearch,
+        test_banking_sentiment_dataset: Dataset,
+    ):
+        user = await UserFactory.create()
+        await self._configure_record_responses(
+            opensearch,
+            test_banking_sentiment_dataset,
+            [ResponseStatusFilter.draft],
+            number_of_answered_records=2,
+            user=user,
+            rating_value=2,
+        )
+
+        another_user = await UserFactory.create()
+        await self._configure_record_responses(
+            opensearch,
+            test_banking_sentiment_dataset,
+            [ResponseStatusFilter.draft],
+            number_of_answered_records=3,
+            user=another_user,
+            rating_value=4,
+        )
+
+        results_for_user = await search_engine.search(
+            test_banking_sentiment_dataset,
+            filter=TermsFilter(ResponseFilterScope(question="rating", user=None), values=["2"]),
+        )
+        assert results_for_user.total == 2
+
+        results_for_another_user = await search_engine.search(
+            test_banking_sentiment_dataset,
+            filter=TermsFilter(ResponseFilterScope(question="rating", user=None), values=["4"]),
+        )
+        assert results_for_another_user.total == 3
+
+        combined_results = await search_engine.search(
+            test_banking_sentiment_dataset,
+            filter=TermsFilter(ResponseFilterScope(question="rating", user=None), values=["2", "4"]),
+        )
+        assert combined_results.total == 3
 
     @pytest.mark.parametrize(
         "statuses, expected_items",
         [
             ([], 9),
-            ([ResponseStatusFilter.missing], 3),
+            ([ResponseStatusFilter.pending], 3),
             ([ResponseStatusFilter.draft], 5),
             ([ResponseStatusFilter.submitted], 3),
             ([ResponseStatusFilter.discarded], 2),
-            ([ResponseStatusFilter.missing, ResponseStatusFilter.draft], 5),
+            ([ResponseStatusFilter.pending, ResponseStatusFilter.draft], 5),
             ([ResponseStatusFilter.submitted, ResponseStatusFilter.discarded], 3),
-            ([ResponseStatusFilter.missing, ResponseStatusFilter.draft, ResponseStatusFilter.discarded], 4),
+            ([ResponseStatusFilter.pending, ResponseStatusFilter.draft, ResponseStatusFilter.discarded], 4),
         ],
     )
     async def test_search_with_response_status_filter_with_no_user(
@@ -619,26 +685,35 @@ class TestBaseElasticAndOpenSearchEngine:
 
         result = await search_engine.search(
             test_banking_sentiment_dataset,
-            user_response_status_filter=UserResponseStatusFilter(statuses=statuses, user=None),
+            filter=TermsFilter(ResponseFilterScope(property="status"), values=statuses),
         )
 
         assert len(result.items) == expected_items
         assert result.total == expected_items
 
     @pytest.mark.parametrize(
-        ("metadata_filters_config", "expected_items"),
+        ("filter", "expected_items"),
         [
-            ([{"name": "label", "values": ["neutral"]}], 4),
-            ([{"name": "label", "values": ["positive"]}], 1),
-            ([{"name": "label", "values": ["neutral", "positive"]}], 5),
-            ([{"name": "textId", "ge": 3, "le": 4}], 2),
-            ([{"name": "textId", "ge": 3, "le": 3}], 1),
-            ([{"name": "textId", "ge": 3}], 6),
-            ([{"name": "textId", "le": 4}], 5),
-            ([{"name": "seq_float", "ge": 0.0, "le": 12.03}], 3),
-            ([{"name": "seq_float", "ge": 0.13, "le": 0.13}], 1),
-            ([{"name": "seq_float", "ge": 0.0}], 7),
-            ([{"name": "seq_float", "le": 12.03}], 5),
+            (TermsFilter(scope=MetadataFilterScope(metadata_property="label"), values=["neutral"]), 4),
+            (TermsFilter(scope=MetadataFilterScope(metadata_property="label"), values=["positive"]), 1),
+            (TermsFilter(scope=MetadataFilterScope(metadata_property="label"), values=["neutral", "positive"]), 5),
+            (RangeFilter(scope=MetadataFilterScope(metadata_property="textId"), ge=3, le=4), 2),
+            (RangeFilter(scope=MetadataFilterScope(metadata_property="textId"), ge=3, le=3), 1),
+            (RangeFilter(scope=MetadataFilterScope(metadata_property="textId"), ge=3), 6),
+            (RangeFilter(scope=MetadataFilterScope(metadata_property="textId"), le=4), 5),
+            (RangeFilter(scope=MetadataFilterScope(metadata_property="seq_float"), ge=0, le=12.03), 3),
+            (RangeFilter(scope=MetadataFilterScope(metadata_property="seq_float"), ge=0.13, le=0.13), 1),
+            (RangeFilter(scope=MetadataFilterScope(metadata_property="seq_float"), ge=0.0), 7),
+            (RangeFilter(scope=MetadataFilterScope(metadata_property="seq_float"), le=12.03), 5),
+            (
+                AndFilter(
+                    filters=[
+                        TermsFilter(scope=MetadataFilterScope(metadata_property="label"), values=["negative"]),
+                        RangeFilter(scope=MetadataFilterScope(metadata_property="textId"), ge=3, le=4),
+                    ]
+                ),
+                1,
+            ),
         ],
     )
     async def test_search_with_metadata_filter(
@@ -646,24 +721,10 @@ class TestBaseElasticAndOpenSearchEngine:
         search_engine: BaseElasticAndOpenSearchEngine,
         opensearch: OpenSearch,
         test_banking_sentiment_dataset: Dataset,
-        metadata_filters_config: List[dict],
+        filter: Filter,
         expected_items: int,
     ):
-        metadata_filters = []
-        for metadata_filter_config in metadata_filters_config:
-            name = metadata_filter_config.pop("name")
-            for metadata_property in test_banking_sentiment_dataset.metadata_properties:
-                if name == metadata_property.name:
-                    if metadata_property.type == MetadataPropertyType.terms:
-                        filter_cls = TermsMetadataFilter
-                    elif metadata_property.type == MetadataPropertyType.integer:
-                        filter_cls = IntegerMetadataFilter
-                    else:
-                        filter_cls = FloatMetadataFilter
-                    metadata_filters.append(filter_cls(metadata_property=metadata_property, **metadata_filter_config))
-                    break
-
-        result = await search_engine.search(test_banking_sentiment_dataset, metadata_filters=metadata_filters)
+        result = await search_engine.search(test_banking_sentiment_dataset, filter=filter)
         assert len(result.items) == expected_items
         assert result.total == expected_items
 
@@ -688,7 +749,7 @@ class TestBaseElasticAndOpenSearchEngine:
     ):
         user = await UserFactory.create()
 
-        all_statuses = [ResponseStatusFilter.missing, ResponseStatusFilter.draft, ResponseStatusFilter.discarded]
+        all_statuses = [ResponseStatusFilter.pending, ResponseStatusFilter.draft, ResponseStatusFilter.discarded]
         await self._configure_record_responses(
             opensearch, test_banking_sentiment_dataset, all_statuses, len(test_banking_sentiment_dataset.records), user
         )
@@ -698,7 +759,7 @@ class TestBaseElasticAndOpenSearchEngine:
         results = await search_engine.search(
             test_banking_sentiment_dataset,
             query=TextQuery(q="payment"),
-            user_response_status_filter=UserResponseStatusFilter(user=user, statuses=all_statuses),
+            filter=TermsFilter(scope=ResponseFilterScope(property="status", user=user), values=all_statuses),
         )
 
         assert len(no_filter_results.items) == len(results.items)
@@ -707,7 +768,7 @@ class TestBaseElasticAndOpenSearchEngine:
 
     @pytest.mark.parametrize(
         "property, filter_match_value, filter_unmatch_value",
-        [("value", "A", "C"), ("score", 0.5, 0), ("agent", "peter", "john"), ("type", "human", "model")],
+        [("value", "A", "C"), ("score", "0.5", "0"), ("agent", "peter", "john"), ("type", "human", "model")],
     )
     async def test_search_with_suggestion_filter(
         self,
@@ -784,12 +845,12 @@ class TestBaseElasticAndOpenSearchEngine:
         assert all_results.items[offset : offset + limit] == results.items
 
     @pytest.mark.parametrize(
-        ("sort_by"),
+        ("sort_order"),
         [
-            SortBy(field="inserted_at"),
-            SortBy(field="updated_at"),
-            SortBy(field="inserted_at", order="desc"),
-            SortBy(field="updated_at", order="desc"),
+            Order(scope=RecordFilterScope(property="inserted_at"), order=SortOrder.asc),
+            Order(scope=RecordFilterScope(property="updated_at"), order=SortOrder.asc),
+            Order(scope=RecordFilterScope(property="inserted_at"), order=SortOrder.desc),
+            Order(scope=RecordFilterScope(property="updated_at"), order=SortOrder.desc),
         ],
     )
     async def test_search_with_sort_by(
@@ -797,18 +858,15 @@ class TestBaseElasticAndOpenSearchEngine:
         search_engine: BaseElasticAndOpenSearchEngine,
         opensearch: OpenSearch,
         test_banking_sentiment_dataset: Dataset,
-        sort_by: SortBy,
+        sort_order: Order,
     ):
         def _local_sort_by(record: Record) -> Any:
-            if isinstance(sort_by.field, str):
-                return getattr(record, sort_by.field)
-            return record.metadata_[sort_by.field.name]
+            return getattr(record, sort_order.scope.property)
 
-        results = await search_engine.search(test_banking_sentiment_dataset, sort_by=[sort_by])
+        results = await search_engine.search(test_banking_sentiment_dataset, sort=[sort_order])
 
         records = test_banking_sentiment_dataset.records
-        if sort_by:
-            records = sorted(records, key=_local_sort_by, reverse=sort_by.order == "desc")
+        records = sorted(records, key=_local_sort_by, reverse=sort_order.order == "desc")
 
         assert [item.record_id for item in results.items] == [record.id for record in records]
 
@@ -834,6 +892,7 @@ class TestBaseElasticAndOpenSearchEngine:
         assert es_docs == [
             {
                 "id": str(record.id),
+                "status": RecordStatus.pending,
                 "fields": record.fields,
                 "inserted_at": record.inserted_at.isoformat(),
                 "updated_at": record.updated_at.isoformat(),
@@ -892,6 +951,7 @@ class TestBaseElasticAndOpenSearchEngine:
         assert es_docs == [
             {
                 "id": str(records[0].id),
+                "status": RecordStatus.pending,
                 "fields": records[0].fields,
                 "inserted_at": records[0].inserted_at.isoformat(),
                 "updated_at": records[0].updated_at.isoformat(),
@@ -899,6 +959,7 @@ class TestBaseElasticAndOpenSearchEngine:
             },
             {
                 "id": str(records[1].id),
+                "status": RecordStatus.pending,
                 "fields": records[1].fields,
                 "inserted_at": records[1].inserted_at.isoformat(),
                 "updated_at": records[1].updated_at.isoformat(),
@@ -933,6 +994,7 @@ class TestBaseElasticAndOpenSearchEngine:
         assert es_docs == [
             {
                 "id": str(record.id),
+                "status": RecordStatus.pending,
                 "fields": record.fields,
                 "inserted_at": record.inserted_at.isoformat(),
                 "updated_at": record.updated_at.isoformat(),
@@ -972,6 +1034,7 @@ class TestBaseElasticAndOpenSearchEngine:
         assert es_docs == [
             {
                 "id": str(record.id),
+                "status": RecordStatus.pending,
                 "fields": record.fields,
                 "inserted_at": record.inserted_at.isoformat(),
                 "updated_at": record.updated_at.isoformat(),
@@ -1035,24 +1098,22 @@ class TestBaseElasticAndOpenSearchEngine:
 
         results = opensearch.get(index=index_name, id=record.id)
 
-        assert results["_source"]["responses"] == {
-            str(response.user.id): {
-                "values": {question.name: "test"},
-                "status": response.status.value,
-            }
-        }
+        assert results["_source"]["responses"] == [
+            {"id": str(response.id), "status": "submitted", "text": "test", "user_id": str(response.user_id)},
+        ]
 
         index = opensearch.indices.get(index=index_name)[index_name]
         assert index["mappings"]["properties"]["responses"] == {
-            "dynamic": "true",
+            "dynamic": "strict",
+            "include_in_root": True,
             "properties": {
-                str(response.user.id): {
-                    "properties": {
-                        "status": {"type": "keyword", "copy_to": [ALL_RESPONSES_STATUSES_FIELD]},
-                        "values": {"properties": {question.name: _expected_value_for_question(question)}},
-                    }
-                }
+                "id": {"type": "keyword"},
+                "rating": {"type": "integer"},
+                "status": {"type": "keyword"},
+                "text": {"enabled": False, "type": "object"},
+                "user_id": {"type": "keyword"},
             },
+            "type": "nested",
         }
 
     @pytest.mark.parametrize("annotators_size", [20, 200, 400])
@@ -1083,9 +1144,18 @@ class TestBaseElasticAndOpenSearchEngine:
         await search_engine.index_records(dataset, [record])
 
         properties = opensearch.indices.get_mapping(index=index_name)[index_name]["mappings"]["properties"]
-
-        for user in annotators:
-            assert str(user.id) in properties["responses"]["properties"]
+        assert properties["responses"] == {
+            "dynamic": "strict",
+            "include_in_root": True,
+            "properties": {
+                "id": {"type": "keyword"},
+                "status": {"type": "keyword"},
+                "user_id": {"type": "keyword"},
+                "rating": {"type": "integer"},
+                "text": {"enabled": False, "type": "object"},
+            },
+            "type": "nested",
+        }
 
     @pytest.mark.parametrize("annotators_size", [1000, 2000, 4000])
     async def test_annotator_limits_increasing_default_fields_limit(
@@ -1117,8 +1187,18 @@ class TestBaseElasticAndOpenSearchEngine:
 
         properties = opensearch.indices.get_mapping(index=index_name)[index_name]["mappings"]["properties"]
 
-        for user in annotators:
-            assert str(user.id) in properties["responses"]["properties"]
+        assert properties["responses"] == {
+            "dynamic": "strict",
+            "include_in_root": True,
+            "properties": {
+                "id": {"type": "keyword"},
+                "status": {"type": "keyword"},
+                "user_id": {"type": "keyword"},
+                "rating": {"type": "integer"},
+                "text": {"enabled": False, "type": "object"},
+            },
+            "type": "nested",
+        }
 
     async def test_delete_record_response(
         self,
@@ -1138,17 +1218,19 @@ class TestBaseElasticAndOpenSearchEngine:
         index_name = es_index_name_for_dataset(test_banking_sentiment_dataset)
 
         results = opensearch.get(index=index_name, id=record.id)
-        assert results["_source"]["responses"] == {
-            str(response.user.id): {
-                "values": {question.name: "test"},
-                "status": response.status.value,
-            }
-        }
+        assert results["_source"]["responses"] == [
+            {
+                "id": str(response.id),
+                "status": "submitted",
+                "text": "test",
+                "user_id": str(response.user_id),
+            },
+        ]
 
         await search_engine.delete_record_response(response)
 
         results = opensearch.get(index=index_name, id=record.id)
-        assert results["_source"]["responses"] == {}
+        assert results["_source"]["responses"] == []
 
     @pytest.mark.parametrize(
         ("property_name", "expected_metrics"),
@@ -1293,32 +1375,34 @@ class TestBaseElasticAndOpenSearchEngine:
         assert responses.items[0].record_id != selected_record.id
 
     @pytest.mark.parametrize(
-        "user_response_status_filter",
+        "statuses",
         [
-            None,
-            UserResponseStatusFilter(statuses=[ResponseStatusFilter.missing, ResponseStatusFilter.draft]),
+            [],
+            [ResponseStatusFilter.pending, ResponseStatusFilter.draft],
         ],
     )
-    async def test_similarity_search_by_record_and_user_response_filter(
+    async def test_similarity_search_by_record_and_response_status_filter(
         self,
         search_engine: BaseElasticAndOpenSearchEngine,
         opensearch: OpenSearch,
         test_banking_sentiment_dataset_with_vectors: Dataset,
-        user_response_status_filter: UserResponseStatusFilter,
+        statuses: List[ResponseStatusFilter],
     ):
         selected_record: Record = test_banking_sentiment_dataset_with_vectors.records[0]
         vector_settings: VectorSettings = test_banking_sentiment_dataset_with_vectors.vectors_settings[0]
 
-        if user_response_status_filter:
+        scope = ResponseFilterScope(property="status")
+
+        if statuses:
             test_user = await UserFactory.create()
-            user_response_status_filter.user = test_user
+            scope.user = test_user
 
         responses = await search_engine.similarity_search(
             dataset=test_banking_sentiment_dataset_with_vectors,
             vector_settings=vector_settings,
             record=selected_record,
             max_results=1,
-            user_response_status_filter=user_response_status_filter,
+            filter=TermsFilter(scope=scope, values=statuses),
         )
 
         assert responses.total == 1
@@ -1342,6 +1426,55 @@ class TestBaseElasticAndOpenSearchEngine:
 
         assert responses.total == 1
         assert responses.items[0].record_id != selected_record.id
+
+    async def test_similarity_search_by_record_and_response_value_filter(
+        self,
+        search_engine: BaseElasticAndOpenSearchEngine,
+        opensearch: OpenSearch,
+        test_banking_sentiment_dataset_with_vectors: Dataset,
+    ):
+        user = await UserFactory.create()
+
+        await self._configure_record_responses(
+            opensearch,
+            test_banking_sentiment_dataset_with_vectors,
+            [ResponseStatusFilter.draft],
+            number_of_answered_records=len(test_banking_sentiment_dataset_with_vectors.records),
+            user=user,
+            rating_value=2,
+        )
+
+        selected_record: Record = test_banking_sentiment_dataset_with_vectors.records[0]
+        vector_settings: VectorSettings = test_banking_sentiment_dataset_with_vectors.vectors_settings[0]
+
+        responses = await search_engine.similarity_search(
+            dataset=test_banking_sentiment_dataset_with_vectors,
+            vector_settings=vector_settings,
+            record=selected_record,
+            max_results=1,
+            filter=TermsFilter(ResponseFilterScope(question="rating", user=None), values=["2"]),
+        )
+
+        assert responses.total == 1
+
+    async def test_similarity_search_by_record_and_response_value_filter_without_responses(
+        self,
+        search_engine: BaseElasticAndOpenSearchEngine,
+        opensearch: OpenSearch,
+        test_banking_sentiment_dataset_with_vectors: Dataset,
+    ):
+        selected_record: Record = test_banking_sentiment_dataset_with_vectors.records[0]
+        vector_settings: VectorSettings = test_banking_sentiment_dataset_with_vectors.vectors_settings[0]
+
+        responses = await search_engine.similarity_search(
+            dataset=test_banking_sentiment_dataset_with_vectors,
+            vector_settings=vector_settings,
+            record=selected_record,
+            max_results=1,
+            filter=TermsFilter(ResponseFilterScope(question="rating", user=None), values=["2"]),
+        )
+
+        assert responses.total == 0
 
     @pytest.mark.parametrize("query, expected_results", [("payment", 5), ("nothing to find", 0)])
     async def test_similarity_search_with_text_search(
@@ -1377,12 +1510,13 @@ class TestBaseElasticAndOpenSearchEngine:
         response_status: List[ResponseStatusFilter],
         number_of_answered_records: int,
         user: Optional[User] = None,
+        rating_value: Optional[int] = None,
     ):
         index_name = es_index_name_for_dataset(dataset)
 
         all_statuses = [
             ResponseStatusFilter.draft,
-            ResponseStatusFilter.missing,
+            ResponseStatusFilter.pending,
             ResponseStatusFilter.discarded,
             ResponseStatusFilter.submitted,
         ]
@@ -1391,11 +1525,13 @@ class TestBaseElasticAndOpenSearchEngine:
 
         # Create two responses with the same status (one in each record)
         for i, status in enumerate(response_status):
-            if status != ResponseStatusFilter.missing:
-                await self._update_records_responses(opensearch, index_name, selected_records, status, user)
+            if status != ResponseStatusFilter.pending:
+                await self._update_records_responses(
+                    opensearch, index_name, selected_records, status, user, rating_value
+                )
 
         for status in all_statuses:
-            if status not in response_status and status != ResponseStatusFilter.missing:
+            if status not in response_status and status != ResponseStatusFilter.pending:
                 await self._update_records_responses(opensearch, index_name, rest_of_the_records, status, user)
 
         opensearch.indices.refresh(index=index_name)
@@ -1407,11 +1543,29 @@ class TestBaseElasticAndOpenSearchEngine:
         records: List[Record],
         status: ResponseStatusFilter,
         user: Optional[User] = None,
+        rating_value: Optional[int] = None,
     ):
         another_user = await UserFactory.create()
 
         for record in records:
-            users_responses = {f"{another_user.id}.status": status.value}
+            responses = [
+                {
+                    "id": str(uuid.uuid4()),
+                    "status": status.value,
+                    "user_id": str(another_user.id),
+                    "rating": -1,
+                }
+            ]
             if user:
-                users_responses.update({f"{user.id}.status": status.value})
-            opensearch.update(index_name, id=record.id, body={"doc": {"responses": users_responses}})
+                responses.append(
+                    {
+                        "id": str(uuid.uuid4()),
+                        "status": status.value,
+                        "user_id": str(user.id),
+                        "rating": rating_value or -1,
+                    }
+                )
+            record_responses = opensearch.get(index=index_name, id=record.id)["_source"].get("responses") or []
+            record_responses.extend(responses)
+
+            opensearch.update(index_name, id=record.id, body={"doc": {"responses": record_responses}})
