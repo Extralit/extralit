@@ -12,26 +12,24 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import contextlib
 import uuid
-from typing import TYPE_CHECKING, Dict, Generator
+from typing import TYPE_CHECKING, Dict, Generator, Optional
 
 import pytest
 import pytest_asyncio
+from sqlalchemy.engine.interfaces import IsolationLevel
+from httpx import AsyncClient
+from opensearchpy import OpenSearch
+
 from argilla_server import telemetry
-from argilla_server.apis.routes import api_v0, api_v1
+from argilla_server.contexts import distribution
+from argilla_server.api.routes import api_v1
 from argilla_server.constants import API_KEY_HEADER_NAME, DEFAULT_API_KEY
-from argilla_server.daos.backend import GenericElasticEngineBackend
-from argilla_server.daos.datasets import DatasetsDAO
-from argilla_server.daos.records import DatasetRecordsDAO
 from argilla_server.database import get_async_db
 from argilla_server.models import User, UserRole, Workspace
 from argilla_server.search_engine import SearchEngine, get_search_engine
 from argilla_server.settings import settings
 from argilla_server.telemetry import TelemetryClient
-from httpx import AsyncClient
-from opensearchpy import OpenSearch
-
 from tests.database import TestSession
 from tests.factories import AnnotatorFactory, OwnerFactory, UserFactory
 
@@ -55,11 +53,6 @@ def opensearch(elasticsearch_config: dict) -> Generator[OpenSearch, None, None]:
         client.indices.delete(index=index_info["index"])
 
 
-@pytest.fixture(scope="session")
-def es():
-    return GenericElasticEngineBackend.get_instance()
-
-
 @pytest.fixture(scope="function")
 def mock_search_engine(mocker) -> Generator["SearchEngine", None, None]:
     return mocker.AsyncMock(SearchEngine)
@@ -80,29 +73,32 @@ def owner_auth_header(owner: User) -> Dict[str, str]:
     return {API_KEY_HEADER_NAME: owner.api_key}
 
 
-@pytest.fixture(scope="function")
-def annotator_auth_header(annotator: User) -> Dict[str, str]:
-    return {API_KEY_HEADER_NAME: annotator.api_key}
-
-
 @pytest_asyncio.fixture(scope="function")
 async def async_client(
     request, mock_search_engine: SearchEngine, mocker: "MockerFixture"
 ) -> Generator["AsyncClient", None, None]:
     from argilla_server import app
 
-    async def override_get_async_db():
+    async def override_get_async_db(isolation_level: Optional[IsolationLevel] = None):
         session = TestSession()
+
+        # NOTE: We are ignoring the isolation_level because is causing errors with the tests.
+        # if isolation_level is not None:
+        #     await session.connection(execution_options={"isolation_level": isolation_level})
+
         yield session
 
     async def override_get_search_engine():
         yield mock_search_engine
 
-    mocker.patch("argilla_server._app._get_db_wrapper", wraps=contextlib.asynccontextmanager(override_get_async_db))
+    mocker.patch.object(distribution, "_get_async_db", override_get_async_db)
 
-    for api in [api_v0, api_v1]:
-        api.dependency_overrides[get_async_db] = override_get_async_db
-        api.dependency_overrides[get_search_engine] = override_get_search_engine
+    api_v1.dependency_overrides.update(
+        {
+            get_async_db: override_get_async_db,
+            get_search_engine: override_get_search_engine,
+        }
+    )
 
     async with AsyncClient(app=app, base_url="http://testserver") as async_client:
         yield async_client
@@ -117,16 +113,6 @@ def test_telemetry(mocker: "MockerFixture") -> "MagicMock":
 
     telemetry._CLIENT = mock_telemetry
     return telemetry._CLIENT
-
-
-@pytest.fixture(scope="session")
-def records_dao(es: GenericElasticEngineBackend):
-    return DatasetRecordsDAO.get_instance(es)
-
-
-@pytest.fixture(scope="session")
-def datasets_dao(records_dao: DatasetRecordsDAO, es: GenericElasticEngineBackend):
-    return DatasetsDAO.get_instance(es=es, records_dao=records_dao)
 
 
 @pytest_asyncio.fixture(scope="function")

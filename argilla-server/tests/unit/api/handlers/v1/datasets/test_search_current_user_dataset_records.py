@@ -16,7 +16,7 @@ from uuid import UUID
 
 import pytest
 from argilla_server.constants import API_KEY_HEADER_NAME
-from argilla_server.enums import UserRole
+from argilla_server.enums import UserRole, RecordStatus
 from argilla_server.search_engine import SearchEngine, SearchResponseItem, SearchResponses
 from httpx import AsyncClient
 
@@ -71,6 +71,7 @@ class TestSearchCurrentUserDatasetRecords:
                 {
                     "record": {
                         "id": str(record.id),
+                        "status": RecordStatus.pending,
                         "fields": record.fields,
                         "metadata": record.metadata_,
                         "external_id": record.external_id,
@@ -122,6 +123,7 @@ class TestSearchCurrentUserDatasetRecords:
                 {
                     "record": {
                         "id": str(record.id),
+                        "status": RecordStatus.pending,
                         "fields": record.fields,
                         "metadata": {"annotator_meta": "value"},
                         "external_id": record.external_id,
@@ -173,6 +175,7 @@ class TestSearchCurrentUserDatasetRecords:
                 {
                     "record": {
                         "id": str(record.id),
+                        "status": RecordStatus.pending,
                         "fields": record.fields,
                         "metadata": {"admin_meta": "value", "annotator_meta": "value", "extra": "value"},
                         "external_id": record.external_id,
@@ -242,7 +245,7 @@ class TestSearchCurrentUserDatasetRecords:
 
         assert response.status_code == 422
         assert response.json() == {
-            "detail": f"Question with name `non-existent` not found for dataset with id `{dataset.id}`"
+            "detail": f"Question not found filtering by name=non-existent, dataset_id={dataset.id}",
         }
 
     async def test_with_invalid_sort(self, async_client: AsyncClient, owner_auth_header: dict):
@@ -261,5 +264,5 @@ class TestSearchCurrentUserDatasetRecords:
 
         assert response.status_code == 422
         assert response.json() == {
-            "detail": f"Question with name `non-existent` not found for dataset with id `{dataset.id}`"
+            "detail": f"Question not found filtering by name=non-existent, dataset_id={dataset.id}"
         }

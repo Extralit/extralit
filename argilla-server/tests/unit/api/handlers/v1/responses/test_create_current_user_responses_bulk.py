@@ -18,7 +18,7 @@ from uuid import UUID, uuid4
 
 import pytest
 from argilla_server.constants import API_KEY_HEADER_NAME
-from argilla_server.enums import ResponseStatus
+from argilla_server.enums import ResponseStatus, RecordStatus
 from argilla_server.models import Response, User
 from argilla_server.search_engine import SearchEngine
 from argilla_server.use_cases.responses.upsert_responses_in_bulk import UpsertResponsesInBulkUseCase
@@ -39,7 +39,7 @@ from tests.factories import (
 @pytest.mark.asyncio
 class TestCreateCurrentUserResponsesBulk:
     def url(self) -> str:
-        return f"/api/v1/me/responses/bulk"
+        return "/api/v1/me/responses/bulk"
 
     def bulk_max_items(self) -> int:
         return 100
@@ -111,7 +111,7 @@ class TestCreateCurrentUserResponsesBulk:
                     "item": {
                         "id": str(response_to_create_id),
                         "values": {"prompt-quality": {"value": 5}},
-                        "status": ResponseStatus.submitted.value,
+                        "status": ResponseStatus.submitted,
                         "record_id": str(records[0].id),
                         "user_id": str(annotator.id),
                         "inserted_at": datetime.fromisoformat(resp_json["items"][0]["item"]["inserted_at"]).isoformat(),
@@ -123,7 +123,7 @@ class TestCreateCurrentUserResponsesBulk:
                     "item": {
                         "id": str(response_to_update.id),
                         "values": {"prompt-quality": {"value": 10}},
-                        "status": ResponseStatus.submitted.value,
+                        "status": ResponseStatus.submitted,
                         "record_id": str(records[1].id),
                         "user_id": str(annotator.id),
                         "inserted_at": datetime.fromisoformat(resp_json["items"][1]["item"]["inserted_at"]).isoformat(),
@@ -145,6 +145,10 @@ class TestCreateCurrentUserResponsesBulk:
                 },
             ],
         }
+
+        assert records[0].status == RecordStatus.completed
+        assert records[1].status == RecordStatus.completed
+        assert records[2].status == RecordStatus.pending
 
         assert (await db.execute(select(func.count(Response.id)))).scalar() == 2
 
@@ -390,7 +394,7 @@ class TestCreateCurrentUserResponsesBulk:
 
     @pytest.mark.skipif(reason="Profiling is not active", condition=not bool(os.getenv("TEST_PROFILING", None)))
     async def test_create_responses_in_bulk_profiling(self, db: "AsyncSession", elasticsearch_config: dict):
-        from argilla_server.schemas.v1.responses import DraftResponseUpsert
+        from argilla_server.api.schemas.v1.responses import DraftResponseUpsert
         from argilla_server.search_engine import ElasticSearchEngine
         from pyinstrument import Profiler
 

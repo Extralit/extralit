@@ -11,11 +11,13 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-
+import uuid
 from uuid import UUID
 
 import pytest
-from argilla_server.enums import DatasetStatus
+
+from argilla_server.constants import API_KEY_HEADER_NAME
+from argilla_server.enums import DatasetStatus, RecordStatus
 from argilla_server.models import Dataset, Record
 from httpx import AsyncClient
 from sqlalchemy import func, select
@@ -26,12 +28,12 @@ from tests.factories import (
     RecordFactory,
     TermsMetadataPropertyFactory,
     TextFieldFactory,
+    AnnotatorFactory,
 )
 
 
 @pytest.mark.asyncio
 class TestDatasetRecordsBulk:
-
     def url(self, dataset_id: UUID) -> str:
         return f"/api/v1/datasets/{dataset_id}/records/bulk"
 
@@ -88,6 +90,7 @@ class TestDatasetRecordsBulk:
             "items": [
                 {
                     "id": str(record.id),
+                    "status": RecordStatus.pending,
                     "dataset_id": str(dataset.id),
                     "external_id": record.external_id,
                     "fields": record.fields,
@@ -106,7 +109,7 @@ class TestDatasetRecordsBulk:
         self, async_client: AsyncClient, db: AsyncSession, owner_auth_header: dict, metadata: dict
     ) -> None:
         dataset = await self.test_dataset()
-        records = await RecordFactory.create_batch(dataset=dataset, size=100)
+        records = await RecordFactory.create_batch(dataset=dataset, size=10)
 
         response = await async_client.put(
             self.url(dataset.id),
@@ -125,7 +128,7 @@ class TestDatasetRecordsBulk:
         self, async_client: AsyncClient, db: AsyncSession, owner_auth_header: dict, metadata: dict
     ):
         dataset = await self.test_dataset()
-        records = await RecordFactory.create_batch(dataset=dataset, size=100)
+        records = await RecordFactory.create_batch(dataset=dataset, size=10)
 
         response = await async_client.put(
             self.url(dataset.id),
@@ -141,6 +144,30 @@ class TestDatasetRecordsBulk:
         for record in updated_records:
             assert record.metadata_ == metadata
 
+    async def test_update_record_metadata_with_invalid_external_id_but_correct_id(
+        self, async_client: AsyncClient, db: AsyncSession, owner_auth_header: dict
+    ):
+        dataset = await self.test_dataset()
+        records = await RecordFactory.create_batch(dataset=dataset, size=10)
+
+        new_metadata = {"whatever": "whatever"}
+        response = await async_client.put(
+            self.url(dataset.id),
+            headers=owner_auth_header,
+            json={
+                "items": [
+                    {"id": str(record.id), "external_id": str(uuid.uuid4()), "metadata": new_metadata}
+                    for record in records
+                ],
+            },
+        )
+
+        assert response.status_code == 200, response.json()
+        assert (await db.execute(select(func.count(Record.id)))).scalar_one() == len(records)
+        updated_records = (await db.execute(select(Record))).scalars().all()
+        for record in updated_records:
+            assert record.metadata_ == new_metadata
+
     async def test_update_record_for_other_dataset(
         self, async_client: AsyncClient, db: AsyncSession, owner_auth_header: dict
     ):
@@ -152,12 +179,29 @@ class TestDatasetRecordsBulk:
         response = await async_client.put(
             self.url(other_dataset.id),
             headers=owner_auth_header,
-            json={"items": [{"id": str(record.id), "metadata": {"terms_metadata": "b"}}]},
+            json={
+                "items": [
+                    {"id": str(record.id), "metadata": {"terms_metadata": "b"}},
+                ],
+            },
         )
 
         assert response.status_code == 422, response.json()
         assert (await db.execute(select(func.count(Record.id)))).scalar_one() == 1
         assert (await db.execute(select(Record))).scalar_one().metadata_ is None
+
+    async def test_create_records_in_bulk_as_annotator(self, async_client: AsyncClient):
+        user = await AnnotatorFactory.create()
+
+        dataset = await self.test_dataset()
+
+        response = await async_client.post(
+            self.url(dataset.id),
+            headers={API_KEY_HEADER_NAME: user.api_key},
+            json={"items": [{"fields": {"text": "The text field"}}]},
+        )
+
+        assert response.status_code == 403, response.json()
 
     async def _configure_dataset_metadata_properties(self, dataset):
         await TermsMetadataPropertyFactory.create(name="terms_metadata", dataset=dataset)
