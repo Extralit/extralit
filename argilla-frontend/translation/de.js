@@ -2,6 +2,7 @@ export default {
   multi_label_selection: "Multi-label",
   ranking: "Ranking",
   label_selection: "Label",
+  span: "Span",
   text: "Text",
   rating: "Bewertung",
   minimize: "Minimieren",
@@ -17,11 +18,6 @@ export default {
   refresh: "Refresh",
   typeYourText: "Type your text",
   all: "Alle",
-  sidebar: {
-    progressTooltip: "Fortschritt",
-    refreshTooltip: "Aktualisieren",
-    shortcutsTooltip: "Tastenkürzel",
-  },
   title: "Titel",
   description: "Beschreibung",
   labels: "Labels",
@@ -33,11 +29,17 @@ export default {
   dimension: "Dimension",
   visibleLabels: "Sichtbare labels",
   annotationGuidelines: "Annotationsrichtlinien",
+  guidelines: "Richtlinien",
   noAnnotationGuidelines: "Dieser Datensatz hat keine Annotationsrichtlinien",
   breadcrumbs: {
     home: "start",
     datasetSettings: "einstellungen",
     userSettings: "meine einstellungen",
+  },
+  datasets: {
+    left: "übrig",
+    completed: "Vollendet",
+    pending: "Ausstehend",
   },
   recordStatus: {
     pending: "Ausstehend",
@@ -45,6 +47,8 @@ export default {
     discarded: "Verworfen",
     submitted: "Gesichert",
     validated: "Validiert",
+    completedTooltip:
+      "Der Datensatz ist abgeschlossen, es hat die Anzahl der Antworten.",
   },
   userSettings: {
     title: "Meine Einstellungen",
@@ -164,13 +168,14 @@ export default {
   spanAnnotation: {
     shortcutHelper: "Halten Sie 'Shift' gedrückt, um Zeichenebene auszuwählen",
     notSupported: "Bereichsannotation wird von Ihrem Browser nicht unterstützt",
-    bulkMode: "Bereichsannotation wird in der Massenansicht nicht unterstützt",
   },
   login: {
     title: "Anmelden",
     username: "Benutzername",
     usernameDescription: "Gebe Sie ihren Benutzernamen ein",
     password: "Passwort",
+    show: "Anzeigen",
+    hide: "Ausblenden",
     passwordDescription: "Gebe Sie ihr Passwort ein",
     claim: "Gemeinsames Arbeiten an Daten.</br>Verbessern Sie Ihre Modelle.",
     support:
@@ -204,22 +209,28 @@ export default {
   youAreOnlineAgain: "Sie sind wieder online",
   youAreOffline: "Sie sind offline",
   datasetTable: {
-    name: "Name",
+    name: "Dataset",
     workspace: "Arbeitsbereich",
-    task: "Datensatz",
-    tags: "Tags",
     createdAt: "Erstellt am",
     lastActivityAt: "Aktualisiert am",
+    progress: "Teamfortschritt",
   },
   metrics: {
     total: "Total",
-    progress: "Fortschritt",
+    progress: {
+      my: "mein Fortschritt",
+      team: "Fortschritte im Team",
+    },
   },
 
   validations: {
     businessLogic: {
       missing_vector: {
         message: "Vektor nicht im ausgewählten Datensatz gefunden",
+      },
+      update_distribution_with_existing_responses: {
+        message:
+          "Die Verteilungseinstellungen können für einen Datensatz mit Benutzerantworten nicht geändert werden",
       },
     },
     http: {

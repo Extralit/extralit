@@ -3,7 +3,7 @@ export class QuestionType extends String {
     super(value);
   }
 
-  private get type(): string {
+  public get value(): string {
     return this.toLowerCase();
   }
 
@@ -12,7 +12,7 @@ export class QuestionType extends String {
   }
 
   public get isRankingType(): boolean {
-    return this.type === "ranking";
+    return this.value === "ranking";
   }
 
   public get isMultiLabelType(): boolean {
@@ -24,14 +24,14 @@ export class QuestionType extends String {
   }
 
   public get isTextType(): boolean {
-    return this.type === "text";
+    return this.value === "text";
   }
 
   public get isSpanType(): boolean {
-    return this.type === "span";
+    return this.value === "span";
   }
 
   public get isRatingType(): boolean {
-    return this.type === "rating";
+    return this.value === "rating";
   }
 }

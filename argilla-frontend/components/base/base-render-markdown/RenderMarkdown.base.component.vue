@@ -14,7 +14,7 @@ import { marked } from "marked";
 import { markedHighlight } from "marked-highlight";
 import hljs from "highlight.js";
 import * as DOMPurify from "dompurify";
-import Vue from 'vue';
+import markedKatex from "marked-katex-extension";
 
 const preprocess = (html) => {
   return html.replace(/[^\S\r\n]+$/gm, "");
@@ -40,6 +40,12 @@ DOMPurify.addHook("beforeSanitizeAttributes", (node) => {
     node.setAttribute("target", "_blank");
   }
 });
+
+marked.use(
+  markedKatex({
+    throwOnError: false,
+  })
+);
 
 marked.use(
   { hooks: { preprocess, postprocess } },
@@ -239,6 +245,9 @@ export default {
   .hljs-tag .hljs-attr,
   .hljs-tag .hljs-name {
     color: #c0a5a5;
+  }
+  .katex-html {
+    display: none;
   }
 }
 </style>
