@@ -16,6 +16,7 @@
 """
 This module contains the data models for the interface
 """
+
 import datetime
 import logging
 import uuid
@@ -26,10 +27,10 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import pandas as pd
 from deprecated import deprecated
 
-from argilla import _messages
-from argilla._constants import DEFAULT_MAX_KEYWORD_LENGTH
-from argilla.pydantic_v1 import BaseModel, Field, PrivateAttr, root_validator, validator
-from argilla.utils.span_utils import SpanUtils
+from argilla_v1 import _messages
+from argilla_v1._constants import DEFAULT_MAX_KEYWORD_LENGTH
+from argilla_v1.pydantic_v1 import BaseModel, Field, PrivateAttr, root_validator, validator
+from argilla_v1.utils.span_utils import SpanUtils
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -134,7 +135,7 @@ class _Validators(BaseModel):
             message = (
                 "Integer ids won't be supported in future versions. We recommend to start using strings instead. "
                 "For datasets already containing integer values we recommend migrating them to avoid deprecation issues. "
-                "See https://docs.argilla.io/en/latest/getting_started/installation/configurations"
+                "See https://docs.v1.argilla.io/en/latest/getting_started/installation/configurations"
                 "/database_migrations.html#elasticsearch"
             )
             warnings.warn(message, DeprecationWarning, stacklevel=2)
@@ -264,7 +265,7 @@ class TextClassificationRecord(_Validators):
             This attribute will be ignored when using `rg.log`.
     Examples:
         >>> # Single text input
-        >>> import argilla as rg
+        >>> import argilla_v1 as rg
         >>> record = rg.TextClassificationRecord(
         ...     text="My first argilla example",
         ...     prediction=[('eng', 0.9), ('esp', 0.1)],
@@ -383,7 +384,7 @@ class TokenClassificationRecord(_Validators):
             READ ONLY! Relevant record keywords/terms for provided query when using `rg.load`.
             This attribute will be ignored when using `rg.log`.
     Examples:
-        >>> import argilla as rg
+        >>> import argilla_v1 as rg
         >>> record = rg.TokenClassificationRecord(
         ...     text = "Michael is a professor at Harvard",
         ...     tokens = ["Michael", "is", "a", "professor", "at", "Harvard"],
@@ -590,7 +591,7 @@ class Text2TextRecord(_Validators):
             This attribute will be ignored when using `rg.log`.
 
     Examples:
-        >>> import argilla as rg
+        >>> import argilla_v1 as rg
         >>> record = rg.Text2TextRecord(
         ...     text="My name is Sarah and I love my dog.",
         ...     prediction=["Je m'appelle Sarah et j'aime mon chien."],

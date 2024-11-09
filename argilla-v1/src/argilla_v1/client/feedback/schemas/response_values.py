@@ -14,8 +14,8 @@
 
 from typing import TYPE_CHECKING, List, Optional, Union
 
-from argilla.client.feedback.schemas.enums import QuestionTypes
-from argilla.pydantic_v1 import (
+from argilla_v1.client.feedback.schemas.enums import QuestionTypes
+from argilla_v1.pydantic_v1 import (
     BaseModel,
     StrictInt,
     StrictStr,
@@ -27,7 +27,7 @@ from argilla.pydantic_v1 import (
 )
 
 if TYPE_CHECKING:
-    from argilla.client.feedback.schemas.questions import QuestionSchema
+    from argilla_v1.client.feedback.schemas.questions import QuestionSchema
 
 
 class RankingValueSchema(BaseModel):

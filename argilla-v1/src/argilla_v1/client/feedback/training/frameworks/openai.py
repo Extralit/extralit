@@ -14,12 +14,12 @@
 
 from typing import TYPE_CHECKING
 
-from argilla.client.feedback.training.base import ArgillaTrainerSkeleton
-from argilla.training.openai import ArgillaOpenAITrainer as ArgillaOpenAITrainerV1
-from argilla.utils.dependency import require_dependencies
+from argilla_v1.client.feedback.training.base import ArgillaTrainerSkeleton
+from argilla_v1.training.openai import ArgillaOpenAITrainer as ArgillaOpenAITrainerV1
+from argilla_v1.utils.dependency import require_dependencies
 
 if TYPE_CHECKING:
-    from argilla.client.feedback.integrations.huggingface.model_card import OpenAIModelCardData
+    from argilla_v1.client.feedback.integrations.huggingface.model_card import OpenAIModelCardData
 
 
 class ArgillaOpenAITrainer(ArgillaOpenAITrainerV1, ArgillaTrainerSkeleton):
@@ -60,7 +60,7 @@ class ArgillaOpenAITrainer(ArgillaOpenAITrainerV1, ArgillaTrainerSkeleton):
         Returns:
             OpenAIModelCardData: Container for the data to be written on the `ArgillaModelCard`.
         """
-        from argilla.client.feedback.integrations.huggingface.model_card import OpenAIModelCardData
+        from argilla_v1.client.feedback.integrations.huggingface.model_card import OpenAIModelCardData
 
         return OpenAIModelCardData(
             model_name=self._model,

@@ -14,7 +14,7 @@
 
 from typing import List, Optional, Union
 
-from argilla.client.feedback.schemas import (
+from argilla_v1.client.feedback.schemas import (
     LabelQuestion,
     MultiLabelQuestion,
     RankingQuestion,
@@ -22,13 +22,13 @@ from argilla.client.feedback.schemas import (
     TextField,
     TextQuestion,
 )
-from argilla.client.feedback.unification import (
+from argilla_v1.client.feedback.unification import (
     LabelQuestionUnification,
     MultiLabelQuestionUnification,
     RankingQuestionUnification,
     RatingQuestionUnification,
 )
-from argilla.pydantic_v1 import BaseModel
+from argilla_v1.pydantic_v1 import BaseModel
 
 
 class TextClassificationDefaults(BaseModel):

@@ -16,12 +16,12 @@ from typing import TYPE_CHECKING
 
 from datasets import DatasetDict
 
-from argilla.client.feedback.training.base import ArgillaTrainerSkeleton
-from argilla.client.models import TokenClassificationRecord
-from argilla.training.span_marker import ArgillaSpanMarkerTrainer as ArgillaSpanMarkerTrainerV1
+from argilla_v1.client.feedback.training.base import ArgillaTrainerSkeleton
+from argilla_v1.client.models import TokenClassificationRecord
+from argilla_v1.training.span_marker import ArgillaSpanMarkerTrainer as ArgillaSpanMarkerTrainerV1
 
 if TYPE_CHECKING:
-    from argilla.client.feedback.integrations.huggingface.model_card import FrameworkCardData
+    from argilla_v1.client.feedback.integrations.huggingface.model_card import FrameworkCardData
 
 
 class ArgillaSpanMarkerTrainer(ArgillaSpanMarkerTrainerV1, ArgillaTrainerSkeleton):

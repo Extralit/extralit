@@ -16,24 +16,24 @@ import logging
 from typing import TYPE_CHECKING, List, Literal, Optional, Type, Union, Dict
 from uuid import UUID
 
-from argilla.client.feedback.dataset.helpers import get_dataset_by_name_and_workspace
-from argilla.client.feedback.dataset.remote.dataset import INCLUDE_ALL_VECTORS_PARAM, RemoteFeedbackDataset
-from argilla.client.feedback.schemas.enums import FieldTypes, MetadataPropertyTypes, QuestionTypes
-from argilla.client.feedback.schemas.fields import TextField
-from argilla.client.feedback.schemas.questions import (
+from argilla_v1.client.feedback.dataset.helpers import get_dataset_by_name_and_workspace
+from argilla_v1.client.feedback.dataset.remote.dataset import INCLUDE_ALL_VECTORS_PARAM, RemoteFeedbackDataset
+from argilla_v1.client.feedback.schemas.enums import FieldTypes, MetadataPropertyTypes, QuestionTypes
+from argilla_v1.client.feedback.schemas.fields import TextField
+from argilla_v1.client.feedback.schemas.questions import (
     LabelQuestion,
     MultiLabelQuestion,
     RankingQuestion,
     RatingQuestion,
     TextQuestion,
 )
-from argilla.client.feedback.schemas.remote.fields import RemoteTextField
-from argilla.client.feedback.schemas.remote.metadata import (
+from argilla_v1.client.feedback.schemas.remote.fields import RemoteTextField
+from argilla_v1.client.feedback.schemas.remote.metadata import (
     RemoteFloatMetadataProperty,
     RemoteIntegerMetadataProperty,
     RemoteTermsMetadataProperty,
 )
-from argilla.client.feedback.schemas.remote.questions import (
+from argilla_v1.client.feedback.schemas.remote.questions import (
     QUESTION_TYPE_TO_QUESTION,
     AllowedRemoteQuestionTypes,
     RemoteLabelQuestion,
@@ -42,21 +42,21 @@ from argilla.client.feedback.schemas.remote.questions import (
     RemoteRatingQuestion,
     RemoteTextQuestion,
 )
-from argilla.client.feedback.schemas.documents import Document
-from argilla.client.feedback.schemas.types import AllowedMetadataPropertyTypes
-from argilla.client.feedback.schemas.vector_settings import VectorSettings
-from argilla.client.sdk.commons.errors import AlreadyExistsApiError
-from argilla.client.sdk.v1.datasets import api as datasets_api_v1
-from argilla.client.singleton import ArgillaSingleton
-from argilla.client.workspaces import Workspace
+from argilla_v1.client.feedback.schemas.documents import Document
+from argilla_v1.client.feedback.schemas.types import AllowedMetadataPropertyTypes
+from argilla_v1.client.feedback.schemas.vector_settings import VectorSettings
+from argilla_v1.client.sdk.commons.errors import AlreadyExistsApiError
+from argilla_v1.client.sdk.v1.datasets import api as datasets_api_v1
+from argilla_v1.client.singleton import ArgillaSingleton
+from argilla_v1.client.workspaces import Workspace
 
 if TYPE_CHECKING:
     import httpx
 
-    from argilla.client.client import Argilla as ArgillaClient
-    from argilla.client.feedback.dataset.local import FeedbackDataset
-    from argilla.client.feedback.dataset.local.dataset import FeedbackDataset
-    from argilla.client.feedback.schemas.types import (
+    from argilla_v1.client.client import Argilla as ArgillaClient
+    from argilla_v1.client.feedback.dataset.local import FeedbackDataset
+    from argilla_v1.client.feedback.dataset.local.dataset import FeedbackDataset
+    from argilla_v1.client.feedback.schemas.types import (
         AllowedFieldTypes,
         AllowedMetadataPropertyTypes,
         AllowedQuestionTypes,
@@ -64,7 +64,7 @@ if TYPE_CHECKING:
         AllowedRemoteMetadataPropertyTypes,
         AllowedRemoteQuestionTypes,
     )
-    from argilla.client.sdk.v1.datasets.models import (
+    from argilla_v1.client.sdk.v1.datasets.models import (
         FeedbackDatasetModel,
         FeedbackFieldModel,
         FeedbackMetadataPropertyModel,
@@ -384,7 +384,7 @@ class ArgillaMixin:
             ValueError: if no `FeedbackDataset` with the provided `name`, `workspace`, or `id` exists in Argilla.
 
         Examples:
-            >>> import argilla as rg
+            >>> import argilla_v1 as rg
             >>> rg.init(...)
             >>> dataset = rg.FeedbackDataset.from_argilla(name="my_dataset")
         """

@@ -15,7 +15,6 @@
 import dataclasses
 import datetime
 import functools
-import inspect
 import json
 import uuid
 from json import JSONEncoder
@@ -24,9 +23,9 @@ from urllib.parse import urlparse
 
 import httpx
 
-from argilla._constants import API_KEY_HEADER_NAME
-from argilla.client.sdk._helpers import build_raw_response
-from argilla.client.sdk.commons.errors import BaseClientError
+from argilla_v1._constants import API_KEY_HEADER_NAME
+from argilla_v1.client.sdk._helpers import build_raw_response
+from argilla_v1.client.sdk.commons.errors import BaseClientError
 
 
 @dataclasses.dataclass

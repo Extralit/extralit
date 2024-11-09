@@ -14,22 +14,22 @@
 
 from typing import Union
 
-from argilla.client.feedback.schemas.fields import TextField
-from argilla.client.feedback.schemas.metadata import (
+from argilla_v1.client.feedback.schemas.fields import TextField
+from argilla_v1.client.feedback.schemas.metadata import (
     FloatMetadataProperty,
     IntegerMetadataProperty,
     TermsMetadataProperty,
 )
-from argilla.client.feedback.schemas.questions import AllowedQuestionTypes  # noqa
-from argilla.client.feedback.schemas.remote.fields import RemoteTextField
-from argilla.client.feedback.schemas.remote.metadata import (
+from argilla_v1.client.feedback.schemas.questions import AllowedQuestionTypes  # noqa
+from argilla_v1.client.feedback.schemas.remote.fields import RemoteTextField
+from argilla_v1.client.feedback.schemas.remote.metadata import (
     RemoteFloatMetadataProperty,
     RemoteIntegerMetadataProperty,
     RemoteTermsMetadataProperty,
 )
-from argilla.client.feedback.schemas.remote.questions import AllowedRemoteQuestionTypes  # noqa
-from argilla.client.feedback.schemas.remote.vector_settings import RemoteVectorSettings
-from argilla.client.feedback.schemas.vector_settings import VectorSettings
+from argilla_v1.client.feedback.schemas.remote.questions import AllowedRemoteQuestionTypes  # noqa
+from argilla_v1.client.feedback.schemas.remote.vector_settings import RemoteVectorSettings
+from argilla_v1.client.feedback.schemas.vector_settings import VectorSettings
 
 AllowedFieldTypes = TextField
 AllowedRemoteFieldTypes = RemoteTextField

@@ -21,17 +21,17 @@ from typing import TYPE_CHECKING, Any, Optional, Type, Union
 from packaging.version import parse as parse_version
 from tqdm import trange
 
-from argilla.client.feedback.constants import FIELD_TYPE_TO_PYTHON_TYPE
-from argilla.client.feedback.schemas.enums import QuestionTypes
-from argilla.client.feedback.schemas.records import FeedbackRecord
-from argilla.client.feedback.schemas.remote.records import RemoteFeedbackRecord
-from argilla.utils.dependency import requires_dependencies
+from argilla_v1.client.feedback.constants import FIELD_TYPE_TO_PYTHON_TYPE
+from argilla_v1.client.feedback.schemas.enums import QuestionTypes
+from argilla_v1.client.feedback.schemas.records import FeedbackRecord
+from argilla_v1.client.feedback.schemas.remote.records import RemoteFeedbackRecord
+from argilla_v1.utils.dependency import requires_dependencies
 
 if TYPE_CHECKING:
     from datasets import Dataset
 
-    from argilla.client.feedback.dataset.local.dataset import FeedbackDataset
-    from argilla.client.feedback.dataset.remote.dataset import RemoteFeedbackDataset
+    from argilla_v1.client.feedback.dataset.local.dataset import FeedbackDataset
+    from argilla_v1.client.feedback.dataset.remote.dataset import RemoteFeedbackDataset
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -50,7 +50,7 @@ class HuggingFaceDatasetMixin:
             questions, and metadata_properties formatted as `datasets.Features`.
 
         Examples:
-            >>> from argilla.client.feedback.integrations.huggingface import HuggingFaceDatasetMixin
+            >>> from argilla_v1.client.feedback.integrations.huggingface import HuggingFaceDatasetMixin
             >>> dataset = FeedbackDataset(...) or RemoteFeedbackDataset(...)
             >>> huggingface_dataset = HuggingFaceDatasetMixin._huggingface_format(dataset)
         """
@@ -242,7 +242,7 @@ class HuggingFaceDatasetMixin:
         from huggingface_hub import HfApi
 
         # https://github.com/argilla-io/argilla/issues/3468
-        from argilla.client.feedback.config import DatasetConfig
+        from argilla_v1.client.feedback.config import DatasetConfig
 
         if parse_version(huggingface_hub.__version__) < parse_version("0.14.0"):
             _LOGGER.warning(
@@ -284,7 +284,7 @@ class HuggingFaceDatasetMixin:
         if generate_card:
             from huggingface_hub import DatasetCardData
 
-            from argilla.client.feedback.integrations.huggingface.card import (
+            from argilla_v1.client.feedback.integrations.huggingface.card import (
                 ArgillaDatasetCard,
                 size_categories_parser,
             )
@@ -334,7 +334,7 @@ class HuggingFaceDatasetMixin:
         from huggingface_hub.utils import EntryNotFoundError
 
         # https://github.com/argilla-io/argilla/issues/3468
-        from argilla.client.feedback.config import (
+        from argilla_v1.client.feedback.config import (
             DatasetConfig,
             DeprecatedDatasetConfig,
         )

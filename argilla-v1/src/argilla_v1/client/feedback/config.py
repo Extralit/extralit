@@ -24,7 +24,7 @@ except ImportError:
 
 import json
 
-from argilla.pydantic_v1 import BaseModel, Field
+from argilla_v1.pydantic_v1 import BaseModel, Field
 
 try:
     from yaml import SafeLoader, load, safe_dump
@@ -35,17 +35,21 @@ except ImportError:
         " so you can run `pip install pyyaml`."
     )
 
-from argilla.client.feedback.schemas.types import AllowedFieldTypes, AllowedMetadataPropertyTypes, AllowedQuestionTypes
-from argilla.client.feedback.schemas.vector_settings import VectorSettings
+from argilla_v1.client.feedback.schemas.types import (
+    AllowedFieldTypes,
+    AllowedMetadataPropertyTypes,
+    AllowedQuestionTypes,
+)
+from argilla_v1.client.feedback.schemas.vector_settings import VectorSettings
 
 
 class DatasetConfig(BaseModel):
     fields: List[AllowedFieldTypes]
     questions: List[Annotated[AllowedQuestionTypes, Field(..., discriminator="type")]]
     guidelines: Optional[str] = None
-    metadata_properties: Optional[
-        List[Annotated[AllowedMetadataPropertyTypes, Field(..., discriminator="type")]]
-    ] = None
+    metadata_properties: Optional[List[Annotated[AllowedMetadataPropertyTypes, Field(..., discriminator="type")]]] = (
+        None
+    )
     allow_extra_metadata: bool = True
     vectors_settings: Optional[List[VectorSettings]] = None
 

@@ -17,11 +17,11 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, Hashable, List, Tuple, Un
 
 import pandas as pd
 
-from argilla.client.feedback.schemas.remote.shared import RemoteSchema
-from argilla.pydantic_v1 import BaseModel
+from argilla_v1.client.feedback.schemas.remote.shared import RemoteSchema
+from argilla_v1.pydantic_v1 import BaseModel
 
 if TYPE_CHECKING:
-    from argilla.client.feedback.dataset import FeedbackDataset
+    from argilla_v1.client.feedback.dataset import FeedbackDataset
 
 
 # Type aliases

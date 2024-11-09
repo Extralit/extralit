@@ -21,16 +21,16 @@ import numpy as np
 import pandas as pd
 from rich.progress import Progress
 
-from argilla.client.feedback.dataset.local.dataset import FeedbackDataset
-from argilla.client.feedback.dataset.remote.dataset import RemoteFeedbackDataset
-from argilla.client.feedback.schemas.metadata import (
+from argilla_v1.client.feedback.dataset.local.dataset import FeedbackDataset
+from argilla_v1.client.feedback.dataset.remote.dataset import RemoteFeedbackDataset
+from argilla_v1.client.feedback.schemas.metadata import (
     FloatMetadataProperty,
     IntegerMetadataProperty,
     TermsMetadataProperty,
 )
-from argilla.client.feedback.schemas.records import FeedbackRecord
-from argilla.client.feedback.schemas.remote.records import RemoteFeedbackRecord
-from argilla.utils.dependency import require_dependencies
+from argilla_v1.client.feedback.schemas.records import FeedbackRecord
+from argilla_v1.client.feedback.schemas.remote.records import RemoteFeedbackRecord
+from argilla_v1.utils.dependency import require_dependencies
 
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.setLevel(logging.INFO)
@@ -59,8 +59,8 @@ class TextDescriptivesExtractor:
             show_progress (bool): Whether to show a progress bar when extracting metrics.
 
         Examples:
-        >>> import argilla as rg
-        >>> from argilla.client.feedback.integrations.textdescriptives import TextDescriptivesExtractor
+        >>> import argilla_v1 as rg
+        >>> from argilla_v1.client.feedback.integrations.textdescriptives import TextDescriptivesExtractor
         >>> ds = rg.FeedbackDataset(...)
         >>> tde = TextDescriptivesExtractor()
         >>> updated_ds = tde.update_dataset(ds)
@@ -341,7 +341,7 @@ class TextDescriptivesExtractor:
             List[Union[FeedbackRecord, RemoteFeedbackRecord]]: A list of FeedbackDataset or RemoteFeedbackDataset records with text descriptives metrics added as metadata.
 
         Examples:
-        >>> from argilla.client.feedback.integrations.textdescriptives import TextDescriptivesExtractor
+        >>> from argilla_v1.client.feedback.integrations.textdescriptives import TextDescriptivesExtractor
         >>> records = [rg.FeedbackRecord(fields={"text": "This is a test."})]
         >>> tde = TextDescriptivesExtractor()
         >>> updated_records = tde.update_records(records)
@@ -399,8 +399,8 @@ class TextDescriptivesExtractor:
             Union[FeedbackDataset, RemoteFeedbackDataset]: A FeedbackDataset or RemoteFeedbackDataset with text descriptives metrics added as metadata.
 
         Examples:
-        >>> import argilla as rg
-        >>> from argilla.client.feedback.integrations.textdescriptives import TextDescriptivesExtractor
+        >>> import argilla_v1 as rg
+        >>> from argilla_v1.client.feedback.integrations.textdescriptives import TextDescriptivesExtractor
         >>> dataset = rg.FeedbackDataset(...)
         >>> tde = TextDescriptivesExtractor()
         >>> updated_dataset = tde.update_dataset(dataset)

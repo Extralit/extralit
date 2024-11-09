@@ -15,17 +15,14 @@ import warnings
 from abc import ABC, ABCMeta, abstractmethod
 from typing import TYPE_CHECKING, Any, Generic, Iterable, List, Literal, Optional, Tuple, TypeVar, Union
 
-from argilla.client.feedback.integrations.huggingface import HuggingFaceDatasetMixin
-from argilla.client.feedback.schemas.records import FeedbackRecord, SortBy
-from argilla.client.feedback.schemas.types import AllowedFieldTypes, AllowedMetadataPropertyTypes, AllowedQuestionTypes
-from argilla.client.feedback.schemas.documents import Document
-from argilla.client.feedback.schemas.vector_settings import VectorSettings
-from argilla.utils.dependency import requires_dependencies
+from argilla_v1.client.feedback.integrations.huggingface import HuggingFaceDatasetMixin
+from argilla_v1.client.feedback.schemas.records import FeedbackRecord, SortBy
+from argilla_v1.utils.dependency import requires_dependencies
 
 if TYPE_CHECKING:
     from datasets import Dataset
 
-    from argilla.client.feedback.schemas.types import (
+    from argilla_v1.client.feedback.schemas.types import (
         AllowedFieldTypes,
         AllowedMetadataPropertyTypes,
         AllowedQuestionTypes,
@@ -179,7 +176,7 @@ class FeedbackDatasetBase(ABC, Generic[R], metaclass=ABCMeta):
             ValueError: if the provided format is not supported.
 
         Examples:
-            >>> import argilla as rg
+            >>> import argilla_v1 as rg
             >>> rg.init(...)
             >>> dataset = rg.FeedbackDataset.from_argilla(name="my-dataset")
             >>> huggingface_dataset = dataset.format_as("datasets")

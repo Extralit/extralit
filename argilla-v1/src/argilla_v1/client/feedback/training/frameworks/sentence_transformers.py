@@ -15,14 +15,14 @@
 import logging
 from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
-from argilla.client.feedback.training.base import ArgillaTrainerSkeleton
-from argilla.client.feedback.training.schemas.base import TrainingTaskForSentenceSimilarity
-from argilla.training.utils import filter_allowed_args, get_default_args
-from argilla.utils.dependency import require_dependencies
+from argilla_v1.client.feedback.training.base import ArgillaTrainerSkeleton
+from argilla_v1.client.feedback.training.schemas.base import TrainingTaskForSentenceSimilarity
+from argilla_v1.training.utils import filter_allowed_args, get_default_args
+from argilla_v1.utils.dependency import require_dependencies
 
 if TYPE_CHECKING:
-    from argilla.client.feedback.dataset import FeedbackDataset
-    from argilla.client.feedback.integrations.huggingface.model_card import SentenceTransformerCardData
+    from argilla_v1.client.feedback.dataset import FeedbackDataset
+    from argilla_v1.client.feedback.integrations.huggingface.model_card import SentenceTransformerCardData
 
 
 class ArgillaSentenceTransformersTrainer(ArgillaTrainerSkeleton):
@@ -357,7 +357,7 @@ class ArgillaSentenceTransformersTrainer(ArgillaTrainerSkeleton):
         Returns:
             SentenceTransformerCardData: Container for the data to be written on the `ArgillaModelCard`.
         """
-        from argilla.client.feedback.integrations.huggingface.model_card import SentenceTransformerCardData
+        from argilla_v1.client.feedback.integrations.huggingface.model_card import SentenceTransformerCardData
 
         return SentenceTransformerCardData(
             model_id=self._model,

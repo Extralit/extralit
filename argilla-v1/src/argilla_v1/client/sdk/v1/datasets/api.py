@@ -20,9 +20,9 @@ from uuid import UUID
 
 import httpx
 
-from argilla.client.sdk.commons.errors_handler import handle_response_error
-from argilla.client.sdk.commons.models import ErrorMessage, HTTPValidationError, Response
-from argilla.client.sdk.v1.datasets.models import (
+from argilla_v1.client.sdk.commons.errors_handler import handle_response_error
+from argilla_v1.client.sdk.commons.models import ErrorMessage, HTTPValidationError, Response
+from argilla_v1.client.sdk.v1.datasets.models import (
     FeedbackDatasetModel,
     FeedbackFieldModel,
     FeedbackListVectorSettingsModel,
@@ -35,7 +35,7 @@ from argilla.client.sdk.v1.datasets.models import (
     FeedbackVectorSettingsModel,
     FeedbackDocumentModel,
 )
-from argilla.client.feedback.schemas.documents import Document
+from argilla_v1.client.feedback.schemas.documents import Document
 
 def create_dataset(
     client: httpx.Client,

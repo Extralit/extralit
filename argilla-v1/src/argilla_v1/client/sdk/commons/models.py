@@ -18,9 +18,9 @@ from enum import Enum
 from typing import TYPE_CHECKING, Any, Dict, Generic, List, MutableMapping, Optional, TypeVar, Union
 from uuid import uuid4
 
-from argilla.client.models import Vectors as ClientVectors
-from argilla.pydantic_v1 import BaseModel, Field, validator
-from argilla.pydantic_v1.generics import GenericModel
+from argilla_v1.client.models import Vectors as ClientVectors
+from argilla_v1.pydantic_v1 import BaseModel, Field, validator
+from argilla_v1.pydantic_v1.generics import GenericModel
 
 if TYPE_CHECKING:
     from httpx import Response as HTTPXResponse

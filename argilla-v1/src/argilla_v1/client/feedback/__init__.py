@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from argilla.client.feedback.training import (
+from argilla_v1.client.feedback.training import (
     ArgillaTrainer,
     TrainingTask,
     TrainingTaskForChatCompletion,
@@ -26,7 +26,7 @@ from argilla.client.feedback.training import (
     TrainingTaskMapping,  # <- Deprecated
     TrainingTaskMappingForTextClassification,  # <- Deprecated
 )
-from argilla.client.feedback.unification import (
+from argilla_v1.client.feedback.unification import (
     LabelQuestionStrategy,
     LabelQuestionUnification,
     MultiLabelQuestionStrategy,

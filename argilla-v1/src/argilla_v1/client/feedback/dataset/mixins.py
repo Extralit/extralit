@@ -15,15 +15,15 @@
 import warnings
 from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
-from argilla.client.feedback.dataset.base import FeedbackDatasetBase
-from argilla.client.feedback.schemas.questions import (
+from argilla_v1.client.feedback.dataset.base import FeedbackDatasetBase
+from argilla_v1.client.feedback.schemas.questions import (
     LabelQuestion,
     MultiLabelQuestion,
     RankingQuestion,
     RatingQuestion,
     TextQuestion,
 )
-from argilla.client.feedback.unification import (
+from argilla_v1.client.feedback.unification import (
     LabelQuestionStrategy,
     MultiLabelQuestionStrategy,
     RankingQuestionStrategy,
@@ -32,9 +32,9 @@ from argilla.client.feedback.unification import (
 )
 
 if TYPE_CHECKING:
-    from argilla.client.feedback.dataset.local.dataset import FeedbackDataset
-    from argilla.client.feedback.metrics.agreement_metrics import AgreementMetricResult
-    from argilla.client.feedback.metrics.annotator_metrics import ModelMetricResult
+    from argilla_v1.client.feedback.dataset.local.dataset import FeedbackDataset
+    from argilla_v1.client.feedback.metrics.agreement_metrics import AgreementMetricResult
+    from argilla_v1.client.feedback.metrics.annotator_metrics import ModelMetricResult
 
 
 class MetricsMixin:
@@ -73,7 +73,7 @@ class MetricsMixin:
                 each annotator as a dict, where the key corresponds to the annotator id and the
                 values are a list with the metrics.
         """
-        from argilla.client.feedback.metrics.annotator_metrics import ModelMetric, UnifiedModelMetric
+        from argilla_v1.client.feedback.metrics.annotator_metrics import ModelMetric, UnifiedModelMetric
 
         if strategy:
             self.compute_unified_responses(question_name, strategy)
@@ -104,7 +104,7 @@ class MetricsMixin:
             metrics_result: Agreement metrics result or a list of metrics results if a list of metric
                 names is provided.
         """
-        from argilla.client.feedback.metrics.agreement_metrics import AgreementMetric
+        from argilla_v1.client.feedback.metrics.agreement_metrics import AgreementMetric
 
         return AgreementMetric(self, question_name, field_name).compute(metric_names)
 

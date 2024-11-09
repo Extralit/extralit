@@ -14,9 +14,9 @@
 
 from typing import TYPE_CHECKING, Dict, List, Union
 
-from argilla.client.feedback.schemas import QuestionTypes
-from argilla.client.feedback.schemas.enums import LabelsOrder
-from argilla.client.feedback.schemas.questions import (
+from argilla_v1.client.feedback.schemas import QuestionTypes
+from argilla_v1.client.feedback.schemas.enums import LabelsOrder
+from argilla_v1.client.feedback.schemas.questions import (
     LabelQuestion,
     MultiLabelQuestion,
     RankingQuestion,
@@ -25,10 +25,10 @@ from argilla.client.feedback.schemas.questions import (
     SpanQuestion,
     TextQuestion,
 )
-from argilla.client.feedback.schemas.remote.shared import RemoteSchema
+from argilla_v1.client.feedback.schemas.remote.shared import RemoteSchema
 
 if TYPE_CHECKING:
-    from argilla.client.sdk.v1.datasets.models import FeedbackQuestionModel
+    from argilla_v1.client.sdk.v1.datasets.models import FeedbackQuestionModel
 
 
 class RemoteTextQuestion(TextQuestion, RemoteSchema):

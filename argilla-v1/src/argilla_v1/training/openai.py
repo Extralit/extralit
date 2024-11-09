@@ -19,12 +19,12 @@ from typing import List, Optional, Union
 
 import numpy as np
 
-from argilla._constants import OPENAI_END_TOKEN, OPENAI_LEGACY_MODELS, OPENAI_SEPARATOR, OPENAI_WHITESPACE
-from argilla.client.models import TextClassificationRecord, TokenClassificationRecord
-from argilla.datasets import TextClassificationSettings, TokenClassificationSettings
-from argilla.training.base import ArgillaTrainerSkeleton
-from argilla.training.utils import filter_allowed_args
-from argilla.utils.dependency import require_dependencies
+from argilla_v1._constants import OPENAI_END_TOKEN, OPENAI_LEGACY_MODELS, OPENAI_SEPARATOR, OPENAI_WHITESPACE
+from argilla_v1.client.models import TextClassificationRecord, TokenClassificationRecord
+from argilla_v1.datasets import TextClassificationSettings, TokenClassificationSettings
+from argilla_v1.training.base import ArgillaTrainerSkeleton
+from argilla_v1.training.utils import filter_allowed_args
+from argilla_v1.utils.dependency import require_dependencies
 
 
 class ArgillaOpenAITrainer(ArgillaTrainerSkeleton):

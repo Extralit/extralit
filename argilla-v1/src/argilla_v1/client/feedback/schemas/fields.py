@@ -15,9 +15,9 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Literal, Optional
 
-from argilla.client.feedback.schemas.enums import FieldTypes
-from argilla.client.feedback.schemas.validators import title_must_have_value
-from argilla.pydantic_v1 import BaseModel, Extra, Field, validator
+from argilla_v1.client.feedback.schemas.enums import FieldTypes
+from argilla_v1.client.feedback.schemas.validators import title_must_have_value
+from argilla_v1.pydantic_v1 import BaseModel, Extra, Field, validator
 
 
 class FieldSchema(BaseModel, ABC):
@@ -82,7 +82,7 @@ class TextField(FieldSchema):
             Defaults to False.
 
     Examples:
-        >>> from argilla.client.feedback.schemas.fields import TextField
+        >>> from argilla_v1.client.feedback.schemas.fields import TextField
         >>> TextField(name="text_field", title="Text Field")
     """
 

@@ -19,9 +19,9 @@ from typing import Any, Dict, List, Literal, Optional, Union
 
 from pydantic import BaseModel
 
-from argilla.client.models import TextClassificationRecord, TokenClassificationRecord
-from argilla.training.base import ArgillaTrainerSkeleton
-from argilla.utils.dependency import require_dependencies
+from argilla_v1.client.models import TextClassificationRecord, TokenClassificationRecord
+from argilla_v1.training.base import ArgillaTrainerSkeleton
+from argilla_v1.utils.dependency import require_dependencies
 
 __all__ = ["ArgillaSpaCyTrainer", "ArgillaSpaCyTransformersTrainer"]
 
@@ -276,7 +276,7 @@ class ArgillaSpaCyTrainer(_ArgillaSpaCyTrainerBase):
             **kwargs: Additional arguments for ArgillaSpaCyTrainerBase.
 
         Examples:
-            >>> from argilla import ArgillaSpaCyTrainer
+            >>> from argilla_v1 import ArgillaSpaCyTrainer
             >>> trainer = ArgillaSpaCyTrainer(freeze_tok2vec=True)
         """
         self.freeze_tok2vec = freeze_tok2vec

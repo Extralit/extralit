@@ -18,18 +18,18 @@ import warnings
 from asyncio import Future
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Tuple, Union
 
-from argilla.client.client import Argilla
-from argilla.client.datasets import Dataset
-from argilla.client.enums import DatasetType
-from argilla.client.feedback.dataset.local.dataset import FeedbackDataset
-from argilla.client.models import BulkResponse, Record  # TODO Remove TextGenerationRecord
-from argilla.client.sdk.commons import errors
-from argilla.client.sdk.datasets.models import Dataset as DatasetModel
-from argilla.client.sdk.v1.workspaces.models import WorkspaceModel
-from argilla.client.singleton import ArgillaSingleton
+from argilla_v1.client.client import Argilla
+from argilla_v1.client.datasets import Dataset
+from argilla_v1.client.enums import DatasetType
+from argilla_v1.client.feedback.dataset.local.dataset import FeedbackDataset
+from argilla_v1.client.models import BulkResponse, Record  # TODO Remove TextGenerationRecord
+from argilla_v1.client.sdk.commons import errors
+from argilla_v1.client.sdk.datasets.models import Dataset as DatasetModel
+from argilla_v1.client.sdk.v1.workspaces.models import WorkspaceModel
+from argilla_v1.client.singleton import ArgillaSingleton
 
 if TYPE_CHECKING:
-    from argilla.client.feedback.dataset.remote.dataset import RemoteFeedbackDataset
+    from argilla_v1.client.feedback.dataset.remote.dataset import RemoteFeedbackDataset
 
 Api = Argilla  # Backward compatibility
 
@@ -73,7 +73,7 @@ def log(
         If the ``background`` argument is set to True, an ``asyncio.Future`` will be returned instead.
 
     Examples:
-        >>> import argilla as rg
+        >>> import argilla_v1 as rg
         >>> record = rg.TextClassificationRecord(
         ...     text="my first argilla example",
         ...     prediction=[('spam', 0.8), ('ham', 0.2)]
@@ -130,8 +130,8 @@ async def log_async(
     Examples:
         >>> # Log asynchronously from your notebook
         >>> import asyncio
-        >>> import argilla as rg
-        >>> from argilla.utils import setup_loop_in_thread
+        >>> import argilla_v1 as rg
+        >>> from argilla_v1.utils import setup_loop_in_thread
         >>> loop, _ = setup_loop_in_thread()
         >>> future_response = asyncio.run_coroutine_threadsafe(
         ...     rg.log_async(my_records, dataset_name), loop
@@ -182,7 +182,7 @@ def load(
         workspace: The workspace to which records will be logged/loaded. If `None` (default) and the
             env variable ``ARGILLA_WORKSPACE`` is not set, it will default to the private user workspace.
         query: An ElasticSearch query with the `query string
-            syntax <https://docs.argilla.io/en/latest/practical_guides/filter_dataset.html>`_
+            syntax <https://docs.v1.argilla.io/en/latest/practical_guides/filter_dataset.html>`_
         vector: Vector configuration for a semantic search
         ids: If provided, load dataset records with given ids.
         limit: The number of records to retrieve.
@@ -205,7 +205,7 @@ def load(
     Examples:
         **Basic Loading: load the samples sorted by their ID**
 
-        >>> import argilla as rg
+        >>> import argilla_v1 as rg
         >>> dataset = rg.load(name="example-dataset")
 
         **Iterate over a large dataset:**
@@ -215,7 +215,7 @@ def load(
             the given id, where N is determined by the `limit` parameter. **NOTE** If
             no `limit` is given the whole dataset after that ID will be retrieved.
 
-        >>> import argilla as rg
+        >>> import argilla_v1 as rg
         >>> dataset_batch_1 = rg.load(name="example-dataset", limit=1000)
         >>> dataset_batch_2 = rg.load(name="example-dataset", limit=1000, id_from=dataset_batch_1[-1].id)
 
@@ -263,7 +263,7 @@ def copy(dataset: str, name_of_copy: str, workspace: Optional[str] = None) -> No
         workspace: If provided, dataset will be copied to that workspace
 
     Examples:
-        >>> import argilla as rg
+        >>> import argilla_v1 as rg
         >>> rg.copy("my_dataset", name_of_copy="new_dataset")
         >>> rg.load("new_dataset")
     """
@@ -292,7 +292,7 @@ def delete(name: str, workspace: Optional[str] = None) -> None:
             the deletion process.
 
     Examples:
-        >>> import argilla as rg
+        >>> import argilla_v1 as rg
         >>> rg.delete(name="example-dataset")
     """
     argilla = ArgillaSingleton.get()
@@ -333,7 +333,7 @@ def delete_records(
         workspace: The workspace to which records will be logged/loaded. If `None` (default) and the
             env variable ``ARGILLA_WORKSPACE`` is not set, it will default to the private user workspace.
         query: An ElasticSearch query with the `query string syntax
-            <https://docs.argilla.io/en/latest/practical_guides/filter_dataset.html>`_
+            <https://docs.v1.argilla.io/en/latest/practical_guides/filter_dataset.html>`_
         ids: If provided, deletes dataset records with given ids.
         discard_only: If `True`, matched records won't be deleted. Instead, they will be marked as `Discarded`
         discard_when_forbidden: Only super-user or dataset creator can delete records from a dataset.
@@ -348,10 +348,10 @@ def delete_records(
 
     Examples:
         >>> ## Delete by id
-        >>> import argilla as rg
+        >>> import argilla_v1 as rg
         >>> rg.delete_records(name="example-dataset", ids=[1,3,5])
         >>> ## Discard records by query
-        >>> import argilla as rg
+        >>> import argilla_v1 as rg
         >>> rg.delete_records(name="example-dataset", query="metadata.code=33", discard_only=True)
     """
     return ArgillaSingleton.get().delete_records(

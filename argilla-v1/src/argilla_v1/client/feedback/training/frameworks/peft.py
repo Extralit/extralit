@@ -14,12 +14,12 @@
 
 from typing import TYPE_CHECKING
 
-from argilla.client.feedback.training.frameworks.transformers import ArgillaTransformersTrainer
-from argilla.training.peft import ArgillaPeftTrainer as ArgillaPeftTrainerV1
-from argilla.utils.dependency import requires_dependencies
+from argilla_v1.client.feedback.training.frameworks.transformers import ArgillaTransformersTrainer
+from argilla_v1.training.peft import ArgillaPeftTrainer as ArgillaPeftTrainerV1
+from argilla_v1.utils.dependency import requires_dependencies
 
 if TYPE_CHECKING:
-    from argilla.client.feedback.integrations.huggingface.model_card import PeftModelCardData
+    from argilla_v1.client.feedback.integrations.huggingface.model_card import PeftModelCardData
 
 
 class ArgillaPeftTrainer(ArgillaPeftTrainerV1, ArgillaTransformersTrainer):
@@ -36,7 +36,7 @@ class ArgillaPeftTrainer(ArgillaPeftTrainerV1, ArgillaTransformersTrainer):
         Returns:
             PeftModelCardData: Container for the data to be written on the `ArgillaModelCard`.
         """
-        from argilla.client.feedback.integrations.huggingface.model_card import PeftModelCardData
+        from argilla_v1.client.feedback.integrations.huggingface.model_card import PeftModelCardData
 
         return PeftModelCardData(
             model_id=self._model,

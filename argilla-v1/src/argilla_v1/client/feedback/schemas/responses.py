@@ -16,17 +16,15 @@ import warnings
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from uuid import UUID
 
-import argilla
-from argilla.client.feedback.schemas.enums import ResponseStatus
-from argilla.client.feedback.schemas.response_values import (
+from argilla_v1.client.feedback.schemas.enums import ResponseStatus
+from argilla_v1.client.feedback.schemas.response_values import (
     ResponseValue,
     normalize_response_value,
-    parse_value_response_for_question,
 )
-from argilla.pydantic_v1 import BaseModel, Extra, validator
+from argilla_v1.pydantic_v1 import BaseModel, Extra, validator
 
 if TYPE_CHECKING:
-    from argilla.client.feedback.schemas.questions import QuestionSchema
+    pass
 
 
 class ValueSchema(BaseModel):
@@ -51,7 +49,7 @@ class ResponseSchema(BaseModel):
         status: Status of the response. Defaults to `submitted`.
 
     Examples:
-        >>> from argilla.client.feedback.schemas.responses import ResponseSchema, ValueSchema
+        >>> from argilla_v1.client.feedback.schemas.responses import ResponseSchema, ValueSchema
         >>> ResponseSchema(
         ...     values={
         ...         "question_1": ValueSchema(value="answer_1"),

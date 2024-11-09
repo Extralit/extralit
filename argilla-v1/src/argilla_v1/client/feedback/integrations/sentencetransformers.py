@@ -15,12 +15,12 @@
 import warnings
 from typing import List, Optional, Union
 
-from argilla.client.feedback.dataset.local.dataset import FeedbackDataset
-from argilla.client.feedback.dataset.remote.dataset import RemoteFeedbackDataset
-from argilla.client.feedback.schemas.records import FeedbackRecord
-from argilla.client.feedback.schemas.remote.records import RemoteFeedbackRecord
-from argilla.client.feedback.schemas.vector_settings import VectorSettings
-from argilla.utils.dependency import require_dependencies
+from argilla_v1.client.feedback.dataset.local.dataset import FeedbackDataset
+from argilla_v1.client.feedback.dataset.remote.dataset import RemoteFeedbackDataset
+from argilla_v1.client.feedback.schemas.records import FeedbackRecord
+from argilla_v1.client.feedback.schemas.remote.records import RemoteFeedbackRecord
+from argilla_v1.client.feedback.schemas.vector_settings import VectorSettings
+from argilla_v1.utils.dependency import require_dependencies
 
 
 class SentenceTransformersExtractor:
@@ -44,8 +44,8 @@ class SentenceTransformersExtractor:
             **kwargs: Additional keyword arguments to pass to the init of the SentenceTransformer model.
 
         Examples:
-        >>> import argilla as rg
-        >>> from argilla.client.feedback.integrations.textdescriptives import SentenceTransformersExtractor
+        >>> import argilla_v1 as rg
+        >>> from argilla_v1.client.feedback.integrations.textdescriptives import SentenceTransformersExtractor
         >>> ds = rg.FeedbackDataset(...)
         >>> tde = SentenceTransformersExtractor()
         >>> updated_ds = tde.update_dataset(ds)
@@ -165,7 +165,7 @@ class SentenceTransformersExtractor:
             List[Union[FeedbackRecord, RemoteFeedbackRecord]]: The updated records.
 
         Examples:
-        >>> from argilla.client.feedback.integrations.sentencetransformers import SentenceTransformersExtractor
+        >>> from argilla_v1.client.feedback.integrations.sentencetransformers import SentenceTransformersExtractor
         >>> records = [rg.FeedbackRecord(fields={"text": "This is a test."})]
         >>> tde = SentenceTransformersExtractor()
         >>> updated_records = tde.update_records(records)
@@ -206,8 +206,8 @@ class SentenceTransformersExtractor:
             Union[FeedbackDataset, RemoteFeedbackDataset]: The updated dataset.
 
         Examples:
-        >>> import argilla as rg
-        >>> from argilla.client.feedback.integrations.sentencetransformers import SentenceTransformersExtractor
+        >>> import argilla_v1 as rg
+        >>> from argilla_v1.client.feedback.integrations.sentencetransformers import SentenceTransformersExtractor
         >>> dataset = rg.FeedbackDataset(...)
         >>> tde = SentenceTransformersExtractor()
         >>> updated_dataset = tde.update_dataset(dataset)

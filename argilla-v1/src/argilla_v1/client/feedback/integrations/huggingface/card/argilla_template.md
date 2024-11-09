@@ -6,7 +6,7 @@
 
 # Dataset Card for {{ repo_id.split("/")[-1] }}
 
-This dataset has been created with [Argilla](https://docs.argilla.io).
+This dataset has been created with [Argilla](https://docs.v1.argilla.io).
 
 As shown in the sections below, this dataset can be loaded into Argilla as explained in [Load with Argilla](#load-with-argilla), or used directly with the `datasets` library in [Load with `datasets`](#load-with-datasets).
 
@@ -33,7 +33,7 @@ This dataset contains:
 To load with Argilla, you'll just need to install Argilla as `pip install argilla --upgrade` and then use the following code:
 
 ```python
-import argilla as rg
+import argilla_v1 as rg
 
 ds = rg.FeedbackDataset.from_huggingface("{{ repo_id }}")
 ```
@@ -50,7 +50,7 @@ ds = load_dataset("{{ repo_id }}")
 
 ### Supported Tasks and Leaderboards
 
-This dataset can contain [multiple fields, questions and responses](https://docs.argilla.io/en/latest/conceptual_guides/data_model.html#feedback-dataset) so it can be used for different NLP tasks, depending on the configuration. The dataset structure is described in the [Dataset Structure section](#dataset-structure).
+This dataset can contain [multiple fields, questions and responses](https://docs.v1.argilla.io/en/latest/conceptual_guides/data_model.html#feedback-dataset) so it can be used for different NLP tasks, depending on the configuration. The dataset structure is described in the [Dataset Structure section](#dataset-structure).
 
 There are no leaderboards associated with this dataset.
 

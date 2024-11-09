@@ -17,10 +17,10 @@ from typing import List, Union
 
 from datasets import DatasetDict
 
-from argilla.client.models import TokenClassificationRecord
-from argilla.training.base import ArgillaTrainerSkeleton
-from argilla.training.utils import filter_allowed_args, get_default_args
-from argilla.utils.dependency import require_dependencies
+from argilla_v1.client.models import TokenClassificationRecord
+from argilla_v1.training.base import ArgillaTrainerSkeleton
+from argilla_v1.training.utils import filter_allowed_args, get_default_args
+from argilla_v1.utils.dependency import require_dependencies
 
 
 class ArgillaSpanMarkerTrainer(ArgillaTrainerSkeleton):

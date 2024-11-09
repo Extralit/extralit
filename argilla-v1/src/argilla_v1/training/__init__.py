@@ -12,6 +12,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from argilla.training.base import ArgillaTrainer
+from argilla_v1.training.base import ArgillaTrainer
 
 __all__ = ["ArgillaTrainer"]

@@ -11,16 +11,15 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-import math
 from abc import ABC, abstractmethod
 from typing import Any, Callable, Dict, List, Literal, Optional, Tuple, Union
 
-from argilla.client.feedback.schemas.enums import MetadataPropertyTypes
-from argilla.client.feedback.schemas.validators import (
+from argilla_v1.client.feedback.schemas.enums import MetadataPropertyTypes
+from argilla_v1.client.feedback.schemas.validators import (
     validate_numeric_metadata_filter_bounds,
     validate_numeric_metadata_property_bounds,
 )
-from argilla.pydantic_v1 import (
+from argilla_v1.pydantic_v1 import (
     BaseModel,
     Extra,
     Field,
@@ -71,8 +70,7 @@ class MetadataPropertySchema(BaseModel, ABC):
 
     @property
     @abstractmethod
-    def server_settings(self) -> Dict[str, Any]:
-        ...
+    def server_settings(self) -> Dict[str, Any]: ...
 
     def to_server_payload(self) -> Dict[str, Any]:
         return {
@@ -84,20 +82,17 @@ class MetadataPropertySchema(BaseModel, ABC):
 
     @property
     @abstractmethod
-    def _pydantic_field_with_validator(self) -> Tuple[Dict[str, Tuple[Any, ...]], Dict[str, Callable]]:
-        ...
+    def _pydantic_field_with_validator(self) -> Tuple[Dict[str, Tuple[Any, ...]], Dict[str, Callable]]: ...
 
     @abstractmethod
     def _validate_filter(self, metadata_filter: "MetadataFilters") -> None:
         pass
 
     @abstractmethod
-    def _check_allowed_value_type(self, value: Any) -> Any:
-        ...
+    def _check_allowed_value_type(self, value: Any) -> Any: ...
 
     @abstractmethod
-    def _validator(self, value: Any) -> Any:
-        ...
+    def _validator(self, value: Any) -> Any: ...
 
 
 def _validator_definition(schema: MetadataPropertySchema) -> Dict[str, Any]:
@@ -120,7 +115,7 @@ class TermsMetadataProperty(MetadataPropertySchema):
             at least one value.
 
     Examples:
-        >>> from argilla.client.feedback.schemas.metadata import TermsMetadataProperty
+        >>> from argilla_v1.client.feedback.schemas.metadata import TermsMetadataProperty
         >>> TermsMetadataProperty(name="color", values=["red", "blue", "green"])
     """
 
@@ -302,7 +297,7 @@ class IntegerMetadataProperty(_NumericMetadataPropertySchema):
             the `min` value.
 
     Examples:
-        >>> from argilla.client.feedback.schemas.metadata import IntegerMetadataProperty
+        >>> from argilla_v1.client.feedback.schemas.metadata import IntegerMetadataProperty
         >>> IntegerMetadataProperty(name="day", min=0, max=31)
     """
 
@@ -345,7 +340,7 @@ class FloatMetadataProperty(_NumericMetadataPropertySchema):
             the `min` value.
 
     Examples:
-        >>> from argilla.client.feedback.schemas.metadata import FloatMetadataProperty
+        >>> from argilla_v1.client.feedback.schemas.metadata import FloatMetadataProperty
         >>> FloatMetadataProperty(name="price", min=0.0, max=100.0)
     """
 
@@ -395,8 +390,7 @@ class MetadataFilterSchema(BaseModel, ABC):
 
     @property
     @abstractmethod
-    def query_string(self) -> str:
-        ...
+    def query_string(self) -> str: ...
 
 
 class TermsMetadataFilter(MetadataFilterSchema):
@@ -410,7 +404,7 @@ class TermsMetadataFilter(MetadataFilterSchema):
             at least two values.
 
     Examples:
-        >>> from argilla.client.feedback.schemas.metadata import TermsMetadataFilter
+        >>> from argilla_v1.client.feedback.schemas.metadata import TermsMetadataFilter
         >>> TermsMetadataFilter(name="color", values=["red", "blue", "green"])
     """
 
@@ -474,7 +468,7 @@ class IntegerMetadataFilter(_NumericMetadataFilterSchema):
         ge: The lower bound of the integer value. Defaults to `None`.
 
     Examples:
-        >>> from argilla.client.feedback.schemas.metadata import IntegerMetadataFilter
+        >>> from argilla_v1.client.feedback.schemas.metadata import IntegerMetadataFilter
         >>> IntegerMetadataFilter(name="day", le=15)
         >>> IntegerMetadataFilter(name="day", ge=15)
         >>> IntegerMetadataFilter(name="day", le=15, ge=10)
@@ -499,7 +493,7 @@ class FloatMetadataFilter(_NumericMetadataFilterSchema):
         ge: The lower bound of the float value. Defaults to `None`.
 
     Examples:
-        >>> from argilla.client.feedback.schemas.metadata import FloatMetadataFilter
+        >>> from argilla_v1.client.feedback.schemas.metadata import FloatMetadataFilter
         >>> FloatMetadataFilter(name="price", le=15.0)
         >>> FloatMetadataFilter(name="price", ge=15.0)
         >>> FloatMetadataFilter(name="price", le=15.0, ge=10.0)

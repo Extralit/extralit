@@ -17,10 +17,10 @@ from typing import Any, ContextManager, Dict, Optional, Type
 
 from packaging.version import parse
 
-from argilla.client.apis import AbstractApi
-from argilla.client.sdk.client import AuthenticatedClient
-from argilla.client.sdk.commons.errors import ApiCompatibilityError
-from argilla.pydantic_v1 import BaseModel
+from argilla_v1.client.apis import AbstractApi
+from argilla_v1.client.sdk.client import AuthenticatedClient
+from argilla_v1.client.sdk.commons.errors import ApiCompatibilityError
+from argilla_v1.pydantic_v1 import BaseModel
 
 
 class ApiInfo(BaseModel):

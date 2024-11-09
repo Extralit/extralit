@@ -19,9 +19,9 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Type, Union
 
 import pandas as pd
 
-from argilla._constants import OPENAI_END_TOKEN, OPENAI_SEPARATOR, OPENAI_WHITESPACE
-from argilla.client.apis.datasets import TextClassificationSettings, TokenClassificationSettings
-from argilla.client.models import (
+from argilla_v1._constants import OPENAI_END_TOKEN, OPENAI_SEPARATOR, OPENAI_WHITESPACE
+from argilla_v1.client.apis.datasets import TextClassificationSettings, TokenClassificationSettings
+from argilla_v1.client.models import (
     Framework,
     Record,
     Text2TextRecord,
@@ -29,9 +29,9 @@ from argilla.client.models import (
     TokenAttributions,
     TokenClassificationRecord,
 )
-from argilla.client.sdk.datasets.models import TaskType
-from argilla.utils.dependency import require_dependencies, requires_dependencies
-from argilla.utils.span_utils import SpanUtils
+from argilla_v1.client.sdk.datasets.models import TaskType
+from argilla_v1.utils.dependency import require_dependencies, requires_dependencies
+from argilla_v1.utils.span_utils import SpanUtils
 
 if TYPE_CHECKING:
     import datasets
@@ -367,7 +367,7 @@ class DatasetBase:
             returned by ``to_datasets`` for "transformers" framework or a spaCy DocBin for "spacy" framework.
 
         Examples:
-            >>> import argilla as rg
+            >>> import argilla_v1 as rg
             >>> rb_dataset = rg.DatasetForTokenClassification([
             ...     rg.TokenClassificationRecord(
             ...         text="The text",
@@ -391,7 +391,7 @@ class DatasetBase:
              'metrics': Value(dtype='null'),
              'ner_tags': [ClassLabel(num_classes=3, names=['O', 'B-TAG', 'I-TAG'])]}
 
-            >>> import argilla as rg
+            >>> import argilla_v1 as rg
             >>> rb_dataset = rg.DatasetForTextClassification([
             ...     rg.TextClassificationRecord(
             ...         inputs={"header": "my header", "content": "my content"},
@@ -589,7 +589,7 @@ class DatasetForTextClassification(DatasetBase):
     """
     Examples:
         >>> # Import/export records:
-        >>> import argilla as rg
+        >>> import argilla_v1 as rg
         >>> dataset = rg.DatasetForTextClassification.from_pandas(my_dataframe)
         >>> dataset.to_datasets()
         >>>
@@ -979,7 +979,7 @@ class DatasetForTokenClassification(DatasetBase):
     """
     Examples:
         >>> # Import/export records:
-        >>> import argilla as rg
+        >>> import argilla_v1 as rg
         >>> dataset = rg.DatasetForTokenClassification.from_pandas(my_dataframe)
         >>> dataset.to_datasets()
         >>>
@@ -989,7 +989,7 @@ class DatasetForTokenClassification(DatasetBase):
         ...     print(record)
         >>>
         >>> # Passing in a list of records:
-        >>> import argilla as rg
+        >>> import argilla_v1 as rg
         >>> records = [
         ...     rg.TokenClassificationRecord(text="example", tokens=["example"]),
         ...     rg.TokenClassificationRecord(text="another example", tokens=["another", "example"]),
@@ -1250,7 +1250,7 @@ class DatasetForTokenClassification(DatasetBase):
 
         # create a dict first, where we make the necessary transformations
         def entities_to_dict(
-            entities: Optional[List[Union[Tuple[str, int, int, float], Tuple[str, int, int]]]]
+            entities: Optional[List[Union[Tuple[str, int, int, float], Tuple[str, int, int]]]],
         ) -> Optional[List[Dict[str, Union[str, int, float]]]]:
             if entities is None:
                 return None
@@ -1297,7 +1297,7 @@ class DatasetForText2Text(DatasetBase):
     """
     Examples:
         >>> # Import/export records:
-        >>> import argilla as rg
+        >>> import argilla_v1 as rg
         >>> dataset = rg.DatasetForText2Text.from_pandas(my_dataframe)
         >>> dataset.to_datasets()
         >>>

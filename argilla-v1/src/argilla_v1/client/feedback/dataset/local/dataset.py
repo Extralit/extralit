@@ -17,24 +17,17 @@ import textwrap
 import warnings
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Optional, Tuple, Union
 
-from argilla.client.feedback.constants import FETCHING_BATCH_SIZE
-from argilla.client.feedback.dataset import helpers
-from argilla.client.feedback.dataset.base import FeedbackDatasetBase, R
-from argilla.client.feedback.dataset.local.mixins import ArgillaMixin, TaskTemplateMixin
-from argilla.client.feedback.dataset.mixins import MetricsMixin, UnificationMixin
-from argilla.client.feedback.integrations.huggingface.dataset import HuggingFaceDatasetMixin
-from argilla.client.feedback.schemas.enums import RecordSortField, SortOrder
-from argilla.client.feedback.schemas.questions import (
-    LabelQuestion,
-    MultiLabelQuestion,
-    RankingQuestion,
-    RatingQuestion,
-    TextQuestion,
-)
-from argilla.client.feedback.schemas.documents import Document
-from argilla.client.feedback.schemas.records import FeedbackRecord
-from argilla.client.feedback.schemas.vector_settings import VectorSettings
-from argilla.client.feedback.training.schemas.base import (
+from argilla_v1.client.feedback.constants import FETCHING_BATCH_SIZE
+from argilla_v1.client.feedback.dataset import helpers
+from argilla_v1.client.feedback.dataset.base import FeedbackDatasetBase, R
+from argilla_v1.client.feedback.dataset.local.mixins import ArgillaMixin, TaskTemplateMixin
+from argilla_v1.client.feedback.dataset.mixins import MetricsMixin, UnificationMixin
+from argilla_v1.client.feedback.integrations.huggingface.dataset import HuggingFaceDatasetMixin
+from argilla_v1.client.feedback.schemas.enums import RecordSortField, SortOrder
+from argilla_v1.client.feedback.schemas.documents import Document
+from argilla_v1.client.feedback.schemas.records import FeedbackRecord
+from argilla_v1.client.feedback.schemas.vector_settings import VectorSettings
+from argilla_v1.client.feedback.training.schemas.base import (
     TrainingTaskForChatCompletion,
     TrainingTaskForDPO,
     TrainingTaskForPPO,
@@ -45,10 +38,10 @@ from argilla.client.feedback.training.schemas.base import (
     TrainingTaskForTextClassification,
     TrainingTaskTypes,
 )
-from argilla.client.models import Framework
+from argilla_v1.client.models import Framework
 
 if TYPE_CHECKING:
-    from argilla.client.feedback.schemas.types import (
+    from argilla_v1.client.feedback.schemas.types import (
         AllowedFieldTypes,
         AllowedMetadataPropertyTypes,
         AllowedQuestionTypes,
@@ -101,7 +94,7 @@ class FeedbackDataset(
             ValueError: if `guidelines` is an empty string.
 
         Examples:
-            >>> import argilla as rg
+            >>> import argilla_v1 as rg
             >>> rg.init(api_url="...", api_key="...")
             >>> dataset = rg.FeedbackDataset(
             ...     fields=[

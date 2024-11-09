@@ -30,3 +30,7 @@ settings = rg.Settings(
 
 ## `rg.VectorField`
 
+::: src.argilla.settings._vector.VectorField
+    options:
+        heading_level: 3
+        show_root_toc_entry: false

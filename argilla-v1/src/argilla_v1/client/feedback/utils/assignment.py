@@ -20,8 +20,8 @@ from typing import Any, Dict, List, Union
 
 from rich.progress import Progress
 
-from argilla.client.users import User
-from argilla.client.workspaces import Workspace
+from argilla_v1.client.users import User
+from argilla_v1.client.workspaces import Workspace
 
 
 def check_user(user_to_check: Union[str, User]) -> User:
@@ -191,7 +191,7 @@ def assign_records(
         Or a dictionary where keys are usernames and values are lists of assigned records.
 
     Examples:
-        >>> from argilla.client.feedback.utils import assign_records
+        >>> from argilla_v1.client.feedback.utils import assign_records
         >>> individual_assignments = assign_records([user1, user2, user3], records, 0, False)
         >>> group_assignments = assign_records({group1: [user1, user2], group2: [user3]}, records, 1, False)
 
@@ -216,7 +216,7 @@ def assign_workspaces(
         A dictionary where each key is a workspace name and its value is a list of user names.
 
     Examples:
-        >>> from argilla.client.feedback.utils import assign_workspaces
+        >>> from argilla_v1.client.feedback.utils import assign_workspaces
         >>> wk_assignments = assign_workspaces(group_assignments, "group")
         >>> wk_assignments = assign_workspaces(group_assignments, "group_personal")
         >>> wk_assignments = assign_workspaces(individual_assignments, "individual")

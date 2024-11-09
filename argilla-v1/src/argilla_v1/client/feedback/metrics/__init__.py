@@ -13,8 +13,8 @@
 #  limitations under the License.
 
 
-from argilla.client.feedback.metrics.agreement_metrics import AgreementMetric
-from argilla.client.feedback.metrics.annotator_metrics import (
+from argilla_v1.client.feedback.metrics.agreement_metrics import AgreementMetric
+from argilla_v1.client.feedback.metrics.annotator_metrics import (
     ModelMetric,
     UnifiedModelMetric,
 )

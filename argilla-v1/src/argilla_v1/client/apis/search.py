@@ -15,12 +15,12 @@
 import dataclasses
 from typing import List, Optional
 
-from argilla.client.apis import AbstractApi
-from argilla.client.models import Record
-from argilla.client.sdk.datasets.models import TaskType
-from argilla.client.sdk.text2text.models import Text2TextRecord
-from argilla.client.sdk.text_classification.models import TextClassificationRecord
-from argilla.client.sdk.token_classification.models import TokenClassificationRecord
+from argilla_v1.client.apis import AbstractApi
+from argilla_v1.client.models import Record
+from argilla_v1.client.sdk.datasets.models import TaskType
+from argilla_v1.client.sdk.text2text.models import Text2TextRecord
+from argilla_v1.client.sdk.text_classification.models import TextClassificationRecord
+from argilla_v1.client.sdk.token_classification.models import TokenClassificationRecord
 
 
 @dataclasses.dataclass

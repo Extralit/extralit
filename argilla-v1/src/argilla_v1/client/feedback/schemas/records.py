@@ -16,17 +16,17 @@ import warnings
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 from uuid import UUID
 
-from argilla.client.feedback.schemas.enums import RecordSortField, SortOrder
+from argilla_v1.client.feedback.schemas.enums import RecordSortField, SortOrder
 
 import argilla as rg
 # Support backward compatibility for import of RankingValueSchema from records module
-from argilla.client.feedback.schemas.response_values import RankingValueSchema  # noqa
-from argilla.client.feedback.schemas.responses import ResponseSchema, ValueSchema  # noqa
-from argilla.client.feedback.schemas.suggestions import SuggestionSchema
-from argilla.pydantic_v1 import BaseModel, Extra, Field, PrivateAttr, validator
+from argilla_v1.client.feedback.schemas.response_values import RankingValueSchema  # noqa
+from argilla_v1.client.feedback.schemas.responses import ResponseSchema, ValueSchema  # noqa
+from argilla_v1.client.feedback.schemas.suggestions import SuggestionSchema
+from argilla_v1.pydantic_v1 import BaseModel, Extra, Field, PrivateAttr, validator
 
 if TYPE_CHECKING:
-    from argilla.client.feedback.unification import UnifiedValueSchema
+    from argilla_v1.client.feedback.unification import UnifiedValueSchema
 
 
 class FeedbackRecord(BaseModel):
@@ -51,7 +51,7 @@ class FeedbackRecord(BaseModel):
             Defaults to None.
 
     Examples:
-        >>> from argilla.feedback import FeedbackRecord, ResponseSchema, SuggestionSchema, ValueSchema
+        >>> from argilla_v1.feedback import FeedbackRecord, ResponseSchema, SuggestionSchema, ValueSchema
         >>> FeedbackRecord(
         ...     fields={"text": "This is the first record", "label": "positive"},
         ...     metadata={"first": True, "nested": {"more": "stuff"}},

@@ -15,13 +15,13 @@
 import logging
 from typing import TYPE_CHECKING
 
-from argilla.client.feedback.training.frameworks.transformers import ArgillaTransformersTrainer
-from argilla.client.models import TextClassificationRecord
-from argilla.training.setfit import ArgillaSetFitTrainer as ArgillaSetFitTrainerV1
-from argilla.utils.dependency import require_dependencies, requires_dependencies
+from argilla_v1.client.feedback.training.frameworks.transformers import ArgillaTransformersTrainer
+from argilla_v1.client.models import TextClassificationRecord
+from argilla_v1.training.setfit import ArgillaSetFitTrainer as ArgillaSetFitTrainerV1
+from argilla_v1.utils.dependency import require_dependencies, requires_dependencies
 
 if TYPE_CHECKING:
-    from argilla.client.feedback.integrations.huggingface.model_card import SetFitModelCardData
+    from argilla_v1.client.feedback.integrations.huggingface.model_card import SetFitModelCardData
 
 
 class ArgillaSetFitTrainer(ArgillaSetFitTrainerV1, ArgillaTransformersTrainer):
@@ -58,7 +58,7 @@ class ArgillaSetFitTrainer(ArgillaSetFitTrainerV1, ArgillaTransformersTrainer):
         Returns:
             SetFitModelCardData: Container for the data to be written on the `ArgillaModelCard`.
         """
-        from argilla.client.feedback.integrations.huggingface.model_card import SetFitModelCardData
+        from argilla_v1.client.feedback.integrations.huggingface.model_card import SetFitModelCardData
 
         return SetFitModelCardData(
             model_id=self._model,

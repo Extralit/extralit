@@ -14,13 +14,13 @@
 
 from typing import TYPE_CHECKING, Iterator, List, Union
 
-from argilla.client.feedback.constants import FETCHING_BATCH_SIZE
-from argilla.client.feedback.schemas.remote.records import RemoteFeedbackRecord
-from argilla.client.sdk.users.models import UserRole
-from argilla.client.utils import allowed_for_roles
+from argilla_v1.client.feedback.constants import FETCHING_BATCH_SIZE
+from argilla_v1.client.feedback.schemas.remote.records import RemoteFeedbackRecord
+from argilla_v1.client.sdk.users.models import UserRole
+from argilla_v1.client.utils import allowed_for_roles
 
 if TYPE_CHECKING:
-    from argilla.client.feedback.dataset.remote.dataset import RemoteFeedbackRecords
+    from argilla_v1.client.feedback.dataset.remote.dataset import RemoteFeedbackRecords
 
 
 class ArgillaRecordsMixin:

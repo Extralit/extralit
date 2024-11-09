@@ -15,7 +15,7 @@
 from typing import Any, Literal, Optional
 from uuid import UUID
 
-from argilla.pydantic_v1 import BaseModel
+from argilla_v1.pydantic_v1 import BaseModel
 
 
 class SuggestionModel(BaseModel):

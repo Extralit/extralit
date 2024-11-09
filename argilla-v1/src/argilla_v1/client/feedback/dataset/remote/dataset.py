@@ -19,28 +19,28 @@ from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Literal, Optional, 
 
 from rich.progress import Progress
 
-from argilla.client.feedback.constants import DELETE_DATASET_RECORDS_MAX_NUMBER, PUSHING_BATCH_SIZE
-from argilla.client.feedback.dataset import helpers
-from argilla.client.feedback.dataset.base import FeedbackDatasetBase, SortBy
-from argilla.client.feedback.dataset.mixins import MetricsMixin, UnificationMixin
-from argilla.client.feedback.dataset.remote.mixins import ArgillaRecordsMixin
-from argilla.client.feedback.mixins import ArgillaMetadataPropertiesMixin
-from argilla.client.feedback.schemas.enums import ResponseStatusFilter
-from argilla.client.feedback.schemas.records import FeedbackRecord
-from argilla.client.feedback.schemas.documents import Document
-from argilla.client.feedback.schemas.remote.records import RemoteFeedbackRecord
-from argilla.client.feedback.schemas.remote.vector_settings import RemoteVectorSettings
-from argilla.client.feedback.schemas.vector_settings import VectorSettings
-from argilla.client.feedback.training.schemas.base import (
+from argilla_v1.client.feedback.constants import DELETE_DATASET_RECORDS_MAX_NUMBER, PUSHING_BATCH_SIZE
+from argilla_v1.client.feedback.dataset import helpers
+from argilla_v1.client.feedback.dataset.base import FeedbackDatasetBase, SortBy
+from argilla_v1.client.feedback.dataset.mixins import MetricsMixin, UnificationMixin
+from argilla_v1.client.feedback.dataset.remote.mixins import ArgillaRecordsMixin
+from argilla_v1.client.feedback.mixins import ArgillaMetadataPropertiesMixin
+from argilla_v1.client.feedback.schemas.enums import ResponseStatusFilter
+from argilla_v1.client.feedback.schemas.records import FeedbackRecord
+from argilla_v1.client.feedback.schemas.documents import Document
+from argilla_v1.client.feedback.schemas.remote.records import RemoteFeedbackRecord
+from argilla_v1.client.feedback.schemas.remote.vector_settings import RemoteVectorSettings
+from argilla_v1.client.feedback.schemas.vector_settings import VectorSettings
+from argilla_v1.client.feedback.training.schemas.base import (
     TrainingTaskTypes,
 )
-from argilla.client.models import Framework
-from argilla.client.sdk.commons.errors import AlreadyExistsApiError
-from argilla.client.sdk.users.models import UserRole
-from argilla.client.sdk.v1.datasets import api as datasets_api_v1
-from argilla.client.sdk.v1.datasets.models import FeedbackRecordsSearchVectorQuery
-from argilla.client.sdk.v1.vectors_settings import api as vectors_settings_api_v1
-from argilla.client.utils import allowed_for_roles
+from argilla_v1.client.models import Framework
+from argilla_v1.client.sdk.commons.errors import AlreadyExistsApiError
+from argilla_v1.client.sdk.users.models import UserRole
+from argilla_v1.client.sdk.v1.datasets import api as datasets_api_v1
+from argilla_v1.client.sdk.v1.datasets.models import FeedbackRecordsSearchVectorQuery
+from argilla_v1.client.sdk.v1.vectors_settings import api as vectors_settings_api_v1
+from argilla_v1.client.utils import allowed_for_roles
 
 INCLUDE_ALL_VECTORS_PARAM: str = "all"
 
@@ -49,16 +49,16 @@ if TYPE_CHECKING:
 
     import httpx
 
-    from argilla.client.feedback.dataset.local.dataset import FeedbackDataset
-    from argilla.client.feedback.schemas.metadata import MetadataFilters
-    from argilla.client.feedback.schemas.types import (
+    from argilla_v1.client.feedback.dataset.local.dataset import FeedbackDataset
+    from argilla_v1.client.feedback.schemas.metadata import MetadataFilters
+    from argilla_v1.client.feedback.schemas.types import (
         AllowedMetadataPropertyTypes,
         AllowedRemoteFieldTypes,
         AllowedRemoteMetadataPropertyTypes,
         AllowedRemoteQuestionTypes,
     )
-    from argilla.client.sdk.v1.datasets.models import FeedbackRecordsModel
-    from argilla.client.workspaces import Workspace
+    from argilla_v1.client.sdk.v1.datasets.models import FeedbackRecordsModel
+    from argilla_v1.client.workspaces import Workspace
 
 
 class RemoteFeedbackRecords(ArgillaRecordsMixin):
@@ -646,7 +646,7 @@ class RemoteFeedbackDataset(FeedbackDatasetBase[RemoteFeedbackRecord], MetricsMi
             A local instance of the dataset which is a `FeedbackDataset` object.
         """
         # Importing here to avoid circular imports
-        from argilla.client.feedback.dataset.local.dataset import FeedbackDataset
+        from argilla_v1.client.feedback.dataset.local.dataset import FeedbackDataset
 
         instance = FeedbackDataset(
             fields=[field.to_local() for field in self.fields],
@@ -709,7 +709,7 @@ class RemoteFeedbackDataset(FeedbackDatasetBase[RemoteFeedbackRecord], MetricsMi
             ) from e
 
         # TODO(alvarobartt): structure better the mixins to be able to easily reuse those, here to avoid circular imports
-        from argilla.client.feedback.dataset.local.mixins import ArgillaMixin
+        from argilla_v1.client.feedback.dataset.local.mixins import ArgillaMixin
 
         return ArgillaMixin._parse_to_remote_metadata_property(metadata_property=metadata_property, client=self._client)
 

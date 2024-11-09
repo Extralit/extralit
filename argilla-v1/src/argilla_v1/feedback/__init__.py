@@ -13,6 +13,6 @@
 #  limitations under the License.
 
 # !!! All modules used here must define the __all__ variable properly
-from argilla.client.feedback import *  # noqa
-from argilla.client.feedback.dataset import FeedbackDataset  # noqa
-from argilla.client.feedback.schemas import *  # noqa
+from argilla_v1.client.feedback import *  # noqa
+from argilla_v1.client.feedback.dataset import FeedbackDataset  # noqa
+from argilla_v1.client.feedback.schemas import *  # noqa

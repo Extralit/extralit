@@ -13,7 +13,7 @@
 #  limitations under the License.
 
 
-from argilla.client.feedback.utils.assignment import (
+from argilla_v1.client.feedback.utils.assignment import (
     assign_records,
     assign_records_to_groups,
     assign_records_to_individuals,
@@ -21,7 +21,7 @@ from argilla.client.feedback.utils.assignment import (
     check_user,
     check_workspace,
 )
-from argilla.client.feedback.utils.html_utils import (
+from argilla_v1.client.feedback.utils.html_utils import (
     audio_to_html,
     create_token_highlights,
     get_file_data,

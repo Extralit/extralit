@@ -18,16 +18,16 @@ import warnings
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
-from argilla.client.datasets import DatasetForText2Text, DatasetForTextClassification, DatasetForTokenClassification
-from argilla.client.models import Framework, Text2TextRecord, TextClassificationRecord, TokenClassificationRecord
-from argilla.client.singleton import active_client
-from argilla.datasets import TextClassificationSettings, TokenClassificationSettings, load_dataset_settings
-from argilla.utils.telemetry import get_telemetry_client
+from argilla_v1.client.datasets import DatasetForText2Text, DatasetForTextClassification, DatasetForTokenClassification
+from argilla_v1.client.models import Framework, Text2TextRecord, TextClassificationRecord, TokenClassificationRecord
+from argilla_v1.client.singleton import active_client
+from argilla_v1.datasets import TextClassificationSettings, TokenClassificationSettings, load_dataset_settings
+from argilla_v1.utils.telemetry import get_telemetry_client
 
 if TYPE_CHECKING:
     import spacy
 
-    from argilla.client.feedback.integrations.huggingface import FrameworkCardData
+    from argilla_v1.client.feedback.integrations.huggingface import FrameworkCardData
 
 
 class ArgillaTrainer(object):
@@ -133,7 +133,7 @@ class ArgillaTrainer(object):
             )
 
         if framework is Framework.SETFIT:
-            from argilla.training.setfit import ArgillaSetFitTrainer
+            from argilla_v1.training.setfit import ArgillaSetFitTrainer
 
             self._trainer = ArgillaSetFitTrainer(
                 name=self._name,
@@ -146,7 +146,7 @@ class ArgillaTrainer(object):
                 model=self.model,
             )
         elif framework is Framework.TRANSFORMERS:
-            from argilla.training.transformers import ArgillaTransformersTrainer
+            from argilla_v1.training.transformers import ArgillaTransformersTrainer
 
             self._trainer = ArgillaTransformersTrainer(
                 name=self._name,
@@ -159,7 +159,7 @@ class ArgillaTrainer(object):
                 model=self.model,
             )
         elif framework is Framework.PEFT:
-            from argilla.training.peft import ArgillaPeftTrainer
+            from argilla_v1.training.peft import ArgillaPeftTrainer
 
             self._trainer = ArgillaPeftTrainer(
                 name=self._name,
@@ -172,7 +172,7 @@ class ArgillaTrainer(object):
                 model=self.model,
             )
         elif framework is Framework.SPACY:
-            from argilla.training.spacy import ArgillaSpaCyTrainer
+            from argilla_v1.training.spacy import ArgillaSpaCyTrainer
 
             self._trainer = ArgillaSpaCyTrainer(
                 name=self._name,
@@ -187,7 +187,7 @@ class ArgillaTrainer(object):
                 **framework_kwargs,  # freeze_tok2vec
             )
         elif framework is Framework.SPACY_TRANSFORMERS:
-            from argilla.training.spacy import ArgillaSpaCyTransformersTrainer
+            from argilla_v1.training.spacy import ArgillaSpaCyTransformersTrainer
 
             self._trainer = ArgillaSpaCyTransformersTrainer(
                 name=self._name,
@@ -202,7 +202,7 @@ class ArgillaTrainer(object):
                 **framework_kwargs,  # update_transformer
             )
         elif framework is Framework.OPENAI:
-            from argilla.training.openai import ArgillaOpenAITrainer
+            from argilla_v1.training.openai import ArgillaOpenAITrainer
 
             self._trainer = ArgillaOpenAITrainer(
                 name=self._name,
@@ -217,7 +217,7 @@ class ArgillaTrainer(object):
         elif framework is Framework.SPAN_MARKER:
             if self._rg_dataset_type is not DatasetForTokenClassification:
                 raise NotImplementedError(f"{Framework.SPAN_MARKER} only supports `TokenClassification` tasks.")
-            from argilla.training.span_marker import ArgillaSpanMarkerTrainer
+            from argilla_v1.training.span_marker import ArgillaSpanMarkerTrainer
 
             self._trainer = ArgillaSpanMarkerTrainer(
                 name=self._name,

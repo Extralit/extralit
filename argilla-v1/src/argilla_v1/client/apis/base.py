@@ -13,7 +13,7 @@
 #  limitations under the License.
 from typing import Optional
 
-from argilla.client.sdk.client import AuthenticatedClient
+from argilla_v1.client.sdk.client import AuthenticatedClient
 
 
 class AbstractApi(object):

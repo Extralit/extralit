@@ -16,7 +16,7 @@ from json import JSONDecodeError
 
 import httpx
 
-from argilla.client.sdk.commons.errors import (
+from argilla_v1.client.sdk.commons.errors import (
     AlreadyExistsApiError,
     BadRequestApiError,
     ForbiddenApiError,

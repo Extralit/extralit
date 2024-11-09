@@ -17,24 +17,24 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Iterator, List, Optional, Union
 from uuid import UUID
 
-from argilla.client.sdk.commons.errors import (
+from argilla_v1.client.sdk.commons.errors import (
     AlreadyExistsApiError,
     BaseClientError,
     NotFoundApiError,
     ValidationApiError,
 )
-from argilla.client.sdk.users import api as users_api
-from argilla.client.sdk.users.models import UserModel, UserRole
-from argilla.client.sdk.v1.users import api as users_api_v1
-from argilla.client.sdk.v1.workspaces import api as workspaces_api_v1
-from argilla.client.singleton import active_client
-from argilla.client.utils import allowed_for_roles
+from argilla_v1.client.sdk.users import api as users_api
+from argilla_v1.client.sdk.users.models import UserModel, UserRole
+from argilla_v1.client.sdk.v1.users import api as users_api_v1
+from argilla_v1.client.sdk.v1.workspaces import api as workspaces_api_v1
+from argilla_v1.client.singleton import active_client
+from argilla_v1.client.utils import allowed_for_roles
 
 if TYPE_CHECKING:
     import httpx
 
-    from argilla.client.sdk.client import AuthenticatedClient
-    from argilla.client.sdk.v1.workspaces.models import WorkspaceModel
+    from argilla_v1.client.sdk.client import AuthenticatedClient
+    from argilla_v1.client.sdk.v1.workspaces.models import WorkspaceModel
 
 
 class User:
@@ -59,7 +59,7 @@ class User:
         updated_at: the datetime when the user was last updated.
 
     Examples:
-        >>> from argilla import rg
+        >>> from argilla_v1 import rg
         >>> user = rg.User.from_name("my-user") # or `User.from_id("...")`
         >>> print(user)
         User(id='...', username='my-user', role='annotator', first_name='Luke', last_name="Skywalker', full_name='Luke Skywalker', role='annotator', api_key='...', inserted_at=datetime.datetime(2021, 8, 31, 10, 0, 0), updated_at=datetime.datetime(2021, 8, 31, 10, 0, 0))
@@ -165,7 +165,7 @@ class User:
                 client = client.httpx
             return client
         except Exception as e:
-            raise RuntimeError(f"The `rg.active_client()` is not available or not responding.") from e
+            raise RuntimeError("The `rg.active_client()` is not available or not responding.") from e
 
     @allowed_for_roles(roles=[UserRole.owner])
     def delete(self) -> None:
@@ -176,7 +176,7 @@ class User:
             RuntimeError: if the user cannot be deleted from Argilla.
 
         Examples:
-            >>> from argilla import rg
+            >>> from argilla_v1 import rg
             >>> user = rg.User.from_name("my-user")
             >>> user.delete()
         """
@@ -230,7 +230,7 @@ class User:
             RuntimeError: if the user cannot be created in Argilla.
 
         Examples:
-            >>> from argilla import rg
+            >>> from argilla_v1 import rg
             >>> user = rg.User.create("my-user", "my-password", role="admin")
         """
         if not first_name:
@@ -284,7 +284,7 @@ class User:
             RuntimeError: if there was an error while retrieving the user.
 
         Examples:
-            >>> from argilla import rg
+            >>> from argilla_v1 import rg
             >>> user = rg.User.from_id("my-user")
         """
         client = cls.__active_client()
@@ -317,7 +317,7 @@ class User:
             RuntimeError: if there was an error while retrieving the user.
 
         Examples:
-            >>> from argilla import rg
+            >>> from argilla_v1 import rg
             >>> user = rg.User.from_name("my-user")
         """
         client = cls.__active_client()
@@ -351,7 +351,7 @@ class User:
             RuntimeError: if there was an error while retrieving the current user.
 
         Examples:
-            >>> from argilla import rg
+            >>> from argilla_v1 import rg
             >>> user = rg.User.me()
         """
         client = cls.__active_client(httpx=False)
@@ -373,7 +373,7 @@ class User:
             RuntimeError: if there was an error while listing the users.
 
         Examples:
-            >>> from argilla import rg
+            >>> from argilla_v1 import rg
             >>> for user in rg.User.list():
             ...     print(user)
         """

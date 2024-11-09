@@ -18,21 +18,21 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Iterator, List, Optional, Union
 from uuid import UUID
 
-from argilla.client.sdk.commons.errors import (
+from argilla_v1.client.sdk.commons.errors import (
     AlreadyExistsApiError,
     BaseClientError,
     NotFoundApiError,
     ValidationApiError,
 )
-from argilla.client.sdk.users.models import UserRole
-from argilla.client.sdk.v1.files.models import FileObjectResponse, ListObjectsResponse
-from argilla.client.sdk.v1.workspaces import api as workspaces_api_v1
-from argilla.client.sdk.v1.workspaces.models import WorkspaceModel as WorkspaceModelV1
-from argilla.client.sdk.workspaces import api as workspaces_api
-from argilla.client.sdk.workspaces.models import WorkspaceModel as WorkspaceModelV0
-from argilla.client.singleton import active_client
-from argilla.client.users import User
-from argilla.client.utils import allowed_for_roles
+from argilla_v1.client.sdk.users.models import UserRole
+from argilla_v1.client.sdk.v1.workspaces import api as workspaces_api_v1
+from argilla_v1.client.sdk.v1.workspaces.models import WorkspaceModel as WorkspaceModelV1
+from argilla_v1.client.sdk.workspaces import api as workspaces_api
+from argilla_v1.client.sdk.workspaces.models import WorkspaceModel as WorkspaceModelV0
+from argilla_v1.client.singleton import active_client
+from argilla_v1.client.users import User
+from argilla_v1.client.utils import allowed_for_roles
+from argilla_v1.client.sdk.v1.files.models import FileObjectResponse, ListObjectsResponse
 
 import pandera as pa
 from extralit.extraction.models import SchemaStructure, DEFAULT_SCHEMA_S3_PATH
@@ -40,7 +40,7 @@ from extralit.extraction.models import SchemaStructure, DEFAULT_SCHEMA_S3_PATH
 if TYPE_CHECKING:
     import httpx
 
-    from argilla.client.sdk.users.models import UserModel
+    from argilla_v1.client.sdk.users.models import UserModel
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -63,7 +63,7 @@ class Workspace:
         updated_at: the datetime when the workspace was last updated.
 
     Examples:
-        >>> from argilla import rg
+        >>> from argilla_v1 import rg
         >>> workspace = rg.Workspace.from_name("my-workspace") # or `Workspace.from_id("...")`
         >>> workspace.add_user("my-user")
         >>> print(workspace.users)
@@ -147,7 +147,7 @@ class Workspace:
                 adding the user to the workspace.
 
         Examples:
-            >>> from argilla import rg
+            >>> from argilla_v1 import rg
             >>> workspace = rg.Workspace.from_name("my-workspace")
             >>> workspace.add_user("my-user-id")
         """
@@ -196,7 +196,7 @@ class Workspace:
                 while deleting it from the workspace.
 
         Examples:
-            >>> from argilla import rg
+            >>> from argilla_v1 import rg
             >>> workspace = rg.Workspace.from_name("my-workspace")
             >>> workspace.delete_user("my-user-id")
         """
@@ -243,7 +243,7 @@ class Workspace:
             RuntimeError: if there was an unexpected error while deleting the user from the workspace.
 
         Examples:
-            >>> from argilla import rg
+            >>> from argilla_v1 import rg
             >>> workspace = rg.Workspace.from_name("my-workspace")
             >>> workspace.delete()
         """
@@ -406,7 +406,7 @@ class Workspace:
         try:
             return active_client().http_client.httpx
         except Exception as e:
-            raise RuntimeError(f"The `rg.active_client()` is not available or not responding.") from e
+            raise RuntimeError("The `rg.active_client()` is not available or not responding.") from e
 
     @classmethod
     def _new_instance(
@@ -434,7 +434,7 @@ class Workspace:
             A `Workspace` instance.
 
         Examples:
-            >>> from argilla import rg
+            >>> from argilla_v1 import rg
             >>> workspace = rg.Workspace.create("my-workspace")
         """
         client = cls.__active_client()
@@ -462,7 +462,7 @@ class Workspace:
             RuntimeError: if there was an error while retrieving the workspace.
 
         Examples:
-            >>> from argilla import rg
+            >>> from argilla_v1 import rg
             >>> workspace = rg.Workspace.from_id("my-workspace-id")
         """
         client = cls.__active_client()
@@ -498,7 +498,7 @@ class Workspace:
             ValueError: if the workspace with the provided name doesn't exist.
 
         Examples:
-            >>> from argilla import rg
+            >>> from argilla_v1 import rg
             >>> workspace = rg.Workspace.from_name("my-workspace")
         """
         client = cls.__active_client()
@@ -528,7 +528,7 @@ class Workspace:
             RuntimeError: if there was an error while listing the workspaces.
 
         Examples:
-            >>> from argilla import rg
+            >>> from argilla_v1 import rg
             >>> workspaces = rg.Workspace.list()
         """
         client = cls.__active_client()

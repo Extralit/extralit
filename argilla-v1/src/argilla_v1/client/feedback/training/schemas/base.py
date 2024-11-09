@@ -21,8 +21,8 @@ from abc import ABC
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional, Tuple, Union
 
 import pandas as pd
-from argilla._constants import OPENAI_SEPARATOR, OPENAI_WHITESPACE
-from argilla.client.feedback.schemas import (
+from argilla_v1._constants import OPENAI_SEPARATOR, OPENAI_WHITESPACE
+from argilla_v1.client.feedback.schemas import (
     FeedbackRecord,
     LabelQuestion,
     MultiLabelQuestion,
@@ -31,12 +31,12 @@ from argilla.client.feedback.schemas import (
     TextField,
     TextQuestion,
 )
-from argilla.client.feedback.training.schemas.defaults import (
+from argilla_v1.client.feedback.training.schemas.defaults import (
     QuestionAnsweringDefaults,
     SentenceSimilarityDefaults,
     TextClassificationDefaults,
 )
-from argilla.client.feedback.training.schemas.return_types import (
+from argilla_v1.client.feedback.training.schemas.return_types import (
     ChatCompletionReturnTypes,
     DPOReturnTypes,
     PPOReturnTypes,
@@ -46,22 +46,22 @@ from argilla.client.feedback.training.schemas.return_types import (
     SFTReturnTypes,
     TextClassificationReturnTypes,
 )
-from argilla.client.feedback.unification import (
+from argilla_v1.client.feedback.unification import (
     LabelQuestionUnification,
     MultiLabelQuestionUnification,
     RankingQuestionUnification,
     RatingQuestionUnification,
 )
-from argilla.client.models import Framework
-from argilla.pydantic_v1 import BaseModel
-from argilla.utils.dependency import require_dependencies, requires_dependencies
+from argilla_v1.client.models import Framework
+from argilla_v1.pydantic_v1 import BaseModel
+from argilla_v1.utils.dependency import require_dependencies, requires_dependencies
 
 _LOGGER = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     import datasets
     import spacy
-    from argilla.client.feedback.dataset import FeedbackDataset
+    from argilla_v1.client.feedback.dataset import FeedbackDataset
     from sentence_transformers import InputExample
 
 
@@ -328,7 +328,7 @@ class TrainingTask:
 
         Examples:
             >>> # with defaults
-            >>> from argilla import LabelQuestion, TrainingTask
+            >>> from argilla_v1 import LabelQuestion, TrainingTask
             >>> dataset = rg.FeedbackDataset.from_argilla(name="...")
             >>> task = TrainingTask.for_text_classification(
             ...     text=dataset.field_by_name("text"),
@@ -336,7 +336,7 @@ class TrainingTask:
             ... )
             >>> dataset.prepare_for_training(framework="...", task=task)
             >>> # with formatting_func
-            >>> from argilla import LabelQuestion, TrainingTask
+            >>> from argilla_v1 import LabelQuestion, TrainingTask
             >>> from collections import Counter
             >>> import random
             >>> def formatting_func(sample: Dict[str, Any]) -> Union[Tuple[str, str], Tuple[str, List[str]]]:
@@ -407,7 +407,7 @@ class TrainingTask:
             TrainingTaskForSFT: A task mapping instance to be used in `FeedbackDataset.prepare_for_training()`
 
         Examples:
-            >>> from argilla import TrainingTask
+            >>> from argilla_v1 import TrainingTask
             >>> dataset = rg.FeedbackDataset.from_argilla(name="...")
             >>> def formatting_func(sample: Dict[str, Any]):
             ...     annotations = sample["good"]
@@ -439,7 +439,7 @@ class TrainingTask:
             TrainingTaskForRM: A task mapping instance to be used in `FeedbackDataset.prepare_for_training()`
 
         Examples:
-            >>> from argilla import TrainingTask
+            >>> from argilla_v1 import TrainingTask
             >>> dataset = rg.FeedbackDataset.from_argilla(name="...")
             >>> def formatting_func(sample: Dict[str, Any]):
             ...     values = [annotation["value"] for annotation in sample["ranking"]]
@@ -491,7 +491,7 @@ class TrainingTask:
             TrainingTaskForDPO: A task mapping instance to be used in `FeedbackDataset.prepare_for_training()`
 
         Examples:
-            >>> from argilla import TrainingTask
+            >>> from argilla_v1 import TrainingTask
             >>> dataset = rg.FeedbackDataset.from_argilla(name="...")
             >>> def formatting_func(sample: Dict[str, Any]):
             ...     values = [annotation["value"] for annotation in sample["ranking"]]
@@ -521,7 +521,7 @@ class TrainingTask:
                 one or more chat-turn-role-content text tuples.
 
         Examples:
-            >>> from argilla import TrainingTaskForChatCompletion
+            >>> from argilla_v1 import TrainingTaskForChatCompletion
             >>> dataset = rg.FeedbackDataset.from_argilla(name="...")
             >>> def formatting_func(sample: Dict[str, Any]):
             ...     from uuid import uuid4
@@ -557,7 +557,7 @@ class TrainingTask:
 
         Examples:
             >>> # with defaults
-            >>> from argilla import TrainingTaskForQuestionAnswering
+            >>> from argilla_v1 import TrainingTaskForQuestionAnswering
             >>> dataset = rg.FeedbackDataset.from_argilla(name="...")
             >>> task = TrainingTaskForQuestionAnswering(
             ...     question=dataset.field_by_name("question"),
@@ -566,7 +566,7 @@ class TrainingTask:
             ... )
             >>> dataset.prepare_for_training(framework="...", task=task)
             >>> # with formatting_func
-            >>> from argilla import TrainingTaskForQuestionAnswering
+            >>> from argilla_v1 import TrainingTaskForQuestionAnswering
             >>> dataset = rg.FeedbackDataset.from_argilla(name="...")
             >>> def formatting_func(sample: Dict[str, Any]):
             ...     question = sample["question"]
@@ -633,7 +633,7 @@ class TrainingTask:
             TrainingTaskForSentenceSimilarity: A task mapping instance to be used in `FeedbackDataset.prepare_for_training()`
 
         Examples:
-            >>> from argilla import LabelQuestion, TrainingTask
+            >>> from argilla_v1 import LabelQuestion, TrainingTask
             >>> dataset = rg.FeedbackDataset.from_argilla(name="...")
             >>> task = TrainingTask.for_text_classification(
             ...     texts=[dataset.field_by_name("premise"), dataset.field_by_name("hypothesis")],
@@ -641,7 +641,7 @@ class TrainingTask:
             ... )
             >>> dataset.prepare_for_training(framework="...", task=task)
 
-            >>> from argilla import LabelQuestion, TrainingTask
+            >>> from argilla_v1 import LabelQuestion, TrainingTask
             >>> from collections import Counter
             >>> import random
             >>> def formatting_func(sample: Dict[str, Any]) -> Union[Tuple[str, str], Tuple[str, List[str]]]:
@@ -702,7 +702,7 @@ class TrainingTaskForTextClassification(BaseModel, TrainingData):
 
         Examples:
             >>> # with defaults
-            >>> from argilla import LabelQuestion, TrainingTask
+            >>> from argilla_v1 import LabelQuestion, TrainingTask
             >>> dataset = rg.FeedbackDataset.from_argilla(name="...")
             >>> task = TrainingTask.for_text_classification(
             ...     text=dataset.field_by_name("text"),
@@ -710,7 +710,7 @@ class TrainingTaskForTextClassification(BaseModel, TrainingData):
             ... )
             >>> dataset.prepare_for_training(framework="...", task=task)
             >>> # with formatting_func
-            >>> from argilla import LabelQuestion, TrainingTask
+            >>> from argilla_v1 import LabelQuestion, TrainingTask
             >>> from collections import Counter
             >>> import random
             >>> def formatting_func(sample: Dict[str, Any]) -> Union[Tuple[str, str], Tuple[str, List[str]]]:
@@ -970,7 +970,7 @@ class TrainingTaskForSFT(BaseModel, TrainingData):
             one or more text strings.
 
     Examples:
-        >>> from argilla import TrainingTaskForSFT
+        >>> from argilla_v1 import TrainingTaskForSFT
         >>> dataset = rg.FeedbackDataset.from_argilla(name="...")
         >>> def formatting_func(sample: Dict[str, Any]):
         ...     annotations = sample["good"]
@@ -1021,7 +1021,7 @@ class TrainingTaskForRM(BaseModel, TrainingData):
             one or more chosen-rejected text tuples.
 
     Examples:
-        >>> from argilla import TrainingTaskForRM
+        >>> from argilla_v1 import TrainingTaskForRM
         >>> dataset = rg.FeedbackDataset.from_argilla(name="...")
         >>> def formatting_func(sample: Dict[str, Any]):
         ...     values = [annotation["value"] for annotation in sample["ranking"]]
@@ -1076,7 +1076,7 @@ class TrainingTaskForPPO(BaseModel, TrainingData):
         text: The TextField to use for training.
 
     Examples:
-        >>> from argilla import TrainingTaskForPPO
+        >>> from argilla_v1 import TrainingTaskForPPO
         >>> dataset = rg.FeedbackDataset.from_argilla(name="...")
         >>> task = TrainingTaskForPPO(text=dataset.fields[0],)
         >>> dataset.prepare_for_training(framework="...", task=task)
@@ -1122,7 +1122,7 @@ class TrainingTaskForDPO(BaseModel, TrainingData):
             one or more prompt-chosen-rejected text tuples.
 
     Examples:
-        >>> from argilla import TrainingTaskForDPO
+        >>> from argilla_v1 import TrainingTaskForDPO
         >>> dataset = rg.FeedbackDataset.from_argilla(name="...")
         >>> def formatting_func(sample: Dict[str, Any]):
         ...     values = [annotation["value"] for annotation in sample["ranking"]]
@@ -1183,7 +1183,7 @@ class TrainingTaskForQuestionAnswering(BaseModel, TrainingData):
 
     Examples:
         >>> # with defaults
-        >>> from argilla import TrainingTaskForQuestionAnswering
+        >>> from argilla_v1 import TrainingTaskForQuestionAnswering
         >>> dataset = rg.FeedbackDataset.from_argilla(name="...")
         >>> task = TrainingTaskForQuestionAnswering(
         ...     question=dataset.field_by_name("question"),
@@ -1192,7 +1192,7 @@ class TrainingTaskForQuestionAnswering(BaseModel, TrainingData):
         ... )
         >>> dataset.prepare_for_training(framework="...", task=task)
         >>> # with formatting_func
-        >>> from argilla import TrainingTaskForQuestionAnswering
+        >>> from argilla_v1 import TrainingTaskForQuestionAnswering
         >>> dataset = rg.FeedbackDataset.from_argilla(name="...")
         >>> def formatting_func(sample: Dict[str, Any]):
         ...     question = sample["question"]
@@ -1285,7 +1285,7 @@ class TrainingTaskForChatCompletion(BaseModel, TrainingData):
             one or more chat-turn-role-content text tuples.
 
     Examples:
-        >>> from argilla import TrainingTaskForChatCompletion
+        >>> from argilla_v1 import TrainingTaskForChatCompletion
         >>> dataset = rg.FeedbackDataset.from_argilla(name="...")
         >>> def formatting_func(sample: Dict[str, Any]):
         ...     from uuid import uuid4
@@ -1364,7 +1364,7 @@ class TrainingTaskForSentenceSimilarity(BaseModel, TrainingData):
 
     Examples:
         Example for argilla/emotion dataset:
-        >>> from argilla import TrainingTaskForSentenceSimilarity
+        >>> from argilla_v1 import TrainingTaskForSentenceSimilarity
         >>> dataset = rg.FeedbackDataset.from_argilla(name="argilla/emotion")
         >>> def formatting_func(sample: Dict[str, Any]):
         ...     return {"sentence": sample["text"], "label": int(sample["label"][0]["value"])}

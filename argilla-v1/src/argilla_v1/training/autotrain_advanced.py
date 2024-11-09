@@ -18,9 +18,9 @@ from uuid import uuid4
 
 from datasets import DatasetDict
 
-from argilla.client.models import TextClassificationRecord, TokenClassificationRecord
-from argilla.training.base import ArgillaTrainerSkeleton
-from argilla.utils.dependency import require_dependencies
+from argilla_v1.client.models import TextClassificationRecord, TokenClassificationRecord
+from argilla_v1.training.base import ArgillaTrainerSkeleton
+from argilla_v1.utils.dependency import require_dependencies
 
 
 class AutoTrainMixin:

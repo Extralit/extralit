@@ -14,7 +14,7 @@
 
 from typing import Any, Dict
 
-from argilla.client.sdk.metrics.models import MetricInfo
+from argilla_v1.client.sdk.metrics.models import MetricInfo
 
 
 class MetricResults(MetricInfo):

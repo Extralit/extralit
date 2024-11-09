@@ -12,18 +12,18 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, Union
 
-from argilla.client.sdk.commons.errors_handler import handle_response_error
-from argilla.client.sdk.commons.models import Response
-from argilla.client.sdk.v1.vectors_settings.models import VectorSettingsModel
+from argilla_v1.client.sdk.commons.errors_handler import handle_response_error
+from argilla_v1.client.sdk.commons.models import Response
+from argilla_v1.client.sdk.v1.vectors_settings.models import VectorSettingsModel
 
 if TYPE_CHECKING:
     from uuid import UUID
 
     import httpx
 
-    from argilla.client.sdk.commons.models import ErrorMessage, HTTPValidationError
+    from argilla_v1.client.sdk.commons.models import ErrorMessage, HTTPValidationError
 
 
 def update_vector_settings(

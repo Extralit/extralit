@@ -17,10 +17,10 @@ from uuid import UUID
 
 import httpx
 
-from argilla.client.sdk.client import AuthenticatedClient
-from argilla.client.sdk.commons.errors_handler import handle_response_error
-from argilla.client.sdk.commons.models import ErrorMessage, HTTPValidationError, Response
-from argilla.client.sdk.users.models import UserCreateModel, UserModel, UserRole
+from argilla_v1.client.sdk.client import AuthenticatedClient
+from argilla_v1.client.sdk.commons.errors_handler import handle_response_error
+from argilla_v1.client.sdk.commons.models import ErrorMessage, HTTPValidationError, Response
+from argilla_v1.client.sdk.users.models import UserCreateModel, UserModel, UserRole
 
 
 # TODO(alvarobartt,frascuchon): use ONLY `httpx.Client` instead of `AuthenticatedClient` and

@@ -17,10 +17,10 @@ from uuid import UUID
 
 import httpx
 
-from argilla.client.sdk.commons.errors_handler import handle_response_error
-from argilla.client.sdk.commons.models import ErrorMessage, HTTPValidationError, Response
-from argilla.client.sdk.users.models import UserModel
-from argilla.client.sdk.workspaces.models import WorkspaceModel
+from argilla_v1.client.sdk.commons.errors_handler import handle_response_error
+from argilla_v1.client.sdk.commons.models import ErrorMessage, HTTPValidationError, Response
+from argilla_v1.client.sdk.users.models import UserModel
+from argilla_v1.client.sdk.workspaces.models import WorkspaceModel
 
 
 def create_workspace(

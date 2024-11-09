@@ -12,23 +12,16 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from typing import Annotated
+from typing import Optional
 
-from fastapi import Form
-
+from argilla_server.integrations.huggingface.spaces import HuggingfaceSettings
 from argilla_server.pydantic_v1 import BaseModel
 
 
-class UserPasswordRequestForm:
-    """User password request form."""
-
-    def __init__(self, *, username: Annotated[str, Form()], password: Annotated[str, Form()]):
-        self.username = username
-        self.password = password
+class ArgillaSettings(BaseModel):
+    show_huggingface_space_persistent_storage_warning: Optional[bool]
 
 
-class Token(BaseModel):
-    """Token response model"""
-
-    access_token: str
-    token_type: str = "bearer"
+class Settings(BaseModel):
+    argilla: ArgillaSettings
+    huggingface: Optional[HuggingfaceSettings]

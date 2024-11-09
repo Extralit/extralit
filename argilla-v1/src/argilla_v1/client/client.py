@@ -25,7 +25,7 @@ import httpx
 from rich import print as rprint
 from rich.progress import Progress
 
-from argilla._constants import (
+from argilla_v1._constants import (
     DATASET_NAME_REGEX_PATTERN,
     DEFAULT_API_KEY,
     DEFAULT_API_URL,
@@ -33,59 +33,59 @@ from argilla._constants import (
     WORKSPACE_HEADER_NAME,
     WORKSPACE_NAME_REGEX_PATTERN,
 )
-from argilla.client.apis.datasets import Datasets
-from argilla.client.apis.metrics import MetricsAPI
-from argilla.client.apis.search import Search, VectorSearch
-from argilla.client.apis.status import Status
-from argilla.client.datasets import (
+from argilla_v1.client.apis.datasets import Datasets
+from argilla_v1.client.apis.metrics import MetricsAPI
+from argilla_v1.client.apis.search import Search, VectorSearch
+from argilla_v1.client.apis.status import Status
+from argilla_v1.client.datasets import (
     Dataset,
     DatasetForText2Text,
     DatasetForTextClassification,
     DatasetForTokenClassification,
 )
-from argilla.client.metrics.models import MetricResults
-from argilla.client.models import (
+from argilla_v1.client.metrics.models import MetricResults
+from argilla_v1.client.models import (
     BulkResponse,
     Record,
     Text2TextRecord,
     TextClassificationRecord,
     TokenClassificationRecord,
 )
-from argilla.client.sdk.client import AuthenticatedClient
-from argilla.client.sdk.commons.api import bulk
-from argilla.client.sdk.commons.errors import AlreadyExistsApiError, InputValueError, NotFoundApiError
-from argilla.client.sdk.datasets import api as datasets_api
-from argilla.client.sdk.datasets.models import CopyDatasetRequest, TaskType
-from argilla.client.sdk.datasets.models import Dataset as DatasetModel
-from argilla.client.sdk.metrics import api as metrics_api
-from argilla.client.sdk.metrics.models import MetricInfo
-from argilla.client.sdk.text2text.models import (
+from argilla_v1.client.sdk.client import AuthenticatedClient
+from argilla_v1.client.sdk.commons.api import bulk
+from argilla_v1.client.sdk.commons.errors import AlreadyExistsApiError, InputValueError, NotFoundApiError
+from argilla_v1.client.sdk.datasets import api as datasets_api
+from argilla_v1.client.sdk.datasets.models import CopyDatasetRequest, TaskType
+from argilla_v1.client.sdk.datasets.models import Dataset as DatasetModel
+from argilla_v1.client.sdk.metrics import api as metrics_api
+from argilla_v1.client.sdk.metrics.models import MetricInfo
+from argilla_v1.client.sdk.text2text.models import (
     CreationText2TextRecord,
     Text2TextBulkData,
 )
-from argilla.client.sdk.text2text.models import (
+from argilla_v1.client.sdk.text2text.models import (
     Text2TextRecord as SdkText2TextRecord,
 )
-from argilla.client.sdk.text_classification import api as text_classification_api
-from argilla.client.sdk.text_classification.models import (
+from argilla_v1.client.sdk.text_classification import api as text_classification_api
+from argilla_v1.client.sdk.text_classification.models import (
     CreationTextClassificationRecord,
     LabelingRule,
     LabelingRuleMetricsSummary,
     TextClassificationBulkData,
 )
-from argilla.client.sdk.text_classification.models import (
+from argilla_v1.client.sdk.text_classification.models import (
     TextClassificationRecord as SdkTextClassificationRecord,
 )
-from argilla.client.sdk.token_classification.models import (
+from argilla_v1.client.sdk.token_classification.models import (
     CreationTokenClassificationRecord,
     TokenClassificationBulkData,
 )
-from argilla.client.sdk.token_classification.models import (
+from argilla_v1.client.sdk.token_classification.models import (
     TokenClassificationRecord as SdkTokenClassificationRecord,
 )
-from argilla.client.sdk.users import api as users_api
-from argilla.client.sdk.v1.workspaces import api as workspaces_api_v1
-from argilla.client.sdk.v1.workspaces.models import WorkspaceModel
+from argilla_v1.client.sdk.users import api as users_api
+from argilla_v1.client.sdk.v1.workspaces import api as workspaces_api_v1
+from argilla_v1.client.sdk.v1.workspaces.models import WorkspaceModel
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -128,7 +128,7 @@ class Argilla:
             httpx_extra_kwargs: Extra kwargs passed to the `httpx.Client` constructor. For more information about the
                 available arguments, see https://www.python-httpx.org/api/#client. Defaults to `None`.
         """
-        from argilla.client.login import ArgillaCredentials
+        from argilla_v1.client.login import ArgillaCredentials
 
         api_url = api_url or os.getenv("ARGILLA_API_URL")
         api_key = api_key or os.getenv("ARGILLA_API_KEY")
@@ -185,7 +185,7 @@ class Argilla:
         self._check_argilla_versions()
 
     def _check_argilla_versions(self):
-        from argilla import __version__ as rg_version
+        from argilla_v1 import __version__ as rg_version
 
         api_info = Status(self.http_client).get_info()
 
@@ -516,7 +516,7 @@ class Argilla:
         Args:
             name: The dataset name.
             query: An ElasticSearch query with the `query string syntax
-                <https://docs.argilla.io/en/latest/practical_guides/filter_dataset.html>`_
+                <https://docs.v1.argilla.io/en/latest/practical_guides/filter_dataset.html>`_
             ids: If provided, deletes dataset records with given ids.
             discard_only: If `True`, matched records won't be deleted. Instead, they will be marked as `Discarded`
             discard_when_forbidden: Only super-user or dataset creator can delete records from a dataset.
@@ -561,7 +561,7 @@ class Argilla:
         Args:
             name: The dataset name.
             query: An ElasticSearch query with the `query string
-                syntax <https://docs.argilla.io/en/latesthttps://docs.argilla.io/en/latest/practical_guides/filter_dataset.html.html>`_
+                syntax <https://docs.v1.argilla.io/en/latesthttps://docs.v1.argilla.io/en/latest/practical_guides/filter_dataset.html.html>`_
             vector: Vector configuration for a semantic search
             ids: If provided, load dataset records with given ids.
             limit: The number of records to retrieve.

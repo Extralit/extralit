@@ -14,18 +14,18 @@
 
 from typing import TYPE_CHECKING, Dict, Optional, Type, Union
 
-from argilla.client.feedback.schemas.enums import MetadataPropertyTypes
-from argilla.client.feedback.schemas.metadata import (
+from argilla_v1.client.feedback.schemas.enums import MetadataPropertyTypes
+from argilla_v1.client.feedback.schemas.metadata import (
     FloatMetadataProperty,
     IntegerMetadataProperty,
     TermsMetadataProperty,
 )
-from argilla.client.feedback.schemas.remote.shared import RemoteSchema
+from argilla_v1.client.feedback.schemas.remote.shared import RemoteSchema
 
 if TYPE_CHECKING:
     import httpx
 
-    from argilla.client.sdk.v1.datasets.models import FeedbackMetadataPropertyModel
+    from argilla_v1.client.sdk.v1.datasets.models import FeedbackMetadataPropertyModel
 
 
 class RemoteTermsMetadataProperty(TermsMetadataProperty, RemoteSchema):

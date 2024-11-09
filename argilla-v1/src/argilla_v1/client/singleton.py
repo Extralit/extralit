@@ -14,7 +14,7 @@
 
 from typing import Any, Dict, Optional
 
-from argilla.client.client import Argilla
+from argilla_v1.client.client import Argilla
 
 
 class ArgillaSingleton:
@@ -85,7 +85,7 @@ def init(
             available arguments, see https://www.python-httpx.org/api/#client. Defaults to `None`.
 
     Examples:
-        >>> import argilla as rg
+        >>> import argilla_v1 as rg
         >>>
         >>> rg.init(api_url="http://localhost:9090", api_key="4AkeAPIk3Y")
         >>> # Customizing request headers

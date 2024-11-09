@@ -4,6 +4,7 @@ import { Question } from "../question/Question";
 import { Suggestion } from "../question/Suggestion";
 import { Score } from "../similarity/Score";
 import { MetadataRecord } from "../metadata/MetadataRecord";
+import { TaskDistribution } from "../distribution/TaskDistribution";
 import { RecordAnswer } from "./RecordAnswer";
 
 const DEFAULT_STATUS = "pending";
@@ -30,6 +31,7 @@ export class Record {
   // eslint-disable-next-line no-use-before-define
   private original: Record;
   public readonly score: Score;
+  public readonly taskDistribution: TaskDistribution;
   constructor(
     public readonly id: string,
     public readonly datasetId: string,
@@ -40,12 +42,14 @@ export class Record {
     score: number,
     public readonly page: number,
     public readonly metadata: MetadataRecord,
+    distributionStatus: "completed" | "pending",
     public readonly insertedAt: Date,
     public updatedAt?: Date
   ) {
     this.completeQuestion();
     this.updatedAt = new Date(answer?.updatedAt) ?? null;
     this.score = new Score(score);
+    this.taskDistribution = new TaskDistribution(distributionStatus);
   }
 
   get status() {
@@ -103,15 +107,17 @@ export class Record {
   }
 
   answerWith(recordReference: Record) {
-    this.questions.forEach((question) => {
-      const questionReference = recordReference.questions.find(
-        (q) => q.id === question.id
-      );
+    this.questions
+      .filter((q) => !q.isSpanType)
+      .forEach((question) => {
+        const questionReference = recordReference.questions.find(
+          (q) => q.id === question.id
+        );
 
-      if (!questionReference) return;
+        if (!questionReference) return;
 
-      question.clone(questionReference);
-    });
+        question.clone(questionReference);
+      });
   }
 
   initialize() {

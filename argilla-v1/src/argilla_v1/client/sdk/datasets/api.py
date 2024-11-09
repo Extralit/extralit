@@ -14,15 +14,15 @@
 #  limitations under the License.
 
 from functools import lru_cache
-from typing import List, Optional, Union
+from typing import List, Optional
 
 import httpx
 
-from argilla._constants import WORKSPACE_HEADER_NAME
-from argilla.client.sdk.client import AuthenticatedClient
-from argilla.client.sdk.commons.errors_handler import handle_response_error
-from argilla.client.sdk.commons.models import Response
-from argilla.client.sdk.datasets.models import CopyDatasetRequest, Dataset
+from argilla_v1._constants import WORKSPACE_HEADER_NAME
+from argilla_v1.client.sdk.client import AuthenticatedClient
+from argilla_v1.client.sdk.commons.errors_handler import handle_response_error
+from argilla_v1.client.sdk.commons.models import Response
+from argilla_v1.client.sdk.datasets.models import CopyDatasetRequest, Dataset
 
 
 @lru_cache(maxsize=None)

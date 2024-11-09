@@ -20,7 +20,7 @@ from typing import Any, Dict, List, Union
 
 import pandas as pd
 
-from argilla.client.feedback.schemas import (
+from argilla_v1.client.feedback.schemas import (
     FeedbackRecord,
     LabelQuestion,
     MultiLabelQuestion,
@@ -28,7 +28,7 @@ from argilla.client.feedback.schemas import (
     RatingQuestion,
     ValueSchema,
 )
-from argilla.pydantic_v1 import BaseModel, root_validator, validator
+from argilla_v1.pydantic_v1 import BaseModel, root_validator, validator
 
 
 class UnifiedValueSchema(ValueSchema):
@@ -39,7 +39,7 @@ class UnifiedValueSchema(ValueSchema):
         strategy (Literal["mean", "majority", "max", "min"]): The strategy to unify the responses. Defaults to "majority".
 
     Examples:
-        >>> import argilla as rg
+        >>> import argilla_v1 as rg
         >>> value = rg.UnifiedValueSchema(value="Yes", strategy="majority")
         >>> # or use a dict
         >>> value = {"value": "Yes", "strategy": "majority"}
@@ -460,7 +460,7 @@ class LabelQuestionStrategy(LabelQuestionStrategyMixin, Enum):
         - "disagreement": preserve the natural disagreement between annotators
 
     Examples:
-        >>> from argilla import LabelQuestion, LabelQuestionStrategy
+        >>> from argilla_v1 import LabelQuestion, LabelQuestionStrategy
         >>> strategy = LabelQuestionStrategy("majority")
         >>> records = strategy.compute_unified_responses(records, question=LabelQuestion(...))
     """
@@ -582,7 +582,7 @@ class RatingQuestionUnification(BaseModel):
             min (str): the min value of the ratings
 
     Examples:
-        >>> from argilla import RatingQuestion, RatingQuestionUnification, RatingQuestionStrategy
+        >>> from argilla_v1 import RatingQuestion, RatingQuestionUnification, RatingQuestionStrategy
         >>> RatingQuestionUnification(question=RatingQuestion(...), strategy="mean")
         >>> # or use a RatingQuestionStrategy
         >>> RatingQuestionUnification(question=RatingQuestion(...), strategy=RatingQuestionStrategy.MEAN)
@@ -610,7 +610,7 @@ class RankingQuestionUnification(BaseModel):
             min (str): the min value of the ratings
 
     Examples:
-        >>> from argilla import RankingQuestionUnification, RankingQuestionStrategy, RankingQuestion
+        >>> from argilla_v1 import RankingQuestionUnification, RankingQuestionStrategy, RankingQuestion
         >>> RankingQuestionUnification(question=RankingQuestion(...), strategy="majority")
         >>> # or use a RankingQuestionStrategy
         >>> RankingQuestionUnification(question=RankingQuestion(...), strategy=RankingQuestionStrategy.MAJORITY)
@@ -637,7 +637,7 @@ class LabelQuestionUnification(BaseModel):
             disagreement (str): preserve the natural disagreement between annotators
 
     Examples:
-        >>> from argilla import LabelQuestion, LabelQuestionStrategy, LabelQuestionUnification
+        >>> from argilla_v1 import LabelQuestion, LabelQuestionStrategy, LabelQuestionUnification
         >>> LabelQuestionUnification(question=LabelQuestion(...), strategy="majority")
         >>> # or use a LabelQuestionStrategy
         >>> LabelQuestionUnification(question=LabelQuestion(...), strategy=LabelQuestionStrategy.MAJORITY)

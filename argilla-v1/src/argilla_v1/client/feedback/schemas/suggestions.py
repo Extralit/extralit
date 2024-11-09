@@ -15,11 +15,11 @@
 from typing import Any, Dict, List, Literal, Optional, Union
 from uuid import UUID
 
-from argilla.client.feedback.schemas.response_values import (
+from argilla_v1.client.feedback.schemas.response_values import (
     ResponseValue,
     normalize_response_value,
 )
-from argilla.pydantic_v1 import BaseModel, Extra, confloat, validator
+from argilla_v1.pydantic_v1 import BaseModel, Extra, confloat, validator
 
 
 class SuggestionSchema(BaseModel):
@@ -33,7 +33,7 @@ class SuggestionSchema(BaseModel):
         agent: agent that generated the suggestion. Defaults to None.
 
     Examples:
-        >>> from argilla.client.feedback.schemas.suggestions import SuggestionSchema
+        >>> from argilla_v1.client.feedback.schemas.suggestions import SuggestionSchema
         >>> SuggestionSchema(
         ...     question_name="question-1",
         ...     type="model",

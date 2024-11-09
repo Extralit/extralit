@@ -15,8 +15,8 @@
 from datetime import datetime
 from uuid import UUID
 
-from argilla.client.feedback.schemas.vector_settings import VectorSettings
-from argilla.client.sdk.v1.datasets.models import FeedbackVectorSettingsModel
+from argilla_v1.client.feedback.schemas.vector_settings import VectorSettings
+from argilla_v1.client.sdk.v1.datasets.models import FeedbackVectorSettingsModel
 
 
 class RemoteVectorSettings(VectorSettings):

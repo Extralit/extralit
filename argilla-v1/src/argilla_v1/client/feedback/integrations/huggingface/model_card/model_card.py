@@ -23,10 +23,10 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, List, Literal, Optional, 
 from huggingface_hub import CardData, ModelCard, dataset_info, model_info
 from huggingface_hub.utils import yaml_dump
 
-from argilla._version import version
-from argilla.client.feedback.training.schemas.base import TRAINING_TASK_MAPPING, TrainingTaskTypes
-from argilla.client.models import FRAMEWORK_TO_NAME_MAPPING, Framework
-from argilla.training.utils import get_default_args
+from argilla_v1._version import version
+from argilla_v1.client.feedback.training.schemas.base import TRAINING_TASK_MAPPING, TrainingTaskTypes
+from argilla_v1.client.models import FRAMEWORK_TO_NAME_MAPPING, Framework
+from argilla_v1.training.utils import get_default_args
 
 if TYPE_CHECKING:
     import spacy

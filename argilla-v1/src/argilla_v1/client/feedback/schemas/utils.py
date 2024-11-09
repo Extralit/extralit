@@ -15,7 +15,7 @@
 from typing import TYPE_CHECKING, Dict, List
 
 if TYPE_CHECKING:
-    from argilla.client.feedback.schemas.questions import QuestionSchema
+    from argilla_v1.client.feedback.schemas.questions import QuestionSchema
 
 
 class LabelMappingMixin:

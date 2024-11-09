@@ -14,8 +14,8 @@
 
 from typing import Optional
 
-from argilla.client.feedback.schemas.validators import title_must_have_value
-from argilla.pydantic_v1 import BaseModel, Field, PositiveInt, validator
+from argilla_v1.client.feedback.schemas.validators import title_must_have_value
+from argilla_v1.pydantic_v1 import BaseModel, Field, PositiveInt, validator
 
 
 class VectorSettings(BaseModel):
@@ -31,7 +31,7 @@ class VectorSettings(BaseModel):
         dimensions: The dimensions of the vectors associated with the vector settings.
 
     Examples:
-        >>> from argilla.client.feedback.schemas import VectorSettings
+        >>> from argilla_v1.client.feedback.schemas import VectorSettings
         >>> VectorSettings(name="my_vector_settings", dimensions=768)
     """
 

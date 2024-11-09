@@ -18,16 +18,16 @@ from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union
 import numpy as np
 from tqdm import tqdm
 
-from argilla.client.feedback.dataset.remote.dataset import RemoteFeedbackDataset
-from argilla.client.feedback.schemas import RankingQuestion, TextQuestion
-from argilla.client.feedback.schemas.enums import ResponseStatusFilter
-from argilla.client.feedback.schemas.remote.questions import RemoteRankingQuestion
+from argilla_v1.client.feedback.dataset.remote.dataset import RemoteFeedbackDataset
+from argilla_v1.client.feedback.schemas import RankingQuestion, TextQuestion
+from argilla_v1.client.feedback.schemas.enums import ResponseStatusFilter
+from argilla_v1.client.feedback.schemas.remote.questions import RemoteRankingQuestion
 
 if TYPE_CHECKING:
-    from argilla.client.feedback.dataset import FeedbackDataset
-    from argilla.client.feedback.metrics.base import Responses, Suggestions
-    from argilla.client.feedback.schemas.enums import ResponseStatusFilter
-    from argilla.client.feedback.schemas.records import SortBy
+    from argilla_v1.client.feedback.dataset import FeedbackDataset
+    from argilla_v1.client.feedback.metrics.base import Responses, Suggestions
+    from argilla_v1.client.feedback.schemas.enums import ResponseStatusFilter
+    from argilla_v1.client.feedback.schemas.records import SortBy
 
 
 def get_responses_and_suggestions_per_user(

@@ -17,22 +17,22 @@
 import warnings
 from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Union
 
-from argilla.client.feedback.dataset import FeedbackDataset
-from argilla.client.feedback.metrics.base import AgreementMetricResult, AnnotationTaskMetricBase, MetricBase
-from argilla.client.feedback.schemas import (
+from argilla_v1.client.feedback.dataset import FeedbackDataset
+from argilla_v1.client.feedback.metrics.base import AgreementMetricResult, AnnotationTaskMetricBase, MetricBase
+from argilla_v1.client.feedback.schemas import (
     LabelQuestion,
     MultiLabelQuestion,
     RankingQuestion,
     RatingQuestion,
 )
-from argilla.client.feedback.schemas.remote.shared import RemoteSchema
+from argilla_v1.client.feedback.schemas.remote.shared import RemoteSchema
 
 if TYPE_CHECKING:
-    from argilla.client.feedback.dataset import FeedbackDataset
-    from argilla.client.feedback.dataset.remote.dataset import RemoteFeedbackDataset
-    from argilla.client.feedback.metrics.base import FormattedResponses
-    from argilla.client.feedback.schemas.enums import ResponseStatusFilter
-    from argilla.client.feedback.schemas.records import SortBy
+    from argilla_v1.client.feedback.dataset import FeedbackDataset
+    from argilla_v1.client.feedback.dataset.remote.dataset import RemoteFeedbackDataset
+    from argilla_v1.client.feedback.metrics.base import FormattedResponses
+    from argilla_v1.client.feedback.schemas.enums import ResponseStatusFilter
+    from argilla_v1.client.feedback.schemas.records import SortBy
 
 
 try:
@@ -184,8 +184,8 @@ class AgreementMetric(MetricBase):
     """Main class to compute agreement metrics.
 
     Example:
-        >>> import argilla as rg
-        >>> from argilla.client.feedback.metrics import AgreementMetric
+        >>> import argilla_v1 as rg
+        >>> from argilla_v1.client.feedback.metrics import AgreementMetric
         >>> metric = AgreementMetric(dataset=dataset, question_name=question, field_name=field, filter_by={"response_status": "submitted"})
         >>> metrics_report = metric.compute("alpha")
 

@@ -18,21 +18,21 @@ import warnings
 from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
-from argilla.client.feedback.schemas.records import FeedbackRecord
-from argilla.client.feedback.training.schemas.base import TrainingTaskForTextClassification, TrainingTaskTypes
-from argilla.client.models import Framework, TextClassificationRecord
-from argilla.training.base import ArgillaTrainer as ArgillaTrainerV1
-from argilla.training.base import ArgillaTrainerSkeleton as ArgillaTrainerSkeletonV1
+from argilla_v1.client.feedback.schemas.records import FeedbackRecord
+from argilla_v1.client.feedback.training.schemas.base import TrainingTaskForTextClassification, TrainingTaskTypes
+from argilla_v1.client.models import Framework, TextClassificationRecord
+from argilla_v1.training.base import ArgillaTrainer as ArgillaTrainerV1
+from argilla_v1.training.base import ArgillaTrainerSkeleton as ArgillaTrainerSkeletonV1
 
 if TYPE_CHECKING:
     import spacy
     from transformers import PreTrainedModel, PreTrainedTokenizer
 
-    from argilla.client.feedback.dataset.local.dataset import FeedbackDataset
-    from argilla.client.feedback.dataset.remote.dataset import RemoteFeedbackDataset
-    from argilla.client.feedback.integrations.huggingface.model_card import ArgillaModelCard
-    from argilla.client.feedback.schemas.enums import ResponseStatusFilter
-    from argilla.client.feedback.schemas.records import SortBy
+    from argilla_v1.client.feedback.dataset.local.dataset import FeedbackDataset
+    from argilla_v1.client.feedback.dataset.remote.dataset import RemoteFeedbackDataset
+    from argilla_v1.client.feedback.integrations.huggingface.model_card import ArgillaModelCard
+    from argilla_v1.client.feedback.schemas.enums import ResponseStatusFilter
+    from argilla_v1.client.feedback.schemas.records import SortBy
 
 
 class ArgillaTrainer(ArgillaTrainerV1):
@@ -122,7 +122,7 @@ class ArgillaTrainer(ArgillaTrainerV1):
         if framework is Framework.SETFIT:
             if not isinstance(task, TrainingTaskForTextClassification):
                 raise NotImplementedError(f"{Framework.SETFIT} only supports `TextClassification` tasks.")
-            from argilla.client.feedback.training.frameworks.setfit import ArgillaSetFitTrainer
+            from argilla_v1.client.feedback.training.frameworks.setfit import ArgillaSetFitTrainer
 
             self._trainer = ArgillaSetFitTrainer(
                 dataset=self._dataset,
@@ -132,7 +132,7 @@ class ArgillaTrainer(ArgillaTrainerV1):
                 model=self._model,
             )
         elif framework is Framework.TRANSFORMERS:
-            from argilla.client.feedback.training.frameworks.transformers import ArgillaTransformersTrainer
+            from argilla_v1.client.feedback.training.frameworks.transformers import ArgillaTransformersTrainer
 
             self._trainer = ArgillaTransformersTrainer(
                 dataset=self._dataset,
@@ -143,7 +143,7 @@ class ArgillaTrainer(ArgillaTrainerV1):
                 tokenizer=self._tokenizer,
             )
         elif framework is Framework.PEFT:
-            from argilla.client.feedback.training.frameworks.peft import ArgillaPeftTrainer
+            from argilla_v1.client.feedback.training.frameworks.peft import ArgillaPeftTrainer
 
             self._trainer = ArgillaPeftTrainer(
                 dataset=self._dataset,
@@ -154,7 +154,7 @@ class ArgillaTrainer(ArgillaTrainerV1):
                 tokenizer=self._tokenizer,
             )
         elif framework is Framework.SPACY:
-            from argilla.client.feedback.training.frameworks.spacy import ArgillaSpaCyTrainer
+            from argilla_v1.client.feedback.training.frameworks.spacy import ArgillaSpaCyTrainer
 
             self._trainer = ArgillaSpaCyTrainer(
                 dataset=self._dataset,
@@ -166,7 +166,7 @@ class ArgillaTrainer(ArgillaTrainerV1):
                 framework_kwargs=framework_kwargs,  # freeze_tok2vec
             )
         elif framework is Framework.SPACY_TRANSFORMERS:
-            from argilla.client.feedback.training.frameworks.spacy import ArgillaSpaCyTransformersTrainer
+            from argilla_v1.client.feedback.training.frameworks.spacy import ArgillaSpaCyTransformersTrainer
 
             self._trainer = ArgillaSpaCyTransformersTrainer(
                 dataset=self._dataset,
@@ -178,7 +178,7 @@ class ArgillaTrainer(ArgillaTrainerV1):
                 framework_kwargs=framework_kwargs,  # update_transformer
             )
         elif framework is Framework.OPENAI:
-            from argilla.client.feedback.training.frameworks.openai import ArgillaOpenAITrainer
+            from argilla_v1.client.feedback.training.frameworks.openai import ArgillaOpenAITrainer
 
             self._trainer = ArgillaOpenAITrainer(
                 dataset=self._dataset,
@@ -188,7 +188,7 @@ class ArgillaTrainer(ArgillaTrainerV1):
                 model=self._model,
             )
         elif framework is Framework.SPAN_MARKER:
-            from argilla.client.feedback.training.frameworks.span_marker import ArgillaSpanMarkerTrainer
+            from argilla_v1.client.feedback.training.frameworks.span_marker import ArgillaSpanMarkerTrainer
 
             self._trainer = ArgillaSpanMarkerTrainer(
                 dataset=self._dataset,
@@ -198,7 +198,7 @@ class ArgillaTrainer(ArgillaTrainerV1):
                 model=self._model,
             )
         elif framework is Framework.TRL:
-            from argilla.client.feedback.training.frameworks.trl import ArgillaTRLTrainer
+            from argilla_v1.client.feedback.training.frameworks.trl import ArgillaTRLTrainer
 
             self._trainer = ArgillaTRLTrainer(
                 dataset=self._dataset,
@@ -209,7 +209,7 @@ class ArgillaTrainer(ArgillaTrainerV1):
                 tokenizer=self._tokenizer,
             )
         elif framework is Framework.SENTENCE_TRANSFORMERS:
-            from argilla.client.feedback.training.frameworks.sentence_transformers import (
+            from argilla_v1.client.feedback.training.frameworks.sentence_transformers import (
                 ArgillaSentenceTransformersTrainer,
             )
 
@@ -306,7 +306,7 @@ class ArgillaTrainer(ArgillaTrainerV1):
         Returns:
             model_card: The model card.
         """
-        from argilla.client.feedback.integrations.huggingface.model_card import ArgillaModelCard
+        from argilla_v1.client.feedback.integrations.huggingface.model_card import ArgillaModelCard
 
         if not self.model_card_kwargs.get("output_dir"):
             self.model_card_kwargs.update({"output_dir": f'"{output_dir}"'})

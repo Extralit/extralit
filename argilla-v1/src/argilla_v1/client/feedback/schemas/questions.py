@@ -16,13 +16,13 @@ import warnings
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Literal, Optional, Union
 
-from argilla.client.feedback.schemas.enums import LabelsOrder, QuestionTypes
-from argilla.client.feedback.schemas.response_values import parse_value_response_for_question
-from argilla.client.feedback.schemas.responses import ResponseValue, ValueSchema
-from argilla.client.feedback.schemas.suggestions import SuggestionSchema
-from argilla.client.feedback.schemas.utils import LabelMappingMixin
-from argilla.client.feedback.schemas.validators import title_must_have_value
-from argilla.pydantic_v1 import BaseModel, Extra, Field, conint, conlist, root_validator, validator
+from argilla_v1.client.feedback.schemas.enums import LabelsOrder, QuestionTypes
+from argilla_v1.client.feedback.schemas.response_values import parse_value_response_for_question
+from argilla_v1.client.feedback.schemas.responses import ResponseValue, ValueSchema
+from argilla_v1.client.feedback.schemas.suggestions import SuggestionSchema
+from argilla_v1.client.feedback.schemas.utils import LabelMappingMixin
+from argilla_v1.client.feedback.schemas.validators import title_must_have_value
+from argilla_v1.pydantic_v1 import BaseModel, Extra, Field, conint, conlist, root_validator, validator
 
 
 class QuestionSchema(BaseModel, ABC):
@@ -104,7 +104,7 @@ class TextQuestion(QuestionSchema):
             Defaults to False.
 
     Examples:
-        >>> from argilla.client.feedback.schemas.questions import TextQuestion
+        >>> from argilla_v1.client.feedback.schemas.questions import TextQuestion
         >>> TextQuestion(name="text_question", title="Text Question")
     """
 
@@ -133,7 +133,7 @@ class RatingQuestion(QuestionSchema, LabelMappingMixin):
             unique integers.
 
     Examples:
-        >>> from argilla.client.feedback.schemas.questions import RatingQuestion
+        >>> from argilla_v1.client.feedback.schemas.questions import RatingQuestion
         >>> RatingQuestion(name="rating_question", title="Rating Question", values=[1, 2, 3, 4, 5])
     """
 
@@ -245,7 +245,7 @@ class LabelQuestion(_LabelQuestion):
             be 3 or greater.
 
     Examples:
-        >>> from argilla.client.feedback.schemas.questions import LabelQuestion
+        >>> from argilla_v1.client.feedback.schemas.questions import LabelQuestion
         >>> LabelQuestion(name="label_question", title="Label Question", labels=["label_1", "label_2"])
     """
 
@@ -276,7 +276,7 @@ class MultiLabelQuestion(_LabelQuestion):
             Defaults to 'natural'.
 
     Examples:
-        >>> from argilla.client.feedback.schemas.questions import MultiLabelQuestion
+        >>> from argilla_v1.client.feedback.schemas.questions import MultiLabelQuestion
         >>> MultiLabelQuestion(name="multi_label_question", title="Multi Label Question", labels=["label_1", "label_2"])
     """
 
@@ -309,7 +309,7 @@ class RankingQuestion(QuestionSchema, LabelMappingMixin):
             are the labels that will be shown in the UI.
 
     Examples:
-        >>> from argilla.client.feedback.schemas.questions import RankingQuestion
+        >>> from argilla_v1.client.feedback.schemas.questions import RankingQuestion
         >>> RankingQuestion(name="ranking_question", title="Ranking Question", values=["label_1", "label_2"])
     """
 
@@ -343,7 +343,7 @@ class SpanLabelOption(BaseModel):
         text: The text of the span label. This is the text that will be shown in the UI.
 
     Examples:
-        >>> from argilla.client.feedback.schemas.questions import SpanLabelOption
+        >>> from argilla_v1.client.feedback.schemas.questions import SpanLabelOption
         >>> SpanLabelOption(value="span_label_1", text="Span Label 1")
     """
 
@@ -367,7 +367,7 @@ class SpanQuestion(QuestionSchema):
     to select a span of text from the input.
 
     Examples:
-        >>> from argilla.client.feedback.schemas.questions import SpanQuestion
+        >>> from argilla_v1.client.feedback.schemas.questions import SpanQuestion
         >>> SpanQuestion(name="span_question", field="prompt", title="Span Question", labels=["person", "org"])
     """
 

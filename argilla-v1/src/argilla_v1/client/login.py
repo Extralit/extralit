@@ -16,9 +16,9 @@ import os
 from pathlib import Path
 from typing import Dict, Optional
 
-from argilla.client.sdk.commons.errors import HttpResponseError, UnauthorizedApiError, WrongResponseError
-from argilla.client.singleton import init
-from argilla.pydantic_v1 import AnyHttpUrl, BaseModel
+from argilla_v1.client.sdk.commons.errors import HttpResponseError, UnauthorizedApiError, WrongResponseError
+from argilla_v1.client.singleton import init
+from argilla_v1.pydantic_v1 import AnyHttpUrl, BaseModel
 
 cache_dir_env = os.environ.get("ARGILLA_CACHE_DIR")
 if cache_dir_env:

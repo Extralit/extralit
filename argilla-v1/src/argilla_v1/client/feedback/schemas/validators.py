@@ -15,7 +15,7 @@
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
 if TYPE_CHECKING:
-    from argilla.pydantic_v1 import BaseModel
+    from argilla_v1.pydantic_v1 import BaseModel
 
 
 def title_must_have_value(cls: "BaseModel", v: Optional[str], values: Dict[str, Any]) -> str:

@@ -20,7 +20,7 @@ from pathlib import Path
 from typing import Callable, List, Optional, Union
 from urllib.parse import urlparse
 
-from argilla.utils.dependency import require_dependencies
+from argilla_v1.utils.dependency import require_dependencies
 
 # Define html supported types for each media
 SUPPORTED_MEDIA_TYPES = {
@@ -178,7 +178,7 @@ def video_to_html(
         The HTML tag with embedded base64 data.
 
     Examples:
-        >>> from argilla.client.feedback.utils import video_to_html
+        >>> from argilla_v1.client.feedback.utils import video_to_html
         >>> html = video_to_html("my_video.mp4", width="300px", height="300px", autoplay=True, loop=True)
     """
     return media_to_html("video", file_source, file_type, width, height, autoplay, loop)
@@ -207,7 +207,7 @@ def audio_to_html(
         The HTML tag with embedded base64 data.
 
     Examples:
-        >>> from argilla.client.feedback.utils import audio_to_html
+        >>> from argilla_v1.client.feedback.utils import audio_to_html
         >>> html = audio_to_html("my_audio.mp3", width="300px", height="300px", autoplay=True, loop=True)
     """
     return media_to_html("audio", file_source, file_type, width, height, autoplay, loop)
@@ -232,7 +232,7 @@ def image_to_html(
         The HTML tag with embedded base64 data.
 
     Examples:
-        >>> from argilla.client.feedback.utils import image_to_html
+        >>> from argilla_v1.client.feedback.utils import image_to_html
         >>> html = image_to_html("my_image.png", width="300px", height="300px")
     """
     return media_to_html("image", file_source, file_type, width, height)
@@ -256,7 +256,7 @@ def pdf_to_html(
         ValueError: If the width and height are not pixel or percentage.
 
     Examples:
-        >>> from argilla.client.feedback.utils import pdf_to_html
+        >>> from argilla_v1.client.feedback.utils import pdf_to_html
         >>> html = pdf_to_html("my_pdf.pdf", width="300px", height="300px")
     """
     if not is_valid_dimension(width) or not is_valid_dimension(height):
@@ -292,7 +292,7 @@ def create_token_highlights(
         TypeError: If c_map is not a string or a callable.
 
     Examples:
-        >>> from argilla.client.feedback.utils import create_token_highlights
+        >>> from argilla_v1.client.feedback.utils import create_token_highlights
         >>> tokens = ["This", "is", "a", "test"]
         >>> weights = [0.1, 0.2, 0.3, 0.4]
         >>> html = create_token_highlights(tokens, weights)

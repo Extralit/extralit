@@ -2,21 +2,10 @@
   <BaseLoading v-if="isLoadingDataset" />
   <InternalPage v-else>
     <template v-slot:header>
-      <HeaderFeedbackTaskComponent
-        :datasetId="datasetId"
-        :breadcrumbs="breadcrumbs"
-        :showTrainButton="true" 
-        @on-click-train="showTrainModal(true)"
-      />
-      <BaseModal :modal-custom="true" :prevent-body-scroll="true" modal-class="modal-auto"
-        modal-position="modal-top-center" :modal-visible="visibleTrainModal" allow-close
-        @close-modal="showTrainModal(false)">
-        <DatasetTrainComponent datasetTask="FeedbackTask" :datasetName="datasetSetting.dataset.name"
-          :workspaceName="datasetSetting.dataset.workspace" />
-      </BaseModal>
+      <HeaderFeedbackTask :datasetId="datasetId" :breadcrumbs="breadcrumbs" />
     </template>
     <template v-slot:page-header>
-      <TopDatasetSettingsFeedbackTaskContent
+      <TopDatasetSettingsFeedbackTask
         :separator="!isAdminOrOwnerRole"
         @goToDataset="goToDataset"
       />
@@ -31,6 +20,8 @@
         :tabs="tabs"
         tab-size="large"
         class="settings__tabs-content"
+        @onChanged="onTabChanged"
+        @onLoaded="onTabLoaded"
       >
         <template v-slot="{ currentComponent }">
           <component
@@ -53,10 +44,8 @@ export default {
   components: {
     InternalPage,
   },
-  data() {
-    return {
-      visibleTrainModal: false,
-    };
+  beforeRouteLeave(to, from, next) {
+    this.goToOutside(next);
   },
   setup() {
     return useDatasetSettingViewModel();

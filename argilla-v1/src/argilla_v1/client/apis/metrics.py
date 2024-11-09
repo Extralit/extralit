@@ -14,8 +14,8 @@
 
 from typing import Optional
 
-from argilla.client.apis import AbstractApi
-from argilla.client.sdk.datasets.models import TaskType
+from argilla_v1.client.apis import AbstractApi
+from argilla_v1.client.sdk.datasets.models import TaskType
 
 
 class MetricsAPI(AbstractApi):

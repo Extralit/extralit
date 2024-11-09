@@ -22,38 +22,38 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 import numpy as np
 import pandas as pd
 
-from argilla.client.feedback.dataset import FeedbackDataset
-from argilla.client.feedback.metrics.base import AnnotatorMetricBase, MetricBase, ModelMetricResult
-from argilla.client.feedback.metrics.utils import (
+from argilla_v1.client.feedback.dataset import FeedbackDataset
+from argilla_v1.client.feedback.metrics.base import AnnotatorMetricBase, MetricBase, ModelMetricResult
+from argilla_v1.client.feedback.metrics.utils import (
     get_responses_and_suggestions_per_user,
     get_unified_responses_and_suggestions,
     is_multiclass,
     map_str_to_int,
 )
-from argilla.client.feedback.schemas import (
+from argilla_v1.client.feedback.schemas import (
     LabelQuestion,
     MultiLabelQuestion,
     RankingQuestion,
     RatingQuestion,
     TextQuestion,
 )
-from argilla.client.feedback.schemas.enums import ResponseStatusFilter
-from argilla.client.feedback.schemas.records import SortBy
-from argilla.utils.dependency import requires_dependencies
+from argilla_v1.client.feedback.schemas.enums import ResponseStatusFilter
+from argilla_v1.client.feedback.schemas.records import SortBy
+from argilla_v1.utils.dependency import requires_dependencies
 
 if TYPE_CHECKING:
-    from argilla.client.feedback.dataset import FeedbackDataset
-    from argilla.client.feedback.metrics.base import Responses, Suggestions
-    from argilla.client.feedback.schemas.enums import ResponseStatusFilter
-    from argilla.client.feedback.schemas.records import SortBy
+    from argilla_v1.client.feedback.dataset import FeedbackDataset
+    from argilla_v1.client.feedback.metrics.base import Responses, Suggestions
+    from argilla_v1.client.feedback.schemas.enums import ResponseStatusFilter
+    from argilla_v1.client.feedback.schemas.records import SortBy
 
 
 class AnnotatorMetric(MetricBase):
     """Main class to compute annotator metrics. Annotator metrics refers to the combination of Suggestions Metric and Responses Metric. They are both different from the Agreement Metric (i.e. Inter-Annotator Agreement) and they are utilized to compute metrics contrasting suggestions vs responses.
 
     Example:
-        >>> import argilla as rg
-        >>> from argilla.client.feedback.metrics import AnnotatorMetric
+        >>> import argilla_v1 as rg
+        >>> from argilla_v1.client.feedback.metrics import AnnotatorMetric
         >>> metric = AnnotatorMetric(dataset=dataset, question_name=question)
         >>> metrics_report = metric.compute("accuracy")
 
@@ -170,8 +170,8 @@ class UnifiedAnnotatorMetric(AnnotatorMetric):
     """Main class to compute metrics for a unified dataset.
 
     Example:
-        >>> import argilla as rg
-        >>> from argilla.client.feedback.metrics import UnifiedAnnotatorMetric
+        >>> import argilla_v1 as rg
+        >>> from argilla_v1.client.feedback.metrics import UnifiedAnnotatorMetric
         >>> metric = UnifiedAnnotatorMetric(dataset=dataset, question_name=question)
         >>> metrics_report = metric.compute("accuracy")
     """

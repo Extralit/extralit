@@ -11,861 +11,389 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+import asyncio
+import contextlib
+import tempfile
+import uuid
+from typing import TYPE_CHECKING, AsyncGenerator, Dict, Generator
 
-import datetime
-import random
-from typing import TYPE_CHECKING, Generator, List
-
+import httpx
 import pytest
-from argilla import SpanQuestion
-from argilla.client.api import log
-from argilla.client.datasets import read_datasets
-from argilla.client.feedback.dataset.local.dataset import FeedbackDataset
-from argilla.client.feedback.schemas import (
-    FeedbackRecord,
-    LabelQuestion,
-    MultiLabelQuestion,
-    RankingQuestion,
-    RankingValueSchema,
-    RatingQuestion,
-    TextField,
-    TextQuestion,
-)
-from argilla.client.feedback.schemas.metadata import (
-    FloatMetadataProperty,
-    IntegerMetadataProperty,
-    TermsMetadataProperty,
-)
-from argilla.client.feedback.schemas.vector_settings import VectorSettings
-from argilla.client.models import (
-    Text2TextRecord,
-    TextClassificationRecord,
-    TokenAttributions,
-    TokenClassificationRecord,
-)
-from argilla.client.sdk.datasets.models import TaskType
-from argilla.client.sdk.text2text.models import (
-    CreationText2TextRecord,
-    Text2TextBulkData,
-)
-from argilla.client.sdk.text_classification.models import (
-    CreationTextClassificationRecord,
-    TextClassificationBulkData,
-)
-from argilla.client.sdk.token_classification.models import (
-    CreationTokenClassificationRecord,
-    TokenClassificationBulkData,
-)
-from argilla.client.singleton import init
-from argilla_server.models import User
-from datasets import Dataset
+import pytest_asyncio
+from argilla_server import telemetry as server_telemetry
+from argilla_server.cli.database.migrate import migrate_db
+from argilla_server.database import get_async_db
+from argilla_server.models import User, UserRole, Workspace
+from argilla_server.settings import settings
+from argilla_v1._constants import API_KEY_HEADER_NAME, DEFAULT_API_KEY
+from argilla_v1.client.api import log
+from argilla_v1.client.apis.datasets import TextClassificationSettings
+from argilla_v1.client.client import Argilla, AuthenticatedClient
+from argilla_v1.client.datasets import read_datasets
+from argilla_v1.client.models import Text2TextRecord, TextClassificationRecord
+from argilla_v1.client.sdk.users import api as users_api
+from argilla_v1.client.singleton import ArgillaSingleton
+from argilla_v1.datasets import configure_dataset
+from argilla_v1.utils import telemetry as client_telemetry
+from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 
+from tests.factories import (
+    AnnotatorFactory,
+    OwnerFactory,
+    UserFactory,
+    WorkspaceFactory,
+)
 from tests.integration.utils import delete_ignoring_errors
+from tests.pydantic_v1 import BaseModel
+
+from ..database import SyncTestSession, TestSession, set_task
+from .helpers import SecuredClient
 
 if TYPE_CHECKING:
-    from argilla.client.feedback.schemas.types import (
-        AllowedFieldTypes,
-        AllowedMetadataPropertyTypes,
-        AllowedQuestionTypes,
-    )
+    from unittest.mock import MagicMock
 
-random.seed(42)
+    from pytest_mock import MockerFixture
+    from sqlalchemy import Connection
+    from sqlalchemy.ext.asyncio import AsyncConnection
+    from sqlalchemy.orm import Session
+
+
+@pytest.fixture(scope="session")
+def event_loop() -> Generator["asyncio.AbstractEventLoop", None, None]:
+    loop = asyncio.get_event_loop_policy().get_event_loop()
+    yield loop
+    loop.close()
+
+
+@pytest.fixture(scope="session")
+def database_url_for_tests() -> Generator[str, None, None]:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        settings.database_url = f"sqlite+aiosqlite:///{tmpdir}/test.db?check_same_thread=False"
+        yield settings.database_url
+
+
+@pytest_asyncio.fixture(scope="session")
+async def connection(database_url_for_tests: str) -> AsyncGenerator["AsyncConnection", None]:
+    set_task(asyncio.current_task())
+    # Create a temp directory to store a SQLite database used for testing
+
+    engine = create_async_engine(database_url_for_tests)
+    conn = await engine.connect()
+    TestSession.configure(bind=conn)
+    migrate_db("head")
+
+    yield conn
+
+    migrate_db("base")
+    await conn.close()
+    await engine.dispose()
+
+
+@pytest_asyncio.fixture(autouse=True)
+async def db(connection: "AsyncConnection") -> AsyncGenerator["AsyncSession", None]:
+    await connection.begin_nested()
+    session = TestSession()
+
+    yield session
+
+    await session.close()
+    await TestSession.remove()
+    await connection.rollback()
 
 
 @pytest.fixture
-def gutenberg_spacy_ner(argilla_user: User) -> Generator[str, None, None]:
+def sync_connection(database_url_for_tests: str) -> Generator["Connection", None, None]:
+    engine = create_engine(database_url_for_tests)
+    conn = engine.connect()
+    SyncTestSession.configure(bind=conn)
+    migrate_db("head")
+
+    yield conn
+
+    migrate_db("base")
+    conn.close()
+    engine.dispose()
+
+
+@pytest.fixture
+def sync_db(sync_connection: "Connection") -> Generator["Session", None, None]:
+    session = SyncTestSession()
+
+    yield session
+
+    session.close()
+    SyncTestSession.remove()
+    sync_connection.rollback()
+
+
+@pytest.fixture(scope="function")
+def client(request, mocker: "MockerFixture") -> Generator[TestClient, None, None]:
+    from argilla_server import app
+    from argilla_server.apis.routes import api_v0, api_v1
+
+    async def override_get_async_db():
+        session = TestSession()
+        yield session
+
+    mocker.patch("argilla_server._app._get_db_wrapper", wraps=contextlib.asynccontextmanager(override_get_async_db))
+    # Here, we need to override the dependency for both versions of the API. This behavior changed from pull request #28
+    # https://github.com/argilla-io/argilla-server/pull/28/files#diff-0cae8a7ee2d37098b1ad84b543d17cfc1e8535eed5fd6abac88c668bfe354cbbR98
+    for api_app in [api_v0, api_v1]:
+        api_app.dependency_overrides[get_async_db] = override_get_async_db
+
+    raise_server_exceptions = request.param if hasattr(request, "param") else False
+    with TestClient(app, raise_server_exceptions=raise_server_exceptions) as client:
+        yield client
+
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture(scope="session")
+def elasticsearch_config():
+    return {"hosts": settings.elasticsearch}
+
+
+@pytest_asyncio.fixture(scope="function")
+async def owner() -> User:
+    return await OwnerFactory.create(first_name="Owner", username="owner", api_key="owner.apikey")
+
+
+@pytest_asyncio.fixture(scope="function")
+async def annotator() -> User:
+    return await AnnotatorFactory.create(first_name="Annotator", username="annotator", api_key="annotator.apikey")
+
+
+@pytest_asyncio.fixture(scope="function")
+async def mock_user() -> User:
+    workspace_a = await WorkspaceFactory.create(name="workspace-a")
+    workspace_b = await WorkspaceFactory.create(name="workspace-b")
+    return await UserFactory.create(
+        first_name="Mock",
+        username="mock-user",
+        password_hash="$2y$05$eaw.j2Kaw8s8vpscVIZMfuqSIX3OLmxA21WjtWicDdn0losQ91Hw.",
+        api_key="mock-user.apikey",
+        workspaces=[workspace_a, workspace_b],
+    )
+
+
+@pytest.fixture(scope="function")
+def owner_auth_header(owner: User) -> Dict[str, str]:
+    return {API_KEY_HEADER_NAME: owner.api_key}
+
+
+@pytest_asyncio.fixture(scope="function")
+async def argilla_user() -> Generator[User, None, None]:
+    user = await UserFactory.create(
+        first_name="Argilla",
+        username="argilla",
+        role=UserRole.owner,
+        password_hash="$2y$05$eaw.j2Kaw8s8vpscVIZMfuqSIX3OLmxA21WjtWicDdn0losQ91Hw.",
+        api_key=DEFAULT_API_KEY,
+        workspaces=[Workspace(name="argilla")],
+    )
+    yield user
+    ArgillaSingleton.clear()
+
+
+@pytest.fixture(scope="function")
+def argilla_auth_header(argilla_user: User) -> Dict[str, str]:
+    return {API_KEY_HEADER_NAME: argilla_user.api_key}
+
+
+@pytest.fixture(autouse=True)
+def server_telemetry_client(mocker: "MockerFixture") -> "MagicMock":
+    mock_telemetry = mocker.Mock(server_telemetry.TelemetryClient)
+    mock_telemetry.server_id = uuid.uuid4()
+
+    server_telemetry._CLIENT = mock_telemetry
+    return server_telemetry._CLIENT
+
+
+@pytest.fixture(autouse=True)
+def client_telemetry_client(mocker: "MockerFixture") -> "MagicMock":
+    mock_telemetry = mocker.Mock(client_telemetry.TelemetryClient)
+    mock_telemetry.machine_id = uuid.uuid4()
+
+    client_telemetry._CLIENT = mock_telemetry
+    return client_telemetry._CLIENT
+
+
+@pytest.mark.parametrize("client", [True], indirect=True)
+@pytest.fixture(autouse=True)
+def using_test_client_from_argilla_python_client(
+    monkeypatch, server_telemetry_client, client_telemetry_client, client: "TestClient"
+):
+    real_whoami = users_api.whoami
+
+    def whoami_mocked(*args, **kwargs):
+        client_arg = args[-1] if args else kwargs["client"]
+
+        monkeypatch.setattr(client_arg, "__httpx__", client)
+        client.headers.update(client_arg.get_headers())
+
+        return real_whoami(client_arg)
+
+    monkeypatch.setattr(users_api, "whoami", whoami_mocked)
+
+    monkeypatch.setattr(httpx, "post", client.post)
+    monkeypatch.setattr(httpx, "patch", client.patch)
+    monkeypatch.setattr(httpx, "get", client.get)
+    monkeypatch.setattr(httpx, "delete", client.delete)
+    monkeypatch.setattr(httpx, "put", client.put)
+    monkeypatch.setattr(httpx, "stream", client.stream)
+
+
+@pytest.fixture
+def api(argilla_user: User) -> Argilla:
+    return Argilla(api_key=argilla_user.api_key, workspace=argilla_user.username)
+
+
+@pytest.fixture
+def mocked_client(
+    monkeypatch, using_test_client_from_argilla_python_client, argilla_user: User, client: "TestClient"
+) -> SecuredClient:
+    client_ = SecuredClient(client, argilla_user)
+
+    real_whoami = users_api.whoami
+
+    def whoami_mocked(client: AuthenticatedClient):
+        monkeypatch.setattr(client, "__httpx__", client_)
+        return real_whoami(client)
+
+    monkeypatch.setattr(users_api, "whoami", whoami_mocked)
+
+    monkeypatch.setattr(httpx, "post", client_.post)
+    monkeypatch.setattr(httpx, "patch", client_.patch)
+    monkeypatch.setattr(httpx, "get", client_.get)
+    monkeypatch.setattr(httpx, "delete", client_.delete)
+    monkeypatch.setattr(httpx, "put", client_.put)
+
+    from argilla_v1.client.singleton import active_api
+
+    rb_api = active_api()
+    monkeypatch.setattr(rb_api.http_client, "__httpx__", client_)
+
+    return client_
+
+
+@pytest.fixture
+def dataset_token_classification(mocked_client: SecuredClient) -> str:
     from datasets import load_dataset
 
     dataset = "gutenberg_spacy_ner"
+
     dataset_ds = load_dataset(
         "argilla/gutenberg_spacy-ner",
-        split="train",
+        split="train[:3]",
         # This revision does not includes the vectors info, so tests will pass
         revision="fff5f572e4cc3127f196f46ba3f9914c6fd0d763",
     )
 
     dataset_rb = read_datasets(dataset_ds, task="TokenClassification")
-
-    init(api_key=argilla_user.api_key, workspace=argilla_user.username)
+    # Set annotations, required for training tests
+    for rec in dataset_rb:
+        # Strip off "score"
+        rec.annotation = [prediction[:3] for prediction in rec.prediction]
+        rec.annotation_agent = rec.prediction_agent
+        rec.prediction = []
+        rec.prediction_agent = None
 
     delete_ignoring_errors(dataset)
     log(name=dataset, records=dataset_rb)
 
-    yield dataset
-
-    delete_ignoring_errors(dataset, workspace=argilla_user.username)
-
-
-@pytest.fixture(scope="session")
-def singlelabel_textclassification_records(
-    request,
-) -> List[TextClassificationRecord]:
-    return [
-        TextClassificationRecord(
-            inputs={"text": "mock", "context": "mock"},
-            prediction=[("a", 0.5), ("b", 0.5)],
-            prediction_agent="mock_pagent",
-            annotation="a",
-            annotation_agent="mock_aagent",
-            id=1,
-            event_timestamp=datetime.datetime(2000, 1, 1),
-            metadata={"mock_metadata": "mock"},
-            explanation={"text": [TokenAttributions(token="mock", attributions={"a": 0.1, "b": 0.5})]},
-            status="Validated",
-        ),
-        TextClassificationRecord(
-            inputs={"text": "mock2", "context": "mock2"},
-            prediction=[("a", 0.5), ("b", 0.2)],
-            prediction_agent="mock2_pagent",
-            id=2,
-            event_timestamp=datetime.datetime(2000, 2, 1),
-            metadata={"mock2_metadata": "mock2"},
-            explanation={"text": [TokenAttributions(token="mock2", attributions={"a": 0.7, "b": 0.2})]},
-            status="Default",
-        ),
-        TextClassificationRecord(
-            inputs={"text": "mock2", "context": "mock2"},
-            prediction=[("a", 0.5), ("b", 0.2)],
-            prediction_agent="mock2_pagent",
-            id=3,
-            status="Discarded",
-        ),
-        TextClassificationRecord(
-            inputs={"text": "mock3", "context": "mock3"},
-            annotation="a",
-            annotation_agent="mock_aagent",
-            id="a",
-            event_timestamp=datetime.datetime(2000, 3, 1),
-            metadata={"mock_metadata": "mock"},
-        ),
-        TextClassificationRecord(
-            text="mock",
-            id="b",
-            status="Default",
-            metrics={"mock_metric": ["B", "I", "O"]},
-        ),
-    ]
+    return dataset
 
 
 @pytest.fixture
-def log_singlelabel_textclassification_records(
-    mocked_client,
-    singlelabel_textclassification_records,
-) -> str:
-    dataset_name = "singlelabel_textclassification_records"
-    mocked_client.delete(f"/api/datasets/{dataset_name}")
-    mocked_client.post(
-        f"/api/datasets/{dataset_name}/{TaskType.text_classification}:bulk",
-        json=TextClassificationBulkData(
-            tags={
-                "env": "test",
-                "task": TaskType.text_classification,
-                "multi_label": False,
-            },
-            records=[
-                CreationTextClassificationRecord.from_client(rec) for rec in singlelabel_textclassification_records
-            ],
-        ).dict(by_alias=True),
+def dataset_text_classification(mocked_client: SecuredClient) -> str:
+    from datasets import load_dataset
+
+    dataset = "banking_sentiment_setfit"
+
+    dataset_ds = load_dataset(
+        f"argilla/{dataset}",
+        split="train[:3]",
     )
+    dataset_rb = [TextClassificationRecord(text=rec["text"], annotation=rec["label"]) for rec in dataset_ds]
+    labels = set([rec.annotation for rec in dataset_rb])
+    configure_dataset(dataset, settings=TextClassificationSettings(label_schema=labels))
 
-    return dataset_name
+    delete_ignoring_errors(dataset)
+    log(name=dataset, records=dataset_rb)
 
-
-@pytest.fixture(scope="session")
-def multilabel_textclassification_records(request) -> List[TextClassificationRecord]:
-    return [
-        TextClassificationRecord(
-            inputs={"text": "mock", "context": "mock"},
-            prediction=[("a", 0.6), ("b", 0.4)],
-            prediction_agent="mock_pagent",
-            annotation=["a", "b"],
-            annotation_agent="mock_aagent",
-            multi_label=True,
-            id=1,
-            event_timestamp=datetime.datetime(2000, 1, 1),
-            metadata={"mock_metadata": "mock"},
-            explanation={"text": [TokenAttributions(token="mock", attributions={"a": 0.1, "b": 0.5})]},
-            status="Validated",
-        ),
-        TextClassificationRecord(
-            inputs={"text": "mock2", "context": "mock2"},
-            prediction=[("a", 0.5), ("b", 0.2)],
-            prediction_agent="mock2_pagent",
-            multi_label=True,
-            id=2,
-            event_timestamp=datetime.datetime(2000, 2, 1),
-            metadata={"mock2_metadata": "mock2"},
-            explanation={"text": [TokenAttributions(token="mock2", attributions={"a": 0.7, "b": 0.2})]},
-            status="Default",
-        ),
-        TextClassificationRecord(
-            inputs={"text": "mock2", "context": "mock2"},
-            prediction=[("a", 0.5), ("b", 0.2)],
-            prediction_agent="mock2_pagent",
-            multi_label=True,
-            id=3,
-            status="Discarded",
-        ),
-        TextClassificationRecord(
-            inputs={"text": "mock3", "context": "mock3"},
-            annotation=["a"],
-            annotation_agent="mock_aagent",
-            multi_label=True,
-            id="a",
-            event_timestamp=datetime.datetime(2000, 3, 1),
-            metadata={"mock_metadata": "mock"},
-            metrics={},
-        ),
-        TextClassificationRecord(
-            text="mock",
-            multi_label=True,
-            id="b",
-            status="Validated",
-            metrics={"mock_metric": ["B", "I", "O"]},
-        ),
-    ]
+    return dataset
 
 
 @pytest.fixture
-def log_multilabel_textclassification_records(
-    mocked_client,
-    multilabel_textclassification_records,
-) -> str:
-    dataset_name = "multilabel_textclassification_records"
-    mocked_client.delete(f"/api/datasets/{dataset_name}")
+def dataset_text_classification_multi_label(mocked_client: SecuredClient) -> str:
+    from datasets import load_dataset
 
-    mocked_client.post(
-        f"/api/datasets/{dataset_name}/{TaskType.text_classification}:bulk",
-        json=TextClassificationBulkData(
-            tags={
-                "env": "test",
-                "task": TaskType.text_classification,
-                "multi_label": True,
-            },
-            records=[
-                CreationTextClassificationRecord.from_client(rec) for rec in multilabel_textclassification_records
-            ],
-        ).dict(by_alias=True),
-    )
+    dataset = "research_titles_multi_label"
 
-    return dataset_name
+    dataset_ds = load_dataset("argilla/research_titles_multi-label", split="train[:50]")
 
+    dataset_rb = read_datasets(dataset_ds, task="TextClassification")
 
-@pytest.fixture(scope="session")
-def tokenclassification_records(request) -> List[TokenClassificationRecord]:
-    return [
-        TokenClassificationRecord(
-            text="This is an example",
-            tokens=["This", "is", "an", "example"],
-            prediction=[("a", 5, 7), ("b", 11, 18)],
-            prediction_agent="mock_pagent",
-            annotation=[("a", 5, 7)],
-            annotation_agent="mock_aagent",
-            id=1,
-            event_timestamp=datetime.datetime(2000, 1, 1),
-            metadata={"mock_metadata": "mock"},
-            status="Validated",
-        ),
-        TokenClassificationRecord(
-            text="This is a second example",
-            tokens=["This", "is", "a", "second", "example"],
-            prediction=[("a", 5, 7), ("b", 8, 9)],
-            prediction_agent="mock_pagent",
-            id=2,
-            event_timestamp=datetime.datetime(2000, 1, 1),
-            metadata={"mock_metadata": "mock"},
-        ),
-        TokenClassificationRecord(
-            text="This is a secondd example",
-            tokens=["This", "is", "a", "secondd", "example"],
-            prediction=[("a", 5, 7), ("b", 8, 9, 0.5)],
-            prediction_agent="mock_pagent",
-            id=3,
-            status="Default",
-        ),
-        TokenClassificationRecord(
-            text="This is a third example",
-            tokens=["This", "is", "a", "third", "example"],
-            annotation=[("a", 0, 4), ("b", 16, 23)],
-            annotation_agent="mock_pagent",
-            id="a",
-            event_timestamp=datetime.datetime(2000, 1, 1),
-            metadata={"mock_metadata": "mock"},
-            metrics={},
-        ),
-        TokenClassificationRecord(
-            text="This is a third example",
-            tokens=["This", "is", "a", "third", "example"],
-            id="b",
-            status="Discarded",
-            metrics={"mock_metric": ["B", "I", "O"]},
-        ),
-    ]
+    dataset_rb = [rec for rec in dataset_rb if rec.annotation]
+
+    delete_ignoring_errors(dataset)
+    log(name=dataset, records=dataset_rb)
+
+    return dataset
 
 
 @pytest.fixture
-def log_tokenclassification_records(
-    mocked_client,
-    tokenclassification_records,
-) -> str:
-    dataset_name = "tokenclassification_records"
-    mocked_client.delete(f"/api/datasets/{dataset_name}")
+def dataset_text2text(mocked_client: SecuredClient) -> str:
+    from datasets import load_dataset
 
-    mocked_client.post(
-        f"/api/datasets/{dataset_name}/{TaskType.token_classification}:bulk",
-        json=TokenClassificationBulkData(
-            tags={
-                "env": "test",
-                "task": TaskType.token_classification,
-            },
-            records=[CreationTokenClassificationRecord.from_client(rec) for rec in tokenclassification_records],
-        ).dict(by_alias=True),
-    )
+    dataset = "news_summary"
 
-    return dataset_name
-
-
-@pytest.fixture(scope="session")
-def text2text_records(request) -> List[Text2TextRecord]:
-    return [
-        Text2TextRecord(
-            text="This is an example",
-            prediction=["Das ist ein Beispiel", "Esto es un ejemplo"],
-            prediction_agent="mock_pagent",
-            annotation="C'est une baguette",
-            annotation_agent="mock_aagent",
-            id=1,
-            event_timestamp=datetime.datetime(2000, 1, 1),
-            metadata={"mock_metadata": "mock"},
-            status="Validated",
-        ),
-        Text2TextRecord(
-            text="This is a one and a half example",
-            prediction=[("Das ist ein Beispiell", 0.9), ("Esto es un ejemploo", 0.1)],
-            prediction_agent="mock_pagent",
-            id=2,
-            event_timestamp=datetime.datetime(2000, 1, 1),
-            metadata={"mock_metadata": "mock"},
-        ),
-        Text2TextRecord(
-            text="This is a second example",
-            prediction=["Esto es un ejemplooo", ("Das ist ein Beispielll", 0.9)],
-            prediction_agent="mock_pagent",
-            id=3,
-            event_timestamp=datetime.datetime(2000, 1, 1),
-            metadata={"mock_metadata": "mock"},
-            metrics={},
-        ),
-        Text2TextRecord(
-            text="This is a third example",
-            annotation="C'est une très bonne baguette",
-            annotation_agent="mock_pagent",
-            id="a",
-            event_timestamp=datetime.datetime(2000, 1, 1),
-            metadata={"mock_metadata": "mock"},
-            metrics={},
-        ),
-        Text2TextRecord(
-            text="This is a forth example",
-            id="b",
-            status="Discarded",
-            metrics={"mock_metric": ["B", "I", "O"]},
-        ),
-    ]
-
-
-@pytest.fixture
-def log_text2text_records(
-    mocked_client,
-    text2text_records,
-) -> str:
-    dataset_name = "text2text_records"
-    mocked_client.delete(f"/api/datasets/{dataset_name}")
-
-    mocked_client.post(
-        f"/api/datasets/{dataset_name}/{TaskType.text2text}:bulk",
-        json=Text2TextBulkData(
-            tags={
-                "env": "test",
-                "task": TaskType.text2text,
-            },
-            records=[CreationText2TextRecord.from_client(rec) for rec in text2text_records],
-        ).dict(by_alias=True),
-    )
-
-    return dataset_name
-
-
-@pytest.fixture
-def feedback_dataset_guidelines() -> str:
-    return "These are the annotation guidelines."
-
-
-@pytest.fixture
-def feedback_dataset_fields() -> List["AllowedFieldTypes"]:
-    return [
-        TextField(name="text", required=True),
-        TextField(name="label", required=True),
-    ]
-
-
-@pytest.fixture
-def feedback_dataset_questions() -> List["AllowedQuestionTypes"]:
-    return [
-        TextQuestion(name="question-1", required=True),
-        RatingQuestion(name="question-2", values=[1, 2], required=True),
-        LabelQuestion(name="question-3", labels=["a", "b", "c"], required=True),
-        MultiLabelQuestion(name="question-4", labels=["a", "b", "c"], required=True),
-        RankingQuestion(name="question-5", values=["a", "b"], required=True),
-        SpanQuestion(name="question-6", field="text", labels=["a", "b"], required=False),
-    ]
-
-
-@pytest.fixture
-def feedback_dataset_metadata_properties() -> List["AllowedMetadataPropertyTypes"]:
-    return [
-        TermsMetadataProperty(name="metadata-property-1", values=["a", "b", "c"]),
-        IntegerMetadataProperty(name="metadata-property-2", min=0, max=10),
-        FloatMetadataProperty(name="metadata-property-3", min=0, max=10),
-    ]
-
-
-@pytest.fixture
-def feedback_dataset_vectors_settings() -> List["VectorSettings"]:
-    return [VectorSettings(name="vector-settings-1", dimensions=5)]
-
-
-@pytest.fixture
-def feedback_dataset(
-    feedback_dataset_fields: List["AllowedFieldTypes"],
-    feedback_dataset_questions: List["AllowedQuestionTypes"],
-    feedback_dataset_metadata_properties: List["AllowedMetadataPropertyTypes"],
-    feedback_dataset_vectors_settings: List["VectorSettings"],
-) -> "FeedbackDataset":
-    return FeedbackDataset(
-        fields=feedback_dataset_fields,
-        questions=feedback_dataset_questions,
-        metadata_properties=feedback_dataset_metadata_properties,
-        vectors_settings=feedback_dataset_vectors_settings,
-    )
-
-
-@pytest.fixture
-def feedback_dataset_records() -> List[FeedbackRecord]:
-    return [
-        FeedbackRecord(
-            fields={"text": "This is a positive example", "label": "positive"},
-            responses=[
-                {
-                    "values": {
-                        "question-1": {"value": "positive example"},
-                        "question-2": {"value": 1},
-                        "question-3": {"value": "a"},
-                        "question-4": {"value": ["a", "b"]},
-                        "question-5": {"value": [{"rank": 1, "value": "a"}, {"rank": 2, "value": "b"}]},
-                        "question-6": {"value": [{"start": 0, "end": 4, "label": "a"}]},
-                    },
-                    "status": "submitted",
-                },
-            ],
-            metadata={"unit": "test"},
-            external_id="1",
-        ),
-        FeedbackRecord(
-            fields={"text": "This is a negative example", "label": "negative"},
-            metadata={"another unit": "test"},
-            external_id="2",
-        ),
-        FeedbackRecord(
-            fields={"text": "This is a negative example", "label": "negative"},
-            responses=[
-                {
-                    "values": {
-                        "question-1": {"value": "negative example"},
-                        "question-2": {"value": 2},
-                        "question-3": {"value": "b"},
-                        "question-4": {"value": ["b", "c"]},
-                        "question-5": {
-                            "value": [RankingValueSchema(rank=1, value="a"), RankingValueSchema(rank=2, value="b")]
-                        },
-                        "question-6": {"value": [{"start": 0, "end": 4, "label": "a"}]},
-                    },
-                    "status": "submitted",
-                }
-            ],
-            suggestions=[
-                {
-                    "question_name": "question-1",
-                    "value": "This is a suggestion to question 1",
-                    "type": "human",
-                    "score": 0.0,
-                    "agent": "agent-1",
-                },
-                {
-                    "question_name": "question-2",
-                    "value": 1,
-                    "type": "human",
-                    "score": 0.0,
-                    "agent": "agent-1",
-                },
-                {
-                    "question_name": "question-3",
-                    "value": "a",
-                    "type": "human",
-                    "score": 0.0,
-                    "agent": "agent-1",
-                },
-                {
-                    "question_name": "question-4",
-                    "value": ["a", "b"],
-                    "type": "human",
-                    "score": [0.0, 0.0],
-                    "agent": "agent-1",
-                },
-                {
-                    "question_name": "question-5",
-                    "value": [RankingValueSchema(rank=1, value="a"), RankingValueSchema(rank=2, value="b")],
-                    "type": "human",
-                    "score": [0.0, 0.0],
-                    "agent": "agent-1",
-                },
-                {
-                    "question_name": "question-6",
-                    "value": [{"start": 0, "end": 4, "label": "a"}],
-                    "type": "human",
-                    "score": [0.0],
-                    "agent": "agent-1",
-                },
-            ],
-            external_id="3",
-        ),
-        FeedbackRecord(
-            fields={"text": "This is a negative example", "label": "negative"},
-            responses=[
-                {
-                    "values": {
-                        "question-1": {"value": "negative example"},
-                        "question-2": {"value": 2},
-                        "question-3": {"value": "c"},
-                        "question-4": {"value": ["a", "c"]},
-                        "question-5": {"value": [{"rank": 1, "value": "a"}, {"rank": 2, "value": "b"}]},
-                        "question-6": {"value": [{"start": 0, "end": 4, "label": "a"}]},
-                    },
-                    "status": "submitted",
-                }
-            ],
-            external_id="4",
-        ),
-        FeedbackRecord(
-            fields={"text": "This is a negative example", "label": "negative"},
-            responses=[
-                {
-                    "values": {
-                        "question-1": {"value": "negative example"},
-                        "question-2": {"value": 1},
-                        "question-3": {"value": "a"},
-                        "question-4": {"value": ["a"]},
-                        "question-5": {"value": [{"rank": 1, "value": "a"}, {"rank": 2, "value": "b"}]},
-                    },
-                    "status": "submitted",
-                }
-            ],
-            external_id="5",
-        ),
-    ]
-
-
-@pytest.fixture
-def feedback_dataset_records_with_paired_suggestions() -> List[FeedbackRecord]:
-    # This fixture contains the same records as `feedback_dataset_records` but with suggestions
-    # for each question so that we can test the annotator metrics.
-    # Generates 4 records from 3 annotators.
-
-    import random
-    import uuid
-
-    q1_options = ["positive", "negative"]
-    q2_options = [1, 2]
-    q3_options = ["a", "b", "c"]
-    q4_options = [["a", "b"], ["b", "c"], ["a", "c"]]
-    q5_options = [
-        [{"rank": 1, "value": "a"}, {"rank": 2, "value": "b"}],
-        [{"rank": 2, "value": "a"}, {"rank": 1, "value": "b"}],
-        [{"rank": 1, "value": "a"}, {"rank": 2, "value": "b"}],
-    ]
+    dataset_ds = load_dataset("argilla/news-summary", split="train[:3]")
 
     records = []
+    for entry in dataset_ds:
+        records.append(Text2TextRecord(text=entry["text"], annotation=entry["prediction"][0]["text"]))
 
-    for record_id in range(1, 5):
-        responses = []
-        for annotator_id in range(1, 4):
-            # Make the random seed depend on the record_id and annotator_id for reproducibility.
-            random.seed(123 + record_id + annotator_id)
-            idx1 = random.randint(0, len(q1_options) - 1)
-            random.seed(123 + record_id + annotator_id + 1)
-            idx2 = random.randint(0, len(q2_options) - 1)
-            random.seed(123 + record_id + annotator_id + 2)
-            idx3 = random.randint(0, len(q3_options) - 1)
-            random.seed(123 + record_id + annotator_id + 3)
-            idx4 = random.randint(0, len(q4_options) - 1)
-            random.seed(123 + record_id + annotator_id + 4)
-            idx5 = random.randint(0, len(q5_options) - 1)
+    delete_ignoring_errors(dataset)
+    log(name=dataset, records=records)
 
-            response_q1 = q1_options[idx1]
-            response_q2 = q2_options[idx2]
-            response_q3 = q3_options[idx3]
-            response_q4 = q4_options[idx4]
-            response_q5 = q5_options[idx5]
+    return dataset
 
-            if annotator_id == 1:
-                # Always answer like the suggestion
-                suggestion_q1 = response_q1
-                suggestion_q2 = response_q2
-                suggestion_q3 = response_q3
-                suggestion_q4 = response_q4
-                suggestion_q5 = response_q5
-            elif annotator_id == 2:
-                # Never answer like the suggestion
-                suggestion_q1 = q1_options[idx1 - 1]
-                suggestion_q2 = q2_options[idx2 - 1]
-                suggestion_q3 = q3_options[idx3 - 1]
-                suggestion_q4 = q4_options[idx4 - 1]
-                suggestion_q5 = q5_options[idx5 - 1]
-            elif annotator_id == 3:
-                # Sometimes answer like the suggestion
-                if record_id % 2 == 0:
-                    suggestion_q1 = response_q1
-                    suggestion_q2 = response_q2
-                    suggestion_q3 = response_q3
-                    suggestion_q4 = response_q4
-                    suggestion_q5 = response_q5
-                else:
-                    suggestion_q1 = q1_options[idx1 - 1]
-                    suggestion_q2 = q2_options[idx2 - 1]
-                    suggestion_q3 = q3_options[idx3 - 1]
-                    suggestion_q4 = q4_options[idx4 - 1]
-                    suggestion_q5 = q5_options[idx5 - 1]
 
-            score_q1 = 0.0 if not isinstance(suggestion_q1, list) else [0.0] * len(suggestion_q1)
-            score_q2 = 0.0 if not isinstance(suggestion_q2, list) else [0.0] * len(suggestion_q2)
-            score_q3 = 0.0 if not isinstance(suggestion_q3, list) else [0.0] * len(suggestion_q3)
-            score_q4 = 0.0 if not isinstance(suggestion_q4, list) else [0.0] * len(suggestion_q4)
-            score_q5 = 0.0 if not isinstance(suggestion_q5, list) else [0.0] * len(suggestion_q5)
-
-            responses.append(
-                {
-                    "values": {
-                        "question-1": {"value": f"{response_q1} example"},
-                        "question-2": {"value": response_q2},
-                        "question-3": {"value": response_q3},
-                        "question-4": {"value": response_q4},
-                        "question-5": {"value": response_q5},
-                    },
-                    "status": "submitted",
-                    "user_id": uuid.UUID(int=annotator_id),
-                },
-            )
-
-        records.append(
-            FeedbackRecord(
-                fields={"text": f"This is a {response_q1} example", "label": f"{response_q1}"},
-                responses=responses,
-                suggestions=[
-                    {
-                        "question_name": "question-1",
-                        "value": suggestion_q1,
-                        "type": "human",
-                        "score": score_q1,
-                        "agent": f"agent-{annotator_id}",
-                    },
-                    {
-                        "question_name": "question-2",
-                        "value": suggestion_q2,
-                        "type": "human",
-                        "score": score_q2,
-                        "agent": f"agent-{annotator_id}",
-                    },
-                    {
-                        "question_name": "question-3",
-                        "value": suggestion_q3,
-                        "type": "human",
-                        "score": score_q3,
-                        "agent": f"agent-{annotator_id}",
-                    },
-                    {
-                        "question_name": "question-4",
-                        "value": suggestion_q4,
-                        "type": "human",
-                        "score": score_q4,
-                        "agent": f"agent-{annotator_id}",
-                    },
-                    {
-                        "question_name": "question-5",
-                        "value": suggestion_q5,
-                        "type": "human",
-                        "score": score_q5,
-                        "agent": f"agent-{annotator_id}",
-                    },
-                ],
-                metadata={"unit": "test"},
-                external_id=str(annotator_id + record_id),
-            )
-        )
-
-    return records
+class _MockResponse(BaseModel):
+    id: str = "1234"
 
 
 @pytest.fixture
-def feedback_dataset_records_with_metadata() -> List[FeedbackRecord]:
-    records = []
-    external_id = 0
-    for status in ["submitted", "discarded"]:
-        records.extend(
-            [
-                FeedbackRecord(
-                    fields={"text": "This is a positive example", "label": "positive"},
-                    responses=[
-                        {
-                            "values": {
-                                "question-1": {"value": "positive example"},
-                                "question-2": {"value": 1},
-                                "question-3": {"value": "a"},
-                                "question-4": {"value": ["a", "b"]},
-                                "question-5": {"value": [{"rank": 1, "value": "a"}, {"rank": 2, "value": "b"}]},
-                            },
-                            "status": status,
-                        },
-                    ],
-                    metadata={"terms-metadata": "a", "integer-metadata": 2, "float-metadata": 2.0},
-                    external_id=str(external_id + 1),
-                ),
-                FeedbackRecord(
-                    fields={"text": "This is a negative example", "label": "negative"},
-                    metadata={"terms-metadata": "a", "integer-metadata": 4, "float-metadata": 4.0},
-                    external_id=str(external_id + 2),
-                ),
-                FeedbackRecord(
-                    fields={"text": "This is a negative example", "label": "negative"},
-                    responses=[
-                        {
-                            "values": {
-                                "question-1": {"value": "negative example"},
-                                "question-2": {"value": 1},
-                                "question-3": {"value": "b"},
-                                "question-4": {"value": ["b", "c"]},
-                                "question-5": {"value": [{"rank": 1, "value": "a"}, {"rank": 2, "value": "b"}]},
-                            },
-                            "status": status,
-                        }
-                    ],
-                    metadata={"terms-metadata": "b", "integer-metadata": 4, "float-metadata": 4.0},
-                    suggestions=[
-                        {
-                            "question_name": "question-1",
-                            "value": "This is a suggestion to question 1",
-                            "type": "human",
-                            "score": 0.0,
-                            "agent": "agent-1",
-                        },
-                        {
-                            "question_name": "question-2",
-                            "value": 1,
-                            "type": "human",
-                            "score": 0.0,
-                            "agent": "agent-1",
-                        },
-                        {
-                            "question_name": "question-3",
-                            "value": "a",
-                            "type": "human",
-                            "score": 0.0,
-                            "agent": "agent-1",
-                        },
-                        {
-                            "question_name": "question-4",
-                            "value": ["a", "b"],
-                            "type": "human",
-                            "score": [0.0, 0.0],
-                            "agent": "agent-1",
-                        },
-                        {
-                            "question_name": "question-5",
-                            "value": [{"rank": 1, "value": "a"}, {"rank": 2, "value": "b"}],
-                            "type": "human",
-                            "score": [0.0, 0.0],
-                            "agent": "agent-1",
-                        },
-                    ],
-                    external_id=str(external_id + 3),
-                ),
-                FeedbackRecord(
-                    fields={"text": "This is a negative example", "label": "negative"},
-                    responses=[
-                        {
-                            "values": {
-                                "question-1": {"value": "negative example"},
-                                "question-2": {"value": 1},
-                                "question-3": {"value": "c"},
-                                "question-4": {"value": ["a", "c"]},
-                                "question-5": {"value": [{"rank": 1, "value": "a"}, {"rank": 2, "value": "b"}]},
-                            },
-                            "status": status,
-                        }
-                    ],
-                    metadata={"terms-metadata": "b", "integer-metadata": 5, "float-metadata": 4.0},
-                    external_id=str(external_id + 4),
-                ),
-                FeedbackRecord(
-                    fields={"text": "This is a negative example", "label": "negative"},
-                    responses=[
-                        {
-                            "values": {
-                                "question-1": {"value": "negative example"},
-                                "question-2": {"value": 1},
-                                "question-3": {"value": "a"},
-                                "question-4": {"value": ["a"]},
-                                "question-5": {"value": [{"rank": 1, "value": "a"}, {"rank": 2, "value": "b"}]},
-                            },
-                            "status": status,
-                        }
-                    ],
-                    metadata={"terms-metadata": "c", "integer-metadata": 6, "float-metadata": 6.0},
-                    external_id=str(external_id + 5),
-                ),
-            ]
-        )
-        external_id += 5
-
-    return records
+def mocked_openai(mocker):
+    # Mock the requests to OpenAI APIs
+    response = _MockResponse()
+    mocker.patch("openai.FineTune.retrieve", return_value=response)
+    mocker.patch("openai.FineTuningJob.retrieve", return_value=response)
+    mocker.patch("openai.Model.retrieve", return_value=response)
+    mocker.patch("openai.FineTuningJob.create", return_value=response)
+    mocker.patch("openai.FineTune.create", return_value=response)
+    mocker.patch("openai.File.create", return_value=response)
 
 
 @pytest.fixture
-def feedback_dataset_huggingface() -> Dataset:
-    return Dataset.from_dict(
-        {
-            "text": ["This is a positive example"],
-            "label": ["positive"],
-            "question-1": [{"user_id": [None], "value": ["This is a response to question 1"], "status": ["submitted"]}],
-            "question-2": [{"user_id": [None], "value": [1], "status": ["submitted"]}],
-            "question-3": [{"user_id": [None], "value": ["a"], "status": ["submitted"]}],
-            "question-4": [{"user_id": [None], "value": [["a", "b"]], "status": ["submitted"]}],
-            "question-5": [
-                {
-                    "user_id": [None],
-                    "value": [[{"rank": 1, "value": "a"}, {"rank": 2, "value": "b"}]],
-                    "status": ["submitted"],
-                }
-            ],
-            "question-1-suggestion": ["This is a suggestion to question 1"],
-            "question-1-suggestion-metadata": [{"type": None, "score": None, "agent": None}],
-            "question-2-suggestion": [1],
-            "question-2-suggestion-metadata": [{"type": None, "score": None, "agent": None}],
-            "question-3-suggestion": ["a"],
-            "question-3-suggestion-metadata": [{"type": None, "score": None, "agent": None}],
-            "question-4-suggestion": [["a", "b"]],
-            "question-4-suggestion-metadata": [{"type": None, "score": None, "agent": None}],
-            "question-5-suggestion": [[{"rank": 1, "value": "a"}, {"rank": 2, "value": "b"}]],
-            "question-5-suggestion-metadata": [{"type": None, "score": None, "agent": None}],
-            "external_id": ["1"],
-        }
-    )
+def mocked_trainer_push_to_huggingface(mocker: "MockerFixture"):
+    # Mock the push_to_huggingface methods for the different trainers,
+    # most of the functionality is already tested by the frameworks itself.
+    # For transformers' model and tokenizer
+    mocker.patch("transformers.PreTrainedModel.push_to_hub", return_value="model_url")
+    mocker.patch("transformers.PreTrainedTokenizer.push_to_hub", return_value="model_url")
+    # For setfit
+    mocker.patch("setfit.trainer.SetFitTrainer.push_to_hub", return_value="model_url")
+    # For peft
+    mocker.patch("peft.PeftModel.push_to_hub", return_value="model_url")
+    mocker.patch("transformers.PreTrainedTokenizerBase.push_to_hub", return_value="model_url")
+    # For spacy and spacy-transformers
+    mocker.patch("spacy_huggingface_hub.push", return_value={"url": "model_url"})
+    # For trl
+    mocker.patch("trl.trainer.sft_trainer.SFTTrainer.push_to_hub", return_value="model_url")
+    mocker.patch("trl.trainer.reward_trainer.RewardTrainer.push_to_hub", return_value="model_url")
+    mocker.patch("trl.trainer.base.BaseTrainer.push_to_hub", return_value="model_url")
+    mocker.patch("trl.trainer.dpo_trainer.DPOTrainer.push_to_hub", return_value="model_url")

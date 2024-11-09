@@ -19,15 +19,15 @@ from typing import TYPE_CHECKING, Optional
 
 from typing_extensions import Literal
 
-from argilla.client.feedback.training.base import ArgillaTrainerSkeleton
-from argilla.client.models import TextClassificationRecord, TokenClassificationRecord
-from argilla.training.spacy import ArgillaSpaCyTrainer as ArgillaSpaCyTrainerV1
-from argilla.training.spacy import ArgillaSpaCyTransformersTrainer as ArgillaSpaCyTransformersTrainerV1
-from argilla.training.spacy import _ArgillaSpaCyTrainerBase as _ArgillaSpaCyTrainerBaseV1
-from argilla.utils.dependency import require_dependencies, requires_dependencies
+from argilla_v1.client.feedback.training.base import ArgillaTrainerSkeleton
+from argilla_v1.client.models import TextClassificationRecord, TokenClassificationRecord
+from argilla_v1.training.spacy import ArgillaSpaCyTrainer as ArgillaSpaCyTrainerV1
+from argilla_v1.training.spacy import ArgillaSpaCyTransformersTrainer as ArgillaSpaCyTransformersTrainerV1
+from argilla_v1.training.spacy import _ArgillaSpaCyTrainerBase as _ArgillaSpaCyTrainerBaseV1
+from argilla_v1.utils.dependency import require_dependencies, requires_dependencies
 
 if TYPE_CHECKING:
-    from argilla.client.feedback.integrations.huggingface.model_card import (
+    from argilla_v1.client.feedback.integrations.huggingface.model_card import (
         SpacyModelCardData,
         SpacyTransformersModelCardData,
     )
@@ -227,7 +227,7 @@ class ArgillaSpaCyTrainer(ArgillaSpaCyTrainerV1, _ArgillaSpaCyTrainerBase):
             **kwargs: The `ArgillaSpaCyTrainerBase` arguments.
 
         Examples:
-            >>> from argilla import ArgillaSpaCyTrainer
+            >>> from argilla_v1 import ArgillaSpaCyTrainer
             >>> trainer = ArgillaSpaCyTrainer(
         """
         self.freeze_tok2vec = freeze_tok2vec
@@ -243,7 +243,7 @@ class ArgillaSpaCyTrainer(ArgillaSpaCyTrainerV1, _ArgillaSpaCyTrainerBase):
         Returns:
             SpacyModelCardData: Container for the data to be written on the `ArgillaModelCard`.
         """
-        from argilla.client.feedback.integrations.huggingface.model_card import SpacyModelCardData
+        from argilla_v1.client.feedback.integrations.huggingface.model_card import SpacyModelCardData
 
         return SpacyModelCardData(
             model_id=self._model,
@@ -279,7 +279,7 @@ class ArgillaSpaCyTransformersTrainer(ArgillaSpaCyTransformersTrainerV1, _Argill
         Returns:
             SpacyTransformersModelCardData: Container for the data to be written on the `ArgillaModelCard`.
         """
-        from argilla.client.feedback.integrations.huggingface.model_card import SpacyTransformersModelCardData
+        from argilla_v1.client.feedback.integrations.huggingface.model_card import SpacyTransformersModelCardData
 
         return SpacyTransformersModelCardData(
             model_id=self._model,

@@ -16,9 +16,9 @@ from typing import Any, Dict, Optional, Type, TypeVar, Union
 
 import httpx
 
-from argilla.client.sdk.commons.errors import WrongResponseError
-from argilla.client.sdk.commons.errors_handler import handle_response_error
-from argilla.client.sdk.commons.models import ErrorMessage, HTTPValidationError, Response
+from argilla_v1.client.sdk.commons.errors import WrongResponseError
+from argilla_v1.client.sdk.commons.errors_handler import handle_response_error
+from argilla_v1.client.sdk.commons.models import ErrorMessage, HTTPValidationError, Response
 
 
 def build_raw_response(response: httpx.Response) -> Response[Union[Dict[str, Any], ErrorMessage, HTTPValidationError]]:

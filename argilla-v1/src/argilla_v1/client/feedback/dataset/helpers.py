@@ -17,19 +17,23 @@ from typing import Any, Dict, List, Optional, Type, Union
 
 import httpx
 
-from argilla.client.feedback.constants import FIELD_TYPE_TO_PYTHON_TYPE
-from argilla.client.feedback.dataset.base import FeedbackDatasetBase
-from argilla.client.feedback.schemas import FeedbackRecord
-from argilla.client.feedback.schemas.enums import MetadataPropertyTypes
-from argilla.client.feedback.schemas.types import AllowedFieldTypes, AllowedMetadataPropertyTypes, AllowedQuestionTypes
-from argilla.client.sdk.v1.datasets import api as datasets_api_v1
-from argilla.client.sdk.v1.datasets.models import FeedbackDatasetModel
-from argilla.client.singleton import active_client
-from argilla.client.workspaces import Workspace
-from argilla.pydantic_v1 import BaseModel, Extra, ValidationError, create_model
+from argilla_v1.client.feedback.constants import FIELD_TYPE_TO_PYTHON_TYPE
+from argilla_v1.client.feedback.dataset.base import FeedbackDatasetBase
+from argilla_v1.client.feedback.schemas import FeedbackRecord
+from argilla_v1.client.feedback.schemas.enums import MetadataPropertyTypes
+from argilla_v1.client.feedback.schemas.types import (
+    AllowedFieldTypes,
+    AllowedMetadataPropertyTypes,
+    AllowedQuestionTypes,
+)
+from argilla_v1.client.sdk.v1.datasets import api as datasets_api_v1
+from argilla_v1.client.sdk.v1.datasets.models import FeedbackDatasetModel
+from argilla_v1.client.singleton import active_client
+from argilla_v1.client.workspaces import Workspace
+from argilla_v1.pydantic_v1 import BaseModel, Extra, ValidationError, create_model
 
 if typing.TYPE_CHECKING:
-    from argilla.client.feedback.schemas.types import (
+    from argilla_v1.client.feedback.schemas.types import (
         AllowedFieldTypes,
         AllowedMetadataPropertyTypes,
         AllowedRemoteFieldTypes,
@@ -84,7 +88,7 @@ def validate_questions(questions: typing.Union[AllowedQuestionTypes, typing.List
 
 
 def validate_metadata_properties(
-    metadata_properties: typing.Union[typing.List[AllowedMetadataPropertyTypes], None]
+    metadata_properties: typing.Union[typing.List[AllowedMetadataPropertyTypes], None],
 ) -> None:
     """Validates that the metadata properties used in the filters are valid."""
 
@@ -138,7 +142,7 @@ def validate_vector_names(dataset: "FeedbackDatasetBase", names: typing.List[str
 
 
 def normalize_records(
-    records: Union[FeedbackRecord, Dict[str, Any], List[Union[FeedbackRecord, Dict[str, Any]]]]
+    records: Union[FeedbackRecord, Dict[str, Any], List[Union[FeedbackRecord, Dict[str, Any]]]],
 ) -> List[FeedbackRecord]:
     """Parses the records into a list of `FeedbackRecord` objects.
 
@@ -231,9 +235,9 @@ def get_dataset_by_name_and_workspace(
         Exception: if the `FeedbackDataset` could not be listed from Argilla.
 
     Examples:
-        >>> import argilla as rg
+        >>> import argilla_v1 as rg
         >>> rg.init(api_url="...", api_key="...")
-        >>> from argilla.client.feedback.dataset.helpers import get_dataset_by_name_and_workspace
+        >>> from argilla_v1.client.feedback.dataset.helpers import get_dataset_by_name_and_workspace
         >>> dataset = get_dataset_by_name_and_workspace(name="my-dataset")
     """
     assert (name and workspace) or name or id, (
@@ -290,8 +294,8 @@ def generate_pydantic_schema_for_fields(
         ValueError: if one of the fields has an unsupported type.
 
     Examples:
-        >>> from argilla.client.feedback.schemas.fields import TextField
-        >>> from argilla.client.feedback.dataset.helpers import generate_pydantic_schema_for_fields
+        >>> from argilla_v1.client.feedback.schemas.fields import TextField
+        >>> from argilla_v1.client.feedback.dataset.helpers import generate_pydantic_schema_for_fields
         >>> fields = [
         ...     TextField(name="text", required=True),
         ...     TextField(name="label", required=True),
@@ -334,8 +338,8 @@ def generate_pydantic_schema_for_metadata(
         ValueError: if one of the metadata properties has an unsupported type.
 
     Examples:
-        >>> from argilla.client.feedback.schemas.metadata import IntegerMetadataProperty
-        >>> from argilla.client.feedback.dataset.helpers import generate_pydantic_schema_for_metadata
+        >>> from argilla_v1.client.feedback.schemas.metadata import IntegerMetadataProperty
+        >>> from argilla_v1.client.feedback.dataset.helpers import generate_pydantic_schema_for_metadata
         >>> metadata_properties = [
         ...     IntegerMetadataProperty(name="int_metadata", min=0, max=10),
         ...     ...,

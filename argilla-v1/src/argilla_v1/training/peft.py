@@ -17,10 +17,10 @@ from typing import List, Union
 
 import numpy as np
 
-from argilla.client.models import TextClassificationRecord, TokenClassificationRecord
-from argilla.training.transformers import ArgillaTransformersTrainer
-from argilla.training.utils import filter_allowed_args
-from argilla.utils.dependency import require_dependencies
+from argilla_v1.client.models import TextClassificationRecord, TokenClassificationRecord
+from argilla_v1.training.transformers import ArgillaTransformersTrainer
+from argilla_v1.training.utils import filter_allowed_args
+from argilla_v1.utils.dependency import require_dependencies
 
 
 class ArgillaPeftTrainer(ArgillaTransformersTrainer):

@@ -15,9 +15,9 @@
 from datetime import datetime
 from typing import Dict, List, Optional, Union
 
-from argilla.client.models import TextClassificationRecord as ClientTextClassificationRecord
-from argilla.client.models import TokenAttributions as ClientTokenAttributions
-from argilla.client.sdk.commons.models import (
+from argilla_v1.client.models import TextClassificationRecord as ClientTextClassificationRecord
+from argilla_v1.client.models import TokenAttributions as ClientTokenAttributions
+from argilla_v1.client.sdk.commons.models import (
     MACHINE_NAME,
     BaseAnnotation,
     BaseRecord,
@@ -27,7 +27,7 @@ from argilla.client.sdk.commons.models import (
     TaskStatus,
     UpdateDatasetRequest,
 )
-from argilla.pydantic_v1 import BaseModel, Field
+from argilla_v1.pydantic_v1 import BaseModel, Field
 
 
 class ClassPrediction(BaseModel):

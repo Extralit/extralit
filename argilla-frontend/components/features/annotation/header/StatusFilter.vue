@@ -26,6 +26,8 @@
 </template>
 
 <script>
+import { RecordStatus } from "~/v1/domain/entities/record/RecordStatus";
+
 export default {
   props: {
     selectedOption: {
@@ -40,24 +42,23 @@ export default {
     return {
       options: [
         {
-          id: "pending",
-          name: this.$t("recordStatus.pending"),
+          id: RecordStatus.pending.name,
+          name: this.$t(`recordStatus.${RecordStatus.pending.name}`),
+          color: RecordStatus.pending.color,
         },
         {
-          id: "draft",
-          name: this.$t("recordStatus.draft"),
+          id: RecordStatus.draft.name,
+          name: this.$t(`recordStatus.${RecordStatus.draft.name}`),
+          color: RecordStatus.draft.color,
         },
         {
-          id: "submitted",
-          name: this.$t("recordStatus.submitted"),
+          id: RecordStatus.discarded.name,
+          name: this.$t(`recordStatus.${RecordStatus.discarded.name}`),
+          color: RecordStatus.discarded.color,
         },
         {
           id: "valid",
           name: "All data",
-        },
-        {
-          id: "discarded",
-          name: this.$t("recordStatus.discarded"),
         },
       ],
     };

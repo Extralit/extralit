@@ -3,6 +3,11 @@ import Container, { register } from "ts-injecty";
 
 import { useEventDispatcher } from "@codescouts/events";
 
+import { useTeamProgress } from "../infrastructure/storage/TeamProgressStorage";
+import {
+  UpdateMetricsEventHandler,
+  UpdateTeamProgressEventHandler,
+} from "../infrastructure/events";
 import {
   DatasetRepository,
   RecordRepository,
@@ -15,6 +20,7 @@ import {
   AgentRepository,
   OAuthRepository,
   EnvironmentRepository,
+  WorkspaceRepository,
 } from "@/v1/infrastructure/repositories";
 
 import { useRole, useRoutes } from "@/v1/infrastructure/services";
@@ -47,19 +53,23 @@ import { UpdateDatasetSettingUseCase } from "@/v1/domain/usecases/dataset-settin
 import { GetMetadataUseCase } from "@/v1/domain/usecases/get-metadata-use-case";
 import { GetDatasetVectorsUseCase } from "@/v1/domain/usecases/get-dataset-vectors-use-case";
 import { UpdateVectorSettingUseCase } from "@/v1/domain/usecases/dataset-setting/update-vector-setting-use-case";
-import { GetDatasetQuestionsFilterUseCase } from "~/v1/domain/usecases/get-dataset-questions-filter-use-case";
+import { GetDatasetQuestionsFilterUseCase } from "@/v1/domain/usecases/get-dataset-questions-filter-use-case";
 import { GetDatasetSuggestionsAgentsUseCase } from "@/v1/domain/usecases/get-dataset-suggestions-agents-use-case";
 import { UpdateMetadataSettingUseCase } from "@/v1/domain/usecases/dataset-setting/update-metadata-setting-use-case";
 import { OAuthLoginUseCase } from "@/v1/domain/usecases/oauth-login-use-case";
 import { GetEnvironmentUseCase } from "@/v1/domain/usecases/get-environment-use-case";
+import { GetWorkspacesUseCase } from "@/v1/domain/usecases/get-workspaces-use-case";
+import { GetDatasetQuestionsGroupedUseCase } from "@/v1/domain/usecases/get-dataset-questions-grouped-use-case";
 
 export const loadDependencyContainer = (context: Context) => {
   const useAxios = () => context.$axios;
-  const useStore = () => context.store;
   const useAuth = () => context.$auth;
 
   const dependencies = [
-    register(DatasetRepository).withDependencies(useAxios, useStore).build(),
+    register(UpdateMetricsEventHandler).build(),
+    register(UpdateTeamProgressEventHandler).build(),
+
+    register(DatasetRepository).withDependency(useAxios).build(),
     register(RecordRepository).withDependency(useAxios).build(),
     register(DocumentRepository).withDependency(useAxios).build(),
     register(QuestionRepository).withDependency(useAxios).build(),
@@ -69,11 +79,12 @@ export const loadDependencyContainer = (context: Context) => {
     register(VectorRepository).withDependency(useAxios).build(),
     register(AgentRepository).withDependency(useAxios).build(),
     register(EnvironmentRepository).withDependency(useAxios).build(),
-    register(OAuthRepository)
-      .withDependencies(useAxios, useRoutes, useAuth)
-      .build(),
+    register(OAuthRepository).withDependencies(useAxios, useRoutes).build(),
+    register(WorkspaceRepository).withDependency(useAxios).build(),
 
     register(DeleteDatasetUseCase).withDependency(DatasetRepository).build(),
+
+    register(GetWorkspacesUseCase).withDependency(WorkspaceRepository).build(),
 
     register(GetDatasetsUseCase)
       .withDependencies(DatasetRepository, useDatasets)
@@ -88,7 +99,7 @@ export const loadDependencyContainer = (context: Context) => {
       .build(),
 
     register(GetDatasetProgressUseCase)
-      .withDependency(DatasetRepository)
+      .withDependencies(DatasetRepository, useTeamProgress)
       .build(),
 
     register(GetLLMExtractionUseCase)
@@ -177,6 +188,10 @@ export const loadDependencyContainer = (context: Context) => {
       .withDependency(QuestionRepository)
       .build(),
 
+    register(GetDatasetQuestionsGroupedUseCase)
+      .withDependency(QuestionRepository)
+      .build(),
+
     register(GetDatasetSuggestionsAgentsUseCase)
       .withDependency(AgentRepository)
       .build(),
@@ -185,7 +200,9 @@ export const loadDependencyContainer = (context: Context) => {
       .withDependency(EnvironmentRepository)
       .build(),
 
-    register(OAuthLoginUseCase).withDependency(OAuthRepository).build(),
+    register(OAuthLoginUseCase)
+      .withDependencies(OAuthRepository, useAuth)
+      .build(),
   ];
 
   Container.register(dependencies);

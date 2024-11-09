@@ -16,4 +16,4 @@
 and `argilla.client.sdk.v1.datasets` modules, so those should be equal, and defined in
 `argilla.client.sdk.v1.datasets.models` module instead."""
 
-from argilla.client.sdk.v1.datasets.models import FeedbackItemModel  # noqa: F401
+from argilla_v1.client.sdk.v1.datasets.models import FeedbackItemModel  # noqa: F401

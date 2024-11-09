@@ -14,11 +14,11 @@
 
 from typing import TYPE_CHECKING
 
-from argilla.client.feedback.schemas.fields import TextField
-from argilla.client.feedback.schemas.remote.shared import RemoteSchema
+from argilla_v1.client.feedback.schemas.fields import TextField
+from argilla_v1.client.feedback.schemas.remote.shared import RemoteSchema
 
 if TYPE_CHECKING:
-    from argilla.client.sdk.v1.datasets.models import FeedbackFieldModel
+    from argilla_v1.client.sdk.v1.datasets.models import FeedbackFieldModel
 
 
 class RemoteTextField(TextField, RemoteSchema):

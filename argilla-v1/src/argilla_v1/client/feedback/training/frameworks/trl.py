@@ -15,23 +15,23 @@
 import logging
 from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
-from argilla.client.feedback.training.base import ArgillaTrainerSkeleton
-from argilla.client.feedback.training.schemas.base import (
+from argilla_v1.client.feedback.training.base import ArgillaTrainerSkeleton
+from argilla_v1.client.feedback.training.schemas.base import (
     TrainingTaskForDPO,
     TrainingTaskForPPO,
     TrainingTaskForRM,
     TrainingTaskForSFT,
 )
-from argilla.training.utils import filter_allowed_args
-from argilla.utils.dependency import require_dependencies, requires_dependencies
+from argilla_v1.training.utils import filter_allowed_args
+from argilla_v1.utils.dependency import require_dependencies, requires_dependencies
 
 if TYPE_CHECKING:
     import transformers
     from transformers import PreTrainedModel, PreTrainedTokenizer
     from trl import PPOConfig
 
-    from argilla.client.feedback.dataset import FeedbackDataset
-    from argilla.client.feedback.integrations.huggingface.model_card import TRLModelCardData
+    from argilla_v1.client.feedback.dataset import FeedbackDataset
+    from argilla_v1.client.feedback.integrations.huggingface.model_card import TRLModelCardData
 
 
 class PPOArgs:
@@ -394,7 +394,7 @@ class ArgillaTRLTrainer(ArgillaTrainerSkeleton):
         Returns:
             TRLModelCardData: Container for the data to be written on the `ArgillaModelCard`.
         """
-        from argilla.client.feedback.integrations.huggingface.model_card import TRLModelCardData
+        from argilla_v1.client.feedback.integrations.huggingface.model_card import TRLModelCardData
 
         if not card_data_kwargs.get("tags"):
             if isinstance(self._task, TrainingTaskForSFT):

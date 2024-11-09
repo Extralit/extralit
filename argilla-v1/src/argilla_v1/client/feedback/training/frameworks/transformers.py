@@ -16,16 +16,16 @@ from typing import TYPE_CHECKING
 
 from datasets import Dataset, DatasetDict
 
-from argilla.client.feedback.training.base import ArgillaTrainerSkeleton
-from argilla.client.feedback.training.schemas.base import (
+from argilla_v1.client.feedback.training.base import ArgillaTrainerSkeleton
+from argilla_v1.client.feedback.training.schemas.base import (
     TrainingTaskForQuestionAnswering,
     TrainingTaskForTextClassification,
 )
-from argilla.training.transformers import ArgillaTransformersTrainer as ArgillaTransformersTrainerV1
-from argilla.utils.dependency import requires_dependencies
+from argilla_v1.training.transformers import ArgillaTransformersTrainer as ArgillaTransformersTrainerV1
+from argilla_v1.utils.dependency import requires_dependencies
 
 if TYPE_CHECKING:
-    from argilla.client.feedback.integrations.huggingface.model_card import TransformersModelCardData
+    from argilla_v1.client.feedback.integrations.huggingface.model_card import TransformersModelCardData
 
 
 class ArgillaTransformersTrainer(ArgillaTransformersTrainerV1, ArgillaTrainerSkeleton):
@@ -88,7 +88,7 @@ class ArgillaTransformersTrainer(ArgillaTransformersTrainerV1, ArgillaTrainerSke
         Returns:
             TransformersModelCardData: Container for the data to be written on the `ArgillaModelCard`.
         """
-        from argilla.client.feedback.integrations.huggingface.model_card import TransformersModelCardData
+        from argilla_v1.client.feedback.integrations.huggingface.model_card import TransformersModelCardData
 
         if not card_data_kwargs.get("tags"):
             if isinstance(self._task, TrainingTaskForTextClassification):

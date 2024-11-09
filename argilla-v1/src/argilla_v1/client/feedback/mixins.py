@@ -14,16 +14,19 @@
 
 from typing import TYPE_CHECKING, List, Optional, Union
 
-from argilla.client.sdk.v1.datasets import api as datasets_api_v1
-from argilla.client.sdk.v1.datasets.models import FeedbackMetadataPropertyModel
-from argilla.client.sdk.v1.metadata_properties import api as metadata_properties_api_v1
+from argilla_v1.client.sdk.v1.datasets import api as datasets_api_v1
+from argilla_v1.client.sdk.v1.datasets.models import FeedbackMetadataPropertyModel
+from argilla_v1.client.sdk.v1.metadata_properties import api as metadata_properties_api_v1
 
 if TYPE_CHECKING:
     from uuid import UUID
 
     import httpx
 
-    from argilla.client.feedback.schemas.types import AllowedMetadataPropertyTypes, AllowedRemoteMetadataPropertyTypes
+    from argilla_v1.client.feedback.schemas.types import (
+        AllowedMetadataPropertyTypes,
+        AllowedRemoteMetadataPropertyTypes,
+    )
 
 
 class ArgillaMetadataPropertiesMixin:
@@ -31,7 +34,7 @@ class ArgillaMetadataPropertiesMixin:
     def parse_payload(
         client: "httpx.Client", payload: Union[FeedbackMetadataPropertyModel, List[FeedbackMetadataPropertyModel]]
     ) -> List["AllowedRemoteMetadataPropertyTypes"]:
-        from argilla.client.feedback.schemas.remote.metadata import RemoteMetadataPropertiesMapping
+        from argilla_v1.client.feedback.schemas.remote.metadata import RemoteMetadataPropertiesMapping
 
         if isinstance(payload, FeedbackMetadataPropertyModel):
             payload = [payload]

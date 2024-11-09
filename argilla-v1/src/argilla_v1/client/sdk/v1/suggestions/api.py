@@ -17,9 +17,9 @@ from uuid import UUID
 
 import httpx
 
-from argilla.client.sdk.commons.errors_handler import handle_response_error
-from argilla.client.sdk.commons.models import ErrorMessage, HTTPValidationError, Response
-from argilla.client.sdk.v1.suggestions.models import SuggestionModel
+from argilla_v1.client.sdk.commons.errors_handler import handle_response_error
+from argilla_v1.client.sdk.commons.models import ErrorMessage, HTTPValidationError, Response
+from argilla_v1.client.sdk.v1.suggestions.models import SuggestionModel
 
 
 def delete_suggestion(
