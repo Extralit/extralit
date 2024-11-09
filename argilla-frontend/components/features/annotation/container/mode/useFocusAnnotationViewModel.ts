@@ -16,14 +16,6 @@ export const useFocusAnnotationViewModel = (
 ) => {
   const debounceForSubmit = useDebounce(300);
   const debounceForSaveDraft = useDebounce(1000);
-
-import { ref } from "vue-demi";
-import { Record } from "~/v1/domain/entities/record/Record";
-import { DiscardRecordUseCase } from "~/v1/domain/usecases/discard-record-use-case";
-import { SubmitRecordUseCase } from "~/v1/domain/usecases/submit-record-use-case";
-import { SaveDraftUseCase } from "~/v1/domain/usecases/save-draft-use-case";
-
-export const useFocusAnnotationViewModel = () => {
   const isDraftSaving = ref(false);
   const isDiscarding = ref(false);
   const isSubmitting = ref(false);

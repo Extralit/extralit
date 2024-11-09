@@ -174,14 +174,14 @@ const config: NuxtConfig = {
       });
     },
     babel: {
-      presets: [
-        ['@babel/preset-env', { targets: { node: 'current' } }],
-      ],
       plugins: [
         ['@babel/plugin-transform-private-methods', { loose: true }],
         ['@babel/plugin-transform-class-properties', { loose: true }],
         ['@babel/plugin-proposal-class-properties', { loose: true }],
         ["@babel/plugin-transform-private-property-in-object", { "loose": true }],
+      ],
+      presets: [
+        ['@babel/preset-env', { targets: { node: 'current' } }],
       ],
     },
     transpile: ['pdfjs-dist'],

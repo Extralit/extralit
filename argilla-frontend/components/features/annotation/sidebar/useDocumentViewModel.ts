@@ -3,12 +3,13 @@ import {
   GetDocumentByIdUseCase,
 } from "@/v1/domain/usecases/get-document-by-id-use-case";
 import { useDocument } from "@/v1/infrastructure/storage/DocumentStorage";
-import { Notification } from "@/models/Notifications";
 import { Segment } from "@/v1/domain/entities/document/Document";
 import { useDataset } from "@/v1/infrastructure/storage/DatasetStorage";
 import { waitForAsyncValue } from "@/v1/infrastructure/services/useWait";
+import { useNotifications } from "~/v1/infrastructure/services/useNotifications";
 
 export const useDocumentViewModel = () => {
+  const notification = useNotifications();
   const getDocument = useResolve(GetDocumentByIdUseCase);
   const { state: dataset } = useDataset();
   const { state: document, set: setDocument, clear: clearDocument } = useDocument();
@@ -17,7 +18,7 @@ export const useDocumentViewModel = () => {
     try {
       await getDocument.setDocumentByID(id);
     } catch (e) {
-      Notification.dispatch("notify", {
+      notification.notify({
         message: `Error fetching document with ID ${id}`,
         type: 'error',
       });
@@ -29,7 +30,7 @@ export const useDocumentViewModel = () => {
     try {
       await getDocument.setDocumentByPubmedID(pmid);
     } catch (e) {
-      Notification.dispatch("notify", {
+      notification.notify({
         message: `Error fetching document with pmid "${pmid}"`,
         type: 'error',
       });
@@ -48,7 +49,7 @@ export const useDocumentViewModel = () => {
       const segments = await getDocument.setSegments(dataset.workspaceName, reference);
       return segments;
     } catch (e) {
-      Notification.dispatch("notify", {
+      notification.notify({
         message: `Error fetching document segments`,
         type: 'error',
       });
