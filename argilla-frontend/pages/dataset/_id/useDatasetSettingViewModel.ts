@@ -10,15 +10,22 @@ import {
   useTranslate,
 } from "@/v1/infrastructure/services";
 import { DatasetSetting } from "~/v1/domain/entities/dataset/DatasetSetting";
-import { Notification } from "~/models/Notifications";
+import { useNotifications } from "~/v1/infrastructure/services/useNotifications";
 
 interface Tab {
-  id: "info" | "fields" | "questions" | "metadata" | "vector" | "danger-zone";
+  id:
+    | "general"
+    | "fields"
+    | "questions"
+    | "metadata"
+    | "vector"
+    | "danger-zone";
   name: string;
   component: string;
 }
 
 export const useDatasetSettingViewModel = () => {
+  const notification = useNotifications();
   const routes = useRoutes();
   const beforeUnload = useBeforeUnload();
   const t = useTranslate();
@@ -33,7 +40,11 @@ export const useDatasetSettingViewModel = () => {
   const tabs = ref<Tab[]>([]);
 
   const configureTabs = (datasetSettings: DatasetSetting) => {
-    tabs.value.push({ id: "info", name: "Info", component: "SettingsInfo" });
+    tabs.value.push({
+      id: "general",
+      name: "General",
+      component: "SettingsInfo",
+    });
     tabs.value.push({
       id: "fields",
       name: t("fields"),
@@ -93,33 +104,33 @@ export const useDatasetSettingViewModel = () => {
     ];
   });
 
-  const onGoToDataset = () => {
+  const goToDataset = () => {
     if (routes.previousRouteMatchWith(datasetId)) return routes.goBack();
 
     routes.goToFeedbackTaskAnnotationPage(datasetId);
   };
 
-  const goToTabWithModification = () => {
-    const goToTab = (id: Tab["id"]) => {
-      document.getElementById(id).click();
-    };
+  const goToTab = (id: Tab["id"]) => {
+    document.getElementById(id)?.click();
+  };
 
-    if (datasetSetting.isDatasetModified) return goToTab("info");
+  const goToTabWithModification = () => {
+    if (datasetSetting.isDatasetModified) return goToTab("general");
     if (datasetSetting.isFieldsModified) return goToTab("fields");
     if (datasetSetting.isQuestionsModified) return goToTab("questions");
     if (datasetSetting.isMetadataPropertiesModified) return goToTab("metadata");
     if (datasetSetting.isVectorsModified) return goToTab("vector");
   };
 
-  const goToDataset = () => {
+  const goToOutside = (next) => {
     if (datasetSetting.isModified) {
-      return Notification.dispatch("notify", {
+      return notification.notify({
         message: t("changes_no_submit"),
         buttonText: t("button.ignore_and_continue"),
         permanent: true,
         type: "warning",
         onClick() {
-          onGoToDataset();
+          next();
         },
         onClose() {
           goToTabWithModification();
@@ -127,7 +138,7 @@ export const useDatasetSettingViewModel = () => {
       });
     }
 
-    onGoToDataset();
+    next();
   };
 
   onBeforeMount(() => {
@@ -147,6 +158,21 @@ export const useDatasetSettingViewModel = () => {
     }
   );
 
+  const onTabChanged = async (tabId: Tab["id"]) => {
+    await routes.setQueryParams({
+      key: "tab",
+      value: tabId,
+    });
+  };
+
+  const onTabLoaded = () => {
+    const selectedTab = routes.getQueryParams<string>("tab") as Tab["id"];
+
+    if (tabs.value.some((t) => t.id === selectedTab)) {
+      goToTab(selectedTab);
+    }
+  };
+
   return {
     isLoadingDataset,
     breadcrumbs,
@@ -154,6 +180,9 @@ export const useDatasetSettingViewModel = () => {
     isAdminOrOwnerRole,
     datasetId,
     datasetSetting,
+    goToOutside,
     goToDataset,
+    onTabChanged,
+    onTabLoaded,
   };
 };

@@ -31,7 +31,7 @@
       <span slot="dropdown-content">
         <ul class="options" role="radiogroup">
           <li
-            v-for="{ id, name } in options"
+            v-for="{ id, name, color } in options"
             class="option"
             :class="id"
             :key="id"
@@ -43,7 +43,7 @@
           >
             <BaseRadioButton
               class="option__radio"
-              :color="getRadioColor(id)"
+              :color="color"
               :id="id"
               :model="id"
               :value="selectedOption"

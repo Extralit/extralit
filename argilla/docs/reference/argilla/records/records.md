@@ -54,3 +54,7 @@ For changes to take effect, the user must call the `update` method on the `Datas
 
 ## `rg.Record`
 
+::: src.argilla.records._resource.Record
+    options:
+        heading_level: 3
+        show_root_toc_entry: false

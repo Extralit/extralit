@@ -5,6 +5,7 @@ export default {
   label_selection: "Label",
   dynamic_label_selection: "Label (dynamic)",
   table_form_placeholder: "Copy and paste a table you'd like to edit here",
+  span: "Span",
   text: "Text",
   rating: "Rating",
   minimize: "Minimize",
@@ -20,11 +21,6 @@ export default {
   refresh: "Refresh",
   typeYourText: "Type your text",
   all: "All",
-  sidebar: {
-    progressTooltip: "Progress",
-    refreshTooltip: "Refresh",
-    shortcutsTooltip: "Shortcuts",
-  },
   value: "Value",
   title: "Title",
   description: "Description",
@@ -41,6 +37,11 @@ export default {
   dimension: "Dimension",
   visibleLabels: "Visible labels",
   annotationGuidelines: "Annotation guidelines",
+  guidelines: "Guidelines",
+  taskDistribution: "Task distribution",
+  minimumSubmittedResponses: "Minimum submitted responses",
+  taskDistributionTooltip:
+    "A task is complete when all records have the \nminimum number of submitted responses",
   noAnnotationGuidelines: "This dataset has no annotation guidelines",
   breadcrumbs: {
     home: "Home",
@@ -49,9 +50,7 @@ export default {
   },
   datasets: {
     left: "left",
-    submitted: "Submitted",
-    conflicting: "Conflicting",
-    discarded: "Discarded",
+    completed: "Completed",
     pending: "Pending",
   },
   recordStatus: {
@@ -60,6 +59,8 @@ export default {
     discarded: "Discarded",
     submitted: "Submitted",
     validated: "Validated",
+    completedTooltip:
+      "The record is complete, it has the \nminimum number of responses",
   },
   userSettings: {
     title: "My settings",
@@ -180,13 +181,14 @@ export default {
   spanAnnotation: {
     shortcutHelper: "Hold 'Shift' to select character level",
     notSupported: "Span annotation is not supported for your browser",
-    bulkMode: "Span annotation is not supported in Bulk view",
   },
   login: {
     title: "Sign in",
     username: "Username",
     usernameDescription: "Enter your username",
     password: "Password",
+    show: "Show",
+    hide: "Hide",
     passwordDescription: "Enter your password",
     claim: "Extract data for <br/>lit reviews",
     support:
@@ -220,16 +222,18 @@ export default {
   youAreOnlineAgain: "You are online again",
   youAreOffline: "You are offline",
   datasetTable: {
-    name: "Name",
+    name: "Dataset",
     workspace: "Workspace",
-    task: "Task",
-    tags: "Tags",
-    createdAt: "Created at",
-    lastActivityAt: "Updated at",
+    createdAt: "Created",
+    lastActivityAt: "Updated",
+    progress: "Team progress",
   },
   metrics: {
     total: "Total",
-    progress: "Progress",
+    progress: {
+      my: "My Progress",
+      team: "Team progress",
+    },
   },
   persistentStorage: {
     adminOrOwner:
@@ -241,6 +245,10 @@ export default {
     businessLogic: {
       missing_vector: {
         message: "Vector not found for the selected record",
+      },
+      update_distribution_with_existing_responses: {
+        message:
+          "Distribution settings can't be modified for a dataset containing user responses",
       },
     },
     http: {

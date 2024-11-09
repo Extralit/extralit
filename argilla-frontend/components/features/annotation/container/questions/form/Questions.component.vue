@@ -59,7 +59,6 @@
           ref="span"
           :question="question"
           :isFocused="checkIfQuestionIsFocused(index)"
-          :is-bulk-mode="isBulkMode"
           :enableSpanQuestionShortcutsGlobal="enableSpanQuestionShortcutsGlobal"
           @on-focus="updateQuestionAutofocus(index)"
         />

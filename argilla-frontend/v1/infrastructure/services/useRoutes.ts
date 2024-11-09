@@ -9,7 +9,8 @@ type KindOfParam =
   | "sort"
   | "response"
   | "suggestion"
-  | "similarity";
+  | "similarity"
+  | "tab";
 
 type QueryParam = {
   key: KindOfParam;
@@ -25,12 +26,7 @@ export const ROUTES = {
     feedbackDataset: (datasetId: string) =>
       `/dataset/${datasetId}/annotation-mode`,
   },
-};
-
-const isOldTask = (task: string) => {
-  return ["TokenClassification", "TextClassification", "Text2Text"].includes(
-    task
-  );
+  signIn: "/sign-in",
 };
 
 export const useRoutes = () => {
@@ -51,35 +47,27 @@ export const useRoutes = () => {
     return false;
   };
 
-  const getDatasetLink = ({ task, name, workspace, id }: Dataset): string => {
-    return isOldTask(task)
-      ? ROUTES.annotationPage.oldDataset(workspace, name)
-      : ROUTES.annotationPage.feedbackDataset(id);
+  const getDatasetLink = ({ id }: Dataset): string => {
+    return ROUTES.annotationPage.feedbackDataset(id);
   };
 
   const goToFeedbackTaskAnnotationPage = (datasetId: string) => {
     router.push(ROUTES.annotationPage.feedbackDataset(datasetId));
   };
 
-  const goToSetting = ({ task, workspace, name, id }: Dataset) => {
-    if (isOldTask(task)) {
-      router.push({
-        name: "datasets-workspace-dataset-settings",
-        params: {
-          workspace,
-          dataset: name,
-        },
-      });
-    } else {
-      router.push({
-        name: "dataset-id-settings",
-        params: { id },
-      });
-    }
+  const goToSetting = ({ id }: Dataset) => {
+    router.push({
+      name: "dataset-id-settings",
+      params: { id },
+    });
   };
 
   const goToDatasetsList = () => {
     router.push({ path: `/${ROUTES.datasets}` });
+  };
+
+  const goToSignIn = () => {
+    router.push(ROUTES.signIn);
   };
 
   const setQueryParams = async (...params: QueryParam[]) => {
@@ -144,6 +132,7 @@ export const useRoutes = () => {
   return {
     go,
     goBack,
+    goToSignIn,
     getQuery,
     goToFeedbackTaskAnnotationPage,
     goToDatasetsList,

@@ -1,6 +1,5 @@
 import { useResolve } from "ts-injecty";
 import { ref } from "vue-demi";
-import { Notification } from "~/models/Notifications";
 import { Record } from "~/v1/domain/entities/record/Record";
 import { RecordCriteria } from "~/v1/domain/entities/record/RecordCriteria";
 import { Records } from "~/v1/domain/entities/record/Records";
@@ -8,7 +7,7 @@ import {
   AvailableStatus,
   BulkAnnotationUseCase,
 } from "~/v1/domain/usecases/bulk-annotation-use-case";
-import { useDebounce } from "~/v1/infrastructure/services/useDebounce";
+import { useNotifications } from "~/v1/infrastructure/services/useNotifications";
 import { useTranslate } from "~/v1/infrastructure/services/useTranslate";
 
 export const useBulkAnnotationViewModel = ({
@@ -16,7 +15,7 @@ export const useBulkAnnotationViewModel = ({
 }: {
   records: Records;
 }) => {
-  const debounceForSubmit = useDebounce(300);
+  const notification = useNotifications();
 
   const affectAllRecords = ref(false);
   const progress = ref(0);
@@ -43,11 +42,12 @@ export const useBulkAnnotationViewModel = ({
     recordReference: Record,
     selectedRecords: Record[]
   ) => {
+    let allSuccessful = false;
     try {
       const totalRecords = records.total;
       const isAffectingAllRecords = affectAllRecords.value;
 
-      const allSuccessful = await bulkAnnotationUseCase.execute(
+      allSuccessful = await bulkAnnotationUseCase.execute(
         status,
         criteria,
         recordReference,
@@ -59,12 +59,12 @@ export const useBulkAnnotationViewModel = ({
       );
 
       if (!allSuccessful) {
-        Notification.dispatch("notify", {
+        notification.notify({
           message: t("some_records_failed_to_annotate"),
           type: "error",
         });
       } else if (isAffectingAllRecords) {
-        Notification.dispatch("notify", {
+        notification.notify({
           message: t("bulkAnnotation.allRecordsAnnotated", {
             total: totalRecords,
             action: t(`bulkAnnotation.affectedAll.${status}`).toLowerCase(),
@@ -72,19 +72,13 @@ export const useBulkAnnotationViewModel = ({
           type: "info",
         });
       }
-
-      progress.value = 0;
-
-      await debounceForSubmit.wait();
-
-      return allSuccessful;
     } catch {
     } finally {
       affectAllRecords.value = false;
       progress.value = 0;
     }
 
-    return false;
+    return allSuccessful;
   };
 
   const discard = async (
