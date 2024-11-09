@@ -16,11 +16,11 @@ export class QuestionType extends String {
   }
 
   public get isMultiLabelType(): boolean {
-    return this.type === "multi_label_selection" || this.type === "dynamic_multi_label_selection";
+    return this.value === "multi_label_selection" || this.value === "dynamic_multi_label_selection";
   }
 
   public get isSingleLabelType(): boolean {
-    return this.type === "label_selection" || this.type === "dynamic_label_selection";
+    return this.value === "label_selection" || this.value === "dynamic_label_selection";
   }
 
   public get isTextType(): boolean {
