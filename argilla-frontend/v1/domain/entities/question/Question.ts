@@ -212,7 +212,7 @@ export class Question {
     }
   }
 
-  private createEmptyAnswers(): QuestionAnswer {
+  private createInitialAnswers(): QuestionAnswer {
     if (this.isTextType) {
       return new TextQuestionAnswer(this.type, "");
     }

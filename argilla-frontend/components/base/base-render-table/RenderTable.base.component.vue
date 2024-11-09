@@ -80,7 +80,6 @@
 
 <script lang="ts">
 import { merge } from 'lodash';
-import { Notification } from "@/models/Notifications";
 import { CellComponent, ColumnComponent, GroupComponent, RangeComponent, RowComponent, TabulatorFull as Tabulator } from "tabulator-tables";
 import { generateCombinations, incrementReferenceStr, getMaxValue } from './dataUtils';
 import "tabulator-tables/dist/css/tabulator.min.css";
@@ -168,11 +167,11 @@ export default {
     this.fetchValidation()
       .catch((error) => {
         console.error(`Failed to fetch validation: ${error}`);
-        Notification.dispatch("notify", {
+        this.$notification.notify({
           message: `${error.response}: ${error.message}`,
           type: "error",
           onClick() {
-            Notification.dispatch("clear");
+            this.$notification.clear();
           },
         });
       })
@@ -562,11 +561,11 @@ export default {
       if (!newFieldName?.length || newFieldName == oldFieldName) return;
       if (this.columns.includes(newFieldName)) {
         setTimeout(() => {
-          Notification.dispatch("notify", {
+          this.$notification.notify({
             message: `Column name '${newFieldName}' already exists. Please choose a different name.`,
             type: "warning",
             onClick() {
-              Notification.dispatch("clear");
+              this.$notification.clear();
             },
           });
         }, 500);
@@ -612,11 +611,11 @@ export default {
         })
         .catch((error) => {
           console.error(error)
-          Notification.dispatch("notify", {
+          this.$notification.notify({
             message: `${error.message}`,
             type: "error",
             onClick() {
-              Notification.dispatch("clear");
+              this.$notification.clear();
             },
           });
         })
@@ -947,12 +946,12 @@ export default {
 
     } catch (error) {
       const message = `Failed to load table: ${error}`;
-      Notification.dispatch("notify", {
+      this.$notification.notify({
         message: message,
         numberOfChars: message.length,
         type: "error",
         onClick() {
-          Notification.dispatch("clear");
+          this.$notification.clear();
         },
       });
     }
