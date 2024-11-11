@@ -175,10 +175,7 @@ export default {
   display: flex;
   flex-wrap: wrap;
   height: 100%;
-  overflow: auto;
-  gap: $base-space * 2;
-  padding: $base-space * 2;
-  &__inner {
+    &__inner {
     display: flex;
   }
   @include media("<desktop") {
@@ -210,10 +207,6 @@ export default {
     gap: $base-space;
     height: 100%;
     min-width: 0;
-    @include media("<desktop") {
-      flex: 0;
-      height: auto;
-    }
     padding: $base-space * 2;
     &__header {
       display: flex;
