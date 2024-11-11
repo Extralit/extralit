@@ -150,12 +150,12 @@ export default {
         await this.saveAsDraft(this.record, duration);
       } catch (error) {
         const message = this.$t('errors.saving', { error: error?.response || error.toString() });
-        Notification.dispatch("notify", {
+        this.$notification.notify({
           message: message,
           numberOfChars: message.length,
           type: "error",
           onClick() {
-            Notification.dispatch("clear");
+            this.$notification.clear();
           },
         });
 
