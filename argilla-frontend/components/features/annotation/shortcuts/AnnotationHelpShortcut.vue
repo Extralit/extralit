@@ -7,20 +7,12 @@
       class="shortcuts__content"
       :content="content"
     />
-    <br/>
-    <!-- <BaseSwitch @change="toggleShortcutsHelper" v-model="showShortcutsHelper" class="shortcuts__footer">
-      Show key shortcuts
-    </BaseSwitch> -->
   </div>
 </template>
 
 <script>
-// import { ref, onMounted } from 'vue';
-// import { useLocalStorage } from "@/v1/infrastructure/services/useLocalStorage.ts";
-
 export default {
   name: "HelpShortcut",
-
   data() {
     return {
       content: {
@@ -28,7 +20,6 @@ export default {
       },
     };
   },
-
   methods: {
     async getShortcutsDocumentation() {
       const folderContent = require.context(
@@ -66,7 +57,6 @@ export default {
       return manipulatedByPlatform.join("\n");
     },
   },
-
   async fetch() {
     try {
       this.content.tabs.push({
@@ -78,24 +68,6 @@ export default {
       console.log(e);
     }
   },
-  // setup() {
-  //   const localStorage = useLocalStorage();
-  //   const showShortcutsHelper = ref(null);
-
-  //   onMounted(() => {
-  //     showShortcutsHelper.value = localStorage.get('showShortcutsHelper');
-  //   });
-
-  //   const toggleShortcutsHelper = (newValue) => {
-  //     localStorage.set('showShortcutsHelper', newValue);
-  //     showShortcutsHelper.value = newValue;
-  //   };
-
-  //   return {
-  //     showShortcutsHelper,
-  //     toggleShortcutsHelper
-  //   };
-  // },
 };
 </script>
 
@@ -112,16 +84,9 @@ export default {
       width: auto;
     }
   }
-  &__footer {
-    position: fixed;
-    bottom: 1em;
-    padding: $base-space;
-    text-align: center;
-  }
 }
-
 :deep(.snippet) {
-  max-height: calc(100vh - $topbarHeight * 2 - $base-space * 2);
+  max-height: calc(100vh - 106px);
   overflow: auto;
 }
 :deep(table) {
