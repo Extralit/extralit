@@ -50,6 +50,9 @@ const config: NuxtConfig = {
       { rel: "icon", sizes: "16x16", href: "favicon-16x16.png" },
       { rel: "manifest", href: "site.webmanifest" },
     ],
+    script: [
+      ...(process.env.NODE_ENV === 'development' ? [{ src: 'http://localhost:8098', defer: true }] : [])
+    ]
   },
 
   // Global CSS (https://go.nuxtjs.dev/config-css)

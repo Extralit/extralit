@@ -86,7 +86,6 @@
         "GitHub.copilot-chat",
         "ms-python.python",
         "ms-python.vscode-pylance",
-        "tamasfe.even-better-toml",
         "eamodio.gitlens",
         "tilt-dev.tiltfile",
         "github.vscode-github-actions",

@@ -60,6 +60,11 @@ export default {
           id: "valid",
           name: "All data",
         },
+        {
+          id: RecordStatus.submitted.name,
+          name: this.$t(`recordStatus.${RecordStatus.submitted.name}`),
+          color: RecordStatus.submitted.color,
+        },
       ],
     };
   },
