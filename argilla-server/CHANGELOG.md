@@ -15,13 +15,10 @@ These are the section headers that we use:
 -->
 
 
-## [Argilla] [2.0.0](https://github.com/argilla-io/argilla/compare/v2.0.0rc1...v2.0.0)
-
-> [!IMPORTANT]
-> This version includes changes related to the search index. So, a reindex is needed.
-
+## [Argilla] [2.0.1](https://github.com/argilla-io/argilla/compare/v2.0.0rc1...v2.0.0)
 ### Added
 
+- Added new endpoint `GET /api/v1/datsets/:dataset_id/users/progress` to compute the users progress. ([#5367](https://github.com/argilla-io/argilla/pull/5367))
 - Added support to specify `distribution` attribute when creating a dataset. ([#5013](https://github.com/argilla-io/argilla/pull/5013))
 - Added support to change `distribution` attribute when updating a dataset. ([#5028](https://github.com/argilla-io/argilla/pull/5028))
 - Added new `status` column to `records` table. ([#5132](https://github.com/argilla-io/argilla/pull/5132))
@@ -44,6 +41,10 @@ These are the section headers that we use:
 - Fixed SQLite connection settings not working correctly due to an outdated conditional. ([#5149](https://github.com/argilla-io/argilla/pull/5149))
 - Fixed errors when `allowed_workspaces` in `.oauth.yaml` file is empty. ([#5273](https://github.com/argilla-io/argilla/pull/5273))
 - Fixed errors when sorting with OpenSearch search engine. ([#5297](https://github.com/argilla-io/argilla/pull/5297))
+- Fixed response duplicate checking ([#5357](https://github.com/argilla-io/argilla/issues/5357))
+
+> [!IMPORTANT]
+> This version includes changes related to the search index. So, a reindex is needed.
 
 ### Removed
 
