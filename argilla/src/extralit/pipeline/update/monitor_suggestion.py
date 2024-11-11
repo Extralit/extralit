@@ -3,7 +3,7 @@ import logging
 import re
 from typing import List
 
-import argilla as rg
+import argilla_v1 as rg
 import numpy as np
 import pandas as pd
 from bs4 import BeautifulSoup

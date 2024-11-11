@@ -1,10 +1,10 @@
 from typing import Union, List, Optional
 
-import argilla as rg
+import argilla_v1 as rg
 
 __all__ = ['update_record_suggestions']
 
-from argilla.client.feedback.schemas.remote.records import RemoteFeedbackRecord
+from argilla_v1.client.feedback.schemas.remote.records import RemoteFeedbackRecord
 
 
 def update_record_suggestions(

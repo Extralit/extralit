@@ -1,9 +1,9 @@
 from typing import List, Optional
 from collections import defaultdict
 
-import argilla as rg
+import argilla_v1 as rg
 import pandas as pd
-from argilla.client.feedback.schemas.remote.records import RemoteFeedbackRecord
+from argilla_v1.client.feedback.schemas.remote.records import RemoteFeedbackRecord
 
 from extralit.convert.json_table import json_to_df, is_json_table
 from extralit.extraction.models.paper import PaperExtraction

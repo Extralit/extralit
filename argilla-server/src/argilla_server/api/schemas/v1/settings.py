@@ -12,18 +12,16 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from typing import Awaitable, Callable
+from typing import Optional
 
-from argilla_server.errors import ForbiddenOperationError
-from argilla_server.models import User
-
-PolicyAction = Callable[[User], Awaitable[bool]]
+from argilla_server.integrations.huggingface.spaces import HuggingfaceSettings
+from argilla_server.pydantic_v1 import BaseModel
 
 
-async def authorize(actor: User, policy_action: PolicyAction) -> None:
-    if not await is_authorized(actor, policy_action):
-        raise ForbiddenOperationError()
+class ArgillaSettings(BaseModel):
+    show_huggingface_space_persistent_storage_warning: Optional[bool]
 
 
-async def is_authorized(actor: User, policy_action: PolicyAction) -> bool:
-    return await policy_action(actor)
+class Settings(BaseModel):
+    argilla: ArgillaSettings
+    huggingface: Optional[HuggingfaceSettings]

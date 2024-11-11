@@ -22,6 +22,7 @@ dependencies = [
     "rich>=10.0.0",
     "datasets>=2.0.0",
 
+    "argilla-v1",
     # for environment variables
     "python-dotenv",
     # for extralit
@@ -53,10 +54,6 @@ dependencies = [
     "weaviate-client >= 4",
     "llama-index-vector-stores-weaviate ~= 1.0.0",
 ]
-
-legacy = [
-    "argilla-v1[listeners]",
-]
 nlp = [
     "textdescriptives",
     "setfit ~= 0.7.0",
@@ -75,6 +72,9 @@ pdf = [
     "pypdfium2",
     "pymupdf",
     "pdf2image ~= 1.16.0",
+]
+legacy = [
+    "argilla-v1[listeners]",
 ]
 
 [build-system]

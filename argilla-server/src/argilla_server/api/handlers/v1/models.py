@@ -7,7 +7,6 @@ from starlette.requests import Request
 from starlette.responses import StreamingResponse
 
 from argilla_server.models import User
-from argilla_server.api.policies.v1 import _exists_workspace_user_by_user_and_workspace_name
 from argilla_server.security import auth
 from argilla_server.settings import settings
 from argilla_server.errors import UnauthorizedError, BadRequestError
@@ -35,18 +34,16 @@ async def proxy(request: Request, rest_of_path: str,
     if current_user:
         params['username'] = current_user.username
 
-        if current_user.role != "owner" and not await _exists_workspace_user_by_user_and_workspace_name(current_user, params['workspace']):
+        if current_user.role != "owner" and not await current_user.is_member_of_workspace_name(params['workspace']):
             raise UnauthorizedError(f"{current_user.username} is not authorized to access workspace {params['workspace']}")
 
     if request.method == "GET":
         proxy_request = client.build_request("GET", url, params=params)
     elif request.method == "POST":
         data = await request.json()
-        print(data)
         proxy_request = client.build_request("POST", url, json=data, params=params)
     elif request.method == "PUT":
         data = await request.json()
-        print(data)
         proxy_request = client.build_request("PUT", url, data=data, params=params)
     elif request.method == "DELETE":
         proxy_request = client.build_request("DELETE", url, params=params)

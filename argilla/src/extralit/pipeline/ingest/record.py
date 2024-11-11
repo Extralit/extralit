@@ -1,9 +1,9 @@
 from datetime import datetime
 from typing import Optional, Union, List, Dict, Any, Literal
 
-import argilla as rg
-from argilla.client.feedback.schemas.remote.records import RemoteFeedbackRecord
-from argilla.client.sdk.users.models import UserModel
+import argilla_v1 as rg
+from argilla_v1.client.feedback.schemas.remote.records import RemoteFeedbackRecord
+from argilla_v1.client.sdk.users.models import UserModel
 
 from extralit.convert.json_table import is_json_table
 from extralit.pipeline.update.suggestion import get_record_suggestion_value

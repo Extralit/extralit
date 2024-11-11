@@ -181,7 +181,7 @@ const config: NuxtConfig = {
         ["@babel/plugin-transform-private-property-in-object", { "loose": true }],
       ],
       presets: [
-        ['@babel/preset-env', { targets: { node: 'current' } }],
+        ['@babel/preset-env', { targets: { node: 'current' }, loose: true }],
       ],
     },
     transpile: ['pdfjs-dist'],
