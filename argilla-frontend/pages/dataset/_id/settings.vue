@@ -50,11 +50,6 @@ export default {
   setup() {
     return useDatasetSettingViewModel();
   },
-  methods: {
-    showTrainModal(value) {
-      this.visibleTrainModal = value;
-    },
-  },
 };
 </script>
 

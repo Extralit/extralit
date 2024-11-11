@@ -17,7 +17,6 @@
         "ms-python.python",
         "ms-toolsai.jupyter",
         "ms-python.vscode-pylance",
-        "tamasfe.even-better-toml",
         "eamodio.gitlens",
         "tilt-dev.tiltfile",
         "Vue.volar"
