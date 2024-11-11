@@ -5,6 +5,7 @@ const STATUS = {
   discarded: "hsl(0, 2%, 76%)",
   submitted: "hsl(227, 56%, 52%)",
   draft: "hsl(188, 92%, 39%)",
+  valid: "hsl(120, 100%, 25%)",
 };
 
 type Status = keyof typeof STATUS;
@@ -41,5 +42,9 @@ export class RecordStatus extends String {
 
   public static get draft(): RecordStatus {
     return RecordStatus.from("draft");
+  }
+
+  public static get valid(): RecordStatus {
+    return RecordStatus.from("valid");
   }
 }

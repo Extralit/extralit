@@ -7,7 +7,6 @@
     @click="focusOnFirstQuestionFromOutside"
   >
     <div class="questions-form__content">
-      <div class="questions-form__content__edge"></div>
       <div class="questions-form__header">
         <p class="questions-form__guidelines-link">
           <div v-if="isDraftSaving" class="questions-form__status">
@@ -117,7 +116,6 @@
 <script>
 import "assets/icons/external-link";
 import "assets/icons/refresh";
-import interact from 'interactjs'
 
 export default {
   props: {
@@ -230,7 +228,8 @@ export default {
       deep: true,
       immediate: true,
       handler() {
-        this.isSubmittedTouched = this.record.isSubmitted && this.record.isModified;
+        this.isSubmittedTouched = 
+          this.record.isSubmitted && this.record.isModified;
         if (this.duration.value > 1) {
           this.checkAndSaveDraft();
         }
@@ -243,27 +242,6 @@ export default {
     document.addEventListener("keydown", this.handleGlobalKeys);
     this.startTimer();
     document.addEventListener('visibilitychange', this.handleVisibilityChange);
-
-    interact(this.$el)
-      .resizable({
-        edges: { left: true, right: false, bottom: false, top: false },
-        modifiers: [
-          interact.modifiers.restrictSize({
-            min: { width: 200, height: 0 },
-          }),
-        ],
-      })
-      .on('resizemove', event => {
-        let target = event.target;
-        let newWidth = event.rect.width;
-        let parentWidth = target.parentElement.offsetWidth;
-        let clampedWidth = Math.max(Math.min(newWidth, 0.8 * parentWidth), 0.25 * parentWidth);
-
-        requestAnimationFrame(() => {
-          target.style.width = clampedWidth + 'px';
-          document.documentElement.style.setProperty('--questions-form-width', target.style.width);
-        });
-      });
   },
 
   beforeDestroy() {
@@ -417,8 +395,7 @@ export default {
 .questions-form {
   display: flex;
   flex-direction: column;
-  width: var(--questions-form-width);
-  flex-shrink: 0;
+  flex-basis: clamp(33%, 520px, 40%);
   gap: $base-space;
   max-height: 100%;
   min-width: 100%;
@@ -490,34 +467,6 @@ export default {
     }
     .--waiting & {
       opacity: 0.7;
-    }
-    &__edge {
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 3px;
-      height: 100%;
-      z-index: 1;
-      background: transparent;
-      opacity: 0;
-      transition: background 0.3s ease;
-
-      &::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: -15px;
-        width: 30px;
-        height: 100%;
-        background: transparent;
-      }
-
-      &:hover {
-        background: $primary-lighten-color;
-        opacity: 1;
-      }
     }
   }
 }

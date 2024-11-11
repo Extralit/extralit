@@ -57,8 +57,9 @@ export default {
           color: RecordStatus.discarded.color,
         },
         {
-          id: "valid",
+          id: RecordStatus.valid.name,
           name: "All data",
+          color: RecordStatus.valid.color,
         },
         {
           id: RecordStatus.submitted.name,
