@@ -1,7 +1,7 @@
 """add Document model and update Record model
 
 Revision ID: 7552df94427a
-Revises: 237f7c674d74
+Revises: ca7293c38970
 Create Date: 2023-11-02 13:54:59.615241
 
 """
@@ -10,32 +10,32 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 
-revision = '7552df94427a'
-down_revision = '237f7c674d74'  # TODO set to latest revision identifiers on updates from from argilla-io/argilla upstream repo.
+revision = "7552df94427a"
+down_revision = "ca7293c38970"  # TODO set to latest revision identifiers on updates from from argilla-io/argilla upstream repo.
 branch_labels = None
 depends_on = None
 
 
 def upgrade() -> None:
-    op.create_table('documents',
-    sa.Column('reference', sa.String(), nullable=True),
-    sa.Column('pmid', sa.String(), nullable=True),
-    sa.Column('doi', sa.String(), nullable=True),
-    sa.Column('file_name', sa.String(), nullable=False),
-    sa.Column('url', sa.String(), nullable=True),
-    sa.Column('id', sa.Uuid(), nullable=False),
+    op.create_table("documents",
+    sa.Column("reference", sa.String(), nullable=True),
+    sa.Column("pmid", sa.String(), nullable=True),
+    sa.Column("doi", sa.String(), nullable=True),
+    sa.Column("file_name", sa.String(), nullable=False),
+    sa.Column("url", sa.String(), nullable=True),
+    sa.Column("id", sa.Uuid(), nullable=False),
     sa.Column(
         "workspace_id", sa.Uuid, sa.ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=True, index=True
     ),
-    sa.Column('inserted_at', sa.DateTime(), nullable=False),
-    sa.Column('updated_at', sa.DateTime(), nullable=False),
-    sa.PrimaryKeyConstraint('id')
+    sa.Column("inserted_at", sa.DateTime(), nullable=False),
+    sa.Column("updated_at", sa.DateTime(), nullable=False),
+    sa.PrimaryKeyConstraint("id")
     )
-    op.create_index(op.f('ix_documents_pmid'), 'documents', ['pmid'], unique=False)
-    op.create_index(op.f('ix_documents_reference'), 'documents', ['reference'], unique=False)
+    op.create_index(op.f("ix_documents_pmid"), "documents", ["pmid"], unique=False)
+    op.create_index(op.f("ix_documents_reference"), "documents", ["reference"], unique=False)
 
 
 def downgrade() -> None:
-    op.drop_index(op.f('ix_documents_pmid'), table_name='documents')
-    op.drop_index(op.f('ix_documents_reference'), table_name='documents')
-    op.drop_table('documents')
+    op.drop_index(op.f("ix_documents_pmid"), table_name="documents")
+    op.drop_index(op.f("ix_documents_reference"), table_name="documents")
+    op.drop_table("documents")
