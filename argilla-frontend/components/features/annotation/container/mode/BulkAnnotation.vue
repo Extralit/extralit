@@ -436,9 +436,7 @@ export default {
   display: flex;
   flex-wrap: wrap;
   height: 100%;
-  gap: $base-space * 2;
-  padding: $base-space * 2 $base-space * 2 0 $base-space * 2;
-  @include media("<desktop") {
+    @include media("<desktop") {
     flex-flow: column;
     overflow: auto;
   }

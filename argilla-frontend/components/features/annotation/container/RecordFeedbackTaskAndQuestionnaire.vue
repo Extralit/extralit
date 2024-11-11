@@ -176,7 +176,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
+<!-- <style lang="scss" scoped>
 .wrapper {
   display: flex;
   flex-wrap: wrap;
@@ -215,4 +215,4 @@ export default {
     justify-content: center;
   }
 }
-</style>
+</style> -->
