@@ -5,9 +5,6 @@
     v-html="markdownToHtml"
     v-copy-code
   />
-  <!-- <div class="markdown-render" v-copy-code>
-    <component :is="dynamicComponent" />
-  </div> -->
 </template>
 <script>
 import { marked } from "marked";
@@ -83,16 +80,6 @@ export default {
 
       return html;
     },
-    // dynamicComponent() {
-    //   return Vue.component('dynamic-component', {
-    //     template: `<div>${this.markdownToHtml}</div>`,
-    //     methods: {
-    //       handleClick(hash) {
-    //         window.location.hash = hash;
-    //       },
-    //     },
-    //   });
-    // },
   },
 
   methods: {
