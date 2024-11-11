@@ -2,7 +2,7 @@ import json
 import logging
 from typing import Optional, Dict
 
-import argilla as rg
+import argilla_v1 as rg
 import pandera as pa
 
 __all__ = ['update_table_schema', 'update_record_table_schema']

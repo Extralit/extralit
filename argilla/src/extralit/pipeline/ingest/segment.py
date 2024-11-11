@@ -1,8 +1,8 @@
 from typing import List, Literal
 
-import argilla as rg
+import argilla_v1 as rg
 import pandas as pd
-from argilla import FeedbackRecord
+from argilla_v1 import FeedbackRecord
 
 from extralit.pipeline.ingest.record import get_record_data
 from extralit.preprocessing.segment import Segments, FigureSegment, TableSegment

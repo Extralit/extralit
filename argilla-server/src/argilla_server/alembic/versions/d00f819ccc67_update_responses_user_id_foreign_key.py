@@ -15,7 +15,7 @@
 """update responses user_id foreign key
 
 Revision ID: d00f819ccc67
-Revises: ca7293c38970
+Revises: 7552df94427a
 Create Date: 2024-06-27 18:04:46.080762
 
 """
@@ -26,7 +26,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "d00f819ccc67"
-down_revision = "ca7293c38970"
+down_revision = "7552df94427a"
 branch_labels = None
 depends_on = None
 

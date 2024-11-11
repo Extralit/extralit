@@ -1,9 +1,9 @@
 import os
 from typing import Optional
 
-import argilla as rg
-from argilla.client.feedback.dataset.remote.dataset import RemoteFeedbackDataset
-from argilla.client.sdk.commons.errors import UnauthorizedApiError
+import argilla_v1 as rg
+from argilla_v1.client.feedback.dataset.remote.dataset import RemoteFeedbackDataset
+from argilla_v1.client.sdk.commons.errors import UnauthorizedApiError
 
 
 def get_argilla_dataset(dataset_name="Table-Preprocessing", workspace_name="itn-recalibration") -> RemoteFeedbackDataset:
