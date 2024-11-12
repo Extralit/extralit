@@ -151,7 +151,7 @@ export default {
   &__content {
     display: block;
     position: relative;
-    color: $black-54;
+    color: var(--bg-opacity-54);
   }
   &__content {
     @include font-size(13px);
@@ -184,7 +184,7 @@ export default {
     }
 
     &:hover {
-      background: $primary-lighten-color;
+      background: var(--bg-action-accent);
     }
   }
 }

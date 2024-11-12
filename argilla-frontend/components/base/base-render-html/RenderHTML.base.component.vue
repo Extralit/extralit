@@ -438,7 +438,7 @@ export default {
 
 		&:hover,
 		&.is-active {
-			background-color: $black-4;
+			background-color: var(--bg-opacity-4);
 		}
 
 		&:disabled {
@@ -461,7 +461,7 @@ export default {
 			cursor: pointer;
 			&:hover,
 			&--active {
-				background: $black-4;
+				background: var(--bg-opacity-4);
 			}
 		}
 	}

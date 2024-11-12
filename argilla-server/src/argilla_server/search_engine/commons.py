@@ -106,6 +106,21 @@ def es_ids_query(ids: List[str]) -> dict:
     return {"ids": {"values": ids}}
 
 
+def es_simple_query_string(field_name: str, query: str) -> dict:
+    # See https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-simple-query-string-query.html
+    return {
+        "simple_query_string": {
+            "query": query,
+            "fields": [field_name],
+            "default_operator": "AND",
+            "analyze_wildcard": False,
+            "auto_generate_synonyms_phrase_query": False,
+            "fuzzy_max_expansions": 10,
+            "fuzzy_transpositions": False,
+        }
+    }
+
+
 def es_nested_query(path: str, query: dict) -> dict:
     return {
         "nested": {
@@ -138,7 +153,7 @@ def es_field_for_metadata_property(metadata_property: Union[str, MetadataPropert
 
 
 def es_field_for_record_field(field_name: str) -> str:
-    return f"fields.{field_name}"
+    return f"fields.{field_name or '*'}"
 
 
 def es_field_for_response_property(property: str) -> str:
@@ -148,8 +163,15 @@ def es_field_for_response_property(property: str) -> str:
 def es_mapping_for_field(field: Field) -> dict:
     field_type = field.settings["type"]
 
-    if field_type == FieldType.text:
+    if field.is_text:
         return {es_field_for_record_field(field.name): {"type": "text"}}
+    elif field.is_image:
+        return {
+            es_field_for_record_field(field.name): {
+                "type": "object",
+                "enabled": False,
+            }
+        }
     else:
         raise Exception(f"Index configuration for field of type {field_type} cannot be generated")
 
@@ -220,6 +242,11 @@ class BaseElasticAndOpenSearchEngine(SearchEngine):
 
     The rest of the code will be shared by both implementation
     """
+    BULK_BATCH_SIZE = 50
+    MAX_RETRIES = 5
+    INITIAL_BACKOFF = 1.0
+    BACKOFF_MULTIPLIER = 2.0
+    MAX_BACKOFF = 30.0
 
     number_of_shards: int
     number_of_replicas: int
@@ -579,6 +606,10 @@ class BaseElasticAndOpenSearchEngine(SearchEngine):
         return {
             # See https://www.elastic.co/guide/en/elasticsearch/reference/current/dynamic.html#dynamic-parameters
             "dynamic": "strict",
+            "_source": {
+                # Excluding image fields, which means they won't be even stored. See https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-source-field.html#include-exclude
+                "excludes": [es_field_for_record_field(field.name) for field in dataset.fields if field.is_image],
+            },
             "properties": {
                 # See https://www.elastic.co/guide/en/elasticsearch/reference/current/explicit-mapping.html
                 "id": {"type": "keyword"},
@@ -613,17 +644,7 @@ class BaseElasticAndOpenSearchEngine(SearchEngine):
         if isinstance(text, str):
             text = TextQuery(q=text)
 
-        if not text.field:
-            # See https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-multi-match-query.html
-            field_names = [
-                es_field_for_record_field(field.name)
-                for field in dataset.fields
-                if field.settings.get("type") == FieldType.text
-            ]
-            return {"multi_match": {"query": text.q, "type": "cross_fields", "fields": field_names, "operator": "and"}}
-        else:
-            # See https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-query.html
-            return {"match": {es_field_for_record_field(text.field): {"query": text.q, "operator": "and"}}}
+        return es_simple_query_string(es_field_for_record_field(text.field), query=text.q)
 
     @staticmethod
     def _mapping_for_fields(fields: List[Field]) -> dict:
@@ -659,7 +680,7 @@ class BaseElasticAndOpenSearchEngine(SearchEngine):
         return {
             "responses": {
                 "type": "nested",
-                "dynamic": "strict",
+                "dynamic": False,
                 "include_in_root": True,
                 "properties": {
                     "id": {"type": "keyword"},

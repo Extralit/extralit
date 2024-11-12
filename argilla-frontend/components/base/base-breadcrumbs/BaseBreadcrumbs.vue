@@ -109,7 +109,7 @@ export default {
     }
   }
   &__item {
-    color: palette(white);
+    color: var(--fg-lighter);
     text-decoration: none;
     outline: none;
     &.--action {

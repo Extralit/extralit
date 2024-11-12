@@ -165,6 +165,7 @@ plugins:
   - social:
       enabled: !ENV [CI, false] # enables the plugin only during continuous integration (CI), disabled on local build
   - mknotebooks
+  - material-plausible
 
 # Documentation Structure
 nav:
@@ -215,11 +216,14 @@ nav:
           - Query and filter records: admin_guide/query.md
           - Import and export datasets: admin_guide/import_export.md
       - Advanced:
-          - Use Markdown to format rich content: admin_guide/use_markdown_to_format_rich_content.md
-          - Migrate your legacy datasets to Argilla V2: admin_guide/migrate_from_legacy_datasets.md
-
+        - Use Markdown to format rich content: how_to_guides/use_markdown_to_format_rich_content.md
+        - Migrate users, workspaces and datasets to Argilla V2: how_to_guides/migrate_from_legacy_datasets.md
   - Tutorials:
       - tutorials/index.md
+      - Text classification: tutorials/text_classification.ipynb
+      - Token classification: tutorials/token_classification.ipynb
+      - Image classification: tutorials/image_classification.ipynb
+      - Image preference: tutorials/image_preference.ipynb
   - API Reference:
       - Argilla Python SDK: reference/argilla/
       - FastAPI Server:
@@ -230,5 +234,8 @@ nav:
   - Community:
       - community/index.md
       - How to contribute?: community/contributor.md
+      - Developer documentation: community/developer.md
       - Issue dashboard: community/popular_issues.md
       - Changelog: community/changelog.md
+  - UI Demo ↗:
+      - https://demo.argilla.io/sign-in?auth=ZGVtbzoxMjM0NTY3OA==

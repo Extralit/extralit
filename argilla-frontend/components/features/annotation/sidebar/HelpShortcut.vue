@@ -135,13 +135,13 @@ export default {
   td,
   th {
     display: block;
-    border-bottom: 1px solid $black-4;
-    border-left: 1px solid $black-4;
-    border-right: 1px solid $black-4;
+    border-bottom: 1px solid var(--bg-opacity-4);
+    border-left: 1px solid var(--bg-opacity-4);
+    border-right: 1px solid var(--bg-opacity-4);
     padding: $base-space;
   }
   th {
-    background: $black-4;
+    background: var(--bg-opacity-4);
     border: none;
   }
   thead tr:last-child th:last-child {
@@ -169,10 +169,10 @@ export default {
   code {
     display: inline-block;
     padding: 2px 4px;
-    border: 1px solid $black-10;
+    border: 1px solid var(--bg-opacity-10);
     border-radius: $border-radius;
     background: palette(white) !important;
-    color: $black-87 !important;
+    color: var(--bg-opacity-87) !important;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
       "Open Sans", "Helvetica Neue", sans-serif;
     min-width: 24px;

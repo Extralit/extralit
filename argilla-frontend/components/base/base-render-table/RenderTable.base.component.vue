@@ -1002,7 +1002,7 @@ export default {
       cursor: pointer;
       &:hover,
       &--active {
-        background: $black-4;
+        background: var(--bg-opacity-4);
       }
     }
   }

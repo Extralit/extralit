@@ -133,7 +133,7 @@ hide: toc
 
     ---
 
-    Learn how to migrate your legacy datasets from Argilla 1.x to 2.x.
+    Learn how to migrate users, workspaces and datasets from Argilla V1 to V2.
 
     [:octicons-arrow-right-24: How-to guide](migrate_from_legacy_datasets.md)
 

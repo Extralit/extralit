@@ -13,7 +13,7 @@
 #  limitations under the License.
 
 from datetime import datetime
-from typing import Annotated, List, Literal, Optional
+from typing import Annotated, List, Literal, Optional, Union
 from uuid import UUID
 
 from argilla_server.api.schemas.v1.commons import UpdateSchema
@@ -50,14 +50,59 @@ FieldTitle = Annotated[
 
 class TextFieldSettings(BaseModel):
     type: Literal[FieldType.text]
+    use_markdown: bool
+    use_table: bool
+
+
+class TextFieldSettingsCreate(BaseModel):
+    type: Literal[FieldType.text]
     use_markdown: bool = False
     use_table: bool = False
 
 
-class TextFieldSettingsUpdate(UpdateSchema):
+class TextFieldSettingsUpdate(BaseModel):
     type: Literal[FieldType.text]
     use_markdown: bool
     use_table: bool
+
+
+class ImageFieldSettings(BaseModel):
+    type: Literal[FieldType.image]
+
+
+class ImageFieldSettingsCreate(BaseModel):
+    type: Literal[FieldType.image]
+
+
+class ImageFieldSettingsUpdate(BaseModel):
+    type: Literal[FieldType.image]
+
+
+FieldSettings = Annotated[
+    Union[
+        TextFieldSettings,
+        ImageFieldSettings,
+    ],
+    PydanticField(..., discriminator="type"),
+]
+
+
+FieldSettingsCreate = Annotated[
+    Union[
+        TextFieldSettingsCreate,
+        ImageFieldSettingsCreate,
+    ],
+    PydanticField(..., discriminator="type"),
+]
+
+
+FieldSettingsUpdate = Annotated[
+    Union[
+        TextFieldSettingsUpdate,
+        ImageFieldSettingsUpdate,
+    ],
+    PydanticField(..., discriminator="type"),
+]
 
 
 class Field(BaseModel):
@@ -65,7 +110,7 @@ class Field(BaseModel):
     name: str
     title: str
     required: bool
-    settings: TextFieldSettings
+    settings: FieldSettings
     dataset_id: UUID
     inserted_at: datetime
     updated_at: datetime
@@ -82,11 +127,11 @@ class FieldCreate(BaseModel):
     name: FieldName
     title: FieldTitle
     required: Optional[bool]
-    settings: TextFieldSettings
+    settings: FieldSettingsCreate
 
 
 class FieldUpdate(UpdateSchema):
     title: Optional[FieldTitle]
-    settings: Optional[TextFieldSettingsUpdate]
+    settings: Optional[FieldSettingsUpdate]
 
     __non_nullable_fields__ = {"title", "settings"}
