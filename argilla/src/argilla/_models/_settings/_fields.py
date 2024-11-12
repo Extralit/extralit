@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, Literal
+from typing import Optional, Literal, Annotated, Union
 from uuid import UUID
 
-from pydantic import BaseModel, field_serializer, field_validator
+from pydantic import BaseModel, field_serializer, field_validator, Field
 from pydantic_core.core_schema import ValidationInfo
 
 from argilla._helpers import log_message
@@ -25,14 +25,28 @@ from argilla._models import ResourceModel
 class TextFieldSettings(BaseModel):
     type: Literal["text"] = "text"
     use_markdown: Optional[bool] = False
+    use_table: Optional[bool] = False
+
+
+class ImageFieldSettings(BaseModel):
+    type: Literal["image"] = "image"
+
+
+FieldSettings = Annotated[
+    Union[
+        TextFieldSettings,
+        ImageFieldSettings,
+    ],
+    Field(..., discriminator="type"),
+]
 
 
 class FieldModel(ResourceModel):
     name: str
+    settings: FieldSettings
     title: Optional[str] = None
     required: bool = True
     description: Optional[str] = None
-    settings: TextFieldSettings = TextFieldSettings(use_markdown=False)
     dataset_id: Optional[UUID] = None
 
     @field_validator("name")

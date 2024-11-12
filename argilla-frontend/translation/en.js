@@ -7,6 +7,7 @@ export default {
   table_form_placeholder: "Copy and paste a table you'd like to edit here",
   span: "Span",
   text: "Text",
+  image: "Image",
   rating: "Rating",
   minimize: "Minimize",
   select: "Select",
@@ -15,7 +16,6 @@ export default {
   searchDatasets: "Search datasets",
   expand: "Expand",
   copied: "Copied",
-  copyClipboard: "Copy to clipboard",
   copyLink: "Copy link",
   copyRecord: "Copy record",
   refresh: "Refresh",
@@ -43,6 +43,19 @@ export default {
   taskDistributionTooltip:
     "A task is complete when all records have the \nminimum number of submitted responses",
   noAnnotationGuidelines: "This dataset has no annotation guidelines",
+  noRecordsMessages: {
+    datasetEmptyForAnnotator:
+      "The dataset is empty. Ask an administrator to upload records and come back soon.",
+    datasetEmptyForAdmin:
+      "The dataset is empty. You can add records using the Python SDK, see <a href='https://docs.argilla.io/latest/how_to_guides/record/'>documentation</a> on adding records.",
+    taskDistributionCompleted: "🎉 The task is completed!",
+    noSubmittedRecords: "You have not submitted any record yet",
+    noRecordsFound: "You have no {status} records matching your query",
+    noRecords: "You have no {status} records",
+    noPendingRecordsToAnnotate: "🎉 Your have no pending records to annotate",
+    noDraftRecordsToReview: "You have no draft records to review",
+  },
+  couldNotLoadImage: "Could not load image",
   breadcrumbs: {
     home: "Home",
     datasetSettings: "settings",
@@ -54,11 +67,11 @@ export default {
     pending: "Pending",
   },
   recordStatus: {
-    pending: "Pending",
-    draft: "Draft",
-    discarded: "Discarded",
-    submitted: "Submitted",
-    validated: "Validated",
+    pending: "pending",
+    draft: "draft",
+    discarded: "discarded",
+    submitted: "submitted",
+    validated: "validated",
     completedTooltip:
       "The record is complete, it has the \nminimum number of responses",
   },
@@ -73,6 +86,7 @@ export default {
     apiKey: "API key",
     apiKeyDescription:
       "API key tokens allow you to manage datasets using the Python SDK.",
+    theme: "Theme",
     copyKey: "Copy key",
   },
   userAvatarTooltip: {
@@ -105,6 +119,13 @@ export default {
     cancel: "Cancel",
     continue: "Continue",
     delete: "Delete",
+    tooltip: {
+      copyToClipboard: "Copy to clipboard",
+      copyNameToClipboard: "Copy dataset name to clipboard",
+      copyLinkToClipboard: "Copy dataset link to clipboard",
+      goToDatasetSettings: "Go to dataset settings",
+      datasetSettings: "Dataset settings",
+    },
   },
   to_submit_complete_required: "To submit complete \nrequired responses",
   some_records_failed_to_annotate: "Some records failed to annotate",
@@ -148,6 +169,7 @@ export default {
     write: "Write",
   },
   sorting: {
+    label: "Sort",
     addOtherField: "+ Add another field",
     suggestion: {
       score: "Suggestion score",
@@ -160,7 +182,7 @@ export default {
   suggestion: {
     agent: "\nagent: {agent}",
     score: "\nscore: {score}",
-    tooltip: "This question contains a suggestion{agent}{score}",
+    tooltip: "This question contains a suggestion {agent} {score}",
     filter: {
       value: "Suggestion values",
       score: "Score",
@@ -193,13 +215,13 @@ export default {
     claim: "Extract data for <br/>lit reviews",
     support:
       "For best experience, please expand your browser window to full width.<br/>To get support from the community, join us on <a href='{link}' target='_blank'>Slack</a>",
-    quickstart:
-      "You are using the Quickstart version of Argilla. Check <a href='{link}' target='_blank'>this guide</a> to learn more about usage and configuration options.",
+    error: "Wrong username or password. Try again",
     hf: {
       title: "Welcome to {space}",
       subtitle: "Join <strong>{user}</strong> to contribute to the dataset",
     },
   },
+  of: "of",
   status: "Status",
   filters: "Filters",
   filterBy: "Filter by...",
@@ -221,6 +243,8 @@ export default {
   update: "Update",
   youAreOnlineAgain: "You are online again",
   youAreOffline: "You are offline",
+  write: "Write",
+  preview: "Preview",
   datasetTable: {
     name: "Dataset",
     workspace: "Workspace",

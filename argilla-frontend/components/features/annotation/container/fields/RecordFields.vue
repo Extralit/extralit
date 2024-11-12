@@ -1,7 +1,7 @@
 <template>
   <div class="fields">
     <div v-for="group in fieldsWithTabs" :key="group[0].id">
-      <SpanAnnotationTextFieldComponent
+      <SpanAnnotationTextField
         v-if="group.length == 1 && hasSpanQuestion(group[0].name)"
         :id="`${group[0].id}-${record.id}-span-field`"
         :name="group[0].name"
@@ -10,8 +10,8 @@
         :spanQuestion="getSpanQuestion(group[0].name)"
         :searchText="recordCriteria.committed.searchText.value.text"
       />
-      <TextFieldComponent
-        v-else-if="group.length == 1"
+      <TextField
+        v-else-if="group[0].isTextType"
         :name="group[0].name"
         :title="group[0].title"
         :fieldText="group[0].content"
@@ -19,10 +19,11 @@
         :useTable="group[0].settings.use_table"
         :searchText="recordCriteria.committed.searchText.value.text"
       />
+      <ImageField v-else-if="group[0].isTextType" :name="group[0].name" :title="group[0].title" :content="group[0].content" />
       
       <BaseCardWithTabs 
         v-else-if="group.length > 1" 
-        :tabs="group.map(field => ({ id: field.name, name: field.title, class: '--field', component: 'TextFieldComponent' }))"
+        :tabs="group.map(field => ({ id: field.name, name: field.title, class: '--field', component: 'TextField' }))"
       >
         <template v-slot="{ currentComponent, currentTabId }">
           <component
@@ -37,7 +38,6 @@
           />
         </template>
       </BaseCardWithTabs>
-      
     </div>
   </div>
 </template>

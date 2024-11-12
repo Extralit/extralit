@@ -20,7 +20,7 @@ import warnings
 from argilla._exceptions import RecordsIngestionError
 from argilla.records._resource import Record
 from argilla.responses import Response
-from argilla.settings import TextField, VectorField
+from argilla.settings import AbstractField, VectorField
 from argilla.settings._metadata import MetadataPropertyBase
 from argilla.settings._question import QuestionPropertyBase
 from argilla.suggestions import Suggestion
@@ -95,10 +95,11 @@ class IngestedRecordMapper:
 
         if data and not (record_id or suggestions or responses or fields or metadata or vectors):
             raise RecordsIngestionError(
-                message=f"""Record has no known keys from `Dataset.settings` or `mapping`.
-                If keys in source dataset do not match the names in `Dataset.settings`, you should use the `mapping` parameter of the `dataset.records.log` method.
-                Available keys in `Dataset.settings` and `mapping`: {self.mapping.keys()}.
-                Unkown keys in Record: {unknown_keys}. """
+                message=f"""Record has no identifiable keys. If keys in source dataset
+                do not match the names in `dataset.settings`, you should use a
+                `mapping` with `dataset.records.log`.
+                Available keys: {self.mapping.keys()}.
+                Unkown keys: {unknown_keys}. """
             )
 
         return Record(
@@ -183,7 +184,7 @@ class IngestedRecordMapper:
             attribute_route.type = AttributeType.SUGGESTION
         elif isinstance(schema_item, QuestionPropertyBase) and attribute_route.type == AttributeType.RESPONSE:
             attribute_route.type = AttributeType.RESPONSE
-        elif isinstance(schema_item, TextField):
+        elif isinstance(schema_item, AbstractField):
             attribute_route.type = AttributeType.FIELD
         elif isinstance(schema_item, VectorField):
             attribute_route.type = AttributeType.VECTOR

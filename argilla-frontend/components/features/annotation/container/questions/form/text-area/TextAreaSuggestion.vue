@@ -1,18 +1,5 @@
 <template>
   <div class="container">
-    <BaseActionTooltip
-      class="button-copy"
-      tooltip="Copied"
-      tooltip-position="left"
-    >
-      <BaseButton
-        title="Copy to clipboard"
-        @click.prevent="$copyToClipboard(question.suggestion?.suggestedAnswer)"
-      >
-        <svgicon color="#acacac" name="copy" width="20" height="20" />
-      </BaseButton>
-    </BaseActionTooltip>
-
     <RenderTableBaseComponent
       v-if="question.settings.settings.use_table && isValidTableJSON"
       class="textarea"
@@ -28,8 +15,13 @@
     <RenderMarkdownBaseComponent
       v-else
       class="textarea--markdown"
-      :markdown="question.suggestion?.suggestedAnswer"
+      :markdown="question.suggestion?.value"
     />
+    <BaseActionTooltip :tooltip="$t('copied')" class="button-copy">
+      <BaseButton @on-click="$copyToClipboard(question.suggestion?.value)">
+        <svgicon name="copy" width="16" height="16" />
+      </BaseButton>
+    </BaseActionTooltip>
   </div>
 </template>
 
@@ -69,10 +61,10 @@ export default {
   position: relative;
   display: flex;
   padding: $base-space * 2;
-  border: 1px solid $black-20;
+  border: 1px solid var(--bg-opacity-20);
   border-radius: $border-radius-s;
-  min-height: 10em;
-  background: palette(white);
+  background: var(--bg-accent-grey-2);
+  min-height: 5em;
   &:hover {
     .button-copy {
       display: block;
@@ -82,13 +74,13 @@ export default {
 .button-copy {
   display: none;
   position: absolute;
-  right: $base-space * 2;
-  bottom: $base-space * 2;
+  right: $base-space;
+  top: $base-space;
   .button {
     padding: 0;
   }
   .svg-icon {
-    color: $black-37;
+    color: var(--fg-tertiary);
   }
 }
 </style>

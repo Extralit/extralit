@@ -4,26 +4,22 @@
       <span class="text_field_component__title-content" v-text="title" />
       <BaseActionTooltip
         class="text_field_component__tooltip"
-        tooltip="Copied"
+        :tooltip="$t('copied')"
         tooltip-position="left"
       >
         <BaseButton
-          title="Copy to clipboard"
+          :title="$t('button.tooltip.copyToClipboard')"
           class="text_field_component__copy-button"
           @click.prevent="$copyToClipboard(fieldText)"
         >
-          <svgicon color="#acacac" name="copy" width="20" height="20" />
+          <svgicon color="#acacac" name="copy" width="18" height="18" />
         </BaseButton>
       </BaseActionTooltip>
     </div>
     <div :id="`fields-content-${name}`" class="content-area --body1">
       <RenderTableBaseComponent v-if="useTable && isValidTableJSON" :tableData="fieldText" />
-      <RenderHTMLBaseComponent 
-        v-else-if="isValidHTML" 
-        style="display: block; white-space: pre-wrap; max-width: 100%; overflow-x: auto !important;" 
-        :value="fieldText" 
-        :editable="false" />
       <RenderMarkdownBaseComponent v-else-if="useMarkdown" :markdown="fieldText" />
+      <Sandbox v-else-if="isHTML" :fieldText="fieldText" />
       <div :class="classes" v-else v-html="fieldText" />
       <template>
         <style :key="name" scoped>
@@ -40,7 +36,6 @@
 import { useTextFieldViewModel } from "./useTextFieldViewModel";
 import { isTableJSON } from "@/components/base/base-render-table/tableUtils";
 export default {
-  name: "TextFieldComponent",
   props: {
     name: {
       type: String,
@@ -71,12 +66,11 @@ export default {
     isValidTableJSON() {
       return isTableJSON(this.fieldText);
     },
-    isValidHTML() {
-      const value = this.fieldText?.trimStart();
-      return value?.startsWith("<table") && !value?.startsWith("<img") && !value?.startsWith("<iframe");
-    },
     classes() {
       return this.$language.isRTL(this.fieldText) ? "--rtl" : "--ltr";
+    },
+    isHTML() {
+      return /<([A-Za-z][A-Za-z0-9]*)\b[^>]*>(.*?)<\/\1>/.test(this.fieldText);
     },
   },
   setup(props) {
@@ -92,8 +86,9 @@ export default {
   flex-direction: column;
   gap: $base-space;
   padding: 2 * $base-space;
-  background: palette(grey, 800);
+  background: var(--bg-field);
   border-radius: $border-radius-m;
+  border: 1px solid var(--bg-opacity-2);
   &:hover {
     #{$this}__copy-button {
       opacity: 1;
@@ -104,7 +99,7 @@ export default {
     align-items: center;
     justify-content: space-between;
     gap: $base-space;
-    color: $black-87;
+    color: var(--fg-primary);
   }
   .content-area {
     white-space: pre-wrap;

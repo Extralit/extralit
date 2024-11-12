@@ -14,27 +14,25 @@ These are the section headers that we use:
 * "Security" in case of vulnerabilities.
 -->
 
+## [Unreleased]()
 
-## [Argilla] [2.0.1](https://github.com/argilla-io/argilla/compare/v2.0.0rc1...v2.0.0)
+### Added
+- Added use_table option to TextFieldSetting.
+
+### Fixed
+- Fixed elasticsearch reindexing errors with dynamic schema.
+
+## [Argilla] [2.1.0](https://github.com/argilla-io/argilla/compare/v2.0.0...v2.1.0)
+
 ### Added
 
+- Added new `image` type dataset field supporting URLs and Data URLs. ([#5279](https://github.com/argilla-io/argilla/pull/5279))
 - Added new endpoint `GET /api/v1/datsets/:dataset_id/users/progress` to compute the users progress. ([#5367](https://github.com/argilla-io/argilla/pull/5367))
-- Added support to specify `distribution` attribute when creating a dataset. ([#5013](https://github.com/argilla-io/argilla/pull/5013))
-- Added support to change `distribution` attribute when updating a dataset. ([#5028](https://github.com/argilla-io/argilla/pull/5028))
-- Added new `status` column to `records` table. ([#5132](https://github.com/argilla-io/argilla/pull/5132))
-- Added new `ARGILLA_DATABASE_SQLITE_TIMEOUT` environment variable allowing to set transactions timeout for SQLite. ([#5213](https://github.com/argilla-io/argilla/pull/5213))
-- Added new `ARGILLA_DATABASE_POSTGRESQL_POOL_SIZE` environment variable allowing to set the number of connections to keep open inside the database connection pool. ([#5220](https://github.com/argilla-io/argilla/pull/5220))
-- Added new `ARGILLA_DATABASE_POSTGRESQL_MAX_OVERFLOW` environment variable allowing to set the number of connections that can be opened above and beyond the `ARGILLA_DATABASE_POSTGRESQL_POOL_SIZE` setting. ([#5220](https://github.com/argilla-io/argilla/pull/5220))
-- Added new `Server-Timing` header to all responses with the total time in milliseconds the server took to generate the response. ([#5239](https://github.com/argilla-io/argilla/pull/5239))
-- Added `REINDEX_DATASETS` environment variable to Argilla server Docker image. ([#5268](https://github.com/argilla-io/argilla/pull/5268))
-- Added `argilla-hf-spaces` docker image for running Argilla server in HF spaces. ([#5307](https://github.com/argilla-io/argilla/pull/5307))
+- Added advanced dsl for text searches. ([#5222](https://github.com/argilla-io/argilla/pull/5222))
 
 ### Changed
 
-- Change `responses` table to delete rows on cascade when a user is deleted. ([#5126](https://github.com/argilla-io/argilla/pull/5126))
-- [breaking] Change `GET /api/v1/datasets/:dataset_id/progress` endpoint to support new dataset distribution task. ([#5140](https://github.com/argilla-io/argilla/pull/5140))
-- [breaking] Change `GET /api/v1/me/datasets/:dataset_id/metrics` endpoint to support new dataset distribution task. ([#5140](https://github.com/argilla-io/argilla/pull/5140))
-- Change search index mapping for responses (reindex is required). ([#5228](https://github.com/argilla-io/argilla/pull/5228))
+- Change the telemetry module to use the HuggingFace telemetry client ([#5218](https://github.com/argilla-io/argilla/pull/5218))
 
 ### Fixed
 
