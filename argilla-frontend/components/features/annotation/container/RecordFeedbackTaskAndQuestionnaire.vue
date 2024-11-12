@@ -10,7 +10,7 @@
     :dataset-vectors="datasetVectors"
     :records="records"
     :record="record"
-    :no-records-message="noRecordsMessage"
+    :records-message="recordsMessage"
     :status-class="statusClass"
     @on-submit-responses="goToNext"
     @on-discard-responses="goToNext"
@@ -21,7 +21,7 @@
     :dataset-vectors="datasetVectors"
     :records="records"
     :record="record"
-    :no-records-message="noRecordsMessage"
+    :records-message="recordsMessage"
     :status-class="statusClass"
     @on-submit-responses="goToNext"
     @on-discard-responses="goToNext"
@@ -47,26 +47,10 @@ export default {
   },
   computed: {
     record() {
-      let thisRecord = this.records.getRecordOn(this.recordCriteria.committed.page);
-      if (!thisRecord) {
-        console.log(`Record not found for recordCriteria.committed.page.client.page: ${this.recordCriteria.committed.page.client.page}, records length ${this.records.records.length}`);
-        console.log('All record pages:', this.records.records.map(record => record.page));
-      }
-      return thisRecord;
+      return this.records.getRecordOn(this.recordCriteria.committed.page);
     },
     metadata() {
       return this.record?.metadata;
-    },
-    noMoreDataMessage() {
-      return `You've reached the end of the data for the ${this.recordCriteria.committed.status} queue.`;
-    },
-    noRecordsMessage() {
-      const { status } = this.recordCriteria.committed;
-
-      if (this.recordCriteria.isFilteredByText)
-        return `You have no ${status} records matching the search input and filters`;
-
-      return `You have no ${status} records`;
     },
     statusClass() {
       return `--${this.record?.status}`;
@@ -97,19 +81,9 @@ export default {
 
       this.fetching = true;
 
-      const isNextRecordExist = await this.paginateRecords(this.recordCriteria);
+      await this.paginateRecords(this.recordCriteria);
 
       this.$nuxt.$emit('on-change-record-metadata', this.metadata);
-
-      if (!isNextRecordExist) {
-        setTimeout(() => {
-          this.$notification.notify({
-            message: this.noMoreDataMessage,
-            numberOfChars: this.noMoreDataMessage.length,
-            type: "info",
-          });
-        }, 100);
-      }
 
       this.fetching = false;
     },
@@ -205,7 +179,7 @@ export default {
     min-width: 0;
   }
   &__text {
-    color: $black-54;
+    color: var(--bg-opacity-54);
   }
   &--empty {
     width: 100%;

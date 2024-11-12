@@ -36,6 +36,7 @@ SHELL ["/bin/bash", "-c"]
 RUN pip install -q uv && uv venv /opt/venv && source /opt/venv/bin/activate
 ENV PATH="/opt/venv/bin:$PATH"
 ENV VIRTUAL_ENV="/opt/venv"
+ENV UVICORN_APP=argilla_server:app
 
 RUN uv pip install -q uvicorn[standard] -e ".[server,postgresql]"
   

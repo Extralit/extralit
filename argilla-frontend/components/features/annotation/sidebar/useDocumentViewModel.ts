@@ -20,7 +20,7 @@ export const useDocumentViewModel = () => {
     } catch (e) {
       notification.notify({
         message: `Error fetching document with ID ${id}`,
-        type: 'error',
+        type: 'danger',
       });
       clearDocument();
     }
@@ -32,7 +32,7 @@ export const useDocumentViewModel = () => {
     } catch (e) {
       notification.notify({
         message: `Error fetching document with pmid "${pmid}"`,
-        type: 'error',
+        type: 'danger',
       });
       clearDocument();
     }
@@ -51,7 +51,7 @@ export const useDocumentViewModel = () => {
     } catch (e) {
       notification.notify({
         message: `Error fetching document segments`,
-        type: 'error',
+        type: 'danger',
       });
     }
   };
