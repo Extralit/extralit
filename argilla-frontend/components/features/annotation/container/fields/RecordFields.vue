@@ -22,6 +22,7 @@
         :useMarkdown="group[0].settings.use_markdown"
         :useTable="group[0].settings.use_table"
         :searchText="recordCriteria.committed.searchText.value.text"
+        :record="record"
       />
       <ChatField
         v-else-if="group[0].isChatType"
@@ -31,7 +32,20 @@
         :content="group[0].content"
         :searchText="recordCriteria.committed.searchText.value.text"
       />
-      <ImageField v-else-if="group[0].isImageType" :name="group[0].name" :title="group[0].title" :content="group[0].content" />
+      <ImageField
+        v-else-if="group[0].isImageType"
+        :name="group[0].name"
+        :title="group[0].title"
+        :content="group[0].content"
+      />
+      <CustomField
+        v-else-if="group[0].sdkRecord"
+        :name="group[0].name"
+        :title="group[0].title"
+        :content="group[0].content"
+        :sdkRecord="group[0].sdkRecord"
+        :settings="group[0].settings"
+      />
       
       <BaseCardWithTabs 
         v-else-if="group.length > 1" 
