@@ -16,7 +16,7 @@
         </BaseButton>
       </BaseActionTooltip>
     </div>
-    <div :id="`fields-content-${name}`" class="content-area --body1">
+    <div class="content-area --body1">
       <RenderTableBaseComponent v-if="useTable && isValidTableJSON" :tableData="fieldText" />
       <MarkdownRenderer v-else-if="useMarkdown" :markdown="fieldText" />
       <Sandbox v-else-if="isHTML" :fieldText="fieldText" />
@@ -56,6 +56,9 @@ export default {
     useMarkdown: {
       type: Boolean,
       default: false,
+    },
+    record: {
+      type: Object,
     },
     useTable: {
       type: Boolean,

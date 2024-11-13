@@ -79,6 +79,7 @@ from argilla_server.models import (
     User,
     Vector,
     VectorSettings,
+    WorkspaceUser,
     Document,
 )
 from argilla_server.models.suggestions import SuggestionCreateWithRecordId
@@ -109,9 +110,21 @@ async def _touch_dataset_last_activity_at(db: AsyncSession, dataset: Dataset) ->
     )
 
 
-async def list_datasets(db: AsyncSession) -> Sequence[Dataset]:
-    result = await db.execute(select(Dataset).order_by(Dataset.inserted_at.asc()))
-    return result.scalars().all()
+async def list_datasets(db: AsyncSession, user: Optional[User] = None, **filters) -> Sequence[Dataset]:
+    """
+    List stored datasets. If `user` is provided, only datasets available to the user will be returned.
+    Additionally, filters based on `Dataset` class attributes can be applied
+
+    """
+    query = select(Dataset).filter_by(**filters).order_by(Dataset.inserted_at.asc())
+
+    if user and not user.is_owner:
+        query = query.join(WorkspaceUser, Dataset.workspace_id == WorkspaceUser.workspace_id).join(
+            User, User.id == WorkspaceUser.user_id
+        )
+
+    result = await db.scalars(query)
+    return result.all()
 
 
 async def list_datasets_by_workspace_id(db: AsyncSession, workspace_id: UUID) -> Sequence[Dataset]:

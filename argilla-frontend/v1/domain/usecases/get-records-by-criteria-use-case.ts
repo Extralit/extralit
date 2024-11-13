@@ -64,10 +64,10 @@ export class GetRecordsByCriteriaUseCase {
               field.id,
               field.name,
               field.title,
-              record.fields[field.name],
               datasetId,
               field.required,
-              field.settings
+              field.settings,
+              record
             );
           });
 
@@ -152,10 +152,10 @@ export class GetRecordsByCriteriaUseCase {
               field.id,
               field.name,
               field.title,
-              referenceRecordFromBackend.fields[field.name],
               datasetId,
               field.required,
-              field.settings
+              field.settings,
+              referenceRecordFromBackend
             );
           });
 

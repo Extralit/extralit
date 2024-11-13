@@ -91,11 +91,30 @@ class ChatFieldSettingsUpdate(BaseModel):
     use_markdown: bool
 
 
+class CustomFieldSettings(BaseModel):
+    type: Literal[FieldType.custom]
+    template: str
+    advanced_mode: bool
+
+
+class CustomFieldSettingsCreate(BaseModel):
+    type: Literal[FieldType.custom]
+    template: str
+    advanced_mode: bool = False
+
+
+class CustomFieldSettingsUpdate(BaseModel):
+    type: Literal[FieldType.custom]
+    template: str
+    advanced_mode: bool
+
+
 FieldSettings = Annotated[
     Union[
         TextFieldSettings,
         ImageFieldSettings,
         ChatFieldSettings,
+        CustomFieldSettings,
     ],
     PydanticField(..., discriminator="type"),
 ]
@@ -105,6 +124,7 @@ FieldSettingsCreate = Annotated[
         TextFieldSettingsCreate,
         ImageFieldSettingsCreate,
         ChatFieldSettingsCreate,
+        CustomFieldSettingsCreate,
     ],
     PydanticField(..., discriminator="type"),
 ]
@@ -114,6 +134,7 @@ FieldSettingsUpdate = Annotated[
         TextFieldSettingsUpdate,
         ImageFieldSettingsUpdate,
         ChatFieldSettingsUpdate,
+        CustomFieldSettingsUpdate,
     ],
     PydanticField(..., discriminator="type"),
 ]

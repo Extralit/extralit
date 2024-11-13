@@ -35,6 +35,8 @@ from argilla.vectors import Vector
 
 if TYPE_CHECKING:
     from argilla.datasets import Dataset
+    from argilla import Argilla
+    from argilla._api import RecordsAPI
 
 
 class Record(Resource):
@@ -80,6 +82,7 @@ class Record(Resource):
             _server_id: An id for the record. (Read-only and set by the server)
             _dataset: The dataset object to which the record belongs.
         """
+
         if fields is None and metadata is None and vectors is None and responses is None and suggestions is None:
             raise ValueError("At least one of fields, metadata, vectors, responses, or suggestions must be provided.")
         if fields is None and id is None:
@@ -153,6 +156,14 @@ class Record(Resource):
     # Public methods
     ############################
 
+    def get(self) -> "Record":
+        """Retrieves the record from the server."""
+        model = self._client.api.records.get(self._server_id)
+        instance = self.from_model(model, dataset=self.dataset)
+        self.__dict__ = instance.__dict__
+
+        return self
+
     def api_model(self) -> RecordModel:
         return RecordModel(
             id=self._model.id,
@@ -172,6 +183,7 @@ class Record(Resource):
         serialized_responses = [response.serialize() for response in self.__responses]
         serialized_model["responses"] = serialized_responses
         serialized_model["suggestions"] = serialized_suggestions
+
         return serialized_model
 
     def to_dict(self) -> Dict[str, Dict]:
@@ -191,6 +203,7 @@ class Record(Resource):
         responses = self.responses.to_dict()
         vectors = self.vectors.to_dict()
 
+        # TODO: Review model attributes when to_dict and serialize methods are unified
         return {
             "id": id,
             "fields": fields,
@@ -251,21 +264,30 @@ class Record(Resource):
             fields=model.fields,
             metadata={meta.name: meta.value for meta in model.metadata},
             vectors={vector.name: vector.vector_values for vector in model.vectors},
-            # Responses and their models are not aligned 1-1.
-            responses=[
-                response
-                for response_model in model.responses
-                for response in UserResponse.from_model(response_model, dataset=dataset)
-            ],
-            suggestions=[Suggestion.from_model(model=suggestion, dataset=dataset) for suggestion in model.suggestions],
+            _dataset=dataset,
+            responses=[],
+            suggestions=[],
         )
 
         # set private attributes
         instance._dataset = dataset
-        instance._model.id = model.id
-        instance._model.status = model.status
+        instance._model = model
+
+        # Responses and suggestions are computed separately based on the record model
+        instance.responses.from_models(model.responses)
+        instance.suggestions.from_models(model.suggestions)
 
         return instance
+
+    @property
+    def _client(self) -> Optional["Argilla"]:
+        if self._dataset:
+            return self.dataset._client
+
+    @property
+    def _api(self) -> Optional["RecordsAPI"]:
+        if self._client:
+            return self._client.api.records
 
 
 class RecordFields(dict):
@@ -278,7 +300,18 @@ class RecordFields(dict):
         self.record = record
 
     def to_dict(self) -> dict:
-        return {key: cast_image(value) if self._is_image(key) else value for key, value in self.items()}
+        fields = {}
+
+        for key, value in self.items():
+            if value is None:
+                continue
+            elif self._is_image(key):
+                fields[key] = cast_image(value)
+            elif self._is_chat(key):
+                fields[key] = [message.model_dump() if not isinstance(message, dict) else message for message in value]
+            else:
+                fields[key] = value
+        return fields
 
     def __getitem__(self, key: str) -> FieldValue:
         value = super().__getitem__(key)
@@ -288,6 +321,11 @@ class RecordFields(dict):
         if not self.record.dataset:
             return False
         return self.record.dataset.settings.schema[key].type == "image"
+
+    def _is_chat(self, key: str) -> bool:
+        if not self.record.dataset:
+            return False
+        return self.record.dataset.settings.schema[key].type == "chat"
 
 
 class RecordMetadata(dict):
@@ -328,11 +366,10 @@ class RecordResponses(Iterable[Response]):
     def __init__(self, responses: List[Response], record: Record) -> None:
         self.record = record
         self.__responses_by_question_name = defaultdict(list)
+        self.__responses = []
 
-        self.__responses = responses or []
-        for response in self.__responses:
-            response.record = self.record
-            self.__responses_by_question_name[response.question_name].append(response)
+        for response in responses or []:
+            self.add(response)
 
     def __iter__(self):
         return iter(self.__responses)
@@ -388,6 +425,11 @@ class RecordResponses(Iterable[Response]):
                     f"already found. The responses for the same question name do not support more than one user"
                 )
 
+    def from_models(self, responses: List[UserResponseModel]) -> None:
+        for response_model in responses:
+            for response in UserResponse.from_model(response_model, record=self.record):
+                self.add(response)
+
 
 class RecordSuggestions(Iterable[Suggestion]):
     """This is a container class for the suggestions of a Record.
@@ -440,3 +482,7 @@ class RecordSuggestions(Iterable[Suggestion]):
         """
         suggestion.record = self.record
         self._suggestion_by_question_name[suggestion.question_name] = suggestion
+
+    def from_models(self, suggestions: List[SuggestionModel]) -> None:
+        for suggestion_model in suggestions:
+            self.add(Suggestion.from_model(suggestion_model, record=self.record))
