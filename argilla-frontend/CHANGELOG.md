@@ -16,9 +16,19 @@ These are the section headers that we use:
 
 ## [Unreleased]()
 
+### Fixed
 - Fixed use_table setting update in `TextField`
 
+## [2.2.0](https://github.com/argilla-io/argilla/compare/v2.1.0...v2.2.0)
+
+### Added
+
+- Added `Required/Optional` label on `Field dataset settings tab` and `Question dataset settings tab`. ([#5394](https://github.com/argilla-io/argilla/pull/5394))
+- Added new `ChatField`. ([#5376](https://github.com/argilla-io/argilla/pull/5376))
+
 ## [2.1.0](https://github.com/argilla-io/argilla/compare/v2.0.1...v2.1.0)
+
+### Added
 
 - Added `DarkMode` ([#5412](https://github.com/argilla-io/argilla/pull/5412))
 - Added new `empty queue messages` ([#5403](https://github.com/argilla-io/argilla/pull/5403))

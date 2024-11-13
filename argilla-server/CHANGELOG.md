@@ -18,9 +18,37 @@ These are the section headers that we use:
 
 ### Added
 - Added use_table option to TextFieldSetting.
+- Added redis service to the tilt k8s deployment for argilla-server.
+
+### Changed
+- Changed envvars in Tilt k8s deployment at `examples/deployments/k8s/argilla-server-deployment.yaml`
 
 ### Fixed
 - Fixed elasticsearch reindexing errors with dynamic schema.
+
+## [2.2.0](https://github.com/argilla-io/argilla/compare/v2.1.0...v2.2.0)
+
+### Added
+
+- Added [`rq`](https://python-rq.org) library to process background jobs using [Redis](https://redis.io) as a dependency. ([#5432](https://github.com/argilla-io/argilla/pull/5432))
+- Added a new background job to update records status when a dataset distribution strategy is updated. ([#5432](https://github.com/argilla-io/argilla/pull/5432))
+- Added new `chat` type dataset field supporting chat-like conversations. ([#5376](https://github.com/argilla-io/argilla/pull/5376))
+
+### Fixed
+
+- Fixed error when computing dataset progress by users without responses related to pending or completed records. ([#5484](https://github.com/argilla-io/argilla/pull/5484))
+
+## [2.2.0](https://github.com/argilla-io/argilla/compare/v2.1.0...v2.2.0)
+
+### Added
+
+- Added [`rq`](https://python-rq.org) library to process background jobs using [Redis](https://redis.io) as a dependency. ([#5432](https://github.com/argilla-io/argilla/pull/5432))
+- Added a new background job to update records status when a dataset distribution strategy is updated. ([#5432](https://github.com/argilla-io/argilla/pull/5432))
+- Added new `chat` type dataset field supporting chat-like conversations. ([#5376](https://github.com/argilla-io/argilla/pull/5376))
+
+### Fixed
+
+- Fixed error when computing dataset progress by users without responses related to pending or completed records. ([#5484](https://github.com/argilla-io/argilla/pull/5484))
 
 ## [Argilla] [2.1.0](https://github.com/argilla-io/argilla/compare/v2.0.0...v2.1.0)
 

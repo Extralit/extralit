@@ -64,6 +64,22 @@ if not ARGILLA_DATABASE_URL:
         resource_deps=['postgres-helm'],
     )
 
+# Add Redis deployment
+helm_repo('bitnami-redis', 'https://charts.bitnami.com/bitnami', labels=['helm'], resource_name='redis-helm')
+helm_resource(
+    name='redis',
+    chart='bitnami/redis',
+    flags=[
+        '--version=17.11.3',
+        '--set=auth.enabled=false',
+        '--set=architecture=standalone',
+        '--set=master.persistence.size=1Gi'
+    ],
+    port_forwards=['6379'],
+    labels=['argilla-server'],
+    resource_deps=['redis-helm']
+)
+
 # argilla-server is the web backend (FastAPI + SQL database)
 if not os.path.exists('argilla-frontend/dist'):
     local('npm install && npm run build', dir='argilla-frontend', quiet=True)
@@ -82,8 +98,6 @@ docker_build(
         sync('argilla-server/src/', '/home/argilla/src/'),
         sync('argilla-server/docker/server/scripts/start_argilla_server.sh', '/home/argilla/'),
         sync('argilla-server/pyproject.toml', '/home/argilla/pyproject.toml'),
-        # Restart the server to pick up code changes
-        run('/bin/bash start_argilla_server.sh', trigger='argilla-server/docker/server/scripts/start_argilla_server.sh'),
     ]
 )
 argilla_server_k8s_yaml = read_yaml_stream('examples/deployments/k8s/argilla-server-deployment.yaml')
@@ -114,7 +128,7 @@ k8s_resource(
     'argilla-server',
     port_forwards=['6900'],
     labels=['argilla-server'],
-    resource_deps=['main-db', 'elasticsearch'] if not ARGILLA_DATABASE_URL else ['elasticsearch'],
+    resource_deps=['redis', 'main-db', 'elasticsearch'] if not ARGILLA_DATABASE_URL else ['redis', 'elasticsearch'],
 )
 
 # Langfuse Observability server

@@ -1,6 +1,10 @@
 <template>
   <div class="fields">
-    <div v-for="group in fieldsWithTabs" :key="group[0].id">
+    <div 
+      v-for="group in fieldsWithTabs" 
+      :class="[group[0]?.isImageType ? 'fields__container--image' : '']"
+      :key="group[0].id"
+    >
       <SpanAnnotationTextField
         v-if="group.length == 1 && hasSpanQuestion(group[0].name)"
         :id="`${group[0].id}-${record.id}-span-field`"
@@ -19,7 +23,15 @@
         :useTable="group[0].settings.use_table"
         :searchText="recordCriteria.committed.searchText.value.text"
       />
-      <ImageField v-else-if="group[0].isTextType" :name="group[0].name" :title="group[0].title" :content="group[0].content" />
+      <ChatField
+        v-else-if="group[0].isChatType"
+        :name="group[0].name"
+        :title="group[0].title"
+        :useMarkdown="group[0].settings.use_markdown"
+        :content="group[0].content"
+        :searchText="recordCriteria.committed.searchText.value.text"
+      />
+      <ImageField v-else-if="group[0].isImageType" :name="group[0].name" :title="group[0].title" :content="group[0].content" />
       
       <BaseCardWithTabs 
         v-else-if="group.length > 1" 
