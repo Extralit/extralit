@@ -17,12 +17,20 @@ from datetime import datetime
 from typing import Any, List, Optional, Union
 from uuid import UUID
 
-from sqlalchemy import JSON, ForeignKey, String, Text, UniqueConstraint, and_, sql, select, func, text
 from sqlalchemy import Enum as SAEnum
+from sqlalchemy import (
+    JSON,
+    ForeignKey,
+    String,
+    Text,
+    UniqueConstraint,
+    and_,
+    sql,
+)
 from sqlalchemy.engine.default import DefaultExecutionContext
 from sqlalchemy.ext.asyncio import async_object_session
 from sqlalchemy.ext.mutable import MutableDict, MutableList
-from sqlalchemy.orm import Mapped, mapped_column, relationship, column_property
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from argilla_server.api.schemas.v1.questions import QuestionSettings
 from argilla_server.enums import (
@@ -30,7 +38,6 @@ from argilla_server.enums import (
     FieldType,
     MetadataPropertyType,
     QuestionType,
-    RecordStatus,
     ResponseStatus,
     SuggestionType,
     UserRole,
@@ -86,6 +93,10 @@ class Field(DatabaseModel):
     @property
     def is_chat(self):
         return self.settings.get("type") == FieldType.chat
+
+    @property
+    def is_custom(self):
+        return self.settings.get("type") == FieldType.custom
 
     def __repr__(self):
         return (
@@ -491,16 +502,6 @@ class User(DatabaseModel):
         cascade="all, delete-orphan",
         passive_deletes=True,
         order_by=Response.inserted_at.asc(),
-    )
-    datasets: Mapped[List["Dataset"]] = relationship(
-        secondary="workspaces_users",
-        primaryjoin="User.id == WorkspaceUser.user_id",
-        secondaryjoin=and_(
-            Workspace.id == Dataset.workspace_id,
-            WorkspaceUser.workspace_id == Workspace.id,
-        ),
-        viewonly=True,
-        order_by=Dataset.inserted_at.asc(),
     )
 
     @property
