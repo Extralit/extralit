@@ -91,8 +91,8 @@ docker_build(
     "{DOCKER_REPO}/argilla-server".format(DOCKER_REPO=DOCKER_REPO),
     context='argilla-server/',
     build_args={'ENV': ENV, 'USERS_DB': USERS_DB},
-    dockerfile='argilla-server/docker/server/argilla_server.dockerfile',
-    ignore=['examples/', 'argilla/', '.*', '**/__pycache__', '*.pyc'],
+    dockerfile='argilla-server/docker/server/dev.argilla_server.dockerfile',
+    ignore=['examples/', 'argilla/', '.*', '**/__pycache__', '*.pyc', 'CHANGELOG.md'],
     live_update=[
         # Sync the source code to the container
         sync('argilla-server/src/', '/home/argilla/src/'),
