@@ -18,7 +18,7 @@
     </div>
     <div :id="`fields-content-${name}`" class="content-area --body1">
       <RenderTableBaseComponent v-if="useTable && isValidTableJSON" :tableData="fieldText" />
-      <RenderMarkdownBaseComponent v-else-if="useMarkdown" :markdown="fieldText" />
+      <MarkdownRenderer v-else-if="useMarkdown" :markdown="fieldText" />
       <Sandbox v-else-if="isHTML" :fieldText="fieldText" />
       <div :class="classes" v-else v-html="fieldText" />
       <template>
@@ -88,7 +88,7 @@ export default {
   padding: 2 * $base-space;
   background: var(--bg-field);
   border-radius: $border-radius-m;
-  border: 1px solid var(--bg-opacity-2);
+  border: 1px solid var(--border-field);
   &:hover {
     #{$this}__copy-button {
       opacity: 1;
@@ -112,6 +112,7 @@ export default {
     // font-size: 16px;
     // font-weight: 500;
     width: calc(100% - 30px);
+    color: var(--fg-secondary);
   }
   &__tooltip {
     display: flex;

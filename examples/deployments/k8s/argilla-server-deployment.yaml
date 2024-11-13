@@ -43,16 +43,20 @@ spec:
             - containerPort: 6900
           resources:
             requests:
-              memory: 1024Mi
-              cpu: 1000m
+              cpu: "0.5"
             limits:
-              memory: 6144Mi
-              cpu: 4000m
+              cpu: "1"
           env:
             - name: ARGILLA_ELASTICSEARCH_PROTOCOL
               value: "http"
             - name: ARGILLA_ELASTICSEARCH_HOST
               value: "elasticsearch-master:9200"
+            - name: ARGILLA_ELASTIC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: elasticsearch-master-credentials
+                  key: password
+                  optional: true
             - name: ARGILLA_ELASTICSEARCH_SSL_VERIFY
               value: "false"
             # - name: ARGILLA_ELASTICSEARCH_CA_PATH
@@ -61,21 +65,21 @@ spec:
               value: "CHANGE_ME"
             - name: ARGILLA_CORS_ORIGINS
               value: '["*"]'
-            - name: REINDEX_DATASETS
-              value: "true"
-            - name: EXTRALIT_URL
+            - name: ARGILLA_REDIS_URL
+              value: "redis://redis-master:6379/0"
+            - name: ARGILLA_EXTRALIT_URL
               value: "http://extralit-server:5555"
-            - name: S3_ENDPOINT
+            - name: ARGILLA_S3_ENDPOINT
               valueFrom:
                 secretKeyRef:
                   name: extralit-secrets
                   key: S3_ENDPOINT
-            - name: S3_ACCESS_KEY
+            - name: ARGILLA_S3_ACCESS_KEY
               valueFrom:
                 secretKeyRef:
                   name: extralit-secrets
                   key: S3_ACCESS_KEY
-            - name: S3_SECRET_KEY
+            - name: ARGILLA_S3_SECRET_KEY
               valueFrom:
                 secretKeyRef:
                   name: extralit-secrets
@@ -87,12 +91,6 @@ spec:
                 secretKeyRef:
                   name: main-db
                   key: postgres-password
-                  optional: true
-            - name: ELASTIC_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: elasticsearch-master-credentials
-                  key: password
                   optional: true
           volumeMounts:
             - name: elasticsearch-master-certs

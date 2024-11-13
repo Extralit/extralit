@@ -56,8 +56,6 @@ marked.use(
 );
 
 export default {
-  name: "RenderMarkdownBaseComponent",
-  
   props: {
     markdown: {
       type: String,
