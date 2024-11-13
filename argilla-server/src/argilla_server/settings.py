@@ -104,6 +104,8 @@ class Settings(BaseSettings):
     elasticsearch_ca_path: Optional[str] = None
     cors_origins: List[str] = ["*"]
 
+    redis_url: str = "redis://localhost:6379/0"
+
     docs_enabled: bool = True
 
     # Analyzer configuration
@@ -197,15 +199,6 @@ class Settings(BaseSettings):
                 raise ValueError(f"Invalid database URL format. Expected: 'postgresql+asyncpg://...', given '{parsed_url.scheme}'")
             
         return database_url
-    
-    @root_validator(pre=True)
-    def set_s3_credentials(cls, values):
-        values["s3_endpoint"] = os.getenv("S3_ENDPOINT", values.get("s3_endpoint"))
-        values["s3_access_key"] = os.getenv("S3_ACCESS_KEY", values.get("s3_access_key"))
-        values["s3_secret_key"] = os.getenv("S3_SECRET_KEY", values.get("s3_secret_key"))
-
-        values['extralit_url'] = os.getenv("EXTRALIT_URL", values.get("extralit_url"))
-        return values
 
     @root_validator(skip_on_failure=True)
     def create_home_path(cls, values):

@@ -12,7 +12,7 @@
       class="textarea"
       :value="question.suggestion?.suggestedAnswer"
     />
-    <RenderMarkdownBaseComponent
+    <MarkdownRenderer
       v-else
       class="textarea--markdown"
       :markdown="question.suggestion?.value"

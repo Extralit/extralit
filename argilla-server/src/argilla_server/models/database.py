@@ -83,6 +83,10 @@ class Field(DatabaseModel):
     def is_image(self):
         return self.settings.get("type") == FieldType.image
 
+    @property
+    def is_chat(self):
+        return self.settings.get("type") == FieldType.chat
+
     def __repr__(self):
         return (
             f"Field(id={str(self.id)!r}, name={self.name!r}, required={self.required!r}, "
@@ -376,13 +380,6 @@ class Dataset(DatabaseModel):
     __table_args__ = (UniqueConstraint("name", "workspace_id", name="dataset_name_workspace_id_uq"),)
 
     @property
-    async def responses_count(self) -> int:
-        # TODO: This should be moved to proper repository
-        return await async_object_session(self).scalar(
-            select(func.count(Response.id)).join(Record).where(Record.dataset_id == self.id)
-        )
-
-    @property
     def is_draft(self):
         return self.status == DatasetStatus.draft
 
@@ -393,6 +390,11 @@ class Dataset(DatabaseModel):
     @property
     def distribution_strategy(self) -> DatasetDistributionStrategy:
         return DatasetDistributionStrategy(self.distribution["strategy"])
+
+    def field_by_name(self, name: str) -> Union["Field", None]:
+        for field in self.fields:
+            if field.name == name:
+                return field
 
     def metadata_property_by_name(self, name: str) -> Union["MetadataProperty", None]:
         for metadata_property in self.metadata_properties:

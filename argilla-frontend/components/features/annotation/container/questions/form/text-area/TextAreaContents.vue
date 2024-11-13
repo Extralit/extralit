@@ -29,7 +29,7 @@
       @on-change-focus="onChangeFocus"
       @on-exit-edition-mode="onExitEditionMode"
     />
-    <RenderMarkdownBaseComponent
+    <MarkdownRenderer
       v-else-if="question.settings.use_markdown && !isEditionModeActive"
       class="textarea--markdown"
       :markdown="question.answer.value"
