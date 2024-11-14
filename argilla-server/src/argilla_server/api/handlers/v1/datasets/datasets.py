@@ -78,7 +78,6 @@ async def list_current_user_datasets(
     status: Optional[DatasetStatus] = Query(None, description="Filter by dataset status"),
 ):
     await authorize(current_user, DatasetPolicy.list(workspace_id))
-    print('parameters', current_user, workspace_id, name, status)
 
     filters = {
         "workspace_id": workspace_id,
@@ -89,8 +88,6 @@ async def list_current_user_datasets(
     dataset_list = await datasets.list_datasets(
         db, user=current_user, **{k: v for k, v in filters.items() if v is not None}
     )
-    from collections import Counter
-    print('dataset_list', Counter([d.id for d in dataset_list]))
 
     return Datasets(items=dataset_list)
 
