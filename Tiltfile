@@ -51,8 +51,8 @@ k8s_resource(
 )
 
 # PostgreSQL is the database for argilla-server
+helm_repo('bitnami', 'https://charts.bitnami.com/bitnami', labels=['helm'], resource_name='bitnami-helm')
 if not ARGILLA_DATABASE_URL:
-    helm_repo('bitnami', 'https://charts.bitnami.com/bitnami', labels=['helm'], resource_name='postgres-helm')
     helm_resource(
         name='main-db', 
         chart='bitnami/postgresql', 
@@ -61,7 +61,7 @@ if not ARGILLA_DATABASE_URL:
             '--values=examples/deployments/k8s/helm/postgres-helm.yaml'],
         port_forwards=['5432'],
         labels=['argilla-server'],
-        resource_deps=['postgres-helm'],
+        resource_deps=['bitnami-helm'],
     )
 
 # Add Redis deployment
