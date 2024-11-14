@@ -159,7 +159,7 @@ export class Record {
       // Ensures that the `selection` are added to initialize the question options first, then add `human` and `model` suggestions to the question
       (this.suggestions || []).forEach((suggestion: Suggestion) => {
         if (suggestion.questionId === question.id) {
-          if (!question.suggestion && suggestion.type != "selection") {
+          if (suggestion.type != "selection") {
             question.addSuggestion(suggestion);
           }
         }

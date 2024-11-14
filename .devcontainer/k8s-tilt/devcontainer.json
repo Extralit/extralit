@@ -26,7 +26,16 @@
       "python.testing.pytestEnabled": true,
       "python.testing.cwd": "${workspaceFolder}/tests",
       "python.testing.pytestArgs": [ "-vs", "--disable-warnings" ],
-      "python.defaultInterpreterPath": "/opt/conda/bin/python"
+      "python.defaultInterpreterPath": "/opt/conda/bin/python",
+      "python.condaPath": "/usr/local/bin/micromamba",
+      "search.exclude": {
+        "argilla-server/src/argilla_server/static/": true,
+        "argilla-frontend/dist/": true,
+      },
+      "files.watcherExclude": {
+        "argilla-server/src/argilla_server/static/": true,
+        "argilla-frontend/dist/": true,
+      }
     }
   },
   
