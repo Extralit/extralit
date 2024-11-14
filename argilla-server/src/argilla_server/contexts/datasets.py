@@ -1064,13 +1064,6 @@ async def delete_suggestion(db: AsyncSession, search_engine: SearchEngine, sugge
     return suggestion
 
 
-async def get_metadata_property_by_id(db: AsyncSession, metadata_property_id: UUID) -> Optional[MetadataProperty]:
-    result = await db.execute(
-        select(MetadataProperty).filter_by(id=metadata_property_id).options(selectinload(MetadataProperty.dataset))
-    )
-    return result.scalar_one_or_none()
-
-
 async def create_document(db: "AsyncSession", dataset_create: DocumentCreateRequest) -> DocumentListItem:
     document = await Document.create(
         db,
