@@ -6,12 +6,11 @@ version_settings(constraint='>=0.23.4')
 allow_k8s_contexts(k8s_context())
 print("Using context:", k8s_context())
 
-# Read the ENV environment variable
+# User-provided environment variables
 ENV = str(local('echo $ENV')).strip() or 'dev'
 USERS_DB = str(local('echo $USERS_DB')).strip()
 DOCKER_REPO = str(local('echo $DOCKER_REPO')).strip() or 'localhost:5005'
 
-# Inform users about the environment variables
 ARGILLA_DATABASE_URL = str(local('echo $ARGILLA_DATABASE_URL')).strip()
 if ARGILLA_DATABASE_URL:
     print("Using external database with ARGILLA_DATABASE_URL envvar, skipping `main-db` deployment")
@@ -113,9 +112,9 @@ for o in argilla_server_k8s_yaml:
                 ])
             if S3_ENDPOINT and S3_ACCESS_KEY and S3_SECRET_KEY:
                 container['env'].extend([
-                    {'name': 'S3_ENDPOINT', 'value': S3_ENDPOINT},
-                    {'name': 'S3_ACCESS_KEY', 'value': S3_ACCESS_KEY},
-                    {'name': 'S3_SECRET_KEY', 'value': S3_SECRET_KEY}
+                    {'name': 'ARGILLA_S3_ENDPOINT', 'value': S3_ENDPOINT},
+                    {'name': 'ARGILLA_S3_ACCESS_KEY', 'value': S3_ACCESS_KEY},
+                    {'name': 'ARGILLA_S3_SECRET_KEY', 'value': S3_SECRET_KEY}
                 ])
 
 k8s_yaml([

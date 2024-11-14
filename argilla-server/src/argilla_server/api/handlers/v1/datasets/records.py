@@ -14,6 +14,7 @@
 
 from typing import Any, Dict, List, Optional, Tuple, Union
 from uuid import UUID
+import uuid
 
 from fastapi import APIRouter, Depends, Query, Security, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -36,6 +37,7 @@ from argilla_server.api.schemas.v1.records import (
     TermsFilter,
     SEARCH_MAX_SIMILARITY_SEARCH_RESULT,
 )
+from argilla_server.api.schemas.v1.users import Users as UsersSchema
 from argilla_server.api.schemas.v1.records import Record as RecordSchema
 from argilla_server.api.schemas.v1.responses import ResponseFilterScope
 from argilla_server.api.schemas.v1.suggestions import (
@@ -47,10 +49,10 @@ from argilla_server.api.schemas.v1.suggestions import (
 from argilla_server.api.handlers.v1.workspaces import list_workspace_users
 from argilla_server.contexts import datasets, search, records
 from argilla_server.database import get_async_db
-from argilla_server.enums import RecordSortField
+from argilla_server.enums import RecordSortField, SuggestionType
 from argilla_server.errors.future import MissingVectorError, NotFoundError, UnprocessableEntityError
 from argilla_server.errors.future.base_errors import MISSING_VECTOR_ERROR_CODE
-from argilla_server.models import Dataset, Field, Record, User, VectorSettings, Response, Question, Suggestion
+from argilla_server.models import Dataset, Field, Record, User, VectorSettings, Response, Question, Suggestion, ResponseStatus
 from argilla_server.search_engine import (
     AndFilter,
     SearchEngine,
@@ -212,18 +214,25 @@ async def _validate_search_records_query(db: "AsyncSession", query: SearchRecord
 def add_suggestions_from_responses(
         records: List[Record],
         current_user: User, 
-        workspace_users: List[User], 
+        workspace_users: UsersSchema, 
         dataset: Dataset, 
     ) -> Records:
-    user_id2name = {user.id: user.username for user in workspace_users.items}
+    workspace_users_id2name = {user.id: user.username for user in workspace_users.items}
     questions_name_map = {question.name: question for question in dataset.questions}
     
     for record in records:
-        suggestion_responses = [response for response in record.responses \
-                                if response.user_id != current_user.id]
-
-        for response in suggestion_responses:
-            suggestions = generate_suggestions_from_response(response, current_user, questions_name_map, user_id2name)
+        other_user_responses = [
+            response for response in record.responses \
+            if response.user_id != current_user.id
+        ]
+        
+        for response in other_user_responses:
+            suggestions = generate_suggestions_from_response(
+                response, 
+                current_user=current_user, 
+                workspace_users_id2name=workspace_users_id2name, 
+                questions_name_map=questions_name_map
+            )
             record.suggestions.extend(suggestions)
 
         if record.responses and record.responses[0].user_id == current_user.id:
@@ -237,8 +246,8 @@ def add_suggestions_from_responses(
 def generate_suggestions_from_response(
         response: Response,
         current_user: User,
+        workspace_users_id2name: Dict[UUID, str],
         questions_name_map: Dict[str, Question],
-        workspace_users_id2name: Dict[UUID, str]
     ) -> List[Suggestion]:
     suggestions = []
     if response.user_id == current_user.id or response.status == ResponseStatus.discarded:
@@ -250,9 +259,9 @@ def generate_suggestions_from_response(
         question = questions_name_map.get(question_name)
 
         suggestion = Suggestion(
-            id=response.id,
+            id=uuid.uuid4(),
             question_id=question.id,
-            type="human",
+            type=SuggestionType.human,
             value=suggestion_value.get("value"),
             agent=workspace_users_id2name.get(response.user_id),
             score=None,
@@ -360,7 +369,7 @@ async def search_current_user_dataset_records(
     )
     
     if include and include.with_response_suggestions:
-        workspace_users = await list_workspace_users(db=db, workspace_id=dataset.workspace_id, current_user=current_user)
+        workspace_users: UsersSchema = await list_workspace_users(db=db, workspace_id=dataset.workspace_id, current_user=current_user)
         workspace_user_ids = [user.id for user in workspace_users.items]
     else:
         workspace_user_ids = None

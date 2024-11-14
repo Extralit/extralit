@@ -43,9 +43,11 @@ spec:
             - containerPort: 6900
           resources:
             requests:
-              cpu: "0.5"
-            limits:
               cpu: "1"
+              memory: "1Gi"
+            limits:
+              cpu: "2"
+              memory: "2Gi"
           env:
             - name: ARGILLA_ELASTICSEARCH_PROTOCOL
               value: "http"
