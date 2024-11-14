@@ -72,34 +72,6 @@ parse_record_include_param = parse_query_param(
 
 router = APIRouter()
 
-async def _filter_records_using_search_engine(
-    db: "AsyncSession",
-    search_engine: "SearchEngine",
-    dataset: Dataset,
-    limit: int,
-    offset: int,
-    user: Optional[User] = None,
-    include: Optional[RecordIncludeParam] = None,
-    workspace_user_ids: Optional[List[UUID]] = None,
-) -> Tuple[List[Record], int]:
-    search_responses = await _get_search_responses(
-        db=db,
-        search_engine=search_engine,
-        dataset=dataset,
-        limit=limit,
-        offset=offset,
-        user=user,
-    )
-
-    record_ids = [response.record_id for response in search_responses.items]
-    user_id = user.id if user else None
-
-    return (
-        await datasets.get_records_by_ids(
-            db=db, dataset_id=dataset.id, user_id=user_id, records_ids=record_ids, include=include, workspace_user_ids=workspace_user_ids
-        ),
-        search_responses.total,
-    )
 
 def _to_search_engine_filter_scope(scope: FilterScope, user: Optional[User]) -> search_engine.FilterScope:
     if isinstance(scope, RecordFilterScope):
@@ -304,11 +276,20 @@ async def list_dataset_records(
     dataset = await Dataset.get_or_raise(db, dataset_id)
     await authorize(current_user, DatasetPolicy.list_records_with_all_responses(dataset))
 
+    if include and include.with_response_suggestions:
+        workspace_users = await list_workspace_users(db=db, workspace_id=dataset.workspace_id, current_user=current_user)
+        workspace_user_ids = [user.id for user in workspace_users.items]
+    else:
+        workspace_user_ids = None
+
+
     include_args = (
         dict(
             with_responses=include.with_responses,
             with_suggestions=include.with_suggestions,
             with_vectors=include.with_all_vectors or include.vectors,
+            with_response_suggestions=include.with_response_suggestions,
+            workspace_user_ids=workspace_user_ids,
         )
         if include
         else {}

@@ -12,15 +12,15 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from typing import Dict, Sequence, Union, List, Tuple, Optional
+from typing import Dict, Iterable, Sequence, Union, List, Tuple, Optional
 from uuid import UUID
 
-from sqlalchemy import select, and_, func, Select
+from sqlalchemy import select, and_, or_, case, func, Select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload, contains_eager
 
 from argilla_server.database import get_async_db
-from argilla_server.models import Dataset, Record, VectorSettings, Vector
+from argilla_server.models import Dataset, Record, VectorSettings, Vector, Response, ResponseStatus
 
 
 async def list_dataset_records(
@@ -31,6 +31,8 @@ async def list_dataset_records(
     with_responses: bool = False,
     with_suggestions: bool = False,
     with_vectors: Union[bool, List[str]] = False,
+    with_response_suggestions: bool = False,
+    workspace_user_ids: Optional[Iterable[UUID]] = None,
 ) -> Tuple[Sequence[Record], int]:
     query = _record_by_dataset_id_query(
         dataset_id=dataset_id,
@@ -39,6 +41,8 @@ async def list_dataset_records(
         with_responses=with_responses,
         with_suggestions=with_suggestions,
         with_vectors=with_vectors,
+        with_response_suggestions=with_response_suggestions,
+        workspace_user_ids=workspace_user_ids,
     )
 
     records = (await db.scalars(query)).unique().all()
@@ -87,10 +91,23 @@ def _record_by_dataset_id_query(
     with_responses: bool = False,
     with_suggestions: bool = False,
     with_vectors: Union[bool, List[str]] = False,
+    with_response_suggestions: bool = False,
+    workspace_user_ids: Optional[Iterable[UUID]] = None,
 ) -> Select:
     query = select(Record).filter_by(dataset_id=dataset_id)
 
-    if with_responses:
+    if with_response_suggestions and workspace_user_ids:
+        query = query.outerjoin(
+            Response, 
+            and_(
+                Response.record_id == Record.id,
+                or_(
+                    Response.user_id.in_(workspace_user_ids),
+                    Response.status.in_([ResponseStatus.submitted, ResponseStatus.discarded])
+                )
+            )
+        ).options(contains_eager(Record.responses))
+    elif with_responses:
         query = query.options(selectinload(Record.responses))
 
     if with_suggestions:
