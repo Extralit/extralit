@@ -109,7 +109,7 @@
             </section>
           </template>
           <template #downHeader>
-            <p v-text="$t('guidelines')" />
+            <p v-text="$t('document')" />
           </template>
           <template #downContent>
             <AnnotationGuidelines />
@@ -168,7 +168,7 @@
         @toggle-expand="expandedGuidelines = !expandedGuidelines"
       >
         <template #panelHeader>
-          <p v-text="$t('guidelines')" />
+          <p v-text="$t('document')" />
         </template>
         <template #panelContent>
           <AnnotationGuidelines />
