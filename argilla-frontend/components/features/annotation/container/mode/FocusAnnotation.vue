@@ -44,7 +44,7 @@
           <p v-text="$t('document')" />
         </template>
         <template #downContent>
-          <PDFViewerBaseComponent 
+          <PDFViewer 
             :url="document.url" 
             :file-name="document.file_name"
             :pageNumber="document.page_number"
@@ -100,7 +100,7 @@
         <p v-text="$t('document')" />
       </template>
       <template #panelContent>
-        <PDFViewerBaseComponent 
+        <PDFViewer 
           :url="document.url" 
           :file-name="document.file_name"
           :pageNumber="document.page_number"
@@ -112,13 +112,9 @@
 
 <script>
 import { useFocusAnnotationViewModel } from "./useFocusAnnotationViewModel";
-import PDFViewerBaseComponent from "@/components/base/base-pdf-viewer/PDFViewer.base.component.vue";
-import useDocumentViewModel from "@/components/features/annotation/sidebar/useDocumentViewModel.ts";
+import { useDocumentViewModel } from "./useDocumentViewModel";
 
 export default {
-  components: {
-    PDFViewerBaseComponent,
-  },
   props: {
     recordCriteria: {
       type: Object,
