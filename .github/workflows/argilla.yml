@@ -20,6 +20,9 @@ on:
     paths:
       - "argilla/**"
 
+permissions:
+  id-token: write
+
 jobs:
   build:
     services:
@@ -88,8 +91,6 @@ jobs:
       # contents: read
       # IMPORTANT: this permission is mandatory for trusted publishing on PyPI
       id-token: write
-      # This permission is needed for creating tags
-      contents: write
 
     needs:
       - build
