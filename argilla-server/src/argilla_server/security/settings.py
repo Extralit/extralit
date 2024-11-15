@@ -16,7 +16,8 @@ import os
 from typing import TYPE_CHECKING, Optional
 from uuid import uuid4
 
-from argilla_server.pydantic_v1 import BaseSettings, PrivateAttr
+from pydantic import PrivateAttr
+from pydantic_settings import BaseSettings
 
 if TYPE_CHECKING:
     from argilla_server.security.authentication.oauth2 import OAuth2Settings
@@ -63,7 +64,7 @@ class Settings(BaseSettings):
         if not self._oauth_settings and os.path.exists(self.oauth_cfg):
             self._oauth_settings = OAuth2Settings.from_yaml(self.oauth_cfg)
         else:
-            self._oauth_settings = OAuth2Settings(enabled=False)
+            self._oauth_settings = OAuth2Settings()
 
         return self._oauth_settings
 

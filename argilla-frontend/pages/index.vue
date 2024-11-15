@@ -16,81 +16,103 @@
   -->
 
 <template>
-  <Home>
-    <template v-slot:header>
-      <AppHeader
-        class="home__header"
-        :breadcrumbs="[
-          { action: 'clearFilters', name: $t('breadcrumbs.home') },
-        ]"
-        @breadcrumb-action="onBreadcrumbAction"
-      />
-      <PersistentStorageBanner class="home__banner" />
-    </template>
-    <template v-slot:page-content>
-      <h1 class="home__title" v-text="$t('home.argillaDatasets')" />
-      <BaseLoading class="home__title" v-if="isLoadingDatasets" />
-      <DatasetsTable
-        v-else
-        class="home__table"
-        ref="table"
-        :datasets="datasets.datasets"
-        @on-click-card="cardAction"
-      />
-    </template>
-    <template v-slot:page-sidebar>
-      <template v-if="isAdminOrOwnerRole">
-        <div class="home__sidebar__buttons">
-          <ImportFromHub
-            :is-expanded="showImportDatasetInput"
-            @on-expand="showImportDatasetInput = true"
-            @on-close="showImportDatasetInput = false"
-            @on-import-dataset="importDataset"
-            :error="error"
-          />
-          <ImportFromPython v-if="!showImportDatasetInput" />
-        </div>
-        <BaseSeparator class="home__sidebar__separator" />
-        <div class="home__sidebar__content">
-          <p
-            class="home__sidebar__title"
-            v-text="$t('home.exampleDatasetsTitle')"
-          />
-          <p
-            class="home__sidebar__subtitle"
-            v-text="$t('home.exampleDatasetsText')"
-          />
-          <div class="home__sidebar__cards">
-            <ExampleDatasetCard
-              v-for="dataset in exampleDatasets"
-              :key="dataset.repoId"
-              :dataset="dataset"
+  <div>
+    <!-- DEBUG DIVS OUTSIDE HOME COMPONENT -->
+    <div
+      style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        background: green;
+        color: white;
+        padding: 10px;
+        z-index: 99999 !important;
+        font-size: 16px !important;
+      "
+    >
+      showImportModal value: {{ showImportModal }}
+    </div>
+    <div
+      v-if="isImportModalVisible"
+      style="
+        position: fixed;
+        top: 30px;
+        left: 0;
+        background: blue;
+        color: white;
+        padding: 10px;
+        z-index: 99999 !important;
+        font-size: 16px !important;
+      "
+    >
+      isImportModalVisible is true
+    </div>
+
+    <Home>
+      <template v-slot:header>
+        <AppHeader
+          class="home__header"
+          :breadcrumbs="[{ action: 'clearFilters', name: $t('breadcrumbs.home') }]"
+          @breadcrumb-action="onBreadcrumbAction"
+        />
+        <PersistentStorageBanner class="home__banner" />
+      </template>
+      <template v-slot:page-content>
+        <BaseLoading v-if="isLoadingDatasets" />
+        <DatasetList :workspaces="workspaces" :datasets="datasets.datasets" @on-click-card="cardAction" />
+      </template>
+      <template v-slot:page-sidebar>
+        <template v-if="true || isAdminOrOwnerRole">
+          <div class="home__sidebar__buttons">
+            <ImportDocuments @on-click="openImportModal" />
+            <ImportFromHub
+              :is-expanded="showImportDatasetInput"
+              @on-expand="showImportDatasetInput = true"
+              @on-close="showImportDatasetInput = false"
               @on-import-dataset="importDataset"
+              :error="error"
             />
+            <ImportFromPython v-if="!showImportDatasetInput" />
           </div>
-        </div>
-      </template>
-      <template v-else>
-        <div class="home__sidebar__content">
-          <p class="home__sidebar__title" v-text="$t('home.guidesTitle')" />
-          <p class="home__sidebar__subtitle" v-text="$t('home.guidesText')" />
-          <div class="home__sidebar__cards">
-            <LinkCard
-              type="How to guide"
-              text="Annotate your dataset"
-              link="https://docs.argilla.io/dev/how_to_guides/annotate/"
-            />
-            <LinkCard
-              type="How to guide"
-              text="Query and filter records"
-              link="https://docs.argilla.io/dev/how_to_guides/query/"
-            />
+          <BaseSeparator class="home__sidebar__separator" />
+          <div class="home__sidebar__content">
+            <p class="home__sidebar__title" v-text="$t('home.exampleDatasetsTitle')" />
+            <p class="home__sidebar__subtitle" v-text="$t('home.exampleDatasetsText')" />
+            <div class="home__sidebar__cards">
+              <ExampleDatasetCard
+                v-for="dataset in exampleDatasets"
+                :key="dataset.repoId"
+                :dataset="dataset"
+                @on-import-dataset="importDataset"
+              />
+            </div>
           </div>
-          <p class="home__sidebar__link" v-html="$t('home.demoLink')" />
-        </div>
+        </template>
+        <template v-else>
+          <div class="home__sidebar__content">
+            <p class="home__sidebar__title" v-text="$t('home.guidesTitle')" />
+            <p class="home__sidebar__subtitle" v-text="$t('home.guidesText')" />
+            <div class="home__sidebar__cards">
+              <LinkCard
+                type="How to guide"
+                text="Annotate your dataset"
+                link="https://docs.extralit.ai/latest/admin_guide/annotate/"
+              />
+              <LinkCard
+                type="How to guide"
+                text="Query and filter records"
+                link="https://docs.extralit.ai/latest/admin_guide/query/"
+              />
+            </div>
+            <p class="home__sidebar__link" v-html="$t('home.demoLink')" />
+          </div>
+        </template>
       </template>
-    </template>
-  </Home>
+
+      <!-- Import Documents Modal -->
+      <ImportModal :is-visible="isImportModalVisible" @close="showImportModal = false" />
+    </Home>
+  </div>
 </template>
 
 <script>
@@ -106,7 +128,7 @@ export default {
   methods: {
     onBreadcrumbAction(e) {
       if (e === "clearFilters") {
-        this.$refs.table?.clearFilters();
+        this.$refs.datasetList?.clearFilters();
       }
     },
     cardAction(action) {
@@ -120,6 +142,12 @@ export default {
   },
   components: {
     Home,
+    ImportDocuments: () => import("@/components/features/home/sidebar/ImportDocuments"),
+    ImportModal: () =>
+      import("@/components/features/import/ImportModal").catch((err) => {
+        console.error("Failed to load ImportModal:", err);
+        return { template: '<div style="background: yellow; padding: 20px;">Failed to load ImportModal</div>' };
+      }),
   },
   setup() {
     return useHomeViewModel();
@@ -129,11 +157,6 @@ export default {
 
 <style lang="scss" scoped>
 .home {
-  &__title {
-    margin: 0;
-    @include font-size(20px);
-    font-weight: 500;
-  }
   &__main {
     display: flex;
     flex-direction: column;
@@ -178,6 +201,7 @@ export default {
       display: flex;
       flex-direction: column;
       gap: $base-space * 2;
+      margin-bottom: $base-space;
     }
     &__link {
       margin-top: $base-space * 4;

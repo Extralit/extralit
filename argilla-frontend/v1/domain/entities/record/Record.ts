@@ -11,7 +11,7 @@ const DEFAULT_STATUS = "pending";
 
 /**
  * Returns the changes in `object` that's different from `base`.
- * 
+ *
  * @param object - The object to compare.
  * @param base - The base object to compare against.
  * @returns An object containing the differences between the two objects.
@@ -81,7 +81,7 @@ export class Record {
   getModified() {
     const { original, ...rest } = this;
 
-    return !!original ? difference(rest, original) : {};
+    return original ? difference(rest, original) : {};
   }
 
   discard(answer: RecordAnswer) {
@@ -159,14 +159,14 @@ export class Record {
       // Ensures that the `selection` are added to initialize the question options first, then add `human` and `model` suggestions to the question
       (this.suggestions || []).forEach((suggestion: Suggestion) => {
         if (suggestion.questionId === question.id) {
-          if (suggestion.type != "selection") {
+          if (suggestion.type !== "selection") {
             question.addSuggestion(suggestion);
           }
         }
       });
-      
+
       if (
-        this.isPending && 
+        this.isPending &&
         !!question.suggestion &&
         // @ts-ignore
         !question.settings?.settings?.use_table

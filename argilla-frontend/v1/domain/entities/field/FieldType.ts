@@ -26,4 +26,8 @@ export class FieldType extends String {
   public get isCustomType(): boolean {
     return this.value === "custom";
   }
+
+  public get isTableType(): boolean {
+    return this.value === "table";
+  }
 }

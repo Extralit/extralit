@@ -1,0 +1,47 @@
+# Extralit CODEOWNERS File
+# Reference: https://docs.github.com/en/repositories/managing-your-work-on-github/about-code-owners
+
+# This file determines who is automatically requested for review when someone
+# opens a pull request that modifies code in different parts of the repository.
+# The last matching pattern takes precedence.
+
+# SDK and Core Extraction
+/extralit/* @extralit/sdk
+/extralit/src/**/* @extralit/sdk
+/extralit/tests/**/* @extralit/sdk
+/extralit/pyproject.toml @extralit/sdk
+/extralit/pdm.lock @extralit/sdk
+
+# Backend Server
+/extralit-server/**/* @extralit/backend
+
+# Frontend
+/extralit-frontend/**/* @extralit/frontend
+
+# Legacy compatibility layer
+/extralit-v1/**/* @extralit/sdk @extralit/backend
+
+# AI/ML-specific code
+/extralit/src/extralit/{extraction,metrics,preprocessing,schema}/**/* @extralit/ai
+/extralit/src/extralit/pipeline/**/* @extralit/ai @extralit/backend
+/extralit/src/extralit/server/**/* @extralit/ai @extralit/backend
+/extralit/src/extralit/storage/**/* @extralit/ai @extralit/backend
+
+# Infrastructure and configuration
+/.github/** @extralit/infra
+/.devcontainer/** @extralit/infra
+/docker/** @extralit/infra
+*.Dockerfile @extralit/infra
+Tiltfile @extralit/infra
+codecov.yml @extralit/infra
+
+# Documentation
+*.md @extralit/docs
+/extralit/docs/**/* @extralit/docs
+/examples/**/* @extralit/docs @extralit/sdk
+
+# Security and legal
+/.github/CODEOWNERS @extralit/core-team
+/SECURITY.md @extralit/core-team
+/LICENSE @extralit/core-team
+/CODE_OF_CONDUCT.md @extralit/core-team

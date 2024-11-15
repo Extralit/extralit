@@ -6,6 +6,7 @@ export default {
   dynamic_label_selection: "Label (dynamic)",
   table_form_placeholder: "Copy and paste a table you'd like to edit here",
   span: "Span",
+  table: "Table",
   text: "Text",
   image: "Image",
   rating: "Rating",
@@ -14,8 +15,10 @@ export default {
   search: "Search",
   searchPlaceholder: "Introduce a query",
   searchDatasets: "Search datasets",
+  share: "Share progress",
   expand: "Expand",
   copied: "Copied",
+  copiedToClipboard: "Copied to clipboard",
   copyLink: "Copy link",
   copyRecord: "Copy record",
   refresh: "Refresh",
@@ -26,6 +29,7 @@ export default {
   description: "Description",
   labels: "Labels",
   order: "Order",
+  owner: "Owner",
   useMarkdown: "Use Markdown",
   useTable: "Use Table",
   suggestionFirst: "Show suggestions first",
@@ -38,19 +42,23 @@ export default {
   visibleLabels: "Visible labels",
   annotationGuidelines: "Annotation guidelines",
   guidelines: "Guidelines",
+  document: "Document",
   taskDistribution: "Task distribution",
   minimumSubmittedResponses: "Minimum submitted responses",
-  taskDistributionTooltip:
-    "A task is complete when all records have the \nminimum number of submitted responses",
+  taskDistributionTooltip: "A task is complete when all records have the \nminimum number of submitted responses",
   noAnnotationGuidelines: "This dataset has no annotation guidelines",
   required: "Required",
   optional: "Optional",
   template: "Template",
+  orgOrUsername: "Organization or username",
+  hfToken: "Hugging Face token",
+  private: "Is private",
+  rows: "rows",
+  datasetName: "Dataset name",
   noRecordsMessages: {
-    datasetEmptyForAnnotator:
-      "The dataset is empty. Ask an administrator to upload records and come back soon.",
+    datasetEmptyForAnnotator: "The dataset is empty. Ask an administrator to upload records and come back soon.",
     datasetEmptyForAdmin:
-      "The dataset is empty. You can add records using the Python SDK, see <a href='https://docs.argilla.io/latest/how_to_guides/record/'>documentation</a> on adding records.",
+      "The dataset is empty. You can add records using the Python SDK, see <a href='https://docs.extralit.ai/latest/admin_guide/record/'>documentation</a> on adding records.",
     taskDistributionCompleted: "🎉 The task is completed!",
     noSubmittedRecords: "You have not submitted any record yet",
     noRecordsFound: "You have no {status} records matching your query",
@@ -62,7 +70,7 @@ export default {
   breadcrumbs: {
     home: "Home",
     datasetSettings: "settings",
-    userSettings: "my settings",
+    userSettings: "My settings",
   },
   datasets: {
     left: "left",
@@ -75,8 +83,7 @@ export default {
     discarded: "discarded",
     submitted: "submitted",
     validated: "validated",
-    completedTooltip:
-      "The record is complete, it has the \nminimum number of responses",
+    completedTooltip: "The record is complete, it has the \nminimum number of responses",
   },
   userSettings: {
     title: "My settings",
@@ -87,9 +94,9 @@ export default {
       workspaces: "Workspaces",
     },
     apiKey: "API key",
-    apiKeyDescription:
-      "API key tokens allow you to manage datasets using the Python SDK.",
+    apiKeyDescription: "API key tokens allow you to manage datasets using the Python SDK.",
     theme: "Theme",
+    language: "Language",
     copyKey: "Copy key",
   },
   userAvatarTooltip: {
@@ -118,11 +125,13 @@ export default {
   button: {
     ignore_and_continue: "Ignore and continue",
     login: "Sign in",
+    signin_with_provider: "Sign in with {provider}",
     "hf-login": "Sign in with Hugging Face",
     sign_in_with_username: "Sign in with username",
     cancel: "Cancel",
     continue: "Continue",
     delete: "Delete",
+    exportToHub: "Push to Hub",
     tooltip: {
       copyToClipboard: "Copy to clipboard",
       copyNameToClipboard: "Copy dataset name to clipboard",
@@ -145,8 +154,7 @@ export default {
     selectAllResults: "Select all {total} matched records",
     haveSelectedRecords: "You have selected all {total} records",
     actionConfirmation: "Bulk action confirmation",
-    actionConfirmationText:
-      "This action will affect {total} records, do you want to continue? ",
+    actionConfirmationText: "This action will affect {total} records, do you want to continue? ",
     allRecordsAnnotated: "The {total} records have been {action}",
     affectedAll: {
       submitted: "submitted",
@@ -231,6 +239,7 @@ export default {
   filters: "Filters",
   filterBy: "Filter by...",
   fields: "Fields",
+  field: "Field",
   questions: "Questions",
   general: "General",
   metadata: "Metadata",
@@ -251,50 +260,55 @@ export default {
   youAreOffline: "You are offline",
   write: "Write",
   preview: "Preview",
-  datasetTable: {
-    name: "Dataset",
-    workspace: "Workspace",
-    createdAt: "Created",
-    lastActivityAt: "Updated",
-    progress: "Team progress",
-  },
   metrics: {
     total: "Total",
     progress: {
+      default: "Progress",
       my: "My Progress",
       team: "Team progress",
     },
   },
   home: {
+    zeroDatasetsFound: "0 datasets found",
     argillaDatasets: "Your datasets",
     none: "None yet",
     importTitle: "Import a dataset from Hugging Face Hub",
-    importText:
-      "Start with a dataset from the Hub by simply pasting the repository name",
+    importText: "Start with a dataset from the Hub by simply pasting the repository name",
     importButton: "Import dataset",
     importFromHub: "Import dataset from Hugging Face",
     importFromPython: "Import from Python",
+    importDocuments: "Import Documents",
     importFromPythonHFWarning:
-      "If you're using a private Space, check the <a target='_blank' href='https://docs.argilla.io/latest/getting_started/how-to-configure-argilla-on-huggingface/#how-to-use-private-spaces'>docs</a>.",
+      "If you're using a private Space, check the <a target='_blank' href='https://docs.extralit.ai/latest/getting_started/how-to-configure-argilla-on-huggingface/#how-to-use-private-spaces'>docs</a>.",
     exampleDatasetsTitle: "Don’t know where to start?",
     exampleDatasetsText: "Explore these example datasets",
-    guidesTitle: "Not familiar with Argilla?",
+    guidesTitle: "Not familiar with Extralit?",
     guidesText: "Take a look at these guides:",
     pasteRepoIdPlaceholder: "Paste a repo id e.g., stanfordnlp/imdb",
     demoLink:
-      "Log into this <a href='https://huggingface.co/spaces/argilla/argilla-template-space' target='_blank'>demo</a> to try Argilla out",
+      "Log into this <a href='https://huggingface.co/spaces/extralit/public-demo' target='_blank'>demo</a> to try Extralit out",
+    name: "Dataset name",
+    updatedAt: "Updated",
+    createdAt: "Created",
   },
   datasetCreation: {
     questions: {
       labelSelection: {
         atLeastTwoOptions: "At least two options are required",
         optionsWithoutLabel: "Empty options are not allowed",
+        optionsSeparatedByComma: "Use comma to separate labels",
+      },
+      rating: {
+        atLeastTwoOptions: "At least two options are required",
+      },
+      span: {
+        fieldRelated: "One text field is required",
       },
     },
     atLeastOneQuestion: "At least one question is required.",
     atLeastOneRequired: "At least one required question is needed.",
     hasInvalidQuestions: "Some questions are invalid",
-    createDataset: "Create the dataset in Argilla",
+    createDataset: "Create the dataset in Extralit",
     datasetName: "Dataset name",
     name: "Name",
     assignWorkspace: "Assign a workspace",
@@ -309,6 +323,7 @@ export default {
     requiredQuestion: "Required question",
     select: "Select",
     mapToColumn: "Map to column",
+    applyToaAField: "Annotate spans on:",
     subset: "Subset",
     selectSubset: "Your can create a dataset from only one subset.",
     preview: "Preview",
@@ -317,7 +332,22 @@ export default {
     cantLoadRepository: "Dataset not found or available on Hugging Face",
     none: "None",
     noWorkspaces:
-      "Please, follow this <a target='_blank' href='https://docs.argilla.io/latest/how_to_guides/workspace/#create-a-new-workspace'>guide</a> to create a workspace",
+      "Please, follow this <a target='_blank' href='https://docs.extralit.ai/latest/admin_guide/workspace/#create-a-new-workspace'>guide</a> to create a workspace",
+  },
+  exportToHub: {
+    dialogTitle: "Push to Hugging Face Hub",
+    ownerTooltip: "Use a valid Hugging Face username or organisation",
+    tokenTooltip: `Use an existing access token or create a <a href='https://huggingface.co/settings/tokens' target='_blank'>new token</a> with "write permission"`,
+    validations: {
+      orgOrUsernameIsRequired: "Organization or username is required",
+      hfTokenIsRequired: "Hugging Face token is required",
+      hfTokenInvalid: "Invalid Hugging Face token",
+      datasetNameIsRequired: "Dataset name is required",
+    },
+    exporting: "Exporting to Hugging Face hub",
+    private: "Private dataset",
+    public: "Public dataset",
+    exportingWarning: "This might take a few seconds",
   },
   config: {
     field: {
@@ -333,14 +363,29 @@ export default {
       ranking: "Ranking",
       multi_label_selection: "Multi-label",
       span: "Span",
+      table: "Table",
       "no mapping": "No mapping",
+    },
+    questionId: {
+      text: "text",
+      rating: "rating",
+      label_selection: "label",
+      ranking: "ranking",
+      multi_label_selection: "multi-label",
+      span: "span",
+      table: "table",
     },
   },
   persistentStorage: {
     adminOrOwner:
       "Persistent storage is not enabled. All data will be lost if this space restarts. Go to the space settings to enable it.",
-    annotator:
-      "Persistent storage is not enabled. All data will be lost if this space restarts.",
+    annotator: "Persistent storage is not enabled. All data will be lost if this space restarts.",
+  },
+  colorSchema: {
+    system: "System",
+    light: "Light",
+    dark: "Dark",
+    "high-contrast": "High contrast",
   },
   validations: {
     businessLogic: {
@@ -348,8 +393,7 @@ export default {
         message: "Vector not found for the selected record",
       },
       update_distribution_with_existing_responses: {
-        message:
-          "Distribution settings can't be modified for a dataset containing user responses",
+        message: "Distribution settings can't be modified for a dataset containing user responses",
       },
     },
     http: {
@@ -370,5 +414,5 @@ export default {
 
   errors: {
     saving: `Failed to save draft due to "{error}"<br/> Please try again and save your work if this persists to avoid losing your progress`,
-  }
+  },
 };

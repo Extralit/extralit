@@ -1,22 +1,18 @@
 <template>
   <div class="container">
-    <RenderTableBaseComponent
+    <RenderTable
       v-if="question.settings.use_table && isValidTableJSON"
       class="textarea"
-      :tableData="question.suggestion?.suggestedAnswer"
+      :tableJSON="JSON.parse(question.suggestion?.suggestedAnswer)"
       :editable="true"
       @onUpdateAnswer="onUpdateAnswer"
     />
-    <RenderHTMLBaseComponent
+    <RenderHTML
       v-else-if="question.settings.use_table && isValidHTML"
       class="textarea"
       :value="question.suggestion?.suggestedAnswer"
     />
-    <MarkdownRenderer
-      v-else
-      class="textarea--markdown"
-      :markdown="question.suggestion?.value"
-    />
+    <MarkdownRenderer v-else class="textarea--markdown" :markdown="question.suggestion?.value" />
     <BaseActionTooltip :tooltip="$t('copied')" class="button-copy">
       <BaseButton @on-click="$copyToClipboard(question.suggestion?.value)">
         <svgicon name="copy" width="16" height="16" />
@@ -27,7 +23,7 @@
 
 <script>
 import "assets/icons/copy";
-import { isTableJSON } from "@/components/base/base-render-table/tableUtils";
+import { isValidJSON } from "@/components/base/base-render-table/tableUtils";
 
 export default {
   name: "TextAreaComponent",
@@ -44,15 +40,14 @@ export default {
       return value?.startsWith("<") && !value?.startsWith("<img") && !value?.startsWith("<iframe");
     },
     isValidTableJSON() {
-      return isTableJSON(this.question.suggestion?.suggestedAnswer);
+      return isValidJSON(this.question.suggestion?.suggestedAnswer);
     },
   },
   methods: {
     onUpdateAnswer(tableJsonString) {
       this.question.answer.value = tableJsonString;
     },
-  }
-
+  },
 };
 </script>
 

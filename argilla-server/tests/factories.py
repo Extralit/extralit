@@ -1,25 +1,35 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import inspect
 import random
-
+import uuid
 import factory
+from unittest.mock import MagicMock
+
+from factory.alchemy import SESSION_PERSISTENCE_COMMIT, SESSION_PERSISTENCE_FLUSH
+from factory.builder import BuildStep, StepBuilder, parse_declarations
+from sqlalchemy.ext.asyncio import async_object_session
+
+from argilla_server.contexts.files import ObjectMetadata, get_minio_client
 from argilla_server.enums import DatasetDistributionStrategy, FieldType, MetadataPropertyType, OptionsOrder
+from argilla_server.webhooks.v1.enums import WebhookEvent
 from argilla_server.models import (
     Dataset,
+    Document,
     Field,
+    ImportHistory,
     MetadataProperty,
     Question,
     QuestionType,
@@ -32,11 +42,10 @@ from argilla_server.models import (
     VectorSettings,
     Workspace,
     WorkspaceUser,
+    Webhook,
+    DatasetUser,
 )
 from argilla_server.models.base import DatabaseModel
-from factory.alchemy import SESSION_PERSISTENCE_COMMIT, SESSION_PERSISTENCE_FLUSH
-from factory.builder import BuildStep, StepBuilder, parse_declarations
-from sqlalchemy.ext.asyncio import async_object_session
 
 from tests.database import SyncTestSession, TestSession
 
@@ -152,14 +161,24 @@ class WorkspaceUserFactory(BaseFactory):
         model = WorkspaceUser
 
 
-class WorkspaceFactory(BaseFactory):
+class WorkspaceSyncFactory(BaseSyncFactory):
     class Meta:
         model = Workspace
 
     name = factory.Sequence(lambda n: f"workspace-{n}")
 
+    @classmethod
+    async def create_with_s3(cls, **kwargs):
+        workspace = await cls.create(**kwargs)
+        minio_client = await get_minio_client()
+        try:
+            await minio_client.make_bucket(workspace.name)
+        except Exception as e:
+            print(f"Error creating bucket for workspace {workspace.name}: {str(e)}")
+        return workspace
 
-class WorkspaceSyncFactory(BaseSyncFactory):
+
+class WorkspaceFactory(BaseFactory):
     class Meta:
         model = Workspace
 
@@ -194,8 +213,21 @@ class AdminFactory(UserFactory):
     role = UserRole.admin
 
 
+class AnnotatorSyncFactory(UserSyncFactory):
+    role = UserRole.annotator
+
+
 class AnnotatorFactory(UserFactory):
     role = UserRole.annotator
+
+
+class DatasetSyncFactory(BaseSyncFactory):
+    class Meta:
+        model = Dataset
+
+    name = factory.Sequence(lambda n: f"dataset-{n}")
+    distribution = {"strategy": DatasetDistributionStrategy.overlap, "min_submitted": 1}
+    workspace = factory.SubFactory(WorkspaceSyncFactory)
 
 
 class DatasetFactory(BaseFactory):
@@ -205,6 +237,26 @@ class DatasetFactory(BaseFactory):
     name = factory.Sequence(lambda n: f"dataset-{n}")
     distribution = {"strategy": DatasetDistributionStrategy.overlap, "min_submitted": 1}
     workspace = factory.SubFactory(WorkspaceFactory)
+
+
+class DatasetUserFactory(BaseFactory):
+    class Meta:
+        model = DatasetUser
+
+    dataset = factory.SubFactory(DatasetFactory)
+    user = factory.SubFactory(UserFactory)
+
+
+class RecordSyncFactory(BaseSyncFactory):
+    class Meta:
+        model = Record
+
+    fields = {
+        "text": "This is a text",
+        "sentiment": "neutral",
+    }
+    external_id = factory.Sequence(lambda n: f"external-id-{n}")
+    dataset = factory.SubFactory(DatasetSyncFactory)
 
 
 class RecordFactory(BaseFactory):
@@ -219,12 +271,30 @@ class RecordFactory(BaseFactory):
     dataset = factory.SubFactory(DatasetFactory)
 
 
+class ResponseSyncFactory(BaseSyncFactory):
+    class Meta:
+        model = Response
+
+    record = factory.SubFactory(RecordSyncFactory)
+    user = factory.SubFactory(UserSyncFactory)
+
+
 class ResponseFactory(BaseFactory):
     class Meta:
         model = Response
 
     record = factory.SubFactory(RecordFactory)
     user = factory.SubFactory(UserFactory)
+
+
+class VectorSettingsSyncFactory(BaseSyncFactory):
+    class Meta:
+        model = VectorSettings
+
+    name = factory.Sequence(lambda n: f"vector-{n}")
+    title = "Vector Title"
+    dimensions = factory.LazyAttribute(lambda _: random.randrange(16, 1024))
+    dataset = factory.SubFactory(DatasetSyncFactory)
 
 
 class VectorSettingsFactory(BaseFactory):
@@ -237,12 +307,29 @@ class VectorSettingsFactory(BaseFactory):
     dataset = factory.SubFactory(DatasetFactory)
 
 
+class VectorSyncFactory(BaseSyncFactory):
+    class Meta:
+        model = Vector
+
+    record = factory.SubFactory(RecordSyncFactory)
+    vector_settings = factory.SubFactory(VectorSettingsSyncFactory)
+
+
 class VectorFactory(BaseFactory):
     class Meta:
         model = Vector
 
     record = factory.SubFactory(RecordFactory)
     vector_settings = factory.SubFactory(VectorSettingsFactory)
+
+
+class FieldSyncFactory(BaseSyncFactory):
+    class Meta:
+        model = Field
+
+    name = factory.Sequence(lambda n: f"field-{n}")
+    title = "Field Title"
+    dataset = factory.SubFactory(DatasetSyncFactory)
 
 
 class FieldFactory(BaseFactory):
@@ -258,6 +345,7 @@ class TextFieldFactory(FieldFactory):
     settings = {
         "type": FieldType.text,
         "use_markdown": False,
+        "use_table": False,
     }
 
 
@@ -280,6 +368,16 @@ class CustomFieldFactory(FieldFactory):
         "template": "<div>{{ value }}</div>",
         "advanced_mode": False,
     }
+
+
+class MetadataPropertySyncFactory(BaseSyncFactory):
+    class Meta:
+        model = MetadataProperty
+
+    name = factory.Sequence(lambda n: f"metadata-property-{n}")
+    title = "Metadata property title"
+    allowed_roles = [UserRole.admin, UserRole.annotator]
+    dataset = factory.SubFactory(DatasetSyncFactory)
 
 
 class MetadataPropertyFactory(BaseFactory):
@@ -313,6 +411,17 @@ class IntegerMetadataPropertyFactory(MetadataPropertyFactory):
 
 class FloatMetadataPropertyFactory(MetadataPropertyFactory):
     settings = {"type": MetadataPropertyType.float}
+
+
+class QuestionSyncFactory(BaseSyncFactory):
+    class Meta:
+        model = Question
+
+    name = factory.Sequence(lambda n: f"question-{n}")
+    title = "Question Title"
+    description = "Question Description"
+    dataset = factory.SubFactory(DatasetSyncFactory)
+    settings = {}
 
 
 class QuestionFactory(BaseFactory):
@@ -409,6 +518,15 @@ class SpanQuestionFactory(QuestionFactory):
     }
 
 
+class SuggestionSyncFactory(BaseSyncFactory):
+    class Meta:
+        model = Suggestion
+
+    record = factory.SubFactory(RecordSyncFactory)
+    question = factory.SubFactory(QuestionSyncFactory)
+    value = "negative"
+
+
 class SuggestionFactory(BaseFactory):
     class Meta:
         model = Suggestion
@@ -416,3 +534,121 @@ class SuggestionFactory(BaseFactory):
     record = factory.SubFactory(RecordFactory)
     question = factory.SubFactory(QuestionFactory)
     value = "negative"
+
+
+class WebhookFactory(BaseFactory):
+    class Meta:
+        model = Webhook
+
+    url = factory.Sequence(lambda n: f"https://example-{n}.com")
+    events = [WebhookEvent.response_created]
+
+
+class DocumentFactory(BaseFactory):
+    class Meta:
+        model = Document
+
+    id = factory.LazyFunction(uuid.uuid4)
+    reference = factory.Sequence(lambda n: f"Test Document {n}")
+    pmid = factory.Sequence(lambda n: f"{n}")
+    doi = factory.Sequence(lambda n: f"10.1234/test.doi.{n}")
+    file_name = factory.Sequence(lambda n: f"test{n}.pdf")
+    url = factory.Sequence(lambda n: f"https://example.com/documents/{n}.pdf")
+    workspace = factory.SubFactory(WorkspaceFactory)
+    workspace_id = factory.SelfAttribute("workspace.id")
+
+
+class ImportHistoryFactory(BaseFactory):
+    class Meta:
+        model = ImportHistory
+
+    id = factory.LazyFunction(uuid.uuid4)
+    workspace = factory.SubFactory(WorkspaceFactory)
+    user = factory.SubFactory(UserFactory)
+    filename = factory.Sequence(lambda n: f"library-{n}.bib")
+    metadata = {
+        "documents": {
+            "ref1": {
+                "document_create": {
+                    "reference": "ref1",
+                    "pmid": None,
+                    "doi": None,
+                    "file_name": "paper1.pdf",
+                    "url": None,
+                },
+                "title": "Test Paper 1",
+                "authors": ["Author A"],
+                "year": 2025,
+                "venue": "Test Journal",
+                "associated_files": ["paper1.pdf"],
+                "status": "add",
+                "validation_errors": [],
+            }
+        },
+        "summary": {"total_documents": 1, "add_count": 1, "update_count": 0, "skip_count": 0, "failed_count": 0},
+    }
+
+
+class MinioFileFactory(factory.Factory):
+    class Meta:
+        model = ObjectMetadata
+
+    bucket_name = "test-bucket"
+    object_name = factory.Sequence(lambda n: f"test-object-{n}")
+    last_modified = None
+    etag = None
+    size = 0
+    content_type = "application/octet-stream"
+    version_id = None
+    is_latest = True
+    metadata = None
+    version_tag = factory.LazyAttribute(lambda o: f"v{factory.Faker('pyint', min_value=1, max_value=5).generate()}")
+
+    @classmethod
+    def attributes(cls, **kwargs):
+        return {
+            "bucket_name": kwargs.get("bucket_name", cls.bucket_name),
+            "object_name": kwargs.get("object_name", f"test-object-0"),
+            "last_modified": kwargs.get("last_modified", None),
+            "etag": kwargs.get("etag", None),
+            "size": kwargs.get("size", 0),
+            "content_type": kwargs.get("content_type", "application/octet-stream"),
+            "version_id": kwargs.get("version_id", None),
+            "is_latest": kwargs.get("is_latest", True),
+            "metadata": kwargs.get("metadata", None),
+            "version_tag": kwargs.get("version_tag", "v1"),
+        }
+
+    @classmethod
+    def build(cls, **kwargs):
+        attributes = cls.attributes(**kwargs)
+        return cls._meta.model(**attributes)
+
+    @classmethod
+    def create(cls, **kwargs):
+        """Create a MinioFile and mock the put_object and get_object methods to return it."""
+        from argilla_server.contexts.files import get_minio_client
+
+        file = cls.build(**kwargs)
+
+        client = get_minio_client()
+
+        # Store original methods
+        getattr(client, "put_object", None)
+        getattr(client, "get_object", None)
+
+        # Mock put_object to return our file
+        def mock_put_object(bucket_name, object_name, data, length, content_type=None, metadata=None):
+            return file
+
+        # Mock get_object to return file data
+        def mock_get_object(bucket_name, object_name, version_id=None):
+            response = MagicMock()
+            response.data = b"test data"
+            return response
+
+        # Apply mocks
+        client.put_object = mock_put_object
+        client.get_object = mock_get_object
+
+        return file

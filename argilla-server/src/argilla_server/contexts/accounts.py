@@ -15,7 +15,7 @@ import secrets
 from typing import Iterable, List, Sequence, Union
 from uuid import UUID
 
-from passlib.context import CryptContext
+import bcrypt
 from sqlalchemy import exists, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -26,8 +26,7 @@ from argilla_server.errors.future import NotUniqueError, UnprocessableEntityErro
 from argilla_server.models import User, Workspace, WorkspaceUser
 from argilla_server.security.authentication.jwt import JWT
 from argilla_server.security.authentication.userinfo import UserInfo
-
-_CRYPT_CONTEXT = CryptContext(schemes=["bcrypt"], deprecated="auto")
+from argilla_server.validators.users import UserCreateValidator
 
 
 async def create_workspace_user(db: AsyncSession, workspace_user_attrs: dict) -> WorkspaceUser:
@@ -54,7 +53,7 @@ async def list_workspaces(db: AsyncSession) -> List[Workspace]:
     return result.scalars().all()
 
 
-async def list_workspaces_by_user_id(db: AsyncSession, user_id: UUID) -> List[Workspace]:
+async def list_workspaces_by_user_id(db: AsyncSession, user_id: UUID) -> Sequence[Workspace]:
     result = await db.execute(
         select(Workspace)
         .join(WorkspaceUser)
@@ -68,7 +67,15 @@ async def create_workspace(db: AsyncSession, workspace_attrs: dict) -> Workspace
     if await Workspace.get_by(db, name=workspace_attrs["name"]) is not None:
         raise NotUniqueError(f"Workspace name `{workspace_attrs['name']}` is not unique")
 
-    return await Workspace.create(db, name=workspace_attrs["name"])
+    if workspace_id := workspace_attrs.get("id"):
+        if await Workspace.get(db, id=workspace_id) is not None:
+            raise NotUniqueError(f"Workspace with id `{workspace_id}` is not unique")
+
+    return await Workspace.create(
+        db,
+        id=workspace_attrs.get("id"),
+        name=workspace_attrs["name"],
+    )
 
 
 async def delete_workspace(db: AsyncSession, workspace: Workspace):
@@ -104,22 +111,26 @@ async def list_users_by_ids(db: AsyncSession, ids: Iterable[UUID]) -> Sequence[U
     return result.scalars().all()
 
 
-# TODO: After removing API v0 implementation we can remove the workspaces attribute.
-# With API v1 the workspaces will be created doing additional requests to other endpoints for it.
-async def create_user(db: AsyncSession, user_attrs: dict, workspaces: Union[List[str], None] = None) -> User:
+async def create_user(
+    db: AsyncSession,
+    user_attrs: dict,
+    workspaces: Union[List[str], None] = None,
+) -> User:
     if await get_user_by_username(db, user_attrs["username"]) is not None:
         raise NotUniqueError(f"User username `{user_attrs['username']}` is not unique")
 
-    user = await User.create(
-        db,
+    new_user = User(
+        id=user_attrs.get("id"),
         first_name=user_attrs["first_name"],
         last_name=user_attrs["last_name"],
         username=user_attrs["username"],
         role=user_attrs["role"],
         password_hash=hash_password(user_attrs["password"]),
-        autocommit=False,
     )
 
+    await UserCreateValidator.validate(db, user=new_user)
+
+    await new_user.save(db, autocommit=False)
     if workspaces is not None:
         for workspace_name in workspaces:
             workspace = await Workspace.get_by(db, name=workspace_name)
@@ -129,13 +140,13 @@ async def create_user(db: AsyncSession, user_attrs: dict, workspaces: Union[List
             await WorkspaceUser.create(
                 db,
                 workspace_id=workspace.id,
-                user_id=user.id,
+                user_id=new_user.id,
                 autocommit=False,
             )
 
     await db.commit()
 
-    return user
+    return new_user
 
 
 async def create_user_with_random_password(
@@ -156,6 +167,18 @@ async def create_user_with_random_password(
     return await create_user(db, user_attrs, workspaces)
 
 
+async def update_user(db: AsyncSession, user: User, user_attrs: dict) -> User:
+    username = user_attrs.get("username")
+    if username is not None and username != user.username:
+        if await get_user_by_username(db, username):
+            raise UnprocessableEntityError(f"Username {username!r} already exists")
+
+    if "password" in user_attrs:
+        user_attrs["password_hash"] = hash_password(user_attrs.pop("password"))
+
+    return await user.update(db, **user_attrs)
+
+
 async def delete_user(db: AsyncSession, user: User) -> User:
     return await user.delete(db)
 
@@ -168,19 +191,21 @@ async def authenticate_user(db: AsyncSession, username: str, password: str):
     elif user:
         return
     else:
-        _CRYPT_CONTEXT.dummy_verify()
+        _dummy_verify()
 
 
 def hash_password(password: str) -> str:
-    return _CRYPT_CONTEXT.hash(password)
+    return bcrypt.hashpw(
+        bytes(password, encoding="utf-8"),
+        bcrypt.gensalt(),
+    ).decode("utf-8")
 
 
 def verify_password(password: str, password_hash: str) -> bool:
-    return _CRYPT_CONTEXT.verify(password, password_hash)
-
-
-def _generate_random_password() -> str:
-    return secrets.token_urlsafe()
+    return bcrypt.checkpw(
+        bytes(password, encoding="utf-8"),
+        bytes(password_hash, encoding="utf-8"),
+    )
 
 
 def generate_user_token(user: User) -> str:
@@ -192,3 +217,15 @@ def generate_user_token(user: User) -> str:
             role=user.role,
         ),
     )
+
+
+_DUMMY_SECRET = "dummy_secret"
+_DUMMY_HASH = hash_password(_DUMMY_SECRET)
+
+
+def _dummy_verify():
+    verify_password(_DUMMY_SECRET, _DUMMY_HASH)
+
+
+def _generate_random_password() -> str:
+    return secrets.token_urlsafe()

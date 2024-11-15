@@ -1,27 +1,27 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-import uuid
 from typing import TYPE_CHECKING, Dict, Generator, Optional
 
 import pytest
 import pytest_asyncio
-from sqlalchemy.engine.interfaces import IsolationLevel
+
+from typing import TYPE_CHECKING, Dict, Generator, Optional
 from httpx import AsyncClient
 from opensearchpy import OpenSearch
+from sqlalchemy.engine.interfaces import IsolationLevel
 
-from argilla_server import telemetry
 from argilla_server.contexts import distribution, datasets, records
 from argilla_server.api.routes import api_v1
 from argilla_server.constants import API_KEY_HEADER_NAME, DEFAULT_API_KEY
@@ -30,6 +30,7 @@ from argilla_server.models import User, UserRole, Workspace
 from argilla_server.search_engine import SearchEngine, get_search_engine
 from argilla_server.settings import settings
 from argilla_server.telemetry import TelemetryClient
+
 from tests.database import TestSession
 from tests.factories import AnnotatorFactory, OwnerFactory, UserFactory
 
@@ -71,6 +72,11 @@ def owner_auth_header(owner: User) -> Dict[str, str]:
     return {API_KEY_HEADER_NAME: owner.api_key}
 
 
+@pytest.fixture(scope="function")
+def annotator_auth_header(annotator: User) -> Dict[str, str]:
+    return {API_KEY_HEADER_NAME: annotator.api_key}
+
+
 @pytest_asyncio.fixture(scope="function")
 async def async_client(
     request, mock_search_engine: SearchEngine, mocker: "MockerFixture"
@@ -91,7 +97,6 @@ async def async_client(
 
     mocker.patch.object(distribution, "_get_async_db", override_get_async_db)
     mocker.patch.object(datasets, "get_async_db", override_get_async_db)
-    mocker.patch.object(records, "get_async_db", override_get_async_db)
 
     api_v1.dependency_overrides.update(
         {

@@ -1,22 +1,14 @@
 <template>
   <div
     class="text_field_component"
-    :key="name"
+    :key="id"
     @mouseenter.stop="mouseEnter = true"
     @mouseleave.stop="mouseEnter = false"
     aria-label="Data Record Field"
   >
     <div class="title-area --body2">
-      <span
-        class="text_field_component__title-content"
-        v-text="title"
-        :aria-label="'Field Name: ' + title"
-      />
-      <BaseActionTooltip
-        class="text_field_component__tooltip"
-        :tooltip="$t('copied')"
-        tooltip-position="left"
-      >
+      <span class="text_field_component__title-content" v-text="title" :aria-label="'Field Name: ' + title" />
+      <BaseActionTooltip class="text_field_component__tooltip" :tooltip="$t('copied')" tooltip-position="left">
         <BaseButton
           :title="$t('button.tooltip.copyToClipboard')"
           :aria-label="$t('button.tooltip.copyToClipboard')"
@@ -24,26 +16,18 @@
           @click.prevent="$copyToClipboard(fieldText)"
           role="button"
         >
-          <svgicon
-            color="#acacac"
-            name="copy"
-            width="18"
-            height="18"
-            aria-hidden="true"
-          />
+          <svgicon color="#acacac" name="copy" width="18" height="18" aria-hidden="true" />
         </BaseButton>
       </BaseActionTooltip>
     </div>
     <div
-      id="fields-content"
+      :id="`fields-content-${id}`"
       class="text_field_component__area --body1"
       :aria-label="'Data entry for Field: ' + title"
     >
       <p
         :class="[
-          allowOverlapping
-            ? 'span-annotation__field--overlapped'
-            : 'span-annotation__field',
+          allowOverlapping ? 'span-annotation__field--overlapped' : 'span-annotation__field',
           hasSelectedEntity ? 'span-annotation__field--active' : null,
         ]"
         ref="spanAnnotationField"
@@ -97,7 +81,7 @@
             [data-theme="dark"] .span-annotation__field--overlapped::highlight(hl-{{id}}-hover) {
               background: {{color.palette.veryDark}};
             }
-            ::highlight(search-text-highlight-{{name}}) {
+            ::highlight(search-text-highlight-{{id}}) {
               color: #ff675f;
             }
           </style>
@@ -110,13 +94,8 @@
 <script>
 import { useSpanAnnotationTextFieldViewModel } from "./useSpanAnnotationTextFieldViewModel";
 export default {
-  name: "SpanAnnotationTextField",
   props: {
     id: {
-      type: String,
-      required: true,
-    },
-    name: {
       type: String,
       required: true,
     },

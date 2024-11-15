@@ -490,6 +490,7 @@ export default {
 }
 
 .button {
+  border: 1px solid var(--bg-opacity-1);
   &__shortcuts {
     display: inline-flex;
     align-items: center;

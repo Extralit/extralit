@@ -1,9 +1,6 @@
 <template>
   <div>
-    <div
-      :class="{ '--error': errors.length }"
-      class="dataset-config-label__input-container"
-    >
+    <div :class="{ '--error': errors.options?.length }" class="dataset-config-label__input-container">
       <input
         type="text"
         :value="optionsJoinedByCommas"
@@ -14,11 +11,11 @@
         class="dataset-config-label__input"
       />
     </div>
-    <Validation v-if="errors.length" :validations="translatedValidations" />
+    <Validation v-if="errors.options?.length" :validations="errors.options" />
     <label
       v-else
       class="dataset-config-label__label"
-      v-text="`Use coma to separate labels`"
+      v-text="$t('datasetCreation.questions.labelSelection.optionsSeparatedByComma')"
     />
   </div>
 </template>
@@ -27,7 +24,7 @@
 export default {
   data() {
     return {
-      errors: [],
+      errors: {},
       isDirty: false,
     };
   },
@@ -44,11 +41,6 @@ export default {
   computed: {
     optionsJoinedByCommas() {
       return this.question.options.map((item) => item.text).join(",");
-    },
-    translatedValidations() {
-      return this.errors.map((validation) => {
-        return this.$t(validation);
-      });
     },
   },
   methods: {

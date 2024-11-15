@@ -1,17 +1,10 @@
 <template>
   <div class="record-menu">
-    <BaseDropdown
-      :freezing-page="visibleMetadataInfo"
-      :visible="dropdownIsVisible"
-      @visibility="onVisibility"
-    >
+    <BaseDropdown :freezing-page="visibleMetadataInfo" :visible="dropdownIsVisible" @visibility="onVisibility">
       <template slot="dropdown-header">
         <BaseButton
           class="record-menu__header"
-          :aria-label="
-            (dropdownIsVisible ? 'Collapse' : 'Expand') +
-            ' Record Dropdown for Extra Information'
-          "
+          :aria-label="(dropdownIsVisible ? 'Collapse' : 'Expand') + ' Record Dropdown for Extra Information'"
         >
           <svgicon name="kebab" width="20" height="20" aria-hidden="true" />
         </BaseButton>
@@ -56,11 +49,7 @@ export default {
     },
     copyRecord() {
       this.dropdownIsVisible = false;
-      this.$copyToClipboard(
-        this.record.fields
-          .map((field) => `${field.title}\n${field.content}`)
-          .join("\n")
-      );
+      this.$copyToClipboard(this.record.fields.map((field) => `${field.title}\n${field.content}`).join("\n"));
     },
     onVisibility(isVisible) {
       this.visibleMetadataInfo = false;
@@ -84,6 +73,7 @@ export default {
     list-style: none;
     padding: $base-space;
     margin: 0;
+    border: 1px solid var(--bg-opacity-1);
     li {
       border-radius: $border-radius-s;
       transition: background-color 0.3s ease;

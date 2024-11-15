@@ -13,10 +13,11 @@
 #  limitations under the License.
 
 from datetime import datetime
-from typing import List
+from optparse import Option
+from typing import List, Optional
 from uuid import UUID
 
-from argilla_server.pydantic_v1 import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class Workspace(BaseModel):
@@ -25,11 +26,11 @@ class Workspace(BaseModel):
     inserted_at: datetime
     updated_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class WorkspaceCreate(BaseModel):
+    id: Optional[UUID] = None
     name: str = Field(min_length=1)
 
 

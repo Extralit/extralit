@@ -9,10 +9,7 @@
       @change-sort-direction="onChangeSortDirection(category)"
       @replace-sort-category="onReplaceSortCategory(category, ...arguments)"
     />
-    <BaseDropdown
-      v-if="nonSelectedSortingItems.length"
-      :visible="visibleDropdown"
-    >
+    <BaseDropdown v-if="nonSelectedSortingItems.length" :visible="visibleDropdown">
       <span slot="dropdown-header">
         <BaseButton class="secondary small light" @click="onToggleVisibility">
           {{ $t("sorting.addOtherField") }}</BaseButton

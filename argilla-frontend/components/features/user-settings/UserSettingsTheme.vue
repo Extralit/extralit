@@ -1,20 +1,10 @@
 <template>
   <div class="theme-switch">
-    <div
-      class="theme-switch__item"
-      v-for="(theme, index) in themes"
-      :key="index"
-    >
-      <input
-        type="radio"
-        :id="theme"
-        :value="theme"
-        v-model="currentTheme"
-        @input="$colorSchema.setTheme(theme)"
-      />
+    <div class="theme-switch__item" v-for="(theme, index) in themes" :key="index">
+      <input type="radio" :id="theme" :value="theme" v-model="currentTheme" @input="$colorSchema.setTheme(theme)" />
       <label :for="theme">
         <svgicon width="20" height="20" :name="`${theme}-theme`" />
-        {{ theme }}</label
+        {{ $t(`colorSchema.${theme}`) }}</label
       >
     </div>
   </div>
@@ -24,11 +14,12 @@
 import "assets/icons/light-theme";
 import "assets/icons/dark-theme";
 import "assets/icons/system-theme";
+import "assets/icons/high-contrast-theme";
+
 export default {
-  name: "ThemeSwitch",
   data() {
     return {
-      themes: ["system", "dark", "light"],
+      themes: ["system", "dark", "light", "high-contrast"],
       currentTheme: this.$colorSchema.currentTheme,
     };
   },
@@ -61,6 +52,7 @@ label {
   &:hover {
     transition: color 0.3s ease;
     color: var(--fg-primary);
+    cursor: pointer;
     .svg-icon {
       transition: fill 0.3s ease;
       fill: var(--fg-primary);

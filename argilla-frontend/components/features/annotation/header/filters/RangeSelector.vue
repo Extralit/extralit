@@ -1,10 +1,5 @@
 <template>
-  <BaseRangeMultipleSlider
-    :min="filter.settings.min"
-    :max="filter.settings.max"
-    v-model="sliderValues"
-    :step="step"
-  />
+  <BaseRangeMultipleSlider :min="filter.settings.min" :max="filter.settings.max" v-model="sliderValues" :step="step" />
 </template>
 <script>
 export default {

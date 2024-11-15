@@ -1,8 +1,5 @@
 <template>
-  <MarkdownRenderer
-    class="--body3"
-    :markdown="guidelines || $t('noAnnotationGuidelines')"
-  />
+  <MarkdownRenderer class="annotation-guidelines --body3" :markdown="guidelines || $t('noAnnotationGuidelines')" />
 </template>
 
 <script>
@@ -13,3 +10,9 @@ export default {
   },
 };
 </script>
+
+<style lang="scss" scoped>
+.annotation-guidelines {
+  padding-inline: $base-space * 2;
+}
+</style>

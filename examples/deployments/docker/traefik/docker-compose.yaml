@@ -17,7 +17,7 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
   argilla:
-    image: argilla/argilla-hf-spaces:latest
+    image: extralitdev/argilla-hf-spaces:latest
     environment:
       HF_HUB_DISABLE_TELEMETRY: 1
       ARGILLA_BASE_URL: /argilla

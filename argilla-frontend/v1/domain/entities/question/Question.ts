@@ -9,6 +9,7 @@ import {
   MultiLabelQuestionAnswer,
   RankingQuestionAnswer,
   SpanQuestionAnswer,
+  TableQuestionAnswer,
 } from "./QuestionAnswer";
 import { QuestionSetting } from "./QuestionSetting";
 import { QuestionType } from "./QuestionType";
@@ -91,6 +92,10 @@ export class Question {
 
   public get isSpanType(): boolean {
     return this.type.isSpanType;
+  }
+
+  public get isTableType(): boolean {
+    return this.type.isTableType;
   }
 
   public get isRatingType(): boolean {
@@ -186,8 +191,8 @@ export class Question {
   public addDynamicSelectionToLabelQuestion(suggestedOptions: LabelAnswer[]) {
     if (!Array.isArray(suggestedOptions) || !suggestedOptions?.length) return
 
-    let existingOptionsValues = new Set(this.settings.options.map((option: LabelAnswer) => option.value));
-    let selections = [
+    const existingOptionsValues = new Set(this.settings.options.map((option: LabelAnswer) => option.value));
+    const selections = [
       ...this.settings.options,
       ...suggestedOptions
         .filter((option: LabelAnswer) => !existingOptionsValues.has(option.value ))
@@ -222,6 +227,12 @@ export class Question {
         this.type,
         this.name,
         this.settings.options
+      );
+    }
+
+    if (this.isTableType) {
+      return new TableQuestionAnswer(
+        this.type,
       );
     }
 

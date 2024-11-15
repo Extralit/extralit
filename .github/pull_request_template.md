@@ -1,28 +1,55 @@
-# Description
-<!-- Please include a summary of the changes and the related issue. Please also include relevant motivation and context. List any dependencies that are required for this change. -->
+<!-- 
+PR Title format: [Type] Short description
+Examples:
+- [Fix] Resolve authentication bug
+- [Feature] Add dark mode support
+- [Refactor] Improve user profile component
+- [Docs] Update API documentation
+- [Chore] Update dependencies
+-->
 
-Closes #<issue_number>
+## Description
 
-**Type of change**
-<!--  Please delete options that are not relevant. Remember to title the PR according to the type of change  -->
+<!-- 
+Please do not leave this blank 
+This PR [adds/removes/fixes/replaces] the [feature/bug/etc]. 
+-->
 
-- Bug fix (non-breaking change which fixes an issue)
-- New feature (non-breaking change which adds functionality)
-- Breaking change (fix or feature that would cause existing functionality to not work as expected)
-- Refactor (change restructuring the codebase without changing functionality)
-- Improvement (change adding some improvement to an existing functionality)
-- Documentation update
+## Related Tickets & Documents
 
-**How Has This Been Tested**
-<!--  Please add some reference about how your feature has been tested.  -->
+Closes #<!-- Add issue number here -->
 
-**Checklist**
-<!--  Please go over the list and make sure you've taken everything into account -->
+## What type of PR is this? (check all applicable)
 
-- I added relevant documentation
-- I followed the style guidelines of this project
-- I did a self-review of my code
-- I made corresponding changes to the documentation
-- I confirm My changes generate no new warnings
-- I have added tests that prove my fix is effective or that my feature works
-- I have added relevant notes to the CHANGELOG.md file (See https://keepachangelog.com/)
+- [ ] Refactor
+- [ ] Feature
+- [ ] Bug Fix
+- [ ] Optimization
+- [ ] Documentation Update
+
+## Steps to QA
+<!-- 
+Please provide some steps for the reviewer to test your change. If you have wrote tests, you can mention that here instead.
+
+1. Click a link
+2. Do this thing
+3. Validate you see the thing working
+-->
+
+## Added/updated tests?
+
+- [ ] Yes
+- [ ] No, and this is why: _please replace this line with details on why tests
+      have not been included_
+- [ ] I need help with writing tests
+
+## Added/updated documentations?
+
+- [ ] Yes
+- [ ] No, and this is why: _please replace this line with details on why tests
+      have not been included_
+- [ ] I need help with writing docs
+  
+## Checklist
+- [ ] I have added relevant notes to the CHANGELOG.md file (See https://keepachangelog.com/)
+

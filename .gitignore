@@ -27,6 +27,7 @@ dmypy.json
 /coverage.xml
 /.coverage
 
+/*.ipynb
 .ipynb_checkpoints
 .history
 
@@ -138,7 +139,9 @@ sw.*
 
 # yarn & npm
 yarn.lock
-package-lock.json
+
+# App generated files
+src/**/server/static/
 
 # Old users db file
 .users.yml
@@ -151,4 +154,4 @@ package-lock.json
 
 # App generated files
 argilla-server/src/argilla_server/static
-argilla/site
+extralit/site

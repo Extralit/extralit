@@ -1,12 +1,7 @@
 <template>
   <div class="wrapper">
     <QuestionHeaderComponent :question="question" />
-    <div
-      class="question__warning"
-      v-if="warningMessage"
-      role="status"
-      aria-live="polite"
-    >
+    <div class="question__warning" v-if="warningMessage" role="status" aria-live="polite">
       <svgicon name="danger" width="16" height="16" aria-hidden="true" />
       <span v-text="warningMessage" />
     </div>
@@ -76,7 +71,7 @@ export default {
 .wrapper {
   display: flex;
   flex-direction: column;
-  gap: $base-space;
+  gap: $base-space * 1.5;
 }
 .question {
   &__warning {
