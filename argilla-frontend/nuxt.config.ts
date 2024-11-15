@@ -51,7 +51,7 @@ const config: NuxtConfig = {
       { rel: "manifest", href: "site.webmanifest" },
     ],
     script: [
-      // ...(process.env.NODE_ENV === 'development' ? [{ src: 'http://localhost:8098', defer: true }] : [])
+      ...(process.env.NODE_ENV === 'development' ? [{ src: 'http://localhost:8098', defer: true }] : [])
     ]
   },
 
