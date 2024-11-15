@@ -44,7 +44,11 @@
           <p v-text="$t('document')" />
         </template>
         <template #downContent>
-          <!-- <AnnotationGuidelines /> -->
+          <PDFViewerBaseComponent 
+            :url="document.url" 
+            :file-name="document.file_name"
+            :pageNumber="document.page_number"
+          />
         </template>
       </HorizontalResizable>
     </template>
@@ -96,7 +100,11 @@
         <p v-text="$t('document')" />
       </template>
       <template #panelContent>
-        <!-- <AnnotationGuidelines /> -->
+        <PDFViewerBaseComponent 
+          :url="document.url" 
+          :file-name="document.file_name"
+          :pageNumber="document.page_number"
+        />
       </template>
     </BaseCollapsablePanel>
   </VerticalResizable>
@@ -104,7 +112,13 @@
 
 <script>
 import { useFocusAnnotationViewModel } from "./useFocusAnnotationViewModel";
+import PDFViewerBaseComponent from "@/components/base/base-pdf-viewer/PDFViewer.base.component.vue";
+import useDocumentViewModel from "@/components/features/annotation/sidebar/useDocumentViewModel.ts";
+
 export default {
+  components: {
+    PDFViewerBaseComponent,
+  },
   props: {
     recordCriteria: {
       type: Object,
@@ -165,7 +179,10 @@ export default {
     },
   },
   setup(props) {
-    return useFocusAnnotationViewModel(props);
+    return {
+      ...useDocumentViewModel(props),
+      ...useFocusAnnotationViewModel(props),
+    };
   },
 };
 </script>
