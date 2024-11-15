@@ -76,7 +76,7 @@ helm_resource(
     ],
     port_forwards=['6379'],
     labels=['argilla-server'],
-    resource_deps=['redis-helm']
+    resource_deps=['redis-helm', 'bitnami-helm']
 )
 
 # argilla-server is the web backend (FastAPI + SQL database)
