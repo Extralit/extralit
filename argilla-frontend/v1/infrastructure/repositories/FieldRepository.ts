@@ -53,7 +53,6 @@ export class FieldRepository {
         `/v1/fields/${field.id}`,
         this.createRequest(field)
       );
-      console.log(data);
       revalidateCache(`/v1/datasets/${field.datasetId}/fields`);
 
       return data;
