@@ -14,12 +14,12 @@ These are the section headers that we use:
 * "Security" in case of vulnerabilities.
 -->
 
-## [Unreleased]()
+## [Extralit] [0.3.0](https://github.com/extralit/extralit/compare/v0.2.3...v0.3.0)
 
 ### Fixed
 - Fixed use_table setting update in `TextField`
 
-## [2.4.1](https://github.com/argilla-io/argilla/compare/v2.4.0...v2.4.1)
+## [Argilla] [2.4.1](https://github.com/argilla-io/argilla/compare/v2.4.0...v2.4.1)
 
 ### Added
 
@@ -32,7 +32,7 @@ These are the section headers that we use:
 - Fixed validation for rating question when creating a dataset ([#5670](https://github.com/argilla-io/argilla/pull/5670))
 - Fixed question name based on question type when creating a dataset ([#5670](https://github.com/argilla-io/argilla/pull/5670))
 
-## [2.4.0](https://github.com/argilla-io/argilla/compare/v2.3.0...v2.4.0)
+## [Argilla] [2.4.0](https://github.com/argilla-io/argilla/compare/v2.3.0...v2.4.0)
 
 ### Added
 
@@ -42,7 +42,7 @@ These are the section headers that we use:
 
 - Refine German translations and update non-localized UI elements. ([#5632](https://github.com/argilla-io/argilla/pull/5632))
 
-## [2.3.0](https://github.com/argilla-io/argilla/compare/v2.2.0...v2.3.0)
+## [Argilla] [2.3.0](https://github.com/argilla-io/argilla/compare/v2.2.0...v2.3.0)
 
 ### Added
 
@@ -53,14 +53,14 @@ These are the section headers that we use:
 - Fix autofill form on sign-in page. ([#5522](https://github.com/argilla-io/argilla/pull/5522))
 - Support copy on clipboard for no secure context. ([#5535](https://github.com/argilla-io/argilla/pull/5535))
 
-## [2.2.0](https://github.com/argilla-io/argilla/compare/v2.1.0...v2.2.0)
+## [Argilla] [2.2.0](https://github.com/argilla-io/argilla/compare/v2.1.0...v2.2.0)
 
 ### Added
 
 - Added `Required/Optional` label on `Field dataset settings tab` and `Question dataset settings tab`. ([#5394](https://github.com/argilla-io/argilla/pull/5394))
 - Added new `ChatField`. ([#5376](https://github.com/argilla-io/argilla/pull/5376))
 
-## [2.1.0](https://github.com/argilla-io/argilla/compare/v2.0.1...v2.1.0)
+## [Argilla] [2.1.0](https://github.com/argilla-io/argilla/compare/v2.0.1...v2.1.0)
 
 ### Added
 

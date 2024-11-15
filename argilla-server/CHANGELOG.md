@@ -14,7 +14,7 @@ These are the section headers that we use:
 * "Security" in case of vulnerabilities.
 -->
 
-## [Unreleased]()
+## [Extralit] [0.3.0](https://github.com/extralit/extralit/compare/v0.2.3...v0.3.0)
 
 ### Added
 - Added use_table option to TextFieldSetting.
@@ -26,13 +26,13 @@ These are the section headers that we use:
 ### Fixed
 - Fixed elasticsearch reindexing errors with dynamic schema.
 
-## [2.4.1](https://github.com/argilla-io/argilla/compare/v2.4.0...v2.4.1)
+## [Argilla] [2.4.1](https://github.com/argilla-io/argilla/compare/v2.4.0...v2.4.1)
 
 ### Fixed
 
 - Fixed error so now `_touch_dataset_last_activity_at` function is not updating dataset's `updated_at` column. ([#5656](https://github.com/argilla-io/argilla/pull/5656))
 
-## [2.4.0](https://github.com/argilla-io/argilla/compare/v2.3.1...v2.4.0)
+## [Argilla] [2.4.0](https://github.com/argilla-io/argilla/compare/v2.3.1...v2.4.0)
 
 ### Added
 
@@ -55,13 +55,13 @@ These are the section headers that we use:
 
 - Fixed wrong field content conversion for empty text and partial chat fields. ([#5600](https://github.com/argilla-io/argilla/pull/5600))
 
-## [2.3.1](https://github.com/argilla-io/argilla/compare/v2.3.0...v2.3.1)
+## [Argilla] [2.3.1](https://github.com/argilla-io/argilla/compare/v2.3.0...v2.3.1)
 
 ### Fixed
 
 - Fixed error listing current user datasets and not filtering by current user id. ([#5583](https://github.com/argilla-io/argilla/pull/5583))
 
-## [2.3.0](https://github.com/argilla-io/argilla/compare/v2.2.0...v2.3.0)
+## [Argilla] [2.3.0](https://github.com/argilla-io/argilla/compare/v2.2.0...v2.3.0)
 
 ### Added
 
@@ -73,7 +73,7 @@ These are the section headers that we use:
 - Fixed error when creating default user with existing default workspace. ([#5558](https://github.com/argilla-io/argilla/pull/5558))
 - Fixed the deployment yaml used to create a new Argilla server in K8s. Added `USERNAME` and `PASSWORD` to the environment variables of pod template. ([#5434](https://github.com/argilla-io/argilla/issues/5434))
 
-## [2.2.0](https://github.com/argilla-io/argilla/compare/v2.1.0...v2.2.0)
+## [Argilla] [2.2.0](https://github.com/argilla-io/argilla/compare/v2.1.0...v2.2.0)
 
 - Added filtering by `name`, and `status` support to endpoint `GET /api/v1/me/datasets`. ([#5374](https://github.com/argilla-io/argilla/pull/5374))
 - Added [`rq`](https://python-rq.org) library to process background jobs using [Redis](https://redis.io) as a dependency. ([#5432](https://github.com/argilla-io/argilla/pull/5432))
@@ -84,7 +84,7 @@ These are the section headers that we use:
 
 - Fixed error when computing dataset progress by users without responses related to pending or completed records. ([#5484](https://github.com/argilla-io/argilla/pull/5484))
 
-## [2.3.0](https://github.com/argilla-io/argilla/compare/v2.2.0...v2.3.0)
+## [Argilla] [2.3.0](https://github.com/argilla-io/argilla/compare/v2.2.0...v2.3.0)
 
 ### Added
 
@@ -96,7 +96,7 @@ These are the section headers that we use:
 - Fixed error when creating default user with existing default workspace. ([#5558](https://github.com/argilla-io/argilla/pull/5558))
 - Fixed the deployment yaml used to create a new Argilla server in K8s. Added `USERNAME` and `PASSWORD` to the environment variables of pod template. ([#5434](https://github.com/argilla-io/argilla/issues/5434))
 
-## [2.2.0](https://github.com/argilla-io/argilla/compare/v2.1.0...v2.2.0)
+## [Argilla] [2.2.0](https://github.com/argilla-io/argilla/compare/v2.1.0...v2.2.0)
 
 - Added filtering by `name`, and `status` support to endpoint `GET /api/v1/me/datasets`. ([#5374](https://github.com/argilla-io/argilla/pull/5374))
 - Added [`rq`](https://python-rq.org) library to process background jobs using [Redis](https://redis.io) as a dependency. ([#5432](https://github.com/argilla-io/argilla/pull/5432))
