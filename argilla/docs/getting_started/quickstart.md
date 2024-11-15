@@ -11,6 +11,8 @@ Extralit is a free, open-source, self-hosted tool. This means you need to deploy
 
     The **recommended choice to get started**. You can get up and running in under 5 minutes and don't need to maintain a server or run any commands.
 
+    === "No-code"
+
     If you're just getting started with Extralit, click the deploy button below:
 
     <div style="margin: 5px">
@@ -70,14 +72,14 @@ If everything went well, you should see the Extralit sign in page that looks lik
 !!! info "Building errors"
     If you get a build error, sometimes restarting the Space from the Settings page works, otherwise [check the HF Spaces settings guide](how-to-configure-argilla-on-huggingface.md).
 
-
 In the sign in page:
 
-1. Click on **Sign in with Hugging Face**
+1. Click on **Sign in with Hugging Face**.
+
 2. **Authorize the application** and you will be logged in into Argilla as an `owner`.
 
 !!! info "Unauthorized error"
-    Sometimes, after authorizing you'll see an unauthorized error, and get redirected to the sign in page. Typically, clicking the Sign in button solves the issue.
+    Sometimes, after authorizing you'll see an unauthorized error, and get redirected to the sign in page. Typically, clicking the Sign in button again will solve this issue.
 
 Congrats! Your Argilla server is ready to start your first project using the Python SDK. You now have full rights to create datasets. Follow the instructions in the home page, or keep reading this guide if you want a more detailed explanation.
 
@@ -90,11 +92,46 @@ pip install extralit
 ```
 
 ## Create your first dataset
-For getting started with Argilla and its SDK, we recommend to use Jupyter Notebook or Google Colab.
 
-To start interacting with your Argilla server, you need to create a instantiate a client with an API key and API URL:
+The quickest way to start exploring the tool and create your first dataset is by importing an exiting one from the Hugging Face Hub.
 
-- The `<api_key>` is in the `My Settings` page of your Argilla Space.
+To do this, log in to the Argilla UI and in the Home page click on "Import from Hub". You can choose one of the sample datasets or paste a repo id in the input. This will look something like `stanfordnlp/imdb`.
+
+Argilla will automatically interpret the columns in the dataset to map them to Fields and Questions.
+
+**Fields** include the data that you want feedback on, like text, chats, or images. If you want to exclude any of the Fields that Argilla identified for you, simply select the "No mapping" option.
+
+**Questions** are the feedback you want to collect, like labels, ratings, rankings, or text. If Argilla identified questions in your dataset that you don't want, you can eliminate them. You can also add questions of your own.
+
+![Screenshot of the dataset configuration page](../assets/images/getting_started/dataset_configurator.png)
+
+Note that you will be able to modify some elements of the configuration of the dataset after it has been created from the Dataset Settings page e.g., the titles of fields and questions. Check all the settings you can modify in the [Update a dataset](../how_to_guides/dataset.md#update-a-dataset) section.
+
+When you're happy with the result, you'll need to give a name to your dataset, select a workspace and choose a split, if applicable. Then, Argilla will start importing the dataset in the background. Now you're all set up to start annotating!
+
+!!! info "Importing long datasets"
+    Argilla will only import the first 10k rows of a dataset. If your dataset is larger, you can import the rest of the records at any point using the Python SDK.
+
+    To do that, open your dataset and copy the code snippet provided under "Import data". Now, open a Jupyter or Google Colab notebook and install argilla:
+
+    ```python
+    !pip install argilla
+    ```
+    Then, paste and run your code snippet. This will import the remaining records to your dataset.
+
+## Install and connect the Python SDK
+
+For getting started with Argilla and its SDK, we recommend to use Jupyter Notebook or Google Colab. You will need this to manage users, workspaces and datasets in Argilla.
+
+In your notebook, you can install the Argilla SDK with pip as follows:
+
+```python
+!pip install argilla
+```
+
+To start interacting with your Argilla server, you need to instantiate a client with an API key and API URL:
+
+- The `<api_key>` is in the `My Settings` page of your Argilla Space but make sure you are logged in with the `owner` account you used to create the Space.
 
 - The `<api_url>` is the URL shown in your browser if it ends with `*.hf.space`.
 
@@ -108,60 +145,33 @@ client = rg.client(
 ```
 
 !!! info "You can't find your API URL"
-    If you're using Spaces, sometimes the Argilla UI is embedded into the Hub UI so the URL of the browser won't match the API URL. In these scenarios, there are two options:
-        1. Click on the three points menu at the top of the Space, select "Embed this Space", and open the direct URL.
-        2. Use this pattern: `https://[your-owner-name]-[your_space_name].hf.space`.
+    If you're using Spaces, sometimes the Argilla UI is embedded into the Hub UI so the URL of the browser won't match the API URL. In these scenarios, you have several options:
 
-To create a dataset with a simple text classification task, first, you need to **define the dataset settings**.
+    1. In the Home page of Argilla, click on "Import from the SDK". You will find your API URL and key in the code snippet provided.
+    2. Click on the three points menu at the top of the Space, select "Embed this Space", and open the direct URL.
+    3. Use this pattern: `https://[your-owner-name]-[your_space_name].hf.space`.
 
-```python
-settings = rg.Settings(
-    guidelines="Classify the reviews as positive or negative.",
-    fields=[
-        rg.TextField(
-            name="review",
-            title="Text from the review",
-            use_markdown=False,
-        ),
-    ],
-    questions=[
-        rg.LabelQuestion(
-            name="my_label",
-            title="In which category does this article fit?",
-            labels=["positive", "negative"],
-        )
-    ],
-)
-```
-
-Now you can **create the dataset with these settings**. Publish the dataset to make it available in the UI and add the records.
-
-!!! info "About workspaces"
-    Workspaces in Argilla group datasets and user access rights. The `workspace` parameter is optional in this case. If you don't specify it, the dataset will be created in the default workspace `argilla`.
-
-    By default, **this workspace will be visible to users joining with the Sign in with Hugging Face button**. You can create other workspaces and decide to grant access to users either with the SDK or the [changing the OAuth configuration](how-to-configure-argilla-on-huggingface.md).
+To check that everything is running correctly, you can call `me`. This should return your user information:
 
 ```python
-dataset = rg.Dataset(
-    name=f"my_first_dataset",
-    settings=settings,
-    client=client,
-    #workspace="argilla"
-)
-dataset.create()
+client.me
 ```
 
-Now you can **add records to your dataset**. We will use the IMDB dataset from the Hugging Face Datasets library as an example. The `mapping` parameter indicates which keys/columns in the source dataset correspond to the Argilla dataset fields.
+From here, you can manage all of your assets in Argilla, including updating the dataset we created earlier and adding advanced information, such as vectors, metadata or suggestions. To learn how to do this, check our [how to guides](../how_to_guides/index.md).
+
+## Export your dataset to the Hub
+
+Once you've spent some time annotating your dataset in Argilla, you can upload it back to the Hugging Face Hub to share with others or version control it.
+
+To do that, first follow the steps in the previous section to connect to your Argilla server using the SDK. Then, you can load your dataset and export it to the hub like this:
 
 ```python
-from datasets import load_dataset
+dataset = client.datasets(name="my_dataset")
 
-data = load_dataset("imdb", split="train[:100]").to_list()
-
-dataset.records.log(records=data, mapping={"text": "review"})
+dataset.to_hub(repo_id="<my_org>/<my_dataset>")
 ```
 
-🎉 You have successfully created your first dataset with Argilla. You can now access it in the Argilla UI and start annotating the records.
+For more info on exporting datasets to the Hub, read our guide on [exporting datasets](../how_to_guides/import_export.md#export-to-hub).
 
 ## Next steps
 - To learn how to create your datasets, workspace, and manage users, check the [how-to guides](../admin_guide/index.md).

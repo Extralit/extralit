@@ -62,6 +62,7 @@ from argilla_server.api.handlers.v1 import (
 from argilla_server.api.handlers.v1 import (
     workspaces as workspaces_v1,
 )
+from argilla_server.api.handlers.v1 import jobs as jobs_v1
 from argilla_server.api.handlers.v1 import (
     documents as documents_v1,
 )
@@ -101,6 +102,7 @@ def create_api_v1():
         users_v1.router,
         vectors_settings_v1.router,
         workspaces_v1.router,
+        jobs_v1.router,
         oauth2_v1.router,
         settings_v1.router,
         documents_v1.router,
