@@ -1,7 +1,7 @@
 <template>
   <div class="input-field">
     <Validation :validations="showValidations ? translatedValidations : []">
-      <label class="input-field__label" v-text="name" :for="name" />
+      <label class="input-field__label" :id="name" v-text="name" :for="name" />
       <span class="input-field__container">
         <input
           ref="input"
@@ -21,9 +21,7 @@
           v-if="type === 'password' && !!value"
           @on-click="toggleVisibility"
           class="input-field__toggle-visibility"
-          >{{
-            isPasswordVisible ? $t("login.hide") : $t("login.show")
-          }}</BaseButton
+          >{{ isPasswordVisible ? $t("login.hide") : $t("login.show") }}</BaseButton
         >
       </span>
     </Validation>
@@ -108,11 +106,7 @@ export default {
       return this.isTouched && this.isBlurred;
     },
     inputType() {
-      return this.type === "password"
-        ? this.isPasswordVisible
-          ? "text"
-          : "password"
-        : this.type;
+      return this.type === "password" ? (this.isPasswordVisible ? "text" : "password") : this.type;
     },
   },
   async mounted() {
@@ -122,11 +116,7 @@ export default {
     detectAutofill(element) {
       return new Promise((resolve) => {
         setTimeout(() => {
-          resolve(
-            window
-              .getComputedStyle(element, null)
-              .getPropertyValue("appearance") === "menulist-button"
-          );
+          resolve(window.getComputedStyle(element, null).getPropertyValue("appearance") === "menulist-button");
         }, 200);
       });
     },

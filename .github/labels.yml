@@ -1,0 +1,59 @@
+# Issue Type Labels - Primary categorization
+- name: bug
+  color: d73a4a
+  description: Something isn't working as expected
+- name: enhancement
+  color: 0e8a16
+  description: New feature or improvement
+- name: documentation
+  color: 0075ca
+  description: Documentation updates or fixes
+- name: refactor
+  color: 1d76db
+  description: Code refactoring or technical debt improvements
+
+# Technical Component Labels - Blue family
+- name: python
+  color: 0366d6
+  description: Python SDK and backend code
+- name: deployment
+  color: 0366d6
+  description: Deployment and infrastructure
+- name: ui/ux
+  color: 0366d6
+  description: User interface and experience
+
+# Project Labels - Purple family
+- name: data-integration
+  color: 6f42c1
+  description: Data Integration Pipeline
+- name: schema-editor
+  color: 6f42c1
+  description: Interactive Schema Editor
+
+# Status Labels - Yellow/Orange family
+- name: needs-triage
+  color: fbca04
+  description: Needs assessment or verification
+- name: in-progress
+  color: fbca04
+  description: Currently being worked on
+- name: blocked
+  color: d93f0b
+  description: Cannot proceed due to dependencies
+
+# Priority Labels - Red gradient
+- name: priority-high
+  color: d73a4a
+  description: Important for current milestone
+- name: priority-low
+  color: fef2c0
+  description: Nice to have, can wait
+
+# Contributor-friendly Labels - Green family
+- name: good-first-issue
+  color: 0e8a16
+  description: Good for newcomers
+- name: help-wanted
+  color: 2cbe4e
+  description: Extra attention is needed

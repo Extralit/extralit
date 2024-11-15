@@ -1,15 +1,7 @@
 <template>
-  <span
-    :class="['tooltip__container', showTooltip ? 'active' : null]"
-    @click="active()"
-  >
+  <span :class="['tooltip__container', showTooltip ? 'active' : null]" @click="active()">
     <slot></slot>
-    <span
-      v-if="tooltip && showTooltip"
-      class="tooltip"
-      :class="tooltipClass"
-      v-text="tooltip"
-    />
+    <span v-if="tooltip && showTooltip" class="tooltip" :class="tooltipClass" v-text="tooltip" />
   </span>
 </template>
 
@@ -64,6 +56,12 @@ export default {
   }
   &.--right {
     left: 100%;
+  }
+  &.--top {
+    bottom: 100%;
+  }
+  &.--bottom {
+    top: 100%;
   }
   &__container {
     position: relative;

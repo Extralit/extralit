@@ -14,11 +14,99 @@ These are the section headers that we use:
 * "Security" in case of vulnerabilities.
 -->
 
-## [Unreleased]()
+## [Extralit] [0.5.0](https://github.com/extralit/extralit/compare/v0.4.0...v0.5.0)
+
+### Added
+- Added new fields (file_name and reference) to the Document model for improved metadata management.
+- Updated WorkspacesAPI to handle document creation from file paths and URLs.
+- Added unit tests for workspace files and schemas API, and improved test configurations.
+- Enhanced CLI commands for adding documents to include reference and improved error handling.
+- Added `from_file` method to Document for creating instances from file paths or URLs.
+
+### Changed
+- Adjustments to Dockerfiles for clarity and consistency.
+- Updated `argilla-server` Dockerfile to use `uv` for installing server dependencies.
+- Refactored API schemas to use `DocumentCreate` and `DocumentDelete` for better clarity.
+- Updated elasticsearch to 8.17.0 in `argilla-hf-spaces` Dockerfile.
+- Changed `home_path` to `~/.extralit/` from `~/.argilla/` to align with new project structure.
+
+### Fixed
+- LocalFileStorage implementation to mimic Minio or S3 storage.
+- Fixed `argilla-hf-spaces` s3 environment files.
+- Used `uv` in `argilla-server` and `argilla-hf-spaces` Dockerfiles
+
+
+## [Argilla] [2.8.0](https://github.com/argilla-io/argilla/compare/v2.7.1...v2.8.0)
+
+## Added
+
+- Add configuration switch to use Redis cluster vs Redis standalone via ARGILLA_REDIS_USE_CLUSTER ([#5799](https://github.com/argilla-io/argilla/pull/5799))
+
+### Fixed
+
+- Fixed error when computing user progress with PostgreSQL database. ([#5795](https://github.com/argilla-io/argilla/pull/5795))
+- Fixed error when updating records with PostgreSQL database. ([#5795](https://github.com/argilla-io/argilla/pull/5795))
+
+## [Argilla] [2.7.1](https://github.com/argilla-io/argilla/compare/v2.7.0...v2.7.1)
+
+## [Argilla] [2.7.0](https://github.com/argilla-io/argilla/compare/v2.6.0...v2.7.0)
+
+### Added
+
+- Added support to create users with predefined ids. ([#5786](https://github.com/argilla-io/argilla/pull/5786))
+- Added support to create workspaces with predefined ids. ([#5786](https://github.com/argilla-io/argilla/pull/5786))
+
+### Fixed
+
+- Fixed error when indexing records with missing chat fields. ([#5787](https://github.com/argilla-io/argilla/pull/5787))
+- Prevent store empty custom fields as `None`. ([#5787](https://github.com/argilla-io/argilla/pull/5787))
+
+## [Argilla] [2.6.0](https://github.com/argilla-io/argilla/compare/v2.5.0...v2.6.0)
+
+### Added
+
+- Added new `POST /api/v1/datasets/:dataset_id/export` endpoint to export datasets to Hugging Face Hub using a background job. ([#5709](https://github.com/argilla-io/argilla/pull/5709))
+- Added support to update record fields in `PATCH /api/v1/records/:record_id` endpoint. ([#5685](https://github.com/argilla-io/argilla/pull/5685))
+- Added support to update record fields in `PUT /api/v1/datasets/:dataset_id/records/bulk` endpoint. ([#5685](https://github.com/argilla-io/argilla/pull/5685))
+- Added `GET /share-your-progress` endpoint to share user progress with the community. ([#5739](https://github.com/argilla-io/argilla/pull/5739))
+- Added `argilla.share_your_progress_enabled` attribute to `GET /api/v1/settings` endpoint. ([#5739](https://github.com/argilla-io/argilla/pull/5739))
+- Added new environment variable `ARGILLA_ENABLE_SHARE_YOUR_PROGRESS` to enable or disable the share your progress feature. ([#5727](https://github.com/argilla-io/argilla/pull/5727))
+
+## [Extralit] [0.4.0](https://github.com/extralit/extralit/compare/v0.3.0...v0.4.0)
+
+### Added
+- Added LocalFileStorage to replace Minio or S3 storage
+
+## [Argilla] [2.5.0](https://github.com/argilla-io/argilla/compare/v2.4.1...v2.5.0)
+
+### Added
+
+- Added new endpoints to create, update, ping and delete webhooks. ([#5453](https://github.com/argilla-io/argilla/pull/5453))
+- Added new webhook events when responses are created, updated, deleted. ([#5468](https://github.com/argilla-io/argilla/pull/5468))
+- Added new webhook events when datasets are created, updated, deleted or published. ([#5468](https://github.com/argilla-io/argilla/pull/5468))
+- Added new webhook events when records are created, updated, deleted or completed. ([#5489](https://github.com/argilla-io/argilla/pull/5489))
+- Added new `high` RQ queue to process high priority background jobs. ([#5467](https://github.com/argilla-io/argilla/pull/5467))
+- Added `users` attribute to the response of the endpoint `GET /api/v1/datasets/:dataset_id/progress`. ([#5701](https://github.com/argilla-io/argilla/pull/5701))
+
+### Changed
+
+- API endpoint added to the User router to allow updates to User objects ([#5615](https://github.com/argilla-io/argilla/pull/5615))
+- Changed default python version to 3.13. ([#5649](https://github.com/argilla-io/argilla/pull/5649))
+- Changed Pydantic version to v2. ([#5666](https://github.com/argilla-io/argilla/pull/5666))
+
+### Fixed
+
+- Fixed error to prevent creating record fields including non-string values for text fields. ([#5682](https://github.com/argilla-io/argilla/pull/5682))
+
+
+## [Extralit] [0.3.0](https://github.com/extralit/extralit/compare/v0.2.3...v0.3.0)
 
 ### Added
 - Added use_table option to TextFieldSetting.
 - Added redis service to the tilt k8s deployment for argilla-server.
+- Improved argillar-server and extralit-server dockerfile multi-stage build.
+- Added support for `TableField` and `es_field_for_record_field` for table fields.
+- Added `TableQuestion` and `TableQuestionSetting` to support table questions.
 
 ### Changed
 - Changed envvars in Tilt k8s deployment at `examples/deployments/k8s/argilla-server-deployment.yaml`
@@ -26,11 +114,17 @@ These are the section headers that we use:
 ### Fixed
 - Fixed elasticsearch reindexing errors with dynamic schema.
 
-## [2.4.0](https://github.com/argilla-io/argilla/compare/v2.3.1...v2.4.0)
+## [Argilla] [2.4.1](https://github.com/argilla-io/argilla/compare/v2.4.0...v2.4.1)
+
+### Fixed
+
+- Fixed error so now `_touch_dataset_last_activity_at` function is not updating dataset's `updated_at` column. ([#5656](https://github.com/argilla-io/argilla/pull/5656))
+
+## [Argilla] [2.4.0](https://github.com/argilla-io/argilla/compare/v2.3.1...v2.4.0)
 
 ### Added
 
-- Added new `POST /api/v1/datasets/:dataset_id/import` to import datasets from Hugging Face as a background job. ([#5572](https://github.com/argilla-io/argilla/pull/5572))
+- Added new `POST /api/v1/datasets/:dataset_id/import` endpoint to import datasets from Hugging Face as a background job. ([#5572](https://github.com/argilla-io/argilla/pull/5572))
 - Added new `metadata` attribute for endpoints getting, creating and updating Datasets so now it is possible to store metadata associated to a dataset. ([#5586](https://github.com/argilla-io/argilla/pull/5586))
 - Added new validation to avoid the creation of records with empty `fields` attributes. ([#5639](https://github.com/argilla-io/argilla/pull/5639))
 
@@ -49,13 +143,13 @@ These are the section headers that we use:
 
 - Fixed wrong field content conversion for empty text and partial chat fields. ([#5600](https://github.com/argilla-io/argilla/pull/5600))
 
-## [2.3.1](https://github.com/argilla-io/argilla/compare/v2.3.0...v2.3.1)
+## [Argilla] [2.3.1](https://github.com/argilla-io/argilla/compare/v2.3.0...v2.3.1)
 
 ### Fixed
 
 - Fixed error listing current user datasets and not filtering by current user id. ([#5583](https://github.com/argilla-io/argilla/pull/5583))
 
-## [2.3.0](https://github.com/argilla-io/argilla/compare/v2.2.0...v2.3.0)
+## [Argilla] [2.3.0](https://github.com/argilla-io/argilla/compare/v2.2.0...v2.3.0)
 
 ### Added
 
@@ -67,7 +161,7 @@ These are the section headers that we use:
 - Fixed error when creating default user with existing default workspace. ([#5558](https://github.com/argilla-io/argilla/pull/5558))
 - Fixed the deployment yaml used to create a new Argilla server in K8s. Added `USERNAME` and `PASSWORD` to the environment variables of pod template. ([#5434](https://github.com/argilla-io/argilla/issues/5434))
 
-## [2.2.0](https://github.com/argilla-io/argilla/compare/v2.1.0...v2.2.0)
+## [Argilla] [2.2.0](https://github.com/argilla-io/argilla/compare/v2.1.0...v2.2.0)
 
 - Added filtering by `name`, and `status` support to endpoint `GET /api/v1/me/datasets`. ([#5374](https://github.com/argilla-io/argilla/pull/5374))
 - Added [`rq`](https://python-rq.org) library to process background jobs using [Redis](https://redis.io) as a dependency. ([#5432](https://github.com/argilla-io/argilla/pull/5432))
@@ -78,7 +172,7 @@ These are the section headers that we use:
 
 - Fixed error when computing dataset progress by users without responses related to pending or completed records. ([#5484](https://github.com/argilla-io/argilla/pull/5484))
 
-## [2.3.0](https://github.com/argilla-io/argilla/compare/v2.2.0...v2.3.0)
+## [Argilla] [2.3.0](https://github.com/argilla-io/argilla/compare/v2.2.0...v2.3.0)
 
 ### Added
 
@@ -90,7 +184,7 @@ These are the section headers that we use:
 - Fixed error when creating default user with existing default workspace. ([#5558](https://github.com/argilla-io/argilla/pull/5558))
 - Fixed the deployment yaml used to create a new Argilla server in K8s. Added `USERNAME` and `PASSWORD` to the environment variables of pod template. ([#5434](https://github.com/argilla-io/argilla/issues/5434))
 
-## [2.2.0](https://github.com/argilla-io/argilla/compare/v2.1.0...v2.2.0)
+## [Argilla] [2.2.0](https://github.com/argilla-io/argilla/compare/v2.1.0...v2.2.0)
 
 - Added filtering by `name`, and `status` support to endpoint `GET /api/v1/me/datasets`. ([#5374](https://github.com/argilla-io/argilla/pull/5374))
 - Added [`rq`](https://python-rq.org) library to process background jobs using [Redis](https://redis.io) as a dependency. ([#5432](https://github.com/argilla-io/argilla/pull/5432))
@@ -208,7 +302,7 @@ These are the section headers that we use:
 
 ### Fixed
 - Fixed the k8s-tilt devcontainer for extralit
-- Fixed the weaviate url for /examples/deployments/k8s/extralit-deployment.yaml 
+- Fixed the weaviate url for /examples/deployments/k8s/extralit-deployment.yaml
 
 
 ## [Extralit] [v0.2.1](https://github.com/extralit/extralit/compare/v0.2.0...v0.2.1)
@@ -900,7 +994,7 @@ These are the section headers that we use:
 - Modified styling of error code outputs in notebooks ([#3270](https://github.com/argilla-io/argilla/pull/3270)).
 - Added ElasticSearch and OpenSearch versions ([#3280](https://github.com/argilla-io/argilla/pull/3280)).
 - Removed template notebook from table of contents ([#3271](https://github.com/argilla-io/argilla/pull/3271)).
-- Fixed tutorials with `pip install argilla` to not use older versions of the package ([#3282](https://github.com/argilla-io/argilla/pull/3282)).
+- Fixed tutorials with `pip install extralit` to not use older versions of the package ([#3282](https://github.com/argilla-io/argilla/pull/3282)).
 
 ### Added
 

@@ -1,12 +1,15 @@
 import { useResolve } from "ts-injecty";
-import { ref, useFetch } from "@nuxtjs/composition-api";
+import { ref, useFetch, computed } from "@nuxtjs/composition-api";
 import { useRoutes, useFocusTab } from "~/v1/infrastructure/services";
 import { GetDatasetCreationUseCase } from "~/v1/domain/usecases/get-dataset-creation-use-case";
 import { GetDatasetsUseCase } from "@/v1/domain/usecases/get-datasets-use-case";
+import { GetWorkspacesUseCase } from "~/v1/domain/usecases/get-workspaces-use-case";
 import { useDatasets } from "~/v1/infrastructure/storage/DatasetsStorage";
 import { useRole } from "~/v1/infrastructure/services/useRole";
 
 export const useHomeViewModel = () => {
+  const workspaces = ref<any[]>([]);
+  const getWorkspacesUseCase = useResolve(GetWorkspacesUseCase);
   const { isAdminOrOwnerRole } = useRole();
   const isLoadingDatasets = ref(false);
   const { goToImportDatasetFromHub } = useRoutes();
@@ -14,13 +17,15 @@ export const useHomeViewModel = () => {
   const getDatasetsUseCase = useResolve(GetDatasetsUseCase);
   const getDatasetCreationUseCase = useResolve(GetDatasetCreationUseCase);
   const error = ref("");
+  const showImportModal = ref(false);
 
   useFocusTab(async () => {
     await onLoadDatasets();
   });
 
-  useFetch(() => {
+  useFetch(async () => {
     loadDatasets();
+    workspaces.value = await getWorkspacesUseCase.execute();
   });
 
   const getNewDatasetByRepoId = async (repositoryId: string) => {
@@ -71,12 +76,33 @@ export const useHomeViewModel = () => {
     isLoadingDatasets.value = false;
   };
 
+  const openImportModal = () => {
+    console.log('openImportModal called from useHomeViewModel');
+    console.log('showImportModal before:', showImportModal.value);
+    showImportModal.value = !showImportModal.value; // Toggle to see if it helps
+    console.log('showImportModal after:', showImportModal.value);
+
+    // Force DOM update
+    setTimeout(() => {
+      console.log('After timeout, showImportModal:', showImportModal.value);
+    }, 100);
+  };
+
+  const isImportModalVisible = computed(() => {
+    console.log('isImportModalVisible computed:', showImportModal.value);
+    return showImportModal.value;
+  });
+
   return {
     datasets,
+    workspaces,
     isLoadingDatasets,
     getNewDatasetByRepoId,
     isAdminOrOwnerRole,
     exampleDatasets,
     error,
+    showImportModal,
+    isImportModalVisible,
+    openImportModal,
   };
 };

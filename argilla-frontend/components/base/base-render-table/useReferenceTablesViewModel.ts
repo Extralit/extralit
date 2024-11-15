@@ -1,27 +1,22 @@
-import { Record as FeedbackRecord } from '~/v1/domain/entities/record/Record';
-import { Question } from "@/v1/domain/entities/question/Question";
+import { Record as FeedbackRecord } from '@/v1/domain/entities/record/Record';
 import { Records } from "@/v1/domain/entities/record/Records";
 import { useRecords } from "@/v1/infrastructure/storage/RecordsStorage";
 
-import { DataFrame, Data, ReferenceValues, PanderaSchema } from "./types";
-import { RecordDataFramesArray } from './tableUtils';
-import { columnUniqueCounts } from './dataUtils';
+import { Data, ReferenceValues, TableData } from '~/v1/domain/entities/table/TableData';
 
-import { SchemaTableViewModel } from "./useSchemaTableViewModel";
+type RecordDataFrames = Record<string, TableData>;
 
 export const useReferenceTablesViewModel = (
-  props: { 
-    tableData: string, 
-    editable: boolean, 
-  }, 
-  schemaTableViewModel: SchemaTableViewModel) => {
-
+  props: {
+    tableJSON: TableData,
+  }
+) => {
   const { state: records }: { state: Records } = useRecords();
 
-  const getTableDataFromRecords = (filter_fn: (record: FeedbackRecord) => boolean): RecordDataFramesArray => {
+  const getTableDataFromRecords = (filter_fn: (record: FeedbackRecord) => boolean): RecordDataFrames[] => {
     // filter_fn is a function that takes a record and returns true if it should be included in the table
     // returns an array of objects of the form {field: {refValue: {column: value, ...}, ...}, ...}
-    let recordTables: RecordDataFramesArray = records.records?.filter(filter_fn)
+    let recordTables: RecordDataFrames[] = records.records?.filter(filter_fn)
       .map((rec) => {
         let answer_tables = rec?.answer?.value || {};
         if (answer_tables) {
@@ -35,7 +30,7 @@ export const useReferenceTablesViewModel = (
                 try {
                   const value = (obj as { value: string; }).value;
                   const table = JSON.parse(value);
-                  return [key, table];
+                  return [key, new TableData(table.data, table.schema, table.reference)];
                 } catch (e) {
                   console.error(e);
                   return [key, {}];
@@ -51,6 +46,7 @@ export const useReferenceTablesViewModel = (
             try {
               acc[field.name] = JSON.parse(field.content);
               delete acc[field.name].validation.columns;
+              acc[field.name] = new TableData(acc[field.name].data, acc[field.name].schema, acc[field.name].reference);
             } finally {
               return acc;
             }
@@ -65,8 +61,8 @@ export const useReferenceTablesViewModel = (
   };
 
   const findMatchingRefValues = (
-    refColumns: string[], 
-    records: RecordDataFramesArray,
+    refColumns: string[],
+    records: RecordDataFrames[],
     filterByColumnUniqueCounts: boolean = true,
   ): Record<string, Record<string, Record<string, any>>> => {
     // refValues is an object of the form {field: refValue}
@@ -77,46 +73,108 @@ export const useReferenceTablesViewModel = (
     if (!records) return matchingRefValues;
 
     for (const field of refColumns) {
+      let refRows: Record<string, any> = {};
       for (const recordTables of records) {
         if (!recordTables) continue;
-        const matchingTable = Object.values(recordTables)
-          .find((table: DataFrame) => {
+        // Try to match by reference property first, then fallback to schemaName
+        const matchingTables = Object.values(recordTables)
+          .filter((table: TableData) => {
+            // Prefer matching by reference property if available
+            if (table?.reference && props.tableJSON?.reference && table.reference === props.tableJSON.reference) {
+              return true;
+            }
+            // Fallback to schemaName logic
             const schemaName = table?.schema?.schemaName || table?.validation?.name;
-            return schemaName?.toLowerCase() === field.replace(/(_ref|_ID)$/, '').toLowerCase();
+            return schemaName?.toLowerCase() === field.replace(/(_ref|_ID)$/i, '').toLowerCase();
           });
 
-        if (!matchingTable) continue;
+        for (let matchingTable of matchingTables) {
+          // Ensure matchingTable is a TableData instance
+          if (!(matchingTable instanceof TableData)) {
+            const mt: any = matchingTable;
+            matchingTable = new TableData(mt.data, mt.schema, mt.reference);
+          }
+          if (!matchingTable.hasOwnProperty('columnUniqueCounts')) {
+            matchingTable.columnUniqueCounts = matchingTable.getColumnUniqueCounts();
+          }
 
-        if (!matchingTable.hasOwnProperty('columnUniqueCounts')) {
-          matchingTable.columnUniqueCounts = columnUniqueCounts(matchingTable)
+          const tableRefRows = matchingTable.data.reduce((acc, row) => {
+            const filteredRowValues: Record<string, any> = Object.entries(row)
+              .filter(([key, value]) =>
+                key != "reference" && key != "_id" &&
+                (!filterByColumnUniqueCounts ||
+                  matchingTable.data.length <= 1 ||
+                  !matchingTable?.columnUniqueCounts?.hasOwnProperty(key) ||
+                  matchingTable.columnUniqueCounts[key] > 1))
+              .reduce((acc, [key, value]) => {
+                acc[key] = value;
+                return acc;
+              }, {});
+            acc[row.reference || row[field]] = filteredRowValues;
+            return acc;
+          }, {});
+          refRows = { ...refRows, ...tableRefRows };
         }
-
-        const refRows = matchingTable.data.reduce((acc, row) => {
-          const filteredRowValues: Record<string, any> = Object.entries(row)
-            .filter(([key, value]) => 
-              key != "reference" && key != "_id" &&
-              (!filterByColumnUniqueCounts || 
-                matchingTable.data.length <= 1 || 
-                !matchingTable?.columnUniqueCounts?.hasOwnProperty(key) || 
-                matchingTable.columnUniqueCounts[key] > 1))
-            .reduce((acc, [key, value]) => {
-              acc[key] = value;
-              return acc;
-            }, {});
-          console.log(field, row.reference || row[field])
-          acc[row.reference || row[field]] = filteredRowValues;
-          return acc;
-        }, {});
-        matchingRefValues[field] = refRows;
-        break; // only need to find the first matching table, since the recordTables is already sorted that the first table is the corrected version
-        }
+      }
+      matchingRefValues[field] = refRows;
     }
 
     return matchingRefValues;
   };
 
+  const getColumnMaxValue = (
+    columnName: string, data: Data
+  ): any => {
+    return data.reduce((max, row) => !max || row[columnName] > max ? row[columnName] : max, null);
+  }
+
+  const incrementReferenceStr = (
+    reference: string
+  ): string => {
+    if (typeof reference !== 'string') return undefined;
+    const prefix = reference.slice(0, 1);
+
+    const numericalPart = reference.slice(1);
+    if (!/^\d+$/.test(numericalPart)) return undefined;
+
+    const incrementedDigits = String(parseInt(numericalPart) + 1).padStart(numericalPart.length, '0');
+    const newReference = `${prefix}${incrementedDigits}`;
+
+    return newReference;
+  }
+
+  const generateCombinations = (
+    columnValues: ReferenceValues, fixedValues: Record<string, string> = {}
+  ): Data => {
+    const possibleKeyValues: Record<string, string[]> = Object.keys(columnValues).reduce((acc, key) => {
+      if (!fixedValues[key]) {
+        acc[key] = Object.keys(columnValues[key]);
+      }
+      return acc;
+    }, {});
+
+    const keys = Object.keys(possibleKeyValues);
+    const valueCombinations = cartesianProduct(keys.map(key => possibleKeyValues[key]));
+
+    const keyValueCombinations = valueCombinations.map(values => {
+      return values.reduce((acc, value, index) => {
+        acc[keys[index]] = value;
+        return acc;
+      }, { ...fixedValues } as Record<string, string>);
+    });
+
+    return keyValueCombinations;
+  }
+
   return {
     getTableDataFromRecords,
     findMatchingRefValues,
+    getColumnMaxValue,
+    incrementReferenceStr,
+    generateCombinations,
   }
 };
+
+function cartesianProduct(arr: any[][]): any[][] {
+  return arr.reduce((a, b) => a.flatMap((x: any[]) => b.map((y: any) => [...x, y])), [[]]);
+}

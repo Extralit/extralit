@@ -2,6 +2,7 @@
   <div class="chat" :key="title">
     <span class="chat__title" v-text="title" />
     <div
+      :id="`fields-content-${id}`"
       class="chat__wrapper"
       :class="checkIfAreLessThanTwoRoles ? '--simple' : '--multiple'"
     >
@@ -9,9 +10,7 @@
         <span
           :class="[
             'chat__item',
-            checkIfAreLessThanTwoRoles && index % 2 == 0
-              ? 'chat__item--right'
-              : 'chat__item--left',
+            checkIfAreLessThanTwoRoles && index % 2 == 0 ? 'chat__item--right' : 'chat__item--left',
           ]"
         >
           <span
@@ -31,8 +30,8 @@
           >
             <MarkdownRenderer v-if="useMarkdown" :markdown="text" />
             <span v-else v-html="text" /><template>
-              <style :key="name" scoped>
-                ::highlight(search-text-highlight-{{name}}) {
+              <style :key="id" scoped>
+                ::highlight(search-text-highlight-{{id}}) {
                   color: #ff675f;
                 }
               </style>
@@ -46,9 +45,10 @@
 
 <script>
 import { useChatFieldViewModel } from "./useChatFieldViewModel";
+
 export default {
   props: {
-    name: {
+    id: {
       type: String,
       required: true,
     },
@@ -71,21 +71,13 @@ export default {
   },
   computed: {
     getAllUniqueRolesNames() {
-      return this.content
-        .map((item) => item.role)
-        .filter((role, index, self) => self.indexOf(role) === index);
+      return this.content.map((item) => item.role).filter((role, index, self) => self.indexOf(role) === index);
     },
     checkIfAreLessThanTwoRoles() {
       return this.getAllUniqueRolesNames.length <= 2;
     },
     colorForRole() {
-      return [
-        "var(--fg-chat-1)",
-        "var(--fg-chat-2)",
-        "var(--fg-chat-3)",
-        "var(--fg-chat-4)",
-        "var(--fg-chat-5)",
-      ];
+      return ["var(--fg-chat-1)", "var(--fg-chat-2)", "var(--fg-chat-3)", "var(--fg-chat-4)", "var(--fg-chat-5)"];
     },
   },
   methods: {
@@ -135,7 +127,7 @@ export default {
   &__bubble {
     max-width: 80%;
     padding: 2 * $base-space;
-    border-radius: $border-radius-l;
+    border-radius: $border-radius-xl;
     border-style: solid;
     border-width: 1px;
     @include font-size(16px);

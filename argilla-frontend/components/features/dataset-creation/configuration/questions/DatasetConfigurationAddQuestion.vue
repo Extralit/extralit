@@ -7,18 +7,12 @@
   >
     <template slot="dropdown-header">
       <BaseButton class="add-question-selector__button"
-        ><span class="add-question-selector__button-icon"
-          ><svgicon name="plus" /></span
+        ><span class="add-question-selector__button-icon"><svgicon name="plus" /></span
       ></BaseButton>
     </template>
     <template slot="dropdown-content">
       <ul class="add-question-selector__options">
-        <li
-          class="add-question-selector__option"
-          v-for="option in options"
-          :key="option"
-          @click="selectOption(option)"
-        >
+        <li class="add-question-selector__option" v-for="option in options" :key="option" @click="selectOption(option)">
           {{ $t(`config.question.${option}`) }}
         </li>
       </ul>

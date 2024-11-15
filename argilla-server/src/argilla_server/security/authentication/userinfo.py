@@ -11,13 +11,12 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-
+import os
 from typing import Any, Optional
 
 from starlette.authentication import BaseUser
 
 from argilla_server.enums import UserRole
-from argilla_server.security.authentication.claims import Claims
 
 _DEFAULT_USER_ROLE = UserRole.annotator
 
@@ -38,17 +37,23 @@ class UserInfo(BaseUser, dict):
         return self.get("first_name") or self.username
 
     @property
+    def last_name(self) -> Optional[str]:
+        return self.get("last_name") or None
+
+    @property
     def role(self) -> UserRole:
-        role = self.get("role") or _DEFAULT_USER_ROLE
+        role = self.get("role") or self._parse_role_from_environment()
         return UserRole(role)
 
-    def use_claims(self, claims: Optional[Claims]) -> "UserInfo":
-        claims = claims or {}
+    @property
+    def available_workspaces(self) -> Optional[list]:
+        return self.get("available_workspaces")
 
-        for attr, item in claims.items():
-            self[attr] = self.__getprop__(item)
-
-        return self
+    def _parse_role_from_environment(self) -> Optional[UserRole]:
+        """This is a temporal solution, and it will be replaced by a proper Sign up process"""
+        if self["username"] == os.getenv("USERNAME"):
+            return UserRole.owner
+        return _DEFAULT_USER_ROLE
 
     def __getprop__(self, item, default="") -> Any:
         if callable(item):

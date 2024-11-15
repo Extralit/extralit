@@ -1,16 +1,16 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from datetime import datetime
 from typing import Dict, List, Sequence, Tuple, Union
@@ -26,19 +26,25 @@ from argilla_server.api.schemas.v1.records_bulk import (
     RecordsBulk,
     RecordsBulkCreate,
     RecordsBulkUpsert,
-    RecordsBulkWithUpdateInfo,
+    RecordsBulkWithUpdatedItemIds,
 )
 from argilla_server.api.schemas.v1.responses import UserResponseCreate
 from argilla_server.api.schemas.v1.suggestions import SuggestionCreate
+from argilla_server.models.database import DatasetUser
+from argilla_server.webhooks.v1.enums import RecordEvent
+from argilla_server.webhooks.v1.records import notify_record_event as notify_record_event_v1
 from argilla_server.contexts import distribution
 from argilla_server.contexts.records import (
     fetch_records_by_external_ids_as_dict,
     fetch_records_by_ids_as_dict,
 )
 from argilla_server.errors.future import UnprocessableEntityError
-from argilla_server.models import Dataset, Record, Response, Suggestion, Vector, VectorSettings
+from argilla_server.models import Dataset, Record, Response, Suggestion, Vector
+from argilla_server.models.database import DatasetUser
 from argilla_server.search_engine import SearchEngine
 from argilla_server.validators.records import RecordsBulkCreateValidator, RecordUpsertValidator
+from argilla_server.webhooks.v1.enums import RecordEvent
+from argilla_server.webhooks.v1.records import notify_record_event as notify_record_event_v1
 
 
 class CreateRecordsBulk:
@@ -69,6 +75,9 @@ class CreateRecordsBulk:
         await _preload_records_relationships_before_index(self._db, records)
         await self._search_engine.index_records(dataset, records)
 
+        for record in records:
+            await notify_record_event_v1(self._db, RecordEvent.created, record)
+
         return RecordsBulk(items=records)
 
     async def _upsert_records_relationships(self, records: List[Record], records_create: List[RecordCreate]) -> None:
@@ -88,7 +97,7 @@ class CreateRecordsBulk:
         upsert_many_suggestions = []
         for idx, (record, suggestions) in enumerate(records_and_suggestions):
             for suggestion_create in suggestions or []:
-                upsert_many_suggestions.append(dict(**suggestion_create.dict(), record_id=record.id))
+                upsert_many_suggestions.append(dict(**suggestion_create.model_dump(), record_id=record.id))
 
         if not upsert_many_suggestions:
             return []
@@ -104,12 +113,21 @@ class CreateRecordsBulk:
         self, records_and_responses: List[Tuple[Record, List[UserResponseCreate]]]
     ) -> List[Response]:
         upsert_many_responses = []
+        datasets_users = set()
         for idx, (record, responses) in enumerate(records_and_responses):
             for response_create in responses or []:
-                upsert_many_responses.append(dict(**response_create.dict(), record_id=record.id))
+                upsert_many_responses.append(dict(**response_create.model_dump(), record_id=record.id))
+                datasets_users.add((response_create.user_id, record.dataset_id))
 
         if not upsert_many_responses:
             return []
+
+        await DatasetUser.upsert_many(
+            self._db,
+            objects=[{"user_id": user_id, "dataset_id": dataset_id} for user_id, dataset_id in datasets_users],
+            constraints=[DatasetUser.user_id, DatasetUser.dataset_id],
+            autocommit=False,
+        )
 
         return await Response.upsert_many(
             self._db,
@@ -139,15 +157,11 @@ class CreateRecordsBulk:
             autocommit=False,
         )
 
-    @classmethod
-    def _metadata_is_set(cls, record_create: RecordCreate) -> bool:
-        return "metadata" in record_create.__fields_set__
-
 
 class UpsertRecordsBulk(CreateRecordsBulk):
     async def upsert_records_bulk(
         self, dataset: Dataset, bulk_upsert: RecordsBulkUpsert, raise_on_error: bool = True
-    ) -> RecordsBulkWithUpdateInfo:
+    ) -> RecordsBulkWithUpdatedItemIds:
         found_records = await self._fetch_existing_dataset_records(dataset, bulk_upsert.items)
 
         records = []
@@ -170,9 +184,14 @@ class UpsertRecordsBulk(CreateRecordsBulk):
                     external_id=record_upsert.external_id,
                     dataset_id=dataset.id,
                 )
-            elif self._metadata_is_set(record_upsert):
-                record.metadata_ = record_upsert.metadata
-                record.updated_at = datetime.utcnow()
+            else:
+                if record_upsert.is_set("metadata"):
+                    record.metadata_ = record_upsert.metadata
+                if record_upsert.is_set("fields"):
+                    record.fields = jsonable_encoder(record_upsert.fields)
+
+                if self._db.is_modified(record):
+                    record.updated_at = datetime.utcnow()
 
             records.append(record)
 
@@ -186,7 +205,9 @@ class UpsertRecordsBulk(CreateRecordsBulk):
         await _preload_records_relationships_before_index(self._db, records)
         await self._search_engine.index_records(dataset, records)
 
-        return RecordsBulkWithUpdateInfo(
+        await self._notify_upsert_record_events(records)
+
+        return RecordsBulkWithUpdatedItemIds(
             items=records,
             updated_item_ids=[record.id for record in found_records.values()],
         )
@@ -204,6 +225,13 @@ class UpsertRecordsBulk(CreateRecordsBulk):
         )
 
         return {**records_by_external_id, **records_by_id}
+
+    async def _notify_upsert_record_events(self, records: List[Record]) -> None:
+        for record in records:
+            if record.inserted_at == record.updated_at:
+                await notify_record_event_v1(self._db, RecordEvent.created, record)
+            else:
+                await notify_record_event_v1(self._db, RecordEvent.updated, record)
 
 
 async def _preload_records_relationships_before_index(db: "AsyncSession", records: Sequence[Record]) -> None:

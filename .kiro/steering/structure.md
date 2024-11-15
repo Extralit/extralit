@@ -1,0 +1,105 @@
+# Project Structure
+
+## Repository Organization
+This is a monorepo containing multiple related packages:
+
+```
+extralit/
+├── argilla-server/          # FastAPI backend server
+├── argilla-frontend/        # Nuxt.js web UI
+├── extralit/               # Python SDK and CLI
+├── argilla-v1/             # Legacy v1 compatibility layer
+├── examples/               # Usage examples and deployments
+└── .kiro/                  # Kiro AI assistant configuration
+```
+
+## Backend Structure (argilla-server/)
+```
+argilla-server/
+├── src/argilla_server/
+│   ├── api/                # FastAPI routes and handlers
+│   │   ├── handlers/       # Request handlers by version
+│   │   └── schemas/        # Pydantic models for API
+│   ├── contexts/           # Business logic contexts
+│   ├── models/             # SQLAlchemy database models
+│   ├── jobs/               # Background job definitions
+│   ├── cli/                # CLI commands
+│   └── alembic/            # Database migrations
+├── tests/                  # Test suite
+├── docker/                 # Docker configurations
+└── pyproject.toml          # PDM configuration
+```
+
+### Key Backend Patterns
+- **API Handlers**: Located in `api/handlers/v1/` - one file per resource
+- **Database Models**: In `models/database.py` - SQLAlchemy models
+- **Business Logic**: In `contexts/` - domain-specific logic
+- **Background Jobs**: In `jobs/` - RQ job definitions
+- **Migrations**: Use Alembic in `alembic/versions/`
+
+## Frontend Structure (argilla-frontend/)
+```
+argilla-frontend/
+├── components/
+│   ├── base/               # Reusable UI components
+│   └── features/           # Feature-specific components
+├── pages/                  # Nuxt.js pages (routes)
+├── plugins/                # Vue plugins and extensions
+├── assets/                 # Static assets (SCSS, icons)
+├── translation/            # i18n language files
+├── v1/                     # Domain logic (DI, stores)
+├── e2e/                    # Playwright e2e tests
+└── package.json            # npm configuration
+```
+
+### Key Frontend Patterns
+- **Components**: Base components in `components/base/`, feature components in `components/features/`
+- **Pages**: Nuxt.js file-based routing in `pages/`
+- **Stores**: Pinia stores in `v1/store/`
+- **Domain Logic**: Dependency injection in `v1/di/`
+- **Styling**: SCSS in `assets/scss/` with component-scoped styles
+
+## Client SDK Structure (extralit/)
+```
+extralit/
+├── src/
+│   ├── argilla/            # Main SDK package
+│   │   ├── cli/            # CLI commands
+│   │   └── client/         # API client
+│   └── extralit/           # Extralit-specific extensions
+├── tests/                  # Test suite
+├── docs/                   # Documentation
+└── pyproject.toml          # PDM configuration
+```
+
+## Examples and Deployments
+```
+examples/
+├── custom_field/           # Custom field examples
+├── document_extraction/    # Document processing examples
+├── deployments/
+│   ├── docker/             # Docker Compose setups
+│   └── k8s/                # Kubernetes manifests
+└── webhooks/               # Webhook integration examples
+```
+
+## Configuration Files
+- **Backend**: `argilla-server/pyproject.toml` (PDM), `.env.dev`, `.env.test`
+- **Frontend**: `argilla-frontend/package.json` (npm), `nuxt.config.ts`
+- **SDK**: `extralit/pyproject.toml` (PDM)
+- **Docker**: `docker-compose.yaml` for local development
+- **K8s**: `Tiltfile` for Kubernetes development
+
+## Development Workflow
+1. **Backend changes**: Work in `argilla-server/src/argilla_server/`
+2. **Frontend changes**: Work in `argilla-frontend/components/` or `argilla-frontend/pages/`
+3. **SDK changes**: Work in `extralit/src/argilla/` or `extralit/src/extralit/`
+4. **Tests**: Each package has its own `tests/` directory
+5. **Documentation**: Use `extralit/docs/` for SDK docs
+
+## File Naming Conventions
+- **Python**: snake_case for files and modules
+- **Vue/TypeScript**: PascalCase for components, camelCase for utilities
+- **API endpoints**: kebab-case in URLs, snake_case in Python
+- **Database**: snake_case for tables and columns
+- **CSS classes**: kebab-case with BEM methodology where applicable

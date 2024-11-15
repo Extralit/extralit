@@ -2,20 +2,19 @@ import { useResolve } from "ts-injecty";
 
 import { Question } from "@/v1/domain/entities/question/Question";
 import { GetLLMExtractionUseCase } from "@/v1/domain/usecases/get-extraction-completion-use-case";
-
-import { Data, ReferenceValues } from "./types";
-import { SchemaTableViewModel } from "./useSchemaTableViewModel";
 import { useDataset } from "@/v1/infrastructure/storage/DatasetStorage";
 import { useDocument } from "@/v1/infrastructure/storage/DocumentStorage";
+import { Data, ReferenceValues, TableData } from "@/v1/domain/entities/table/TableData";
+
 
 export const useLLMExtractionViewModel = (
   props: { 
-    tableData: string, 
+    tableJSON: TableData, 
     editable: boolean, 
     hasValidValues: boolean,
     questions: Question[],
-  }, 
-  schemaTableViewModel: SchemaTableViewModel) => {
+  }
+) => {
     const getExtraction = useResolve(GetLLMExtractionUseCase);
     const { state: dataset } = useDataset();
     const { state: document } = useDocument();
@@ -24,19 +23,19 @@ export const useLLMExtractionViewModel = (
     selectedRowData: Data,
     columns: Array<string>, 
     referenceValues: ReferenceValues,
-    headers_question_name: string = 'context-relevant',
-    types_question_name: string = 'extraction-source',
-    prompt_question_name: string = 'notes',
+    headersQuestionName: string = 'context-relevant',
+    typesQuestionName: string = 'extraction-source',
+    promptQuestionName: string = 'notes',
   ): Promise<Data> => {
-    const reference = schemaTableViewModel.tableJSON.value.reference || document.reference;
-    const schema_name = schemaTableViewModel.tableJSON.value.schema?.schemaName || schemaTableViewModel.tableJSON.value.validation?.name;
-    const headers = getSelectionQuestionAnswer(headers_question_name)?.filter((value) => value != 'Not listed');
-    const types = getSelectionQuestionAnswer(types_question_name);
-    const prompt = getTextQuestionAnswer(prompt_question_name);
+    const reference = props.tableJSON.reference || document.reference;
+    const schemaName = props.tableJSON.schema?.schemaName || props.tableJSON.validation?.name;
+    const headers = getSelectionQuestionAnswer(headersQuestionName)?.filter((value) => value != 'Not listed');
+    const types = getSelectionQuestionAnswer(typesQuestionName);
+    const prompt = getTextQuestionAnswer(promptQuestionName);
 
     const predictedData = await getExtraction.getExtractionCompletion(
       reference, 
-      schema_name, 
+      schemaName, 
       dataset.workspaceName,
       selectedRowData, 
       referenceValues,

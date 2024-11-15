@@ -42,6 +42,11 @@ class TestElasticSearchEngine:
                 "dims": settings.dimensions,
                 "index": True,
                 "similarity": "cosine",
+                "index_options": {
+                    "type": "int8_hnsw",
+                    "m": 16,
+                    "ef_construction": 100,
+                }
             }
             for settings in vectors_settings
         }

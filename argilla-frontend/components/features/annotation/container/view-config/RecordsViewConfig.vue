@@ -1,21 +1,11 @@
 <template>
-  <BaseDropdown
-    class="view-config"
-    :visible="dropdownIsVisible"
-    @visibility="onChangeDropDownVisibility"
+  <BaseDropdown class="view-config" :visible="dropdownIsVisible" @visibility="onChangeDropDownVisibility"
     ><template slot="dropdown-header"
       ><BaseButton
         class="view-config__button"
-        :data-title="
-          !dropdownIsVisible && $t('bulkAnnotation.recordsViewSettings')
-        "
+        :data-title="!dropdownIsVisible && $t('bulkAnnotation.recordsViewSettings')"
       >
-        <svgicon
-          class="view-config__icon"
-          width="20"
-          height="20"
-          name="change-height"
-          aria-hidden="true" /></BaseButton
+        <svgicon class="view-config__icon" width="20" height="20" name="change-height" aria-hidden="true" /></BaseButton
     ></template>
     <template slot="dropdown-content">
       <div class="view-config__content">

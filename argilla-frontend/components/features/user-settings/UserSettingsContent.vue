@@ -8,34 +8,22 @@
     </div>
 
     <div class="form-group">
-      <h2
-        class="--heading5 --medium description__title"
-        v-text="$t('userSettings.fields.userName')"
-      />
+      <h2 class="--heading5 --medium description__title" v-text="$t('userSettings.fields.userName')" />
       <p class="--body1 description__text" v-text="user.userName" />
     </div>
 
     <div class="form-group">
-      <h2
-        class="--heading5 --medium description__title"
-        v-text="$t('userSettings.fields.firstName')"
-      />
+      <h2 class="--heading5 --medium description__title" v-text="$t('userSettings.fields.firstName')" />
       <p class="--body1 description__text" v-text="user.firstName" />
     </div>
 
     <div class="form-group">
-      <h2
-        class="--heading5 --medium description__title"
-        v-text="$t('userSettings.fields.lastName')"
-      />
+      <h2 class="--heading5 --medium description__title" v-text="$t('userSettings.fields.lastName')" />
       <p class="--body1 description__text" v-text="user.lastName" />
     </div>
 
     <div class="form-group">
-      <h2
-        class="--heading5 --medium description__title"
-        v-text="$t('userSettings.fields.workspaces')"
-      />
+      <h2 class="--heading5 --medium description__title" v-text="$t('userSettings.fields.workspaces')" />
       <BaseBadgeSkeleton v-if="isLoadingWorkspaces" :quantity="5" />
       <div class="workspaces" v-else-if="workspaces.length">
         <BaseBadge
@@ -48,14 +36,15 @@
       <p v-else class="--body1 description__text">-</p>
     </div>
     <div class="form-group">
-      <UserTokenComponent :userToken="user.apiKey" />
+      <h2 class="--heading5 --medium description__title" v-text="$t('userSettings.theme')" />
+      <UserSettingsTheme />
     </div>
     <div class="form-group">
-      <h2
-        class="--heading5 --medium description__title"
-        v-text="$t('userSettings.theme')"
-      />
-      <UserSettingsTheme />
+      <h2 class="--heading5 --medium description__title" v-text="$t('userSettings.language')" />
+      <UserSettingsLanguage />
+    </div>
+    <div class="form-group">
+      <UserTokenComponent :userToken="user.apiKey" />
     </div>
   </div>
 </template>
@@ -66,7 +55,7 @@ import { useUserInfoViewModel } from "./useUserInfoViewModel";
 export default {
   methods: {
     goToWorkspace(workspace) {
-      this.$router.push(`/?workspaces=${workspace}`);
+      this.$router.push(`/datasets?workspaces=${workspace}`);
     },
   },
   setup() {
@@ -96,6 +85,10 @@ export default {
   flex-wrap: wrap;
   gap: $base-space * 2;
   padding-bottom: 0;
+}
+.circle-and-role span {
+  background-color: var(--color-brand);
+  color: var(--color-white);
 }
 
 .description {

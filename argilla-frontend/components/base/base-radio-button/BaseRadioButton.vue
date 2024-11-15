@@ -1,10 +1,7 @@
 <template>
   <div class="radio-button" :class="[radioClasses]" @click.stop="toggleCheck">
     <div class="radio-button__container" :style="cssVars">
-      <input
-        type="radio"
-        v-bind="{ id, name, disabled, value, checked: isSelected }"
-      />
+      <input type="radio" v-bind="{ id, name, disabled, value, checked: isSelected }" />
     </div>
     <label :for="id" class="radio-button__label" @click.prevent="toggleCheck">
       <slot />
@@ -32,7 +29,7 @@ export default {
     disabled: Boolean,
     color: {
       type: String,
-      default: "#3e5cc9",
+      default: "var(--fg-status-submitted)",
     },
   },
   model: {

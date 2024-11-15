@@ -2,11 +2,7 @@
   <div class="text_field_component" :key="fieldText">
     <div class="title-area --body2">
       <span class="text_field_component__title-content" v-text="title" />
-      <BaseActionTooltip
-        class="text_field_component__tooltip"
-        :tooltip="$t('copied')"
-        tooltip-position="left"
-      >
+      <BaseActionTooltip class="text_field_component__tooltip" :tooltip="$t('copied')" tooltip-position="left">
         <BaseButton
           :title="$t('button.tooltip.copyToClipboard')"
           class="text_field_component__copy-button"
@@ -16,14 +12,14 @@
         </BaseButton>
       </BaseActionTooltip>
     </div>
-    <div class="content-area --body1">
-      <RenderTableBaseComponent v-if="useTable && isValidTableJSON" :tableData="fieldText" />
+    <div :id="`fields-content-${id}`" class="content-area --body1">
+      <RenderTable v-if="useTable && isValidTableJSON" :tableJSON="JSON.parse(fieldText)" />
       <MarkdownRenderer v-else-if="useMarkdown" :markdown="fieldText" />
-      <Sandbox v-else-if="isHTML" :fieldText="fieldText" />
+      <Sandbox v-else-if="isHTML" :content="fieldText" />
       <div :class="classes" v-else v-html="fieldText" />
       <template>
-        <style :key="name" scoped>
-          ::highlight(search-text-highlight-{{name}}) {
+        <style :key="id" scoped>
+          ::highlight(search-text-highlight-{{id}}) {
             color: #ff675f;
           }
         </style>
@@ -34,10 +30,10 @@
 
 <script>
 import { useTextFieldViewModel } from "./useTextFieldViewModel";
-import { isTableJSON } from "@/components/base/base-render-table/tableUtils";
+import { isValidJSON } from "@/components/base/base-render-table/tableUtils";
 export default {
   props: {
-    name: {
+    id: {
       type: String,
       required: true,
     },
@@ -67,7 +63,7 @@ export default {
   },
   computed: {
     isValidTableJSON() {
-      return isTableJSON(this.fieldText);
+      return isValidJSON(this.fieldText);
     },
     classes() {
       return this.$language.isRTL(this.fieldText) ? "--rtl" : "--ltr";

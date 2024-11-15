@@ -2,22 +2,23 @@ version: '3.8'
 
 services:
   devcontainer:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
     env_file:
       - .env.dev
     volumes:
-      - ../../..:/workspaces:cached      
+      - ../../..:/workspaces:cached
     command: ["sh", "-c", "trap 'exit 0' SIGTERM; while :; do sleep 1; done"]
     depends_on:
       - elasticsearch
       - postgres
       - minio
+      - redis
     network_mode: host
-      
+
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
     ports:
       - "9200:9200"
       - "9300:9300"
@@ -28,7 +29,7 @@ services:
       xpack.security.transport.ssl.enabled: false
       xpack.security.http.ssl.enabled: false
       ES_JAVA_OPTS: -Xms512m -Xmx512m
-    network_mode: host
+      bootstrap.memory_lock: false
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
       interval: 30s
@@ -60,8 +61,9 @@ services:
   minio:
     image: quay.io/minio/minio:RELEASE.2024-08-29T01-40-52Z
     command: minio server /data --console-address :9090
-    env_file:
-      - .env.dev
+    environment:
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
     ports:
       - "9000:9000"
     network_mode: host
@@ -85,6 +87,14 @@ services:
       timeout: 10s
       retries: 3
     restart: unless-stopped
+
+  redis:
+    image: redis:7.0
+    container_name: extralit-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    network_mode: host
 
 networks:
   argilla:

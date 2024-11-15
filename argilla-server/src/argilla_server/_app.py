@@ -1,17 +1,17 @@
-#  coding=utf-8
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import contextlib
 import glob
 import inspect
@@ -19,16 +19,21 @@ import logging
 import os
 import shutil
 import tempfile
+import textwrap
+from urllib.parse import urlencode
+
 import redis
 from datetime import datetime
 from pathlib import Path
 
 import backoff
 from brotli_asgi import BrotliMiddleware
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Query
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.datastructures import URL
 from starlette.middleware.cors import CORSMiddleware
-from starlette.responses import RedirectResponse
+from starlette.responses import RedirectResponse, HTMLResponse
 
 from argilla_server import helpers
 from argilla_server._version import __version__ as argilla_version
@@ -58,6 +63,90 @@ async def app_lifespan(app: FastAPI):
     yield
 
 
+def configure_share_your_progress(app: FastAPI):
+    if settings.enable_share_your_progress is False:
+        return
+
+    def create_image_link(username: str, dataset_name: str, submitted: int, team_progress: float) -> str:
+        url = "https://argilla.imglab-cdn.net/dibt/dibt_v2.png"
+
+        text = f"""<span size="9pt" weight="bold">@{username}</span>
+I've just contributed <span weight="bold">{submitted}</span> examples to this dataset:
+<span size="9pt" weight="bold">{dataset_name}</span>
+
+<span size="8pt">Team progress</span>
+<span weight="bold">{team_progress}%</span>"""
+
+        params = {
+            "width": "1200",
+            "text": text,
+            "text-width": "700",
+            "text-height": "590",
+            "text-padding": "60",
+            "text-color": "39,71,111",
+            "text-x": "460",
+            "text-y": "40",
+            "format": "png",
+            "dpr": "2",
+        }
+
+        return f"{url}?{urlencode(params)}"
+
+    def create_share_html(dataset_name: str, dataset_id: str, share_image: str, url: URL) -> str:
+        share_page = f"""
+            <!DOCTYPE html>
+            <html lang="en">
+              <head>
+                <meta charset="UTF-8" />
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <title{dataset_name}</title>
+
+                <meta property="og:title" content="{dataset_name}" />
+                <meta
+                  property="og:description"
+                  content="Join and contribute to the dataset {dataset_name}"
+                />
+                <meta property="og:type" content="website" />
+                <meta property="og:url" content="{url}" />
+                <meta property="og:image" content="{share_image}" />
+                <meta property="og:site_name" content="Argilla" />
+                <meta property="og:locale" content="en_US" />
+
+                <!-- Twitter meta tags -->
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content="{dataset_name}" />
+                <meta
+                  name="twitter:description"
+                  content="Join and contribute to the dataset {dataset_name}"
+                />
+                <meta name="twitter:image" content="{share_image}" />
+                <meta name="twitter:site" content="{url}" />
+              </head>
+              <body>
+                <script>
+                  window.location.href = `${{window.location.origin}}/dataset/{dataset_id}/annotation-mode`;
+                </script>
+              </body>
+            </html>
+        """
+
+        return textwrap.dedent(share_page)
+
+    @app.get("/share-your-progress", include_in_schema=False)
+    async def share_your_progress_page(
+        request: Request,
+        dataset_name: str = Query(),
+        dataset_id: str = Query(),
+        user_name: str = Query(),
+        team_progress: float = Query(default=0.0),
+        records_submitted: int = Query(default=0),
+    ):
+        share_image = create_image_link(user_name, dataset_name, records_submitted, team_progress)
+        share_page = create_share_html(dataset_name, dataset_id, share_image, request.url)
+
+        return HTMLResponse(content=share_page, status_code=200)
+
+
 def create_server_app() -> FastAPI:
     """Configure the argilla server"""
 
@@ -74,6 +163,7 @@ def create_server_app() -> FastAPI:
     configure_logging()
     configure_common_middleware(app)
     configure_api_router(app)
+    configure_share_your_progress(app)
     configure_telemetry(app)
     configure_app_statics(app)
     configure_api_docs(app)
@@ -81,7 +171,7 @@ def create_server_app() -> FastAPI:
     # This if-else clause is needed to simplify the test dependency setup. Otherwise, we cannot override dependencies
     # easily. We can review this once we have separate fastapi application for the api and the webapp.
     if settings.base_url and settings.base_url != "/":
-        _app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None, redirect_slashes=False)
+        _app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None, redirect_slashes=True)
         _app.mount(settings.base_url, app)
         return _app
     else:
@@ -166,7 +256,7 @@ def configure_app_statics(app: FastAPI):
         BASE_URL_VAR_NAME = "@@baseUrl@@"
         temp_dir = tempfile.mkdtemp()
         new_folder = shutil.copytree(path_from, temp_dir + "/statics")
-        base_url = helpers.remove_suffix(settings.base_url, suffix="/")
+        base_url = helpers.remove_suffix(settings.base_url or "", suffix="/")
         for extension in ["*.js", "*.html"]:
             for file in glob.glob(
                 f"{new_folder}/**/{extension}",
@@ -203,9 +293,9 @@ def track_server_startup() -> None:
 def _show_telemetry_warning():
     message = "\n"
     message += inspect.cleandoc(
-        "Argilla uses telemetry to report anonymous usage and error information. You\n"
+        "Extralit uses telemetry to report anonymous usage and error information. You\n"
         "can know more about what information is reported at:\n\n"
-        "    https://docs.argilla.io/latest/reference/argilla-server/telemetry/\n\n"
+        "    https://docs.extralit.ai/latest/reference/argilla-server/telemetry/\n\n"
         "Telemetry is currently enabled. If you want to disable it, you can configure\n"
         "the environment variable before relaunching the server:\n\n"
         f'{"#set HF_HUB_DISABLE_TELEMETRY=1" if os.name == "nt" else "$>export HF_HUB_DISABLE_TELEMETRY=1"}'
@@ -215,9 +305,6 @@ def _show_telemetry_warning():
 
 async def _create_oauth_allowed_workspaces(db: AsyncSession):
     from argilla_server.security.settings import settings as security_settings
-
-    if not security_settings.oauth.enabled:
-        return
 
     for allowed_workspace in security_settings.oauth.allowed_workspaces:
         if await Workspace.get_by(db, name=allowed_workspace.name) is None:
@@ -242,6 +329,11 @@ async def configure_database():
     async with contextlib.asynccontextmanager(get_async_db)() as db:
         await _show_default_user_warning(db)
         await _create_oauth_allowed_workspaces(db)
+        try:
+            await db.execute(text("SELECT 1"))
+        except Exception as e:
+            _LOGGER.error(f"Database connection test failed at startup: {e}")
+            raise
 
 
 async def configure_search_engine():
@@ -274,7 +366,7 @@ def configure_redis():
     def ping_redis():
         try:
             REDIS_CONNECTION.ping()
-        except redis.exceptions.ConnectionError:
+        except redis.ConnectionError:
             raise ConnectionError(
                 f"Your redis instance at {settings.redis_url} is not available or not responding.\n"
                 "Please make sure your redis instance is launched and correctly running and\n"

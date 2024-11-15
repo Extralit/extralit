@@ -14,11 +14,7 @@
     <template slot="dropdown-content">
       <ul class="similarity-config__options">
         <li
-          :class="
-            value === getKeyProp(option)
-              ? 'similarity-config__option--selected'
-              : 'similarity-config__option'
-          "
+          :class="value === getKeyProp(option) ? 'similarity-config__option--selected' : 'similarity-config__option'"
           v-for="option in options"
           :key="getKeyProp(option)"
           @click="selectOption(getKeyProp(option))"
@@ -66,9 +62,7 @@ export default {
   },
   computed: {
     selectedValue() {
-      const selectedOption = this.options.find(
-        (option) => this.value === this.getKeyProp(option)
-      );
+      const selectedOption = this.options.find((option) => this.value === this.getKeyProp(option));
 
       return this.getDisplayProp(selectedOption);
     },

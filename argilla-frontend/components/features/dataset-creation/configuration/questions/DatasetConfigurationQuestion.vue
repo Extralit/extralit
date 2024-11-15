@@ -6,30 +6,23 @@
     @is-focused="$emit('is-focused', $event)"
     @change-type="$emit('change-type', $event)"
   >
-    <BaseButton
-      class="config-card__remove"
-      @click="remove"
-      v-if="removeIsAllowed"
-      ><svgicon name="close"
-    /></BaseButton>
+    <BaseButton class="config-card__remove" @click="remove" v-if="removeIsAllowed"><svgicon name="close" /></BaseButton>
 
     <template v-if="noMapping">
       <DatasetConfigurationLabels
-        v-if="
-          question.settings.type.isSingleLabelType ||
-          question.settings.type.isMultiLabelType
-        "
+        v-if="question.settings.type.isSingleLabelType || question.settings.type.isMultiLabelType"
         :question="question"
         @is-focused="$emit('is-focused', $event)"
       />
       <DatasetConfigurationSpan
         v-else-if="question.settings.type.isSpanType"
         :question="question"
+        :textFields="selectedSubset.textFields"
         @is-focused="$emit('is-focused', $event)"
       />
       <DatasetConfigurationRating
         v-else-if="question.settings.type.isRatingType"
-        v-model="question.settings.options"
+        :question="question"
         @is-focused="$emit('is-focused', $event)"
       />
       <DatasetConfigurationRanking
@@ -42,7 +35,7 @@
     <DatasetConfigurationColumnSelector
       v-if="showColumnSelector"
       class="config-card__type"
-      :options="columns"
+      :options="selectedSubset.columns"
       v-model="question.column"
     />
     <BaseCheckbox
@@ -63,8 +56,8 @@ export default {
       type: Object,
       required: true,
     },
-    columns: {
-      type: Array,
+    selectedSubset: {
+      type: Object,
       required: true,
     },
     removeIsAllowed: {
@@ -90,7 +83,7 @@ export default {
   },
   methods: {
     remove() {
-      this.$emit("remove");
+      this.selectedSubset.removeQuestion(this.question.name);
     },
   },
 };

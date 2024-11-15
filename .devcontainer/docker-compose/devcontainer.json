@@ -1,7 +1,7 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/anaconda
 {
-  "name": "PostgreSQL & Elasticsearch for Docker-Compose",
+  "name": "Docker-Compose",
 
   "dockerComposeFile": "docker-compose.yml",
   "service": "devcontainer",
@@ -9,7 +9,8 @@
     "elasticsearch",
     "postgres",
     "minio",
-    "weaviate"
+    "weaviate",
+    "redis"
   ],
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
 
@@ -85,7 +86,8 @@
         "GitHub.copilot",
         "GitHub.copilot-chat",
         "ms-python.python",
-        "ms-python.vscode-pylance",
+        "usernamehw.errorlens",
+        "charliermarsh.ruff",
         "eamodio.gitlens",
         "tilt-dev.tiltfile",
         "github.vscode-github-actions",
@@ -96,22 +98,28 @@
     },
     "settings": {
       "python.testing.pytestEnabled": true,
-      "python.testing.cwd": "${workspaceFolder}/argilla/",
+      "python.testing.cwd": "${workspaceFolder}/extralit/",
       "python.testing.pytestArgs": [
         "-vv",
-        "--disable-warnings",
-        "--cov",
-        "--cov-report=xml:coverage.xml",
+        "--disable-warnings"
       ],
       "python.defaultInterpreterPath": "/opt/conda/bin/python",
       "python.condaPath": "/usr/local/bin/micromamba",
+      "python.envFile": "${workspaceFolder}/extralit/.env.test",
       "search.exclude": {
         "argilla-server/src/argilla_server/static/": true,
         "argilla-frontend/dist/": true,
+        "_nuxt/": true,
+        "node_modules/": true,
+        ".venv/": true,
+        "**/*.png": true
       },
       "files.watcherExclude": {
         "argilla-server/src/argilla_server/static/": true,
         "argilla-frontend/dist/": true,
+        "_nuxt/": true,
+        "node_modules/": true,
+        ".venv/": true
       }
     }
   }

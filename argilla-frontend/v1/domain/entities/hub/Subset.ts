@@ -7,6 +7,8 @@ import { QuestionCreation } from "./QuestionCreation";
 type Structure = {
   name: string;
   options?: string[];
+  role?: string;
+  content?: string;
   structure?: Structure[];
   kindObject?: "Value" | "Image" | "ClassLabel" | "Sequence";
   type?: "string" | MetadataTypes;
@@ -33,6 +35,7 @@ export class Subset {
 
     for (const [name, value] of Object.entries<Feature>(datasetInfo.features)) {
       if (Array.isArray(value)) {
+        const { role, content } = value[0];
         this.structures.push({
           name,
           structure: value.map((v) => {
@@ -42,6 +45,8 @@ export class Subset {
               name: key,
               kindObject: value._type,
               type: value.dtype,
+              role,
+              content,
             };
           }),
         });
@@ -80,6 +85,10 @@ export class Subset {
     return ["no mapping", ...columnNames];
   }
 
+  get textFields() {
+    return this.fields.filter((f) => f.settings.type.isTextType);
+  }
+
   private setDefaultValues() {
     if (this.questions.length === 1) {
       this.questions[0].markAsRequired();
@@ -90,6 +99,7 @@ export class Subset {
     if (this.isASingleLabel(structure)) {
       this.questions.push(
         new QuestionCreation(
+          this,
           structure.name,
           {
             type: "label_selection",
@@ -109,6 +119,7 @@ export class Subset {
     if (this.isAMultiLabel(structure)) {
       this.questions.push(
         new QuestionCreation(
+          this,
           structure.name,
           {
             type: "multi_label_selection",
@@ -134,8 +145,12 @@ export class Subset {
         return "text";
 
       if (structure.kindObject === "Image") return "image";
-
-      if (structure.structure?.length > 0) return "chat";
+      if (
+        structure.structure?.length > 0 &&
+        structure.structure[0].content &&
+        structure.structure[0].role
+      )
+        return "chat";
     };
 
     const field = FieldCreation.from(
@@ -193,7 +208,11 @@ export class Subset {
     }
   }
 
-  public addQuestion(name: string, settings: QuestionPrototype) {
+  public addQuestion(
+    name: string,
+    settings: QuestionPrototype,
+    position?: number
+  ) {
     const { type } = settings;
     if (type === "label_selection") {
       settings.options = [
@@ -242,7 +261,10 @@ export class Subset {
         { text: "event", id: "3", value: "event" },
       ];
       settings.allow_overlapping = true;
-      settings.field = "text";
+
+      if (this.textFields.length > 0) {
+        settings.field = this.textFields[0].name;
+      }
     }
 
     if (type === "text") {
@@ -257,6 +279,10 @@ export class Subset {
       return;
     }
 
-    this.questions.push(new QuestionCreation(name, settings));
+    this.questions.splice(
+      position ?? this.questions.length,
+      0,
+      new QuestionCreation(this, name, settings)
+    );
   }
 }

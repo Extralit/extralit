@@ -86,7 +86,7 @@ def join_slack_channel(client: WebClient, channel_id: str) -> None:
 
 
 def get_pr_url(pr_number: int) -> str:
-    return f"https://github.com/argilla-io/argilla/pull/{pr_number}"
+    return f"https://github.com/extralit/extralit/pull/{pr_number}"
 
 
 def get_thread_ts_pr_message(

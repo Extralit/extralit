@@ -1,6 +1,6 @@
-import { DocumentRepository } from "@/v1/infrastructure/repositories/DocumentRepository";
-import { IDocumentStorage } from "../services/IDocumentStorage";
 import { Segment } from "../entities/document/Document";
+import { IDocumentStorage } from "../services/IDocumentStorage";
+import { DocumentRepository } from "@/v1/infrastructure/repositories/DocumentRepository";
 
 export class GetDocumentByIdUseCase {
   constructor(

@@ -2,7 +2,7 @@
   <div class="datasets-empty">
     <span class="datasets-empty__message" v-text="$t('home.none')" />
     <div class="datasets-empty__cards" v-if="isAdminOrOwnerRole">
-      <DatasetListCard
+      <DatasetsEmptyCard
         :title="$t('home.importTitle')"
         :text="$t('home.importText')"
         :button-text="$t('home.importButton')"
@@ -27,11 +27,7 @@ export default {
 <style lang="scss" scoped>
 .dataset {
   &__placeholder {
-    background: linear-gradient(
-      180deg,
-      var(--bg-opacity-2) 0%,
-      var(--bg-opacity-4) 100%
-    );
+    background: linear-gradient(180deg, var(--bg-opacity-2) 0%, var(--bg-opacity-4) 100%);
     border-radius: $border-radius-m;
   }
 }

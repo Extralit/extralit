@@ -76,7 +76,7 @@ helm_resource(
     ],
     port_forwards=['6379'],
     labels=['argilla-server'],
-    resource_deps=['redis-helm']
+    resource_deps=['redis-helm', 'bitnami-helm']
 )
 
 # argilla-server is the web backend (FastAPI + SQL database)
@@ -91,7 +91,7 @@ docker_build(
     context='argilla-server/',
     build_args={'ENV': ENV, 'USERS_DB': USERS_DB},
     dockerfile='argilla-server/docker/server/dev.argilla_server.dockerfile',
-    ignore=['examples/', 'argilla/', '.*', '**/__pycache__', '*.pyc', 'CHANGELOG.md'],
+    ignore=['examples/', 'extralit/', '.*', '**/__pycache__', '*.pyc', 'CHANGELOG.md'],
     live_update=[
         # Sync the source code to the container
         sync('argilla-server/src/', '/home/argilla/src/'),
@@ -159,22 +159,22 @@ helm_resource(
     flags=[
         '--version=16.8.8',
         '--values=examples/deployments/k8s/helm/weaviate-helm.yaml'],
-    auto_init=False,
+    auto_init=not WCS_HTTP_URL or not WCS_API_KEY,
     port_forwards=['8080:8080', '50051:50051'],
     labels=['extralit'],
     resource_deps=['weaviate-helm'],
 )
 
 # Extralit server
-if not os.path.exists('argilla/dist/'):
-    local('pdm build', dir='argilla')
+if not os.path.exists('extralit/dist/'):
+    local('pdm build', dir='extralit')
 docker_build(
     "{DOCKER_REPO}/extralit-server".format(DOCKER_REPO=DOCKER_REPO),
-    context='argilla/',
-    dockerfile='argilla/docker/extralit.dockerfile',
+    context='extralit/',
+    dockerfile='extralit/docker/extralit.dockerfile',
     ignore=['.*', 'argilla-frontend/', 'argilla-server/', '**/__pycache__', '*.pyc'],
     live_update=[
-        sync('argilla/', '/home/extralit/'),
+        sync('extralit/', '/home/extralit/'),
     ]
 )
 extralit_k8s_yaml = read_yaml_stream('examples/deployments/k8s/extralit-deployment.yaml')
