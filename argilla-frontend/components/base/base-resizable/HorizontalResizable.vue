@@ -47,7 +47,7 @@ export default {
     },
     minHeightPercent: {
       type: Number,
-      default: 50,
+      default: 25,
     },
     topPercentHeight: {
       type: Number,

@@ -25,7 +25,6 @@ async def proxy(request: Request, rest_of_path: str,
     url = urljoin(settings.extralit_url, rest_of_path)
     params = dict(request.query_params)
 
-    print(f'PROXY {url} {params}', end='')
     _LOGGER.info('PROXY %s %s', url, params)
 
     if 'workspace' not in params or not params['workspace']:

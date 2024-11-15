@@ -96,8 +96,7 @@ export const useDocumentViewModel = (
         } finally {
           isLoading.value = false;
           if (!hasDocumentLoaded.value) {
-            // Assuming closePanel is a method you want to call here
-            // closePanel();
+            // TODO closePanel();
           }
         }
       }

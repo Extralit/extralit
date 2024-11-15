@@ -540,13 +540,12 @@ class User(DatabaseModel):
         )
     
     async def is_member_of_workspace_name(self, workspace_name: str) -> bool:
-        session = async_object_session(self)
-        workspace = await Workspace.get_by(session, name=workspace_name)
+        workspace = await Workspace.get_by(self.current_async_session, name=workspace_name)
         if not workspace:
             return False
         return (
             await WorkspaceUser.get_by(
-                session,
+                self.current_async_session,
                 workspace_id=workspace.id,
                 user_id=self.id
             )
