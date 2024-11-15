@@ -8,12 +8,6 @@
       />
       <div v-if="currentPanel === 'document'">
         <div v-if="isLoading">Loading...</div>
-        <PDFViewerBaseComponent 
-          v-else
-          :url="document.url" 
-          :file-name="document.file_name"
-          :pageNumber="document.page_number"
-        />
       </div>
 
     </SidebarFeedbackTaskPanel>

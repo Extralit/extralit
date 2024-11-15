@@ -51,7 +51,7 @@ const config: NuxtConfig = {
       { rel: "manifest", href: "site.webmanifest" },
     ],
     script: [
-      ...(process.env.NODE_ENV === 'development' ? [{ src: 'http://localhost:8098', defer: true }] : [])
+      // ...(process.env.NODE_ENV === 'development' ? [{ src: 'http://localhost:8098', defer: true }] : [])
     ]
   },
 
@@ -242,5 +242,7 @@ const config: NuxtConfig = {
     documentationPersistentStorage:
       "https://docs.argilla.io/latest/getting_started/how-to-configure-argilla-on-huggingface/#persistent-storage",
   },
+
+  watch: ['~/components/**/*.vue', '~/pages/**/*.vue', '~/layouts/**/*.vue', '~/store/**/*.js', '~/plugins/**/*.js', '~/nuxt.config.ts'],
 };
 export default config;
