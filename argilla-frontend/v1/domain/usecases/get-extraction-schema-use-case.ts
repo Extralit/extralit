@@ -1,6 +1,6 @@
 import { type NuxtAxiosInstance } from "@nuxtjs/axios";
 
-import { Data, DataFrame, ReferenceValues, PanderaSchema, SchemaMetadata } from "@/components/base/base-render-table/types";
+import { PanderaSchema, SchemaMetadata } from "@/components/base/base-render-table/types";
 
 const FILES_API_ERRORS = {
   ERROR_FETCHING_SCHEMA_FILE: "ERROR_FETCHING_SCHEMA_FILE",

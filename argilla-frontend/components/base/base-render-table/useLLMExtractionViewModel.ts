@@ -24,19 +24,19 @@ export const useLLMExtractionViewModel = (
     selectedRowData: Data,
     columns: Array<string>, 
     referenceValues: ReferenceValues,
-    headers_question_name: string = 'context-relevant',
-    types_question_name: string = 'extraction-source',
-    prompt_question_name: string = 'notes',
+    headersQuestionName: string = 'context-relevant',
+    typesQuestionName: string = 'extraction-source',
+    promptQuestionName: string = 'notes',
   ): Promise<Data> => {
     const reference = schemaTableViewModel.tableJSON.value.reference || document.reference;
-    const schema_name = schemaTableViewModel.tableJSON.value.schema?.schemaName || schemaTableViewModel.tableJSON.value.validation?.name;
-    const headers = getSelectionQuestionAnswer(headers_question_name)?.filter((value) => value != 'Not listed');
-    const types = getSelectionQuestionAnswer(types_question_name);
-    const prompt = getTextQuestionAnswer(prompt_question_name);
+    const schemaName = schemaTableViewModel.tableJSON.value.schema?.schemaName || schemaTableViewModel.tableJSON.value.validation?.name;
+    const headers = getSelectionQuestionAnswer(headersQuestionName)?.filter((value) => value != 'Not listed');
+    const types = getSelectionQuestionAnswer(typesQuestionName);
+    const prompt = getTextQuestionAnswer(promptQuestionName);
 
     const predictedData = await getExtraction.getExtractionCompletion(
       reference, 
-      schema_name, 
+      schemaName, 
       dataset.workspaceName,
       selectedRowData, 
       referenceValues,
