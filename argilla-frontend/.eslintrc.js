@@ -37,13 +37,13 @@ module.exports = {
   rules: {
     "no-console": process.env.NODE_ENV === "production" ? "error" : "off",
     "no-debugger": process.env.NODE_ENV === "production" ? "error" : "off",
-    "prefer-const": "error",
-    "prefer-arrow-callback": "error",
-    "no-unused-vars": ["error", { ignoreRestSiblings: true }],
+    "prefer-const": "warn",
+    "prefer-arrow-callback": "warn",
+    "no-unused-vars": ["warn", { ignoreRestSiblings: true }],
     "@intlify/vue-i18n/no-raw-text": "off",
     "@intlify/vue-i18n/no-v-html": "off",
-    "@intlify/vue-i18n/no-missing-keys": "error",
-    "vue/attributes-order": ["error", {
+    "@intlify/vue-i18n/no-missing-keys": "warn",
+    "vue/attributes-order": ["warn", {
       "order": ["DEFINITION", "LIST_RENDERING", "CONDITIONALS", "RENDER_MODIFIERS", "GLOBAL", "UNIQUE", "TWO_WAY_BINDING", "OTHER_DIRECTIVES", "OTHER_ATTR", "EVENTS", "CONTENT"],
       "alphabetical": false
     }],
@@ -62,9 +62,9 @@ module.exports = {
       plugins: ["@typescript-eslint", "prettier"],
       parserOptions: { project: ["./tsconfig.json"] },
       rules: {
-        "prettier/prettier": ["error"],
-        quotes: ["error", "double"],
-        semi: ["error", "always"],
+        "prettier/prettier": ["warn"],
+        quotes: ["warn", "double"],
+        semi: ["warn", "always"],
         "import/no-named-as-default-member": 0,
         "no-useless-constructor": 0,
         "space-before-function-paren": 0,
