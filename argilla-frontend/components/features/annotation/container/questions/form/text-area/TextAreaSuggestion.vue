@@ -1,14 +1,14 @@
 <template>
   <div class="container">
     <RenderTableBaseComponent
-      v-if="question.settings.settings.use_table && isValidTableJSON"
+      v-if="question.settings.use_table && isValidTableJSON"
       class="textarea"
       :tableData="question.suggestion?.suggestedAnswer"
       :editable="true"
       @onUpdateAnswer="onUpdateAnswer"
     />
     <RenderHTMLBaseComponent
-      v-else-if="question.settings.settings.use_table && isValidHTML"
+      v-else-if="question.settings.use_table && isValidHTML"
       class="textarea"
       :value="question.suggestion?.suggestedAnswer"
     />

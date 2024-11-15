@@ -18,6 +18,11 @@ on:
       - synchronize
       - ready_for_review
 
+permissions:
+  contents: read
+  id-token: write
+  pull-requests: write
+
 jobs:
   build:
     name: Build argilla-frontend
