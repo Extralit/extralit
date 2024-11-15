@@ -38,6 +38,7 @@ export default {
   visibleLabels: "Visible labels",
   annotationGuidelines: "Annotation guidelines",
   guidelines: "Guidelines",
+  document: "Document",
   taskDistribution: "Task distribution",
   minimumSubmittedResponses: "Minimum submitted responses",
   taskDistributionTooltip:

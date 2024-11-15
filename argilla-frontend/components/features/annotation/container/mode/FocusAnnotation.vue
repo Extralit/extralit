@@ -38,13 +38,13 @@
           </section>
         </template>
         <template #downHeader>
-          <p v-text="$t('guidelines')" />
+          <p v-text="$t('document')" />
         </template>
         <template #downHeaderExpanded>
-          <p v-text="$t('guidelines')" />
+          <p v-text="$t('document')" />
         </template>
         <template #downContent>
-          <AnnotationGuidelines />
+          <!-- <AnnotationGuidelines /> -->
         </template>
       </HorizontalResizable>
     </template>
@@ -93,10 +93,10 @@
       @toggle-expand="expandedGuidelines = !expandedGuidelines"
     >
       <template #panelHeader>
-        <p v-text="$t('guidelines')" />
+        <p v-text="$t('document')" />
       </template>
       <template #panelContent>
-        <AnnotationGuidelines />
+        <!-- <AnnotationGuidelines /> -->
       </template>
     </BaseCollapsablePanel>
   </VerticalResizable>
