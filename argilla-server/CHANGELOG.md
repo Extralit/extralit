@@ -19,6 +19,7 @@ These are the section headers that we use:
 ### Added
 - Added use_table option to TextFieldSetting.
 - Added redis service to the tilt k8s deployment for argilla-server.
+- Improved argillar-server and extralit-server dockerfile multi-stage build.
 
 ### Changed
 - Changed envvars in Tilt k8s deployment at `examples/deployments/k8s/argilla-server-deployment.yaml`
