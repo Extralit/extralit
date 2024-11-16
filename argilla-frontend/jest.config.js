@@ -11,13 +11,19 @@ module.exports = {
   },
   modulePathIgnorePatterns: ["<rootDir>/e2e"],
   transform: {
-    "^.+\\.js$": "babel-jest",
-    "^.+\\.ts$": "babel-jest",
-    ".*\\.(vue)$": "vue-jest",
+    "^.+\\.js$": ["babel-jest", { configFile: './babel.config.test.js' }],
+    "^.+\\.ts$": ["babel-jest", { configFile: './babel.config.test.js' }],
+    ".*\\.(vue)$": "@vue/vue2-jest",
     "^.+\\.svg$": "jest-transform-stub",
   },
+  transformIgnorePatterns: [
+    "/node_modules/(?!(@tiptap|vue-svgicon|tabulator-tables)/)"
+  ],
   snapshotSerializers: ["<rootDir>/node_modules/jest-serializer-vue"],
   testEnvironment: "jsdom",
   collectCoverageFrom: ["<rootDir>/components/**/*.vue", "<rootDir>/pages/*.vue"],
   setupFiles: ["<rootDir>/jest.setup.ts"],
+  testEnvironmentOptions: {
+    customExportConditions: ["node", "node-addons"],
+  },
 };
