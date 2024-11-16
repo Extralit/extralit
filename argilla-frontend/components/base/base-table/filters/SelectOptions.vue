@@ -25,9 +25,7 @@
         :value="optionValue(option)"
       >
         {{ optionName(option) }}
-        <template v-if="optionCounter(option) !== undefined"
-          >({{ optionCounter(option) | formatNumber }})</template
-        >
+        <template v-if="optionCounter(option) !== undefined">({{ optionCounter(option) | formatNumber }})</template>
       </base-checkbox>
     </li>
     <li v-if="!Object.entries(options).length">0 results</li>

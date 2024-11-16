@@ -1,10 +1,7 @@
 <template>
   <div class="filters__wrapper">
     <div class="filters">
-      <SearchBarFilter
-        v-model="recordCriteria.searchText"
-        :fields="datasetFields"
-      />
+      <SearchBarFilter v-model="recordCriteria.searchText" :fields="datasetFields" />
       <StatusFilter class="filters__status" v-model="recordCriteria.status" />
       <FilterButton
         v-if="isAnyAvailableFilter"
@@ -39,10 +36,7 @@
             :datasetMetadata="datasetMetadata"
             v-model="recordCriteria.metadata.value"
           />
-          <ResponsesFilter
-            :datasetQuestions="datasetQuestions"
-            v-model="recordCriteria.response.value"
-          />
+          <ResponsesFilter :datasetQuestions="datasetQuestions" v-model="recordCriteria.response.value" />
           <SuggestionFilter
             v-model="recordCriteria.suggestion.value"
             :datasetId="recordCriteria.datasetId"
@@ -155,11 +149,7 @@ export default {
         top: 0;
         width: $base-space * 4;
         height: 100%;
-        background: linear-gradient(
-          90deg,
-          transparent 0%,
-          var(--bg-solid-grey-1) 50%
-        );
+        background: linear-gradient(90deg, transparent 0%, var(--bg-solid-grey-1) 50%);
         transition: all 0.3s ease;
       }
       &:hover {

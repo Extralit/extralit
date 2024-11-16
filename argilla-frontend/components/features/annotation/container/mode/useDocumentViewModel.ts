@@ -21,9 +21,9 @@ export const useDocumentViewModel = (
   const hasDocumentLoaded = computed(() => {
     return document.id !== null;
   });
-  const hasDocument = computed(() => {
-    return props.record.metadata === null || props.record.metadata?.doc_id != null || props.record.metadata?.pmid != null;
-  })
+  // const hasDocument = computed(() => {
+  //   return props.record.metadata === null || props.record.metadata?.doc_id != null || props.record.metadata?.pmid != null;
+  // })
 
   const fetchDocumentByID = async (id: string) => {
     try {
@@ -52,10 +52,10 @@ export const useDocumentViewModel = (
   const updateDocument = async (metadata: any) => {
     if (metadata?.pmid != null) {
       if (document.pmid !== metadata.pmid) {
-        fetchDocumentByPubmedID(metadata.pmid);
+        await fetchDocumentByPubmedID(metadata.pmid);
       }
     } else if (metadata?.doc_id != null && document.id !== metadata.doc_id) {
-      fetchDocumentByID(metadata.doc_id);
+      await fetchDocumentByID(metadata.doc_id);
     } else if (!metadata?.pmid && !metadata?.doc_id && hasDocumentLoaded.value) {
       clearDocument();
     }

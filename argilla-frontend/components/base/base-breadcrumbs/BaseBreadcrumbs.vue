@@ -19,18 +19,12 @@
   <div class="breadcrumbs">
     <ul role="navigation">
       <li v-for="breadcrumb in filteredBreadcrumbs" :key="breadcrumb.name">
-        <nuxt-link
-          class="breadcrumbs__item"
-          v-if="breadcrumb.link"
-          :to="breadcrumb.link"
+        <nuxt-link class="breadcrumbs__item" v-if="breadcrumb.link" :to="breadcrumb.link"
           >{{ breadcrumb.name }}
         </nuxt-link>
-        <span
-          v-else
-          class="breadcrumbs__item --action"
-          @click="onBreadcrumbAction(breadcrumb)"
-          >{{ breadcrumb.name }}</span
-        >
+        <span v-else class="breadcrumbs__item --action" @click="onBreadcrumbAction(breadcrumb)">{{
+          breadcrumb.name
+        }}</span>
       </li>
     </ul>
     <!-- <base-action-tooltip :tooltip="$t('copied')">

@@ -1,20 +1,8 @@
 <template>
   <div class="options-search">
-    <input
-      v-model="searchText"
-      class="options-search__input"
-      type="text"
-      autofocus
-      :placeholder="$t('search')"
-    />
+    <input v-model="searchText" class="options-search__input" type="text" autofocus :placeholder="$t('search')" />
     <a href="#" class="options-search__clear" @click.prevent="clear">
-      <svgicon
-        v-if="allowClear && !!searchText"
-        name="close"
-        width="10"
-        height="10"
-        color="#9b9b9b"
-      ></svgicon>
+      <svgicon v-if="allowClear && !!searchText" name="close" width="10" height="10" color="#9b9b9b"></svgicon>
     </a>
   </div>
 </template>

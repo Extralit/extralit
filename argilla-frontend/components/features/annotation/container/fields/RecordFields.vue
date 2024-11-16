@@ -1,7 +1,7 @@
 <template>
   <div class="fields">
-    <div 
-      v-for="group in fieldsWithTabs" 
+    <div
+      v-for="group in fieldsWithTabs"
       :class="[group[0]?.isImageType ? 'fields__container--image' : '']"
       :key="group[0].id"
     >
@@ -46,20 +46,20 @@
         :sdkRecord="group[0].sdkRecord"
         :settings="group[0].settings"
       />
-      
-      <BaseCardWithTabs 
-        v-else-if="group.length > 1" 
-        :tabs="group.map(field => ({ id: field.name, name: field.title, class: '--field', component: 'TextField' }))"
+
+      <BaseCardWithTabs
+        v-else-if="group.length > 1"
+        :tabs="group.map((field) => ({ id: field.name, name: field.title, class: '--field', component: 'TextField' }))"
       >
         <template v-slot="{ currentComponent, currentTabId }">
           <component
             :is="currentComponent"
             :key="currentTabId"
-            :name="group.find(field => field.name === currentTabId)?.name"
-            :title="group.find(field => field.name === currentTabId)?.title"
-            :fieldText="group.find(field => field.name === currentTabId)?.content"
-            :useMarkdown="group.find(field => field.name === currentTabId)?.settings.use_markdown"
-            :useTable="group.find(field => field.name === currentTabId)?.settings.use_table"
+            :name="group.find((field) => field.name === currentTabId)?.name"
+            :title="group.find((field) => field.name === currentTabId)?.title"
+            :fieldText="group.find((field) => field.name === currentTabId)?.content"
+            :useMarkdown="group.find((field) => field.name === currentTabId)?.settings.use_markdown"
+            :useTable="group.find((field) => field.name === currentTabId)?.settings.use_table"
             :searchText="recordCriteria.committed.searchText.value.text"
           />
         </template>
@@ -96,7 +96,7 @@ export default {
     },
     fieldsWithTabs() {
       const fieldGroups = this.fields.reduce((groups, field) => {
-        const prefix = field.name.split('-')[0];
+        const prefix = field.name.split("-")[0];
         if (!groups[prefix]) {
           groups[prefix] = [];
         }

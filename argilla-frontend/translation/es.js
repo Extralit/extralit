@@ -42,14 +42,12 @@ export default {
   optional: "Opcional",
   template: "Plantilla",
   noRecordsMessages: {
-    datasetEmptyForAnnotator:
-      "El dataset está vacío. Pide a un administrador que suba registros y vuelve pronto.",
+    datasetEmptyForAnnotator: "El dataset está vacío. Pide a un administrador que suba registros y vuelve pronto.",
     datasetEmptyForAdmin:
       "El dataset está vacío. Puedes agregar registros usando el SDK de Python, consulta la <a href='https://docs.argilla.io/latest/how_to_guides/record/'>documentación</a> sobre cómo agregar registros.",
     taskDistributionCompleted: "🎉 ¡La tarea está completada!",
     noSubmittedRecords: "Aún no has entregado ningún registro",
-    noRecordsFound:
-      "No tienes registros {status} que coincidan con tu búsqueda",
+    noRecordsFound: "No tienes registros {status} que coincidan con tu búsqueda",
     noRecords: "No tienes registros {status}",
     noPendingRecordsToAnnotate: "🎉 No tienes registros pendientes para anotar",
     noDraftRecordsToReview: "No tienes ningún borrador para revisar",
@@ -70,8 +68,7 @@ export default {
     discarded: "descartado | descartados",
     submitted: "entregado | entregados",
     validated: "validado | validados",
-    completedTooltip:
-      "El registro está completo, tiene el número \nmínimo de respuestas",
+    completedTooltip: "El registro está completo, tiene el número \nmínimo de respuestas",
   },
   userSettings: {
     title: "Mi configuración",
@@ -82,8 +79,7 @@ export default {
       workspaces: "Espacios de trabajo",
     },
     apiKey: "Clave de API",
-    apiKeyDescription:
-      "Los tokens de clave API permiten administrar datasets utilizando el SDK de Python",
+    apiKeyDescription: "Los tokens de clave API permiten administrar datasets utilizando el SDK de Python",
     copyKey: "Copiar clave",
   },
   userAvatarTooltip: {
@@ -125,13 +121,11 @@ export default {
       datasetSettings: "Configuración del dataset",
     },
   },
-  to_submit_complete_required:
-    "Para entregar completa \nlas respuestas requeridas",
+  to_submit_complete_required: "Para entregar completa \nlas respuestas requeridas",
   some_records_failed_to_annotate: "Algunos registros no fueron anotados",
   changes_no_submit: "No entregó sus cambios",
   bulkAnnotation: {
-    recordsSelected:
-      "1 registro seleccionado | {count} registros seleccionados",
+    recordsSelected: "1 registro seleccionado | {count} registros seleccionados",
     recordsViewSettings: "Tamaño de registro",
     fixedHeight: "Colapsar registros",
     defaultHeight: "Expandir registros",
@@ -141,8 +135,7 @@ export default {
     selectAllResults: "Selecciona todos los registros coincidentes {total}",
     haveSelectedRecords: "Has seleccionado todos los registros {total}",
     actionConfirmation: "Confirmación de acción en bloque",
-    actionConfirmationText:
-      "Esta acción afectará a {total} registros, ¿Quiere continuar?",
+    actionConfirmationText: "Esta acción afectará a {total} registros, ¿Quiere continuar?",
     allRecordsAnnotated: "{total} registros han sido {action}",
     affectedAll: {
       submitted: "entregados",
@@ -213,8 +206,7 @@ export default {
     claim: "Trabaja en equipo con tus datos.</br>Perfecciona tus modelos.",
     hf: {
       title: "Bienvenido a {space}",
-      subtitle:
-        "Únete a <strong>{user}</strong> para construir mejores datasets para IA",
+      subtitle: "Únete a <strong>{user}</strong> para construir mejores datasets para IA",
     },
   },
   of: "de",
@@ -259,8 +251,7 @@ export default {
     argillaDatasets: "Tus datasets",
     none: "Sin datasets",
     importTitle: "Importar un dataset desde Hugging Face Hub",
-    importText:
-      "Comienza con un conjunto de datos del Hub simplemente pegando el nombre del repositorio",
+    importText: "Comienza con un conjunto de datos del Hub simplemente pegando el nombre del repositorio",
     importButton: "Importar dataset",
     importFromHub: "Importar dataset desde Hugging Face",
     importFromPython: "Importar desde Python",

@@ -1,15 +1,8 @@
 <template>
-  <DatasetsEmpty
-    v-if="!datasets.length"
-    @on-click-card="$emit('on-click-card', $event)"
-  />
+  <DatasetsEmpty v-if="!datasets.length" @on-click-card="$emit('on-click-card', $event)" />
   <div class="dataset__table" v-else>
     <div class="interactions">
-      <base-search-bar
-        @input="onSearch"
-        :querySearch="querySearch"
-        :placeholder="$t('searchDatasets')"
-      />
+      <base-search-bar @input="onSearch" :querySearch="querySearch" :placeholder="$t('searchDatasets')" />
     </div>
     <BaseTableInfo
       ref="table"
@@ -143,12 +136,7 @@ export default {
       this.sortedOrder = order;
     },
     onColumnFilterApplied({ column, values }) {
-      const updateUrlParamsFor = (
-        values,
-        paramKey,
-        currentParams,
-        valuesToPush
-      ) => {
+      const updateUrlParamsFor = (values, paramKey, currentParams, valuesToPush) => {
         if (values === currentParams) return;
 
         const query = createQueryFor(values, paramKey, valuesToPush);
@@ -166,12 +154,7 @@ export default {
 
       switch (column) {
         case "workspace":
-          updateUrlParamsFor(
-            values,
-            "workspaces",
-            this.workspaces,
-            values.join(",")
-          );
+          updateUrlParamsFor(values, "workspaces", this.workspaces, values.join(","));
           break;
       }
     },

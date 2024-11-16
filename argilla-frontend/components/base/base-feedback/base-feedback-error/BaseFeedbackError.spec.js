@@ -10,10 +10,7 @@ const options = {
   },
 };
 
-const spyOnClickMethod = jest.spyOn(
-  BaseFeedBackErrorComponent.methods,
-  "onClick"
-);
+const spyOnClickMethod = jest.spyOn(BaseFeedBackErrorComponent.methods, "onClick");
 
 beforeEach(() => {
   wrapper = shallowMount(BaseFeedBackErrorComponent, options);
@@ -32,9 +29,7 @@ describe("BaseFeedbackErrorComponent", () => {
     isClassExist("button", false);
   });
   it("render 1 button", async () => {
-    setButtonsPropsAndCheckIfButtonsAreRendered([
-      { label: "button1", value: "BUTTON_1" },
-    ]);
+    setButtonsPropsAndCheckIfButtonsAreRendered([{ label: "button1", value: "BUTTON_1" }]);
   });
   it("render 2 buttons", () => {
     setButtonsPropsAndCheckIfButtonsAreRendered([
@@ -59,10 +54,7 @@ describe("BaseFeedbackErrorComponent", () => {
   });
 });
 
-const testIfButtonExistAndIfOnClickMethodIsFired = async (
-  buttonLabel,
-  eventNumber
-) => {
+const testIfButtonExistAndIfOnClickMethodIsFired = async (buttonLabel, eventNumber) => {
   const button = wrapper.findComponent(`#${buttonLabel.label}`);
   expect(button.exists()).toBe(true);
   await button.vm.$emit("on-click");

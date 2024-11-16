@@ -18,6 +18,7 @@ These are the section headers that we use:
 
 ### Fixed
 - Fixed use_table setting update in `TextField`
+- Ran `npm run lint:fix` for the first time due to CI failure
 
 ## [Argilla] [2.4.1](https://github.com/argilla-io/argilla/compare/v2.4.0...v2.4.1)
 

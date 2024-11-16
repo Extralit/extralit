@@ -8,10 +8,7 @@
           role="progressbar"
           :aria-valuenow="getPercentage(range.value)"
           :aria-label="range.name"
-          :class="[
-            'progress__range',
-            showTooltip ? 'progress__range--with-tooltip' : null,
-          ]"
+          :class="['progress__range', showTooltip ? 'progress__range--with-tooltip' : null]"
           :style="{
             width: `${getPercentage(range.value)}%`,
             zIndex: filteredProgressRanges.length - index,
@@ -23,23 +20,16 @@
         </div>
       </div>
       <template v-if="showTooltip && !!hoveredRange">
-        <span
-          class="progress__tooltip__triangle"
-          :style="{ left: `${getTrianglePosition(hoveredRange)}%` }"
-        />
+        <span class="progress__tooltip__triangle" :style="{ left: `${getTrianglePosition(hoveredRange)}%` }" />
         <div
           class="progress__tooltip"
           :style="{
-            left: tooltipPositionFixed
-              ? '50%'
-              : `${getTrianglePosition(hoveredRange)}%`,
+            left: tooltipPositionFixed ? '50%' : `${getTrianglePosition(hoveredRange)}%`,
           }"
         >
           <span class="progress__tooltip__percent-info"
             >{{ hoveredRange.name }}:
-            <span v-if="showPercentInTooltip"
-              >{{ getPercentage(hoveredRange.value) }}%</span
-            >
+            <span v-if="showPercentInTooltip">{{ getPercentage(hoveredRange.value) }}%</span>
           </span>
           {{ hoveredRange.tooltip }}
         </div>
@@ -89,9 +79,7 @@ export default {
     getTrianglePosition(range) {
       if (!range) return;
 
-      return this.getPercentage(
-        range.value / 2 + this.getPreviousRangesPercent(range)
-      );
+      return this.getPercentage(range.value / 2 + this.getPreviousRangesPercent(range));
     },
     getPreviousRangesPercent(range) {
       return this.filteredProgressRanges

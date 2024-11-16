@@ -1,22 +1,13 @@
 <template>
   <div class="new-dataset">
-    <HeaderFeedbackTask
-      :breadcrumbs="[
-        { link: '/', name: $t('breadcrumbs.home') },
-        { name: repoIdWithoutOrg },
-      ]"
-    >
+    <HeaderFeedbackTask :breadcrumbs="[{ link: '/', name: $t('breadcrumbs.home') }, { name: repoIdWithoutOrg }]">
       <template slot="badge">
         <p class="new-dataset__header-badge">
           {{ $t("datasetCreation.preview") }}
         </p>
       </template>
     </HeaderFeedbackTask>
-    <DatasetConfiguration
-      v-if="datasetConfig"
-      :dataset="datasetConfig"
-      @change-subset="changeSubset($event)"
-    />
+    <DatasetConfiguration v-if="datasetConfig" :dataset="datasetConfig" @change-subset="changeSubset($event)" />
   </div>
 </template>
 
