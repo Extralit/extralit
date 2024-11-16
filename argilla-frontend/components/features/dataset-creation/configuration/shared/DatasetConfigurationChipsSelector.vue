@@ -13,9 +13,7 @@
         :checked="option.value === value.value"
         @change="selectOption(option)"
       />
-      <label :for="`${id}-${option.value}`">{{
-        $t(`config.${type}.${option}`)
-      }}</label>
+      <label :for="`${id}-${option.value}`">{{ $t(`config.${type}.${option}`) }}</label>
     </li>
   </ul>
 </template>

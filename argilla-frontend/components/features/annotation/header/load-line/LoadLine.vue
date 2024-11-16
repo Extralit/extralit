@@ -16,10 +16,7 @@
   -->
 
 <template>
-  <span
-    class="load-line"
-    :style="{ minWidth: 100, background: color, height: height }"
-  ></span>
+  <span class="load-line" :style="{ minWidth: 100, background: color, height: height }"></span>
 </template>
 
 <script>

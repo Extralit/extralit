@@ -16,10 +16,7 @@
         <h2 v-if="currentTab.description" class="snippet__description --body2">
           {{ currentTab.description }}
         </h2>
-        <MarkdownRenderer
-          v-if="currentTab.markdown"
-          :markdown="currentTab.markdown"
-        />
+        <MarkdownRenderer v-if="currentTab.markdown" :markdown="currentTab.markdown" />
         <div class="library__buttons" v-if="currentTab.links">
           <p class="library__section__title">Links</p>
           <BaseButton

@@ -18,15 +18,8 @@
           handler: onClickOutside,
         }"
       >
-        <BaseBadge
-          :text="`+ ${this.badges.length - this.maxVisibleBadges}`"
-          @on-click="toggleTooltip"
-        />
-        <FilterTooltip
-          boundary="viewport"
-          v-if="visibleTooltip"
-          class="filter-button-width-badges__tooltip"
-        >
+        <BaseBadge :text="`+ ${this.badges.length - this.maxVisibleBadges}`" @on-click="toggleTooltip" />
+        <FilterTooltip boundary="viewport" v-if="visibleTooltip" class="filter-button-width-badges__tooltip">
           <FilterBadge
             class="badge"
             v-for="badge in collapsedBadges"

@@ -7,11 +7,7 @@
       class="category__search"
     />
     <ul class="category__list">
-      <li
-        v-for="category in categoriesFilteredBySearchText"
-        :key="category.name"
-        :title="category.tooltip"
-      >
+      <li v-for="category in categoriesFilteredBySearchText" :key="category.name" :title="category.tooltip">
         <BaseButton
           @on-click="selectCategory(category)"
           class="category__item"

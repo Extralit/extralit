@@ -16,13 +16,7 @@
   -->
 
 <template>
-  <svg
-    width="607"
-    height="115"
-    viewBox="0 0 607 115"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
+  <svg width="607" height="115" viewBox="0 0 607 115" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path
       d="M43.94 89.0894C68.2074 89.0894 87.88 69.4167 87.88 45.1493C87.88 20.882 68.2074 1.20935 43.94 1.20935C19.6726 1.20935 0 20.882 0 45.1493C0 69.4167 19.6726 89.0894 43.94 89.0894Z"
       fill="url(#paint0_linear_620_12096)"
@@ -81,9 +75,7 @@ export default {
   },
   computed: {
     svgColor() {
-      return this.color === "light"
-        ? "var(--fg-primary)"
-        : "var(--color-black)";
+      return this.color === "light" ? "var(--fg-primary)" : "var(--color-black)";
     },
   },
 };

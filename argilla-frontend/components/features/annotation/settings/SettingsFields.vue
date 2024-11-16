@@ -3,10 +3,7 @@
     <div class="settings__edition-form">
       <h2 class="--heading5 --medium" v-text="$t('settings.editFields')" />
       <div v-for="field in settings.fields" :key="field.id">
-        <form
-          @submit.prevent="onSubmit(field)"
-          class="settings__edition-form__fields"
-        >
+        <form @submit.prevent="onSubmit(field)" class="settings__edition-form__fields">
           <div class="settings__edition-form__header">
             <div class="settings__edition-form__name">
               <h4 class="--body1 --medium" v-text="field.name" />
@@ -16,10 +13,7 @@
             <p v-else v-text="$t('optional')" />
           </div>
 
-          <Validation
-            :validations="field.validate().title"
-            class="settings__edition-form__group"
-          >
+          <Validation :validations="field.validate().title" class="settings__edition-form__group">
             <label for="field.id" v-text="$t('title')" />
             <input type="text" id="field.id" v-model="field.title" />
           </Validation>
@@ -54,11 +48,7 @@
             >
               <span v-text="$t('cancel')" />
             </BaseButton>
-            <BaseButton
-              type="submit"
-              class="primary small"
-              :disabled="!field.isModified || !field.isFieldValid"
-            >
+            <BaseButton type="submit" class="primary small" :disabled="!field.isModified || !field.isFieldValid">
               <span v-text="$t('update')" />
             </BaseButton>
           </div>

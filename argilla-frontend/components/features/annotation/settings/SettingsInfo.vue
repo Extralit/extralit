@@ -5,10 +5,7 @@
       <div class="settings__area">
         <div class="settings__row">
           <div class="settings__item">
-            <p
-              class="settings__dataset-name --body1"
-              v-html="settings.dataset.name"
-            />
+            <p class="settings__dataset-name --body1" v-html="settings.dataset.name" />
           </div>
           <base-action-tooltip :tooltip="$t('copied')">
             <base-button
@@ -22,25 +19,13 @@
         </div>
       </div>
       <div class="settings__area">
-        <form
-          @submit.prevent="onSubmitDatasetTaskMinimumResponse()"
-          class="settings__edition-form-fields"
-        >
-          <h2
-            class="--heading5 --medium description__title"
-            v-text="$t('taskDistribution')"
-          />
+        <form @submit.prevent="onSubmitDatasetTaskMinimumResponse()" class="settings__edition-form-fields">
+          <h2 class="--heading5 --medium description__title" v-text="$t('taskDistribution')" />
 
           <Validation :validations="settings.dataset.validate().distribution">
             <div class="form_group">
-              <label
-                for="task-distribution"
-                v-text="$t('minimumSubmittedResponses')"
-              />
-              <span
-                class="info-icon"
-                :data-title="$t('taskDistributionTooltip')"
-              >
+              <label for="task-distribution" v-text="$t('minimumSubmittedResponses')" />
+              <span class="info-icon" :data-title="$t('taskDistributionTooltip')">
                 <svgicon name="info" width="20" height="20"></svgicon>
               </span>
               <input
@@ -64,10 +49,7 @@
             <BaseButton
               type="submit"
               class="primary small"
-              :disabled="
-                !settings.dataset.isModifiedTaskDistribution ||
-                !settings.dataset.isValidDistribution
-              "
+              :disabled="!settings.dataset.isModifiedTaskDistribution || !settings.dataset.isValidDistribution"
             >
               <span v-text="$t('update')" />
             </BaseButton>
@@ -76,15 +58,9 @@
       </div>
 
       <div class="settings__area">
-        <form
-          @submit.prevent="onSubmitDatasetGuidelines()"
-          class="settings__edition-form-fields"
-        >
+        <form @submit.prevent="onSubmitDatasetGuidelines()" class="settings__edition-form-fields">
           <Validation :validations="settings.dataset.validate().guidelines">
-            <DatasetDescription
-              :key="settings.dataset.updatedAt"
-              v-model="settings.dataset"
-            />
+            <DatasetDescription :key="settings.dataset.updatedAt" v-model="settings.dataset" />
           </Validation>
 
           <div class="settings__edition-form__footer">
@@ -99,10 +75,7 @@
             <BaseButton
               type="submit"
               class="primary small"
-              :disabled="
-                !settings.dataset.isModifiedGuidelines ||
-                !settings.dataset.isValidGuidelines
-              "
+              :disabled="!settings.dataset.isModifiedGuidelines || !settings.dataset.isValidGuidelines"
             >
               <span v-text="$t('update')" />
             </BaseButton>

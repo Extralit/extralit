@@ -17,14 +17,10 @@ export default {
   computed: {
     pieStyles() {
       let acum = 0;
-      const styles = this.slices.map(
-        (slice) => `${slice.color} 0 ${(acum += slice.percent)}%`
-      );
+      const styles = this.slices.map((slice) => `${slice.color} 0 ${(acum += slice.percent)}%`);
 
       return {
-        background: `radial-gradient(#fafafa 40%, transparent 41%), conic-gradient( ${styles.join(
-          ","
-        )} )`,
+        background: `radial-gradient(#fafafa 40%, transparent 41%), conic-gradient( ${styles.join(",")} )`,
       };
     },
     sizeStyles() {
@@ -56,10 +52,7 @@ export default {
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: conic-gradient(
-      transparent var(--a),
-      var(--bg-accent-grey-1) 0deg
-    );
+    background-image: conic-gradient(transparent var(--a), var(--bg-accent-grey-1) 0deg);
     animation: progress 0.5s ease-in-out;
   }
 }

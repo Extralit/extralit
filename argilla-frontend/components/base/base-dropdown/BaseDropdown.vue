@@ -44,11 +44,7 @@
         <slot name="dropdown-content" />
       </div>
     </transition>
-    <div
-      @click="onClose"
-      v-if="visible && freezingPage"
-      class="dropdown--frozen-page"
-    ></div>
+    <div @click="onClose" v-if="visible && freezingPage" class="dropdown--frozen-page"></div>
   </div>
 </template>
 <script>
@@ -160,10 +156,7 @@ export default {
   mounted() {
     if (this.isViewportBoundary) {
       window.addEventListener("resize", this.setViewportPosition);
-      this.getScrollableParent(this.$refs.dropdown).addEventListener(
-        "scroll",
-        this.setViewportPosition
-      );
+      this.getScrollableParent(this.$refs.dropdown).addEventListener("scroll", this.setViewportPosition);
 
       this.setViewportPosition();
     }
@@ -171,10 +164,7 @@ export default {
   beforeDestroy() {
     if (this.isViewportBoundary) {
       window.removeEventListener("resize", this.setViewportPosition);
-      this.getScrollableParent(this.$refs.dropdown).removeEventListener(
-        "scroll",
-        this.setViewportPosition
-      );
+      this.getScrollableParent(this.$refs.dropdown).removeEventListener("scroll", this.setViewportPosition);
     }
   },
 };

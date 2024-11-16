@@ -2,9 +2,7 @@
   <BaseLinearProgressSkeleton v-if="!isLoaded" class="dataset-progress__bar" />
   <transition v-else-if="!!progress" name="fade" appear>
     <div class="dataset-progress">
-      <p class="dataset-progress__pending-info">
-        {{ progress.pending }} {{ $t("datasets.left") }}
-      </p>
+      <p class="dataset-progress__pending-info">{{ progress.pending }} {{ $t("datasets.left") }}</p>
       <BaseLinearProgress
         class="dataset-progress__bar"
         :progress-ranges="progressRanges"

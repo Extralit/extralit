@@ -1,13 +1,7 @@
 <template>
   <div class="user-token">
-    <h2
-      class="user-token-title --heading5 --medium description__title"
-      v-text="$t('userSettings.apiKey')"
-    />
-    <p
-      class="user-token-description --body1 description__text"
-      v-text="$t('userSettings.apiKeyDescription')"
-    />
+    <h2 class="user-token-title --heading5 --medium description__title" v-text="$t('userSettings.apiKey')" />
+    <p class="user-token-description --body1 description__text" v-text="$t('userSettings.apiKeyDescription')" />
 
     <span class="user-token-value --body1" v-text="'**** **** **** ****'" />
 

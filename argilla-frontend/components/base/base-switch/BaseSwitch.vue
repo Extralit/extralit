@@ -16,23 +16,13 @@
   -->
 
 <template>
-  <div
-    :class="{ disabled: !checked, 'disable-action': disableAction }"
-    class="re-switch"
-  >
+  <div :class="{ disabled: !checked, 'disable-action': disableAction }" class="re-switch">
     <label v-if="$slots.default" :for="id || name" class="re-switch-label">
       <slot />
     </label>
     <div class="re-switch-container" @click="toggle($event)">
       <div class="re-switch-thumb" :style="styles">
-        <input
-          :id="id"
-          type="checkbox"
-          :name="name"
-          :disabled="disabled"
-          :value="value"
-          tabindex="-1"
-        />
+        <input :id="id" type="checkbox" :name="name" :disabled="disabled" :value="value" tabindex="-1" />
         <button :type="type" class="re-switch-holder">
           <svgicon width="10" height="10" name="check" color="white"></svgicon>
         </button>

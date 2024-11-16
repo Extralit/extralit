@@ -36,9 +36,7 @@ describe("BaseFeedbackComponent", () => {
 
     expect(wrapper.vm.isFeedbackError).toBe(false);
     await wrapper.vm.$nextTick();
-    expect(wrapper.findComponent(BaseFeedbackErrorComponent).exists()).toBe(
-      false
-    );
+    expect(wrapper.findComponent(BaseFeedbackErrorComponent).exists()).toBe(false);
   });
   it("render BaseFeedbackErrorComponent component if feedbackType ==='ERROR'", async () => {
     const feedbackInput = {
@@ -53,8 +51,6 @@ describe("BaseFeedbackComponent", () => {
 
     expect(wrapper.vm.isFeedbackError).toBe(true);
     await wrapper.vm.$nextTick();
-    expect(wrapper.findComponent(BaseFeedbackErrorComponent).exists()).toBe(
-      true
-    );
+    expect(wrapper.findComponent(BaseFeedbackErrorComponent).exists()).toBe(true);
   });
 });

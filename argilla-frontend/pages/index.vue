@@ -20,9 +20,7 @@
     <template v-slot:header>
       <AppHeader
         class="home__header"
-        :breadcrumbs="[
-          { action: 'clearFilters', name: $t('breadcrumbs.home') },
-        ]"
+        :breadcrumbs="[{ action: 'clearFilters', name: $t('breadcrumbs.home') }]"
         @breadcrumb-action="onBreadcrumbAction"
       />
       <PersistentStorageBanner class="home__banner" />
@@ -30,13 +28,7 @@
     <template v-slot:page-content>
       <h1 class="home__title" v-text="$t('home.argillaDatasets')" />
       <BaseLoading class="home__title" v-if="isLoadingDatasets" />
-      <DatasetsTable
-        v-else
-        class="home__table"
-        ref="table"
-        :datasets="datasets.datasets"
-        @on-click-card="cardAction"
-      />
+      <DatasetsTable v-else class="home__table" ref="table" :datasets="datasets.datasets" @on-click-card="cardAction" />
     </template>
     <template v-slot:page-sidebar>
       <template v-if="isAdminOrOwnerRole">
@@ -52,14 +44,8 @@
         </div>
         <BaseSeparator class="home__sidebar__separator" />
         <div class="home__sidebar__content">
-          <p
-            class="home__sidebar__title"
-            v-text="$t('home.exampleDatasetsTitle')"
-          />
-          <p
-            class="home__sidebar__subtitle"
-            v-text="$t('home.exampleDatasetsText')"
-          />
+          <p class="home__sidebar__title" v-text="$t('home.exampleDatasetsTitle')" />
+          <p class="home__sidebar__subtitle" v-text="$t('home.exampleDatasetsText')" />
           <div class="home__sidebar__cards">
             <ExampleDatasetCard
               v-for="dataset in exampleDatasets"
