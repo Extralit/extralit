@@ -487,7 +487,8 @@ export class RecordRepository {
       });
 
     if (duration) {
-      values['duration'] = { value: duration };
+      /* eslint-disable-next-line @typescript-eslint/camelcase, dot-notation */
+      values["duration"] = { value: duration };
     }
 
     return {
