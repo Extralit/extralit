@@ -1,8 +1,6 @@
 <template>
   <p v-if="!clickable" class="badge" v-html="text" />
-  <BaseButton @click="onClick" v-else class="badge --clickable">{{
-    text
-  }}</BaseButton>
+  <BaseButton @click="onClick" v-else class="badge --clickable">{{ text }}</BaseButton>
 </template>
 
 <script>
@@ -44,7 +42,7 @@ export default {
   margin: 0;
   color: var(--fg-secondary);
   @include font-size(12px);
-  @include line-height(12px); 
+  @include line-height(12px);
   // white-space: nowrap;
   // overflow: hidden;
   // text-overflow: ellipsis;

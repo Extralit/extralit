@@ -1,19 +1,12 @@
 <template>
   <VerticalResizable class="wrapper" :id="`${recordCriteria.datasetId}-r-v-rz`">
     <template #left>
-      <HorizontalResizable
-        :id="`${recordCriteria.datasetId}-r-h-rz`"
-        class="wrapper__left"
-        collapsable
-      >
+      <HorizontalResizable :id="`${recordCriteria.datasetId}-r-h-rz`" class="wrapper__left" collapsable>
         <template #up>
           <section class="wrapper__records" aria-label="Focus Annotation View">
             <DatasetFilters :recordCriteria="recordCriteria">
               <ToggleAnnotationType
-                v-if="
-                  records.hasRecordsToAnnotate &&
-                  recordCriteria.committed.isPending
-                "
+                v-if="records.hasRecordsToAnnotate && recordCriteria.committed.isPending"
                 :recordCriteria="recordCriteria"
             /></DatasetFilters>
             <SimilarityRecordReference
@@ -29,12 +22,7 @@
             <div v-if="recordsMessage" class="wrapper--empty">
               <p class="wrapper__text --heading3" v-html="recordsMessage" />
             </div>
-            <Record
-              v-else
-              :datasetVectors="datasetVectors"
-              :recordCriteria="recordCriteria"
-              :record="record"
-            />
+            <Record v-else :datasetVectors="datasetVectors" :recordCriteria="recordCriteria" :record="record" />
           </section>
         </template>
         <template #downHeader>
@@ -44,21 +32,13 @@
           <p v-text="$t('document')" />
         </template>
         <template #downContent>
-          <PDFViewer 
-            :url="document.url" 
-            :file-name="document.file_name"
-            :pageNumber="document.page_number"
-          />
+          <PDFViewer :url="document.url" :file-name="document.file_name" :pageNumber="document.page_number" />
         </template>
       </HorizontalResizable>
     </template>
 
     <template #right>
-      <HorizontalResizable
-        :id="`${recordCriteria.datasetId}-q-h-rz}`"
-        class="wrapper__right"
-        collapsable
-      >
+      <HorizontalResizable :id="`${recordCriteria.datasetId}-q-h-rz}`" class="wrapper__right" collapsable>
         <template #up>
           <QuestionsForm
             v-if="!!record"
@@ -78,10 +58,7 @@
           />
         </template>
         <template #downHeader>
-          <AnnotationProgress
-            class="annotation-progress"
-            :datasetId="recordCriteria.datasetId"
-          />
+          <AnnotationProgress class="annotation-progress" :datasetId="recordCriteria.datasetId" />
         </template>
         <template #downHeaderExpanded>
           <p v-text="$t('metrics.progress.my')" />
@@ -100,11 +77,7 @@
         <p v-text="$t('document')" />
       </template>
       <template #panelContent>
-        <PDFViewer 
-          :url="document.url" 
-          :file-name="document.file_name"
-          :pageNumber="document.page_number"
-        />
+        <PDFViewer :url="document.url" :file-name="document.file_name" :pageNumber="document.page_number" />
       </template>
     </BaseCollapsablePanel>
   </VerticalResizable>
@@ -160,7 +133,7 @@ export default {
       try {
         await this.saveAsDraft(this.record, duration);
       } catch (error) {
-        const message = this.$t('errors.saving', { error: error?.response || error.toString() });
+        const message = this.$t("errors.saving", { error: error?.response || error.toString() });
         this.$notification.notify({
           message: message,
           numberOfChars: message.length,
@@ -189,7 +162,7 @@ export default {
   display: flex;
   flex-wrap: wrap;
   height: 100%;
-    &__inner {
+  &__inner {
     display: flex;
   }
   @include media("<desktop") {

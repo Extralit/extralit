@@ -1,16 +1,10 @@
 <template>
   <div class="import-data">
-    <BaseButton
-      class="primary import-data__button"
-      @click.prevent="visibleSnippet = !visibleSnippet"
-      >{{ $t("datasetCreation.importData") }}</BaseButton
-    >
+    <BaseButton class="primary import-data__button" @click.prevent="visibleSnippet = !visibleSnippet">{{
+      $t("datasetCreation.importData")
+    }}</BaseButton>
     <transition name="fade" appear>
-      <dialog
-        v-if="visibleSnippet"
-        class="import-data__dialog"
-        v-click-outside="closeDialog"
-      >
+      <dialog v-if="visibleSnippet" class="import-data__dialog" v-click-outside="closeDialog">
         <p class="import-data__title">{{ $t("datasetCreation.addRecords") }}</p>
         <div class="import-data__code">
           <MarkdownRenderer :markdown="snippet" />

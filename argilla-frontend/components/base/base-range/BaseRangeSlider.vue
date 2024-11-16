@@ -4,15 +4,7 @@
     <div class="range__wrapper">
       <div class="range">
         <span class="range__progress-value" ref="progress" v-text="range" />
-        <input
-          :id="id"
-          ref="slider"
-          class="range__slider"
-          type="range"
-          :min="min"
-          :max="max"
-          v-model.number="range"
-        />
+        <input :id="id" ref="slider" class="range__slider" type="range" :min="min" :max="max" v-model.number="range" />
       </div>
       <div class="range__legends">
         <span v-text="min" />
@@ -64,9 +56,7 @@ export default {
   },
   methods: {
     styleRange() {
-      this.$refs.progress.style.left = `calc(${this.progress}% + (${
-        8 - this.progress * 0.15
-      }px))`;
+      this.$refs.progress.style.left = `calc(${this.progress}% + (${8 - this.progress * 0.15}px))`;
       this.$refs.slider.style.background = `linear-gradient(to right, #3e5cc9 ${this.progress}%, rgba(0, 0, 0, 0.2) ${this.progress}%)`;
     },
   },

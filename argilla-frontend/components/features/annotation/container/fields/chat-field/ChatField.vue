@@ -10,9 +10,7 @@
         <span
           :class="[
             'chat__item',
-            checkIfAreLessThanTwoRoles && index % 2 == 0
-              ? 'chat__item--right'
-              : 'chat__item--left',
+            checkIfAreLessThanTwoRoles && index % 2 == 0 ? 'chat__item--right' : 'chat__item--left',
           ]"
         >
           <span
@@ -72,21 +70,13 @@ export default {
   },
   computed: {
     getAllUniqueRolesNames() {
-      return this.content
-        .map((item) => item.role)
-        .filter((role, index, self) => self.indexOf(role) === index);
+      return this.content.map((item) => item.role).filter((role, index, self) => self.indexOf(role) === index);
     },
     checkIfAreLessThanTwoRoles() {
       return this.getAllUniqueRolesNames.length <= 2;
     },
     colorForRole() {
-      return [
-        "var(--fg-chat-1)",
-        "var(--fg-chat-2)",
-        "var(--fg-chat-3)",
-        "var(--fg-chat-4)",
-        "var(--fg-chat-5)",
-      ];
+      return ["var(--fg-chat-1)", "var(--fg-chat-2)", "var(--fg-chat-3)", "var(--fg-chat-4)", "var(--fg-chat-5)"];
     },
   },
   methods: {

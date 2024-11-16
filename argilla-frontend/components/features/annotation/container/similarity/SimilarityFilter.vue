@@ -1,10 +1,7 @@
 <template>
-  <BaseButton
-    v-if="availableVectors.length === 1"
-    class="small"
-    @click="findSimilarUniqueVector"
-    >{{ $t("similarity.findSimilar") }}</BaseButton
-  >
+  <BaseButton v-if="availableVectors.length === 1" class="small" @click="findSimilarUniqueVector">{{
+    $t("similarity.findSimilar")
+  }}</BaseButton>
   <BaseDropdown
     v-else
     boundary="viewport"
@@ -21,10 +18,7 @@
           <SimilarityFilterOrder v-model="order" />
           {{ $t("similarity.similarUsing") }}:
         </span>
-        <SimilarityFilterVectorRadioButtons
-          v-model="vectorName"
-          :vectors="availableVectors"
-        />
+        <SimilarityFilterVectorRadioButtons v-model="vectorName" :vectors="availableVectors" />
         <div class="similarity-filter__buttons">
           <base-button class="primary outline small" @click="cancel">
             {{ $t("cancel") }}
@@ -70,8 +64,7 @@ export default {
     onSetDefaultVector() {
       if (this.recordCriteria.similaritySearch.vectorName) return;
 
-      this.recordCriteria.similaritySearch.vectorName =
-        this.availableVectors[0].name;
+      this.recordCriteria.similaritySearch.vectorName = this.availableVectors[0].name;
     },
     onChangeDropDownVisibility(value) {
       this.dropdownIsVisible = value;

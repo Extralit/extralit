@@ -1,20 +1,10 @@
 <template>
   <transition name="fade" appear>
     <dialog class="dataset-config-dialog" v-click-outside="closeDialog">
-      <form
-        class="dataset-config-dialog__content"
-        @submit.prevent="createDataset"
-      >
-        <h1
-          class="dataset-config-dialog__title"
-          v-text="$t('datasetCreation.createDataset')"
-        />
+      <form class="dataset-config-dialog__content" @submit.prevent="createDataset">
+        <h1 class="dataset-config-dialog__title" v-text="$t('datasetCreation.createDataset')" />
         <div class="dataset-config-dialog__row">
-          <label
-            class="dataset-config-dialog__label"
-            for="datasetName"
-            v-text="$t('datasetCreation.datasetName')"
-          />
+          <label class="dataset-config-dialog__label" for="datasetName" v-text="$t('datasetCreation.datasetName')" />
           <DatasetConfigurationInput
             id="datasetName"
             v-model="dataset.name"
@@ -22,15 +12,9 @@
           />
         </div>
         <div class="dataset-config-dialog__row">
-          <label
-            class="dataset-config-dialog__label"
-            v-text="$t('datasetCreation.assignWorkspace')"
-          />
+          <label class="dataset-config-dialog__label" v-text="$t('datasetCreation.assignWorkspace')" />
           <template v-if="!workspaces.length">
-            <span
-              class="dataset-config-dialog__unique-workspace"
-              v-text="$t('datasetCreation.none')"
-            />
+            <span class="dataset-config-dialog__unique-workspace" v-text="$t('datasetCreation.none')" />
             <Validation :validations="[$t('datasetCreation.noWorkspaces')]" />
           </template>
           <span
@@ -38,31 +22,18 @@
             class="dataset-config-dialog__unique-workspace"
             v-text="dataset.workspace.name"
           />
-          <DatasetConfigurationSelector
-            v-else
-            :options="workspaces"
-            v-model="dataset.workspace"
-          />
+          <DatasetConfigurationSelector v-else :options="workspaces" v-model="dataset.workspace" />
         </div>
 
-        <div
-          class="dataset-config-dialog__row"
-          v-if="dataset.selectedSubset.splits?.length > 1"
-        >
-          <label
-            class="dataset-config-dialog__label"
-            v-text="$t('datasetCreation.selectSplit')"
-          />
+        <div class="dataset-config-dialog__row" v-if="dataset.selectedSubset.splits?.length > 1">
+          <label class="dataset-config-dialog__label" v-text="$t('datasetCreation.selectSplit')" />
           <DatasetConfigurationSelector
             class="config-form__selector"
             :options="dataset.selectedSubset.splits"
             v-model="dataset.selectedSubset.selectedSplit"
           />
         </div>
-        <p
-          class="dataset-config-dialog__info"
-          v-text="$t('datasetCreation.recordWarning')"
-        />
+        <p class="dataset-config-dialog__info" v-text="$t('datasetCreation.recordWarning')" />
         <BaseButton
           :disabled="!dataset.name || !dataset.workspace || !dataset.isValid"
           :loading="isLoading"
@@ -70,10 +41,7 @@
           class="dataset-config-dialog__button primary full"
           >{{ $t("datasetCreation.button") }}</BaseButton
         >
-        <Validation
-          v-if="!dataset.isValid"
-          :validations="firstTranslatedValidation"
-        />
+        <Validation v-if="!dataset.isValid" :validations="firstTranslatedValidation" />
       </form>
     </dialog>
   </transition>
@@ -156,11 +124,7 @@ export default {
     padding: $base-space * 2;
     border-top-left-radius: $border-radius-m;
     border-top-right-radius: $border-radius-m;
-    background: linear-gradient(
-      90deg,
-      hsla(227, 31%, 57%, 0.1) 0%,
-      hsla(227, 56%, 52%, 0) 100%
-    );
+    background: linear-gradient(90deg, hsla(227, 31%, 57%, 0.1) 0%, hsla(227, 56%, 52%, 0) 100%);
   }
   &__unique-workspace {
     height: $base-space * 4;

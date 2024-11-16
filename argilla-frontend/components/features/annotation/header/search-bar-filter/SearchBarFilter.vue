@@ -16,15 +16,8 @@
   -->
 
 <template>
-  <div
-    class="search-area"
-    :class="{ active: isSearchActive, expanded: isExpanded }"
-  >
-    <BaseButton
-      @on-click="openOrApply"
-      class="search-area__icon --search"
-      :data-title="$t('search')"
-    >
+  <div class="search-area" :class="{ active: isSearchActive, expanded: isExpanded }">
+    <BaseButton @on-click="openOrApply" class="search-area__icon --search" :data-title="$t('search')">
       <svgicon name="search" width="16" height="16" aria-hidden="true" />
     </BaseButton>
     <input
@@ -39,11 +32,7 @@
       @keydown.stop=""
       @keypress.enter.stop="applySearch"
     />
-    <BaseButton
-      @on-click="resetValue"
-      v-if="showDelete"
-      class="search-area__icon --close"
-    >
+    <BaseButton @on-click="resetValue" v-if="showDelete" class="search-area__icon --close">
       <svgicon name="close" width="12" height="12" aria-hidden="true" />
     </BaseButton>
 
@@ -55,18 +44,14 @@
     >
       <template slot="dropdown-header">
         <span class="search-area__fields__header">
-          <span class="search-area__fields__header__text">{{
-            selectedField.title
-          }}</span>
+          <span class="search-area__fields__header__text">{{ selectedField.title }}</span>
           <svgicon name="chevron-down" height="8" aria-hidden="true" />
         </span>
       </template>
       <template slot="dropdown-content">
         <ul class="search-area__fields__content">
           <li v-for="field in filteredFields" :key="field.id">
-            <BaseButton @on-click="selectField(field)">{{
-              field.title
-            }}</BaseButton>
+            <BaseButton @on-click="selectField(field)">{{ field.title }}</BaseButton>
           </li>
         </ul>
       </template>
@@ -102,9 +87,7 @@ export default {
       return this.isSearchActive;
     },
     selectedField() {
-      return this.fieldList.find(
-        (field) => field.name === this.value.value.field
-      );
+      return this.fieldList.find((field) => field.name === this.value.value.field);
     },
     fieldList() {
       return [
@@ -117,9 +100,7 @@ export default {
       ];
     },
     filteredFields() {
-      return this.fieldList.filter(
-        (field) => field.name !== this.value.value.field
-      );
+      return this.fieldList.filter((field) => field.name !== this.value.value.field);
     },
   },
   watch: {

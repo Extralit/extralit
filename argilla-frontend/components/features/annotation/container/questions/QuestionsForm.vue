@@ -9,7 +9,7 @@
   >
     <div class="questions-form__content">
       <div class="questions-form__header">
-        <p class="questions-form__guidelines-link">
+        <div class="questions-form__guidelines-link">
           <div v-if="isDraftSaving" class="questions-form__status">
             <svgicon color="#0000005e" name="refresh" />
             {{ $t("saving") }}
@@ -34,7 +34,7 @@
             >{{ $t("annotationGuidelines") }}
             <svgicon name="external-link" width="12" />
           </NuxtLink>
-        </p>
+        </div>
       </div>
 
       <QuestionsComponent
@@ -57,11 +57,9 @@
           :data-title="!isSaving ? draftSavingTooltip : null"
           @on-click="onDiscard"
         >
-          <span
-            v-if="!isDiscarding"
-            class="button__shortcuts"
-            v-text="'⌫'"
-          /><span v-text="$t('questions_form.discard')" />
+          <span v-if="!isDiscarding" class="button__shortcuts" v-text="'⌫'" /><span
+            v-text="$t('questions_form.discard')"
+          />
         </BaseButton>
         <BaseButton
           type="button"
@@ -72,9 +70,7 @@
           @on-click="onSaveDraft"
         >
           <span v-if="!isDraftSaving"
-            ><span
-              class="button__shortcuts"
-              v-text="$platform.isMac ? '⌘' : 'ctrl'" /><span
+            ><span class="button__shortcuts" v-text="$platform.isMac ? '⌘' : 'ctrl'" /><span
               class="button__shortcuts"
               v-text="'S'"
           /></span>
@@ -89,12 +85,7 @@
           ]"
           :loading-progress="progress"
           :loading="isSubmitting"
-          :disabled="
-            !questionAreCompletedCorrectly ||
-            isSubmitDisabled ||
-            isSaving ||
-            !record.id
-          "
+          :disabled="!questionAreCompletedCorrectly || isSubmitDisabled || isSaving || !record.id"
           :data-title="
             !!record.id
               ? !isSaving
@@ -185,7 +176,7 @@ export default {
       default: false,
     },
   },
-  
+
   data() {
     return {
       autofocusPosition: 0,
@@ -204,11 +195,7 @@ export default {
       // if (this.isDraftSaving) return "--saving-draft";
       if (this.isDraftSaving) return;
 
-      if (
-        this.isSubmittedTouched ||
-        (this.formHasFocus && this.interactionCount > 1)
-      )
-        return "--focused-form";
+      if (this.isSubmittedTouched || (this.formHasFocus && this.interactionCount > 1)) return "--focused-form";
     },
     formHasFocus() {
       return this.autofocusPosition || this.autofocusPosition == 0;
@@ -229,8 +216,7 @@ export default {
       deep: true,
       immediate: true,
       handler() {
-        this.isSubmittedTouched = 
-          this.record.isSubmitted && this.record.isModified;
+        this.isSubmittedTouched = this.record.isSubmitted && this.record.isModified;
         if (this.duration.value > 1) {
           this.checkAndSaveDraft();
         }
@@ -242,12 +228,12 @@ export default {
     // Listen for visibility change events
     document.addEventListener("keydown", this.handleGlobalKeys);
     this.startTimer();
-    document.addEventListener('visibilitychange', this.handleVisibilityChange);
+    document.addEventListener("visibilitychange", this.handleVisibilityChange);
   },
 
   beforeDestroy() {
     this.stopTimer();
-    document.removeEventListener('visibilitychange', this.handleVisibilityChange);
+    document.removeEventListener("visibilitychange", this.handleVisibilityChange);
     document.removeEventListener("keydown", this.handleGlobalKeys);
   },
 
@@ -325,14 +311,9 @@ export default {
       }
     },
     onSubmit() {
-      if (
-        this.isSubmitDisabled ||
-        this.isSaving ||
-        !this.questionAreCompletedCorrectly
-      )
-        return;
+      if (this.isSubmitDisabled || this.isSaving || !this.questionAreCompletedCorrectly) return;
 
-        this.$emit("on-submit-responses", this.duration);
+      this.$emit("on-submit-responses", this.duration);
     },
     onDiscard() {
       if (this.isDiscardDisabled || this.isSaving) return;
@@ -344,14 +325,11 @@ export default {
         return;
       }
       const modified = this.record.getModified();
-      const condition = modified?.questions?.some(
-        question => {
-          const conditionForThisQuestion = question && question.answer && (
-            question.answer?.value || 
-            question.answer?.values?.some(value => !!value)
-          );
-          return conditionForThisQuestion;
-        });
+      const condition = modified?.questions?.some((question) => {
+        const conditionForThisQuestion =
+          question && question.answer && (question.answer?.value || question.answer?.values?.some((value) => !!value));
+        return conditionForThisQuestion;
+      });
 
       if (modified && condition) {
         this.onSaveDraft();
@@ -364,10 +342,7 @@ export default {
     },
     updateQuestionAutofocus(index) {
       this.interactionCount++;
-      this.autofocusPosition = Math.min(
-        this.numberOfQuestions - 1,
-        Math.max(0, index)
-      );
+      this.autofocusPosition = Math.min(this.numberOfQuestions - 1, Math.max(0, index));
     },
     startTimer() {
       this.timer = setInterval(() => {
@@ -505,8 +480,7 @@ export default {
     color: var(--fg-primary);
     background: var(--bg-accent-grey-2);
     @include font-size(11px);
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-      "Open Sans", "Helvetica Neue", sans-serif;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Open Sans", "Helvetica Neue", sans-serif;
     padding: 0 4px;
   }
   &__shortcuts-group {

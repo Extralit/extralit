@@ -73,10 +73,8 @@ export default {
     },
     setViewportPosition() {
       return this.$nextTick(() => {
-        const contentWidth =
-          this.$refs.filterTooltipContent.getBoundingClientRect().width;
-        const { top, left, height, width } =
-          this.$refs.filterTooltip.getBoundingClientRect();
+        const contentWidth = this.$refs.filterTooltipContent.getBoundingClientRect().width;
+        const { top, left, height, width } = this.$refs.filterTooltip.getBoundingClientRect();
         this.tooltipTop = top + height + this.gap;
         this.tooltipLeft = left - contentWidth / 2 + width / 2;
       });
@@ -103,12 +101,7 @@ $triangle-size: 6px;
     left: 0;
     right: 0;
     margin: auto;
-    @include triangle(
-      top,
-      $triangle-size,
-      $triangle-size,
-      var(--bg-accent-grey-3)
-    );
+    @include triangle(top, $triangle-size, $triangle-size, var(--bg-accent-grey-3));
   }
 }
 </style>

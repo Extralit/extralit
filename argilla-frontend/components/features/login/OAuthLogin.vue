@@ -3,10 +3,7 @@
     <BaseSeparator />
 
     <div v-for="provider in providers" :key="provider.name">
-      <HuggingFaceButton
-        v-if="provider.isHuggingFace"
-        @click="authorize(provider.name)"
-      />
+      <HuggingFaceButton v-if="provider.isHuggingFace" @click="authorize(provider.name)" />
     </div>
   </div>
 </template>

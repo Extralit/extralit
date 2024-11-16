@@ -1,24 +1,14 @@
 <template>
   <span class="bulk__container">
     <LoadLine v-if="isSubmitting || isDraftSaving || isDiscarding" />
-    <VerticalResizable
-      class="wrapper"
-      :id="`${recordCriteria.datasetId}-r-v-rz`"
-    >
+    <VerticalResizable class="wrapper" :id="`${recordCriteria.datasetId}-r-v-rz`">
       <template #left>
-        <HorizontalResizable
-          :id="`${recordCriteria.datasetId}-r-h-rz`"
-          class="wrapper__left"
-          collapsable
-        >
+        <HorizontalResizable :id="`${recordCriteria.datasetId}-r-h-rz`" class="wrapper__left" collapsable>
           <template #up>
             <section class="wrapper__records" aria-label="Bulk Annotation View">
               <DatasetFilters :recordCriteria="recordCriteria">
                 <ToggleAnnotationType
-                  v-if="
-                    records.hasRecordsToAnnotate &&
-                    recordCriteria.committed.isPending
-                  "
+                  v-if="records.hasRecordsToAnnotate && recordCriteria.committed.isPending"
                   :recordCriteria="recordCriteria"
               /></DatasetFilters>
               <SimilarityRecordReference
@@ -31,11 +21,7 @@
               <div class="wrapper__records__header">
                 <div class="wrapper__records__header--left">
                   <BaseCheckbox
-                    :data-title="
-                      !selectedRecords.length
-                        ? $t('bulkAnnotation.select_to_annotate')
-                        : null
-                    "
+                    :data-title="!selectedRecords.length ? $t('bulkAnnotation.select_to_annotate') : null"
                     v-if="records.hasRecordsToAnnotate"
                     :decoration-circle="true"
                     class="wrapper__records__header__checkbox"
@@ -45,18 +31,10 @@
                   <span
                     class="wrapper__records__header__selection-text"
                     v-if="selectedRecords.length && !affectAllRecords"
-                    v-text="
-                      $tc(
-                        'bulkAnnotation.recordsSelected',
-                        selectedRecords.length
-                      )
-                    "
+                    v-text="$tc('bulkAnnotation.recordsSelected', selectedRecords.length)"
                   />
 
-                  <div
-                    v-if="isAffectAllRecordsAllowed"
-                    class="bulk-by-criteria"
-                  >
+                  <div v-if="isAffectAllRecordsAllowed" class="bulk-by-criteria">
                     <BaseButton
                       v-if="!affectAllRecords"
                       class="bulk-by-criteria__button primary text small"
@@ -81,10 +59,7 @@
                     </template>
                   </div>
                 </div>
-                <RecordsViewConfig
-                  v-if="records.hasRecordsToAnnotate"
-                  v-model="recordHeight"
-                />
+                <RecordsViewConfig v-if="records.hasRecordsToAnnotate" v-model="recordHeight" />
                 <PaginationFeedbackTask :recordCriteria="recordCriteria" />
               </div>
               <div v-if="recordsMessage" class="wrapper--empty">
@@ -94,8 +69,7 @@
                 <Record
                   class="snap-child"
                   :class="{
-                    'record__wrapper--fixed-height':
-                      recordHeight === 'fixedHeight',
+                    'record__wrapper--fixed-height': recordHeight === 'fixedHeight',
                   }"
                   v-for="(record, i) in recordsOnPage"
                   :key="`${recordCriteria.committed.page.client.page}_${record.id}_${i}`"
@@ -117,11 +91,7 @@
         </HorizontalResizable>
       </template>
       <template #right>
-        <HorizontalResizable
-          :id="`${recordCriteria.datasetId}-q-h-rz}`"
-          class="wrapper__right"
-          collapsable
-        >
+        <HorizontalResizable :id="`${recordCriteria.datasetId}-q-h-rz}`" class="wrapper__right" collapsable>
           <template #up>
             <QuestionsForm
               v-if="!!record"
@@ -148,10 +118,7 @@
             />
           </template>
           <template #downHeader>
-            <AnnotationProgress
-              class="annotation-progress"
-              :datasetId="recordCriteria.datasetId"
-            />
+            <AnnotationProgress class="annotation-progress" :datasetId="recordCriteria.datasetId" />
           </template>
           <template #downHeaderExpanded>
             <p v-text="$t('metrics.progress.my')" />
@@ -184,11 +151,7 @@
       :modal-visible="visibleConfirmationModal"
       @close-modal="cancelAction"
     >
-      <p
-        v-text="
-          $t('bulkAnnotation.actionConfirmationText', { total: records.total })
-        "
-      />
+      <p v-text="$t('bulkAnnotation.actionConfirmationText', { total: records.total })" />
       <div class="modal-buttons">
         <BaseButton class="primary outline" @on-click="cancelAction">
           {{ $t("button.cancel") }}
@@ -249,13 +212,9 @@ export default {
       return this.numberOfSelectedRecords > 0;
     },
     bulkActionsTooltip() {
-      if (!this.hasSelectedAtLeastOneRecord)
-        return this.$t("bulkAnnotation.to_annotate_record_bulk_required");
+      if (!this.hasSelectedAtLeastOneRecord) return this.$t("bulkAnnotation.to_annotate_record_bulk_required");
 
-      return this.$tc(
-        "bulkAnnotation.recordsSelected",
-        this.numberOfSelectedRecords
-      );
+      return this.$tc("bulkAnnotation.recordsSelected", this.numberOfSelectedRecords);
     },
     isSelectedAll() {
       return this.selectedRecords.length === this.recordsOnPage.length;
@@ -280,15 +239,12 @@ export default {
   methods: {
     onSelectRecord(isSelected, record) {
       if (isSelected) {
-        if (!this.selectedRecords.some((r) => r.id === record.id))
-          return this.selectedRecords.push(record);
+        if (!this.selectedRecords.some((r) => r.id === record.id)) return this.selectedRecords.push(record);
 
         return;
       }
 
-      this.selectedRecords = this.selectedRecords.filter(
-        (r) => r.id !== record.id
-      );
+      this.selectedRecords = this.selectedRecords.filter((r) => r.id !== record.id);
     },
     showConfirmationModal(action) {
       this.visibleConfirmationModal = true;
@@ -335,29 +291,17 @@ export default {
       }
     },
     async onSubmit() {
-      const allSuccessful = await this.submit(
-        this.recordCriteria,
-        this.record,
-        this.selectedRecords
-      );
+      const allSuccessful = await this.submit(this.recordCriteria, this.record, this.selectedRecords);
 
       if (allSuccessful) this.selectedRecords = [];
     },
     async onDiscard() {
-      const allSuccessful = await this.discard(
-        this.recordCriteria,
-        this.record,
-        this.selectedRecords
-      );
+      const allSuccessful = await this.discard(this.recordCriteria, this.record, this.selectedRecords);
 
       if (allSuccessful) this.selectedRecords = [];
     },
     async onSaveDraft() {
-      const allSuccessful = await this.saveAsDraft(
-        this.recordCriteria,
-        this.record,
-        this.selectedRecords
-      );
+      const allSuccessful = await this.saveAsDraft(this.recordCriteria, this.record, this.selectedRecords);
 
       if (allSuccessful) this.selectedRecords = [];
     },
@@ -381,17 +325,13 @@ export default {
     spansQuestionsWithSelectedEntities: {
       deep: true,
       handler() {
-        const spanQuestions = this.recordsOnPage
-          .flatMap((r) => r.questions)
-          .filter((q) => q.isSpanType);
+        const spanQuestions = this.recordsOnPage.flatMap((r) => r.questions).filter((q) => q.isSpanType);
 
         this.spansQuestionsWithSelectedEntities.forEach((q) => {
           spanQuestions.forEach((question) => {
             if (question.id === q.id) {
               question.answer.options.forEach((option) => {
-                option.isSelected = q.answer.options.some(
-                  (o) => o.isSelected && o.id === option.id
-                );
+                option.isSelected = q.answer.options.some((o) => o.isSelected && o.id === option.id);
               });
             }
           });
@@ -434,7 +374,7 @@ export default {
   display: flex;
   flex-wrap: wrap;
   height: 100%;
-    @include media("<desktop") {
+  @include media("<desktop") {
     flex-flow: column;
     overflow: auto;
   }

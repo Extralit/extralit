@@ -72,7 +72,8 @@ export default {
       padding: $base-space $base-space * 2;
     }
 
-    &--left, &--right {
+    &--left,
+    &--right {
       display: flex;
       align-items: center;
       gap: $base-space;
@@ -97,16 +98,16 @@ export default {
 .fields__header {
   position: relative;
   min-width: 0;
-  
+
   &--left {
-    flex-shrink: 1; 
-    min-width: 0; 
-    overflow: hidden; 
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
   }
 
   &--right {
-    flex-shrink: 0; 
-    z-index: 2; 
+    flex-shrink: 0;
+    z-index: 2;
   }
 }
 

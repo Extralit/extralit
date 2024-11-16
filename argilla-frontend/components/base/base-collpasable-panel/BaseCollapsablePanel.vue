@@ -1,11 +1,5 @@
 <template>
-  <div
-    class="panel"
-    :class="[
-      !isExpanded ? '--collapsed' : undefined,
-      hideOnDesktop ? '--mobile' : undefined,
-    ]"
-  >
+  <div class="panel" :class="[!isExpanded ? '--collapsed' : undefined, hideOnDesktop ? '--mobile' : undefined]">
     <BaseButton
       class="panel__header"
       @click="toggleExpand(isExpanded)"

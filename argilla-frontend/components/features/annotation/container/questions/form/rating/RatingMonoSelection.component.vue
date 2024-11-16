@@ -32,11 +32,7 @@
           >
             {{ option.value }}
 
-            <svgicon
-              v-if="isSuggested(option)"
-              class="label-text__suggestion-icon"
-              name="suggestion"
-            />
+            <svgicon v-if="isSuggested(option)" class="label-text__suggestion-icon" name="suggestion" />
           </label>
         </BaseTooltip>
       </div>

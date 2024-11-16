@@ -29,14 +29,7 @@
     <slot />
   </a>
 
-  <nuxt-link
-    v-else-if="to"
-    :class="buttonClasses"
-    :to="to"
-    :loading="loading"
-    :disabled="disabled"
-    @click="onClick"
-  >
+  <nuxt-link v-else-if="to" :class="buttonClasses" :to="to" :loading="loading" :disabled="disabled" @click="onClick">
     <slot />
   </nuxt-link>
 
@@ -49,12 +42,7 @@
     :disabled="disabled"
     @click="onClick"
   >
-    <BaseSpinner
-      class="spinner"
-      v-if="loading"
-      :size="20"
-      :progress="loadingProgress"
-    />
+    <BaseSpinner class="spinner" v-if="loading" :size="20" :progress="loadingProgress" />
     <slot />
   </button>
 </template>

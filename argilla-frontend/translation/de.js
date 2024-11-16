@@ -35,8 +35,7 @@ export default {
   annotationGuidelines: "Annotationsrichtlinien",
   guidelines: "Richtlinien",
   taskDistribution: "Annotationsverteilung",
-  minimumSubmittedResponses:
-    "Erforderliche Mindestanzahl an eingereichten Antworten",
+  minimumSubmittedResponses: "Erforderliche Mindestanzahl an eingereichten Antworten",
   taskDistributionTooltip:
     "Eine Aufgabe ist abgeschlossen, wenn alle Datensätze die \nMindestanzahl an eingereichten Antworten haben.",
   noAnnotationGuidelines: "Dieser Datensatz hat keine Annotationsrichtlinien",
@@ -50,8 +49,7 @@ export default {
       "Der Datensatz ist leer. Sie können Datensätze mit dem Python SDK hinzufügen. Siehe <a href='https://docs.argilla.io/latest/how_to_guides/record/'>Dokumentation</a> zum Hinzufügen von Einträgen.",
     taskDistributionCompleted: "🎉 Die Aufgabe ist erledigt!",
     noSubmittedRecords: "Sie haben noch keinen Datensatz eingereicht",
-    noRecordsFound:
-      "Sie haben keine {status} Datensätze, welche Ihrer Anfrage entsprechen",
+    noRecordsFound: "Sie haben keine {status} Datensätze, welche Ihrer Anfrage entsprechen",
     noRecords: "Sie haben keine {status} Datensätze",
     noPendingRecordsToAnnotate: "🎉 Die Aufgabe ist erledigt!",
     noDraftRecordsToReview: "Sie haben keine Entwürfe zu prüfen",
@@ -72,8 +70,7 @@ export default {
     discarded: "verworfen",
     submitted: "gesichert",
     validated: "validiert",
-    completedTooltip:
-      "Der Datensatz ist abgeschlossen, es hat die Anzahl der Antworten.",
+    completedTooltip: "Der Datensatz ist abgeschlossen, es hat die Anzahl der Antworten.",
   },
   userSettings: {
     title: "Meine Einstellungen",
@@ -84,8 +81,7 @@ export default {
       workspaces: "Arbeitsbereiche",
     },
     apiKey: "API-Key",
-    apiKeyDescription:
-      "API-Keys erlauben es die Datensätze über das Python SDK zu verwalten.",
+    apiKeyDescription: "API-Keys erlauben es die Datensätze über das Python SDK zu verwalten.",
     theme: "Theme",
     copyKey: "API-Key kopieren",
   },
@@ -128,10 +124,8 @@ export default {
       datasetSettings: "Datensatzeinstellungen",
     },
   },
-  to_submit_complete_required:
-    "Zum Absenden beantworten \nSie die benötigten Fragen",
-  some_records_failed_to_annotate:
-    "Einige Einträge konnten nicht annotiert werden",
+  to_submit_complete_required: "Zum Absenden beantworten \nSie die benötigten Fragen",
+  some_records_failed_to_annotate: "Einige Einträge konnten nicht annotiert werden",
   changes_no_submit: "Sie haben Ihre Änderungen nicht gespeichert",
   bulkAnnotation: {
     recordsSelected: "1 Eintrag ausgewählt | {count} Einträge ausgewählt",
@@ -144,8 +138,7 @@ export default {
     selectAllResults: "Alle {total} Einträge auswählen",
     haveSelectedRecords: "Sie haben alle {total} Einträge ausgewählt",
     actionConfirmation: "Mehrfach-Aktion bestätigen",
-    actionConfirmationText:
-      "Diese Aktion wird {total} Einträge ändern, wollen Sie fortfahren?",
+    actionConfirmationText: "Diese Aktion wird {total} Einträge ändern, wollen Sie fortfahren?",
     allRecordsAnnotated: "{total} Einträge wurden {action}",
     affectedAll: {
       submitted: "abgesendet",
@@ -217,8 +210,7 @@ export default {
     error: "Falscher Benutzername oder Passwort. Versuchen Sie es erneut",
     hf: {
       title: "Willkommen bei {space}",
-      subtitle:
-        "Helfe <strong>{user}</strong> um bessere Datensätze für KI zu erstellen",
+      subtitle: "Helfe <strong>{user}</strong> um bessere Datensätze für KI zu erstellen",
     },
   },
   of: "von",
@@ -266,8 +258,7 @@ export default {
         message: "Vektor nicht im ausgewählten Datensatz gefunden",
       },
       update_distribution_with_existing_responses: {
-        message:
-          "Die Verteilungseinstellungen können für einen Datensatz mit Benutzerantworten nicht geändert werden", //TODO
+        message: "Die Verteilungseinstellungen können für einen Datensatz mit Benutzerantworten nicht geändert werden", //TODO
       },
     },
     http: {
@@ -278,12 +269,10 @@ export default {
         message: "Die angeforderte Ressource konnte nicht gefunden werden",
       },
       429: {
-        message:
-          "Bitte warten Sie einige Sekunden, bevor Sie es erneut versuchen",
+        message: "Bitte warten Sie einige Sekunden, bevor Sie es erneut versuchen",
       },
       500: {
-        message:
-          "Bitte warten Sie einige Sekunden, bevor Sie es erneut versuchen",
+        message: "Bitte warten Sie einige Sekunden, bevor Sie es erneut versuchen",
       },
     },
   },

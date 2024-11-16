@@ -7,16 +7,8 @@
     aria-label="Data Record Field"
   >
     <div class="title-area --body2">
-      <span
-        class="text_field_component__title-content"
-        v-text="title"
-        :aria-label="'Field Name: ' + title"
-      />
-      <BaseActionTooltip
-        class="text_field_component__tooltip"
-        :tooltip="$t('copied')"
-        tooltip-position="left"
-      >
+      <span class="text_field_component__title-content" v-text="title" :aria-label="'Field Name: ' + title" />
+      <BaseActionTooltip class="text_field_component__tooltip" :tooltip="$t('copied')" tooltip-position="left">
         <BaseButton
           :title="$t('button.tooltip.copyToClipboard')"
           :aria-label="$t('button.tooltip.copyToClipboard')"
@@ -24,13 +16,7 @@
           @click.prevent="$copyToClipboard(fieldText)"
           role="button"
         >
-          <svgicon
-            color="#acacac"
-            name="copy"
-            width="18"
-            height="18"
-            aria-hidden="true"
-          />
+          <svgicon color="#acacac" name="copy" width="18" height="18" aria-hidden="true" />
         </BaseButton>
       </BaseActionTooltip>
     </div>
@@ -41,9 +27,7 @@
     >
       <p
         :class="[
-          allowOverlapping
-            ? 'span-annotation__field--overlapped'
-            : 'span-annotation__field',
+          allowOverlapping ? 'span-annotation__field--overlapped' : 'span-annotation__field',
           hasSelectedEntity ? 'span-annotation__field--active' : null,
         ]"
         ref="spanAnnotationField"
