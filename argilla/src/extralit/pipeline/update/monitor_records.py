@@ -3,9 +3,9 @@ from collections import defaultdict
 from time import sleep
 from typing import Dict, Optional, Any
 
-import argilla as rg
-from argilla.client.feedback.dataset.remote.dataset import RemoteFeedbackDataset
-from argilla.client.feedback.schemas.remote.records import RemoteFeedbackRecord
+import argilla_v1 as rg
+from argilla_v1.client.feedback.dataset.remote.dataset import RemoteFeedbackDataset
+from argilla_v1.client.feedback.schemas.remote.records import RemoteFeedbackRecord
 
 from extralit.convert.json_table import json_to_df, df_to_json
 from extralit.pipeline.ingest.record import get_record_table, get_record_timestamp

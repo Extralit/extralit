@@ -21,13 +21,7 @@
       <slot />
     </label>
     <div class="checkbox__container" tabindex="0">
-      <input
-        :id="id"
-        type="checkbox"
-        :disabled="disabled"
-        :value="value"
-        :checked="checked"
-      />
+      <input :id="id" type="checkbox" :disabled="disabled" :value="value" :checked="checked" />
       <svgicon color="#fffff" width="12" name="check" />
     </div>
   </div>
@@ -96,10 +90,7 @@ export default {
       if (!this.disabled) {
         if (Array.isArray(this.areChecked)) {
           const checked = this.areChecked.slice();
-          const found =
-            typeof this.value === "string"
-              ? checked.indexOf(this.value)
-              : _.findIndex(checked, this.value);
+          const found = typeof this.value === "string" ? checked.indexOf(this.value) : _.findIndex(checked, this.value);
           if (found !== -1) {
             checked.splice(found, 1);
           } else {
@@ -121,8 +112,8 @@ export default {
 <style lang="scss" scoped>
 $checkbox-size: 16px;
 $checkbox-touch-size: 16px;
-$checkbox-color: palette(grey, 600);
-$checkbox-color-dark: $primary-color;
+$checkbox-color: var(--bg-solid-grey-3);
+$checkbox-color-dark: var(--bg-action);
 $checkbox-border-radius: 3px;
 $checkbox-decoration-circle-color: #6b87f8;
 .checkbox {
@@ -150,7 +141,7 @@ $checkbox-decoration-circle-color: #6b87f8;
     margin-right: 0;
     margin-left: auto;
     .svg-icon {
-      fill: palette(white);
+      fill: var(--color-white);
       transform: scale(0);
       transition: all 0.2s ease-in-out;
       display: block;
@@ -172,7 +163,7 @@ $checkbox-decoration-circle-color: #6b87f8;
   }
   &--dark {
     .checkbox__container {
-      border: 1px solid $black-20;
+      border: 1px solid var(--bg-opacity-20);
       &:after {
         background: $checkbox-color-dark;
       }
@@ -212,8 +203,8 @@ $checkbox-decoration-circle-color: #6b87f8;
 
 .checkbox.checked {
   .checkbox__container {
-    background: $primary-color;
-    border: 1px solid $primary-color;
+    background: var(--bg-action);
+    border: 1px solid var(--bg-action);
     .svg-icon {
       transform: scale(1);
       transition: all 0.2s ease-in-out;

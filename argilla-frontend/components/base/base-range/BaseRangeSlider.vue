@@ -4,15 +4,7 @@
     <div class="range__wrapper">
       <div class="range">
         <span class="range__progress-value" ref="progress" v-text="range" />
-        <input
-          :id="id"
-          ref="slider"
-          class="range__slider"
-          type="range"
-          :min="min"
-          :max="max"
-          v-model.number="range"
-        />
+        <input :id="id" ref="slider" class="range__slider" type="range" :min="min" :max="max" v-model.number="range" />
       </div>
       <div class="range__legends">
         <span v-text="min" />
@@ -64,9 +56,7 @@ export default {
   },
   methods: {
     styleRange() {
-      this.$refs.progress.style.left = `calc(${this.progress}% + (${
-        8 - this.progress * 0.15
-      }px))`;
+      this.$refs.progress.style.left = `calc(${this.progress}% + (${8 - this.progress * 0.15}px))`;
       this.$refs.slider.style.background = `linear-gradient(to right, #3e5cc9 ${this.progress}%, rgba(0, 0, 0, 0.2) ${this.progress}%)`;
     },
   },
@@ -78,13 +68,13 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
-$slider-color: $primary-color;
-$slider-light-color: rgba(0, 26, 255, 0.1);
+$slider-color: var(--bg-action);
+$slider-light-color: hsla(from var(--fg-cuaternary) h s l / 20%);
 $slider-thumb-size: 16px;
 label {
   width: fit-content;
   height: 14px;
-  color: $black-54;
+  color: var(--fg-secondary);
 }
 
 .range {
@@ -101,7 +91,7 @@ label {
     display: flex;
     width: 100%;
     justify-content: space-between;
-    color: $black-37;
+    color: var(--fg-tertiary);
     @include font-size(12px);
   }
   &__progress-value {
@@ -111,8 +101,8 @@ label {
     margin-left: -15px;
     width: 30px;
     text-align: center;
-    color: palette(white);
-    background: palette(grey, 200);
+    color: var(--color-white);
+    background: var(--color-black);
     border-radius: $border-radius-s;
     @include font-size(12px);
     &:before {
@@ -120,7 +110,7 @@ label {
       left: calc(50% - 6px);
       top: 0;
       transform: translateY(-50%);
-      @include triangle(top, 6px, 6px, palette(grey, 200));
+      @include triangle(top, 6px, 6px, var(--color-black));
     }
     .range:hover & {
       display: block;
@@ -134,7 +124,7 @@ label {
     outline: none;
     border-radius: 15px;
     height: 6px;
-    background: $black-10;
+    background: var(--bg-opacity-10);
   }
 }
 

@@ -4,9 +4,9 @@ import os
 from collections import Counter
 from typing import List, Optional, Tuple, Union, Dict, Any
 
-import argilla as rg
+import argilla_v1 as rg
 import pandas as pd
-from argilla.client.feedback.utils import image_to_html
+from argilla_v1.client.feedback.utils import image_to_html
 from pydantic.v1 import BaseModel, Field, validator
 from rapidfuzz import fuzz
 from unstructured.documents.elements import Element, Header, FigureCaption, Image, \

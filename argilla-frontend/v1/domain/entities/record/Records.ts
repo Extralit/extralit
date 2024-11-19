@@ -1,4 +1,5 @@
 import { PageCriteria } from "../page/PageCriteria";
+import { Question } from "../question/Question";
 import { Record } from "./Record";
 import { RecordStatus } from "./RecordAnswer";
 import { RecordCriteria } from "./RecordCriteria";
@@ -6,13 +7,10 @@ import { RecordCriteria } from "./RecordCriteria";
 export class Records {
   constructor(
     public records: Record[] = [],
-    public readonly total: number = 0
+    public readonly total: number = 0,
+    public readonly hasRecordsToAnnotate: boolean = records.length > 0
   ) {
     this.arrangeQueue();
-  }
-
-  get hasRecordsToAnnotate() {
-    return this.records.length > 0;
   }
 
   existsRecordOn(criteria: PageCriteria) {
@@ -20,16 +18,17 @@ export class Records {
   }
 
   getRecordOn(criteria: PageCriteria) {
-    let record = this.records.find((record) => record.page === criteria.client.page);
-    return record;
+    return this.records.find((record) => record.page === criteria.client.page);
   }
 
-  hasNecessaryBuffering(criteria: PageCriteria) {
+  shouldBuffering(criteria: PageCriteria) {
     const bufferedRecords = this.records.filter(
       (record) => record.page > criteria.client.page
     );
 
-    return bufferedRecords.length > criteria.buffer;
+    if (this.total === this.lastRecord.page) return false;
+
+    return bufferedRecords.length <= criteria.buffer;
   }
 
   getRecordsOn(criteria: PageCriteria): Record[] {
@@ -131,5 +130,25 @@ export class Records {
 export class RecordsWithReference extends Records {
   constructor(records: Record[], total, public readonly reference: Record) {
     super(records, total);
+  }
+}
+
+export class EmptyQueueRecords extends Records {
+  constructor(criteria: RecordCriteria, questions: Question[] = []) {
+    const nullRecord = new Record(
+      undefined,
+      criteria.datasetId,
+      questions,
+      [],
+      null,
+      [],
+      0,
+      criteria.page.client.page,
+      null,
+      null,
+      null
+    );
+
+    super([nullRecord], -1, false);
   }
 }

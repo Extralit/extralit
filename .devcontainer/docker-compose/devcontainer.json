@@ -86,7 +86,6 @@
         "GitHub.copilot-chat",
         "ms-python.python",
         "ms-python.vscode-pylance",
-        "tamasfe.even-better-toml",
         "eamodio.gitlens",
         "tilt-dev.tiltfile",
         "github.vscode-github-actions",
@@ -106,6 +105,14 @@
       ],
       "python.defaultInterpreterPath": "/opt/conda/bin/python",
       "python.condaPath": "/usr/local/bin/micromamba",
+      "search.exclude": {
+        "argilla-server/src/argilla_server/static/": true,
+        "argilla-frontend/dist/": true,
+      },
+      "files.watcherExclude": {
+        "argilla-server/src/argilla_server/static/": true,
+        "argilla-frontend/dist/": true,
+      }
     }
   }
 }

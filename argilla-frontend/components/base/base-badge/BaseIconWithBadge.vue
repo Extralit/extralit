@@ -1,10 +1,5 @@
 <template>
-  <BaseButton
-    class="icon-with-badge"
-    :data-title="tooltip"
-    @on-click="onClickIcon"
-    :tabIndex="-1"
-  >
+  <BaseButton class="icon-with-badge" :data-title="tooltip" @on-click="onClickIcon" :tabIndex="-1">
     <i
       :key="showBadge"
       class="icon-wrapper"
@@ -15,7 +10,7 @@
         borderColor: badgeBorderColor,
       }"
     >
-      <svgicon :name="icon" width="22" height="22" :color="iconColor" />
+      <svgicon :name="icon" :width="badgeSize" :height="badgeSize" :color="iconColor" :aria-label="icon + ' icon'" />
     </i>
   </BaseButton>
 </template>
@@ -48,6 +43,10 @@ export default {
     },
     badgeBorderColor: {
       type: String,
+    },
+    badgeSize: {
+      type: String,
+      default: "22",
     },
   },
   methods: {

@@ -1,0 +1,234 @@
+[build-system]
+requires = ["setuptools>=61.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "extralit-v1"
+description = "Open-source tool for accurate & fast scientific literature data extraction with LLM and human-in-the-loop."
+readme = "README.md"
+requires-python = ">=3.9,!=3.10.0,<3.13"
+license = { text = "Apache-2.0" }
+keywords = [
+    "literature-review",
+    "pdf-extraction",
+    "natural-language-processing",
+    "text-labeling",
+    "data-extraction",
+    "artificial-intelligence",
+    "human-in-the-loop",
+]
+authors = [
+    { name = "Jonny Tran", email = "nhat.c.tran@gmail.com" },
+    { name = "argilla", email = "contact@argilla.io" }
+]
+maintainers = [
+    { name = "Jonny Tran", email = "nhat.c.tran@gmail.com" },
+    { name = "argilla", email = "contact@argilla.io" }
+]
+dependencies = [
+    # Client
+    "httpx >= 0.15,<= 0.26",
+    "deprecated ~= 1.2.0",
+    "packaging >= 20.0",
+    # Aligned pydantic version with server fastAPI
+    "pydantic >= 1.10.7",
+    # monitoring
+    "wrapt >= 1.14,< 1.15",
+    # for progressbars
+    "tqdm >= 4.66.1, < 5.0.0",
+    # monitor background consumers
+    "backoff",
+    "monotonic",
+    # for logging, tracebacks, printing, progressbars
+    "rich != 13.1.0",
+    # for CLI
+    "typer >= 0.6.0, < 0.10.0", # spaCy only supports typer<0.10.0
+    # for environment variables
+    "python-dotenv",
+    # for extralit
+    "minio",
+    "html5lib",
+    "fastapi < 1.0.0",
+    "pypandoc ~= 1.13",
+    "beautifulsoup4 ~= 4.12.2",
+    "pandas ~= 2.2.2",
+    "pandera[io] ~= 0.19.3",
+    "numpy ~= 1.26.4",
+    "spacy ~= 3.7.2",
+    "pyarrow == 14.*",
+    "natsort ~= 8.4.0",
+    "rapidfuzz ~= 3.8.1",
+    "dill ~= 0.3.8",
+    "json-repair ~= 0.19.2",
+    "fastparquet",
+    "tiktoken",
+    "pymupdf",
+    # for llama-index
+    "llama-index ~= 0.10.68",
+    "llama-index-core ~= 0.10.68",
+    "llama-index-callbacks-langfuse ~= 0.1.6",
+    "llama-index-llms-openai ~= 0.1.31",
+    "llama-index-embeddings-openai ~=0.1.11",
+    "llama-index-multi-modal-llms-openai",
+    # for weaviate vector db
+    "weaviate-client >= 4",
+    "llama-index-vector-stores-weaviate ~= 1.0.0",
+]
+dynamic = ["version"]
+# This line is just to force the build
+[project.optional-dependencies]
+nlp = [
+    "textdescriptives",
+    "setfit ~= 0.7.0",
+]
+ocr = [
+    "nougat-ocr[api]",
+    "timm == 0.5.4",
+    "transformers ~= 4.25.1"
+]
+pdf = [
+    "unstructured[pdf] ~= 0.12.3",
+    "llmsherpa ~= 0.1.3",
+    "python-doctr ~= 0.8.1",
+    "deepdoctection",
+    "pypdf",
+    "pypdfium2",
+    "pymupdf",
+    "pdf2image ~= 1.16.0",
+]
+server = [
+    # "argilla-server"
+    # Comment previous line and uncomment the next line when we have a release
+    "extralit-server ~= 0.2.1"
+]
+server-postgresql = [
+    # "argilla-server[postgresql]"
+    # Comment previos line and uncomment the next line when we have a release
+    "extralit-server[postgresql] >= 0.2.1"
+]
+listeners = ["schedule ~= 1.1.0"]
+integrations = [
+    "PyYAML >= 5.4.1,< 6.1.0", # Required by `argilla.client.feedback.config` just used in `HuggingFaceDatasetMixin`
+    # TODO: `push_to_hub` fails up to 2.3.2, check patches when they come out eventually
+    "datasets > 1.17.0,!= 2.3.2",
+    # TODO: some backward comp. problems introduced in 0.5.0
+    "huggingface_hub >= 0.5.0,< 0.24",
+    # Version 0.12 fixes a known installation issue related to `sentencepiece` and `tokenizers`, more at https://github.com/flairNLP/flair/issues/3129
+    # Version 0.12.2 relaxes the `huggingface_hub` dependency
+    "flair >= 0.12.2",
+    "faiss-cpu",
+    "flyingsquid",
+    "pgmpy",
+    "plotly >= 4.1.0",
+    "snorkel >= 0.9.7",
+    "spacy>=3.5.0,<3.7.0",
+    "spacy-transformers >= 1.2.5",
+    "spacy-huggingface-hub >= 0.0.10",
+    "transformers[torch] >= 4.30.0",
+    "evaluate",
+    "seqeval",
+    "sentence-transformers",
+    "setfit>=1.0.0",
+    "span_marker",
+    "sentence-transformers>=2.0.0,<3.0.0",
+    "textdescriptives>=2.7.0,<3.0.0",
+    "openai>=0.27.10,<1.0.0",
+    "peft",
+    "trl>=0.5.0",
+    # To find the notebook name from within a notebook
+    "ipynbname",
+]
+tests = [
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
+    "pytest-asyncio",
+    "pytest-env",
+    "factory_boy ~= 3.2.1",
+]
+
+[project.urls]
+homepage = "https://www.extralit.ai"
+documentation = "https://docs.extralit.ai"
+changelog = "https://docs.extralit.ai/latest/community/changelog/"
+repository = "https://github.com/extralit/extralit"
+tracker = "https://github.com/extralit/extralit/issues"
+
+[project.scripts]
+extralit = "argilla.cli.app:app"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.dynamic]
+version = { attr = "extralit.__version__" }
+
+[tool.setuptools.package-data]
+"argilla_v1.client.feedback.integrations.huggingface.card" = [
+    "argilla_template.md",
+]
+"argilla_v1.client.feedback.integrations.huggingface.model_card" = [
+    "argilla_model_template.md",
+]
+
+[tool.pytest.ini_options]
+log_format = "%(asctime)s %(name)s %(levelname)s %(message)s"
+log_date_format = "%Y-%m-%d %H:%M:%S"
+log_cli = "True"
+testpaths = ["tests"]
+env = ["ARGILLA_ENABLE_TELEMETRY=0"]
+
+
+[tool.coverage.run]
+concurrency = ["greenlet", "thread", "multiprocessing"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "def __str__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "if _TYPE_CHECKING:",
+    "if typing.TYPE_CHECKING:",
+]
+
+[tool.isort]
+profile = "black"
+
+[tool.ruff]
+# Ignore line length violations
+ignore = ["E501"]
+
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+]
+line-length = 120
+
+[tool.ruff.per-file-ignores]
+# Ignore imported but unused;
+"__init__.py" = ["F401"]
+
+[tool.black]
+line-length = 120

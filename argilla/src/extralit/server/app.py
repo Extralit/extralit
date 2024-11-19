@@ -15,7 +15,7 @@ from llama_index.core.vector_stores import MetadataFilters, MetadataFilter, Filt
 from minio import Minio
 from weaviate import WeaviateClient
 
-import argilla as rg
+import argilla_v1 as rg
 from extralit.convert.json_table import json_to_df
 from extralit.extraction.extraction import extract_schema
 from extralit.extraction.models.paper import PaperExtraction

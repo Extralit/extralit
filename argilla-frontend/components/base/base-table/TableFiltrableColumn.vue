@@ -5,7 +5,7 @@
       @click="openFilter(column)"
       :class="[visibleFilter || selectedOptions.length ? 'active' : '']"
     >
-      <svgicon color="#4D4D4D" name="filter" width="16" />
+      <svgicon name="filter" width="16" aria-hidden="true" />
       {{ column.name }}
     </button>
     <div class="table__filter" v-click-outside="close" v-if="visibleFilter">
@@ -17,6 +17,7 @@
         :options="filterOptions(this.options, searchText)"
         :option-name="optionName"
         :option-counter="optionCounter"
+        :aria-label="optionName"
       />
     </div>
   </div>
@@ -64,14 +65,11 @@ export default {
     options() {
       const rawOptions = this.data.map((item) => item[this.column.field]);
       if (rawOptions.every((option) => this.isObject(option))) {
-        const removedEmptyOptions = rawOptions
-          .filter((opt) => Object.values(opt).length)
-          .flatMap((opt) => opt);
-        const optionsArray = Object.values(removedEmptyOptions).flatMap(
-          (options) =>
-            Object.keys(options).map((key) => {
-              return { key: key, value: options[key] };
-            })
+        const removedEmptyOptions = rawOptions.filter((opt) => Object.values(opt).length).flatMap((opt) => opt);
+        const optionsArray = Object.values(removedEmptyOptions).flatMap((options) =>
+          Object.keys(options).map((key) => {
+            return { key: key, value: options[key] };
+          })
         );
         const keys = ["key", "value"];
         return optionsArray.filter(
@@ -109,37 +107,24 @@ export default {
       if (text === undefined) {
         return options;
       }
-      const filtered = options.filter((id) =>
-        JSON.stringify(id).toLowerCase().match(text.toLowerCase())
-      );
+      const filtered = options.filter((id) => JSON.stringify(id).toLowerCase().match(text.toLowerCase()));
       return filtered;
     },
     tableItemsCounter(option) {
-      const keys = Object.keys(this.filters).filter(
-        (k) => k !== this.column.field
-      );
+      const keys = Object.keys(this.filters).filter((k) => k !== this.column.field);
       const filteredData = this.data.filter((tableItem) => {
         return keys.every((key) => {
           if (this.filters[key].every((f) => this.isObject(f))) {
-            return this.filters[key].find(
-              (f) => f.value === tableItem[key][f.key]
-            );
+            return this.filters[key].find((f) => f.value === tableItem[key][f.key]);
           } else {
             return this.filters[key].includes(tableItem[key]);
           }
         });
       });
-      if (
-        filteredData.every((data) => this.isObject(data[this.column.field]))
-      ) {
-        return filteredData.filter(
-          (tableItem) =>
-            tableItem[this.column.field][option.key] === option.value
-        ).length;
+      if (filteredData.every((data) => this.isObject(data[this.column.field]))) {
+        return filteredData.filter((tableItem) => tableItem[this.column.field][option.key] === option.value).length;
       } else {
-        return filteredData.filter(
-          (tableItem) => tableItem[this.column.field] === option
-        ).length;
+        return filteredData.filter((tableItem) => tableItem[this.column.field] === option).length;
       }
     },
     optionName(option) {
@@ -153,7 +138,7 @@ export default {
 </script>
 <style lang="scss" scoped>
 .table__filter {
-  background: $bg;
+  background: var(--bg-accent-grey-3);
   position: absolute;
   top: 50px;
   left: -1em;
@@ -198,7 +183,6 @@ button {
   background: transparent;
   padding-left: 0;
   padding-right: 0;
-  color: $black-87;
   display: flex;
   align-items: center;
   @include font-size(14px);
@@ -211,7 +195,7 @@ button {
   }
   &:hover,
   &.active {
-    background: $black-4;
+    background: var(--bg-opacity-4);
     min-height: 40px;
     padding: 0 1em;
     margin: 0 -1em;

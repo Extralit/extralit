@@ -22,7 +22,7 @@ def get_langfuse_callback(
             Settings.callback_manager.add_handler(langfuse_callback_handler)
         set_global_handler("langfuse")
     except Exception as e:
-        _LOGGER.error(f"Failed to create Langfuse callback handler: {e}")
+        _LOGGER.warning(f"Failed to create Langfuse callback handler: {e}")
         langfuse_callback_handler = None
 
     return langfuse_callback_handler

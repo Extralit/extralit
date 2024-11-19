@@ -18,11 +18,7 @@
 <template>
   <ul class="tabs">
     <li v-for="{ id, name } in tabs" :key="id" class="tab">
-      <button
-        :id="id"
-        :class="['tab__button', `--${tabSize}`, getTabClass(id)]"
-        @click="changeTab(id)"
-      >
+      <button :id="id" :class="['tab__button', `--${tabSize}`, getTabClass(id)]" @click="changeTab(id)">
         <span>{{ name }}</span>
       </button>
     </li>
@@ -49,9 +45,7 @@ export default {
       this.$emit("change-tab", id);
     },
     getTabClass(id) {
-      return this.activeTab.id === id || this.tabs.length === 1
-        ? "--active"
-        : null;
+      return this.activeTab.id === id || this.tabs.length === 1 ? "--active" : null;
     },
   },
 };
@@ -65,7 +59,7 @@ export default {
   margin-bottom: 0;
   list-style: none;
   overflow-y: auto;
-  border-bottom: 1px solid $black-10;
+  border-bottom: 1px solid var(--bg-opacity-10);
   @extend %hide-scrollbar;
 }
 .tab {
@@ -78,7 +72,7 @@ export default {
     border-left: 0;
     border-bottom: 2px solid transparent;
     transition: border-color 0.3s ease-in-out;
-    color: $black-54;
+    color: var(--fg-secondary);
     outline: 0;
     white-space: nowrap;
     cursor: pointer;
@@ -90,12 +84,12 @@ export default {
       padding: $base-space $base-space * 2;
     }
     &.--active {
-      border-color: $primary-color;
+      border-color: var(--fg-cuaternary);
       transition: border-color 0.3s ease-in-out;
     }
     &.--active,
     &:hover {
-      color: $black-87;
+      color: var(--fg-primary);
       transition: color 0.2s ease-in-out;
     }
   }

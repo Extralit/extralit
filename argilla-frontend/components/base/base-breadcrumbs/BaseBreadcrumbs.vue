@@ -17,23 +17,17 @@
 
 <template>
   <div class="breadcrumbs">
-    <ul>
+    <ul role="navigation">
       <li v-for="breadcrumb in filteredBreadcrumbs" :key="breadcrumb.name">
-        <nuxt-link
-          class="breadcrumbs__item"
-          v-if="breadcrumb.link"
-          :to="breadcrumb.link"
+        <nuxt-link class="breadcrumbs__item" v-if="breadcrumb.link" :to="breadcrumb.link"
           >{{ breadcrumb.name }}
         </nuxt-link>
-        <span
-          class="breadcrumbs__item --action"
-          v-else
-          @click="$emit('breadcrumb-action', breadcrumb.action)"
-          >{{ breadcrumb.name }}</span
-        >
+        <span v-else class="breadcrumbs__item --action" @click="onBreadcrumbAction(breadcrumb)">{{
+          breadcrumb.name
+        }}</span>
       </li>
     </ul>
-    <base-action-tooltip :tooltip="$t('copied')">
+    <!-- <base-action-tooltip :tooltip="$t('copied')">
       <a
         v-if="copyButton"
         class="breadcrumbs__copy"
@@ -45,7 +39,7 @@
       >
         <svgicon name="copy" width="16" height="16" />
       </a>
-    </base-action-tooltip>
+    </base-action-tooltip> -->
   </div>
 </template>
 
@@ -54,7 +48,7 @@ export default {
   props: {
     breadcrumbs: {
       type: Array,
-      required: true,
+      default: () => [],
     },
     copyButton: {
       type: Boolean,
@@ -66,12 +60,16 @@ export default {
       return this.breadcrumbs.filter((breadcrumb) => breadcrumb.name);
     },
   },
+  methods: {
+    onBreadcrumbAction(breadcrumb) {
+      this.$emit("breadcrumb-action", breadcrumb.action);
+    },
+  },
 };
 </script>
 
 <style lang="scss" scoped>
 .breadcrumbs {
-  margin-right: auto;
   margin-left: 1em;
   display: flex;
   align-items: center;
@@ -104,23 +102,8 @@ export default {
       }
     }
   }
-  &__copy {
-    user-select: none;
-    cursor: pointer;
-    @include media("<=tablet") {
-      display: none;
-    }
-    &:hover {
-      .svg-icon {
-        fill: darken(palette(white), 10%);
-      }
-    }
-    .svg-icon {
-      fill: palette(white);
-    }
-  }
   &__item {
-    color: palette(white);
+    color: var(--fg-lighter);
     text-decoration: none;
     outline: none;
     &.--action {

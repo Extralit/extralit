@@ -18,14 +18,19 @@ component_management:
         target: auto
         
   individual_components:
+    - component_id: extralit
+      paths:
+        - argilla/src/extralit/**
+
     - component_id: argilla
       name: argilla
       paths:
         - argilla/src/argilla/**
 
-    - component_id: extralit
+    - component_id: argilla_v1
+      name: argilla_v1
       paths:
-        - argilla/src/extralit/**
+        - argilla-v1/src/argilla_v1/**
 
     - component_id: argilla-server
       paths:
