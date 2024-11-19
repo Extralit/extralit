@@ -59,7 +59,7 @@
     "nuxt-highlightjs": "^1.0.3",
     "nuxt-mq": "^2.0.2",
     "pinia": "^2.1.7",
-    "sass": "~1.77.4",
+    "sass": "^1.49.9",
     "stringz": "^2.1.0",
     "tabulator-tables": "^6.2.1",
     "ts-injecty": "^0.0.22",
@@ -110,7 +110,7 @@
     "jest-transform-stub": "^2.0.0",
     "prettier": "^2.8.8",
     "rimraf": "^5.0.7",
-    "sass-loader": "^10.5.2",
+    "sass-loader": "^10.1.0",
     "typescript": "^5.4.5",
     "vue-jest": "^3.0.7"
   },
