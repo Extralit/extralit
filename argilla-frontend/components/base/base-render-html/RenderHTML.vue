@@ -185,8 +185,6 @@ import SearchAndReplace from "@sereneinserenade/tiptap-search-and-replace";
 import { Editor, EditorContent } from "@tiptap/vue-2";
 
 export default {
-  name: "RenderHTMLBaseComponent",
-
   components: {
     EditorContent,
   },

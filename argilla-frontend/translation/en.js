@@ -277,7 +277,7 @@ export default {
     guidesText: "Take a look at these guides:",
     pasteRepoIdPlaceholder: "Paste a repo id e.g., stanfordnlp/imdb",
     demoLink:
-      "Log into this <a href='https://huggingface.co/spaces/argilla/argilla-template-space' target='_blank'>demo</a> to try Argilla out",
+      "Log into this <a href='https://huggingface.co/spaces/extralit/public-demo' target='_blank'>demo</a> to try Extralit out",
   },
   datasetCreation: {
     questions: {
