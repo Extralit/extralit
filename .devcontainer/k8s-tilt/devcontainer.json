@@ -35,6 +35,19 @@
       "files.watcherExclude": {
         "argilla-server/src/argilla_server/static/": true,
         "argilla-frontend/dist/": true,
+      },
+      "[javascript]": {
+        "editor.tabSize": 2
+      },
+      "jest.pathToJest": "npm test --",
+      "jest.autoRun": {
+        "watch": true,
+        "onSave": "test-file"
+      },
+      "jest.runAllTestsFirst": false,
+      "jest.showCoverageOnLoad": true,
+      "jest.testExplorer": {
+        "enabled": true
       }
     }
   },
