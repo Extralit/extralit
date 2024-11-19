@@ -41,9 +41,7 @@ describe("AnnotationModePage", () => {
       },
     };
 
-    jest
-      .spyOn(useAnnotationModeViewModel, "useAnnotationModeViewModel")
-      .mockReturnValue({
+    jest.spyOn(useAnnotationModeViewModel, "useAnnotationModeViewModel").mockReturnValue({
       isLoadingDataset: true,
     });
 
@@ -72,9 +70,7 @@ describe("AnnotationModePage", () => {
       },
     };
 
-    jest
-      .spyOn(useAnnotationModeViewModel, "useAnnotationModeViewModel")
-      .mockReturnValue({
+    jest.spyOn(useAnnotationModeViewModel, "useAnnotationModeViewModel").mockReturnValue({
       isLoadingDataset: false,
     });
 
