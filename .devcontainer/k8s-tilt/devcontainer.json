@@ -19,7 +19,8 @@
         "ms-python.vscode-pylance",
         "eamodio.gitlens",
         "tilt-dev.tiltfile",
-        "Vue.volar"
+        "Vue.volar",
+        "ms-kubernetes-tools.vscode-kubernetes-tools"
       ]
     },
     "settings": {
