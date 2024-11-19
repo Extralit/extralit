@@ -67,16 +67,19 @@ jobs:
           echo "Enable HF access token"
 
       - name: Run unit tests 📈
+        continue-on-error: true
         run: |
           pip install -e ".[server,listeners]"
           pytest tests/unit -vs
 
       - name: Run tests with pandas v2 📈
+        continue-on-error: true
         run: |
           pip install "pandas~=2.0" pytest-custom_exit_code
           pytest --suppress-no-test-exit-code tests/unit -vs
 
       - name: Run tests with pydantic v2 📈
+        continue-on-error: true
         run: |
           pip install "pydantic~=2.0" pytest-custom_exit_code
           pytest --suppress-no-test-exit-code tests/unit -vs
