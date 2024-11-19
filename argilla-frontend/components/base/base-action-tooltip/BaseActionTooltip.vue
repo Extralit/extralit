@@ -1,15 +1,7 @@
 <template>
-  <span
-    :class="['tooltip__container', showTooltip ? 'active' : null]"
-    @click="active()"
-  >
+  <span :class="['tooltip__container', showTooltip ? 'active' : null]" @click="active()">
     <slot></slot>
-    <span
-      v-if="tooltip && showTooltip"
-      class="tooltip"
-      :class="tooltipClass"
-      v-text="tooltip"
-    />
+    <span v-if="tooltip && showTooltip" class="tooltip" :class="tooltipClass" v-text="tooltip" />
   </span>
 </template>
 
@@ -49,15 +41,16 @@ export default {
 .tooltip {
   position: absolute;
   top: 0;
-  background: palette(grey, 100);
+  background: var(--bg-tooltip);
   display: inline-block;
   border-radius: $border-radius-s;
-  color: palette(white);
+  color: var(--color-white);
   @include font-size(12px);
-  box-shadow: 0 1px 4px 1px rgba(222, 222, 222, 0.5);
+  box-shadow: 0 1px 4px 1px var(--bg-accent-grey-1);
   padding: 0.1em 0.5em;
   white-space: nowrap;
   font-family: $primary-font-family !important;
+  z-index: 1;
   &.--left {
     right: 100%;
   }
@@ -66,14 +59,6 @@ export default {
   }
   &__container {
     position: relative;
-    &.active {
-      :deep(svg) {
-        .breadcrumbs &,
-        .code & {
-          fill: $brand-secondary-color;
-        }
-      }
-    }
   }
 }
 </style>

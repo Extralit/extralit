@@ -110,6 +110,7 @@ typings/
 
 # nuxt.js build output
 .nuxt
+_nuxt
 
 # Nuxt generate
 dist

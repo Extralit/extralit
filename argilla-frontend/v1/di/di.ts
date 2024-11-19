@@ -3,6 +3,14 @@ import Container, { register } from "ts-injecty";
 
 import { useEventDispatcher } from "@codescouts/events";
 
+import { useTeamProgress } from "../infrastructure/storage/TeamProgressStorage";
+import {
+  UpdateMetricsEventHandler,
+  UpdateTeamProgressEventHandler,
+} from "../infrastructure/events";
+
+import { useAxiosExtension } from "@/v1/infrastructure/services/useAxiosExtension";
+
 import {
   DatasetRepository,
   RecordRepository,
@@ -15,6 +23,11 @@ import {
   AgentRepository,
   OAuthRepository,
   EnvironmentRepository,
+  WorkspaceRepository,
+  AuthRepository,
+  UserRepository,
+  HubRepository,
+  JobRepository,
 } from "@/v1/infrastructure/repositories";
 
 import { useRole, useRoutes } from "@/v1/infrastructure/services";
@@ -25,6 +38,7 @@ import { useDatasets } from "@/v1/infrastructure/storage/DatasetsStorage";
 import { useMetrics } from "@/v1/infrastructure/storage/MetricsStorage";
 import { useDatasetSetting } from "@/v1/infrastructure/storage/DatasetSettingStorage";
 
+import { GetDatasetCreationUseCase } from "@/v1/domain/usecases/get-dataset-creation-use-case";
 import { GetDatasetsUseCase } from "@/v1/domain/usecases/get-datasets-use-case";
 import { GetDatasetByIdUseCase } from "@/v1/domain/usecases/get-dataset-by-id-use-case";
 import { GetDocumentByIdUseCase } from "@/v1/domain/usecases/get-document-by-id-use-case";
@@ -47,19 +61,27 @@ import { UpdateDatasetSettingUseCase } from "@/v1/domain/usecases/dataset-settin
 import { GetMetadataUseCase } from "@/v1/domain/usecases/get-metadata-use-case";
 import { GetDatasetVectorsUseCase } from "@/v1/domain/usecases/get-dataset-vectors-use-case";
 import { UpdateVectorSettingUseCase } from "@/v1/domain/usecases/dataset-setting/update-vector-setting-use-case";
-import { GetDatasetQuestionsFilterUseCase } from "~/v1/domain/usecases/get-dataset-questions-filter-use-case";
+import { GetDatasetQuestionsFilterUseCase } from "@/v1/domain/usecases/get-dataset-questions-filter-use-case";
 import { GetDatasetSuggestionsAgentsUseCase } from "@/v1/domain/usecases/get-dataset-suggestions-agents-use-case";
 import { UpdateMetadataSettingUseCase } from "@/v1/domain/usecases/dataset-setting/update-metadata-setting-use-case";
 import { OAuthLoginUseCase } from "@/v1/domain/usecases/oauth-login-use-case";
 import { GetEnvironmentUseCase } from "@/v1/domain/usecases/get-environment-use-case";
+import { GetWorkspacesUseCase } from "@/v1/domain/usecases/get-workspaces-use-case";
+import { GetDatasetQuestionsGroupedUseCase } from "@/v1/domain/usecases/get-dataset-questions-grouped-use-case";
+import { LoadUserUseCase } from "@/v1/domain/usecases/load-user-use-case";
+import { CreateDatasetUseCase } from "@/v1/domain/usecases/create-dataset-use-case";
+import { GetFirstRecordFromHub } from "@/v1/domain/usecases/get-first-record-from-hub";
+import { AuthLoginUseCase } from "@/v1/domain/usecases/auth-login-use-case";
 
 export const loadDependencyContainer = (context: Context) => {
-  const useAxios = () => context.$axios;
-  const useStore = () => context.store;
+  const useAxios = useAxiosExtension(() => context.$axios);
   const useAuth = () => context.$auth;
 
   const dependencies = [
-    register(DatasetRepository).withDependencies(useAxios, useStore).build(),
+    register(UpdateMetricsEventHandler).build(),
+    register(UpdateTeamProgressEventHandler).build(),
+    register(HubRepository).withDependency(useAxios).build(),
+    register(DatasetRepository).withDependency(useAxios).build(),
     register(RecordRepository).withDependency(useAxios).build(),
     register(DocumentRepository).withDependency(useAxios).build(),
     register(QuestionRepository).withDependency(useAxios).build(),
@@ -68,12 +90,19 @@ export const loadDependencyContainer = (context: Context) => {
     register(MetadataRepository).withDependency(useAxios).build(),
     register(VectorRepository).withDependency(useAxios).build(),
     register(AgentRepository).withDependency(useAxios).build(),
+    register(WorkspaceRepository).withDependency(useAxios).build(),
+    register(JobRepository).withDependency(useAxios).build(),
+
+    register(OAuthRepository).withDependencies(useAxios, useRoutes).build(),
     register(EnvironmentRepository).withDependency(useAxios).build(),
-    register(OAuthRepository)
-      .withDependencies(useAxios, useRoutes, useAuth)
-      .build(),
+    register(AuthRepository).withDependency(useAxios).build(),
+    register(UserRepository).withDependency(useAxios).build(),
+
+    register(GetDatasetCreationUseCase).withDependency(HubRepository).build(),
 
     register(DeleteDatasetUseCase).withDependency(DatasetRepository).build(),
+
+    register(GetWorkspacesUseCase).withDependency(WorkspaceRepository).build(),
 
     register(GetDatasetsUseCase)
       .withDependencies(DatasetRepository, useDatasets)
@@ -88,7 +117,7 @@ export const loadDependencyContainer = (context: Context) => {
       .build(),
 
     register(GetDatasetProgressUseCase)
-      .withDependency(DatasetRepository)
+      .withDependencies(DatasetRepository, useTeamProgress)
       .build(),
 
     register(GetLLMExtractionUseCase)
@@ -108,8 +137,17 @@ export const loadDependencyContainer = (context: Context) => {
       )
       .build(),
 
+    register(GetUserMetricsUseCase)
+      .withDependencies(MetricsRepository, useMetrics)
+      .build(),
+
     register(LoadRecordsToAnnotateUseCase)
-      .withDependencies(GetRecordsByCriteriaUseCase, useRecords)
+      .withDependencies(
+        GetRecordsByCriteriaUseCase,
+        GetDatasetProgressUseCase,
+        GetUserMetricsUseCase,
+        useRecords
+      )
       .build(),
 
     register(GetFieldsUseCase).withDependency(FieldRepository).build(),
@@ -133,10 +171,6 @@ export const loadDependencyContainer = (context: Context) => {
         RecordRepository,
         useEventDispatcher
       )
-      .build(),
-
-    register(GetUserMetricsUseCase)
-      .withDependencies(MetricsRepository, useMetrics)
       .build(),
 
     register(GetDatasetSettingsUseCase)
@@ -177,6 +211,10 @@ export const loadDependencyContainer = (context: Context) => {
       .withDependency(QuestionRepository)
       .build(),
 
+    register(GetDatasetQuestionsGroupedUseCase)
+      .withDependency(QuestionRepository)
+      .build(),
+
     register(GetDatasetSuggestionsAgentsUseCase)
       .withDependency(AgentRepository)
       .build(),
@@ -185,7 +223,27 @@ export const loadDependencyContainer = (context: Context) => {
       .withDependency(EnvironmentRepository)
       .build(),
 
-    register(OAuthLoginUseCase).withDependency(OAuthRepository).build(),
+    register(LoadUserUseCase).withDependencies(useAuth, UserRepository).build(),
+
+    register(OAuthLoginUseCase)
+      .withDependencies(useAuth, OAuthRepository, LoadUserUseCase)
+      .build(),
+
+    register(AuthLoginUseCase)
+      .withDependencies(useAuth, AuthRepository, LoadUserUseCase)
+      .build(),
+
+    register(CreateDatasetUseCase)
+      .withDependencies(
+        DatasetRepository,
+        WorkspaceRepository,
+        QuestionRepository,
+        FieldRepository,
+        MetadataRepository
+      )
+      .build(),
+
+    register(GetFirstRecordFromHub).withDependency(HubRepository).build(),
   ];
 
   Container.register(dependencies);

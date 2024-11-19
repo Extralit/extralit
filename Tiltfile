@@ -6,12 +6,11 @@ version_settings(constraint='>=0.23.4')
 allow_k8s_contexts(k8s_context())
 print("Using context:", k8s_context())
 
-# Read the ENV environment variable
+# User-provided environment variables
 ENV = str(local('echo $ENV')).strip() or 'dev'
 USERS_DB = str(local('echo $USERS_DB')).strip()
 DOCKER_REPO = str(local('echo $DOCKER_REPO')).strip() or 'localhost:5005'
 
-# Inform users about the environment variables
 ARGILLA_DATABASE_URL = str(local('echo $ARGILLA_DATABASE_URL')).strip()
 if ARGILLA_DATABASE_URL:
     print("Using external database with ARGILLA_DATABASE_URL envvar, skipping `main-db` deployment")
@@ -51,8 +50,8 @@ k8s_resource(
 )
 
 # PostgreSQL is the database for argilla-server
+helm_repo('bitnami', 'https://charts.bitnami.com/bitnami', labels=['helm'], resource_name='bitnami-helm')
 if not ARGILLA_DATABASE_URL:
-    helm_repo('bitnami', 'https://charts.bitnami.com/bitnami', labels=['helm'], resource_name='postgres-helm')
     helm_resource(
         name='main-db', 
         chart='bitnami/postgresql', 
@@ -61,8 +60,24 @@ if not ARGILLA_DATABASE_URL:
             '--values=examples/deployments/k8s/helm/postgres-helm.yaml'],
         port_forwards=['5432'],
         labels=['argilla-server'],
-        resource_deps=['postgres-helm'],
+        resource_deps=['bitnami-helm'],
     )
+
+# Add Redis deployment
+helm_repo('bitnami-redis', 'https://charts.bitnami.com/bitnami', labels=['helm'], resource_name='redis-helm')
+helm_resource(
+    name='redis',
+    chart='bitnami/redis',
+    flags=[
+        '--version=17.11.3',
+        '--set=auth.enabled=false',
+        '--set=architecture=standalone',
+        '--set=master.persistence.size=1Gi'
+    ],
+    port_forwards=['6379'],
+    labels=['argilla-server'],
+    resource_deps=['redis-helm', 'bitnami-helm']
+)
 
 # argilla-server is the web backend (FastAPI + SQL database)
 if not os.path.exists('argilla-frontend/dist'):
@@ -75,15 +90,13 @@ docker_build(
     "{DOCKER_REPO}/argilla-server".format(DOCKER_REPO=DOCKER_REPO),
     context='argilla-server/',
     build_args={'ENV': ENV, 'USERS_DB': USERS_DB},
-    dockerfile='argilla-server/docker/server/argilla_server.dockerfile',
-    ignore=['examples/', 'argilla/', '.*', '**/__pycache__', '*.pyc'],
+    dockerfile='argilla-server/docker/server/dev.argilla_server.dockerfile',
+    ignore=['examples/', 'argilla/', '.*', '**/__pycache__', '*.pyc', 'CHANGELOG.md'],
     live_update=[
         # Sync the source code to the container
         sync('argilla-server/src/', '/home/argilla/src/'),
         sync('argilla-server/docker/server/scripts/start_argilla_server.sh', '/home/argilla/'),
         sync('argilla-server/pyproject.toml', '/home/argilla/pyproject.toml'),
-        # Restart the server to pick up code changes
-        run('/bin/bash start_argilla_server.sh', trigger='argilla-server/docker/server/scripts/start_argilla_server.sh'),
     ]
 )
 argilla_server_k8s_yaml = read_yaml_stream('examples/deployments/k8s/argilla-server-deployment.yaml')
@@ -99,9 +112,9 @@ for o in argilla_server_k8s_yaml:
                 ])
             if S3_ENDPOINT and S3_ACCESS_KEY and S3_SECRET_KEY:
                 container['env'].extend([
-                    {'name': 'S3_ENDPOINT', 'value': S3_ENDPOINT},
-                    {'name': 'S3_ACCESS_KEY', 'value': S3_ACCESS_KEY},
-                    {'name': 'S3_SECRET_KEY', 'value': S3_SECRET_KEY}
+                    {'name': 'ARGILLA_S3_ENDPOINT', 'value': S3_ENDPOINT},
+                    {'name': 'ARGILLA_S3_ACCESS_KEY', 'value': S3_ACCESS_KEY},
+                    {'name': 'ARGILLA_S3_SECRET_KEY', 'value': S3_SECRET_KEY}
                 ])
 
 k8s_yaml([
@@ -114,7 +127,7 @@ k8s_resource(
     'argilla-server',
     port_forwards=['6900'],
     labels=['argilla-server'],
-    resource_deps=['main-db', 'elasticsearch'] if not ARGILLA_DATABASE_URL else ['elasticsearch'],
+    resource_deps=['redis', 'main-db', 'elasticsearch'] if not ARGILLA_DATABASE_URL else ['redis', 'elasticsearch'],
 )
 
 # Langfuse Observability server

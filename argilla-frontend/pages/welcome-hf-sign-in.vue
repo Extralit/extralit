@@ -2,31 +2,19 @@
   <main class="hf-login">
     <BaseLoading v-if="!isHuggingFaceConfigured" />
     <div v-else class="hf-login__hero">
-      <BrandLogo class="hf-login__logo" />
+      <BrandLogo color="dark" class="hf-login__logo" />
       <div class="hf-login__hero__content">
         <h1 class="hf-login__title" v-text="$t('login.hf.title', { space })" />
-        <h2
-          class="hf-login__subtitle"
-          v-html="$t('login.hf.subtitle', { user })"
-        />
+        <h2 class="hf-login__subtitle" v-html="$t('login.hf.subtitle', { user })" />
         <div class="hf-login__buttons">
-          <HuggingFaceButton
-            class="hf-login__button--hugging-face"
-            @click="authorize"
-          />
-          <BaseButton class="hf-login__button" @click="goToLogin">{{
-            $t("button.sign_in_with_username")
-          }}</BaseButton>
+          <HuggingFaceButton class="hf-login__button--hugging-face" @click="authorize" />
+          <BaseButton class="hf-login__button" @click="goToLogin">{{ $t("button.sign_in_with_username") }}</BaseButton>
         </div>
       </div>
     </div>
 
     <div class="hf-login__img-container">
-      <img
-        class="hf-login__img"
-        src="images/welcome-hf-sign-in-ss.png"
-        alt="argilla UI"
-      />
+      <img class="hf-login__img" src="images/welcome-hf-sign-in-ss.png" alt="argilla UI" />
     </div>
   </main>
 </template>
@@ -74,13 +62,14 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-$bg-color: #f5e3db;
-$gradient-bg-color: linear-gradient(178.31deg, #ffe5d9 1.36%, #ffd1bc 109.14%);
+$bg-color: var(--bg-auth);
+$gradient-bg-color: var(--bg-auth-gradient);
 .hf-login {
   display: flex;
   flex-direction: column;
   height: 100vh;
   background: $bg-color;
+  color: var(--color-black);
   &:before {
     content: "";
     position: fixed;
@@ -153,7 +142,7 @@ $gradient-bg-color: linear-gradient(178.31deg, #ffe5d9 1.36%, #ffd1bc 109.14%);
     justify-content: center;
     transition: opacity 0.2s ease-in;
     @include font-size(16px);
-    color: $black-87;
+    color: var(--color-black);
     &:hover {
       opacity: 0.8;
       transition: opacity 0.2s ease-in;
@@ -175,7 +164,7 @@ $gradient-bg-color: linear-gradient(178.31deg, #ffe5d9 1.36%, #ffd1bc 109.14%);
     max-width: min(400px, calc(100% - $base-space * 4));
     padding: $base-space;
     margin-inline: auto;
-    background: palette(white);
+    background: var(--color-white);
     border-radius: 18px;
     @include media(">tablet") {
       position: relative;

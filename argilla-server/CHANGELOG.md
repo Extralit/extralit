@@ -14,7 +14,196 @@ These are the section headers that we use:
 * "Security" in case of vulnerabilities.
 -->
 
-## [v0.2.3](https://github.com/extralit/extralit/compare/v0.2.2...v0.2.3)
+## [Extralit] [0.3.0](https://github.com/extralit/extralit/compare/v0.2.3...v0.3.0)
+
+### Added
+- Added use_table option to TextFieldSetting.
+- Added redis service to the tilt k8s deployment for argilla-server.
+- Improved argillar-server and extralit-server dockerfile multi-stage build.
+
+### Changed
+- Changed envvars in Tilt k8s deployment at `examples/deployments/k8s/argilla-server-deployment.yaml`
+
+### Fixed
+- Fixed elasticsearch reindexing errors with dynamic schema.
+
+## [Argilla] [2.4.1](https://github.com/argilla-io/argilla/compare/v2.4.0...v2.4.1)
+
+### Fixed
+
+- Fixed error so now `_touch_dataset_last_activity_at` function is not updating dataset's `updated_at` column. ([#5656](https://github.com/argilla-io/argilla/pull/5656))
+
+## [Argilla] [2.4.0](https://github.com/argilla-io/argilla/compare/v2.3.1...v2.4.0)
+
+### Added
+
+- Added new `POST /api/v1/datasets/:dataset_id/import` to import datasets from Hugging Face as a background job. ([#5572](https://github.com/argilla-io/argilla/pull/5572))
+- Added new `metadata` attribute for endpoints getting, creating and updating Datasets so now it is possible to store metadata associated to a dataset. ([#5586](https://github.com/argilla-io/argilla/pull/5586))
+- Added new validation to avoid the creation of records with empty `fields` attributes. ([#5639](https://github.com/argilla-io/argilla/pull/5639))
+
+### Changed
+
+- Now it is possible to publish a dataset without required fields. Allowing being published with at least one field (required or not). ([#5569](https://github.com/argilla-io/argilla/pull/5569))
+- Changed supported values for terms metadata options to accept other than strings values. ([#5589](https://github.com/argilla-io/argilla/pull/5589))
+- Changed Helm chart to allow the use of a default storage class when none is explicitly specified. This ensures compatibility with environments like k3d that do not have a 'standard' storage class by default.
+
+### Removed
+
+- Removed name pattern restrictions for Fields, Questions, Metadata Properties and Vector Settings. ([#5573](https://github.com/argilla-io/argilla/pull/5573))
+- Removed name pattern validation for Datasets, Workspaces and Users. ([#5575](https://github.com/argilla-io/argilla/pull/5575))
+
+### Fixed
+
+- Fixed wrong field content conversion for empty text and partial chat fields. ([#5600](https://github.com/argilla-io/argilla/pull/5600))
+
+## [Argilla] [2.3.1](https://github.com/argilla-io/argilla/compare/v2.3.0...v2.3.1)
+
+### Fixed
+
+- Fixed error listing current user datasets and not filtering by current user id. ([#5583](https://github.com/argilla-io/argilla/pull/5583))
+
+## [Argilla] [2.3.0](https://github.com/argilla-io/argilla/compare/v2.2.0...v2.3.0)
+
+### Added
+
+- Added support for `CustomField`. ([#5422](https://github.com/argilla-io/argilla/pull/5422))
+- Added helm chart for argilla. ([#5512](https://github.com/argilla-io/argilla/pull/5512))
+
+### Fixed
+
+- Fixed error when creating default user with existing default workspace. ([#5558](https://github.com/argilla-io/argilla/pull/5558))
+- Fixed the deployment yaml used to create a new Argilla server in K8s. Added `USERNAME` and `PASSWORD` to the environment variables of pod template. ([#5434](https://github.com/argilla-io/argilla/issues/5434))
+
+## [Argilla] [2.2.0](https://github.com/argilla-io/argilla/compare/v2.1.0...v2.2.0)
+
+- Added filtering by `name`, and `status` support to endpoint `GET /api/v1/me/datasets`. ([#5374](https://github.com/argilla-io/argilla/pull/5374))
+- Added [`rq`](https://python-rq.org) library to process background jobs using [Redis](https://redis.io) as a dependency. ([#5432](https://github.com/argilla-io/argilla/pull/5432))
+- Added a new background job to update records status when a dataset distribution strategy is updated. ([#5432](https://github.com/argilla-io/argilla/pull/5432))
+- Added new `chat` type dataset field supporting chat-like conversations. ([#5376](https://github.com/argilla-io/argilla/pull/5376))
+
+### Fixed
+
+- Fixed error when computing dataset progress by users without responses related to pending or completed records. ([#5484](https://github.com/argilla-io/argilla/pull/5484))
+
+## [Argilla] [2.3.0](https://github.com/argilla-io/argilla/compare/v2.2.0...v2.3.0)
+
+### Added
+
+- Added support for `CustomField`. ([#5422](https://github.com/argilla-io/argilla/pull/5422))
+- Added helm chart for argilla. ([#5512](https://github.com/argilla-io/argilla/pull/5512))
+
+### Fixed
+
+- Fixed error when creating default user with existing default workspace. ([#5558](https://github.com/argilla-io/argilla/pull/5558))
+- Fixed the deployment yaml used to create a new Argilla server in K8s. Added `USERNAME` and `PASSWORD` to the environment variables of pod template. ([#5434](https://github.com/argilla-io/argilla/issues/5434))
+
+## [Argilla] [2.2.0](https://github.com/argilla-io/argilla/compare/v2.1.0...v2.2.0)
+
+- Added filtering by `name`, and `status` support to endpoint `GET /api/v1/me/datasets`. ([#5374](https://github.com/argilla-io/argilla/pull/5374))
+- Added [`rq`](https://python-rq.org) library to process background jobs using [Redis](https://redis.io) as a dependency. ([#5432](https://github.com/argilla-io/argilla/pull/5432))
+- Added a new background job to update records status when a dataset distribution strategy is updated. ([#5432](https://github.com/argilla-io/argilla/pull/5432))
+- Added new `chat` type dataset field supporting chat-like conversations. ([#5376](https://github.com/argilla-io/argilla/pull/5376))
+
+### Fixed
+
+- Fixed error when computing dataset progress by users without responses related to pending or completed records. ([#5484](https://github.com/argilla-io/argilla/pull/5484))
+
+## [Argilla] [2.1.0](https://github.com/argilla-io/argilla/compare/v2.0.0...v2.1.0)
+
+### Added
+
+- Added new `image` type dataset field supporting URLs and Data URLs. ([#5279](https://github.com/argilla-io/argilla/pull/5279))
+- Added new endpoint `GET /api/v1/datsets/:dataset_id/users/progress` to compute the users progress. ([#5367](https://github.com/argilla-io/argilla/pull/5367))
+- Added advanced dsl for text searches. ([#5222](https://github.com/argilla-io/argilla/pull/5222))
+
+### Changed
+
+- Change the telemetry module to use the HuggingFace telemetry client ([#5218](https://github.com/argilla-io/argilla/pull/5218))
+
+### Fixed
+
+- Fixed SQLite connection settings not working correctly due to an outdated conditional. ([#5149](https://github.com/argilla-io/argilla/pull/5149))
+- Fixed errors when `allowed_workspaces` in `.oauth.yaml` file is empty. ([#5273](https://github.com/argilla-io/argilla/pull/5273))
+- Fixed errors when sorting with OpenSearch search engine. ([#5297](https://github.com/argilla-io/argilla/pull/5297))
+- Fixed response duplicate checking ([#5357](https://github.com/argilla-io/argilla/issues/5357))
+
+> [!IMPORTANT]
+> This version includes changes related to the search index. So, a reindex is needed.
+
+### Removed
+
+- [breaking] Removed deprecated endpoint `POST /api/v1/datasets/:dataset_id/records`. ([#5206](https://github.com/argilla-io/argilla/pull/5206))
+- [breaking] Removed deprecated endpoint `PATCH /api/v1/datasets/:dataset_id/records`. ([#5206](https://github.com/argilla-io/argilla/pull/5206))
+- [breaking] Removed `GET /api/v1/me/datasets/:dataset_id/records` endpoint. ([#5153](https://github.com/argilla-io/argilla/pull/5153))
+- [breaking] Removed support for `response_status` query param for endpoints `POST /api/v1/me/datasets/:dataset_id/records/search` and `POST /api/v1/datasets/:dataset_id/records/search`. ([#5163](https://github.com/argilla-io/argilla/pull/5163))
+- [breaking] Removed support for `metadata` query param for endpoints `POST /api/v1/me/datasets/:dataset_id/records/search` and `POST /api/v1/datasets/:dataset_id/records/search`. ([#5156](https://github.com/argilla-io/argilla/pull/5156))
+- [breaking] Removed support for `sort_by` query param for endpoints `POST /api/v1/me/datasets/:dataset_id/records/search` and `POST /api/v1/datasets/:dataset_id/records/search`. ([#5166](https://github.com/argilla-io/argilla/pull/5166))
+- Removed argilla quickstart docker image (Older versions are still available). ([#5307](https://github.com/argilla-io/argilla/pull/5307))
+
+## [Argilla] [2.0.0rc1](https://github.com/argilla-io/argilla/compare/v1.29.0...v2.0.0rc1)
+
+### Removed
+
+- Removed all API v0 endpoints. ([#4852](https://github.com/argilla-io/argilla/pull/4852))
+
+### Fixed
+
+- Fixed error when updating records in bulk with wrong `external_id` but correct record `id`. ([#5014](https://github.com/argilla-io/argilla/pull/5014))
+- Fixed error when searching all record response values. ([#5003](https://github.com/argilla-io/argilla/pull/5003))
+
+## [Argilla] [2.0.0](https://github.com/argilla-io/argilla/compare/v2.0.0rc1...v2.0.0)
+
+> [!IMPORTANT]
+> This version includes changes related to the search index. So, a reindex is needed.
+
+### Added
+
+- Added support to specify `distribution` attribute when creating a dataset. ([#5013](https://github.com/argilla-io/argilla/pull/5013))
+- Added support to change `distribution` attribute when updating a dataset. ([#5028](https://github.com/argilla-io/argilla/pull/5028))
+- Added new `status` column to `records` table. ([#5132](https://github.com/argilla-io/argilla/pull/5132))
+- Added new `ARGILLA_DATABASE_SQLITE_TIMEOUT` environment variable allowing to set transactions timeout for SQLite. ([#5213](https://github.com/argilla-io/argilla/pull/5213))
+- Added new `ARGILLA_DATABASE_POSTGRESQL_POOL_SIZE` environment variable allowing to set the number of connections to keep open inside the database connection pool. ([#5220](https://github.com/argilla-io/argilla/pull/5220))
+- Added new `ARGILLA_DATABASE_POSTGRESQL_MAX_OVERFLOW` environment variable allowing to set the number of connections that can be opened above and beyond the `ARGILLA_DATABASE_POSTGRESQL_POOL_SIZE` setting. ([#5220](https://github.com/argilla-io/argilla/pull/5220))
+- Added new `Server-Timing` header to all responses with the total time in milliseconds the server took to generate the response. ([#5239](https://github.com/argilla-io/argilla/pull/5239))
+- Added `REINDEX_DATASETS` environment variable to Argilla server Docker image. ([#5268](https://github.com/argilla-io/argilla/pull/5268))
+- Added `argilla-hf-spaces` docker image for running Argilla server in HF spaces. ([#5307](https://github.com/argilla-io/argilla/pull/5307))
+
+### Changed
+
+- Change `responses` table to delete rows on cascade when a user is deleted. ([#5126](https://github.com/argilla-io/argilla/pull/5126))
+- [breaking] Change `GET /api/v1/datasets/:dataset_id/progress` endpoint to support new dataset distribution task. ([#5140](https://github.com/argilla-io/argilla/pull/5140))
+- [breaking] Change `GET /api/v1/me/datasets/:dataset_id/metrics` endpoint to support new dataset distribution task. ([#5140](https://github.com/argilla-io/argilla/pull/5140))
+- Change search index mapping for responses (reindex is required). ([#5228](https://github.com/argilla-io/argilla/pull/5228))
+
+### Fixed
+
+- Fixed SQLite connection settings not working correctly due to an outdated conditional. ([#5149](https://github.com/argilla-io/argilla/pull/5149))
+- Fixed errors when `allowed_workspaces` in `.oauth.yaml` file is empty. ([#5273](https://github.com/argilla-io/argilla/pull/5273))
+- Fixed errors when sorting with OpenSearch search engine. ([#5297](https://github.com/argilla-io/argilla/pull/5297))
+
+### Removed
+
+- [breaking] Removed deprecated endpoint `POST /api/v1/datasets/:dataset_id/records`. ([#5206](https://github.com/argilla-io/argilla/pull/5206))
+- [breaking] Removed deprecated endpoint `PATCH /api/v1/datasets/:dataset_id/records`. ([#5206](https://github.com/argilla-io/argilla/pull/5206))
+- [breaking] Removed `GET /api/v1/me/datasets/:dataset_id/records` endpoint. ([#5153](https://github.com/argilla-io/argilla/pull/5153))
+- [breaking] Removed support for `response_status` query param for endpoints `POST /api/v1/me/datasets/:dataset_id/records/search` and `POST /api/v1/datasets/:dataset_id/records/search`. ([#5163](https://github.com/argilla-io/argilla/pull/5163))
+- [breaking] Removed support for `metadata` query param for endpoints `POST /api/v1/me/datasets/:dataset_id/records/search` and `POST /api/v1/datasets/:dataset_id/records/search`. ([#5156](https://github.com/argilla-io/argilla/pull/5156))
+- [breaking] Removed support for `sort_by` query param for endpoints `POST /api/v1/me/datasets/:dataset_id/records/search` and `POST /api/v1/datasets/:dataset_id/records/search`. ([#5166](https://github.com/argilla-io/argilla/pull/5166))
+- Removed argilla quickstart docker image (Older versions are still available). ([#5307](https://github.com/argilla-io/argilla/pull/5307))
+
+## [Argilla] [2.0.0rc1](https://github.com/argilla-io/argilla/compare/v1.29.0...v2.0.0rc1)
+
+### Removed
+
+- Removed all API v0 endpoints. ([#4852](https://github.com/argilla-io/argilla/pull/4852))
+
+### Fixed
+
+- Fixed error when updating records in bulk with wrong `external_id` but correct record `id`. ([#5014](https://github.com/argilla-io/argilla/pull/5014))
+- Fixed error when searching all record response values. ([#5003](https://github.com/argilla-io/argilla/pull/5003))
+
+
+## [Extralit] [v0.2.3](https://github.com/extralit/extralit/compare/v0.2.2...v0.2.3)
 
 ### Changed
 - Added FilePolicy allow get and list all files for owners at `/api/v1/files` endpoint.
@@ -22,14 +211,14 @@ These are the section headers that we use:
 ### Fixed
 - Error messages when attempting to access files that doesn't have an existing bucket.
 
-## [v0.2.2](https://github.com/extralit/extralit/compare/v0.2.1...v0.2.2)
+## [Extralit] [v0.2.2](https://github.com/extralit/extralit/compare/v0.2.1...v0.2.2)
 
 ### Fixed
 - Fixed the k8s-tilt devcontainer for extralit
 - Fixed the weaviate url for /examples/deployments/k8s/extralit-deployment.yaml 
 
 
-## [v0.2.1](https://github.com/extralit/extralit/compare/v0.2.0...v0.2.1)
+## [Extralit] [v0.2.1](https://github.com/extralit/extralit/compare/v0.2.0...v0.2.1)
 
 ### Added
 - Pytest and python env setup in GH Codespaces devcontainer
@@ -50,7 +239,7 @@ These are the section headers that we use:
 - Added Workspace relationship Document to enable cascade delete
 
 
-## [v0.2.0](https://github.com/extralit/extralit/compare/v1.27.0a...v0.2.0)
+## [Extralit] [v0.2.0](https://github.com/extralit/extralit/compare/v1.27.0a...v0.2.0)
 
 ### Added
 - Added use_table option to `QuestionSetting`.
@@ -65,7 +254,7 @@ These are the section headers that we use:
 - Updated pip dependencies for Python tests.
 
 
-## [1.29.0](https://github.com/argilla-io/argilla/compare/v1.28.0...v1.29.0)
+## [Argilla] [1.29.0](https://github.com/argilla-io/argilla/compare/v1.28.0...v1.29.0)
 
 ### Added
 
@@ -150,7 +339,7 @@ These are the section headers that we use:
 
 > [!IMPORTANT]
 > This version include changes related to the search index. So, a reindex is needed.
-> Visit the [docs](https://docs.argilla.io/en/latest/getting_started/installation/configurations/database_migrations.html#feedback-datasets) for more info.
+> Visit the [docs](https://docs.v1.argilla.io/en/latest/getting_started/installation/configurations/database_migrations.html#feedback-datasets) for more info.
 
 ### Added
 
@@ -161,8 +350,8 @@ These are the section headers that we use:
 
 ### Changed
 
-- Changed indexing responses for search to use user `id` instead of `username`. **[Reindex needed](https://docs.argilla.io/en/latest/getting_started/installation/configurations/database_migrations.html#feedback-datasets)** ([#26](https://github.com/argilla-io/argilla-server/pull/26))
-- Changed search index mappings definition to optimize the number of fields. **[Reindex needed](https://docs.argilla.io/en/latest/getting_started/installation/configurations/database_migrations.html#feedback-datasets)** ([#31](https://github.com/argilla-io/argilla-server/pull/31))
+- Changed indexing responses for search to use user `id` instead of `username`. **[Reindex needed](https://docs.v1.argilla.io/en/latest/getting_started/installation/configurations/database_migrations.html#feedback-datasets)** ([#26](https://github.com/argilla-io/argilla-server/pull/26))
+- Changed search index mappings definition to optimize the number of fields. **[Reindex needed](https://docs.v1.argilla.io/en/latest/getting_started/installation/configurations/database_migrations.html#feedback-datasets)** ([#31](https://github.com/argilla-io/argilla-server/pull/31))
 
 ### Removed
 
@@ -186,7 +375,7 @@ These are the section headers that we use:
 
 - Fixed problems using `ARGILLA_BASE_URL` environment variable. ([#14](https://github.com/argilla-io/argilla-server/pull/14))
 
-## [1.23.0](https://github.com/argilla-io/argilla/compare/v1.22.0...v1.23.0)
+## [Argilla] [1.23.0](https://github.com/argilla-io/argilla/compare/v1.22.0...v1.23.0)
 
 ### Added
 
@@ -221,7 +410,7 @@ These are the section headers that we use:
 
 - Fixed keyboard shortcut for label questions. ([#4530](https://github.com/argilla-io/argilla/pull/4530))
 
-## [1.22.0](https://github.com/argilla-io/argilla/compare/v1.21.0...v1.22.0)
+## [Argilla] [1.22.0](https://github.com/argilla-io/argilla/compare/v1.21.0...v1.22.0)
 
 ### Added
 
@@ -252,7 +441,7 @@ These are the section headers that we use:
 
 - The deprecated `python -m argilla database` command has been removed. ([#4472](https://github.com/argilla-io/argilla/pull/4472))
 
-## [1.21.0](https://github.com/argilla-io/argilla/compare/v1.20.0...v1.21.0)
+## [Argilla] [1.21.0](https://github.com/argilla-io/argilla/compare/v1.20.0...v1.21.0)
 
 ### Added
 
@@ -283,7 +472,7 @@ These are the section headers that we use:
 
 - Removed `draft` auto save for annotation view ([#4334](https://github.com/argilla-io/argilla/pull/4334))
 
-## [1.20.0](https://github.com/argilla-io/argilla/compare/v1.19.0...v1.20.0)
+## [Argilla] [1.20.0](https://github.com/argilla-io/argilla/compare/v1.19.0...v1.20.0)
 
 ### Added
 
@@ -316,7 +505,7 @@ These are the section headers that we use:
 - Updated `push_to_argilla` to print `repr` of the pushed `RemoteFeedbackDataset` after push and changed `show_progress` to True by default. ([#4223](https://github.com/argilla-io/argilla/pull/4223))
 - Changed `models` and `tokenizer` for the `ArgillaTrainer` to explicitly allow for changing them when needed. ([#4214](https://github.com/argilla-io/argilla/pull/4214)).
 
-## [1.19.0](https://github.com/argilla-io/argilla/compare/v1.18.0...v1.19.0)
+## [Argilla] [1.19.0](https://github.com/argilla-io/argilla/compare/v1.18.0...v1.19.0)
 
 ### Added
 
@@ -372,7 +561,7 @@ These are the section headers that we use:
 - Fixed passing user_id when getting records by id. (Commit [98c7927](https://github.com/argilla-io/argilla/commit/98c792757a21da05bac89b7f625e7e5792ad59f9))
 - Fixed non-basic tags serialized when pushing a dataset to the Hugging Face Hub. Closes [#4089](https://github.com/argilla-io/argilla/issues/4089) ([#4200](https://github.com/argilla-io/argilla/pull/4200))
 
-## [1.18.0](https://github.com/argilla-io/argilla/compare/v1.17.0...v1.18.0)
+## [Argilla] [1.18.0](https://github.com/argilla-io/argilla/compare/v1.17.0...v1.18.0)
 
 ### Added
 
@@ -413,7 +602,7 @@ These are the section headers that we use:
 
 - Fixed response schemas to allow `values` to be `None` i.e. when a record is discarded the `response.values` are set to `None`. ([#3926](https://github.com/argilla-io/argilla/pull/3926))
 
-## [1.17.0](https://github.com/argilla-io/argilla/compare/v1.16.0...v1.17.0)
+## [Argilla] [1.17.0](https://github.com/argilla-io/argilla/compare/v1.16.0...v1.17.0)
 
 ### Added
 
@@ -446,7 +635,7 @@ These are the section headers that we use:
 
 - Function `rg.configure_dataset` is deprecated in favour of `rg.configure_dataset_settings`. The former will be removed in version 1.19.0
 
-## [1.16.0](https://github.com/argilla-io/argilla/compare/v1.15.1...v1.16.0)
+## [Argilla] [1.16.0](https://github.com/argilla-io/argilla/compare/v1.15.1...v1.16.0)
 
 ### Added
 
@@ -501,7 +690,7 @@ These are the section headers that we use:
 - Fixed Python 3.11 compatibility issue with `/api/datasets` endpoints due to the `TaskType` enum replacement in the endpoint URL ([#3769](https://github.com/argilla-io/argilla/pull/3769)).
 - Fixed `RankingValueSchema` and `FeedbackRankingValueModel` schemas to allow `rank=None` when `status=draft` ([#3781](https://github.com/argilla-io/argilla/pull/3781)).
 
-## [1.15.1](https://github.com/argilla-io/argilla/compare/v1.15.0...v1.15.1)
+## [Argilla] [1.15.1](https://github.com/argilla-io/argilla/compare/v1.15.0...v1.15.1)
 
 ### Fixed
 
@@ -509,7 +698,7 @@ These are the section headers that we use:
 - Fixed `Text component` now you need to press Escape to exit the text area ([#3733](https://github.com/argilla-io/argilla/pull/3733))
 - Fixed `SearchEngine` was creating the same number of primary shards and replica shards for each `FeedbackDataset` ([#3736](https://github.com/argilla-io/argilla/pull/3736)).
 
-## [1.15.0](https://github.com/argilla-io/argilla/compare/v1.14.1...v1.15.0)
+## [Argilla] [1.15.0](https://github.com/argilla-io/argilla/compare/v1.14.1...v1.15.0)
 
 ### Added
 
@@ -554,7 +743,7 @@ These are the section headers that we use:
 - Removed `set_suggestions` in favor of `update(suggestions=...)` for both `FeedbackRecord` and `RemoteFeedbackRecord`, as all the updates of any "updateable" attribute of a record will go through `update` instead ([#3663](https://github.com/argilla-io/argilla/pull/3663)).
 - Remove unused `owner` attribute for client Dataset data model ([#3665](https://github.com/argilla-io/argilla/pull/3665))
 
-## [1.14.1](https://github.com/argilla-io/argilla/compare/v1.14.0...v1.14.1)
+## [Argilla] [1.14.1](https://github.com/argilla-io/argilla/compare/v1.14.0...v1.14.1)
 
 ### Fixed
 
@@ -564,7 +753,7 @@ These are the section headers that we use:
 
 - Fixed `settings` could not be provided when updating a `rating` or `ranking` question ([#3552](https://github.com/argilla-io/argilla/pull/3552)).
 
-## [1.14.0](https://github.com/argilla-io/argilla/compare/v1.13.3...v1.14.0)
+## [Argilla] [1.14.0](https://github.com/argilla-io/argilla/compare/v1.13.3...v1.14.0)
 
 ### Added
 
@@ -607,26 +796,26 @@ These are the section headers that we use:
 - After calling `FeedbackDataset.push_to_argilla`, calling `fetch_records` won't do anything since the records are lazily fetched from Argilla ([#3465](https://github.com/argilla-io/argilla/pull/3465)).
 - After calling `FeedbackDataset.push_to_argilla`, the Argilla ID is no longer stored in the attribute/property `argilla_id` but in `id` instead ([#3465](https://github.com/argilla-io/argilla/pull/3465)).
 
-## [1.13.3](https://github.com/argilla-io/argilla/compare/v1.13.2...v1.13.3)
+## [Argilla] [1.13.3](https://github.com/argilla-io/argilla/compare/v1.13.2...v1.13.3)
 
 ### Fixed
 
 - Fixed `ModuleNotFoundError` caused because the `argilla.utils.telemetry` module used in the `ArgillaTrainer` was importing an optional dependency not installed by default ([#3471](https://github.com/argilla-io/argilla/pull/3471)).
 - Fixed `ImportError` caused because the `argilla.client.feedback.config` module was importing `pyyaml` optional dependency not installed by default ([#3471](https://github.com/argilla-io/argilla/pull/3471)).
 
-## [1.13.2](https://github.com/argilla-io/argilla/compare/v1.13.1...v1.13.2)
+## [Argilla] [1.13.2](https://github.com/argilla-io/argilla/compare/v1.13.1...v1.13.2)
 
 ### Fixed
 
 - The `suggestion_type_enum` ENUM data type created in PostgreSQL didn't have any value ([#3445](https://github.com/argilla-io/argilla/pull/3445)).
 
-## [1.13.1](https://github.com/argilla-io/argilla/compare/v1.13.0...v1.13.1)
+## [Argilla] [1.13.1](https://github.com/argilla-io/argilla/compare/v1.13.0...v1.13.1)
 
 ### Fixed
 
 - Fix database migration for PostgreSQL (See [#3438](https://github.com/argilla-io/argilla/pull/3438))
 
-## [1.13.0](https://github.com/argilla-io/argilla/compare/v1.12.1...v1.13.0)
+## [Argilla] [1.13.0](https://github.com/argilla-io/argilla/compare/v1.12.1...v1.13.0)
 
 ### Added
 
@@ -649,7 +838,7 @@ These are the section headers that we use:
 - Added Telemetry support for `ArgillaTrainer` (closes [#3325](https://github.com/argilla-io/argilla/issues/3325))
 - `User.workspaces` is no longer an attribute but a property, and is calling `list_user_workspaces` to list all the workspace names for a given user ID ([#3334](https://github.com/argilla-io/argilla/pull/3334))
 - Renamed `FeedbackDatasetConfig` to `DatasetConfig` and export/import from YAML as default instead of JSON (just used internally on `push_to_huggingface` and `from_huggingface` methods of `FeedbackDataset`) ([#3326](https://github.com/argilla-io/argilla/pull/3326)).
-- The protected metadata fields support other than textual info - existing datasets must be reindex. See [docs](https://docs.argilla.io/en/latest/getting_started/installation/configurations/database_migrations.html#elasticsearch) for more detail (Closes [#3332](https://github.com/argilla-io/argilla/issues/3332)).
+- The protected metadata fields support other than textual info - existing datasets must be reindex. See [docs](https://docs.v1.argilla.io/en/latest/getting_started/installation/configurations/database_migrations.html#elasticsearch) for more detail (Closes [#3332](https://github.com/argilla-io/argilla/issues/3332)).
 - Updated `Dockerfile` parent image from `python:3.9.16-slim` to `python:3.10.12-slim` ([#3425](https://github.com/argilla-io/argilla/pull/3425)).
 - Updated `quickstart.Dockerfile` parent image from `elasticsearch:8.5.3` to `argilla/argilla-server:${ARGILLA_VERSION}` ([#3425](https://github.com/argilla-io/argilla/pull/3425)).
 
@@ -668,7 +857,7 @@ These are the section headers that we use:
 
 - Integer support for record id in text classification, token classification and text2text datasets.
 
-## [1.12.1](https://github.com/argilla-io/argilla/compare/v1.12.0...v1.12.1)
+## [Argilla] [1.12.1](https://github.com/argilla-io/argilla/compare/v1.12.0...v1.12.1)
 
 ### Fixed
 
@@ -676,7 +865,7 @@ These are the section headers that we use:
 - Resolved wrong import structure for `ArgillaTrainer` and `TrainingTaskMapping` (Closes [#3345](https://github.com/argilla-io/argilla/issues/3345))
 - Pin pydantic dependency to version < 2 (Closes [3348](https://github.com/argilla-io/argilla/issues/3348))
 
-## [1.12.0](https://github.com/argilla-io/argilla/compare/v1.11.0...v1.12.0)
+## [Argilla] [1.12.0](https://github.com/argilla-io/argilla/compare/v1.11.0...v1.12.0)
 
 ### Added
 
@@ -701,7 +890,7 @@ These are the section headers that we use:
 
 - Check available workspaces on Argilla on `rg.set_workspace` (Closes [#3262](https://github.com/argilla-io/argilla/issues/3262))
 
-## [1.11.0](https://github.com/argilla-io/argilla/compare/v1.10.0...v1.11.0)
+## [Argilla] [1.11.0](https://github.com/argilla-io/argilla/compare/v1.10.0...v1.11.0)
 
 ### Fixed
 
@@ -738,7 +927,7 @@ These are the section headers that we use:
 
 - As of Python 3.7 end-of-life (EOL) on 2023-06-27, Argilla will no longer support Python 3.7 ([#3188](https://github.com/argilla-io/argilla/pull/33188)). More information at https://peps.python.org/pep-0537/
 
-## [1.10.0](https://github.com/argilla-io/argilla/compare/v1.9.0...v1.10.0)
+## [Argilla] [1.10.0](https://github.com/argilla-io/argilla/compare/v1.9.0...v1.10.0)
 
 ### Added
 
@@ -762,7 +951,7 @@ These are the section headers that we use:
 - Resolved typos in the docs ([#3240](https://github.com/argilla-io/argilla/pull/3240)).
 - Fixed mention of master branch ([#3254](https://github.com/argilla-io/argilla/pull/3254)).
 
-## [1.9.0](https://github.com/argilla-io/argilla/compare/v1.8.0...v1.9.0)
+## [Argilla] [1.9.0](https://github.com/argilla-io/argilla/compare/v1.8.0...v1.9.0)
 
 ### Added
 
@@ -792,7 +981,7 @@ These are the section headers that we use:
 
 [#3126]: https://github.com/argilla-io/argilla/pull/3126
 
-## [1.8.0](https://github.com/argilla-io/argilla/compare/v1.7.0...v1.8.0)
+## [Argilla] [1.8.0](https://github.com/argilla-io/argilla/compare/v1.7.0...v1.8.0)
 
 ### Added
 
@@ -851,7 +1040,7 @@ These are the section headers that we use:
 
 [#3045]: https://github.com/argilla-io/argilla/pull/3045
 
-## [1.7.0](https://github.com/argilla-io/argilla/compare/v1.6.0...v1.7.0)
+## [Argilla] [1.7.0](https://github.com/argilla-io/argilla/compare/v1.6.0...v1.7.0)
 
 ### Added
 
@@ -885,7 +1074,7 @@ These are the section headers that we use:
 
 - The `rg.log_async` function is deprecated and will be removed in next minor release.
 
-## [1.6.0](https://github.com/argilla-io/argilla/compare/v1.5.1...v1.6.0)
+## [Argilla] [1.6.0](https://github.com/argilla-io/argilla/compare/v1.5.1...v1.6.0)
 
 ### Added
 
@@ -931,7 +1120,7 @@ These are the section headers that we use:
 
 [#2564]: https://github.com/argilla-io/argilla/issues/2564
 
-## [1.5.1](https://github.com/argilla-io/argilla/compare/v1.5.0...v1.5.1) - 2023-03-30
+## [Argilla] [1.5.1](https://github.com/argilla-io/argilla/compare/v1.5.0...v1.5.1) - 2023-03-30
 
 ### Fixes
 
@@ -945,7 +1134,7 @@ These are the section headers that we use:
 - Update field name in metadata for image url. See [#2609](https://github.com/argilla-io/argilla/pull/2609)
 - Improvements in tutorial doc cards. Closes [#2216](https://github.com/argilla-io/argilla/issues/2216)
 
-## [1.5.0](https://github.com/argilla-io/argilla/compare/v1.4.0...v1.5.0) - 2023-03-21
+## [Argilla] [1.5.0](https://github.com/argilla-io/argilla/compare/v1.4.0...v1.5.0) - 2023-03-21
 
 ### Added
 

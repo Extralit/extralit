@@ -7,7 +7,7 @@ from urllib.parse import urlparse
 from uuid import UUID
 
 
-from argilla_server.schemas.v1.files import ListObjectsResponse, ObjectMetadata, FileObjectResponse
+from argilla_server.api.schemas.v1.files import ListObjectsResponse, ObjectMetadata, FileObjectResponse
 from argilla_server.settings import settings
 from fastapi import HTTPException
 from minio import Minio, S3Error

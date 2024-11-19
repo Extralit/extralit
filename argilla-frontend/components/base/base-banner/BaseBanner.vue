@@ -1,26 +1,11 @@
 <template>
   <section role="alert" class="banner" :class="`--${type}`">
     <div class="banner__content">
-      <svgicon
-        v-if="icon"
-        class="banner__icon"
-        :name="icon"
-        width="16px"
-        height="16px"
-      />
+      <svgicon v-if="icon" class="banner__icon" :name="icon" width="16px" height="16px" />
       <p class="banner__text">{{ message }}</p>
     </div>
-    <BaseButton
-      v-if="buttonLink"
-      class="banner__link"
-      :href="buttonLink"
-      target="_blank"
-      >{{ buttonText }}</BaseButton
-    >
-    <BaseButton
-      class="banner__close-button"
-      v-if="dismissible"
-      @click="onDismiss"
+    <BaseButton v-if="buttonLink" class="banner__link" :href="buttonLink" target="_blank">{{ buttonText }}</BaseButton>
+    <BaseButton class="banner__close-button" v-if="dismissible" @click="onDismiss"
       ><svgicon name="close" width="16px" height="16px"
     /></BaseButton>
   </section>
@@ -78,9 +63,9 @@ export default {
 </script>
 
 <styles lang="scss" scoped>
-$info-color: #e6e6e6;
-$warning-color: #fbf2d3;
-$error-color: #ffd9d7;
+$info-color: var(--bg-banner-info);
+$warning-color: var(--bg-banner-warning);
+$error-color: var(--bg-banner-error);
 .banner {
   $this: &;
   display: flex;
@@ -90,15 +75,7 @@ $error-color: #ffd9d7;
   width: 100%;
   min-height: $base-space * 4;
   padding: calc($base-space / 2);
-  &.--info {
-    background-color: $info-color;
-  }
-  &.--warning {
-    background-color: $warning-color;
-  }
-  &.--error {
-    background-color: $error-color;
-  }
+  background-color: $warning-color;
   &__content {
     display: flex;
     align-items: center;
@@ -111,9 +88,9 @@ $error-color: #ffd9d7;
   #{$this}__link.button {
     padding: 0;
     @include font-size(12px);
-    color: $primary-color;
+    color: var(--fg-cuaternary);
     &:hover {
-      color: darken($primary-color, 10%);
+      color: hsl(from var(--fg-cuaternary) h s l / 90%);
     }
   }
   &__close-button {

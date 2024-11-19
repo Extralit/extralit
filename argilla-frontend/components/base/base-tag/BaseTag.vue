@@ -16,14 +16,15 @@ export default {
 .tag {
   text-align: left;
   white-space: nowrap;
-  border: 1px solid $black-10;
+  border: 1px solid var(--bg-opacity-10);
+  border: 1px solid var(--bg-opacity-10);
   display: inline-block;
   border-radius: 20px;
   padding: 0.2em 0.8em;
   margin: 3.5px;
   max-width: 175px;
   vertical-align: top;
-  color: $black-54;
+  color: var(--fg-secondary);
   word-break: break-word;
   hyphens: auto;
   @include font-size(12px);

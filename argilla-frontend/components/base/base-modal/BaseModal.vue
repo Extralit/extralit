@@ -19,20 +19,12 @@
   <transition v-if="modalVisible" name="modal" appear>
     <div class="modal-mask" :class="modalMaskClass">
       <div class="modal-wrapper" :class="modalPosition">
-        <div
-          class="modal-container"
-          :class="modalClass"
-          v-click-outside="closeModal"
-        >
+        <div class="modal-container" :class="modalClass" v-click-outside="closeModal">
           <p v-if="modalTitle" class="modal__title">
             {{ modalTitle }}
           </p>
           <slot />
-          <BaseButton
-            class="button-close-modal"
-            @on-click="closeModal"
-            v-if="allowClose"
-          >
+          <BaseButton class="button-close-modal" @on-click="closeModal" v-if="allowClose">
             <svgicon name="close" width="20" height="20" />
           </BaseButton>
         </div>
@@ -109,7 +101,7 @@ export default {
   display: table;
   transition: opacity 0.3s ease;
   cursor: default;
-  background: $black-20;
+  background: var(--bg-opacity-20);
   &:not(.prevent-scroll) {
     pointer-events: none;
   }
@@ -147,8 +139,8 @@ export default {
   max-width: 460px;
   margin: 0px auto;
   padding: $base-space * 4;
-  background-color: palette(white);
-  color: $black-87;
+  background-color: var(--bg-accent-grey-1);
+  color: var(--fg-primary);
   border-radius: $border-radius;
   box-shadow: $shadow;
   transition: $swift-ease-in-out;
