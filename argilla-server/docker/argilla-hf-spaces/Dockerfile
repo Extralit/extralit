@@ -1,6 +1,6 @@
 # TODO(gabrielmbmb): update this `Dockerfile` to multi-staged build to reduce the image size
 ARG ARGILLA_VERSION=latest
-ARG ARGILLA_SERVER_IMAGE=argilla/argilla-server
+ARG ARGILLA_SERVER_IMAGE=extralitdev/argilla-server
 FROM ${ARGILLA_SERVER_IMAGE}:${ARGILLA_VERSION}
 
 USER root
@@ -29,7 +29,7 @@ RUN \
     mkdir /data && \
     apt-get update && \
     # Install Elasticsearch and configure it
-    apt-get install -y elasticsearch=8.8.2 && \
+    apt-get install -y elasticsearch=8.15.0 && \
     chown -R argilla:argilla /usr/share/elasticsearch /etc/elasticsearch /var/lib/elasticsearch /var/log/elasticsearch && \
     chown argilla:argilla /etc/default/elasticsearch && \
     # Install Redis
@@ -62,5 +62,11 @@ ENV ES_JAVA_OPTS="-Xms1g -Xmx1g"
 ENV ARGILLA_HOME_PATH=/data/argilla
 ENV BACKGROUND_NUM_WORKERS=2
 ENV REINDEX_DATASETS=1
+
+ENV ARGILLA_DATABASE_URL=""
+ENV ARGILLA_S3_ENDPOINT=""
+ENV ARGILLA_S3_ACCESS_KEY=""
+ENV ARGILLA_S3_SECRET_KEY=""
+ENV ARGILLA_EXTRALIT_URL=""
 
 CMD ["/bin/bash", "start.sh"]
