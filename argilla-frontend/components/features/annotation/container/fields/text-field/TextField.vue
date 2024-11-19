@@ -13,7 +13,7 @@
       </BaseActionTooltip>
     </div>
     <div :id="`fields-content-${name}`" class="content-area --body1">
-      <RenderTableBaseComponent v-if="useTable && isValidTableJSON" :tableData="fieldText" />
+      <RenderTable v-if="useTable && isValidTableJSON" :tableData="fieldText" />
       <MarkdownRenderer v-else-if="useMarkdown" :markdown="fieldText" />
       <Sandbox v-else-if="isHTML" :content="fieldText" />
       <div :class="classes" v-else v-html="fieldText" />
