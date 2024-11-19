@@ -7,7 +7,7 @@
     :tabindex="isEditionModeActive ? '-1' : '0'"
     @keydown.shift.enter.exact.prevent="onEditMode"
   >
-    <RenderHTMLBaseComponent
+    <RenderHTML
       v-if="question.settings.use_markdown && isValidHTML"
       class="textarea"
       :value="question.answer.value"
@@ -19,7 +19,7 @@
       @on-change-focus="onChangeFocus"
       @on-exit-edition-mode="onExitEditionMode"
     />
-    <RenderTableBaseComponent
+    <RenderTable
       v-else-if="question.settings.use_table && isValidTableJSON"
       class="textarea"
       :tableData="question.answer.value"
