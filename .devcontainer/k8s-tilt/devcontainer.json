@@ -17,7 +17,6 @@
         "ms-python.python",
         "ms-toolsai.jupyter",
         "ms-python.vscode-pylance",
-        "tamasfe.even-better-toml",
         "eamodio.gitlens",
         "tilt-dev.tiltfile",
         "Vue.volar"
@@ -27,7 +26,29 @@
       "python.testing.pytestEnabled": true,
       "python.testing.cwd": "${workspaceFolder}/tests",
       "python.testing.pytestArgs": [ "-vs", "--disable-warnings" ],
-      "python.defaultInterpreterPath": "/opt/conda/bin/python"
+      "python.defaultInterpreterPath": "/opt/conda/bin/python",
+      "python.condaPath": "/usr/local/bin/micromamba",
+      "search.exclude": {
+        "argilla-server/src/argilla_server/static/": true,
+        "argilla-frontend/dist/": true,
+      },
+      "files.watcherExclude": {
+        "argilla-server/src/argilla_server/static/": true,
+        "argilla-frontend/dist/": true,
+      },
+      "[javascript]": {
+        "editor.tabSize": 2
+      },
+      "jest.pathToJest": "npm test --",
+      "jest.autoRun": {
+        "watch": true,
+        "onSave": "test-file"
+      },
+      "jest.runAllTestsFirst": false,
+      "jest.showCoverageOnLoad": true,
+      "jest.testExplorer": {
+        "enabled": true
+      }
     }
   },
   
@@ -36,6 +57,7 @@
     10350,
     5005,
     6443,
+    3000
   ],
 
   // Features to add to the dev container. More info: https://containers.dev/features.
@@ -62,13 +84,11 @@
   },
 
   "postCreateCommand": "/workspace/setup.sh",
+  "postStopCommand": "tilt down",
   
   "hostRequirements": {
     "cpus": 4,
     "memory": "16gb",
     "storage": "32gb"
   }
-
-  // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-  // "remoteUser": "root"
 }

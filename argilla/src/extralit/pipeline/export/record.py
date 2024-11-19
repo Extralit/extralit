@@ -2,10 +2,10 @@ import logging
 import uuid
 from typing import Dict, List, Optional
 
-import argilla as rg
+import argilla_v1 as rg
 import pandas as pd
 import pandera as pa
-from argilla.client.feedback.dataset.remote.dataset import RemoteFeedbackDataset
+from argilla_v1.client.feedback.dataset.remote.dataset import RemoteFeedbackDataset
 from llama_index.embeddings.openai import OpenAIEmbedding
 from tqdm import tqdm
 

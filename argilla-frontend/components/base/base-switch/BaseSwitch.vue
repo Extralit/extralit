@@ -16,23 +16,13 @@
   -->
 
 <template>
-  <div
-    :class="{ disabled: !checked, 'disable-action': disableAction }"
-    class="re-switch"
-  >
+  <div :class="{ disabled: !checked, 'disable-action': disableAction }" class="re-switch">
     <label v-if="$slots.default" :for="id || name" class="re-switch-label">
       <slot />
     </label>
     <div class="re-switch-container" @click="toggle($event)">
       <div class="re-switch-thumb" :style="styles">
-        <input
-          :id="id"
-          type="checkbox"
-          :name="name"
-          :disabled="disabled"
-          :value="value"
-          tabindex="-1"
-        />
+        <input :id="id" type="checkbox" :name="name" :disabled="disabled" :value="value" tabindex="-1" />
         <button :type="type" class="re-switch-holder">
           <svgicon width="10" height="10" name="check" color="white"></svgicon>
         </button>
@@ -137,7 +127,7 @@ $switch-thumb-size: 18px;
     pointer-events: none;
     cursor: default;
     .re-switch-thumb {
-      background-color: palette(white) !important;
+      background-color: var(--color-white) !important;
       transform: translate3d(-1px, -50%, 0px) !important;
     }
     &:active {
@@ -152,7 +142,7 @@ $switch-thumb-size: 18px;
     position: relative;
     border-radius: $switch-height;
     transition: $swift-ease-out;
-    background-color: $black-20;
+    background-color: var(--bg-opacity-20);
     cursor: pointer;
     .re-switch-thumb {
       width: $switch-thumb-size;
@@ -160,7 +150,7 @@ $switch-thumb-size: 18px;
       position: absolute;
       top: 50%;
       left: 0;
-      background-color: $primary-color;
+      background-color: var(--bg-action);
       border-radius: 50%;
       transition: $swift-linear;
     }
@@ -185,7 +175,7 @@ $switch-thumb-size: 18px;
   }
   .re-switch-label {
     margin-right: 1em;
-    color: $black-54;
+    color: var(--fg-secondary);
   }
 }
 </style>

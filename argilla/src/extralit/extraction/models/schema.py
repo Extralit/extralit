@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import List, Optional, Union, Dict
 
 import pandera as pa
-import argilla as rg
+import argilla_v1 as rg
 from minio import Minio
 from pandera.api.base.model import MetaModel
 from pandera.io import from_json, from_yaml

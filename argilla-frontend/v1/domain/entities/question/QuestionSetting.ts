@@ -1,13 +1,19 @@
-export class QuestionSetting {
-  type:
-    | "text"
-    | "ranking"
-    | "multi_label_selection"
-    | "label_selection"
-    | "dynamic_multi_label_selection"
-    | "dynamic_label_selection"
-    | "span";
+import { QuestionType, QuestionTypes } from "./QuestionType";
 
+export interface QuestionPrototype {
+  type: QuestionTypes;
+  use_markdown?: boolean;
+  use_table?: boolean;
+  visible_options?: number;
+  options?: any[];
+  options_order?: "natural" | "suggestion";
+  allow_overlapping?: boolean;
+  allow_character_annotation?: boolean;
+  field?: string;
+}
+
+export class QuestionSetting {
+  type: QuestionType;
   use_markdown: boolean;
   use_table: boolean;
   visible_options: number;
@@ -17,8 +23,8 @@ export class QuestionSetting {
   options: any;
   options_order: "natural" | "suggestion";
 
-  constructor(private readonly settings: any) {
-    this.type = settings.type;
+  constructor(settings: QuestionPrototype) {
+    this.type = QuestionType.from(settings.type);
 
     this.use_markdown = settings.use_markdown;
     this.use_table = settings.use_table;
@@ -41,7 +47,7 @@ export class QuestionSetting {
   }
 
   get shouldShowVisibleOptions() {
-    return this.options?.length > 3 && "visible_options" in this.settings;
+    return this.options?.length > 3 && !!this.visible_options;
   }
 
   isEqual(setting: QuestionSetting) {

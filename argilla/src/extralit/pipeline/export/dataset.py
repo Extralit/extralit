@@ -1,9 +1,9 @@
 from typing import Dict, List, Optional, Literal, Union, Any
 
-import argilla as rg
+import argilla_v1 as rg
 import pandas as pd
 import pandera as pa
-from argilla import SpanLabelOption
+from argilla_v1 import SpanLabelOption
 
 
 def create_papers_dataset(

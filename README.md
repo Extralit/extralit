@@ -3,8 +3,6 @@
   <a href=""><img src="https://github.com/extralit/extralit/blob/develop/argilla/docs/assets/logo.png" alt="Extralit" width="500"></a>
 </h1>
 
-<h2 align="center">Open-source feedback layer for LLM-assisted data extractions</h2>
-
 <h3>
 <p align="center">
 <a href="#">📄 Documentation</a> | </span>

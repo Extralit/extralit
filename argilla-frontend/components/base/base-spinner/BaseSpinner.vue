@@ -16,23 +16,13 @@
   -->
 
 <template>
-  <div
-    :style="{ width: `${size}px`, height: `${size}px` }"
-    v-if="!progress"
-    class="spinner"
-  ></div>
-  <div
-    v-else
-    class="spinner--progress"
-    :style="{ width: `${size}px`, height: `${size}px` }"
-  >
+  <div :style="{ width: `${size}px`, height: `${size}px` }" v-if="!progress" class="spinner"></div>
+  <div v-else class="spinner--progress" :style="{ width: `${size}px`, height: `${size}px` }">
     <div class="spinner--progress__circle">
       <div
         class="spinner--progress__progress"
         :style="{
-          'background-image': `conic-gradient(${progressColor} ${
-            progress * 3.6
-          }deg,rgb(0 0 0 / 10%) 0deg)`,
+          'background-image': `conic-gradient(${progressColor} ${progress * 3.6}deg,rgb(0 0 0 / 10%) 0deg)`,
         }"
       ></div>
     </div>
@@ -64,7 +54,7 @@ export default {
   width: $base-space * 4;
   height: $base-space * 4;
   border-radius: 50%;
-  border: 5px solid palette(apricot);
+  border: 5px solid var(--color-brand-secondary);
   border-top-color: transparent;
   animation-name: spin;
   animation-iteration-count: infinite;
@@ -90,11 +80,7 @@ export default {
       height: 100%;
       border-radius: 50%;
       box-sizing: border-box;
-      mask: radial-gradient(
-        farthest-side,
-        transparent calc(100% - 3px),
-        palette(white) calc(100% - 3px + 1px)
-      );
+      mask: radial-gradient(farthest-side, transparent calc(100% - 3px), var(--color-white) calc(100% - 3px + 1px));
     }
   }
 }

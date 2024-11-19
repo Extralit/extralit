@@ -1,13 +1,7 @@
 import { shallowMount } from "@vue/test-utils";
 import SignIn from "./sign-in.vue";
 
-const stubs = [
-  "BaseLoading",
-  "brand-logo",
-  "geometric-shape-a",
-  "base-button",
-  "OAuthLogin",
-];
+const stubs = ["BaseLoading", "brand-logo", "geometric-shape-a", "base-button", "OAuthLogin", "LoginInput"];
 
 const validAuthToken = btoa("USERNAME:PASSWORD");
 
@@ -24,6 +18,12 @@ const mountLoginPage = ({ auth } = {}) => {
     },
   });
 };
+
+jest.mock("./useSignInViewModel", () => {
+  const useSignInViewModel = jest.fn();
+
+  return { useSignInViewModel };
+});
 
 describe("Login page should", () => {
   it("still in the same page if the auth token is not valid", () => {

@@ -5,7 +5,7 @@ from os.path import join
 from typing import Optional, Literal
 import warnings
 
-import argilla as rg
+import argilla_v1 as rg
 from extralit.storage.files import StorageType
 import pandas as pd
 from llama_index.core import VectorStoreIndex, load_index_from_storage, global_handler

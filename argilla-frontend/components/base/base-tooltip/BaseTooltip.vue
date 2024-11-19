@@ -1,11 +1,5 @@
 <template>
-  <div
-    class="tooltip"
-    v-if="title || text"
-    ref="tooltipWrapper"
-    @mouseenter="show"
-    @mouseleave="hide"
-  >
+  <div class="tooltip" v-if="title || text" ref="tooltipWrapper" @mouseenter="show" @mouseleave="hide">
     <slot></slot>
 
     <div
@@ -83,36 +77,24 @@ export default {
         case "top":
           this.tooltipPosition = {
             top: tooltipRect.top - tooltipTextRect.height - this.offset,
-            left:
-              tooltipRect.left +
-              tooltipRect.width / 2 -
-              tooltipTextRect.width / 2,
+            left: tooltipRect.left + tooltipRect.width / 2 - tooltipTextRect.width / 2,
           };
           break;
         case "bottom":
           this.tooltipPosition = {
-            top: tooltipRect.top - tooltipRect.height + tooltipTextRect.height,
-            left:
-              tooltipRect.left +
-              tooltipRect.width / 2 -
-              tooltipTextRect.width / 2,
+            top: tooltipRect.top + tooltipRect.height,
+            left: tooltipRect.left + tooltipRect.width / 2 - tooltipTextRect.width / 2,
           };
           break;
         case "left":
           this.tooltipPosition = {
-            top:
-              tooltipRect.top +
-              tooltipRect.height / 2 -
-              tooltipTextRect.height / 2,
+            top: tooltipRect.top + tooltipRect.height / 2 - tooltipTextRect.height / 2,
             left: tooltipRect.left - tooltipTextRect.width - this.offset,
           };
           break;
         case "right":
           this.tooltipPosition = {
-            top:
-              tooltipRect.top +
-              tooltipRect.height / 2 -
-              tooltipTextRect.height / 2,
+            top: tooltipRect.top + tooltipRect.height / 2 - tooltipTextRect.height / 2,
             left: tooltipRect.right + this.offset,
           };
           break;
@@ -160,7 +142,7 @@ export default {
   white-space: pre;
   line-height: 1.4;
   &--minimalist {
-    background: palette(grey, 150);
+    background: $tooltip-mini-bg;
     @include font-size(13px);
     padding: calc($base-space / 2);
   }

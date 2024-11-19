@@ -17,19 +17,11 @@
 
 <template>
   <div class="slides-nav">
-    <a
-      :class="itemNumber <= 0 ? 'disabled' : null"
-      href="#"
-      @click.prevent="prev(itemNumber)"
-    >
+    <a :class="itemNumber <= 0 ? 'disabled' : null" href="#" @click.prevent="prev(itemNumber)">
       <svgicon name="chevron-left" width="8" height="8" color="#4C4EA3" />
     </a>
     {{ itemNumber + 1 }} of {{ slidesOrigin.length }} {{ slidesName }}
-    <a
-      :class="slidesOrigin.length <= itemNumber + 1 ? 'disabled' : null"
-      href="#"
-      @click.prevent="next(itemNumber)"
-    >
+    <a :class="slidesOrigin.length <= itemNumber + 1 ? 'disabled' : null" href="#" @click.prevent="next(itemNumber)">
       <svgicon name="chevron-right" width="8" height="8" />
     </a>
   </div>
@@ -70,7 +62,7 @@ export default {
   min-width: 33%;
   margin-right: 33%;
   margin-left: auto;
-  color: $black-54;
+  color: var(--fg-secondary);
   a {
     height: 20px;
     width: 20px;
@@ -84,12 +76,12 @@ export default {
     outline: none;
     @include font-size(13px);
     transition: all 0.2s ease-in-out;
-    background: palette(grey, 800);
+    background: var(--bg-solid-grey-1);
     .svg-icon {
-      fill: $black-87;
+      fill: var(--bg-opacity-87);
     }
     &:hover {
-      background: palette(grey, 700);
+      background: var(--bg-solid-grey-2);
       transition: all 0.2s ease-in-out;
     }
     &.disabled {

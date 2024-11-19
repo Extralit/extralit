@@ -1,10 +1,7 @@
 <template>
   <div class="radio-button" :class="[radioClasses]" @click.stop="toggleCheck">
     <div class="radio-button__container" :style="cssVars">
-      <input
-        type="radio"
-        v-bind="{ id, name, disabled, value, checked: isSelected }"
-      />
+      <input type="radio" v-bind="{ id, name, disabled, value, checked: isSelected }" />
     </div>
     <label :for="id" class="radio-button__label" @click.prevent="toggleCheck">
       <slot />
@@ -86,8 +83,8 @@ $radio-button-size: 20px;
     min-width: $radio-button-size;
     height: $radio-button-size;
     position: relative;
-    border: 1px solid palette(grey, 600);
-    background: palette(white);
+    border: 1px solid var(--bg-opacity-20);
+    background: var(--bg-accent-grey-2);
     border-radius: 50%;
     transition: all 0.2s ease;
     input {
@@ -114,7 +111,7 @@ $radio-button-size: 20px;
       right: 6px;
       bottom: 6px;
       left: 6px;
-      background: palette(white);
+      background: var(--bg-solid-grey-1);
       opacity: 0;
       border-radius: 50%;
       transform: scale3D(0, 0, 1);

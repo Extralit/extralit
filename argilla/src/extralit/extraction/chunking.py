@@ -2,7 +2,7 @@ import re
 from os.path import join, exists
 from typing import Optional, List, Tuple, Dict, Any, Iterable
 
-import argilla as rg
+import argilla_v1 as rg
 from extralit.storage.files import FileHandler, StorageType
 import pandas as pd
 from llama_index.core.schema import Document
