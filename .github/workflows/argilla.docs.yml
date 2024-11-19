@@ -17,9 +17,6 @@ on:
     paths:
       - "argilla/docs/**"
 
-permissions:
-  contents: write
-
 defaults:
   run:
     working-directory: argilla
