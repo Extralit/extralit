@@ -97,6 +97,10 @@ class Field(DatabaseModel):
     def is_custom(self):
         return self.settings.get("type") == FieldType.custom
 
+    @property
+    def is_table(self):
+        return self.settings.get("type") == FieldType.table
+
     def __repr__(self):
         return (
             f"Field(id={str(self.id)!r}, name={self.name!r}, required={self.required!r}, "
