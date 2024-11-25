@@ -1,6 +1,9 @@
 <template>
   <div>
-    <div class="dataset-config-label__input-container" :class="{ '--error': errors.length }">
+    <div
+      class="dataset-config-label__input-container"
+      :class="{ '--error': errors.length }"
+    >
       <input
         type="text"
         :value="optionsJoinedByCommas"
@@ -12,7 +15,11 @@
       />
     </div>
     <Validation v-if="errors.length" :validations="translatedValidations" />
-    <label v-else class="dataset-config-label__label" v-text="`Use coma to separate labels`" />
+    <label
+      v-else
+      class="dataset-config-label__label"
+      v-text="`Use coma to separate labels`"
+    />
   </div>
 </template>
 

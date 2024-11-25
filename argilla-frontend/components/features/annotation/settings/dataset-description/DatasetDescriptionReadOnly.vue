@@ -1,6 +1,9 @@
 <template>
   <div class="description">
-    <h2 class="--heading5 --medium description__title" v-text="$t('annotationGuidelines')" />
+    <h2
+      class="--heading5 --medium description__title"
+      v-text="$t('annotationGuidelines')"
+    />
     <MarkdownRenderer
       class="--body1 description__text"
       :class="{ '--light': isColorLight }"

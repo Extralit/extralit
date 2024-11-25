@@ -1,11 +1,26 @@
 <template>
   <section role="alert" class="banner" :class="`--${type}`">
     <div class="banner__content">
-      <svgicon v-if="icon" class="banner__icon" :name="icon" width="16px" height="16px" />
+      <svgicon
+        v-if="icon"
+        class="banner__icon"
+        :name="icon"
+        width="16px"
+        height="16px"
+      />
       <p class="banner__text">{{ message }}</p>
     </div>
-    <BaseButton v-if="buttonLink" class="banner__link" :href="buttonLink" target="_blank">{{ buttonText }}</BaseButton>
-    <BaseButton class="banner__close-button" v-if="dismissible" @click="onDismiss"
+    <BaseButton
+      v-if="buttonLink"
+      class="banner__link"
+      :href="buttonLink"
+      target="_blank"
+      >{{ buttonText }}</BaseButton
+    >
+    <BaseButton
+      class="banner__close-button"
+      v-if="dismissible"
+      @click="onDismiss"
       ><svgicon name="close" width="16px" height="16px"
     /></BaseButton>
   </section>

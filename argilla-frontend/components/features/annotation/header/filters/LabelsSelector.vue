@@ -19,7 +19,11 @@
     <div class="labels-selector__items">
       <BaseCheckbox
         class="labels-selector__item"
-        :class="index === preSelectionIndex ? 'labels-selector__item--highlighted' : null"
+        :class="
+          index === preSelectionIndex
+            ? 'labels-selector__item--highlighted'
+            : null
+        "
         v-for="(option, index) in labelsFilteredBySearchText"
         :key="option.value"
         :value="option.selected"
@@ -73,7 +77,9 @@ export default {
     includePreselectedOption() {
       if (!this.labelsFilteredBySearchText.length) return;
 
-      this.toggleSelectedOption(this.labelsFilteredBySearchText[this.preSelectionIndex]);
+      this.toggleSelectedOption(
+        this.labelsFilteredBySearchText[this.preSelectionIndex]
+      );
 
       this.preSelectionIndex = 0;
     },
@@ -81,10 +87,14 @@ export default {
       option.selected = !option.selected;
     },
     preselectNextOption() {
-      this.preSelectionIndex === this.optionsLength - 1 ? (this.preSelectionIndex = 0) : this.preSelectionIndex++;
+      this.preSelectionIndex === this.optionsLength - 1
+        ? (this.preSelectionIndex = 0)
+        : this.preSelectionIndex++;
     },
     preselectPreviousOption() {
-      this.preSelectionIndex === 0 ? (this.preSelectionIndex = this.optionsLength - 1) : this.preSelectionIndex--;
+      this.preSelectionIndex === 0
+        ? (this.preSelectionIndex = this.optionsLength - 1)
+        : this.preSelectionIndex--;
     },
   },
 };

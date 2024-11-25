@@ -1,7 +1,14 @@
 import { shallowMount } from "@vue/test-utils";
 import SignIn from "./sign-in.vue";
 
-const stubs = ["BaseLoading", "brand-logo", "geometric-shape-a", "base-button", "OAuthLogin", "LoginInput"];
+const stubs = [
+  "BaseLoading",
+  "brand-logo",
+  "geometric-shape-a",
+  "base-button",
+  "OAuthLogin",
+  "LoginInput",
+];
 
 const validAuthToken = btoa("USERNAME:PASSWORD");
 

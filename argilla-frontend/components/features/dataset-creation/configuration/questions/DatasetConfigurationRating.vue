@@ -1,12 +1,19 @@
 <template>
   <div>
-    <div :class="{ '--error': errors.length }" class="dataset-config-rating__input-container">
+    <div
+      :class="{ '--error': errors.length }"
+      class="dataset-config-rating__input-container"
+    >
       <input
         type="number"
         min="0"
         max="10"
         step="1"
-        :value="question.settings.options.length ? question.settings.options.length - 1 : 0"
+        :value="
+          question.settings.options.length
+            ? question.settings.options.length - 1
+            : 0
+        "
         @input="onInput($event.target.value)"
         @focus.stop="onFocus"
         @blur="onBlur"

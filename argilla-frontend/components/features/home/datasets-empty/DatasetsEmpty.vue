@@ -27,7 +27,11 @@ export default {
 <style lang="scss" scoped>
 .dataset {
   &__placeholder {
-    background: linear-gradient(180deg, var(--bg-opacity-2) 0%, var(--bg-opacity-4) 100%);
+    background: linear-gradient(
+      180deg,
+      var(--bg-opacity-2) 0%,
+      var(--bg-opacity-4) 100%
+    );
     border-radius: $border-radius-m;
   }
 }

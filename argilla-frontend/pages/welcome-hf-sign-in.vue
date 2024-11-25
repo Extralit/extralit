@@ -5,16 +5,28 @@
       <BrandLogo color="dark" class="hf-login__logo" />
       <div class="hf-login__hero__content">
         <h1 class="hf-login__title" v-text="$t('login.hf.title', { space })" />
-        <h2 class="hf-login__subtitle" v-html="$t('login.hf.subtitle', { user })" />
+        <h2
+          class="hf-login__subtitle"
+          v-html="$t('login.hf.subtitle', { user })"
+        />
         <div class="hf-login__buttons">
-          <HuggingFaceButton class="hf-login__button--hugging-face" @click="authorize" />
-          <BaseButton class="hf-login__button" @click="goToLogin">{{ $t("button.sign_in_with_username") }}</BaseButton>
+          <HuggingFaceButton
+            class="hf-login__button--hugging-face"
+            @click="authorize"
+          />
+          <BaseButton class="hf-login__button" @click="goToLogin">{{
+            $t("button.sign_in_with_username")
+          }}</BaseButton>
         </div>
       </div>
     </div>
 
     <div class="hf-login__img-container">
-      <img class="hf-login__img" src="images/welcome-hf-sign-in-ss.png" alt="argilla UI" />
+      <img
+        class="hf-login__img"
+        src="images/welcome-hf-sign-in-ss.png"
+        alt="argilla UI"
+      />
     </div>
   </main>
 </template>

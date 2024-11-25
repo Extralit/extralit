@@ -1,9 +1,9 @@
 <template>
   <div class="pdf-container">
-    <PDFView
-      :src.sync="url"
-      :fileName="fileName"
-      :sidebarFeatureVisible="true"
+    <PDFView 
+      :src.sync="url" 
+      :fileName="fileName" 
+      :sidebarFeatureVisible=true 
       :scale.sync="scale"
       :pageNumber="currentPageNumber"
       ref="pdfView"
@@ -12,7 +12,8 @@
       <template slot="right-toolbox">
         <p class="document__title">{{ fileName }}</p>
       </template>
-      <template slot="left-toolbox"> </template>
+      <template slot="left-toolbox">
+      </template>
       <template slot="error"></template>
       <template slot="loading"></template>
     </PDFView>
@@ -20,26 +21,26 @@
 </template>
 
 <script>
-import { PDFView } from "@jonnytran/vue-pdf-viewer";
+import { PDFView } from '@jonnytran/vue-pdf-viewer';
 
 export default {
-  name: "PDFViewer",
+  name: 'PDFViewer',
   components: {
     PDFView,
   },
 
-  props: {
+  props:{
     url: {
       type: String,
       required: true,
     },
     fileName: {
       type: String,
-      required: false,
+      required: false
     },
     pageNumber: {
       type: [Number, String],
-      required: false,
+      required: false
     },
   },
 
@@ -53,20 +54,20 @@ export default {
     return {
       scale: "1.50",
       currentPageNumber: this.pageNumber,
-    };
+    }
   },
-
+  
   mounted() {
-    window.addEventListener("hashchange", this.onHashChange);
+    window.addEventListener('hashchange', this.onHashChange);
     this.onHashChange(); // Call on component mount to handle initial hash
   },
 
   methods: {
     onHashChange() {
       const hash = window.location.hash.substring(1); // Remove the '#' from the hash
-      const [key, value] = hash.split(".");
-      if (key === "page_number" && !isNaN(value)) {
-        this.currentPageNumber = Number(value);
+      const [key, value] = hash.split('.');
+      if (key === 'page_number' && !isNaN(value)) {
+        this.currentPageNumber = Number(value); 
       }
     },
   },
@@ -78,9 +79,9 @@ export default {
   },
   beforeUnmount() {
     this.$refs.pdfView.destroy();
-    window.removeEventListener("hashchange", this.onHashChange);
+    window.removeEventListener('hashchange', this.onHashChange);
   },
-};
+}
 </script>
 
 <style scoped lang="scss">
