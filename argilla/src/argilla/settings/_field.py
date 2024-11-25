@@ -289,7 +289,37 @@ class CustomField(AbstractField):
         )
 
 
-Field = Union[TextField, ImageField, ChatField, CustomField]
+class TableField(AbstractField):
+    """Table field for use in Argilla `Dataset` `Settings`"""
+
+    def __init__(
+        self,
+        name: str,
+        title: Optional[str] = None,
+        required: bool = True,
+        description: Optional[str] = None,
+        _client: Optional["Argilla"] = None,
+    ) -> None:
+        """
+        Table field for use in Argilla `Dataset` `Settings`
+
+        Parameters:
+            name (str): The name of the field
+            title (Optional[str], optional): The title of the field. Defaults to None.
+            required (bool, optional): Whether the field is required. Defaults to True.
+            description (Optional[str], optional): The description of the field. Defaults to None.
+        """
+        super().__init__(
+            name=name,
+            title=title,
+            required=required,
+            description=description,
+            settings=None,
+            _client=_client,
+        )
+
+
+Field = Union[TextField, ImageField, ChatField, CustomField, TableField]
 
 
 def _field_from_model(model: FieldModel) -> Field:
@@ -301,6 +331,8 @@ def _field_from_model(model: FieldModel) -> Field:
         return ChatField.from_model(model)
     elif model.settings.type == "custom":
         return CustomField.from_model(model)
+    elif model.settings.type == "table":
+        return TableField.from_model(model)
     else:
         raise ArgillaError(f"Unsupported field type: {model.settings.type}")
 
@@ -317,6 +349,8 @@ def _field_from_dict(data: dict) -> Union[Field, VectorField, MetadataType]:
         return ChatField.from_dict(data)
     elif field_type == "custom":
         return CustomField.from_dict(data)
+    elif field_type == "table":
+        return TableField.from_dict(data)
     elif field_type == "vector":
         return VectorField.from_dict(data)
     elif field_type == "metadata":

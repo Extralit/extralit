@@ -39,12 +39,18 @@
         :content="group[0].content"
       />
       <CustomField
-        v-else-if="group[0].sdkRecord"
+        v-else-if="group[0].isCustomType"
         :name="group[0].name"
         :title="group[0].title"
         :content="group[0].content"
         :sdkRecord="group[0].sdkRecord"
         :settings="group[0].settings"
+      />
+      <TableField
+        v-else-if="group[0].isTableType"
+        :name="group[0].name"
+        :title="group[0].title"
+        :content="group[0].content"
       />
       
       <BaseCardWithTabs 
