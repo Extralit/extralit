@@ -477,7 +477,9 @@ QuestionType = Union[
 
 _TYPE_TO_CLASS = {
     "label_selection": LabelQuestion,
+    "dynamic_label_selection": LabelQuestion,
     "multi_label_selection": MultiLabelQuestion,
+    "dynamic_multi_label_selection": MultiLabelQuestion,
     "ranking": RankingQuestion,
     "text": TextQuestion,
     "rating": RatingQuestion,
