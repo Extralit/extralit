@@ -41,6 +41,8 @@ export class Field {
     if (this.isCustomType) {
       this.sdkRecord = record;
       this.content = settings.template;
+    } else if (this.isTableType) {
+      this.sdkRecord = record;
     } else if (this.isChatType) {
       this.content = adaptContentForChatField(this.content);
     } else if (this.isImageType) {
@@ -62,6 +64,10 @@ export class Field {
 
   get isCustomType() {
     return this.type.isCustomType;
+  }
+
+  get isTableType() {
+    return this.type.isTableType;
   }
 
   private get type() {
