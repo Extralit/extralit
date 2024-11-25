@@ -65,11 +65,14 @@ export default {
     options() {
       const rawOptions = this.data.map((item) => item[this.column.field]);
       if (rawOptions.every((option) => this.isObject(option))) {
-        const removedEmptyOptions = rawOptions.filter((opt) => Object.values(opt).length).flatMap((opt) => opt);
-        const optionsArray = Object.values(removedEmptyOptions).flatMap((options) =>
-          Object.keys(options).map((key) => {
-            return { key: key, value: options[key] };
-          })
+        const removedEmptyOptions = rawOptions
+          .filter((opt) => Object.values(opt).length)
+          .flatMap((opt) => opt);
+        const optionsArray = Object.values(removedEmptyOptions).flatMap(
+          (options) =>
+            Object.keys(options).map((key) => {
+              return { key: key, value: options[key] };
+            })
         );
         const keys = ["key", "value"];
         return optionsArray.filter(
@@ -107,24 +110,37 @@ export default {
       if (text === undefined) {
         return options;
       }
-      const filtered = options.filter((id) => JSON.stringify(id).toLowerCase().match(text.toLowerCase()));
+      const filtered = options.filter((id) =>
+        JSON.stringify(id).toLowerCase().match(text.toLowerCase())
+      );
       return filtered;
     },
     tableItemsCounter(option) {
-      const keys = Object.keys(this.filters).filter((k) => k !== this.column.field);
+      const keys = Object.keys(this.filters).filter(
+        (k) => k !== this.column.field
+      );
       const filteredData = this.data.filter((tableItem) => {
         return keys.every((key) => {
           if (this.filters[key].every((f) => this.isObject(f))) {
-            return this.filters[key].find((f) => f.value === tableItem[key][f.key]);
+            return this.filters[key].find(
+              (f) => f.value === tableItem[key][f.key]
+            );
           } else {
             return this.filters[key].includes(tableItem[key]);
           }
         });
       });
-      if (filteredData.every((data) => this.isObject(data[this.column.field]))) {
-        return filteredData.filter((tableItem) => tableItem[this.column.field][option.key] === option.value).length;
+      if (
+        filteredData.every((data) => this.isObject(data[this.column.field]))
+      ) {
+        return filteredData.filter(
+          (tableItem) =>
+            tableItem[this.column.field][option.key] === option.value
+        ).length;
       } else {
-        return filteredData.filter((tableItem) => tableItem[this.column.field] === option).length;
+        return filteredData.filter(
+          (tableItem) => tableItem[this.column.field] === option
+        ).length;
       }
     },
     optionName(option) {

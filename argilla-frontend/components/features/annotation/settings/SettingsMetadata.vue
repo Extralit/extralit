@@ -3,20 +3,28 @@
     <div class="settings__edition-form">
       <h2 class="--heading5 --medium" v-text="$t('settings.editMetadata')" />
       <div v-for="metadata in settings.metadataProperties" :key="metadata.id">
-        <form @submit.prevent="updateMetadata(metadata)" class="settings__edition-form__metadata">
+        <form
+          @submit.prevent="updateMetadata(metadata)"
+          class="settings__edition-form__metadata"
+        >
           <div class="settings__edition-form__name">
             <h4 class="--body1 --medium" v-text="metadata.name" />
             <BaseBadge class="--capitalized" :text="metadata.settings.type" />
           </div>
 
-          <Validation :validations="metadata.validate().title" class="settings__edition-form__group">
+          <Validation
+            :validations="metadata.validate().title"
+            class="settings__edition-form__group"
+          >
             <label for="metadata.title" v-text="$t('title')" />
             <input type="text" id="metadata.title" v-model="metadata.title" />
           </Validation>
 
-          <BaseSwitch class="settings__edition-form__switch" v-model="metadata.visibleForAnnotators">{{
-            $t("visibleForAnnotators")
-          }}</BaseSwitch>
+          <BaseSwitch
+            class="settings__edition-form__switch"
+            v-model="metadata.visibleForAnnotators"
+            >{{ $t("visibleForAnnotators") }}</BaseSwitch
+          >
 
           <div class="settings__edition-form__footer">
             <BaseButton
@@ -27,7 +35,11 @@
             >
               <span v-text="$t('cancel')" />
             </BaseButton>
-            <BaseButton type="submit" class="primary small" :disabled="!metadata.isModified || !metadata.isValid">
+            <BaseButton
+              type="submit"
+              class="primary small"
+              :disabled="!metadata.isModified || !metadata.isValid"
+            >
               <span v-text="$t('update')" />
             </BaseButton>
           </div>
@@ -35,10 +47,15 @@
       </div>
 
       <h2 class="--heading5 --medium" v-text="$t('extraMetadata')" />
-      <form @submit.prevent="updateDataset(settings.dataset)" class="settings__edition-form__metadata">
-        <BaseSwitch class="settings__edition-form__switch" v-model="settings.dataset.allowExtraMetadata">{{
-          $t("allowExtraMetadata")
-        }}</BaseSwitch>
+      <form
+        @submit.prevent="updateDataset(settings.dataset)"
+        class="settings__edition-form__metadata"
+      >
+        <BaseSwitch
+          class="settings__edition-form__switch"
+          v-model="settings.dataset.allowExtraMetadata"
+          >{{ $t("allowExtraMetadata") }}</BaseSwitch
+        >
         <div class="settings__edition-form__footer">
           <BaseButton
             type="button"
@@ -48,7 +65,11 @@
           >
             <span v-text="$t('cancel')" />
           </BaseButton>
-          <BaseButton type="submit" class="primary small" :disabled="!settings.dataset.isModifiedExtraMetadata">
+          <BaseButton
+            type="submit"
+            class="primary small"
+            :disabled="!settings.dataset.isModifiedExtraMetadata"
+          >
             <span v-text="$t('update')" />
           </BaseButton>
         </div>

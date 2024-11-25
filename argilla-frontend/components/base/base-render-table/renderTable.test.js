@@ -1,5 +1,5 @@
 // import { shallowMount } from "@vue/test-utils";
-// import RenderTable from "./RenderTable.base.component";
+// import RenderTable from "./RenderTable";
 
 describe('RenderTable', () => {
   it('should pass a mock test', () => {

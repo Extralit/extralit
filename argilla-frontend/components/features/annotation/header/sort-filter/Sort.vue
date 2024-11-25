@@ -1,8 +1,14 @@
 <template>
   <div class="sort-filter">
-    <BaseDropdown :visible="visibleDropdown" @visibility="onSortToggleVisibility">
+    <BaseDropdown
+      :visible="visibleDropdown"
+      @visibility="onSortToggleVisibility"
+    >
       <span slot="dropdown-header">
-        <SortButton :is-active="visibleDropdown" :active-sort-items="selectedSortingItems" />
+        <SortButton
+          :is-active="visibleDropdown"
+          :active-sort-items="selectedSortingItems"
+        />
       </span>
       <span slot="dropdown-content" class="sort-filter__container">
         <SortCategoriesList

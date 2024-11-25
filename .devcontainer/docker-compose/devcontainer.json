@@ -108,10 +108,16 @@
       "search.exclude": {
         "argilla-server/src/argilla_server/static/": true,
         "argilla-frontend/dist/": true,
+        "_nuxt/": true,
+        "node_modules/": true,
+        ".venv/": true
       },
       "files.watcherExclude": {
         "argilla-server/src/argilla_server/static/": true,
         "argilla-frontend/dist/": true,
+        "_nuxt/": true,
+        "node_modules/": true,
+        ".venv/": true
       }
     }
   }

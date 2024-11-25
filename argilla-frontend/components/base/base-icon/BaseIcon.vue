@@ -1,5 +1,11 @@
 <template>
-  <svgicon :name="iconName" :width="iconWidth" :height="iconHeight" :color="iconColor" aria-hidden="true" />
+  <svgicon
+    :name="iconName"
+    :width="iconWidth"
+    :height="iconHeight"
+    :color="iconColor"
+    aria-hidden="true"
+  />
 </template>
 
 <script>

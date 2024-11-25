@@ -35,7 +35,7 @@ export class GetExtractionSchemaUseCase {
       }
 
       const SchemaMetadata: SchemaMetadata = {
-        schemaName,
+        schemaName: schemaName,
         etag: headers.get('etag'),
         version_id: headers.get('version-id'),
         version_tag: headers.get('version-tag'),

@@ -27,7 +27,9 @@
       <div class="error__content">
         <div class="error__pill">{{ error.message }}</div>
         <h1 class="error__title">Something went wrong.</h1>
-        <h2 class="error__text">We can't seem to find the page you are looking for</h2>
+        <h2 class="error__text">
+          We can't seem to find the page you are looking for
+        </h2>
         <div class="error__buttons">
           <nuxt-link class="error__button" :to="`/`"
             >Back to home page

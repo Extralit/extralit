@@ -1,11 +1,19 @@
 <template>
   <component
-    :class="[clickable ? 'badge--clickable' : 'badge', activeBadge ? 'badge--active' : 'badge']"
+    :class="[
+      clickable ? 'badge--clickable' : 'badge',
+      activeBadge ? 'badge--active' : 'badge',
+    ]"
     :is="renderComponent"
     @click="onClick($event)"
     ><span class="badge__text">{{ text }}</span>
     <BaseButton v-if="clearable" class="badge__button" @click="onClear($event)">
-      <svgicon name="close" width="10" height="10" color="rgba(0, 0, 0, 0.54)" />
+      <svgicon
+        name="close"
+        width="10"
+        height="10"
+        color="rgba(0, 0, 0, 0.54)"
+      />
     </BaseButton>
   </component>
 </template>

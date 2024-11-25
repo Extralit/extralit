@@ -8,22 +8,34 @@
     </div>
 
     <div class="form-group">
-      <h2 class="--heading5 --medium description__title" v-text="$t('userSettings.fields.userName')" />
+      <h2
+        class="--heading5 --medium description__title"
+        v-text="$t('userSettings.fields.userName')"
+      />
       <p class="--body1 description__text" v-text="user.userName" />
     </div>
 
     <div class="form-group">
-      <h2 class="--heading5 --medium description__title" v-text="$t('userSettings.fields.firstName')" />
+      <h2
+        class="--heading5 --medium description__title"
+        v-text="$t('userSettings.fields.firstName')"
+      />
       <p class="--body1 description__text" v-text="user.firstName" />
     </div>
 
     <div class="form-group">
-      <h2 class="--heading5 --medium description__title" v-text="$t('userSettings.fields.lastName')" />
+      <h2
+        class="--heading5 --medium description__title"
+        v-text="$t('userSettings.fields.lastName')"
+      />
       <p class="--body1 description__text" v-text="user.lastName" />
     </div>
 
     <div class="form-group">
-      <h2 class="--heading5 --medium description__title" v-text="$t('userSettings.fields.workspaces')" />
+      <h2
+        class="--heading5 --medium description__title"
+        v-text="$t('userSettings.fields.workspaces')"
+      />
       <BaseBadgeSkeleton v-if="isLoadingWorkspaces" :quantity="5" />
       <div class="workspaces" v-else-if="workspaces.length">
         <BaseBadge
@@ -39,7 +51,10 @@
       <UserTokenComponent :userToken="user.apiKey" />
     </div>
     <div class="form-group">
-      <h2 class="--heading5 --medium description__title" v-text="$t('userSettings.theme')" />
+      <h2
+        class="--heading5 --medium description__title"
+        v-text="$t('userSettings.theme')"
+      />
       <UserSettingsTheme />
     </div>
   </div>

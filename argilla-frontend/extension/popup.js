@@ -7,7 +7,8 @@ async function saveSettings(settings) {
   await chrome.scripting.executeScript({
     target: { tabId: activeTab.id },
     function: (settings) => {
-      localStorage.setItem("argilla-dev", JSON.stringify(settings)), location.reload();
+      localStorage.setItem("argilla-dev", JSON.stringify(settings)),
+        location.reload();
     },
     args: [settings],
   });

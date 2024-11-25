@@ -18,8 +18,16 @@
           v-if="showCollapseButton"
           @click="toggleShowLess"
         >
-          <span :class="isExpanded ? '--less' : '--more'" v-text="textToShowInTheCollapseButton" />
-          <svgicon width="18" height="18" :name="iconToShowInTheCollapseButton" aria-hidden="true" />
+          <span
+            :class="isExpanded ? '--less' : '--more'"
+            v-text="textToShowInTheCollapseButton"
+          />
+          <svgicon
+            width="18"
+            height="18"
+            :name="iconToShowInTheCollapseButton"
+            aria-hidden="true"
+          />
         </button>
       </div>
     </div>
@@ -68,7 +76,11 @@
             :for="option.id"
             :title="option.text"
           >
-            <span v-if="visibleShortcuts" class="key" v-text="keyboards[option.id]" />
+            <span
+              v-if="visibleShortcuts"
+              class="key"
+              v-text="keyboards[option.id]"
+            />
             <span class="label-text__text">{{ option.text }}</span>
             <span v-if="isSuggested(option)" class="label-text__suggestion">
               <svgicon class="label-text__suggestion__icon" name="suggestion" />
@@ -173,7 +185,9 @@ export default {
     },
     filteredOptions() {
       return this.options.filter((option) =>
-        String(option.text).toLowerCase().includes(this.searchInput.toLowerCase())
+        String(option.text)
+          .toLowerCase()
+          .includes(this.searchInput.toLowerCase())
       );
     },
     visibleOptions() {
@@ -181,7 +195,9 @@ export default {
 
       if (this.suggestionFirst) {
         const suggestedOptions = this.filteredOptions
-          .filter((v) => this.suggestion && this.suggestion.isSuggested(v.value))
+          .filter(
+            (v) => this.suggestion && this.suggestion.isSuggested(v.value)
+          )
           .sort((a, b) => {
             const isASuggested = this.suggestion.getSuggestion(a.value);
             const isBSuggested = this.suggestion.getSuggestion(b.value);
@@ -200,7 +216,9 @@ export default {
         return options;
       }
 
-      const remainingSorted = options.slice(this.maxVisibleOptions).filter((option) => option.isSelected);
+      const remainingSorted = options
+        .slice(this.maxVisibleOptions)
+        .filter((option) => option.isSelected);
 
       return options.slice(0, this.maxVisibleOptions).concat(remainingSorted);
     },
@@ -211,7 +229,10 @@ export default {
       return this.filteredOptions.length > this.maxVisibleOptions;
     },
     showSearch() {
-      return this.options.length >= OPTIONS_THRESHOLD_TO_ENABLE_SEARCH || this.showCollapseButton;
+      return (
+        this.options.length >= OPTIONS_THRESHOLD_TO_ENABLE_SEARCH ||
+        this.showCollapseButton
+      );
     },
     textToShowInTheCollapseButton() {
       if (this.isExpanded) {
@@ -245,7 +266,9 @@ export default {
       )
         return;
 
-      const isSearchActive = document.activeElement === this.$refs.searchComponentRef?.searchInputRef;
+      const isSearchActive =
+        document.activeElement ===
+        this.$refs.searchComponentRef?.searchInputRef;
 
       if (isSearchActive) return;
 
@@ -275,14 +298,19 @@ export default {
       }, 300);
     },
     hasJustOneCoincidence(keyCode) {
-      return this.$refs.options.filter((o) => o.dataset.keyboard.startsWith(keyCode)).length == 1;
+      return (
+        this.$refs.options.filter((o) => o.dataset.keyboard.startsWith(keyCode))
+          .length == 1
+      );
     },
     reset() {
       this.keyCode = "";
       this.timer = null;
     },
     selectByKeyCode($event, keyCode) {
-      const match = this.$refs.options.find((option) => option.dataset.keyboard === keyCode);
+      const match = this.$refs.options.find(
+        (option) => option.dataset.keyboard === keyCode
+      );
 
       if (match) {
         $event.preventDefault();
@@ -336,7 +364,7 @@ export default {
       let tooltip = option.description || "";
 
       if (this.isSuggested(option)) {
-        tooltip += this.getSuggestedAgent(option);
+        tooltip += this.getSuggestedAgent(option)
       }
       return tooltip;
     },
