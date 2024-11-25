@@ -36,6 +36,7 @@ from argilla._models._settings._fields import (
     ImageFieldSettings,
     ChatFieldSettings,
     CustomFieldSettings,
+    TableFieldSettings,
     FieldSettings,
 )
 from argilla._models._settings._questions import (
