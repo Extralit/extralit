@@ -55,7 +55,19 @@ async def startup():
 
 @app.get("/health")
 async def health_check():
-    return {"status": "ok"}
+    try:
+        # Check weaviate connection
+        if weaviate_client is None:
+            return {"status": "error", "message": "Weaviate client not initialized"}
+            
+        # Check minio connection    
+        if minio_client is None:
+            return {"status": "error", "message": "Minio client not initialized"}
+            
+        return {"status": "ok"}
+        
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 
 
 @app.get("/schemas/{workspace}")
