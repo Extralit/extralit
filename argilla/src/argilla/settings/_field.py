@@ -26,6 +26,7 @@ from argilla._models import (
     ChatFieldSettings,
     ImageFieldSettings,
     CustomFieldSettings,
+    TableFieldSetting,
     FieldSettings,
 )
 from argilla.settings._common import SettingsPropertyBase
@@ -314,7 +315,7 @@ class TableField(AbstractField):
             title=title,
             required=required,
             description=description,
-            settings=None,
+            settings=TableFieldSetting(),
             _client=_client,
         )
 
