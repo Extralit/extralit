@@ -81,7 +81,7 @@ export class Record {
   getModified() {
     const { original, ...rest } = this;
 
-    return original ? difference(rest, original) : {};
+    return !!original ? difference(rest, original) : {};
   }
 
   discard(answer: RecordAnswer) {

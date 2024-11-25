@@ -186,8 +186,8 @@ export class Question {
   public addDynamicSelectionToLabelQuestion(suggestedOptions: LabelAnswer[]) {
     if (!Array.isArray(suggestedOptions) || !suggestedOptions?.length) return
 
-    const existingOptionsValues = new Set(this.settings.options.map((option: LabelAnswer) => option.value));
-    const selections = [
+    let existingOptionsValues = new Set(this.settings.options.map((option: LabelAnswer) => option.value));
+    let selections = [
       ...this.settings.options,
       ...suggestedOptions
         .filter((option: LabelAnswer) => !existingOptionsValues.has(option.value ))

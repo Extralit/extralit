@@ -1,6 +1,9 @@
 <template>
   <div class="record__wrapper" v-if="!!record" :key="`${record.id}_fields`">
-    <div class="record" :class="Array.isArray(selectedRecords) ? 'record--bulk' : 'record--focus'">
+    <div
+      class="record"
+      :class="Array.isArray(selectedRecords) ? 'record--bulk' : 'record--focus'"
+    >
       <RecordFieldsHeader
         class="record__fixed-header"
         :record="record"
@@ -10,7 +13,11 @@
         @on-select-record="onSelectedRecord"
       />
       <div class="record__content">
-        <RecordFields :record="record" :fields="record.fields" :recordCriteria="recordCriteria" />
+        <RecordFields
+          :record="record"
+          :fields="record.fields"
+          :recordCriteria="recordCriteria"
+        />
       </div>
     </div>
   </div>
@@ -52,7 +59,11 @@ export default {
     spanQuestionsAnswers: {
       deep: true,
       handler() {
-        if (this.record?.questions?.filter((q) => q.isSpanType).some((q) => q.isAnswerModified)) {
+        if (
+          this.record?.questions
+            ?.filter((q) => q.isSpanType)
+            .some((q) => q.isAnswerModified)
+        ) {
           this.onSelectedRecord(true);
         }
       },

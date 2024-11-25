@@ -3,9 +3,12 @@
   <div class="card">
     <h2 class="card__title" v-text="title" />
     <p class="card__text" v-text="text" />
-    <BaseButton class="card__button" :class="buttonType" @click="$emit('on-click', buttonAction)">{{
-      buttonText
-    }}</BaseButton>
+    <BaseButton
+      class="card__button"
+      :class="buttonType"
+      @click="$emit('on-click', buttonAction)"
+      >{{ buttonText }}</BaseButton
+    >
   </div>
 </template>
 
@@ -59,10 +62,18 @@ export default {
   &__button.button {
     margin: auto;
     color: var(--fg-primary);
-    background: linear-gradient(177.33deg, var(--bg-accent-grey-5) 20%, var(--bg-opacity-4) 100%);
+    background: linear-gradient(
+      177.33deg,
+      var(--bg-accent-grey-5) 20%,
+      var(--bg-opacity-4) 100%
+    );
     border: 1px solid hsl(47, 100%, 60%, 0.5);
     &:hover {
-      background: linear-gradient(177.33deg, var(--bg-accent-grey-5) 20%, var(--bg-opacity-2) 100%);
+      background: linear-gradient(
+        177.33deg,
+        var(--bg-accent-grey-5) 20%,
+        var(--bg-opacity-2) 100%
+      );
     }
   }
 }

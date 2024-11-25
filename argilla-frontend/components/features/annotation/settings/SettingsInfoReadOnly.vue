@@ -4,7 +4,10 @@
     <div class="settings__area">
       <div class="settings__row">
         <div class="settings__item">
-          <p class="setting__dataset-name --body1" v-html="settings.dataset.name" />
+          <p
+            class="setting__dataset-name --body1"
+            v-html="settings.dataset.name"
+          />
         </div>
         <base-action-tooltip :tooltip="$t('copied')">
           <base-button
@@ -18,18 +21,27 @@
       </div>
     </div>
     <div class="settings__area">
-      <h2 class="--heading5 --medium description__title" v-text="$t('taskDistribution')" />
+      <h2
+        class="--heading5 --medium description__title"
+        v-text="$t('taskDistribution')"
+      />
 
       <div class="form-group">
         <label v-text="$t('minimumSubmittedResponses')" />
         <span class="info-icon" :data-title="$t('taskDistributionTooltip')">
           <svgicon name="info" width="20" height="20"></svgicon>
         </span>
-        <span class="form-group__input--read-only" v-text="settings.dataset.distribution.minSubmitted" />
+        <span
+          class="form-group__input--read-only"
+          v-text="settings.dataset.distribution.minSubmitted"
+        />
       </div>
     </div>
     <div class="settings__area">
-      <DatasetDescriptionReadOnly :guidelines="guidelines" :isColorLight="!guidelines" />
+      <DatasetDescriptionReadOnly
+        :guidelines="guidelines"
+        :isColorLight="!guidelines"
+      />
     </div>
   </div>
 </template>
@@ -49,7 +61,9 @@ export default {
       return `${window.origin}${fullPath}`;
     },
     guidelines() {
-      return this.settings.dataset.guidelines || this.$t("noAnnotationGuidelines");
+      return (
+        this.settings.dataset.guidelines || this.$t("noAnnotationGuidelines")
+      );
     },
   },
 };

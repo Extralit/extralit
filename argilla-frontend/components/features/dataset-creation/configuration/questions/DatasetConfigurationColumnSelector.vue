@@ -1,5 +1,10 @@
 <template>
-  <BaseDropdown class="column-selector" :visible="dropdownIsVisible" @visibility="onVisibility" v-if="options.length">
+  <BaseDropdown
+    class="column-selector"
+    :visible="dropdownIsVisible"
+    @visibility="onVisibility"
+    v-if="options.length"
+  >
     <template slot="dropdown-header">
       <svgicon name="assign" height="12" />
       {{ $t("datasetCreation.mapToColumn") }}
@@ -9,7 +14,11 @@
       <span class="column-selector__options__intro">Column</span>
       <ul class="column-selector__options">
         <li
-          :class="option === value ? 'column-selector__option--selected' : 'column-selector__option'"
+          :class="
+            option === value
+              ? 'column-selector__option--selected'
+              : 'column-selector__option'
+          "
           v-for="(option, index) in filteredOptions"
           :key="index"
           @click="selectOption(option)"
@@ -45,7 +54,9 @@ export default {
   },
   computed: {
     filteredOptions() {
-      return this.options.filter((option) => JSON.stringify(option) !== JSON.stringify(this.value));
+      return this.options.filter(
+        (option) => JSON.stringify(option) !== JSON.stringify(this.value)
+      );
     },
     noMapping() {
       return this.value === "no mapping";

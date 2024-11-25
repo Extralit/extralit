@@ -93,8 +93,6 @@ import { Data, DataFrame, DataFrameField, Validators } from './types';
 import { difference } from '~/v1/domain/entities/record/Record';
 
 export default {
-  name: "RenderTableBaseComponent",
-
   props: {
     tableData: {
       type: String,

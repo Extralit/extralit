@@ -40,7 +40,8 @@ Vue.directive("tooltip", {
       let tooltipTriangle = document.createElement("div");
       tooltipTriangle = initTooltipTriangleStyle(tooltipTriangle);
       let tooltipTriangleInner = document.createElement("div");
-      tooltipTriangleInner = initTooltipTriangleInnerStyle(tooltipTriangleInner);
+      tooltipTriangleInner =
+        initTooltipTriangleInnerStyle(tooltipTriangleInner);
 
       // NOTE - include close icon and text node inside tooltip
       tooltip.appendChild(tooltipHeader);
@@ -96,7 +97,10 @@ Vue.directive("tooltip", {
     element.scrollInParent = function () {
       const { top: parentOffsetTop = 0, bottom: parentOffsetBottom = 0 } =
         initElementOffset(getScrollableParent(element)) || {};
-      if (elementOffset.top < parentOffsetTop || elementOffset.bottom > parentOffsetBottom) {
+      if (
+        elementOffset.top < parentOffsetTop ||
+        elementOffset.bottom > parentOffsetBottom
+      ) {
         tooltip.style.visibility = "hidden";
       } else {
         tooltip.style.visibility = "visible";
@@ -141,29 +145,45 @@ const initElementOffset = function (element) {
   return element.getBoundingClientRect() || null;
 };
 const getScrollableParent = function (element) {
-  return !element || element === document.body ? document.body : getElementOrParent(element);
+  return !element || element === document.body
+    ? document.body
+    : getElementOrParent(element);
 };
 const getElementOrParent = function (element) {
-  return isScrollable(element) ? element : getScrollableParent(element.parentNode);
+  return isScrollable(element)
+    ? element
+    : getScrollableParent(element.parentNode);
 };
 const initEventsListener = (element, closeIcon) => {
   if (element && closeIcon) {
     closeIcon.addEventListener("click", element.clickOnClose);
     element.addEventListener("click", element.clickOnTooltipElementEvent);
     document.body.addEventListener("click", element.clickOutsideEvent);
-    getScrollableParent(element).addEventListener("scroll", element.scrollInParent);
+    getScrollableParent(element).addEventListener(
+      "scroll",
+      element.scrollInParent
+    );
     window.addEventListener("resize", element.resize);
   }
 };
 
 const destroyEventsListener = (element) => {
-  document.body.removeEventListener("click", element.clickOnTooltipElementEvent);
-  document.body.removeEventListener("touchstart", element.clickOnTooltipElementEvent);
+  document.body.removeEventListener(
+    "click",
+    element.clickOnTooltipElementEvent
+  );
+  document.body.removeEventListener(
+    "touchstart",
+    element.clickOnTooltipElementEvent
+  );
   document.body.removeEventListener("click", element.clickOutsideEvent);
   document.body.removeEventListener("touchstart", element.clickOutsideEvent);
   document.body.removeEventListener("click", element.clickOnClose);
   document.body.removeEventListener("touchstart", element.clickOnClose);
-  getScrollableParent(element).removeEventListener("scroll", element.scrollInParent);
+  getScrollableParent(element).removeEventListener(
+    "scroll",
+    element.scrollInParent
+  );
   window.removeEventListener("resize", element.resize);
 };
 
@@ -200,7 +220,8 @@ const initTooltipTriangleInnerStyle = (tooltipTriangleInner) => {
   tooltipTriangleInner.style.position = "relative";
   tooltipTriangleInner.style.width = "0";
   tooltipTriangleInner.style.height = "0";
-  tooltipTriangleInner.style.borderBottom = "10px solid var(--bg-accent-grey-2)";
+  tooltipTriangleInner.style.borderBottom =
+    "10px solid var(--bg-accent-grey-2)";
   tooltipTriangleInner.style.borderRight = "10px solid transparent";
   tooltipTriangleInner.style.borderLeft = "10px solid transparent";
   return tooltipTriangleInner;
@@ -211,13 +232,24 @@ const initTooltipPosition = (tooltip, tooltipPosition, elementOffset) => {
   const tooltipTriangle = tooltip.querySelector(".triangle");
   const tooltipTriangleOffset = initElementOffset(tooltipTriangle);
   const margin = 8;
-  const rightSideOutOfViewport = window.innerWidth <= elementOffset.right + tooltipOffset.width / 2;
-  const bottomSideoutOfViewport = window.innerHeight <= elementOffset.bottom + tooltipOffset.height;
+  const rightSideOutOfViewport =
+    window.innerWidth <= elementOffset.right + tooltipOffset.width / 2;
+  const bottomSideoutOfViewport =
+    window.innerHeight <= elementOffset.bottom + tooltipOffset.height;
   switch (tooltipPosition.toUpperCase()) {
     case TOOLTIP_DIRECTION.BOTTOM:
       tooltip.style.left = rightSideOutOfViewport
-        ? `${elementOffset.left - tooltipOffset.width + elementOffset.width + tooltipTriangleOffset.width}px`
-        : `${elementOffset.left - tooltipOffset.width / 2 + elementOffset.width / 2}px`;
+        ? `${
+            elementOffset.left -
+            tooltipOffset.width +
+            elementOffset.width +
+            tooltipTriangleOffset.width
+          }px`
+        : `${
+            elementOffset.left -
+            tooltipOffset.width / 2 +
+            elementOffset.width / 2
+          }px`;
       tooltipTriangle.style.left = rightSideOutOfViewport ? "100%" : "50%";
       tooltipTriangle.style.marginLeft = rightSideOutOfViewport
         ? `-${tooltipTriangleOffset.width * 2}px`
@@ -227,8 +259,12 @@ const initTooltipPosition = (tooltip, tooltipPosition, elementOffset) => {
         ? `${elementOffset.y - tooltipOffset.height - margin}px`
         : `${elementOffset.y + elementOffset.height + margin}px`;
 
-      tooltipTriangle.style.transform = bottomSideoutOfViewport ? "rotateX(180deg)" : "";
-      tooltipTriangle.style.top = bottomSideoutOfViewport ? "100%" : `-${tooltipTriangleOffset.height}px`;
+      tooltipTriangle.style.transform = bottomSideoutOfViewport
+        ? "rotateX(180deg)"
+        : "";
+      tooltipTriangle.style.top = bottomSideoutOfViewport
+        ? "100%"
+        : `-${tooltipTriangleOffset.height}px`;
       break;
     default:
     // tooltip direction is unknown

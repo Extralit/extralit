@@ -1,5 +1,11 @@
 <template>
-  <div :class="visibleReferenceRecord ? 'record-reference__wrapper--expanded' : 'record-reference__wrapper'">
+  <div
+    :class="
+      visibleReferenceRecord
+        ? 'record-reference__wrapper--expanded'
+        : 'record-reference__wrapper'
+    "
+  >
     <SimilarityReference
       v-show="recordCriteria.isFilteringBySimilarity"
       class="record-reference__filter"
@@ -44,13 +50,15 @@ export default {
   },
   computed: {
     fieldsPreview() {
-      const firstFieldText = (index) => {
+      const firstFieldText = (index) =>{
         let content = this.fields[index].content;
-        content = content.replace(/<[^>]*>?/gm, "");
-        content = content.replace(/\s+/g, " ");
+        content = content.replace(/<[^>]*>?/gm, ''); 
+        content = content.replace(/\s+/g, ' '); 
         return `${this.fields[index].title}: ${content}`;
       };
-      return this.fields.length > 1 ? [firstFieldText(0), firstFieldText(1)] : [firstFieldText(0)];
+      return this.fields.length > 1
+        ? [firstFieldText(0), firstFieldText(1)]
+        : [firstFieldText(0)];
     },
   },
   methods: {

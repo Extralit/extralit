@@ -1,7 +1,12 @@
 <template>
   <div class="wrapper">
     <QuestionHeaderComponent :question="question" />
-    <TextAreaContents v-if="!question.suggestion" :question="question" :questions="questions" :is-focused="isFocused" />
+    <TextAreaContents
+      v-if="!question.suggestion"
+      :question="question"
+      :questions="questions"
+      :is-focused="isFocused"
+    />
     <BaseCardWithTabs v-else :tabs="tabs" tabSize="small">
       <template v-slot="{ currentComponent }">
         <component
@@ -50,7 +55,9 @@ export default {
           name: this.isSuggested ? `Use: ${this.suggestedAgent}` : this.$nuxt.$t("questions_form.write"),
           icon: this.isSuggested ? "suggestion" : "",
           info: this.isSuggested ? this.suggestedScore : "",
-          tooltipTitle: this.isSuggested ? this.$nuxt.$t("suggestion.name") : "",
+          tooltipTitle: this.isSuggested
+            ? this.$nuxt.$t("suggestion.name")
+            : "",
           tooltipText: this.isSuggested ? this.suggestedAgent : "",
           component: "TextAreaContents",
         },
