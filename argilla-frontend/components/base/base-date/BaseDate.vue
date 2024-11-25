@@ -67,14 +67,9 @@ export default {
         this.formattedDate = this.timeAgo(date);
         return;
       } else if (this.format === "date-local") {
-        const utcDate = this.date.endsWith("Z") ? this.date : `${this.date}Z`;
-        this.formattedDate = new Date(utcDate).toLocaleString(undefined, {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        });
+        const utcDate = this.date.endsWith('Z') ? this.date : `${this.date}Z`;
+        this.formattedDate = new Date(utcDate).toLocaleString(undefined, 
+        { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
         return;
       }
 

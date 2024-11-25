@@ -19,7 +19,11 @@
     <div class="table-info" role="table">
       <div class="table-info__header">
         <slot name="columns">
-          <div class="table-info__item" role="columnheader" aria-label="Table Header">
+          <div
+            class="table-info__item"
+            role="columnheader"
+            aria-label="Table Header"
+          >
             <div
               v-for="(column, key) in columns"
               :key="key"
@@ -43,7 +47,12 @@
                 :aria-label="'Sort by ' + column.name"
                 :aria-sort="sortOrder === 'asc' ? 'descending' : 'ascending'"
               >
-                <svgicon width="18" height="18" name="sort" aria-hidden="true" />
+                <svgicon
+                  width="18"
+                  height="18"
+                  name="sort"
+                  aria-hidden="true"
+                />
                 <span>{{ column.name }}</span>
               </button>
               <button v-else :data-title="column.tooltip">
@@ -72,9 +81,16 @@
                   role="cell"
                 >
                   <span :class="column.class">
-                    <span v-if="column.actions" role="group" aria-label="Row actions">
+                    <span
+                      v-if="column.actions"
+                      role="group"
+                      aria-label="Row actions"
+                    >
                       <div class="table-info__actions">
-                        <p class="table-info__main" v-if="column.type === 'main'">
+                        <p
+                          class="table-info__main"
+                          v-if="column.type === 'main'"
+                        >
                           {{ itemValue(item, column) }}
                         </p>
                         <span v-else>{{ itemValue(item, column) }}</span>
@@ -89,7 +105,9 @@
                             <base-button
                               :title="action.title"
                               class="table-info__actions__button"
-                              @click.prevent="onActionClicked(action.name, item)"
+                              @click.prevent="
+                                onActionClicked(action.name, item)
+                              "
                               aria-hidden="true"
                             >
                               <svgicon
@@ -209,7 +227,10 @@ export default {
         }
         const querySearch = this.querySearch.toLowerCase();
 
-        return item[this.searchOn].toString().toLowerCase().includes(querySearch);
+        return item[this.searchOn]
+          .toString()
+          .toLowerCase()
+          .includes(querySearch);
       };
       const matchFilters = (item) => {
         if (this.filters) {
@@ -229,7 +250,10 @@ export default {
         return 0;
       };
 
-      return this.data.filter(matchSearch).filter(matchFilters).sort(itemComparator);
+      return this.data
+        .filter(matchSearch)
+        .filter(matchFilters)
+        .sort(itemComparator);
     },
   },
   beforeMount() {

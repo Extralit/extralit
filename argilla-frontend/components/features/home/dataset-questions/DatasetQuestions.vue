@@ -1,7 +1,11 @@
 <template>
   <BaseBadgeSkeleton v-if="isQuestionsLoading" :quantity="3" />
   <div class="questions" v-else>
-    <BaseBadge v-for="question in questions" :key="question.id" :text="$t(question.type)" />
+    <BaseBadge
+      v-for="question in questions"
+      :key="question.id"
+      :text="$t(question.type)"
+    />
   </div>
 </template>
 <script>

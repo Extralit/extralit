@@ -1,5 +1,11 @@
 <template>
-  <div class="tooltip" v-if="title || text" ref="tooltipWrapper" @mouseenter="show" @mouseleave="hide">
+  <div
+    class="tooltip"
+    v-if="title || text"
+    ref="tooltipWrapper"
+    @mouseenter="show"
+    @mouseleave="hide"
+  >
     <slot></slot>
 
     <div
@@ -77,24 +83,36 @@ export default {
         case "top":
           this.tooltipPosition = {
             top: tooltipRect.top - tooltipTextRect.height - this.offset,
-            left: tooltipRect.left + tooltipRect.width / 2 - tooltipTextRect.width / 2,
+            left:
+              tooltipRect.left +
+              tooltipRect.width / 2 -
+              tooltipTextRect.width / 2,
           };
           break;
         case "bottom":
           this.tooltipPosition = {
             top: tooltipRect.top + tooltipRect.height,
-            left: tooltipRect.left + tooltipRect.width / 2 - tooltipTextRect.width / 2,
+            left:
+              tooltipRect.left +
+              tooltipRect.width / 2 -
+              tooltipTextRect.width / 2,
           };
           break;
         case "left":
           this.tooltipPosition = {
-            top: tooltipRect.top + tooltipRect.height / 2 - tooltipTextRect.height / 2,
+            top:
+              tooltipRect.top +
+              tooltipRect.height / 2 -
+              tooltipTextRect.height / 2,
             left: tooltipRect.left - tooltipTextRect.width - this.offset,
           };
           break;
         case "right":
           this.tooltipPosition = {
-            top: tooltipRect.top + tooltipRect.height / 2 - tooltipTextRect.height / 2,
+            top:
+              tooltipRect.top +
+              tooltipRect.height / 2 -
+              tooltipTextRect.height / 2,
             left: tooltipRect.right + this.offset,
           };
           break;

@@ -158,7 +158,7 @@ export default {
         return this.$t("table_form_placeholder");
       }
       return this.question.settings.placeholder;
-    },
+    }
   },
 };
 </script>

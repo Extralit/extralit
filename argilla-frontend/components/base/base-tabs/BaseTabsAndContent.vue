@@ -17,7 +17,12 @@
 
 <template>
   <div>
-    <BaseTabs :tabs="tabs" :active-tab="currentTab" :tab-size="tabSize" @change-tab="getSelectedTab" />
+    <BaseTabs
+      :tabs="tabs"
+      :active-tab="currentTab"
+      :tab-size="tabSize"
+      @change-tab="getSelectedTab"
+    />
     <transition name="fade" mode="out-in" appear>
       <slot :current-component="currentComponent" />
     </transition>

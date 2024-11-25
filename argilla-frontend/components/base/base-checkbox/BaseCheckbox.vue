@@ -21,7 +21,13 @@
       <slot />
     </label>
     <div class="checkbox__container" tabindex="0">
-      <input :id="id" type="checkbox" :disabled="disabled" :value="value" :checked="checked" />
+      <input
+        :id="id"
+        type="checkbox"
+        :disabled="disabled"
+        :value="value"
+        :checked="checked"
+      />
       <svgicon color="#fffff" width="12" name="check" />
     </div>
   </div>
@@ -90,7 +96,10 @@ export default {
       if (!this.disabled) {
         if (Array.isArray(this.areChecked)) {
           const checked = this.areChecked.slice();
-          const found = typeof this.value === "string" ? checked.indexOf(this.value) : _.findIndex(checked, this.value);
+          const found =
+            typeof this.value === "string"
+              ? checked.indexOf(this.value)
+              : _.findIndex(checked, this.value);
           if (found !== -1) {
             checked.splice(found, 1);
           } else {

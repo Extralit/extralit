@@ -2,7 +2,10 @@
   <BaseLoading v-if="$fetchState.pending || $fetchState.error" />
 
   <BulkAnnotation
-    v-else-if="recordCriteria.committed.page.isBulkMode && recordCriteria.committed.isPending"
+    v-else-if="
+      recordCriteria.committed.page.isBulkMode &&
+      recordCriteria.committed.isPending
+    "
     role="main"
     :record-criteria="recordCriteria"
     :dataset-vectors="datasetVectors"
@@ -69,7 +72,7 @@ export default {
 
       await this.loadRecords(this.recordCriteria);
 
-      this.$nuxt.$emit("on-change-record-metadata", this.metadata);
+      this.$nuxt.$emit('on-change-record-metadata', this.metadata);
 
       this.fetching = false;
     },
@@ -82,7 +85,7 @@ export default {
 
       await this.paginateRecords(this.recordCriteria);
 
-      this.$nuxt.$emit("on-change-record-metadata", this.metadata);
+      this.$nuxt.$emit('on-change-record-metadata', this.metadata);
 
       this.fetching = false;
     },
@@ -91,14 +94,18 @@ export default {
         await this.paginate();
       };
 
-      this.showNotificationForNewFilterWhenIfNeeded(filter, () => criteria.rollback());
+      this.showNotificationForNewFilterWhenIfNeeded(filter, () =>
+        criteria.rollback()
+      );
     },
     onChangeRecordFilter(criteria) {
       const filter = async () => {
         await this.onLoadRecords();
       };
 
-      this.showNotificationForNewFilterWhenIfNeeded(filter, () => criteria.rollback());
+      this.showNotificationForNewFilterWhenIfNeeded(filter, () =>
+        criteria.rollback()
+      );
     },
     goToNext() {
       this.recordCriteria.nextPage();
@@ -132,7 +139,10 @@ export default {
   mounted() {
     this.$root.$on("on-change-record-page", this.onChangeRecordPage);
 
-    this.$root.$on("on-change-record-criteria-filter", this.onChangeRecordFilter);
+    this.$root.$on(
+      "on-change-record-criteria-filter",
+      this.onChangeRecordFilter
+    );
   },
   destroyed() {
     this.$root.$off("on-change-record-page");

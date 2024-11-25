@@ -1,6 +1,9 @@
 <template>
   <div class="import-from-hub" :class="isExpanded ? '--expanded' : null">
-    <BaseButton class="import-from-hub__button" @click="$emit('on-expand')" v-if="!isExpanded"
+    <BaseButton
+      class="import-from-hub__button"
+      @click="$emit('on-expand')"
+      v-if="!isExpanded"
       ><svgicon
         class="import-from-hub__button__icon"
         name="link"
@@ -12,12 +15,19 @@
       >{{ $t("home.importFromHub") }}</BaseButton
     >
     <template v-else>
-      <BaseButton class="import-from-hub__close-button" @click="$emit('on-close')">
-        <svgicon name="close" width="8" aria-hidden="true"></svgicon>Close</BaseButton
+      <BaseButton
+        class="import-from-hub__close-button"
+        @click="$emit('on-close')"
+      >
+        <svgicon name="close" width="8" aria-hidden="true"></svgicon
+        >Close</BaseButton
       >
       <form @submit.prevent="$emit('on-import-dataset', repositoryId)">
         <transition name="slide-right" appear>
-          <BaseInputContainer class="import-from-hub__input" :class="{ '--error': error }">
+          <BaseInputContainer
+            class="import-from-hub__input"
+            :class="{ '--error': error }"
+          >
             <svgicon
               class="import-from-hub__button__icon"
               name="link"
@@ -25,13 +35,23 @@
               height="20"
               aria-hidden="true"
             ></svgicon>
-            <BaseInput autofocus v-model="repositoryId" :placeholder="$t('home.pasteRepoIdPlaceholder')" />
-            <BaseButton :disabled="!repositoryId" class="secondary import-from-hub__button-submit" type="submit">
+            <BaseInput
+              autofocus
+              v-model="repositoryId"
+              :placeholder="$t('home.pasteRepoIdPlaceholder')"
+            />
+            <BaseButton
+              :disabled="!repositoryId"
+              class="secondary import-from-hub__button-submit"
+              type="submit"
+            >
               <svgicon name="chevron-right" width="16"></svgicon
             ></BaseButton>
           </BaseInputContainer>
         </transition>
-        <span v-if="error" class="import-from-hub__error">{{ $t("datasetCreation.cantLoadRepository") }}</span>
+        <span v-if="error" class="import-from-hub__error">{{
+          $t("datasetCreation.cantLoadRepository")
+        }}</span>
       </form>
     </template>
   </div>
@@ -66,10 +86,18 @@ $color-error: var(--color-brand);
   &__button.button {
     min-height: 42px;
     color: var(--fg-primary);
-    background: linear-gradient(177.33deg, var(--bg-accent-grey-5) 20%, var(--bg-opacity-4) 100%);
+    background: linear-gradient(
+      177.33deg,
+      var(--bg-accent-grey-5) 20%,
+      var(--bg-opacity-4) 100%
+    );
     box-shadow: 0 0 0 1px var(--bg-opacity-10);
     &:hover {
-      background: linear-gradient(177.33deg, var(--bg-accent-grey-5) 20%, var(--bg-opacity-2) 100%);
+      background: linear-gradient(
+        177.33deg,
+        var(--bg-accent-grey-5) 20%,
+        var(--bg-opacity-2) 100%
+      );
     }
   }
   &__input {

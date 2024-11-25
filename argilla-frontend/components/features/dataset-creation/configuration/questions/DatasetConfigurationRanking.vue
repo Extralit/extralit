@@ -1,6 +1,10 @@
 <template>
   <div class="dataset-config-ranking">
-    <div class="dataset-config-ranking__input-container" v-for="(item, index) in value" :key="index">
+    <div
+      class="dataset-config-ranking__input-container"
+      v-for="(item, index) in value"
+      :key="index"
+    >
       <input
         type="text"
         :value="item.value"
@@ -10,12 +14,19 @@
         :placeholder="placeholder"
         class="dataset-config-ranking__input"
       />
-      <BaseButton v-if="value.length >= 3" @click="removeOption(item)" class="dataset-config-ranking__remove-button">
+      <BaseButton
+        v-if="value.length >= 3"
+        @click="removeOption(item)"
+        class="dataset-config-ranking__remove-button"
+      >
         <svgicon name="close" width="12" color="var(--fg-tertiary)" />
       </BaseButton>
     </div>
-    <BaseButton @click="addOption" class="secondary small dataset-config-ranking__add-button"
-      ><svgicon name="plus" width="12" color="var(--fg-secondary)" /> Include option</BaseButton
+    <BaseButton
+      @click="addOption"
+      class="secondary small dataset-config-ranking__add-button"
+      ><svgicon name="plus" width="12" color="var(--fg-secondary)" /> Include
+      option</BaseButton
     >
   </div>
 </template>
@@ -52,7 +63,9 @@ export default {
       this.$emit("on-value-change", newValue);
     },
     onInput(index, value) {
-      const newValue = this.value.map((item, i) => (i === index ? { ...item, value } : item));
+      const newValue = this.value.map((item, i) =>
+        i === index ? { ...item, value } : item
+      );
       this.$emit("on-value-change", newValue);
     },
   },

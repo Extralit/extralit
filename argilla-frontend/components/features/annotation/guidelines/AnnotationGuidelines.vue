@@ -1,5 +1,8 @@
 <template>
-  <MarkdownRenderer class="--body3" :markdown="guidelines || $t('noAnnotationGuidelines')" />
+  <MarkdownRenderer
+    class="--body3"
+    :markdown="guidelines || $t('noAnnotationGuidelines')"
+  />
 </template>
 
 <script>

@@ -2,7 +2,10 @@
   <section class="config-form">
     <div class="config-form__content">
       <div class="config-form__col-wrapper">
-        <div class="config-form__col" v-if="dataset.selectedSubset.fields.length">
+        <div
+          class="config-form__col"
+          v-if="dataset.selectedSubset.fields.length"
+        >
           <div class="config-form__col__header">
             {{ $t("datasetCreation.fields") }}
             <div class="config-form__subset" v-if="dataset.subsets.length > 1">
@@ -14,7 +17,9 @@
                 @onValueChange="$emit('change-subset', $event)"
               >
                 <template slot="optionsIntro">
-                  <span class="config-form__selector__intro">{{ $t("datasetCreation.selectSubset") }}</span>
+                  <span class="config-form__selector__intro">{{
+                    $t("datasetCreation.selectSubset")
+                  }}</span>
                 </template>
               </DatasetConfigurationSelector>
             </div>
@@ -27,13 +32,23 @@
               ghost-class="config-form__ghost"
               :disabled="isFocused"
             >
-              <transition-group class="config-form__draggable-area-wrapper" type="transition" :css="false">
+              <transition-group
+                class="config-form__draggable-area-wrapper"
+                type="transition"
+                :css="false"
+              >
                 <DatasetConfigurationField
-                  v-for="field in dataset.selectedSubset.fields.filter((f) => f.name !== dataset.mappings.external_id)"
+                  v-for="field in dataset.selectedSubset.fields.filter(
+                    (f) => f.name !== dataset.mappings.external_id
+                  )"
                   :key="field.name"
                   :field="field"
                   :available-types="
-                    availableFieldTypes.filter((a) => a.value === 'no mapping' || a.value === field.originalType.value)
+                    availableFieldTypes.filter(
+                      (a) =>
+                        a.value === 'no mapping' ||
+                        a.value === field.originalType.value
+                    )
                   "
                   @is-focused="isFocused = $event"
                 />
@@ -47,7 +62,14 @@
           <div class="config-form__col__header">
             {{ $t("datasetCreation.questionsTitle") }}
             <DatasetConfigurationAddQuestion
-              :options="['text', 'label_selection', 'multi_label_selection', 'rating', 'ranking', 'span']"
+              :options="[
+                'text',
+                'label_selection',
+                'multi_label_selection',
+                'rating',
+                'ranking',
+                'span',
+              ]"
               @add-question="addQuestion($event)"
             />
           </div>
@@ -60,7 +82,11 @@
               :group="{ name: 'questions' }"
               :disabled="isFocused"
             >
-              <transition-group class="config-form__draggable-area-wrapper" type="transition" :css="false">
+              <transition-group
+                class="config-form__draggable-area-wrapper"
+                type="transition"
+                :css="false"
+              >
                 <DatasetConfigurationQuestion
                   v-for="question in dataset.selectedSubset.questions"
                   :key="question.name"
@@ -77,9 +103,13 @@
           </div>
         </div>
         <div class="config-form__button-area">
-          <BaseButton class="primary" @click.prevent="visibleDatasetCreationDialog = !visibleDatasetCreationDialog">{{
-            $t("datasetCreation.button")
-          }}</BaseButton>
+          <BaseButton
+            class="primary"
+            @click.prevent="
+              visibleDatasetCreationDialog = !visibleDatasetCreationDialog
+            "
+            >{{ $t("datasetCreation.button") }}</BaseButton
+          >
           <DatasetConfigurationDialog
             v-if="visibleDatasetCreationDialog"
             :dataset="dataset"
@@ -128,14 +158,19 @@ export default {
       return `${typeName}_${parseInt(number) || 0}`;
     },
     addQuestion(type) {
-      const questionName = this.generateName(type, this.getMaxNumberInNames + 1);
+      const questionName = this.generateName(
+        type,
+        this.getMaxNumberInNames + 1
+      );
       this.dataset.selectedSubset.addQuestion(questionName, {
         type,
       });
     },
     onTypeIsChanged(oldName, type) {
       const numberInName = oldName.split("_").pop();
-      const index = this.dataset.selectedSubset.questions.findIndex((q) => q.name === oldName);
+      const index = this.dataset.selectedSubset.questions.findIndex(
+        (q) => q.name === oldName
+      );
       this.dataset.selectedSubset.removeQuestion(oldName);
       const newQuestionName = this.generateName(type.value, numberInName);
       this.dataset.selectedSubset.addQuestion(

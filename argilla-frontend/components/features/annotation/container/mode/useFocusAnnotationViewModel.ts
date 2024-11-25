@@ -30,7 +30,7 @@ export const useFocusAnnotationViewModel = (
     const selections = document?.getSegmentSelections();
 
     props.record?.questions?.forEach((question: Question) => {
-      if (selections && question.name === 'context-relevant'){
+      if (selections && question.name == 'context-relevant'){
         question.addDynamicSelectionToLabelQuestion(selections)
 
         if (props.record.isPending && !!question.suggestion) {
@@ -65,7 +65,7 @@ export const useFocusAnnotationViewModel = (
 
   const submit = async (record: Record, durationWrapper?: { value: number }) => {
     isSubmitting.value = true;
-    const duration = incrementDuration(record, durationWrapper);
+    let duration = incrementDuration(record, durationWrapper);
 
     await submitUseCase.execute(record, duration);
     await debounceForSubmit.wait();
@@ -75,7 +75,7 @@ export const useFocusAnnotationViewModel = (
 
   const saveAsDraft = async (record: Record, durationWrapper?: { value: number }) => {
     isDraftSaving.value = true;
-    const duration = incrementDuration(record, durationWrapper);
+    let duration = incrementDuration(record, durationWrapper);
 
     await debounceForSaveDraft.wait();
     await saveDraftUseCase.execute(record, duration);

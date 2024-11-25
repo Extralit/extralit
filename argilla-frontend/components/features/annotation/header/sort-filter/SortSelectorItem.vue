@@ -1,10 +1,21 @@
 <template>
   <div class="sort-selector-item">
-    <BaseDropdown :visible="visibleDropdown" @visibility="onToggleVisibility" class="sort-selector-item__dropdown">
+    <BaseDropdown
+      :visible="visibleDropdown"
+      @visibility="onToggleVisibility"
+      class="sort-selector-item__dropdown"
+    >
       <span slot="dropdown-header" class="sort-selector-item__dropdown__header">
         <div class="sort-selector-item__dropdown__header__item">
-          <span class="sort-selector-item__dropdown__header__group" v-text="$t(`sorting.${category.group}`)" />
-          <span class="sort-selector-item__dropdown__header__text" title="category.title" v-text="category.title" />
+          <span
+            class="sort-selector-item__dropdown__header__group"
+            v-text="$t(`sorting.${category.group}`)"
+          />
+          <span
+            class="sort-selector-item__dropdown__header__text"
+            title="category.title"
+            v-text="category.title"
+          />
         </div>
         <svgicon width="12" height="12" name="chevron-down" />
       </span>
@@ -25,11 +36,21 @@
         width="16"
         height="16"
         :name="category.sort === 'asc' ? 'arrow-up' : 'arrow-down'"
-        :aria-label="'Change sort direction to ' + (category.sort === 'asc' ? 'up' : 'down')"
+        :aria-label="
+          'Change sort direction to ' +
+          (category.sort === 'asc' ? 'up' : 'down')
+        "
       />
     </BaseButton>
-    <BaseButton class="sort-selector-item__close-button secondary clear" @click="$emit('clear-category')">
-      <svgicon class="sort-selector-item__close-button__icon" name="close" width="14" height="14"
+    <BaseButton
+      class="sort-selector-item__close-button secondary clear"
+      @click="$emit('clear-category')"
+    >
+      <svgicon
+        class="sort-selector-item__close-button__icon"
+        name="close"
+        width="14"
+        height="14"
     /></BaseButton>
   </div>
 </template>

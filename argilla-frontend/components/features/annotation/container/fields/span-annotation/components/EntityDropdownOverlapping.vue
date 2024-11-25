@@ -24,7 +24,11 @@
         @click="excludeAll"
         title="Clear all"
       >
-        <svgicon class="span-entity__badges__close-button__icon" name="close" width="10" height="10"
+        <svgicon
+          class="span-entity__badges__close-button__icon"
+          name="close"
+          width="10"
+          height="10"
       /></BaseButton>
       <input
         ref="search"
@@ -48,7 +52,11 @@
           v-model="selection"
           @mouseover.native="preSelectionIndex = index"
         >
-          <EntityBadge class="span-entity__badge" :color="option.color" :text="option.text"></EntityBadge>
+          <EntityBadge
+            class="span-entity__badge"
+            :color="option.color"
+            :text="option.text"
+          ></EntityBadge>
         </BaseCheckbox>
       </li>
     </ul>
@@ -77,7 +85,9 @@ export default {
   },
   computed: {
     filteredOptions() {
-      return this.options.filter((entity) => entity.text.toLowerCase().includes(this.searchText.toLowerCase()));
+      return this.options.filter((entity) =>
+        entity.text.toLowerCase().includes(this.searchText.toLowerCase())
+      );
     },
     optionsLength() {
       return this.filteredOptions.length;
@@ -86,7 +96,8 @@ export default {
   methods: {
     selectOptions() {
       const removedSpans = this.spanInRange.filter(
-        ({ entity }) => !this.selection.map((entity) => entity.id).includes(entity.id)
+        ({ entity }) =>
+          !this.selection.map((entity) => entity.id).includes(entity.id)
       );
 
       removedSpans.forEach((span) => {
@@ -94,7 +105,8 @@ export default {
       });
 
       const addedSpans = this.selection.filter(
-        (entity) => !this.spanInRange.some((span) => span.entity.id === entity.id)
+        (entity) =>
+          !this.spanInRange.some((span) => span.entity.id === entity.id)
       );
 
       addedSpans.forEach((entity) => {
@@ -102,7 +114,9 @@ export default {
       });
     },
     excludeOption(entityOpt) {
-      this.selection = this.selection.filter((entity) => entity.id !== entityOpt.id);
+      this.selection = this.selection.filter(
+        (entity) => entity.id !== entityOpt.id
+      );
     },
     excludeAll() {
       this.selection = [];
@@ -121,10 +135,14 @@ export default {
       this.preSelectionIndex = 0;
     },
     preselectNextOption() {
-      this.preSelectionIndex === this.optionsLength - 1 ? (this.preSelectionIndex = 0) : this.preSelectionIndex++;
+      this.preSelectionIndex === this.optionsLength - 1
+        ? (this.preSelectionIndex = 0)
+        : this.preSelectionIndex++;
     },
     preselectPreviousOption() {
-      this.preSelectionIndex === 0 ? (this.preSelectionIndex = this.optionsLength - 1) : this.preSelectionIndex--;
+      this.preSelectionIndex === 0
+        ? (this.preSelectionIndex = this.optionsLength - 1)
+        : this.preSelectionIndex--;
     },
   },
   watch: {

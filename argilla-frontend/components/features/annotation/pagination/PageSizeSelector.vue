@@ -14,7 +14,11 @@
       <template slot="dropdown-content">
         <ul class="page-size__options">
           <li
-            :class="value === option ? 'page-size__option--selected' : 'page-size__option'"
+            :class="
+              value === option
+                ? 'page-size__option--selected'
+                : 'page-size__option'
+            "
             v-for="option in options"
             :key="option"
             @click="selectOption(option)"
