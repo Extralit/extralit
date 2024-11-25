@@ -2,7 +2,11 @@
   <div class="text_field_component" :key="fieldText">
     <div class="title-area --body2">
       <span class="text_field_component__title-content" v-text="title" />
-      <BaseActionTooltip class="text_field_component__tooltip" :tooltip="$t('copied')" tooltip-position="left">
+      <BaseActionTooltip
+        class="text_field_component__tooltip"
+        :tooltip="$t('copied')"
+        tooltip-position="left"
+      >
         <BaseButton
           :title="$t('button.tooltip.copyToClipboard')"
           class="text_field_component__copy-button"

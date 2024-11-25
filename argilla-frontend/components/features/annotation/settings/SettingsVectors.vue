@@ -3,19 +3,30 @@
     <div class="settings__edition-form">
       <h2 class="--heading5 --medium" v-text="$t('settings.editVectors')" />
       <div v-for="vector in settings.vectors" :key="vector.id">
-        <form @submit.prevent="onSubmit(vector)" class="settings__edition-form__vectors">
+        <form
+          @submit.prevent="onSubmit(vector)"
+          class="settings__edition-form__vectors"
+        >
           <div class="settings__edition-form__name">
             <h4 class="--body1 --medium" v-text="vector.name" />
           </div>
 
-          <Validation :validations="vector.validate().title" class="settings__edition-form__group">
+          <Validation
+            :validations="vector.validate().title"
+            class="settings__edition-form__group"
+          >
             <label for="vector.title" v-text="$t('title')" />
             <input type="text" id="vector.title" v-model="vector.title" />
           </Validation>
 
           <div class="settings__edition-form__group">
             <label for="vector.dimensions" v-text="$t('dimension')" />
-            <input type="number" id="vector.dimensions" v-model="vector.dimensions" disabled />
+            <input
+              type="number"
+              id="vector.dimensions"
+              v-model="vector.dimensions"
+              disabled
+            />
           </div>
 
           <div class="settings__edition-form__footer">
@@ -27,7 +38,11 @@
             >
               <span v-text="$t('cancel')" />
             </BaseButton>
-            <BaseButton type="submit" class="primary small" :disabled="!vector.isModified || !vector.isValid">
+            <BaseButton
+              type="submit"
+              class="primary small"
+              :disabled="!vector.isModified || !vector.isValid"
+            >
               <span v-text="$t('update')" />
             </BaseButton>
           </div>

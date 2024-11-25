@@ -10,12 +10,16 @@
           <BaseButton :class="tabSize" @on-click="changeTab(tab)">
             {{ tab.name }}
             <svgicon v-if="tab.icon" :name="tab.icon" width="10" height="10" />
-            <span class="card-with-tabs__info" v-if="tab.info" v-text="tab.info" />
+            <span
+              class="card-with-tabs__info"
+              v-if="tab.info"
+              v-text="tab.info"
+            />
           </BaseButton>
         </BaseTooltip>
       </li>
     </ul>
-    <div class="card-with-tabs__content">
+    <div class="card-with-tabs__content" >
       <transition name="fade">
         <slot :current-component="currentComponent" :currentTabId="currentTab.id" />
       </transition>
@@ -91,7 +95,7 @@ export default {
       margin-left: -1px;
     }
     // @media (max-width: 600px) {
-    //   padding: 5px;
+    //   padding: 5px; 
     //   min-width: 100px;
     //   overflow: hidden;
     //   text-overflow: ellipsis;
@@ -116,13 +120,11 @@ export default {
   }
 }
 
-.fade-enter-active,
-.fade-leave-active {
+.fade-enter-active, .fade-leave-active {
   transition: opacity 0.1s ease;
 }
 
-.fade-enter,
-.fade-leave-to {
+.fade-enter, .fade-leave-to {
   opacity: 0;
 }
 </style>

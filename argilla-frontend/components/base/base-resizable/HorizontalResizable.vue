@@ -144,7 +144,8 @@ export default {
       const dY = e.clientY - this.upSidePrevPosition.clientY;
       const proportionalHeight = (this.upSidePrevPosition.height + dY) * 100;
       const newHeight = proportionalHeight / this.parentHeight;
-      const collapsedHeight = (this.collapsedPanelHeight * 100) / this.parentHeight;
+      const collapsedHeight =
+        (this.collapsedPanelHeight * 100) / this.parentHeight;
       this.upSide.style.height = `${newHeight}%`;
       if (newHeight >= 100 - collapsedHeight) {
         this.isExpanded = false;
@@ -178,8 +179,12 @@ export default {
       this.isExpanded = !this.isExpanded;
       if (this.isExpanded) {
         const savedPosition = this.getPosition();
-        const useSavedPosition = this.parentHeight - parseInt(savedPosition?.position) > this.expandedPanelMinHeight;
-        this.upSide.style.height = useSavedPosition ? savedPosition?.position : "50%";
+        const useSavedPosition =
+          this.parentHeight - parseInt(savedPosition?.position) >
+          this.expandedPanelMinHeight;
+        this.upSide.style.height = useSavedPosition
+          ? savedPosition?.position
+          : "50%";
       }
     },
   },

@@ -32,7 +32,11 @@
           @click="selectOption(option)"
           @mouseover.native="preSelectionIndex = index"
         >
-          <EntityBadge class="span-entity__badge" :color="option.color" :text="option.text"></EntityBadge>
+          <EntityBadge
+            class="span-entity__badge"
+            :color="option.color"
+            :text="option.text"
+          ></EntityBadge>
         </BaseButton>
       </li>
     </ul>
@@ -65,7 +69,9 @@ export default {
       );
     },
     availableOptions() {
-      return this.options.filter((entity) => entity.id !== this.selectedOption.id);
+      return this.options.filter(
+        (entity) => entity.id !== this.selectedOption.id
+      );
     },
     optionsLength() {
       return this.filteredOptions.length;
@@ -81,10 +87,14 @@ export default {
       this.preSelectionIndex = 0;
     },
     preselectNextOption() {
-      this.preSelectionIndex === this.optionsLength - 1 ? (this.preSelectionIndex = 0) : this.preSelectionIndex++;
+      this.preSelectionIndex === this.optionsLength - 1
+        ? (this.preSelectionIndex = 0)
+        : this.preSelectionIndex++;
     },
     preselectPreviousOption() {
-      this.preSelectionIndex === 0 ? (this.preSelectionIndex = this.optionsLength - 1) : this.preSelectionIndex--;
+      this.preSelectionIndex === 0
+        ? (this.preSelectionIndex = this.optionsLength - 1)
+        : this.preSelectionIndex--;
     },
   },
   watch: {

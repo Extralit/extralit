@@ -1,5 +1,11 @@
 <template>
-  <iframe :srcdoc="template" ref="iframe" frameborder="0" scrolling="no" @load="load" />
+  <iframe
+    :srcdoc="template"
+    ref="iframe"
+    frameborder="0"
+    scrolling="no"
+    @load="load"
+  />
 </template>
 <script>
 /* eslint-disable */

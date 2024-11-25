@@ -26,7 +26,10 @@ export default {
       this.reset();
     },
     hasJustOneCoincidence(keyCode) {
-      return this.options.filter((o) => o.value.toString().startsWith(keyCode)).length == 1;
+      return (
+        this.options.filter((o) => o.value.toString().startsWith(keyCode))
+          .length == 1
+      );
     },
     reset() {
       this.keyCode = "";

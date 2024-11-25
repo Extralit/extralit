@@ -19,7 +19,9 @@
   <div class="input-container" :class="[classes]">
     <slot />
 
-    <span v-if="enableCounter" class="re-count">{{ inputLength }} / {{ counterLength }}</span>
+    <span v-if="enableCounter" class="re-count"
+      >{{ inputLength }} / {{ counterLength }}</span
+    >
   </div>
 </template>
 
@@ -68,12 +70,16 @@ export default {
     },
   },
   mounted() {
-    this.input = this.$el.querySelectorAll("input, textarea, select, .re-file")[0];
+    this.input = this.$el.querySelectorAll(
+      "input, textarea, select, .re-file"
+    )[0];
 
     if (!this.input) {
       this.$destroy();
 
-      throw new Error("Missing input/select/textarea inside re-input-container");
+      throw new Error(
+        "Missing input/select/textarea inside re-input-container"
+      );
     }
   },
   methods: {

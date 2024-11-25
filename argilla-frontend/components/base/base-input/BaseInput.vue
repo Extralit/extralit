@@ -53,7 +53,10 @@ export default {
   },
   mounted() {
     this.$nextTick(() => {
-      this.parentContainer = getClosestVueParent(this.$parent, "input-container");
+      this.parentContainer = getClosestVueParent(
+        this.$parent,
+        "input-container"
+      );
 
       if (!this.parentContainer) {
         this.$destroy();

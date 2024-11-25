@@ -1,16 +1,25 @@
 <template>
   <div>
-    <p v-if="legend" class="questions__title --body3 --light" v-text="legend" :aria-label="legend" />
-    <div class="questions" role="list" aria-label="List of annotation questions">
+    <p
+      v-if="legend"
+      class="questions__title --body3 --light"
+      v-text="legend"
+      :aria-label="legend"
+    />
+    <div
+      class="questions"
+      role="list"
+      aria-label="List of annotation questions"
+    >
       <div
         v-for="(question, index) in questions"
         :key="question.id"
         :aria-label="'Question: ' + question.name"
         @keydown.arrow-up.prevent="
-          $event.ctrlKey || $event.metaKey ? updateQuestionAutofocus(autofocusPosition - 1) : null
+            $event.ctrlKey || $event.metaKey ? updateQuestionAutofocus(autofocusPosition - 1) : null
         "
         @keydown.arrow-down.prevent="
-          $event.ctrlKey || $event.metaKey ? updateQuestionAutofocus(autofocusPosition + 1) : null
+            $event.ctrlKey || $event.metaKey ? updateQuestionAutofocus(autofocusPosition + 1) : null
         "
       >
         <TextAreaComponent
@@ -109,7 +118,10 @@ export default {
   },
   beforeDestroy() {
     this.questionsWithLoopMovement.forEach((parent) => {
-      parent.removeEventListener("keydown", this.handleKeyboardToMoveLoop(parent));
+      parent.removeEventListener(
+        "keydown",
+        this.handleKeyboardToMoveLoop(parent)
+      );
     });
   },
   methods: {
@@ -119,7 +131,9 @@ export default {
         if (e.key !== "Tab") return;
         const isShiftKeyPressed = e.shiftKey;
 
-        const focusable = parent.querySelectorAll('input[type="checkbox"], [tabindex="0"]');
+        const focusable = parent.querySelectorAll(
+          'input[type="checkbox"], [tabindex="0"]'
+        );
         const firstElement = focusable[0];
         const lastElement = focusable[focusable.length - 1];
 
@@ -131,9 +145,13 @@ export default {
         } else if (isShiftKeyPressed && isFirstElementActive) {
           this.focusOn(e, lastElement);
         } else {
-          const index = Array.from(focusable).findIndex((r) => r === document.activeElement);
+          const index = Array.from(focusable).findIndex(
+            (r) => r === document.activeElement
+          );
 
-          const nextElementToFocus = isShiftKeyPressed ? focusable[index - 1] : focusable[index + 1];
+          const nextElementToFocus = isShiftKeyPressed
+            ? focusable[index - 1]
+            : focusable[index + 1];
 
           this.focusOn(e, nextElementToFocus);
         }

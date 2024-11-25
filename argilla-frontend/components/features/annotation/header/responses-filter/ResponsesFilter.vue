@@ -1,6 +1,10 @@
 <template>
   <div class="responses-filter" v-if="questionFilters.hasFilters">
-    <BaseDropdown boundary="viewport" :visible="visibleDropdown" @visibility="onToggleVisibility">
+    <BaseDropdown
+      boundary="viewport"
+      :visible="visibleDropdown"
+      @visibility="onToggleVisibility"
+    >
       <span slot="dropdown-header">
         <FilterButtonWithBadges
           :is-active="visibleDropdown"
@@ -23,10 +27,18 @@
         <template v-else>
           <div class="responses-filter__header" @click="selectResponse(null)">
             <span v-text="selectedResponse.name" />
-            <svgicon name="chevron-left" width="12" height="12" aria-hidden="true" />
+            <svgicon
+              name="chevron-left"
+              width="12"
+              height="12"
+              aria-hidden="true"
+            />
           </div>
           <div class="responses-filter__content">
-            <LabelsSelector v-if="selectedResponse.isTerms" :filter="selectedResponse.options" />
+            <LabelsSelector
+              v-if="selectedResponse.isTerms"
+              :filter="selectedResponse.options"
+            />
             <RangeSelector v-else :filter="selectedResponse.rangeValue" />
           </div>
         </template>
@@ -88,7 +100,9 @@ export default {
       this.appliedCategoriesFilters = this.questionFilters.filteredCategories;
     },
     openResponseFilter(response) {
-      this.visibleDropdown = this.visibleDropdown ? response !== this.selectedResponse : true;
+      this.visibleDropdown = this.visibleDropdown
+        ? response !== this.selectedResponse
+        : true;
 
       this.selectResponse(response);
     },

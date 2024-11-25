@@ -43,25 +43,10 @@ module.exports = {
     "@intlify/vue-i18n/no-raw-text": "off",
     "@intlify/vue-i18n/no-v-html": "off",
     "@intlify/vue-i18n/no-missing-keys": "warn",
-    "vue/attributes-order": [
-      "warn",
-      {
-        order: [
-          "DEFINITION",
-          "LIST_RENDERING",
-          "CONDITIONALS",
-          "RENDER_MODIFIERS",
-          "GLOBAL",
-          "UNIQUE",
-          "TWO_WAY_BINDING",
-          "OTHER_DIRECTIVES",
-          "OTHER_ATTR",
-          "EVENTS",
-          "CONTENT",
-        ],
-        alphabetical: false,
-      },
-    ],
+    "vue/attributes-order": ["warn", {
+      "order": ["DEFINITION", "LIST_RENDERING", "CONDITIONALS", "RENDER_MODIFIERS", "GLOBAL", "UNIQUE", "TWO_WAY_BINDING", "OTHER_DIRECTIVES", "OTHER_ATTR", "EVENTS", "CONTENT"],
+      "alphabetical": false
+    }],
   },
   globals: {
     $nuxt: true,

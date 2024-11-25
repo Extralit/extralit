@@ -10,11 +10,20 @@ const options = {
     value: "",
   },
 };
-const spyResetValueMethod = jest.spyOn(SearchLabelComponent.methods, "resetValue");
+const spyResetValueMethod = jest.spyOn(
+  SearchLabelComponent.methods,
+  "resetValue"
+);
 
-const spyFocusInSearchMethod = jest.spyOn(SearchLabelComponent.methods, "focusInSearch");
+const spyFocusInSearchMethod = jest.spyOn(
+  SearchLabelComponent.methods,
+  "focusInSearch"
+);
 
-const spyLooseFocusMethod = jest.spyOn(SearchLabelComponent.methods, "looseFocus");
+const spyLooseFocusMethod = jest.spyOn(
+  SearchLabelComponent.methods,
+  "looseFocus"
+);
 
 beforeEach(() => {
   wrapper = shallowMount(SearchLabelComponent, options);
