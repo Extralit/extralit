@@ -2,7 +2,11 @@
   <div class="text_field_component" :key="fieldText">
     <div class="title-area --body2">
       <span class="text_field_component__title-content" v-text="title" />
-      <BaseActionTooltip class="text_field_component__tooltip" :tooltip="$t('copied')" tooltip-position="left">
+      <BaseActionTooltip
+        class="text_field_component__tooltip"
+        :tooltip="$t('copied')"
+        tooltip-position="left"
+      >
         <BaseButton
           :title="$t('button.tooltip.copyToClipboard')"
           class="text_field_component__copy-button"
@@ -13,7 +17,7 @@
       </BaseActionTooltip>
     </div>
     <div :id="`fields-content-${name}`" class="content-area --body1">
-      <RenderTableBaseComponent v-if="useTable && isValidTableJSON" :tableData="fieldText" />
+      <RenderTable v-if="useTable && isValidTableJSON" :tableData="fieldText" />
       <MarkdownRenderer v-else-if="useMarkdown" :markdown="fieldText" />
       <Sandbox v-else-if="isHTML" :content="fieldText" />
       <div :class="classes" v-else v-html="fieldText" />

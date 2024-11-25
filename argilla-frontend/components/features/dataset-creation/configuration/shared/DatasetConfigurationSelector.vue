@@ -1,5 +1,10 @@
 <template>
-  <BaseDropdown class="selector" :visible="dropdownIsVisible" @visibility="onVisibility" v-if="options.length">
+  <BaseDropdown
+    class="selector"
+    :visible="dropdownIsVisible"
+    @visibility="onVisibility"
+    v-if="options.length"
+  >
     <template slot="dropdown-header">
       {{ value?.name ?? value ?? $t("datasetCreation.select") }}
       <svgicon name="chevron-down" height="8" />
@@ -8,7 +13,9 @@
       <slot name="optionsIntro" />
       <ul class="selector__options">
         <li
-          :class="option === value ? 'selector__option--selected' : 'selector__option'"
+          :class="
+            option === value ? 'selector__option--selected' : 'selector__option'
+          "
           v-for="(option, index) in filteredOptions"
           :key="index"
           @click="selectOption(option)"
@@ -42,7 +49,9 @@ export default {
   },
   computed: {
     filteredOptions() {
-      return this.options.filter((option) => JSON.stringify(option) !== JSON.stringify(this.value));
+      return this.options.filter(
+        (option) => JSON.stringify(option) !== JSON.stringify(this.value)
+      );
     },
   },
   methods: {

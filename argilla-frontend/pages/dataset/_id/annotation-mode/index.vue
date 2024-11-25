@@ -11,7 +11,9 @@
           :showCopyButton="true"
         >
           <template slot="dialog-cta" v-if="dataset && dataset.createdFromUI">
-            <ImportData :snippet="dataset.createCodeSnippetFromHub(getUser())" />
+            <ImportData
+              :snippet="dataset.createCodeSnippetFromHub(getUser())"
+            />
           </template>
         </HeaderFeedbackTask>
       </template>
@@ -42,8 +44,8 @@ export default {
   },
   head() {
     return {
-      title: this.dataset.name,
-    };
-  },
+      title: this.dataset.name
+    }
+  }
 };
 </script>

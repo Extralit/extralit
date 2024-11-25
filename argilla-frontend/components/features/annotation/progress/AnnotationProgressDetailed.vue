@@ -37,7 +37,11 @@
       </template>
     </ul>
     <p class="team-progress__title" v-text="$t('metrics.progress.team')" />
-    <TeamProgress visibleProgressValues :datasetId="datasetId" :show-tooltip="false" />
+    <TeamProgress
+      visibleProgressValues
+      :datasetId="datasetId"
+      :show-tooltip="false"
+    />
   </div>
 </template>
 

@@ -21,11 +21,25 @@
     <div class="login__form">
       <form class="form" @submit.prevent="onLoginUser">
         <p class="form__title" v-text="$t('login.title')" />
-        <LoginInput v-model="username" :name="$t('login.username')" type="text" :autofocus="true" autocomplete="on" />
-        <LoginInput v-model="password" :name="$t('login.password')" type="password" autocomplete="on" />
-        <base-button type="submit" :disabled="!isButtonEnabled" class="form__button primary full-width">{{
-          $t("button.login")
-        }}</base-button>
+        <LoginInput
+          v-model="username"
+          :name="$t('login.username')"
+          type="text"
+          :autofocus="true"
+          autocomplete="on"
+        />
+        <LoginInput
+          v-model="password"
+          :name="$t('login.password')"
+          type="password"
+          autocomplete="on"
+        />
+        <base-button
+          type="submit"
+          :disabled="!isButtonEnabled"
+          class="form__button primary full-width"
+          >{{ $t("button.login") }}</base-button
+        >
         <p class="form__error" v-if="error">{{ formattedError }}</p>
       </form>
 
@@ -74,7 +88,9 @@ export default {
   computed: {
     formattedError() {
       if (this.error) {
-        return this.error.toString().includes("401") ? this.$t("login.error") : this.error;
+        return this.error.toString().includes("401")
+          ? this.$t("login.error")
+          : this.error;
       }
     },
     isButtonEnabled() {

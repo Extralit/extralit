@@ -10,9 +10,12 @@
       </p>
     </div>
     <div class="card__buttons" v-if="buttonText">
-      <base-button class="card__button outline small" :class="[cardClasses]" @click="action">{{
-        buttonText
-      }}</base-button>
+      <base-button
+        class="card__button outline small"
+        :class="[cardClasses]"
+        @click="action"
+        >{{ buttonText }}</base-button
+      >
     </div>
   </div>
 </template>

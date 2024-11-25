@@ -7,7 +7,10 @@
       class="wrapper"
     >
       <template #up>
-        <VerticalResizable :id="`dataset-config-left-t-v-rz`" :left-percent-width="64">
+        <VerticalResizable
+          :id="`dataset-config-left-t-v-rz`"
+          :left-percent-width="64"
+        >
           <template #left>
             <div class="dataset-config__fields">
               <Record
@@ -47,7 +50,11 @@
         </VerticalResizable>
       </template>
       <template #down>
-        <VerticalResizable class="dataset-config__down" :id="`dataset-preview-t-v-rz`" :left-percent-width="36">
+        <VerticalResizable
+          class="dataset-config__down"
+          :id="`dataset-preview-t-v-rz`"
+          :left-percent-width="36"
+        >
           <template #left>
             <div class="dataset-config__preview">
               <iframe
@@ -55,13 +62,16 @@
                 :src="`https://huggingface.co/datasets/${dataset.repoId}/embed/viewer/ParaphraseRC/train`"
                 frameborder="0"
                 width="100%"
-                height="500px"
+                height="100%"
               ></iframe>
             </div>
           </template>
           <template #right>
             <div class="dataset-config__configuration">
-              <DatasetConfigurationForm :dataset="dataset" @change-subset="$emit('change-subset', $event)" />
+              <DatasetConfigurationForm
+                :dataset="dataset"
+                @change-subset="$emit('change-subset', $event)"
+              />
             </div>
           </template>
         </VerticalResizable>

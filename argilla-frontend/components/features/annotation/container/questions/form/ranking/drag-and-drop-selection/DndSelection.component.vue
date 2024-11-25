@@ -24,8 +24,17 @@
           :text="getSuggestedAgent(item)"
           minimalist
         >
-          <svgicon width="6" name="draggable" :id="`${item.value}-icon`" aria-label="Dragging Icon" />
-          <span class="draggable__rank-card__title" v-text="item.text" :id="`${item.value}-span`" />
+          <svgicon
+            width="6"
+            name="draggable"
+            :id="`${item.value}-icon`"
+            aria-label="Dragging Icon"
+          />
+          <span
+            class="draggable__rank-card__title"
+            v-text="item.text"
+            :id="`${item.value}-span`"
+          />
 
           <span v-if="isSuggested(item)" class="draggable__suggestion">
             <span v-text="getSuggestedRank(item)" />
@@ -72,7 +81,11 @@
               class="draggable__rank-card--ranked"
             >
               <svgicon width="6" name="draggable" :id="`${item.value}-icon`" />
-              <span class="draggable__rank-card__title" v-text="item.text" :id="`${item.value}-span`" />
+              <span
+                class="draggable__rank-card__title"
+                v-text="item.text"
+                :id="`${item.value}-span`"
+              />
 
               <span v-if="isSuggested(item)" class="draggable__suggestion">
                 <span v-text="getSuggestedRank(item)" />
@@ -119,9 +132,14 @@ export default {
     isFocused: {
       immediate: true,
       handler(newValue) {
-        const questionsAndItems = [...(this.$refs.questions || []), ...(this.$refs.items || [])];
+        const questionsAndItems = [
+          ...(this.$refs.questions || []),
+          ...(this.$refs.items || []),
+        ];
 
-        const componentContainsActiveElement = questionsAndItems?.includes(document.activeElement);
+        const componentContainsActiveElement = questionsAndItems?.includes(
+          document.activeElement
+        );
 
         if (newValue && !componentContainsActiveElement) {
           this.focusOnFirstQuestionOrItem();
@@ -169,7 +187,9 @@ export default {
       this.onMoveEnd();
 
       this.$nextTick(() => {
-        const questionRanked = this.$refs.items?.find(({ title }) => title == questionToMove?.text);
+        const questionRanked = this.$refs.items?.find(
+          ({ title }) => title == questionToMove?.text
+        );
 
         questionRanked?.focus();
       });
@@ -183,7 +203,9 @@ export default {
     },
     focusOnFirstQuestionOrItem() {
       this.$nextTick(() => {
-        const firstQuestion = this.$refs.questions?.find(({ title }) => title == this.ranking.questions[0]?.text);
+        const firstQuestion = this.$refs.questions?.find(
+          ({ title }) => title == this.ranking.questions[0]?.text
+        );
 
         if (!firstQuestion) {
           const firstItem = this.$refs.items[0];

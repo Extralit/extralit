@@ -3,7 +3,13 @@ import BaseTableInfo from "@/components/base/base-table/BaseTableInfo";
 
 const mountBaseTableInfo = () =>
   mount(BaseTableInfo, {
-    stubs: ["lazy-table-filtrable-column", "base-modal", "base-button", "base-modal", "nuxt-link"],
+    stubs: [
+      "lazy-table-filtrable-column",
+      "base-modal",
+      "base-button",
+      "base-modal",
+      "nuxt-link",
+    ],
     propsData: {
       actions: [],
       columns: [

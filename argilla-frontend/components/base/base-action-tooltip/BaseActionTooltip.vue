@@ -1,7 +1,15 @@
 <template>
-  <span :class="['tooltip__container', showTooltip ? 'active' : null]" @click="active()">
+  <span
+    :class="['tooltip__container', showTooltip ? 'active' : null]"
+    @click="active()"
+  >
     <slot></slot>
-    <span v-if="tooltip && showTooltip" class="tooltip" :class="tooltipClass" v-text="tooltip" />
+    <span
+      v-if="tooltip && showTooltip"
+      class="tooltip"
+      :class="tooltipClass"
+      v-text="tooltip"
+    />
   </span>
 </template>
 

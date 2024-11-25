@@ -1,7 +1,17 @@
 <template>
   <div class="theme-switch">
-    <div class="theme-switch__item" v-for="(theme, index) in themes" :key="index">
-      <input type="radio" :id="theme" :value="theme" v-model="currentTheme" @input="$colorSchema.setTheme(theme)" />
+    <div
+      class="theme-switch__item"
+      v-for="(theme, index) in themes"
+      :key="index"
+    >
+      <input
+        type="radio"
+        :id="theme"
+        :value="theme"
+        v-model="currentTheme"
+        @input="$colorSchema.setTheme(theme)"
+      />
       <label :for="theme">
         <svgicon width="20" height="20" :name="`${theme}-theme`" />
         {{ theme }}</label

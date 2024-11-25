@@ -6,11 +6,19 @@
     @is-focused="$emit('is-focused', $event)"
     @change-type="$emit('change-type', $event)"
   >
-    <BaseButton class="config-card__remove" @click="remove" v-if="removeIsAllowed"><svgicon name="close" /></BaseButton>
+    <BaseButton
+      class="config-card__remove"
+      @click="remove"
+      v-if="removeIsAllowed"
+      ><svgicon name="close"
+    /></BaseButton>
 
     <template v-if="noMapping">
       <DatasetConfigurationLabels
-        v-if="question.settings.type.isSingleLabelType || question.settings.type.isMultiLabelType"
+        v-if="
+          question.settings.type.isSingleLabelType ||
+          question.settings.type.isMultiLabelType
+        "
         :question="question"
         @is-focused="$emit('is-focused', $event)"
       />

@@ -36,7 +36,8 @@ export default {
       return this.recordCriteria.committed.page.client.page;
     },
     currentPageEnd() {
-      return this.currentPage + this.currentPageItemsSize - 1 > this.records.total
+      return this.currentPage + this.currentPageItemsSize - 1 >
+        this.records.total
         ? this.records.total
         : this.currentPage + this.currentPageItemsSize - 1;
     },

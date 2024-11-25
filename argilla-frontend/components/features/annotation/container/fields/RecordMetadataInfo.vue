@@ -1,7 +1,15 @@
 <template>
-  <div class="record-metadata-info" ref="recordMetadataInfo" :style="{ marginTop: `${-topPosition}px` }">
+  <div
+    class="record-metadata-info"
+    ref="recordMetadataInfo"
+    :style="{ marginTop: `${-topPosition}px` }"
+  >
     <div class="table-info">
-      <div v-for="{ titleKey, titleValue, data, classType } in tableInfo" :key="titleKey" :class="classType">
+      <div
+        v-for="{ titleKey, titleValue, data, classType } in tableInfo"
+        :key="titleKey"
+        :class="classType"
+      >
         <div class="table-info__header">
           <div class="table-info__key" v-text="titleKey" />
           <div v-if="titleValue" v-text="titleValue" />
@@ -11,8 +19,14 @@
             <p class="table-info__key" :title="key" v-text="key" />
             <p class="table-info__value">
               {{ value }}
-              <BaseActionTooltip class="table-info__copy" :tooltip="$t('copied')" tooltip-position="left">
-                <BaseButton class="table-info__copy__button" @click="$copyToClipboard(value)"
+              <BaseActionTooltip
+                class="table-info__copy"
+                :tooltip="$t('copied')"
+                tooltip-position="left"
+              >
+                <BaseButton
+                  class="table-info__copy__button"
+                  @click="$copyToClipboard(value)"
                   ><svgicon name="copy" /></BaseButton
               ></BaseActionTooltip>
             </p>
@@ -66,7 +80,10 @@ export default {
   mounted() {
     this.$nextTick(() => {
       const { bottom } = this.$refs.recordMetadataInfo.getBoundingClientRect();
-      this.topPosition = bottom > window.innerHeight ? bottom - window.innerHeight + this.bottomGap : 0;
+      this.topPosition =
+        bottom > window.innerHeight
+          ? bottom - window.innerHeight + this.bottomGap
+          : 0;
     });
   },
 };

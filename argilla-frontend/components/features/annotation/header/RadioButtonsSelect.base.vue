@@ -19,9 +19,18 @@
   <div v-if="options.length">
     <BaseDropdown :visible="dropdownIsVisible" @visibility="onVisibility">
       <span slot="dropdown-header">
-        <BaseButton class="selected-option" :class="currentOptionId" :data-title="$t('status')">
+        <BaseButton
+          class="selected-option"
+          :class="currentOptionId"
+          :data-title="$t('status')"
+        >
           {{ currentOptionName }}
-          <svgicon name="chevron-down" width="8" height="8" aria-hidden="true" />
+          <svgicon
+            name="chevron-down"
+            width="8"
+            height="8"
+            aria-hidden="true"
+          />
         </BaseButton>
       </span>
       <span slot="dropdown-content">
@@ -95,7 +104,7 @@ export default {
       this.$emit("change", id);
       this.dropdownIsVisible = false;
     },
-  },
+      },
 };
 </script>
 
@@ -129,8 +138,7 @@ $selector-width: 140px;
       background: hsl(from var(--fg-status-submitted) h s l / 10%);
     }
   }
-  &.pending,
-  &.valid {
+  &.pending, &.valid {
     &:hover,
     &:focus-within {
       background: hsl(from var(--fg-status-pending) h s l / 10%);
@@ -171,8 +179,7 @@ $selector-width: 140px;
       background: var(--fg-status-submitted);
     }
   }
-  &.pending,
-  &.valid {
+  &.pending, &.valid {
     color: var(--fg-status-pending);
     border: 1px solid var(--fg-status-pending);
     &:before {

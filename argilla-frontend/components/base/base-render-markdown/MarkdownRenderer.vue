@@ -1,5 +1,10 @@
 <template>
-  <div class="markdown-render" :class="classes" v-html="markdownToHtml" v-copy-code />
+  <div
+    class="markdown-render"
+    :class="classes"
+    v-html="markdownToHtml"
+    v-copy-code
+  />
 </template>
 <script>
 import { marked } from "marked";
@@ -69,10 +74,7 @@ export default {
         breaks: true,
       });
 
-      html = html.replace(
-        /<a href="#(.*?)">(.*?)<\/a>/g,
-        '<button type="button" @click.prevent="handleClick(\'#$1\')">$2</button>'
-      );
+      html = html.replace(/<a href="#(.*?)">(.*?)<\/a>/g, '<button type="button" @click.prevent="handleClick(\'#$1\')">$2</button>');
 
       return html;
     },
@@ -134,7 +136,7 @@ export default {
     img {
       max-width: 100%;
       max-height: 100%;
-      object-fit: contain;
+      object-fit: contain; 
 
       @media (min-height: 400px) {
         max-height: 50vh;
@@ -149,8 +151,7 @@ export default {
       border: 0px;
       @include overflow-scrollbar;
 
-      th,
-      td {
+      th, td {
         border: 1px solid #ddd;
         padding: 1.5px 5px;
         text-align: left;
@@ -159,7 +160,7 @@ export default {
         max-width: 350px;
         overflow: hidden;
         text-overflow: ellipsis;
-        vertical-align: middle;
+        vertical-align: middle; 
       }
 
       tr {
