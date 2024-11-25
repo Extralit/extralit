@@ -62,7 +62,7 @@
                 :src="`https://huggingface.co/datasets/${dataset.repoId}/embed/viewer/ParaphraseRC/train`"
                 frameborder="0"
                 width="100%"
-                height="500px"
+                height="100%"
               ></iframe>
             </div>
           </template>
