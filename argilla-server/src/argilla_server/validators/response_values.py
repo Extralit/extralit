@@ -84,7 +84,7 @@ class LabelSelectionQuestionResponseValueValidator:
     ) -> None:
         available_labels = [option.value for option in label_selection_question_settings.options]
 
-        if self._response_value not in available_labels:
+        if self._response_value not in available_labels and not label_selection_question_settings.type == QuestionType.dynamic_label_selection:
             raise UnprocessableEntityError(
                 f"{self._response_value!r} is not a valid label for label selection question.\nValid labels are: {available_labels!r}"
             )
@@ -122,7 +122,7 @@ class MultiLabelSelectionQuestionResponseValueValidator:
         available_labels = [option.value for option in multi_label_selection_question_settings.options]
         invalid_labels = sorted(list(set(self._response_value) - set(available_labels)))
 
-        if invalid_labels:
+        if invalid_labels and not multi_label_selection_question_settings.type == QuestionType.dynamic_multi_label_selection:
             raise UnprocessableEntityError(
                 f"{invalid_labels!r} are not valid labels for multi label selection question.\nValid labels are: {available_labels!r}"
             )
