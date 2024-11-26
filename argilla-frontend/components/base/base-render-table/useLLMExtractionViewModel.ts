@@ -10,7 +10,7 @@ import { useDocument } from "@/v1/infrastructure/storage/DocumentStorage";
 
 export const useLLMExtractionViewModel = (
   props: { 
-    tableData: string, 
+    tableJSON: Object, 
     editable: boolean, 
     hasValidValues: boolean,
     questions: Question[],

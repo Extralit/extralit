@@ -19,7 +19,7 @@ export interface SchemaTableViewModel {
 
 export const useSchemaTableViewModel = (
   props: { 
-    tableData: string, 
+    tableJSON: DataFrame, 
     editable: boolean, 
     hasValidValues: boolean,
     questions: Question[],
@@ -28,14 +28,7 @@ export const useSchemaTableViewModel = (
   const getSchema = useResolve(GetExtractionSchemaUseCase);
   const { state: dataset } = useDataset();
 
-  const tableJSON = ref<DataFrame>();
-
-  try {
-    tableJSON.value = JSON.parse(props.tableData);
-  } catch (error) {
-    console.error("Failed to parse tableData:", error);
-    tableJSON.value = {data: [], schema: { fields: [], primaryKey: [] }};
-  }
+  const tableJSON = ref<DataFrame>(props.tableJSON);
 
   const validation = ref<PanderaSchema | null>(null);
   const indexColumns = ref(tableJSON.value?.schema?.primaryKey || []);
