@@ -11,7 +11,7 @@ import { SchemaTableViewModel } from "./useSchemaTableViewModel";
 
 export const useReferenceTablesViewModel = (
   props: { 
-    tableData: string, 
+    tableJSON: DataFrame,  // Changed from tableData: string
     editable: boolean, 
   }, 
   schemaTableViewModel: SchemaTableViewModel) => {
