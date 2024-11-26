@@ -90,7 +90,7 @@ import { useLLMExtractionViewModel } from "./useLLMExtractionViewModel";
 import { useReferenceTablesViewModel } from "./useReferenceTablesViewModel";
 import { Question } from "@/v1/domain/entities/question/Question";
 import { Data, DataFrame, DataFrameField, Validators } from './types';
-import { difference } from '~/v1/domain/entities/record/Record';
+import { difference } from '@/v1/domain/entities/record/Record';
 
 export default {
   props: {

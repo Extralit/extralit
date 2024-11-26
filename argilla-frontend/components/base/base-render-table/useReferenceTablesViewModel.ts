@@ -1,4 +1,4 @@
-import { Record as FeedbackRecord } from '~/v1/domain/entities/record/Record';
+import { Record as FeedbackRecord } from '@/v1/domain/entities/record/Record';
 import { Question } from "@/v1/domain/entities/question/Question";
 import { Records } from "@/v1/domain/entities/record/Records";
 import { useRecords } from "@/v1/infrastructure/storage/RecordsStorage";
@@ -11,11 +11,11 @@ import { SchemaTableViewModel } from "./useSchemaTableViewModel";
 
 export const useReferenceTablesViewModel = (
   props: { 
-    tableJSON: DataFrame,  // Changed from tableData: string
+    tableJSON: DataFrame,
     editable: boolean, 
   }, 
-  schemaTableViewModel: SchemaTableViewModel) => {
-
+  schemaTableViewModel: SchemaTableViewModel
+) => {
   const { state: records }: { state: Records } = useRecords();
 
   const getTableDataFromRecords = (filter_fn: (record: FeedbackRecord) => boolean): RecordDataFramesArray => {
