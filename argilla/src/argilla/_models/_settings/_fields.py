@@ -44,7 +44,7 @@ class CustomFieldSettings(BaseModel):
 
 
 class TableFieldSettings(BaseModel):
-    type: Literal["custom"] = "table"
+    type: Literal["table"] = "table"
 
 
 FieldSettings = Annotated[
