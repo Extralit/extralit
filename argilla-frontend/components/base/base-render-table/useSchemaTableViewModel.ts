@@ -40,7 +40,7 @@ export const useSchemaTableViewModel = (
   const groupbyColumns = ref(refColumns.value || null);
 
   const fetchValidation = async ({ latest = false }: { latest?: boolean } = {}) => {
-    var schemaName: string = tableJSON.value.schema?.schemaName || tableJSON.value?.validation?.name;
+    var schemaName: string = tableJSON.value?.schema?.schemaName || tableJSON.value?.validation?.name;
     if (!schemaName) {
       return;
     }
