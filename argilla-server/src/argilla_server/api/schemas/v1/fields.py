@@ -90,21 +90,33 @@ class ChatFieldSettingsUpdate(BaseModel):
 
 
 class CustomFieldSettings(BaseModel):
-    type: Literal[FieldType.custom, FieldType.table]
+    type: Literal[FieldType.custom]
     template: str
     advanced_mode: bool
 
 
 class CustomFieldSettingsCreate(BaseModel):
-    type: Literal[FieldType.custom, FieldType.table]
+    type: Literal[FieldType.custom]
     template: str
     advanced_mode: bool = False
 
 
 class CustomFieldSettingsUpdate(BaseModel):
-    type: Literal[FieldType.custom, FieldType.table]
+    type: Literal[FieldType.custom]
     template: str
     advanced_mode: bool
+
+
+class TableFieldSettings(BaseModel):
+    type: Literal[FieldType.table]
+
+
+class TableFieldSettingsCreate(BaseModel):
+    type: Literal[FieldType.table]
+
+
+class TableFieldSettingsUpdate(BaseModel):
+    type: Literal[FieldType.table]
 
 
 FieldSettings = Annotated[
@@ -113,6 +125,7 @@ FieldSettings = Annotated[
         ImageFieldSettings,
         ChatFieldSettings,
         CustomFieldSettings,
+        TableFieldSettings,
     ],
     PydanticField(..., discriminator="type"),
 ]
@@ -123,6 +136,7 @@ FieldSettingsCreate = Annotated[
         ImageFieldSettingsCreate,
         ChatFieldSettingsCreate,
         CustomFieldSettingsCreate,
+        TableFieldSettingsCreate,
     ],
     PydanticField(..., discriminator="type"),
 ]
@@ -133,6 +147,7 @@ FieldSettingsUpdate = Annotated[
         ImageFieldSettingsUpdate,
         ChatFieldSettingsUpdate,
         CustomFieldSettingsUpdate,
+        TableFieldSettingsUpdate,
     ],
     PydanticField(..., discriminator="type"),
 ]
