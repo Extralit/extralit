@@ -3,7 +3,7 @@
     <RenderTable
       v-if="question.settings.use_table && isValidTableJSON"
       class="textarea"
-      :tableData="question.suggestion?.suggestedAnswer"
+      :tableJSON="JSON.parse(question.suggestion?.suggestedAnswer)"
       :editable="true"
       @onUpdateAnswer="onUpdateAnswer"
     />
