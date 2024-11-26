@@ -26,7 +26,7 @@ from argilla._models import (
     ChatFieldSettings,
     ImageFieldSettings,
     CustomFieldSettings,
-    TableFieldSetting,
+    TableFieldSettings,
     FieldSettings,
 )
 from argilla.settings._common import SettingsPropertyBase
@@ -41,7 +41,7 @@ except ImportError:
 if TYPE_CHECKING:
     from argilla.datasets import Dataset
 
-__all__ = ["Field", "AbstractField", "TextField", "ImageField", "ChatField", "CustomField"]
+__all__ = ["Field", "AbstractField", "TextField", "ImageField", "ChatField", "CustomField", "TableField"]
 
 
 class AbstractField(ABC, SettingsPropertyBase):
@@ -315,7 +315,7 @@ class TableField(AbstractField):
             title=title,
             required=required,
             description=description,
-            settings=TableFieldSetting(),
+            settings=TableFieldSettings(),
             _client=_client,
         )
 
