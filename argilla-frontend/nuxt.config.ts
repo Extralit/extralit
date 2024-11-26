@@ -154,6 +154,10 @@ const config: NuxtConfig = {
   // Build Configuration (https://go.nuxtjs.dev/config-build)
   build: {
     cssSourceMap: false,
+    cache: true,
+    parallel: true,
+    quiet: true,
+    analyze: false,
     extend(config) {
       config.resolve.alias.vue = "vue/dist/vue.common";
       config.module.rules.push({
@@ -171,6 +175,10 @@ const config: NuxtConfig = {
           loader: 'babel-loader',
           options: {
             presets: ['@babel/preset-env'],
+            plugins: [
+              ['@babel/plugin-transform-private-methods', { loose: true }],
+              ['@babel/plugin-transform-class-properties', { loose: true }]
+            ],
             compact: false,
           },
         },
@@ -182,6 +190,10 @@ const config: NuxtConfig = {
           loader: 'babel-loader',
           options: {
             presets: ['@babel/preset-env'],
+            plugins: [
+              ['@babel/plugin-transform-private-methods', { loose: true }],
+              ['@babel/plugin-transform-class-properties', { loose: true }]
+            ],
             compact: false,
           },
         },
@@ -192,7 +204,7 @@ const config: NuxtConfig = {
         ['@babel/plugin-transform-private-methods', { loose: true }],
         ['@babel/plugin-transform-class-properties', { loose: true }],
         ['@babel/plugin-proposal-class-properties', { loose: true }],
-        ["@babel/plugin-transform-private-property-in-object", { "loose": true }],
+        ["@babel/plugin-transform-private-property-in-object", { loose: true }],
       ],
       presets: [
         ['@babel/preset-env', { targets: { node: 'current' }, loose: true }],
@@ -203,8 +215,22 @@ const config: NuxtConfig = {
       terserOptions: {
         keep_classnames: true,
         keep_fnames: true,
+        compress: {
+          drop_console: process.env.NODE_ENV === 'production'
+        }
       },
     },
+  },
+
+  webpack: {
+    devMiddleware: {
+      stats: 'minimal'
+    },
+    watchOptions: {
+      aggregateTimeout: 300,
+      poll: 1000,
+      ignored: /node_modules/
+    }
   },
 
   // https://github.com/nuxt-community/style-resources-module
@@ -242,7 +268,5 @@ const config: NuxtConfig = {
     documentationPersistentStorage:
       "https://docs.argilla.io/latest/getting_started/how-to-configure-argilla-on-huggingface/#persistent-storage",
   },
-
-  watch: ['~/components/**/*.vue', '~/pages/**/*.vue', '~/layouts/**/*.vue', '~/store/**/*.js', '~/plugins/**/*.js', '~/nuxt.config.ts'],
 };
 export default config;
