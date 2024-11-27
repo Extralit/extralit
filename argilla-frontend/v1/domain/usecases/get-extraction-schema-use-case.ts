@@ -1,6 +1,7 @@
 import { type NuxtAxiosInstance } from "@nuxtjs/axios";
+import { SchemaMetadata } from "../entities/table/Schema";
+import { ValidationSchema } from "../entities/table/Validation";
 
-import { PanderaSchema, SchemaMetadata } from "@/components/base/base-render-table/types";
 
 const FILES_API_ERRORS = {
   ERROR_FETCHING_SCHEMA_FILE: "ERROR_FETCHING_SCHEMA_FILE",
@@ -15,11 +16,11 @@ export class GetExtractionSchemaUseCase {
     workspaceName: string,
     schemaName: string, 
     versionId?: string,
-  ): Promise<[PanderaSchema, SchemaMetadata]> {
+  ): Promise<[ValidationSchema, SchemaMetadata]> {
 
     try {
       const url = `/v1/file/${workspaceName}/schemas/${schemaName}`;
-      const response = await this.axios.get<PanderaSchema>(url, {
+      const response = await this.axios.get<ValidationSchema>(url, {
         params: {
           version_id: versionId,
         },

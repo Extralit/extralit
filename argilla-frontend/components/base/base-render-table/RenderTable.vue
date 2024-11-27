@@ -88,14 +88,16 @@ import { cellTooltip, headerTooltip, groupHeader, getRangeRowData, getRangeColum
 import { useSchemaTableViewModel } from "./useSchemaTableViewModel";
 import { useLLMExtractionViewModel } from "./useLLMExtractionViewModel";
 import { useReferenceTablesViewModel } from "./useReferenceTablesViewModel";
+import { Data, TableData } from '@/v1/domain/entities/table/TableData';
+import { DataFrameField } from '@/v1/domain/entities/table/Schema';
 import { Question } from "@/v1/domain/entities/question/Question";
-import { Data, DataFrame, DataFrameField, Validators } from './types';
 import { difference } from '@/v1/domain/entities/record/Record';
+import { Validators } from '~/v1/domain/entities/table/Validation';
 
 export default {
   props: {
     tableJSON: {
-      type: Object as () => DataFrame,
+      type: Object as () => TableData,
       required: true,
     },
     editable: {
@@ -133,7 +135,7 @@ export default {
     tableJSON: {
       deep: true,
       immediate: false,
-      handler(newTableJSON: DataFrame, oldTableJSON: DataFrame) {
+      handler(newTableJSON: TableData, oldTableJSON: TableData) {
         if (!this.editable) return;
         if (newTableJSON?.schema?.schemaName && newTableJSON?.validation?.name) {
           this.$emit("change-text", JSON.stringify({...newTableJSON, validation: undefined}));

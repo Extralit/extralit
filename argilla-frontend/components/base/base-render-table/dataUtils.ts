@@ -1,8 +1,8 @@
 
-import { Data, DataFrame, PanderaSchema, ReferenceValues, Validator, Validators } from './types';
+import { Data, TableData, ValidationSchema, ReferenceValues, Validator, Validators } from './types';
 
 
-export function columnUniqueCounts(tableJSON: DataFrame): Record<string, number> {
+export function columnUniqueCounts(tableJSON: TableData): Record<string, number> {
   // tableJSON is an object of the form {data: [{column: value, ...}, ...]}
   // returns an object of the form {column: uniqueCount, ...}
   let uniqueCounts: Record<string, number> = {};

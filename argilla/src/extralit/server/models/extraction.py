@@ -28,15 +28,15 @@ class FieldSchema(BaseModel):
     extDtype: Optional[str] = None
 
 
-class Schema(BaseModel):
+class DataFrameSchema(BaseModel):
     fields: List[FieldSchema]
     primaryKey: Optional[List[str]] = None
     pandas_version: Optional[str]
 
 
 class ExtractionResponse(BaseModel):
-    schema: Schema
     data: Data
+    schema: DataFrameSchema
 
     class Config:
         extra = 'ignore'

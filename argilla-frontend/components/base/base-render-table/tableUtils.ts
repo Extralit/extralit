@@ -1,8 +1,6 @@
-import { DataFrame, PanderaSchema, Validator, Validators, ReferenceValues } from './types';
 import { CellComponent, ColumnComponent, GroupComponent, RangeComponent, RowComponent } from "tabulator-tables";
-
-type RecordDataFrames = Record<string, DataFrame>;
-export type RecordDataFramesArray = RecordDataFrames[];
+import { ReferenceValues } from "~/v1/domain/entities/table/TableData";
+import { ValidationSchema, Validator, Validators } from "~/v1/domain/entities/table/Validation";
 
 
 export function isTableJSON(value: string): boolean {
@@ -57,7 +55,7 @@ export function groupHeader(index: string, count: number, data: any, group: Grou
   return header;
 }
 
-export function headerTooltip(e, column: ColumnComponent, onRendered, validation: PanderaSchema, columnValidators: Validators) {
+export function headerTooltip(e, column: ColumnComponent, onRendered, validation: ValidationSchema, columnValidators: Validators) {
   try {
     const fieldName = column?.getDefinition()?.field;
     const desc = columnSchemaToDesc(fieldName, validation, columnValidators)
@@ -72,7 +70,7 @@ export function headerTooltip(e, column: ColumnComponent, onRendered, validation
 
 export function columnSchemaToDesc(
   fieldName: string, 
-  validation: PanderaSchema, 
+  validation: ValidationSchema, 
   columnValidators: Validators): string | undefined {
   // returns a string describing the column schema and validators
   if (!validation || !fieldName) return;
