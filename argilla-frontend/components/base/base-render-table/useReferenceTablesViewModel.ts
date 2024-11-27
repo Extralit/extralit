@@ -5,7 +5,6 @@ import { useRecords } from "@/v1/infrastructure/storage/RecordsStorage";
 
 import { columnUniqueCounts } from './dataUtils';
 
-import { SchemaTableViewModel } from "./useSchemaTableViewModel";
 import { TableData } from '~/v1/domain/entities/table/TableData';
 
 type RecordDataFrames = Record<string, TableData>;
@@ -14,8 +13,7 @@ export const useReferenceTablesViewModel = (
   props: { 
     tableJSON: TableData,
     editable: boolean, 
-  }, 
-  schemaTableViewModel: SchemaTableViewModel
+  }
 ) => {
   const { state: records }: { state: Records } = useRecords();
 
