@@ -1,5 +1,5 @@
 import { type NuxtAxiosInstance } from "@nuxtjs/axios";
-import { SchemaMetadata } from "../entities/table/Schema";
+import { FileMetadata } from "../entities/table/Schema";
 import { ValidationSchema } from "../entities/table/Validation";
 
 
@@ -16,7 +16,7 @@ export class GetExtractionSchemaUseCase {
     workspaceName: string,
     schemaName: string, 
     versionId?: string,
-  ): Promise<[ValidationSchema, SchemaMetadata]> {
+  ): Promise<[ValidationSchema, FileMetadata]> {
 
     try {
       const url = `/v1/file/${workspaceName}/schemas/${schemaName}`;
@@ -35,7 +35,7 @@ export class GetExtractionSchemaUseCase {
         isLatest = false;
       }
 
-      const SchemaMetadata: SchemaMetadata = {
+      const SchemaMetadata: FileMetadata = {
         schemaName: schemaName,
         etag: headers.get('etag'),
         version_id: headers.get('version-id'),
