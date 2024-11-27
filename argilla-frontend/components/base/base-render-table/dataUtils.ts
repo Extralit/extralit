@@ -1,5 +1,4 @@
-
-import { Data, TableData, ValidationSchema, ReferenceValues, Validator, Validators } from './types';
+import { Data, ReferenceValues, TableData } from "@/v1/domain/entities/table/TableData";
 
 
 export function columnUniqueCounts(tableJSON: TableData): Record<string, number> {

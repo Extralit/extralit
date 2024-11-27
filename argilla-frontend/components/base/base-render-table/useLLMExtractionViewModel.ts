@@ -2,11 +2,11 @@ import { useResolve } from "ts-injecty";
 
 import { Question } from "@/v1/domain/entities/question/Question";
 import { GetLLMExtractionUseCase } from "@/v1/domain/usecases/get-extraction-completion-use-case";
-
-import { SchemaTableViewModel } from "./useSchemaTableViewModel";
 import { useDataset } from "@/v1/infrastructure/storage/DatasetStorage";
 import { useDocument } from "@/v1/infrastructure/storage/DocumentStorage";
-import { Data, ReferenceValues } from "~/v1/domain/entities/table/TableData";
+import { Data, ReferenceValues } from "@/v1/domain/entities/table/TableData";
+
+import { SchemaTableViewModel } from "./useSchemaTableViewModel";
 
 export const useLLMExtractionViewModel = (
   props: { 

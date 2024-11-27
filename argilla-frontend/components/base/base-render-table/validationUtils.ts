@@ -1,5 +1,6 @@
 import { CellComponent } from "tabulator-tables";
-import { TableData, SchemaColumns, Checks, ValidationSchema, Validator, Validators, ReferenceValues, SuggestionCheck } from "./types";
+import { ReferenceValues, TableData } from "@/v1/domain/entities/table/TableData";
+import { Checks, SchemaColumns, SuggestionCheck, ValidationSchema, Validator, Validators } from "@/v1/domain/entities/table/Validation";
 
 var integer = (cell: any, value: string, parameters: { nullable: boolean }): boolean => 
 	(parameters.nullable && value == "NA") || /^-?\d+$/.test(value);
