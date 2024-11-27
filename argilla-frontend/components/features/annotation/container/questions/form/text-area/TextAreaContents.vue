@@ -51,7 +51,7 @@
 </template>
 
 <script>
-import { isTableJSON } from "@/components/base/base-render-table/tableUtils";
+import { isValidJSON } from "@/components/base/base-render-table/tableUtils";
 
 export default {
   name: "TextAreaComponent",
@@ -146,7 +146,7 @@ export default {
       return null;
     },
     isValidTableJSON() {
-      return isTableJSON(this.question.answer.value);
+      return isValidJSON(this.question.answer.value);
     },
     isValidHTML() {
       const value = this.question.answer?.value?.trimStart();

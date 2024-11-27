@@ -3,7 +3,7 @@ import { ReferenceValues } from "@/v1/domain/entities/table/TableData";
 import { ValidationSchema, Validator, Validators } from "@/v1/domain/entities/table/Validation";
 
 
-export function isTableJSON(value: string): boolean {
+export function isValidJSON(value: string): boolean {
   if (!value?.length || (!value.startsWith('{') && !value.startsWith('['))) { return false; }
   
   try {
