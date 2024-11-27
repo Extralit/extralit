@@ -3,25 +3,26 @@ import { Question } from "@/v1/domain/entities/question/Question";
 import { Records } from "@/v1/domain/entities/record/Records";
 import { useRecords } from "@/v1/infrastructure/storage/RecordsStorage";
 
-import { DataFrame, Data, ReferenceValues, PanderaSchema } from "./types";
-import { RecordDataFramesArray } from './tableUtils';
 import { columnUniqueCounts } from './dataUtils';
 
 import { SchemaTableViewModel } from "./useSchemaTableViewModel";
+import { TableData } from '~/v1/domain/entities/table/TableData';
+
+type RecordDataFrames = Record<string, TableData>;
 
 export const useReferenceTablesViewModel = (
   props: { 
-    tableJSON: DataFrame,
+    tableJSON: TableData,
     editable: boolean, 
   }, 
   schemaTableViewModel: SchemaTableViewModel
 ) => {
   const { state: records }: { state: Records } = useRecords();
 
-  const getTableDataFromRecords = (filter_fn: (record: FeedbackRecord) => boolean): RecordDataFramesArray => {
+  const getTableDataFromRecords = (filter_fn: (record: FeedbackRecord) => boolean): RecordDataFrames[] => {
     // filter_fn is a function that takes a record and returns true if it should be included in the table
     // returns an array of objects of the form {field: {refValue: {column: value, ...}, ...}, ...}
-    let recordTables: RecordDataFramesArray = records.records?.filter(filter_fn)
+    let recordTables: RecordDataFrames[] = records.records?.filter(filter_fn)
       .map((rec) => {
         let answer_tables = rec?.answer?.value || {};
         if (answer_tables) {
@@ -66,7 +67,7 @@ export const useReferenceTablesViewModel = (
 
   const findMatchingRefValues = (
     refColumns: string[], 
-    records: RecordDataFramesArray,
+    records: RecordDataFrames[],
     filterByColumnUniqueCounts: boolean = true,
   ): Record<string, Record<string, Record<string, any>>> => {
     // refValues is an object of the form {field: refValue}
@@ -80,7 +81,7 @@ export const useReferenceTablesViewModel = (
       for (const recordTables of records) {
         if (!recordTables) continue;
         const matchingTable = Object.values(recordTables)
-          .find((table: DataFrame) => {
+          .find((table: TableData) => {
             const schemaName = table?.schema?.schemaName || table?.validation?.name;
             return schemaName?.toLowerCase() === field.replace(/(_ref|_ID)$/, '').toLowerCase();
           });
