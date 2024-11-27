@@ -34,7 +34,7 @@
 
 <script>
 import { useTextFieldViewModel } from "./useTextFieldViewModel";
-import { isTableJSON } from "@/components/base/base-render-table/tableUtils";
+import { isValidJSON } from "@/components/base/base-render-table/tableUtils";
 export default {
   props: {
     name: {
@@ -67,7 +67,7 @@ export default {
   },
   computed: {
     isValidTableJSON() {
-      return isTableJSON(this.fieldText);
+      return isValidJSON(this.fieldText);
     },
     classes() {
       return this.$language.isRTL(this.fieldText) ? "--rtl" : "--ltr";

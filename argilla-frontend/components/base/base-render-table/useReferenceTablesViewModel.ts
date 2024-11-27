@@ -1,18 +1,14 @@
 import { Record as FeedbackRecord } from '@/v1/domain/entities/record/Record';
-import { Question } from "@/v1/domain/entities/question/Question";
 import { Records } from "@/v1/domain/entities/record/Records";
 import { useRecords } from "@/v1/infrastructure/storage/RecordsStorage";
 
-import { columnUniqueCounts } from './dataUtils';
-
-import { TableData } from '~/v1/domain/entities/table/TableData';
+import { Data, ReferenceValues, TableData } from '~/v1/domain/entities/table/TableData';
 
 type RecordDataFrames = Record<string, TableData>;
 
 export const useReferenceTablesViewModel = (
   props: { 
     tableJSON: TableData,
-    editable: boolean, 
   }
 ) => {
   const { state: records }: { state: Records } = useRecords();
@@ -87,7 +83,7 @@ export const useReferenceTablesViewModel = (
         if (!matchingTable) continue;
 
         if (!matchingTable.hasOwnProperty('columnUniqueCounts')) {
-          matchingTable.columnUniqueCounts = columnUniqueCounts(matchingTable)
+          matchingTable.columnUniqueCounts = matchingTable.getColumnUniqueCounts()
         }
 
         const refRows = matchingTable.data.reduce((acc, row) => {
@@ -114,8 +110,59 @@ export const useReferenceTablesViewModel = (
     return matchingRefValues;
   };
 
+  const getColumnMaxValue = (
+    columnName: string, data: Data
+  ): any => {
+    return data.reduce((max, row) => !max || row[columnName] > max ? row[columnName] : max, null);
+  }
+
+  const incrementReferenceStr = (
+    reference: string
+  ): string => {
+    if (typeof reference !== 'string') return undefined;
+    const prefix = reference.slice(0, 1);
+
+    const numericalPart = reference.slice(1);
+    if (!/^\d+$/.test(numericalPart)) return undefined;
+
+    const incrementedDigits = String(parseInt(numericalPart) + 1).padStart(numericalPart.length, '0');
+    const newReference = `${prefix}${incrementedDigits}`;
+
+    return newReference;
+  }
+
+  const generateCombinations = (
+    columnValues: ReferenceValues, fixedValues: Record<string, string> = {}
+  ): Data => {
+    const possibleKeyValues: Record<string, string[]> = Object.keys(columnValues).reduce((acc, key) => {
+      if (!fixedValues[key]) {
+        acc[key] = Object.keys(columnValues[key]);
+      }
+      return acc;
+    }, {});
+
+    const keys = Object.keys(possibleKeyValues);
+    const valueCombinations = cartesianProduct(keys.map(key => possibleKeyValues[key]));
+
+    const keyValueCombinations = valueCombinations.map(values => {
+      return values.reduce((acc, value, index) => {
+        acc[keys[index]] = value;
+        return acc;
+      }, { ...fixedValues } as Record<string, string>);
+    });
+
+    return keyValueCombinations;
+  }
+
   return {
     getTableDataFromRecords,
     findMatchingRefValues,
+    getColumnMaxValue,
+    incrementReferenceStr,
+    generateCombinations,
   }
 };
+
+function cartesianProduct(arr: any[][]): any[][] {
+  return arr.reduce((a, b) => a.flatMap((x: any[]) => b.map((y: any) => [...x, y])), [[]]);
+}

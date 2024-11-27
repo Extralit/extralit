@@ -57,13 +57,30 @@ export class TableData {
         return this.schema.fieldNames;
     }
 
+    getColumnUniqueCounts(): Record<string, number> {
+        // tableJSON is an object of the form {data: [{column: value, ...}, ...]}
+        // returns an object of the form {column: uniqueCount, ...}
+        let uniqueCounts: Record<string, number> = {};
+        for (let key of Object.keys(this.data[0])) {
+            let values = this.data
+                .map(row => row[key])
+                .filter(value => value != null && value !== 'NA');
+            uniqueCounts[key] = new Set(values).size;
+        }
+
+        return uniqueCounts;
+    }
+
+    getColumnMaxValue(columnName: string): any {
+        return this.data.reduce((max, row) => !max || row[columnName] > max ? row[columnName] : max, null);
+    }
+
     toJSON() {
         return {
             data: this.data,
             schema: this.schema,
             reference: this.reference,
             validation: this.validation,
-            columnUniqueCounts: this.columnUniqueCounts
         };
     }
 }
