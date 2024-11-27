@@ -82,16 +82,15 @@
 import { merge } from 'lodash';
 import { CellComponent, ColumnComponent, GroupComponent, RangeComponent, RowComponent, TabulatorFull as Tabulator } from "tabulator-tables";
 import "tabulator-tables/dist/css/tabulator.min.css";
-import { getColumnValidators, getColumnEditorParams } from "./validationUtils";
-import { cellTooltip, headerTooltip, groupHeader, getRangeRowData, getRangeColumns } from "./tableUtils"; 
+import { cellTooltip, headerTooltip, groupHeader, getRangeRowData, getRangeColumns, getColumnEditorParams } from "./tableUtils"; 
+import { getColumnValidators } from "./validatorUtils";
+import { useReferenceTablesViewModel } from "./useReferenceTablesViewModel";
 import { useSchemaTableViewModel } from "./useSchemaTableViewModel";
 import { useLLMExtractionViewModel } from "./useLLMExtractionViewModel";
-import { useReferenceTablesViewModel } from "./useReferenceTablesViewModel";
 import { Data, TableData } from '@/v1/domain/entities/table/TableData';
 import { DataFrameField } from '@/v1/domain/entities/table/Schema';
+import { Validators } from '@/v1/domain/entities/table/Validation';
 import { Question } from "@/v1/domain/entities/question/Question";
-import { difference } from '@/v1/domain/entities/record/Record';
-import { Validators } from '~/v1/domain/entities/table/Validation';
 
 export default {
   props: {
@@ -143,14 +142,14 @@ export default {
         }
       },
     },
-    columnsConfig: {
-      deep: true,
-      handler(newColumnsConfig, oldColumnsConfig) {
-        if (this.isLoaded) {
-          if (this.editable) console.warn('Changes columns config', difference(newColumnsConfig, oldColumnsConfig));
-        }
-      },
-    },
+    // columnsConfig: {
+    //   deep: true,
+    //   handler(newColumnsConfig, oldColumnsConfig) {
+    //     if (this.isLoaded) {
+    //       if (this.editable) console.warn('Changes columns config', difference(newColumnsConfig, oldColumnsConfig));
+    //     }
+    //   },
+    // },
     validation: {
       handler(newValidation, oldValidation) {
         if (this.isLoaded) {
