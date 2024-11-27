@@ -81,7 +81,6 @@
 <script lang="ts">
 import { merge } from 'lodash';
 import { CellComponent, ColumnComponent, GroupComponent, RangeComponent, RowComponent, TabulatorFull as Tabulator } from "tabulator-tables";
-import { generateCombinations, incrementReferenceStr, getMaxValue } from './dataUtils';
 import "tabulator-tables/dist/css/tabulator.min.css";
 import { getColumnValidators, getColumnEditorParams } from "./validationUtils";
 import { cellTooltip, headerTooltip, groupHeader, getRangeRowData, getRangeColumns } from "./tableUtils"; 
@@ -219,7 +218,7 @@ export default {
           } else if (value != null) {
             return value;
           }
-          const maxRefValue = getMaxValue(component.getField(), this.tabulator.getData());
+          const maxRefValue = this.getColumnMaxValue(component.getField(), this.tabulator.getData());
           if (rownum < maxRefValue) {
             rownum = maxRefValue+1;
           }
@@ -270,7 +269,7 @@ export default {
                 fixedValues[parentGroup.getField()] = parentGroup.getKey();
                 parentGroup = parentGroup.getParentGroup();
               }
-              const combinations = generateCombinations(this.referenceValues, fixedValues);
+              const combinations = this.generateCombinations(this.referenceValues, fixedValues);
 
               combinations.filter((rowData) => {
                 return !group.getSubGroups().some((subGroup: GroupComponent) => {
@@ -487,8 +486,8 @@ export default {
           continue
         } else if (this.indexColumns.includes(field) && !this.refColumns.includes(field) && 
             selectedRow?.getData()[field]) {
-          const maxRefValue = getMaxValue(field, this.tabulator.getData());
-          rowData[field] = incrementReferenceStr(maxRefValue);
+          const maxRefValue = this.getColumnMaxValue(field, this.tabulator.getData());
+          rowData[field] = this.incrementReferenceStr(maxRefValue);
         } else if (this.refColumns.includes(field) && selectedRow?.getData()[field]) {
           rowData[field] = selectedRow?.getData()[field];
         } else {
@@ -593,7 +592,7 @@ export default {
       });
     },
     addEmptyReferenceRows() {
-      const combinations = generateCombinations(this.referenceValues);
+      const combinations = this.generateCombinations(this.referenceValues);
 
       combinations.forEach(rowData => {
         this.addRow(null, rowData);
