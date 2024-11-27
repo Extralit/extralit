@@ -1,5 +1,5 @@
 import { CellComponent } from "tabulator-tables";
-import { DataFrame, SchemaColumns, Checks, PanderaSchema, Validator, Validators, ReferenceValues, SuggestionCheck } from "./types";
+import { TableData, SchemaColumns, Checks, ValidationSchema, Validator, Validators, ReferenceValues, SuggestionCheck } from "./types";
 
 var integer = (cell: any, value: string, parameters: { nullable: boolean }): boolean => 
 	(parameters.nullable && value == "NA") || /^-?\d+$/.test(value);
@@ -56,7 +56,7 @@ var between = (cell: any, value: any, parameters: { lower: string, upper: string
  * @param tableJSON - The table JSON containing the validation information.
  * @returns An object containing the column validators.
  */
-export function getColumnValidators(tableJSON: DataFrame, validation: PanderaSchema): Validators {
+export function getColumnValidators(tableJSON: TableData, validation: ValidationSchema): Validators {
 	const schemaColumns = validation?.columns;
 	const indexColumns: SchemaColumns = validation?.index?.reduce((acc, curr) => ({ ...acc, [curr.name]: curr }), {}) || {};
 	if (schemaColumns == null) return {};
@@ -181,7 +181,7 @@ function getListAutocompleteValues(values: SuggestionCheck): any[] {
 
 export function getColumnEditorParams(
   fieldName: string,
-  validation: PanderaSchema,
+  validation: ValidationSchema,
   refColumns: string[],
   referenceValues: ReferenceValues,
 ): any {

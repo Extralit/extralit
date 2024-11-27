@@ -1,7 +1,7 @@
 import { type NuxtAxiosInstance } from "@nuxtjs/axios";
 
-import { BackendExtractionRequest, BackendExtractionResponse } from "@/v1/domain/entities/extraction/Extraction";
-import { Data, DataFrame, ReferenceValues } from "@/components/base/base-render-table/types";
+import { BackendExtractionRequest, BackendExtractionResponse } from "~/v1/domain/entities/table/Extraction";
+import { Data, TableData, ReferenceValues } from "../entities/table/TableData";
 
 const LLM_EXTRACTION_API_ERRORS = {
   ERROR_FETCHING_LLM_EXTRACTION: "ERROR_FETCHING_LLM_EXTRACTION",
@@ -27,7 +27,7 @@ export class GetLLMExtractionUseCase {
       const json = this.createRequest(reference, schema_name, selectedRowData, extractions, columns, headers, types, prompt);
       const params = { workspace: workspaceName };
       
-      const { data } = await this.axios.post<DataFrame>(
+      const { data } = await this.axios.post<TableData>(
         `/v1/models/extraction`, json, { params: params }
       );
 
