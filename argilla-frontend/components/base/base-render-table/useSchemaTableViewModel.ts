@@ -4,8 +4,9 @@ import { useResolve } from "ts-injecty";
 
 import { Question } from "@/v1/domain/entities/question/Question";
 import { GetExtractionSchemaUseCase } from "@/v1/domain/usecases/get-extraction-schema-use-case";
-import { TableData } from "~/v1/domain/entities/table/TableData";
-import { ValidationSchema } from "~/v1/domain/entities/table/Validation";
+import { TableData } from "@/v1/domain/entities/table/TableData";
+import { ValidationSchema } from "@/v1/domain/entities/table/Validation";
+import { DataFrameSchema } from "@/v1/domain/entities/table/Schema";
 
 import { useDataset } from "@/v1/infrastructure/storage/DatasetStorage";
 import { waitForAsyncValue } from "~/v1/infrastructure/services/useWait";
@@ -48,10 +49,18 @@ export const useSchemaTableViewModel = (
     
     const [schema, fileMetadata] = await getSchema.fetch(dataset.workspaceName, schemaName, version_id);
 
-    const schemaMetadataUpdate = {
-      ...props.tableJSON.schema,
-      ...fileMetadata
-    };
+    // const schemaMetadataUpdate = {
+    //   ...props.tableJSON.schema,
+    //   ...fileMetadata
+    // };
+    const schemaMetadataUpdate = new DataFrameSchema(
+      props.tableJSON?.schema?.fields || [],
+      props.tableJSON?.schema?.primaryKey || [],
+      fileMetadata,
+      schemaName,
+      version_id
+    );
+
     if (!isEqual(props.tableJSON?.schema, schemaMetadataUpdate)) {
       props.tableJSON.schema = schemaMetadataUpdate;
     }

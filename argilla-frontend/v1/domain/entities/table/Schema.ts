@@ -1,10 +1,12 @@
+import { formToJSON } from "axios";
+
 export interface DataFrameField {
     name: string;
     type: string;
     extDtype?: string;
 }
 
-export interface SchemaMetadata {
+export interface FileMetadata {
     schemaName?: string;
     etag?: string;
     version_id?: string;
@@ -16,17 +18,25 @@ export interface SchemaMetadata {
 export class DataFrameSchema {
     primaryKey: string[];
     fields: DataFrameField[];
-    metadata?: SchemaMetadata;
+    metadata?: FileMetadata;
     schemaName?: string;
+    version_id?: string;
+    is_latest?: boolean;
 
     constructor(
         fields: DataFrameField[] = [], 
         primaryKey: string[] = [], 
-        metadata?: SchemaMetadata
+        metadata?: FileMetadata,
+        schemaName?: string,
+        version_id?: string,
+        is_latest?: boolean
     ) {
         this.fields = fields;
         this.primaryKey = primaryKey;
         this.metadata = metadata;
+        this.schemaName = schemaName;
+        this.version_id = version_id;
+        this.is_latest = is_latest;
     }
 
     get fieldNames(): string[] {
