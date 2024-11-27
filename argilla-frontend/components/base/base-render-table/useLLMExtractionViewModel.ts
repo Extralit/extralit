@@ -4,18 +4,17 @@ import { Question } from "@/v1/domain/entities/question/Question";
 import { GetLLMExtractionUseCase } from "@/v1/domain/usecases/get-extraction-completion-use-case";
 import { useDataset } from "@/v1/infrastructure/storage/DatasetStorage";
 import { useDocument } from "@/v1/infrastructure/storage/DocumentStorage";
-import { Data, ReferenceValues } from "@/v1/domain/entities/table/TableData";
+import { Data, ReferenceValues, TableData } from "@/v1/domain/entities/table/TableData";
 
-import { SchemaTableViewModel } from "./useSchemaTableViewModel";
 
 export const useLLMExtractionViewModel = (
   props: { 
-    tableJSON: Object, 
+    tableJSON: TableData, 
     editable: boolean, 
     hasValidValues: boolean,
     questions: Question[],
-  }, 
-  schemaTableViewModel: SchemaTableViewModel) => {
+  }
+) => {
     const getExtraction = useResolve(GetLLMExtractionUseCase);
     const { state: dataset } = useDataset();
     const { state: document } = useDocument();
@@ -28,8 +27,8 @@ export const useLLMExtractionViewModel = (
     typesQuestionName: string = 'extraction-source',
     promptQuestionName: string = 'notes',
   ): Promise<Data> => {
-    const reference = schemaTableViewModel.tableJSON.value.reference || document.reference;
-    const schemaName = schemaTableViewModel.tableJSON.value.schema?.schemaName || schemaTableViewModel.tableJSON.value.validation?.name;
+    const reference = props.tableJSON.reference || document.reference;
+    const schemaName = props.tableJSON.schema?.schemaName || props.tableJSON.validation?.name;
     const headers = getSelectionQuestionAnswer(headersQuestionName)?.filter((value) => value != 'Not listed');
     const types = getSelectionQuestionAnswer(typesQuestionName);
     const prompt = getTextQuestionAnswer(promptQuestionName);

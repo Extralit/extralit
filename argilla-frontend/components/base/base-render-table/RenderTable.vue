@@ -958,11 +958,10 @@ export default {
   },
 
   setup(props) {
-    const schemaTableViewModel = useSchemaTableViewModel(props);
     return {
-      ...schemaTableViewModel,
-      ...useReferenceTablesViewModel(props, schemaTableViewModel),
-      ...useLLMExtractionViewModel(props, schemaTableViewModel),
+      ...useSchemaTableViewModel(props),
+      ...useReferenceTablesViewModel(props),
+      ...useLLMExtractionViewModel(props),
     };
   },
 
