@@ -1,5 +1,5 @@
-import { CellComponent } from "tabulator-tables";
-import { DataFrame, SchemaColumns, Checks, PanderaSchema, Validator, Validators, ReferenceValues, SuggestionCheck } from "./types";
+import { TableData } from "@/v1/domain/entities/table/TableData";
+import { Checks, SchemaColumns, ValidationSchema, Validator, Validators } from "@/v1/domain/entities/table/Validation";
 
 var integer = (cell: any, value: string, parameters: { nullable: boolean }): boolean => 
 	(parameters.nullable && value == "NA") || /^-?\d+$/.test(value);
@@ -56,7 +56,7 @@ var between = (cell: any, value: any, parameters: { lower: string, upper: string
  * @param tableJSON - The table JSON containing the validation information.
  * @returns An object containing the column validators.
  */
-export function getColumnValidators(tableJSON: DataFrame, validation: PanderaSchema): Validators {
+export function getColumnValidators(tableJSON: TableData, validation: ValidationSchema): Validators {
 	const schemaColumns = validation?.columns;
 	const indexColumns: SchemaColumns = validation?.index?.reduce((acc, curr) => ({ ...acc, [curr.name]: curr }), {}) || {};
 	if (schemaColumns == null) return {};
@@ -164,134 +164,3 @@ function addDataFrameChecks(checks: Checks, columnValidators: Validators) {
     });
   }
 }
-
-function getListAutocompleteValues(values: SuggestionCheck): any[] {
-  let editorParamsValues: any[] = [];
-
-  if (Array.isArray(values)) {
-    editorParamsValues = values.map((value) => ({ label: value, value: value, data: {} }));
-
-  } else if (typeof values === 'object') {
-    editorParamsValues = Object.entries(values)
-      .map(([key, value]) => ({ label: key, value: key, data: value }));
-  }
-  return editorParamsValues;
-}
-
-
-export function getColumnEditorParams(
-  fieldName: string,
-  validation: PanderaSchema,
-  refColumns: string[],
-  referenceValues: ReferenceValues,
-): any {
-  let config: any = { editorParams: {} };
-
-  if (validation?.columns?.hasOwnProperty(fieldName)) {
-    const columnValidators = validation.columns[fieldName];
-    const suggestions = columnValidators?.checks?.suggestion;
-    const isinValues = columnValidators?.checks?.isin;
-
-    if (columnValidators?.dtype === "str") {
-      config.editor = "list";
-      config.editorParams.emptyValue = "NA";
-      config.editorParams.autocomplete = true;
-      config.editorParams.freetext = true;
-      config.editorParams.listOnEmpty = true;
-      config.editorParams.selectContents = true;
-      config.editorParams.valuesLookupField = fieldName;
-
-      if (isinValues) {
-        const allowedValues = getListAutocompleteValues(isinValues);
-        if (allowedValues.length) {
-          config.editorParams.valuesLookup = (cell: CellComponent, filterTerm: string) => {
-            return allowedValues
-          }
-        } 
-
-      } else if (suggestions) {
-        let suggestionValues: any[] = getListAutocompleteValues(suggestions);
-
-        if (suggestionValues.length) {
-          config.editorParams.valuesLookup = (cell: CellComponent, filterTerm: string) => {
-            let values = cell.getColumn().getCells()
-              .map((c) => c.getValue())
-              .filter(value => value != null && value !== 'NA' && !suggestionValues.some(item => item.value === value))
-
-            return [...new Set(values), ...suggestionValues]
-          }
-        } else {
-          config.editorParams.valuesLookup = 'active';
-        }
-      } 
-
-      if (columnValidators.checks?.multiselect?.delimiter) {
-        if (isinValues) {
-          config.editorParams.multiselect = true;
-          config.editorParams.autocomplete = false;
-        }
-      }
-
-    } else if (columnValidators.dtype.includes("int") || columnValidators.dtype.includes("float")) {
-      config.hozAlign = "right";
-      config.editorParams.valuesLookup = 'active';
-      config.editorParams.valuesLookupField = fieldName;
-    }
-
-  } else if (refColumns?.includes(fieldName)) {
-    config.editor = "list";
-
-    if (referenceValues?.hasOwnProperty(fieldName)) {
-      config.editorParams = {
-        allowEmpty: true,
-        listOnEmpty: true,
-        freetext: true,
-        emptyValue: null,
-        valuesLookup: false,
-        values: Object.entries(referenceValues[fieldName]).map(
-          ([key, value]) => ({ label: key, value: key, data: value})
-        ),
-      };
-
-    } else {
-      // Default editor params for reference columns
-      config.editorParams = {
-        search: true,
-        valuesLookup: 'active',
-        listOnEmpty: true,
-        freetext: true,
-      };
-    }
-  }
-
-  const hasSuggestedValues = config.editorParams?.values || typeof config.editorParams?.valuesLookup == 'function';
-  if (hasSuggestedValues) {
-    config.editorParams.itemFormatter = function (label, value, item, element) {
-      if (item.data && typeof item.data === 'object') {
-        const keyValues = Object.entries(item.data)
-          .filter(([key, v]) => v !== 'NA' && v !== null)
-          .map(([key, v]) => `<span style="font-weight:normal; color:black; margin-left:0;">${key}:</span> ${v}`)
-          .join(', ');
-
-        return `<strong>${label}</strong>${keyValues ? `: ${keyValues}` : ''}`;
-      } 
-      return label;
-    };
-
-    config.editorParams.maxWidth = '500px'
-
-    config.editorParams.filterFunc = function (term: string, label: string, value, item) {
-      if (String(label).startsWith(term) || value.includes(term)) {
-        return true;
-      } else if (term.length >= 3 && item.data) {
-        return JSON.stringify(item.data).toLowerCase().match(term.toLowerCase());              
-      }
-      return label === term;
-    };
-
-    config.editorParams.placeholderEmpty = "Type to search by keyword...";
-  }
-
-  return config;
-}
-

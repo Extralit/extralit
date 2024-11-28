@@ -17,7 +17,7 @@
       </BaseActionTooltip>
     </div>
     <div :id="`fields-content-${name}`" class="content-area --body1">
-      <RenderTable v-if="useTable && isValidTableJSON" :tableData="fieldText" />
+      <RenderTable v-if="useTable && isValidTableJSON" :tableJSON="JSON.parse(fieldText)" />
       <MarkdownRenderer v-else-if="useMarkdown" :markdown="fieldText" />
       <Sandbox v-else-if="isHTML" :content="fieldText" />
       <div :class="classes" v-else v-html="fieldText" />
@@ -34,7 +34,7 @@
 
 <script>
 import { useTextFieldViewModel } from "./useTextFieldViewModel";
-import { isTableJSON } from "@/components/base/base-render-table/tableUtils";
+import { isValidJSON } from "@/components/base/base-render-table/tableUtils";
 export default {
   props: {
     name: {
@@ -67,7 +67,7 @@ export default {
   },
   computed: {
     isValidTableJSON() {
-      return isTableJSON(this.fieldText);
+      return isValidJSON(this.fieldText);
     },
     classes() {
       return this.$language.isRTL(this.fieldText) ? "--rtl" : "--ltr";

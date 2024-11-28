@@ -107,12 +107,25 @@ class CustomFieldSettingsUpdate(BaseModel):
     advanced_mode: bool
 
 
+class TableFieldSettings(BaseModel):
+    type: Literal[FieldType.table]
+
+
+class TableFieldSettingsCreate(BaseModel):
+    type: Literal[FieldType.table]
+
+
+class TableFieldSettingsUpdate(BaseModel):
+    type: Literal[FieldType.table]
+
+
 FieldSettings = Annotated[
     Union[
         TextFieldSettings,
         ImageFieldSettings,
         ChatFieldSettings,
         CustomFieldSettings,
+        TableFieldSettings,
     ],
     PydanticField(..., discriminator="type"),
 ]
@@ -123,6 +136,7 @@ FieldSettingsCreate = Annotated[
         ImageFieldSettingsCreate,
         ChatFieldSettingsCreate,
         CustomFieldSettingsCreate,
+        TableFieldSettingsCreate,
     ],
     PydanticField(..., discriminator="type"),
 ]
@@ -133,6 +147,7 @@ FieldSettingsUpdate = Annotated[
         ImageFieldSettingsUpdate,
         ChatFieldSettingsUpdate,
         CustomFieldSettingsUpdate,
+        TableFieldSettingsUpdate,
     ],
     PydanticField(..., discriminator="type"),
 ]

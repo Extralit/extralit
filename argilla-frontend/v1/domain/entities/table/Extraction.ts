@@ -1,4 +1,5 @@
-import { Data, DataFrameSchema } from "@/components/base/base-render-table/types";
+import { DataFrameSchema } from "./Schema";
+import { Data } from "./TableData";
 
 export interface BackendExtractionRequest {
   reference: string;
@@ -12,6 +13,6 @@ export interface BackendExtractionRequest {
 
 
 export interface BackendExtractionResponse {
-    schema: DataFrameSchema;
-    data: Data;
+  schema: DataFrameSchema;
+  data: Data;
 }
