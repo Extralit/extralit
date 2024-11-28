@@ -3,7 +3,7 @@
     <RenderTable
       v-if="question.settings.use_table && isValidTableJSON"
       class="textarea"
-      :tableData="question.suggestion?.suggestedAnswer"
+      :tableJSON="JSON.parse(question.suggestion?.suggestedAnswer)"
       :editable="true"
       @onUpdateAnswer="onUpdateAnswer"
     />
@@ -27,7 +27,7 @@
 
 <script>
 import "assets/icons/copy";
-import { isTableJSON } from "@/components/base/base-render-table/tableUtils";
+import { isValidJSON } from "@/components/base/base-render-table/tableUtils";
 
 export default {
   name: "TextAreaComponent",
@@ -44,7 +44,7 @@ export default {
       return value?.startsWith("<") && !value?.startsWith("<img") && !value?.startsWith("<iframe");
     },
     isValidTableJSON() {
-      return isTableJSON(this.question.suggestion?.suggestedAnswer);
+      return isValidJSON(this.question.suggestion?.suggestedAnswer);
     },
   },
   methods: {

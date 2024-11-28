@@ -43,8 +43,12 @@ class CustomFieldSettings(BaseModel):
     advanced_mode: Optional[bool] = False
 
 
+class TableFieldSettings(BaseModel):
+    type: Literal["table"] = "table"
+
+
 FieldSettings = Annotated[
-    Union[TextFieldSettings, ImageFieldSettings, ChatFieldSettings, CustomFieldSettings],
+    Union[TextFieldSettings, ImageFieldSettings, ChatFieldSettings, CustomFieldSettings, TableFieldSettings],
     Field(..., discriminator="type"),
 ]
 

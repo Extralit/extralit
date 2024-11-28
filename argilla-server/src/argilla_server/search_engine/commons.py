@@ -176,7 +176,7 @@ def es_mapping_for_field(field: Field) -> dict:
             },
         }
         return {es_field_for_record_field(field.name): es_field}
-    elif field.is_custom:
+    elif field.is_custom or field.is_table:
         return {
             es_field_for_record_field(field.name): {
                 "type": "text",
@@ -880,7 +880,7 @@ class BaseElasticAndOpenSearchEngine(SearchEngine):
         for field in dataset_fields:
             if field.is_image:
                 fields[field.name] = None
-            elif field.is_custom:
+            elif field.is_custom or field.is_table:
                 fields[field.name] = str(fields.get(field.name, ""))
             else:
                 fields[field.name] = fields.get(field.name, "")

@@ -81,21 +81,21 @@
 <script lang="ts">
 import { merge } from 'lodash';
 import { CellComponent, ColumnComponent, GroupComponent, RangeComponent, RowComponent, TabulatorFull as Tabulator } from "tabulator-tables";
-import { generateCombinations, incrementReferenceStr, getMaxValue } from './dataUtils';
 import "tabulator-tables/dist/css/tabulator.min.css";
-import { getColumnValidators, getColumnEditorParams } from "./validationUtils";
-import { cellTooltip, headerTooltip, groupHeader, getRangeRowData, getRangeColumns } from "./tableUtils"; 
+import { cellTooltip, headerTooltip, groupHeader, getRangeRowData, getRangeColumns, getColumnEditorParams } from "./tableUtils"; 
+import { getColumnValidators } from "./validatorUtils";
+import { useReferenceTablesViewModel } from "./useReferenceTablesViewModel";
 import { useSchemaTableViewModel } from "./useSchemaTableViewModel";
 import { useLLMExtractionViewModel } from "./useLLMExtractionViewModel";
-import { useReferenceTablesViewModel } from "./useReferenceTablesViewModel";
+import { Data, TableData } from '@/v1/domain/entities/table/TableData';
+import { DataFrameField } from '@/v1/domain/entities/table/Schema';
+import { Validators } from '@/v1/domain/entities/table/Validation';
 import { Question } from "@/v1/domain/entities/question/Question";
-import { Data, DataFrame, DataFrameField, Validators } from './types';
-import { difference } from '~/v1/domain/entities/record/Record';
 
 export default {
   props: {
-    tableData: {
-      type: String,
+    tableJSON: {
+      type: Object as () => TableData,
       required: true,
     },
     editable: {
@@ -133,7 +133,7 @@ export default {
     tableJSON: {
       deep: true,
       immediate: false,
-      handler(newTableJSON: DataFrame, oldTableJSON: DataFrame) {
+      handler(newTableJSON: TableData, oldTableJSON: TableData) {
         if (!this.editable) return;
         if (newTableJSON?.schema?.schemaName && newTableJSON?.validation?.name) {
           this.$emit("change-text", JSON.stringify({...newTableJSON, validation: undefined}));
@@ -142,14 +142,14 @@ export default {
         }
       },
     },
-    columnsConfig: {
-      deep: true,
-      handler(newColumnsConfig, oldColumnsConfig) {
-        if (this.isLoaded) {
-          if (this.editable) console.warn('Changes columns config', difference(newColumnsConfig, oldColumnsConfig));
-        }
-      },
-    },
+    // columnsConfig: {
+    //   deep: true,
+    //   handler(newColumnsConfig, oldColumnsConfig) {
+    //     if (this.isLoaded) {
+    //       if (this.editable) console.warn('Changes columns config', difference(newColumnsConfig, oldColumnsConfig));
+    //     }
+    //   },
+    // },
     validation: {
       handler(newValidation, oldValidation) {
         if (this.isLoaded) {
@@ -217,7 +217,7 @@ export default {
           } else if (value != null) {
             return value;
           }
-          const maxRefValue = getMaxValue(component.getField(), this.tabulator.getData());
+          const maxRefValue = this.getColumnMaxValue(component.getField(), this.tabulator.getData());
           if (rownum < maxRefValue) {
             rownum = maxRefValue+1;
           }
@@ -268,7 +268,7 @@ export default {
                 fixedValues[parentGroup.getField()] = parentGroup.getKey();
                 parentGroup = parentGroup.getParentGroup();
               }
-              const combinations = generateCombinations(this.referenceValues, fixedValues);
+              const combinations = this.generateCombinations(this.referenceValues, fixedValues);
 
               combinations.filter((rowData) => {
                 return !group.getSubGroups().some((subGroup: GroupComponent) => {
@@ -485,8 +485,8 @@ export default {
           continue
         } else if (this.indexColumns.includes(field) && !this.refColumns.includes(field) && 
             selectedRow?.getData()[field]) {
-          const maxRefValue = getMaxValue(field, this.tabulator.getData());
-          rowData[field] = incrementReferenceStr(maxRefValue);
+          const maxRefValue = this.getColumnMaxValue(field, this.tabulator.getData());
+          rowData[field] = this.incrementReferenceStr(maxRefValue);
         } else if (this.refColumns.includes(field) && selectedRow?.getData()[field]) {
           rowData[field] = selectedRow?.getData()[field];
         } else {
@@ -591,7 +591,7 @@ export default {
       });
     },
     addEmptyReferenceRows() {
-      const combinations = generateCombinations(this.referenceValues);
+      const combinations = this.generateCombinations(this.referenceValues);
 
       combinations.forEach(rowData => {
         this.addRow(null, rowData);
@@ -956,11 +956,10 @@ export default {
   },
 
   setup(props) {
-    const schemaTableViewModel = useSchemaTableViewModel(props);
     return {
-      ...schemaTableViewModel,
-      ...useReferenceTablesViewModel(props, schemaTableViewModel),
-      ...useLLMExtractionViewModel(props, schemaTableViewModel),
+      ...useSchemaTableViewModel(props),
+      ...useReferenceTablesViewModel(props),
+      ...useLLMExtractionViewModel(props),
     };
   },
 
@@ -1136,6 +1135,4 @@ export default {
     }
   }
 }
-
 </style>
-./useSchemaViewModel

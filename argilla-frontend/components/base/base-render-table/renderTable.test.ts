@@ -1,8 +1,22 @@
-import { shallowMount } from "@vue/test-utils";
+// @ts-nocheck
+import { shallowMount, Wrapper } from "@vue/test-utils";
 import RenderTable from "./RenderTable.vue";
 import { TableData } from "~/v1/domain/entities/table/TableData";
+import { TabulatorFull as Tabulator } from "tabulator-tables";
 
-// Mock composables
+interface RenderTableInstance extends Vue {
+  tabulator: Tabulator;
+  tableJSON: TableData;
+  columns: string[];
+  validateTable: (data: any) => boolean;
+  clearTable: () => void;
+  columnTitleChanged: (column: any) => Promise<void>;
+  columnContextMenu: () => any[];
+  rowContextMenu: () => any[];
+  addRow: (position: any, data: any) => Promise<any>;
+}
+
+
 jest.mock("./useSchemaTableViewModel", () => ({
   useSchemaTableViewModel: () => ({
     fetchValidation: jest.fn().mockResolvedValue(undefined)
@@ -23,19 +37,21 @@ jest.mock("./useLLMExtractionViewModel", () => ({
 }));
 
 describe('RenderTable', () => {
-  const createWrapper = (props = {}) => {
-    return shallowMount(RenderTable, {
+  const createWrapper = (props = {}): Wrapper<RenderTableInstance> => {
+    const mockTableData = new TableData({
+      data: [
+        { col1: "value1" },
+        { col1: "value2" }
+      ],
+      schema: {
+        primaryKey: ["col1"],
+        fields: [{ name: "col1", type: "string" }]
+      }
+    });
+
+    return shallowMount<RenderTableInstance>(RenderTable, {
       propsData: {
-        tableJSON: {
-          data: [
-            { col1: "value1" }, 
-            { col1: "value2" }
-          ],
-          schema: {
-            primaryKey: ["col1"],
-            fields: [{ name: "col1", type: "string" }]
-          }
-        } as TableData,
+        tableJSON: mockTableData,
         editable: true,
         hasValidValues: true,
         questions: [],
@@ -67,7 +83,6 @@ describe('RenderTable', () => {
   describe('Table Operations', () => {
     it('validates table data', () => {
       const wrapper = createWrapper();
-      wrapper.vm.tabulator = { validate: jest.fn(() => true) };
       
       const result = wrapper.vm.validateTable({});
       expect(result).toBe(true);
@@ -76,9 +91,6 @@ describe('RenderTable', () => {
 
     it('clears empty table', () => {
       const wrapper = createWrapper();
-      wrapper.vm.tabulator = { 
-        getDataCount: jest.fn(() => 0)
-      };
 
       wrapper.vm.clearTable();
       expect(wrapper.vm.tableJSON).toBeUndefined();
