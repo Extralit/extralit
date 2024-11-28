@@ -22,7 +22,7 @@
     <RenderTable
       v-else-if="question.settings.use_table && isValidTableJSON"
       class="textarea"
-      :tableData="question.answer.value"
+      :tableJSON="JSON.parse(question.answer.value)"
       :editable="true"
       :questions="questions"
       @change-text="onChangeTextArea"
@@ -40,7 +40,7 @@
       class="textarea"
       :value="question.answer.value"
       :originalValue="question.answer.originalValue"
-      :placeholder="placeholder"
+      :placeholder="question.settings.placeholder"
       :isFocused="isEditionModeActive"
       @change-text="onChangeTextArea"
       @on-change-focus="onChangeFocus"
@@ -51,7 +51,7 @@
 </template>
 
 <script>
-import { isTableJSON } from "@/components/base/base-render-table/tableUtils";
+import { isValidJSON } from "@/components/base/base-render-table/tableUtils";
 
 export default {
   name: "TextAreaComponent",
@@ -146,19 +146,13 @@ export default {
       return null;
     },
     isValidTableJSON() {
-      return isTableJSON(this.question.answer.value);
+      return isValidJSON(this.question.answer.value);
     },
     isValidHTML() {
       const value = this.question.answer?.value?.trimStart();
 
       return value?.startsWith("<") && !value?.startsWith("<img") && !value?.startsWith("<iframe");
     },
-    placeholder() {
-      if (this.question.settings.use_table) {
-        return this.$t("table_form_placeholder");
-      }
-      return this.question.settings.placeholder;
-    }
   },
 };
 </script>

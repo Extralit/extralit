@@ -124,7 +124,7 @@ class LabelQuestion(QuestionPropertyBase):
 
     @classmethod
     def from_model(cls, model: LabelQuestionModel) -> "LabelQuestion":
-        instance = cls(name=model.name, labels=cls._render_options_as_values(model.settings.options))
+        instance = cls(name=model.name, labels=cls._render_options_as_values(getattr(model.settings, 'options', [])))
         instance._model = model
         return instance
 
@@ -204,8 +204,10 @@ class MultiLabelQuestion(LabelQuestion):
     def from_model(cls, model: MultiLabelQuestionModel) -> "MultiLabelQuestion":
         instance = cls(
             name=model.name,
-            labels=cls._render_options_as_values(model.settings.options),
-            labels_order=model.settings.options_order,
+            labels=cls._render_options_as_values(
+                getattr(model.settings, 'options', [])
+            ),
+            labels_order=getattr(model.settings, 'options_order', 'natural'),
         )
         instance._model = model
 
@@ -477,7 +479,9 @@ QuestionType = Union[
 
 _TYPE_TO_CLASS = {
     "label_selection": LabelQuestion,
+    "dynamic_label_selection": LabelQuestion,
     "multi_label_selection": MultiLabelQuestion,
+    "dynamic_multi_label_selection": MultiLabelQuestion,
     "ranking": RankingQuestion,
     "text": TextQuestion,
     "rating": RatingQuestion,

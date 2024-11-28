@@ -210,8 +210,6 @@ async def create_field(db: AsyncSession, dataset: Dataset, field_create: FieldCr
 
 
 async def update_field(db: AsyncSession, field: Field, field_update: "FieldUpdate") -> Field:
-    print('field', field)
-    print('field_update', field_update)
     if field_update.settings and field_update.settings.type != field.settings["type"]:
         raise UnprocessableEntityError(
             f"Field type cannot be changed. Expected '{field.settings['type']}' but got '{field_update.settings.type}'"
