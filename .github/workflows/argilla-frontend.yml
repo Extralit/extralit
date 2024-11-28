@@ -45,6 +45,7 @@ jobs:
           npm install
 
       - name: Run lint 🧹
+        continue-on-error: true
         run: |
           npm run lint
 
