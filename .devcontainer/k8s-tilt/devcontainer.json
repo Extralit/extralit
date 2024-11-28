@@ -20,7 +20,8 @@
         "eamodio.gitlens",
         "tilt-dev.tiltfile",
         "Vue.volar",
-        "ms-kubernetes-tools.vscode-kubernetes-tools"
+        "ms-kubernetes-tools.vscode-kubernetes-tools",
+        "firsttris.vscode-jest-runner"
       ]
     },
     "settings": {
