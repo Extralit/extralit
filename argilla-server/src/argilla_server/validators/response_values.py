@@ -21,6 +21,7 @@ from argilla_server.api.schemas.v1.questions import (
     RankingQuestionSettings,
     RatingQuestionSettings,
     SpanQuestionSettings,
+    TableQuestionSettings,
 )
 from argilla_server.api.schemas.v1.responses import (
     MultiLabelSelectionQuestionResponseValue,
@@ -28,6 +29,7 @@ from argilla_server.api.schemas.v1.responses import (
     RatingQuestionResponseValue,
     ResponseValueTypes,
     SpanQuestionResponseValue,
+    TableQuestionResponseValue,
     TextAndLabelSelectionQuestionResponseValue,
 )
 from argilla_server.enums import QuestionType, ResponseStatus
@@ -56,6 +58,8 @@ class ResponseValueValidator:
             RankingQuestionResponseValueValidator(response_value).validate_for(question_settings, response_status)
         elif question_settings.type == QuestionType.span:
             SpanQuestionResponseValueValidator(response_value).validate_for(question_settings, record)
+        elif question_settings.type == QuestionType.table:
+            TableQuestionResponseValueValidator(response_value).validate_for(question_settings)
         else:
             raise UnprocessableEntityError(f"unknown question type f{question_settings.type!r}")
 
@@ -281,3 +285,27 @@ class SpanQuestionResponseValueValidator:
                     raise UnprocessableEntityError(
                         f"overlapping values found between spans at index idx={span_i} and idx={span_j}"
                     )
+
+
+class TableQuestionResponseValueValidator:
+    def __init__(self, response_value: TableQuestionResponseValue):
+        self._response_value = response_value
+
+    def validate_for(self, table_question_settings: TableQuestionSettings) -> None:
+        self._validate_value_type()
+        self._validate_columns_are_available_at_question_settings(table_question_settings)
+
+    def _validate_value_type(self) -> None:
+        if not isinstance(self._response_value, dict):
+            raise UnprocessableEntityError(
+                f"table question expects a dictionary of values, found {type(self._response_value)}"
+            )
+
+    def _validate_columns_are_available_at_question_settings(
+        self, table_question_settings: TableQuestionSettings
+    ) -> None:
+        invalid_columns = []
+        if False:
+            raise UnprocessableEntityError(
+                f"{invalid_columns!r} are not valid columns for table question.\nValid columns are: {available_columns!r}"
+            )

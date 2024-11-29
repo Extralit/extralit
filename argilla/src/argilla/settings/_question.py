@@ -29,6 +29,8 @@ from argilla._models._settings._questions import (
     SpanQuestionSettings,
     TextQuestionModel,
     TextQuestionSettings,
+    TableQuestionModel,
+    TableQuestionSettings,
 )
 from argilla.settings._common import SettingsPropertyBase
 
@@ -44,6 +46,7 @@ __all__ = [
     "TextQuestion",
     "RatingQuestion",
     "SpanQuestion",
+    "TableQuestion",
     "QuestionType",
 ]
 
@@ -468,6 +471,56 @@ class SpanQuestion(QuestionPropertyBase):
         return cls.from_model(model=model)
 
 
+class TableQuestion(QuestionPropertyBase):
+    _model: TableQuestionModel
+
+    def __init__(
+        self,
+        name: str,
+        title: Optional[str] = None,
+        description: Optional[str] = None,
+        required: bool = True,
+    ):
+        """ Create a new table question for `Settings` of a `Dataset`. A table question \
+            is a question where the user can input data in a tabular format.
+
+            Parameters:
+                name (str): The name of the question to be used as a reference.
+                columns (List[str]): The list of column names for the table.
+                allow_editing (bool): This value specifies whether the table is editable or not.
+                title (Optional[str]:) The title of the question to be shown in the UI.
+                description (Optional[str]): The description of the question to be shown in the UI.
+                required (bool): If the question is required for a record to be valid. At least one question must be required.
+            """
+        self._model = TableQuestionModel(
+            name=name,
+            title=title,
+            description=description,
+            required=required,
+            settings=TableQuestionSettings(
+            ),
+        )
+
+    @property
+    def name(self):
+        return self._model.name
+
+
+    @classmethod
+    def from_model(cls, model: TableQuestionModel) -> "TableQuestion":
+        instance = cls(
+            name=model.name,
+        )
+        instance._model = model
+
+        return instance
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "TableQuestion":
+        model = TableQuestionModel(**data)
+        return cls.from_model(model=model)
+
+
 QuestionType = Union[
     LabelQuestion,
     MultiLabelQuestion,
@@ -475,6 +528,7 @@ QuestionType = Union[
     TextQuestion,
     RatingQuestion,
     SpanQuestion,
+    TableQuestion,
 ]
 
 _TYPE_TO_CLASS = {
@@ -486,6 +540,7 @@ _TYPE_TO_CLASS = {
     "text": TextQuestion,
     "rating": RatingQuestion,
     "span": SpanQuestion,
+    "table": TableQuestion,
 }
 
 

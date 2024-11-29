@@ -274,6 +274,22 @@ class SpanQuestionSettingsUpdate(UpdateSchema):
     allow_overlapping: Optional[bool]
 
 
+# Table question
+class TableQuestionSettings(BaseModel):
+    type: Literal[QuestionType.table]
+
+
+class TableQuestionSettingsCreate(UniqueValuesCheckerMixin):
+    type: Literal[QuestionType.table]
+
+
+class TableQuestionSettingsUpdate(UpdateSchema):
+    type: Literal[QuestionType.table]
+    columns: Optional[List[str]]
+
+    __non_nullable_fields__ = {}
+
+
 QuestionSettings = Annotated[
     Union[
         TextQuestionSettings,
@@ -282,6 +298,7 @@ QuestionSettings = Annotated[
         MultiLabelSelectionQuestionSettings,
         RankingQuestionSettings,
         SpanQuestionSettings,
+        TableQuestionSettings,
     ],
     Field(..., discriminator="type"),
 ]
@@ -322,6 +339,7 @@ QuestionSettingsCreate = Annotated[
         MultiLabelSelectionQuestionSettingsCreate,
         RankingQuestionSettingsCreate,
         SpanQuestionSettingsCreate,
+        TableQuestionSettingsCreate,
     ],
     Field(discriminator="type"),
 ]
@@ -335,6 +353,7 @@ QuestionSettingsUpdate = Annotated[
         MultiLabelSelectionQuestionSettingsUpdate,
         RankingQuestionSettingsUpdate,
         SpanQuestionSettingsUpdate,
+        TableQuestionSettingsUpdate,
     ],
     Field(..., discriminator="type"),
 ]

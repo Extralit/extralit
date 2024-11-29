@@ -24,6 +24,7 @@ from argilla._models._settings._questions._ranking import RankingQuestionModel, 
 from argilla._models._settings._questions._text import TextQuestionModel, TextQuestionSettings
 from argilla._models._settings._questions._base import QuestionBaseModel, QuestionSettings
 from argilla._models._settings._questions._span import SpanQuestionModel, SpanQuestionSettings
+from argilla._models._settings._questions._table import TableQuestionModel, TableQuestionSettings
 
 QuestionModel = Union[
     LabelQuestionModel,
@@ -32,4 +33,5 @@ QuestionModel = Union[
     MultiLabelQuestionModel,
     RankingQuestionModel,
     QuestionBaseModel,
+    TableQuestionModel,
 ]
