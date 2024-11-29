@@ -1,4 +1,5 @@
-import { Answer, RankingAnswer, SpanAnswer } from "../IAnswer";
+import { Answer, RankingAnswer, SpanAnswer, TableAnswer } from "../IAnswer";
+import { TableData } from "../table/TableData";
 import { QuestionType } from "./QuestionType";
 
 export abstract class QuestionAnswer {
@@ -305,5 +306,30 @@ export class RankingQuestionAnswer extends QuestionAnswer {
 
   get valuesAnswered(): RankingValue[] {
     return this.values;
+  }
+}
+
+export class TableQuestionAnswer extends QuestionAnswer {
+  public value: TableAnswer;
+
+  constructor(public readonly type: QuestionType, value: TableAnswer) {
+    super(type);
+    this.value = value;
+  }
+
+  protected fill(answer: Answer) {
+    this.value = new TableData();
+  }
+
+  clear() {
+    this.value = new TableData();
+  }
+
+  get isValid(): boolean {
+    return this.value.data.length > 0;
+  }
+
+  get valuesAnswered() {
+    return this.value;
   }
 }

@@ -58,6 +58,7 @@ SpanQuestionResponseValue = Annotated[
 MultiLabelSelectionQuestionResponseValue = List[str]
 RatingQuestionResponseValue = StrictInt
 TextAndLabelSelectionQuestionResponseValue = StrictStr
+TableQuestionResponseValue = Dict[str, Any]
 
 ResponseValueTypes = Union[
     SpanQuestionResponseValue,
@@ -65,6 +66,7 @@ ResponseValueTypes = Union[
     MultiLabelSelectionQuestionResponseValue,
     RatingQuestionResponseValue,
     TextAndLabelSelectionQuestionResponseValue,
+    TableQuestionResponseValue,
 ]
 
 

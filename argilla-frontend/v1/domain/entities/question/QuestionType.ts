@@ -6,6 +6,7 @@ const availableQuestionTypes = [
   "ranking",
   "text",
   "span",
+  "table",
   "rating",
 ];
 
@@ -17,6 +18,7 @@ export type QuestionTypes =
   | "ranking"
   | "text"
   | "span"
+  | "table"
   | "rating";
 
 export class QuestionType extends String {
@@ -54,6 +56,10 @@ export class QuestionType extends String {
 
   public get isSpanType(): boolean {
     return this.value === "span";
+  }
+
+  public get isTableType(): boolean {
+    return this.value === "table";
   }
 
   public get isRatingType(): boolean {
