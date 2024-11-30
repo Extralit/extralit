@@ -47,6 +47,10 @@ interface SpanSetting {
   field: string;
 }
 
+interface TableSetting {
+  type: "table";
+}
+
 export interface BackendQuestion {
   id: string;
   description?: string;
@@ -59,5 +63,6 @@ export interface BackendQuestion {
     | SingleSelectionSetting
     | RatingSetting
     | RankingSetting
-    | SpanSetting;
+    | SpanSetting
+    | TableSetting;
 }

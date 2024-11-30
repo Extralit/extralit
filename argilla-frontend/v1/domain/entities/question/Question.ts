@@ -233,7 +233,6 @@ export class Question {
     if (this.isTableType) {
       return new TableQuestionAnswer(
         this.type,
-        this.settings.options
       );
     }
 
