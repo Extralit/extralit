@@ -285,7 +285,6 @@ class TableQuestionSettingsCreate(UniqueValuesCheckerMixin):
 
 class TableQuestionSettingsUpdate(UpdateSchema):
     type: Literal[QuestionType.table]
-    columns: Optional[List[str]]
 
     __non_nullable_fields__ = {}
 
