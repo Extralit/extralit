@@ -1,8 +1,9 @@
 <template>
-  <div class="table-component">
+  <div class="container">
     <RenderTable
       :tableJSON="question.answer.value"
       :editable="true"
+      :questions="questions"
       @change-text="onChangeTextArea"
       @on-change-focus="onChangeFocus"
       @on-exit-edition-mode="onExitEditionMode"
@@ -11,13 +12,9 @@
 </template>
 
 <script>
-import RenderTable from "@/components/base/base-render-table/RenderTable";
 
 export default {
   name: "TableComponent",
-  components: {
-    RenderTable,
-  },
   props: {
     question: {
       type: Object,
@@ -46,8 +43,8 @@ export default {
 };
 </script>
 
-<style scoped>
-.table-component {
+<style lang="scss" scoped>
+.container {
   display: flex;
   flex-direction: column;
   gap: $base-space;

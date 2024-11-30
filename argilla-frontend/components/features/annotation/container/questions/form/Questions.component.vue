@@ -75,6 +75,14 @@
           :enableSpanQuestionShortcutsGlobal="enableSpanQuestionShortcutsGlobal"
           @on-focus="updateQuestionAutofocus(index)"
         />
+
+        <TableComponent
+          v-if="question.isTableType"
+          ref="table"
+          :question="question"
+          :isFocused="checkIfQuestionIsFocused(index)"
+          @on-focus="updateQuestionAutofocus(index)"
+        />
       </div>
     </div>
   </div>
