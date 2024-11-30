@@ -312,9 +312,9 @@ export class RankingQuestionAnswer extends QuestionAnswer {
 export class TableQuestionAnswer extends QuestionAnswer {
   public value: TableAnswer;
 
-  constructor(public readonly type: QuestionType, value: TableAnswer) {
+  constructor(public readonly type: QuestionType) {
     super(type);
-    this.value = value;
+    this.value = { data: [], schema: {primaryKey: [], fields: []} } as TableAnswer;
   }
 
   protected fill(answer: Answer) {
