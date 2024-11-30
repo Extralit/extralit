@@ -50,6 +50,8 @@ from argilla._models._settings._questions import (
     RatingQuestionModel,
     SpanQuestionModel,
     SpanQuestionSettings,
+    TableQuestionModel,
+    TableQuestionSettings,
     TextQuestionModel,
     TextQuestionSettings,
 )
