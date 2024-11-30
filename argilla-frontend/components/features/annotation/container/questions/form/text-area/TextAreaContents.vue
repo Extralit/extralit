@@ -19,11 +19,15 @@
       @on-change-focus="onChangeFocus"
       @on-exit-edition-mode="onExitEditionMode"
     />
-    <TableComponent
+    <RenderTable
       v-else-if="question.settings.use_table && isValidTableJSON"
-      :question="question"
+      class="textarea"
+      :tableJSON="JSON.parse(question.answer.value)"
+      :editable="true"
       :questions="questions"
-      @on-focus="onFocus"
+      @change-text="onChangeTextArea"
+      @on-change-focus="onChangeFocus"
+      @on-exit-edition-mode="onExitEditionMode"
     />
     <MarkdownRenderer
       v-else-if="question.settings.use_markdown && !isEditionModeActive"
@@ -48,13 +52,9 @@
 
 <script>
 import { isValidJSON } from "@/components/base/base-render-table/tableUtils";
-import TableComponent from "@/components/features/annotation/container/questions/form/table/TableComponent.vue";
 
 export default {
   name: "TextAreaComponent",
-  components: {
-    TableComponent,
-  },
   props: {
     question: {
       type: Object,

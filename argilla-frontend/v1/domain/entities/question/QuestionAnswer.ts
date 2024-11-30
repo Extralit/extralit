@@ -318,7 +318,7 @@ export class TableQuestionAnswer extends QuestionAnswer {
   }
 
   protected fill(answer: Answer) {
-    this.value = new TableData();
+    this.value = answer.value as TableAnswer;
   }
 
   clear() {
@@ -326,7 +326,7 @@ export class TableQuestionAnswer extends QuestionAnswer {
   }
 
   get isValid(): boolean {
-    return this.value.data.length > 0;
+    return this.value?.data?.length > 0;
   }
 
   get valuesAnswered() {
