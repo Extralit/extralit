@@ -14,20 +14,35 @@ These are the section headers that we use:
 * "Security" in case of vulnerabilities.
 -->
 
-## [Unreleased]()
+## [Extralit] [0.4.0]()
+
+
+## [Argilla] [2.5.0](https://github.com/argilla-io/argilla/compare/v2.4.1...v2.5.0)
+
+### Added
+
+- Add new dataset list page ([#5684](https://github.com/argilla-io/argilla/pull/5684))
+- Add a high-contrast theme & improvements for the forced-colors mode. ([#5661](https://github.com/argilla-io/argilla/pull/5661))
+- Add English as the default language and add language selector in the user settings page. ([#5690](https://github.com/argilla-io/argilla/pull/5690))
+
+### Fixed
+
+- Assign field to span question on dataset creation. ([#5717](https://github.com/argilla-io/argilla/pull/5717))
+- Fixed visible_options when updating question setting. ([#5716](https://github.com/argilla-io/argilla/pull/5716))
+- Fixed highlighting on same record ([#5693](https://github.com/argilla-io/argilla/pull/5693))
+
+## [Extralit] [0.3.0](https://github.com/extralit/extralit/compare/v0.2.3...v0.3.0)
 
 ### Added
 - Added support for `TableField` for table fields.
 - Added `TableQuestion` to support table questions.
 
+### Fixed
+- Fixed use_table setting update in `TextField`
+
 ### Changed
 - Refactored `argilla-frontend/components/base/base-render-table/RenderTable.vue` to add `TableData`, `Validation`, `Extraction` entities.
 
-
-## [Extralit] [0.3.0](https://github.com/extralit/extralit/compare/v0.2.3...v0.3.0)
-
-### Fixed
-- Fixed use_table setting update in `TextField`
 
 ## [Argilla] [2.4.1](https://github.com/argilla-io/argilla/compare/v2.4.0...v2.4.1)
 
@@ -47,6 +62,7 @@ These are the section headers that we use:
 ### Added
 
 - Added new dataset configurator to import datasets from Hugging Face using Argilla UI. ([#5532](https://github.com/argilla-io/argilla/pull/5532))
+- Improve Accessibility for Screenreaders ([#5634](https://github.com/argilla-io/argilla/pull/5634))
 
 ### Fixed
 

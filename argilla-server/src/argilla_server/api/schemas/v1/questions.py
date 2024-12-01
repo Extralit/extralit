@@ -19,14 +19,13 @@ from uuid import UUID
 from argilla_server.api.schemas.v1.commons import UpdateSchema
 from argilla_server.api.schemas.v1.fields import FieldName
 from argilla_server.enums import OptionsOrder, QuestionType
-from argilla_server.pydantic_v1 import BaseModel, Field, conlist, constr, root_validator
+from pydantic import BaseModel, Field, conlist, constr, root_validator, ConfigDict, model_validator
 from argilla_server.settings import settings
 
 try:
     from typing import Annotated
 except ImportError:
     from typing_extensions import Annotated
-
 
 QUESTION_CREATE_NAME_MIN_LENGTH = 1
 QUESTION_CREATE_NAME_MAX_LENGTH = 200
@@ -60,9 +59,10 @@ SPAN_MIN_VISIBLE_OPTIONS = 3
 
 
 class UniqueValuesCheckerMixin(BaseModel):
-    @root_validator(skip_on_failure=True)
-    def check_unique_values(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        options = values.get("options", [])
+    @model_validator(mode="after")
+    @classmethod
+    def check_unique_values(cls, instance: "UniqueValuesCheckerMixin") -> "UniqueValuesCheckerMixin":
+        options = instance.options or []
         seen = set()
         duplicates = set()
         for option in options:
@@ -72,7 +72,7 @@ class UniqueValuesCheckerMixin(BaseModel):
                 seen.add(option.value)
         if duplicates:
             raise ValueError(f"Option values must be unique, found duplicates: {duplicates}")
-        return values
+        return instance
 
 
 # Option-based settings
@@ -114,8 +114,8 @@ class TextQuestionSettingsCreate(BaseModel):
 
 class TextQuestionSettingsUpdate(UpdateSchema):
     type: Literal[QuestionType.text]
-    use_markdown: Optional[bool]
-    use_table: Optional[bool]
+    use_markdown: Optional[bool] = None
+    use_table: Optional[bool] = None
 
     __non_nullable_fields__ = {"use_markdown", "use_table"}
 
@@ -137,8 +137,8 @@ class RatingQuestionSettings(BaseModel):
 class RatingQuestionSettingsCreate(UniqueValuesCheckerMixin):
     type: Literal[QuestionType.rating]
     options: List[RatingQuestionSettingsOptionCreate] = Field(
-        min_items=RATING_OPTIONS_MIN_ITEMS,
-        max_items=RATING_OPTIONS_MAX_ITEMS,
+        min_length=RATING_OPTIONS_MIN_ITEMS,
+        max_length=RATING_OPTIONS_MAX_ITEMS,
     )
 
 
@@ -157,23 +157,26 @@ class LabelSelectionQuestionSettingsCreate(UniqueValuesCheckerMixin):
     type: Literal[QuestionType.label_selection, QuestionType.dynamic_label_selection]
     options: conlist(
         item_type=OptionSettingsCreate,
-        min_items=LABEL_SELECTION_OPTIONS_MIN_ITEMS,
-        max_items=settings.label_selection_options_max_items,
+        min_length=LABEL_SELECTION_OPTIONS_MIN_ITEMS,
+        max_length=settings.label_selection_options_max_items,
     )
     visible_options: Optional[int] = Field(None, ge=LABEL_SELECTION_MIN_VISIBLE_OPTIONS)
 
-    @root_validator(skip_on_failure=True)
-    def check_visible_options_value(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        visible_options = values.get("visible_options")
+    @model_validator(mode="after")
+    @classmethod
+    def check_visible_options_value(
+        cls, instance: "LabelSelectionQuestionSettingsCreate"
+    ) -> "LabelSelectionQuestionSettingsCreate":
+        visible_options = instance.visible_options
         if visible_options is not None:
-            num_options = len(values["options"])
-            if visible_options > num_options and "dynamic" not in values.get("type", ''):
+            num_options = len(instance.options)
+            if visible_options > num_options and "dynamic" not in instance.type:
                 raise ValueError(
                     "the value for 'visible_options' must be less or equal to the number of items in 'options'"
                     f" ({num_options})"
                 )
 
-        return values
+        return instance
 
 
 class LabelSelectionSettingsUpdate(UpdateSchema):
@@ -182,10 +185,10 @@ class LabelSelectionSettingsUpdate(UpdateSchema):
     options: Optional[
         conlist(
             item_type=OptionSettings,
-            min_items=LABEL_SELECTION_OPTIONS_MIN_ITEMS,
-            max_items=settings.label_selection_options_max_items,
+            min_length=LABEL_SELECTION_OPTIONS_MIN_ITEMS,
+            max_length=settings.label_selection_options_max_items,
         )
-    ]
+    ] = None
 
 
 # Multi-label selection question
@@ -201,7 +204,7 @@ class MultiLabelSelectionQuestionSettingsCreate(LabelSelectionQuestionSettingsCr
 
 class MultiLabelSelectionQuestionSettingsUpdate(LabelSelectionSettingsUpdate):
     type: Literal[QuestionType.multi_label_selection, QuestionType.dynamic_multi_label_selection]
-    options_order: Optional[OptionsOrder]
+    options_order: Optional[OptionsOrder] = None
 
     __non_nullable_fields__ = {"options_order"}
 
@@ -216,8 +219,8 @@ class RankingQuestionSettingsCreate(UniqueValuesCheckerMixin):
     type: Literal[QuestionType.ranking]
     options: conlist(
         item_type=OptionSettingsCreate,
-        min_items=RANKING_OPTIONS_MIN_ITEMS,
-        max_items=RANKING_OPTIONS_MAX_ITEMS,
+        min_length=RANKING_OPTIONS_MIN_ITEMS,
+        max_length=RANKING_OPTIONS_MAX_ITEMS,
     )
 
 
@@ -241,24 +244,25 @@ class SpanQuestionSettingsCreate(UniqueValuesCheckerMixin):
     field: FieldName
     options: conlist(
         item_type=OptionSettingsCreate,
-        min_items=SPAN_OPTIONS_MIN_ITEMS,
-        max_items=settings.span_options_max_items,
+        min_length=SPAN_OPTIONS_MIN_ITEMS,
+        max_length=settings.span_options_max_items,
     )
     visible_options: Optional[int] = Field(None, ge=SPAN_MIN_VISIBLE_OPTIONS)
     allow_overlapping: bool = False
 
-    @root_validator(skip_on_failure=True)
-    def check_visible_options_value(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        visible_options = values.get("visible_options")
+    @model_validator(mode="after")
+    @classmethod
+    def check_visible_options_value(cls, instance: "SpanQuestionSettingsCreate") -> "SpanQuestionSettingsCreate":
+        visible_options = instance.visible_options
         if visible_options is not None:
-            num_options = len(values["options"])
+            num_options = len(instance.options)
             if visible_options > num_options:
                 raise ValueError(
                     "the value for 'visible_options' must be less or equal to the number of items in 'options'"
                     f" ({num_options})"
                 )
 
-        return values
+        return instance
 
 
 class SpanQuestionSettingsUpdate(UpdateSchema):
@@ -266,12 +270,27 @@ class SpanQuestionSettingsUpdate(UpdateSchema):
     options: Optional[
         conlist(
             item_type=OptionSettings,
-            min_items=SPAN_OPTIONS_MIN_ITEMS,
-            max_items=settings.span_options_max_items,
+            min_length=SPAN_OPTIONS_MIN_ITEMS,
+            max_length=settings.span_options_max_items,
         )
-    ]
+    ] = None
     visible_options: Optional[int] = Field(None, ge=SPAN_MIN_VISIBLE_OPTIONS)
-    allow_overlapping: Optional[bool]
+    allow_overlapping: Optional[bool] = None
+
+
+# Table question
+class TableQuestionSettings(BaseModel):
+    type: Literal[QuestionType.table]
+
+
+class TableQuestionSettingsCreate(UniqueValuesCheckerMixin):
+    type: Literal[QuestionType.table]
+
+
+class TableQuestionSettingsUpdate(UpdateSchema):
+    type: Literal[QuestionType.table]
+
+    __non_nullable_fields__ = {}
 
 
 # Table question
@@ -302,7 +321,6 @@ QuestionSettings = Annotated[
     Field(..., discriminator="type"),
 ]
 
-
 QuestionName = Annotated[
     constr(
         min_length=QUESTION_CREATE_NAME_MIN_LENGTH,
@@ -310,7 +328,6 @@ QuestionName = Annotated[
     ),
     Field(..., description="The name of the question"),
 ]
-
 
 QuestionTitle = Annotated[
     constr(
@@ -320,7 +337,6 @@ QuestionTitle = Annotated[
     Field(..., description="The title of the question"),
 ]
 
-
 QuestionDescription = Annotated[
     constr(
         min_length=QUESTION_CREATE_DESCRIPTION_MIN_LENGTH,
@@ -328,7 +344,6 @@ QuestionDescription = Annotated[
     ),
     Field(..., description="The description of the question"),
 ]
-
 
 QuestionSettingsCreate = Annotated[
     Union[
@@ -342,7 +357,6 @@ QuestionSettingsCreate = Annotated[
     ],
     Field(discriminator="type"),
 ]
-
 
 QuestionSettingsUpdate = Annotated[
     Union[
@@ -362,15 +376,14 @@ class Question(BaseModel):
     id: UUID
     name: str
     title: str
-    description: Optional[str]
+    description: Optional[str] = None
     required: bool
     settings: QuestionSettings
     dataset_id: UUID
     inserted_at: datetime
     updated_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class Questions(BaseModel):
@@ -380,14 +393,14 @@ class Questions(BaseModel):
 class QuestionCreate(BaseModel):
     name: QuestionName
     title: QuestionTitle
-    description: Optional[QuestionDescription]
-    required: Optional[bool]
+    description: Optional[QuestionDescription] = None
+    required: Optional[bool] = None
     settings: QuestionSettingsCreate
 
 
 class QuestionUpdate(UpdateSchema):
-    title: Optional[QuestionTitle]
-    description: Optional[QuestionDescription]
-    settings: Optional[QuestionSettingsUpdate]
+    title: Optional[QuestionTitle] = None
+    description: Optional[QuestionDescription] = None
+    settings: Optional[QuestionSettingsUpdate] = None
 
     __non_nullable_fields__ = {"title", "settings"}

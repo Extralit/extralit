@@ -48,14 +48,21 @@
       <p v-else class="--body1 description__text">-</p>
     </div>
     <div class="form-group">
-      <UserTokenComponent :userToken="user.apiKey" />
-    </div>
-    <div class="form-group">
       <h2
         class="--heading5 --medium description__title"
         v-text="$t('userSettings.theme')"
       />
       <UserSettingsTheme />
+    </div>
+    <div class="form-group">
+      <h2
+        class="--heading5 --medium description__title"
+        v-text="$t('userSettings.language')"
+      />
+      <UserSettingsLanguage />
+    </div>
+    <div class="form-group">
+      <UserTokenComponent :userToken="user.apiKey" />
     </div>
   </div>
 </template>
@@ -66,7 +73,7 @@ import { useUserInfoViewModel } from "./useUserInfoViewModel";
 export default {
   methods: {
     goToWorkspace(workspace) {
-      this.$router.push(`/?workspaces=${workspace}`);
+      this.$router.push(`/datasets?workspaces=${workspace}`);
     },
   },
   setup() {
@@ -96,6 +103,10 @@ export default {
   flex-wrap: wrap;
   gap: $base-space * 2;
   padding-bottom: 0;
+}
+.circle-and-role span {
+  background-color: var(--color-brand);
+  color: var(--color-white);
 }
 
 .description {

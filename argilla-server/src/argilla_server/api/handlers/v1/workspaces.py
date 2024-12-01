@@ -67,7 +67,7 @@ async def create_workspace(
         raise GenericServerError(e)
 
     try:
-        workspace = await accounts.create_workspace(db, workspace_create.dict())
+        workspace = await accounts.create_workspace(db, workspace_create.model_dump())
     except NotUniqueError as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
 

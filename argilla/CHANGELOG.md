@@ -14,7 +14,7 @@ These are the section headers that we use:
 * "Security" in case of vulnerabilities.
 -->
 
-## [Unreleased]()
+## [Extralit] [0.4.0]()
 
 ### Added
 - Added support for `TableField` for table fields.
@@ -24,7 +24,20 @@ These are the section headers that we use:
 - Fixed certain extralit-specific changes when loading Dataset
 
 
-## [2.4.0](https://github.com/argilla-io/argilla/compare/v2.3.0...v2.4.0)
+## [Argilla] [2.5.0](https://github.com/argilla-io/argilla/compare/v2.4.0...v2.5.0)
+
+### Added
+
+- Added support to remove/override datasets settings. ([#5584](https://github.com/argilla-io/argilla/pull/5584))
+- Added support to update question attributes. ([#5680](https://github.com/argilla-io/argilla/pull/5680))
+- Added support to webhook listeners. ([#5502](https://github.com/argilla-io/argilla/pull/5502))
+- Added support to Python 3.13. ([#5652](https://github.com/argilla-io/argilla/pull/5652))
+
+### Fixed
+
+- Fixed error when update settings.distribution.min_submitted from defaults ([#5719](https://github.com/argilla-io/argilla/pull/5719))
+
+## [Argilla] [2.4.0](https://github.com/argilla-io/argilla/compare/v2.3.0...v2.4.0)
 
 ### Added
 
@@ -40,7 +53,7 @@ These are the section headers that we use:
 
 - Removed name sanitizing for dataset settings names. This may cause issues with old server versions. Especially when working with `from_hub`. ([#5574](https://github.com/argilla-io/argilla/pull/5574))
 
-## [2.3.0](https://github.com/argilla-io/argilla/compare/v2.2.2...v2.3.0)
+## [Argilla] [2.3.0](https://github.com/argilla-io/argilla/compare/v2.2.2...v2.3.0)
 
 ### Added
 
@@ -53,14 +66,14 @@ These are the section headers that we use:
 
 ### Changed
 
-- Changed the __repr__ method for `SettingsProperties` to display the details of all the properties in `Setting` object. ([#5380](https://github.com/argilla-io/argilla/issues/5380))
+- Changed the **repr** method for `SettingsProperties` to display the details of all the properties in `Setting` object. ([#5380](https://github.com/argilla-io/argilla/issues/5380))
 - Changed error messages when creating datasets with insufficient permissions. ([#5540](https://github.com/argilla-io/argilla/pull/5554))
 
 ### Fixed
 
 - Fixed serialization of `ChatField` when collecting records from the hub and exporting to `datasets`. ([#5554](https://github.com/argilla-io/argilla/pull/5553))
 
-## [2.2.2](https://github.com/argilla-io/argilla/compare/v2.2.1...v2.2.2)
+## [Argilla] [2.2.2](https://github.com/argilla-io/argilla/compare/v2.2.1...v2.2.2)
 
 ### Fixed
 
@@ -71,7 +84,7 @@ These are the section headers that we use:
 
 - Changed `from_hub` to only generate fields not questions for strings in dataset. ([#5524](https://github.com/argilla-io/argilla/pull/5524))
 
-## [2.2.1](https://github.com/argilla-io/argilla/compare/v2.2.0...v2.2.1)
+## [Argilla] [2.2.1](https://github.com/argilla-io/argilla/compare/v2.2.0...v2.2.1)
 
 ### Fixed
 
@@ -79,7 +92,7 @@ These are the section headers that we use:
 - Fixed `from_hub` errors when class feature values contains unlabelled values. ([#5523](https://github.com/argilla-io/argilla/pull/5523))
 - Fixed `from_hub` errors when loading cached datasets. ([#5523](https://github.com/argilla-io/argilla/pull/5523))
 
-## [2.2.0](https://github.com/argilla-io/argilla/compare/v2.1.0...v2.2.0)
+## [Argilla] [2.2.0](https://github.com/argilla-io/argilla/compare/v2.1.0...v2.2.0)
 
 - Added new `ChatField` supporting chat messages. ([#5376](https://github.com/argilla-io/argilla/pull/5376))
 - Added template settings to `rg.Settings` for classification, rating, and ranking questions. ([#5426](https://github.com/argilla-io/argilla/pull/5426))
@@ -88,8 +101,7 @@ These are the section headers that we use:
 - Added multiple error handling methods to the `rg.Dataset.records.log` method to warn, ignore, or raise errors. ([#5466](https://github.com/argilla-io/argilla/pull/5463))
 - Changed dataset import and export of `rg.LabelQuestion` to use `datasets.ClassLabel` not `datasets.Value`. ([#5474](https://github.com/argilla-io/argilla/pull/5474))
 
-
-## [2.1.0](https://github.com/argilla-io/argilla/compare/v2.0.1...v2.1.0)
+## [Argilla] [2.1.0](https://github.com/argilla-io/argilla/compare/v2.0.1...v2.1.0)
 
 ### Added
 
