@@ -9,6 +9,7 @@ import {
   MultiLabelQuestionAnswer,
   RankingQuestionAnswer,
   SpanQuestionAnswer,
+  TableQuestionAnswer,
 } from "./QuestionAnswer";
 import { QuestionSetting } from "./QuestionSetting";
 import { QuestionType } from "./QuestionType";
@@ -91,6 +92,10 @@ export class Question {
 
   public get isSpanType(): boolean {
     return this.type.isSpanType;
+  }
+
+  public get isTableType(): boolean {
+    return this.type.isTableType;
   }
 
   public get isRatingType(): boolean {
@@ -222,6 +227,12 @@ export class Question {
         this.type,
         this.name,
         this.settings.options
+      );
+    }
+
+    if (this.isTableType) {
+      return new TableQuestionAnswer(
+        this.type,
       );
     }
 

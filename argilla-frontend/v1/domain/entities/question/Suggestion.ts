@@ -3,10 +3,11 @@ import {
   AnswerCombinations,
   RankingAnswer,
   SpanAnswer,
+  TableAnswer,
 } from "../IAnswer";
 import { QuestionType } from "./QuestionType";
 
-type AnswerValue = string | number | RankingAnswer | SpanAnswer;
+type AnswerValue = string | number | RankingAnswer | SpanAnswer | TableAnswer;
 
 class SuggestionScore extends Number {
   private constructor(value: number) {
@@ -59,7 +60,8 @@ export class Suggestion implements Answer {
     if (
       this.questionType.isSingleLabelType ||
       this.questionType.isTextType ||
-      this.questionType.isRatingType
+      this.questionType.isRatingType ||
+      this.questionType.isTableType
     ) {
       if (this.value === answer) {
         return new SuggestionValue(answer, this.score as number, this.agent, this.updatedAt,);

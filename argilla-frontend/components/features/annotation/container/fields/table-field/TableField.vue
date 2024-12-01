@@ -10,14 +10,14 @@
         <BaseButton
           :title="$t('button.tooltip.copyToClipboard')"
           class="table_field_component__copy-button"
-          @click.prevent="$copyToClipboard(JSON.stringify(fieldContent))"
+          @click.prevent="$copyToClipboard(JSON.stringify(content))"
         >
           <svgicon color="#acacac" name="copy" width="18" height="18" />
         </BaseButton>
       </BaseActionTooltip>
     </div>
     <RenderTable
-      :tableJSON="fieldContent"
+      :tableJSON="content"
       :editable="false"
     />
   </div>
@@ -38,14 +38,6 @@ export default {
     content: {
       type: [Object, String],
       required: true,
-    },
-  },
-  computed: {
-    fieldContent(): Object {
-      if (typeof this.content === 'string') {
-        return JSON.parse(this.content);
-      }
-      return this.content;
     },
   },
 };

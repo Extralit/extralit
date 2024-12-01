@@ -16,6 +16,14 @@ These are the section headers that we use:
 
 ## [Unreleased]()
 
+### Added
+- Added support for `TableField` for table fields.
+- Added `TableQuestion` to support table questions.
+
+### Fixed
+- Fixed certain extralit-specific changes when loading Dataset
+
+
 ## [2.4.0](https://github.com/argilla-io/argilla/compare/v2.3.0...v2.4.0)
 
 ### Added

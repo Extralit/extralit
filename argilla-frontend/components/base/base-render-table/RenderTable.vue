@@ -136,9 +136,9 @@ export default {
       handler(newTableJSON: TableData, oldTableJSON: TableData) {
         if (!this.editable) return;
         if (newTableJSON?.schema?.schemaName && newTableJSON?.validation?.name) {
-          this.$emit("change-text", JSON.stringify({...newTableJSON, validation: undefined}));
+          this.$emit("change-text", {...newTableJSON, validation: undefined});
         } else {
-          this.$emit("change-text", JSON.stringify(newTableJSON));
+          this.$emit("change-text", newTableJSON);
         }
       },
     },
