@@ -23,6 +23,7 @@ from argilla_server.api.schemas.v1.responses import (
     RatingQuestionResponseValue,
     SpanQuestionResponseValue,
     TextAndLabelSelectionQuestionResponseValue,
+    TableQuestionResponseValue,
 )
 from argilla_server.enums import SuggestionType
 from argilla_server.pydantic_v1 import BaseModel, Field
@@ -84,6 +85,7 @@ class SuggestionCreate(BaseSuggestion):
         MultiLabelSelectionQuestionResponseValue,
         RatingQuestionResponseValue,
         TextAndLabelSelectionQuestionResponseValue,
+        TableQuestionResponseValue,
     ]
     agent: Optional[str] = Field(
         None,

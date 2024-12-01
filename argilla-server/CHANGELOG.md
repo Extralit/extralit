@@ -14,6 +14,15 @@ These are the section headers that we use:
 * "Security" in case of vulnerabilities.
 -->
 
+## [Unreleased]()
+
+### Added
+- Added support for `TableField` and `es_field_for_record_field` for table fields.
+- Added `TableQuestion` and `TableQuestionSetting` to support table questions.
+
+
+
+
 ## [Extralit] [0.3.0](https://github.com/extralit/extralit/compare/v0.2.3...v0.3.0)
 
 ### Added
