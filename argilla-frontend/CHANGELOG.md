@@ -14,6 +14,16 @@ These are the section headers that we use:
 * "Security" in case of vulnerabilities.
 -->
 
+## [Unreleased]()
+
+### Added
+- Added support for `TableField` for table fields.
+- Added `TableQuestion` to support table questions.
+
+### Changed
+- Refactored `argilla-frontend/components/base/base-render-table/RenderTable.vue` to add `TableData`, `Validation`, `Extraction` entities.
+
+
 ## [Extralit] [0.3.0](https://github.com/extralit/extralit/compare/v0.2.3...v0.3.0)
 
 ### Fixed

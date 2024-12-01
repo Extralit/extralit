@@ -78,6 +78,7 @@ class QuestionType(str, Enum):
     dynamic_multi_label_selection = "dynamic_multi_label_selection"
     ranking = "ranking"
     span = "span"
+    table = "table"
 
 
 class MetadataPropertyType(str, Enum):

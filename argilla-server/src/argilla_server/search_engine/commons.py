@@ -176,10 +176,52 @@ def es_mapping_for_field(field: Field) -> dict:
             },
         }
         return {es_field_for_record_field(field.name): es_field}
-    elif field.is_custom or field.is_table:
+    elif field.is_custom:
         return {
             es_field_for_record_field(field.name): {
                 "type": "text",
+            }
+        }
+    elif field.is_table:
+        return {
+            es_field_for_record_field(field.name): {
+                "type": "object",
+                "dynamic": False,
+                "properties": {
+                    "data": {
+                        "type": "nested",
+                        "dynamic": True  # Allow dynamic fields in data array
+                    },
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "primaryKey": {"type": "keyword"},
+                            "fields": {
+                                "type": "nested",
+                                "properties": {
+                                    "name": {"type": "keyword"},
+                                    "type": {"type": "keyword"},
+                                    "extDtype": {"type": "keyword"}
+                                }
+                            },
+                            "metadata": {
+                                "type": "object",
+                                "properties": {
+                                    "schemaName": {"type": "keyword"},
+                                    "etag": {"type": "keyword"},
+                                    "version_id": {"type": "keyword"},
+                                    "last_modified": {"type": "date"},
+                                    "version_tag": {"type": "keyword"},
+                                    "is_latest": {"type": "boolean"}
+                                }
+                            },
+                            "schemaName": {"type": "keyword"},
+                            "version_id": {"type": "keyword"},
+                            "is_latest": {"type": "boolean"}
+                        }
+                    },
+                    "reference": {"type": "keyword"}
+                }
             }
         }
     elif field.is_image:
