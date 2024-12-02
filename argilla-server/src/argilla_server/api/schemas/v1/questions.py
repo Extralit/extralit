@@ -283,7 +283,7 @@ class TableQuestionSettings(BaseModel):
     type: Literal[QuestionType.table]
 
 
-class TableQuestionSettingsCreate(UniqueValuesCheckerMixin):
+class TableQuestionSettingsCreate(BaseModel):
     type: Literal[QuestionType.table]
 
 
