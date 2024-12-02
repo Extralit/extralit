@@ -502,7 +502,7 @@ class TableQuestion(QuestionBase):
 
     @classmethod
     def from_model(cls, model: QuestionModel) -> "Self":
-        instance = cls(name=model.name, values=cls._render_options_as_labels(model.settings.options))  # noqa
+        instance = cls(name=model.name)  # noqa
         instance._model = model
 
         return instance

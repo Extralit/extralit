@@ -293,21 +293,6 @@ class TableQuestionSettingsUpdate(UpdateSchema):
     __non_nullable_fields__ = {}
 
 
-# Table question
-class TableQuestionSettings(BaseModel):
-    type: Literal[QuestionType.table]
-
-
-class TableQuestionSettingsCreate(UniqueValuesCheckerMixin):
-    type: Literal[QuestionType.table]
-
-
-class TableQuestionSettingsUpdate(UpdateSchema):
-    type: Literal[QuestionType.table]
-
-    __non_nullable_fields__ = {}
-
-
 QuestionSettings = Annotated[
     Union[
         TextQuestionSettings,

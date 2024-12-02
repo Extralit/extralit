@@ -126,7 +126,7 @@ class TextQuestionSettings(BaseModel):
 
 
 class TableQuestionSettings(BaseModel):
-    type: str = "table"
+    type: Literal["table"] = "table"
 
 
 QuestionSettings = Annotated[
