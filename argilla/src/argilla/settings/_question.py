@@ -261,6 +261,7 @@ class TextQuestion(QuestionBase):
         description: Optional[str] = None,
         required: bool = True,
         use_markdown: bool = False,
+        use_table: bool = False,
         client: Optional[Argilla] = None,
     ) -> None:
         """Create a new text question for `Settings` of a `Dataset`. A text question \
@@ -279,7 +280,7 @@ class TextQuestion(QuestionBase):
             title=title,
             required=required,
             description=description,
-            settings=TextQuestionSettings(use_markdown=use_markdown),
+            settings=TextQuestionSettings(use_markdown=use_markdown, use_table=use_table),
             _client=client,
         )
 

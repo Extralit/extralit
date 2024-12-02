@@ -27,7 +27,7 @@ except ImportError:
 
 
 class LabelQuestionSettings(BaseModel):
-    type: Literal["label_selection"] = "label_selection"
+    type: Literal["label_selection", "dynamic_label_selection"] = "label_selection"
 
     _MIN_VISIBLE_OPTIONS: ClassVar[int] = 3
 
@@ -52,7 +52,7 @@ class LabelQuestionSettings(BaseModel):
 
 
 class MultiLabelQuestionSettings(LabelQuestionSettings):
-    type: Literal["multi_label_selection"] = "multi_label_selection"
+    type: Literal["multi_label_selection", "dynamic_multi_label_selection"] = "multi_label_selection"
     options_order: Literal["natural", "suggestion"] = Field("natural", description="The order of the labels in the UI.")
 
 
