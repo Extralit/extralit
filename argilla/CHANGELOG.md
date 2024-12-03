@@ -14,7 +14,7 @@ These are the section headers that we use:
 * "Security" in case of vulnerabilities.
 -->
 
-## [Extralit] [0.4.0]()
+## [Extralit] [0.4.0](https://github.com/extralit/extralit/compare/v0.3.0...v0.4.0)
 
 ### Added
 - Added support for `TableField` for table fields.
@@ -36,6 +36,15 @@ These are the section headers that we use:
 ### Fixed
 
 - Fixed error when update settings.distribution.min_submitted from defaults ([#5719](https://github.com/argilla-io/argilla/pull/5719))
+
+## [Extralit] [0.3.0](https://github.com/extralit/extralit/compare/v0.2.3...v0.3.0)
+
+### Added
+- Added support for `TableField` for table fields.
+- Added `TableQuestion` to support table questions.
+
+### Fixed
+- Fixed certain extralit-specific changes when loading Dataset
 
 ## [Argilla] [2.4.0](https://github.com/argilla-io/argilla/compare/v2.3.0...v2.4.0)
 
