@@ -48,6 +48,7 @@ export default {
   required: "Required",
   optional: "Optional",
   template: "Template",
+  rows: "rows",
   noRecordsMessages: {
     datasetEmptyForAnnotator:
       "The dataset is empty. Ask an administrator to upload records and come back soon.",
@@ -64,7 +65,7 @@ export default {
   breadcrumbs: {
     home: "Home",
     datasetSettings: "settings",
-    userSettings: "my settings",
+    userSettings: "My settings",
   },
   datasets: {
     left: "left",
@@ -92,6 +93,7 @@ export default {
     apiKeyDescription:
       "API key tokens allow you to manage datasets using the Python SDK.",
     theme: "Theme",
+    language: "Language",
     copyKey: "Copy key",
   },
   userAvatarTooltip: {
@@ -233,6 +235,7 @@ export default {
   filters: "Filters",
   filterBy: "Filter by...",
   fields: "Fields",
+  field: "Field",
   questions: "Questions",
   general: "General",
   metadata: "Metadata",
@@ -253,21 +256,16 @@ export default {
   youAreOffline: "You are offline",
   write: "Write",
   preview: "Preview",
-  datasetTable: {
-    name: "Dataset",
-    workspace: "Workspace",
-    createdAt: "Created",
-    lastActivityAt: "Updated",
-    progress: "Team progress",
-  },
   metrics: {
     total: "Total",
     progress: {
+      default: "Progress",
       my: "My Progress",
       team: "Team progress",
     },
   },
   home: {
+    zeroDatasetsFound: "0 datasets found",
     argillaDatasets: "Your datasets",
     none: "None yet",
     importTitle: "Import a dataset from Hugging Face Hub",
@@ -285,15 +283,22 @@ export default {
     pasteRepoIdPlaceholder: "Paste a repo id e.g., stanfordnlp/imdb",
     demoLink:
       "Log into this <a href='https://huggingface.co/spaces/extralit/public-demo' target='_blank'>demo</a> to try Extralit out",
+    name: "Dataset name",
+    updatedAt: "Updated",
+    createdAt: "Created",
   },
   datasetCreation: {
     questions: {
       labelSelection: {
         atLeastTwoOptions: "At least two options are required",
         optionsWithoutLabel: "Empty options are not allowed",
+        optionsSeparatedByComma: "Use comma to separate labels",
       },
       rating: {
         atLeastTwoOptions: "At least two options are required",
+      },
+      span: {
+        fieldRelated: "One text field is required",
       },
     },
     atLeastOneQuestion: "At least one question is required.",
@@ -314,6 +319,7 @@ export default {
     requiredQuestion: "Required question",
     select: "Select",
     mapToColumn: "Map to column",
+    applyToaAField: "Annotate spans on:",
     subset: "Subset",
     selectSubset: "Your can create a dataset from only one subset.",
     preview: "Preview",
@@ -356,6 +362,12 @@ export default {
       "Persistent storage is not enabled. All data will be lost if this space restarts. Go to the space settings to enable it.",
     annotator:
       "Persistent storage is not enabled. All data will be lost if this space restarts.",
+  },
+  colorSchema: {
+    system: "System",
+    light: "Light",
+    dark: "Dark",
+    "high-contrast": "High contrast",
   },
   validations: {
     businessLogic: {

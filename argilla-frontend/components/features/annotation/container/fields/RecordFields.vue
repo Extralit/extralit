@@ -7,7 +7,7 @@
     >
       <SpanAnnotationTextField
         v-if="group.length == 1 && hasSpanQuestion(group[0].name)"
-        :id="`${group[0].id}-${record.id}-span-field`"
+        :id="`${group[0].id}-${record.id}`"
         :name="group[0].name"
         :title="group[0].title"
         :fieldText="group[0].content"
@@ -16,7 +16,7 @@
       />
       <TextField
         v-else-if="group[0].isTextType"
-        :name="group[0].name"
+        :id="`${id}-${record.id}`"
         :title="group[0].title"
         :fieldText="group[0].content"
         :useMarkdown="group[0].settings.use_markdown"
@@ -26,7 +26,7 @@
       />
       <ChatField
         v-else-if="group[0].isChatType"
-        :name="group[0].name"
+        :id="`${id}-${record.id}`"
         :title="group[0].title"
         :useMarkdown="group[0].settings.use_markdown"
         :content="group[0].content"

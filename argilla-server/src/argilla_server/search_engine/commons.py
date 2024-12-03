@@ -301,11 +301,6 @@ class BaseElasticAndOpenSearchEngine(SearchEngine):
 
     The rest of the code will be shared by both implementation
     """
-    BULK_BATCH_SIZE = 50
-    MAX_RETRIES = 5
-    INITIAL_BACKOFF = 1.0
-    BACKOFF_MULTIPLIER = 2.0
-    MAX_BACKOFF = 30.0
 
     number_of_shards: int
     number_of_replicas: int
@@ -922,7 +917,7 @@ class BaseElasticAndOpenSearchEngine(SearchEngine):
         for field in dataset_fields:
             if field.is_image:
                 fields[field.name] = None
-            elif field.is_custom or field.is_table:
+            elif field.is_custom:
                 fields[field.name] = str(fields.get(field.name, ""))
             else:
                 fields[field.name] = fields.get(field.name, "")

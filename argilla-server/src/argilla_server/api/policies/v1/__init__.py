@@ -24,6 +24,7 @@ from argilla_server.api.policies.v1.user_policy import UserPolicy
 from argilla_server.api.policies.v1.vector_settings_policy import VectorSettingsPolicy
 from argilla_server.api.policies.v1.workspace_policy import WorkspacePolicy
 from argilla_server.api.policies.v1.workspace_user_policy import WorkspaceUserPolicy
+from argilla_server.api.policies.v1.webhook_policy import WebhookPolicy
 from argilla_server.api.policies.v1.job_policy import JobPolicy
 from argilla_server.api.policies.v1.file_policy import FilePolicy
 from argilla_server.api.policies.v1.document_policy import DocumentPolicy
@@ -40,6 +41,7 @@ __all__ = [
     "VectorSettingsPolicy",
     "WorkspacePolicy",
     "WorkspaceUserPolicy",
+    "WebhookPolicy",
     "JobPolicy",
     "FilePolicy",
     "DocumentPolicy",

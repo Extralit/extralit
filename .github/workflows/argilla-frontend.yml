@@ -84,15 +84,15 @@ jobs:
         ARGILLA_SERVER_TAG=main
     secrets: inherit
 
-  deploy:
-    name: Deploy pr environment
-    uses: ./.github/workflows/argilla-frontend.deploy-environment.yml
-    needs: build_dev_docker_image
-    if: |
-      !cancelled() &&
-      needs.build_dev_docker_image.result == 'success' &&
-      github.event_name == 'pull_request' && github.event.pull_request.draft == false
-    with:
-      image-name: extralit/argilla-frontend-for-dev
-      image-version: ${{ needs.build_dev_docker_image.outputs.version }}
-    secrets: inherit
+  # deploy:
+  #   name: Deploy pr environment
+  #   uses: ./.github/workflows/argilla-frontend.deploy-environment.yml
+  #   needs: build_dev_docker_image
+  #   if: |
+  #     !cancelled() &&
+  #     needs.build_dev_docker_image.result == 'success' &&
+  #     github.event_name == 'pull_request' && github.event.pull_request.draft == false
+  #   with:
+  #     image-name: extralit/argilla-frontend-for-dev
+  #     image-version: ${{ needs.build_dev_docker_image.outputs.version }}
+  #   secrets: inherit

@@ -16,14 +16,14 @@
         </BaseButton>
       </BaseActionTooltip>
     </div>
-    <div :id="`fields-content-${name}`" class="content-area --body1">
+    <div :id="`fields-content-${id}`" class="content-area --body1">
       <RenderTable v-if="useTable && isValidTableJSON" :tableJSON="JSON.parse(fieldText)" />
       <MarkdownRenderer v-else-if="useMarkdown" :markdown="fieldText" />
       <Sandbox v-else-if="isHTML" :content="fieldText" />
       <div :class="classes" v-else v-html="fieldText" />
       <template>
-        <style :key="name" scoped>
-          ::highlight(search-text-highlight-{{name}}) {
+        <style :key="id" scoped>
+          ::highlight(search-text-highlight-{{id}}) {
             color: #ff675f;
           }
         </style>
@@ -37,7 +37,7 @@ import { useTextFieldViewModel } from "./useTextFieldViewModel";
 import { isValidJSON } from "@/components/base/base-render-table/tableUtils";
 export default {
   props: {
-    name: {
+    id: {
       type: String,
       required: true,
     },

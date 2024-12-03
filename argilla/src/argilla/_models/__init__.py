@@ -40,20 +40,15 @@ from argilla._models._settings._fields import (
     FieldSettings,
 )
 from argilla._models._settings._questions import (
-    LabelQuestionModel,
-    LabelQuestionSettings,
-    MultiLabelQuestionModel,
-    QuestionBaseModel,
     QuestionModel,
     QuestionSettings,
-    RankingQuestionModel,
-    RatingQuestionModel,
-    SpanQuestionModel,
     SpanQuestionSettings,
-    TableQuestionModel,
     TableQuestionSettings,
-    TextQuestionModel,
     TextQuestionSettings,
+    LabelQuestionSettings,
+    RatingQuestionSettings,
+    MultiLabelQuestionSettings,
+    RankingQuestionSettings,
 )
 from argilla._models._settings._metadata import (
     MetadataFieldModel,
@@ -64,4 +59,18 @@ from argilla._models._settings._metadata import (
     FloatMetadataPropertySettings,
     IntegerMetadataPropertySettings,
 )
+from argilla._models._settings._questions import (
+    QuestionModel,
+    QuestionSettings,
+    LabelQuestionSettings,
+    RatingQuestionSettings,
+    TextQuestionSettings,
+    MultiLabelQuestionSettings,
+    RankingQuestionSettings,
+    SpanQuestionSettings,
+)
 from argilla._models._settings._vectors import VectorFieldModel
+
+from argilla._models._user import UserModel, Role
+from argilla._models._workspace import WorkspaceModel
+from argilla._models._webhook import WebhookModel, EventType
