@@ -209,11 +209,11 @@ class Settings(BaseSettings):
         if "postgres" in database_url:
             parsed_url = urlparse(database_url)
             if parsed_url.scheme.__contains__('postgres'):
-                warnings.warn(
-                    "From version 1.14.0, Argilla will use `asyncpg` as default PostgreSQL driver. The protocol in the"
-                    " provided database URL has been automatically replaced from `postgresql` to `postgresql+asyncpg`."
-                    " Please, update your database URL to use `postgresql+asyncpg` protocol."
-                )
+                # warnings.warn(
+                #     "From version 1.14.0, Argilla will use `asyncpg` as default PostgreSQL driver. The protocol in the"
+                #     " provided database URL has been automatically replaced from `postgresql` to `postgresql+asyncpg`."
+                #     " Please, update your database URL to use `postgresql+asyncpg` protocol."
+                # )
                 new_scheme = "postgresql+asyncpg"
                 database_url = urlunparse(parsed_url._replace(scheme=new_scheme))
 
