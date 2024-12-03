@@ -1,6 +1,6 @@
 from uuid import UUID, uuid4
-from typing import Any, Dict, Generic, List, Literal, Optional, TypeVar, Union
-from argilla_server.pydantic_v1 import BaseModel, Field
+from typing import Optional, Union
+from pydantic import BaseModel, Field, ConfigDict
 
 class DocumentCreateRequest(BaseModel):
     id: UUID = Field(default_factory=uuid4)
@@ -28,5 +28,4 @@ class DocumentListItem(BaseModel):
     doi: Optional[str]
     workspace_id: UUID
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

@@ -145,7 +145,7 @@ async def get_document_by_pmid(
         )
     
     document: Document = documents[0]
-    return DocumentListItem.from_orm(document)
+    return DocumentListItem.model_validate(document)
 
 
 @router.get("/documents/by-id/{id}", response_model=DocumentListItem)
@@ -174,7 +174,7 @@ async def get_document_by_id(
         )
     
     document: Document = documents[0]
-    return DocumentListItem.from_orm(document)
+    return DocumentListItem.model_validate(document)
 
 
 @router.delete("/documents/workspace/{workspace_id}", status_code=status.HTTP_200_OK, response_model=int, description="Delete all documents by workspace_id, or a specific document by id, pmid, doi, or url")
@@ -212,9 +212,9 @@ async def list_documents(*,
     db: AsyncSession = Depends(get_async_db),
     workspace_id: UUID = Path(..., title="The UUID of the workspace whose documents will be retrieved"),
     current_user: User = Security(auth.get_current_user)
-    ) -> List[Document]:
+    ) -> List[DocumentListItem]:
     await authorize(current_user, DocumentPolicy.list(workspace_id))
 
     documents = await datasets.list_documents(db, workspace_id)
 
-    return documents
+    return [DocumentListItem.model_validate(doc) for doc in documents]

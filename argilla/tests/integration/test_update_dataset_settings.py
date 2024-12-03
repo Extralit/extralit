@@ -12,11 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import uuid
-
 import pytest
 
-from argilla import Dataset, Settings, TextField, ChatField, LabelQuestion, Argilla, VectorField, FloatMetadataProperty
+from argilla import (
+    Dataset,
+    Settings,
+    TextField,
+    ChatField,
+    LabelQuestion,
+    Argilla,
+    VectorField,
+    FloatMetadataProperty,
+    TermsMetadataProperty,
+)
 
 
 @pytest.fixture
@@ -56,9 +64,34 @@ class TestUpdateDatasetSettings:
         dataset = client.datasets(dataset.name)
         assert dataset.settings.vectors["vector"].title == "A new title for vector"
 
+    def test_update_question_title(self, client: Argilla, dataset: Dataset):
+        question = dataset.settings.questions["label"]
+        question.title = "A new title for label question"
+        dataset.settings.update()
+
+        dataset = client.datasets(dataset.name)
+        question = dataset.settings.questions["label"]
+        assert question.title == "A new title for label question"
+
     def test_update_distribution_settings(self, client: Argilla, dataset: Dataset):
         dataset.settings.distribution.min_submitted = 100
         dataset.update()
 
         dataset = client.datasets(dataset.name)
         assert dataset.settings.distribution.min_submitted == 100
+
+    def test_remove_settings_property(self, client: Argilla, dataset: Dataset):
+        dataset.settings.metadata.add(TermsMetadataProperty(name="metadata"))
+        dataset.settings.vectors.add(VectorField(name="vector", dimensions=10))
+        dataset.update()
+
+        assert isinstance(dataset.settings.metadata["metadata"], TermsMetadataProperty)
+        assert isinstance(dataset.settings.vectors["vector"], VectorField)
+
+        dataset.settings.metadata.remove("metadata")
+        dataset.settings.vectors.remove("vector")
+
+        dataset.update()
+
+        assert dataset.settings.metadata["metadata"] is None
+        assert dataset.settings.vectors["vector"] is None

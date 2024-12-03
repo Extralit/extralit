@@ -20,9 +20,9 @@ import warnings
 from argilla._exceptions import RecordsIngestionError
 from argilla.records._resource import Record
 from argilla.responses import Response
-from argilla.settings import AbstractField, VectorField
+from argilla.settings import FieldBase, VectorField
 from argilla.settings._metadata import MetadataPropertyBase
-from argilla.settings._question import QuestionPropertyBase
+from argilla.settings._question import QuestionBase
 from argilla.suggestions import Suggestion
 from argilla.records._mapping._routes import (
     AttributeRoute,
@@ -177,14 +177,14 @@ class IngestedRecordMapper:
         If the attribute type is not provided, it will be inferred based on the schema item.
         """
         schema_item = self._schema.get(attribute_route.name)
-        if isinstance(schema_item, QuestionPropertyBase) and (
+        if isinstance(schema_item, QuestionBase) and (
             attribute_route.type is None or attribute_route.type == AttributeType.SUGGESTION
         ):
             # Suggestions are the default destination for questions.
             attribute_route.type = AttributeType.SUGGESTION
-        elif isinstance(schema_item, QuestionPropertyBase) and attribute_route.type == AttributeType.RESPONSE:
+        elif isinstance(schema_item, QuestionBase) and attribute_route.type == AttributeType.RESPONSE:
             attribute_route.type = AttributeType.RESPONSE
-        elif isinstance(schema_item, AbstractField):
+        elif isinstance(schema_item, FieldBase):
             attribute_route.type = AttributeType.FIELD
         elif isinstance(schema_item, VectorField):
             attribute_route.type = AttributeType.VECTOR
