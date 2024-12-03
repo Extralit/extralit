@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from minio.datatypes import Object
-from argilla_server.pydantic_v1 import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 from urllib3 import HTTPResponse
 from urllib3._collections import HTTPHeaderDict
 from minio.helpers import ObjectWriteResult
@@ -17,10 +17,10 @@ class ObjectMetadata(BaseModel):
     size: Optional[int]
     content_type: Optional[str]
     version_id: Optional[str]
-    version_tag: Optional[str]
+    version_tag: Optional[str] = None
     metadata: Optional[Dict[str, Any]]
 
-    @validator('metadata', pre=True)
+    @field_validator('metadata', mode='before')
     def parse_metadata(cls, v):
         if v and isinstance(v, (HTTPHeaderDict, dict)):
             v = {
@@ -72,13 +72,16 @@ class ListObjectsResponse(BaseModel):
     def __iter__(self):
         return iter(self.objects)
 
-    @validator('objects', pre=True, each_item=True)
+    @field_validator('objects', mode='before')
     def convert_objects(cls, v):
-        if isinstance(v, Object):
-            return ObjectMetadata.from_minio_object(v)
+        if isinstance(v, list):
+            return [
+                ObjectMetadata.from_minio_object(item) if isinstance(item, Object) else item
+                for item in v
+            ]
         return v
     
-    @validator('objects', each_item=False)
+    @field_validator('objects')
     def assign_version_id(cls, objects: List[ObjectMetadata]) -> List[ObjectMetadata]:
         # Group objects by object_name
         grouped_objects = defaultdict(list)
@@ -144,18 +147,14 @@ class FileObjectResponse(BaseModel):
         headers = {key: value for key, value in headers.items() if value}
         return headers
 
-    @validator('response')
+    @field_validator('response')
     def validate_response(cls, v):
         if v is None:
             raise ValueError("Response cannot be None")
         return v
 
-    @validator('metadata', 'versions', pre=True, each_item=True)
+    @field_validator('metadata', 'versions', mode='before')
     def convert_minio_object(cls, v):
         if isinstance(v, Object):
             return ObjectMetadata.from_minio_object(v)
         return v
-
-
-
-

@@ -34,6 +34,7 @@
       class="textarea--markdown"
       :markdown="question.answer.value"
       @click.native="onFocus"
+      role="textbox"
     />
     <ContentEditableFeedbackTask
       v-else

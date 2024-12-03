@@ -14,13 +14,30 @@ These are the section headers that we use:
 * "Security" in case of vulnerabilities.
 -->
 
-## [Unreleased]()
+## [Extralit] [0.4.0](https://github.com/extralit/extralit/compare/v0.3.0...v0.4.0)
+### Added
+
+
+
+## [Argilla] [2.5.0](https://github.com/argilla-io/argilla/compare/v2.4.1...v2.5.0)
 
 ### Added
-- Added support for `TableField` and `es_field_for_record_field` for table fields.
-- Added `TableQuestion` and `TableQuestionSetting` to support table questions.
 
+- Added new endpoints to create, update, ping and delete webhooks. ([#5453](https://github.com/argilla-io/argilla/pull/5453))
+- Added new webhook events when responses are created, updated, deleted. ([#5468](https://github.com/argilla-io/argilla/pull/5468))
+- Added new webhook events when datasets are created, updated, deleted or published. ([#5468](https://github.com/argilla-io/argilla/pull/5468))
+- Added new webhook events when records are created, updated, deleted or completed. ([#5489](https://github.com/argilla-io/argilla/pull/5489))
+- Added new `high` RQ queue to process high priority background jobs. ([#5467](https://github.com/argilla-io/argilla/pull/5467))
+- Added `users` attribute to the response of the endpoint `GET /api/v1/datasets/:dataset_id/progress`. ([#5701](https://github.com/argilla-io/argilla/pull/5701))
 
+### Changed
+
+- Changed default python version to 3.13. ([#5649](https://github.com/argilla-io/argilla/pull/5649))
+- Changed Pydantic version to v2. ([#5666](https://github.com/argilla-io/argilla/pull/5666))
+
+### Fixed
+
+- Fixed error to prevent creating record fields including non-string values for text fields. ([#5682](https://github.com/argilla-io/argilla/pull/5682))
 
 
 ## [Extralit] [0.3.0](https://github.com/extralit/extralit/compare/v0.2.3...v0.3.0)
@@ -29,6 +46,8 @@ These are the section headers that we use:
 - Added use_table option to TextFieldSetting.
 - Added redis service to the tilt k8s deployment for argilla-server.
 - Improved argillar-server and extralit-server dockerfile multi-stage build.
+- Added support for `TableField` and `es_field_for_record_field` for table fields.
+- Added `TableQuestion` and `TableQuestionSetting` to support table questions.
 
 ### Changed
 - Changed envvars in Tilt k8s deployment at `examples/deployments/k8s/argilla-server-deployment.yaml`

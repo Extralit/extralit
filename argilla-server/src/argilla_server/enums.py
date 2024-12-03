@@ -12,10 +12,14 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from enum import Enum
+
+try:
+    from enum import StrEnum
+except ImportError:
+    from argilla_server.utils.str_enum import StrEnum
 
 
-class FieldType(str, Enum):
+class FieldType(StrEnum):
     text = "text"
     image = "image"
     chat = "chat"
@@ -23,53 +27,53 @@ class FieldType(str, Enum):
     table = "table"
 
 
-class ResponseStatus(str, Enum):
+class ResponseStatus(StrEnum):
     draft = "draft"
     submitted = "submitted"
     discarded = "discarded"
 
 
-class ResponseStatusFilter(str, Enum):
+class ResponseStatusFilter(StrEnum):
     draft = "draft"
     pending = "pending"
     submitted = "submitted"
     discarded = "discarded"
 
 
-class SuggestionType(str, Enum):
+class SuggestionType(StrEnum):
     model = "model"
     human = "human"
     selection = "selection"
 
 
-class DatasetStatus(str, Enum):
+class DatasetStatus(StrEnum):
     draft = "draft"
     ready = "ready"
 
 
-class DatasetDistributionStrategy(str, Enum):
+class DatasetDistributionStrategy(StrEnum):
     overlap = "overlap"
 
 
-class UserRole(str, Enum):
+class UserRole(StrEnum):
     owner = "owner"
     admin = "admin"
     annotator = "annotator"
 
 
-class RecordStatus(str, Enum):
+class RecordStatus(StrEnum):
     pending = "pending"
     completed = "completed"
 
 
-class RecordInclude(str, Enum):
+class RecordInclude(StrEnum):
     responses = "responses"
     suggestions = "suggestions"
     vectors = "vectors"
     response_suggestions = "response_suggestions"
 
 
-class QuestionType(str, Enum):
+class QuestionType(StrEnum):
     text = "text"
     rating = "rating"
     label_selection = "label_selection"
@@ -81,13 +85,13 @@ class QuestionType(str, Enum):
     table = "table"
 
 
-class MetadataPropertyType(str, Enum):
+class MetadataPropertyType(StrEnum):
     terms = "terms"  # Textual types with a fixed value list
     integer = "integer"  # Integer values
     float = "float"  # Decimal values
 
 
-class RecordSortField(str, Enum):
+class RecordSortField(StrEnum):
     id = "id"
     external_id = "external_id"
     inserted_at = "inserted_at"
@@ -95,16 +99,16 @@ class RecordSortField(str, Enum):
     status = "status"
 
 
-class SortOrder(str, Enum):
+class SortOrder(StrEnum):
     asc = "asc"
     desc = "desc"
 
 
-class SimilarityOrder(str, Enum):
+class SimilarityOrder(StrEnum):
     most_similar = "most_similar"
     least_similar = "least_similar"
 
 
-class OptionsOrder(str, Enum):
+class OptionsOrder(StrEnum):
     natural = "natural"
     suggestion = "suggestion"

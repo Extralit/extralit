@@ -43,6 +43,7 @@ export default {
   required: "Erforderlich",
   optional: "Optional",
   template: "Template",
+  rows: "zeilen",
   noRecordsMessages: {
     datasetEmptyForAnnotator:
       "Der Datensatz ist leer. Bitten Sie einen Administrator, Daten hochzuladen, und versuchen Sie es später erneut.",
@@ -56,6 +57,7 @@ export default {
     noPendingRecordsToAnnotate: "🎉 Die Aufgabe ist erledigt!",
     noDraftRecordsToReview: "Sie haben keine Entwürfe zu prüfen",
   },
+  couldNotLoadImage: "Bild konnte nicht geladen werden",
   breadcrumbs: {
     home: "Start",
     datasetSettings: "Einstellungen",
@@ -87,6 +89,7 @@ export default {
     apiKeyDescription:
       "API-Keys erlauben es die Datensätze über das Python SDK zu verwalten.",
     theme: "Theme",
+    language: "Sprache",
     copyKey: "API-Key kopieren",
   },
   userAvatarTooltip: {
@@ -167,6 +170,7 @@ export default {
     discard: "Verwerfen",
     submit: "Absenden",
     draft: "Entwurf speichern",
+    write: "Schreiben",
   },
   sorting: {
     label: "Sortieren",
@@ -218,7 +222,7 @@ export default {
     hf: {
       title: "Willkommen bei {space}",
       subtitle:
-        "Helfe <strong>{user}</strong> um bessere Datensätze für KI zu erstellen",
+        "Helfe <strong>{user}</strong> bessere Datensätze für KI zu erstellen",
     },
   },
   of: "von",
@@ -226,6 +230,7 @@ export default {
   filters: "Filter",
   filterBy: "Filter nach...",
   fields: "Felder",
+  field: "Feld",
   questions: "Fragen",
   general: "Übersicht",
   metadata: "Metadaten",
@@ -235,6 +240,7 @@ export default {
   "reset-all": "Alle zurücksetzen",
   reset: "Zurücksetzen",
   less: "Weniger",
+  learnMore: "Erfahre mehr",
   with: "mit",
   find: "Finden",
   cancel: "Abbrechen",
@@ -245,21 +251,107 @@ export default {
   youAreOffline: "Sie sind offline",
   write: "Schreiben",
   preview: "Vorschau",
-  datasetTable: {
-    name: "Datensatz",
-    workspace: "Arbeitsbereich",
-    createdAt: "Erstellt am",
-    lastActivityAt: "Aktualisiert am",
-    progress: "Teamfortschritt",
-  },
   metrics: {
     total: "Total",
     progress: {
+      default: "Fortschritt",
       my: "mein Fortschritt",
       team: "Fortschritte im Team",
     },
   },
-
+  home: {
+    argillaDatasets: "Argilla Datensätze",
+    none: "Bis jetzt keine",
+    importTitle: "Importiere ein Datensatz aus dem Hugging Face Hub",
+    importText:
+      "Starten Sie mit einem Datensatz aus dem Hub, indem Sie einfach den Repository-Namen einfügen",
+    importButton: "Datensatz importieren",
+    importFromHub: "Direkt vom Hub importieren",
+    importFromPython: "Mit Python importieren",
+    importFromPythonHFWarning:
+      "Wenn Sie einen privaten Space verwenden, lesen Sie die <a target='_blank' href='https://docs.argilla.io/latest/getting_started/how-to-configure-argilla-on-huggingface/#how-to-use-private-spaces'>Dokumentation</a>.",
+    exampleDatasetsTitle: "Sie wissen nicht, wo Sie anfangen sollen?",
+    exampleDatasetsText: "Erkunden Sie diese Beispiel-Datensätze",
+    guidesTitle: "Nicht mit Argilla vertraut?",
+    guidesText: "Nutzen Sie diese Anleitungen an:",
+    pasteRepoIdPlaceholder: "Fügen Sie eine Repo-ID ein",
+    demoLink:
+      "Melden Sie sich bei dieser <a href='https://huggingface.co/spaces/argilla/argilla-template-space' target='_blank'>Demo</a> an, um Argilla auszuprobieren",
+  },
+  datasetCreation: {
+    questions: {
+      labelSelection: {
+        atLeastTwoOptions: "Mindestens zwei Optionen müssen vorhanden sein",
+        optionsWithoutLabel: "Optionen ohne Label sind nicht erlaubt",
+        optionsSeparatedByComma: "Optionen müssen durch Kommas getrennt sein",
+      },
+      rating: {
+        atLeastTwoOptions: "Mindestens zwei Optionen müssen vorhanden sein",
+      },
+      span: {
+        fieldRelated: "One text field is required",
+      },
+    },
+    atLeastOneQuestion: "Mindestens eine Frage wird benötigt",
+    atLeastOneRequired: "Mindestens eine erforderliche Frage wird benötigt",
+    hasInvalidQuestions: "Einige Fragen sind ungültig",
+    createDataset: "Datensatz in Argilla erstellen",
+    datasetName: "Name des Datensatzes",
+    name: "Name",
+    assignWorkspace: "Einem Workspace zuweisen",
+    selectSplit: "Einen Datensatz-Split auswählen",
+    recordWarning:
+      "Der erstellte Datensatz wird nur die ersten 10Tsd Zeilen enthalten, weitere Einträge können über das Python SDK hinzugefügt werden.",
+    button: "Datensatz erstellen",
+    fields: "Felder",
+    questionsTitle: "Fragen",
+    yourQuestions: "Ihre Fragen",
+    requiredField: "Pflichtfeld",
+    requiredQuestion: "Pflichtfrage",
+    select: "Auswählen",
+    mapToColumn: "Annotate spans on:",
+    applyToaAField: "Gelten für:",
+    subset: "Teilmenge",
+    selectSubset:
+      "Sie können einen Datensatz nur aus einer Teilmenge erstellen.",
+    preview: "Vorschau",
+    importData: "Daten importieren",
+    addRecords: "Einträge hinzufügen",
+    cantLoadRepository:
+      "Datensatz auf Hugging Face nicht gefunden oder verfügbar",
+    none: "Keine",
+    noWorkspaces:
+      "Bitte folgen Sie der <a target='_blank' href='https://docs.argilla.io/latest/how_to_guides/workspace/#create-a-new-workspace'>Anleitung</a>, um einen Workspace zu erstellen",
+  },
+  config: {
+    field: {
+      text: "Textfeld",
+      chat: "Chatfeld",
+      image: "Bildfeld",
+      "no mapping": "Keine Zuordnung",
+    },
+    question: {
+      text: "Text",
+      rating: "Numerische Bewertung",
+      label_selection: "Label",
+      ranking: "Ranking",
+      multi_label_selection: "Multi-Label",
+      span: "Bereichsannotation",
+      "no mapping": "Keine Zuordnung",
+    },
+  },
+  persistentStorage: {
+    adminOrOwner:
+      "Der persistente Speicher ist nicht aktiviert. Alle Daten gehen verloren, wenn dieser Space neu gestartet wird. Gehen Sie zu den Space-Einstellungen, um ihn zu aktivieren.",
+    annotator:
+      "Der persistente Speicher ist nicht aktiviert. Alle Daten gehen verloren, wenn dieser Space neu gestartet wird.",
+  },
+  colorSchema: {
+    system: "System",
+    light: "Licht",
+    dark: "Dunkel",
+    "high-contrast": "Hoher Kontrast",
+  },
   validations: {
     businessLogic: {
       missing_vector: {

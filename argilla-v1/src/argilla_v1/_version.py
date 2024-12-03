@@ -13,4 +13,4 @@
 #  limitations under the License.
 
 # coding: utf-8
-version = "0.3.0"
+version = "0.4.0"
