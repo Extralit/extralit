@@ -5,7 +5,7 @@ from os.path import join
 from typing import Optional, Literal
 import warnings
 
-import argilla_v1 as rg
+import argilla as rg
 from extralit.storage.files import StorageType
 import pandas as pd
 from llama_index.core import VectorStoreIndex, load_index_from_storage, global_handler
@@ -30,18 +30,18 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 def create_local_index(
     paper: pd.Series,
     preprocessing_path='data/preprocessing/nougat/',
-    preprocessing_dataset: rg.FeedbackDataset = None,
+    preprocessing_dataset: rg.Dataset = None,
     persist_dir: Optional[str] = None,
     embed_model='text-embedding-3-small',
     dimensions=1536,
     retrieval_mode=DEFAULT_RETRIEVAL_MODE,
     chunk_size=4096,
     chunk_overlap=200,
-    verbose=True, 
+    verbose=True,
 ) -> VectorStoreIndex:
     text_nodes, table_nodes = create_nodes(
         paper, preprocessing_path=preprocessing_path,
-        preprocessing_dataset=preprocessing_dataset, 
+        preprocessing_dataset=preprocessing_dataset,
         storage_type=StorageType.FILE)
 
     _LOGGER.info(
@@ -82,7 +82,7 @@ def create_local_index(
 def create_vector_index(
     paper: pd.Series,
     weaviate_client: WeaviateClient,
-    preprocessing_dataset: Optional[rg.FeedbackDataset] = None,
+    preprocessing_dataset: Optional[rg.Dataset] = None,
     preprocessing_path='data/preprocessing/nougat/',
     index_name: Optional[str] = "LlamaIndexDocumentSections",
     embed_model='text-embedding-3-small',
@@ -93,7 +93,7 @@ def create_vector_index(
     chunk_overlap=200,
     storage_type: StorageType=StorageType.FILE,
     bucket_name: Optional[str]=None,
-    verbose=True, 
+    verbose=True,
 ) -> VectorStoreIndex:
     """
     Creates a VectorStoreIndex for a given paper and loads it into a vector db.
@@ -101,7 +101,7 @@ def create_vector_index(
     Args:
         paper (pd.Series): The paper to be indexed.
         weaviate_client (WeaviateClient): The Weaviate client to use.
-        preprocessing_dataset (Optional[rg.FeedbackDataset]):
+        preprocessing_dataset (Optional[rg.Dataset]):
             The preprocessing dataset to use. Defaults to None.
             If given, the TableSegments will be loaded from the Argilla dataset with users' annotations. If None,
             the TableSegments will be loaded from the preprocessed table extractions locally from `preprocessing_path`.
@@ -124,7 +124,7 @@ def create_vector_index(
 
     text_nodes, table_nodes = create_nodes(
         paper, preprocessing_path=preprocessing_path,
-        preprocessing_dataset=preprocessing_dataset, 
+        preprocessing_dataset=preprocessing_dataset,
         storage_type=storage_type, bucket_name=bucket_name)
 
     if global_handler and hasattr(global_handler, 'set_trace_params'):
@@ -171,7 +171,7 @@ def create_vector_index(
 
 def load_index(paper: pd.Series, llm_model="gpt-4o", embed_model='text-embedding-3-small',
                weaviate_client: Optional[WeaviateClient] = None,
-               index_name: Optional[str] = "LlamaIndexDocumentSections", 
+               index_name: Optional[str] = "LlamaIndexDocumentSections",
                persist_dir='data/interim/vectorstore/',
                **kwargs) -> VectorStoreIndex:
     """
