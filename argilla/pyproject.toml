@@ -25,7 +25,6 @@ dependencies = [
     "pillow>=9.5.0",
     "standardwebhooks>=1.0.0",
 
-    "argilla-v1",
     # for environment variables
     "python-dotenv",
     # for extralit
