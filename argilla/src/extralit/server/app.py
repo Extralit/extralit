@@ -15,7 +15,7 @@ from llama_index.core.vector_stores import MetadataFilters, MetadataFilter, Filt
 from minio import Minio
 from weaviate import WeaviateClient
 
-import argilla_v1 as rg
+import argilla as rg
 from extralit.convert.json_table import json_to_df
 from extralit.extraction.extraction import extract_schema
 from extralit.extraction.models.paper import PaperExtraction
@@ -26,6 +26,7 @@ from extralit.extraction.vector_index import create_vector_index, load_index
 from extralit.server.context.files import get_minio_client
 from extralit.server.context.llamaindex import get_langfuse_callback
 from extralit.server.context.vectordb import get_weaviate_client
+from extralit.server.context.datasets import get_argilla_client
 from extralit.server.models.extraction import ExtractionRequest, ExtractionResponse
 from extralit.server.models.segments import SegmentsResponse
 
@@ -40,17 +41,19 @@ app = FastAPI()
 #     allow_headers=["*"],
 # )
 
-weaviate_client: WeaviateClient = None
-minio_client: Minio = None
-
+weaviate_client: WeaviateClient
+minio_client: Minio
+argilla_client: rg.Argilla
 
 @app.on_event("startup")
 async def startup():
-    global weaviate_client, minio_client
+    global weaviate_client, minio_client, argilla_client
     if weaviate_client is None:
         weaviate_client = get_weaviate_client()
     if minio_client is None:
         minio_client = get_minio_client()
+    if argilla_client is None:
+        argilla_client = get_argilla_client()
 
 
 @app.get("/health")
@@ -59,13 +62,13 @@ async def health_check():
         # Check weaviate connection
         if weaviate_client is None:
             return {"status": "error", "message": "Weaviate client not initialized"}
-            
-        # Check minio connection    
+
+        # Check minio connection
         if minio_client is None:
             return {"status": "error", "message": "Minio client not initialized"}
-            
+
         return {"status": "ok"}
-        
+
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
@@ -194,7 +197,7 @@ async def extraction(
                                           types=extraction_request.types, similarity_top_k=similarity_top_k,
                                           system_prompt=system_prompt, user_prompt=extraction_request.prompt,
                                           vector_store_query_mode="hybrid")
-        
+
         if not isinstance(df, pd.DataFrame) or df.empty:
             if rag_response.source_nodes is None or len(rag_response.source_nodes) == 0:
                 raise HTTPException(
@@ -248,7 +251,7 @@ async def create_index(
     username: Optional[Union[str, UUID]] = Query(None),
 ):
     try:
-        preprocessing_dataset = rg.FeedbackDataset.from_argilla(name=preprocessing_dataset, workspace=workspace) \
+        preprocessing_dataset = argilla_client.datasets(name=preprocessing_dataset, workspace=workspace) \
             if preprocessing_dataset else None
     except Exception as e:
         preprocessing_dataset = None
@@ -264,6 +267,6 @@ async def create_index(
         )
 
         return index.index_id
-    
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
