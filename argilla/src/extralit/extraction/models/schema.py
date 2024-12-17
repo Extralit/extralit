@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import List, Optional, Union, Dict
 
 import pandera as pa
-import argilla_v1 as rg
+import argilla as rg
 from minio import Minio
 from pandera.api.base.model import MetaModel
 from pandera.io import from_json, from_yaml
@@ -35,8 +35,8 @@ def topological_sort(schema_name: str, visited: Dict[str, int], stack: deque,
 class SchemaStructure(BaseModel):
     """
     A class representing the structure of a schema.
-    
-    Usage: 
+
+    Usage:
     ```python
     from pandera import DataFrameSchema
     from extralit.extraction.models.schema import SchemaStructure
@@ -70,12 +70,12 @@ class SchemaStructure(BaseModel):
                 check.name == "singleton" and check.statistics.get('enabled', True) \
                     for check in schema.checks
             )
-                
+
             if is_singleton_schema and not self.singleton_schema:
                 self.singleton_schema = schema
             elif is_singleton_schema and self.singleton_schema and schema != self.singleton_schema:
                 raise ValueError("Only one singleton schema is allowed in the schema structure")
-        
+
 
     @validator('schemas', pre=True, each_item=True)
     def parse_schema(cls, v: Union[pa.DataFrameModel, pa.DataFrameSchema]):
@@ -121,9 +121,9 @@ class SchemaStructure(BaseModel):
                 _LOGGER.warning(f"Ignoring failed schema loading from '{filepath}': \n{e}")
 
         return cls(schemas=list(schemas.values()))
-    
+
     @classmethod
-    def from_workspace(cls, workspace: "rg.Workspace", prefix: str = DEFAULT_SCHEMA_S3_PATH, 
+    def from_workspace(cls, workspace: rg.Workspace, prefix: str = DEFAULT_SCHEMA_S3_PATH,
                        exclude: List[str] = []):
         return workspace.get_schemas(prefix=prefix, exclude=exclude)
 
