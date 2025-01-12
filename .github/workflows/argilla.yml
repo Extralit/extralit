@@ -104,6 +104,12 @@ jobs:
       - name: Checkout Code 🛎
         uses: actions/checkout@v4
 
+      - name: Update diagram
+        uses: githubocto/repo-visualizer@0.7.1
+        with:
+          output_file: "docs/repo-diagram.svg"
+          excluded_paths: "dist,node_modules,docs,tests,argilla-v1,.swm,assets,__mocks__,__pycache__,.pytest_cache,.github"
+
       - name: Download python package
         uses: actions/download-artifact@v4
         with:
