@@ -12,17 +12,3 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from social_core.backends.github import GithubOAuth2
-
-from argilla_server.security.authentication.claims import Claims
-from argilla_server.security.authentication.oauth2.providers._base import OAuth2ClientProvider
-
-
-class GitHubClientProvider(OAuth2ClientProvider):
-    claims = Claims(
-        picture="avatar_url",
-        identity=lambda user: f"{user.provider}:{user.id}",
-        username="login",
-    )
-    backend_class = GithubOAuth2
-    name = "github"
