@@ -11,6 +11,9 @@
 </p>
 </h3>
 
+> [!NOTE] 
+> Development for Extralit has been paused until Feb 7 due to personal projects.
+
 ## What is Extralit?
 
 <img src="docs/_source/_static/images/main/data-extraction-pipeline.jpg" alt="pipeline">
