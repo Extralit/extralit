@@ -16,6 +16,8 @@ These are the section headers that we use:
 
 ## [Unreleased]()
 
+## [2.8.0](https://github.com/argilla-io/argilla/compare/v2.7.1...v2.8.0)
+
 ### Fixed
 
 - Fixed error when computing user progress with PostgreSQL database. ([#5795](https://github.com/argilla-io/argilla/pull/5795))
