@@ -11,22 +11,25 @@
 </p>
 </h3>
 
-> [!NOTE] 
-> Development for Extralit has been paused until Feb 7 due to personal projects.
-
 ## What is Extralit?
 
 <img src="docs/_source/_static/images/main/data-extraction-pipeline.jpg" alt="pipeline">
 
-Extralit is a UI interface and platform for LLM-based document data extraction that integrates human and model feedback loops for continuous LLM refinement and collaborative data extraction.
+Extralit (EXTRAct LITerature) is a data extraction pipeline with user-friendly UI, designed for **LLM-assisted scientific data extraction** and other **unstructured document intelligence** tasks. It focuses on data accuracy above all else, and further integrates human feedback loops for continuous LLM refinement and collaborative data extraction.
 
-With a Python SDK and adaptable UI, you can create human and model-in-the-loop workflows for:
+- 🔹 Precision First – Built for high data accuracy, ensuring reliable results.
+- 🔹 Human-in-the-Loop – Seamlessly integrate human annotations to refine LLM outputs and collaborate on data validation.
+- 🔹 Flexible & Scalable – Available as a Python SDK, CLI, and Web UI with multiple deployment options to fit your workflow.
 
-- Schema-driven extraction: Ensures high specificity, contextual relevance, and automated validation of the extracted data.
-- Advanced PDF preprocessing: AI optical character recoginition (OCR) algorithms to detect and correct table structures within documents.
-- User-friendly interface: Facilitates easy verification and correction of extracted data.
-- Data flywheel: Continuous data collection of table extractions and LLM outputs to monitor performance and build datasets.
+🌟 Key Features
 
+- ✅ Schema-Driven Extraction – Define structured schemas for context-aware, high-accuracy data extraction across scientific domains.
+- ✅ Advanced PDF Processing – AI-powered OCR detects complex table structures in both digital and scanned PDFs.
+- ✅ Built-in Validation – Automatically verify extracted data for accuracy in both the annotation UI and the data pipeline outputs.
+- ✅ User-Friendly Interface – Easily review, edit, and validate data with team-based consensus workflows.
+- ✅ Data Flywheel – Collect human annotations to monitor performance and build fine-tuning datasets for continuous improvement.
+
+Start extracting smarter with Extralit! 🚀
 
 ## Getting started
 
@@ -36,22 +39,26 @@ Install the client package
 ```bash
 pip install extralit
 ```
-After installing this client package, you can manage your extraction workspace through the CLI.
+
+If you already have a server deployed and login credentials, obtain your API key in the User Settings. You can manage your extraction workspace through the CLI with:
 
 ```base
-extralit login --api-url http://<path_to_the_webserver>
-# You will be prompted an API key to login to your account, which can be obtained from User Settings in the web interface
+extralit login --api-url http://<extralit_server_instance>
+# You will be prompted an API key to login to your account
 ```
+
+### Server setup
+
+See [https://docs.extralit.ai/latest/getting_started/quickstart/](https://docs.extralit.ai/latest/getting_started/quickstart/)
 
 ## 🛠️ Project Architecture
 
-Argilla is built on 5 core components:
+Extralit is built on top of Argilla, extending its capabilities with enhanced data extraction, validation, and human-in-the-loop workflows, with these 5 core components:
 
-- **Python SDK**: A Python SDK which is installable with `pip install extralit`. To interact with the Argilla Server and the Argilla UI. It provides an API to manage the data, configuration and annotation workflows.
-- **FastAPI Server**: The core of Argilla is a *Python FastAPI* server that manages the data, by pre-processing it and storing it in the vector database. Also, it stores application information in the relational database. It provides a REST API to interact with the data from the Python SDK and the Argilla UI. It also provides a web interface to visualize the data.
-- **Relational Database**: A relational database to store the metadata of the records and the annotations. *SQLite* is used as the default built-in option and is deployed separately with the Argilla Server but a separate *PostgreSQL* can be used too.
+- **Python SDK**: A Python SDK which is installable with `pip install extralit` to interact with the web server and provides an API to manage the data extraction workflows.
+- **FastAPI Server**: The backbone of Argilla, handling users, storage, and API interactions. It manages application data using a relational database (PostgreSQL by default).
+- **Web UI**: A web application to visualize and annotate your data, users and teams. It is built with *Vue.js* and *Nuxt.js* and is directly deployed alongside the FastAPI Server within our Docker image.
 - **Vector Database**: A vector database to store the records data and perform scalable vector similarity searches and basic document searches. We currently support *ElasticSearch* and *AWS OpenSearch* and they can be deployed as separate Docker images.
-- **Vue.js UI**: A web application to visualize and annotate your data, users and teams. It is built with *Vue.js* and is directly deployed alongside the Argilla Server within our Argilla Docker image.
 
 ## Repo Activity
 
