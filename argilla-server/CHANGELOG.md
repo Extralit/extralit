@@ -18,6 +18,10 @@ These are the section headers that we use:
 
 ## [2.8.0](https://github.com/argilla-io/argilla/compare/v2.7.1...v2.8.0)
 
+## Added
+
+- Add configuration switch to use Redis cluster vs Redis standalone via ARGILLA_REDIS_USE_CLUSTER ([#5799](https://github.com/argilla-io/argilla/pull/5799))
+
 ### Fixed
 
 - Fixed error when computing user progress with PostgreSQL database. ([#5795](https://github.com/argilla-io/argilla/pull/5795))
