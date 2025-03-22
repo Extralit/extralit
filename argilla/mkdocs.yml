@@ -15,7 +15,7 @@ extra:
     provider: mike
   social:
     - icon: fontawesome/brands/slack
-      link: https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ
+      link: https://join.slack.com/t/extralit/shared_invite/zt-32blg3602-0m0XewPBXF7776BQ3m7ZlA
   analytics:
     provider: google
     property: G-SQHP22W3F6
