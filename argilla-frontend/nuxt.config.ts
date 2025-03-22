@@ -245,7 +245,7 @@ const config: NuxtConfig = {
   publicRuntimeConfig: {
     clientVersion: pkg.version,
     communityLink:
-      "https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ",
+      "https://join.slack.com/t/extralit/shared_invite/zt-32blg3602-0m0XewPBXF7776BQ3m7ZlA",
     documentationSite: "https://docs.argilla.io/",
     documentationPersistentStorage:
       "https://docs.argilla.io/latest/getting_started/how-to-configure-argilla-on-huggingface/#persistent-storage",
