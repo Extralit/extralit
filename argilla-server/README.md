@@ -1,5 +1,5 @@
 <h1 align="center">
-  <a href=""><img src="https://github.com/extralit/extralit/raw/main/assets/logo.svg" alt="Extralit" width="150"></a>
+  <a href=""><img src="https://github.com/extralit/extralit/raw/develop/argilla/docs/assets/logo.svg" alt="Extralit" width="150"></a>
   <br>
   Extralit Server
   <br>
