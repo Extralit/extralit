@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="This is a step-by-step guide to help you contribute to the Argilla project as a developer. We are excited to have you on board! 🚀">
+        <meta name="description" content="This is a step-by-step guide to help you contribute to the Extralit project as a developer. We are excited to have you on board! 🚀">
       
       
         <meta name="author" content="Extralit">
@@ -83,7 +83,7 @@
       
         <meta  property="og:title"  content="Developer documentation - Extralit Docs" >
       
-        <meta  property="og:description"  content="This is a step-by-step guide to help you contribute to the Argilla project as a developer. We are excited to have you on board! 🚀" >
+        <meta  property="og:description"  content="This is a step-by-step guide to help you contribute to the Extralit project as a developer. We are excited to have you on board! 🚀" >
       
         <meta  property="og:image"  content="https://docs.extralit.ai/latest/assets/images/social/community/developer.png" >
       
@@ -99,7 +99,7 @@
       
         <meta  name="twitter:title"  content="Developer documentation - Extralit Docs" >
       
-        <meta  name="twitter:description"  content="This is a step-by-step guide to help you contribute to the Argilla project as a developer. We are excited to have you on board! 🚀" >
+        <meta  name="twitter:description"  content="This is a step-by-step guide to help you contribute to the Extralit project as a developer. We are excited to have you on board! 🚀" >
       
         <meta  name="twitter:image"  content="https://docs.extralit.ai/latest/assets/images/social/community/developer.png" >
       
@@ -124,7 +124,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#the-argilla-repository" class="md-skip">
+        <a href="#developer-guide" class="md-skip">
           Skip to content
         </a>
       
@@ -2745,6 +2745,8 @@
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
+        
+      
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
           
@@ -2773,6 +2775,8 @@
   
   
   
+    
+  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -2781,9 +2785,9 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#the-argilla-repository" class="md-nav__link">
+  <a href="#the-extralit-repository" class="md-nav__link">
     <span class="md-ellipsis">
-      The Argilla repository
+      The Extralit repository
     </span>
   </a>
   
@@ -3063,6 +3067,8 @@
   
   
   
+    
+  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -3071,9 +3077,9 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#the-argilla-repository" class="md-nav__link">
+  <a href="#the-extralit-repository" class="md-nav__link">
     <span class="md-ellipsis">
-      The Argilla repository
+      The Extralit repository
     </span>
   </a>
   
@@ -3210,59 +3216,59 @@
   
 
 
-  <h1>Developer documentation</h1>
-
-<p>As an Argilla developer, you are already part of the community, and your contribution is to our development. This guide will help you set up your development environment and start contributing.</p>
+<h1 id="developer-guide">Developer Guide<a class="headerlink" href="#developer-guide" title="Permanent link">&para;</a></h1>
+<p>As an Extralit developer, you are already part of the community, and your contribution is to our development. This guide will help you set up your development environment and start contributing.</p>
 <div class="admonition note">
-<p class="admonition-title">Argilla core components</p>
+<p class="admonition-title">Extralit core components</p>
 <ul>
 <li>
-<p><strong>Documentation</strong>: Argilla's documentation serves as an invaluable resource, providing a comprehensive and in-depth guide for users seeking to explore, understand, and effectively harness the core components of the Argilla ecosystem.</p>
+<p><strong>Documentation</strong>: Extralit's documentation serves as an invaluable resource, providing a comprehensive and in-depth guide for users seeking to explore, understand, and effectively harness the core components of the Extralit ecosystem.</p>
 </li>
 <li>
-<p><strong>Python <abbr title="Software Development Kit.">SDK</abbr></strong>: A Python <abbr title="Software Development Kit.">SDK</abbr> installable with <code>pip install argilla</code> to interact with the Argilla Server and the Argilla UI. It provides an <abbr title="Application Programming Interface.">API</abbr> to manage the data, configuration, and annotation workflows.</p>
+<p><strong>Python <abbr title="Software Development Kit.">SDK</abbr></strong>: A Python <abbr title="Software Development Kit.">SDK</abbr> installable with <code>pip install extralit</code> to interact with the Extralit Server and the Extralit UI. It provides an <abbr title="Application Programming Interface.">API</abbr> to manage the data, configuration, and extraction workflows.</p>
 </li>
 <li>
-<p><strong>FastAPI Server</strong>: The core of Argilla is a Python <code>FastAPI server</code> that manages the data by pre-processing it and storing it in the vector database. Also, it stores application information in the relational database. It provides an REST <abbr title="Application Programming Interface.">API</abbr> that interacts with the data from the Python <abbr title="Software Development Kit.">SDK</abbr> and the Argilla UI. It also provides a web interface to visualize the data.</p>
+<p><strong>FastAPI Server</strong>: The core of Extralit is a Python <code>FastAPI server</code> that manages the data by pre-processing it and storing it in the vector database. Also, it stores application information in the relational database. It provides an REST <abbr title="Application Programming Interface.">API</abbr> that interacts with the data from the Python <abbr title="Software Development Kit.">SDK</abbr> and the Extralit UI. It also provides a web interface to visualize the data.</p>
 </li>
 <li>
-<p><strong>Relational Database</strong>: A relational database to store the metadata of the records and the annotations. <code>SQLite</code> is used as the default built-in option and is deployed separately with the Argilla Server, but a separate <code>PostgreSQL</code> can be used.</p>
+<p><strong>Relational Database</strong>: A relational database to store the metadata of the records and the annotations. <code>PostgreSQL</code> is used as the primary database option and is deployed separately with the Extralit Server.</p>
 </li>
 <li>
-<p><strong>Vector Database</strong>: A vector database to store the records data and perform scalable vector similarity searches and basic document searches. We currently support <code>ElasticSearch</code> and <code>OpenSearch</code>, which can be deployed as separate Docker images.</p>
+<p><strong>Vector Database</strong>: A vector database to store the records data and perform scalable vector similarity searches and basic document searches. We currently support <code>ElasticSearch</code> and <code>Weaviate</code>, which can be deployed as separate Docker images.</p>
 </li>
 <li>
-<p><strong>Vue.js UI</strong>: A web application to visualize and annotate your data, users, and teams. It is built with <code>Vue.js</code> and is directly deployed alongside the Argilla Server within our Argilla Docker image.</p>
+<p><strong>Vue.js UI</strong>: A web application to visualize, extract and validate your data, users, and teams. It is built with <code>Vue.js</code> and is directly deployed alongside the Extralit Server within our Extralit Docker image.</p>
 </li>
 </ul>
 </div>
-<h2 id="the-argilla-repository">The Argilla repository<a class="headerlink" href="#the-argilla-repository" title="Permanent link">&para;</a></h2>
-<p>The Argilla repository has a monorepo structure, which means that all the components are located in the same repository: <a href="https://github.com/argilla-io/argilla"><code>argilla-io/argilla</code></a>. This repo is divided into the following folders:</p>
+<h2 id="the-extralit-repository">The Extralit repository<a class="headerlink" href="#the-extralit-repository" title="Permanent link">&para;</a></h2>
+<p>The Extralit repository has a monorepo structure, which means that all the components are located in the same repository: <a href="https://github.com/extralit/extralit"><code>extralit/extralit</code></a>. This repo is divided into the following folders:</p>
 <ul>
-<li><a href="https://github.com/argilla-io/argilla/tree/develop/argilla"><code>argilla</code></a>: The python <abbr title="Software Development Kit.">SDK</abbr> project</li>
-<li><a href="https://github.com/argilla-io/argilla/tree/develop/argilla-server"><code>argilla-server</code></a>: The FastAPI server project</li>
-<li><a href="https://github.com/argilla-io/argilla/tree/develop/argilla-frontend"><code>argilla-frontend</code></a>: The Vue.js UI project</li>
-<li><a href="https://github.com/argilla-io/argilla/tree/develop/argilla/docs"><code>argilla/docs</code></a>: The documentation project</li>
-<li><a href="https://github.com/argilla-io/argilla/tree/develop/examples"><code>examples</code></a>: Example resources for deployments, scripts and notebooks</li>
+<li><a href="https://github.com/extralit/extralit/tree/develop/argilla/src/extralit"><code>extralit</code></a>: The FastAPI server project for extraction</li>
+<li><a href="https://github.com/extralit/extralit/tree/develop/argilla/docs"><code>argilla/docs</code></a>: The documentation project</li>
+<li><a href="https://github.com/extralit/extralit/tree/develop/argilla"><code>extralit</code></a>: The argilla <abbr title="Software Development Kit.">SDK</abbr> project</li>
+<li><a href="https://github.com/extralit/extralit/tree/develop/argilla-server"><code>argilla-server</code></a>: The FastAPI server project for annotation</li>
+<li><a href="https://github.com/extralit/extralit/tree/develop/argilla-frontend"><code>argilla-frontend</code></a>: The Vue.js UI project</li>
+<li><a href="https://github.com/extralit/extralit/tree/develop/examples"><code>examples</code></a>: Example resources for deployments, scripts and notebooks</li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">How to contribute?</p>
-<p>Before starting to develop, we recommend reading our <a href="../contributor/">contribution guide</a> to understand the contribution process and the guidelines to follow. Once you have <a href="../contributor/#fork-the-argilla-repository">cloned the Argilla repository</a> and <a href="../contributor/#create-a-new-branch">checked out to the correct branch</a>, you can start setting up your development environment.</p>
+<p>Before starting to develop, we recommend reading our <a href="../contributor/">contribution guide</a> to understand the contribution process and the guidelines to follow. Once you have <a href="../contributor/#fork-the-extralit-repository">cloned the Extralit repository</a> and <a href="../contributor/#create-a-new-branch">checked out to the correct branch</a>, you can start setting up your development environment.</p>
 </div>
 <h2 id="set-up-the-python-environment">Set up the Python environment<a class="headerlink" href="#set-up-the-python-environment" title="Permanent link">&para;</a></h2>
-<p>To work on the Argilla Python <abbr title="Software Development Kit.">SDK</abbr>, you must install the Argilla package on your system.</p>
+<p>To work on the Extralit Python <abbr title="Software Development Kit.">SDK</abbr>, you must install the Extralit package on your system.</p>
 <div class="admonition tip">
 <p class="admonition-title">Create a virtual environment</p>
 <p>We recommend creating a dedicated virtual environment for <abbr title="Software Development Kit.">SDK</abbr> development to prevent conflicts. For this, you can use the manager of your choice, such as <code>venv</code>, <code>conda</code>, <code>pyenv</code>, or <code>uv</code>.</p>
 </div>
-<p>From the root of the cloned Argilla repository, you should move to the <code>argilla</code> folder in your terminal.</p>
-<div class="language-sh highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nb">cd</span><span class="w"> </span>argilla
+<p>From the root of the cloned Extralit repository, you should move to the <code>extralit</code> folder in your terminal.</p>
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nb">cd</span><span class="w"> </span>extralit
 </span></code></pre></div>
 <p>Next, activate your virtual environment and make the required installations:</p>
 <div class="language-sh highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Install the `pdm` package manager</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>pip<span class="w"> </span>install<span class="w"> </span>pdm
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Install argilla in editable mode and the development dependencies</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Install extralit in editable mode and the development dependencies</span>
 </span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>pdm<span class="w"> </span>install<span class="w"> </span>--dev
 </span></code></pre></div>
 <h3 id="linting-and-formatting">Linting and formatting<a class="headerlink" href="#linting-and-formatting" title="Permanent link">&para;</a></h3>
@@ -3289,38 +3295,40 @@
 </span></code></pre></div>
 </details>
 <h2 id="set-up-the-databases">Set up the databases<a class="headerlink" href="#set-up-the-databases" title="Permanent link">&para;</a></h2>
-<p>To run your development environment, you need to set up Argilla's databases.</p>
+<p>To run your development environment, you need to set up Extralit's databases.</p>
 <h4 id="vector-database">Vector database<a class="headerlink" href="#vector-database" title="Permanent link">&para;</a></h4>
-<p>Argilla supports ElasticSearch as its primary search engine for the vector database by default. For more information about setting OpenSearch, check the <a href="../../reference/argilla-server/configuration/">Server configuration</a>.</p>
+<p>Extralit supports ElasticSearch as its primary search engine for the vector database by default. For more information about setting up Weaviate, check the <a href="../reference/server/configuration.md">Server configuration</a>.</p>
 <p>You can run ElasticSearch locally using Docker:</p>
-<div class="language-sh highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Argilla supports ElasticSearch versions &gt;=8.5</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>--name<span class="w"> </span>elasticsearch-for-argilla<span class="w"> </span>-p<span class="w"> </span><span class="m">9200</span>:9200<span class="w"> </span>-p<span class="w"> </span><span class="m">9300</span>:9300<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;ES_JAVA_OPTS=-Xms512m -Xmx512m&quot;</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;discovery.type=single-node&quot;</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;xpack.security.enabled=false&quot;</span><span class="w"> </span>docker.elastic.co/elasticsearch/elasticsearch:8.5.3
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Extralit supports ElasticSearch versions &gt;=8.5</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>--name<span class="w"> </span>elasticsearch-for-extralit<span class="w"> </span>-p<span class="w"> </span><span class="m">9200</span>:9200<span class="w"> </span>-p<span class="w"> </span><span class="m">9300</span>:9300<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;ES_JAVA_OPTS=-Xms512m -Xmx512m&quot;</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;discovery.type=single-node&quot;</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;xpack.security.enabled=false&quot;</span><span class="w"> </span>docker.elastic.co/elasticsearch/elasticsearch:8.5.3
 </span></code></pre></div>
 <div class="admonition tip">
 <p class="admonition-title">Install Docker</p>
 <p>You can find the Docker installation guides for <a href="https://docs.docker.com/desktop/install/windows-install/">Windows</a>, <a href="https://docs.docker.com/desktop/install/mac-install/">macOS</a> and <a href="https://docs.docker.com/desktop/install/linux-install/">Linux</a> on Docker website.</p>
 </div>
 <h4 id="relational-database">Relational database<a class="headerlink" href="#relational-database" title="Permanent link">&para;</a></h4>
-<p>Argilla will use SQLite as the default built-in option to store information about users, workspaces, etc., for the
-relational database. No additional configuration is required to start using SQLite.</p>
-<p>By default, the database file will be created at <code>~/.argilla/argilla.db</code>; this can be configured by setting different
-values for <code>ARGILLA_DATABASE_URL</code> and <code>ARGILLA_HOME_PATH</code> environment variables.</p>
-<div class="admonition note">
-<p class="admonition-title">Manage the database</p>
-<p>For more information about the database migration and user management, refer to the <a href="https://github.com/argilla-io/argilla/blob/develop/argilla-server/README.md">Argilla server README</a>.</p>
-</div>
+<p>Extralit uses PostgreSQL to store information about users, workspaces, extraction schemas, etc. You can run PostgreSQL locally using Docker:</p>
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>--name<span class="w"> </span>postgres-for-extralit<span class="w"> </span>-p<span class="w"> </span><span class="m">5432</span>:5432<span class="w"> </span>-e<span class="w"> </span><span class="nv">POSTGRES_PASSWORD</span><span class="o">=</span>postgres<span class="w"> </span>-e<span class="w"> </span><span class="nv">POSTGRES_USER</span><span class="o">=</span>postgres<span class="w"> </span>-e<span class="w"> </span><span class="nv">POSTGRES_DB</span><span class="o">=</span>postgres<span class="w"> </span>postgres:14
+</span></code></pre></div>
 <h2 id="set-up-the-server">Set up the server<a class="headerlink" href="#set-up-the-server" title="Permanent link">&para;</a></h2>
-<p>Once you have set up the databases, you can start the Argilla server. To run the server, you can check the <a href="https://github.com/argilla-io/argilla/blob/develop/argilla-server/README.md">Argilla server README</a> file.</p>
+<p>Once you have set up the databases, you can start the Extralit server. For local development, we recommend using Tilt to orchestrate the entire development environment.</p>
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># Install Tilt</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>curl<span class="w"> </span>-fsSL<span class="w"> </span>https://raw.githubusercontent.com/tilt-dev/tilt/master/scripts/install.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="c1"># Start the development environment</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>tilt<span class="w"> </span>up
+</span></code></pre></div>
+<p>For more details, check the <a href="https://github.com/extralit/extralit/blob/develop/extralit-server/README.md">Extralit server README</a> file.</p>
 <h2 id="set-up-the-frontend">Set up the frontend<a class="headerlink" href="#set-up-the-frontend" title="Permanent link">&para;</a></h2>
-<p>Optionally, if you need to run the Argilla frontend, you can follow the instructions in the <a href="https://github.com/argilla-io/argilla/blob/develop/argilla-frontend/README.md">Argilla frontend README</a>.</p>
+<p>Optionally, if you need to run the Extralit frontend separately, you can follow the instructions in the <a href="https://github.com/extralit/extralit/blob/develop/argilla-frontend/README.md">Argilla frontend README</a>.</p>
 <h2 id="set-up-the-documentation">Set up the documentation<a class="headerlink" href="#set-up-the-documentation" title="Permanent link">&para;</a></h2>
-<p>Documentation is essential to provide users with a comprehensive guide about Argilla.</p>
+<p>Documentation is essential to provide users with a comprehensive guide about Extralit.</p>
 <div class="admonition note">
 <p class="admonition-title">From <code>main</code> or <code>develop</code>?</p>
 <p>If you are updating, improving, or fixing the current documentation without a code change, work on the <code>main</code> branch. For new features or bug fixes that require documentation, use the <code>develop</code> branch.</p>
 </div>
 <p>To contribute to the documentation and generate it locally, ensure you installed the development dependencies as shown in the <a href="#set-up-the-python-environment">"Set up the Python environment"</a> section, and run the following command to create the development server with <code>mkdocs</code>:</p>
-<div class="language-sh highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>mkdocs<span class="w"> </span>serve
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>mkdocs<span class="w"> </span>serve
 </span></code></pre></div>
 <h3 id="documentation-guidelines">Documentation guidelines<a class="headerlink" href="#documentation-guidelines" title="Permanent link">&para;</a></h3>
 <p>As mentioned, we use <a href="https://www.mkdocs.org/"><code>mkdocs</code></a> to build the documentation. You can write the documentation in <a href="https://www.markdownguide.org/getting-started/"><code>markdown</code></a> format, and it will automatically be converted to HTML. In addition, you can include elements such as tables, tabs, images, and others, as shown in this <a href="https://squidfunk.github.io/mkdocs-material/reference/">guide</a>. We recommend following these guidelines:</p>
@@ -3332,7 +3340,7 @@ values for <code>ARGILLA_DATABASE_URL</code> and <code>ARGILLA_HOME_PATH</code> 
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Contribute with a tutorial</p>
-<p>You can also contribute a tutorial (<code>.ipynb</code>) to the "Community" section. We recommend aligning the tutorial with the structure of the existing tutorials. For an example, check <a href="../../tutorials/text_classification/">this tutorial</a>.</p>
+<p>You can also contribute a tutorial (<code>.ipynb</code>) to the "Community" section. We recommend aligning the tutorial with the structure of the existing tutorials. For an example, check <a href="../tutorials/getting_started.ipynb">this tutorial</a>.</p>
 </div>
 
 
