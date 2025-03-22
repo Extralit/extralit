@@ -41,9 +41,9 @@ app = FastAPI()
 #     allow_headers=["*"],
 # )
 
-weaviate_client: WeaviateClient
-minio_client: Minio
-argilla_client: rg.Argilla
+weaviate_client: Optional[WeaviateClient] = None
+minio_client: Optional[Minio] = None
+argilla_client: Optional[rg.Argilla] = None
 
 @app.on_event("startup")
 async def startup():
