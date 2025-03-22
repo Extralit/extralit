@@ -246,9 +246,9 @@ const config: NuxtConfig = {
     clientVersion: pkg.version,
     communityLink:
       "https://join.slack.com/t/extralit/shared_invite/zt-32blg3602-0m0XewPBXF7776BQ3m7ZlA",
-    documentationSite: "https://docs.argilla.io/",
+    documentationSite: "https://docs.extralit.ai/",
     documentationPersistentStorage:
-      "https://docs.argilla.io/latest/getting_started/how-to-configure-argilla-on-huggingface/#persistent-storage",
+      "https://docs.extralit.ai/latest/getting_started/how-to-configure-argilla-on-huggingface/#persistent-storage",
   },
 };
 export default config;

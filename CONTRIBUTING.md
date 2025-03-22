@@ -29,5 +29,5 @@ alembic upgrade head
 
 ## Want to work on your own?
 
-For more seasoned contributors, we recommend taking a look at the [contributor section](https://docs.argilla.io/latest/community/contributor/) in our docs.
+For more seasoned contributors, we recommend taking a look at the [contributor section](https://docs.extralit.ai/latest/community/contributor/) in our docs.
 

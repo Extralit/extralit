@@ -1,155 +1,126 @@
-
 <h1 align="center">
-  <a href=""><img src="https://github.com/dvsrepo/imgs/raw/main/rg.svg" alt="Argilla" width="150"></a>
+  <a href=""><img src="https://github.com/extralit/extralit/raw/main/assets/logo.svg" alt="Extralit" width="150"></a>
   <br>
-  Argilla
+  Extralit
   <br>
 </h1>
-<h3 align="center">Work on data together, make your model outputs better!</h2>
+<h3 align="center">Extract structured data from scientific literature with human validation</h2>
 
 <p align="center">
-<a  href="https://pypi.org/project/argilla/">
-<img alt="CI" src="https://img.shields.io/pypi/v/argilla.svg?style=flat-round&logo=pypi&logoColor=white">
+<a href="https://pypi.org/project/extralit/">
+<img alt="CI" src="https://img.shields.io/pypi/v/extralit.svg?style=flat-round&logo=pypi&logoColor=white">
 </a>
-<img alt="Codecov" src="https://codecov.io/gh/argilla-io/argilla/branch/main/graph/badge.svg?token=VDVR29VOMG"/>
-<a href="https://pepy.tech/project/argilla">
-<img alt="CI" src="https://static.pepy.tech/personalized-badge/argilla?period=month&units=international_system&left_color=grey&right_color=blue&left_text=pypi%20downloads/month">
-</a>
-<a href="https://huggingface.co/new-space?template=argilla/argilla-template-space">
-<img src="https://huggingface.co/datasets/huggingface/badges/raw/main/deploy-to-spaces-sm.svg"/>
+<img alt="Codecov" src="https://codecov.io/gh/extralit/extralit/branch/main/graph/badge.svg"/>
+<a href="https://pepy.tech/project/extralit">
+<img alt="Downloads" src="https://static.pepy.tech/personalized-badge/extralit?period=month&units=international_system&left_color=grey&right_color=blue&left_text=pypi%20downloads/month">
 </a>
 </p>
 
 <p align="center">
-<a href="https://twitter.com/argilla_io">
+<a href="https://twitter.com/extralit_ai">
 <img src="https://img.shields.io/badge/twitter-black?logo=x"/>
 </a>
-<a href="https://www.linkedin.com/company/argilla-io">
+<a href="https://www.linkedin.com/company/extralit-ai">
 <img src="https://img.shields.io/badge/linkedin-blue?logo=linkedin"/>
 </a>
-<a href="http://hf.co/join/discord">
-<img src="https://img.shields.io/badge/Discord-7289DA?&logo=discord&logoColor=white"/>
+<a href="https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ">
+<img src="https://img.shields.io/badge/Slack-4A154B?&logo=slack&logoColor=white"/>
 </a>
 </p>
 
-Argilla is a collaboration tool for AI engineers and domain experts who need to build high-quality datasets for their projects.
-If you just want to get started, we recommend our [UI demo](https://demo.argilla.io/sign-in?auth=ZGVtbzoxMjM0NTY3OA%3D%3D) or our [free Hugging Face Spaces deployment integration](https://huggingface.co/new-space?template=argilla/argilla-template-space). Curious, and want to know more? Read our [documentation](https://docs.argilla.io/latest/).
+Extralit is an open-source platform that transforms how researchers extract structured data from scientific literature. Want to get started? Check out our [documentation](https://docs.extralit.ai/latest/).
 
-## Why use Argilla?
+## Why use Extralit?
 
-Whether you are working on monitoring and improving complex **generative tasks** involving LLM pipelines with RAG, or you are working on a **predictive task** for things like AB-testing of span- and text-classification models. Our versatile platform helps you ensure **your data work pays off**.
+### Accelerate Scientific Data Collection
 
-### Improve your AI output quality through data quality
+Manual data extraction from research papers is slow and error-prone, often taking 6-12 months for systematic reviews. Extralit combines AI-powered extraction with human validation to reduce this to weeks while maintaining research-grade accuracy.
 
-Compute is expensive and output quality is important. We help you focus on data, which tackles the root cause of both of these problems at once. Argilla helps you to **achieve and keep high-quality standards** for your data. This means you can improve the quality of your AI output.
+### Take Control of Your Research Data
 
-### Take control of your data and models
+Most scientific data extraction tools are inflexible black boxes. Extralit is different - it's open source and puts you in control. Define custom extraction schemas, validate results, and integrate with your existing research workflows.
 
-Most AI tools are black boxes. Argilla is different. We believe that you should be the owner of both your data and your models. That's why we provide you with all the tools your team needs to **manage your data and models in a way that suits you best**.
+### Scale Your Literature Reviews
 
-### Improve efficiency by quickly iterating on the right data and models
-
-Gathering data is a time-consuming process. Argilla helps by providing a platform that allows you to **interact with your data in a more engaging way**. This means you can quickly and easily label your data with filters, AI feedback suggestions and semantic search. So you can focus on training your models and monitoring their performance.
+Whether you're conducting a systematic review, meta-analysis, or building a scientific knowledge base, Extralit helps you efficiently process hundreds of papers. Our platform handles complex tables, figures, and relationships while preserving scientific rigor.
 
 ## 🏘️ Community
 
-We are an open-source community-driven project and we love to hear from you. Here are some ways to get involved:
+We're an open-source project built for researchers, by researchers. Here's how to get involved:
 
-- [Community Meetup](https://lu.ma/embed-checkout/evt-IQtRiSuXZCIW6FB): listen in or present during one of our bi-weekly events.
+- [Slack Community](https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ): Connect with other researchers and developers
+- [Documentation](https://docs.extralit.ai): Learn how to use and contribute to Extralit
+- [Roadmap](https://github.com/orgs/extralit/projects/1/views/1): See what we're building and share your ideas
 
-- [Discord](http://hf.co/join/discord): get direct support from the community in #argilla-distilabel-general and #argilla-distilabel-help.
+## Real-World Impact
 
-- [Roadmap](https://github.com/orgs/argilla-io/projects/10/views/1): plans change but we love to discuss those with our community so feel encouraged to participate.
+Extralit is already accelerating research at leading institutions:
 
-## What do people build with Argilla?
+- **Gates Foundation**: Reduced systematic review time for malaria intervention studies from 6 months to 6 weeks
+- **Life Science Research**: Streamlined extraction of clinical trial endpoints, genetic markers, and intervention protocols
+- **Meta-Analysis**: Enabled rapid synthesis of evidence across hundreds of papers while maintaining rigorous validation
 
-### Open-source datasets and models
-
-The community uses Argilla to create amazing open-source [datasets](https://huggingface.co/datasets?library=library:argilla&sort=trending) and [models](https://huggingface.co/models?other=distilabel).
-
-- [Cleaned UltraFeedback dataset](https://huggingface.co/datasets/argilla/ultrafeedback-binarized-preferences-cleaned) used to fine-tune the [Notus](https://huggingface.co/argilla/notus-7b-v1) and [Notux](https://huggingface.co/argilla/notux-8x7b-v1) models. The original UltraFeedback dataset was curated using Argilla UI filters to find and report a bug in the original data generation code. Based on this data curation process, Argilla built this new version of the UltraFeedback dataset and fine-tuned Notus, outperforming Zephyr on several benchmarks.
-- [distilabeled Intel Orca DPO dataset](https://huggingface.co/datasets/argilla/distilabel-intel-orca-dpo-pairs) used to fine-tune the [improved OpenHermes model](https://huggingface.co/argilla/distilabeled-OpenHermes-2.5-Mistral-7B). This dataset was built by combining human curation in Argilla with AI feedback from distilabel, leading to an improved version of the Intel Orca dataset and outperforming models fine-tuned on the original dataset.
-
-### Examples Use cases
-
-AI teams from companies like [the Red Cross](https://510.global/), [Loris.ai](https://loris.ai/) and [Prolific](https://www.prolific.com/) use Argilla to improve the quality and efficiency of AI projects. They shared their experiences in our [AI community meetup](https://lu.ma/embed-checkout/evt-IQtRiSuXZCIW6FB).
-
-- AI for good: [the Red Cross presentation](https://youtu.be/ZsCqrAhzkFU?feature=shared) showcases how the Red Cross domain experts and AI team collaborated by classifying and redirecting requests from refugees of the Ukrainian crisis to streamline the support processes of the Red Cross.
-- Customer support: during [the Loris meetup](https://youtu.be/jWrtgf2w4VU?feature=shared) they showed how their AI team uses unsupervised and few-shot contrastive learning to help them quickly validate and gain labeled samples for a huge amount of multi-label classifiers.
-- Research studies: [the showcase from Prolific](https://youtu.be/ePDlhIxnuAs?feature=shared) announced their integration with our platform. They use it to actively distribute data collection projects among their annotating workforce. This allows Prolific to quickly and efficiently collect high-quality data for research studies.
-
-## 👨‍💻 Getting started
+## 👨‍💻 Getting Started
 
 ### Installation
 
-First things first! You can install the SDK with pip as follows:
+Install Extralit using pip:
 
 ```console
-pip install argilla
+pip install extralit
 ```
 
-After that, you will need to deploy Argilla Server. The easiest way to do this is through our [free Hugging Face Spaces deployment integration](https://huggingface.co/new-space?template=argilla/argilla-template-space).
-
-To use the client, you need to import the `Argilla` class and instantiate it with the API URL and API key.
+Initialize the client:
 
 ```python
-import argilla as rg
+import extralit as ex
 
-client = rg.Argilla(api_url="https://[your-owner-name]-[your_space_name].hf.space", api_key="owner.apikey")
+client = ex.Extralit(
+    api_url="https://your-deployment-url", 
+    api_key="your-api-key"
+)
 ```
 
-### Create your first dataset
+### Create an extraction schema
 
-We can now create a dataset with a simple text classification task. First, you need to define the dataset settings.
+Define what data you want to extract:
 
 ```python
-settings = rg.Settings(
-    guidelines="Classify the reviews as positive or negative.",
+schema = ex.Schema(
+    name="clinical_trial",
     fields=[
-        rg.TextField(
-            name="review",
-            title="Text from the review",
-            use_markdown=False,
-        ),
-    ],
-    questions=[
-        rg.LabelQuestion(
-            name="my_label",
-            title="In which category does this article fit?",
-            labels=["positive", "negative"],
-        )
-    ],
+        ex.TextField(name="intervention", required=True),
+        ex.NumericField(name="sample_size", required=True),
+        ex.TextField(name="outcome_measure"),
+        ex.TableField(name="results_table")
+    ]
 )
-dataset = rg.Dataset(
-    name=f"my_first_dataset",
-    settings=settings,
-    client=client,
+
+project = client.create_project(
+    name="trial_extraction",
+    schema=schema
 )
-dataset.create()
 ```
 
-Next, we can add records to the dataset.
-
-```bash
-pip install datasets
-```
+### Add documents and start extraction
 
 ```python
-from datasets import load_dataset
+# Add PDFs to extract from
+project.add_documents("path/to/papers/*.pdf")
 
-data = load_dataset("imdb", split="train[:100]").to_list()
-dataset.records.log(records=data, mapping={"text": "review"})
+# Start extraction
+extractions = project.extract()
+
+# Review and validate results
+validated_data = project.validate(extractions)
 ```
 
-🎉 You have successfully created your first dataset with Argilla. You can now access it in the Argilla UI and start annotating the records.
-Need more info, check out [our docs](https://docs.argilla.io/latest/).
+Need more help? Check out our [detailed tutorials](https://docs.extralit.ai/latest/tutorials).
 
 ## 🥇 Contributors
 
-To help our community with the creation of contributions, we have created our [community](https://docs.argilla.io/latest/community/) docs. Additionally, you can always [schedule a meeting](https://calendly.com/david-berenstein-huggingface/30min) with our Developer Advocacy team so they can get you up to speed.
+Want to contribute? Great! Check out our [contribution guide](https://docs.extralit.ai/latest/community/contributor) or join our [Slack community](https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ).
 
-<a  href="https://github.com/argilla-io/argilla/graphs/contributors">
-
-<img  src="https://contrib.rocks/image?repo=argilla-io/argilla" />
-
+<a href="https://github.com/extralit/extralit/graphs/contributors">
+<img src="https://contrib.rocks/image?repo=extralit/extralit" />
 </a>

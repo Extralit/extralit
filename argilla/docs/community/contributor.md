@@ -1,64 +1,57 @@
 ---
-description: This is a step-by-step guide to help you contribute to the Argilla project. We are excited to have you on board! 🚀
+description: This is a step-by-step guide to help you contribute to the Extralit project. We are excited to have you on board! 🚀
 hide:
   - footer
 ---
 
-Thank you for investing your time in contributing to the project! Any contribution you make will be reflected in the most recent version of Argilla 🤩.
+# Contributing to Extralit
+
+Thank you for investing your time in contributing to the project! Any contribution you make will be reflected in the most recent version of Extralit 🤩.
 
 ??? Question "New to contributing in general?"
-    If you're a new contributor, read the [README](https://github.com/argilla-io/argilla/blob/develop/README.md) to get an overview of the project. In addition, here are some resources to help you get started with open-source contributions:
+    If you're a new contributor, read the [README](https://github.com/extralit/extralit/blob/main/README.md) to get an overview of the project. In addition, here are some resources to help you get started with open-source contributions:
 
-    * **Discord**: You are welcome to join the [Argilla Discord community](http://hf.co/join/discord), where you can keep in touch with other users, contributors and the Argilla team. In the following [section](#first-contact-in-discord), you can find more information on how to get started in Discord.
+    * **Slack**: You are welcome to join the [Extralit Slack community](https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ), where you can keep in touch with other users, contributors and the Extralit team. In the following [section](#first-contact-in-slack), you can find more information on how to get started in Slack.
     * **Git**: This is a very useful tool to keep track of the changes in your files. Using the command-line interface (CLI), you can make your contributions easily. For that, you need to have it [installed and updated](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) on your computer.
-    * **GitHub**: It is a platform and cloud-based service that uses git and allows developers to collaborate on projects. To contribute to Argilla, you'll need to create an account. Check the [Contributor Workflow with Git and Github](#contributor-workflow-with-git-and-github) for more info.
+    * **GitHub**: It is a platform and cloud-based service that uses git and allows developers to collaborate on projects. To contribute to Extralit, you'll need to create an account. Check the [Contributor Workflow with Git and Github](#contributor-workflow-with-git-and-github) for more info.
     * **Developer Documentation**: To collaborate, you'll need to set up an efficient environment. Check the [developer documentation](developer.md) to know how to do it.
 
-## First Contact in Discord
+## First Contact in Slack
 
-Discord is a handy tool for more casual conversations and to answer day-to-day questions. As part of Hugging Face, we have set up some Argilla channels on the server. Click [here](http://hf.co/join/discord) to join the Hugging Face Discord community effortlessly.
+Slack is our primary communication tool for contributors and users. Click [here](https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ) to join the Extralit Slack community.
 
-When part of the Hugging Face Discord, you can select "Channels & roles" and select "Argilla" along with any of the other groups that are interesting to you. "Argilla" will cover anything about Argilla and Distilabel. You can join the following channels:
+When you join our Slack workspace, you'll find several channels:
 
-* **#argilla-announcements**: 📢 Important announcements and updates.
-* **#argilla-distilabel-general**: 💬 General discussions about Argilla and Distilabel.
-* **#argilla-distilabel-help**: 🙋‍♀️ Need assistance? We're always here to help. Select the appropriate label (`argilla` or `distilabel`) for your issue and post it.
+* **#announcements**: 📢 Important updates about Extralit.
+* **#general**: 💬 General discussions about Extralit.
+* **#help**: 🙋‍♀️ Need assistance? We're always here to help.
+* **#development**: 👩‍💻 Technical discussions about the codebase.
 
 So now there is only one thing left to do: introduce yourself and talk to the community. You'll always be welcome! 🤗👋
 
 
 ## Contributor Workflow with Git and GitHub
 
-If you're working with Argilla and suddenly a new idea comes to your mind or you find an issue that can be improved, it's time to actively participate and contribute to the project!
+If you're working with Extralit and suddenly a new idea comes to your mind or you find an issue that can be improved, it's time to actively participate and contribute to the project!
 
 ### Report an issue
 
-If you spot a problem, [search if an issue already exists](https://github.com/argilla-io/argilla/issues?q=is%3Aissue). You can use the `Label` filter. If that is the case, participate in the conversation. If it does not exist, create an issue by clicking on `New Issue`.
-
-![issues-page](../assets/images/community/contributing/issues-page.PNG)
+If you spot a problem, [search if an issue already exists](https://github.com/extralit/extralit/issues?q=is%3Aissue). You can use the `Label` filter. If that is the case, participate in the conversation. If it does not exist, create an issue by clicking on `New Issue`.
 
 This will show various templates, choose the one that best suits your issue.
 
-![templates-issues](../assets/images/community/contributing/templates-issues.PNG)
-
 Below, you can see an example of the `Feature request` template. Once you choose one, you will need to fill in it following the guidelines. Try to be as clear as possible. In addition, you can assign yourself to the issue and add or choose the right labels. Finally, click on `Submit new issue`.
-
-![issue-feature-template](../assets/images/community/contributing/issue-feature-template.PNG)
 
 
 ### Work with a fork
 
-#### Fork the Argilla repository
+#### Fork the Extralit repository
 
 After having reported the issue, you can start working on it. For that, you will need to create a fork of the project. To do that, click on the `Fork` button.
 
-![fork-bar](../assets/images/community/contributing/fork-bar.PNG)
-
 Now, fill in the information. Remember to uncheck the `Copy develop branch only` if you are going to work in or from another branch (for instance, to fix documentation the `main` branch is used). Then, click on `Create fork`.
 
-![create-fork](../assets/images/community/contributing/create-fork.PNG)
-
-Now, you will be redirected to your fork. You can see that you are in your fork because the name of the repository will be your `username/argilla`, and it will indicate `forked from argilla-io/argilla`.
+Now, you will be redirected to your fork. You can see that you are in your fork because the name of the repository will be your `username/extralit`, and it will indicate `forked from extralit/extralit`.
 
 
 #### Clone your forked repository
@@ -66,11 +59,11 @@ Now, you will be redirected to your fork. You can see that you are in your fork 
 In order to make the required adjustments, clone the forked repository to your local machine. Choose the destination folder and run the following command:
 
 ```sh
-git clone https://github.com/[your-github-username]/argilla.git
-cd argilla
+git clone https://github.com/[your-github-username]/extralit.git
+cd extralit
 ```
 
-To keep your fork’s main/develop branch up to date with our repo, add it as an upstream remote branch.
+To keep view changes between Extralit and Argilla, add Argilla as remote upstreams:
 
 ```sh
 git remote add upstream https://github.com/argilla-io/argilla.git
@@ -85,13 +78,9 @@ For each issue you're addressing, it's advisable to create a new branch. GitHub 
 
 Navigate to your issue and on the right column, select `Create a branch`.
 
-![create-branch-issue](../assets/images/community/contributing/create-branch.PNG)
-
-After the new window pops up, the branch will be named after the issue, include a prefix such as feature/, bug/, or docs/ to facilitate quick recognition of the issue type. In the `Repository destination`, pick your fork ( [your-github-username]/argilla), and then select `Change branch source` to specify the source branch for creating the new one. Complete the process by clicking `Create branch`.
+After the new window pops up, the branch will be named after the issue, include a prefix such as feature/, bug/, or docs/ to facilitate quick recognition of the issue type. In the `Repository destination`, pick your fork ( [your-github-username]/extralit), and then select `Change branch source` to specify the source branch for creating the new one. Complete the process by clicking `Create branch`.
 
 > 🤔 Remember that the `main` branch is only used to work with the documentation. For any other changes, use the `develop` branch.
-
-![create-branch](../assets/images/community/contributing/create-branch-together.png)
 
 Now, locally change to the new branch you just created.
 
@@ -117,7 +106,7 @@ A sample addition would be:
 - Fixed the key errors for the `init` method ([#NUMBER_OF_PR](LINK_TO_PR)). Contributed by @github_handle.
 ```
 
-You can have a look at the [CHANGELOG.md](https://github.com/argilla-io/argilla/blob/develop/argilla/CHANGELOG.md)) file to see more cases and examples.
+You can have a look at the CHANGELOG.md file to see more cases and examples.
 
 ### Make changes and push them
 
@@ -156,17 +145,13 @@ When pushing, you will be asked to enter your GitHub login credentials. Once the
 
 Come back to GitHub, navigate to the original repository where you created your fork, and click on `Compare & pull request`.
 
-![compare-and-pr](../assets/images/community/contributing/compare-pull-request.PNG)
-
 First, click on `compare across forks` and select the right repositories and branches.
 
 > In the base repository, keep in mind to select either `main` or `develop` based on the modifications made. In the head repository, indicate your forked repository and the branch corresponding to the issue.
 
-![compare-across-forks](../assets/images/community/contributing/compare-across-forks.PNG)
-
 Then, fill in the pull request template. You should add a prefix to the PR name as we did with the branch above. If you are working on a new feature, you can name your PR as `feat: TITLE`. If your PR consists of a solution for a bug, you can name your PR as `bug: TITLE` And, if your work is for improving the documentation, you can name your PR as `docs: TITLE`.
 
-In addition, on the right side, you can select a reviewer (for instance, if you discussed the issue with a member of the Argilla team) and assign the pull request to yourself. It is highly advisable to add labels to PR as well. You can do this again by the labels section right to the screen. For instance, if you are addressing a bug, add the `bug` label or if the PR is related to the documentation, add the `documentation` label. This way, PRs can be easily filtered.
+In addition, on the right side, you can select a reviewer (for instance, if you discussed the issue with a member of the Extralit team) and assign the pull request to yourself. It is highly advisable to add labels to PR as well. You can do this again by the labels section right to the screen. For instance, if you are addressing a bug, add the `bug` label or if the PR is related to the documentation, add the `documentation` label. This way, PRs can be easily filtered.
 
 Finally, fill in the template carefully and follow the guidelines. Remember to link the original issue and enable the checkbox to allow maintainer edits so the branch can be updated for a merge. Then, click on `Create pull request`.
 
@@ -175,9 +160,7 @@ Finally, fill in the template carefully and follow the guidelines. Remember to l
 
 Once you submit your PR, a team member will review your proposal. We may ask questions, request additional information or ask for changes to be made before a PR can be merged, either using [suggested changes](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/incorporating-feedback-in-your-pull-request) or pull request comments.
 
-You can apply the changes directly through the UI (check the files changed and click on the right-corner three dots, see image below) or from your fork, and then commit them to your branch. The PR will be updated automatically and the suggestions will appear as outdated.
-
-![edit-file-from-UI](../assets/images/community/contributing/edit-file.PNG)
+You can apply the changes directly through the UI (check the files changed and click on the right-corner three dots) or from your fork, and then commit them to your branch. The PR will be updated automatically and the suggestions will appear as outdated.
 
 > If you run into any merge issues, check out this [git tutorial](https://github.com/skills/resolve-merge-conflicts) to help you resolve merge conflicts and other issues.
 
@@ -186,15 +169,15 @@ You can apply the changes directly through the UI (check the files changed and c
 
 Congratulations 🎉🎊 We thank you 🤩
 
-Once your PR is merged, your contributions will be publicly visible on the [Argilla GitHub](https://github.com/argilla-io/argilla#contributors).
+Once your PR is merged, your contributions will be publicly visible on the [Extralit GitHub](https://github.com/extralit/extralit#contributors).
 
-Additionally, we will include your changes in the next release based on our [development branch](https://github.com/argilla-io/argilla/tree/develop).
+Additionally, we will include your changes in the next release based on our [development branch](https://github.com/extralit/extralit/tree/develop).
 
 ## Additional resources
 
 Here are some helpful resources for your reference.
 
-* [Configuring Discord](https://support.discord.com/hc/en-us/categories/115000217151), a guide to learn how to get started with Discord.
+* [Configuring Slack](https://slack.com/help/categories/360000049063), a guide to learn how to get started with Slack.
 * [Pro Git](https://git-scm.com/book/en/v2), a book to learn Git.
 * [Git in VSCode](https://code.visualstudio.com/docs/sourcecontrol/overview), a guide to learn how to easily use Git in VSCode.
 * [GitHub Skills](https://skills.github.com/), an interactive course to learn GitHub.
