@@ -326,9 +326,9 @@ records = trainer.predict(["my-text"], as_argilla_records=True)
 
 To help our community with the creation of contributions, we have created our [developer](https://docs.v1.argilla.io/en/latest/community/developer_docs.html) and [contributor](https://docs.v1.argilla.io/en/latest/community/contributing.html) docs. Additionally, you can always [schedule a meeting](https://calendly.com/david-berenstein-huggingface/30min) with our Developer Advocacy team so they can get you up to speed.
 
-<a  href="https://github.com/argilla-io/argilla/graphs/contributors">
+<a  href="https://github.com/extralit/extralit/graphs/contributors">
 
-<img  src="https://contrib.rocks/image?repo=argilla-io/argilla" />
+<img  src="https://contrib.rocks/image?repo=extralit/extralit" />
 
 </a>
 

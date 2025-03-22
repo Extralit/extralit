@@ -87,7 +87,7 @@ def _get_secret_from_google_colab(name: str) -> Optional[str]:
                 f"\nError while fetching {name} secret value from your vault: '{str(e)}'."
                 "\nYou are not authenticated with the Argilla in this notebook."
                 "\nIf the error persists, please let us know by opening an issue on GitHub "
-                "(https://github.com/argilla-io/argilla//issues/new)."
+                "(https://github.com/extralit/extralit/issues/new)."
             )
 
         _IS_GOOGLE_COLAB_CHECKED = True
