@@ -160,10 +160,7 @@ export class Record {
       (this.suggestions || []).forEach((suggestion: Suggestion) => {
         if (suggestion.questionId === question.id) {
           if (suggestion.type !== "selection") {
-            console.log(suggestion.type, suggestion.getSuggestion().agent, suggestion.value)
             question.addSuggestion(suggestion);
-          } else {
-            console.log(suggestion.type, suggestion.getSuggestion().agent, suggestion.value)
           }
         }
       });
