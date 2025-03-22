@@ -78,8 +78,8 @@ postgresql = [
 
 [project.urls]
 homepage = "https://www.argilla.io"
-documentation = "https://docs.argilla.io"
-repository = "https://github.com/argilla-io/argilla"
+documentation = "https://docs.extralit.ai"
+repository = "https://github.com/extralit/extralit"
 
 [build-system]
 requires = ["pdm-backend"]

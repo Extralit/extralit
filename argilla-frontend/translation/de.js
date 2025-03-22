@@ -48,7 +48,7 @@ export default {
     datasetEmptyForAnnotator:
       "Der Datensatz ist leer. Bitten Sie einen Administrator, Daten hochzuladen, und versuchen Sie es später erneut.",
     datasetEmptyForAdmin:
-      "Der Datensatz ist leer. Sie können Datensätze mit dem Python SDK hinzufügen. Siehe <a href='https://docs.argilla.io/latest/how_to_guides/record/'>Dokumentation</a> zum Hinzufügen von Einträgen.",
+      "Der Datensatz ist leer. Sie können Datensätze mit dem Python SDK hinzufügen. Siehe <a href='https://docs.extralit.ai/latest/how_to_guides/record/'>Dokumentation</a> zum Hinzufügen von Einträgen.",
     taskDistributionCompleted: "🎉 Die Aufgabe ist erledigt!",
     noSubmittedRecords: "Sie haben noch keinen Datensatz eingereicht",
     noRecordsFound:
@@ -269,7 +269,7 @@ export default {
     importFromHub: "Direkt vom Hub importieren",
     importFromPython: "Mit Python importieren",
     importFromPythonHFWarning:
-      "Wenn Sie einen privaten Space verwenden, lesen Sie die <a target='_blank' href='https://docs.argilla.io/latest/getting_started/how-to-configure-argilla-on-huggingface/#how-to-use-private-spaces'>Dokumentation</a>.",
+      "Wenn Sie einen privaten Space verwenden, lesen Sie die <a target='_blank' href='https://docs.extralit.ai/latest/getting_started/how-to-configure-argilla-on-huggingface/#how-to-use-private-spaces'>Dokumentation</a>.",
     exampleDatasetsTitle: "Sie wissen nicht, wo Sie anfangen sollen?",
     exampleDatasetsText: "Erkunden Sie diese Beispiel-Datensätze",
     guidesTitle: "Nicht mit Argilla vertraut?",
@@ -321,7 +321,7 @@ export default {
       "Datensatz auf Hugging Face nicht gefunden oder verfügbar",
     none: "Keine",
     noWorkspaces:
-      "Bitte folgen Sie der <a target='_blank' href='https://docs.argilla.io/latest/how_to_guides/workspace/#create-a-new-workspace'>Anleitung</a>, um einen Workspace zu erstellen",
+      "Bitte folgen Sie der <a target='_blank' href='https://docs.extralit.ai/latest/how_to_guides/workspace/#create-a-new-workspace'>Anleitung</a>, um einen Workspace zu erstellen",
   },
   config: {
     field: {

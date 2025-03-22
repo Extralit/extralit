@@ -4,7 +4,7 @@
 
 ```{admonition} Argilla 2.x
 :class: info
-We are announcing that Argilla 1.29 is the final minor release for Argilla 1.x. Although we will continue to release bug fixes for this version, we will neither be adding nor removing any functionalities. Visit the [2.x docs](https://docs.argilla.io/)!
+We are announcing that Argilla 1.29 is the final minor release for Argilla 1.x. Although we will continue to release bug fixes for this version, we will neither be adding nor removing any functionalities. Visit the [2.x docs](https://docs.extralit.ai/)!
 ```
 
 <div class="social social--sidebar" style="margin-top: 1em; display: flex; justify-content: right; gap: 8px">

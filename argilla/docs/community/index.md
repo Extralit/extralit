@@ -1,38 +1,39 @@
 ---
-description: These are the tools and resources to be up-to-date with the Argilla development and contribute to the project.
+description: These are the tools and resources to be up-to-date with the Extralit development and contribute to the project.
 hide:
     - toc
     - footer
 ---
 
-We are an open-source community-driven project not only focused on building a great product but also on building a great community, where you can get support, share your experiences, and contribute to the project! We would love to hear from you and help you get started with Argilla.
+# Community
+
+We are an open-source community-driven project focused on building a platform that accelerates scientific data extraction while fostering a collaborative community. We would love to hear from you and help you get started with Extralit!
 
 <div class="grid cards" markdown>
 
--   __Discord__
+-   __Slack__
 
     ---
 
-    In our Discord channels (#argilla-distilabel-general and #argilla-distilabel-help), you can get direct support from the community.
+    Join our Slack workspace to get direct support from the community and stay up to date with the latest developments.
 
+    [:octicons-arrow-right-24: Slack ↗](https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ)
 
-    [:octicons-arrow-right-24: Discord ↗](http://hf.co/join/discord)
-
--   __Community Meetup__
+-   __Blog__
 
     ---
 
-    We host bi-weekly community meetups where you can listen in or present your work.
+    Follow our blog for technical deep-dives, user stories, and project updates.
 
-    [:octicons-arrow-right-24: Community Meetup ↗](https://lu.ma/argilla-event-calendar)
+    [:octicons-arrow-right-24: Blog ↗](https://extralit.ai/blog)
 
 -   __Changelog__
 
     ---
 
-    The changelog is where you can find the latest updates and changes to the Argilla project.
+    The changelog is where you can find the latest updates and changes to the Extralit project.
 
-    [:octicons-arrow-right-24: Changelog ↗](https://github.com/argilla-io/argilla/blob/develop/argilla/CHANGELOG.md)
+    [:octicons-arrow-right-24: Changelog ↗](https://github.com/extralit/extralit/blob/develop/CHANGELOG.md)
 
 -   __Roadmap__
 
@@ -40,14 +41,20 @@ We are an open-source community-driven project not only focused on building a gr
 
     We love to discuss our plans with the community. Feel encouraged to participate in our roadmap discussions.
 
-    [:octicons-arrow-right-24: Roadmap ↗](https://github.com/orgs/argilla-io/projects/10/views/1)
+    [:octicons-arrow-right-24: Roadmap ↗](https://github.com/orgs/extralit/projects/1/views/1)
 
--   __Gurubase__
+-   __Developer Guide__
 
     ---
 
-    Gurubase is an AI-powered platform designed to answer technical questions using focused knowledge bases. Argilla Guru leverages data from Argilla's GitHub repository and documentation to provide answers to your questions.
+    Learn how to contribute to Extralit's development with our comprehensive developer documentation.
 
-    [:octicons-arrow-right-24: Ask Argilla Guru ↗](https://gurubase.io/g/argilla)
+    [:octicons-arrow-right-24: Developer Guide ↗](developer.md)
 
 </div>
+
+## Getting Started
+
+- Check out our [documentation](https://docs.extralit.ai) to learn more about Extralit
+- Join our [Slack community](https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ) to connect with other users and contributors
+- Read our [contribution guide](contributor.md) to start contributing to the project

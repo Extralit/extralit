@@ -27,8 +27,8 @@ Argilla server with `ARGILLA_BASE_URL=/custom-path-for-argilla`.
 
 NGINX and Traefik have been tested and are known to work with Argilla:
 
-- [NGINX example](https://github.com/argilla-io/argilla/tree/main/examples/deployments/docker/nginx)
-- [Traefik example](https://github.com/argilla-io/argilla/tree/main/examples/deployments/docker/traefik)
+- [NGINX example](https://github.com/extralit/extralit/tree/main/examples/deployments/docker/nginx)
+- [Traefik example](https://github.com/extralit/extralit/tree/main/examples/deployments/docker/traefik)
 
 ## Environment variables
 
