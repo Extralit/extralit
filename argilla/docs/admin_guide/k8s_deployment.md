@@ -117,19 +117,12 @@ argilla_server database users migrate
 
 ### Frontend Development
 
-1. Set up and run frontend:
+Set up and run frontend:
    ```bash
-   cd argilla/argilla-frontend
+   cd argilla-frontend
    npm install
    API_BASE_URL=http://path.to.server npm run dev
    ```
-
-2. Update frontend:
-   ```bash
-   sh scripts/build_frontend.sh
-   ```
-
-3. Rebuild `argilla-server-deployment` in Tilt UI
 
 ### Backend Development
 
