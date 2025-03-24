@@ -3299,23 +3299,11 @@
 </span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>argilla_server<span class="w"> </span>database<span class="w"> </span>users<span class="w"> </span>migrate
 </span></code></pre></div>
 <h3 id="frontend-development">Frontend Development<a class="headerlink" href="#frontend-development" title="Permanent link">&para;</a></h3>
-<ol>
-<li>
 <p>Set up and run frontend:
-   <div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nb">cd</span><span class="w"> </span>argilla/argilla-frontend
+   <div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nb">cd</span><span class="w"> </span>argilla-frontend
 </span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>npm<span class="w"> </span>install
 </span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="nv">API_BASE_URL</span><span class="o">=</span>http://path.to.server<span class="w"> </span>npm<span class="w"> </span>run<span class="w"> </span>dev
 </span></code></pre></div></p>
-</li>
-<li>
-<p>Update frontend:
-   <div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>sh<span class="w"> </span>scripts/build_frontend.sh
-</span></code></pre></div></p>
-</li>
-<li>
-<p>Rebuild <code>argilla-server-deployment</code> in Tilt UI</p>
-</li>
-</ol>
 <h3 id="backend-development">Backend Development<a class="headerlink" href="#backend-development" title="Permanent link">&para;</a></h3>
 <p>Changes to <code>src/argilla_server/</code> or <code>src/extralit/</code> are automatically updated while running Tilt with <code>ENV=dev</code>. Manually rebuild if needed.</p>
 <h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
