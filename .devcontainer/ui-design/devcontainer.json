@@ -1,31 +1,31 @@
 {
-    "name": "UI Design Environment",
-    "dockerComposeFile": "../docker-compose/docker-compose.yml",
-    "service": "app",
+    "name": "UI/UX Design Environment",
+    "image": "mcr.microsoft.com/devcontainers/javascript-node:18",
     "workspaceFolder": "/workspace",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
     "customizations": {
         "vscode": {
             "extensions": [
-                "ms-vscode.live-server",
-                "ritwickdey.LiveServer",
+                "Vue.volar",
+                "bradlc.vscode-tailwindcss",
                 "mrmlnc.vscode-scss",
                 "sibiraj-s.vscode-scss-formatter",
-                "glenn2223.live-sass",
-                "Vue.volar"
+                "esbenp.prettier-vscode",
+                "ms-vscode.live-server"
             ],
             "settings": {
                 "workbench.colorTheme": "Default Light+",
                 "editor.fontSize": 14,
+                "editor.formatOnSave": true,
+                "editor.defaultFormatter": "esbenp.prettier-vscode",
                 "files.exclude": {
                     "**/.git": true,
                     "**/node_modules": true,
-                    // Hide complex files to reduce clutter
-                    "**/*.js": true,
-                    "**/*.ts": true,
-                    "**/*.json": false,
-                    "**/assets/scss/variables.scss": false,
-                    "**/assets/scss/theme.scss": false
+                    "**/*.js": false,
+                    "**/*.ts": false
                 },
+                "workbench.startupEditor": "none",
+                "explorer.compactFolders": false,
                 "explorer.fileNesting.enabled": true,
                 "explorer.fileNesting.patterns": {
                     "*.scss": "${capture}.css"
@@ -33,15 +33,17 @@
             }
         }
     },
-    "postCreateCommand": "npm install && echo '🎨 Design environment ready! Click \"Go Live\" in the status bar to see changes.' > DESIGNER_README.md",
-    "postStartCommand": "npm run dev",
+    "onCreateCommand": "echo '🎨 Setting up design environment...'",
+    "postCreateCommand": "cd argilla-frontend && npm install && echo '# Designer Guide\n\n1. Edit theme files in `assets/scss/`\n2. The development server will automatically reload to show your changes\n3. Press F1 and type \"Focus on SCSS Files\" to see only design files' > DESIGNER_README.md",
+    "postStartCommand": "cd argilla-frontend && API_BASE_URL=https://extralit-public-demo.hf.space/ npm run dev",
     "forwardPorts": [
         3000
     ],
     "portsAttributes": {
         "3000": {
-            "label": "Web Preview",
+            "label": "UI Preview",
             "onAutoForward": "openPreview"
         }
-    }
+    },
+    "remoteUser": "node"
 }
