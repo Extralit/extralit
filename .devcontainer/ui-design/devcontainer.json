@@ -1,0 +1,47 @@
+{
+    "name": "UI Design Environment",
+    "dockerComposeFile": "../docker-compose/docker-compose.yml",
+    "service": "app",
+    "workspaceFolder": "/workspace",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-vscode.live-server",
+                "ritwickdey.LiveServer",
+                "mrmlnc.vscode-scss",
+                "sibiraj-s.vscode-scss-formatter",
+                "glenn2223.live-sass",
+                "Vue.volar"
+            ],
+            "settings": {
+                "workbench.colorTheme": "Default Light+",
+                "editor.fontSize": 14,
+                "files.exclude": {
+                    "**/.git": true,
+                    "**/node_modules": true,
+                    // Hide complex files to reduce clutter
+                    "**/*.js": true,
+                    "**/*.ts": true,
+                    "**/*.json": false,
+                    "**/assets/scss/variables.scss": false,
+                    "**/assets/scss/theme.scss": false
+                },
+                "explorer.fileNesting.enabled": true,
+                "explorer.fileNesting.patterns": {
+                    "*.scss": "${capture}.css"
+                }
+            }
+        }
+    },
+    "postCreateCommand": "npm install && echo '🎨 Design environment ready! Click \"Go Live\" in the status bar to see changes.' > DESIGNER_README.md",
+    "postStartCommand": "npm run dev",
+    "forwardPorts": [
+        3000
+    ],
+    "portsAttributes": {
+        "3000": {
+            "label": "Web Preview",
+            "onAutoForward": "openPreview"
+        }
+    }
+}
