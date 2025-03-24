@@ -6,7 +6,7 @@ hide:
 
 # Developer Guide
 
-As an Extralit developer, you are already part of the community, and your contribution is to our development. This guide will help you set up your development environment and start contributing.
+As an Extralit developer, you are already part of the community, and your contribution is valuable to our development. This guide will help you set up your development environment and start contributing.
 
 !!! note "Extralit core components"
 
@@ -22,6 +22,54 @@ As an Extralit developer, you are already part of the community, and your contri
 
     - **Vue.js UI**: A web application to visualize, extract and validate your data, users, and teams. It is built with `Vue.js` and is directly deployed alongside the Extralit Server within our Extralit Docker image.
 
+## Using GitHub Codespaces: Docker & Tilt for K8s development (preferred)
+
+The recommended way to develop for Extralit is using GitHub Codespaces, which provides a fully configured development environment with all the necessary tools pre-installed. This approach eliminates environment setup issues and ensures consistent development across the team.
+
+### 1. Starting a Codespace
+
+1. Navigate to the [Extralit repository](https://github.com/extralit/extralit)
+2. Click the "Code" button and select the "Codespaces" tab
+3. Click "Create codespace on develop" to launch a new development environment
+
+The Codespace will automatically set up:
+- All required development tools (kubectl, Tilt, Docker)
+- A local Kubernetes cluster using kind
+- The necessary environment variables
+
+### 2. Deploying the Services
+
+Once your Codespace is ready:
+
+1. Open a terminal in the Codespace and deploy the services using Tilt:
+
+   ```bash
+   ENV=dev DOCKER_REPO=localhost:5005 tilt up
+   ```
+
+2. Monitor deployment in the Tilt UI at `http://localhost:10350`, which will be automatically forwarded
+
+3. If you encounter PV (Persistent Volume) issues, deploy services incrementally:
+
+   ```bash
+   ENV=dev DOCKER_REPO=localhost:5005 tilt up elasticsearch
+   ENV=dev DOCKER_REPO=localhost:5005 tilt up main-db
+   ENV=dev DOCKER_REPO=localhost:5005 tilt up minio
+   ENV=dev DOCKER_REPO=localhost:5005 tilt up weaviate
+   ENV=dev DOCKER_REPO=localhost:5005 tilt up
+   ```
+
+### 3. Development Workflow
+
+- **Backend Development**: Changes to `src/argilla_server/` or `src/extralit/` are automatically updated while Tilt is running
+- **Frontend Development**: For frontend changes:
+  ```bash
+  cd argilla/argilla-frontend
+  npm install
+  npm run dev
+  ```
+
+- **Rebuilding Components**: Use the Tilt UI to rebuild specific components as needed
 
 ## The Extralit repository
 
@@ -37,8 +85,11 @@ The Extralit repository has a monorepo structure, which means that all the compo
 !!! note "How to contribute?"
     Before starting to develop, we recommend reading our [contribution guide](contributor.md) to understand the contribution process and the guidelines to follow. Once you have [cloned the Extralit repository](contributor.md#fork-the-extralit-repository) and [checked out to the correct branch](contributor.md#create-a-new-branch), you can start setting up your development environment.
 
+## Manual Setup: Alternative Development Options
 
-## Set up the Python environment
+If you prefer not to use Codespaces, you can set up your development environment manually using the following approaches.
+
+### Set up the Python environment
 
 To work on the Extralit Python SDK, you must install the Extralit package on your system.
 
@@ -96,50 +147,62 @@ pytest tests/unit
         pdm run all
     ```
 
-## Set up the databases
+### Manual Kubernetes Setup
 
-To run your development environment, you need to set up Extralit's databases.
+If you want to set up a local Kubernetes cluster manually:
+
+1. Install required tools:
+   - [kubectl](https://kubernetes.io/docs/tasks/tools/)
+   - [Tilt](https://docs.tilt.dev/install.html)
+   - [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
+   - [ctlptl](https://github.com/tilt-dev/ctlptl/tree/main#how-do-i-install-it)
+
+2. Create a local Kubernetes cluster:
+   ```bash
+   kind create cluster --name extralit-dev
+   ```
+
+3. For local development with image registry:
+   ```bash
+   ctlptl create registry ctlptl-registry --port=5005
+   ctlptl create cluster extralit-dev --registry=ctlptl-registry
+   ```
+
+4. Apply storage configurations:
+   ```bash
+   ctlptl apply -f k8s/kind/kind-config.yaml
+   kubectl --context kind-kind taint node kind-control-plane node-role.kubernetes.io/control-plane:NoSchedule-
+   ```
+
+5. Create namespace and deploy services:
+   ```bash
+   kubectl create ns extralit-dev
+   kubectl apply -f extralit-secrets.yaml -n extralit-dev
+   kubectl apply -f langfuse-secrets.yaml -n extralit-dev
+   kubectl apply -f weaviate-api-keys.yaml -n extralit-dev
+   ```
+
+6. Deploy with Tilt:
+   ```bash
+   ENV=dev DOCKER_REPO=localhost:5005 tilt up --namespace extralit-dev --context kind-extralit-dev
+   ```
+
+### Set up the databases directly
+
+If you prefer to run the databases directly without Kubernetes:
 
 #### Vector database
-
-Extralit supports ElasticSearch as its primary search engine for the vector database by default. For more information about setting up Weaviate, check the [Server configuration](../reference/server/configuration.md).
-
-You can run ElasticSearch locally using Docker:
 
 ```sh
 # Extralit supports ElasticSearch versions >=8.5
 docker run -d --name elasticsearch-for-extralit -p 9200:9200 -p 9300:9300 -e "ES_JAVA_OPTS=-Xms512m -Xmx512m" -e "discovery.type=single-node" -e "xpack.security.enabled=false" docker.elastic.co/elasticsearch/elasticsearch:8.5.3
 ```
 
-!!! tip "Install Docker"
-    You can find the Docker installation guides for [Windows](https://docs.docker.com/desktop/install/windows-install/), [macOS](https://docs.docker.com/desktop/install/mac-install/) and [Linux](https://docs.docker.com/desktop/install/linux-install/) on Docker website.
-
 #### Relational database
-
-Extralit uses PostgreSQL to store information about users, workspaces, extraction schemas, etc. You can run PostgreSQL locally using Docker:
 
 ```sh
 docker run -d --name postgres-for-extralit -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_DB=postgres postgres:14
 ```
-
-## Set up the server
-
-Once you have set up the databases, you can start the Extralit server. For local development, we recommend using Tilt to orchestrate the entire development environment.
-
-```sh
-# Install Tilt
-curl -fsSL https://raw.githubusercontent.com/tilt-dev/tilt/master/scripts/install.sh | bash
-
-# Start the development environment
-tilt up
-```
-
-For more details, check the [Extralit server README](https://github.com/extralit/extralit/blob/develop/extralit-server/README.md) file.
-
-## Set up the frontend
-
-Optionally, if you need to run the Extralit frontend separately, you can follow the instructions in the [Argilla frontend README](https://github.com/extralit/extralit/blob/develop/argilla-frontend/README.md).
-
 
 ## Set up the documentation
 
@@ -165,4 +228,20 @@ As mentioned, we use [`mkdocs`](https://www.mkdocs.org/) to build the documentat
 
 !!! note "Contribute with a tutorial"
     You can also contribute a tutorial (`.ipynb`) to the "Community" section. We recommend aligning the tutorial with the structure of the existing tutorials. For an example, check [this tutorial](../tutorials/getting_started.ipynb).
+
+## Troubleshooting
+
+### Persistent Volume & Storage Classes
+When using Kubernetes, persistent volume issues can occur:
+- PVs might not be available when services are deployed, especially in `kind` clusters
+- PVC might bind to incorrect PVs depending on creation order
+- For persistent storage issues, check the `uncategorized` resource in Tilt
+- Sometimes clearing `/tmp/kind-volumes/` and restarting the cluster is needed
+
+### Deployment Issues
+Common deployment problems:
+- `elasticsearch`: Can fail on restart due to data-shard issues
+- `main-db` Postgres: May fail to remount volumes after redeployment due to password changes
+
+For support, join the [Extralit Slack channel](https://join.slack.com/t/extralit/shared_invite/zt-32blg3602-0m0XewPBXF7776BQ3m7ZlA).
 
