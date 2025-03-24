@@ -31,10 +31,16 @@
                     "*.scss": "${capture}.css"
                 }
             }
+        },
+        "codespaces": {
+            "openFiles": [
+                "argilla-frontend/assets/scss/abstract/variables/_themes.scss",
+                "argilla-frontend/assets/scss/abstract/variables/_variables.scss"
+            ]
         }
     },
     "onCreateCommand": "echo '🎨 Setting up design environment...'",
-    "postCreateCommand": "cd argilla-frontend && npm install && echo '# Designer Guide\n\n1. Edit theme files in `assets/scss/`\n2. The development server will automatically reload to show your changes\n3. Press F1 and type \"Focus on SCSS Files\" to see only design files' > DESIGNER_README.md",
+    "postCreateCommand": "cd argilla-frontend && npm install && echo '# Designer Guide\n\n1. Edit theme files in `assets/scss/`\n2. The development server will automatically reload to show your changes\n3. Press F1 and type \"Focus on SCSS Files\" to see only design files'",
     "postStartCommand": "cd argilla-frontend && API_BASE_URL=https://extralit-public-demo.hf.space/ npm run dev",
     "forwardPorts": [
         3000
