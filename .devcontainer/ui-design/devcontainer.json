@@ -17,12 +17,13 @@
                 "workbench.colorTheme": "Default Light+",
                 "editor.fontSize": 14,
                 "editor.formatOnSave": true,
-                "editor.defaultFormatter": "esbenp.prettier-vscode",
                 "files.exclude": {
                     "**/.git": true,
                     "**/node_modules": true,
+					".devcontainer/": true,
                     "**/*.js": false,
-                    "**/*.ts": false
+                    "**/*.ts": false,
+                    "**/.*": false
                 },
                 "workbench.startupEditor": "none",
                 "explorer.compactFolders": false,
