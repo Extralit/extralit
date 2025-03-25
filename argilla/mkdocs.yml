@@ -3,7 +3,7 @@ site_name: Extralit Docs
 site_url: https://docs.extralit.ai/
 site_author: Extralit
 site_description: Data-centric tool for AI builders
-copyright: Copyright &copy; 2023 - 2024 Extralit
+copyright: Copyright &copy; 2023 - 2025 Extralit
 
 # Repository
 repo_name: extralit/extralit
@@ -243,4 +243,4 @@ nav:
       - Issue dashboard: community/popular_issues.md
       - Changelog: community/changelog.md
   - UI Demo ↗:
-      - https://demo.argilla.io/sign-in?auth=ZGVtbzoxMjM0NTY3OA==
+      - https://extralit-public-demo.hf.space/sign-in
