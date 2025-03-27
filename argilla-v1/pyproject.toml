@@ -155,7 +155,7 @@ repository = "https://github.com/extralit/extralit"
 tracker = "https://github.com/extralit/extralit/issues"
 
 [project.scripts]
-extralit = "argilla.cli.app:app"
+extralit = "argilla_v1.cli.app:app"
 
 [tool.setuptools.packages.find]
 where = ["src"]
