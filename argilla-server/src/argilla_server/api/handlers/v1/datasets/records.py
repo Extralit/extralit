@@ -367,6 +367,10 @@ async def search_current_user_dataset_records(
             selectinload(Dataset.questions),
         ],
     )
+
+    if current_user.is_annotator and include.with_response_suggestions:
+        # Annotators should not see suggestions from other users
+        include.with_response_suggestions = False
     
     if include and include.with_response_suggestions:
         workspace_users: UsersSchema = await list_workspace_users(db=db, workspace_id=dataset.workspace_id, current_user=current_user)
