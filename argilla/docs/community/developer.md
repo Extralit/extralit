@@ -64,7 +64,7 @@ Once your Codespace is ready:
 - **Backend Development**: Changes to `src/argilla_server/` or `src/extralit/` are automatically updated while Tilt is running
 - **Frontend Development**: For frontend changes:
   ```bash
-  cd argilla/argilla-frontend
+  cd argilla-frontend
   npm install
   npm run dev
   ```
