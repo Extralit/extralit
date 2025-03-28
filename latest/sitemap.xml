@@ -126,6 +126,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://docs.extralit.ai/latest/getting_started/development_setup/</loc>
+         <lastmod>2025-03-28</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://docs.extralit.ai/latest/getting_started/faq/</loc>
          <lastmod>2025-03-28</lastmod>
          <changefreq>daily</changefreq>
