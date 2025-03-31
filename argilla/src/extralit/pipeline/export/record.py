@@ -49,7 +49,7 @@ def create_extraction_records(
         metadata['reference'] = ref
         if paper.get('id'):
             metadata['doc_id'] = str(paper['id'])
-        if paper.get('pmid'):
+        if paper.get('pmid') is not None and str(paper['pmid']).strip():
             metadata['pmid'] = paper['pmid']
         if paper.get('doi'):
             metadata['doi'] = paper['doi']
