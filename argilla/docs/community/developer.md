@@ -22,54 +22,17 @@ As an Extralit developer, you are already part of the community, and your contri
 
     - **Vue.js UI**: A web application to visualize, extract and validate your data, users, and teams. It is built with `Vue.js` and is directly deployed alongside the Extralit Server within our Extralit Docker image.
 
-## Using GitHub Codespaces: Docker & Tilt for K8s development (preferred)
+## Environment setup
 
-The recommended way to develop for Extralit is using GitHub Codespaces, which provides a fully configured development environment with all the necessary tools pre-installed. This approach eliminates environment setup issues and ensures consistent development across the team.
+Extralit offers a comprehensive guide for setting up your development environment. For detailed instructions, please refer to our [Development Environment Setup Guide](../getting_started/development_setup.md).
 
-### 1. Starting a Codespace
+This guide covers everything you need to get started, including:
+- Installing prerequisites
+- Setting up Docker containers
+- Configuring your development environment
+- Running Extralit components locally
 
-1. Navigate to the [Extralit repository](https://github.com/extralit/extralit)
-2. Click the "Code" button and select the "Codespaces" tab
-3. Click "Create codespace on develop" to launch a new development environment
-
-The Codespace will automatically set up:
-- All required development tools (kubectl, Tilt, Docker)
-- A local Kubernetes cluster using kind
-- The necessary environment variables
-
-### 2. Deploying the Services
-
-Once your Codespace is ready:
-
-1. Open a terminal in the Codespace and deploy the services using Tilt:
-
-   ```bash
-   ENV=dev DOCKER_REPO=localhost:5005 tilt up
-   ```
-
-2. Monitor deployment in the Tilt UI at `http://localhost:10350`, which will be automatically forwarded
-
-3. If you encounter PV (Persistent Volume) issues, deploy services incrementally:
-
-   ```bash
-   ENV=dev DOCKER_REPO=localhost:5005 tilt up elasticsearch
-   ENV=dev DOCKER_REPO=localhost:5005 tilt up main-db
-   ENV=dev DOCKER_REPO=localhost:5005 tilt up minio
-   ENV=dev DOCKER_REPO=localhost:5005 tilt up weaviate
-   ENV=dev DOCKER_REPO=localhost:5005 tilt up
-   ```
-
-### 3. Development Workflow
-
-- **Backend Development**: Changes to `src/argilla_server/` or `src/extralit/` are automatically updated while Tilt is running
-- **Frontend Development**: For frontend changes:
-  ```bash
-  cd argilla-frontend
-  npm install
-  npm run dev
-  ```
-
-- **Rebuilding Components**: Use the Tilt UI to rebuild specific components as needed
+Once you have your environment set up, you can return to this guide to learn more about the specific components you want to contribute to.
 
 ## The Extralit repository
 
