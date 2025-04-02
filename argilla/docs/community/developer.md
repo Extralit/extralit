@@ -27,6 +27,7 @@ As an Extralit developer, you are already part of the community, and your contri
 Extralit offers a comprehensive guide for setting up your development environment. For detailed instructions, please refer to our [Development Environment Setup Guide](../getting_started/development_setup.md).
 
 This guide covers everything you need to get started, including:
+
 - Installing prerequisites
 - Setting up Docker containers
 - Configuring your development environment
