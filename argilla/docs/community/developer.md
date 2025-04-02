@@ -10,17 +10,22 @@ As an Extralit developer, you are already part of the community, and your contri
 
 !!! note "Extralit core components"
 
-    - **Documentation**: Extralit's documentation serves as an invaluable resource, providing a comprehensive and in-depth guide for users seeking to explore, understand, and effectively harness the core components of the Extralit ecosystem.
+    - **Mkdocs Documentation**: Extralit's documentation serves as an invaluable resource, providing a comprehensive and in-depth guide for both annotators and project admins to explore, understand, and effectively use the core components of the Extralit ecosystem.
+  
+    - **Vue.js Web UI**: A web application to visualize, extract and validate your data, users, and teams. It is built with `Vue.js` and `Nuxt.js` and is directly deployed alongside the Extralit Server within our Extralit Docker image.
+    
+    - **Python SDK**: A Python SDK installable with `pip install extralit` to interact with the Extralit Server and the Extralit UI. It provides an API as well as a CLI to manage the data, configuration, and extraction workflows.
 
-    - **Python SDK**: A Python SDK installable with `pip install extralit` to interact with the Extralit Server and the Extralit UI. It provides an API to manage the data, configuration, and extraction workflows.
+    - **FastAPI Server**: The core of Extralit's back-end is a Python `FastAPI server` that manages the document extraction and data annotation lifecycle, as well as serving the Nuxt-built Web UI. It does so by interfacing with the relational database, text-search/vector database, file blob storage, and redis. It provides an REST API that interacts with the data from the Python SDK and the Extralit UI. It also provides a web interface to visualize the data.
+    
+    - **Relational Database**: A relational database to store the data of the records, workspaces, and users. `PostgreSQL` is the preferred database option for persistent deployments, otherwise `sqlite` can also be used for certain local development scenarios, such as testing or lightweight, single-user setups.
+    
+    - **File Blob Storage**: A file storage system to store the documents and files associated with the records. It can be a local file system or a cloud-based storage solution like `Minio` or `Amazon S3`. For local development, we use a local file system or self-hosted Minio, while for production deployments, we recommend using S3.
 
-    - **FastAPI Server**: The core of Extralit is a Python `FastAPI server` that manages the data by pre-processing it and storing it in the vector database. Also, it stores application information in the relational database. It provides an REST API that interacts with the data from the Python SDK and the Extralit UI. It also provides a web interface to visualize the data.
+    - **Text Search Database**: An indexed text search database to enable efficient searching and retrieval of data records. We currently support `Elasticsearch` for this purpose, which allows for full-text search capabilities and is integrated with the Extralit Server. When deployed in initiation, Elasticsearch copies and indexes all of the records data from the Relational Database.
 
-    - **Relational Database**: A relational database to store the metadata of the records and the annotations. `PostgreSQL` is used as the primary database option and is deployed separately with the Extralit Server.
+    - **RAG Vector Database**: A vector database to store the document content and perform scalable vector similarity searches, supporting RAG uses for LLM extraction. We currently support `Weaviate` but soon will add support to "Elasticsearch" to consolidate the dependencies.
 
-    - **Vector Database**: A vector database to store the records data and perform scalable vector similarity searches and basic document searches. We currently support `ElasticSearch` and `Weaviate`, which can be deployed as separate Docker images.
-
-    - **Vue.js UI**: A web application to visualize, extract and validate your data, users, and teams. It is built with `Vue.js` and is directly deployed alongside the Extralit Server within our Extralit Docker image.
 
 ## Environment setup
 
