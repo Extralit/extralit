@@ -3151,9 +3151,9 @@
 
 
 <h1 id="rgresponse"><code>rg.Response</code><a class="headerlink" href="#rgresponse" title="Permanent link">&para;</a></h1>
-<p>Class for interacting with Argilla Responses of records. Responses are answers to questions by a user. Therefore, a question can have multiple responses, one for each user that has answered the question. A <code>Response</code> is typically created by a user in the UI or consumed from a data source as a label, unlike a <code>Suggestion</code> which is typically created by a model prediction.</p>
+<p>Class for interacting with Argilla Responses of <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>. Responses are answers to questions by a user. Therefore, a question can have multiple responses, one for each user that has answered the question. A <code>Response</code> is typically created by a user in the UI or consumed from a data source as a label, unlike a <code>Suggestion</code> which is typically created by a model prediction.</p>
 <h2 id="usage-examples">Usage Examples<a class="headerlink" href="#usage-examples" title="Permanent link">&para;</a></h2>
-<p>Responses can be added to an instantiated <code>Record</code> directly or as a dictionary a dictionary. The following examples demonstrate how to add responses to a record object and how to access responses from a record object:</p>
+<p>Responses can be added to an instantiated <code>Record</code> directly or as a dictionary a dictionary. The following examples demonstrate how to add responses to a <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> object and how to access responses from a <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> object:</p>
 <p>Instantiate the <code>Record</code> and related <code>Response</code> objects:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">dataset</span><span class="o">.</span><span class="n">records</span><span class="o">.</span><span class="n">log</span><span class="p">(</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="p">[</span>
@@ -3175,7 +3175,7 @@
 </span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="p">]</span>
 </span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="p">)</span>
 </span></code></pre></div>
-<p>Responses can be accessed from a <code>Record</code> via their question name as an attribute of the record. So if a question is named <code>label</code>, the response can be accessed as <code>record.label</code>. The following example demonstrates how to access responses from a record object:</p>
+<p>Responses can be accessed from a <code>Record</code> via their question name as an attribute of the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr>. So if a question is named <code>label</code>, the response can be accessed as <code>record.label</code>. The following example demonstrates how to access responses from a <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> object:</p>
 <p><div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># iterate over the records and responses</span>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">records</span><span class="p">:</span>
@@ -3195,8 +3195,8 @@
 </span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>            <span class="n">rg</span><span class="o">.</span><span class="n">Response</span><span class="p">(</span><span class="s2">&quot;label&quot;</span><span class="p">,</span> <span class="s2">&quot;positive&quot;</span><span class="p">,</span> <span class="n">user_id</span><span class="o">=</span><span class="n">user</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
 </span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>        <span class="p">)</span> <span class="c1"># (2)</span>
 </span></code></pre></div>
-    1. Access the responses for the question named <code>label</code> for each record like a dictionary containing a list of <code>Response</code> objects.
-    2. Add a response to the record if it does not already have one.</p>
+    1. Access the responses for the question named <code>label</code> for each <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> like a dictionary containing a list of <code>Response</code> objects.
+    2. Add a response to the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> if it does not already have one.</p>
 <h2 id="format-per-question-type">Format per <code>Question</code> type<a class="headerlink" href="#format-per-question-type" title="Permanent link">&para;</a></h2>
 <p>Depending on the <code>Question</code> type, responses might need to be formatted in a slightly different way.</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:6"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><input id="__tabbed_1_4" name="__tabbed_1" type="radio" /><input id="__tabbed_1_5" name="__tabbed_1" type="radio" /><input id="__tabbed_1_6" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">For <code>LabelQuestion</code></label><label for="__tabbed_1_2">For <code>MultiLabelQuestion</code></label><label for="__tabbed_1_3">For <code>RankingQuestion</code></label><label for="__tabbed_1_4">For <code>RatingQuestion</code></label><label for="__tabbed_1_5">For <code>SpanQuestion</code></label><label for="__tabbed_1_6">For <code>TextQuestion</code></label></div>
@@ -3274,10 +3274,12 @@
     <div class="doc doc-contents first">
 
 
-      <p>Class for interacting with Argilla Responses of records. Responses are answers to questions by a user.
-Therefore, a record question can have multiple responses, one for each user that has answered the question.
+      <p>Class for interacting with Argilla Responses of <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>. Responses are answers to questions by a user.
+Therefore, a <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> question can have multiple responses, one for each user that has answered the question.
 A <code>Response</code> is typically created by a user in the UI or consumed from a data source as a label,
 unlike a <code>Suggestion</code> which is typically created by a model prediction.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
               <details class="quote">
                 <summary>Source code in <code>src/argilla/responses.py</code></summary>
@@ -3452,7 +3454,9 @@ unlike a <code>Suggestion</code> which is typically created by a model predictio
 
     <div class="doc doc-contents ">
 
-      <p>Returns the record associated with the response</p>
+      <p>Returns the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> associated with the response</p>
+<!-- General -->
+<!-- Argilla specific -->
     </div>
 
 </div>
@@ -3471,6 +3475,8 @@ unlike a <code>Suggestion</code> which is typically created by a model predictio
     <div class="doc doc-contents ">
 
       <p>Initializes a <code>Response</code> for a <code>Record</code> with a user_id and value</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 <p><span class="doc-section-title">Attributes:</span></p>
@@ -3491,6 +3497,8 @@ unlike a <code>Suggestion</code> which is typically created by a model predictio
             <td>
               <div class="doc-md-description">
                 <p>The name of the question that the suggestion is for.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -3502,6 +3510,8 @@ unlike a <code>Suggestion</code> which is typically created by a model predictio
             <td>
               <div class="doc-md-description">
                 <p>The value of the response</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -3513,6 +3523,8 @@ unlike a <code>Suggestion</code> which is typically created by a model predictio
             <td>
               <div class="doc-md-description">
                 <p>The id of the user that submits the response</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -3524,6 +3536,8 @@ unlike a <code>Suggestion</code> which is typically created by a model predictio
             <td>
               <div class="doc-md-description">
                 <p>The status of the response as "draft", "submitted", "discarded".</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -3613,6 +3627,8 @@ unlike a <code>Suggestion</code> which is typically created by a model predictio
     <div class="doc doc-contents ">
 
       <p>Serializes the Response to a dictionary. This is principally used for sending the response to the <abbr title="Application Programming Interface.">API</abbr>,             but can be used for data wrangling or manual export.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
     <p><span class="doc-section-title">Returns:</span></p>
@@ -3631,6 +3647,8 @@ unlike a <code>Suggestion</code> which is typically created by a model predictio
             <td>
               <div class="doc-md-description">
                 <p>dict[str, Any]: The serialized response as a dictionary with keys <code>question_name</code>, <code>value</code>, and <code>user_id</code>.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -3640,6 +3658,8 @@ unlike a <code>Suggestion</code> which is typically created by a model predictio
 <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">response</span> <span class="o">=</span> <span class="n">rg</span><span class="o">.</span><span class="n">Response</span><span class="p">(</span><span class="s2">&quot;label&quot;</span><span class="p">,</span> <span class="s2">&quot;negative&quot;</span><span class="p">,</span> <span class="n">user_id</span><span class="o">=</span><span class="n">user</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">response</span><span class="o">.</span><span class="n">serialize</span><span class="p">()</span>
 </span></code></pre></div>
+<!-- General -->
+<!-- Argilla specific -->
 
             <details class="quote">
               <summary>Source code in <code>src/argilla/responses.py</code></summary>
@@ -3694,7 +3714,8 @@ unlike a <code>Suggestion</code> which is typically created by a model predictio
 
     </div>
 
-</div>
+</div><!-- General -->
+<!-- Argilla specific -->
 
 
 

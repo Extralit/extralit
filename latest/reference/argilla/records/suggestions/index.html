@@ -3253,10 +3253,10 @@
 
 
 <h1 id="rgsuggestion"><code>rg.Suggestion</code><a class="headerlink" href="#rgsuggestion" title="Permanent link">&para;</a></h1>
-<p>Class for interacting with Argilla Suggestions of records. Suggestions are typically created by a model prediction, unlike a <code>Response</code> which is typically created by a user in the UI or consumed from a data source as a label.</p>
+<p>Class for interacting with Argilla Suggestions of <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>. Suggestions are typically created by a model prediction, unlike a <code>Response</code> which is typically created by a user in the UI or consumed from a data source as a label.</p>
 <h2 id="usage-examples">Usage Examples<a class="headerlink" href="#usage-examples" title="Permanent link">&para;</a></h2>
-<h3 id="adding-records-with-suggestions">Adding records with suggestions<a class="headerlink" href="#adding-records-with-suggestions" title="Permanent link">&para;</a></h3>
-<p>Suggestions can be added to a record directly or via a dictionary structure. The following examples demonstrate how to add suggestions to a record object and how to access suggestions from a record object:</p>
+<h3 id="adding-records-with-suggestions">Adding <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> with suggestions<a class="headerlink" href="#adding-records-with-suggestions" title="Permanent link">&para;</a></h3>
+<p>Suggestions can be added to a <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> directly or via a dictionary structure. The following examples demonstrate how to add suggestions to a <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> object and how to access suggestions from a <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> object:</p>
 <p>Add a response from a dictionary where key is the question name and value is the response:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">dataset</span><span class="o">.</span><span class="n">records</span><span class="o">.</span><span class="n">log</span><span class="p">(</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="p">[</span>
@@ -3267,7 +3267,7 @@
 </span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="p">]</span>
 </span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="p">)</span>
 </span></code></pre></div>
-<p>If your data contains scores for suggestions you can add them as well via the <code>mapping</code> parameter. The following example demonstrates how to add a suggestion with a score to a record object:</p>
+<p>If your data contains scores for suggestions you can add them as well via the <code>mapping</code> parameter. The following example demonstrates how to add a suggestion with a score to a <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> object:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">dataset</span><span class="o">.</span><span class="n">records</span><span class="o">.</span><span class="n">log</span><span class="p">(</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="p">[</span>
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>        <span class="p">{</span>
@@ -3293,12 +3293,12 @@
 </span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="p">]</span>
 </span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="p">)</span>
 </span></code></pre></div>
-<h3 id="iterating-over-records-with-suggestions">Iterating over records with suggestions<a class="headerlink" href="#iterating-over-records-with-suggestions" title="Permanent link">&para;</a></h3>
-<p>Just like responses, suggestions can be accessed from a <code>Record</code> via their question name as an attribute of the record. So if a question is named <code>label</code>, the suggestion can be accessed as <code>record.label</code>. The following example demonstrates how to access suggestions from a record object:</p>
+<h3 id="iterating-over-records-with-suggestions">Iterating over <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> with suggestions<a class="headerlink" href="#iterating-over-records-with-suggestions" title="Permanent link">&para;</a></h3>
+<p>Just like responses, suggestions can be accessed from a <code>Record</code> via their question name as an attribute of the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr>. So if a question is named <code>label</code>, the suggestion can be accessed as <code>record.label</code>. The following example demonstrates how to access suggestions from a <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> object:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">records</span><span class="p">(</span><span class="n">with_suggestions</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">suggestions</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
 </span></code></pre></div>
-<p>We can also add suggestions to records as we iterate over them using the <code>add</code> method:</p>
+<p>We can also add suggestions to <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> as we iterate over them using the <code>add</code> method:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">records</span><span class="p">(</span><span class="n">with_suggestions</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">record</span><span class="o">.</span><span class="n">suggestions</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">]:</span> <span class="c1"># (1)</span>
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>        <span class="n">record</span><span class="o">.</span><span class="n">suggestions</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
@@ -3306,8 +3306,8 @@
 </span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>        <span class="p">)</span> <span class="c1"># (2)</span>
 </span></code></pre></div>
 <ol>
-<li>Validate that the record has a suggestion</li>
-<li>Add a suggestion to the record if it does not already have one</li>
+<li>Validate that the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> has a suggestion</li>
+<li>Add a suggestion to the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> if it does not already have one</li>
 </ol>
 <h2 id="format-per-question-type">Format per <code>Question</code> type<a class="headerlink" href="#format-per-question-type" title="Permanent link">&para;</a></h2>
 <p>Depending on the <code>Question</code> type, responses might need to be formatted in a slightly different way.</p>
@@ -3388,8 +3388,10 @@
               Bases: <code><span title="argilla._resource.Resource">Resource</span></code></p>
 
 
-      <p>Class for interacting with Argilla Suggestions. Suggestions are typically model predictions for records.
+      <p>Class for interacting with Argilla Suggestions. Suggestions are typically model predictions for <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>.
 Suggestions are rendered in the user interfaces as 'hints' or 'suggestions' for the user to review and accept or reject.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 <p><span class="doc-section-title">Attributes:</span></p>
@@ -3410,6 +3412,8 @@ Suggestions are rendered in the user interfaces as 'hints' or 'suggestions' for 
             <td>
               <div class="doc-md-description">
                 <p>The name of the question that the suggestion is for.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -3421,6 +3425,8 @@ Suggestions are rendered in the user interfaces as 'hints' or 'suggestions' for 
             <td>
               <div class="doc-md-description">
                 <p>The value of the suggestion</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -3432,6 +3438,8 @@ Suggestions are rendered in the user interfaces as 'hints' or 'suggestions' for 
             <td>
               <div class="doc-md-description">
                 <p>The score of the suggestion. For example, the probability of the model prediction.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -3443,6 +3451,8 @@ Suggestions are rendered in the user interfaces as 'hints' or 'suggestions' for 
             <td>
               <div class="doc-md-description">
                 <p>The agent that created the suggestion. For example, the model name.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -3454,6 +3464,8 @@ Suggestions are rendered in the user interfaces as 'hints' or 'suggestions' for 
             <td>
               <div class="doc-md-description">
                 <p>The type of suggestion, either 'model' or 'human'.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -3769,6 +3781,8 @@ Suggestions are rendered in the user interfaces as 'hints' or 'suggestions' for 
     <div class="doc doc-contents ">
 
       <p>The value of the suggestion.</p>
+<!-- General -->
+<!-- Argilla specific -->
     </div>
 
 </div>
@@ -3791,6 +3805,8 @@ Suggestions are rendered in the user interfaces as 'hints' or 'suggestions' for 
     <div class="doc doc-contents ">
 
       <p>The name of the question that the suggestion is for.</p>
+<!-- General -->
+<!-- Argilla specific -->
     </div>
 
 </div>
@@ -3812,6 +3828,8 @@ Suggestions are rendered in the user interfaces as 'hints' or 'suggestions' for 
     <div class="doc doc-contents ">
 
       <p>The type of suggestion, either 'model' or 'human'.</p>
+<!-- General -->
+<!-- Argilla specific -->
     </div>
 
 </div>
@@ -3834,6 +3852,8 @@ Suggestions are rendered in the user interfaces as 'hints' or 'suggestions' for 
     <div class="doc doc-contents ">
 
       <p>The score of the suggestion.</p>
+<!-- General -->
+<!-- Argilla specific -->
     </div>
 
 </div>
@@ -3856,6 +3876,8 @@ Suggestions are rendered in the user interfaces as 'hints' or 'suggestions' for 
     <div class="doc doc-contents ">
 
       <p>The agent that created the suggestion.</p>
+<!-- General -->
+<!-- Argilla specific -->
     </div>
 
 </div>
@@ -3877,7 +3899,9 @@ Suggestions are rendered in the user interfaces as 'hints' or 'suggestions' for 
 
     <div class="doc doc-contents ">
 
-      <p>The record that the suggestion is for.</p>
+      <p>The <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> that the suggestion is for.</p>
+<!-- General -->
+<!-- Argilla specific -->
     </div>
 
 </div>
@@ -3890,7 +3914,8 @@ Suggestions are rendered in the user interfaces as 'hints' or 'suggestions' for 
 
     </div>
 
-</div>
+</div><!-- General -->
+<!-- Argilla specific -->
 
 
 

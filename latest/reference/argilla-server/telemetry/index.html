@@ -3096,11 +3096,11 @@
 </span></code></pre></div>
 <p>To opt in again, you can set the variable to <code>0</code>.</p>
 <h2 id="why-reporting-telemetry">Why reporting telemetry<a class="headerlink" href="#why-reporting-telemetry" title="Permanent link">&para;</a></h2>
-<p>Anonymous telemetry information enables us to continuously improve the product and detect recurring problems to better serve all users. We collect aggregated information about general usage and errors. We do NOT collect any information on users' data records, datasets, or metadata information.</p>
+<p>Anonymous telemetry information enables us to continuously improve the product and detect recurring problems to better serve all users. We collect aggregated information about general usage and errors. We do NOT collect any information on users' data <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>, datasets, or metadata information.</p>
 <h2 id="sensitive-data">Sensitive data<a class="headerlink" href="#sensitive-data" title="Permanent link">&para;</a></h2>
 <p>We do not collect any piece of information related to the source data you store in Argilla. We don't identify individual users. Your data does not leave your server at any time:</p>
 <ul>
-<li>No dataset record is collected.</li>
+<li>No dataset <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> is collected.</li>
 <li>No dataset names or metadata are collected.</li>
 </ul>
 <h2 id="information-reported">Information reported<a class="headerlink" href="#information-reported" title="Permanent link">&para;</a></h2>
@@ -3108,7 +3108,7 @@
 <ul>
 <li>The code of the raised error</li>
 <li>The <code>user-agent</code> and <code>accept-language</code> http headers</li>
-<li>Task name and number of records for bulk operations</li>
+<li>Task name and number of <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> for bulk operations</li>
 <li>An anonymous generated user uuid</li>
 <li>An anonymous generated server uuid</li>
 <li>The Argilla version running the server</li>
@@ -3121,6 +3121,8 @@
 <li>The dockerized deployment flag: <code>True</code> or <code>False</code></li>
 </ul>
 <p>For transparency, you can inspect the source code where this is performed <a href="https://github.com/extralit/extralit/argilla-server/src/argilla_server/telemetry.py">here</a>.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 

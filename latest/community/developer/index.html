@@ -3327,22 +3327,28 @@
 <p class="admonition-title">Extralit core components</p>
 <ul>
 <li>
-<p><strong>Documentation</strong>: Extralit's documentation serves as an invaluable resource, providing a comprehensive and in-depth guide for users seeking to explore, understand, and effectively harness the core components of the Extralit ecosystem.</p>
+<p><strong>Mkdocs Documentation</strong>: Extralit's documentation serves as an invaluable resource, providing a comprehensive and in-depth guide for both annotators and project admins to explore, understand, and effectively use the core components of the Extralit ecosystem.</p>
 </li>
 <li>
-<p><strong>Python <abbr title="Software Development Kit.">SDK</abbr></strong>: A Python <abbr title="Software Development Kit.">SDK</abbr> installable with <code>pip install extralit</code> to interact with the Extralit Server and the Extralit UI. It provides an <abbr title="Application Programming Interface.">API</abbr> to manage the data, configuration, and extraction workflows.</p>
+<p><strong>Vue.js Web UI</strong>: A web application to visualize, extract and validate your data, users, and teams. It is built with <code>Vue.js</code> and <code>Nuxt.js</code> and is directly deployed alongside the Extralit Server within our Extralit Docker image.</p>
 </li>
 <li>
-<p><strong>FastAPI Server</strong>: The core of Extralit is a Python <code>FastAPI server</code> that manages the data by pre-processing it and storing it in the vector database. Also, it stores application information in the relational database. It provides an REST <abbr title="Application Programming Interface.">API</abbr> that interacts with the data from the Python <abbr title="Software Development Kit.">SDK</abbr> and the Extralit UI. It also provides a web interface to visualize the data.</p>
+<p><strong>Python <abbr title="Software Development Kit.">SDK</abbr></strong>: A Python <abbr title="Software Development Kit.">SDK</abbr> installable with <code>pip install extralit</code> to interact with the Extralit Server and the Extralit UI. It provides an <abbr title="Application Programming Interface.">API</abbr> as well as a <abbr title="Command Line Interface.">CLI</abbr> to manage the data, configuration, and extraction workflows.</p>
 </li>
 <li>
-<p><strong>Relational Database</strong>: A relational database to store the metadata of the records and the annotations. <code>PostgreSQL</code> is used as the primary database option and is deployed separately with the Extralit Server.</p>
+<p><strong>FastAPI Server</strong>: The core of Extralit's back-end is a Python <code>FastAPI server</code> that manages the document extraction and data annotation lifecycle, as well as serving the Nuxt-built Web UI. It does so by interfacing with the relational database, text-search/vector database, file blob storage, and redis. It provides an REST <abbr title="Application Programming Interface.">API</abbr> that interacts with the data from the Python <abbr title="Software Development Kit.">SDK</abbr> and the Extralit UI. It also provides a web interface to visualize the data.</p>
 </li>
 <li>
-<p><strong>Vector Database</strong>: A vector database to store the records data and perform scalable vector similarity searches and basic document searches. We currently support <code>ElasticSearch</code> and <code>Weaviate</code>, which can be deployed as separate Docker images.</p>
+<p><strong>Relational Database</strong>: A relational database to store the data of the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>, workspaces, and users. <code>PostgreSQL</code> is the preferred database option for persistent deployments, otherwise <code>sqlite</code> can also be used for certain local development scenarios, such as testing or lightweight, single-user setups.</p>
 </li>
 <li>
-<p><strong>Vue.js UI</strong>: A web application to visualize, extract and validate your data, users, and teams. It is built with <code>Vue.js</code> and is directly deployed alongside the Extralit Server within our Extralit Docker image.</p>
+<p><strong>File Blob Storage</strong>: A file storage system to store the documents and files associated with the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>. It can be a local file system or a cloud-based storage solution like <code>Minio</code> or <code>Amazon S3</code>. For local development, we use a local file system or self-hosted Minio, while for production deployments, we recommend using S3.</p>
+</li>
+<li>
+<p><strong>Text Search Database</strong>: An indexed text search database to enable efficient searching and retrieval of data <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>. We currently support <code>Elasticsearch</code> for this purpose, which allows for full-text search capabilities and is integrated with the Extralit Server. When deployed in initiation, Elasticsearch copies and indexes all of the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> data from the Relational Database.</p>
+</li>
+<li>
+<p><strong><abbr title="Retrieval-Augmented Generation, a technique that combines information retrieval with text generation.">RAG</abbr> Vector Database</strong>: A vector database to store the document content and perform scalable vector similarity searches, supporting <abbr title="Retrieval-Augmented Generation, a technique that combines information retrieval with text generation.">RAG</abbr> uses for <abbr title="Large Language Model, an AI system trained on vast amounts of text data.">LLM</abbr> extraction. We currently support <code>Weaviate</code> but soon will add support to "Elasticsearch" to consolidate the dependencies.</p>
 </li>
 </ul>
 </div>
@@ -3494,6 +3500,8 @@
 - <code>elasticsearch</code>: Can fail on restart due to data-shard issues
 - <code>main-db</code> Postgres: May fail to remount volumes after redeployment due to password changes</p>
 <p>For support, join the <a href="https://join.slack.com/t/extralit/shared_invite/zt-32blg3602-0m0XewPBXF7776BQ3m7ZlA">Extralit Slack channel</a>.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 

@@ -3320,16 +3320,16 @@
 <div class="admonition note">
 <p class="admonition-title">For user familiar with legacy approaches</p>
 <ol>
-<li><code>Dataset.records</code> object is used to interact with the records in a dataset. It interactively fetches records from the server in batches without using a local copy of the records.</li>
-<li>The <code>log</code> method of <code>Dataset.records</code> is used to both add and update records in a dataset. If the record includes a known <code>id</code> field, the record will be updated. If the record does not include a known <code>id</code> field, the record will be added.</li>
+<li><code>Dataset.records</code> object is used to interact with the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> in a dataset. It interactively fetches <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> from the server in batches without using a local copy of the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>.</li>
+<li>The <code>log</code> method of <code>Dataset.records</code> is used to both add and update <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> in a dataset. If the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> includes a known <code>id</code> field, the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> will be updated. If the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> does not include a known <code>id</code> field, the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> will be added.</li>
 </ol>
 </div>
-<h3 id="adding-records-to-a-dataset">Adding records to a dataset<a class="headerlink" href="#adding-records-to-a-dataset" title="Permanent link">&para;</a></h3>
-<p>To add records to a dataset, use the <code>log</code> method. Records can be added as dictionaries or as <code>Record</code> objects. Single records can also be added as a dictionary or <code>Record</code>.</p>
+<h3 id="adding-records-to-a-dataset">Adding <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> to a dataset<a class="headerlink" href="#adding-records-to-a-dataset" title="Permanent link">&para;</a></h3>
+<p>To add <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> to a dataset, use the <code>log</code> method. Records can be added as dictionaries or as <code>Record</code> objects. Single <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> can also be added as a dictionary or <code>Record</code>.</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:4"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><input id="__tabbed_1_4" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">As a <code>Record</code> object</label><label for="__tabbed_1_2">From a data structure</label><label for="__tabbed_1_3">From a data structure with a mapping</label><label for="__tabbed_1_4">From a Hugging Face dataset</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<p>You can also add records to a dataset by initializing a <code>Record</code> object directly.</p>
+<p>You can also add <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> to a dataset by initializing a <code>Record</code> object directly.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">records</span> <span class="o">=</span> <span class="p">[</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="n">rg</span><span class="o">.</span><span class="n">Record</span><span class="p">(</span>
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>        <span class="n">fields</span><span class="o">=</span><span class="p">{</span>
@@ -3391,7 +3391,7 @@
 </ol>
 </div>
 <div class="tabbed-block">
-<p>You can also add records to a dataset using a Hugging Face dataset. This is useful when you want to use a dataset from the Hugging Face Hub and add it to your Argilla dataset.</p>
+<p>You can also add <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> to a dataset using a Hugging Face dataset. This is useful when you want to use a dataset from the Hugging Face Hub and add it to your Argilla dataset.</p>
 <p>You can add the dataset where the column names correspond to the names of fields, questions, metadata or vectors in the Argilla dataset.</p>
 <p>If the dataset's schema does not correspond to your Argilla dataset names, you can use a <code>mapping</code> to indicate which columns in the dataset correspond to the Argilla dataset fields.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span> <span class="nn">datasets</span> <span class="kn">import</span> <span class="n">load_dataset</span>
@@ -3412,12 +3412,12 @@
 </div>
 </div>
 </div>
-<h3 id="updating-records-in-a-dataset">Updating records in a dataset<a class="headerlink" href="#updating-records-in-a-dataset" title="Permanent link">&para;</a></h3>
-<p>Records can also be updated using the <code>log</code> method with records that contain an <code>id</code> to identify the records to be updated. As above, records can be added as dictionaries or as <code>Record</code> objects.</p>
+<h3 id="updating-records-in-a-dataset">Updating <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> in a dataset<a class="headerlink" href="#updating-records-in-a-dataset" title="Permanent link">&para;</a></h3>
+<p>Records can also be updated using the <code>log</code> method with <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> that contain an <code>id</code> to identify the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> to be updated. As above, <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> can be added as dictionaries or as <code>Record</code> objects.</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="2:4"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><input id="__tabbed_2_3" name="__tabbed_2" type="radio" /><input id="__tabbed_2_4" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">As a <code>Record</code> object</label><label for="__tabbed_2_2">From a data structure</label><label for="__tabbed_2_3">From a data structure with a mapping</label><label for="__tabbed_2_4">From a Hugging Face dataset</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<p>You can update records in a dataset by initializing a <code>Record</code> object directly and providing the <code>id</code> field.</p>
+<p>You can update <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> in a dataset by initializing a <code>Record</code> object directly and providing the <code>id</code> field.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">records</span> <span class="o">=</span> <span class="p">[</span>
 </span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="n">rg</span><span class="o">.</span><span class="n">Record</span><span class="p">(</span>
 </span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>        <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;department&quot;</span><span class="p">:</span> <span class="s2">&quot;toys&quot;</span><span class="p">},</span>
@@ -3428,11 +3428,11 @@
 </span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="n">dataset</span><span class="o">.</span><span class="n">records</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">records</span><span class="p">)</span>
 </span></code></pre></div>
 <ol>
-<li>The <code>id</code> field is required to identify the record to be updated. The <code>id</code> field must be unique for each record in the dataset. If the <code>id</code> field is not provided, the record will be added as a new record.</li>
+<li>The <code>id</code> field is required to identify the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> to be updated. The <code>id</code> field must be unique for each <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> in the dataset. If the <code>id</code> field is not provided, the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> will be added as a new <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr>.</li>
 </ol>
 </div>
 <div class="tabbed-block">
-<p>You can also update records in a dataset by providing the <code>id</code> field in the data structure.</p>
+<p>You can also update <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> in a dataset by providing the <code>id</code> field in the data structure.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">data</span> <span class="o">=</span> <span class="p">[</span>
 </span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>    <span class="p">{</span>
 </span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>        <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;department&quot;</span><span class="p">:</span> <span class="s2">&quot;toys&quot;</span><span class="p">},</span>
@@ -3443,11 +3443,11 @@
 </span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="n">dataset</span><span class="o">.</span><span class="n">records</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 </span></code></pre></div>
 <ol>
-<li>The <code>id</code> field is required to identify the record to be updated. The <code>id</code> field must be unique for each record in the dataset. If the <code>id</code> field is not provided, the record will be added as a new record.</li>
+<li>The <code>id</code> field is required to identify the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> to be updated. The <code>id</code> field must be unique for each <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> in the dataset. If the <code>id</code> field is not provided, the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> will be added as a new <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr>.</li>
 </ol>
 </div>
 <div class="tabbed-block">
-<p>You can also update records in a dataset by providing the <code>id</code> field in the data structure and using a mapping to map the keys in the data structure to the fields in the dataset.</p>
+<p>You can also update <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> in a dataset by providing the <code>id</code> field in the data structure and using a mapping to map the keys in the data structure to the fields in the dataset.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">data</span> <span class="o">=</span> <span class="p">[</span>
 </span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="p">{</span>
 </span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>        <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;department&quot;</span><span class="p">:</span> <span class="s2">&quot;toys&quot;</span><span class="p">},</span>
@@ -3461,12 +3461,12 @@
 </span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="p">)</span>
 </span></code></pre></div>
 <ol>
-<li>The <code>id</code> field is required to identify the record to be updated. The <code>id</code> field must be unique for each record in the dataset. If the <code>id</code> field is not provided, the record will be added as a new record.</li>
+<li>The <code>id</code> field is required to identify the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> to be updated. The <code>id</code> field must be unique for each <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> in the dataset. If the <code>id</code> field is not provided, the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> will be added as a new <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr>.</li>
 <li>Let's say that your data structure has keys <code>my_id</code> instead of <code>id</code>. You can use the <code>mapping</code> parameter to map the keys in the data structure to the fields in the dataset.</li>
 </ol>
 </div>
 <div class="tabbed-block">
-<p>You can also update records to an Argilla dataset using a Hugging Face dataset. To update records, the Hugging Face dataset must contain an <code>id</code> field to identify the records to be updated, or you can use a mapping to map the keys in the Hugging Face dataset to the fields in the Argilla dataset.</p>
+<p>You can also update <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> to an Argilla dataset using a Hugging Face dataset. To update <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>, the Hugging Face dataset must contain an <code>id</code> field to identify the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> to be updated, or you can use a mapping to map the keys in the Hugging Face dataset to the fields in the Argilla dataset.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kn">from</span> <span class="nn">datasets</span> <span class="kn">import</span> <span class="n">load_dataset</span>
 </span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
 </span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="n">hf_dataset</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="s2">&quot;imdb&quot;</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="s2">&quot;train[:100]&quot;</span><span class="p">)</span> <span class="c1"># (1)</span>
@@ -3480,11 +3480,11 @@
 </div>
 </div>
 </div>
-<h3 id="adding-and-updating-records-with-images">Adding and updating records with images<a class="headerlink" href="#adding-and-updating-records-with-images" title="Permanent link">&para;</a></h3>
-<p>Argilla datasets can contain image fields. You can add images to a dataset by passing the image to the record object as either a remote URL, a local path to an image file, or a PIL object. The field names must be defined as an <code>rg.ImageField</code> in the dataset's <code>Settings</code> object to be accepted. Images will be stored in the Argilla database and returned using the data URI schema.</p>
+<h3 id="adding-and-updating-records-with-images">Adding and updating <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> with images<a class="headerlink" href="#adding-and-updating-records-with-images" title="Permanent link">&para;</a></h3>
+<p>Argilla datasets can contain image fields. You can add images to a dataset by passing the image to the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> object as either a remote URL, a local path to an image file, or a PIL object. The field names must be defined as an <code>rg.ImageField</code> in the dataset's <code>Settings</code> object to be accepted. Images will be stored in the Argilla database and returned using the data URI schema.</p>
 <div class="admonition note">
 <p class="admonition-title">As PIL objects</p>
-<p>To retrieve the images as rescaled PIL objects, you can use the <code>to_datasets</code> method when exporting the records, as shown in this <a href="../../../how_to_guides/import_export.md">how-to guide</a>.</p>
+<p>To retrieve the images as rescaled PIL objects, you can use the <code>to_datasets</code> method when exporting the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>, as shown in this <a href="../../../how_to_guides/import_export.md">how-to guide</a>.</p>
 </div>
 <div class="tabbed-set tabbed-alternate" data-tabs="3:3"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><input id="__tabbed_3_3" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">From a data structure with remote URLs</label><label for="__tabbed_3_2">From a data structure with local files or PIL objects</label><label for="__tabbed_3_3">From a Hugging Face dataset</label></div>
 <div class="tabbed-content">
@@ -3541,8 +3541,8 @@
 </div>
 </div>
 </div>
-<h3 id="iterating-over-records-in-a-dataset">Iterating over records in a dataset<a class="headerlink" href="#iterating-over-records-in-a-dataset" title="Permanent link">&para;</a></h3>
-<p><code>Dataset.records</code> can be used to iterate over records in a dataset from the server. The records will be fetched in batches from the server::</p>
+<h3 id="iterating-over-records-in-a-dataset">Iterating over <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> in a dataset<a class="headerlink" href="#iterating-over-records-in-a-dataset" title="Permanent link">&para;</a></h3>
+<p><code>Dataset.records</code> can be used to iterate over <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> in a dataset from the server. The <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> will be fetched in batches from the server::</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">records</span><span class="p">:</span>
 </span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
 </span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>
@@ -3555,7 +3555,7 @@
 </span><span id="__span-14-10"><a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a><span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">records</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="s2">&quot;capital&quot;</span><span class="p">,</span> <span class="n">with_vectors</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 </span><span id="__span-14-11"><a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">vectors</span><span class="p">)</span>
 </span></code></pre></div>
-<p>Check out the <a href="../../records/records/"><code>rg.Record</code></a> class reference for more information on the properties and methods available on a record and the <a href="../../search/"><code>rg.Query</code></a> class reference for more information on the query syntax.</p>
+<p>Check out the <a href="../../records/records/"><code>rg.Record</code></a> class reference for more information on the properties and methods available on a <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> and the <a href="../../search/"><code>rg.Query</code></a> class reference for more information on the query syntax.</p>
 <hr />
 
 
@@ -3575,9 +3575,11 @@
               Bases: <code><span title="typing.Iterable">Iterable</span>[<span title="argilla.records._resource.Record">Record</span>]</code>, <code><span title="argilla._helpers.LoggingMixin">LoggingMixin</span></code></p>
 
 
-      <p>This class is used to work with records from a dataset and is accessed via <code>Dataset.records</code>.
-The responsibility of this class is to provide an interface to interact with records in a dataset,
-by adding, updating, fetching, querying, deleting, and exporting records.</p>
+      <p>This class is used to work with <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> from a dataset and is accessed via <code>Dataset.records</code>.
+The responsibility of this class is to provide an interface to interact with <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> in a dataset,
+by adding, updating, fetching, querying, deleting, and exporting <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 <p><span class="doc-section-title">Attributes:</span></p>
@@ -3598,6 +3600,8 @@ by adding, updating, fetching, querying, deleting, and exporting records.</p>
             <td>
               <div class="doc-md-description">
                 <p>The Argilla client object.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -3609,6 +3613,8 @@ by adding, updating, fetching, querying, deleting, and exporting records.</p>
             <td>
               <div class="doc-md-description">
                 <p>The dataset object.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -4288,6 +4294,8 @@ by adding, updating, fetching, querying, deleting, and exporting records.</p>
 Args:
     client: An Argilla client object.
     dataset: A Dataset object.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
             <details class="quote">
               <summary>Source code in <code>src/argilla/records/_dataset_records.py</code></summary>
@@ -4331,7 +4339,9 @@ Args:
 
     <div class="doc doc-contents ">
 
-      <p>Returns an iterator over the records in the dataset on the server.</p>
+      <p>Returns an iterator over the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> in the dataset on the server.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -4352,7 +4362,9 @@ Args:
             </td>
             <td>
               <div class="doc-md-description">
-                <p>A string or a Query object to filter the records.</p>
+                <p>A string or a Query object to filter the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -4366,7 +4378,9 @@ Args:
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The number of records to fetch in each batch. The default is 256.</p>
+                <p>The number of <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> to fetch in each batch. The default is 256.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -4380,7 +4394,9 @@ Args:
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The offset from which to start fetching records. The default is 0.</p>
+                <p>The offset from which to start fetching <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>. The default is 0.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -4394,7 +4410,9 @@ Args:
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Whether to include suggestions in the records. The default is True.</p>
+                <p>Whether to include suggestions in the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>. The default is True.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -4408,7 +4426,9 @@ Args:
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Whether to include responses in the records. The default is True.</p>
+                <p>Whether to include responses in the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>. The default is True.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -4422,9 +4442,11 @@ Args:
             </td>
             <td>
               <div class="doc-md-description">
-                <p>A list of vector names to include in the records. The default is None.
+                <p>A list of vector names to include in the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>. The default is None.
 If a list is provided, only the specified vectors will be included.
 If True is provided, all vectors will be included.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -4438,7 +4460,9 @@ If True is provided, all vectors will be included.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The maximum number of records to fetch. The default is None.</p>
+                <p>The maximum number of <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> to fetch. The default is None.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -4464,7 +4488,9 @@ If True is provided, all vectors will be included.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>An iterator over the records in the dataset on the server.</p>
+                <p>An iterator over the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> in the dataset on the server.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -4577,10 +4603,12 @@ If True is provided, all vectors will be included.</p>
 
     <div class="doc doc-contents ">
 
-      <p>Add or update records in a dataset on the server using the provided records.
-If the record includes a known <code>id</code> field, the record will be updated.
-If the record does not include a known <code>id</code> field, the record will be added as a new record.
-See <code>rg.Record</code> for more information on the record definition.</p>
+      <p>Add or update <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> in a dataset on the server using the provided <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>.
+If the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> includes a known <code>id</code> field, the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> will be updated.
+If the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> does not include a known <code>id</code> field, the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> will be added as a new <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr>.
+See <code>rg.Record</code> for more information on the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> definition.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -4601,9 +4629,11 @@ See <code>rg.Record</code> for more information on the record definition.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>A list of <code>Record</code> objects, a Hugging Face Dataset, or a list of dictionaries representing the records.
-     If records are defined as a dictionaries or a dataset, the keys/ column names should correspond to the
-     fields in the Argilla dataset's fields and questions. <code>id</code> should be provided to identify the records when updating.</p>
+                <p>A list of <code>Record</code> objects, a Hugging Face Dataset, or a list of dictionaries representing the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>.
+     If <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> are defined as a dictionaries or a dataset, the keys/ column names should correspond to the
+     fields in the Argilla dataset's fields and questions. <code>id</code> should be provided to identify the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> when updating.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -4617,8 +4647,10 @@ See <code>rg.Record</code> for more information on the record definition.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>A dictionary that maps the keys/ column names in the records to the fields or questions in the Argilla dataset.
+                <p>A dictionary that maps the keys/ column names in the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> to the fields or questions in the Argilla dataset.
      To assign an incoming key or column to multiple fields or questions, provide a list or tuple of field or question names.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -4632,7 +4664,9 @@ See <code>rg.Record</code> for more information on the record definition.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The user id to be associated with the records' response. If not provided, the current user id is used.</p>
+                <p>The user id to be associated with the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>' response. If not provided, the current user id is used.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -4646,7 +4680,9 @@ See <code>rg.Record</code> for more information on the record definition.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The number of records to send in each batch. The default is 256.</p>
+                <p>The number of <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> to send in each batch. The default is 256.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -4672,7 +4708,9 @@ See <code>rg.Record</code> for more information on the record definition.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>A list of Record objects representing the updated records.</p>
+                <p>A list of Record objects representing the updated <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -4809,8 +4847,10 @@ See <code>rg.Record</code> for more information on the record definition.</p>
 
     <div class="doc doc-contents ">
 
-      <p>Delete records in a dataset on the server using the provided records
+      <p>Delete <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> in a dataset on the server using the provided <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>
     and matching based on the id.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -4831,7 +4871,9 @@ See <code>rg.Record</code> for more information on the record definition.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>A list of <code>Record</code> objects representing the records to be deleted.</p>
+                <p>A list of <code>Record</code> objects representing the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> to be deleted.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -4845,7 +4887,9 @@ See <code>rg.Record</code> for more information on the record definition.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The number of records to send in each batch. The default is 64.</p>
+                <p>The number of <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> to send in each batch. The default is 64.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -4871,7 +4915,9 @@ See <code>rg.Record</code> for more information on the record definition.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>A list of Record objects representing the deleted records.</p>
+                <p>A list of Record objects representing the deleted <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -4982,7 +5028,9 @@ See <code>rg.Record</code> for more information on the record definition.</p>
 
     <div class="doc doc-contents ">
 
-      <p>Return the records as a dictionary. This is a convenient shortcut for dataset.records(...).to_dict().</p>
+      <p>Return the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> as a dictionary. This is a convenient shortcut for dataset.<abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>(...).to_dict().</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -5004,8 +5052,10 @@ See <code>rg.Record</code> for more information on the record definition.</p>
             <td>
               <div class="doc-md-description">
                 <p>The structure of the exported dictionary.
-- True: The record fields, metadata, suggestions and responses will be flattened.
-- False: The record fields, metadata, suggestions and responses will be nested.</p>
+- True: The <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> fields, metadata, suggestions and responses will be flattened.
+- False: The <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> fields, metadata, suggestions and responses will be nested.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -5021,7 +5071,9 @@ See <code>rg.Record</code> for more information on the record definition.</p>
               <div class="doc-md-description">
                 <p>The orientation of the exported dictionary.
 - "names": The keys of the dictionary will be the names of the fields, metadata, suggestions and responses.
-- "index": The keys of the dictionary will be the id of the records.</p>
+- "index": The keys of the dictionary will be the id of the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -5031,7 +5083,9 @@ See <code>rg.Record</code> for more information on the record definition.</p>
       </tbody>
     </table>
       <p>Returns:
-    A dictionary of records.</p>
+    A dictionary of <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
             <details class="quote">
               <summary>Source code in <code>src/argilla/records/_dataset_records.py</code></summary>
@@ -5083,7 +5137,9 @@ See <code>rg.Record</code> for more information on the record definition.</p>
 
     <div class="doc doc-contents ">
 
-      <p>Return the records as a list of dictionaries. This is a convenient shortcut for dataset.records(...).to_list().</p>
+      <p>Return the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> as a list of dictionaries. This is a convenient shortcut for dataset.<abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>(...).to_list().</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -5105,8 +5161,10 @@ See <code>rg.Record</code> for more information on the record definition.</p>
             <td>
               <div class="doc-md-description">
                 <p>The structure of the exported dictionaries in the list.
-- True: The record keys are flattened and a dot notation is used to record attributes and their attributes . For example, <code>label.suggestion</code> and <code>label.response</code>. Records responses are spread across multiple columns for values and users.
-- False: The record fields, metadata, suggestions and responses will be nested dictionary with keys for record attributes.</p>
+- True: The <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> keys are flattened and a dot notation is used to <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> attributes and their attributes . For example, <code>label.suggestion</code> and <code>label.response</code>. Records responses are spread across multiple columns for values and users.
+- False: The <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> fields, metadata, suggestions and responses will be nested dictionary with keys for <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> attributes.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -5116,7 +5174,9 @@ See <code>rg.Record</code> for more information on the record definition.</p>
       </tbody>
     </table>
       <p>Returns:
-    A list of dictionaries of records.</p>
+    A list of dictionaries of <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
             <details class="quote">
               <summary>Source code in <code>src/argilla/records/_dataset_records.py</code></summary>
@@ -5162,7 +5222,9 @@ See <code>rg.Record</code> for more information on the record definition.</p>
 
     <div class="doc doc-contents ">
 
-      <p>Export the records to a file on disk.</p>
+      <p>Export the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> to a file on disk.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -5183,7 +5245,9 @@ See <code>rg.Record</code> for more information on the record definition.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The path to the file to save the records.</p>
+                <p>The path to the file to save the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -5209,7 +5273,9 @@ See <code>rg.Record</code> for more information on the record definition.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The path to the file where the records were saved.</p>
+                <p>The path to the file where the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> were saved.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -5260,6 +5326,8 @@ See <code>rg.Record</code> for more information on the record definition.</p>
 
       <p>Creates a DatasetRecords object from a disk path to a JSON file.
     The JSON file should be defined by <code>DatasetRecords.to_json</code>.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -5280,7 +5348,9 @@ See <code>rg.Record</code> for more information on the record definition.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The path to the file containing the records.</p>
+                <p>The path to the file containing the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -5307,6 +5377,8 @@ See <code>rg.Record</code> for more information on the record definition.</p>
             <td>
               <div class="doc-md-description">
                 <p>The DatasetRecords object created from the disk path.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -5357,7 +5429,9 @@ See <code>rg.Record</code> for more information on the record definition.</p>
 
     <div class="doc doc-contents ">
 
-      <p>Export the records to a HFDataset.</p>
+      <p>Export the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> to a HFDataset.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
     <p><span class="doc-section-title">Returns:</span></p>
@@ -5375,7 +5449,9 @@ See <code>rg.Record</code> for more information on the record definition.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The dataset containing the records.</p>
+                <p>The dataset containing the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -5415,7 +5491,8 @@ See <code>rg.Record</code> for more information on the record definition.</p>
 
     </div>
 
-</div>
+</div><!-- General -->
+<!-- Argilla specific -->
 
 
 

@@ -3160,9 +3160,9 @@
   
 
 
-<h1 id="query-and-filter-records">Query and filter records<a class="headerlink" href="#query-and-filter-records" title="Permanent link">&para;</a></h1>
+<h1 id="query-and-filter-records">Query and filter <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr><a class="headerlink" href="#query-and-filter-records" title="Permanent link">&para;</a></h1>
 <p>This guide provides an overview of how to query and filter a dataset in Argilla.</p>
-<p>You can search for records in your dataset by <strong>querying</strong> or <strong>filtering</strong>. The query focuses on the content of the text field, while the filter is used to filter the records based on conditions. You can use them independently or combine multiple filters to create complex search queries. You can also export records from a dataset either as a single dictionary or a list of dictionaries.</p>
+<p>You can search for <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> in your dataset by <strong>querying</strong> or <strong>filtering</strong>. The query focuses on the content of the text field, while the filter is used to filter the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> based on conditions. You can use them independently or combine multiple filters to create complex search queries. You can also export <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> from a dataset either as a single dictionary or a list of dictionaries.</p>
 <div class="admonition info">
 <p class="admonition-title">Main Classes</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1"><code>rg.Query</code></label><label for="__tabbed_1_2"><code>rg.Filter</code></label><label for="__tabbed_1_3"><code>rg.Similar</code></label></div>
@@ -3202,7 +3202,7 @@
 </div>
 </div>
 <h2 id="query-with-search-terms">Query with search terms<a class="headerlink" href="#query-with-search-terms" title="Permanent link">&para;</a></h2>
-<p>To search for records with terms, you can use the <code>Dataset.records</code> attribute with a query string. The search terms are used to search for records that contain the terms in the text field. You can search a single term or various terms, in the latter, all of them should appear in the record to be retrieved.</p>
+<p>To search for <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> with terms, you can use the <code>Dataset.records</code> attribute with a query string. The search terms are used to search for <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> that contain the terms in the text field. You can search a single term or various terms, in the latter, all of them should appear in the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> to be retrieved.</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Single term search</label><label for="__tabbed_2_2">Multiple terms search</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
@@ -3245,46 +3245,46 @@
 <tr>
 <td><code>+</code> or <code>space</code></td>
 <td><strong>AND</strong>: search both terms</td>
-<td><code>argilla + distilabel</code> or <code>argilla distilabel</code></br> return records that include the terms "argilla" and "distilabel"</td>
+<td><code>argilla + distilabel</code> or <code>argilla distilabel</code></br> return <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> that include the terms "argilla" and "distilabel"</td>
 </tr>
 <tr>
 <td><code>|</code></td>
 <td><strong>OR</strong>: search either term</td>
-<td><code>argilla | distilabel</code> </br> returns records that include the term "argilla" or "distilabel"</td>
+<td><code>argilla | distilabel</code> </br> returns <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> that include the term "argilla" or "distilabel"</td>
 </tr>
 <tr>
 <td><code>-</code></td>
 <td><strong>Negation</strong>: exclude a term</td>
-<td><code>argilla -distilabel</code> </br> returns records that contain the term "argilla" and don't have the term "distilabel"</td>
+<td><code>argilla -distilabel</code> </br> returns <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> that contain the term "argilla" and don't have the term "distilabel"</td>
 </tr>
 <tr>
 <td><code>*</code></td>
 <td><strong>Prefix</strong>: search a prefix</td>
-<td><code>arg*</code></br> returns records with any words starting with "arg-"</td>
+<td><code>arg*</code></br> returns <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> with any words starting with "arg-"</td>
 </tr>
 <tr>
 <td><code>"</code></td>
 <td><strong>Phrase</strong>: search a phrase</td>
-<td><code>"argilla and distilabel"</code> </br> returns records that contain the phrase "argilla and distilabel"</td>
+<td><code>"argilla and distilabel"</code> </br> returns <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> that contain the phrase "argilla and distilabel"</td>
 </tr>
 <tr>
 <td><code>(</code> and <code>)</code></td>
 <td><strong>Precedence</strong>: group terms</td>
-<td><code>(argilla | distilabel) rules</code> </br> returns records that contain either "argilla" or "distilabel" and "rules"</td>
+<td><code>(argilla | distilabel) rules</code> </br> returns <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> that contain either "argilla" or "distilabel" and "rules"</td>
 </tr>
 <tr>
 <td><code>~N</code></td>
 <td><strong>Edit distance</strong>: search a term or phrase with an edit distance</td>
-<td><code>argilla~1</code> </br> returns records that contain the term "argilla" with an edit distance of 1, e.g. "argila"</td>
+<td><code>argilla~1</code> </br> returns <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> that contain the term "argilla" with an edit distance of 1, e.g. "argila"</td>
 </tr>
 </tbody>
 </table>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
-<p>To use one of these characters literally, escape it with a preceding backslash <code>\</code>, e.g. <code>"1 \+ 2"</code> would match records where the phrase "1 + 2" is found.</p>
+<p>To use one of these characters literally, escape it with a preceding backslash <code>\</code>, e.g. <code>"1 \+ 2"</code> would match <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> where the phrase "1 + 2" is found.</p>
 </div>
 <h2 id="filter-by-conditions">Filter by conditions<a class="headerlink" href="#filter-by-conditions" title="Permanent link">&para;</a></h2>
-<p>You can use the <code>Filter</code> class to define the conditions and pass them to the <code>Dataset.records</code> attribute to fetch records based on the conditions. Conditions include "==", "&gt;=", "&lt;=", or "in". Conditions can be combined with dot notation to filter records based on metadata, suggestions, or responses. You can use a single condition or multiple conditions to filter records.</p>
+<p>You can use the <code>Filter</code> class to define the conditions and pass them to the <code>Dataset.records</code> attribute to fetch <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> based on the conditions. Conditions include "==", "&gt;=", "&lt;=", or "in". Conditions can be combined with dot notation to filter <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> based on metadata, suggestions, or responses. You can use a single condition or multiple conditions to filter <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>.</p>
 <table>
 <thead>
 <tr>
@@ -3351,7 +3351,7 @@
 </div>
 </div>
 <h3 id="available-fields">Available fields<a class="headerlink" href="#available-fields" title="Permanent link">&para;</a></h3>
-<p>You can filter records based on the following fields:</p>
+<p>You can filter <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> based on the following fields:</p>
 <table>
 <thead>
 <tr>
@@ -3363,27 +3363,27 @@
 <tbody>
 <tr>
 <td><code>id</code></td>
-<td>The record id</td>
+<td>The <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> id</td>
 <td><code>("id", "in", ["1","2","3"])</code></td>
 </tr>
 <tr>
 <td><code>_server_id</code></td>
-<td>The internal record id. This value must be a valida UUID</td>
+<td>The internal <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> id. This value must be a valida UUID</td>
 <td><code>("_server_id", "==", "ba69a996-85c2-4af0-a473-23138929641b")</code></td>
 </tr>
 <tr>
 <td><code>inserted_at</code></td>
-<td>The date and time the record was inserted. You can pass a datetime or a string</td>
+<td>The date and time the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> was inserted. You can pass a datetime or a string</td>
 <td><code>("inserted_at" "&gt;=", "2024-10-10")</code></td>
 </tr>
 <tr>
 <td><code>updated_at</code></td>
-<td>The date and time the record was updated.</td>
+<td>The date and time the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> was updated.</td>
 <td><code>("updated_at" "&gt;=", "2024-10-10")</code></td>
 </tr>
 <tr>
 <td><code>status</code></td>
-<td>The record status, which can be <code>pending</code> or <code>completed</code>.</td>
+<td>The <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> status, which can be <code>pending</code> or <code>completed</code>.</td>
 <td><code>("status", "==", "completed")</code></td>
 </tr>
 <tr>
@@ -3419,7 +3419,7 @@
 </tbody>
 </table>
 <h2 id="filter-by-status">Filter by status<a class="headerlink" href="#filter-by-status" title="Permanent link">&para;</a></h2>
-<p>You can filter records based on record or response status. Record status can be <code>pending</code> or <code>completed</code>, and response status can be <code>draft</code>, <code>submitted</code>, or <code>discarded</code>.</p>
+<p>You can filter <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> based on <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> or response status. Record status can be <code>pending</code> or <code>completed</code>, and response status can be <code>draft</code>, <code>submitted</code>, or <code>discarded</code>.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">import</span> <span class="nn">argilla</span> <span class="k">as</span> <span class="nn">rg</span>
 </span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
 </span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">client</span> <span class="o">=</span> <span class="n">rg</span><span class="o">.</span><span class="n">Argilla</span><span class="p">(</span><span class="n">api_url</span><span class="o">=</span><span class="s2">&quot;&lt;api_url&gt;&quot;</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;&lt;api_key&gt;&quot;</span><span class="p">)</span>
@@ -3438,7 +3438,7 @@
 </span><span id="__span-7-16"><a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="n">filtered_records</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">records</span><span class="p">(</span><span class="n">status_filter</span><span class="p">)</span><span class="o">.</span><span class="n">to_list</span><span class="p">(</span><span class="n">flatten</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span></code></pre></div>
 <h2 id="similarity-search">Similarity search<a class="headerlink" href="#similarity-search" title="Permanent link">&para;</a></h2>
-<p>You can search for records that are similar to a given vector. You can use the <code>Similar</code> class to define the vector and pass it as part of the query argument to the <code>Dataset.records</code>.</p>
+<p>You can search for <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> that are similar to a given vector. You can use the <code>Similar</code> class to define the vector and pass it as part of the query argument to the <code>Dataset.records</code>.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kn">import</span> <span class="nn">argilla</span> <span class="k">as</span> <span class="nn">rg</span>
 </span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
 </span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="n">client</span> <span class="o">=</span> <span class="n">rg</span><span class="o">.</span><span class="n">Argilla</span><span class="p">(</span><span class="n">api_url</span><span class="o">=</span><span class="s2">&quot;&lt;api_url&gt;&quot;</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;&lt;api_key&gt;&quot;</span><span class="p">)</span>
@@ -3483,6 +3483,8 @@ Vist the <a href="../dataset/#vectors">Vectors</a> section for more details on h
 </span><span id="__span-9-20"><a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a>    <span class="n">with_suggestions</span><span class="o">=</span><span class="kc">True</span>
 </span><span id="__span-9-21"><a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a><span class="p">)</span><span class="o">.</span><span class="n">to_list</span><span class="p">(</span><span class="n">flatten</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span></code></pre></div>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 

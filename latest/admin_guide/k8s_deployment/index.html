@@ -3221,7 +3221,7 @@
 <li>argilla-server: Web server for data annotation, dataset management, and extraction services</li>
 <li>extralit-server: <abbr title="Application Programming Interface.">API</abbr> server for data extraction, PDF parsing, and schema generation</li>
 <li>Postgres database: Main database for extracted data and user accounts</li>
-<li>Elasticsearch: Search engine for data records</li>
+<li>Elasticsearch: Search engine for data <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr></li>
 <li>Minio/S3: File storage for schemas, PDFs, and intermediate outputs</li>
 <li>Weaviate: Vector database for text and table sections</li>
 <li>Langfuse: <abbr title="Large Language Model, an AI system trained on vast amounts of text data.">LLM</abbr> instrumentation service for query tracing and logging</li>
@@ -3344,6 +3344,8 @@
 <li><code>minio</code>: As a standalone pod in the <abbr title="Kubernetes, an open-source platform designed to automate deploying, scaling, and operating application containers.">K8s</abbr> cluster for file blob storage, the Minio service is not automatically backed up. The data in the Minio bucket can be lost if the pod is deleted or the cluster fails in anyway. The data can be restored by re-uploading the data to the Minio bucket.</li>
 </ul>
 <p>For support, join the <a href="https://join.slack.com/t/extralit/shared_invite/zt-32blg3602-0m0XewPBXF7776BQ3m7ZlA">Extralit Slack channel</a>.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 

@@ -3028,7 +3028,7 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Legacy datasets include: <code>DatasetForTextClassification</code>, <code>DatasetForTokenClassification</code>, and <code>DatasetForText2Text</code>.</p>
-<p><code>FeedbackDataset</code>'s do not need to be migrated as they are already in the Argilla V2 format. Anyway, since the 2.x version includes changes to the search index structure, you should reindex the datasets by enabling the docker environment variable REINDEX_DATASET (This step is automatically executed if you're running Argilla in an <abbr title="A platform for deploying and managing AI applications, models and datasets in the cloud.">HF Space</abbr>). See the <a href="../../reference/argilla-server/configuration/#docker-images-only">server configuration docs</a> section for more details.</p>
+<p><code>FeedbackDataset</code>'s do not need to be migrated as they are already in the Argilla V2 format. Anyway, since the 2.x version includes changes to the search index structure, you should reindex the datasets by enabling the docker environment variable REINDEX_DATASET (This step is automatically executed if you're running Argilla in an <abbr title="HuggingFace - A platform for deploying and managing open-source AI applications, models and datasets in the cloud.">HF</abbr> Space). See the <a href="../../reference/argilla-server/configuration/#docker-images-only">server configuration docs</a> section for more details.</p>
 </div>
 <p>To follow this guide, you will need to have the following prerequisites:</p>
 <ul>
@@ -3101,7 +3101,7 @@
 <ol>
 <li><strong>Retrieve the legacy dataset</strong> from the Argilla V1 server using the new <code>argilla</code> package.</li>
 <li><strong>Define the new dataset</strong> in the Argilla V2 format.</li>
-<li><strong>Upload the dataset records</strong> to the new Argilla V2 dataset format and attributes.</li>
+<li><strong>Upload the dataset <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr></strong> to the new Argilla V2 dataset format and attributes.</li>
 </ol>
 <h3 id="step-1-retrieve-the-legacy-dataset">Step 1: Retrieve the legacy dataset<a class="headerlink" href="#step-1-retrieve-the-legacy-dataset" title="Permanent link">&para;</a></h3>
 <p>You can use the <code>v1</code> module to connect to the Argilla V1 server.</p>
@@ -3112,7 +3112,7 @@
 </span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="n">api_key</span> <span class="o">=</span> <span class="s2">&quot;&lt;your-api-key&gt;&quot;</span>
 </span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="n">rg_v1</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">api_url</span><span class="p">,</span> <span class="n">api_key</span><span class="p">)</span>
 </span></code></pre></div>
-<p>Next, load the dataset settings and records from the Argilla V1 server:</p>
+<p>Next, load the dataset settings and <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> from the Argilla V1 server:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">dataset_name</span> <span class="o">=</span> <span class="s2">&quot;news-programmatic-labeling&quot;</span>
 </span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">workspace</span> <span class="o">=</span> <span class="s2">&quot;demo&quot;</span>
 </span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
@@ -3232,9 +3232,9 @@
 </span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>    <span class="n">dataset</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
 </span></code></pre></div>
 </div>
-<h3 id="step-3-upload-the-dataset-records">Step 3: Upload the dataset records<a class="headerlink" href="#step-3-upload-the-dataset-records" title="Permanent link">&para;</a></h3>
-<p>To upload the records to the new server, we will need to convert the records from the Argilla V1 format to the Argilla V2 format. The new <code>argilla</code> sdk package uses a generic <code>Record</code> class, but legacy datasets have specific record classes. We will need to convert the records to the generic <code>Record</code> class.</p>
-<p>Here are a set of example functions to convert the records for single-label and multi-label classification. You can modify these functions to suit your dataset.</p>
+<h3 id="step-3-upload-the-dataset-records">Step 3: Upload the dataset <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr><a class="headerlink" href="#step-3-upload-the-dataset-records" title="Permanent link">&para;</a></h3>
+<p>To upload the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> to the new server, we will need to convert the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> from the Argilla V1 format to the Argilla V2 format. The new <code>argilla</code> sdk package uses a generic <code>Record</code> class, but legacy datasets have specific <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> classes. We will need to convert the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> to the generic <code>Record</code> class.</p>
+<p>Here are a set of example functions to convert the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> for single-label and multi-label classification. You can modify these functions to suit your dataset.</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="2:4"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><input id="__tabbed_2_3" name="__tabbed_2" type="radio" /><input id="__tabbed_2_4" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">For single-label classification</label><label for="__tabbed_2_2">For multi-label classification</label><label for="__tabbed_2_3">For token classification</label><label for="__tabbed_2_4">For text generation</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
@@ -3438,7 +3438,7 @@
 <div class="language-python highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="n">users_by_name</span> <span class="o">=</span> <span class="p">{</span><span class="n">user</span><span class="o">.</span><span class="n">username</span><span class="p">:</span> <span class="n">user</span> <span class="k">for</span> <span class="n">user</span> <span class="ow">in</span> <span class="n">client</span><span class="o">.</span><span class="n">users</span><span class="p">}</span>
 </span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="n">current_user</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">me</span>
 </span></code></pre></div>
-<p>Finally, upload the records to the new dataset using the <code>log</code> method and map functions.</p>
+<p>Finally, upload the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> to the new dataset using the <code>log</code> method and map functions.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="n">records</span> <span class="o">=</span> <span class="p">[]</span>
 </span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>
 </span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">hf_records</span><span class="p">:</span>
@@ -3448,6 +3448,8 @@
 </span><span id="__span-20-7"><a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a><span class="n">dataset</span><span class="o">.</span><span class="n">records</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">records</span><span class="p">)</span>
 </span></code></pre></div>
 <p>You have now successfully migrated your legacy dataset to Argilla V2. For more guides on how to use the Argilla <abbr title="Software Development Kit.">SDK</abbr>, please refer to the <a href="../">How to guides</a>.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 

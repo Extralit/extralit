@@ -3440,7 +3440,7 @@
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="add-records">Add records<a class="headerlink" href="#add-records" title="Permanent link">&para;</a></h2>
+<h2 id="add-records">Add <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr><a class="headerlink" href="#add-records" title="Permanent link">&para;</a></h2>
 </div>
 </div>
 </div>
@@ -3537,7 +3537,7 @@
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>To update the records, we will need to retrieve them from the server and update them with the new suggestions. The <code>id</code> will always need to be provided as it is the records' identifier to update a record and avoid creating a new one.</p>
+<p>To update the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>, we will need to retrieve them from the server and update them with the new suggestions. The <code>id</code> will always need to be provided as it is the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>' identifier to update a <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> and avoid creating a new one.</p>
 </div>
 </div>
 </div>
@@ -3576,7 +3576,7 @@
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Now, we can start the annotation process. Just open the dataset in the Argilla UI and start annotating the records. If the suggestions are correct, you can just click on <code>Submit</code>. Otherwise, you can select the correct label.</p>
+<p>Now, we can start the annotation process. Just open the dataset in the Argilla UI and start annotating the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>. If the suggestions are correct, you can just click on <code>Submit</code>. Otherwise, you can select the correct label.</p>
 </div>
 </div>
 </div>
@@ -3600,7 +3600,7 @@
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>After the annotation, we will have a robust dataset to train our model for entity recognition. For our case, we will train a SpanMarker model, but you can select any model of your choice. So, let's start by retrieving the annotated records.</p>
+<p>After the annotation, we will have a robust dataset to train our model for entity recognition. For our case, we will train a SpanMarker model, but you can select any model of your choice. So, let's start by retrieving the annotated <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Check this <a href="../how_to_guides/query.md">how-to guide</a> to learn more about filtering and querying in Argilla. Also, you can check the Hugging Face docs on <a href="https://huggingface.co/docs/transformers/en/tasks/token_classification">fine-tuning an token classification model</a>.</p>
@@ -3899,7 +3899,7 @@
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>As the training data was of better quality, we can expect a better model. So we can update the remaining non-annotated records with the new model's suggestions.</p>
+<p>As the training data was of better quality, we can expect a better model. So we can update the remaining non-annotated <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> with the new model's suggestions.</p>
 </div>
 </div>
 </div>
@@ -3930,10 +3930,12 @@
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>In this tutorial, we present an end-to-end example of a token classification task. This serves as the base, but it can be performed iteratively and seamlessly integrated into your workflow to ensure high-quality curation of your data and improved results.</p>
-<p>We started by configuring the dataset, adding records, and adding suggestions based on the GLiNer predictions. After the annotation process, we trained a SpanMarker model with the annotated data and updated the remaining records with the new suggestions.</p>
+<p>We started by configuring the dataset, adding <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>, and adding suggestions based on the GLiNer predictions. After the annotation process, we trained a SpanMarker model with the annotated data and updated the remaining <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> with the new suggestions.</p>
 </div>
 </div>
 </div>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 

@@ -3241,7 +3241,7 @@
 
 
 <h1 id="fields">Fields<a class="headerlink" href="#fields" title="Permanent link">&para;</a></h1>
-<p>Fields in Argilla define the content of a record that will be reviewed by a user.</p>
+<p>Fields in Argilla define the content of a <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> that will be reviewed by a user.</p>
 <h2 id="usage-examples">Usage Examples<a class="headerlink" href="#usage-examples" title="Permanent link">&para;</a></h2>
 <p>To define a field, instantiate the different field classes and pass it to the <code>fields</code> parameter of the <code>Settings</code> class.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">text_field</span> <span class="o">=</span> <span class="n">rg</span><span class="o">.</span><span class="n">TextField</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;text&quot;</span><span class="p">)</span>
@@ -3266,7 +3266,7 @@
 </span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="p">)</span>
 </span></code></pre></div>
 <blockquote>
-<p>To add records with values for fields, refer to the <a href="../../records/records/"><code>rg.Dataset.records</code></a> documentation.</p>
+<p>To add <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> with values for fields, refer to the <a href="../../records/records/"><code>rg.Dataset.records</code></a> documentation.</p>
 </blockquote>
 <hr />
 
@@ -3288,6 +3288,8 @@
 
 
       <p>Text field for use in Argilla <code>Dataset</code> <code>Settings</code></p>
+<!-- General -->
+<!-- Argilla specific -->
 
               <details class="quote">
                 <summary>Source code in <code>src/argilla/settings/_field.py</code></summary>
@@ -3417,6 +3419,8 @@ Parameters:
     use_markdown (Optional[bool], optional): Whether to use markdown. Defaults to False.
     required (bool): Whether the field is required. Defaults to True.
     description (Optional[str], optional): The description of the field. Defaults to None.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
             <details class="quote">
               <summary>Source code in <code>src/argilla/settings/_field.py</code></summary>
@@ -3506,6 +3510,8 @@ Parameters:
 
 
       <p>Image field for use in Argilla <code>Dataset</code> <code>Settings</code></p>
+<!-- General -->
+<!-- Argilla specific -->
 
               <details class="quote">
                 <summary>Source code in <code>src/argilla/settings/_field.py</code></summary>
@@ -3593,6 +3599,8 @@ Parameters:
     <div class="doc doc-contents ">
 
       <p>Text field for use in Argilla <code>Dataset</code> <code>Settings</code></p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -3614,6 +3622,8 @@ Parameters:
             <td>
               <div class="doc-md-description">
                 <p>The name of the field</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -3628,6 +3638,8 @@ Parameters:
             <td>
               <div class="doc-md-description">
                 <p>The title of the field. Defaults to None.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -3642,6 +3654,8 @@ Parameters:
             <td>
               <div class="doc-md-description">
                 <p>Whether the field is required. Defaults to True.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -3656,6 +3670,8 @@ Parameters:
             <td>
               <div class="doc-md-description">
                 <p>The description of the field. Defaults to None.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -3749,6 +3765,8 @@ Parameters:
 
 
       <p>Chat field for use in Argilla <code>Dataset</code> <code>Settings</code></p>
+<!-- General -->
+<!-- Argilla specific -->
 
               <details class="quote">
                 <summary>Source code in <code>src/argilla/settings/_field.py</code></summary>
@@ -3856,6 +3874,8 @@ Parameters:
     <div class="doc doc-contents ">
 
       <p>Chat field for use in Argilla <code>Dataset</code> <code>Settings</code></p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -3877,6 +3897,8 @@ Parameters:
             <td>
               <div class="doc-md-description">
                 <p>The name of the field</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -3891,6 +3913,8 @@ Parameters:
             <td>
               <div class="doc-md-description">
                 <p>The title of the field. Defaults to None.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -3905,6 +3929,8 @@ Parameters:
             <td>
               <div class="doc-md-description">
                 <p>Whether to use markdown. Defaults to True.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -3919,6 +3945,8 @@ Parameters:
             <td>
               <div class="doc-md-description">
                 <p>Whether the field is required. Defaults to True.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -3933,6 +3961,8 @@ Parameters:
             <td>
               <div class="doc-md-description">
                 <p>The description of the field. Defaults to None.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -4030,6 +4060,8 @@ Parameters:
 
 
       <p>Custom field for use in Argilla <code>Dataset</code> <code>Settings</code></p>
+<!-- General -->
+<!-- Argilla specific -->
 
               <details class="quote">
                 <summary>Source code in <code>src/argilla/settings/_field.py</code></summary>
@@ -4200,7 +4232,9 @@ Parameters:
 
       <p>Custom field for use in Argilla <code>Dataset</code> <code>Settings</code> for working with custom HTML and CSS templates.
 By default argilla will use a brackets syntax engine for the templates, which converts
-<code>{{ field.key }}</code> to the values of record's field's object.</p>
+<code>{{ field.key }}</code> to the values of <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr>'s field's object.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -4222,6 +4256,8 @@ By default argilla will use a brackets syntax engine for the templates, which co
             <td>
               <div class="doc-md-description">
                 <p>The name of the field</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -4236,6 +4272,8 @@ By default argilla will use a brackets syntax engine for the templates, which co
             <td>
               <div class="doc-md-description">
                 <p>The title of the field. Defaults to None.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -4250,6 +4288,8 @@ By default argilla will use a brackets syntax engine for the templates, which co
             <td>
               <div class="doc-md-description">
                 <p>The template of the field (HTML and CSS)</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -4265,6 +4305,8 @@ By default argilla will use a brackets syntax engine for the templates, which co
               <div class="doc-md-description">
                 <p>Whether to use advanced mode. Defaults to False.
 Deactivate the brackets syntax engine and use custom javascript to render the field.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -4279,6 +4321,8 @@ Deactivate the brackets syntax engine and use custom javascript to render the fi
             <td>
               <div class="doc-md-description">
                 <p>Whether the field is required. Defaults to True.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -4293,6 +4337,8 @@ Deactivate the brackets syntax engine and use custom javascript to render the fi
             <td>
               <div class="doc-md-description">
                 <p>Whether the field is required. Defaults to True.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -4307,6 +4353,8 @@ Deactivate the brackets syntax engine and use custom javascript to render the fi
             <td>
               <div class="doc-md-description">
                 <p>The description of the field. Defaults to None.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -4397,7 +4445,8 @@ Deactivate the brackets syntax engine and use custom javascript to render the fi
 
     </div>
 
-</div>
+</div><!-- General -->
+<!-- Argilla specific -->
 
 
 

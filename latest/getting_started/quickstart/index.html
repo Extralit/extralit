@@ -3130,7 +3130,7 @@
 <ul>
 <li>Leave the default owner if using your personal account</li>
 <li>
-<p>Leave <code>ADMIN_USERNAME</code> and <code>ADMIN_PASSWORD</code> secrets empty since you'll sign in with your HF user as the Argilla Space <code>owner</code>.</p>
+<p>Leave <code>ADMIN_USERNAME</code> and <code>ADMIN_PASSWORD</code> secrets empty since you'll sign in with your <abbr title="HuggingFace - A platform for deploying and managing open-source AI applications, models and datasets in the cloud.">HF</abbr> user as the Argilla Space <code>owner</code>.</p>
 </li>
 <li>
 <p>You must fill out the following Space secrets fields:</p>
@@ -3172,7 +3172,7 @@ Learn how to [create your first dataset](create-your-first-dataset.md).
 <p class="admonition-title">Persistent storage <code>SMALL</code></p>
 <p>Not setting persistent storage to <code>SMALL</code> means that <strong>you will loose your data when the Space restarts</strong>. Spaces get restarted due to maintenance, inactivity, and every time you change your Spaces settings. If you want to <strong>use the Space just for testing</strong> you can use <code>FREE</code> temporarily.</p>
 </div>
-<p>If you want to deploy Argilla within a Hugging Face organization, setup a more stable Space, or understand the settings, <a href="../how-to-configure-argilla-on-huggingface/">check out the HF Spaces settings guide</a>. --&gt;</p>
+<p>If you want to deploy Argilla within a Hugging Face organization, setup a more stable Space, or understand the settings, <a href="../how-to-configure-argilla-on-huggingface/">check out the <abbr title="HuggingFace - A platform for deploying and managing open-source AI applications, models and datasets in the cloud.">HF</abbr> Spaces settings guide</a>. --&gt;</p>
 </div>
 <div class="admonition docker">
 <p class="admonition-title">Deploy with Docker</p>
@@ -3183,7 +3183,7 @@ Learn how to [create your first dataset](create-your-first-dataset.md).
 <p><img alt="Focus view" height="100%" src="../../assets/images/getting_started/signin-hf-page.png" width="100%" /></p>
 <div class="admonition info">
 <p class="admonition-title">Building errors</p>
-<p>If you get a build error, sometimes restarting the Space from the Settings page works, otherwise <a href="../how-to-configure-argilla-on-huggingface/">check the HF Spaces settings guide</a>.</p>
+<p>If you get a build error, sometimes restarting the Space from the Settings page works, otherwise <a href="../how-to-configure-argilla-on-huggingface/">check the <abbr title="HuggingFace - A platform for deploying and managing open-source AI applications, models and datasets in the cloud.">HF</abbr> Spaces settings guide</a>.</p>
 </div>
 <p>In the sign in page:</p>
 <ol>
@@ -3214,11 +3214,11 @@ Learn how to [create your first dataset](create-your-first-dataset.md).
 <p>When you're happy with the result, you'll need to give a name to your dataset, select a workspace and choose a split, if applicable. Then, Argilla will start importing the dataset in the background. Now you're all set up to start annotating!</p>
 <div class="admonition info">
 <p class="admonition-title">Importing long datasets</p>
-<p>Argilla will only import the first 10k rows of a dataset. If your dataset is larger, you can import the rest of the records at any point using the Python <abbr title="Software Development Kit.">SDK</abbr>.</p>
+<p>Argilla will only import the first 10k rows of a dataset. If your dataset is larger, you can import the rest of the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> at any point using the Python <abbr title="Software Development Kit.">SDK</abbr>.</p>
 <p>To do that, open your dataset and copy the code snippet provided under "Import data". Now, open a Jupyter or Google Colab notebook and install argilla:</p>
 <p><div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="err">!</span><span class="n">pip</span> <span class="n">install</span> <span class="n">argilla</span>
 </span></code></pre></div>
-Then, paste and run your code snippet. This will import the remaining records to your dataset.</p>
+Then, paste and run your code snippet. This will import the remaining <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> to your dataset.</p>
 </div>
 <h2 id="install-and-connect-the-python-sdk">Install and connect the Python <abbr title="Software Development Kit.">SDK</abbr><a class="headerlink" href="#install-and-connect-the-python-sdk" title="Permanent link">&para;</a></h2>
 <p>For getting started with Argilla and its <abbr title="Software Development Kit.">SDK</abbr>, we recommend to use Jupyter Notebook or Google Colab. You will need this to manage users, workspaces and datasets in Argilla.</p>
@@ -3274,6 +3274,8 @@ Then, paste and run your code snippet. This will import the remaining records to
 <p>To further configure your Argilla Space, check the <a href="../how-to-configure-argilla-on-huggingface/">Hugging Face Spaces settings guide</a>.</p>
 </li>
 </ul>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 

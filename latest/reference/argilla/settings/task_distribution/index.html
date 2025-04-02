@@ -3067,9 +3067,9 @@
 
 
 <h1 id="distribution">Distribution<a class="headerlink" href="#distribution" title="Permanent link">&para;</a></h1>
-<p>Distribution settings are used to define the criteria used by the tool to automatically manage records in the dataset depending on the expected number of submitted responses per record.</p>
+<p>Distribution settings are used to define the criteria used by the tool to automatically manage <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> in the dataset depending on the expected number of submitted responses per <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr>.</p>
 <h2 id="usage-examples">Usage Examples<a class="headerlink" href="#usage-examples" title="Permanent link">&para;</a></h2>
-<p>The default minimum submitted responses per record is 1. If you wish to increase this value, you can define it through the <code>TaskDistribution</code> class and pass it to the <code>Settings</code> class.</p>
+<p>The default minimum submitted responses per <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> is 1. If you wish to increase this value, you can define it through the <code>TaskDistribution</code> class and pass it to the <code>Settings</code> class.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">settings</span> <span class="o">=</span> <span class="n">rg</span><span class="o">.</span><span class="n">Settings</span><span class="p">(</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">guidelines</span><span class="o">=</span><span class="s2">&quot;These are some guidelines.&quot;</span><span class="p">,</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">fields</span><span class="o">=</span><span class="p">[</span>
@@ -3109,7 +3109,9 @@
 
 
       <p>The task distribution settings class.</p>
-<p>This task distribution defines a number of submitted responses required to complete a record.</p>
+<p>This task distribution defines a number of submitted responses required to complete a <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr>.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -3130,7 +3132,9 @@
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The number of min. submitted responses to complete the record</p>
+                <p>The number of min. submitted responses to complete the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr></p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -3258,7 +3262,8 @@
 
     </div>
 
-</div>
+</div><!-- General -->
+<!-- Argilla specific -->
 
 
 

@@ -3463,7 +3463,7 @@
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="add-records">Add records<a class="headerlink" href="#add-records" title="Permanent link">&para;</a></h2>
+<h2 id="add-records">Add <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr><a class="headerlink" href="#add-records" title="Permanent link">&para;</a></h2>
 <p>Even if we have created the dataset, it still lacks the information to be annotated (you can check it in the UI). We will use the <code>tomg-group-umd/pixelprose</code> dataset from <a href="https://huggingface.co/datasets/tomg-group-umd/pixelprose">the Hugging Face Hub</a>. Specifically, we will use <code>25</code> examples. Because we are dealing with a potentially large image dataset, we will set <code>streaming=True</code> to avoid loading the entire dataset into memory and iterate over the data to lazily load it.</p>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
@@ -3691,7 +3691,7 @@
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="log-to-argilla">Log to Argilla<a class="headerlink" href="#log-to-argilla" title="Permanent link">&para;</a></h3>
-<p>We will easily add them to the dataset using <code>log</code> and the mapping, where we indicate which column from our dataset needs to be mapped to which Argilla resource if the names do not correspond. We are also using the <code>key</code> column as <code>id</code> for our record so we can easily backtrack the record to the external data source.</p>
+<p>We will easily add them to the dataset using <code>log</code> and the mapping, where we indicate which column from our dataset needs to be mapped to which Argilla resource if the names do not correspond. We are also using the <code>key</code> column as <code>id</code> for our <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> so we can easily backtrack the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> to the external data source.</p>
 </div>
 </div>
 </div>
@@ -3724,7 +3724,7 @@
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Now, we can start the annotation process. Just open the dataset in the Argilla UI and start annotating the records.</p>
+<p>Now, we can start the annotation process. Just open the dataset in the Argilla UI and start annotating the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>.</p>
 </div>
 </div>
 </div>
@@ -3749,10 +3749,12 @@
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>In this tutorial, we present an end-to-end example of an image preference task. This serves as the base, but it can be performed iteratively and seamlessly integrated into your workflow to ensure high-quality curation of your data and improved results.</p>
-<p>We started by configuring the dataset and adding records with the original and generated images. After the annotation process, you can evaluate the results and potentially retrain the model to improve the quality of the generated images.</p>
+<p>We started by configuring the dataset and adding <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> with the original and generated images. After the annotation process, you can evaluate the results and potentially retrain the model to improve the quality of the generated images.</p>
 </div>
 </div>
 </div>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 

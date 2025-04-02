@@ -3227,15 +3227,15 @@
 
 
 <h1 id="rgquery"><code>rg.Query</code><a class="headerlink" href="#rgquery" title="Permanent link">&para;</a></h1>
-<p>To collect records based on searching criteria, you can use the <code>Query</code> and <code>Filter</code> classes. The <code>Query</code> class is used to define the search criteria, while the <code>Filter</code> class is used to filter the search results. <code>Filter</code> is passed to a <code>Query</code> object so you can combine multiple filters to create complex search queries. A <code>Query</code> object can also be passed to <code>Dataset.records</code> to fetch records based on the search criteria.</p>
+<p>To collect <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> based on searching criteria, you can use the <code>Query</code> and <code>Filter</code> classes. The <code>Query</code> class is used to define the search criteria, while the <code>Filter</code> class is used to filter the search results. <code>Filter</code> is passed to a <code>Query</code> object so you can combine multiple filters to create complex search queries. A <code>Query</code> object can also be passed to <code>Dataset.records</code> to fetch <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> based on the search criteria.</p>
 <h2 id="usage-examples">Usage Examples<a class="headerlink" href="#usage-examples" title="Permanent link">&para;</a></h2>
-<h3 id="searching-for-records-with-terms">Searching for records with terms<a class="headerlink" href="#searching-for-records-with-terms" title="Permanent link">&para;</a></h3>
-<p>To search for records with terms, you can use the <code>Dataset.records</code> attribute with a query string. The search terms are used to search for records that contain the terms in the text field.</p>
+<h3 id="searching-for-records-with-terms">Searching for <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> with terms<a class="headerlink" href="#searching-for-records-with-terms" title="Permanent link">&para;</a></h3>
+<p>To search for <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> with terms, you can use the <code>Dataset.records</code> attribute with a query string. The search terms are used to search for <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> that contain the terms in the text field.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">records</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="s2">&quot;paris&quot;</span><span class="p">):</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
 </span></code></pre></div>
-<h3 id="filtering-records-by-conditions">Filtering records by conditions<a class="headerlink" href="#filtering-records-by-conditions" title="Permanent link">&para;</a></h3>
-<p>Argilla allows you to filter records based on conditions. You can use the <code>Filter</code> class to define the conditions and pass them to the <code>Dataset.records</code> attribute to fetch records based on the conditions. Conditions include "==", "&gt;=", "&lt;=", or "in". Conditions can be combined with dot notation to filter records based on metadata, suggestions, or responses.</p>
+<h3 id="filtering-records-by-conditions">Filtering <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> by conditions<a class="headerlink" href="#filtering-records-by-conditions" title="Permanent link">&para;</a></h3>
+<p>Argilla allows you to filter <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> based on conditions. You can use the <code>Filter</code> class to define the conditions and pass them to the <code>Dataset.records</code> attribute to fetch <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> based on the conditions. Conditions include "==", "&gt;=", "&lt;=", or "in". Conditions can be combined with dot notation to filter <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> based on metadata, suggestions, or responses.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># create a range from 10 to 20</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">range_filter</span> <span class="o">=</span> <span class="n">rg</span><span class="o">.</span><span class="n">Filter</span><span class="p">(</span>
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="p">[</span>
@@ -3269,6 +3269,8 @@
 
 
       <p>This class is used to map user queries to the internal query models</p>
+<!-- General -->
+<!-- Argilla specific -->
 
               <details class="quote">
                 <summary>Source code in <code>src/argilla/records/_search.py</code></summary>
@@ -3396,6 +3398,8 @@
     <div class="doc doc-contents ">
 
       <p>Create a query object for use in Argilla search requests.add()</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -3417,6 +3421,8 @@
             <td>
               <div class="doc-md-description">
                 <p>The query string that will be used to search.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -3430,7 +3436,9 @@
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The similar object that will be used to search for similar records</p>
+                <p>The similar object that will be used to search for similar <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr></p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -3445,6 +3453,8 @@
             <td>
               <div class="doc-md-description">
                 <p>The filter object that will be used to filter the search results.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -3532,6 +3542,8 @@
 
 
       <p>This class is used to map user filters to the internal filter models</p>
+<!-- General -->
+<!-- Argilla specific -->
 
               <details class="quote">
                 <summary>Source code in <code>src/argilla/records/_search.py</code></summary>
@@ -3599,6 +3611,8 @@
     <div class="doc doc-contents ">
 
       <p>Create a filter object for use in Argilla search requests.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -3620,6 +3634,8 @@
             <td>
               <div class="doc-md-description">
                 <p>The conditions that will be used to filter the search results.                 The conditions should be a list of tuples where each tuple contains                 the field, operator, and value. For example <code>("label", "in", ["positive","happy"])</code>.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -3685,6 +3701,8 @@
 
 
       <p>This class is used to map user similar queries to the internal query models</p>
+<!-- General -->
+<!-- Argilla specific -->
 
               <details class="quote">
                 <summary>Source code in <code>src/argilla/records/_search.py</code></summary>
@@ -3766,6 +3784,8 @@
     <div class="doc doc-contents ">
 
       <p>Create a similar object for use in Argilla search requests.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -3787,6 +3807,8 @@
             <td>
               <div class="doc-md-description">
                 <p>The name of the vector field</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -3800,7 +3822,9 @@
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The vector value or the record to search for similar records</p>
+                <p>The vector value or the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> to search for similar <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr></p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -3814,7 +3838,9 @@
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Whether to search for the most similar records or the least similar records</p>
+                <p>Whether to search for the most similar <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> or the least similar <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr></p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -3863,7 +3889,8 @@
 
     </div>
 
-</div>
+</div><!-- General -->
+<!-- Argilla specific -->
 
 
 

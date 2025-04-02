@@ -3449,7 +3449,7 @@
 
 
 <h1 id="rgargilla"><code>rg.Argilla</code><a class="headerlink" href="#rgargilla" title="Permanent link">&para;</a></h1>
-<p>To interact with the Argilla server from Python you can use the <code>Argilla</code> class. The <code>Argilla</code> client is used to create, get, update, and delete all Argilla resources, such as workspaces, users, datasets, and records.</p>
+<p>To interact with the Argilla server from Python you can use the <code>Argilla</code> class. The <code>Argilla</code> client is used to create, get, update, and delete all Argilla resources, such as workspaces, users, datasets, and <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>.</p>
 <h2 id="usage-examples">Usage Examples<a class="headerlink" href="#usage-examples" title="Permanent link">&para;</a></h2>
 <h3 id="deploying-argilla-server-on-hugging-face-spaces">Deploying Argilla Server on Hugging Face Spaces<a class="headerlink" href="#deploying-argilla-server-on-hugging-face-spaces" title="Permanent link">&para;</a></h3>
 <p>To deploy Argilla on Hugging Face Spaces, use the <code>deploy_on_spaces</code> method.</p>
@@ -3498,6 +3498,8 @@
 
 
       <p>Argilla <abbr title="Application Programming Interface.">API</abbr> client. This is the main entry point to interact with the <abbr title="Application Programming Interface.">API</abbr>.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 <p><span class="doc-section-title">Attributes:</span></p>
@@ -3518,6 +3520,8 @@
             <td>
               <div class="doc-md-description">
                 <p>A collection of workspaces.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -3529,6 +3533,8 @@
             <td>
               <div class="doc-md-description">
                 <p>A collection of datasets.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -3540,6 +3546,8 @@
             <td>
               <div class="doc-md-description">
                 <p>A collection of users.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -3551,6 +3559,8 @@
             <td>
               <div class="doc-md-description">
                 <p>The current user.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -3748,6 +3758,8 @@
     <div class="doc doc-contents ">
 
       <p>A collection of workspaces on the server.</p>
+<!-- General -->
+<!-- Argilla specific -->
     </div>
 
 </div>
@@ -3769,6 +3781,8 @@
     <div class="doc doc-contents ">
 
       <p>A collection of datasets on the server.</p>
+<!-- General -->
+<!-- Argilla specific -->
     </div>
 
 </div>
@@ -3790,6 +3804,8 @@
     <div class="doc doc-contents ">
 
       <p>A collection of users on the server.</p>
+<!-- General -->
+<!-- Argilla specific -->
     </div>
 
 </div>
@@ -3811,6 +3827,8 @@
     <div class="doc doc-contents ">
 
       <p>A collection of webhooks on the server.</p>
+<!-- General -->
+<!-- Argilla specific -->
     </div>
 
 </div>
@@ -3829,6 +3847,8 @@
     <div class="doc doc-contents ">
 
       <p>Inits the <code>Argilla</code> client.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -3852,6 +3872,8 @@
                 <p>the URL of the Argilla <abbr title="Application Programming Interface.">API</abbr>. If not provided, then the value will try
 to be set from <code>ARGILLA_API_URL</code> environment variable. Defaults to
 <code>"http://localhost:6900"</code>.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -3868,6 +3890,8 @@ to be set from <code>ARGILLA_API_URL</code> environment variable. Defaults to
                 <p>the key to be used to authenticate in the Argilla <abbr title="Application Programming Interface.">API</abbr>. If not provided,
 then the value will try to be set from <code>ARGILLA_API_KEY</code> environment variable.
 Defaults to <code>None</code>.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -3883,6 +3907,8 @@ Defaults to <code>None</code>.</p>
               <div class="doc-md-description">
                 <p>the maximum time in seconds to wait for a request to the Argilla <abbr title="Application Programming Interface.">API</abbr>
 to be completed before raising an exception. Defaults to <code>60</code>.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -3898,6 +3924,8 @@ to be completed before raising an exception. Defaults to <code>60</code>.</p>
               <div class="doc-md-description">
                 <p>the number of times to retry the HTTP connection to the Argilla <abbr title="Application Programming Interface.">API</abbr>
 before raising an exception. Defaults to <code>5</code>.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -3989,6 +4017,8 @@ before raising an exception. Defaults to <code>5</code>.</p>
 
 
       <p>A collection of users. It can be used to create a new user or to get an existing one.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
               <details class="quote">
                 <summary>Source code in <code>src/argilla/client.py</code></summary>
@@ -4206,6 +4236,8 @@ before raising an exception. Defaults to <code>5</code>.</p>
     <div class="doc doc-contents ">
 
       <p>Add a new user to Argilla.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -4227,6 +4259,8 @@ before raising an exception. Defaults to <code>5</code>.</p>
             <td>
               <div class="doc-md-description">
                 <p>User object.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -4253,6 +4287,8 @@ before raising an exception. Defaults to <code>5</code>.</p>
             <td>
               <div class="doc-md-description">
                 <p>The created user.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -4300,6 +4336,8 @@ before raising an exception. Defaults to <code>5</code>.</p>
     <div class="doc doc-contents ">
 
       <p>List all users.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
             <details class="quote">
               <summary>Source code in <code>src/argilla/client.py</code></summary>
@@ -4349,6 +4387,8 @@ before raising an exception. Defaults to <code>5</code>.</p>
 
 
       <p>A collection of workspaces. It can be used to create a new workspace or to get an existing one.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
               <details class="quote">
                 <summary>Source code in <code>src/argilla/client.py</code></summary>
@@ -4567,6 +4607,8 @@ before raising an exception. Defaults to <code>5</code>.</p>
     <div class="doc doc-contents ">
 
       <p>The default workspace.</p>
+<!-- General -->
+<!-- Argilla specific -->
     </div>
 
 </div>
@@ -4587,6 +4629,8 @@ before raising an exception. Defaults to <code>5</code>.</p>
       <p>Add a new workspace to the Argilla platform.
 Args:
     workspace: Workspace object.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
     <p><span class="doc-section-title">Returns:</span></p>
@@ -4605,6 +4649,8 @@ Args:
             <td>
               <div class="doc-md-description">
                 <p>The created workspace.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -4663,6 +4709,8 @@ Args:
 
 
       <p>A collection of datasets. It can be used to create a new dataset or to get an existing one.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
               <details class="quote">
                 <summary>Source code in <code>src/argilla/client.py</code></summary>
@@ -4876,6 +4924,8 @@ Args:
     <div class="doc doc-contents ">
 
       <p>Add a new dataset to the Argilla platform</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -4897,6 +4947,8 @@ Args:
             <td>
               <div class="doc-md-description">
                 <p>Dataset object.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -4923,6 +4975,8 @@ Args:
             <td>
               <div class="doc-md-description">
                 <p>The created dataset.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -5302,6 +5356,8 @@ Args:
     <div class="doc doc-contents ">
 
       <p>Deploys Argilla on Hugging Face Spaces.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -5323,6 +5379,8 @@ Args:
             <td>
               <div class="doc-md-description">
                 <p>The Argilla <abbr title="Application Programming Interface.">API</abbr> key to be defined for the owner user and creator of the Space.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -5337,6 +5395,8 @@ Args:
             <td>
               <div class="doc-md-description">
                 <p>The ID of the repository where Argilla will be deployed. Defaults to "argilla".</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -5351,6 +5411,8 @@ Args:
             <td>
               <div class="doc-md-description">
                 <p>The name of the organization where Argilla will be deployed. Defaults to None.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -5365,6 +5427,8 @@ Args:
             <td>
               <div class="doc-md-description">
                 <p>The Hugging Face authentication token. Defaults to None.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -5379,6 +5443,8 @@ Args:
             <td>
               <div class="doc-md-description">
                 <p>The persistent storage size for the space. Defaults to None without persistent storage.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -5393,6 +5459,8 @@ Args:
             <td>
               <div class="doc-md-description">
                 <p>The hardware configuration for the space. Defaults to "cpu-basic" with downtime after 48 hours of inactivity.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -5407,6 +5475,8 @@ Args:
             <td>
               <div class="doc-md-description">
                 <p>Whether the space should be private. Defaults to False.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -5433,6 +5503,8 @@ Args:
             <td>
               <div class="doc-md-description">
                 <p>The Argilla client.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -5441,10 +5513,14 @@ Args:
 
 
 <details class="example" open>
-  <summary>Example</summary>
+  <summary><p>Example</p>
+<!-- General -->
+<!-- Argilla specific --></summary>
   <div class="language-Python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span> <span class="nn">argilla</span> <span class="k">as</span> <span class="nn">rg</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">client</span> <span class="o">=</span> <span class="n">rg</span><span class="o">.</span><span class="n">Argilla</span><span class="o">.</span><span class="n">deploy_on_spaces</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;12345678&quot;</span><span class="p">)</span>
 </span></code></pre></div>
+<!-- General -->
+<!-- Argilla specific -->
 </details>
             <details class="quote">
               <summary>Source code in <code>src/argilla/_helpers/_deploy.py</code></summary>
@@ -5637,7 +5713,8 @@ Args:
 
     </div>
 
-</div>
+</div><!-- General -->
+<!-- Argilla specific -->
 
 
 

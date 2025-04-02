@@ -3129,7 +3129,7 @@
 
 
 <h1 id="rgdataset"><code>rg.Dataset</code><a class="headerlink" href="#rgdataset" title="Permanent link">&para;</a></h1>
-<p><code>Dataset</code> is a class that represents a collection of records. It is used to store and manage records in Argilla.</p>
+<p><code>Dataset</code> is a class that represents a collection of <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>. It is used to store and manage <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> in Argilla.</p>
 <h2 id="usage-examples">Usage Examples<a class="headerlink" href="#usage-examples" title="Permanent link">&para;</a></h2>
 <h3 id="creating-a-dataset">Creating a Dataset<a class="headerlink" href="#creating-a-dataset" title="Permanent link">&para;</a></h3>
 <p>To create a new dataset you need to define its name and settings. Optional parameters are <code>workspace</code> and <code>client</code>, if you want to create the dataset in a specific workspace or on a specific Argilla instance.</p>
@@ -3171,6 +3171,8 @@
 
 
       <p>Class for interacting with Argilla Datasets</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 <p><span class="doc-section-title">Attributes:</span></p>
@@ -3191,6 +3193,8 @@
             <td>
               <div class="doc-md-description">
                 <p>Name of the dataset.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -3201,7 +3205,9 @@
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The records object for the dataset. Used to interact with the records of the dataset by iterating, searching, etc.</p>
+                <p>The <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> object for the dataset. Used to interact with the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> of the dataset by iterating, searching, etc.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -3213,6 +3219,8 @@
             <td>
               <div class="doc-md-description">
                 <p>The settings object of the dataset. Used to configure the dataset with fields, questions, guidelines, etc.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -3224,6 +3232,8 @@
             <td>
               <div class="doc-md-description">
                 <p>The fields of the dataset, for example the <code>rg.TextField</code> of the dataset. Defined in the settings.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -3235,6 +3245,8 @@
             <td>
               <div class="doc-md-description">
                 <p>The questions of the dataset defined in the settings. For example, the <code>rg.TextQuestion</code> that you want labelers to answer.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -3246,6 +3258,8 @@
             <td>
               <div class="doc-md-description">
                 <p>The guidelines of the dataset defined in the settings. Used to provide instructions to labelers.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -3257,6 +3271,8 @@
             <td>
               <div class="doc-md-description">
                 <p>True if extra metadata is allowed, False otherwise.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -3795,6 +3811,8 @@
     <div class="doc doc-contents ">
 
       <p>Initializes a new Argilla Dataset object with the given parameters.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -3816,6 +3834,8 @@
             <td>
               <div class="doc-md-description">
                 <p>Name of the dataset. Replaced by random UUID if not assigned.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -3830,6 +3850,8 @@
             <td>
               <div class="doc-md-description">
                 <p>Workspace of the dataset. Default is the first workspace found in the server.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -3844,6 +3866,8 @@
             <td>
               <div class="doc-md-description">
                 <p>Settings class to be used to configure the dataset.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -3858,6 +3882,8 @@
             <td>
               <div class="doc-md-description">
                 <p>Instance of Argilla to connect with the server. Default is the default client.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -3938,6 +3964,8 @@
     <div class="doc doc-contents ">
 
       <p>Creates the dataset on the server with the <code>Settings</code> configuration.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
     <p><span class="doc-section-title">Returns:</span></p>
@@ -3956,6 +3984,8 @@
             <td>
               <div class="doc-md-description">
                 <p>The created dataset object.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -4025,6 +4055,8 @@
     <div class="doc doc-contents ">
 
       <p>Updates the dataset on the server with the current settings.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
     <p><span class="doc-section-title">Returns:</span></p>
@@ -4043,6 +4075,8 @@
             <td>
               <div class="doc-md-description">
                 <p>The updated dataset object.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -4084,6 +4118,8 @@
     <div class="doc doc-contents ">
 
       <p>Returns the team's progress on the dataset.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -4106,6 +4142,8 @@
               <div class="doc-md-description">
                 <p>If True, the progress of the dataset is returned
 with users distribution. This includes the number of responses made by each user.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -4132,6 +4170,8 @@ with users distribution. This includes the number of responses made by each user
             <td>
               <div class="doc-md-description">
                 <p>The team's progress on the dataset.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -4154,6 +4194,8 @@ with users distribution. This includes the number of responses made by each user
 </span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">        </span><span class="err">...</span>
 </span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="p">}</span>
 </span></code></pre></div></p>
+<!-- General -->
+<!-- Argilla specific -->
 
             <details class="quote">
               <summary>Source code in <code>src/argilla/datasets/_resource.py</code></summary>
@@ -4279,6 +4321,8 @@ with users distribution. This includes the number of responses made by each user
 
 
       <p>A mixin for exporting and importing datasets to and from disk.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
               <details class="quote">
                 <summary>Source code in <code>src/argilla/datasets/_io/_disk.py</code></summary>
@@ -4579,7 +4623,9 @@ with users distribution. This includes the number of responses made by each user
 
     <div class="doc doc-contents ">
 
-      <p>Exports the dataset to disk in the given path. The dataset is exported as a directory containing the dataset model, settings and records as json files.</p>
+      <p>Exports the dataset to disk in the given path. The dataset is exported as a directory containing the dataset model, settings and <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> as json files.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -4601,6 +4647,8 @@ with users distribution. This includes the number of responses made by each user
             <td>
               <div class="doc-md-description">
                 <p>The path to export the dataset to. Must be an empty directory.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -4614,7 +4662,9 @@ with users distribution. This includes the number of responses made by each user
             </td>
             <td>
               <div class="doc-md-description">
-                <p>whether to load the records from the Hugging Face dataset. Defaults to <code>True</code>.</p>
+                <p>whether to load the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> from the Hugging Face dataset. Defaults to <code>True</code>.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -4682,8 +4732,10 @@ with users distribution. This includes the number of responses made by each user
 
     <div class="doc doc-contents ">
 
-      <p>Imports a dataset from disk as a directory containing the dataset model, settings and records.
+      <p>Imports a dataset from disk as a directory containing the dataset model, settings and <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>.
 The directory should be defined using the <code>to_disk</code> method.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -4704,7 +4756,9 @@ The directory should be defined using the <code>to_disk</code> method.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The path to the directory containing the dataset model, settings and records.</p>
+                <p>The path to the directory containing the dataset model, settings and <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -4719,6 +4773,8 @@ The directory should be defined using the <code>to_disk</code> method.</p>
             <td>
               <div class="doc-md-description">
                 <p>The name to assign to the new dataset. Defaults to None and the dataset's source name is used, unless it already exists, in which case a unique UUID is appended.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -4733,6 +4789,8 @@ The directory should be defined using the <code>to_disk</code> method.</p>
             <td>
               <div class="doc-md-description">
                 <p>The workspace to import the dataset to. Defaults to None and default workspace is used.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -4747,6 +4805,8 @@ The directory should be defined using the <code>to_disk</code> method.</p>
             <td>
               <div class="doc-md-description">
                 <p>The client to use for the import. Defaults to None and the default client is used.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -4760,7 +4820,9 @@ The directory should be defined using the <code>to_disk</code> method.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>whether to load the records from the Hugging Face dataset. Defaults to <code>True</code>.</p>
+                <p>whether to load the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> from the Hugging Face dataset. Defaults to <code>True</code>.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -5580,6 +5642,8 @@ The directory should be defined using the <code>to_disk</code> method.</p>
 
       <p>Pushes the <code>Dataset</code> to the Hugging Face Hub. If the dataset has been previously pushed to the
 Hugging Face Hub, it will be updated instead of creating a new dataset repo.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -5601,6 +5665,8 @@ Hugging Face Hub, it will be updated instead of creating a new dataset repo.</p>
             <td>
               <div class="doc-md-description">
                 <p>the ID of the Hugging Face Hub repo to push the <code>Dataset</code> to.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -5614,7 +5680,9 @@ Hugging Face Hub, it will be updated instead of creating a new dataset repo.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>whether to load the records from the Hugging Face dataset. Defaults to <code>True</code>.</p>
+                <p>whether to load the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> from the Hugging Face dataset. Defaults to <code>True</code>.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -5630,6 +5698,8 @@ Hugging Face Hub, it will be updated instead of creating a new dataset repo.</p>
               <div class="doc-md-description">
                 <p>whether to generate a dataset card for the <code>Dataset</code> in the Hugging Face Hub. Defaults
 to <code>True</code>.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -5644,6 +5714,8 @@ to <code>True</code>.</p>
             <td>
               <div class="doc-md-description">
                 <p>the kwargs to pass to <code>datasets.Dataset.push_to_hub</code>.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -5670,6 +5742,8 @@ to <code>True</code>.</p>
             <td>
               <div class="doc-md-description">
                 <p>None</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -5835,6 +5909,8 @@ to <code>True</code>.</p>
     <div class="doc doc-contents ">
 
       <p>Loads a <code>Dataset</code> from the Hugging Face Hub.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -5856,6 +5932,8 @@ to <code>True</code>.</p>
             <td>
               <div class="doc-md-description">
                 <p>the ID of the Hugging Face Hub repo to load the <code>Dataset</code> from.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -5870,6 +5948,8 @@ to <code>True</code>.</p>
             <td>
               <div class="doc-md-description">
                 <p>The name to assign to the new dataset. Defaults to None and the dataset's source name is used, unless it already exists, in which case a unique UUID is appended.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -5884,6 +5964,8 @@ to <code>True</code>.</p>
             <td>
               <div class="doc-md-description">
                 <p>The workspace to import the dataset to. Defaults to None and default workspace is used.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -5898,6 +5980,8 @@ to <code>True</code>.</p>
             <td>
               <div class="doc-md-description">
                 <p>the client to use to load the <code>Dataset</code>. If not provided, the default client will be used.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -5911,7 +5995,9 @@ to <code>True</code>.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>whether to load the records from the Hugging Face dataset. Defaults to <code>True</code>.</p>
+                <p>whether to load the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> from the Hugging Face dataset. Defaults to <code>True</code>.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -5928,6 +6014,8 @@ to <code>True</code>.</p>
                 <p>the settings to use to load the <code>Dataset</code>. If settings are "ui", a URL to configure the settings
 through argilla will be returned. If settings are "auto",
 the settings will be inferred from the <code>Features</code> of the dataset on the hub. Defaults to "ui".</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -5942,6 +6030,8 @@ the settings will be inferred from the <code>Features</code> of the dataset on t
             <td>
               <div class="doc-md-description">
                 <p>the split to load from the Hugging Face dataset. If not provided, the first split will be loaded.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -5956,6 +6046,8 @@ the settings will be inferred from the <code>Features</code> of the dataset on t
             <td>
               <div class="doc-md-description">
                 <p>the subset to load from the Hugging Face dataset. If not provided, the first subset will be loaded.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -5970,6 +6062,8 @@ the settings will be inferred from the <code>Features</code> of the dataset on t
             <td>
               <div class="doc-md-description">
                 <p>the kwargs to pass to <code>datasets.Dataset.load_from_hub</code>.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -5996,6 +6090,8 @@ the settings will be inferred from the <code>Features</code> of the dataset on t
             <td>
               <div class="doc-md-description">
                 <p>A <code>Dataset</code> loaded from the Hugging Face Hub.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -6213,7 +6309,8 @@ the settings will be inferred from the <code>Features</code> of the dataset on t
 
     </div>
 
-</div>
+</div><!-- General -->
+<!-- Argilla specific -->
 
 
 

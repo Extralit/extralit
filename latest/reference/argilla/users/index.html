@@ -3198,7 +3198,9 @@
               Bases: <code><span title="argilla._resource.Resource">Resource</span></code></p>
 
 
-      <p>Class for interacting with Argilla users in the Argilla server. User profiles         are used to manage access to the Argilla server and track responses to records.</p>
+      <p>Class for interacting with Argilla users in the Argilla server. User profiles         are used to manage access to the Argilla server and track responses to <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 <p><span class="doc-section-title">Attributes:</span></p>
@@ -3219,6 +3221,8 @@
             <td>
               <div class="doc-md-description">
                 <p>The username of the user.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -3230,6 +3234,8 @@
             <td>
               <div class="doc-md-description">
                 <p>The first name of the user.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -3241,6 +3247,8 @@
             <td>
               <div class="doc-md-description">
                 <p>The last name of the user.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -3252,6 +3260,8 @@
             <td>
               <div class="doc-md-description">
                 <p>The role of the user, either 'annotator' or 'admin'.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -3263,6 +3273,8 @@
             <td>
               <div class="doc-md-description">
                 <p>The password of the user.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -3274,6 +3286,8 @@
             <td>
               <div class="doc-md-description">
                 <p>The ID of the user.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -3594,6 +3608,8 @@
     <div class="doc doc-contents ">
 
       <p>Initializes a User object with a client and a username</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -3615,6 +3631,8 @@
             <td>
               <div class="doc-md-description">
                 <p>The username of the user</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -3629,6 +3647,8 @@
             <td>
               <div class="doc-md-description">
                 <p>The first name of the user</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -3643,6 +3663,8 @@
             <td>
               <div class="doc-md-description">
                 <p>The last name of the user</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -3657,6 +3679,8 @@
             <td>
               <div class="doc-md-description">
                 <p>The role of the user, either 'annotator', admin, or 'owner'</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -3671,6 +3695,8 @@
             <td>
               <div class="doc-md-description">
                 <p>The password of the user</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -3685,6 +3711,8 @@
             <td>
               <div class="doc-md-description">
                 <p>The client used to interact with Argilla</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -3711,6 +3739,8 @@
             <td>
               <div class="doc-md-description">
                 <p>The initialized user object</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -3812,6 +3842,8 @@
     <div class="doc doc-contents ">
 
       <p>Creates the user in Argilla. After creating a user, it will be able to log in to the Argilla server.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
     <p><span class="doc-section-title">Returns:</span></p>
@@ -3830,6 +3862,8 @@
             <td>
               <div class="doc-md-description">
                 <p>The user that was created in Argilla.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -3879,6 +3913,8 @@
     <div class="doc doc-contents ">
 
       <p>Deletes the user from Argilla. After deleting a user, it will no longer be able to log in to the Argilla server.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
             <details class="quote">
               <summary>Source code in <code>src/argilla/users/_resource.py</code></summary>
@@ -3910,6 +3946,8 @@
 
       <p>Adds the user to a workspace. After adding a user to a workspace, it will have access to the datasets
 in the workspace.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -3931,6 +3969,8 @@ in the workspace.</p>
             <td>
               <div class="doc-md-description">
                 <p>The workspace to add the user to.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -3957,6 +3997,8 @@ in the workspace.</p>
             <td>
               <div class="doc-md-description">
                 <p>The user that was added to the workspace.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -4007,6 +4049,8 @@ in the workspace.</p>
 
       <p>Removes the user from a workspace. After removing a user from a workspace, it will no longer have access to
 the datasets in the workspace.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -4028,6 +4072,8 @@ the datasets in the workspace.</p>
             <td>
               <div class="doc-md-description">
                 <p>The workspace to remove the user from.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
             <td>
@@ -4054,6 +4100,8 @@ the datasets in the workspace.</p>
             <td>
               <div class="doc-md-description">
                 <p>The user that was removed from the workspace.</p>
+<!-- General -->
+<!-- Argilla specific -->
               </div>
             </td>
           </tr>
@@ -4099,7 +4147,8 @@ the datasets in the workspace.</p>
 
     </div>
 
-</div>
+</div><!-- General -->
+<!-- Argilla specific -->
 
 
 

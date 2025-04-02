@@ -3061,7 +3061,7 @@
 <p>If you have already deployed Extralit server, you can skip this step. Otherwise, you can quickly deploy it in two different ways:</p>
 <ul>
 <li>
-<p><a href="../how-to-configure-argilla-on-huggingface/">Using a <abbr title="A platform for deploying and managing AI applications, models and datasets in the cloud.">HF Space</abbr></a>.</p>
+<p><a href="../how-to-configure-argilla-on-huggingface/">Using a <abbr title="HuggingFace - A platform for deploying and managing open-source AI applications, models and datasets in the cloud.">HF</abbr> Space</a>.</p>
 </li>
 <li>
 <p><a href="../how-to-deploy-argilla-with-docker/">Locally with Docker</a>.</p>
@@ -3070,13 +3070,13 @@
 <h2 id="connect-to-the-extralit-server">Connect to the Extralit server<a class="headerlink" href="#connect-to-the-extralit-server" title="Permanent link">&para;</a></h2>
 <p>Get your <code>&lt;api_url&gt;</code>:</p>
 <ul>
-<li>If you are using HF Spaces, it should be constructed as follows: <code>https://[your-owner-name]-[your_space_name].hf.space</code></li>
+<li>If you are using <abbr title="HuggingFace - A platform for deploying and managing open-source AI applications, models and datasets in the cloud.">HF</abbr> Spaces, it should be constructed as follows: <code>https://[your-owner-name]-[your_space_name].hf.space</code></li>
 <li>If you are using Docker, it is the URL shown in your browser (by default <code>http://localhost:6900</code>)</li>
 </ul>
 <p>Get your <code>&lt;api_key&gt;</code> in <code>My Settings</code> in the Argilla UI (by default owner.apikey).</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Make sure to replace <code>&lt;api_url&gt;</code> and <code>&lt;api_key&gt;</code> with your actual values. If you are using a private <abbr title="A platform for deploying and managing AI applications, models and datasets in the cloud.">HF Space</abbr>, you need to specify your <code>HF_TOKEN</code> which can be found <a href="https://huggingface.co/settings/tokens">here</a>.</p>
+<p>Make sure to replace <code>&lt;api_url&gt;</code> and <code>&lt;api_key&gt;</code> with your actual values. If you are using a private <abbr title="HuggingFace - A platform for deploying and managing open-source AI applications, models and datasets in the cloud.">HF</abbr> Space, you need to specify your <code>HF_TOKEN</code> which can be found <a href="https://huggingface.co/settings/tokens">here</a>.</p>
 </div>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span> <span class="nn">argilla</span> <span class="k">as</span> <span class="nn">rg</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
@@ -3086,6 +3086,8 @@
 </span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="c1"># headers={&quot;Authorization&quot;: f&quot;Bearer {HF_TOKEN}&quot;}</span>
 </span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="p">)</span>
 </span></code></pre></div>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 
