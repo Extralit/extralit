@@ -15,7 +15,7 @@
 
 <img src="argilla/docs/assets/images/getting_started/data-extraction-pipeline.jpg" alt="pipeline">
 
-Extralit (EXTRAct LITerature) is a data extraction pipeline with user-friendly UI, designed for **LLM-assisted scientific data extraction** and other **unstructured document intelligence** tasks. It focuses on data accuracy above all else, and further integrates human feedback loops for continuous LLM refinement and collaborative data extraction.
+Extralit (EXTRAct LITerature) is a data extraction workflow with user-friendly UI, designed for **LLM-assisted scientific data extraction** and other **unstructured document intelligence** tasks. It focuses on data accuracy above all else, and further integrates human feedback loops for continuous LLM refinement and collaborative data extraction.
 
 - 🔹 Precision First – Built for high data accuracy, ensuring reliable results.
 - 🔹 Human-in-the-Loop – Seamlessly integrate human annotations to refine LLM outputs and collaborate on data validation.
