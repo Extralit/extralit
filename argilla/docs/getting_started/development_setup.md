@@ -88,6 +88,177 @@ pdm run server-dev
   npm install
   npm run dev
   ```
+## Option 2: Local Development Setup
+
+### Prerequisites
+
+- Python 3.9 or later
+- Node.js 18 or later
+- Docker and Docker Compose
+- Git
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/extralit/extralit.git
+cd extralit
+```
+
+### 2. Set Up Python Environment
+
+We recommend using PDM for package management:
+
+```bash
+# Install PDM if not already installed
+pip install pdm
+
+# Install server dependencies
+cd argilla-server
+pdm install
+
+# Install client dependencies
+cd ../argilla
+pdm install --dev
+```
+
+### 3. Build the Frontend
+
+```bash
+cd argilla-frontend
+npm install
+npm run build
+
+# Copy built files to server static directory
+cp -r dist ../argilla-server/src/argilla_server/static
+```
+
+### 4. Configure Environment Variables
+
+Create a `.env.dev` file in the `argilla-server` directory with the following content:
+
+```
+ALEMBIC_CONFIG=src/argilla_server/alembic.ini
+ARGILLA_AUTH_SECRET_KEY=8VO7na5N/jQx+yP/N+HlE8q51vPdrxqlh6OzoebIyko=
+ARGILLA_DATABASE_URL=sqlite+aiosqlite:///${HOME}/.argilla/argilla-dev.db?check_same_thread=False
+# Search engine configuration
+ARGILLA_SEARCH_ENGINE=elasticsearch
+ARGILLA_ELASTICSEARCH=http://localhost:9200
+# Redis configuration
+ARGILLA_REDIS_URL=redis://localhost:6379/0
+```
+
+### 5. Set Up the Databases
+
+#### Vector database (Elasticsearch)
+
+```sh
+# Extralit supports ElasticSearch versions >=8.5
+docker run -d --name elasticsearch-for-extralit -p 9200:9200 -p 9300:9300 -e "ES_JAVA_OPTS=-Xms512m -Xmx512m" -e "discovery.type=single-node" -e "xpack.security.enabled=false" docker.elastic.co/elasticsearch/elasticsearch:8.5.3
+```
+
+#### Relational database (PostgreSQL)
+
+```sh
+docker run -d --name postgres-for-extralit -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_DB=postgres postgres:14
+```
+
+Alternatively, you can start all required services using Docker Compose:
+
+```bash
+# Start Elasticsearch and other services
+docker-compose up -d elasticsearch redis
+```
+
+### 6. Run Database Migrations and Start the Server
+
+```bash
+cd argilla-server
+pdm run migrate
+pdm run cli database users create_default
+pdm run server
+```
+
+### 7. Access the Web Interface
+
+Open your browser and navigate to http://localhost:6900
+
+## Option 3: Advanced Kubernetes Setup
+
+For developers who want to work with Kubernetes locally:
+
+### 1. Install Required Tools
+
+- [kubectl](https://kubernetes.io/docs/tasks/tools/)
+- [Tilt](https://docs.tilt.dev/install.html)
+- [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
+- [ctlptl](https://github.com/tilt-dev/ctlptl/tree/main#how-do-i-install-it)
+
+### 2. Create a Local Kubernetes Cluster
+
+```bash
+kind create cluster --name extralit-dev
+```
+
+### 3. Set Up Local Development with Image Registry
+
+```bash
+ctlptl create registry ctlptl-registry --port=5005
+ctlptl create cluster extralit-dev --registry=ctlptl-registry
+```
+
+### 4. Apply Storage Configurations
+
+```bash
+ctlptl apply -f k8s/kind/kind-config.yaml
+kubectl --context kind-kind taint node kind-control-plane node-role.kubernetes.io/control-plane:NoSchedule-
+```
+
+### 5. Create Namespace and Deploy Services
+
+```bash
+kubectl create ns extralit-dev
+kubectl apply -f extralit-secrets.yaml -n extralit-dev
+kubectl apply -f langfuse-secrets.yaml -n extralit-dev
+kubectl apply -f weaviate-api-keys.yaml -n extralit-dev
+```
+
+### 6. Deploy with Tilt
+
+```bash
+ENV=dev DOCKER_REPO=localhost:5005 tilt up --namespace extralit-dev --context kind-extralit-dev
+```
+
+## Option 4: Docker Deployment
+
+For a simpler setup using Docker without development capabilities:
+
+### 1. Create a Project Directory
+
+```bash
+mkdir extralit && cd extralit
+```
+
+### 2. Download Docker Compose Configuration
+
+```bash
+wget -O docker-compose.yaml https://raw.githubusercontent.com/extralit/extralit/main/examples/deployments/docker/docker-compose.yaml
+```
+
+Or using curl:
+
+```bash
+curl https://raw.githubusercontent.com/extralit/extralit/main/examples/deployments/docker/docker-compose.yaml -o docker-compose.yaml
+```
+
+### 3. Start the Services
+
+```bash
+docker compose up -d
+```
+
+### 4. Access the Web Interface
+
+Open your browser and navigate to http://localhost:6900
 
 ## Development Best Practices
 
