@@ -704,8 +704,8 @@ export default {
                   label: "Accept",
                   action: (e, column: ColumnComponent) => {
                     if (column.getDefinition().frozen) return;
+                    // @ts-ignore
                     column.updateDefinition({
-                      title: column.getDefinition().title,
                       editableTitle: !column.getDefinition().editableTitle,
                       headerMenu: null,
                     });
