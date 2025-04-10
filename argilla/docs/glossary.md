@@ -1,4 +1,5 @@
 <!-- General -->
+*[OSS]: Open Source Software, software with source code that anyone can inspect, modify, and enhance.
 *[LLM]: Large Language Model, an AI system trained on vast amounts of text data.
 *[LLMs]: Large Language Model, an AI system trained on vast amounts of text data.
 *[RAG]: Retrieval-Augmented Generation, a technique that combines information retrieval with text generation.
