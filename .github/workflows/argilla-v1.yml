@@ -36,8 +36,8 @@ jobs:
       - name: Setup Conda Env 🐍
         uses: conda-incubator/setup-miniconda@v3
         with:
-          miniforge-variant: Mambaforge
-          miniforge-version: 24.7.1-2
+          miniforge-variant: Miniforge3
+          miniforge-version: latest
           use-mamba: true
           activate-environment: argilla
 
