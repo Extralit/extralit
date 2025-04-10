@@ -37,7 +37,7 @@ jobs:
         uses: conda-incubator/setup-miniconda@v3
         with:
           miniforge-variant: Mambaforge
-          miniforge-version: 2.0.8
+          miniforge-version: 24.7.1-2
           use-mamba: true
           activate-environment: argilla
 
