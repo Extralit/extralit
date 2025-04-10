@@ -704,6 +704,7 @@ export default {
                   action: (e, column) => {
                     if (column.getDefinition().frozen) return;
                     column.updateDefinition({
+                      title: column.getDefinition().title,
                       editableTitle: !column.getDefinition().editableTitle,
                       headerMenu: null,
                     });
