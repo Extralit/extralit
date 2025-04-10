@@ -694,14 +694,15 @@ export default {
           disabled: !this.editable,
           action: function(e, column: ColumnComponent) {
             if (column.getDefinition().frozen) return;
-
+            
+            // @ts-ignore
             column.updateDefinition({
               editableTitle: !column.getDefinition().editableTitle,
               // @ts-ignore
               headerMenu: function(e, column: ColumnComponent) {
                 return column.getDefinition().editableTitle ? [{
                   label: "Accept",
-                  action: (e, column) => {
+                  action: (e, column: ColumnComponent) => {
                     if (column.getDefinition().frozen) return;
                     column.updateDefinition({
                       title: column.getDefinition().title,
