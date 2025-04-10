@@ -14,7 +14,7 @@ on:
       - releases/**
     paths:
       - "argilla-v1/**"
-      - ".github/workflows/argilla-v1."
+      - ".github/workflows/argilla-v1.*"
 
   pull_request:
     paths:
@@ -37,7 +37,7 @@ jobs:
         uses: conda-incubator/setup-miniconda@v3
         with:
           miniforge-variant: Mambaforge
-          miniforge-version: latest
+          miniforge-version: 2.0.8
           use-mamba: true
           activate-environment: argilla
 
