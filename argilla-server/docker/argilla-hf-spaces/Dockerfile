@@ -11,7 +11,7 @@ COPY Procfile /home/argilla
 COPY requirements.txt /packages/requirements.txt
 
 RUN apt-get update && \
-    apt-get install -y apt-transport-https gnupg wget
+    apt-get install -y --no-install-recommends apt-transport-https gnupg wget
 
 # Install Elasticsearch signing key
 RUN wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg
@@ -21,7 +21,7 @@ RUN echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://
 # Install Redis signing key
 RUN wget -qO - https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
 # Add Redis repository
-RUN apt-get install -y lsb-release
+RUN apt-get install -y --no-install-recommends lsb-release
 RUN echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/redis.list
 
 RUN \
@@ -29,19 +29,19 @@ RUN \
     mkdir /data && \
     apt-get update && \
     # Install Elasticsearch and configure it
-    apt-get install -y elasticsearch=8.15.0 && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends elasticsearch=8.15.0 && \
     chown -R argilla:argilla /usr/share/elasticsearch /etc/elasticsearch /var/lib/elasticsearch /var/log/elasticsearch && \
     chown argilla:argilla /etc/default/elasticsearch && \
     # Install Redis
-    apt-get install -y redis && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends redis && \
     # Install image dependencies
-    pip install -r /packages/requirements.txt && \
+    pip install --no-cache-dir -r /packages/requirements.txt && \
     chmod +x /home/argilla/start.sh && \
     chmod +x /home/argilla/start_argilla_server.sh && \
     # Give ownership of the data directory to the argilla user
     chown -R argilla:argilla /data && \
     # Install additional tools to be used in the start.sh script to get default username and generate passwords
-    apt-get install -y curl jq pwgen && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends curl jq pwgen && \
     # Clean up
     apt-get remove -y wget gnupg && \
     apt-get clean && \
