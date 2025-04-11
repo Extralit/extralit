@@ -155,7 +155,7 @@ jobs:
       || github.ref == 'refs/heads/develop'
       || contains(github.ref, 'releases/')
       || github.event_name == 'workflow_dispatch'
-      || github.event_name == 'pull_request'
+      || (github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork)
     needs:
       - build
     with:
