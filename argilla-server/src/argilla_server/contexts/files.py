@@ -1,9 +1,8 @@
-import os
 import io
 import shutil
 import json
 import hashlib
-import time
+import uuid
 import logging  
 from pathlib import Path
 from typing import Any, BinaryIO, Dict, List, Optional, Union, Iterator
@@ -24,7 +23,6 @@ EXCLUDED_VERSIONING_PREFIXES = ['pdf']
 _LOGGER = logging.getLogger("argilla")
 
 
-# Class to mimic Minio client for local file storage
 class LocalFileStorage:
     """Local file storage implementation that mimics Minio client interface."""
     
@@ -67,47 +65,46 @@ class LocalFileStorage:
         # Ensure bucket exists
         bucket_path = self._get_bucket_path(bucket_name)
         bucket_path.mkdir(parents=True, exist_ok=True)
-        
-        # Create object path
-        object_path = self._get_object_path(bucket_name, object_name)
-        object_path.parent.mkdir(parents=True, exist_ok=True)
-        
-        # Handle versioning
-        version_id = hashlib.md5(str(time.time()).encode()).hexdigest()
-        version_path = self._get_version_path(bucket_name, object_name)
+
+        if not isinstance(data, bytes):
+            data_bytes = data.read()
+        else:
+            data_bytes = data
+
+        # Generate content-based version ID and ETag
+        content_hash = compute_hash(data_bytes)
+        version_id = str(uuid.uuid4())
+
+        version_path = self._get_version_path(bucket_name, object_name).with_suffix(f'.{version_id}')
         version_path.parent.mkdir(parents=True, exist_ok=True)
         
-        # Write data
-        if isinstance(data, bytes):
-            with open(object_path, 'wb') as f:
-                f.write(data)
-                
-            # Save version
-            version_file = version_path.with_suffix(f'.{version_id}')
-            with open(version_file, 'wb') as f:
-                f.write(data)
-        else:
-            with open(object_path, 'wb') as f:
-                shutil.copyfileobj(data, f)
-                
-            # Save version (rewind the file first)
-            data.seek(0)
-            version_file = version_path.with_suffix(f'.{version_id}')
-            with open(version_file, 'wb') as f:
-                shutil.copyfileobj(data, f)
-        
-        # Save metadata if provided
-        if metadata:
-            meta_path = object_path.with_suffix('.metadata.json')
-            with open(meta_path, 'w') as f:
-                json.dump(metadata, f)
+        # Write data to version file
+        with open(version_path, 'wb') as f:
+            f.write(data_bytes)
+
+        object_path = self._get_object_path(bucket_name, object_name)
+        object_path.parent.mkdir(parents=True, exist_ok=True)
+        if object_path.exists():
+            object_path.unlink()  # Remove existing file/symlink
+        object_path.symlink_to(version_path)
+
+        # Always write metadata with content hash
+        meta_path = object_path.with_suffix('.metadata.json')
+        metadata = metadata or {}
+        metadata.update({
+            "etag": content_hash,
+            "content_type": content_type or "application/octet-stream",
+            "version_id": version_id
+        })
+        with open(meta_path, 'w') as f:
+            json.dump(metadata, f)
         
         return {
             "bucket_name": bucket_name,
             "object_name": object_name,
             "version_id": version_id,
-            "etag": hashlib.md5(str(object_path).encode()).hexdigest(),
-            "size": object_path.stat().st_size
+            "etag": content_hash,
+            "size": len(data_bytes)
         }
     
     def get_object(self, bucket_name: str, object_name: str, version_id: Optional[str] = None) -> io.BytesIO:
@@ -136,19 +133,20 @@ class LocalFileStorage:
                 raise S3Error("NoSuchKey", "The specified key does not exist", resource=object_name)
             path = object_path
         
-        # Get metadata if exists
-        metadata = {}
+        # Get metadata from file
         meta_path = self._get_object_path(bucket_name, object_name).with_suffix('.metadata.json')
-        if meta_path.exists():
-            with open(meta_path, 'r') as f:
-                metadata = json.load(f)
+        if not meta_path.exists():
+            raise S3Error("NoSuchKey", "The specified key does not exist", resource=object_name)
+            
+        with open(meta_path, 'r') as f:
+            metadata = json.load(f)
         
         stats = path.stat()
         return {
             "bucket_name": bucket_name,
             "object_name": object_name,
-            "version_id": version_id or hashlib.md5(str(stats.st_mtime).encode()).hexdigest(),
-            "etag": hashlib.md5(str(path).encode()).hexdigest(),
+            "version_id": version_id or metadata.get("version_id"),
+            "etag": metadata.get("etag"),
             "size": stats.st_size,
             "last_modified": stats.st_mtime,
             "metadata": metadata,
@@ -175,7 +173,7 @@ class LocalFileStorage:
                     start_after: Optional[str] = None) -> Iterator[Dict[str, Any]]:
         bucket_path = self._get_bucket_path(bucket_name)
         if not bucket_path.exists():
-            return []
+            raise S3Error("NoSuchBucket", "The specified bucket does not exist", resource=bucket_name)
         
         # Get all files in bucket (and subdirectories if recursive)
         pattern = "**/*" if recursive else "*"
@@ -200,18 +198,19 @@ class LocalFileStorage:
             object_name = str(file_path.relative_to(bucket_path))
             stats = file_path.stat()
             
-            # Get metadata if exists
-            metadata = {}
+            # Get metadata from file
             meta_path = file_path.with_suffix('.metadata.json')
-            if meta_path.exists():
-                with open(meta_path, 'r') as f:
-                    metadata = json.load(f)
+            if not meta_path.exists():
+                continue  # Skip objects without metadata
+                
+            with open(meta_path, 'r') as f:
+                metadata = json.load(f)
             
             obj = {
                 "bucket_name": bucket_name,
                 "object_name": object_name,
                 "is_dir": False,
-                "etag": hashlib.md5(str(file_path).encode()).hexdigest(),
+                "etag": metadata.get("etag"),
                 "size": stats.st_size,
                 "last_modified": stats.st_mtime,
                 "metadata": metadata,
@@ -219,7 +218,7 @@ class LocalFileStorage:
             }
             
             if include_version:
-                obj["version_id"] = hashlib.md5(str(stats.st_mtime).encode()).hexdigest()
+                obj["version_id"] = metadata.get("version_id")
             
             yield obj
 
