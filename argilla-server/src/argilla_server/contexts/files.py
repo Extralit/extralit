@@ -4,6 +4,7 @@ import shutil
 import json
 import hashlib
 import time
+import logging  
 from pathlib import Path
 from typing import Any, BinaryIO, Dict, List, Optional, Union, Iterator
 from urllib.parse import urlparse
@@ -27,7 +28,7 @@ _LOGGER = logging.getLogger("argilla")
 class LocalFileStorage:
     """Local file storage implementation that mimics Minio client interface."""
     
-    def __init__(self, base_dir: str):
+    def __init__(self, base_dir: Union[str, Path]):
         self.base_dir = Path(base_dir)
         self.base_dir.mkdir(parents=True, exist_ok=True)
         
@@ -226,7 +227,8 @@ class LocalFileStorage:
 def get_minio_client() -> Optional[Union[Minio, LocalFileStorage]]:
     if None in [settings.s3_endpoint, settings.s3_access_key, settings.s3_secret_key]:
         # Use local file storage instead
-        local_storage_path = os.path.join(settings.home_path, "local_storage")
+        local_storage_path = settings.home_path / "local_storage"
+        _LOGGER.info(f"Using local file storage at: {local_storage_path}")
         return LocalFileStorage(local_storage_path)
 
     try:
@@ -369,21 +371,40 @@ def create_bucket(client: Minio, workspace_name: str, excluded_prefixes: List[st
         raise e
 
 
-def delete_bucket(client: Minio, workspace_name: str):
-    try:
-        objects = client.list_objects(workspace_name, prefix="", recursive=True, include_version=True)
-        for obj in objects:
-            client.remove_object(workspace_name, obj.object_name, version_id=obj.version_id)
+def delete_bucket(client: Union[Minio, LocalFileStorage], workspace_name: str):
+    if isinstance(client, LocalFileStorage):
+        try:
+            bucket_path = client._get_bucket_path(workspace_name)
+            if bucket_path.exists() and bucket_path.is_dir():
+                shutil.rmtree(bucket_path)
+                _LOGGER.info(f"Locally deleted bucket directory: {bucket_path}")
+        except Exception as e:
+            _LOGGER.error(f"Error deleting local bucket directory {workspace_name}: {e}")
+            raise e
+    elif isinstance(client, Minio):
+        try:
+            # Existing Minio logic
+            objects = client.list_objects(workspace_name, prefix="", recursive=True, include_version=True)
+            # Convert generator to list to avoid issues during iteration
+            obj_list = list(objects)
+            for obj in obj_list:
+                try:
+                    client.remove_object(workspace_name, obj.object_name, version_id=obj.version_id)
+                except S3Error as remove_err:
+                    _LOGGER.warning(f"Error removing object {obj.object_name} (version: {obj.version_id}) during bucket delete: {remove_err}")
 
-        client.remove_bucket(workspace_name)
-    except S3Error as se:
-        if se.code in {"NoSuchBucket", "NotImplemented"}:
-            pass
-        else:
-            _LOGGER.error(f"Error creating bucket {workspace_name}: {se}")
-            raise se
-    except Exception as e:
-        _LOGGER.error(f"Error deleting bucket {workspace_name}: {e}")
-        raise e
+            client.remove_bucket(workspace_name)
+        except S3Error as se:
+            if se.code in {"NoSuchBucket", "NotImplemented"}:
+                pass
+            else:
+                _LOGGER.error(f"Error deleting Minio bucket {workspace_name}: {se}")
+                raise se
+        except Exception as e:
+            _LOGGER.error(f"Error deleting Minio bucket {workspace_name}: {e}")
+            raise e
+    else:
+        _LOGGER.error(f"Unknown client type for delete_bucket: {type(client)}")
+        raise TypeError("Unsupported client type for delete_bucket")
 
 
