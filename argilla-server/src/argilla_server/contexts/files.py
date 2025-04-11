@@ -1,11 +1,13 @@
-import hashlib
+import os
 import io
-import logging
+import shutil
+import json
+import hashlib
+import time
 from pathlib import Path
-from typing import Any, BinaryIO, Dict, List, Optional, Union
+from typing import Any, BinaryIO, Dict, List, Optional, Union, Iterator
 from urllib.parse import urlparse
 from uuid import UUID
-
 
 from argilla_server.api.schemas.v1.files import ListObjectsResponse, ObjectMetadata, FileObjectResponse
 from argilla_server.settings import settings
@@ -21,9 +23,211 @@ EXCLUDED_VERSIONING_PREFIXES = ['pdf']
 _LOGGER = logging.getLogger("argilla")
 
 
-def get_minio_client() -> Optional[Minio]:
+# Class to mimic Minio client for local file storage
+class LocalFileStorage:
+    """Local file storage implementation that mimics Minio client interface."""
+    
+    def __init__(self, base_dir: str):
+        self.base_dir = Path(base_dir)
+        self.base_dir.mkdir(parents=True, exist_ok=True)
+        
+    def _get_bucket_path(self, bucket_name: str) -> Path:
+        bucket_path = self.base_dir / bucket_name
+        return bucket_path
+        
+    def _get_object_path(self, bucket_name: str, object_name: str) -> Path:
+        bucket_path = self._get_bucket_path(bucket_name)
+        object_path = bucket_path / object_name
+        return object_path
+    
+    def _get_version_path(self, bucket_name: str, object_name: str) -> Path:
+        bucket_path = self._get_bucket_path(bucket_name)
+        version_path = bucket_path / ".versions" / object_name
+        return version_path
+    
+    def make_bucket(self, bucket_name: str) -> None:
+        bucket_path = self._get_bucket_path(bucket_name)
+        bucket_path.mkdir(parents=True, exist_ok=True)
+        # Create versions directory
+        (bucket_path / ".versions").mkdir(exist_ok=True)
+        
+    def set_bucket_versioning(self, bucket_name: str, config: Any) -> None:
+        # Just create the versions directory
+        bucket_path = self._get_bucket_path(bucket_name)
+        (bucket_path / ".versions").mkdir(exist_ok=True)
+    
+    def bucket_exists(self, bucket_name: str) -> bool:
+        bucket_path = self._get_bucket_path(bucket_name)
+        return bucket_path.exists() and bucket_path.is_dir()
+    
+    def put_object(self, bucket_name: str, object_name: str, data: Union[BinaryIO, bytes], 
+                  length: Optional[int] = None, content_type: Optional[str] = None,
+                  part_size: int = None, metadata: Dict[str, Any] = None) -> Dict[str, Any]:
+        # Ensure bucket exists
+        bucket_path = self._get_bucket_path(bucket_name)
+        bucket_path.mkdir(parents=True, exist_ok=True)
+        
+        # Create object path
+        object_path = self._get_object_path(bucket_name, object_name)
+        object_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Handle versioning
+        version_id = hashlib.md5(str(time.time()).encode()).hexdigest()
+        version_path = self._get_version_path(bucket_name, object_name)
+        version_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Write data
+        if isinstance(data, bytes):
+            with open(object_path, 'wb') as f:
+                f.write(data)
+                
+            # Save version
+            version_file = version_path.with_suffix(f'.{version_id}')
+            with open(version_file, 'wb') as f:
+                f.write(data)
+        else:
+            with open(object_path, 'wb') as f:
+                shutil.copyfileobj(data, f)
+                
+            # Save version (rewind the file first)
+            data.seek(0)
+            version_file = version_path.with_suffix(f'.{version_id}')
+            with open(version_file, 'wb') as f:
+                shutil.copyfileobj(data, f)
+        
+        # Save metadata if provided
+        if metadata:
+            meta_path = object_path.with_suffix('.metadata.json')
+            with open(meta_path, 'w') as f:
+                json.dump(metadata, f)
+        
+        return {
+            "bucket_name": bucket_name,
+            "object_name": object_name,
+            "version_id": version_id,
+            "etag": hashlib.md5(str(object_path).encode()).hexdigest(),
+            "size": object_path.stat().st_size
+        }
+    
+    def get_object(self, bucket_name: str, object_name: str, version_id: Optional[str] = None) -> io.BytesIO:
+        if version_id:
+            version_path = self._get_version_path(bucket_name, object_name).with_suffix(f'.{version_id}')
+            if not version_path.exists():
+                raise S3Error("NoSuchKey", "The specified version does not exist", resource=object_name)
+            with open(version_path, 'rb') as f:
+                return io.BytesIO(f.read())
+        else:
+            object_path = self._get_object_path(bucket_name, object_name)
+            if not object_path.exists():
+                raise S3Error("NoSuchKey", "The specified key does not exist", resource=object_name)
+            with open(object_path, 'rb') as f:
+                return io.BytesIO(f.read())
+    
+    def stat_object(self, bucket_name: str, object_name: str, version_id: Optional[str] = None) -> Dict[str, Any]:
+        if version_id:
+            version_path = self._get_version_path(bucket_name, object_name).with_suffix(f'.{version_id}')
+            if not version_path.exists():
+                raise S3Error("NoSuchKey", "The specified version does not exist", resource=object_name)
+            path = version_path
+        else:
+            object_path = self._get_object_path(bucket_name, object_name)
+            if not object_path.exists():
+                raise S3Error("NoSuchKey", "The specified key does not exist", resource=object_name)
+            path = object_path
+        
+        # Get metadata if exists
+        metadata = {}
+        meta_path = self._get_object_path(bucket_name, object_name).with_suffix('.metadata.json')
+        if meta_path.exists():
+            with open(meta_path, 'r') as f:
+                metadata = json.load(f)
+        
+        stats = path.stat()
+        return {
+            "bucket_name": bucket_name,
+            "object_name": object_name,
+            "version_id": version_id or hashlib.md5(str(stats.st_mtime).encode()).hexdigest(),
+            "etag": hashlib.md5(str(path).encode()).hexdigest(),
+            "size": stats.st_size,
+            "last_modified": stats.st_mtime,
+            "metadata": metadata,
+            "content_type": metadata.get("content_type", "application/octet-stream")
+        }
+    
+    def remove_object(self, bucket_name: str, object_name: str, version_id: Optional[str] = None):
+        if version_id:
+            version_path = self._get_version_path(bucket_name, object_name).with_suffix(f'.{version_id}')
+            if version_path.exists():
+                version_path.unlink()
+        else:
+            object_path = self._get_object_path(bucket_name, object_name)
+            if object_path.exists():
+                object_path.unlink()
+                
+                # Remove metadata if exists
+                meta_path = object_path.with_suffix('.metadata.json')
+                if meta_path.exists():
+                    meta_path.unlink()
+    
+    def list_objects(self, bucket_name: str, prefix: Optional[str] = None, 
+                    recursive: bool = False, include_version: bool = False,
+                    start_after: Optional[str] = None) -> Iterator[Dict[str, Any]]:
+        bucket_path = self._get_bucket_path(bucket_name)
+        if not bucket_path.exists():
+            return []
+        
+        # Get all files in bucket (and subdirectories if recursive)
+        pattern = "**/*" if recursive else "*"
+        files = list(bucket_path.glob(pattern))
+        
+        # Filter by prefix if provided
+        if prefix:
+            files = [f for f in files if str(f.relative_to(bucket_path)).startswith(prefix)]
+        
+        # Filter out directories and metadata files
+        files = [f for f in files if f.is_file() and not f.name.endswith('.metadata.json') and '.versions' not in str(f)]
+        
+        # Sort by name
+        files.sort()
+        
+        # Apply start_after if provided
+        if start_after:
+            files = [f for f in files if str(f.relative_to(bucket_path)) > start_after]
+        
+        # Convert to objects
+        for file_path in files:
+            object_name = str(file_path.relative_to(bucket_path))
+            stats = file_path.stat()
+            
+            # Get metadata if exists
+            metadata = {}
+            meta_path = file_path.with_suffix('.metadata.json')
+            if meta_path.exists():
+                with open(meta_path, 'r') as f:
+                    metadata = json.load(f)
+            
+            obj = {
+                "bucket_name": bucket_name,
+                "object_name": object_name,
+                "is_dir": False,
+                "etag": hashlib.md5(str(file_path).encode()).hexdigest(),
+                "size": stats.st_size,
+                "last_modified": stats.st_mtime,
+                "metadata": metadata,
+                "content_type": metadata.get("content_type", "application/octet-stream")
+            }
+            
+            if include_version:
+                obj["version_id"] = hashlib.md5(str(stats.st_mtime).encode()).hexdigest()
+            
+            yield obj
+
+
+def get_minio_client() -> Optional[Union[Minio, LocalFileStorage]]:
     if None in [settings.s3_endpoint, settings.s3_access_key, settings.s3_secret_key]:
-        return None
+        # Use local file storage instead
+        local_storage_path = os.path.join(settings.home_path, "local_storage")
+        return LocalFileStorage(local_storage_path)
 
     try:
         parsed_url = urlparse(settings.s3_endpoint)
