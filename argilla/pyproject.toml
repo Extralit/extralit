@@ -126,10 +126,3 @@ test = { cmd = "pytest tests", env_file = ".env.test" }
 lint = "ruff check"
 format = "black ."
 all = { composite = ["format", "lint", "test"] }
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-env = [
-    "ARGILLA_API_URL=http://localhost:6900",
-    "ARGILLA_API_KEY=argilla.apikey"
-]
