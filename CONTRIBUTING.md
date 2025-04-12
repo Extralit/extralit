@@ -1,33 +1,10 @@
-# Developer guide
+# Contribute to Extralit
 
-## Getting started
-Ensure you have the development environment setup by running the following commands:
-```bash
-conda env create -n extralit -f environment_dev.yml
-conda activate extralit
-```
+Everyone is welcome to contribute, and we value everybody's contribution. Code contributions are not the only way to help the community. Answering questions, helping others, and improving the documentation are also immensely valuable.
 
-## Updating the database schema
-Modify the `[database model code](src/argilla/server/models/database.py)` to define the database's declarative schema.
+It also helps us if you spread the word! Reference the library in blog posts about the awesome projects it made possible, shout out on Twitter every time it has helped you, or simply ⭐️ the repository to say thank you.
 
-Then, to apply the changes to the database run the following command:
+However you choose to contribute, please be mindful and respect our
+[code of conduct](https://github.com/extralit/extralit/blob/main/CODE_OF_CONDUCT.md).
 
-```bash
-# From your development machine, Set the 4 env variables below, and ensure that ARGILLA_ELASTICSEARCH_HOST and POSTGRES_HOST are reachable
-export ARGILLA_ELASTICSEARCH=https://elastic:$ELASTIC_PASSWORD@$ARGILLA_ELASTICSEARCH_HOST
-export ARGILLA_DATABASE_URL=postgresql://postgres:$POSTGRES_PASSWORD@$POSTGRES_HOST/postgres
-
-# Run the database migration script
-python -m argilla server database migrate
-
-# Run the upgrade
-cd src/argilla
-alembic revision --autogenerate -m "<Title of the changes>"
-alembic upgrade head
-```
-
-
-## Want to work on your own?
-
-For more seasoned contributors, we recommend taking a look at the [contributor section](https://docs.extralit.ai/latest/community/contributor/) in our docs.
-
+We recommend taking a look at the [contributor section](https://docs.extralit.ai/latest/community/contributor/) in our docs to get started with the development of Extralit.
