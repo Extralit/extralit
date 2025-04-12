@@ -109,11 +109,23 @@ class Settings(BaseSettings):
         description="SQLite database connection timeout in seconds",
     )
 
-    s3_endpoint: Optional[str] = Field(description="The S3 endpoint for data storage")
-    s3_access_key: Optional[str] = Field(description="The access key for the S3 storage")
-    s3_secret_key: Optional[str] = Field(description="The secret key for the S3 storage")
+    s3_endpoint: Optional[str] = Field(
+        default=None,
+        description="The S3 endpoint for data storage"
+    )
+    s3_access_key: Optional[str] = Field(
+        default=None,
+        description="The access key for the S3 storage"
+    )
+    s3_secret_key: Optional[str] = Field(
+        default=None,
+        description="The secret key for the S3 storage"
+    )
 
-    extralit_url: Optional[str] = Field(description="The extralit server url for LLM serving endpoint")
+    extralit_url: Optional[str] = Field(
+        default=None,
+        description="The extralit server url for LLM serving endpoint"
+    )
 
     elasticsearch: str = "http://localhost:9200"
     elasticsearch_ssl_verify: bool = True
