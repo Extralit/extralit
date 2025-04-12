@@ -19,6 +19,7 @@ on:
   pull_request:
     paths:
       - "argilla/**"
+      - "argilla-server/**"
 
 permissions:
   id-token: write
