@@ -13,6 +13,7 @@
 #  limitations under the License.
 
 from uuid import UUID
+from typing import Union
 
 from fastapi import APIRouter, Depends, HTTPException, Security, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -57,7 +58,7 @@ async def create_workspace(
     db: AsyncSession = Depends(get_async_db),
     workspace_create: WorkspaceCreate,
     current_user: User = Security(auth.get_current_user),
-    minio_client: Minio = Depends(files.get_minio_client),
+    minio_client: Union[Minio, files.LocalFileStorage] = Depends(files.get_minio_client),
 ):
     await authorize(current_user, WorkspacePolicy.create)
 
@@ -80,7 +81,7 @@ async def delete_workspace(
     db: AsyncSession = Depends(get_async_db),
     workspace_id: UUID,
     current_user: User = Security(auth.get_current_user),
-    minio_client: Minio = Depends(files.get_minio_client),
+    minio_client: Union[Minio, files.LocalFileStorage] = Depends(files.get_minio_client),
 ):
     await authorize(current_user, WorkspacePolicy.delete)
 
