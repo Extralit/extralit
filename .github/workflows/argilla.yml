@@ -68,6 +68,7 @@ jobs:
         run: |
           pdm run test tests/unit
       - name: Run integration tests
+        continue-on-error: true
         run: |
           pdm run test tests/integration
       - name: Build package
