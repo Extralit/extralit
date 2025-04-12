@@ -87,7 +87,7 @@ services:
       retries: 3
     restart: unless-stopped
 
-     redis:  
+  redis:  
     image: redis:7.0
     container_name: extralit-redis
     ports:
