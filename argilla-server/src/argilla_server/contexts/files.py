@@ -247,7 +247,7 @@ def get_minio_client() -> Optional[Union[Minio, LocalFileStorage]]:
         )
     except Exception as e:
         _LOGGER.error(f"Error creating Minio client: {e}", stack_info=True)
-        return None
+        raise e
 
 
 def compute_hash(data: bytes) -> str:
@@ -270,12 +270,12 @@ def get_s3_object_url(bucket_name: str, object_path: str) -> str:
     return f'/api/v1/file/{bucket_name}/{object_path}'
 
 
-def list_objects(client: Minio, bucket: str, prefix: Optional[str] = None, include_version=True, recursive=True, start_after: Optional[str]=None) -> ListObjectsResponse:
+def list_objects(client: Union[Minio, LocalFileStorage], bucket: str, prefix: Optional[str] = None, include_version=True, recursive=True, start_after: Optional[str]=None) -> ListObjectsResponse:
     objects = client.list_objects(bucket, prefix=prefix, recursive=recursive, include_version=include_version, start_after=start_after)
     objects = [ObjectMetadata.from_minio_object(obj) for obj in objects]
     return ListObjectsResponse(objects=objects)
 
-def get_object(client: Minio, bucket: str, object: str, version_id: Optional[str] = None, 
+def get_object(client: Union[Minio, LocalFileStorage], bucket: str, object: str, version_id: Optional[str] = None, 
                include_versions=False) -> FileObjectResponse:
     try:
         stat = client.stat_object(bucket, object, version_id=version_id)
@@ -308,7 +308,7 @@ def get_object(client: Minio, bucket: str, object: str, version_id: Optional[str
         raise HTTPException(status_code=500, detail=f"Internal server error: {e.message}")
     
 
-def put_object(client: Minio, bucket: str, object: str, data: Union[BinaryIO, bytes, str], 
+def put_object(client: Union[Minio, LocalFileStorage], bucket: str, object: str, data: Union[BinaryIO, bytes, str], 
                content_type: str=None,
                size: int=None, 
                metadata: Dict[str, Any]=None, 
@@ -339,7 +339,7 @@ def put_object(client: Minio, bucket: str, object: str, data: Union[BinaryIO, by
         raise e
 
 
-def delete_object(client: Minio, bucket: str, object: str, version_id: Optional[str] = None):
+def delete_object(client: Union[Minio, LocalFileStorage], bucket: str, object: str, version_id: Optional[str] = None):
     try:
         client.remove_object(bucket, object, version_id=version_id)
         
@@ -351,7 +351,7 @@ def delete_object(client: Minio, bucket: str, object: str, version_id: Optional[
         raise e
 
 
-def create_bucket(client: Minio, workspace_name: str, excluded_prefixes: List[str]= EXCLUDED_VERSIONING_PREFIXES):
+def create_bucket(client: Union[Minio, LocalFileStorage], workspace_name: str, excluded_prefixes: List[str]= EXCLUDED_VERSIONING_PREFIXES):
     try:
         client.make_bucket(workspace_name)
         try:
