@@ -33,7 +33,7 @@ We are an open-source community-driven project focused on building a platform th
 
     The changelog is where you can find the latest updates and changes to the Extralit project.
 
-    [:octicons-arrow-right-24: Changelog ↗](https://github.com/extralit/extralit/blob/develop/CHANGELOG.md)
+    [:octicons-arrow-right-24: Changelog ↗](https://github.com/extralit/extralit/blob/develop/argilla/CHANGELOG.md)
 
 -   __Roadmap__
 
