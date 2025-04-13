@@ -18,16 +18,16 @@ The Codespaces will automatically:
 
 ### 1. Setting Up a Codespace
 
-=== "New Contributors (Fork Method)"
+=== "New Contributors (Fork)"
     This approach is recommended for contributors who don't have direct write access to the main repository:
 
     1. Fork the [Extralit repository](https://github.com/extralit/extralit) to your GitHub account
     2. Navigate to your forked repository
     3. Click the "Code" button
     4. Select the "Codespaces" tab
-    5. Click "Create codespace on develop" to launch a new development environment
+    5. Click on the kabob menu to select "New with options..." to launch a new development environment
 
-=== "Existing Contributors (Direct Method)"
+=== "Existing Contributors"
     This approach is for maintainers and contributors with direct push access to the main Extralit repository:
 
     1. Use this direct link to create a Codespace with the preferred configuration:
@@ -45,10 +45,9 @@ Extralit offers three different development environments through devcontainers, 
     ```bash
     # Initialize the Kubernetes cluster and deploy all services
     tilt up
-    
-    # Monitor the deployment in the Tilt UI
-    # The URL will be available in the "Ports" tab, usually http://localhost:10350, or another URL in your VSCode Ports tab.
     ```
+
+    Then, simply monitor the deployment in the Tilt UI. The URL will be available in the "Ports" tab, usually http://localhost:10350, or another URL in your VSCode Ports tab.
     
     **Advanced Configuration:** You can customize your deployment by setting environment variables:
     
@@ -73,6 +72,7 @@ Extralit offers three different development environments through devcontainers, 
     tilt up
     ```
 
+
 === "Docker Compose"
     This environment uses Docker Compose for a simpler, leaner setup without Kubernetes:
     
@@ -90,8 +90,9 @@ Extralit offers three different development environments through devcontainers, 
     ```
 
 === "UI/UX Design Only"
-    This lightweight environment is focused solely on frontend development:
+    This lightweight environment is focused solely on frontend development for UI changes only. It will connect directly to a public demo HF Spaces server instance and automatically load the live-reloading frontend as you make changes.
     
+    If 
     ```bash
     # Navigate to the frontend directory
     cd argilla-frontend
@@ -103,22 +104,22 @@ Extralit offers three different development environments through devcontainers, 
     API_BASE_URL=https://extralit-public-demo.hf.space/ npm run dev
     ```
     
-    This will start a development server focused on UI changes only, using the public demo API.
+### 3. Development workflow*
+
+    - **Backend Development**: Changes to `argilla_server/src/argilla_server/` or `argilla/src/{argilla,extralit}/` are automatically updated if Tilt is running
+    - **Python SDK packages**
+      ```bash
+      cd argilla
+      pdm install
+      ```
+    - **Frontend Development**: For frontend live-reloading:
+      ```bash
+      cd argilla/argilla-frontend
+      npm install
+      npm run dev
+      ```
 
 
-
-### 3. Alternative: Start the Development Server Directly
-
-If you prefer not to use Tilt, you can start the server directly:
-
-```bash
-# Check running containers
-docker ps
-
-# Start the development server
-cd argilla-server
-pdm run server-dev
-```
 
 ### 4. Access the Web Interface
 
@@ -129,15 +130,7 @@ pdm run server-dev
   - Password: `1234`
   - API Key: `argilla.apikey`
 
-### 5. Development Workflow
 
-- **Backend Development**: Changes to `src/argilla_server/` or `src/extralit/` are automatically updated while Tilt is running
-- **Frontend Development**: For frontend changes:
-  ```bash
-  cd argilla/argilla-frontend
-  npm install
-  npm run dev
-  ```
 
 
 ## Option 2: Local Development Setup
