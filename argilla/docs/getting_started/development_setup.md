@@ -8,54 +8,104 @@ This guide provides detailed instructions for setting up the Extralit developmen
 
 ## Option 1: GitHub Codespaces (Recommended for Beginners)
 
-GitHub Codespaces provides a fully configured development environment with all necessary tools pre-installed, making it the easiest way to get started.
+GitHub Codespaces provides a fully configured cloud development environment with all necessary tools pre-installed, making it the easiest way to get started.
 
-### 1. Setting Up a Codespace
-
-There are two ways to create a Codespace for the Extralit project:
-
-#### Method A: From Your Fork
-1. Fork the [Extralit repository](https://github.com/extralit/extralit) to your GitHub account
-2. Navigate to your forked repository
-3. Click the "Code" button
-4. Select the "Codespaces" tab
-5. Click "Create codespace on develop" to launch a new development environment
-
-#### Method B: Using Existing Repository
-1. Go to [GitHub Codespaces](https://github.com/codespaces)
-2. Click "New codespace"
-3. Select the Extralit repository or enter the repository URL
-4. Choose the branch (typically "develop")
-5. Select your preferred machine type
-6. Click "Create codespace"
-
-The Codespace will automatically:
+The Codespaces will automatically:
 - Install all required development tools
 - Set up a local Kubernetes cluster
 - Configure necessary environment variables
 - Install the Extralit packages in development mode
 
-### 2. Deploying the Services
+### 1. Setting Up a Codespace
 
-Once your Codespace is ready:
+=== "New Contributors (Fork Method)"
+    This approach is recommended for contributors who don't have direct write access to the main repository:
 
-1. Open a terminal in the Codespace and deploy the services using Tilt:
+    1. Fork the [Extralit repository](https://github.com/extralit/extralit) to your GitHub account
+    2. Navigate to your forked repository
+    3. Click the "Code" button
+    4. Select the "Codespaces" tab
+    5. Click "Create codespace on develop" to launch a new development environment
 
-   ```bash
-   ENV=dev DOCKER_REPO=localhost:5005 tilt up
-   ```
+=== "Existing Contributors (Direct Method)"
+    This approach is for maintainers and contributors with direct push access to the main Extralit repository:
 
-2. Monitor deployment in the Tilt UI at `http://localhost:10350`, which will be automatically forwarded
+    1. Use this direct link to create a Codespace with the preferred configuration:
+       [Create Extralit Codespace](https://github.com/codespaces/new?skip_quickstart=true&machine=standardLinux32gb&repo=708248756&ref=develop&devcontainer_path=.devcontainer%2Fdevcontainer.json)
+    2. Select your preferred machine type (recommended: 4-core, 16GB RAM)
+    3. Click "Create codespace"
 
-3. If you encounter PV (Persistent Volume) issues, deploy services incrementally:
+### 2. Selecting a Development Environment
 
-   ```bash
-   ENV=dev DOCKER_REPO=localhost:5005 tilt up elasticsearch
-   ENV=dev DOCKER_REPO=localhost:5005 tilt up main-db
-   ENV=dev DOCKER_REPO=localhost:5005 tilt up minio
-   ENV=dev DOCKER_REPO=localhost:5005 tilt up weaviate
-   ENV=dev DOCKER_REPO=localhost:5005 tilt up
-   ```
+Extralit offers three different development environments through devcontainers, each optimized for different purposes:
+
+=== "Tilt on K8s (Recommended)"
+    This environment provides full-stack development with Kubernetes and live-reloading capabilities:
+    
+    ```bash
+    # Initialize the Kubernetes cluster and deploy all services
+    tilt up
+    
+    # Monitor the deployment in the Tilt UI
+    # The URL will be available in the "Ports" tab, usually http://localhost:10350, or another URL in your VSCode Ports tab.
+    ```
+    
+    **Advanced Configuration:** You can customize your deployment by setting environment variables:
+    
+    ```bash
+    # Use external database instead of deploying PostgreSQL
+    export ARGILLA_DATABASE_URL="postgresql://user:password@external-host:5432/dbname"
+    
+    # Use external S3-compatible storage instead of deploying MinIO
+    export S3_ENDPOINT="https://your-s3-endpoint"
+    export S3_ACCESS_KEY="your-access-key"
+    export S3_SECRET_KEY="your-secret-key"
+    
+    # Use external OpenAI API key
+    export OPENAI_API_KEY="your-openai-api-key"
+    
+    # Use external Weaviate instance
+    export WCS_HTTP_URL="https://your-weaviate-instance"
+    export WCS_GRPC_URL="grpc://your-weaviate-instance:50051"
+    export WCS_API_KEY="your-weaviate-api-key"
+    
+    # Start Tilt with custom configuration
+    tilt up
+    ```
+
+=== "Docker Compose"
+    This environment uses Docker Compose for a simpler, leaner setup without Kubernetes:
+    
+    ```bash
+    # Start all required services using Docker Compose (if not already started automatically in the devcontainer)
+    cd .devcontainer/docker-compose
+    docker-compose up -d
+    
+    # Install server dependencies
+    cd argilla-server
+    pdm install
+    
+    # Start the server in development mode
+    pdm run server-dev
+    ```
+
+=== "UI/UX Design Only"
+    This lightweight environment is focused solely on frontend development:
+    
+    ```bash
+    # Navigate to the frontend directory
+    cd argilla-frontend
+    
+    # Install dependencies
+    npm install
+    
+    # Start the development server with mock API
+    API_BASE_URL=https://extralit-public-demo.hf.space/ npm run dev
+    ```
+    
+    This will start a development server focused on UI changes only, using the public demo API.
+
+
 
 ### 3. Alternative: Start the Development Server Directly
 
@@ -88,6 +138,8 @@ pdm run server-dev
   npm install
   npm run dev
   ```
+
+
 ## Option 2: Local Development Setup
 
 ### Prerequisites

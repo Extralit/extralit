@@ -1,7 +1,7 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/anaconda
 {
-  "name": "Docker & Tilt for K8s development",
+  "name": "Tilt on K8s for full-stack development",
 
   "build": { 
     "context": ".",
