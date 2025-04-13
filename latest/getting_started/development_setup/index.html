@@ -667,36 +667,12 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="1. Setting Up a Codespace">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#method-a-from-your-fork" class="md-nav__link">
-    <span class="md-ellipsis">
-      Method A: From Your Fork
-    </span>
-  </a>
-  
 </li>
         
           <li class="md-nav__item">
-  <a href="#method-b-using-existing-repository" class="md-nav__link">
+  <a href="#2-selecting-a-development-environment" class="md-nav__link">
     <span class="md-ellipsis">
-      Method B: Using Existing Repository
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-deploying-the-services" class="md-nav__link">
-    <span class="md-ellipsis">
-      2. Deploying the Services
+      2. Selecting a Development Environment
     </span>
   </a>
   
@@ -3410,36 +3386,12 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="1. Setting Up a Codespace">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#method-a-from-your-fork" class="md-nav__link">
-    <span class="md-ellipsis">
-      Method A: From Your Fork
-    </span>
-  </a>
-  
 </li>
         
           <li class="md-nav__item">
-  <a href="#method-b-using-existing-repository" class="md-nav__link">
+  <a href="#2-selecting-a-development-environment" class="md-nav__link">
     <span class="md-ellipsis">
-      Method B: Using Existing Repository
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-deploying-the-services" class="md-nav__link">
-    <span class="md-ellipsis">
-      2. Deploying the Services
+      2. Selecting a Development Environment
     </span>
   </a>
   
@@ -3836,10 +3788,17 @@
 <h1 id="development-setup">Development Setup<a class="headerlink" href="#development-setup" title="Permanent link">&para;</a></h1>
 <p>This guide provides detailed instructions for setting up the Extralit development environment using different approaches, from beginner-friendly options to advanced configurations.</p>
 <h2 id="option-1-github-codespaces-recommended-for-beginners">Option 1: GitHub Codespaces (Recommended for Beginners)<a class="headerlink" href="#option-1-github-codespaces-recommended-for-beginners" title="Permanent link">&para;</a></h2>
-<p>GitHub Codespaces provides a fully configured development environment with all necessary tools pre-installed, making it the easiest way to get started.</p>
+<p>GitHub Codespaces provides a fully configured cloud development environment with all necessary tools pre-installed, making it the easiest way to get started.</p>
+<p>The Codespaces will automatically:
+- Install all required development tools
+- Set up a local Kubernetes cluster
+- Configure necessary environment variables
+- Install the Extralit packages in development mode</p>
 <h3 id="1-setting-up-a-codespace">1. Setting Up a Codespace<a class="headerlink" href="#1-setting-up-a-codespace" title="Permanent link">&para;</a></h3>
-<p>There are two ways to create a Codespace for the Extralit project:</p>
-<h4 id="method-a-from-your-fork">Method A: From Your Fork<a class="headerlink" href="#method-a-from-your-fork" title="Permanent link">&para;</a></h4>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">New Contributors (Fork Method)</label><label for="__tabbed_1_2">Existing Contributors (Direct Method)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p>This approach is recommended for contributors who don't have direct write access to the main repository:</p>
 <ol>
 <li>Fork the <a href="https://github.com/extralit/extralit">Extralit repository</a> to your GitHub account</li>
 <li>Navigate to your forked repository</li>
@@ -3847,49 +3806,88 @@
 <li>Select the "Codespaces" tab</li>
 <li>Click "Create codespace on develop" to launch a new development environment</li>
 </ol>
-<h4 id="method-b-using-existing-repository">Method B: Using Existing Repository<a class="headerlink" href="#method-b-using-existing-repository" title="Permanent link">&para;</a></h4>
+</div>
+<div class="tabbed-block">
+<p>This approach is for maintainers and contributors with direct push access to the main Extralit repository:</p>
 <ol>
-<li>Go to <a href="https://github.com/codespaces">GitHub Codespaces</a></li>
-<li>Click "New codespace"</li>
-<li>Select the Extralit repository or enter the repository URL</li>
-<li>Choose the branch (typically "develop")</li>
-<li>Select your preferred machine type</li>
+<li>Use this direct link to create a Codespace with the preferred configuration:
+   <a href="https://github.com/codespaces/new?skip_quickstart=true&amp;machine=standardLinux32gb&amp;repo=708248756&amp;ref=develop&amp;devcontainer_path=.devcontainer%2Fdevcontainer.json">Create Extralit Codespace</a></li>
+<li>Select your preferred machine type (recommended: 4-core, 16GB RAM)</li>
 <li>Click "Create codespace"</li>
 </ol>
-<p>The Codespace will automatically:
-- Install all required development tools
-- Set up a local Kubernetes cluster
-- Configure necessary environment variables
-- Install the Extralit packages in development mode</p>
-<h3 id="2-deploying-the-services">2. Deploying the Services<a class="headerlink" href="#2-deploying-the-services" title="Permanent link">&para;</a></h3>
-<p>Once your Codespace is ready:</p>
-<ol>
-<li>Open a terminal in the Codespace and deploy the services using Tilt:</li>
-</ol>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nv">ENV</span><span class="o">=</span>dev<span class="w"> </span><span class="nv">DOCKER_REPO</span><span class="o">=</span>localhost:5005<span class="w"> </span>tilt<span class="w"> </span>up
+</div>
+</div>
+</div>
+<h3 id="2-selecting-a-development-environment">2. Selecting a Development Environment<a class="headerlink" href="#2-selecting-a-development-environment" title="Permanent link">&para;</a></h3>
+<p>Extralit offers three different development environments through devcontainers, each optimized for different purposes:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:3"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><input id="__tabbed_2_3" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Tilt on <abbr title="Kubernetes, an open-source platform designed to automate deploying, scaling, and operating application containers.">K8s</abbr> (Recommended)</label><label for="__tabbed_2_2">Docker Compose</label><label for="__tabbed_2_3">UI/UX Design Only</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p>This environment provides full-stack development with Kubernetes and live-reloading capabilities:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Initialize the Kubernetes cluster and deploy all services</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>tilt<span class="w"> </span>up
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># Monitor the deployment in the Tilt UI</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="c1"># The URL will be available in the &quot;Ports&quot; tab, usually http://localhost:10350, or another URL in your VSCode Ports tab.</span>
 </span></code></pre></div>
-<ol>
-<li>
-<p>Monitor deployment in the Tilt UI at <code>http://localhost:10350</code>, which will be automatically forwarded</p>
-</li>
-<li>
-<p>If you encounter PV (Persistent Volume) issues, deploy services incrementally:</p>
-</li>
-</ol>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nv">ENV</span><span class="o">=</span>dev<span class="w"> </span><span class="nv">DOCKER_REPO</span><span class="o">=</span>localhost:5005<span class="w"> </span>tilt<span class="w"> </span>up<span class="w"> </span>elasticsearch
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nv">ENV</span><span class="o">=</span>dev<span class="w"> </span><span class="nv">DOCKER_REPO</span><span class="o">=</span>localhost:5005<span class="w"> </span>tilt<span class="w"> </span>up<span class="w"> </span>main-db
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="nv">ENV</span><span class="o">=</span>dev<span class="w"> </span><span class="nv">DOCKER_REPO</span><span class="o">=</span>localhost:5005<span class="w"> </span>tilt<span class="w"> </span>up<span class="w"> </span>minio
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="nv">ENV</span><span class="o">=</span>dev<span class="w"> </span><span class="nv">DOCKER_REPO</span><span class="o">=</span>localhost:5005<span class="w"> </span>tilt<span class="w"> </span>up<span class="w"> </span>weaviate
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="nv">ENV</span><span class="o">=</span>dev<span class="w"> </span><span class="nv">DOCKER_REPO</span><span class="o">=</span>localhost:5005<span class="w"> </span>tilt<span class="w"> </span>up
+<p><strong>Advanced Configuration:</strong> You can customize your deployment by setting environment variables:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Use external database instead of deploying PostgreSQL</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">ARGILLA_DATABASE_URL</span><span class="o">=</span><span class="s2">&quot;postgresql://user:password@external-host:5432/dbname&quot;</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Use external S3-compatible storage instead of deploying MinIO</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="nb">export</span><span class="w"> </span><span class="nv">S3_ENDPOINT</span><span class="o">=</span><span class="s2">&quot;https://your-s3-endpoint&quot;</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="nb">export</span><span class="w"> </span><span class="nv">S3_ACCESS_KEY</span><span class="o">=</span><span class="s2">&quot;your-access-key&quot;</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="nb">export</span><span class="w"> </span><span class="nv">S3_SECRET_KEY</span><span class="o">=</span><span class="s2">&quot;your-secret-key&quot;</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="c1"># Use external OpenAI API key</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OPENAI_API_KEY</span><span class="o">=</span><span class="s2">&quot;your-openai-api-key&quot;</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="c1"># Use external Weaviate instance</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="nb">export</span><span class="w"> </span><span class="nv">WCS_HTTP_URL</span><span class="o">=</span><span class="s2">&quot;https://your-weaviate-instance&quot;</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="nb">export</span><span class="w"> </span><span class="nv">WCS_GRPC_URL</span><span class="o">=</span><span class="s2">&quot;grpc://your-weaviate-instance:50051&quot;</span>
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="nb">export</span><span class="w"> </span><span class="nv">WCS_API_KEY</span><span class="o">=</span><span class="s2">&quot;your-weaviate-api-key&quot;</span>
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="c1"># Start Tilt with custom configuration</span>
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>tilt<span class="w"> </span>up
 </span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<p>This environment uses Docker Compose for a simpler, leaner setup without Kubernetes:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Start all required services using Docker Compose (if not already started automatically in the devcontainer)</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="nb">cd</span><span class="w"> </span>.devcontainer/docker-compose
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>docker-compose<span class="w"> </span>up<span class="w"> </span>-d
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="c1"># Install server dependencies</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="nb">cd</span><span class="w"> </span>argilla-server
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>pdm<span class="w"> </span>install
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="c1"># Start the server in development mode</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>pdm<span class="w"> </span>run<span class="w"> </span>server-dev
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<p>This lightweight environment is focused solely on frontend development:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Navigate to the frontend directory</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nb">cd</span><span class="w"> </span>argilla-frontend
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># Install dependencies</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>npm<span class="w"> </span>install
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="c1"># Start the development server with mock API</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="nv">API_BASE_URL</span><span class="o">=</span>https://extralit-public-demo.hf.space/<span class="w"> </span>npm<span class="w"> </span>run<span class="w"> </span>dev
+</span></code></pre></div>
+<p>This will start a development server focused on UI changes only, using the public demo <abbr title="Application Programming Interface.">API</abbr>.</p>
+</div>
+</div>
+</div>
 <h3 id="3-alternative-start-the-development-server-directly">3. Alternative: Start the Development Server Directly<a class="headerlink" href="#3-alternative-start-the-development-server-directly" title="Permanent link">&para;</a></h3>
 <p>If you prefer not to use Tilt, you can start the server directly:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Check running containers</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>docker<span class="w"> </span>ps
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># Start the development server</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="nb">cd</span><span class="w"> </span>argilla-server
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>pdm<span class="w"> </span>run<span class="w"> </span>server-dev
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Check running containers</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>docker<span class="w"> </span>ps
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1"># Start the development server</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="nb">cd</span><span class="w"> </span>argilla-server
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>pdm<span class="w"> </span>run<span class="w"> </span>server-dev
 </span></code></pre></div>
 <h3 id="4-access-the-web-interface">4. Access the Web Interface<a class="headerlink" href="#4-access-the-web-interface" title="Permanent link">&para;</a></h3>
 <ul>
@@ -3904,9 +3902,9 @@
 <ul>
 <li><strong>Backend Development</strong>: Changes to <code>src/argilla_server/</code> or <code>src/extralit/</code> are automatically updated while Tilt is running</li>
 <li><strong>Frontend Development</strong>: For frontend changes:
-  <div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nb">cd</span><span class="w"> </span>argilla/argilla-frontend
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>npm<span class="w"> </span>install
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>npm<span class="w"> </span>run<span class="w"> </span>dev
+  <div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nb">cd</span><span class="w"> </span>argilla/argilla-frontend
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>npm<span class="w"> </span>install
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>npm<span class="w"> </span>run<span class="w"> </span>dev
 </span></code></pre></div></li>
 </ul>
 <h2 id="option-2-local-development-setup">Option 2: Local Development Setup<a class="headerlink" href="#option-2-local-development-setup" title="Permanent link">&para;</a></h2>
@@ -3918,58 +3916,58 @@
 <li>Git</li>
 </ul>
 <h3 id="1-clone-the-repository">1. Clone the Repository<a class="headerlink" href="#1-clone-the-repository" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/extralit/extralit.git
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nb">cd</span><span class="w"> </span>extralit
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/extralit/extralit.git
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="nb">cd</span><span class="w"> </span>extralit
 </span></code></pre></div>
 <h3 id="2-set-up-python-environment">2. Set Up Python Environment<a class="headerlink" href="#2-set-up-python-environment" title="Permanent link">&para;</a></h3>
 <p>We recommend using PDM for package management:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Install PDM if not already installed</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>pip<span class="w"> </span>install<span class="w"> </span>pdm
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1"># Install server dependencies</span>
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="nb">cd</span><span class="w"> </span>argilla-server
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>pdm<span class="w"> </span>install
-</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>
-</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="c1"># Install client dependencies</span>
-</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="nb">cd</span><span class="w"> </span>../argilla
-</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>pdm<span class="w"> </span>install<span class="w"> </span>--dev
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Install PDM if not already installed</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>pip<span class="w"> </span>install<span class="w"> </span>pdm
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="c1"># Install server dependencies</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="nb">cd</span><span class="w"> </span>argilla-server
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>pdm<span class="w"> </span>install
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="c1"># Install client dependencies</span>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="nb">cd</span><span class="w"> </span>../argilla
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>pdm<span class="w"> </span>install<span class="w"> </span>--dev
 </span></code></pre></div>
 <h3 id="3-build-the-frontend">3. Build the Frontend<a class="headerlink" href="#3-build-the-frontend" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nb">cd</span><span class="w"> </span>argilla-frontend
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>npm<span class="w"> </span>install
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>npm<span class="w"> </span>run<span class="w"> </span>build
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="c1"># Copy built files to server static directory</span>
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>cp<span class="w"> </span>-r<span class="w"> </span>dist<span class="w"> </span>../argilla-server/src/argilla_server/static
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nb">cd</span><span class="w"> </span>argilla-frontend
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>npm<span class="w"> </span>install
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>npm<span class="w"> </span>run<span class="w"> </span>build
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="c1"># Copy built files to server static directory</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>cp<span class="w"> </span>-r<span class="w"> </span>dist<span class="w"> </span>../argilla-server/src/argilla_server/static
 </span></code></pre></div>
 <h3 id="4-configure-environment-variables">4. Configure Environment Variables<a class="headerlink" href="#4-configure-environment-variables" title="Permanent link">&para;</a></h3>
 <p>Create a <code>.env.dev</code> file in the <code>argilla-server</code> directory with the following content:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>ALEMBIC_CONFIG=src/argilla_server/alembic.ini
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>ARGILLA_AUTH_SECRET_KEY=8VO7na5N/jQx+yP/N+HlE8q51vPdrxqlh6OzoebIyko=
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>ARGILLA_DATABASE_URL=sqlite+aiosqlite:///${HOME}/.argilla/argilla-dev.db?check_same_thread=False
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a># Search engine configuration
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>ARGILLA_SEARCH_ENGINE=elasticsearch
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>ARGILLA_ELASTICSEARCH=http://localhost:9200
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a># Redis configuration
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>ARGILLA_REDIS_URL=redis://localhost:6379/0
+<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>ALEMBIC_CONFIG=src/argilla_server/alembic.ini
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>ARGILLA_AUTH_SECRET_KEY=8VO7na5N/jQx+yP/N+HlE8q51vPdrxqlh6OzoebIyko=
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>ARGILLA_DATABASE_URL=sqlite+aiosqlite:///${HOME}/.argilla/argilla-dev.db?check_same_thread=False
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a># Search engine configuration
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>ARGILLA_SEARCH_ENGINE=elasticsearch
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>ARGILLA_ELASTICSEARCH=http://localhost:9200
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a># Redis configuration
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>ARGILLA_REDIS_URL=redis://localhost:6379/0
 </span></code></pre></div>
 <h3 id="5-set-up-the-databases">5. Set Up the Databases<a class="headerlink" href="#5-set-up-the-databases" title="Permanent link">&para;</a></h3>
 <h4 id="vector-database-elasticsearch">Vector database (Elasticsearch)<a class="headerlink" href="#vector-database-elasticsearch" title="Permanent link">&para;</a></h4>
-<div class="language-sh highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># Extralit supports ElasticSearch versions &gt;=8.5</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>--name<span class="w"> </span>elasticsearch-for-extralit<span class="w"> </span>-p<span class="w"> </span><span class="m">9200</span>:9200<span class="w"> </span>-p<span class="w"> </span><span class="m">9300</span>:9300<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;ES_JAVA_OPTS=-Xms512m -Xmx512m&quot;</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;discovery.type=single-node&quot;</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;xpack.security.enabled=false&quot;</span><span class="w"> </span>docker.elastic.co/elasticsearch/elasticsearch:8.5.3
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># Extralit supports ElasticSearch versions &gt;=8.5</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>--name<span class="w"> </span>elasticsearch-for-extralit<span class="w"> </span>-p<span class="w"> </span><span class="m">9200</span>:9200<span class="w"> </span>-p<span class="w"> </span><span class="m">9300</span>:9300<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;ES_JAVA_OPTS=-Xms512m -Xmx512m&quot;</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;discovery.type=single-node&quot;</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;xpack.security.enabled=false&quot;</span><span class="w"> </span>docker.elastic.co/elasticsearch/elasticsearch:8.5.3
 </span></code></pre></div>
 <h4 id="relational-database-postgresql">Relational database (PostgreSQL)<a class="headerlink" href="#relational-database-postgresql" title="Permanent link">&para;</a></h4>
-<div class="language-sh highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>--name<span class="w"> </span>postgres-for-extralit<span class="w"> </span>-p<span class="w"> </span><span class="m">5432</span>:5432<span class="w"> </span>-e<span class="w"> </span><span class="nv">POSTGRES_PASSWORD</span><span class="o">=</span>postgres<span class="w"> </span>-e<span class="w"> </span><span class="nv">POSTGRES_USER</span><span class="o">=</span>postgres<span class="w"> </span>-e<span class="w"> </span><span class="nv">POSTGRES_DB</span><span class="o">=</span>postgres<span class="w"> </span>postgres:14
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>--name<span class="w"> </span>postgres-for-extralit<span class="w"> </span>-p<span class="w"> </span><span class="m">5432</span>:5432<span class="w"> </span>-e<span class="w"> </span><span class="nv">POSTGRES_PASSWORD</span><span class="o">=</span>postgres<span class="w"> </span>-e<span class="w"> </span><span class="nv">POSTGRES_USER</span><span class="o">=</span>postgres<span class="w"> </span>-e<span class="w"> </span><span class="nv">POSTGRES_DB</span><span class="o">=</span>postgres<span class="w"> </span>postgres:14
 </span></code></pre></div>
 <p>Alternatively, you can start all required services using Docker Compose:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># Start Elasticsearch and other services</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>docker-compose<span class="w"> </span>up<span class="w"> </span>-d<span class="w"> </span>elasticsearch<span class="w"> </span>redis
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># Start Elasticsearch and other services</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>docker-compose<span class="w"> </span>up<span class="w"> </span>-d<span class="w"> </span>elasticsearch<span class="w"> </span>redis
 </span></code></pre></div>
 <h3 id="6-run-database-migrations-and-start-the-server">6. Run Database Migrations and Start the Server<a class="headerlink" href="#6-run-database-migrations-and-start-the-server" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="nb">cd</span><span class="w"> </span>argilla-server
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>pdm<span class="w"> </span>run<span class="w"> </span>migrate
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>pdm<span class="w"> </span>run<span class="w"> </span>cli<span class="w"> </span>database<span class="w"> </span>users<span class="w"> </span>create_default
-</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>pdm<span class="w"> </span>run<span class="w"> </span>server
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="nb">cd</span><span class="w"> </span>argilla-server
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>pdm<span class="w"> </span>run<span class="w"> </span>migrate
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>pdm<span class="w"> </span>run<span class="w"> </span>cli<span class="w"> </span>database<span class="w"> </span>users<span class="w"> </span>create_default
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>pdm<span class="w"> </span>run<span class="w"> </span>server
 </span></code></pre></div>
 <h3 id="7-access-the-web-interface">7. Access the Web Interface<a class="headerlink" href="#7-access-the-web-interface" title="Permanent link">&para;</a></h3>
 <p>Open your browser and navigate to http://localhost:6900</p>
@@ -3983,83 +3981,83 @@
 <li><a href="https://github.com/tilt-dev/ctlptl/tree/main#how-do-i-install-it">ctlptl</a></li>
 </ul>
 <h3 id="2-create-a-local-kubernetes-cluster">2. Create a Local Kubernetes Cluster<a class="headerlink" href="#2-create-a-local-kubernetes-cluster" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>kind<span class="w"> </span>create<span class="w"> </span>cluster<span class="w"> </span>--name<span class="w"> </span>extralit-dev
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>kind<span class="w"> </span>create<span class="w"> </span>cluster<span class="w"> </span>--name<span class="w"> </span>extralit-dev
 </span></code></pre></div>
 <h3 id="3-set-up-local-development-with-image-registry">3. Set Up Local Development with Image Registry<a class="headerlink" href="#3-set-up-local-development-with-image-registry" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>ctlptl<span class="w"> </span>create<span class="w"> </span>registry<span class="w"> </span>ctlptl-registry<span class="w"> </span>--port<span class="o">=</span><span class="m">5005</span>
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>ctlptl<span class="w"> </span>create<span class="w"> </span>cluster<span class="w"> </span>extralit-dev<span class="w"> </span>--registry<span class="o">=</span>ctlptl-registry
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>ctlptl<span class="w"> </span>create<span class="w"> </span>registry<span class="w"> </span>ctlptl-registry<span class="w"> </span>--port<span class="o">=</span><span class="m">5005</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>ctlptl<span class="w"> </span>create<span class="w"> </span>cluster<span class="w"> </span>extralit-dev<span class="w"> </span>--registry<span class="o">=</span>ctlptl-registry
 </span></code></pre></div>
 <h3 id="4-apply-storage-configurations">4. Apply Storage Configurations<a class="headerlink" href="#4-apply-storage-configurations" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>ctlptl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>k8s/kind/kind-config.yaml
-</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>kubectl<span class="w"> </span>--context<span class="w"> </span>kind-kind<span class="w"> </span>taint<span class="w"> </span>node<span class="w"> </span>kind-control-plane<span class="w"> </span>node-role.kubernetes.io/control-plane:NoSchedule-
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>ctlptl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>k8s/kind/kind-config.yaml
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>kubectl<span class="w"> </span>--context<span class="w"> </span>kind-kind<span class="w"> </span>taint<span class="w"> </span>node<span class="w"> </span>kind-control-plane<span class="w"> </span>node-role.kubernetes.io/control-plane:NoSchedule-
 </span></code></pre></div>
 <h3 id="5-create-namespace-and-deploy-services">5. Create Namespace and Deploy Services<a class="headerlink" href="#5-create-namespace-and-deploy-services" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>kubectl<span class="w"> </span>create<span class="w"> </span>ns<span class="w"> </span>extralit-dev
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>extralit-secrets.yaml<span class="w"> </span>-n<span class="w"> </span>extralit-dev
-</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>langfuse-secrets.yaml<span class="w"> </span>-n<span class="w"> </span>extralit-dev
-</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>weaviate-api-keys.yaml<span class="w"> </span>-n<span class="w"> </span>extralit-dev
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>kubectl<span class="w"> </span>create<span class="w"> </span>ns<span class="w"> </span>extralit-dev
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>extralit-secrets.yaml<span class="w"> </span>-n<span class="w"> </span>extralit-dev
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>langfuse-secrets.yaml<span class="w"> </span>-n<span class="w"> </span>extralit-dev
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>weaviate-api-keys.yaml<span class="w"> </span>-n<span class="w"> </span>extralit-dev
 </span></code></pre></div>
 <h3 id="6-deploy-with-tilt">6. Deploy with Tilt<a class="headerlink" href="#6-deploy-with-tilt" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="nv">ENV</span><span class="o">=</span>dev<span class="w"> </span><span class="nv">DOCKER_REPO</span><span class="o">=</span>localhost:5005<span class="w"> </span>tilt<span class="w"> </span>up<span class="w"> </span>--namespace<span class="w"> </span>extralit-dev<span class="w"> </span>--context<span class="w"> </span>kind-extralit-dev
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="nv">ENV</span><span class="o">=</span>dev<span class="w"> </span><span class="nv">DOCKER_REPO</span><span class="o">=</span>localhost:5005<span class="w"> </span>tilt<span class="w"> </span>up<span class="w"> </span>--namespace<span class="w"> </span>extralit-dev<span class="w"> </span>--context<span class="w"> </span>kind-extralit-dev
 </span></code></pre></div>
 <h2 id="option-4-docker-deployment">Option 4: Docker Deployment<a class="headerlink" href="#option-4-docker-deployment" title="Permanent link">&para;</a></h2>
 <p>For a simpler setup using Docker without development capabilities:</p>
 <h3 id="1-create-a-project-directory">1. Create a Project Directory<a class="headerlink" href="#1-create-a-project-directory" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>mkdir<span class="w"> </span>extralit<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>extralit
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>mkdir<span class="w"> </span>extralit<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>extralit
 </span></code></pre></div>
 <h3 id="2-download-docker-compose-configuration">2. Download Docker Compose Configuration<a class="headerlink" href="#2-download-docker-compose-configuration" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>wget<span class="w"> </span>-O<span class="w"> </span>docker-compose.yaml<span class="w"> </span>https://raw.githubusercontent.com/extralit/extralit/main/examples/deployments/docker/docker-compose.yaml
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>wget<span class="w"> </span>-O<span class="w"> </span>docker-compose.yaml<span class="w"> </span>https://raw.githubusercontent.com/extralit/extralit/main/examples/deployments/docker/docker-compose.yaml
 </span></code></pre></div>
 <p>Or using curl:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>curl<span class="w"> </span>https://raw.githubusercontent.com/extralit/extralit/main/examples/deployments/docker/docker-compose.yaml<span class="w"> </span>-o<span class="w"> </span>docker-compose.yaml
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>curl<span class="w"> </span>https://raw.githubusercontent.com/extralit/extralit/main/examples/deployments/docker/docker-compose.yaml<span class="w"> </span>-o<span class="w"> </span>docker-compose.yaml
 </span></code></pre></div>
 <h3 id="3-start-the-services">3. Start the Services<a class="headerlink" href="#3-start-the-services" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d
 </span></code></pre></div>
 <h3 id="4-access-the-web-interface_1">4. Access the Web Interface<a class="headerlink" href="#4-access-the-web-interface_1" title="Permanent link">&para;</a></h3>
 <p>Open your browser and navigate to http://localhost:6900</p>
 <h2 id="development-best-practices">Development Best Practices<a class="headerlink" href="#development-best-practices" title="Permanent link">&para;</a></h2>
 <h3 id="linting-and-formatting">Linting and Formatting<a class="headerlink" href="#linting-and-formatting" title="Permanent link">&para;</a></h3>
 <p>To maintain a consistent code format, install the <code>pre-commit</code> hooks to run before each commit automatically.</p>
-<div class="language-sh highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>pre-commit<span class="w"> </span>install
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>pre-commit<span class="w"> </span>install
 </span></code></pre></div>
 <p>In addition, run the following scripts to check the code formatting and linting:</p>
-<div class="language-sh highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>pdm<span class="w"> </span>run<span class="w"> </span>format
-</span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>pdm<span class="w"> </span>run<span class="w"> </span>lint
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>pdm<span class="w"> </span>run<span class="w"> </span>format
+</span><span id="__span-24-2"><a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a>pdm<span class="w"> </span>run<span class="w"> </span>lint
 </span></code></pre></div>
 <details class="tip">
 <summary>Running linting, formatting, and tests</summary>
 <p>You can run all the checks at once by using the following command:</p>
-<div class="language-sh highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>pdm<span class="w"> </span>run<span class="w"> </span>all
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>pdm<span class="w"> </span>run<span class="w"> </span>all
 </span></code></pre></div>
 </details>
 <h2 id="documentation-development">Documentation Development<a class="headerlink" href="#documentation-development" title="Permanent link">&para;</a></h2>
 <p>To contribute to the documentation and generate it locally:</p>
-<div class="language-sh highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>mkdocs<span class="w"> </span>serve
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>mkdocs<span class="w"> </span>serve
 </span></code></pre></div>
 <p>This will start a local server with the documentation site.</p>
 <h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
 <h3 id="elasticsearch-issues">Elasticsearch Issues<a class="headerlink" href="#elasticsearch-issues" title="Permanent link">&para;</a></h3>
 <p>If you encounter issues with Elasticsearch:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="c1"># Check Elasticsearch logs</span>
-</span><span id="__span-25-2"><a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a>docker<span class="w"> </span>logs<span class="w"> </span>elasticsearch-for-extralit
-</span><span id="__span-25-3"><a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a>
-</span><span id="__span-25-4"><a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a><span class="c1"># Ensure Elasticsearch is running</span>
-</span><span id="__span-25-5"><a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a>curl<span class="w"> </span>http://localhost:9200
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="c1"># Check Elasticsearch logs</span>
+</span><span id="__span-27-2"><a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a>docker<span class="w"> </span>logs<span class="w"> </span>elasticsearch-for-extralit
+</span><span id="__span-27-3"><a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a>
+</span><span id="__span-27-4"><a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a><span class="c1"># Ensure Elasticsearch is running</span>
+</span><span id="__span-27-5"><a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a>curl<span class="w"> </span>http://localhost:9200
 </span></code></pre></div>
 <h3 id="database-migration-failures">Database Migration Failures<a class="headerlink" href="#database-migration-failures" title="Permanent link">&para;</a></h3>
 <p>If database migrations fail:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="c1"># Reset the database</span>
-</span><span id="__span-26-2"><a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a>rm<span class="w"> </span>-rf<span class="w"> </span>~/.argilla/argilla-dev.db
-</span><span id="__span-26-3"><a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a>pdm<span class="w"> </span>run<span class="w"> </span>migrate
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="c1"># Reset the database</span>
+</span><span id="__span-28-2"><a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a>rm<span class="w"> </span>-rf<span class="w"> </span>~/.argilla/argilla-dev.db
+</span><span id="__span-28-3"><a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a>pdm<span class="w"> </span>run<span class="w"> </span>migrate
 </span></code></pre></div>
 <h3 id="frontend-build-issues">Frontend Build Issues<a class="headerlink" href="#frontend-build-issues" title="Permanent link">&para;</a></h3>
 <p>If you encounter issues with the frontend build:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="c1"># Clean and rebuild</span>
-</span><span id="__span-27-2"><a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="nb">cd</span><span class="w"> </span>argilla-frontend
-</span><span id="__span-27-3"><a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a>rm<span class="w"> </span>-rf<span class="w"> </span>node_modules
-</span><span id="__span-27-4"><a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a>npm<span class="w"> </span>install
-</span><span id="__span-27-5"><a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a>npm<span class="w"> </span>run<span class="w"> </span>build
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-29-1"><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="c1"># Clean and rebuild</span>
+</span><span id="__span-29-2"><a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="nb">cd</span><span class="w"> </span>argilla-frontend
+</span><span id="__span-29-3"><a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a>rm<span class="w"> </span>-rf<span class="w"> </span>node_modules
+</span><span id="__span-29-4"><a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a>npm<span class="w"> </span>install
+</span><span id="__span-29-5"><a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a>npm<span class="w"> </span>run<span class="w"> </span>build
 </span></code></pre></div>
 <h3 id="persistent-volume-storage-class-issues">Persistent Volume &amp; Storage Class Issues<a class="headerlink" href="#persistent-volume-storage-class-issues" title="Permanent link">&para;</a></h3>
 <p>When using Kubernetes, persistent volume issues can occur:
