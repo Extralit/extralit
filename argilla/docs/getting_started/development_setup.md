@@ -106,7 +106,7 @@ Extralit offers three different development environments through devcontainers, 
     
 ### 3. Development workflow*
 
-    - **Backend Development**: Changes to `argilla_server/src/argilla_server/` or `argilla/src/{argilla,extralit}/` are automatically updated if Tilt is running
+    - **Backend Development**: Changes to `argilla-server/src/argilla_server/` or `argilla/src/{argilla,extralit}/` are automatically updated if Tilt is running
     - **Python SDK packages**
       ```bash
       cd argilla
@@ -118,7 +118,6 @@ Extralit offers three different development environments through devcontainers, 
       npm install
       npm run dev
       ```
-
 
 
 ### 4. Access the Web Interface
