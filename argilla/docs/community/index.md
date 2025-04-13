@@ -41,7 +41,7 @@ We are an open-source community-driven project focused on building a platform th
 
     We love to discuss our plans with the community. Feel encouraged to participate in our roadmap discussions.
 
-    [:octicons-arrow-right-24: Roadmap ↗](https://github.com/orgs/extralit/projects/1/views/1)
+    [:octicons-arrow-right-24: Roadmap ↗](https://github.com/orgs/extralit/projects/2/views/1)
 
 -   __Developer Guide__
 
