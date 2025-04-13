@@ -679,9 +679,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#3-alternative-start-the-development-server-directly" class="md-nav__link">
+  <a href="#3-development-workflow" class="md-nav__link">
     <span class="md-ellipsis">
-      3. Alternative: Start the Development Server Directly
+      3. Development workflow*
     </span>
   </a>
   
@@ -691,15 +691,6 @@
   <a href="#4-access-the-web-interface" class="md-nav__link">
     <span class="md-ellipsis">
       4. Access the Web Interface
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#5-development-workflow" class="md-nav__link">
-    <span class="md-ellipsis">
-      5. Development Workflow
     </span>
   </a>
   
@@ -3398,9 +3389,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#3-alternative-start-the-development-server-directly" class="md-nav__link">
+  <a href="#3-development-workflow" class="md-nav__link">
     <span class="md-ellipsis">
-      3. Alternative: Start the Development Server Directly
+      3. Development workflow*
     </span>
   </a>
   
@@ -3410,15 +3401,6 @@
   <a href="#4-access-the-web-interface" class="md-nav__link">
     <span class="md-ellipsis">
       4. Access the Web Interface
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#5-development-workflow" class="md-nav__link">
-    <span class="md-ellipsis">
-      5. Development Workflow
     </span>
   </a>
   
@@ -3795,7 +3777,7 @@
 - Configure necessary environment variables
 - Install the Extralit packages in development mode</p>
 <h3 id="1-setting-up-a-codespace">1. Setting Up a Codespace<a class="headerlink" href="#1-setting-up-a-codespace" title="Permanent link">&para;</a></h3>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">New Contributors (Fork Method)</label><label for="__tabbed_1_2">Existing Contributors (Direct Method)</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">New Contributors (Fork)</label><label for="__tabbed_1_2">Existing Contributors</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <p>This approach is recommended for contributors who don't have direct write access to the main repository:</p>
@@ -3804,7 +3786,7 @@
 <li>Navigate to your forked repository</li>
 <li>Click the "Code" button</li>
 <li>Select the "Codespaces" tab</li>
-<li>Click "Create codespace on develop" to launch a new development environment</li>
+<li>Click on the kabob menu to select "New with options..." to launch a new development environment</li>
 </ol>
 </div>
 <div class="tabbed-block">
@@ -3826,10 +3808,8 @@
 <p>This environment provides full-stack development with Kubernetes and live-reloading capabilities:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Initialize the Kubernetes cluster and deploy all services</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>tilt<span class="w"> </span>up
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># Monitor the deployment in the Tilt UI</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="c1"># The URL will be available in the &quot;Ports&quot; tab, usually http://localhost:10350, or another URL in your VSCode Ports tab.</span>
 </span></code></pre></div>
+<p>Then, simply monitor the deployment in the Tilt UI. The URL will be available in the "Ports" tab, usually http://localhost:10350, or another URL in your VSCode Ports tab.</p>
 <p><strong>Advanced Configuration:</strong> You can customize your deployment by setting environment variables:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Use external database instead of deploying PostgreSQL</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">ARGILLA_DATABASE_URL</span><span class="o">=</span><span class="s2">&quot;postgresql://user:password@external-host:5432/dbname&quot;</span>
@@ -3866,7 +3846,8 @@
 </span></code></pre></div>
 </div>
 <div class="tabbed-block">
-<p>This lightweight environment is focused solely on frontend development:</p>
+<p>This lightweight environment is focused solely on frontend development for UI changes only. It will connect directly to a public demo <abbr title="HuggingFace - A platform for deploying and managing open-source AI applications, models and datasets in the cloud.">HF</abbr> Spaces server instance and automatically load the live-reloading frontend as you make changes.</p>
+<p>If 
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Navigate to the frontend directory</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nb">cd</span><span class="w"> </span>argilla-frontend
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
@@ -3875,20 +3856,24 @@
 </span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
 </span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="c1"># Start the development server with mock API</span>
 </span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="nv">API_BASE_URL</span><span class="o">=</span>https://extralit-public-demo.hf.space/<span class="w"> </span>npm<span class="w"> </span>run<span class="w"> </span>dev
-</span></code></pre></div>
-<p>This will start a development server focused on UI changes only, using the public demo <abbr title="Application Programming Interface.">API</abbr>.</p>
+</span></code></pre></div></p>
 </div>
 </div>
 </div>
-<h3 id="3-alternative-start-the-development-server-directly">3. Alternative: Start the Development Server Directly<a class="headerlink" href="#3-alternative-start-the-development-server-directly" title="Permanent link">&para;</a></h3>
-<p>If you prefer not to use Tilt, you can start the server directly:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Check running containers</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>docker<span class="w"> </span>ps
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1"># Start the development server</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="nb">cd</span><span class="w"> </span>argilla-server
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>pdm<span class="w"> </span>run<span class="w"> </span>server-dev
-</span></code></pre></div>
+<h3 id="3-development-workflow">3. Development workflow*<a class="headerlink" href="#3-development-workflow" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code>- **Backend Development**: Changes to `argilla_server/src/argilla_server/` or `argilla/src/{argilla,extralit}/` are automatically updated if Tilt is running
+- **Python SDK packages**
+  ```bash
+  cd argilla
+  pdm install
+  ```
+- **Frontend Development**: For frontend live-reloading:
+  ```bash
+  cd argilla/argilla-frontend
+  npm install
+  npm run dev
+  ```
+</code></pre></div>
 <h3 id="4-access-the-web-interface">4. Access the Web Interface<a class="headerlink" href="#4-access-the-web-interface" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Look for port 6900 in the "Ports" tab of your Codespace</li>
@@ -3897,15 +3882,6 @@
 <li>Username: <code>argilla</code></li>
 <li>Password: <code>1234</code></li>
 <li><abbr title="Application Programming Interface.">API</abbr> Key: <code>argilla.apikey</code></li>
-</ul>
-<h3 id="5-development-workflow">5. Development Workflow<a class="headerlink" href="#5-development-workflow" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>Backend Development</strong>: Changes to <code>src/argilla_server/</code> or <code>src/extralit/</code> are automatically updated while Tilt is running</li>
-<li><strong>Frontend Development</strong>: For frontend changes:
-  <div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nb">cd</span><span class="w"> </span>argilla/argilla-frontend
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>npm<span class="w"> </span>install
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>npm<span class="w"> </span>run<span class="w"> </span>dev
-</span></code></pre></div></li>
 </ul>
 <h2 id="option-2-local-development-setup">Option 2: Local Development Setup<a class="headerlink" href="#option-2-local-development-setup" title="Permanent link">&para;</a></h2>
 <h3 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h3>
