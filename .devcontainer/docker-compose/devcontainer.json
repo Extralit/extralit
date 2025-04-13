@@ -1,7 +1,7 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/anaconda
 {
-  "name": "PostgreSQL & Elasticsearch for Docker-Compose",
+  "name": "Docker-Compose",
 
   "dockerComposeFile": "docker-compose.yml",
   "service": "devcontainer",
@@ -9,7 +9,8 @@
     "elasticsearch",
     "postgres",
     "minio",
-    "weaviate"
+    "weaviate",
+    "redis"
   ],
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
 
