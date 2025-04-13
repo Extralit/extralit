@@ -26,15 +26,23 @@ RUN apt-get update && \
 COPY --from=builder /opt/venv /opt/venv
 
 # Set environment variables for the container
+# Environment Variables
 ARG ENV=dev
 ARG USERS_DB=/config/users.yaml
 ENV ENV=$ENV
-ENV ARGILLA_LOCAL_AUTH_USERS_DB_FILE=$USERS_DB
+
+ENV USERNAME="argilla"
+ENV PASSWORD="12345678"
+ENV API_KEY="argilla.apikey"
+
+## Argilla home path
 ENV ARGILLA_HOME_PATH=/var/lib/argilla
-ENV DEFAULT_USER_ENABLED=true
-ENV DEFAULT_USER_PASSWORD=1234
-ENV DEFAULT_USER_API_KEY=argilla.apikey
+ENV ARGILLA_LOCAL_AUTH_USERS_DB_FILE=$USERS_DB
+## Uvicorn defaults
 ENV UVICORN_PORT=6900
+### Uvicorn app. Extended apps can override this variable
+ENV UVICORN_APP=argilla_server:app
+
 
 # Create a user and a volume for argilla
 RUN useradd -ms /bin/bash argilla
