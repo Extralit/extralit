@@ -22,7 +22,6 @@ on:
       - "argilla-server/**"
 
 permissions:
-  contents: write
   id-token: write
 
 jobs:
@@ -110,7 +109,7 @@ jobs:
       - name: Update diagram
         uses: githubocto/repo-visualizer@0.7.1
         with:
-          output_file: "argilla/docs/assets/images/community/contributing/repo-diagram.svg"
+          artifact_name: "repo-diagram"
           excluded_paths: "dist,node_modules,docs,tests,argilla-v1,.swm,assets,__mocks__,__pycache__,.pytest_cache,.github"
 
       - name: Download python package
