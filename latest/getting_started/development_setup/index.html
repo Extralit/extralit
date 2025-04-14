@@ -670,15 +670,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#2-selecting-a-development-environment" class="md-nav__link">
-    <span class="md-ellipsis">
-      2. Selecting a Development Environment
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#3-development-workflow" class="md-nav__link">
     <span class="md-ellipsis">
       3. Development workflow*
@@ -3380,15 +3371,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#2-selecting-a-development-environment" class="md-nav__link">
-    <span class="md-ellipsis">
-      2. Selecting a Development Environment
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#3-development-workflow" class="md-nav__link">
     <span class="md-ellipsis">
       3. Development workflow*
@@ -3800,9 +3782,8 @@
 </div>
 </div>
 </div>
-<h3 id="2-selecting-a-development-environment">2. Selecting a Development Environment<a class="headerlink" href="#2-selecting-a-development-environment" title="Permanent link">&para;</a></h3>
-<p>Extralit offers three different development environments through devcontainers, each optimized for different purposes:</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="2:3"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><input id="__tabbed_2_3" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Tilt on <abbr title="Kubernetes, an open-source platform designed to automate deploying, scaling, and operating application containers.">K8s</abbr> (Recommended)</label><label for="__tabbed_2_2">Docker Compose</label><label for="__tabbed_2_3">UI/UX Design Only</label></div>
+<p>Then, select from three different development environments through devcontainers, each optimized for different purposes:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:3"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><input id="__tabbed_2_3" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Tilt on <abbr title="Kubernetes, an open-source platform designed to automate deploying, scaling, and operating application containers.">K8s</abbr> (Recommended)</label><label for="__tabbed_2_2">Docker-Compose</label><label for="__tabbed_2_3">UI/UX Design</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <p>This environment provides full-stack development with Kubernetes and live-reloading capabilities:</p>
@@ -3830,6 +3811,7 @@
 </span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="c1"># Start Tilt with custom configuration</span>
 </span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>tilt<span class="w"> </span>up
 </span></code></pre></div>
+<p>To edit the environment variables used by all services, go to <code>examples/deployments/k8s/extralit-configs.yaml</code>.</p>
 </div>
 <div class="tabbed-block">
 <p>This environment uses Docker Compose for a simpler, leaner setup without Kubernetes:</p>
@@ -3880,7 +3862,7 @@
 <li>Click on the link to open the Extralit web interface</li>
 <li>Log in with the default credentials:</li>
 <li>Username: <code>argilla</code></li>
-<li>Password: <code>1234</code></li>
+<li>Password: <code>12345678</code></li>
 <li><abbr title="Application Programming Interface.">API</abbr> Key: <code>argilla.apikey</code></li>
 </ul>
 <h2 id="option-2-local-development-setup">Option 2: Local Development Setup<a class="headerlink" href="#option-2-local-development-setup" title="Permanent link">&para;</a></h2>
