@@ -112,9 +112,15 @@ jobs:
         with:
           excluded_paths: "dist,node_modules,docs,tests,argilla-v1,.swm,assets,__mocks__,__pycache__,.pytest_cache,.github"
           excluded_globs: "frontend/*.spec.js;**/*.{png,jpg};**/!(*.module).ts"
-          output_file: "output-diagram.svg"
-          artifact_name: "repodiagram"
+          output_file: "repo-visualizer.svg"
           should_push: false
+          
+      - name: Upload diagram as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: repo-visualizer
+          path: repo-visualizer.svg
+          retention-days: 5
 
       - name: Download python package
         uses: actions/download-artifact@v4
