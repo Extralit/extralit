@@ -22,10 +22,13 @@ Slack is our primary communication tool for contributors and users. Click [here]
 
 When you join our Slack workspace, you'll find several channels:
 
-* **#announcements**: 📢 Important updates about Extralit.
-* **#general**: 💬 General discussions about Extralit.
+* **#general**: 💬 General development discussions for Extralit developers.
+* **#greeting**: 👋 Introduce yourself and say hi to the community.
+* **#gsoc-onboarding**: 📣 Important information about GSoC deadlines and program.
+* **#gsoc-general**: 💬 General discussions about GSoC.
+* **#proj-***: 👩‍💻 Project-specific discussions and development.
 * **#help**: 🙋‍♀️ Need assistance? We're always here to help.
-* **#development**: 👩‍💻 Technical discussions about the codebase.
+* **#news**: 📢 Important updates about Extralit.
 
 So now there is only one thing left to do: introduce yourself and talk to the community. You'll always be welcome! 🤗👋
 
