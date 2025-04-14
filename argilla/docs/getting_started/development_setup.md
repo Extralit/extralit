@@ -35,9 +35,7 @@ The Codespaces will automatically:
     2. Select your preferred machine type (recommended: 4-core, 16GB RAM)
     3. Click "Create codespace"
 
-### 2. Selecting a Development Environment
-
-Extralit offers three different development environments through devcontainers, each optimized for different purposes:
+Then, select from three different development environments through devcontainers, each optimized for different purposes:
 
 === "Tilt on K8s (Recommended)"
     This environment provides full-stack development with Kubernetes and live-reloading capabilities:
@@ -72,8 +70,9 @@ Extralit offers three different development environments through devcontainers, 
     tilt up
     ```
 
+    To edit the environment variables used by all services, go to `examples/deployments/k8s/extralit-configs.yaml`.
 
-=== "Docker Compose"
+=== "Docker-Compose"
     This environment uses Docker Compose for a simpler, leaner setup without Kubernetes:
     
     ```bash
@@ -89,7 +88,7 @@ Extralit offers three different development environments through devcontainers, 
     pdm run server-dev
     ```
 
-=== "UI/UX Design Only"
+=== "UI/UX Design"
     This lightweight environment is focused solely on frontend development for UI changes only. It will connect directly to a public demo HF Spaces server instance and automatically load the live-reloading frontend as you make changes.
     
     If 
@@ -126,10 +125,8 @@ Extralit offers three different development environments through devcontainers, 
 - Click on the link to open the Extralit web interface
 - Log in with the default credentials:
   - Username: `argilla`
-  - Password: `1234`
+  - Password: `12345678`
   - API Key: `argilla.apikey`
-
-
 
 
 ## Option 2: Local Development Setup

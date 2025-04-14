@@ -159,7 +159,7 @@ helm_resource(
     flags=[
         '--version=16.8.8',
         '--values=examples/deployments/k8s/helm/weaviate-helm.yaml'],
-    auto_init=False,
+    auto_init=not WCS_HTTP_URL or not WCS_API_KEY,
     port_forwards=['8080:8080', '50051:50051'],
     labels=['extralit'],
     resource_deps=['weaviate-helm'],
