@@ -110,7 +110,7 @@ jobs:
       - name: Update diagram
         uses: githubocto/repo-visualizer@0.7.1
         with:
-          artifact_name: "repo-diagram"
+          artifact_name: "repo_diagram.svg"
           excluded_paths: "dist,node_modules,docs,tests,argilla-v1,.swm,assets,__mocks__,__pycache__,.pytest_cache,.github"
           should_push: false
 
