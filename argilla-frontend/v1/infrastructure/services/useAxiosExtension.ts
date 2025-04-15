@@ -2,6 +2,7 @@ import { type NuxtAxiosInstance } from "@nuxtjs/axios";
 
 type PublicAxiosConfig = {
   enableErrors: boolean;
+  removeAuthorizationHeader?: boolean;
 };
 
 export interface PublicNuxtAxiosInstance extends NuxtAxiosInstance {
@@ -18,6 +19,20 @@ export const useAxiosExtension = (axiosInstanceFn: () => NuxtAxiosInstance) => {
       publicAxios.interceptors.response = axios.interceptors.response;
     }
 
+    // Remove Authorization header for get requests if specified
+    if (config.removeAuthorizationHeader) {
+      const originalGet = publicAxios.get;
+      publicAxios.get = function(...args) {
+        const config = args[1] || {};
+        if (!config.headers) {
+          config.headers = {};
+        }
+        config.headers['Authorization'] = undefined;
+        args[1] = config;
+        return originalGet.apply(this, args);
+      };
+    }
+
     return publicAxios;
   };
 
@@ -29,6 +44,7 @@ export const useAxiosExtension = (axiosInstanceFn: () => NuxtAxiosInstance) => {
       makePublic: (
         config: PublicAxiosConfig = {
           enableErrors: true,
+          removeAuthorizationHeader: false
         }
       ) => makePublic(axios, config),
     } as PublicNuxtAxiosInstance;
