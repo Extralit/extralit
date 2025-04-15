@@ -11,6 +11,7 @@ export class HubRepository {
   constructor(axios: PublicNuxtAxiosInstance) {
     this.axios = axios.makePublic({
       enableErrors: false,
+      removeAuthorizationHeader: true,
     });
   }
 
