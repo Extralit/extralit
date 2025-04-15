@@ -75,12 +75,12 @@
             <LinkCard
               type="How to guide"
               text="Annotate your dataset"
-              link="https://docs.extralit.ai/dev/how_to_guides/annotate/"
+              link="https://docs.extralit.ai/latest/admin_guide/annotate/"
             />
             <LinkCard
               type="How to guide"
               text="Query and filter records"
-              link="https://docs.extralit.ai/dev/how_to_guides/query/"
+              link="https://docs.extralit.ai/latest/admin_guide/query/"
             />
           </div>
           <p class="home__sidebar__link" v-html="$t('home.demoLink')" />
