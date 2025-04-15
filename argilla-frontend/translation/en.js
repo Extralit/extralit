@@ -53,7 +53,7 @@ export default {
     datasetEmptyForAnnotator:
       "The dataset is empty. Ask an administrator to upload records and come back soon.",
     datasetEmptyForAdmin:
-      "The dataset is empty. You can add records using the Python SDK, see <a href='https://docs.extralit.ai/latest/how_to_guides/record/'>documentation</a> on adding records.",
+      "The dataset is empty. You can add records using the Python SDK, see <a href='https://docs.extralit.ai/latest/admin_guide/record/'>documentation</a> on adding records.",
     taskDistributionCompleted: "🎉 The task is completed!",
     noSubmittedRecords: "You have not submitted any record yet",
     noRecordsFound: "You have no {status} records matching your query",
@@ -278,7 +278,7 @@ export default {
       "If you're using a private Space, check the <a target='_blank' href='https://docs.extralit.ai/latest/getting_started/how-to-configure-argilla-on-huggingface/#how-to-use-private-spaces'>docs</a>.",
     exampleDatasetsTitle: "Don’t know where to start?",
     exampleDatasetsText: "Explore these example datasets",
-    guidesTitle: "Not familiar with Argilla?",
+    guidesTitle: "Not familiar with Extralit?",
     guidesText: "Take a look at these guides:",
     pasteRepoIdPlaceholder: "Paste a repo id e.g., stanfordnlp/imdb",
     demoLink:
@@ -304,7 +304,7 @@ export default {
     atLeastOneQuestion: "At least one question is required.",
     atLeastOneRequired: "At least one required question is needed.",
     hasInvalidQuestions: "Some questions are invalid",
-    createDataset: "Create the dataset in Argilla",
+    createDataset: "Create the dataset in Extralit",
     datasetName: "Dataset name",
     name: "Name",
     assignWorkspace: "Assign a workspace",
@@ -328,7 +328,7 @@ export default {
     cantLoadRepository: "Dataset not found or available on Hugging Face",
     none: "None",
     noWorkspaces:
-      "Please, follow this <a target='_blank' href='https://docs.extralit.ai/latest/how_to_guides/workspace/#create-a-new-workspace'>guide</a> to create a workspace",
+      "Please, follow this <a target='_blank' href='https://docs.extralit.ai/latest/admin_guide/workspace/#create-a-new-workspace'>guide</a> to create a workspace",
   },
   config: {
     field: {
