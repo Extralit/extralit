@@ -6,6 +6,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://docs.extralit.ai/latest/faq/</loc>
+         <lastmod>2025-04-16</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://docs.extralit.ai/latest/glossary/</loc>
          <lastmod>2025-04-16</lastmod>
          <changefreq>daily</changefreq>
