@@ -107,20 +107,21 @@ jobs:
       - name: Checkout Code 🛎
         uses: actions/checkout@v4
 
-      - name: Update diagram
+      - name: Update repo visualizer
         uses: githubocto/repo-visualizer@0.7.1
         with:
-          excluded_paths: "dist,node_modules,docs,tests,argilla-v1,.swm,assets,__mocks__,__pycache__,.pytest_cache,.github"
-          excluded_globs: "frontend/*.spec.js;**/*.{png,jpg};**/!(*.module).ts"
+          root_path: "argilla/"
+          excluded_paths: "dist,build,node_modules,docs,.swm,assets,.github,package-lock.json,pdm.lock"
+          excluded_globs: "*.spec.js;**/*.{png,jpg,svg,md};**/!(*.module).ts,**/__pycache__/,**/__mocks__/,LICENSE*,**/*.egg-info/,**/.*/"
           output_file: "repo-visualizer.svg"
           should_push: false
           
-      - name: Upload diagram as artifact
+      - name: Upload repo visualizer diagram as artifact
         uses: actions/upload-artifact@v4
         with:
           name: repo-visualizer
           path: repo-visualizer.svg
-          retention-days: 5
+          retention-days: 10
 
       - name: Download python package
         uses: actions/download-artifact@v4
