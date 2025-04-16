@@ -19,7 +19,7 @@ hide: toc
 
 ??? Question "What kind of data can Extralit extract?"
 
-    Extralit can extract many types of information, such as tables, results, study characteristics, and other details from research papers. You can define what data you want to collect using simple templates.
+    Extralit can extract many types of information, such as tables, results, study characteristics, and other details from research papers. You can define what data you want to collect using simple templates. It can process research papers from PDFs directly, even scanned PDFs, extracting content from complex tables and text.
 
 ??? Question "Can Extralit handle non-English papers?"
 
