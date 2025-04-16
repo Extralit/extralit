@@ -181,24 +181,24 @@ nav:
   - User Guide:
       - user_guide/index.md
       - Core concepts: user_guide/core_concepts.md
+      - Overview: user_guide/overview.md
       - Data Pipeline:
-          - Documents import: user_guide/documents_import.md
           - Schema definition: user_guide/schema_definition.md
-          - Text and table OCR: user_guide/text_table_ocr.md
-          - LLM-assisted extraction: user_guide/llm_extraction.md
-          - Consensus review: user_guide/consensus_review.md
-          - Data validation: user_guide/data_validation.md
-          - Extraction status: user_guide/extraction_status.md
-      - User Interface:
-          - Navigation and layout: user_guide/navigation_layout.md
-          - Create and manage workspace: user_guide/create_manage_workspace.md
-          - Search and filter records: user_guide/search_filter.md
-          - Performing extractions: user_guide/performing_extractions.md
-          - Reviewing and validating data: user_guide/review_validate_data.md
+          # - Text and table OCR: user_guide/text_table_ocr.md
+          # - LLM-assisted extraction: user_guide/llm_extraction.md
+          # - Consensus review: user_guide/consensus_review.md
+          # - Data validation: user_guide/data_validation.md
+          # - Extraction status: user_guide/extraction_status.md
+      # - User Interface:
+      #     - Navigation and layout: user_guide/navigation_layout.md
+      #     - Create and manage workspace: user_guide/create_manage_workspace.md
+      #     - Search and filter records: user_guide/search_filter.md
+      #     - Performing extractions: user_guide/performing_extractions.md
+      #     - Reviewing and validating data: user_guide/review_validate_data.md
       - Advanced Usage:
           - Customizing multiple extraction schemas: user_guide/multi_schemas.md
-          - Optimizing LLM performance: user_guide/optimizing_llm_performance.md
-          - Using the API: user_guide/using_the_api.md
+          # - Optimizing LLM performance: user_guide/optimizing_llm_performance.md
+          # - Using the API: user_guide/using_the_api.md
 
   - Administrator Guide:
       - admin_guide/index.md
