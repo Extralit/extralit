@@ -29,7 +29,7 @@ As an Extralit developer, you are already part of the community, and your contri
 
 ## Environment setup
 
-Extralit offers a comprehensive guide for setting up your development environment. For detailed instructions, please refer to our [Development Environment Setup Guide](../getting_started/development_setup.md).
+[:octicons-tools-16: Development Environment Setup Guide](../getting_started/development_setup.md){.md-button}
 
 This guide covers everything you need to get started, including:
 
@@ -53,6 +53,12 @@ The Extralit repository has a monorepo structure, which means that all the compo
 
 !!! note "How to contribute?"
     Before starting to develop, we recommend reading our [contribution guide](contributor.md) to understand the contribution process and the guidelines to follow. Once you have [cloned the Extralit repository](contributor.md#fork-the-extralit-repository) and [checked out to the correct branch](contributor.md#create-a-new-branch), you can start setting up your development environment.
+
+??? example "Argilla Directory Structure"
+    ![Argilla Repository Structure](../assets/images/community/developer/repo-visualizer-argilla.svg)
+
+??? example "Argilla Server Directory Structure"
+    ![Argilla Server Repository Structure](../assets/images/community/developer/repo-visualizer-argilla-server.svg)
 
 ## Development workflow
 
@@ -146,7 +152,7 @@ To contribute to the documentation and generate it locally, ensure you installed
 mkdocs serve
 ```
 
-## Documentation guidelines
+### Documentation guidelines
 
 As mentioned, we use [`mkdocs`](https://www.mkdocs.org/) to build the documentation. You can write the documentation in [`markdown`](https://www.markdownguide.org/getting-started/) format, and it will automatically be converted to HTML. In addition, you can include elements such as tables, tabs, images, and others, as shown in this [guide](https://squidfunk.github.io/mkdocs-material/reference/). We recommend following these guidelines:
 
@@ -157,6 +163,62 @@ As mentioned, we use [`mkdocs`](https://www.mkdocs.org/) to build the documentat
 
 !!! note "Contribute with a tutorial"
     You can also contribute a tutorial (`.ipynb`) to the "Community" section. We recommend aligning the tutorial with the structure of the existing tutorials. For an example, check [this tutorial](../tutorials/getting_started.ipynb).
+
+## Set up the databases
+
+Extralit uses a PostgreSQL database to store all application data. Understanding the database schema is essential for developers working on backend components or making changes that affect data storage.
+
+![Database Schema](../assets/images/community/developer/database_tables.png)
+
+### Working with Database Revisions
+
+When making changes to the database schema, you need to create database revisions using Alembic. This ensures database migrations are tracked and applied consistently across different environments.
+
+#### Creating a New Revision
+
+1. Make your changes to the SQLAlchemy models
+2. Generate a new revision file:
+
+```bash
+cd argilla-server
+PYTHONPATH=. alembic revision --autogenerate -m "Brief description of the change"
+```
+
+3. Review the generated revision file in `argilla-server/migrations/versions/`
+4. Test the migration:
+
+```bash
+# Apply the migration
+PYTHONPATH=. alembic upgrade head
+
+# Rollback if needed
+PYTHONPATH=. alembic downgrade -1
+```
+
+#### Applying Migrations
+
+To apply all pending migrations:
+
+```bash
+PYTHONPATH=. alembic upgrade head
+```
+
+To check the current database version:
+
+```bash
+PYTHONPATH=. alembic current
+```
+
+#### Guidelines for Database Changes
+
+- Always create migrations for schema changes
+- Test migrations in both directions (upgrade and downgrade)
+- Keep migrations backward compatible when possible
+- Document complex migrations with comments
+
+!!! warning "Production Databases"
+    Be extremely cautious when applying migrations to production databases. Always backup your database before applying migrations and test thoroughly in staging environments first.
+
 
 ## Troubleshooting
 
