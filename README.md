@@ -5,9 +5,9 @@
 
 <h3>
 <p align="center">
-<a href="https://docs.extralit.ai/latest/">📄 Documentation</a> | </span>
-<a href="https://docs.extralit.ai/latest/getting_started/quickstart/">🚀 Quickstart</a> <span> | </span>
-<a href="https://docs.extralit.ai/latest/community/developer/">🛠️ Architecture</a> <span> | </span>
+<a href="https://docs.extralit.ai/latest/" target="_blank">📄 Documentation</a> | </span>
+<a href="https://docs.extralit.ai/latest/getting_started/quickstart/" target="_blank">🚀 Quickstart</a> <span> | </span>
+<a href="https://docs.extralit.ai/latest/community/developer/" target="_blank">🛠️ Architecture</a> <span> | </span>
 </p>
 </h3>
 
