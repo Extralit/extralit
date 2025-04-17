@@ -29,6 +29,7 @@ services:
       xpack.security.transport.ssl.enabled: false
       xpack.security.http.ssl.enabled: false
       ES_JAVA_OPTS: -Xms512m -Xmx512m
+      bootstrap.memory_lock: false
     network_mode: host
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
