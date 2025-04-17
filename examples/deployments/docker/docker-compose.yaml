@@ -58,7 +58,7 @@ services:
       - postgresdata:/var/lib/postgresql/data
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.2
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
     environment:
       - node.name=elasticsearch
       - cluster.name=es-argilla-local
