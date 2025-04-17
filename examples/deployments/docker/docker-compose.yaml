@@ -6,7 +6,7 @@ x-common-variables: &common-variables
 
 services:
   argilla:
-    image: argilla/argilla-server:latest
+    image: extralitdev/argilla-server:latest
     restart: unless-stopped
     ports:
       - "6900:6900"
@@ -34,7 +34,7 @@ services:
       - redis
 
   worker:
-    image: argilla/argilla-server:latest
+    image: extralitdev/argilla-server:latest
     environment:
       <<: *common-variables
       BACKGROUND_NUM_WORKERS: 2
