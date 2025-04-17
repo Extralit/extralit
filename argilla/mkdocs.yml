@@ -115,7 +115,7 @@ markdown_extensions:
 plugins:
   - search
   - open-in-new-tab
-  - glightbox  # Added plugin for image lightbox
+  - glightbox
   - gen-files:
       scripts:
         - docs/scripts/gen_changelog.py
