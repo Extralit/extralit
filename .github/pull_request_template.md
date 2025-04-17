@@ -1,44 +1,55 @@
-# Pull Request
+<!-- 
+PR Title format: [Type] Short description
+Examples:
+- [Fix] Resolve authentication bug
+- [Feature] Add dark mode support
+- [Refactor] Improve user profile component
+- [Docs] Update API documentation
+- [Chore] Update dependencies
+-->
 
 ## Description
-<!-- Please include a summary of the changes and the related issue. Please also include relevant motivation and context. List any dependencies that are required for this change. -->
+
+<!-- 
+Please do not leave this blank 
+This PR [adds/removes/fixes/replaces] the [feature/bug/etc]. 
+-->
+
+## Related Tickets & Documents
 
 Closes #<!-- Add issue number here -->
 
-## Type of change
-<!-- Please check the relevant options -->
+## What type of PR is this? (check all applicable)
 
-- [ ] Bug fix (non-breaking change which fixes an issue)
-- [ ] New feature (non-breaking change which adds functionality)
-- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
-- [ ] Refactor (restructuring the codebase without changing functionality)
-- [ ] Improvement (enhancing an existing functionality)
-- [ ] Documentation update
-- [ ] CI/CD or build process changes
+- [ ] Refactor
+- [ ] Feature
+- [ ] Bug Fix
+- [ ] Optimization
+- [ ] Documentation Update
 
-## How Has This Been Tested?
-<!-- Please describe the tests that you ran to verify your changes. Provide instructions so we can reproduce. Please also list any relevant details for your test configuration -->
+## Steps to QA
+<!-- 
+Please provide some steps for the reviewer to test your change. If you have wrote tests, you can mention that here instead.
 
-- [ ] Unit tests
-- [ ] Integration tests
-- [ ] Manual testing
-- [ ] Other: <!-- please specify -->
+1. Click a link
+2. Do this thing
+3. Validate you see the thing working
+-->
 
+## Added/updated tests?
+
+- [ ] Yes
+- [ ] No, and this is why: _please replace this line with details on why tests
+      have not been included_
+- [ ] I need help with writing tests
+
+## Added/updated documentations?
+
+- [ ] Yes
+- [ ] No, and this is why: _please replace this line with details on why tests
+      have not been included_
+- [ ] I need help with writing docs
+  
 ## Checklist
-<!-- Please check all that apply. If an item is not applicable, mark it as "N/A" -->
-
-- [ ] My code follows the style guidelines of this project
-- [ ] I have performed a self-review of my code
-- [ ] I have commented my code, particularly in hard-to-understand areas
-- [ ] I have made corresponding changes to the documentation
-- [ ] My changes generate no new warnings
-- [ ] I have added tests that prove my fix is effective or that my feature works
-- [ ] New and existing unit tests pass locally with my changes
 - [ ] I have added relevant notes to the CHANGELOG.md file (See https://keepachangelog.com/)
-- [ ] I have updated any relevant API documentation
 
-## Screenshots
-<!-- If applicable, add screenshots to help explain your changes -->
-
-## Additional context
-<!-- Add any other context about the PR here -->
