@@ -108,7 +108,7 @@ markdown_extensions:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator:
         !!python/name:material.extensions.emoji.to_svg # activating permalink: true makes the anchor link works in the notebooks
-
+  - pymdownx.blocks.caption
 
   - toc:
       permalink: true
@@ -116,6 +116,7 @@ markdown_extensions:
 plugins:
   - search
   - open-in-new-tab
+  - glightbox  # Added plugin for image lightbox
   - gen-files:
       scripts:
         - docs/scripts/gen_changelog.py
