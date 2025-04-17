@@ -115,7 +115,6 @@ markdown_extensions:
 plugins:
   - search
   - open-in-new-tab
-  - glightbox
   - gen-files:
       scripts:
         - docs/scripts/gen_changelog.py

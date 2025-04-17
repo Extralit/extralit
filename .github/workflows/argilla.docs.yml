@@ -16,6 +16,7 @@ on:
       - "docs/**"
     paths:
       - "argilla/docs/**"
+      - "argilla/mkdocs.yml"
 
 defaults:
   run:
