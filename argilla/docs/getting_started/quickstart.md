@@ -33,38 +33,38 @@ Extralit is a free, open-source, self-hosted tool. This means you need to deploy
     - Click Duplicate Space to build an Extralit instance 🚀.
     - Once you see the UI, [go to the Sign in into the UI section](#sign-in-to-the-argilla-ui). If you see the `Building` message for longer than 2-3 min refresh the page.
 
-    <!-- === "Python SDK"
+    === "Python SDK"
 
-        If you want to deploy Argilla using the Python SDK, follow these steps:
+    If you want to deploy Extralit using the Python SDK, follow these steps:
 
-        First, install Argilla:
+    First, install Extralit:
 
-        ```console
-        pip install argilla
-        ```
+    ```console
+    pip install extralit
+    ```
 
-        Next, we can use the `Argilla.deploy_on_spaces` method, which will create a Space in [the Hugging Face Hub](https://huggingface.co/). This method will automatically do the following:
+    Next, we can use the `Argilla.deploy_on_spaces` method, which will create a Space in [the Hugging Face Hub](https://huggingface.co/). This method will automatically do the following:
 
-        - Deploy an Argilla Space on the Hugging Face Hub with [OAuth sign-in](#sign-in-into-the-argilla-ui) and a URL like `https://<your-username>-argilla.hf.space`, which takes around 2-3 minutes.
-        - Create a default workspace called `argilla` with an owner called `<your-username>` and an Argilla token set to `api_key`.
-        - Automatically return the authenticated Argilla client, which can directly be used to interact with your Argilla server.
+    - Deploy an Argilla Space on the Hugging Face Hub with [OAuth sign-in](#sign-in-into-the-argilla-ui) and a URL like `https://<your-username>-argilla.hf.space`, which takes around 2-3 minutes.
+    - Create a default workspace called `argilla` with an owner called `<your-username>` and an Argilla token set to `api_key`.
+    - Automatically return the authenticated Argilla client, which can directly be used to interact with your Argilla server.
 
-        ```python
-        import argilla as rg
+    ```python
+    import argilla as rg
 
-        authenticated_client = rg.Argilla.deploy_on_spaces(api_key="<api_key>")
-        ```
+    authenticated_client = rg.Argilla.deploy_on_spaces(api_key="<api_key>")
+    ```
 
-        Learn how to [create your first dataset](create-your-first-dataset.md).
+    Learn how to [create your first dataset](create-your-first-dataset.md).
 
 
-    !!! tip "Argilla API Key"
-        Your Argilla API key can be found in the `My Settings` page of your Argilla Space. Take a look at the [sign in to the UI section](#sign-in-into-the-argilla-ui) to learn how to retrieve it.
+!!! tip "Argilla API Key"
+    Your Argilla API key can be found in the `My Settings` page of your Argilla Space. Take a look at the [sign in to the UI section](#sign-in-into-the-argilla-ui) to learn how to retrieve it.
 
-    !!! warning "Persistent storage `SMALL`"
-        Not setting persistent storage to `SMALL` means that **you will loose your data when the Space restarts**. Spaces get restarted due to maintenance, inactivity, and every time you change your Spaces settings. If you want to **use the Space just for testing** you can use `FREE` temporarily.
+!!! warning "Persistent storage `SMALL`"
+    Not setting persistent storage to `SMALL` means that **you will loose your data when the Space restarts**. Spaces get restarted due to maintenance, inactivity, and every time you change your Spaces settings. If you want to **use the Space just for testing** you can use `FREE` temporarily.
 
-    If you want to deploy Argilla within a Hugging Face organization, setup a more stable Space, or understand the settings, [check out the HF Spaces settings guide](how-to-configure-argilla-on-huggingface.md). -->
+If you want to deploy Argilla within a Hugging Face organization, setup a more stable Space, or understand the settings, [check out the HF Spaces settings guide](how-to-configure-argilla-on-huggingface.md).
 
 !!! docker "Deploy with Docker"
      If you want to **run Extralit locally on your machine or a server**, or tune the server configuration, choose this option. To use this option, [check this guide](how-to-deploy-argilla-with-docker.md).
