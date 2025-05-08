@@ -19,9 +19,25 @@ These are the section headers that we use:
 ### Added
 - Added support for `TableField` for table fields.
 - Added `TableQuestion` to support table questions.
+- Implemented full workspace schema management in the CLI and Python API, including:
+  - Listing, uploading, downloading, and deleting schemas via CLI and Python API
+  - Full CRUD support for workspace schemas, including Pandera-based schema serialization/deserialization
+  - Comprehensive error handling and logging for all schema operations
+  - Extensive documentation and usage examples for all workspace API methods
+  - Unit and integration tests for all CLI commands and API methods
+  - Restored and modernized all critical workspace and schema operations from Argilla V1
+  - Unblocked CLI-based workflows for researchers and users
+  - [#57](https://github.com/extralit/extralit/pull/57) by @priyankeshh and @Ashutoshx7
 
 ### Fixed
 - Fixed certain extralit-specific changes when loading Dataset
+- Fixed regressions in workspace and schema management from V1 to V2 migration ([#57](https://github.com/extralit/extralit/pull/57))
+
+### Documentation
+- Updated and expanded documentation for all workspace API methods and CLI commands ([#57](https://github.com/extralit/extralit/pull/57))
+
+### Contributors
+- Special thanks to @priyankeshh and @Ashutoshx7 for their collaborative work on this release.
 
 
 ## [Argilla] [2.5.0](https://github.com/argilla-io/argilla/compare/v2.4.0...v2.5.0)
@@ -200,7 +216,7 @@ These are the section headers that we use:
 - Added singleton schema support in SchemaStructure
 - Added .devcontainer for "Docker, Tilt, and K8s" local development on GH Codespaces
 - Added examples/deployments/k8s/extralit-configs.yaml for configuring the extralit service and secrets in a K8s cluster
-- Added [docs site for the extralit project](https://docs.extralit.ai) at `argilla/docs/` 
+- Added [docs site for the extralit project](https://docs.extralit.ai) at `argilla/docs/`
 - Added pytest-xdist for parallel testing
 - Added docker-compose devcontainer
 
