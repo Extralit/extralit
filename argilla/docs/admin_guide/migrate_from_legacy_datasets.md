@@ -2,6 +2,42 @@
 
 This guide will help you migrate task to Argilla V2. These do not include the `FeedbackDataset` which is just an interim naming convention for the latest extensible dataset. Task-specific datasets are datasets that are used for a specific task, such as text classification, token classification, etc. If you would like to learn about the backstory of SDK this migration, please refer to the [SDK migration blog post](https://argilla.io/blog/introducing-argilla-new-sdk/). Additionally, we will provide guidance on how to maintain your `User`'s and `Workspace`'s within the new Argilla V2 format.
 
+## API Differences Between Argilla v1 and v2
+
+Argilla v2 introduces several important changes to the API that affect how you migrate and interact with users, workspaces, datasets, schemas, and more. Below is a summary of the key differences:
+
+### Authentication
+- **v1:** Used a simple API key for authentication, passed in the `X-API-Key` header.
+- **v2:** Uses JWT tokens. The API key is used to obtain a token, which is then used for subsequent requests in the `Authorization` header with the `Bearer` prefix.
+
+### Workspaces
+- **v1:** Workspaces were simple containers for datasets with limited metadata and permissions.
+- **v2:** Workspaces have richer metadata and support user roles and permissions within each workspace.
+
+### Datasets
+- **v1:** Datasets were tied to a specific task type (e.g., text classification) and had limited metadata.
+- **v2:** Datasets are more flexible, support multiple task types, and have more metadata and configuration options.
+
+### Schemas
+- **v1:** No explicit schema management; schema was defined as part of dataset creation.
+- **v2:** Explicit schema management with versioning. Schemas can be shared across datasets.
+
+### Training
+- **v1:** Training was tightly integrated with the dataset and had limited configuration options.
+- **v2:** Training is more flexible, can be configured separately from the dataset, and supports more frameworks and options.
+
+### Extraction
+- **v1:** Limited extraction capabilities and no explicit extraction pipeline.
+- **v2:** Enhanced extraction with a dedicated pipeline, supporting more document types and extraction methods.
+
+### Issues and Workarounds
+- **Authentication:** v2 requires a different authentication method. The migration guide and SDK implement a flexible system to handle both.
+- **Schema Management:** v2 API for schema management is different; migration scripts and CLI have been updated accordingly.
+- **Training:** v2 API for training is different; migration scripts and CLI have been updated accordingly.
+- **Extraction:** v2 API for extraction is different; migration scripts and CLI have been updated accordingly.
+
+---
+
 !!! note
     Legacy datasets include: `DatasetForTextClassification`, `DatasetForTokenClassification`, and `DatasetForText2Text`.
 

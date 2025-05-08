@@ -16,6 +16,16 @@ repos:
   ##############################################################################
   # argilla specific hooks
   ##############################################################################
+  - repo: https://github.com/pycqa/autoflake
+    rev: v2.2.1
+    hooks:
+      - id: autoflake
+        name: "Remove unused imports and variables in argilla"
+        files: '^argilla/.*\.py$'
+        args:
+          - "--remove-all-unused-imports"
+          - "--remove-unused-variables"
+          - "--in-place"
   - repo: https://github.com/charliermarsh/ruff-pre-commit
     rev: v0.4.8
     hooks:
@@ -52,6 +62,17 @@ repos:
   ##############################################################################
   # argilla-server specific hooks
   ##############################################################################
+  - repo: https://github.com/pycqa/autoflake
+    rev: v2.2.1
+    hooks:
+      - id: autoflake
+        name: "Remove unused imports and variables in argilla-server"
+        files: '^argilla-server/.*\.py$'
+        args:
+          - "--remove-all-unused-imports"
+          - "--remove-unused-variables"
+          - "--in-place"
+
   - repo: https://github.com/charliermarsh/ruff-pre-commit
     rev: v0.4.8
     hooks:

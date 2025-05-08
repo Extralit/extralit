@@ -35,6 +35,14 @@ These guides provide step-by-step instructions for common scenarios, including d
 
     [:octicons-arrow-right-24: User guide](schema_definition.md)
 
+-   __Command Line Interface__
+
+    ---
+
+    Learn how to use Extralit's command line tools to manage workspaces, files, documents, and extraction workflows.
+
+    [:octicons-arrow-right-24: User guide](command_line_interface.md)
+
 
 </div>
 

@@ -22,6 +22,7 @@ dependencies = [
     "datasets>=2.0.0",
     "pillow>=9.5.0",
     "standardwebhooks>=1.0.0",
+    "typer>=0.9.0",
 
     # for environment variables
     "python-dotenv",
@@ -52,7 +53,7 @@ dependencies = [
     "llama-index-llms-openai ~= 0.1.31",
     "llama-index-embeddings-openai ~=0.1.11",
     "llama-index-multi-modal-llms-openai",
-    
+
     # for weaviate vector db
     "weaviate-client >= 4",
     "llama-index-vector-stores-weaviate ~= 1.0.0",
@@ -126,3 +127,6 @@ test = { cmd = "pytest tests", env_file = ".env.test" }
 lint = "ruff check"
 format = "black ."
 all = { composite = ["format", "lint", "test"] }
+
+[project.scripts]
+extralit = "argilla.cli.app:app"

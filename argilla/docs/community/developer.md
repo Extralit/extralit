@@ -11,15 +11,15 @@ As an Extralit developer, you are already part of the community, and your contri
 !!! note "Extralit core components"
 
     - **Mkdocs Documentation**: Extralit's documentation serves as an invaluable resource, providing a comprehensive and in-depth guide for both annotators and project admins to explore, understand, and effectively use the core components of the Extralit ecosystem.
-  
+
     - **Vue.js Web UI**: A web application to visualize, extract and validate your data, users, and teams. It is built with `Vue.js` and `Nuxt.js` and is directly deployed alongside the Extralit Server within our Extralit Docker image.
-    
+
     - **Python SDK**: A Python SDK installable with `pip install extralit` to interact with the Extralit Server and the Extralit UI. It provides an API as well as a CLI to manage the data, configuration, and extraction workflows.
 
     - **FastAPI Server**: The core of Extralit's back-end is a Python `FastAPI server` that manages the document extraction and data annotation lifecycle, as well as serving the Nuxt-built Web UI. It does so by interfacing with the relational database, text-search/vector database, file blob storage, and redis. It provides an REST API that interacts with the data from the Python SDK and the Extralit UI. It also provides a web interface to visualize the data.
-    
+
     - **Relational Database**: A relational database to store the data of the records, workspaces, and users. `PostgreSQL` is the preferred database option for persistent deployments, otherwise `sqlite` can also be used for certain local development scenarios, such as testing or lightweight, single-user setups.
-    
+
     - **File Blob Storage**: A file storage system to store the documents and files associated with the records. It can be a local file system or a cloud-based storage solution like `Minio` or `Amazon S3`. For local development, we use a local file system or self-hosted Minio, while for production deployments, we recommend using S3.
 
     - **Text Search Database**: An indexed text search database to enable efficient searching and retrieval of data records. We currently support `Elasticsearch` for this purpose, which allows for full-text search capabilities and is integrated with the Extralit Server. When deployed in initiation, Elasticsearch copies and indexes all of the records data from the Relational Database.
@@ -69,9 +69,9 @@ If you prefer not to use Codespaces, you can set up your development environment
 To work on the Extralit Python SDK, you must install the Extralit package on your system.
 
 !!! tip "Create a virtual environment"
-    We recommend creating a dedicated virtual environment for SDK development to prevent conflicts. For this, you can use the manager of your choice, such as `venv`, `conda`, `pyenv`, or `uv`.
+    We recommend creating a dedicated virtual environment for SDK development to prevent conflicts. For this, you can use the manager of your choice, such as `venv`, `micromamba`, `pyenv`, or `uv`.
 
-From the root of the cloned Extralit repository, you should move to the `extralit` folder in your terminal.
+From the root of the cloned Extralit repository.
 
 ```sh
 cd extralit
@@ -87,26 +87,90 @@ pip install pdm
 pdm install --dev
 ```
 
+
+### Contributing to the CLI
+
+The Command Line Interface (CLI) is an important part of Extralit that enables users to interact with the platform from their terminal. Here's how to contribute to the CLI:
+
+#### CLI Structure
+
+The CLI code is located in `argilla/src/argilla/cli` with this organization:
+
+```
+cli/
+├── app.py                # Main entry point
+├── command_modules/      # Individual commands
+    ├── datasets/         # Dataset operations
+    ├── documents/        # Document operations
+    ├── extraction/       # Extraction pipeline
+    ├── files/            # File operations
+    └── ...               # Other commands
+```
+
+The CLI uses [Typer](https://typer.tiangolo.com/) for creating the command-line interface.
+
+#### Adding a New CLI Command
+
+1. Create a new module in the appropriate directory:
+
+```python
+# src/argilla/cli/mycommand/__main__.py
+import typer
+from argilla.cli.callback import init_callback
+from argilla.cli.rich import get_argilla_themed_panel
+from rich.console import Console
+
+app = typer.Typer(help="My command description")
+
+@app.callback()
+def callback(ctx: typer.Context):
+    """Callback for my command."""
+    init_callback()
+
+@app.command(name="subcommand")
+def my_subcommand(param: str = typer.Argument(..., help="Parameter description")):
+    """Subcommand docstring - appears in help."""
+    # Command implementation
+    Console().print(f"Executed with parameter: {param}")
+```
+
+2. Register your command in `app.py`:
+
+```python
+from argilla.cli import mycommand
+app.add_typer(mycommand.app, name="mycommand")
+```
+
+3. Write tests for your command in `tests/unit/cli/test_mycommand.py`
+
+4. Update the [CLI documentation](../user_guide/command_line_interface.md) with examples
+
+#### CLI Design Principles
+
+- Create commands that fit into existing workflows
+- Follow consistent naming and structure patterns
+- Provide clear help text for all commands and options, e.g. use the [`print_rich_table`](https://github.com/extralit/extralit/blob/develop/argilla/src/argilla/cli/rich.py#L115) function to print tables in a rich format
+- Use sensible defaults to minimize required input
+- Follow the Unix philosophy: commands should do one thing well
+
+
 ### Linting and formatting
 
 To maintain a consistent code format, install the `pre-commit` hooks to run before each commit automatically.
 
 ```sh
 pre-commit install
+# then
+pre-commit run
 ```
 
-In addition, run the following scripts to check the code formatting and linting:
-
-```sh
-pdm run format
-pdm run lint
-```
+These commit hooks will automated linting and formatting checks
 
 ### Write clear commit messages
 
 !!! note "Commit message format"
     When writing commit messages, follow this structure:
-    
+
         short one line title
 
         Longer description of what the change does (if the title isn't enough).

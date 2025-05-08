@@ -1,0 +1,1 @@
+DEFAULT_SCHEMA_S3_PATH = 'schemas/'
