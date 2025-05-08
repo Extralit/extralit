@@ -140,19 +140,6 @@ plugins:
             show_symbol_type_toc: true
             # Members
             inherited_members: true # allow looking up inherited methods
-          options:
-            show_inheritance_diagram: false
-            show_source: true # include source code
-            # Headings
-            heading_level: 3
-            show_root_heading: true # show the python path of the class
-            show_root_toc_entry: true # show the toc entry for the root class
-            show_root_full_path: false # display "diffrax.asdf" not just "asdf"
-            show_object_full_path: false # display "diffrax.asdf" not just "asdf"
-            show_symbol_type_heading: true
-            show_symbol_type_toc: true
-            # Members
-            inherited_members: true # allow looking up inherited methods
             members_order: source # order methods according to their order of definition in the source code, not alphabetical order
             show_labels: true
             # Docstring
@@ -183,12 +170,14 @@ nav:
       - Overview: user_guide/overview.md
       - Data Pipeline:
           - Schema definition: user_guide/schema_definition.md
+          # - Importing documents: user_guide/document_import.md
           # - Text and table OCR: user_guide/text_table_ocr.md
           # - LLM-assisted extraction: user_guide/llm_extraction.md
           # - Consensus review: user_guide/consensus_review.md
           # - Data validation: user_guide/data_validation.md
           # - Extraction status: user_guide/extraction_status.md
-      # - User Interface:
+      - User Interface:
+          - Using the command-line interface (CLI): user_guide/command_line_interface.md
       #     - Navigation and layout: user_guide/navigation_layout.md
       #     - Create and manage workspace: user_guide/create_manage_workspace.md
       #     - Search and filter records: user_guide/search_filter.md

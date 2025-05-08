@@ -7,7 +7,7 @@
 <p align="center">
 <a href="https://docs.extralit.ai/latest/" target="_blank">📄 Documentation</a> | </span>
 <a href="https://docs.extralit.ai/latest/getting_started/quickstart/" target="_blank">🚀 Quickstart</a> <span> | </span>
-<a href="https://docs.extralit.ai/latest/community/developer/" target="_blank">🛠️ Architecture</a> <span> | </span>
+<a href="https://docs.extralit.ai/latest/community/developer/" target="_blank">🛠️ Architecture</a> <span>
 </p>
 </h3>
 
@@ -19,13 +19,13 @@ Extralit (EXTRAct LITerature) is a data extraction workflow with user-friendly U
 - 🔹 Human-in-the-Loop – Seamlessly integrate human annotations to refine LLM outputs and collaborate on data validation.
 - 🔹 Flexible & Scalable – Available as a Python SDK, CLI, and Web UI with multiple deployment options to fit your workflow.
 
-Key Features:
+🌟 Key Features
 
-- Schema-Driven Extraction – Define structured schemas for context-aware, high-accuracy data extraction across scientific domains.
-- Advanced PDF Processing – AI-powered OCR detects complex table structures in both digital and scanned PDFs.
-- Built-in Validation – Automatically verify extracted data for accuracy in both the annotation UI and the data pipeline outputs.
-- User-Friendly Interface – Easily review, edit, and validate data with team-based consensus workflows.
-- Data Flywheel – Collect human annotations to monitor performance and build fine-tuning datasets for continuous improvement.
+- ✅ Schema-Driven Extraction – Define structured schemas for context-aware, high-accuracy data extraction across scientific domains.
+- ✅ Advanced PDF Processing – AI-powered OCR detects complex table structures in both digital and scanned PDFs.
+- ✅ Built-in Validation – Automatically verify extracted data for accuracy in both the annotation UI and the data pipeline outputs.
+- ✅ User-Friendly Interface – Easily review, edit, and validate data with team-based consensus workflows.
+- ✅ Data Flywheel – Collect human annotations to monitor performance and build fine-tuning datasets for continuous improvement.
 
 Start extracting smarter with Extralit! 🚀
 
