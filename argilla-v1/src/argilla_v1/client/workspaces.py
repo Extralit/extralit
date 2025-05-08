@@ -18,6 +18,8 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Iterator, List, Optional, Union
 from uuid import UUID
 
+from extralit.constants import DEFAULT_SCHEMA_S3_PATH
+
 from argilla_v1.client.sdk.commons.errors import (
     AlreadyExistsApiError,
     BaseClientError,
@@ -35,7 +37,7 @@ from argilla_v1.client.utils import allowed_for_roles
 from argilla_v1.client.sdk.v1.files.models import FileObjectResponse, ListObjectsResponse
 
 import pandera as pa
-from extralit.extraction.models import SchemaStructure, DEFAULT_SCHEMA_S3_PATH
+from extralit.extraction.models import SchemaStructure
 
 if TYPE_CHECKING:
     import httpx

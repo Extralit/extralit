@@ -1,9 +1,10 @@
 from pathlib import Path
 from typing import Dict, Optional, List
+from extralit.constants import DEFAULT_SCHEMA_S3_PATH
 import typer
 
 from argilla_v1.client.workspaces import Workspace
-from extralit.extraction.models import SchemaStructure, DEFAULT_SCHEMA_S3_PATH
+from extralit.extraction.models import SchemaStructure
 
 
 def list_schemas(
