@@ -1,0 +1,84 @@
+# Extralit CODEOWNERS File
+# Reference: https://docs.github.com/en/repositories/managing-your-work-on-github/about-code-owners
+
+# This file determines who is automatically requested for review when someone
+# opens a pull request that modifies code in different parts of the repository.
+# The last matching pattern takes precedence.
+
+# Default owners for everything
+* @extralit/core-team
+
+# Core infrastructure and configuration files
+/.github/ @extralit/contributors/infra
+/.devcontainer/ @extralit/contributors/infra
+/docker/ @extralit/contributors/infra
+/Tiltfile @extralit/contributors/infra
+*.Dockerfile @extralit/contributors/infra
+codecov.yml @extralit/contributors/infra
+
+# Documentation
+/argilla/docs/ @extralit/contributors/docs
+*.md @extralit/contributors/docs
+/examples/ @extralit/contributors/docs @extralit/contributors/sdk
+
+# Python SDK
+/argilla/src/ @extralit/contributors/sdk
+/argilla/src/extralit/ @extralit/contributors/sdk
+/argilla/src/extralit/extraction/ @extralit/contributors/sdk
+/argilla/src/extralit/schema/ @extralit/contributors/sdk
+/argilla/src/extralit/preprocessing/ @extralit/contributors/sdk
+/argilla/src/extralit/convert/ @extralit/contributors/sdk
+/argilla/src/extralit/metrics/ @extralit/contributors/sdk
+/argilla/src/extralit/server/ @extralit/contributors/sdk
+/argilla/src/extralit/storage/ @extralit/contributors/sdk
+/argilla/tests/ @extralit/contributors/sdk
+/argilla/pyproject.toml @extralit/contributors/sdk
+/argilla/pdm.lock @extralit/contributors/sdk
+
+# Backend Server
+/argilla-server/ @extralit/contributors/backend
+/argilla-server/src/argilla_server/ @extralit/contributors/backend
+/argilla-server/src/argilla_server/api/ @extralit/contributors/backend
+/argilla-server/src/argilla_server/contexts/ @extralit/contributors/backend
+/argilla-server/src/argilla_server/models/ @extralit/contributors/backend
+/argilla-server/src/argilla_server/search_engine/ @extralit/contributors/backend
+/argilla-server/src/argilla_server/security/ @extralit/contributors/backend
+/argilla-server/src/argilla_server/cli/ @extralit/contributors/backend
+/argilla-server/src/argilla_server/jobs/ @extralit/contributors/backend
+/argilla-server/src/argilla_server/webhooks/ @extralit/contributors/backend
+/argilla-server/src/argilla_server/validators/ @extralit/contributors/backend
+/argilla-server/tests/ @extralit/contributors/backend
+/argilla-server/pyproject.toml @extralit/contributors/backend
+/argilla-server/pdm.lock @extralit/contributors/backend
+
+# Frontend
+/argilla-frontend/ @extralit/contributors/frontend
+/argilla-frontend/components/ @extralit/contributors/frontend
+/argilla-frontend/pages/ @extralit/contributors/frontend
+/argilla-frontend/v1/ @extralit/contributors/frontend
+/argilla-frontend/v1/domain/ @extralit/contributors/frontend
+/argilla-frontend/plugins/ @extralit/contributors/frontend
+/argilla-frontend/assets/ @extralit/contributors/frontend
+/argilla-frontend/layouts/ @extralit/contributors/frontend
+/argilla-frontend/static/ @extralit/contributors/frontend
+/argilla-frontend/nuxt.config.ts @extralit/contributors/frontend
+
+# Legacy compatibility layer
+/argilla-v1/ @extralit/contributors/sdk @extralit/contributors/backend
+
+# AI/ML Model Code
+/argilla/src/extralit/extraction/models/ @extralit/contributors/ai @extralit/contributors/sdk
+/argilla/src/extralit/extraction/ @extralit/contributors/ai @extralit/contributors/sdk
+/argilla/src/extralit/extraction/ocr/ @extralit/contributors/ai @extralit/contributors/sdk
+/argilla/src/extralit/extraction/prompts.py @extralit/contributors/ai @extralit/contributors/sdk
+/argilla/src/extralit/extraction/chunking.py @extralit/contributors/ai @extralit/contributors/sdk
+/argilla/src/extralit/extraction/vector_store.py @extralit/contributors/ai @extralit/contributors/sdk
+/argilla/src/extralit/extraction/vector_index.py @extralit/contributors/ai @extralit/contributors/sdk
+
+# CI/CD Workflows
+/.github/workflows/ @extralit/contributors/infra
+
+# Security related files
+/SECURITY.md @extralit/core-team
+/LICENSE @extralit/core-team
+/CODE_OF_CONDUCT.md @extralit/core-team
