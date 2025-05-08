@@ -13,21 +13,19 @@
 
 ## What is Extralit?
 
-<img src="argilla/docs/assets/images/getting_started/data-extraction-pipeline.jpg" alt="pipeline">
-
 Extralit (EXTRAct LITerature) is a data extraction workflow with user-friendly UI, designed for **LLM-assisted scientific data extraction** and other **unstructured document intelligence** tasks. It focuses on data accuracy above all else, and further integrates human feedback loops for continuous LLM refinement and collaborative data extraction.
 
 - 🔹 Precision First – Built for high data accuracy, ensuring reliable results.
 - 🔹 Human-in-the-Loop – Seamlessly integrate human annotations to refine LLM outputs and collaborate on data validation.
 - 🔹 Flexible & Scalable – Available as a Python SDK, CLI, and Web UI with multiple deployment options to fit your workflow.
 
-🌟 Key Features
+Key Features:
 
-- ✅ Schema-Driven Extraction – Define structured schemas for context-aware, high-accuracy data extraction across scientific domains.
-- ✅ Advanced PDF Processing – AI-powered OCR detects complex table structures in both digital and scanned PDFs.
-- ✅ Built-in Validation – Automatically verify extracted data for accuracy in both the annotation UI and the data pipeline outputs.
-- ✅ User-Friendly Interface – Easily review, edit, and validate data with team-based consensus workflows.
-- ✅ Data Flywheel – Collect human annotations to monitor performance and build fine-tuning datasets for continuous improvement.
+- Schema-Driven Extraction – Define structured schemas for context-aware, high-accuracy data extraction across scientific domains.
+- Advanced PDF Processing – AI-powered OCR detects complex table structures in both digital and scanned PDFs.
+- Built-in Validation – Automatically verify extracted data for accuracy in both the annotation UI and the data pipeline outputs.
+- User-Friendly Interface – Easily review, edit, and validate data with team-based consensus workflows.
+- Data Flywheel – Collect human annotations to monitor performance and build fine-tuning datasets for continuous improvement.
 
 Start extracting smarter with Extralit! 🚀
 
