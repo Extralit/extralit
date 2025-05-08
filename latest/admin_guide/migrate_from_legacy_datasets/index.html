@@ -1501,6 +1501,84 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#api-differences-between-argilla-v1-and-v2" class="md-nav__link">
+    <span class="md-ellipsis">
+      API Differences Between Argilla v1 and v2
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API Differences Between Argilla v1 and v2">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      Authentication
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workspaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      Workspaces
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datasets" class="md-nav__link">
+    <span class="md-ellipsis">
+      Datasets
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schemas" class="md-nav__link">
+    <span class="md-ellipsis">
+      Schemas
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#training" class="md-nav__link">
+    <span class="md-ellipsis">
+      Training
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#extraction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Extraction
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#issues-and-workarounds" class="md-nav__link">
+    <span class="md-ellipsis">
+      Issues and Workarounds
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#migrate-users-and-workspaces" class="md-nav__link">
     <span class="md-ellipsis">
       Migrate Users and Workspaces
@@ -2750,6 +2828,84 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#api-differences-between-argilla-v1-and-v2" class="md-nav__link">
+    <span class="md-ellipsis">
+      API Differences Between Argilla v1 and v2
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API Differences Between Argilla v1 and v2">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      Authentication
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workspaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      Workspaces
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datasets" class="md-nav__link">
+    <span class="md-ellipsis">
+      Datasets
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schemas" class="md-nav__link">
+    <span class="md-ellipsis">
+      Schemas
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#training" class="md-nav__link">
+    <span class="md-ellipsis">
+      Training
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#extraction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Extraction
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#issues-and-workarounds" class="md-nav__link">
+    <span class="md-ellipsis">
+      Issues and Workarounds
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#migrate-users-and-workspaces" class="md-nav__link">
     <span class="md-ellipsis">
       Migrate Users and Workspaces
@@ -2849,6 +3005,46 @@
 
 <h1 id="migrate-users-workspaces-and-datasets-to-argilla-2x">Migrate users, workspaces and datasets to Argilla 2.x<a class="headerlink" href="#migrate-users-workspaces-and-datasets-to-argilla-2x" title="Permanent link">&para;</a></h1>
 <p>This guide will help you migrate task to Argilla V2. These do not include the <code>FeedbackDataset</code> which is just an interim naming convention for the latest extensible dataset. Task-specific datasets are datasets that are used for a specific task, such as text classification, token classification, etc. If you would like to learn about the backstory of <abbr title="Software Development Kit.">SDK</abbr> this migration, please refer to the <a href="https://argilla.io/blog/introducing-argilla-new-sdk/"><abbr title="Software Development Kit.">SDK</abbr> migration blog post</a>. Additionally, we will provide guidance on how to maintain your <code>User</code>'s and <code>Workspace</code>'s within the new Argilla V2 format.</p>
+<h2 id="api-differences-between-argilla-v1-and-v2"><abbr title="Application Programming Interface.">API</abbr> Differences Between Argilla v1 and v2<a class="headerlink" href="#api-differences-between-argilla-v1-and-v2" title="Permanent link">&para;</a></h2>
+<p>Argilla v2 introduces several important changes to the <abbr title="Application Programming Interface.">API</abbr> that affect how you migrate and interact with users, workspaces, datasets, schemas, and more. Below is a summary of the key differences:</p>
+<h3 id="authentication">Authentication<a class="headerlink" href="#authentication" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>v1:</strong> Used a simple <abbr title="Application Programming Interface.">API</abbr> key for authentication, passed in the <code>X-API-Key</code> header.</li>
+<li><strong>v2:</strong> Uses JWT tokens. The <abbr title="Application Programming Interface.">API</abbr> key is used to obtain a token, which is then used for subsequent requests in the <code>Authorization</code> header with the <code>Bearer</code> prefix.</li>
+</ul>
+<h3 id="workspaces">Workspaces<a class="headerlink" href="#workspaces" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>v1:</strong> Workspaces were simple containers for datasets with limited metadata and permissions.</li>
+<li><strong>v2:</strong> Workspaces have richer metadata and support user roles and permissions within each workspace.</li>
+</ul>
+<h3 id="datasets">Datasets<a class="headerlink" href="#datasets" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>v1:</strong> Datasets were tied to a specific task type (e.g., text classification) and had limited metadata.</li>
+<li><strong>v2:</strong> Datasets are more flexible, support multiple task types, and have more metadata and configuration options.</li>
+</ul>
+<h3 id="schemas">Schemas<a class="headerlink" href="#schemas" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>v1:</strong> No explicit schema management; schema was defined as part of dataset creation.</li>
+<li><strong>v2:</strong> Explicit schema management with versioning. Schemas can be shared across datasets.</li>
+</ul>
+<h3 id="training">Training<a class="headerlink" href="#training" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>v1:</strong> Training was tightly integrated with the dataset and had limited configuration options.</li>
+<li><strong>v2:</strong> Training is more flexible, can be configured separately from the dataset, and supports more frameworks and options.</li>
+</ul>
+<h3 id="extraction">Extraction<a class="headerlink" href="#extraction" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>v1:</strong> Limited extraction capabilities and no explicit extraction pipeline.</li>
+<li><strong>v2:</strong> Enhanced extraction with a dedicated pipeline, supporting more document types and extraction methods.</li>
+</ul>
+<h3 id="issues-and-workarounds">Issues and Workarounds<a class="headerlink" href="#issues-and-workarounds" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Authentication:</strong> v2 requires a different authentication method. The migration guide and <abbr title="Software Development Kit.">SDK</abbr> implement a flexible system to handle both.</li>
+<li><strong>Schema Management:</strong> v2 <abbr title="Application Programming Interface.">API</abbr> for schema management is different; migration scripts and <abbr title="Command Line Interface.">CLI</abbr> have been updated accordingly.</li>
+<li><strong>Training:</strong> v2 <abbr title="Application Programming Interface.">API</abbr> for training is different; migration scripts and <abbr title="Command Line Interface.">CLI</abbr> have been updated accordingly.</li>
+<li><strong>Extraction:</strong> v2 <abbr title="Application Programming Interface.">API</abbr> for extraction is different; migration scripts and <abbr title="Command Line Interface.">CLI</abbr> have been updated accordingly.</li>
+</ul>
+<hr />
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Legacy datasets include: <code>DatasetForTextClassification</code>, <code>DatasetForTokenClassification</code>, and <code>DatasetForText2Text</code>.</p>

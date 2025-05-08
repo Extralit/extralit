@@ -2579,6 +2579,24 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documentation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#contributors" class="md-nav__link">
+    <span class="md-ellipsis">
+      Contributors
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -4702,6 +4720,24 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documentation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#contributors" class="md-nav__link">
+    <span class="md-ellipsis">
+      Contributors
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -6720,10 +6756,28 @@ These are the section headers that we use:
 <ul>
 <li>Added support for <code>TableField</code> for table fields.</li>
 <li>Added <code>TableQuestion</code> to support table questions.</li>
+<li>Implemented full workspace schema management in the <abbr title="Command Line Interface.">CLI</abbr> and Python <abbr title="Application Programming Interface.">API</abbr>, including:</li>
+<li>Listing, uploading, downloading, and deleting schemas via <abbr title="Command Line Interface.">CLI</abbr> and Python <abbr title="Application Programming Interface.">API</abbr></li>
+<li>Full CRUD support for workspace schemas, including Pandera-based schema serialization/deserialization</li>
+<li>Comprehensive error handling and logging for all schema operations</li>
+<li>Extensive documentation and usage examples for all workspace <abbr title="Application Programming Interface.">API</abbr> methods</li>
+<li>Unit and integration tests for all <abbr title="Command Line Interface.">CLI</abbr> commands and <abbr title="Application Programming Interface.">API</abbr> methods</li>
+<li>Restored and modernized all critical workspace and schema operations from Argilla V1</li>
+<li>Unblocked <abbr title="Command Line Interface.">CLI</abbr>-based workflows for researchers and users</li>
+<li><a href="https://github.com/extralit/extralit/pull/57">#57</a> by @priyankeshh and @Ashutoshx7</li>
 </ul>
 <h3 id="fixed">Fixed<a class="headerlink" href="#fixed" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Fixed certain extralit-specific changes when loading Dataset</li>
+<li>Fixed regressions in workspace and schema management from V1 to V2 migration (<a href="https://github.com/extralit/extralit/pull/57">#57</a>)</li>
+</ul>
+<h3 id="documentation">Documentation<a class="headerlink" href="#documentation" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Updated and expanded documentation for all workspace <abbr title="Application Programming Interface.">API</abbr> methods and <abbr title="Command Line Interface.">CLI</abbr> commands (<a href="https://github.com/extralit/extralit/pull/57">#57</a>)</li>
+</ul>
+<h3 id="contributors">Contributors<a class="headerlink" href="#contributors" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Special thanks to @priyankeshh and @Ashutoshx7 for their collaborative work on this release.</li>
 </ul>
 <h2 id="argillahttpsgithubcomargilla-ioargillacomparev240v250">[Argilla][2.5.0](https://github.com/argilla-io/argilla/compare/v2.4.0...v2.5.0)<a class="headerlink" href="#argillahttpsgithubcomargilla-ioargillacomparev240v250" title="Permanent link">&para;</a></h2>
 <h3 id="added_1">Added<a class="headerlink" href="#added_1" title="Permanent link">&para;</a></h3>
@@ -6897,7 +6951,7 @@ This release for 2.0.0rc1 does not contain any changelog entries because it is t
 <li>Added singleton schema support in SchemaStructure</li>
 <li>Added .devcontainer for "Docker, Tilt, and <abbr title="Kubernetes, an open-source platform designed to automate deploying, scaling, and operating application containers.">K8s</abbr>" local development on GH Codespaces</li>
 <li>Added examples/deployments/k8s/extralit-configs.yaml for configuring the extralit service and secrets in a <abbr title="Kubernetes, an open-source platform designed to automate deploying, scaling, and operating application containers.">K8s</abbr> cluster</li>
-<li>Added <a href="https://docs.extralit.ai">docs site for the extralit project</a> at <code>argilla/docs/</code> </li>
+<li>Added <a href="https://docs.extralit.ai">docs site for the extralit project</a> at <code>argilla/docs/</code></li>
 <li>Added pytest-xdist for parallel testing</li>
 <li>Added docker-compose devcontainer</li>
 </ul>
