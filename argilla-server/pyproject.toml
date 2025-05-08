@@ -77,7 +77,7 @@ postgresql = [
 ]
 
 [project.urls]
-homepage = "https://www.argilla.io"
+homepage = "https://extralit.ai"
 documentation = "https://docs.extralit.ai"
 repository = "https://github.com/extralit/extralit"
 
