@@ -34,5 +34,8 @@ else
     echo 'Upstream remote already exists. Skipping addition.'
 fi
 
+# Install precommit hooks
+cd /workspaces/extralit
+pre-commit install
 
 echo 'Setup script completed'
