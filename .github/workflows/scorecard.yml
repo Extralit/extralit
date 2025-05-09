@@ -12,8 +12,9 @@ on:
   # schedule:
   #   - cron: '15 16 * * 3'
   pull_request:
-    - "argilla/**"
-    - "argilla-server/**"
+    paths:
+      - "argilla/**"
+      - "argilla-server/**"
 
 # Declare default permissions as read only.
 permissions: read-all
