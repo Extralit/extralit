@@ -7,50 +7,53 @@
 
 # Default owners for everything (fallback)
 * @extralit/core-team
+/argilla/**/* @extralit/contributors
+/argilla-server/**/* @extralit/contributors
+/argilla-v1/**/* @extralit/contributors
 
 # Python SDK (general files)
-/argilla/*.py @extralit/contributors/sdk
-/argilla/pyproject.toml @extralit/contributors/sdk
-/argilla/pdm.lock @extralit/contributors/sdk
+/argilla/*.py @extralit/sdk
+/argilla/pyproject.toml @extralit/sdk
+/argilla/pdm.lock @extralit/sdk
 
 # Python SDK (source and tests)
-/argilla/src/**/* @extralit/contributors/sdk
-/argilla/tests/**/* @extralit/contributors/sdk
+/argilla/src/**/* @extralit/sdk
+/argilla/tests/**/* @extralit/sdk
 
 # Backend Server
-/argilla-server/**/* @extralit/contributors/backend
+/argilla-server/**/* @extralit/backend
 
 # Frontend
-/argilla-frontend/**/* @extralit/contributors/frontend
+/argilla-frontend/**/* @extralit/frontend
 
 # Legacy compatibility layer
-/argilla-v1/**/* @extralit/contributors/sdk @extralit/contributors/backend
+/argilla-v1/**/* @extralit/sdk @extralit/backend
 
 # AI/ML-specific code (more specific paths take precedence)
-/argilla/src/extralit/extraction/**/* @extralit/contributors/ai
-/argilla/src/extralit/extraction/**/* @extralit/contributors/ai
-/argilla/src/extralit/metrics/**/* @extralit/contributors/ai
-/argilla/src/extralit/preprocessing/**/* @extralit/contributors/ai
-/argilla/src/extralit/schema/**/* @extralit/contributors/ai
+/argilla/src/extralit/extraction/**/* @extralit/ai
+/argilla/src/extralit/extraction/**/* @extralit/ai
+/argilla/src/extralit/metrics/**/* @extralit/ai
+/argilla/src/extralit/preprocessing/**/* @extralit/ai
+/argilla/src/extralit/schema/**/* @extralit/ai
 
 # AI services
-/argilla/src/extralit/pipeline/**/* @extralit/contributors/ai @extralit/contributors/backend
-/argilla/src/extralit/server/**/* @extralit/contributors/ai @extralit/contributors/backend
-/argilla/src/extralit/storage/**/* @extralit/contributors/ai @extralit/contributors/backend
+/argilla/src/extralit/pipeline/**/* @extralit/ai @extralit/backend
+/argilla/src/extralit/server/**/* @extralit/ai @extralit/backend
+/argilla/src/extralit/storage/**/* @extralit/ai @extralit/backend
 
 # Core infrastructure and configuration files
-/.github/workflows/**/* @extralit/contributors/infra
-/.github/ @extralit/contributors/infra
-/.devcontainer/ @extralit/contributors/infra
-/docker/ @extralit/contributors/infra
-*.Dockerfile @extralit/contributors/infra
-Tiltfile @extralit/contributors/infra
-codecov.yml @extralit/contributors/infra
+/.github/workflows/**/* @extralit/infra
+/.github/ @extralit/infra
+/.devcontainer/ @extralit/infra
+/docker/ @extralit/infra
+*.Dockerfile @extralit/infra
+Tiltfile @extralit/infra
+codecov.yml @extralit/infra
 
 # Documentation
-*.md @extralit/contributors/docs
-/argilla/docs/**/* @extralit/contributors/docs
-/examples/**/* @extralit/contributors/docs @extralit/contributors/sdk
+*.md @extralit/docs
+/argilla/docs/**/* @extralit/docs
+/examples/**/* @extralit/docs @extralit/sdk
 
 
 # Security and legal files
