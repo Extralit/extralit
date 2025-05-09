@@ -1,8 +1,8 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 authors:
-- family-names: "Tran"
-  given-names: "Jonny (Nhat)"
+- family-names: "Labs"
+  given-names: "Extralit"
 title: "Extralit - Fast and accurate systemic literature data extraction with LLM assistance"
 version: 1.2.0
 date-released: 2023-11-15
