@@ -77,7 +77,7 @@ From the root of the cloned Extralit repository.
 cd extralit
 ```
 
-Next, activate your virtual environment and make the required installations:
+Next, activate your virtual Python environment and make the required installations:
 
 ```sh
 # Install the `pdm` package manager
@@ -87,71 +87,13 @@ pip install pdm
 pdm install --dev
 ```
 
+To install specific sub-packages with editable mode, you can use the following command:
 
-### Contributing to the CLI
-
-The Command Line Interface (CLI) is an important part of Extralit that enables users to interact with the platform from their terminal. Here's how to contribute to the CLI:
-
-#### CLI Structure
-
-The CLI code is located in `argilla/src/argilla/cli` with this organization:
-
+```sh
+pip install -e argilla/
+# or
+pip install -e argilla-server/
 ```
-cli/
-├── app.py                # Main entry point
-├── command_modules/      # Individual commands
-    ├── datasets/         # Dataset operations
-    ├── documents/        # Document operations
-    ├── extraction/       # Extraction pipeline
-    ├── files/            # File operations
-    └── ...               # Other commands
-```
-
-The CLI uses [Typer](https://typer.tiangolo.com/) for creating the command-line interface.
-
-#### Adding a New CLI Command
-
-1. Create a new module in the appropriate directory:
-
-```python
-# src/argilla/cli/mycommand/__main__.py
-import typer
-from argilla.cli.callback import init_callback
-from argilla.cli.rich import get_argilla_themed_panel
-from rich.console import Console
-
-app = typer.Typer(help="My command description")
-
-@app.callback()
-def callback(ctx: typer.Context):
-    """Callback for my command."""
-    init_callback()
-
-@app.command(name="subcommand")
-def my_subcommand(param: str = typer.Argument(..., help="Parameter description")):
-    """Subcommand docstring - appears in help."""
-    # Command implementation
-    Console().print(f"Executed with parameter: {param}")
-```
-
-2. Register your command in `app.py`:
-
-```python
-from argilla.cli import mycommand
-app.add_typer(mycommand.app, name="mycommand")
-```
-
-3. Write tests for your command in `tests/unit/cli/test_mycommand.py`
-
-4. Update the [CLI documentation](../user_guide/command_line_interface.md) with examples
-
-#### CLI Design Principles
-
-- Create commands that fit into existing workflows
-- Follow consistent naming and structure patterns
-- Provide clear help text for all commands and options, e.g. use the [`print_rich_table`](https://github.com/extralit/extralit/blob/develop/argilla/src/argilla/cli/rich.py#L115) function to print tables in a rich format
-- Use sensible defaults to minimize required input
-- Follow the Unix philosophy: commands should do one thing well
 
 
 ### Linting and formatting
@@ -282,6 +224,72 @@ PYTHONPATH=. alembic current
 
 !!! warning "Production Databases"
     Be extremely cautious when applying migrations to production databases. Always backup your database before applying migrations and test thoroughly in staging environments first.
+
+### Contributing to the CLI
+
+The Command Line Interface (CLI) is an important part of Extralit that enables users to interact with the platform from their terminal. Here's how to contribute to the CLI:
+
+#### CLI Structure
+
+The CLI code is located in `argilla/src/argilla/cli` with this organization:
+
+```
+cli/
+├── app.py                # Main entry point
+├── command_modules/      # Individual commands
+    ├── datasets/         # Dataset operations
+    ├── documents/        # Document operations
+    ├── extraction/       # Extraction pipeline
+    ├── files/            # File operations
+    └── ...               # Other commands
+```
+
+The CLI uses [Typer](https://typer.tiangolo.com/) for creating the command-line interface.
+
+#### Adding a New CLI Command
+
+1. Create a new module in the appropriate directory:
+
+```python
+# src/argilla/cli/mycommand/__main__.py
+import typer
+from argilla.cli.callback import init_callback
+from argilla.cli.rich import get_argilla_themed_panel
+from rich.console import Console
+
+app = typer.Typer(help="My command description")
+
+@app.callback()
+def callback(ctx: typer.Context):
+    """Callback for my command."""
+    init_callback()
+
+@app.command(name="subcommand")
+def my_subcommand(param: str = typer.Argument(..., help="Parameter description")):
+    """Subcommand docstring - appears in help."""
+    # Command implementation
+    Console().print(f"Executed with parameter: {param}")
+```
+
+2. Register your command in `app.py`:
+
+```python
+from argilla.cli import mycommand
+app.add_typer(mycommand.app, name="mycommand")
+```
+
+3. Write tests for your command in `tests/unit/cli/test_mycommand.py`
+
+4. Update the [CLI documentation](../user_guide/command_line_interface.md) with examples
+
+#### CLI Design Principles
+
+- Create commands that fit into existing workflows
+- Follow consistent naming and structure patterns
+- Provide clear help text for all commands and options, e.g. use the [`print_rich_table`](https://github.com/extralit/extralit/blob/develop/argilla/src/argilla/cli/rich.py#L115) function to print tables in a rich format
+- Use sensible defaults to minimize required input
+- Follow the Unix philosophy: commands should do one thing well
+
 
 
 ## Troubleshooting
