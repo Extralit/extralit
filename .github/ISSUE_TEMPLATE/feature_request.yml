@@ -3,7 +3,7 @@ description: Cool new ideas for the project
 title: "[FEATURE]"
 labels: ["enhancement"]
 assignees: []
-
+type: "Feature"
 body:
   - type: markdown
     attributes:
