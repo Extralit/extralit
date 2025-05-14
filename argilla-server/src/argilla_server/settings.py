@@ -16,21 +16,30 @@
 """
 Common environment vars / settings
 """
+
 import logging
 import os
 import re
 import warnings
 from pathlib import Path
-from typing import List, Optional
-from urllib.parse import urlparse
+from typing import Dict, List, Optional
+
+from pydantic import Field, field_validator, model_validator
+from pydantic_core.core_schema import ValidationInfo
+from pydantic_settings import BaseSettings
+from urllib.parse import urlparse, urlunparse
 
 from argilla_server.constants import (
+    DATABASE_POSTGRESQL,
+    DATABASE_SQLITE,
+    DEFAULT_DATABASE_POSTGRESQL_MAX_OVERFLOW,
+    DEFAULT_DATABASE_POSTGRESQL_POOL_SIZE,
+    DEFAULT_DATABASE_SQLITE_TIMEOUT,
     DEFAULT_LABEL_SELECTION_OPTIONS_MAX_ITEMS,
-    DEFAULT_MAX_KEYWORD_LENGTH,
     DEFAULT_SPAN_OPTIONS_MAX_ITEMS,
-    DEFAULT_TELEMETRY_KEY,
+    SEARCH_ENGINE_ELASTICSEARCH,
+    SEARCH_ENGINE_OPENSEARCH,
 )
-from argilla_server.pydantic_v1 import BaseSettings, Field, root_validator, validator
 
 
 class Settings(BaseSettings):
@@ -68,59 +77,72 @@ class Settings(BaseSettings):
     __DATASETS_INDEX_NAME__ = "ar.datasets"
     __DATASETS_RECORDS_INDEX_NAME__ = "ar.dataset.{}"
 
-    home_path: Optional[str] = Field(description="The home path where argilla related files will be stored")
-    base_url: Optional[str] = Field(description="The default base url where server will be deployed")
-    database_url: Optional[str] = Field(description="The database url that argilla will use as data store")
+    home_path: Optional[str] = Field(
+        None,
+        validate_default=True,
+        description="The home path where argilla related files will be stored",
+    )
+    base_url: Optional[str] = Field(
+        None,
+        validate_default=True,
+        description="The default base url where server will be deployed",
+    )
 
-    s3_endpoint: Optional[str] = Field(description="The S3 endpoint for data storage")
-    s3_access_key: Optional[str] = Field(description="The access key for the S3 storage")
-    s3_secret_key: Optional[str] = Field(description="The secret key for the S3 storage")
+    database_url: Optional[str] = Field(
+        None,
+        validate_default=True,
+        description="The database url that argilla will use as data store",
+    )
+    # https://docs.sqlalchemy.org/en/20/core/engines.html#sqlalchemy.create_engine.params.pool_size
+    database_postgresql_pool_size: Optional[int] = Field(
+        default=DEFAULT_DATABASE_POSTGRESQL_POOL_SIZE,
+        description="The number of connections to keep open inside the database connection pool",
+    )
+    # https://docs.sqlalchemy.org/en/20/core/engines.html#sqlalchemy.create_engine.params.max_overflow
+    database_postgresql_max_overflow: Optional[int] = Field(
+        default=DEFAULT_DATABASE_POSTGRESQL_MAX_OVERFLOW,
+        description="The number of connections that can be opened above and beyond the pool_size setting",
+    )
+    # https://docs.python.org/3/library/sqlite3.html#sqlite3.connect
+    database_sqlite_timeout: Optional[int] = Field(
+        default=DEFAULT_DATABASE_SQLITE_TIMEOUT,
+        description="SQLite database connection timeout in seconds",
+    )
 
-    extralit_url: Optional[str] = Field(description="The extralit server url for LLM serving endpoint")
+    s3_endpoint: Optional[str] = Field(
+        default=None,
+        description="The S3 endpoint for data storage"
+    )
+    s3_access_key: Optional[str] = Field(
+        default=None,
+        description="The access key for the S3 storage"
+    )
+    s3_secret_key: Optional[str] = Field(
+        default=None,
+        description="The secret key for the S3 storage"
+    )
+
+    extralit_url: Optional[str] = Field(
+        default=None,
+        description="The extralit server url for LLM serving endpoint"
+    )
 
     elasticsearch: str = "http://localhost:9200"
     elasticsearch_ssl_verify: bool = True
     elasticsearch_ca_path: Optional[str] = None
     cors_origins: List[str] = ["*"]
 
+    redis_url: str = "redis://localhost:6379/0"
+
     docs_enabled: bool = True
 
-    namespace: str = Field(default=None, regex=r"^[a-z]+$")
-
-    enable_migration: bool = Field(
-        default=False,
-        description="If enabled, try to migrate data from old rubrix installation",
-    )
-
     # Analyzer configuration
-    default_es_search_analyzer: str = "standard"
-    exact_es_search_analyzer: str = "whitespace"
-    # This line will be enabled once words field won't be used anymore
-    # wordcloud_es_search_analyzer: str = "multilingual_stop_analyzer"
-
     es_records_index_shards: int = 1
     es_records_index_replicas: int = 0
 
     es_mapping_total_fields_limit: int = 2000
 
-    search_engine: str = "elasticsearch"
-
-    vectors_fields_limit: int = Field(
-        default=5,
-        description="Max number of supported vectors per record",
-    )
-
-    metadata_fields_limit: int = Field(
-        default=50,
-        gt=0,
-        le=100,
-        description="Max number of fields in metadata",
-    )
-    metadata_field_length: int = Field(
-        default=DEFAULT_MAX_KEYWORD_LENGTH,
-        description="Max length supported for the string metadata fields."
-        " Values containing higher than this will be truncated",
-    )
+    search_engine: str = SEARCH_ENGINE_ELASTICSEARCH
 
     # Questions settings
     label_selection_options_max_items: int = Field(
@@ -139,15 +161,35 @@ class Settings(BaseSettings):
         description="If True, show a warning when Hugging Face space persistent storage is disabled",
     )
 
-    # See also the telemetry.py module
-    enable_telemetry: bool = True
-    telemetry_key: str = DEFAULT_TELEMETRY_KEY
+    # Hugging Face telemetry
+    enable_telemetry: bool = Field(
+        default=True,
+        validate_default=True,
+        description="The telemetry configuration for Hugging Face hub telemetry. ",
+    )
 
-    @validator("home_path", always=True)
+    # See also the telemetry.py module
+    @field_validator("enable_telemetry", mode="before")
+    @classmethod
+    def set_enable_telemetry(cls, enable_telemetry: bool) -> bool:
+        if os.getenv("HF_HUB_DISABLE_TELEMETRY") == "1" or os.getenv("HF_HUB_OFFLINE") == "1":
+            enable_telemetry = False
+        if os.getenv("ARGILLA_ENABLE_TELEMETRY") == "0":
+            os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
+            warnings.warn(
+                "environment vairbale ARGILLA_ENABLE_TELEMETRY is deprecated, use HF_HUB_DISABLE_TELEMETRY or HF_HUB_OFFLINE instead."
+            )
+            enable_telemetry = False
+
+        return enable_telemetry
+
+    @field_validator("home_path", mode="before")
+    @classmethod
     def set_home_path_default(cls, home_path: str):
         return home_path or os.path.join(Path.home(), ".argilla")
 
-    @validator("base_url", always=True)
+    @field_validator("base_url")
+    @classmethod
     def normalize_base_url(cls, base_url: str):
         if not base_url:
             base_url = "/"
@@ -158,10 +200,11 @@ class Settings(BaseSettings):
 
         return base_url
 
-    @validator("database_url", pre=True, always=True)
-    def set_database_url(cls, database_url: str, values: dict) -> str:
+    @field_validator("database_url", mode="before")
+    @classmethod
+    def set_database_url(cls, database_url: str, info: ValidationInfo) -> str:
         if not database_url:
-            home_path = values.get("home_path")
+            home_path = info.data.get("home_path")
             sqlite_file = os.path.join(home_path, "argilla.db")
             return f"sqlite+aiosqlite:///{sqlite_file}?check_same_thread=False"
 
@@ -176,68 +219,66 @@ class Settings(BaseSettings):
                 return re.sub(regex, "sqlite+aiosqlite", database_url)
 
         if "postgres" in database_url:
-            regex = re.compile(r"^postgres(?:ql)?(?!\+asyncpg)(\+psycopg2)?")
-            if regex.match(database_url):
-                warnings.warn(
-                    "From version 1.14.0, Argilla will use `asyncpg` as default PostgreSQL driver. The protocol in the"
-                    " provided database URL has been automatically replaced from `postgresql` to `postgresql+asyncpg`."
-                    " Please, update your database URL to use `postgresql+asyncpg` protocol."
-                )
-                return re.sub(regex, "postgresql+asyncpg", database_url)
+            parsed_url = urlparse(database_url)
+            if parsed_url.scheme.__contains__('postgres'):
+                # warnings.warn(
+                #     "From version 1.14.0, Argilla will use `asyncpg` as default PostgreSQL driver. The protocol in the"
+                #     " provided database URL has been automatically replaced from `postgresql` to `postgresql+asyncpg`."
+                #     " Please, update your database URL to use `postgresql+asyncpg` protocol."
+                # )
+                new_scheme = "postgresql+asyncpg"
+                database_url = urlunparse(parsed_url._replace(scheme=new_scheme))
 
+            if not database_url.startswith('postgresql+asyncpg://'):
+                raise ValueError(f"Invalid database URL format. Expected: 'postgresql+asyncpg://...', given '{parsed_url.scheme}'")
+            
         return database_url
-    
-    @root_validator(pre=True)
-    def set_s3_credentials(cls, values):
-        values["s3_endpoint"] = os.getenv("S3_ENDPOINT", values.get("s3_endpoint"))
-        values["s3_access_key"] = os.getenv("S3_ACCESS_KEY", values.get("s3_access_key"))
-        values["s3_secret_key"] = os.getenv("S3_SECRET_KEY", values.get("s3_secret_key"))
 
-        values['extralit_url'] = os.getenv("EXTRALIT_URL", values.get("extralit_url"))
-        return values
+    @model_validator(mode="after")
+    @classmethod
+    def create_home_path(cls, instance: "Settings") -> "Settings":
+        Path(instance.home_path).mkdir(parents=True, exist_ok=True)
 
-    @root_validator(skip_on_failure=True)
-    def create_home_path(cls, values):
-        Path(values["home_path"]).mkdir(parents=True, exist_ok=True)
-
-        return values
+        return instance
 
     @property
-    def dataset_index_name(self) -> str:
-        ns = self.namespace
-        if ns:
-            return f"{self.namespace}.{self.__DATASETS_INDEX_NAME__}"
-        return self.__DATASETS_INDEX_NAME__
+    def database_engine_args(self) -> Dict:
+        if self.database_is_sqlite:
+            return {
+                "connect_args": {
+                    "timeout": self.database_sqlite_timeout,
+                },
+            }
+
+        if self.database_is_postgresql:
+            return {
+                "pool_size": self.database_postgresql_pool_size,
+                "max_overflow": self.database_postgresql_max_overflow,
+            }
+
+        return {}
 
     @property
-    def dataset_records_index_name(self) -> str:
-        ns = self.namespace
-        if ns:
-            return f"{self.namespace}.{self.__DATASETS_RECORDS_INDEX_NAME__}"
-        return self.__DATASETS_RECORDS_INDEX_NAME__
+    def database_is_sqlite(self) -> bool:
+        if self.database_url is None:
+            return False
+
+        return self.database_url.lower().startswith(DATABASE_SQLITE)
 
     @property
-    def old_dataset_index_name(self) -> str:
-        index_name = ".rubrix<NAMESPACE>.datasets-v0"
-        ns = self.namespace
-        if ns is None:
-            return index_name.replace("<NAMESPACE>", "")
-        return index_name.replace("<NAMESPACE>", f".{ns}")
+    def database_is_postgresql(self) -> bool:
+        if self.database_url is None:
+            return False
+
+        return self.database_url.lower().startswith(DATABASE_POSTGRESQL)
 
     @property
-    def old_dataset_records_index_name(self) -> str:
-        index_name = ".rubrix<NAMESPACE>.dataset.{}.records-v0"
-        ns = self.namespace
-        if ns is None:
-            return index_name.replace("<NAMESPACE>", "")
-        return index_name.replace("<NAMESPACE>", f".{ns}")
+    def search_engine_is_elasticsearch(self) -> bool:
+        return self.search_engine == SEARCH_ENGINE_ELASTICSEARCH
 
-    def obfuscated_elasticsearch(self) -> str:
-        """Returns configured elasticsearch url obfuscating the provided password, if any"""
-        parsed = urlparse(self.elasticsearch)
-        if parsed.password:
-            return self.elasticsearch.replace(parsed.password, "XXXX")
-        return self.elasticsearch
+    @property
+    def search_engine_is_opensearch(self) -> bool:
+        return self.search_engine == SEARCH_ENGINE_OPENSEARCH
 
     class Config:
         env_prefix = "ARGILLA_"

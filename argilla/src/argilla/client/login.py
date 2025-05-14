@@ -1,92 +1,142 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import os
+import json
 from pathlib import Path
 from typing import Dict, Optional
 
-from argilla.client.sdk.commons.errors import HttpResponseError, UnauthorizedApiError, WrongResponseError
-from argilla.client.singleton import init
-from argilla.pydantic_v1 import AnyHttpUrl, BaseModel
-
-cache_dir_env = os.environ.get("ARGILLA_CACHE_DIR")
+# Define the cache directory for storing credentials
+cache_dir_env = os.environ.get("EXTRALIT_CACHE_DIR")
 if cache_dir_env:
-    ARGILLA_CACHE_DIR = Path(cache_dir_env)
+    EXTRALIT_CACHE_DIR = Path(cache_dir_env)
 else:
-    ARGILLA_CACHE_DIR = Path.home() / ".cache" / "argilla"
+    EXTRALIT_CACHE_DIR = Path.home() / ".extralit"
 
-ARGILLA_CREDENTIALS_FILE = ARGILLA_CACHE_DIR / "credentials.json"
+EXTRALIT_CREDENTIALS_FILE = EXTRALIT_CACHE_DIR / "credentials.json"
 
 
-class ArgillaCredentials(BaseModel):
-    api_url: AnyHttpUrl
-    api_key: str
-    workspace: Optional[str] = None
-    extra_headers: Optional[Dict[str, str]] = None
+class ArgillaCredentials:
+    def __init__(
+        self,
+        api_url: str,
+        api_key: str,
+        workspace: Optional[str] = None,
+        extra_headers: Optional[Dict[str, str]] = None,
+    ):
+        """Initialize credentials.
+
+        Args:
+            api_url: The URL of the Extralit server.
+            api_key: The API key for authentication.
+            workspace: Optional default workspace.
+            extra_headers: Optional extra headers for API requests.
+        """
+        self.api_url = api_url
+        self.api_key = api_key
+        self.workspace = workspace
+        self.extra_headers = extra_headers or {}
 
     def save(self) -> None:
-        with open(ARGILLA_CREDENTIALS_FILE, "w") as f:
-            f.write(self.json())
+        """Save credentials to file."""
+        if not EXTRALIT_CACHE_DIR.exists():
+            EXTRALIT_CACHE_DIR.mkdir(parents=True)
+
+        with open(EXTRALIT_CREDENTIALS_FILE, "w") as f:
+            json.dump(
+                {
+                    "api_url": self.api_url,
+                    "api_key": self.api_key,
+                    "workspace": self.workspace,
+                    "extra_headers": self.extra_headers,
+                },
+                f,
+            )
 
     @classmethod
     def load(cls) -> "ArgillaCredentials":
-        if not cls.exists():
-            raise FileNotFoundError(f"'{ARGILLA_CREDENTIALS_FILE}' does not exist.")
+        """Load credentials from file.
 
-        with open(ARGILLA_CREDENTIALS_FILE, "r") as f:
-            return cls.parse_raw(f.read())
+        Returns:
+            ArgillaCredentials: The loaded credentials.
+
+        Raises:
+            FileNotFoundError: If credentials file doesn't exist.
+        """
+        if not cls.exists():
+            raise FileNotFoundError(f"'{EXTRALIT_CREDENTIALS_FILE}' does not exist.")
+
+        with open(EXTRALIT_CREDENTIALS_FILE, "r") as f:
+            data = json.load(f)
+            return cls(
+                api_url=data["api_url"],
+                api_key=data["api_key"],
+                workspace=data.get("workspace"),
+                extra_headers=data.get("extra_headers"),
+            )
 
     @classmethod
     def remove(cls) -> None:
-        if not cls.exists():
-            raise FileNotFoundError(f"'{ARGILLA_CREDENTIALS_FILE}' does not exist.")
+        """Remove credentials file.
 
-        ARGILLA_CREDENTIALS_FILE.unlink()
+        Raises:
+            FileNotFoundError: If credentials file doesn't exist.
+        """
+        if not cls.exists():
+            raise FileNotFoundError(f"'{EXTRALIT_CREDENTIALS_FILE}' does not exist.")
+
+        EXTRALIT_CREDENTIALS_FILE.unlink()
 
     @classmethod
     def exists(cls) -> bool:
-        return ARGILLA_CREDENTIALS_FILE.exists()
+        """Check if credentials file exists.
+
+        Returns:
+            bool: True if credentials file exists, False otherwise.
+        """
+        return EXTRALIT_CREDENTIALS_FILE.exists()
 
 
 def login(
     api_url: str, api_key: str, workspace: Optional[str] = None, extra_headers: Optional[Dict[str, str]] = None
 ) -> None:
-    """Login to an Argilla server using the provided URL and API key. If the login is successful, the credentials will
-    be stored in the Argilla cache directory (`~/.cache/argilla/credentials.json`).
+    """Login to an Extralit server using the provided URL and API key.
+
+    If the login is successful, the credentials will be stored in the Extralit cache directory.
 
     Args:
-        api_url: The URL of the Argilla server.
-        api_key: The API key to use when communicating with the Argilla server.
+        api_url: The URL of the Extralit server.
+        api_key: The API key to use when communicating with the Extralit server.
         workspace: The default workspace where the datasets will be created.
-        extra_headers: A dictionary containing extra headers that will be sent to the Argilla server.
+        extra_headers: A dictionary containing extra headers that will be sent to the Extralit server.
 
     Raises:
         ValueError: If the login fails.
     """
-    # Try to login to the server
+    # Validate credentials by creating a client and making a test API call
+    from argilla.client import Argilla
+
     try:
-        init(api_url=api_url, api_key=api_key, workspace=workspace, extra_headers=extra_headers)
-    except HttpResponseError as e:
-        raise ValueError(
-            f"Could not reach '{api_url}', make sure that the Argilla Server is running and working as expected"
-        ) from e
-    except WrongResponseError as e:
-        raise ValueError(f"Could not login to '{api_url}'. Ensure proper https or http protocol in the API URL") from e
-    except UnauthorizedApiError as e:
-        raise ValueError(f"Could not login to '{api_url}' using provided credentials") from e
+        # Create client with the provided credentials
+        client = Argilla(api_url=api_url, api_key=api_key)
 
-    if not ARGILLA_CACHE_DIR.exists():
-        ARGILLA_CACHE_DIR.mkdir(parents=True)
+        # Try to get user info - this will raise an exception if authentication fails
+        client.me
 
-    ArgillaCredentials(api_url=api_url, api_key=api_key, workspace=workspace, extra_headers=extra_headers).save()
+        # If we get here, the credentials are valid
+        # Save credentials
+        ArgillaCredentials(api_url=api_url, api_key=api_key, workspace=workspace, extra_headers=extra_headers).save()
+    except Exception as e:
+        # Authentication failed
+        raise ValueError(f"Failed to authenticate with the provided credentials: {str(e)}")

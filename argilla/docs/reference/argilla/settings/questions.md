@@ -4,7 +4,7 @@ hide: footer
 
 # Questions
 
-Questions in Argilla are the questions that will be answered as feedback. They are used to define the questions that will be answered by users or models.
+Argilla uses questions to gather the feedback. The questions will be answered by users or models.
 
 ## Usage Examples
 
@@ -21,7 +21,6 @@ settings = rg.Settings(
         label_question,
     ],
 )
-
 ```
 
 Questions can be combined in extensible ways based on the type of feedback you want to collect. For example, you can combine a label question with a text question to collect both a label and a text response.
@@ -44,34 +43,20 @@ dataset = rg.Dataset(
     name="my_dataset",
     settings=settings,
 )
-
-
 ```
 
 > To add records with responses to questions, refer to the [`rg.Response`](../records/responses.md) class documentation.
 
-
 ---
 
-## `rg.LabelQuestion`
+::: src.argilla.settings._question.LabelQuestion
 
+::: src.argilla.settings._question.MultiLabelQuestion
 
+::: src.argilla.settings._question.RankingQuestion
 
-## `rg.MultiLabelQuestion`
+::: src.argilla.settings._question.TextQuestion
 
+::: src.argilla.settings._question.RatingQuestion
 
-
-## `rg.RankingQuestion`
-
-
-
-## `rg.TextQuestion`
-
-
-
-## `rg.RatingQuestion`
-
-
-
-## `rg.SpanQuestion`
-
+::: src.argilla.settings._question.SpanQuestion

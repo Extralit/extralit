@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-import { NuxtConfig } from "@nuxt/types";
 import Mode from "frontmatter-markdown-loader/mode";
+import { NuxtConfig } from "@nuxt/types";
 import pkg from "./package.json";
 
-const LOCAL_ENVIRONMENT = "http://localhost:6900";
+const LOCAL_ENVIRONMENT = "http://0.0.0.0:6900";
 const BASE_URL = process.env.API_BASE_URL ?? LOCAL_ENVIRONMENT;
 const DIST_FOLDER = process.env.DIST_FOLDER || "dist";
 
@@ -50,36 +50,16 @@ const config: NuxtConfig = {
       { rel: "icon", sizes: "16x16", href: "favicon-16x16.png" },
       { rel: "manifest", href: "site.webmanifest" },
     ],
+    script: [
+      ...(process.env.NODE_ENV === 'development' ? [{ src: 'http://localhost:8098', defer: true }] : [])
+    ]
   },
 
   // Global CSS (https://go.nuxtjs.dev/config-css)
   css: ["~assets/scss/base/base.scss"],
 
   // Plugins to run before rendering page (https://go.nuxtjs.dev/config-plugins)
-  plugins: [
-    { src: "~/plugins/logo" },
-
-    { src: "~/plugins/directives" },
-
-    { src: "~/plugins/di" },
-
-    { src: "~/plugins/language" },
-
-    { src: "~/plugins/plugins/axios.ts" },
-    { src: "~/plugins/plugins/axios-cache.ts" },
-    { src: "~/plugins/plugins/svg-icon.js" },
-    { src: "~/plugins/plugins/vue-vega.js" },
-    { src: "~/plugins/plugins/click-outside.js" },
-    { src: "~/plugins/plugins/virtual-scroller.js" },
-    { src: "~/plugins/plugins/toast.js" },
-    { src: "~/plugins/plugins/highlight-search.js" },
-    { src: "~/plugins/plugins/copy-to-clipboard.js" },
-    { src: "~/plugins/plugins/filters.js" },
-    { src: "~/plugins/plugins/variables.js" },
-    { src: "~/plugins/plugins/vue-draggable.js" },
-    { src: "~/plugins/plugins/platform.ts" },
-    { src: "~/plugins/plugins/language.ts" },
-  ],
+  plugins: [{ src: "~/plugins" }],
 
   // Auto import components (https://go.nuxtjs.dev/config-components)
   components: [
@@ -104,29 +84,31 @@ const config: NuxtConfig = {
     "@nuxtjs/style-resources",
     "@nuxtjs/axios",
     "@nuxtjs/auth-next",
-    "nuxt-highlightjs",
-    "@nuxtjs/i18n",
     [
-      "nuxt-mq",
+      "nuxt-highlightjs",
       {
-        breakpoints: {
-          sm: 450,
-          md: 1901,
-          lg: Infinity,
-        },
+        style: "obsidian",
       },
     ],
+    "@nuxtjs/i18n",
   ],
 
   i18n: {
     locales: [
       {
         code: "en",
+        name: "English",
         file: "en.js",
       },
       {
         code: "de",
+        name: "Deutsch",
         file: "de.js",
+      },
+      {
+        code: "es",
+        name: "Español",
+        file: "es.js",
       },
     ],
     detectBrowserLanguage: false,
@@ -154,6 +136,10 @@ const config: NuxtConfig = {
   // Build Configuration (https://go.nuxtjs.dev/config-build)
   build: {
     cssSourceMap: false,
+    cache: true,
+    parallel: true,
+    quiet: true,
+    analyze: false,
     extend(config) {
       config.resolve.alias.vue = "vue/dist/vue.common";
       config.module.rules.push({
@@ -171,6 +157,10 @@ const config: NuxtConfig = {
           loader: 'babel-loader',
           options: {
             presets: ['@babel/preset-env'],
+            plugins: [
+              ['@babel/plugin-transform-private-methods', { loose: true }],
+              ['@babel/plugin-transform-class-properties', { loose: true }]
+            ],
             compact: false,
           },
         },
@@ -182,20 +172,24 @@ const config: NuxtConfig = {
           loader: 'babel-loader',
           options: {
             presets: ['@babel/preset-env'],
+            plugins: [
+              ['@babel/plugin-transform-private-methods', { loose: true }],
+              ['@babel/plugin-transform-class-properties', { loose: true }]
+            ],
             compact: false,
           },
         },
       });
     },
     babel: {
-      presets: [
-        ['@babel/preset-env', { targets: { node: 'current' } }],
-      ],
       plugins: [
         ['@babel/plugin-transform-private-methods', { loose: true }],
         ['@babel/plugin-transform-class-properties', { loose: true }],
         ['@babel/plugin-proposal-class-properties', { loose: true }],
-        ["@babel/plugin-transform-private-property-in-object", { "loose": true }],
+        ["@babel/plugin-transform-private-property-in-object", { loose: true }],
+      ],
+      presets: [
+        ['@babel/preset-env', { targets: { node: 'current' }, loose: true }],
       ],
     },
     transpile: ['pdfjs-dist'],
@@ -203,8 +197,22 @@ const config: NuxtConfig = {
       terserOptions: {
         keep_classnames: true,
         keep_fnames: true,
+        compress: {
+          drop_console: process.env.NODE_ENV === 'production'
+        }
       },
     },
+  },
+
+  webpack: {
+    devMiddleware: {
+      stats: 'minimal'
+    },
+    watchOptions: {
+      aggregateTimeout: 300,
+      poll: 1000,
+      ignored: /node_modules/
+    }
   },
 
   // https://github.com/nuxt-community/style-resources-module
@@ -216,24 +224,11 @@ const config: NuxtConfig = {
 
   auth: {
     strategies: {
-      basic: {
-        scheme: "local",
-        token: {
-          property: "access_token",
-        },
-        user: {
-          property: false,
-          autoFetch: true,
-        },
+      local: {
         endpoints: {
-          login: {
-            url: "/security/token",
-            method: "post",
-            propertyName: "access_token",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          },
           logout: false,
-          user: { url: "/me", propertyName: false },
+          user: false,
+          login: false,
         },
       },
     },
@@ -243,25 +238,17 @@ const config: NuxtConfig = {
   },
 
   router: {
-    middleware: ["auth-guard"],
+    middleware: ["route-guard", "me"],
     base: process.env.BASE_URL ?? "/",
   },
 
   publicRuntimeConfig: {
     clientVersion: pkg.version,
     communityLink:
-      "https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ",
-    documentationSite: "https://docs.argilla.io/",
-    documentationSiteQuickStart:
-      "https://docs.argilla.io/en/latest/getting_started/quickstart.html",
-    documentationSiteSemanticSearch:
-      "https://docs.argilla.io/en/latest/reference/webapp/features.html#semantic-search",
-    documentationSiteLabelScheme:
-      "https://docs.argilla.io/en/latest/guides/log_load_and_prepare_data.html#define-a-labeling-schema",
-    documentationSiteQueryDatasets:
-      "https://docs.argilla.io/en/latest/guides/query_datasets.html",
+      "https://join.slack.com/t/extralit/shared_invite/zt-32blg3602-0m0XewPBXF7776BQ3m7ZlA",
+    documentationSite: "https://docs.extralit.ai/",
     documentationPersistentStorage:
-      "https://docs.argilla.io/en/latest/getting_started/installation/deployments/huggingface-spaces.html#setting-up-persistent-storage",
+      "https://docs.extralit.ai/latest/getting_started/how-to-configure-argilla-on-huggingface/#persistent-storage",
   },
 };
 export default config;

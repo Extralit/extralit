@@ -13,29 +13,40 @@
 #  limitations under the License.
 
 import secrets
+import base64
 from datetime import datetime
 from typing import Any, List, Optional, Union
 from uuid import UUID
 
-from sqlalchemy import JSON, ForeignKey, String, Text, UniqueConstraint, and_, sql, LargeBinary
-from sqlalchemy import Enum as SAEnum
+from sqlalchemy import Enum as SAEnum, PrimaryKeyConstraint
+from sqlalchemy import (
+    JSON,
+    ForeignKey,
+    String,
+    Text,
+    UniqueConstraint,
+    sql,
+)
 from sqlalchemy.engine.default import DefaultExecutionContext
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from argilla_server.api.schemas.v1.questions import QuestionSettings
 from argilla_server.enums import (
     DatasetStatus,
+    FieldType,
     MetadataPropertyType,
     QuestionType,
     ResponseStatus,
     SuggestionType,
     UserRole,
+    DatasetDistributionStrategy,
+    RecordStatus,
 )
 from argilla_server.models.base import DatabaseModel
 from argilla_server.models.metadata_properties import MetadataPropertySettings
 from argilla_server.models.mixins import inserted_at_current_value
-from argilla_server.pydantic_v1 import parse_obj_as
-from argilla_server.schemas.v1.questions import QuestionSettings
+from pydantic import TypeAdapter
 
 # Include here the data model ref to be accessible for automatic alembic migration scripts
 __all__ = [
@@ -52,9 +63,12 @@ __all__ = [
     "Vector",
     "VectorSettings",
     "Document",
+    "Webhook",
+    "DatasetUser",
 ]
 
 _USER_API_KEY_BYTES_LENGTH = 80
+_WEBHOOK_SECRET_BYTES_LENGTH = 64
 
 
 class Field(DatabaseModel):
@@ -69,6 +83,26 @@ class Field(DatabaseModel):
     dataset: Mapped["Dataset"] = relationship(back_populates="fields")
 
     __table_args__ = (UniqueConstraint("name", "dataset_id", name="field_name_dataset_id_uq"),)
+
+    @property
+    def is_text(self):
+        return self.settings.get("type") == FieldType.text
+
+    @property
+    def is_image(self):
+        return self.settings.get("type") == FieldType.image
+
+    @property
+    def is_chat(self):
+        return self.settings.get("type") == FieldType.chat
+
+    @property
+    def is_custom(self):
+        return self.settings.get("type") == FieldType.custom
+
+    @property
+    def is_table(self):
+        return self.settings.get("type") == FieldType.table
 
     def __repr__(self):
         return (
@@ -87,7 +121,7 @@ class Response(DatabaseModel):
     values: Mapped[Optional[dict]] = mapped_column(MutableDict.as_mutable(JSON))
     status: Mapped[ResponseStatus] = mapped_column(ResponseStatusEnum, default=ResponseStatus.submitted, index=True)
     record_id: Mapped[UUID] = mapped_column(ForeignKey("records.id", ondelete="CASCADE"), index=True)
-    user_id: Mapped[Optional[UUID]] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), index=True)
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
 
     record: Mapped["Record"] = relationship(back_populates="responses")
     user: Mapped["User"] = relationship(back_populates="responses")
@@ -184,11 +218,17 @@ class VectorSettings(DatabaseModel):
         )
 
 
+RecordStatusEnum = SAEnum(RecordStatus, name="record_status_enum")
+
+
 class Record(DatabaseModel):
     __tablename__ = "records"
 
     fields: Mapped[dict] = mapped_column(JSON, default={})
     metadata_: Mapped[Optional[dict]] = mapped_column("metadata", MutableDict.as_mutable(JSON), nullable=True)
+    status: Mapped[RecordStatus] = mapped_column(
+        RecordStatusEnum, default=RecordStatus.pending, server_default=RecordStatus.pending, index=True
+    )
     external_id: Mapped[Optional[str]] = mapped_column(index=True)
     dataset_id: Mapped[UUID] = mapped_column(ForeignKey("datasets.id", ondelete="CASCADE"), index=True)
 
@@ -197,6 +237,12 @@ class Record(DatabaseModel):
         back_populates="record",
         cascade="all, delete-orphan",
         passive_deletes=True,
+        order_by=Response.inserted_at.asc(),
+    )
+    responses_submitted: Mapped[List["Response"]] = relationship(
+        back_populates="record",
+        viewonly=True,
+        primaryjoin=f"and_(Record.id==Response.record_id, Response.status=='{ResponseStatus.submitted}')",
         order_by=Response.inserted_at.asc(),
     )
     suggestions: Mapped[List["Suggestion"]] = relationship(
@@ -214,16 +260,19 @@ class Record(DatabaseModel):
 
     __table_args__ = (UniqueConstraint("external_id", "dataset_id", name="record_external_id_dataset_id_uq"),)
 
-    def __repr__(self):
-        return (
-            f"Record(id={str(self.id)!r}, external_id={self.external_id!r}, dataset_id={str(self.dataset_id)!r}, "
-            f"inserted_at={str(self.inserted_at)!r}, updated_at={str(self.updated_at)!r})"
-        )
+    def is_completed(self) -> bool:
+        return self.status == RecordStatus.completed
 
     def vector_value_by_vector_settings(self, vector_settings: "VectorSettings") -> Union[List[float], None]:
         for vector in self.vectors:
             if vector.vector_settings_id == vector_settings.id:
                 return vector.value
+
+    def __repr__(self):
+        return (
+            f"Record(id={str(self.id)!r}, external_id={self.external_id!r}, dataset_id={str(self.dataset_id)!r}, "
+            f"inserted_at={str(self.inserted_at)!r}, updated_at={str(self.updated_at)!r})"
+        )
 
 
 class Question(DatabaseModel):
@@ -248,7 +297,23 @@ class Question(DatabaseModel):
 
     @property
     def parsed_settings(self) -> QuestionSettings:
-        return parse_obj_as(QuestionSettings, self.settings)
+        return TypeAdapter(QuestionSettings).validate_python(self.settings)
+
+    @property
+    def is_text(self) -> bool:
+        return self.settings.get("type") == QuestionType.text
+
+    @property
+    def is_label_selection(self) -> bool:
+        return self.settings.get("type") == QuestionType.label_selection
+
+    @property
+    def is_multi_label_selection(self) -> bool:
+        return self.settings.get("type") == QuestionType.multi_label_selection
+
+    @property
+    def is_rating(self) -> bool:
+        return self.settings.get("type") == QuestionType.rating
 
     @property
     def type(self) -> QuestionType:
@@ -281,7 +346,7 @@ class MetadataProperty(DatabaseModel):
 
     @property
     def parsed_settings(self) -> MetadataPropertySettings:
-        return parse_obj_as(MetadataPropertySettings, self.settings)
+        return TypeAdapter(MetadataPropertySettings).validate_python(self.settings)
 
     @property
     def visible_for_annotators(self) -> bool:
@@ -301,6 +366,28 @@ def _updated_at_current_value(context: DefaultExecutionContext) -> datetime:
     return context.get_current_parameters(isolate_multiinsert_groups=False)["updated_at"]
 
 
+class DatasetUser(DatabaseModel):
+    __tablename__ = "datasets_users"
+    __upsertable_columns__ = {}
+
+    id = None  # This is a workaround to avoid the id column in the table
+
+    dataset_id: Mapped[UUID] = mapped_column(ForeignKey("datasets.id", ondelete="CASCADE"), index=True)
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+
+    dataset: Mapped["Dataset"] = relationship(viewonly=True)
+    user: Mapped["User"] = relationship(viewonly=True)
+
+    __table_args__ = (PrimaryKeyConstraint("dataset_id", "user_id"),)
+
+    def __repr__(self):
+        return (
+            f"DatasetUser(id={str(self.id)!r}, dataset_id={str(self.dataset_id)!r}, "
+            f"user_id={str(self.user_id)!r}, "
+            f"inserted_at={str(self.inserted_at)!r}, updated_at={str(self.updated_at)!r})"
+        )
+
+
 class Dataset(DatabaseModel):
     __tablename__ = "datasets"
 
@@ -308,6 +395,8 @@ class Dataset(DatabaseModel):
     guidelines: Mapped[Optional[str]] = mapped_column(Text)
     allow_extra_metadata: Mapped[bool] = mapped_column(default=True, server_default=sql.true())
     status: Mapped[DatasetStatus] = mapped_column(DatasetStatusEnum, default=DatasetStatus.draft, index=True)
+    distribution: Mapped[dict] = mapped_column(MutableDict.as_mutable(JSON))
+    metadata_: Mapped[Optional[dict]] = mapped_column("metadata", JSON, nullable=True)
     workspace_id: Mapped[UUID] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
     inserted_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(default=inserted_at_current_value, onupdate=datetime.utcnow)
@@ -347,6 +436,13 @@ class Dataset(DatabaseModel):
         order_by=VectorSettings.inserted_at.asc(),
     )
 
+    users: Mapped[List["User"]] = relationship(
+        secondary="datasets_users",
+        back_populates="datasets",
+        passive_deletes=True,
+        order_by=DatasetUser.inserted_at.asc(),
+    )
+
     __table_args__ = (UniqueConstraint("name", "workspace_id", name="dataset_name_workspace_id_uq"),)
 
     @property
@@ -356,6 +452,15 @@ class Dataset(DatabaseModel):
     @property
     def is_ready(self):
         return self.status == DatasetStatus.ready
+
+    @property
+    def distribution_strategy(self) -> DatasetDistributionStrategy:
+        return DatasetDistributionStrategy(self.distribution["strategy"])
+
+    def field_by_name(self, name: str) -> Union["Field", None]:
+        for field in self.fields:
+            if field.name == name:
+                return field
 
     def metadata_property_by_name(self, name: str) -> Union["MetadataProperty", None]:
         for metadata_property in self.metadata_properties:
@@ -367,7 +472,7 @@ class Dataset(DatabaseModel):
             if question.id == question_id:
                 return question
 
-    def question_by_name(self, name: str) -> Union["Question", None]:
+    def question_by_name(self, name: str) -> Union[Question, None]:
         for question in self.questions:
             if question.name == name:
                 return question
@@ -447,16 +552,17 @@ class User(DatabaseModel):
     workspaces: Mapped[List["Workspace"]] = relationship(
         secondary="workspaces_users", back_populates="users", order_by=WorkspaceUser.inserted_at.asc()
     )
-    responses: Mapped[List["Response"]] = relationship(back_populates="user")
+    responses: Mapped[List["Response"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        order_by=Response.inserted_at.asc(),
+    )
+
     datasets: Mapped[List["Dataset"]] = relationship(
-        secondary="workspaces_users",
-        primaryjoin="User.id == WorkspaceUser.user_id",
-        secondaryjoin=and_(
-            Workspace.id == Dataset.workspace_id,
-            WorkspaceUser.workspace_id == Workspace.id,
-        ),
-        viewonly=True,
-        order_by=Dataset.inserted_at.asc(),
+        secondary="datasets_users",
+        back_populates="users",
+        order_by=DatasetUser.inserted_at.asc(),
     )
 
     @property
@@ -470,6 +576,26 @@ class User(DatabaseModel):
     @property
     def is_annotator(self):
         return self.role == UserRole.annotator
+
+    async def is_member(self, workspace_id: UUID) -> bool:
+        # TODO: Change query to use exists may improve performance
+        return (
+            await WorkspaceUser.get_by(self.current_async_session, workspace_id=workspace_id, user_id=self.id)
+            is not None
+        )
+    
+    async def is_member_of_workspace_name(self, workspace_name: str) -> bool:
+        workspace = await Workspace.get_by(self.current_async_session, name=workspace_name)
+        if not workspace:
+            return False
+        return (
+            await WorkspaceUser.get_by(
+                self.current_async_session,
+                workspace_id=workspace.id,
+                user_id=self.id
+            )
+            is not None
+        )
 
     def __repr__(self):
         return (
@@ -497,3 +623,24 @@ class Document(DatabaseModel):
             f"pmid={self.pmid!r}, doi={self.doi!r}, file_name={self.file_name!r}, url={self.url!r})"
         )
     
+
+def generate_webhook_secret() -> str:
+    # NOTE: https://www.standardwebhooks.com implementation requires a base64 encoded secret
+    return base64.b64encode(secrets.token_bytes(_WEBHOOK_SECRET_BYTES_LENGTH)).decode("utf-8")
+
+
+class Webhook(DatabaseModel):
+    __tablename__ = "webhooks"
+
+    url: Mapped[str] = mapped_column(Text)
+    secret: Mapped[str] = mapped_column(Text, default=generate_webhook_secret)
+    events: Mapped[List[str]] = mapped_column(JSON)
+    enabled: Mapped[bool] = mapped_column(default=True, server_default=sql.true())
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    def __repr__(self):
+        return (
+            f"Webhook(id={str(self.id)!r}, url={self.url!r}, events={self.events!r}, "
+            f"enabled={self.enabled!r}, description={self.description!r}, "
+            f"inserted_at={str(self.inserted_at)!r}, updated_at={str(self.updated_at)!r})"
+        )

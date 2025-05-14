@@ -1,4 +1,5 @@
-import { Answer, RankingAnswer, SpanAnswer } from "../IAnswer";
+import { Answer, RankingAnswer, SpanAnswer, TableAnswer } from "../IAnswer";
+import { TableData } from "../table/TableData";
 import { QuestionType } from "./QuestionType";
 
 export abstract class QuestionAnswer {
@@ -20,6 +21,14 @@ export abstract class QuestionAnswer {
   response(answer: Answer) {
     this._answer = answer;
     this.fill(this._answer);
+  }
+
+  isEqual(answer: QuestionAnswer) {
+    const isEqual =
+      JSON.stringify(this.valuesAnswered) ===
+      JSON.stringify(answer.valuesAnswered);
+
+    return isEqual;
   }
 
   protected abstract fill(answer: Answer);
@@ -99,7 +108,11 @@ export class SpanQuestionAnswer extends QuestionAnswer {
   }
 
   get valuesAnswered(): SpanAnswer[] {
-    return this.values;
+    return this.values.map((value) => ({
+      start: value.start,
+      end: value.end,
+      label: value.label,
+    }));
   }
 }
 
@@ -293,5 +306,30 @@ export class RankingQuestionAnswer extends QuestionAnswer {
 
   get valuesAnswered(): RankingValue[] {
     return this.values;
+  }
+}
+
+export class TableQuestionAnswer extends QuestionAnswer {
+  public value: TableAnswer;
+
+  constructor(public readonly type: QuestionType) {
+    super(type);
+    this.value = { data: [], schema: {primaryKey: [], fields: []} } as TableAnswer;
+  }
+
+  protected fill(answer: Answer) {
+    this.value = answer.value as TableAnswer;
+  }
+
+  clear() {
+    this.value = new TableData();
+  }
+
+  get isValid(): boolean {
+    return this.value?.data?.length > 0;
+  }
+
+  get valuesAnswered() {
+    return this.value;
   }
 }

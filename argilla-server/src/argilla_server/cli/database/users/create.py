@@ -16,12 +16,12 @@ from typing import List, Optional
 
 import typer
 
+from argilla_server.api.schemas.v1.users import USER_PASSWORD_MIN_LENGTH, UserCreate
+from argilla_server.api.schemas.v1.workspaces import WorkspaceCreate
 from argilla_server.contexts import accounts
 from argilla_server.database import AsyncSessionLocal
 from argilla_server.models import User, UserRole
-from argilla_server.pydantic_v1 import constr
-from argilla_server.schemas.v0.users import USER_PASSWORD_MIN_LENGTH, UserCreate
-from argilla_server.schemas.v0.workspaces import WorkspaceCreate
+from pydantic import constr
 
 from .utils import get_or_new_workspace
 
@@ -72,9 +72,7 @@ async def _create(
             typer.echo(f"User with username {username!r} already exists in database. Skipping...")
             return
 
-        if not api_key:
-            api_key = None
-        elif await accounts.get_user_by_api_key(session, api_key):
+        if await accounts.get_user_by_api_key(session, api_key):
             typer.echo(f"User with api_key {api_key!r} already exists in database. Skipping...")
             return
 

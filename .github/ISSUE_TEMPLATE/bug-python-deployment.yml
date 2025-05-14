@@ -1,0 +1,115 @@
+name: "🪲 Bug report: Python/Deployment"
+description: Python or Deployment bugs and unexpected behavior
+title: "[BUG-python/deployment]"
+labels: ["bug", "python", "deployment"]
+assignees: []
+type: "Bug"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this Python/Deployment bug report!
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Also tell us, what did you expect to happen?
+      placeholder: I encountered an issue when...
+      value: "A bug happened!"
+    validations:
+      required: true
+
+
+  - type: textarea
+    id: code
+    attributes:
+      label: Stacktrace and Code to reproduce the bug
+      description: Please provide code samples and error messages that demonstrate the issue
+      placeholder: |
+        ```python
+        # Your Python code here
+        ```
+
+        ```bash
+        # Your bash commands or stacktrace here
+        ```
+      render: python
+    validations:
+      required: true
+
+  # - type: markdown
+  #   attributes:
+  #     value: |
+  #       ## Environment
+  #       Since version 1.16.0 you can use `python -m argilla info` command to easily get the used versions.
+
+  - type: input
+    id: extralit-version
+    attributes:
+      label: Extralit/Argilla Version
+      description: What version of Extralit/Argilla are you using?
+      placeholder: e.g. v0.2.0
+    validations:
+      required: true
+
+  - type: input
+    id: server-version
+    attributes:
+      label: Extralit Server Version (optional)
+      description: What version of Extralit Server are you using?
+      placeholder: e.g. v0.2.0
+
+  - type: input
+    id: elasticsearch-version
+    attributes:
+      label: ElasticSearch Version
+      description: What version of ElasticSearch are you using?
+      placeholder: e.g. 7.10.2
+    validations:
+      required: true
+
+  - type: input
+    id: docker-image
+    attributes:
+      label: Docker Image (optional)
+      description: Which Docker image are you using?
+      placeholder: e.g. argilla:v1.0.0
+
+  - type: dropdown
+    id: python-version
+    attributes:
+      label: Python Version
+      description: What version of Python are you using?
+      options:
+        - 3.7
+        - 3.8
+        - 3.9
+        - 3.10
+        - 3.11
+        - 3.12
+        - Other (specify in additional context)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      description: What operating system are you using?
+      options:
+        - Windows
+        - macOS
+        - Linux (Ubuntu/Debian)
+        - Linux (CentOS/RHEL)
+        - Linux (Other)
+        - Other (specify in additional context)
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Add any other context about the problem here.
+      placeholder: Any other information that might be helpful...

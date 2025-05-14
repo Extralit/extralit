@@ -12,38 +12,62 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from typing import Dict, Iterable, Sequence
+from typing import Dict, Iterable, Sequence, Union, List, Tuple, Optional
 from uuid import UUID
 
-from sqlalchemy import select, sql
+from sqlalchemy import select, and_, or_, case, func, Select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, contains_eager
 
-from argilla_server.models import Dataset, Record, Suggestion
+from argilla_server.database import get_async_db
+from argilla_server.models import Dataset, Record, VectorSettings, Vector, Response, ResponseStatus
+
+
+async def list_dataset_records(
+    db: AsyncSession,
+    dataset_id: UUID,
+    offset: int,
+    limit: int,
+    with_responses: bool = False,
+    with_suggestions: bool = False,
+    with_vectors: Union[bool, List[str]] = False,
+    with_response_suggestions: bool = False,
+    workspace_user_ids: Optional[Iterable[UUID]] = None,
+) -> Tuple[Sequence[Record], int]:
+    query = _record_by_dataset_id_query(
+        dataset_id=dataset_id,
+        offset=offset,
+        limit=limit,
+        with_responses=with_responses,
+        with_suggestions=with_suggestions,
+        with_vectors=with_vectors,
+        with_response_suggestions=with_response_suggestions,
+        workspace_user_ids=workspace_user_ids,
+    )
+
+    records = (await db.scalars(query)).unique().all()
+    total = await db.scalar(select(func.count(Record.id)).filter_by(dataset_id=dataset_id))
+
+    return records, total
 
 
 async def list_dataset_records_by_ids(
     db: AsyncSession, dataset_id: UUID, record_ids: Sequence[UUID]
 ) -> Sequence[Record]:
-
-    query = select(Record).filter(Record.id.in_(record_ids), Record.dataset_id == dataset_id)
-    return (await db.execute(query)).unique().scalars().all()
+    query = select(Record).where(and_(Record.id.in_(record_ids), Record.dataset_id == dataset_id))
+    return (await db.scalars(query)).unique().all()
 
 
 async def list_dataset_records_by_external_ids(
     db: AsyncSession, dataset_id: UUID, external_ids: Sequence[str]
 ) -> Sequence[Record]:
-
     query = (
         select(Record)
-        .filter(Record.external_id.in_(external_ids), Record.dataset_id == dataset_id)
+        .where(and_(Record.external_id.in_(external_ids), Record.dataset_id == dataset_id))
         .options(selectinload(Record.dataset))
     )
-    return (await db.execute(query)).unique().scalars().all()
 
-
-async def delete_suggestions_by_record_ids(db: AsyncSession, record_ids: Iterable[UUID]) -> None:
-    await db.execute(sql.delete(Suggestion).filter(Suggestion.record_id.in_(record_ids)))
+    return (await db.scalars(query)).unique().all()
 
 
 async def fetch_records_by_ids_as_dict(
@@ -58,3 +82,51 @@ async def fetch_records_by_external_ids_as_dict(
 ) -> Dict[str, Record]:
     records_by_external_ids = await list_dataset_records_by_external_ids(db, dataset.id, external_ids)
     return {record.external_id: record for record in records_by_external_ids}
+
+
+def _record_by_dataset_id_query(
+    dataset_id,
+    offset: Optional[int] = None,
+    limit: Optional[int] = None,
+    with_responses: bool = False,
+    with_suggestions: bool = False,
+    with_vectors: Union[bool, List[str]] = False,
+    with_response_suggestions: bool = False,
+    workspace_user_ids: Optional[Iterable[UUID]] = None,
+) -> Select:
+    query = select(Record).filter_by(dataset_id=dataset_id)
+
+    if with_response_suggestions and workspace_user_ids:
+        query = query.outerjoin(
+            Response, 
+            and_(
+                Response.record_id == Record.id,
+                or_(
+                    Response.user_id.in_(workspace_user_ids),
+                    Response.status.in_([ResponseStatus.submitted, ResponseStatus.discarded])
+                )
+            )
+        ).options(contains_eager(Record.responses))
+    elif with_responses:
+        query = query.options(selectinload(Record.responses))
+
+    if with_suggestions:
+        query = query.options(selectinload(Record.suggestions))
+
+    if with_vectors is True:
+        query = query.options(selectinload(Record.vectors).selectinload(Vector.vector_settings))
+    elif isinstance(with_vectors, list):
+        subquery = select(VectorSettings.id).filter(
+            and_(VectorSettings.dataset_id == dataset_id, VectorSettings.name.in_(with_vectors))
+        )
+        query = query.outerjoin(
+            Vector, and_(Vector.record_id == Record.id, Vector.vector_settings_id.in_(subquery))
+        ).options(contains_eager(Record.vectors).selectinload(Vector.vector_settings))
+
+    if offset is not None:
+        query = query.offset(offset)
+
+    if limit is not None:
+        query = query.limit(limit)
+
+    return query.order_by(Record.inserted_at)

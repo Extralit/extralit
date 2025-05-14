@@ -17,6 +17,7 @@
 
 <template>
   <input
+    ref="input"
     class="input"
     :type="type"
     :name="name"
@@ -44,6 +45,22 @@ export default {
     type: {
       type: String,
       default: "text",
+    },
+    autofocus: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  watch: {
+    autofocus: {
+      immediate: true,
+      handler() {
+        this.$nextTick(() => {
+          if (this.autofocus) {
+            this.$refs.input.focus();
+          }
+        });
+      },
     },
   },
   mounted() {

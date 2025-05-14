@@ -3,10 +3,11 @@ import {
   AnswerCombinations,
   RankingAnswer,
   SpanAnswer,
+  TableAnswer,
 } from "../IAnswer";
 import { QuestionType } from "./QuestionType";
 
-type AnswerValue = string | number | RankingAnswer | SpanAnswer;
+type AnswerValue = string | number | RankingAnswer | SpanAnswer | TableAnswer;
 
 class SuggestionScore extends Number {
   private constructor(value: number) {
@@ -28,7 +29,7 @@ export class SuggestionValue {
     public readonly value: AnswerValue,
     score: number,
     public readonly agent: string,
-    public readonly updated_at?: Date,
+    public readonly updatedAt?: Date,
   ) {
     this.score = score ? SuggestionScore.from(score) : undefined;
   }
@@ -43,8 +44,8 @@ export class Suggestion implements Answer {
     private readonly score: number | number[],
     private readonly agent: string,
     public readonly type?: string,
-    public readonly inserted_at?: Date,
-    public readonly updated_at?: Date,
+    public readonly insertedAt?: Date,
+    public readonly updatedAt?: Date,
   ) {}
 
   get value() {
@@ -59,10 +60,11 @@ export class Suggestion implements Answer {
     if (
       this.questionType.isSingleLabelType ||
       this.questionType.isTextType ||
-      this.questionType.isRatingType
+      this.questionType.isRatingType ||
+      this.questionType.isTableType
     ) {
       if (this.value === answer) {
-        return new SuggestionValue(answer, this.score as number, this.agent, this.updated_at,);
+        return new SuggestionValue(answer, this.score as number, this.agent, this.updatedAt,);
       }
     }
 
@@ -77,7 +79,7 @@ export class Suggestion implements Answer {
           answerValue,
           this.score?.[indexOf],
           this.agent,
-          this.updated_at,
+          this.updatedAt,
         );
       }
     }
@@ -98,7 +100,7 @@ export class Suggestion implements Answer {
           spanSuggested,
           this.score?.[indexOf],
           this.agent,
-          this.updated_at,
+          this.updatedAt,
         );
       }
     }
@@ -118,7 +120,7 @@ export class Suggestion implements Answer {
           rankingSuggested,
           this.score?.[indexOf],
           this.agent,
-          this.updated_at || this.inserted_at,
+          this.updatedAt || this.insertedAt,
         );
       }
     }

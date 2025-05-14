@@ -17,12 +17,12 @@ from typing import List
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from argilla_server.api.policies.v1 import RecordPolicy, authorize
+from argilla_server.api.schemas.v1.responses import Response, ResponseBulk, ResponseBulkError, ResponseUpsert
 from argilla_server.contexts import datasets
 from argilla_server.database import get_async_db
 from argilla_server.errors import future as errors
 from argilla_server.models import User
-from argilla_server.policies import RecordPolicyV1, authorize
-from argilla_server.schemas.v1.responses import Response, ResponseBulk, ResponseBulkError, ResponseUpsert
 from argilla_server.search_engine import SearchEngine, get_search_engine
 
 
@@ -43,18 +43,21 @@ class UpsertResponsesInBulkUseCase:
                 if record is None:
                     raise errors.NotFoundError(f"Record with id `{item.record_id}` not found")
 
-                await authorize(user, RecordPolicyV1.create_response(record))
+                await authorize(user, RecordPolicy.create_response(record))
+
                 response = await datasets.upsert_response(self.db, self.search_engine, record, user, item)
             except Exception as err:
                 responses_bulk_items.append(ResponseBulk(item=None, error=ResponseBulkError(detail=str(err))))
             else:
-                responses_bulk_items.append(ResponseBulk(item=Response.from_orm(response), error=None))
+                responses_bulk_items.append(ResponseBulk(item=Response.model_validate(response), error=None))
 
         return responses_bulk_items
 
 
 class UpsertResponsesInBulkUseCaseFactory:
     def __call__(
-        self, db: AsyncSession = Depends(get_async_db), search_engine: SearchEngine = Depends(get_search_engine)
+        self,
+        db: AsyncSession = Depends(get_async_db),
+        search_engine: SearchEngine = Depends(get_search_engine),
     ):
         return UpsertResponsesInBulkUseCase(db, search_engine)

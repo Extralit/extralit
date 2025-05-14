@@ -1,21 +1,137 @@
-# Migrate your legacy datasets to Argilla V2
+# Migrate users, workspaces and datasets to Argilla 2.x
 
-This guide will help you migrate task specific datasets to Argilla V2. These do not include the `FeedbackDataset` which is just an interim naming convention for the latest extensible dataset. Task specific datasets are datasets that are used for a specific task, such as text classification, token classification, etc. If you would like to learn about the backstory of SDK this migration, please refer to the [SDK migration blog post](https://argilla.io/blog/introducing-argilla-new-sdk/).
+This guide will help you migrate task to Argilla V2. These do not include the `FeedbackDataset` which is just an interim naming convention for the latest extensible dataset. Task-specific datasets are datasets that are used for a specific task, such as text classification, token classification, etc. If you would like to learn about the backstory of SDK this migration, please refer to the [SDK migration blog post](https://argilla.io/blog/introducing-argilla-new-sdk/). Additionally, we will provide guidance on how to maintain your `User`'s and `Workspace`'s within the new Argilla V2 format.
+
+## API Differences Between Argilla v1 and v2
+
+Argilla v2 introduces several important changes to the API that affect how you migrate and interact with users, workspaces, datasets, schemas, and more. Below is a summary of the key differences:
+
+### Authentication
+- **v1:** Used a simple API key for authentication, passed in the `X-API-Key` header.
+- **v2:** Uses JWT tokens. The API key is used to obtain a token, which is then used for subsequent requests in the `Authorization` header with the `Bearer` prefix.
+
+### Workspaces
+- **v1:** Workspaces were simple containers for datasets with limited metadata and permissions.
+- **v2:** Workspaces have richer metadata and support user roles and permissions within each workspace.
+
+### Datasets
+- **v1:** Datasets were tied to a specific task type (e.g., text classification) and had limited metadata.
+- **v2:** Datasets are more flexible, support multiple task types, and have more metadata and configuration options.
+
+### Schemas
+- **v1:** No explicit schema management; schema was defined as part of dataset creation.
+- **v2:** Explicit schema management with versioning. Schemas can be shared across datasets.
+
+### Training
+- **v1:** Training was tightly integrated with the dataset and had limited configuration options.
+- **v2:** Training is more flexible, can be configured separately from the dataset, and supports more frameworks and options.
+
+### Extraction
+- **v1:** Limited extraction capabilities and no explicit extraction pipeline.
+- **v2:** Enhanced extraction with a dedicated pipeline, supporting more document types and extraction methods.
+
+### Issues and Workarounds
+- **Authentication:** v2 requires a different authentication method. The migration guide and SDK implement a flexible system to handle both.
+- **Schema Management:** v2 API for schema management is different; migration scripts and CLI have been updated accordingly.
+- **Training:** v2 API for training is different; migration scripts and CLI have been updated accordingly.
+- **Extraction:** v2 API for extraction is different; migration scripts and CLI have been updated accordingly.
+
+---
 
 !!! note
-    Legacy Datasets include: `DatasetForTextClassification`, `DatasetForTokenClassification`, and `DatasetForText2Text`.
+    Legacy datasets include: `DatasetForTextClassification`, `DatasetForTokenClassification`, and `DatasetForText2Text`.
 
-    `FeedbackDataset`'s do not need to be migrated as they are already in the Argilla V2 format.
+    `FeedbackDataset`'s do not need to be migrated as they are already in the Argilla V2 format. Anyway, since the 2.x version includes changes to the search index structure, you should reindex the datasets by enabling the docker environment variable REINDEX_DATASET (This step is automatically executed if you're running Argilla in an HF Space). See the [server configuration docs](../reference/argilla-server/configuration.md#docker-images-only) section for more details.
+
 
 To follow this guide, you will need to have the following prerequisites:
 
 - An argilla 1.* server instance running with legacy datasets.
-- An argilla >=1.29 server instance running. If you don't have one, you can create one by following the [Argilla installation guide](../getting_started/installation.md).
+- An argilla >=1.29 server instance running. If you don't have one, you can create one by following this [Argilla guide](../getting_started/quickstart.md).
 - The `argilla` sdk package installed in your environment.
+
+!!! warning
+    This guide will recreate all `User`'s' and `Workspace`'s' on a new server. Hence, they will be created with new passwords and IDs. If you want to keep the same passwords and IDs, you can can copy the datasets to a temporary v2 instance, then upgrade your current instance to v2.0 and copy the datasets back to your original instance after.
 
 If your current legacy datasets are on a server with Argilla release after 1.29, you could chose to recreate your legacy datasets as new datasets on the same server. You could then upgrade the server to Argilla 2.0 and carry on working their. Your legacy datasets will not be visible on the new server, but they will remain in storage layers if you need to access them.
 
-## Steps
+For migrating the  guides you will need to install the new `argilla` package. This includes a new `v1` module that allows you to connect to the Argilla V1 server.
+
+```bash
+pip install "argilla>=2.0.0"
+```
+
+## Migrate Users and Workspaces
+
+The guide will take you through two steps:
+
+1. **Retrieve the old users and workspaces** from the Argilla V1 server using the new `argilla` package.
+2. **Recreate the users and workspaces** on the Argilla V2 server based op `name` as unique identifier.
+
+### Step 1: Retrieve the old users and workspaces
+
+You can use the `v1` module to connect to the Argilla V1 server.
+
+```python
+import argilla.v1 as rg_v1
+
+# Initialize the API with an Argilla server less than 2.0
+api_url = "<your-url>"
+api_key = "<your-api-key>"
+rg_v1.init(api_url, api_key)
+```
+
+Next, load the dataset `User` and `Workspaces` and from the Argilla V1 server:
+
+```python
+users_v1 = rg_v1.User.list()
+workspaces_v1 = rg_v1.Workspace.list()
+```
+
+### Step 2: Recreate the users and workspaces
+
+To recreate the users and workspaces on the Argilla V2 server, you can use the `argilla` package.
+
+First, instantiate the `Argilla` class to connect to the Argilla V2 server:
+
+```python
+import argilla as rg
+
+client = rg.Argilla()
+```
+
+Next, recreate the users and workspaces on the Argilla V2 server:
+
+```python
+for workspace in workspaces_v1:
+    rg.Workspace(
+        name=workspace.name
+    ).create()
+```
+
+```python
+for user in users_v1:
+    user = rg.User(
+        username=user.username,
+        first_name=user.first_name,
+        last_name=user.last_name,
+        role=user.role,
+        password="<your_chosen_password>" # (1)
+    ).create()
+    if user.role == "owner":
+       continue
+
+    for workspace_name in user.workspaces:
+        if workspace_name != user.name:
+            workspace = client.workspaces(name=workspace_name)
+            user.add_to_workspace(workspace)
+```
+
+1. You need to chose a new password for the user, to do this programmatically you can use the `uuid` package to generate a random password. Take care to keep track of the passwords you chose, since you will not be able to retrieve them later.
+
+Now you have successfully migrated your users and workspaces to Argilla V2 and can continue with the next steps.
+
+## Migrate datasets
 
 The guide will take you through three steps:
 
@@ -25,12 +141,7 @@ The guide will take you through three steps:
 
 ### Step 1: Retrieve the legacy dataset
 
-Connect to the Argilla V1 server via the new `argilla` package. First, you should install an extra dependency:
-```bash
-pip install "argilla[legacy]"
-```
-
-Now, you can use the `v1` module to connect to the Argilla V1 server.
+You can use the `v1` module to connect to the Argilla V1 server.
 
 ```python
 import argilla.v1 as rg_v1
@@ -88,9 +199,7 @@ Next, define the new dataset settings:
     ```
 
     1. The default field in `DatasetForTextClassification` is `text`, but make sure you provide all fields included in `record.inputs`.
-
     2. Make sure you provide all relevant metadata fields available in the dataset.
-
     3. Make sure you provide all relevant vectors available in the dataset.
 
 === "For multi-label classification"
@@ -113,9 +222,7 @@ Next, define the new dataset settings:
     ```
 
     1. The default field in `DatasetForTextClassification` is `text`, but we should provide all fields included in `record.inputs`.
-
     2. Make sure you provide all relevant metadata fields available in the dataset.
-
     3. Make sure you provide all relevant vectors available in the dataset.
 
 === "For token classification"
@@ -138,7 +245,6 @@ Next, define the new dataset settings:
     ```
 
     1. Make sure you provide all relevant metadata fields available in the dataset.
-
     2. Make sure you provide all relevant vectors available in the dataset.
 
 === "For text generation"
@@ -161,13 +267,12 @@ Next, define the new dataset settings:
     ```
 
     1. We should provide all relevant metadata fields available in the dataset.
-
     2. We should provide all relevant vectors available in the dataset.
 
 Finally, create the new dataset on the Argilla V2 server:
 
 ```python
-dataset = rg.Dataset(name=dataset_name, settings=settings)
+dataset = rg.Dataset(name=dataset_name, workspace=workspace, settings=settings)
 dataset.create()
 ```
 
@@ -175,7 +280,7 @@ dataset.create()
     If a dataset with the same name already exists, the `create` method will raise an exception. You can check if the dataset exists and delete it before creating a new one.
 
     ```python
-    dataset = client.datasets(name=dataset_name)
+    dataset = client.datasets(name=dataset_name, workspace=workspace)
 
     if dataset is not None:
         dataset.delete()
