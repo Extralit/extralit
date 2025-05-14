@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,11 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""
-Login module for Extralit CLI.
-Handles authentication and credential storage.
-"""
 
 import os
 import json
@@ -33,9 +28,13 @@ EXTRALIT_CREDENTIALS_FILE = EXTRALIT_CACHE_DIR / "credentials.json"
 
 
 class ArgillaCredentials:
-    """Class for handling Extralit credentials."""
-
-    def __init__(self, api_url: str, api_key: str, workspace: Optional[str] = None, extra_headers: Optional[Dict[str, str]] = None):
+    def __init__(
+        self,
+        api_url: str,
+        api_key: str,
+        workspace: Optional[str] = None,
+        extra_headers: Optional[Dict[str, str]] = None,
+    ):
         """Initialize credentials.
 
         Args:
@@ -55,12 +54,15 @@ class ArgillaCredentials:
             EXTRALIT_CACHE_DIR.mkdir(parents=True)
 
         with open(EXTRALIT_CREDENTIALS_FILE, "w") as f:
-            json.dump({
-                "api_url": self.api_url,
-                "api_key": self.api_key,
-                "workspace": self.workspace,
-                "extra_headers": self.extra_headers
-            }, f)
+            json.dump(
+                {
+                    "api_url": self.api_url,
+                    "api_key": self.api_key,
+                    "workspace": self.workspace,
+                    "extra_headers": self.extra_headers,
+                },
+                f,
+            )
 
     @classmethod
     def load(cls) -> "ArgillaCredentials":
@@ -81,7 +83,7 @@ class ArgillaCredentials:
                 api_url=data["api_url"],
                 api_key=data["api_key"],
                 workspace=data.get("workspace"),
-                extra_headers=data.get("extra_headers")
+                extra_headers=data.get("extra_headers"),
             )
 
     @classmethod
@@ -106,7 +108,9 @@ class ArgillaCredentials:
         return EXTRALIT_CREDENTIALS_FILE.exists()
 
 
-def login(api_url: str, api_key: str, workspace: Optional[str] = None, extra_headers: Optional[Dict[str, str]] = None) -> None:
+def login(
+    api_url: str, api_key: str, workspace: Optional[str] = None, extra_headers: Optional[Dict[str, str]] = None
+) -> None:
     """Login to an Extralit server using the provided URL and API key.
 
     If the login is successful, the credentials will be stored in the Extralit cache directory.
@@ -122,14 +126,14 @@ def login(api_url: str, api_key: str, workspace: Optional[str] = None, extra_hea
     """
     # Validate credentials by creating a client and making a test API call
     from argilla.client import Argilla
-    
+
     try:
         # Create client with the provided credentials
         client = Argilla(api_url=api_url, api_key=api_key)
-        
+
         # Try to get user info - this will raise an exception if authentication fails
-        user = client.me
-        
+        client.me
+
         # If we get here, the credentials are valid
         # Save credentials
         ArgillaCredentials(api_url=api_url, api_key=api_key, workspace=workspace, extra_headers=extra_headers).save()
