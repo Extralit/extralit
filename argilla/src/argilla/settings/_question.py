@@ -25,10 +25,7 @@ from argilla._models._settings._questions import (
     RatingQuestionSettings,
     RankingQuestionSettings,
     SpanQuestionSettings,
-<<<<<<< HEAD
     TableQuestionSettings,
-=======
->>>>>>> v2.6.0
 )
 from argilla.settings._common import SettingsPropertyBase
 
@@ -165,14 +162,18 @@ class LabelQuestion(QuestionBase):
                 Setting it to None show all options.
         """
 
+        settings_type = "dynamic_label_selection" if dynamic else "label_selection"
+        settings_type = "dynamic_multi_label_selection" if dynamic else "multi_label_selection"
         super().__init__(
             name=name,
             title=title,
             required=required,
             description=description,
-            settings=LabelQuestionSettings(
+            settings=MultiLabelQuestionSettings(
+                type=settings_type,
                 options=self._render_values_as_options(labels),
                 visible_options=visible_labels,
+                options_order=options_order,
             ),
             _client=client,
         )
@@ -268,9 +269,7 @@ class TextQuestion(QuestionBase):
         description: Optional[str] = None,
         required: bool = True,
         use_markdown: bool = False,
-<<<<<<< HEAD
         use_table: bool = False,
-=======
 >>>>>>> v2.6.0
         client: Optional[Argilla] = None,
     ) -> None:
@@ -290,11 +289,7 @@ class TextQuestion(QuestionBase):
             title=title,
             required=required,
             description=description,
-<<<<<<< HEAD
             settings=TextQuestionSettings(use_markdown=use_markdown, use_table=use_table),
-=======
-            settings=TextQuestionSettings(use_markdown=use_markdown),
->>>>>>> v2.6.0
             _client=client,
         )
 
@@ -487,14 +482,19 @@ class SpanQuestion(QuestionBase):
 
 <<<<<<< HEAD
 
-class TableQuestion(QuestionBase):
-    def __init__(
-        self,
-        name: str,
-        title: Optional[str] = None,
-        description: Optional[str] = None,
-        required: bool = True,
-        client: Optional[Argilla] = None,
+class LabelQuestion(QuestionBase):
+    class MultiLabelQuestion(LabelQuestion):
+        def __init__(
+            self,
+            name: str,
+            labels: List[Union[str, Dict[str, Optional[str]]]],
+            title: Optional[str] = None,
+            visible_labels: Optional[int] = None,
+            options_order: Literal["natural", "suggestion"] = "natural",
+            description: Optional[str] = None,
+            required: bool = True,
+            dynamic: bool = False,
+            client: Optional[Argilla] = None,
     ):
         """ Create a new table question for `Settings` of a `Dataset`. A table question \
             is a question where the user can input data in a tabular format.
@@ -540,15 +540,9 @@ QuestionType = Union[
 def question_from_model(model: QuestionModel) -> QuestionType:
     question_type = model.type
 
-<<<<<<< HEAD
     if question_type in ["label_selection", "dynamic_label_selection"]:
         return LabelQuestion.from_model(model)
     elif question_type in ["multi_label_selection", "dynamic_multi_label_selection"]:
-=======
-    if question_type == "label_selection":
-        return LabelQuestion.from_model(model)
-    elif question_type == "multi_label_selection":
->>>>>>> v2.6.0
         return MultiLabelQuestion.from_model(model)
     elif question_type == "ranking":
         return RankingQuestion.from_model(model)
@@ -558,11 +552,8 @@ def question_from_model(model: QuestionModel) -> QuestionType:
         return RatingQuestion.from_model(model)
     elif question_type == "span":
         return SpanQuestion.from_model(model)
-<<<<<<< HEAD
     elif question_type == "table":
         return TableQuestion.from_model(model)
-=======
->>>>>>> v2.6.0
     else:
         raise ValueError(f"Unsupported question model type: {question_type}")
 
