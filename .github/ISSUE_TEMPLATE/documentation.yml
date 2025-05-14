@@ -3,7 +3,7 @@ description: Report typos, mistakes or improvements for our documentation
 title: "[DOCS]"
 labels: ["documentation"]
 assignees: []
-
+type: "Task"
 body:
   - type: markdown
     attributes:

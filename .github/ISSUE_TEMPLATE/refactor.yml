@@ -2,6 +2,7 @@ name: "Refactor Request"
 description: "Suggest a code refactor to improve maintainability, readability, or performance."
 title: "[Refactor] <short summary of the refactor>"
 labels: ["refactor"]
+type: "Task"
 body:
   - type: markdown
     attributes:
