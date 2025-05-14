@@ -1,0 +1,55 @@
+name: "Refactor Request"
+description: "Suggest a code refactor to improve maintainability, readability, or performance."
+title: "[Refactor] <short summary of the refactor>"
+labels: ["refactor"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Refactor Request
+        Thank you for helping us improve the codebase! Please fill out the following sections to describe the refactor you are proposing.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: "Summary"
+      description: "Briefly describe what needs to be refactored."
+      placeholder: "e.g., Refactor the data loading logic in module X to improve readability."
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: "Motivation"
+      description: "Why is this refactor needed? What problems does it solve?"
+      placeholder: "e.g., The current implementation is hard to maintain and has duplicate code."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed_refactor
+    attributes:
+      label: "Proposed Refactor"
+      description: "Describe your proposed changes. Be as specific as possible."
+      placeholder: "e.g., Extract common logic into a helper function and add unit tests."
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: "Acceptance Criteria"
+      description: "What are the requirements for this refactor to be considered complete?"
+      placeholder: "e.g., No duplicate code remains, all tests pass, and code coverage is maintained."
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: "Additional Context"
+      description: "Add any other context, screenshots, or references here."
+      placeholder: "Links to related issues, PRs, or documentation."
+    validations:
+      required: false
