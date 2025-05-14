@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+<<<<<<< HEAD
 export default (_, inject) => {
   const unsecuredCopyToClipboard = (text) => {
     const textArea = document.createElement("textarea");
@@ -41,4 +42,12 @@ export default (_, inject) => {
   };
 
   inject("copyToClipboard", copyToClipboard);
+=======
+import { useClipboard } from "~/v1/infrastructure/services/useClipboard";
+
+export default (_, inject) => {
+  const { copy } = useClipboard();
+
+  inject("copyToClipboard", copy);
+>>>>>>> v2.6.0
 };

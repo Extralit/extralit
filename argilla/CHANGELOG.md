@@ -16,6 +16,7 @@ These are the section headers that we use:
 
 ## [Extralit] [0.4.0](https://github.com/extralit/extralit/compare/v0.3.0...v0.4.0)
 
+<<<<<<< HEAD
 ### Added
 - Added support for `TableField` for table fields.
 - Added `TableQuestion` to support table questions.
@@ -41,6 +42,19 @@ These are the section headers that we use:
 
 
 ## [Argilla] [2.5.0](https://github.com/argilla-io/argilla/compare/v2.4.0...v2.5.0)
+=======
+## [2.6.0](https://github.com/argilla-io/argilla/compare/v2.5.0...v2.6.0)
+
+### Fixed
+
+- Fixed error when iterating over datasets and settings are not properly loaded. ([#5753](https://github.com/argilla-io/argilla/pull/5753))
+- Fixed error when loading field from raw dictionaries. ([#5756](https://github.com/argilla-io/argilla/pull/5756))
+- Fixed error when importing datasets from hub that already exists. ([#5756](https://github.com/argilla-io/argilla/pull/5756))
+- Fixed error when importing discarded responses without a response. ([#5756](https://github.com/argilla-io/argilla/pull/5756))
+- Fixed error when importing datasets with responses from existing users. ([#5756](https://github.com/argilla-io/argilla/pull/5756))
+
+## [2.5.0](https://github.com/argilla-io/argilla/compare/v2.4.0...v2.5.0)
+>>>>>>> v2.6.0
 
 ### Added
 
@@ -53,6 +67,7 @@ These are the section headers that we use:
 
 - Fixed error when update settings.distribution.min_submitted from defaults ([#5719](https://github.com/argilla-io/argilla/pull/5719))
 
+<<<<<<< HEAD
 ## [Extralit] [0.3.0](https://github.com/extralit/extralit/compare/v0.2.3...v0.3.0)
 
 ### Added
@@ -63,6 +78,9 @@ These are the section headers that we use:
 - Fixed certain extralit-specific changes when loading Dataset
 
 ## [Argilla] [2.4.0](https://github.com/argilla-io/argilla/compare/v2.3.0...v2.4.0)
+=======
+## [2.4.0](https://github.com/argilla-io/argilla/compare/v2.3.0...v2.4.0)
+>>>>>>> v2.6.0
 
 ### Added
 
@@ -70,6 +88,7 @@ These are the section headers that we use:
 
 ### Changed
 
+- User parameters can now be updated using the client ([#5614](https://github.com/argilla-io/argilla/issues/5614))
 - Changed `Dataset.from_hub` method to open configure URL when `settings="ui"`. ([#5622](https://github.com/argilla-io/argilla/pull/5622))
 - Terms metadata properties accept other values than `str`. ([#5594](https://github.com/argilla-io/argilla/pull/5594))
 - Added support for `with_vectors` while fetching records along with a search query. ([#5638](https://github.com/argilla-io/argilla/pull/5638))
@@ -126,7 +145,11 @@ These are the section headers that we use:
 - Added multiple error handling methods to the `rg.Dataset.records.log` method to warn, ignore, or raise errors. ([#5466](https://github.com/argilla-io/argilla/pull/5463))
 - Changed dataset import and export of `rg.LabelQuestion` to use `datasets.ClassLabel` not `datasets.Value`. ([#5474](https://github.com/argilla-io/argilla/pull/5474))
 
+<<<<<<< HEAD
 ## [Argilla] [2.1.0](https://github.com/argilla-io/argilla/compare/v2.0.1...v2.1.0)
+=======
+## [2.1.0](https://github.com/argilla-io/argilla/compare/v2.0.1...v2.1.0)
+>>>>>>> v2.6.0
 
 ### Added
 

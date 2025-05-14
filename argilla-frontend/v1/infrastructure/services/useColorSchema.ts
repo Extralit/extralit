@@ -6,7 +6,11 @@ export const useColorSchema = () => {
     ? "dark"
     : "light";
 
+<<<<<<< HEAD
   const currentTheme = ref(get("theme") || "system");
+=======
+  const currentTheme = ref(get<string>("theme") || "system");
+>>>>>>> v2.6.0
 
   const setTheme = (theme: string) => {
     currentTheme.value = theme;

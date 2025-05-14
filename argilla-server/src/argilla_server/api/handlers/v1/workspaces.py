@@ -62,6 +62,7 @@ async def create_workspace(
 ):
     await authorize(current_user, WorkspacePolicy.create)
 
+<<<<<<< HEAD
     try:
         files.create_bucket(minio_client, workspace_create.name)
     except Exception as e:
@@ -73,6 +74,9 @@ async def create_workspace(
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
 
     return workspace
+=======
+    return await accounts.create_workspace(db, workspace_create.model_dump())
+>>>>>>> v2.6.0
 
 
 @router.delete("/workspaces/{workspace_id}", response_model=WorkspaceSchema)

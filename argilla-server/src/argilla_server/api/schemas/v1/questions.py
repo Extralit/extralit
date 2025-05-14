@@ -276,6 +276,7 @@ class SpanQuestionSettingsUpdate(UpdateSchema):
     ] = None
     visible_options: Optional[int] = Field(None, ge=SPAN_MIN_VISIBLE_OPTIONS)
     allow_overlapping: Optional[bool] = None
+<<<<<<< HEAD
 
 
 # Table question
@@ -291,6 +292,8 @@ class TableQuestionSettingsUpdate(UpdateSchema):
     type: Literal[QuestionType.table]
 
     __non_nullable_fields__ = {}
+=======
+>>>>>>> v2.6.0
 
 
 QuestionSettings = Annotated[

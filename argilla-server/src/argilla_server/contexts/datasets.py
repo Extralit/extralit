@@ -12,38 +12,28 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import copy
 from collections import defaultdict
 from datetime import datetime
 from typing import (
     TYPE_CHECKING,
-    Any,
-    Callable,
-    Dict,
     Iterable,
     List,
-    Literal,
     Optional,
     Sequence,
-    Set,
-    Tuple,
-    TypeVar,
     Union,
 )
 from uuid import UUID
 
 import sqlalchemy
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy import Select, and_, or_, case, func, select
+from sqlalchemy import Select, and_, or_, case, func, select, exists
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import contains_eager, joinedload, selectinload
 
 from argilla_server.api.schemas.v1.fields import FieldCreate
 from argilla_server.api.schemas.v1.metadata_properties import MetadataPropertyCreate, MetadataPropertyUpdate
 from argilla_server.api.schemas.v1.records import (
-    RecordCreate,
     RecordIncludeParam,
-    RecordUpdateWithId,
 )
 from argilla_server.api.schemas.v1.responses import (
     ResponseCreate,
@@ -105,7 +95,6 @@ from argilla_server.validators.suggestions import SuggestionCreateValidator
 
 if TYPE_CHECKING:
     from argilla_server.api.schemas.v1.fields import FieldUpdate
-    from argilla_server.api.schemas.v1.records import RecordUpdate
     from argilla_server.api.schemas.v1.suggestions import SuggestionCreate
     from argilla_server.api.schemas.v1.vector_settings import VectorSettingsUpdate
 
@@ -214,6 +203,10 @@ async def delete_dataset(db: AsyncSession, search_engine: SearchEngine, dataset:
     await deleted_dataset_event_v1.notify(db)
 
     return dataset
+
+
+async def dataset_has_records(db: AsyncSession, dataset: Dataset) -> bool:
+    return bool(await db.scalar(select(exists().where(Record.dataset_id == dataset.id))))
 
 
 async def create_field(db: AsyncSession, dataset: Dataset, field_create: FieldCreate) -> Field:
@@ -337,6 +330,7 @@ async def create_vector_settings(
     return vector_settings
 
 
+# TODO: Move this function to the records.py context
 async def get_records_by_ids(
     db: AsyncSession,
     records_ids: Iterable[UUID],
@@ -470,6 +464,7 @@ async def get_dataset_users_progress(db: AsyncSession, dataset: Dataset) -> List
         .join(User)
         .where(Record.dataset_id == dataset.id)
         .group_by(User.username, Record.status, Response.status)
+        .order_by(User.inserted_at.asc())
     )
 
     annotators_progress = defaultdict(lambda: defaultdict(dict))
@@ -576,6 +571,8 @@ async def _build_record(
         external_id=record_create.external_id,
         dataset=dataset,
     )
+=======
+>>>>>>> v2.6.0
 
 
 async def _load_users_from_responses(responses: Union[Response, Iterable[Response]]) -> None:
@@ -588,6 +585,7 @@ async def _load_users_from_responses(responses: Union[Response, Iterable[Respons
         await response.awaitable_attrs.user
 
 
+<<<<<<< HEAD
 async def _validate_record_metadata(
     db: AsyncSession,
     dataset: Dataset,
@@ -744,6 +742,8 @@ async def _preload_record_relationships_before_index(db: AsyncSession, record: R
     )
 
 
+=======
+>>>>>>> v2.6.0
 async def preload_records_relationships_before_validate(db: AsyncSession, records: List[Record]) -> None:
     await db.execute(
         select(Record)
@@ -754,6 +754,7 @@ async def preload_records_relationships_before_validate(db: AsyncSession, record
     )
 
 
+<<<<<<< HEAD
 async def delete_records(
     db: AsyncSession, search_engine: "SearchEngine", dataset: Dataset, records_ids: List[UUID]
 ) -> None:
@@ -818,6 +819,8 @@ async def delete_record(db: AsyncSession, search_engine: "SearchEngine", record:
     return record
 
 
+=======
+>>>>>>> v2.6.0
 async def create_response(
     db: AsyncSession, search_engine: SearchEngine, record: Record, user: User, response_create: ResponseCreate
 ) -> Response:
@@ -943,22 +946,6 @@ async def delete_response(db: AsyncSession, search_engine: SearchEngine, respons
     await deleted_response_event_v1.notify(db)
 
     return response
-
-
-def _validate_record_fields(dataset: Dataset, fields: Dict[str, Any]):
-    fields_copy = copy.copy(fields or {})
-    for field in dataset.fields:
-        if field.required and not (field.name in fields_copy and fields_copy.get(field.name) is not None):
-            raise UnprocessableEntityError(f"missing required value for field: {field.name!r}")
-
-        value = fields_copy.pop(field.name, None)
-        if value and not isinstance(value, str):
-            raise UnprocessableEntityError(
-                f"wrong value found for field {field.name!r}. Expected {str.__name__!r}, found {type(value).__name__!r}"
-            )
-
-    if fields_copy:
-        raise UnprocessableEntityError(f"found fields values for non configured fields: {list(fields_copy.keys())!r}")
 
 
 async def _preload_suggestion_relationships_before_index(db: AsyncSession, suggestion: Suggestion) -> None:

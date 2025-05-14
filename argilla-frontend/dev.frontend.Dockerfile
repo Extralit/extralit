@@ -1,6 +1,6 @@
-ARG ARGILLA_SERVER_TAG=main
+ARG ARGILLA_SERVER_TAG=develop
 
-FROM argilla/argilla-quickstart:${ARGILLA_SERVER_TAG}
+FROM argilladev/argilla-hf-spaces:${ARGILLA_SERVER_TAG}
 
 USER root
 
@@ -14,6 +14,7 @@ WORKDIR /home/argilla/frontend
 COPY --chown=argilla:argilla dist ./dist
 COPY --chown=argilla:argilla .nuxt ./.nuxt
 COPY --chown=argilla:argilla package.json ./package.json
+COPY --chown=argilla:argilla package-lock.json ./package-lock.json
 COPY --chown=argilla:argilla nuxt.config.ts ./nuxt.config.ts
 
 # NOTE: Right now this Docker image is using dev.argilla.io as server.

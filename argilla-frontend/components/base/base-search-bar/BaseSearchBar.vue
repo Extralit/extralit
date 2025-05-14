@@ -19,7 +19,15 @@
   <BaseInputContainer
     class="search-area"
     :class="[filter ? 'active' : null, isCollapsed ? '--collapsed' : null]"
+<<<<<<< HEAD
     ><BaseButton class="search-area__button__search" @click="toggleSearchBar">
+=======
+    ><BaseButton
+      class="search-area__button__search"
+      @click="toggleSearchBar"
+      aria-label="search"
+    >
+>>>>>>> v2.6.0
       <svgicon
         name="search"
         width="20"

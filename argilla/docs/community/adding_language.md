@@ -32,8 +32,13 @@ export default {
 ### How to test it
 
 1. Start a local instance of Argilla, easiest by just using the docker recipe [here](../getting_started/how-to-deploy-argilla-with-docker.md). It will give you a backend API for the frontend.
+<<<<<<< HEAD
 2. Compile a new version of the frontend. Check [this guide](https://github.com/extralit/extralit/tree/develop/argilla-frontend). This is basically:
     - `git clone https://github.com/extralit/extralit`
+=======
+2. Compile a new version of the frontend. Check [this guide](https://github.com/argilla-io/argilla/tree/develop/argilla-frontend). This is basically:
+    - `git clone https://github.com/argilla-io/argilla`
+>>>>>>> v2.6.0
     - `cd argilla-frontend`
     - Install the dependencies: `npm i`
     - Build the new frontend with the updates: `npm run build`

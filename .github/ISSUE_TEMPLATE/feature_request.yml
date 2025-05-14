@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 name: "🆕 Feature request"
 description: Cool new ideas for the project
 title: "[FEATURE]"
@@ -16,10 +17,39 @@ body:
       label: Is your feature request related to a problem?
       description: A clear and concise description of what the problem is.
       placeholder: I'm always frustrated when [...]
+=======
+name: "\U0001F195 Feature request"
+description: "Share cool new ideas for the project."
+title: "[FEATURE]"
+labels: []
+assignees: []
+
+
+body:
+  - type: markdown
+    attributes:
+      value: "Thank you for sharing your feature request! Please fill out the sections below."
+
+  - type: textarea
+    id: feature_request
+    attributes:
+      label: "Is your feature request related to a problem? Please describe."
+      description: "A clear and concise description of what the problem is."
+      placeholder: "I'm always frustrated when..."
+    validations:
+          required: false
+
+  - type: textarea
+    id: feature_description
+    attributes:
+      label: "Describe the solution you'd like"
+      description: "A clear and concise description of what you want to happen."
+>>>>>>> v2.6.0
     validations:
       required: false
 
   - type: textarea
+<<<<<<< HEAD
     id: solution
     attributes:
       label: Describe the solution you'd like
@@ -34,10 +64,17 @@ body:
       label: Describe alternatives you've considered
       description: A clear and concise description of any alternative solutions or features you've considered.
       placeholder: I've also thought about...
+=======
+    id: feature_alternatives
+    attributes:
+      label: "Describe alternatives you've considered"
+      description: "A clear and concise description of any alternative solutions or features you've considered."
+>>>>>>> v2.6.0
     validations:
       required: false
 
   - type: textarea
+<<<<<<< HEAD
     id: context
     attributes:
       label: Additional context
@@ -73,3 +110,11 @@ body:
       multiple: true
     validations:
       required: false
+=======
+    id: additional_context
+    attributes:
+      label: "Additional context"
+      description: "Add any other context or screenshots about the feature request here."
+    validations:
+      required: false
+>>>>>>> v2.6.0

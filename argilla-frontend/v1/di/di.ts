@@ -30,7 +30,11 @@ import {
   JobRepository,
 } from "@/v1/infrastructure/repositories";
 
-import { useRole, useRoutes } from "@/v1/infrastructure/services";
+import {
+  useLocalStorage,
+  useRole,
+  useRoutes,
+} from "@/v1/infrastructure/services";
 import { useDataset } from "@/v1/infrastructure/storage/DatasetStorage";
 import { useDocument } from "@/v1/infrastructure/storage/DocumentStorage";
 import { useRecords } from "@/v1/infrastructure/storage/RecordsStorage";
@@ -72,10 +76,11 @@ import { GetDatasetFieldsGroupedUseCase } from "@/v1/domain/usecases/get-dataset
 import { LoadUserUseCase } from "@/v1/domain/usecases/load-user-use-case";
 import { CreateDatasetUseCase } from "@/v1/domain/usecases/create-dataset-use-case";
 import { GetFirstRecordFromHub } from "@/v1/domain/usecases/get-first-record-from-hub";
+import { ExportDatasetToHubUseCase } from "@/v1/domain/usecases/export-dataset-to-hub-use-case";
 import { AuthLoginUseCase } from "@/v1/domain/usecases/auth-login-use-case";
 
 export const loadDependencyContainer = (context: Context) => {
-  const useAxios = useAxiosExtension(() => context.$axios);
+  const useAxios = useAxiosExtension(context);
   const useAuth = () => context.$auth;
 
   const dependencies = [
@@ -249,6 +254,10 @@ export const loadDependencyContainer = (context: Context) => {
       .build(),
 
     register(GetFirstRecordFromHub).withDependency(HubRepository).build(),
+
+    register(ExportDatasetToHubUseCase)
+      .withDependencies(DatasetRepository, useLocalStorage)
+      .build(),
   ];
 
   Container.register(dependencies);

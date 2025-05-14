@@ -16,7 +16,7 @@ export const useAnnotationModeViewModel = () => {
   const { isAdminOrOwner } = useRole();
   const router = useRouter();
   const routes = useRoutes();
-  const { getUser } = useUser();
+  const { user } = useUser();
   const { state: dataset } = useDataset();
   const getDatasetUseCase = useResolve(GetDatasetByIdUseCase);
 
@@ -113,7 +113,11 @@ export const useAnnotationModeViewModel = () => {
     datasetId,
     breadcrumbs,
     updateQueryParams,
+<<<<<<< HEAD
     getUser,
     isAdminOrOwner,
+=======
+    user,
+>>>>>>> v2.6.0
   };
 };

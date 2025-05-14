@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+<<<<<<< HEAD
 import { AxiosError } from "axios";
 import { useNotifications } from "~/v1/infrastructure/services/useNotifications";
 
@@ -68,4 +69,11 @@ export default ({ $axios, app }) => {
 
     throw error;
   });
+=======
+import { Context } from "@nuxt/types";
+import { loadErrorHandler } from "~/v1/infrastructure/repositories/AxiosErrorHandler";
+
+export default (context: Context) => {
+  loadErrorHandler(context);
+>>>>>>> v2.6.0
 };

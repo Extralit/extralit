@@ -73,7 +73,6 @@ jobs:
       - name: Build package 📦
         env:
           # BASE_URL is used in the server to support parameterizable base root path
-          # See scripts/build_frontend.sh
           BASE_URL: "@@baseUrl@@"
           DIST_FOLDER: ./dist
         run: |
@@ -96,8 +95,6 @@ jobs:
       image-name: extralit/argilla-frontend-for-dev
       dockerfile: argilla-frontend/dev.frontend.Dockerfile
       platforms: linux/amd64
-      build-args: |
-        ARGILLA_SERVER_TAG=main
     secrets: inherit
 
   # deploy:

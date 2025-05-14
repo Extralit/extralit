@@ -15,8 +15,10 @@ export default {
   search: "Search",
   searchPlaceholder: "Introduce a query",
   searchDatasets: "Search datasets",
+  share: "Share progress",
   expand: "Expand",
   copied: "Copied",
+  copiedToClipboard: "Copied to clipboard",
   copyLink: "Copy link",
   copyRecord: "Copy record",
   refresh: "Refresh",
@@ -27,6 +29,7 @@ export default {
   description: "Description",
   labels: "Labels",
   order: "Order",
+  owner: "Owner",
   useMarkdown: "Use Markdown",
   useTable: "Use Table",
   suggestionFirst: "Show suggestions first",
@@ -49,6 +52,10 @@ export default {
   optional: "Optional",
   template: "Template",
   rows: "rows",
+  orgOrUsername: "Organization or username",
+  hfToken: "Hugging Face token",
+  private: "Is private",
+  datasetName: "Dataset name",
   noRecordsMessages: {
     datasetEmptyForAnnotator:
       "The dataset is empty. Ask an administrator to upload records and come back soon.",
@@ -127,6 +134,7 @@ export default {
     cancel: "Cancel",
     continue: "Continue",
     delete: "Delete",
+    exportToHub: "Push to Hub",
     tooltip: {
       copyToClipboard: "Copy to clipboard",
       copyNameToClipboard: "Copy dataset name to clipboard",
@@ -329,6 +337,21 @@ export default {
     none: "None",
     noWorkspaces:
       "Please, follow this <a target='_blank' href='https://docs.extralit.ai/latest/admin_guide/workspace/#create-a-new-workspace'>guide</a> to create a workspace",
+  },
+  exportToHub: {
+    dialogTitle: "Push to Hugging Face Hub",
+    ownerTooltip: "Use a valid Hugging Face username or organisation",
+    tokenTooltip: `Use an existing access token or create a <a href='https://huggingface.co/settings/tokens' target='_blank'>new token</a> with "write permission"`,
+    validations: {
+      orgOrUsernameIsRequired: "Organization or username is required",
+      hfTokenIsRequired: "Hugging Face token is required",
+      hfTokenInvalid: "Invalid Hugging Face token",
+      datasetNameIsRequired: "Dataset name is required",
+    },
+    exporting: "Exporting to Hugging Face hub",
+    private: "Private dataset",
+    public: "Public dataset",
+    exportingWarning: "This might take a few seconds",
   },
   config: {
     field: {

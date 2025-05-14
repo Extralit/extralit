@@ -6,6 +6,7 @@
       :key="group[0].id"
     >
       <SpanAnnotationTextField
+<<<<<<< HEAD
         v-if="group.length == 1 && hasSpanQuestion(group[0].name)"
         :id="`${group[0].id}-${record.id}`"
         :name="group[0].name"
@@ -21,15 +22,39 @@
         :fieldText="group[0].content"
         :useMarkdown="group[0].settings.use_markdown"
         :useTable="group[0].settings.use_table"
+=======
+        v-if="hasSpanQuestion(name)"
+        :id="`${id}-${record.id}`"
+        :name="name"
+        :title="title"
+        :fieldText="content"
+        :spanQuestion="getSpanQuestion(name)"
+        :searchText="recordCriteria.committed.searchText.value.text"
+      />
+      <TextField
+        v-else-if="isTextType"
+        :id="`${id}-${record.id}`"
+        :title="title"
+        :fieldText="content"
+        :useMarkdown="settings.use_markdown"
+>>>>>>> v2.6.0
         :searchText="recordCriteria.committed.searchText.value.text"
         :record="record"
       />
       <ChatField
+<<<<<<< HEAD
         v-else-if="group[0].isChatType"
         :id="`${id}-${record.id}`"
         :title="group[0].title"
         :useMarkdown="group[0].settings.use_markdown"
         :content="group[0].content"
+=======
+        v-else-if="isChatType"
+        :id="`${id}-${record.id}`"
+        :title="title"
+        :useMarkdown="settings.use_markdown"
+        :content="content"
+>>>>>>> v2.6.0
         :searchText="recordCriteria.committed.searchText.value.text"
       />
       <ImageField

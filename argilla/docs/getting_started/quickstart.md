@@ -57,6 +57,11 @@ Extralit is a free, open-source, self-hosted tool. This means you need to deploy
 
     Learn how to [create your first dataset](create-your-first-dataset.md).
 
+<<<<<<< HEAD
+=======
+    !!! warning "Persistent storage `SMALL`"
+        Not setting persistent storage to `SMALL` means that **you will loose your data when the Space restarts**. Spaces get restarted due to maintenance, inactivity, and every time you change your Spaces settings. If you want to **use the Space just for testing** you can use `FREE` temporarily.
+>>>>>>> v2.6.0
 
 !!! tip "Argilla API Key"
     Your Argilla API key can be found in the `My Settings` page of your Argilla Space. Take a look at the [sign in to the UI section](#sign-in-into-the-argilla-ui) to learn how to retrieve it.

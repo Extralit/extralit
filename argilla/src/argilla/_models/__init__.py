@@ -43,7 +43,10 @@ from argilla._models._settings._questions import (
     QuestionModel,
     QuestionSettings,
     SpanQuestionSettings,
+<<<<<<< HEAD
     TableQuestionSettings,
+=======
+>>>>>>> v2.6.0
     TextQuestionSettings,
     LabelQuestionSettings,
     RatingQuestionSettings,
@@ -52,7 +55,6 @@ from argilla._models._settings._questions import (
 )
 from argilla._models._settings._metadata import (
     MetadataFieldModel,
-    MetadataPropertyType,
     BaseMetadataPropertySettings,
     TermsMetadataPropertySettings,
     NumericMetadataPropertySettings,

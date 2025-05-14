@@ -25,7 +25,10 @@ from argilla._models._settings._questions import (
     RatingQuestionSettings,
     RankingQuestionSettings,
     SpanQuestionSettings,
+<<<<<<< HEAD
     TableQuestionSettings,
+=======
+>>>>>>> v2.6.0
 )
 from argilla.settings._common import SettingsPropertyBase
 
@@ -247,7 +250,11 @@ class MultiLabelQuestion(LabelQuestion):
 
     @classmethod
     def from_model(cls, model: QuestionModel) -> "Self":
+<<<<<<< HEAD
         instance = cls(name=model.name, labels=cls._render_options_as_labels(getattr(model.settings, 'options', [])))  # noqa
+=======
+        instance = cls(name=model.name, labels=cls._render_options_as_labels(model.settings.options))  # noqa
+>>>>>>> v2.6.0
         instance._model = model
 
         return instance
@@ -261,7 +268,10 @@ class TextQuestion(QuestionBase):
         description: Optional[str] = None,
         required: bool = True,
         use_markdown: bool = False,
+<<<<<<< HEAD
         use_table: bool = False,
+=======
+>>>>>>> v2.6.0
         client: Optional[Argilla] = None,
     ) -> None:
         """Create a new text question for `Settings` of a `Dataset`. A text question \
@@ -280,7 +290,11 @@ class TextQuestion(QuestionBase):
             title=title,
             required=required,
             description=description,
+<<<<<<< HEAD
             settings=TextQuestionSettings(use_markdown=use_markdown, use_table=use_table),
+=======
+            settings=TextQuestionSettings(use_markdown=use_markdown),
+>>>>>>> v2.6.0
             _client=client,
         )
 
@@ -471,6 +485,7 @@ class SpanQuestion(QuestionBase):
 
         return instance
 
+<<<<<<< HEAD
 
 class TableQuestion(QuestionBase):
     def __init__(
@@ -508,6 +523,8 @@ class TableQuestion(QuestionBase):
 
         return instance
     
+=======
+>>>>>>> v2.6.0
 
 QuestionType = Union[
     LabelQuestion,
@@ -523,9 +540,15 @@ QuestionType = Union[
 def question_from_model(model: QuestionModel) -> QuestionType:
     question_type = model.type
 
+<<<<<<< HEAD
     if question_type in ["label_selection", "dynamic_label_selection"]:
         return LabelQuestion.from_model(model)
     elif question_type in ["multi_label_selection", "dynamic_multi_label_selection"]:
+=======
+    if question_type == "label_selection":
+        return LabelQuestion.from_model(model)
+    elif question_type == "multi_label_selection":
+>>>>>>> v2.6.0
         return MultiLabelQuestion.from_model(model)
     elif question_type == "ranking":
         return RankingQuestion.from_model(model)
@@ -535,8 +558,11 @@ def question_from_model(model: QuestionModel) -> QuestionType:
         return RatingQuestion.from_model(model)
     elif question_type == "span":
         return SpanQuestion.from_model(model)
+<<<<<<< HEAD
     elif question_type == "table":
         return TableQuestion.from_model(model)
+=======
+>>>>>>> v2.6.0
     else:
         raise ValueError(f"Unsupported question model type: {question_type}")
 

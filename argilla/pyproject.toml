@@ -77,6 +77,10 @@ pdf = [
     "pymupdf",
     "pdf2image ~= 1.16.0",
 ]
+=======
+]
+
+>>>>>>> v2.6.0
 legacy = ["argilla-v1[listeners]"]
 
 [build-system]
@@ -119,7 +123,11 @@ dev = [
     "CairoSVG >= 2.7.1",
     "mknotebooks >= 0.8.0",
     "pytest-retry>=1.5",
+<<<<<<< HEAD
     "pyarrow~=14.0.0",
+=======
+    "pyarrow~=18.0.0",
+>>>>>>> v2.6.0
 ]
 
 [tool.pdm.scripts]
@@ -127,6 +135,9 @@ test = { cmd = "pytest tests", env_file = ".env.test" }
 lint = "ruff check"
 format = "black ."
 all = { composite = ["format", "lint", "test"] }
+<<<<<<< HEAD
 
 [project.scripts]
 extralit = "argilla.cli.app:app"
+=======
+>>>>>>> v2.6.0
