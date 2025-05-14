@@ -10,13 +10,16 @@
 # Package dependencies
 !docker/quickstart.requirements.txt
 
-# Egg-info directories
-**/.egg-info
-**/.DS_Store
+# Python
+**/*.pyc
 **/__pycache__
 **/.ipynb_checkpoints
 **/.pdm-build
 **/.venv
+
+# Egg-info directories
+**/.egg-info
+**/.DS_Store
 **/.github
 
 **/node_modules

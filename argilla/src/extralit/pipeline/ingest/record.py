@@ -2,14 +2,11 @@ from datetime import datetime
 from typing import Optional, Union, List, Dict, Any, Literal
 
 import argilla as rg
-from argilla.client.feedback.schemas.remote.records import RemoteFeedbackRecord
-from argilla.client.sdk.users.models import UserModel
-
 from extralit.convert.json_table import is_json_table
 from extralit.pipeline.update.suggestion import get_record_suggestion_value
 
 def get_record_data(
-    record: Union[RemoteFeedbackRecord, rg.FeedbackRecord],
+    record: rg.Record,
     fields: Optional[Union[List[str], str]] = None,
     answers: Optional[Union[List[str], str]] = None,
     suggestions: Optional[Union[List[str], str]] = None,
@@ -22,7 +19,7 @@ def get_record_data(
     Extracts data from a feedback record based on the specified parameters.
 
     Args:
-        record (Union[RemoteFeedbackRecord, rg.FeedbackRecord]): The feedback record to extract data from.
+        record (rg.Record): The feedback record to extract data from.
         fields (Union[List[str], str]): The fields to extract from the record.
         answers (Optional[Union[List[str], str]]): The answers to extract from the record's responses.
         suggestions (Optional[Union[List[str], str]]): The suggestions to extract from the record's responses.
@@ -72,7 +69,7 @@ def get_record_data(
     return data
 
 
-def get_record_timestamp(record: Union[RemoteFeedbackRecord, rg.FeedbackRecord]) -> Optional[datetime]:
+def get_record_timestamp(record: rg.Record) -> Optional[datetime]:
     timestamp = record.updated_at or record.inserted_at
 
     if len(record.responses):

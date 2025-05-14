@@ -1,6 +1,6 @@
 import { Answer, LabelAnswer } from "../IAnswer";
 import { Guard } from "../error";
-import { Color } from "./Color";
+import { Color } from "../color/Color";
 import {
   QuestionAnswer,
   TextQuestionAnswer,
@@ -9,6 +9,7 @@ import {
   MultiLabelQuestionAnswer,
   RankingQuestionAnswer,
   SpanQuestionAnswer,
+  TableQuestionAnswer,
 } from "./QuestionAnswer";
 import { QuestionSetting } from "./QuestionSetting";
 import { QuestionType } from "./QuestionType";
@@ -18,6 +19,7 @@ interface OriginalQuestion {
   title: string;
   description: string;
   settings: any;
+  answer: QuestionAnswer;
 }
 
 export class Question {
@@ -40,8 +42,6 @@ export class Question {
     this.settings = new QuestionSetting(settings);
 
     this.initialize();
-    this.initializeAnswers();
-    this.initializeOriginal();
   }
 
   private _description: string;
@@ -71,7 +71,7 @@ export class Question {
   }
 
   public get type(): QuestionType {
-    return QuestionType.from(this.settings.type);
+    return this.settings.type;
   }
 
   public get isRankingType(): boolean {
@@ -94,8 +94,16 @@ export class Question {
     return this.type.isSpanType;
   }
 
+  public get isTableType(): boolean {
+    return this.type.isTableType;
+  }
+
   public get isRatingType(): boolean {
     return this.type.isRatingType;
+  }
+
+  public get isAnswerModified(): boolean {
+    return !this.answer.isEqual(this.original.answer);
   }
 
   public get isModified(): boolean {
@@ -155,8 +163,6 @@ export class Question {
     this.description = this.original.description;
 
     this.restoreOriginal();
-
-    this.reloadAnswerFromOptions();
   }
 
   update() {
@@ -172,6 +178,8 @@ export class Question {
     if (!answer) return;
 
     this.answer.response(answer);
+
+    this.initializeOriginal();
   }
 
   addSuggestion(suggestion: Suggestion) {
@@ -209,7 +217,7 @@ export class Question {
     }
   }
 
-  private createEmptyAnswers(): QuestionAnswer {
+  private createInitialAnswers(): QuestionAnswer {
     if (this.isTextType) {
       return new TextQuestionAnswer(this.type, "");
     }
@@ -219,6 +227,12 @@ export class Question {
         this.type,
         this.name,
         this.settings.options
+      );
+    }
+
+    if (this.isTableType) {
+      return new TableQuestionAnswer(
+        this.type,
       );
     }
 
@@ -274,22 +288,35 @@ export class Question {
         };
       });
     }
+
+    this.initializeAnswers();
+    this.initializeOriginal();
   }
 
   private initializeAnswers() {
-    this.answer = this.createEmptyAnswers();
+    this.answer = this.createInitialAnswers();
   }
 
   private initializeOriginal() {
     const { options, ...rest } = this.settings;
+
+    const originalAnswer = this.createInitialAnswers();
+
+    const valuesAnswered = this.answer.valuesAnswered;
+
+    if (valuesAnswered) {
+      originalAnswer.response({ value: valuesAnswered });
+    }
 
     this.original = {
       title: this.title,
       description: this.description,
       settings: new QuestionSetting({
         ...rest,
+        type: this.settings.type.value,
         options: options?.map((option: string) => option),
       }),
+      answer: originalAnswer,
     };
   }
 
@@ -298,7 +325,16 @@ export class Question {
 
     this.settings = new QuestionSetting({
       ...rest,
+      type: this.original.settings.type.value,
       options: options?.map((option: string) => option),
     });
+
+    const valuesAnswered = this.answer.valuesAnswered;
+
+    this.initializeAnswers();
+
+    if (valuesAnswered) {
+      this.answer.response({ value: valuesAnswered });
+    }
   }
 }

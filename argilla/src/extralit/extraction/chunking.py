@@ -19,7 +19,7 @@ EXCLUDE_LLM_METADATA_KEYS = ['type', 'page_number', 'reference', 'level']
 def create_nodes(
     paper: pd.Series,
     preprocessing_path='data/preprocessing/nougat/',
-    preprocessing_dataset: Optional[rg.FeedbackDataset] = None,
+    preprocessing_dataset: Optional[rg.Dataset] = None,
     response_status=['submitted'],
     exclude_llm_metadata_keys=EXCLUDE_LLM_METADATA_KEYS,
     storage_type: StorageType=StorageType.FILE,
@@ -32,7 +32,7 @@ def create_nodes(
     Args:
         paper: pd.Series, required
             A paper from the dataset.
-        preprocessing_dataset: rg.FeedbackDataset, default=None
+        preprocessing_dataset: rg.Dataset, default=None
             Manually annotated preprocessing dataset. If given, the TableSegments will be loaded from this dataset.
         response_status: List[str], default=['submitted']
             The response status of the records to consider.

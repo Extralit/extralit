@@ -26,5 +26,5 @@
   "vueCompilerOptions": {
     "target": 2.7
   },
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "dist", "build"]
 }

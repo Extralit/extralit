@@ -17,8 +17,9 @@ from typing import Any, Dict
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exception_handlers import http_exception_handler
 from fastapi.exceptions import RequestValidationError
+from pydantic import BaseModel, field_serializer
 
-from argilla_server import telemetry
+from argilla_server.api.errors.v1.exception_handlers import set_request_error
 from argilla_server.errors.base_errors import (
     BadRequestError,
     ClosedDatasetError,
@@ -33,12 +34,31 @@ from argilla_server.errors.base_errors import (
     ValidationError,
     WrongTaskError,
 )
-from argilla_server.pydantic_v1 import BaseModel
 
 
 class ErrorDetail(BaseModel):
     code: str
     params: Dict[str, Any]
+
+    # TODO: Newer version does not serialize some exceptions such as ValueError
+    @field_serializer("params")
+    def serialize_params(self, value):
+        return self._parse_to_serializable(value)
+
+    @classmethod
+    def _parse_to_serializable(cls, value: Any) -> Any:
+        if isinstance(value, ValueError):
+            return str(value)
+
+        if isinstance(value, dict):
+            for k in value:
+                value[k] = cls._parse_to_serializable(value[k])
+            return value
+
+        if isinstance(value, list):
+            return [cls._parse_to_serializable(item) for item in value]
+
+        return value
 
 
 # TODO(@frascuchon): Review class Naming
@@ -46,28 +66,16 @@ class ServerHTTPException(HTTPException):
     def __init__(self, error: ServerError):
         super().__init__(
             status_code=error.HTTP_STATUS,
-            detail=ErrorDetail(code=error.code, params=error.arguments).dict(),
+            detail=ErrorDetail(code=error.code, params=error.arguments).model_dump(),
         )
 
 
 class APIErrorHandler:
     @classmethod
-    async def track_error(cls, error: ServerError, request: Request):
-        data = {
-            "code": error.code,
-            "user-agent": request.headers.get("user-agent"),
-            "accept-language": request.headers.get("accept-language"),
-        }
-        if isinstance(error, (GenericServerError, EntityNotFoundError, EntityAlreadyExistsError)):
-            data["type"] = error.type
-
-        telemetry.get_telemetry_client().track_data(action="ServerErrorFound", data=data)
-
-    @classmethod
     async def common_exception_handler(cls, request: Request, error: Exception):
         """Wraps errors as custom generic error"""
         argilla_error = cls._exception_to_argilla_error(error)
-        await cls.track_error(argilla_error, request=request)
+        set_request_error(request, argilla_error)
 
         return await http_exception_handler(request, ServerHTTPException(argilla_error))
 
@@ -96,7 +104,7 @@ class APIErrorHandler:
         if isinstance(error, ServerError):
             return error
 
-        _LOGGER.error(error)
+        _LOGGER.error(error, exc_info=error, stacklevel=2)
         if isinstance(error, RequestValidationError):
             return ValidationError(error)
 

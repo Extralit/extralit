@@ -4,13 +4,11 @@ import argilla as rg
 
 __all__ = ['update_record_suggestions']
 
-from argilla.client.feedback.schemas.remote.records import RemoteFeedbackRecord
-
 
 def update_record_suggestions(
-    record: RemoteFeedbackRecord,
-    suggestions: Union[rg.SuggestionSchema, List[rg.SuggestionSchema]]
-) -> rg.FeedbackRecord:
+    record: rg.Record,
+    suggestions: Union[rg.Suggestion, List[rg.Suggestion]],
+) -> rg.Record:
     if not isinstance(suggestions, list):
         suggestions = [suggestions]
 
@@ -18,7 +16,7 @@ def update_record_suggestions(
     new_suggestions_dict = {
         (s.question_name, s.type, s.agent): s \
         for s in suggestions \
-        if s.question_name in record.question_name_to_id}
+        if s.question_name in record.dataset.questions}
 
     if new_suggestions_dict:
         # Keep only the suggestions that are not in the new suggestions
@@ -33,7 +31,7 @@ def update_record_suggestions(
 
 
 def get_record_suggestion_value(
-    record: RemoteFeedbackRecord, question_name: str, users: List[rg.User]=None
+    record: rg.Record, question_name: str, users: List[rg.User]=None
 ) -> Optional[str]:
     usernames = {user.username for user in users} if users else None
     for suggestion in record.suggestions:

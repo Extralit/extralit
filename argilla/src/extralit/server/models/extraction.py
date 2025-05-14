@@ -1,5 +1,5 @@
 from typing import Dict, Optional, List, Any, Union, Annotated, Any
-from pydantic import BaseModel, Field, Extra
+from pydantic import BaseModel, Field
 
 SchemaName = Annotated[str, Field(description="The schema name of the extraction.", examples=["schema_name"])]
 FieldName = Annotated[str, Field(description="The name of the field.", examples=["field_name"])]
@@ -28,15 +28,15 @@ class FieldSchema(BaseModel):
     extDtype: Optional[str] = None
 
 
-class Schema(BaseModel):
+class DataFrameSchema(BaseModel):
     fields: List[FieldSchema]
     primaryKey: Optional[List[str]] = None
     pandas_version: Optional[str]
 
 
 class ExtractionResponse(BaseModel):
-    schema: Schema
     data: Data
+    schema: DataFrameSchema
 
     class Config:
-        extra = Extra.ignore
+        extra = 'ignore'

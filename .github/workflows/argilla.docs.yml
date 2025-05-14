@@ -16,13 +16,15 @@ on:
       - "docs/**"
     paths:
       - "argilla/docs/**"
-
-permissions:
-  contents: write
+      - "argilla/mkdocs.yml"
 
 defaults:
   run:
     working-directory: argilla
+
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
   publish:
@@ -69,7 +71,7 @@ jobs:
         run: |
           pdm run mike deploy latest --push
           pdm run mike set-default --push latest
-        if: github.ref == 'refs/heads/develop'
+        if: github.ref == 'refs/heads/develop' || github.event_name == 'workflow_dispatch'
 
       - name: Deploy Extralit docs (release $version)
         run: |

@@ -5,7 +5,6 @@ concurrency:
   cancel-in-progress: true
 
 on:
-
   workflow_call:
 
   pull_request:
@@ -19,8 +18,12 @@ on:
       - synchronize
       - ready_for_review
 
-jobs:
+permissions:
+  contents: read
+  id-token: write
+  pull-requests: write
 
+jobs:
   build:
     name: Build argilla-frontend
     runs-on: ubuntu-latest
@@ -29,22 +32,45 @@ jobs:
         working-directory: argilla-frontend
 
     steps:
-
       - name: Checkout Code 🛎
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Update repo visualizer
+        uses: githubocto/repo-visualizer@0.7.1
+        with:
+          root_path: "argilla-frontend/"
+          excluded_paths: "dist,build,node_modules,docs,tests,.swm,assets,.github,package-lock.json,pdm.lock"
+          excluded_globs: "*.spec.js;**/*.{png,jpg,svg,md};**/!(*.module).ts,**/__pycache__/,**/__mocks__/,LICENSE*,**/.gitignore,**/*.egg-info/,**/.*/"
+          output_file: "repo-visualizer.svg"
+          should_push: false
+          
+      - name: Upload repo visualizer diagram as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: repo-visualizer
+          path: repo-visualizer.svg
+          retention-days: 10
+
+      - name: Setup Node.js ⚙️
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Run tests
+      - name: Install dependencies 📦
         run: |
           npm install
+
+      - name: Run lint 🧹
+        continue-on-error: true
+        run: |
           npm run lint
+
+      - name: Run tests 🧪
+        continue-on-error: true
+        run: |
           npm run test
 
-      - name: Build package
+      - name: Build package 📦
         env:
           # BASE_URL is used in the server to support parameterizable base root path
           # See scripts/build_frontend.sh
@@ -62,7 +88,7 @@ jobs:
   build_dev_docker_image:
     name: Build development argilla-fronted docker image
     needs: build
-    uses: ./.github/workflows/argilla.build-push-dev-frontend-docker.yml
+    uses: ./.github/workflows/argilla-frontend.build-push-dev-frontend-docker.yml
     if: |
       !cancelled() &&
       github.event_name == 'pull_request' && github.event.pull_request.draft == false
@@ -74,15 +100,15 @@ jobs:
         ARGILLA_SERVER_TAG=main
     secrets: inherit
 
-  deploy:
-    name: Deploy pr environment
-    uses: ./.github/workflows/argilla.deploy-environment.yml
-    needs: build_dev_docker_image
-    if: |
-      !cancelled() &&
-      needs.build_dev_docker_image.result == 'success' &&
-      github.event_name == 'pull_request' && github.event.pull_request.draft == false
-    with:
-      image-name: extralit/argilla-frontend-for-dev
-      image-version: ${{ needs.build_dev_docker_image.outputs.version }}
-    secrets: inherit
+  # deploy:
+  #   name: Deploy pr environment
+  #   uses: ./.github/workflows/argilla-frontend.deploy-environment.yml
+  #   needs: build_dev_docker_image
+  #   if: |
+  #     !cancelled() &&
+  #     needs.build_dev_docker_image.result == 'success' &&
+  #     github.event_name == 'pull_request' && github.event.pull_request.draft == false
+  #   with:
+  #     image-name: extralit/argilla-frontend-for-dev
+  #     image-version: ${{ needs.build_dev_docker_image.outputs.version }}
+  #   secrets: inherit

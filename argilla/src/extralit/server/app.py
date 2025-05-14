@@ -2,6 +2,7 @@ import logging
 from typing import Optional, Union, List, Literal
 from uuid import UUID
 
+from extralit.server.errors import BaseError
 import pandas as pd
 from fastapi import FastAPI, Depends, Body, Query, status, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -25,6 +26,7 @@ from extralit.extraction.vector_index import create_vector_index, load_index
 from extralit.server.context.files import get_minio_client
 from extralit.server.context.llamaindex import get_langfuse_callback
 from extralit.server.context.vectordb import get_weaviate_client
+from extralit.server.context.datasets import get_argilla_client
 from extralit.server.models.extraction import ExtractionRequest, ExtractionResponse
 from extralit.server.models.segments import SegmentsResponse
 
@@ -39,27 +41,36 @@ app = FastAPI()
 #     allow_headers=["*"],
 # )
 
-weaviate_client: WeaviateClient = None
-minio_client: Minio = None
-
+weaviate_client: Optional[WeaviateClient] = None
+minio_client: Optional[Minio] = None
+argilla_client: Optional[rg.Argilla] = None
 
 @app.on_event("startup")
-async def load_weaviate_client():
-    global weaviate_client
+async def startup():
+    global weaviate_client, minio_client, argilla_client
     if weaviate_client is None:
         weaviate_client = get_weaviate_client()
-
-
-@app.on_event("startup")
-async def load_minio_client():
-    global minio_client
     if minio_client is None:
         minio_client = get_minio_client()
+    if argilla_client is None:
+        argilla_client = get_argilla_client()
 
 
 @app.get("/health")
 async def health_check():
-    return {"status": "ok"}
+    try:
+        # Check weaviate connection
+        if weaviate_client is None:
+            return {"status": "error", "message": "Weaviate client not initialized"}
+
+        # Check minio connection
+        if minio_client is None:
+            return {"status": "error", "message": "Minio client not initialized"}
+
+        return {"status": "ok"}
+
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 
 
 @app.get("/schemas/{workspace}")
@@ -154,7 +165,6 @@ async def extraction(
     try:
         system_prompt = langfuse_callback.langfuse.get_prompt(prompt_template, cache_ttl_seconds=3000, max_retries=0)
     except Exception as e:
-        _LOGGER.error(f"Failed to get system prompt: {e}")
         system_prompt = None
 
     try:
@@ -198,6 +208,7 @@ async def extraction(
                                 detail="No extraction found with the selected context and your query.")
 
         response = ExtractionResponse.parse_raw(df.to_json(orient='table'))
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -240,7 +251,7 @@ async def create_index(
     username: Optional[Union[str, UUID]] = Query(None),
 ):
     try:
-        preprocessing_dataset = rg.FeedbackDataset.from_argilla(name=preprocessing_dataset, workspace=workspace) \
+        preprocessing_dataset = argilla_client.datasets(name=preprocessing_dataset, workspace=workspace) \
             if preprocessing_dataset else None
     except Exception as e:
         preprocessing_dataset = None
@@ -256,6 +267,6 @@ async def create_index(
         )
 
         return index.index_id
-    
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -1,0 +1,113 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/anaconda
+{
+  "name": "Tilt on K8s for full-stack development",
+
+  "build": {
+    "context": ".",
+    "dockerfile": "Dockerfile"
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "github.vscode-github-actions",
+        "ms-python.python",
+        "ms-toolsai.jupyter",
+        "ms-python.vscode-pylance",
+        "eamodio.gitlens",
+        "tilt-dev.tiltfile",
+        "Vue.volar",
+        "ms-kubernetes-tools.vscode-kubernetes-tools",
+        "firsttris.vscode-jest-runner"
+      ]
+    },
+    "settings": {
+      "python.testing.pytestEnabled": true,
+      "python.testing.cwd": "${workspaceFolder}/tests",
+      "python.testing.pytestArgs": [ "-vs", "--disable-warnings" ],
+      "python.defaultInterpreterPath": "/opt/conda/bin/python",
+      "python.condaPath": "/usr/local/bin/micromamba",
+      "search.exclude": {
+        "argilla-server/src/argilla_server/static/": true,
+        "argilla-frontend/dist/": true,
+        "_nuxt/": true,
+        "node_modules/": true,
+        ".venv/": true
+      },
+      "files.watcherExclude": {
+        "argilla-server/src/argilla_server/static/": true,
+        "argilla-frontend/dist/": true,
+        "_nuxt/": true,
+        "node_modules/": true,
+        ".venv/": true
+      },
+      "[javascript]": {
+        "editor.tabSize": 2
+      },
+      "jest.pathToJest": "npm test --",
+      "jest.autoRun": {
+        "watch": true,
+        "onSave": "test-file"
+      },
+      "jest.runAllTestsFirst": false,
+      "jest.showCoverageOnLoad": true,
+      "jest.testExplorer": {
+        "enabled": true
+      }
+    }
+  },
+
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  "forwardPorts": [
+    10350,
+    5005,
+    6443,
+    3000
+  ],
+
+  "remoteEnv": {
+    "WCS_HTTP_URL": "${localEnv:WCS_HTTP_URL}",
+    "WCS_GRPC_URL": "${localEnv:WCS_GRPC_URL}",
+    "WCS_API_KEY": "${localEnv:WCS_API_KEY}",
+    "ARGILLA_DATABASE_URL": "${localEnv:ARGILLA_DATABASE_URL}",
+    "S3_ENDPOINT": "${localEnv:S3_ENDPOINT}",
+    "S3_ACCESS_KEY": "${localEnv:S3_ACCESS_KEY}",
+    "S3_SECRET_KEY": "${localEnv:S3_SECRET_KEY}",
+    "OPENAI_API_KEY": "${localEnv:OPENAI_API_KEY}"
+  },
+
+  // Features to add to the dev container. More info: https://containers.dev/features.
+  "features": {
+    // Add Docker-in-Docker support. A Debian base requires the proprietary Docker engine.
+    "ghcr.io/devcontainers/features/docker-in-docker:2.12.0": {
+      "version": "latest",
+      "moby": "false"
+    },
+
+    // Add Kubernetes support with k3d and the kubectl, and helm CLI tools.
+    "ghcr.io/rio/features/k3d:1.1.0": {},
+    "ghcr.io/devcontainers/features/kubectl-helm-minikube:1.2.0": {},
+
+    // Add python support with micromamba and some packages
+    "ghcr.io/mamba-org/devcontainer-features/micromamba": {
+      "autoActivate": true,
+      "channels": "conda-forge huggingface defaults",
+      "packages": "python==3.10.14 uvicorn uv pdm ipykernel pre-commit pyparsing!=3.0.5 pytest pytest-cov pytest-mock pytest-asyncio==0.21.1 pytest-env factory_boy~=3.2.1 pandoc==2.12 ipython<8.0.0 nodejs=18.16.1 pandoc==2.12 pytest-randomly>=3.15.0",
+      "envFile": "",
+      "envName": "base"
+    },
+
+  },
+
+  "postCreateCommand": "/workspace/setup.sh",
+  "postStopCommand": "tilt down",
+
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "16gb",
+    "storage": "32gb"
+  }
+}

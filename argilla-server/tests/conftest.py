@@ -12,19 +12,20 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import asyncio
-from typing import TYPE_CHECKING, AsyncGenerator, Generator
-
 import httpx
+import asyncio
 import pytest
 import pytest_asyncio
-from argilla_server.cli.database.migrate import migrate_db
-from argilla_server.database import database_url_sync
-from argilla_server.settings import settings
-from argilla_server.contexts.files import delete_bucket, get_minio_client
+
+from rq import Queue
+from typing import TYPE_CHECKING, AsyncGenerator, Generator
 from sqlalchemy import NullPool, create_engine
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from minio import S3Error
+
+from argilla_server.cli.database.migrate import migrate_db
+from argilla_server.database import database_url_sync
+from argilla_server.jobs.queues import REDIS_CONNECTION
+from argilla_server.settings import settings
 
 from tests.database import SyncTestSession, TestSession, set_task
 
@@ -99,6 +100,16 @@ def sync_db(sync_connection: "Connection") -> Generator["Session", None, None]:
     sync_connection.rollback()
 
 
+@pytest.fixture(autouse=True)
+def empty_job_queues():
+    queues = Queue.all(connection=REDIS_CONNECTION)
+
+    for queue in queues:
+        queue.empty()
+
+    yield
+
+
 @pytest.fixture
 def async_db_proxy(mocker: "MockerFixture", sync_db: "Session") -> "AsyncSession":
     """Create a mocked `AsyncSession` that proxies to the sync session. This will allow us to execute the async CLI commands
@@ -117,12 +128,3 @@ def async_db_proxy(mocker: "MockerFixture", sync_db: "Session") -> "AsyncSession
     async_session.close = mocker.AsyncMock()
 
     return async_session
-
-@pytest.fixture(scope="session", autouse=True)
-def cleanup_minio_bucket():
-    yield
-    minio_client = get_minio_client()
-    bucket_name = "workspace"
-    
-    if minio_client.bucket_exists(bucket_name):
-        delete_bucket(minio_client, bucket_name)

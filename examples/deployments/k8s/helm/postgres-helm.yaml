@@ -5,12 +5,21 @@ nameOverride: "main-db"
 fullnameOverride: "main-db"
 # Rename to `extralit-db` and change the default database name to `extralit-db`
 
+backup:
+  storage:
+    size: 1Gi
+  cronjob:
+    storage:
+      size: 1Gi
+    resources:
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
+
 postgresql:
   persistence:
     enabled: true
     storageClass: "local-path"
-    size: 1Gi
-  backup:
     size: 1Gi
   nodeAffinity: 
     preferredDuringSchedulingIgnoredDuringExecution:

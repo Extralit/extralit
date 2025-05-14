@@ -1,0 +1,70 @@
+name: "📚 Documentation update/fix"
+description: Report typos, mistakes or improvements for our documentation
+title: "[DOCS]"
+labels: ["documentation"]
+assignees: []
+type: "Task"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to help improve our documentation!
+
+  - type: dropdown
+    id: doc_type
+    attributes:
+      label: Type of documentation issue
+      description: What type of documentation issue are you reporting?
+      options:
+        - Typo/Grammar mistake
+        - Incorrect information
+        - Missing information
+        - Outdated content
+        - Unclear explanation
+        - Broken link
+        - Other (please specify in description)
+    validations:
+      required: true
+
+  - type: input
+    id: page_url
+    attributes:
+      label: Documentation page URL
+      description: Which page contains the issue? Please provide the full URL.
+      placeholder: "https://docs.extralit.ai/page-with-issue"
+    validations:
+      required: true
+
+  - type: textarea
+    id: current_content
+    attributes:
+      label: Current content
+      description: What does the current documentation say? How is it incorrect, incomplete, or misleading?
+      placeholder: "Copy the current text here..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: suggested_change
+    attributes:
+      label: Suggested fix or improvement
+      description: How should the documentation be changed?
+      placeholder: "I suggest changing it to..."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: user_type
+    attributes:
+      label: User Perspective
+      description: From which perspective are you requesting this feature?
+      options:
+        - Researcher/Scientist
+        - Research Manager
+        - Data Scientist
+        - Software Developer
+        - Designer
+        - Other
+      multiple: true
+    validations:
+      required: false

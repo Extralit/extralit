@@ -41,3 +41,9 @@ for record in dataset.records(query=query):
 
 
 ---
+
+::: src.argilla.records._search.Query
+
+::: src.argilla.records._search.Filter
+
+::: src.argilla.records._search.Similar

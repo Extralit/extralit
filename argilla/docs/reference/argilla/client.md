@@ -7,6 +7,16 @@ To interact with the Argilla server from Python you can use the `Argilla` class.
 
 ## Usage Examples
 
+### Deploying Argilla Server on Hugging Face Spaces
+
+To deploy Argilla on Hugging Face Spaces, use the `deploy_on_spaces` method.
+
+```python
+import argilla as rg
+
+client = rg.Argilla.deploy_on_spaces(api_key="12345678")
+```
+
 ### Connecting to an Argilla server
 
 To connect to an Argilla server, instantiate the `Argilla` class and pass the `api_url` of the server and the `api_key` to authenticate.
@@ -16,7 +26,7 @@ import argilla as rg
 
 client = rg.Argilla(
     api_url="https://argilla.example.com",
-    api_key="my_token",
+    api_key="my_api_key",
 )
 ```
 
@@ -43,3 +53,10 @@ for dataset in my_workspace.datasets:
 
 
 ---
+
+::: src.argilla.client.core.Argilla
+::: src.argilla.client.resources.Users
+::: src.argilla.client.resources.Workspaces
+::: src.argilla.client.resources.Datasets
+
+::: src.argilla._helpers._deploy.SpacesDeploymentMixin

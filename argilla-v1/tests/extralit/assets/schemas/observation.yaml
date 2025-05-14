@@ -1,0 +1,134 @@
+schema_type: dataframe
+version: 0.18.3
+columns:
+  Study_type:
+    title: null
+    description: Hut trial, lab based bioassay, and village trial. Ok to have multiple
+      study types from a single publication, which will be entered as separate rows.
+    dtype: str
+    nullable: false
+    checks:
+      isin:
+        - Hut trial
+        - Lab based bioassay
+        - Village trial
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  Country:
+    title: null
+    description: Country where the study was conducted
+    dtype: str
+    nullable: false
+    checks: null
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  Site:
+    title: null
+    description: Specific geographic information if provided (such as district name)
+      or the name of the lab strain
+    dtype: str
+    nullable: false
+    checks: null
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  Start_month:
+    title: null
+    description: Numerical start month of the reporting period (some studies may report
+      multiple time periods)
+    dtype: int64
+    nullable: true
+    checks:
+      greater_than_or_equal_to: 1
+      less_than_or_equal_to: 12
+    unique: false
+    coerce: true
+    required: true
+    regex: false
+  Start_year:
+    title: null
+    description: Reporting period start year (some studies may report on multiple
+      time periods)
+    dtype: int64
+    nullable: true
+    checks:
+      greater_than_or_equal_to: 0
+    unique: false
+    coerce: true
+    required: true
+    regex: false
+  End_month:
+    title: null
+    description: Numerical end month of the reporting period
+    dtype: int64
+    nullable: true
+    checks:
+      greater_than_or_equal_to: 1
+      less_than_or_equal_to: 12
+    unique: false
+    coerce: true
+    required: true
+    regex: false
+  End_year:
+    title: null
+    description: Reporting period end year
+    dtype: int64
+    nullable: true
+    checks:
+      greater_than_or_equal_to: 0
+    unique: false
+    coerce: true
+    required: true
+    regex: false
+  Time_elapsed:
+    title: null
+    description: 'For longitudinal studies: how long since the start of the study?
+      Report this value in units of months.'
+    dtype: float64
+    nullable: true
+    checks:
+      greater_than_or_equal_to: 0
+    unique: false
+    coerce: true
+    required: true
+    regex: false
+checks:
+  check_time_difference:
+    field: Time_elapsed
+    start_year: Start_year
+    start_month: Start_month
+    end_year: End_year
+    end_month: End_month
+    unit: months
+    margin: null
+  check_less_than:
+    columns_a:
+      - Start_year
+    columns_b:
+      - End_year
+    or_equal: true
+index:
+  - title: null
+    description: null
+    dtype: str
+    nullable: false
+    checks: null
+    name: reference
+    unique: true
+    coerce: false
+dtype: null
+coerce: true
+strict: true
+name: Observation
+ordered: false
+unique: null
+report_duplicates: all
+unique_column_names: false
+add_missing_columns: false
+title: null
+description: null

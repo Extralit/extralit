@@ -11,11 +11,13 @@ module.exports = {
   },
   modulePathIgnorePatterns: ["<rootDir>/e2e"],
   transform: {
-    "^.+\\.js$": "babel-jest",
-    "^.+\\.ts$": "babel-jest",
-    ".*\\.(vue)$": "vue-jest",
+    "^.+\\.(js|jsx|ts|tsx|mjs)$": ["babel-jest"],
+    ".*\\.(vue)$": "@vue/vue2-jest",
     "^.+\\.svg$": "jest-transform-stub",
   },
+  transformIgnorePatterns: [
+    "/node_modules/(?!(@nuxtjs/composition-api|@tiptap|vue-svgicon|tabulator-tables|vue-demi)/)",
+  ],
   snapshotSerializers: ["<rootDir>/node_modules/jest-serializer-vue"],
   testEnvironment: "jsdom",
   collectCoverageFrom: [
@@ -23,4 +25,7 @@ module.exports = {
     "<rootDir>/pages/*.vue",
   ],
   setupFiles: ["<rootDir>/jest.setup.ts"],
+  testEnvironmentOptions: {
+    customExportConditions: ["node", "node-addons"],
+  },
 };

@@ -13,3 +13,4 @@ k3d:
     kubeAPI:
       host: "0.0.0.0"
       hostPort: "6443"
+      

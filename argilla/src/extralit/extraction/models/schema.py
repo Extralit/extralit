@@ -1,25 +1,43 @@
+# Copyright 2024-present, Extralit Labs, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import logging
 import os
 from collections import deque
 from glob import glob
 from io import BytesIO
 from pathlib import Path
-from typing import List, Optional, Union, Dict
+from typing import TYPE_CHECKING, List, Optional, Union, Dict
 
 import pandera as pa
-import argilla as rg
-from minio import Minio
 from pandera.api.base.model import MetaModel
 from pandera.io import from_json, from_yaml
 from pydantic.v1 import BaseModel, Field, validator
 
-DEFAULT_SCHEMA_S3_PATH = 'schemas/'
+import argilla as rg
+from extralit.constants import DEFAULT_SCHEMA_S3_PATH
+
+if TYPE_CHECKING:
+    from minio import Minio
+
 
 _LOGGER = logging.getLogger(__name__)
 
 
-def topological_sort(schema_name: str, visited: Dict[str, int], stack: deque,
-                     dependencies: Dict[str, List[str]]) -> None:
+def topological_sort(
+    schema_name: str, visited: Dict[str, int], stack: deque, dependencies: Dict[str, List[str]]
+) -> None:
     visited[schema_name] = 1  # Gray
 
     for i in dependencies.get(schema_name, []):
@@ -35,8 +53,8 @@ def topological_sort(schema_name: str, visited: Dict[str, int], stack: deque,
 class SchemaStructure(BaseModel):
     """
     A class representing the structure of a schema.
-    
-    Usage: 
+
+    Usage:
     ```python
     from pandera import DataFrameSchema
     from extralit.extraction.models.schema import SchemaStructure
@@ -53,10 +71,11 @@ class SchemaStructure(BaseModel):
     )
     ```
     """
-    schemas: List[pa.DataFrameSchema] = Field(
-        default_factory=list, description="A list of all the extraction schemas.")
+
+    schemas: List[pa.DataFrameSchema] = Field(default_factory=list, description="A list of all the extraction schemas.")
     singleton_schema: Optional[pa.DataFrameSchema] = Field(
-        None, repr=True, description="A singleton schema that exists in `schemas` list.")
+        None, repr=True, description="A singleton schema that exists in `schemas` list."
+    )
 
     def __init__(self, **data):
         super().__init__(**data)
@@ -67,28 +86,28 @@ class SchemaStructure(BaseModel):
 
         for schema in self.schemas:
             is_singleton_schema = any(
-                check.name == "singleton" and check.statistics.get('enabled', True) \
-                    for check in schema.checks
+                check.name == "singleton" and check.statistics.get("enabled", True) for check in schema.checks
             )
-                
+
             if is_singleton_schema and not self.singleton_schema:
                 self.singleton_schema = schema
             elif is_singleton_schema and self.singleton_schema and schema != self.singleton_schema:
                 raise ValueError("Only one singleton schema is allowed in the schema structure")
-        
 
-    @validator('schemas', pre=True, each_item=True)
+    @validator("schemas", pre=True, each_item=True)
     def parse_schema(cls, v: Union[pa.DataFrameModel, pa.DataFrameSchema]):
-        return v.to_schema() if hasattr(v, 'to_schema') else v
+        return v.to_schema() if hasattr(v, "to_schema") else v
 
-    @validator('singleton_schema', pre=True)
+    @validator("singleton_schema", pre=True)
     def parse_singleton_schema(cls, v: Union[pa.DataFrameModel, pa.DataFrameSchema]):
-        schema: pa.DataFrameSchema = v.to_schema() if hasattr(v, 'to_schema') else v
-        assert all(key.islower() for key in schema.columns.keys()), f"All keys in {schema.name} schema must be lowercased"
+        schema: pa.DataFrameSchema = v.to_schema() if hasattr(v, "to_schema") else v
+        assert all(
+            key.islower() for key in schema.columns.keys()
+        ), f"All keys in {schema.name} schema must be lowercased"
         return schema
 
     @classmethod
-    def from_dir(cls, dir_path: Path, exclude: Optional[List[str]]=None):
+    def from_dir(cls, dir_path: Path, exclude: Optional[List[str]] = None):
         """
         Load a SchemaStructure from a directory containing pandera DataFrameSchema .json files.
         Args:
@@ -100,15 +119,15 @@ class SchemaStructure(BaseModel):
         """
         schemas = {}
         if os.path.isdir(dir_path):
-            schema_paths = sorted(glob(os.path.join(dir_path, '*.json')), key=lambda x: not x.endswith('.json'))
+            schema_paths = sorted(glob(os.path.join(dir_path, "*.json")), key=lambda x: not x.endswith(".json"))
         else:
-            schema_paths = sorted(glob(dir_path), key=lambda x: not x.endswith('.json'))
+            schema_paths = sorted(glob(dir_path), key=lambda x: not x.endswith(".json"))
 
         for filepath in schema_paths:
             try:
-                if filepath.endswith('.json'):
+                if filepath.endswith(".json"):
                     schema = from_json(filepath)
-                elif filepath.endswith('.yaml') or filepath.endswith('.yml'):
+                elif filepath.endswith(".yaml") or filepath.endswith(".yml"):
                     schema = from_yaml(filepath)
                 else:
                     continue
@@ -121,16 +140,20 @@ class SchemaStructure(BaseModel):
                 _LOGGER.warning(f"Ignoring failed schema loading from '{filepath}': \n{e}")
 
         return cls(schemas=list(schemas.values()))
-    
-    @classmethod
-    def from_workspace(cls, workspace: "rg.Workspace", prefix: str = DEFAULT_SCHEMA_S3_PATH, 
-                       exclude: List[str] = []):
-        return workspace.get_schemas(prefix=prefix, exclude=exclude)
-
 
     @classmethod
-    def from_s3(cls, workspace_name: str, minio_client: Minio, prefix: str = DEFAULT_SCHEMA_S3_PATH,
-                exclude: List[str] = [], verbose: bool = True):
+    def from_workspace(cls, workspace: rg.Workspace, prefix: str = DEFAULT_SCHEMA_S3_PATH, exclude: List[str] = []):
+        return workspace.list_schemas(prefix=prefix, exclude=exclude)
+
+    @classmethod
+    def from_s3(
+        cls,
+        workspace_name: str,
+        minio_client: "Minio",
+        prefix: str = DEFAULT_SCHEMA_S3_PATH,
+        exclude: List[str] = [],
+        verbose: bool = True,
+    ):
         """
         Load a SchemaStructure from a Minio bucket containing pandera DataFrameSchema .json files.
 
@@ -148,8 +171,9 @@ class SchemaStructure(BaseModel):
         objects = minio_client.list_objects(workspace_name, prefix=prefix, include_version=False)
 
         # Sort the objects by file extension
-        objects = sorted(objects, key=lambda obj: (
-            os.path.splitext(obj.object_name)[1] != '', os.path.splitext(obj.object_name)[1]))
+        objects = sorted(
+            objects, key=lambda obj: (os.path.splitext(obj.object_name)[1] != "", os.path.splitext(obj.object_name)[1])
+        )
 
         for obj in objects:
             filepath = obj.object_name
@@ -159,9 +183,9 @@ class SchemaStructure(BaseModel):
                 data = minio_client.get_object(workspace_name, filepath)
                 file_data = BytesIO(data.read())
 
-                if not file_extension or file_extension == '.json':
+                if not file_extension or file_extension == ".json":
                     schema = from_json(file_data)
-                elif file_extension in ['.yaml', '.yml']:
+                elif file_extension in [".yaml", ".yml"]:
                     schema = from_yaml(file_data)
                 else:
                     continue
@@ -169,14 +193,16 @@ class SchemaStructure(BaseModel):
                 if schema.name in schemas or schema.name in exclude:
                     continue
 
-                _LOGGER.info(f'Loaded {schema.name} from {filepath}', exc_info=1)
+                _LOGGER.info(f"Loaded {schema.name} from {filepath}", exc_info=1)
                 schemas[schema.name] = schema
             except Exception as e:
                 _LOGGER.warning(f"Ignoring failed schema loading from '{filepath}': \n{e}")
 
         return cls(schemas=list(schemas.values()))
 
-    def to_s3(self, workspace_name: str, minio_client: Minio, prefix: str = 'schemas/', delete_excluded: bool = False):
+    def to_s3(
+        self, workspace_name: str, minio_client: "Minio", prefix: str = "schemas/", delete_excluded: bool = False
+    ):
         """
         This method is used to upload the schemas to an S3 bucket and optionally delete the excluded schemas.
 
@@ -206,7 +232,7 @@ class SchemaStructure(BaseModel):
                 object_name=object_name,
                 data=schema_bytes,
                 length=schema_bytes.getbuffer().nbytes,
-                content_type='application/json'
+                content_type="application/json",
             )
 
         if delete_excluded:
@@ -214,7 +240,7 @@ class SchemaStructure(BaseModel):
             bucket_schema_paths = [os.path.splitext(obj.object_name)[0] for obj in objects]
             self_schema_paths = [os.path.join(prefix, schema.name) for schema in self.schemas]
             schemas_to_delete = set(bucket_schema_paths) - set(self_schema_paths)
-            print('Deleting schemas:', schemas_to_delete)
+            print("Deleting schemas:", schemas_to_delete)
             for schema_path in schemas_to_delete:
                 minio_client.remove_object(workspace_name, schema_path)
 
@@ -245,12 +271,17 @@ class SchemaStructure(BaseModel):
             schema_index_names = self.index_names(schema)
 
             for dep in self.schemas:
-                if not dep.index or schema == dep: continue
+                if not dep.index or schema == dep:
+                    continue
                 dep_index_names = self.index_names(dep)
                 if f"{schema.name}_ref".lower() in dep_index_names:
                     dependents[schema.name].append(dep.name)
 
-                if schema.index and f"{schema.name}_ID" in dep_index_names and f"{schema.name}_ID" in schema_index_names:
+                if (
+                    schema.index
+                    and f"{schema.name}_ID" in dep_index_names
+                    and f"{schema.name}_ID" in schema_index_names
+                ):
                     dependents[schema.name].append(dep.name)
         return dependents
 
@@ -262,7 +293,8 @@ class SchemaStructure(BaseModel):
             schema_index_names = self.index_names(schema)
 
             for dep in self.schemas:
-                if not schema.index or schema == dep: continue
+                if not schema.index or schema == dep:
+                    continue
                 dep_index_names = self.index_names(dep)
                 if f"{dep.name}_ref".lower() in schema_index_names:
                     dependencies[schema.name].append(dep.name)
@@ -273,15 +305,16 @@ class SchemaStructure(BaseModel):
 
     def index_names(self, schema: Union[str, pa.DataFrameSchema]) -> List[str]:
         schema = self.__getitem__(schema) if isinstance(schema, str) else schema
-        if not schema.index: return []
+        if not schema.index:
+            return []
         index_names = list(schema.index.names or [schema.index.name])
         index_names = [name for name in index_names if name]
         return index_names
 
     def get_ref_schema(self, ref_column: str) -> pa.DataFrameSchema:
-        if not ref_column.endswith('_ref') and not ref_column.endswith('_ID'):
+        if not ref_column.endswith("_ref") and not ref_column.endswith("_ID"):
             raise ValueError(f"Foreign key '{ref_column}' must contain '_ref' or '_ID' suffix")
-        schema_name = ref_column.rsplit('_ref', 1)[0].rsplit('_ID', 1)[0]
+        schema_name = ref_column.rsplit("_ref", 1)[0].rsplit("_ID", 1)[0]
         return self.__getitem__(schema_name)
 
     def columns(self, schema: str) -> List[str]:
@@ -319,6 +352,8 @@ class SchemaStructure(BaseModel):
             item = item.name
         elif isinstance(item, MetaModel):
             item = str(item)
+        elif not isinstance(item, str):
+            raise ValueError(f"SchemaStructure.__getitem__() expects a string or pa.DataFrameSchema, got {type(item)}")
 
         for schema in self.schemas:
             if schema.name.lower() == item.lower():

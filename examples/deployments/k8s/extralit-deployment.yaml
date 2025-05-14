@@ -21,9 +21,9 @@ spec:
           httpGet:
             path: /health
             port: 5555
-          initialDelaySeconds: 5
+          initialDelaySeconds: 15
           periodSeconds: 10
-          timeoutSeconds: 5
+          timeoutSeconds: 10
           failureThreshold: 3
           successThreshold: 1
         env:
@@ -40,9 +40,9 @@ spec:
                 name: extralit-secrets
                 key: ARGILLA_API_KEY
           - name: WCS_HTTP_URL
-            value: "weaviate"
+            value: "http://weaviate:80"
           - name: WCS_GRPC_URL
-            value: "weaviate-grpc"
+            value: "http://weaviate-grpc:50051"
           - name: WCS_API_KEY
             valueFrom:
               secretKeyRef:
@@ -92,4 +92,16 @@ spec:
                 operator: In
                 values:
                 - extralit
-                
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: extralit-server
+spec:
+  selector:
+    app: extralit
+  ports:
+    - protocol: TCP
+      port: 5555
+      targetPort: 5555
+  type: NodePort

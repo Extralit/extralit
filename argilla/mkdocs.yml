@@ -3,7 +3,7 @@ site_name: Extralit Docs
 site_url: https://docs.extralit.ai/
 site_author: Extralit
 site_description: Data-centric tool for AI builders
-copyright: Copyright &copy; 2023 - 2024 Extralit
+copyright: Copyright &copy; 2023 - 2025 Extralit
 
 # Repository
 repo_name: extralit/extralit
@@ -15,11 +15,24 @@ extra:
     provider: mike
   social:
     - icon: fontawesome/brands/slack
-      link: https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ
+      link: https://join.slack.com/t/extralit/shared_invite/zt-32blg3602-0m0XewPBXF7776BQ3m7ZlA
   analytics:
     provider: google
     property: G-SQHP22W3F6
-
+    feedback:
+      title: Was this page helpful?
+      ratings:
+        - icon: material/thumb-up-outline
+          name: This page was helpful
+          data: 1
+          note: >-
+            Thanks for your feedback!
+        - icon: material/thumb-down-outline
+          name: This page could be improved
+          data: 0
+          note: >-
+            Thanks for your feedback! Help us improve this page by
+            <a href="https://github.com/extralit/extralit/issues/new/?title=[Feedback]+{title}+-+{url}" target="_blank" rel="noopener">opening a GitHub issue</a>.
 extra_css:
   - stylesheets/extra.css
 
@@ -96,7 +109,6 @@ markdown_extensions:
       emoji_generator:
         !!python/name:material.extensions.emoji.to_svg # activating permalink: true makes the anchor link works in the notebooks
 
-
   - toc:
       permalink: true
 
@@ -139,6 +151,7 @@ plugins:
   - social:
       enabled: !ENV [CI, false] # enables the plugin only during continuous integration (CI), disabled on local build
   - mknotebooks
+  - material-plausible
 
 # Documentation Structure
 nav:
@@ -147,30 +160,33 @@ nav:
   - Getting Started:
       - Installation: getting_started/installation.md
       - Quickstart: getting_started/quickstart.md
+      - Development Setup: getting_started/development_setup.md
       - Deploy with Docker: getting_started/how-to-deploy-argilla-with-docker.md
       - Deploy with Hugging Face Spaces: getting_started/how-to-configure-argilla-on-huggingface.md
 
   - User Guide:
       - user_guide/index.md
       - Core concepts: user_guide/core_concepts.md
+      - Overview: user_guide/overview.md
       - Data Pipeline:
-          - Documents import: user_guide/documents_import.md
           - Schema definition: user_guide/schema_definition.md
-          - Text and table OCR: user_guide/text_table_ocr.md
-          - LLM-assisted extraction: user_guide/llm_extraction.md
-          - Consensus review: user_guide/consensus_review.md
-          - Data validation: user_guide/data_validation.md
-          - Extraction status: user_guide/extraction_status.md
+          # - Importing documents: user_guide/document_import.md
+          # - Text and table OCR: user_guide/text_table_ocr.md
+          # - LLM-assisted extraction: user_guide/llm_extraction.md
+          # - Consensus review: user_guide/consensus_review.md
+          # - Data validation: user_guide/data_validation.md
+          # - Extraction status: user_guide/extraction_status.md
       - User Interface:
-          - Navigation and layout: user_guide/navigation_layout.md
-          - Create and manage workspace: user_guide/create_manage_workspace.md
-          - Search and filter records: user_guide/search_filter.md
-          - Performing extractions: user_guide/performing_extractions.md
-          - Reviewing and validating data: user_guide/review_validate_data.md
+          - Using the command-line interface (CLI): user_guide/command_line_interface.md
+      #     - Navigation and layout: user_guide/navigation_layout.md
+      #     - Create and manage workspace: user_guide/create_manage_workspace.md
+      #     - Search and filter records: user_guide/search_filter.md
+      #     - Performing extractions: user_guide/performing_extractions.md
+      #     - Reviewing and validating data: user_guide/review_validate_data.md
       - Advanced Usage:
           - Customizing multiple extraction schemas: user_guide/multi_schemas.md
-          - Optimizing LLM performance: user_guide/optimizing_llm_performance.md
-          - Using the API: user_guide/using_the_api.md
+          # - Optimizing LLM performance: user_guide/optimizing_llm_performance.md
+          # - Using the API: user_guide/using_the_api.md
 
   - Administrator Guide:
       - admin_guide/index.md
@@ -189,11 +205,18 @@ nav:
           - Query and filter records: admin_guide/query.md
           - Import and export datasets: admin_guide/import_export.md
       - Advanced:
-          - Use Markdown to format rich content: admin_guide/use_markdown_to_format_rich_content.md
-          - Migrate your legacy datasets to Argilla V2: admin_guide/migrate_from_legacy_datasets.md
-
+        - Custom fields with layout templates: admin_guide/custom_fields.md
+        - Use webhooks to respond to server events:
+            - admin_guide/webhooks.md
+            - Webhooks internals: admin_guide/webhooks_internals.md
+        - Use Markdown to format rich content: admin_guide/use_markdown_to_format_rich_content.md
+        - Migrate users, workspaces and datasets to Argilla V2: admin_guide/migrate_from_legacy_datasets.md
   - Tutorials:
       - tutorials/index.md
+      - Text classification: tutorials/text_classification.ipynb
+      - Token classification: tutorials/token_classification.ipynb
+      - Image classification: tutorials/image_classification.ipynb
+      - Image preference: tutorials/image_preference.ipynb
   - API Reference:
       - Argilla Python SDK: reference/argilla/
       - FastAPI Server:
@@ -204,5 +227,9 @@ nav:
   - Community:
       - community/index.md
       - How to contribute?: community/contributor.md
+      - Developer documentation: community/developer.md
+      - Add a new language to Argilla: community/adding_language.md
       - Issue dashboard: community/popular_issues.md
       - Changelog: community/changelog.md
+  - UI Demo ↗:
+      - https://extralit-public-demo.hf.space/sign-in
