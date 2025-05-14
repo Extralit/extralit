@@ -1,0 +1,56 @@
+{
+    "name": "UI/UX Design Environment",
+    "image": "mcr.microsoft.com/devcontainers/javascript-node:18",
+    "workspaceFolder": "/workspace",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "Vue.volar",
+                "bradlc.vscode-tailwindcss",
+                "mrmlnc.vscode-scss",
+                "sibiraj-s.vscode-scss-formatter",
+                "esbenp.prettier-vscode",
+                "ms-vscode.live-server"
+            ],
+            "settings": {
+                "workbench.colorTheme": "Default Light+",
+                "editor.fontSize": 14,
+                "editor.formatOnSave": true,
+                "files.exclude": {
+                    "**/.git": true,
+                    "**/node_modules": true,
+					".devcontainer/": true,
+                    "**/*.js": false,
+                    "**/*.ts": false,
+                    "**/.*": false
+                },
+                "workbench.startupEditor": "none",
+                "explorer.compactFolders": false,
+                "explorer.fileNesting.enabled": true,
+                "explorer.fileNesting.patterns": {
+                    "*.scss": "${capture}.css"
+                }
+            }
+        },
+        "codespaces": {
+            "openFiles": [
+                "argilla-frontend/assets/scss/abstract/variables/_themes.scss",
+                "argilla-frontend/assets/scss/abstract/variables/_variables.scss"
+            ]
+        }
+    },
+    "onCreateCommand": "echo '🎨 Setting up design environment...'",
+    "postCreateCommand": "cd argilla-frontend && npm install && echo '# Designer Guide\n\n1. Edit theme files in `assets/scss/`\n2. The development server will automatically reload to show your changes\n3. Press F1 and type \"Focus on SCSS Files\" to see only design files'",
+    "postStartCommand": "cd argilla-frontend && API_BASE_URL=https://extralit-public-demo.hf.space/ npm run dev",
+    "forwardPorts": [
+        3000
+    ],
+    "portsAttributes": {
+        "3000": {
+            "label": "UI Preview",
+            "onAutoForward": "openPreview"
+        }
+    },
+    "remoteUser": "node"
+}

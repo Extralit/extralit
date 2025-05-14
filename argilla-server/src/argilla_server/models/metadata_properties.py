@@ -16,8 +16,8 @@ from abc import ABC, abstractmethod
 from typing import Any, Generic, List, Literal, Optional, TypeVar, Union
 
 from argilla_server.enums import MetadataPropertyType
-from argilla_server.pydantic_v1 import BaseModel, Field
-from argilla_server.pydantic_v1.generics import GenericModel
+from argilla_server.errors.future import UnprocessableEntityError
+from pydantic import BaseModel, Field
 
 __all__ = [
     "MetadataPropertySettings",
@@ -40,34 +40,34 @@ class BaseMetadataPropertySettings(BaseModel, ABC):
 
 class TermsMetadataPropertySettings(BaseMetadataPropertySettings):
     type: Literal[MetadataPropertyType.terms]
-    values: Optional[List[str]] = None
+    values: Optional[List[Any]] = None
 
-    def check_metadata(self, value: Union[str, List[str]]) -> None:
+    def check_metadata(self, value: Any) -> None:
         if self.values is None:
             return
 
         values = value
-        if isinstance(values, str):
+        if not isinstance(values, list):
             values = [value]
 
         for v in values:
             if v not in self.values:
-                raise ValueError(f"'{v}' is not an allowed term.")
+                raise UnprocessableEntityError(f"'{v}' is not an allowed term.")
 
 
 NT = TypeVar("NT", int, float)
 
 
-class NumericMetadataPropertySettings(BaseMetadataPropertySettings, GenericModel, Generic[NT]):
+class NumericMetadataPropertySettings(BaseMetadataPropertySettings, BaseModel, Generic[NT]):
     min: Optional[NT] = None
     max: Optional[NT] = None
 
     def check_metadata(self, value: NT) -> None:
         if self.min is not None and value < self.min:
-            raise ValueError(f"'{value}' is less than the minimum value of '{self.min}'.")
+            raise UnprocessableEntityError(f"'{value}' is less than the minimum value of '{self.min}'.")
 
         if self.max is not None and value > self.max:
-            raise ValueError(f"'{value}' is greater than the maximum value of '{self.max}'.")
+            raise UnprocessableEntityError(f"'{value}' is greater than the maximum value of '{self.max}'.")
 
 
 class IntegerMetadataPropertySettings(NumericMetadataPropertySettings[int]):
@@ -75,7 +75,8 @@ class IntegerMetadataPropertySettings(NumericMetadataPropertySettings[int]):
 
     def check_metadata(self, value: int) -> None:
         if not isinstance(value, int):
-            raise ValueError(f"'{value}' is not an integer.")
+            raise UnprocessableEntityError(f"'{value}' is not an integer.")
+
         return super().check_metadata(value)
 
 
@@ -84,7 +85,8 @@ class FloatMetadataPropertySettings(NumericMetadataPropertySettings[float]):
 
     def check_metadata(self, value: float) -> None:
         if not isinstance(value, float):
-            raise ValueError(f"'{value}' is not a float.")
+            raise UnprocessableEntityError(f"'{value}' is not a float.")
+
         return super().check_metadata(value)
 
 

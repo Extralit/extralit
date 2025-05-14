@@ -38,7 +38,11 @@ def fetch_file_from_github(repository, changelog_path, branch, auth_token):
     print(f"Fetching CHANGELOG.md from {changelog_url}...")
     response = requests.get(changelog_url, headers=headers)
 
-    content = base64.b64decode(response.json()["content"]).decode("utf-8")
+    response_json = response.json()
+    if "content" in response_json:
+        content = base64.b64decode(response_json["content"]).decode("utf-8")
+    else:
+        content = ""
 
     return content
 

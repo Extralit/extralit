@@ -1,6 +1,7 @@
 import json
 from typing import List, Optional
 
+from extralit.server.errors import CompletionError, DependencyNotFoundError, ExtractionError
 import pandera as pa
 from llama_index.core import PromptTemplate, ChatPromptTemplate
 from llama_index.core.base.llms.types import MessageRole, ChatMessage
@@ -35,40 +36,46 @@ DEFAULT_EXTRACTION_PROMPT_TMPL = DATA_EXTRACTION_SYSTEM_PROMPT_TMPL
 
 def create_extraction_prompt(
         schema: pa.DataFrameSchema, extractions: PaperExtraction, filter_unique_cols=False) -> str:
-    prompt = (
-        f"Your task is to extract data from a research paper.\n"
-        f"The `{schema.name}` details can be split across the provided context. Respond with details by looking at the whole context always.\n"
-        f"If you don't find the information in the given context or you are not sure, "
-        f"omit the key-value in your JSON response. ")
-    schema_structure = extractions.schemas
-    dependencies = schema_structure.upstream_dependencies[schema.name]
-    if dependencies:
-        prompt += (
-            f"The `{schema.name}` data you're extracting is dependent on the provided "
-            f"`{stringify_lists(dependencies, conjunction='and')}` tables containing entities which you need to reference. "
-            f"There can be multiple `{schema.name}` data entries for each unique combination of these references."
-            f"Here are the data already extracted from the paper:\n\n")
+    try:
+        prompt = (
+            f"Your task is to extract data from a research paper.\n"
+            f"The `{schema.name}` details can be split across the provided context. Respond with details by looking at the whole context always.\n"
+            f"If you don't find the information in the given context or you are not sure, "
+            f"omit the key-value in your JSON response. ")
+        schema_structure = extractions.schemas
+        dependencies = schema_structure.upstream_dependencies[schema.name]
+        if dependencies:
+            prompt += (
+                f"The `{schema.name}` data you're extracting is dependent on the provided "
+                f"`{stringify_lists(dependencies, conjunction='and')}` tables containing entities which you need to reference. "
+                f"There can be multiple `{schema.name}` data entries for each unique combination of these references."
+                f"Here are the data already extracted from the paper:\n\n")
 
-    # Inject prior extraction data into the query
-    for dep_schema_name in dependencies:
-        if dep_schema_name not in extractions.extractions:
-            raise ValueError(f"Dependency '{dep_schema_name}' not found in extractions")
+        # Inject prior extraction data into the query
+        for dep_schema_name in dependencies:
+            if dep_schema_name not in extractions.extractions:
+                raise DependencyNotFoundError(dep_schema_name)
 
-        if filter_unique_cols:
-            dep_extraction = filter_unique_columns(extractions[dep_schema_name])
-        else:
-            dep_extraction = extractions[dep_schema_name]
+            if filter_unique_cols:
+                dep_extraction = filter_unique_columns(extractions[dep_schema_name])
+            else:
+                dep_extraction = extractions[dep_schema_name]
 
-        schema_json = get_extraction_schema_model(schema_structure[dep_schema_name],
-                                                  include_fields=dep_extraction.columns.tolist(),
-                                                  singleton=True, description_only=True).schema()
-        schema_definition = json.dumps(drop_type_def_from_schema_json(schema_json))
-        prompt += (
-            f"###{dep_schema_name}###\n"
-            f"Schema:\n"
-            f"{schema_definition}\n"
-            f"Data:\n"
-            f"{dep_extraction.to_json(orient='index')}\n\n")
+            schema_json = get_extraction_schema_model(schema_structure[dep_schema_name],
+                                                    include_fields=dep_extraction.columns.tolist(),
+                                                    singleton=True, description_only=True).schema()
+            schema_definition = json.dumps(drop_type_def_from_schema_json(schema_json))
+            prompt += (
+                f"###{dep_schema_name}###\n"
+                f"Schema:\n"
+                f"{schema_definition}\n"
+                f"Data:\n"
+                f"{dep_extraction.to_json(orient='index')}\n\n")
+            
+    except DependencyNotFoundError as e:
+        raise e
+    except Exception as e:
+        raise ExtractionError(str(e))
 
     return prompt
 
@@ -76,21 +83,29 @@ def create_extraction_prompt(
 def create_completion_prompt(
         schema: pa.DataFrameSchema, extractions: PaperExtraction, include_fields: List[str],
         filter_unique_cols=True, extra_prompt: Optional[str]=None, ) -> str:
-    assert schema.name in extractions.extractions, f"Schema '{schema.name}' not found in extractions"
-    prompt = create_extraction_prompt(schema, extractions, filter_unique_cols)
-    existing_extraction = extractions[schema.name]
+    
+    try:
+        assert schema.name in extractions.extractions, f"Schema '{schema.name}' not found in extractions"
 
-    note = f'Note: {extra_prompt}\n' if extra_prompt else ''
+        prompt = create_extraction_prompt(schema, extractions, filter_unique_cols)
+        existing_extraction = extractions[schema.name]
 
-    prompt += (
-        f'Please complete the following `{schema.name}` table by extracting the {include_fields} fields '
-        f'for the following {len(existing_extraction)} entries. The rows you\'re filling in may not match the same order '
-        f'as the rows in the provided context, so be sure to match the correct rows based on the existing values.\n'
-        f'{note}'
-        f'###{schema.name}###\n'
-        f'Data:\n'
-        f'{existing_extraction.reset_index().to_json(orient="index")}\n\n'
-    )
+        note = f'Note: {extra_prompt}\n' if extra_prompt else ''
+
+        prompt += (
+            f'Please complete the following `{schema.name}` table by extracting the {include_fields} fields '
+            f'for the following {len(existing_extraction)} entries. The rows you\'re filling in may not match the same order '
+            f'as the rows in the provided context, so be sure to match the correct rows based on the existing values.\n'
+            f'{note}'
+            f'###{schema.name}###\n'
+            f'Data:\n'
+            f'{existing_extraction.reset_index().to_json(orient="index")}\n\n'
+        )
+
+    except DependencyNotFoundError as e:
+        raise e
+    except Exception as e:
+        raise CompletionError(str(e))
 
     return prompt
 

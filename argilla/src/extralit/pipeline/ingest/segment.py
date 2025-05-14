@@ -2,25 +2,24 @@ from typing import List, Literal
 
 import argilla as rg
 import pandas as pd
-from argilla import FeedbackRecord
 
 from extralit.pipeline.ingest.record import get_record_data
 from extralit.preprocessing.segment import Segments, FigureSegment, TableSegment
 
 
 def get_paper_tables(paper: pd.Series,
-                     dataset: rg.FeedbackDataset,
+                     dataset: rg.Dataset,
                      select: str = 'text-correction',
                      response_status: List[Literal['discarded', 'submitted', 'pending', 'draft']] = [
                          'submitted']) -> Segments:
     """
-    Get the tables manually annotated a given paper in an Argilla (Preprocessing) FeedbackDataset.
+    Get the tables manually annotated a given paper in an Argilla (Preprocessing) Dataset.
 
     Args:
         paper: pd.Series, required
             A paper from the dataset.
-        dataset: rg.FeedbackDataset, required
-            The Argilla (Preprocessing) FeedbackDataset.
+        dataset: rg.Dataset, required
+            The Argilla (Preprocessing) Dataset.
         select: str, default='text-correction'
             The field to select from the dataset records.
         response_status: List[str], default=['discarded']
@@ -28,11 +27,13 @@ def get_paper_tables(paper: pd.Series,
     Returns:
         Segments: The tables manually annotated for the given paper.
     """
-    records: List[FeedbackRecord] = dataset.filter_by(
-        metadata_filters=rg.TermsMetadataFilter(
-            name='reference',
-            values=[paper.name]),
-        response_status=response_status).records
+    query = rg.Query(
+        filter=rg.Filter([
+            ("metadata.reference", "==", paper.name),
+            ("response.status", "in", response_status)
+        ])
+    )
+    records = list(dataset.records(query=query))
 
     segments = Segments()
     for record in records:

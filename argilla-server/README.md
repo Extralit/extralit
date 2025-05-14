@@ -1,84 +1,127 @@
 <h1 align="center">
-  <a href=""><img src="https://github.com/dvsrepo/imgs/raw/main/rg.svg" alt="Argilla" width="150"></a>
+  <a href=""><img src="https://github.com/extralit/extralit/raw/develop/argilla/docs/assets/logo.svg" alt="Extralit" width="150"></a>
   <br>
-  Argilla-Server
+  Extralit Server
   <br>
 </h1>
-<h3 align="center">The repository for the Python native FastAPI server for Argilla backend.</h2>
-
+<h3 align="center">Extract structured data from scientific literature with human validation</h2>
 
 <p align="center">
-<a  href="https://pypi.org/project/argilla-server/">
-<img alt="CI" src="https://img.shields.io/pypi/v/argilla.svg?style=flat-round&logo=pypi&logoColor=white">
+<a href="https://pypi.org/project/extralit/">
+<img alt="CI" src="https://img.shields.io/pypi/v/extralit.svg?style=flat-round&logo=pypi&logoColor=white">
 </a>
-<img alt="Codecov" src="https://codecov.io/gh/argilla-io/argilla-server/branch/main/graph/badge.svg?token=VDVR29VOMG"/>
-<a href="https://pepy.tech/project/argilla-server">
-<img alt="CI" src="https://static.pepy.tech/personalized-badge/argilla-server?period=month&units=international_system&left_color=grey&right_color=blue&left_text=pypi%20downloads/month">
-</a>
-<a href="https://huggingface.co/new-space?template=argilla/argilla-template-space">
-<img src="https://huggingface.co/datasets/huggingface/badges/raw/main/deploy-to-spaces-sm.svg"/>
+<img alt="Codecov" src="https://codecov.io/gh/extralit/extralit/branch/main/graph/badge.svg"/>
+<a href="https://pepy.tech/project/extralit">
+<img alt="Downloads" src="https://static.pepy.tech/personalized-badge/extralit?period=month&units=international_system&left_color=grey&right_color=blue&left_text=pypi%20downloads/month">
 </a>
 </p>
 
 <p align="center">
-<a href="https://twitter.com/argilla_io">
-<img src="https://img.shields.io/badge/twitter-black?logo=x"/>
-</a>
-<a href="https://www.linkedin.com/company/argilla-io">
+<a href="https://www.linkedin.com/company/extralit-ai">
 <img src="https://img.shields.io/badge/linkedin-blue?logo=linkedin"/>
 </a>
-<a href="https://join.slack.com/t/rubrixworkspace/shared_invite/zt-whigkyjn-a3IUJLD7gDbTZ0rKlvcJ5g">
-<img src="https://img.shields.io/badge/slack-purple?logo=slack"/>
-</a>
 </p>
 
-Argilla is a **collaboration platform for AI engineers and domain experts** that require **high-quality outputs, full
-data ownership, and overall efficiency**.
+This repository contains developer information about the backend server components. For general usage, please refer to our [main repository](https://github.com/extralit/extralit) or our [documentation](https://docs.extralit.ai/latest/).
 
-This repository only contains developer info about the backend server. If you want to get started, we recommend taking a
-look at our [main repository](https://github.com/argilla-io/argilla) or our [documentation](https://docs.argilla.io/).
+## Source Code Structure
 
-Are you a contributor or do you want to understand what is going on under the hood, please keep reading the
-documentation below.
+The server components are split into two main services:
 
-## Development environment
-
-By default all commands executed with `pdm run` will get environment variables from `.env.dev` except command `pdm test`
-that will overwrite some of them using values coming from `.env.test` file.
-
-These environment variables can be override if necessary so feel free to defined your own ones locally.
-
-### Run cli
-
-```sh
-pdm cli
+```
+/extralit_server
+  /api # Core extraction API endpoints
+    /handlers # FastAPI request handlers 
+    /schemas # Data models and validation
+    /services # Business logic services
+    /utils # Helper utilities
+  /ml # Machine learning components
+    /extractors # Document extraction models
+    /ocr # OCR processing
+    /pipeline # Extraction pipeline orchestration
+  /storage # Data persistence layer
+    /models # Database models
+    /search # Search engine integration
+    /vector # Vector store
 ```
 
-### Run database migrations
-
-By default a SQLite located at `~/.argilla/argilla.db` will be used. You can create the database and run migrations with
-the following custom PDM command:
-
-```sh
-pdm migrate
+```
+/argilla_server 
+  /api # Annotation UI API endpoints
+    /handlers
+    /schemas 
+  /models # Database models
+  /auth # Authentication
+  /tasks # Background jobs
 ```
 
-### Run tests
+## Development Environment
 
-A SQLite database located at `~/.argilla/argilla-test.db` will be automatically created to run tests. You can run the
-entire test suite using the following custom PDM command:
+The development environment uses Docker Compose to run all required services. Key commands:
 
 ```sh
+# Start all services
+docker-compose up -d
+
+# Run server in dev mode
+pdm run dev
+
+# Run tests
 pdm test
+
+# Format and lint
+pdm format
+pdm lint
+
+# Run all checks
+pdm all
 ```
 
-## Run development server
+## Key Components
 
-Note: If you need to run the frontend server you can follow the instructions at
-the [argilla-frontend](/argilla-frontend/README.md) project
+### FastAPI Servers
 
-### Run uvicorn development server
+- **Extraction Server**: Handles document processing, extraction pipeline, and ML model serving
+- **Annotation Server**: Manages UI, data validation workflow, and user collaboration
+
+### Databases
+
+- **PostgreSQL**: Main database for user data, annotations, and metadata
+- **Elasticsearch**: Vector store for semantic search and document indexing
+- **Weaviate**: Vector database for table and section embeddings
+
+### Background Processing
+
+Uses Celery for asynchronous tasks like:
+
+- Document OCR and preprocessing
+- ML model inference
+- Batch extraction jobs
+- Data export
+
+## CLI Commands
+
+Key management commands:
 
 ```sh
-pdm server
+# Database management
+python -m extralit_server db migrate
+python -m extralit_server db create-user
+
+# Start servers
+python -m extralit_server start
+python -m argilla_server start
+
+# Run workers
+python -m extralit_server worker
 ```
+
+See full CLI documentation in our [developer docs](https://docs.extralit.ai/latest/developer).
+
+## Contributing
+
+Check our [contribution guide](https://docs.extralit.ai/latest/community/contributor) and join our [Slack community](https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ).
+
+## Roadmap
+
+See our [development roadmap](https://github.com/orgs/extralit/projects/2/views/1) and share your ideas!

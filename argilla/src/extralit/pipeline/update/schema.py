@@ -19,8 +19,8 @@ def update_table_schema(table_json_str: str, schema_json: Dict, reference: str, 
     return json.dumps(table_json)
 
 
-def update_record_table_schema(record: rg.FeedbackRecord, schema: pa.DataFrameSchema,
-                               field: str, answer: Optional[str] = None) -> rg.FeedbackRecord:
+def update_record_table_schema(record: rg.Record, schema: pa.DataFrameSchema,
+                               field: str, answer: Optional[str] = None) -> rg.Record:
     reference = record.metadata.get('reference')
     schema_name = record.metadata['type']
     assert schema_name == schema.name, f"Schema name `{schema_name}` does not match the schema provided."

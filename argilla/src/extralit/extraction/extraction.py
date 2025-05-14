@@ -84,11 +84,13 @@ def extract_schema(
     Returns:
         Tuple[pd.DataFrame, ResponseResult]: The extracted DataFrame and the ResponseResult.
     """
-
-    if schema.name in extractions.extractions:
-        prompt = create_completion_prompt(schema, extractions, include_fields=include_fields, extra_prompt=user_prompt)
-    else:
-        prompt = create_extraction_prompt(schema, extractions, )
+    try:
+        if schema.name in extractions.extractions:
+            prompt = create_completion_prompt(schema, extractions, include_fields=include_fields, extra_prompt=user_prompt)
+        else:
+            prompt = create_extraction_prompt(schema, extractions, )
+    except Exception as e:
+        raise e
 
     output_cls = get_extraction_schema_model(
         schema, include_fields=include_fields, exclude_fields=['reference'], top_class=schema.name + 's', lower_class=schema.name,
@@ -119,13 +121,18 @@ def extract_schema(
                         f"DATA_EXTRACTION_SYSTEM_PROMPT_TMPL.")
         system_prompt = DEFAULT_EXTRACTION_PROMPT_TMPL
 
-    response = query_rag_index(
-        prompt, index=index, output_cls=output_cls,
-        similarity_top_k=similarity_top_k, filters=filters,
-        text_qa_template=system_prompt, response_mode="compact", **kwargs)
+    try:
+        response = query_rag_index(
+            prompt, index=index, output_cls=output_cls,
+            similarity_top_k=similarity_top_k, filters=filters,
+            text_qa_template=system_prompt, response_mode="compact", **kwargs)
 
-    df = convert_response_to_dataframe(response)
-    df = generate_reference_columns(df, schema)
+        df = convert_response_to_dataframe(response)
+        df = generate_reference_columns(df, schema)
+    except Exception as e:
+        _LOGGER.error(f"Failed to extract schema: \n{type(e)} {e}")
+        raise e
+
     try:
         response = ResponseResult(**response.__dict__)
     except Exception as e:

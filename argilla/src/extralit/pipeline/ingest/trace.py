@@ -6,19 +6,16 @@ from langfuse.api import ObservationsView
 
 from extralit.extraction.models import PaperExtraction
 from extralit.metrics.extraction import grits_multi_tables
-from extralit.server.context.llamaindex import get_langfuse_callback
-
-langfuse_callback = get_langfuse_callback()
-langfuse_client = langfuse_callback.langfuse
 
 
 def get_langfuse_traces(
-        langfuse_client: Langfuse,
-        user_id: str,
-        references: List[str]=None,
-        schema_names: List[str]=None,
-        input_match='Please complete the following',
-        page_size=50) -> Iterator[ObservationsView]:
+    langfuse_client: Langfuse,
+    user_id: str,
+    references: List[str]=None,
+    schema_names: List[str]=None,
+    input_match='Please complete the following',
+    page_size=50
+) -> Iterator[ObservationsView]:
 
     page = 1
     max_page = None

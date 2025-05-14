@@ -34,14 +34,14 @@ def load_segments(file_handler: FileHandler, path: str) -> Tuple[Segments, Segme
 
 
 def create_or_load_unstructured_segments(
-    paper: pd.Series, file_handler: FileHandler, preprocessing_path='data/preprocessing/',
+    paper: pd.Series, file_handler: FileHandler,
     load_only=True, redo=False, save=True,
 ) -> Tuple[Optional[Segments], Optional[Segments], Optional[Segments]]:
     from extralit.preprocessing.methods import unstructured
     from unstructured.partition.pdf import partition_pdf
     from unstructured.staging.base import elements_to_json, elements_from_json
 
-    cache_path: str = join(preprocessing_path, 'unstructured', paper.name)
+    cache_path: str = join('unstructured', paper.name)
     model_output_path = join(cache_path, 'elements.json')
     figures_path = join(cache_path, 'figures')
 
@@ -83,13 +83,13 @@ def create_or_load_unstructured_segments(
 
 
 def create_or_load_llmsherpa_segments(
-    paper: pd.Series, file_handler: FileHandler, preprocessing_path='data/preprocessing/',
+    paper: pd.Series, file_handler: FileHandler,
     load_only=True, redo=False, save=True,
 ) -> Tuple[Optional[Segments], Optional[Segments], Optional[Segments]]:
     from extralit.preprocessing.methods import llmsherpa
     from llmsherpa.readers import LayoutPDFReader
 
-    cache_path: str = join(preprocessing_path, 'llmsherpa', paper.name)
+    cache_path: str = join('llmsherpa', paper.name)
     model_output_path = join(cache_path, 'document.pkl')
 
     if file_handler.exists(cache_path) and load_only:
@@ -123,13 +123,13 @@ def create_or_load_llmsherpa_segments(
 
 
 def create_or_load_nougat_segments(
-    paper: pd.Series, file_handler: FileHandler, preprocessing_path='data/preprocessing/',
+    paper: pd.Series, file_handler: FileHandler,
     nougat_model=None,
     load_only=True, redo=False, save=True,
 ) -> Tuple[Optional[Segments], Optional[Segments], Optional[Segments]]:
     from extralit.preprocessing.methods import nougat
 
-    cache_path: str = join(preprocessing_path, 'nougat', paper.name)
+    cache_path: str = join('nougat', paper.name)
     model_output_path = join(cache_path, 'predictions.json')
 
     if file_handler.exists(cache_path) and load_only:
@@ -137,8 +137,8 @@ def create_or_load_nougat_segments(
 
     if not file_handler.exists(model_output_path) or redo:
         from extralit.preprocessing.text import NougatOCR
-        print(f"Nougat {paper.name}: {cache_path}", flush=True)
-        assert isinstance(nougat_model, NougatOCR), f"Invalid Nougat model: {nougat_model}"
+        if not isinstance(nougat_model, NougatOCR):
+            raise ValueError("NougatOCR model is required for Nougat preprocessing.")
 
         predictions = nougat_model.predict(paper.file_path)
         output = nougat.NougatOutput(reference=paper.name, pages=predictions)
@@ -158,13 +158,13 @@ def create_or_load_nougat_segments(
 
 
 def create_or_load_pdffigures2_segments(
-    paper: pd.Series, file_handler: FileHandler, preprocessing_path='data/preprocessing/', 
+    paper: pd.Series, file_handler: FileHandler, 
     jar_path='~/bin/pdffigures2.jar', load_only=True, redo=False, save=True,
 ) -> Tuple[Optional[Segments], Optional[Segments], Optional[Segments]]:
     if not os.path.exists(jar_path):
         raise FileNotFoundError(f"pdffigures2 jar not found: {jar_path}")
     
-    cache_path: str = join(preprocessing_path, 'pdffigure2', paper.name)
+    cache_path: str = join('pdffigure2', paper.name)
     _, file_name_ext = os.path.split(paper.file_path)
     file_name, _ = os.path.splitext(file_name_ext)
     model_output_path = join(cache_path, f'{file_name}.json')
@@ -203,13 +203,13 @@ def create_or_load_pdffigures2_segments(
 
 
 def create_or_load_deepdoctection_segments(
-    paper: pd.Series, file_handler: FileHandler, preprocessing_path='data/preprocessing/',
+    paper: pd.Series, file_handler: FileHandler,
     load_only=True, redo=False, save=True,
 ) -> Tuple[Optional[Segments], Optional[Segments], Optional[Segments]]:
     from extralit.preprocessing.methods import deepdoctection
     import deepdoctection as dd
 
-    cache_path: str = join(preprocessing_path, 'deepdoctection', paper.name)
+    cache_path: str = join('deepdoctection', paper.name)
     model_output_path = join(cache_path, 'page_1.json')
 
     if file_handler.exists(cache_path) and load_only:

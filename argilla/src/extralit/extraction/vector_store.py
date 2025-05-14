@@ -57,12 +57,17 @@ NODE_SCHEMA: List[Dict] = [
     },
     {
         "dataType": ["text"],
+        "description": "The header of the Node",
+        "name": "header",
+    },
+    {
+        "dataType": ["text"],
         "description": "The doc_id of the Node",
         "name": "doc_id",
     },
 ]
 
-def create_default_schema(client: Any, class_name: str) -> None:
+def create_default_schema(client: weaviate.WeaviateClient, class_name: str) -> None:
     """Create default schema."""
     validate_client(client)
     class_schema = {

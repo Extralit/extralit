@@ -1,5 +1,8 @@
 blank_issues_enabled: false
 contact_links:
+  - name: 📖 Documentation
+    url: https://docs.extralit.io/
+    about: Check our documentation for guides and information.
   - name: 🗯 Community Discussions
-    url: https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ
+    url: https://join.slack.com/t/extralit/shared_invite/zt-32blg3602-0m0XewPBXF7776BQ3m7ZlA
     about: Our Slack Community loves to discuss Extralit and scientific literature review topics

@@ -1,7 +1,21 @@
+# Copyright 2024-present, Extralit Labs, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import itertools
 import logging
 from datetime import datetime
-from typing import Dict, Iterator, Tuple, Optional, Union
+from typing import TYPE_CHECKING, Dict, Iterator, Tuple, Optional, Union
 from uuid import UUID
 
 import pandas as pd
@@ -9,7 +23,8 @@ import pandera as pa
 from pandera.api.base.model import MetaModel
 from pydantic.v1 import BaseModel, Field
 
-from extralit.extraction.models.schema import SchemaStructure
+if TYPE_CHECKING:
+    from extralit.extraction.models.schema import SchemaStructure
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -17,7 +32,7 @@ _LOGGER = logging.getLogger(__name__)
 class PaperExtraction(BaseModel):
     reference: str
     extractions: Dict[str, pd.DataFrame] = Field(default_factory=dict)
-    schemas: SchemaStructure = Field(..., description="The schema structure of the extraction.")
+    schemas: "SchemaStructure" = Field(..., description="The schema structure of the extraction.")
     durations: Dict[str, Optional[float]] = Field(default_factory=dict)
     updated_at: Dict[str, Optional[datetime]] = Field(default_factory=dict)
     inserted_at: Dict[str, Optional[datetime]] = Field(default_factory=dict)
@@ -49,9 +64,13 @@ class PaperExtraction(BaseModel):
                 continue
 
             dependent_df = next(
-                (value.copy() for key, value in self.extractions.items() \
-                 if str(key).lower() == dep_schema_name.lower() and value.size > 0),
-                None)
+                (
+                    value.copy()
+                    for key, value in self.extractions.items()
+                    if str(key).lower() == dep_schema_name.lower() and value.size > 0
+                ),
+                None,
+            )
             if dependent_df is None:
                 continue
 
@@ -60,13 +79,13 @@ class PaperExtraction(BaseModel):
                 _LOGGER.info(f"Skipping join on {dep_schema_name} as it is the same user.")
 
             try:
-                dependent_df = dependent_df.rename_axis(index={'reference': ref_column})
-                df = df.join(dependent_df, how='left', rsuffix='_joined')
-                df = overwrite_joined_columns(df, rsuffix='_joined', prepend=True)
+                dependent_df = dependent_df.rename_axis(index={"reference": ref_column})
+                df = df.join(dependent_df, how="left", rsuffix="_joined")
+                df = overwrite_joined_columns(df, rsuffix="_joined", prepend=True)
                 if drop_joined_index and ref_column in df.index.names:
                     df = df.reset_index(level=ref_column, drop=True)
-            except NotImplementedError as e:
-                _LOGGER.info(f'{dep_schema_name}-{schema.name} extraction table is already joined.')
+            except NotImplementedError:
+                _LOGGER.info(f"{dep_schema_name}-{schema.name} extraction table is already joined.")
             except Exception as e:
                 _LOGGER.error(f"Failed to join `{dep_schema_name}` to {schema.name}: {e}")
                 raise e
@@ -109,11 +128,11 @@ class PaperExtraction(BaseModel):
         return self.extractions.items()
 
     def __repr_args__(self):
-        args = [(k, v.dropna(axis=1, how='all').shape) for k, v in self.extractions.items() if v.size]
+        args = [(k, v.dropna(axis=1, how="all").shape) for k, v in self.extractions.items() if v.size]
         return args
 
 
-def overwrite_joined_columns(df: pd.DataFrame, rsuffix='_joined', prepend=True) -> pd.DataFrame:
+def overwrite_joined_columns(df: pd.DataFrame, rsuffix="_joined", prepend=True) -> pd.DataFrame:
     # Overwrite the original column with the '_joined' column
     suffix_columns = [col for col in df.columns if col.endswith(rsuffix)]
     joined_columns = [col.rsplit(rsuffix, 1)[0] for col in suffix_columns]
