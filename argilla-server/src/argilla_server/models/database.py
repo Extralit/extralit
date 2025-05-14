@@ -1,6 +1,8 @@
 #  Copyright 2021-present, the Recognai S.L. team.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
+# TODO: This license is not consistent with the license used in the project.
+#       Delete the inconsistent license and above line and rerun pre-commit to insert a good license.
 #  you may not use this file except in compliance with the License.
 #  You may obtain a copy of the License at
 #
@@ -171,7 +173,7 @@ class Suggestion(DatabaseModel):
                 if attr == "value" and len(value) > 20:
                     value = value[:20] + '...'
                 attrs.append(f"{attr}={value}")
-        
+
         return f"Suggestion({', '.join(attrs)})"
 
 
@@ -615,7 +617,7 @@ class User(DatabaseModel):
             await WorkspaceUser.get_by(self.current_async_session, workspace_id=workspace_id, user_id=self.id)
             is not None
         )
-    
+
     async def is_member_of_workspace_name(self, workspace_name: str) -> bool:
         workspace = await Workspace.get_by(self.current_async_session, name=workspace_name)
         if not workspace:
@@ -654,10 +656,8 @@ class Document(DatabaseModel):
             f"Document(id={str(self.id)!r}, workspace_id={str(self.workspace_id)!r}, reference={self.reference!r},"
             f"pmid={self.pmid!r}, doi={self.doi!r}, file_name={self.file_name!r}, url={self.url!r})"
         )
-    
 
-=======
->>>>>>> v2.6.0
+
 def generate_webhook_secret() -> str:
     # NOTE: https://www.standardwebhooks.com implementation requires a base64 encoded secret
     return base64.b64encode(secrets.token_bytes(_WEBHOOK_SECRET_BYTES_LENGTH)).decode("utf-8")

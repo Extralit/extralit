@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2023-present, Extralit, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -43,10 +43,7 @@ from argilla._models._settings._questions import (
     QuestionModel,
     QuestionSettings,
     SpanQuestionSettings,
-<<<<<<< HEAD
     TableQuestionSettings,
-=======
->>>>>>> v2.6.0
     TextQuestionSettings,
     LabelQuestionSettings,
     RatingQuestionSettings,
@@ -61,16 +58,7 @@ from argilla._models._settings._metadata import (
     FloatMetadataPropertySettings,
     IntegerMetadataPropertySettings,
 )
-from argilla._models._settings._questions import (
-    QuestionModel,
-    QuestionSettings,
-    LabelQuestionSettings,
-    RatingQuestionSettings,
-    TextQuestionSettings,
-    MultiLabelQuestionSettings,
-    RankingQuestionSettings,
-    SpanQuestionSettings,
-)
+
 from argilla._models._settings._vectors import VectorFieldModel
 
 from argilla._models._user import UserModel, Role

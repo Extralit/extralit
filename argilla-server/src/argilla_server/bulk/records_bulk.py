@@ -1,4 +1,4 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+#  Copyright 2023-present, Extralit, Inc.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -155,13 +155,10 @@ class CreateRecordsBulk:
             autocommit=False,
         )
 
-<<<<<<< HEAD
     @classmethod
     def _metadata_is_set(cls, record_create: RecordCreate) -> bool:
         return "metadata" in record_create.model_fields_set
 
-=======
->>>>>>> v2.6.0
 
 class UpsertRecordsBulk(CreateRecordsBulk):
     async def upsert_records_bulk(
@@ -212,11 +209,7 @@ class UpsertRecordsBulk(CreateRecordsBulk):
 
         await self._notify_upsert_record_events(records)
 
-<<<<<<< HEAD
-        return RecordsBulkWithUpdateInfo(
-=======
         return RecordsBulkWithUpdatedItemIds(
->>>>>>> v2.6.0
             items=records,
             updated_item_ids=[record.id for record in found_records.values()],
         )

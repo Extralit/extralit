@@ -43,12 +43,19 @@ export default {
   optional: "Opcional",
   template: "Plantilla",
   rows: "filas",
-  datasetName: "Nombre del dataset",
+<<<<<<< HEAD
+=======
+  datasetName: "Dataset name",
+>>>>>>> v2.6.0
   noRecordsMessages: {
     datasetEmptyForAnnotator:
       "El dataset está vacío. Pide a un administrador que suba registros y vuelve pronto.",
     datasetEmptyForAdmin:
+<<<<<<< HEAD
       "El dataset está vacío. Puedes agregar registros usando el SDK de Python, consulta la <a href='https://docs.extralit.ai/latest/admin_guide/record/'>documentación</a> sobre cómo agregar registros.",
+=======
+      "El dataset está vacío. Puedes agregar registros usando el SDK de Python, consulta la <a href='https://docs.argilla.io/latest/how_to_guides/record/'>documentación</a> sobre cómo agregar registros.",
+>>>>>>> v2.6.0
     taskDistributionCompleted: "¡La tarea está completada!",
     noSubmittedRecords: "Aún no has enviado ningún registro",
     noRecordsFound:
@@ -275,7 +282,11 @@ export default {
       "Si estás usando un Espacio privado, consulta la <a target='_blank' href='https://docs.extralit.ai/latest/getting_started/how-to-configure-argilla-on-huggingface/#how-to-use-private-spaces'>documentación</a>.",
     exampleDatasetsTitle: "¿No sabes por dónde empezar?",
     exampleDatasetsText: "Explora estos datasets de ejemplo",
+<<<<<<< HEAD
     guidesTitle: "¿No conoces Extralit?",
+=======
+    guidesTitle: "¿No conoces Argilla?",
+>>>>>>> v2.6.0
     guidesText: "Echa un vistazo a estas guías:",
     pasteRepoIdPlaceholder:
       "Pega el ID del repositorio, por ejemplo, stanfordnlp/imdb",

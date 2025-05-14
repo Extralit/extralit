@@ -1,4 +1,4 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+#  Copyright 2023-present, Extralit, Inc.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,13 +17,9 @@ import os
 import base64
 import json
 
-<<<<<<< HEAD
-from typing import Any
-=======
 from uuid import uuid4
 from pathlib import Path
 from typing import Any, Optional, List
->>>>>>> v2.6.0
 from typing_extensions import Self
 from tempfile import TemporaryDirectory
 

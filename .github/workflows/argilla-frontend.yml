@@ -10,7 +10,7 @@ on:
   pull_request:
     paths:
       - "argilla-frontend/**"
-      
+
     types:
       - opened
       - edited
@@ -43,7 +43,7 @@ jobs:
           excluded_globs: "*.spec.js;**/*.{png,jpg,svg,md};**/!(*.module).ts,**/__pycache__/,**/__mocks__/,LICENSE*,**/.gitignore,**/*.egg-info/,**/.*/"
           output_file: "repo-visualizer.svg"
           should_push: false
-          
+
       - name: Upload repo visualizer diagram as artifact
         uses: actions/upload-artifact@v4
         with:

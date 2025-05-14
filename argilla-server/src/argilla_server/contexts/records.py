@@ -1,4 +1,4 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+#  Copyright 2023-present, Extralit, Inc.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ from sqlalchemy.orm import selectinload, contains_eager
 
 from argilla_server.api.schemas.v1.records import RecordUpdate
 from argilla_server.api.schemas.v1.vectors import Vector as VectorSchema
-
 from argilla_server.database import get_async_db
 from argilla_server.models import Dataset, Record, VectorSettings, Vector, Response, ResponseStatus, Suggestion
 from argilla_server.search_engine import SearchEngine
@@ -33,6 +32,7 @@ from argilla_server.webhooks.v1.records import (
     build_record_event as build_record_event_v1,
     notify_record_event as notify_record_event_v1,
 )
+>>>>>>> v2.6.0
 
 
 async def list_dataset_records(
@@ -110,7 +110,7 @@ def _build_list_records_query(
 
     if with_response_suggestions and workspace_user_ids:
         query = query.outerjoin(
-            Response, 
+            Response,
             and_(
                 Response.record_id == Record.id,
                 or_(

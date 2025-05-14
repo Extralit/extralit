@@ -1,4 +1,4 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+#  Copyright 2023-present, Extralit, Inc.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -11,12 +11,6 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-<<<<<<< HEAD
-import os
-from collections import OrderedDict
-from typing import AsyncGenerator, Optional
-=======
->>>>>>> v2.6.0
 
 import os
 
@@ -46,11 +40,7 @@ TAGGED_REVISIONS = OrderedDict(
         "1.28": "ca7293c38970",
         "0.2.0": "7552df94427a", # Extralit v0.2.0
         "2.0": "237f7c674d74",
-<<<<<<< HEAD
         "2.4": "660d6c6b3360", # Extralit v0.3.0
-=======
-        "2.4": "660d6c6b3360",
->>>>>>> v2.6.0
         "2.5": "580a6553186f",
     }
 )

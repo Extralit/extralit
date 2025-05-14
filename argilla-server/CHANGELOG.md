@@ -266,7 +266,7 @@ These are the section headers that we use:
 
 ### Fixed
 - Fixed the k8s-tilt devcontainer for extralit
-- Fixed the weaviate url for /examples/deployments/k8s/extralit-deployment.yaml 
+- Fixed the weaviate url for /examples/deployments/k8s/extralit-deployment.yaml
 
 
 ## [Extralit] [v0.2.1](https://github.com/extralit/extralit/compare/v0.2.0...v0.2.1)

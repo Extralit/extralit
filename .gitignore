@@ -136,14 +136,12 @@ sw.*
 # Ruff cache
 .ruff_cache/
 
-<<<<<<< HEAD
 # yarn & npm
 yarn.lock
 package-lock.json
-=======
+
 # App generated files
 src/**/server/static/
->>>>>>> v2.6.0
 
 # Old users db file
 .users.yml

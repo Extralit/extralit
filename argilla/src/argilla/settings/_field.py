@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2023-present, Extralit, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -40,11 +40,7 @@ except ImportError:
 if TYPE_CHECKING:
     from argilla.datasets import Dataset
 
-<<<<<<< HEAD
 __all__ = ["Field", "FieldBase", "TextField", "ImageField", "ChatField", "CustomField", "TableField"]
-=======
-__all__ = ["Field", "FieldBase", "TextField", "ImageField", "ChatField", "CustomField"]
->>>>>>> v2.6.0
 
 
 class FieldBase(ABC, SettingsPropertyBase):
@@ -144,14 +140,11 @@ class TextField(FieldBase):
     def use_table(self) -> Optional[bool]:
         return self._model.settings.use_table
 
-<<<<<<< HEAD
     @use_table.setter
     def use_table(self, value: bool) -> None:
         self._model.settings.use_table = value
 
 
-=======
->>>>>>> v2.6.0
 class ImageField(FieldBase):
     """Image field for use in Argilla `Dataset` `Settings`"""
 
@@ -346,7 +339,6 @@ def _field_from_model(model: FieldModel) -> Field:
 
 def _field_from_dict(data: dict) -> Field:
     """Create a field instance from a field dictionary"""
-<<<<<<< HEAD
     field_type = data["type"]
 
     if field_type == "text":
@@ -365,6 +357,3 @@ def _field_from_dict(data: dict) -> Field:
         return MetadataField.from_dict(data)
     else:
         raise ArgillaError(f"Unsupported field type: {field_type}")
-=======
-    return _field_from_model(FieldModel(**data))
->>>>>>> v2.6.0

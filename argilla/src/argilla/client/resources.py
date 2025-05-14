@@ -1,4 +1,6 @@
 # Copyright 2024-present, Argilla, Inc.
+# TODO: This license is not consistent with the license used in the project.
+#       Delete the inconsistent license and above line and rerun pre-commit to insert a good license.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +20,6 @@ from collections.abc import Sequence
 from typing import TYPE_CHECKING, List, Optional, Union, overload
 
 from argilla._api._base import ResourceAPI
-from argilla._api._client import DEFAULT_HTTP_CONFIG
 from argilla._api._webhooks import WebhookModel
 from argilla._exceptions import ArgillaError, NotFoundError
 from argilla._helpers import GenericIterator
@@ -30,67 +31,7 @@ if TYPE_CHECKING:
     from argilla.client.core import Argilla
 
 __all__ = ["Users", "Workspaces", "Datasets", "Webhooks"]
-    ) -> None:
-        """Inits the `Argilla` client.
 
-        Args:
-            api_url: the URL of the Argilla API. If not provided, then the value will try
-                to be set from `ARGILLA_API_URL` environment variable. Defaults to
-                `"http://localhost:6900"`.
-            api_key: the key to be used to authenticate in the Argilla API. If not provided,
-                then the value will try to be set from `ARGILLA_API_KEY` environment variable.
-                Defaults to `None`.
-            timeout: the maximum time in seconds to wait for a request to the Argilla API
-                to be completed before raising an exception. Defaults to `60`.
-            retries: the number of times to retry the HTTP connection to the Argilla API
-                before raising an exception. Defaults to `5`.
-        """
-        super().__init__(api_url=api_url, api_key=api_key, timeout=timeout, retries=retries, **http_client_args)
-
-        self._set_default(self)
-
-    @property
-    def workspaces(self) -> "Workspaces":
-        """A collection of workspaces on the server."""
-        return Workspaces(client=self)
-
-    @property
-    def datasets(self) -> "Datasets":
-        """A collection of datasets on the server."""
-        return Datasets(client=self)
-
-    @property
-    def users(self) -> "Users":
-        """A collection of users on the server."""
-        return Users(client=self)
-
-    @property
-    def webhooks(self) -> "Webhooks":
-        """A collection of webhooks on the server."""
-        return Webhooks(client=self)
-
-    @cached_property
-    def me(self) -> "User":
-        from argilla.users import User
-
-        return User(client=self, _model=self.api.users.get_me())
-
-    ############################
-    # Private methods
-    ############################
-
-    @classmethod
-    def _set_default(cls, client: "Argilla") -> None:
-        """Set the default instance of Argilla."""
-        cls._default_client = client
-
-    @classmethod
-    def _get_default(cls) -> "Argilla":
-        """Get the default instance of Argilla. If it doesn't exist, create a new one."""
-        if cls._default_client is None:
-            cls._default_client = Argilla()
-        return cls._default_client
->>>>>>> v2.6.0:argilla/src/argilla/client.py
 
 
 class Users(Sequence["User"], ResourceHTMLReprMixin):
@@ -326,7 +267,7 @@ class Datasets(Sequence["Dataset"], ResourceHTMLReprMixin):
                 return self._from_model(model)
             warnings.warn(f"Dataset with id {id!r} not found")
             return None
-        
+
         elif name is not None and id is None:
             workspace_obj = workspace or self._client.workspaces.default
             if isinstance(workspace_obj, str):
@@ -334,13 +275,13 @@ class Datasets(Sequence["Dataset"], ResourceHTMLReprMixin):
 
             if workspace_obj is None:
                 raise ArgillaError("Workspace not found. Please provide a valid workspace name or id.")
-            
+
             for dataset in workspace_obj.datasets:
                 if dataset.name == name:
                     return dataset.get()
             warnings.warn(f"Dataset with name {name!r} not found in workspace {workspace_obj.name!r}")
             return None
-        
+
         elif name is None and id is None and workspace is not None:
             workspace_obj = workspace
             if isinstance(workspace_obj, str):
@@ -354,7 +295,7 @@ class Datasets(Sequence["Dataset"], ResourceHTMLReprMixin):
                 return self._from_model(model)
             warnings.warn(f"Dataset with id {id!r} not found")
             return None
-        
+
         else:
             raise ArgillaError("One of 'name', 'id', or 'workspace' must be provided")
 

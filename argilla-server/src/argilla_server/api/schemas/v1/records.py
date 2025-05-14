@@ -1,4 +1,4 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+#  Copyright 2023-present, Extralit, Inc.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -243,7 +243,7 @@ class RecordIncludeParam(BaseModel):
     @property
     def with_suggestions(self) -> bool:
         return self._has_relationships and RecordInclude.suggestions in self.relationships
-    
+
     @property
     def with_response_suggestions(self) -> bool:
         return self._has_relationships and RecordInclude.response_suggestions in self.relationships
@@ -287,8 +287,6 @@ class RecordsUpdate(BaseModel):
     items: List[RecordUpdateWithId] = Field(
         ..., min_length=RECORDS_UPDATE_MIN_ITEMS, max_length=RECORDS_UPDATE_MAX_ITEMS
     )
-=======
->>>>>>> v2.6.0
 
 
 class MetadataParsedQueryParam:

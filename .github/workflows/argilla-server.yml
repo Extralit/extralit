@@ -15,7 +15,7 @@ on:
     paths:
       - "argilla-server/**"
       - ".github/workflows/argilla-server.*"
-      
+
   pull_request:
     paths:
       - "argilla-server/**"
@@ -99,12 +99,9 @@ jobs:
         run: pdm install
 
       - name: Run tests 📈
-<<<<<<< HEAD
         continue-on-error: true
-=======
         env:
           HF_TOKEN_ARGILLA_INTERNAL_TESTING: ${{ secrets.HF_TOKEN_ARGILLA_INTERNAL_TESTING }}
->>>>>>> v2.6.0
         run: |
           ARGILLA_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/argilla
           ARGILLA_ELASTICSEARCH=http://localhost:9200
@@ -117,7 +114,7 @@ jobs:
           file: coverage.xml
           flags: argilla-server
           token: ${{ secrets.CODECOV_TOKEN }}
-      
+
       - name: Upload test results to Codecov
         if: ${{ !cancelled() }}
         uses: codecov/test-results-action@v1
@@ -201,7 +198,7 @@ jobs:
           excluded_globs: "*.spec.js;**/*.{png,jpg,svg,md};**/!(*.module).ts,**/__pycache__/,**/__mocks__/,LICENSE*,**/.gitignore,**/*.egg-info/,**/.*/"
           output_file: "repo-visualizer.svg"
           should_push: false
-          
+
       - name: Upload repo visualizer diagram as artifact
         uses: actions/upload-artifact@v4
         with:

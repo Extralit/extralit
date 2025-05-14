@@ -1,4 +1,4 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+#  Copyright 2023-present, Extralit, Inc.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -276,7 +276,6 @@ class SpanQuestionSettingsUpdate(UpdateSchema):
     ] = None
     visible_options: Optional[int] = Field(None, ge=SPAN_MIN_VISIBLE_OPTIONS)
     allow_overlapping: Optional[bool] = None
-<<<<<<< HEAD
 
 
 # Table question
@@ -292,8 +291,6 @@ class TableQuestionSettingsUpdate(UpdateSchema):
     type: Literal[QuestionType.table]
 
     __non_nullable_fields__ = {}
-=======
->>>>>>> v2.6.0
 
 
 QuestionSettings = Annotated[

@@ -1,6 +1,8 @@
 #  Copyright 2021-present, the Recognai S.L. team.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
+# TODO: This license is not consistent with the license used in the project.
+#       Delete the inconsistent license and above line and rerun pre-commit to insert a good license.
 #  you may not use this file except in compliance with the License.
 #  You may obtain a copy of the License at
 #
@@ -12,7 +14,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 import uuid
 
@@ -213,24 +215,24 @@ async def _validate_search_records_query(db: "AsyncSession", query: SearchRecord
 
 def add_suggestions_from_responses(
         records: List[Record],
-        current_user: User, 
-        workspace_users: UsersSchema, 
-        dataset: Dataset, 
+        current_user: User,
+        workspace_users: UsersSchema,
+        dataset: Dataset,
     ) -> Records:
     workspace_users_id2name = {user.id: user.username for user in workspace_users.items}
     questions_name_map = {question.name: question for question in dataset.questions}
-    
+
     for record in records:
         other_user_responses = [
             response for response in record.responses \
             if response.user_id != current_user.id
         ]
-        
+
         for response in other_user_responses:
             suggestions = generate_suggestions_from_response(
-                response, 
-                current_user=current_user, 
-                workspace_users_id2name=workspace_users_id2name, 
+                response,
+                current_user=current_user,
+                workspace_users_id2name=workspace_users_id2name,
                 questions_name_map=questions_name_map
             )
             record.suggestions.extend(suggestions)
@@ -239,7 +241,7 @@ def add_suggestions_from_responses(
             record.responses = [record.responses[0]]
         else:
             record.responses = []
-    
+
     return records
 
 
@@ -269,7 +271,7 @@ def generate_suggestions_from_response(
             updated_at=response.updated_at
         )
         suggestions.append(suggestion)
-    
+
     return suggestions
 
 @router.get("/datasets/{dataset_id}/records", response_model=Records, response_model_exclude_unset=True)
@@ -367,7 +369,7 @@ async def search_current_user_dataset_records(
             selectinload(Dataset.questions),
         ],
     )
-    
+
     if include and include.with_response_suggestions and not current_user.is_annotator:
         workspace_users: UsersSchema = await list_workspace_users(db=db, workspace_id=dataset.workspace_id, current_user=current_user)
         workspace_user_ids = [user.id for user in workspace_users.items]

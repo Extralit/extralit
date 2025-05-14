@@ -1,4 +1,4 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+#  Copyright 2023-present, Extralit, Inc.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -331,8 +331,6 @@ async def import_dataset_from_hub(
         split=hub_dataset.split,
         dataset_id=dataset.id,
         mapping=hub_dataset.mapping.model_dump(),
-<<<<<<< HEAD
-=======
     )
 
     return JobSchema(id=job.id, status=job.get_status())
@@ -360,7 +358,6 @@ async def export_dataset_to_hub(
         private=hub_dataset.private,
         token=hub_dataset.token,
         dataset_id=dataset.id,
->>>>>>> v2.6.0
     )
 
     return JobSchema(id=job.id, status=job.get_status())

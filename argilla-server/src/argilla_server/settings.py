@@ -1,5 +1,5 @@
 #  coding=utf-8
-#  Copyright 2021-present, the Recognai S.L. team.
+#  Copyright 2023-present, Extralit, Inc.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -236,7 +236,7 @@ class Settings(BaseSettings):
 
             if not database_url.startswith('postgresql+asyncpg://'):
                 raise ValueError(f"Invalid database URL format. Expected: 'postgresql+asyncpg://...', given '{parsed_url.scheme}'")
-            
+
         return database_url
 
     @model_validator(mode="after")

@@ -151,14 +151,16 @@ const config: NuxtConfig = {
       target: BASE_URL,
     },
   },
-
   // Build Configuration (https://go.nuxtjs.dev/config-build)
   build: {
+<<<<<<< HEAD
     cssSourceMap: false,
     cache: true,
     parallel: true,
     quiet: true,
     analyze: false,
+=======
+>>>>>>> v2.6.0
     extend(config) {
       config.resolve.alias.vue = "vue/dist/vue.common";
       config.module.rules.push({

@@ -1,6 +1,8 @@
 #  Copyright 2021-present, the Recognai S.L. team.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
+# TODO: This license is not consistent with the license used in the project.
+#       Delete the inconsistent license and above line and rerun pre-commit to insert a good license.
 #  you may not use this file except in compliance with the License.
 #  You may obtain a copy of the License at
 #
@@ -351,7 +353,7 @@ async def get_records_by_ids(
             query = query.options(joinedload(Record.responses))
         elif include.with_response_suggestions and workspace_user_ids:
             query = query.outerjoin(
-                Response, 
+                Response,
                 and_(
                     Response.record_id == Record.id,
                     or_(
@@ -571,8 +573,6 @@ async def _build_record(
         external_id=record_create.external_id,
         dataset=dataset,
     )
-=======
->>>>>>> v2.6.0
 
 
 async def _load_users_from_responses(responses: Union[Response, Iterable[Response]]) -> None:
@@ -585,7 +585,7 @@ async def _load_users_from_responses(responses: Union[Response, Iterable[Respons
         await response.awaitable_attrs.user
 
 
-<<<<<<< HEAD
+
 async def _validate_record_metadata(
     db: AsyncSession,
     dataset: Dataset,
@@ -742,8 +742,6 @@ async def _preload_record_relationships_before_index(db: AsyncSession, record: R
     )
 
 
-=======
->>>>>>> v2.6.0
 async def preload_records_relationships_before_validate(db: AsyncSession, records: List[Record]) -> None:
     await db.execute(
         select(Record)
@@ -754,7 +752,6 @@ async def preload_records_relationships_before_validate(db: AsyncSession, record
     )
 
 
-<<<<<<< HEAD
 async def delete_records(
     db: AsyncSession, search_engine: "SearchEngine", dataset: Dataset, records_ids: List[UUID]
 ) -> None:
@@ -819,8 +816,6 @@ async def delete_record(db: AsyncSession, search_engine: "SearchEngine", record:
     return record
 
 
-=======
->>>>>>> v2.6.0
 async def create_response(
     db: AsyncSession, search_engine: SearchEngine, record: Record, user: User, response_create: ResponseCreate
 ) -> Response:

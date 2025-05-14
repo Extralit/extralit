@@ -20,12 +20,12 @@ Extralit is a free, open-source, self-hosted tool. This means you need to deploy
             <img src="https://huggingface.co/datasets/huggingface/badges/raw/main/deploy-to-spaces-lg.svg" />
         </a>
     </div>
-    
+
     You can use the default values following these steps:
 
     - Leave the default owner if using your personal account
       - Leave `ADMIN_USERNAME` and `ADMIN_PASSWORD` secrets empty since you'll sign in with your HF user as the Argilla Space `owner`.
-    
+
     - You must fill out the following Space secrets fields:
       - `OAUTH2_HUGGINGFACE_CLIENT_ID` and `OAUTH2_HUGGINGFACE_CLIENT_SECRET`: The Oauth.
       - `ARGILLA_DATABASE_URL`: The URL of the PostgreSQL database where the data will be stored. If you leave it blank, the data will be lost when the Space restarts.

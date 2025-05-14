@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2023-present, Extralit, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,11 +27,7 @@ except ImportError:
 
 
 class LabelQuestionSettings(BaseModel):
-<<<<<<< HEAD
     type: Literal["label_selection", "dynamic_label_selection"] = "label_selection"
-=======
-    type: Literal["label_selection"] = "label_selection"
->>>>>>> v2.6.0
 
     _MIN_VISIBLE_OPTIONS: ClassVar[int] = 3
 
@@ -56,11 +52,7 @@ class LabelQuestionSettings(BaseModel):
 
 
 class MultiLabelQuestionSettings(LabelQuestionSettings):
-<<<<<<< HEAD
     type: Literal["multi_label_selection", "dynamic_multi_label_selection"] = "multi_label_selection"
-=======
-    type: Literal["multi_label_selection"] = "multi_label_selection"
->>>>>>> v2.6.0
     options_order: Literal["natural", "suggestion"] = Field("natural", description="The order of the labels in the UI.")
 
 
@@ -130,14 +122,11 @@ class TextQuestionSettings(BaseModel):
     type: Literal["text"] = "text"
 
     use_markdown: bool = False
-<<<<<<< HEAD
     use_table: bool = False
 
 
 class TableQuestionSettings(BaseModel):
     type: Literal["table"] = "table"
-=======
->>>>>>> v2.6.0
 
 
 QuestionSettings = Annotated[
@@ -148,10 +137,7 @@ QuestionSettings = Annotated[
         RatingQuestionSettings,
         SpanQuestionSettings,
         TextQuestionSettings,
-<<<<<<< HEAD
         TableQuestionSettings,
-=======
->>>>>>> v2.6.0
     ],
     Field(..., discriminator="type"),
 ]
