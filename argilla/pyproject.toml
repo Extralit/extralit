@@ -2,10 +2,10 @@
 name = "extralit"
 description = "Open-source tool for accurate & fast scientific literature data extraction with LLM and human-in-the-loop."
 authors = [
-    { name = "Jonny Tran", email = "nhat.c.tran@gmail.com" },
+    { name = "Extralit Labs", email = "extralit.contact@gmail.com" },
 ]
 maintainers = [
-    { name = "Jonny Tran", email = "nhat.c.tran@gmail.com" },
+    { name = "Extralit Labs", email = "extralit.contact@gmail.com" },
 ]
 requires-python = ">=3.9,!=3.10.0"
 readme = "README.md"

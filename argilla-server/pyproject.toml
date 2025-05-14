@@ -14,12 +14,10 @@ keywords = [
     "mlops",
 ]
 authors = [
-    { name = "Jonny Tran", email = "nhat.c.tran@gmail.com" },
-    { name = "argilla", email = "contact@argilla.io" }
+    { name = "Extralit Labs", email = "extralit.contact@gmail.com" },
 ]
 maintainers = [
-    { name = "Jonny Tran", email = "nhat.c.tran@gmail.com" },
-    { name = "argilla", email = "contact@argilla.io" }
+    { name = "Extralit Labs", email = "extralit.contact@gmail.com" },
 ]
 dependencies = [
     # Basic dependencies
