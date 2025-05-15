@@ -62,6 +62,8 @@ The Extralit repository has a monorepo structure, which means that all the compo
 
 ## Development workflow
 
+[:octicons-rocket-16: How to Create a New Release](release_guide.md){.md-button}
+
 If you prefer not to use Codespaces, you can set up your development environment manually using the following approaches.
 
 ### Set up the Python environment
