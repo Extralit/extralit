@@ -32,7 +32,7 @@ from argilla_server.webhooks.v1.records import (
     build_record_event as build_record_event_v1,
     notify_record_event as notify_record_event_v1,
 )
->>>>>>> v2.6.0
+
 
 
 async def list_dataset_records(

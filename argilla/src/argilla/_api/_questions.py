@@ -1,6 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
-# TODO: This license is not consistent with the license used in the project.
-#       Delete the inconsistent license and above line and rerun pre-commit to insert a good license.
+# Copyright 2023-present, Extralit, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -83,11 +81,8 @@ class QuestionsAPI(ResourceAPI[QuestionModel]):
     ####################
 
     def _model_from_json(self, response_json: Dict) -> QuestionModel:
-<<<<<<< HEAD
         response_json["inserted_at"] = self._date_from_iso_format(date=response_json["inserted_at"])
         response_json["updated_at"] = self._date_from_iso_format(date=response_json["updated_at"])
-=======
->>>>>>> v2.6.0
         return QuestionModel(**response_json)
 
     def _model_from_jsons(self, response_jsons: List[Dict]) -> List[QuestionModel]:

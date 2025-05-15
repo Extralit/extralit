@@ -1,8 +1,6 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+#  Copyright 2023-present, Extralit, Inc.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
-# TODO: This license is not consistent with the license used in the project.
-#       Delete the inconsistent license and above line and rerun pre-commit to insert a good license.
 #  you may not use this file except in compliance with the License.
 #  You may obtain a copy of the License at
 #
@@ -95,10 +93,7 @@ class TestUpsertDatasetRecordsBulk:
                     },
                     {
                         "id": str(record.id),
-<<<<<<< HEAD
                         "fields": {},
-=======
->>>>>>> v2.6.0
                     },
                 ],
             },
@@ -106,10 +101,6 @@ class TestUpsertDatasetRecordsBulk:
 
         assert response.status_code == 200
 
-<<<<<<< HEAD
-        assert record.fields == {"text-field": "value"}
-        assert (await db.execute(select(func.count(Record.id)))).scalar_one() == 2
-=======
         assert (await db.execute(select(func.count(Record.id)))).scalar_one() == 2
         assert record.fields == {"text-field": "value"}
 

@@ -5,10 +5,7 @@ const STATUS = {
   discarded: "var(--fg-status-discarded)",
   submitted: "var(--fg-status-submitted)",
   draft: "var(--fg-status-draft)",
-<<<<<<< HEAD
   valid: "var(--fg-status-pending)",
-=======
->>>>>>> v2.6.0
 };
 
 type Status = keyof typeof STATUS;

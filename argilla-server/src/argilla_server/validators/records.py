@@ -1,8 +1,6 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+#  Copyright 2023-present, Extralit, Inc.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
-# TODO: This license is not consistent with the license used in the project.
-#       Delete the inconsistent license and above line and rerun pre-commit to insert a good license.
 #  you may not use this file except in compliance with the License.
 #  You may obtain a copy of the License at
 #
@@ -24,11 +22,7 @@ from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from argilla_server.api.schemas.v1.chat import ChatFieldValue
-<<<<<<< HEAD
-from argilla_server.api.schemas.v1.records import RecordCreate, RecordUpsert
-=======
 from argilla_server.api.schemas.v1.records import RecordCreate, RecordUpsert, RecordUpdate
->>>>>>> v2.6.0
 from argilla_server.api.schemas.v1.records_bulk import RecordsBulkCreate
 from argilla_server.api.schemas.v1.responses import UserResponseCreate
 from argilla_server.api.schemas.v1.suggestions import SuggestionCreate

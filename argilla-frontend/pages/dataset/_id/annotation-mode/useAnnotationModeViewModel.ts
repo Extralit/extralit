@@ -113,11 +113,7 @@ export const useAnnotationModeViewModel = () => {
     datasetId,
     breadcrumbs,
     updateQueryParams,
-<<<<<<< HEAD
-    getUser,
-    isAdminOrOwner,
-=======
     user,
->>>>>>> v2.6.0
+    isAdminOrOwner,
   };
 };

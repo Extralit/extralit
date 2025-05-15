@@ -1,8 +1,6 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+#  Copyright 2023-present, Extralit, Inc.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
-# TODO: This license is not consistent with the license used in the project.
-#       Delete the inconsistent license and above line and rerun pre-commit to insert a good license.
 #  you may not use this file except in compliance with the License.
 #  You may obtain a copy of the License at
 #
@@ -20,10 +18,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field, constr, ConfigDict
 
-<<<<<<< HEAD
-=======
 from argilla_server.api.schemas.v1.commons import UpdateSchema
->>>>>>> v2.6.0
 from argilla_server.enums import UserRole
 
 USER_PASSWORD_MIN_LENGTH = 8
@@ -64,13 +59,6 @@ class User(BaseModel):
 
 
 class UserCreate(BaseModel):
-<<<<<<< HEAD
-    username: str = Field(..., min_length=1)
-    password: str = Field(min_length=USER_PASSWORD_MIN_LENGTH, max_length=USER_PASSWORD_MAX_LENGTH)
-    first_name: constr(min_length=1, strip_whitespace=True)
-    last_name: Optional[constr(min_length=1, strip_whitespace=True)] = None
-    role: Optional[UserRole] = None
-=======
     first_name: UserFirstName
     last_name: Optional[UserLastName] = None
     username: UserUsername
@@ -86,7 +74,6 @@ class UserUpdate(UpdateSchema):
     username: Optional[UserUsername] = None
     role: Optional[UserRole] = None
     password: Optional[UserPassword] = None
->>>>>>> v2.6.0
 
 
 class Users(BaseModel):

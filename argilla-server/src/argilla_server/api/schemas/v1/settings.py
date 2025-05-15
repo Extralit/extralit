@@ -1,8 +1,6 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+#  Copyright 2023-present, Extralit, Inc.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
-# TODO: This license is not consistent with the license used in the project.
-#       Delete the inconsistent license and above line and rerun pre-commit to insert a good license.
 #  you may not use this file except in compliance with the License.
 #  You may obtain a copy of the License at
 #
@@ -33,10 +31,7 @@ class HuggingfaceSettings(BaseModel):
 
 class ArgillaSettings(BaseModel):
     show_huggingface_space_persistent_storage_warning: Optional[bool] = None
-<<<<<<< HEAD
-=======
     share_your_progress_enabled: bool = False
->>>>>>> v2.6.0
 
 
 class Settings(BaseModel):

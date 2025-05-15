@@ -86,17 +86,6 @@ export default {
     color: var(--fg-tertiary);
   }
 }
-<<<<<<< HEAD
-.list-enter-active,
-.list-leave-active {
-  transition: all 0.2s ease;
-}
-
-.list-enter,
-.list-leave-to {
-  opacity: 0;
-  transform: scale(0.8);
-=======
 .list-move,
 .list-enter-active,
 .list-leave-active {
@@ -109,6 +98,5 @@ export default {
 }
 .list-leave-active {
   position: absolute;
->>>>>>> v2.6.0
 }
 </style>

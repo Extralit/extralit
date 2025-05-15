@@ -15,13 +15,8 @@
             v-if="dataset && dataset.id && user.isAdminOrOwner"
           >
             <ImportData
-<<<<<<< HEAD
               v-if="isAdminOrOwner"
-              :snippet="dataset.createCodeSnippetFromHub(getUser())"
-=======
-              v-if="dataset.createdFromUI"
               :snippet="dataset.createCodeSnippetFromHub(user)"
->>>>>>> v2.6.0
             />
             <ExportToHub :dataset="dataset" />
           </template>
