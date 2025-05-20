@@ -234,8 +234,6 @@ class DatasetUserFactory(BaseFactory):
     user = factory.SubFactory(UserFactory)
 
 
-<<<<<<< HEAD
-=======
 class RecordSyncFactory(BaseSyncFactory):
     class Meta:
         model = Record
@@ -248,7 +246,6 @@ class RecordSyncFactory(BaseSyncFactory):
     dataset = factory.SubFactory(DatasetSyncFactory)
 
 
->>>>>>> v2.6.0
 class RecordFactory(BaseFactory):
     class Meta:
         model = Record

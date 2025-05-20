@@ -183,7 +183,6 @@ class TestUpsertDatasetRecordsBulk:
         assert response.json() == {
             "detail": "Record at position 0 is not valid because missing required value for field: 'text-field'"
         }
->>>>>>> v2.6.0
 
     async def test_upsert_dataset_records_bulk_updates_records_status(
         self, async_client: AsyncClient, owner: User, owner_auth_header: dict

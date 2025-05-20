@@ -17,11 +17,7 @@ export const useLanguageDetector = (context: Context) => {
   const { i18n } = context.app;
 
   const detect = () => {
-<<<<<<< HEAD
-    return get("language") || navigator.language;
-=======
     return get<string>("language") || navigator.language;
->>>>>>> v2.6.0
   };
 
   const exists = (language: string) => {
@@ -56,10 +52,7 @@ export const useLanguageChanger = (context: Context) => {
 
   const change = (language: string) => {
     i18n.setLocale(language);
-<<<<<<< HEAD
-=======
     document.documentElement.lang = language;
->>>>>>> v2.6.0
 
     set("language", language);
   };

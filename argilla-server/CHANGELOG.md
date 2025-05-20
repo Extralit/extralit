@@ -14,15 +14,10 @@ These are the section headers that we use:
 * "Security" in case of vulnerabilities.
 -->
 
-## [Extralit] [0.4.0](https://github.com/extralit/extralit/compare/v0.3.0...v0.4.0)
-### Added
-
-<<<<<<< HEAD
+## [Extralit] [0.5.0](https://github.com/extralit/extralit/compare/v0.3.0...v0.5.0)
 
 
-## [Argilla] [2.5.0](https://github.com/argilla-io/argilla/compare/v2.4.1...v2.5.0)
-=======
-## [2.6.0](https://github.com/argilla-io/argilla/compare/v2.5.0...v2.6.0)
+## [Argilla] [2.6.0](https://github.com/argilla-io/argilla/compare/v2.5.0...v2.6.0)
 
 ### Added
 
@@ -33,8 +28,7 @@ These are the section headers that we use:
 - Added `argilla.share_your_progress_enabled` attribute to `GET /api/v1/settings` endpoint. ([#5739](https://github.com/argilla-io/argilla/pull/5739))
 - Added new environment variable `ARGILLA_ENABLE_SHARE_YOUR_PROGRESS` to enable or disable the share your progress feature. ([#5727](https://github.com/argilla-io/argilla/pull/5727))
 
-## [2.5.0](https://github.com/argilla-io/argilla/compare/v2.4.1...v2.5.0)
->>>>>>> v2.6.0
+## [Argilla] [2.5.0](https://github.com/argilla-io/argilla/compare/v2.4.1...v2.5.0)
 
 ### Added
 
@@ -47,10 +41,7 @@ These are the section headers that we use:
 
 ### Changed
 
-<<<<<<< HEAD
-=======
 - API endpoint added to the User router to allow updates to User objects ([#5615](https://github.com/argilla-io/argilla/pull/5615))
->>>>>>> v2.6.0
 - Changed default python version to 3.13. ([#5649](https://github.com/argilla-io/argilla/pull/5649))
 - Changed Pydantic version to v2. ([#5666](https://github.com/argilla-io/argilla/pull/5666))
 
@@ -58,7 +49,6 @@ These are the section headers that we use:
 
 - Fixed error to prevent creating record fields including non-string values for text fields. ([#5682](https://github.com/argilla-io/argilla/pull/5682))
 
-<<<<<<< HEAD
 
 ## [Extralit] [0.3.0](https://github.com/extralit/extralit/compare/v0.2.3...v0.3.0)
 
@@ -76,9 +66,6 @@ These are the section headers that we use:
 - Fixed elasticsearch reindexing errors with dynamic schema.
 
 ## [Argilla] [2.4.1](https://github.com/argilla-io/argilla/compare/v2.4.0...v2.4.1)
-=======
-## [2.4.1](https://github.com/argilla-io/argilla/compare/v2.4.0...v2.4.1)
->>>>>>> v2.6.0
 
 ### Fixed
 
@@ -88,7 +75,7 @@ These are the section headers that we use:
 
 ### Added
 
-- Added new `POST /api/v1/datasets/:dataset_id/import` endpoint to import datasets from Hugging Face as a background job. ([#5572](https://github.com/argilla-io/argilla/pull/5572))
+- Added new `POST /api/v1/datasets/:dataset_id/import` to import datasets from Hugging Face as a background job. ([#5572](https://github.com/argilla-io/argilla/pull/5572))
 - Added new `metadata` attribute for endpoints getting, creating and updating Datasets so now it is possible to store metadata associated to a dataset. ([#5586](https://github.com/argilla-io/argilla/pull/5586))
 - Added new validation to avoid the creation of records with empty `fields` attributes. ([#5639](https://github.com/argilla-io/argilla/pull/5639))
 
@@ -266,7 +253,7 @@ These are the section headers that we use:
 
 ### Fixed
 - Fixed the k8s-tilt devcontainer for extralit
-- Fixed the weaviate url for /examples/deployments/k8s/extralit-deployment.yaml
+- Fixed the weaviate url for /examples/deployments/k8s/extralit-deployment.yaml 
 
 
 ## [Extralit] [v0.2.1](https://github.com/extralit/extralit/compare/v0.2.0...v0.2.1)

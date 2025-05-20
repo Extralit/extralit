@@ -7,7 +7,7 @@ authors = [
 maintainers = [
     { name = "Jonny Tran", email = "nhat.c.tran@gmail.com" },
 ]
-requires-python = ">=3.9,!=3.10.0"
+requires-python = ">= 3.9, !=3.10.0"
 readme = "README.md"
 license = { text = "Apache 2.0" }
 
@@ -77,7 +77,6 @@ pdf = [
     "pymupdf",
     "pdf2image ~= 1.16.0",
 ]
-
 legacy = ["argilla-v1[listeners]"]
 
 [build-system]
@@ -128,7 +127,6 @@ test = { cmd = "pytest tests", env_file = ".env.test" }
 lint = "ruff check"
 format = "black ."
 all = { composite = ["format", "lint", "test"] }
-<<<<<<< HEAD
 
 [project.scripts]
 extralit = "argilla.cli.app:app"

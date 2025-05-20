@@ -1,6 +1,6 @@
 /*
  * coding=utf-8
- * Copyright 2021-present, the Recognai S.L. team.
+ * Copyright 2023-present, Extralit, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,65 +15,9 @@
  * limitations under the License.
  */
 
-<<<<<<< HEAD
-import { AxiosError } from "axios";
-import { useNotifications } from "~/v1/infrastructure/services/useNotifications";
-
-type BackendError = {
-  detail:
-    | {
-        params: {
-          detail: string;
-        };
-      }
-    | string;
-  code?: string;
-  message?: string;
-};
-
-export default ({ $axios, app }) => {
-  const notification = useNotifications();
-
-  $axios.onError((error: AxiosError<BackendError>) => {
-    const { status, data } = error.response ?? {};
-    const t = (key: string) => app.i18n.t(key);
-
-    notification.clear();
-
-    const errorHandledKey = `validations.http.${status}.message`;
-    const handledTranslatedError = t(errorHandledKey);
-
-    if (handledTranslatedError !== errorHandledKey) {
-      notification.notify({
-        message: handledTranslatedError,
-        type: "danger",
-      });
-    }
-
-    if (data.code) {
-      const errorHandledKey = `validations.businessLogic.${data.code}.message`;
-      const handledTranslatedError = t(errorHandledKey);
-
-      if (handledTranslatedError !== errorHandledKey) {
-        notification.notify({
-          message: handledTranslatedError,
-          type: "danger",
-        });
-      }
-    } else if (data.detail && typeof data.detail === "string") {
-      notification.notify({
-        message: data.detail.toString(),
-        type: "danger",
-      });
-    }
-
-    throw error;
-  });
-=======
 import { Context } from "@nuxt/types";
 import { loadErrorHandler } from "~/v1/infrastructure/repositories/AxiosErrorHandler";
 
 export default (context: Context) => {
   loadErrorHandler(context);
->>>>>>> v2.6.0
 };

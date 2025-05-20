@@ -45,10 +45,7 @@ export default {
   optional: "Optional",
   template: "Template",
   rows: "zeilen",
-<<<<<<< HEAD
-=======
   datasetName: "Dataset name",
->>>>>>> v2.6.0
   noRecordsMessages: {
     datasetEmptyForAnnotator:
       "Der Datensatz ist leer. Bitten Sie einen Administrator, Daten hochzuladen, und versuchen Sie es später erneut.",
@@ -265,11 +262,7 @@ export default {
     },
   },
   home: {
-<<<<<<< HEAD
     argillaDatasets: "Extralit Datensätze",
-=======
-    argillaDatasets: "Argilla Datensätze",
->>>>>>> v2.6.0
     none: "Bis jetzt keine",
     importTitle: "Importiere ein Datensatz aus dem Hugging Face Hub",
     importText:
@@ -278,21 +271,14 @@ export default {
     importFromHub: "Direkt vom Hub importieren",
     importFromPython: "Mit Python importieren",
     importFromPythonHFWarning:
-<<<<<<< HEAD
       "Wenn Sie einen privaten Space verwenden, lesen Sie die <a target='_blank' href='https://docs.extralit.ai/latest/getting_started/how-to-configure-argilla-on-huggingface/#how-to-use-private-spaces'>Dokumentation</a>.",
     exampleDatasetsTitle: "Sie wissen nicht, wo Sie anfangen sollen?",
     exampleDatasetsText: "Erkunden Sie diese Beispiel-Datensätze",
     guidesTitle: "Nicht mit Extralit vertraut?",
-=======
-      "Wenn Sie einen privaten Space verwenden, lesen Sie die <a target='_blank' href='https://docs.argilla.io/latest/getting_started/how-to-configure-argilla-on-huggingface/#how-to-use-private-spaces'>Dokumentation</a>.",
-    exampleDatasetsTitle: "Sie wissen nicht, wo Sie anfangen sollen?",
-    exampleDatasetsText: "Erkunden Sie diese Beispiel-Datensätze",
-    guidesTitle: "Nicht mit Argilla vertraut?",
->>>>>>> v2.6.0
     guidesText: "Nutzen Sie diese Anleitungen an:",
     pasteRepoIdPlaceholder: "Fügen Sie eine Repo-ID ein",
     demoLink:
-      "Melden Sie sich bei dieser <a href='https://huggingface.co/spaces/argilla/argilla-template-space' target='_blank'>Demo</a> an, um Argilla auszuprobieren",
+      "Melden Sie sich bei dieser <a href='https://huggingface.co/spaces/extralit/public-demo' target='_blank'>Demo</a> an, um Extralit auszuprobieren",
   },
   datasetCreation: {
     questions: {
@@ -311,7 +297,7 @@ export default {
     atLeastOneQuestion: "Mindestens eine Frage wird benötigt",
     atLeastOneRequired: "Mindestens eine erforderliche Frage wird benötigt",
     hasInvalidQuestions: "Einige Fragen sind ungültig",
-    createDataset: "Datensatz in Argilla erstellen",
+    createDataset: "Datensatz in Extralit erstellen",
     datasetName: "Name des Datensatzes",
     name: "Name",
     assignWorkspace: "Einem Workspace zuweisen",
@@ -337,10 +323,7 @@ export default {
       "Datensatz auf Hugging Face nicht gefunden oder verfügbar",
     none: "Keine",
     noWorkspaces:
-<<<<<<< HEAD
       "Bitte folgen Sie der <a target='_blank' href='https://docs.extralit.ai/latest/admin_guide/workspace/#create-a-new-workspace'>Anleitung</a>, um einen Workspace zu erstellen",
-=======
-      "Bitte folgen Sie der <a target='_blank' href='https://docs.argilla.io/latest/how_to_guides/workspace/#create-a-new-workspace'>Anleitung</a>, um einen Workspace zu erstellen",
   },
   exportToHub: {
     dialogTitle: "Drücken",
@@ -358,7 +341,6 @@ export default {
     private: "Privater Datensatz",
     public: "Öffentlicher Datensatz",
     exportingWarning: "Das kann ein paar Sekunden dauern",
->>>>>>> v2.6.0
   },
   config: {
     field: {

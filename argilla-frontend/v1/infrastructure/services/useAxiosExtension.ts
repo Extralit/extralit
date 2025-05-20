@@ -25,11 +25,10 @@ export const useAxiosExtension = (context: Context) => {
       });
     }
 
-<<<<<<< HEAD
     // Remove Authorization header for get requests if specified
     if (config.removeAuthorizationHeader) {
-      const originalGet = publicAxios.get;
-      publicAxios.get = function(...args) {
+      const originalGet = $axios.get;
+      $axios.get = function(...args) {
         const config = args[1] || {};
         if (!config.headers) {
           config.headers = {};
@@ -40,12 +39,9 @@ export const useAxiosExtension = (context: Context) => {
       };
     }
 
-    return publicAxios;
-=======
     loadCache($axios);
 
     return $axios;
->>>>>>> v2.6.0
   };
 
   const create = () => {

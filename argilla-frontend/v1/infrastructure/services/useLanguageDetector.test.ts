@@ -75,11 +75,7 @@ describe("useLanguageDetector", () => {
 
     test("set the language saved by the user", () => {
       useLocalStorageMock.mockReturnValue({
-<<<<<<< HEAD
-        get: () => "fr",
-=======
         get: jest.fn().mockReturnValue("fr"),
->>>>>>> v2.6.0
         pop: jest.fn(),
         set: jest.fn(),
       });

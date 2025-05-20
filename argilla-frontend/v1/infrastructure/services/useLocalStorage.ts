@@ -1,16 +1,7 @@
-<<<<<<< HEAD
-type Options =
-  | "showShortcutsHelper"
-  | "layout"
-  | "redirectTo"
-  | "language"
-  | "theme";
-=======
 import {
   ILocalStorageService,
   Options,
 } from "~/v1/domain/services/ILocalStorageService";
->>>>>>> v2.6.0
 
 const STORAGE_KEY = "argilla";
 

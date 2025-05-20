@@ -15,39 +15,10 @@
  * limitations under the License.
  */
 
-<<<<<<< HEAD
-export default (_, inject) => {
-  const unsecuredCopyToClipboard = (text) => {
-    const textArea = document.createElement("textarea");
-    textArea.value = text;
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
-    try {
-      document.execCommand("copy");
-    } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error("Unable to copy to clipboard", err);
-    }
-
-    document.body.removeChild(textArea);
-  };
-
-  const copyToClipboard = function (text) {
-    if (window.isSecureContext && navigator.clipboard) {
-      navigator.clipboard.writeText(text);
-    } else {
-      unsecuredCopyToClipboard(text);
-    }
-  };
-
-  inject("copyToClipboard", copyToClipboard);
-=======
 import { useClipboard } from "~/v1/infrastructure/services/useClipboard";
 
 export default (_, inject) => {
   const { copy } = useClipboard();
 
   inject("copyToClipboard", copy);
->>>>>>> v2.6.0
 };

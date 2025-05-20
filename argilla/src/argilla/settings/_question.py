@@ -144,6 +144,7 @@ class LabelQuestion(QuestionBase):
         title: Optional[str] = None,
         description: Optional[str] = None,
         required: bool = True,
+        dynamic: bool = False,
         visible_labels: Optional[int] = None,
         client: Optional[Argilla] = None,
     ) -> None:
@@ -170,10 +171,8 @@ class LabelQuestion(QuestionBase):
             required=required,
             description=description,
             settings=MultiLabelQuestionSettings(
-                type=settings_type,
                 options=self._render_values_as_options(labels),
                 visible_options=visible_labels,
-                options_order=options_order,
             ),
             _client=client,
         )
@@ -251,11 +250,7 @@ class MultiLabelQuestion(LabelQuestion):
 
     @classmethod
     def from_model(cls, model: QuestionModel) -> "Self":
-<<<<<<< HEAD
         instance = cls(name=model.name, labels=cls._render_options_as_labels(getattr(model.settings, 'options', [])))  # noqa
-=======
-        instance = cls(name=model.name, labels=cls._render_options_as_labels(model.settings.options))  # noqa
->>>>>>> v2.6.0
         instance._model = model
 
         return instance
@@ -270,7 +265,6 @@ class TextQuestion(QuestionBase):
         required: bool = True,
         use_markdown: bool = False,
         use_table: bool = False,
->>>>>>> v2.6.0
         client: Optional[Argilla] = None,
     ) -> None:
         """Create a new text question for `Settings` of a `Dataset`. A text question \
@@ -480,21 +474,15 @@ class SpanQuestion(QuestionBase):
 
         return instance
 
-<<<<<<< HEAD
 
-class LabelQuestion(QuestionBase):
-    class MultiLabelQuestion(LabelQuestion):
-        def __init__(
-            self,
-            name: str,
-            labels: List[Union[str, Dict[str, Optional[str]]]],
-            title: Optional[str] = None,
-            visible_labels: Optional[int] = None,
-            options_order: Literal["natural", "suggestion"] = "natural",
-            description: Optional[str] = None,
-            required: bool = True,
-            dynamic: bool = False,
-            client: Optional[Argilla] = None,
+class TableQuestion(QuestionBase):
+    def __init__(
+        self,
+        name: str,
+        title: Optional[str] = None,
+        description: Optional[str] = None,
+        required: bool = True,
+        client: Optional[Argilla] = None,
     ):
         """ Create a new table question for `Settings` of a `Dataset`. A table question \
             is a question where the user can input data in a tabular format.
@@ -523,8 +511,6 @@ class LabelQuestion(QuestionBase):
 
         return instance
     
-=======
->>>>>>> v2.6.0
 
 QuestionType = Union[
     LabelQuestion,

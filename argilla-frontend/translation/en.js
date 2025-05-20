@@ -51,15 +51,11 @@ export default {
   required: "Required",
   optional: "Optional",
   template: "Template",
-<<<<<<< HEAD
-  rows: "rows",
-=======
   orgOrUsername: "Organization or username",
   hfToken: "Hugging Face token",
   private: "Is private",
   rows: "rows",
   datasetName: "Dataset name",
->>>>>>> v2.6.0
   noRecordsMessages: {
     datasetEmptyForAnnotator:
       "The dataset is empty. Ask an administrator to upload records and come back soon.",
@@ -294,11 +290,7 @@ export default {
     guidesText: "Take a look at these guides:",
     pasteRepoIdPlaceholder: "Paste a repo id e.g., stanfordnlp/imdb",
     demoLink:
-<<<<<<< HEAD
       "Log into this <a href='https://huggingface.co/spaces/extralit/public-demo' target='_blank'>demo</a> to try Extralit out",
-=======
-      "Log into this <a href='https://huggingface.co/spaces/argilla/argilla-template-space' target='_blank'>demo</a> to try Argilla out",
->>>>>>> v2.6.0
     name: "Dataset name",
     updatedAt: "Updated",
     createdAt: "Created",
