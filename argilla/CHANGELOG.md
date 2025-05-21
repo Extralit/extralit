@@ -14,6 +14,12 @@ These are the section headers that we use:
 * "Security" in case of vulnerabilities.
 -->
 
+## [Extralit] [0.4.1](https://github.com/extralit/extralit/compare/v0.3.0...v0.4.1)
+
+### Fixed
+- Fixed missing 'selection' type in Suggestions, causing errors at `dataset.records.to_list()`
+  
+
 ## [Extralit] [0.4.0](https://github.com/extralit/extralit/compare/v0.3.0...v0.4.0)
 
 ### Added
