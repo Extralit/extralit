@@ -1,13 +1,12 @@
-"""
-MIT License
-Copyright (c) Microsoft Corporation.
-"""
+# MIT License
+# Copyright (c) Microsoft Corporation.
+
 import itertools
 import logging
 import xml.etree.ElementTree as ET
 from collections import defaultdict
 from difflib import SequenceMatcher
-from typing import Dict, List, Tuple, Callable
+from typing import Dict, List, Tuple, Callable, Union
 
 import numpy as np
 import pandas as pd
@@ -41,7 +40,7 @@ def compute_fscore(num_true_positives, num_true, num_positives) -> Tuple[float, 
     return fscore, precision, recall
 
 
-def initialize_DP(sequence1_length, sequence2_length):
+def initialize_DP(sequence1_length: int, sequence2_length: int) -> Tuple[np.ndarray, np.ndarray]:
     """
     Helper function to initialize dynamic programming data structures.
     """
@@ -60,7 +59,7 @@ def initialize_DP(sequence1_length, sequence2_length):
     return scores, pointers
 
 
-def traceback(pointers):
+def traceback(pointers: np.ndarray) -> Tuple[List[int], List[int]]:
     """
     Dynamic programming traceback to determine the aligned indices
     between the two sequences.
@@ -88,20 +87,21 @@ def traceback(pointers):
     return aligned_sequence1_indices, aligned_sequence2_indices
 
 
-def align_1d(sequence1, sequence2, reward_lookup, return_alignment=False):
-    '''
+def align_1d(
+    sequence1: List, sequence2: List, reward_lookup: Dict, return_alignment: bool = False
+) -> Union[float, Tuple[List[int], List[int], float]]:
+    """
     Dynamic programming alignment between two sequences,
     with memoized rewards.
 
     Sequences are represented as indices into the rewards lookup table.
 
     Traceback convention: -1 = up, 1 = left, 0 = diag up-left
-    '''
+    """
     sequence1_length = len(sequence1)
     sequence2_length = len(sequence2)
 
-    scores, pointers = initialize_DP(sequence1_length,
-                                     sequence2_length)
+    scores, pointers = initialize_DP(sequence1_length, sequence2_length)
 
     for seq1_idx in range(1, sequence1_length + 1):
         for seq2_idx in range(1, sequence2_length + 1):
@@ -130,8 +130,10 @@ def align_1d(sequence1, sequence2, reward_lookup, return_alignment=False):
     return sequence1_indices, sequence2_indices, score
 
 
-def align_2d_outer(true_shape, pred_shape, reward_lookup):
-    '''
+def align_2d_outer(
+    true_shape: Tuple[int, int], pred_shape: Tuple[int, int], reward_lookup: Dict
+) -> Tuple[List[int], List[int], float]:
+    """
     Dynamic programming matrix alignment posed as 2D
     sequence-of-sequences alignment:
     Align two outer sequences whose entries are also sequences,
@@ -139,15 +141,17 @@ def align_2d_outer(true_shape, pred_shape, reward_lookup):
     is their 1D sequence alignment score.
 
     Traceback convention: -1 = up, 1 = left, 0 = diag up-left
-    '''
+    """
 
     scores, pointers = initialize_DP(true_shape[0], pred_shape[0])
 
     for row_idx in range(1, true_shape[0] + 1):
         for col_idx in range(1, pred_shape[0] + 1):
-            reward = align_1d([(row_idx - 1, tcol) for tcol in range(true_shape[1])],
-                              [(col_idx - 1, prow) for prow in range(pred_shape[1])],
-                              reward_lookup)
+            reward = align_1d(
+                [(row_idx - 1, tcol) for tcol in range(true_shape[1])],
+                [(col_idx - 1, prow) for prow in range(pred_shape[1])],
+                reward_lookup,
+            )
             diag_score = scores[row_idx - 1, col_idx - 1] + reward
             same_row_score = scores[row_idx, col_idx - 1]
             same_col_score = scores[row_idx - 1, col_idx]
@@ -169,9 +173,7 @@ def align_2d_outer(true_shape, pred_shape, reward_lookup):
 
 
 def factored_2dmss(
-    true_cell_grid: np.ndarray,
-    pred_cell_grid: np.ndarray,
-    reward_function: Callable, return_substructures=False
+    true_cell_grid: np.ndarray, pred_cell_grid: np.ndarray, reward_function: Callable, return_substructures=False
 ) -> Tuple[float, float, float, float]:
     """
     Factored 2D-MSS: Factored two-dimensional most-similar substructures
@@ -187,10 +189,12 @@ def factored_2dmss(
     """
     pre_computed_rewards = {}
     transpose_rewards = {}
-    for trow, tcol, prow, pcol in itertools.product(range(true_cell_grid.shape[0]),
-                                                    range(true_cell_grid.shape[1]),
-                                                    range(pred_cell_grid.shape[0]),
-                                                    range(pred_cell_grid.shape[1])):
+    for trow, tcol, prow, pcol in itertools.product(
+        range(true_cell_grid.shape[0]),
+        range(true_cell_grid.shape[1]),
+        range(pred_cell_grid.shape[0]),
+        range(pred_cell_grid.shape[1]),
+    ):
         reward = reward_function(true_cell_grid[trow, tcol], pred_cell_grid[prow, pcol])
 
         pre_computed_rewards[(trow, tcol, prow, pcol)] = reward
@@ -199,13 +203,13 @@ def factored_2dmss(
     num_pos = pred_cell_grid.shape[0] * pred_cell_grid.shape[1]
     num_true = true_cell_grid.shape[0] * true_cell_grid.shape[1]
 
-    true_row_nums, pred_row_nums, row_pos_match_score = align_2d_outer(true_cell_grid.shape[:2],
-                                                                       pred_cell_grid.shape[:2],
-                                                                       pre_computed_rewards)
+    true_row_nums, pred_row_nums, row_pos_match_score = align_2d_outer(
+        true_cell_grid.shape[:2], pred_cell_grid.shape[:2], pre_computed_rewards
+    )
 
-    true_column_nums, pred_column_nums, col_pos_match_score = align_2d_outer(true_cell_grid.shape[:2][::-1],
-                                                                             pred_cell_grid.shape[:2][::-1],
-                                                                             transpose_rewards)
+    true_column_nums, pred_column_nums, col_pos_match_score = align_2d_outer(
+        true_cell_grid.shape[:2][::-1], pred_cell_grid.shape[:2][::-1], transpose_rewards
+    )
 
     if return_substructures:
         true_substructure = true_cell_grid[true_row_nums, :][:, true_column_nums]
@@ -221,18 +225,15 @@ def factored_2dmss(
         for true_column_num, pred_column_num in zip(true_column_nums, pred_column_nums):
             positive_match_score += pre_computed_rewards[(true_row_num, true_column_num, pred_row_num, pred_column_num)]
 
-    fscore, precision, recall = compute_fscore(positive_match_score,
-                                               num_true,
-                                               num_pos)
+    fscore, precision, recall = compute_fscore(positive_match_score, num_true, num_pos)
 
     return fscore, precision, recall, upper_bound_score
 
 
 def lcs_string(string1: str, string2: str) -> str:
     s = SequenceMatcher(None, string1, string2)
-    lcs = ''.join([string1[block.a:(block.a + block.size)] for block in s.get_matching_blocks()])
+    lcs = "".join([string1[block.a : (block.a + block.size)] for block in s.get_matching_blocks()])
     return lcs
-
 
 
 def lcs_similarity(string1: str, string2: str) -> float:
@@ -241,9 +242,17 @@ def lcs_similarity(string1: str, string2: str) -> float:
     lcs = lcs_string(string1, string2)
     return 2 * len(lcs) / (len(string1) + len(string2))
 
-def iou(bbox1, bbox2):
+
+def iou(bbox1: List[float], bbox2: List[float]) -> float:
     """
     Compute the intersection-over-union of two bounding boxes.
+
+    Args:
+        bbox1: First bounding box coordinates [x0, y0, x1, y1]
+        bbox2: Second bounding box coordinates [x0, y0, x1, y1]
+
+    Returns:
+        float: IoU score between 0 and 1
     """
     intersection = Rect(bbox1).intersect(bbox2)
     union = Rect(bbox1).include_rect(bbox2)
@@ -255,23 +264,28 @@ def iou(bbox1, bbox2):
     return 0
 
 
-def cells_to_grid(cells, key='bbox'):
+def cells_to_grid(cells: List[Dict[str, any]], key: str = "bbox") -> List[List[any]]:
     """
     Convert from a list of cells to a matrix of grid cell features.
     This matrix representation is the input to GriTS.
 
-    For key, use:
-    - 'bbox' for computing GriTS_Loc
-    - 'cell_text' for computing GriTS_Con
+    Args:
+        cells: List of cell dictionaries containing row_nums and column_nums
+        key: Property to extract from each cell. Options:
+            - 'bbox' for computing GriTS_Loc
+            - 'cell_text' for computing GriTS_Con
+
+    Returns:
+        2D grid with cell properties
     """
     if len(cells) == 0:
         return [[]]
-    num_rows = max([max(cell['row_nums']) for cell in cells]) + 1
-    num_columns = max([max(cell['column_nums']) for cell in cells]) + 1
+    num_rows = max([max(cell["row_nums"]) for cell in cells]) + 1
+    num_columns = max([max(cell["column_nums"]) for cell in cells]) + 1
     cell_grid = np.zeros((num_rows, num_columns)).tolist()
     for cell in cells:
-        for row_num in cell['row_nums']:
-            for column_num in cell['column_nums']:
+        for row_num in cell["row_nums"]:
+            for column_num in cell["column_nums"]:
                 cell_grid[row_num][column_num] = cell[key]
 
     return cell_grid
@@ -284,16 +298,16 @@ def cells_to_relspan_grid(cells: List[Dict[str, List[int]]]) -> List[List[List[i
     """
     if len(cells) == 0:
         return [[]]
-    num_rows = max([max(cell['row_nums']) for cell in cells]) + 1
-    num_columns = max([max(cell['column_nums']) for cell in cells]) + 1
+    num_rows = max([max(cell["row_nums"]) for cell in cells]) + 1
+    num_columns = max([max(cell["column_nums"]) for cell in cells]) + 1
     cell_grid = np.zeros((num_rows, num_columns)).tolist()
     for cell in cells:
-        min_row_num = min(cell['row_nums'])
-        min_column_num = min(cell['column_nums'])
-        max_row_num = max(cell['row_nums']) + 1
-        max_column_num = max(cell['column_nums']) + 1
-        for row_num in cell['row_nums']:
-            for column_num in cell['column_nums']:
+        min_row_num = min(cell["row_nums"])
+        min_column_num = min(cell["column_nums"])
+        max_row_num = max(cell["row_nums"]) + 1
+        max_column_num = max(cell["column_nums"]) + 1
+        for row_num in cell["row_nums"]:
+            for column_num in cell["column_nums"]:
                 cell_grid[row_num][column_num] = [
                     min_column_num - column_num,
                     min_row_num - row_num,
@@ -304,7 +318,9 @@ def cells_to_relspan_grid(cells: List[Dict[str, List[int]]]) -> List[List[List[i
     return cell_grid
 
 
-def get_spanning_cell_rows_and_columns(spanning_cells, rows, columns):
+def get_spanning_cell_rows_and_columns(
+    spanning_cells: List[Dict], rows: List[Dict], columns: List[Dict]
+) -> List[List[Tuple[int, int]]]:
     """
     Determine which grid cell locations (row-column) each spanning cell
     corresponds to.
@@ -315,19 +331,13 @@ def get_spanning_cell_rows_and_columns(spanning_cells, rows, columns):
         row_matches = set()
         column_matches = set()
         for row_num, row in enumerate(rows):
-            bbox1 = [
-                spanning_cell['bbox'][0], row['bbox'][1], spanning_cell['bbox'][2],
-                row['bbox'][3]
-            ]
-            bbox2 = Rect(spanning_cell['bbox']).intersect(bbox1)
+            bbox1 = [spanning_cell["bbox"][0], row["bbox"][1], spanning_cell["bbox"][2], row["bbox"][3]]
+            bbox2 = Rect(spanning_cell["bbox"]).intersect(bbox1)
             if bbox2.get_area() / Rect(bbox1).get_area() >= 0.5:
                 row_matches.add(row_num)
         for column_num, column in enumerate(columns):
-            bbox1 = [
-                column['bbox'][0], spanning_cell['bbox'][1], column['bbox'][2],
-                spanning_cell['bbox'][3]
-            ]
-            bbox2 = Rect(spanning_cell['bbox']).intersect(bbox1)
+            bbox1 = [column["bbox"][0], spanning_cell["bbox"][1], column["bbox"][2], spanning_cell["bbox"][3]]
+            bbox2 = Rect(spanning_cell["bbox"]).intersect(bbox1)
             if bbox2.get_area() / Rect(bbox1).get_area() >= 0.5:
                 column_matches.add(column_num)
         already_taken = False
@@ -345,18 +355,20 @@ def get_spanning_cell_rows_and_columns(spanning_cells, rows, columns):
             column_nums = [elem[1] for elem in this_matches]
             row_rect = Rect()
             for row_num in row_nums:
-                row_rect.include_rect(rows[row_num]['bbox'])
+                row_rect.include_rect(rows[row_num]["bbox"])
             column_rect = Rect()
             for column_num in column_nums:
-                column_rect.include_rect(columns[column_num]['bbox'])
-            spanning_cell['bbox'] = list(row_rect.intersect(column_rect))
+                column_rect.include_rect(columns[column_num]["bbox"])
+            spanning_cell["bbox"] = list(row_rect.intersect(column_rect))
         else:
             matches_by_spanning_cell.append([])
 
     return matches_by_spanning_cell
 
 
-def output_to_dilatedbbox_grid(bboxes, labels, scores):
+def output_to_dilatedbbox_grid(
+    bboxes: List[List[float]], labels: List[int], scores: List[float]
+) -> List[List[List[float]]]:
     """
     Compute the matrix of grid cell features for GriTS_Loc but using the raw predicted
     and ground truth bounding boxes, not the post-processed boxes.
@@ -368,28 +380,30 @@ def output_to_dilatedbbox_grid(bboxes, labels, scores):
     for itnrecal comparison but could be useful for understanding the behavior of
     an individual itnrecal.
     """
-    rows = [{'bbox': bbox} for bbox, label in zip(bboxes, labels) if label == 2]
-    columns = [{'bbox': bbox} for bbox, label in zip(bboxes, labels) if label == 1]
-    spanning_cells = [{'bbox': bbox, 'score': 1} for bbox, label in zip(bboxes, labels) if label in [4, 5]]
-    rows.sort(key=lambda x: x['bbox'][1] + x['bbox'][3])
-    columns.sort(key=lambda x: x['bbox'][0] + x['bbox'][2])
-    spanning_cells.sort(key=lambda x: -x['score'])
+    rows = [{"bbox": bbox} for bbox, label in zip(bboxes, labels) if label == 2]
+    columns = [{"bbox": bbox} for bbox, label in zip(bboxes, labels) if label == 1]
+    spanning_cells = [{"bbox": bbox, "score": 1} for bbox, label in zip(bboxes, labels) if label in [4, 5]]
+    rows.sort(key=lambda x: x["bbox"][1] + x["bbox"][3])
+    columns.sort(key=lambda x: x["bbox"][0] + x["bbox"][2])
+    spanning_cells.sort(key=lambda x: -x["score"])
     cell_grid = []
     for row_num, row in enumerate(rows):
         column_grid = []
         for column_num, column in enumerate(columns):
-            bbox = Rect(row['bbox']).intersect(column['bbox'])
+            bbox = Rect(row["bbox"]).intersect(column["bbox"])
             column_grid.append(list(bbox))
         cell_grid.append(column_grid)
     matches_by_spanning_cell = get_spanning_cell_rows_and_columns(spanning_cells, rows, columns)
     for matches, spanning_cell in zip(matches_by_spanning_cell, spanning_cells):
         for match in matches:
-            cell_grid[match[0]][match[1]] = spanning_cell['bbox']
+            cell_grid[match[0]][match[1]] = spanning_cell["bbox"]
 
     return cell_grid
 
 
-def grits_top(true_relative_span_grid, pred_relative_span_grid):
+def grits_top(
+    true_relative_span_grid: np.ndarray, pred_relative_span_grid: np.ndarray
+) -> Tuple[float, float, float, float]:
     """
     Compute GriTS_Top given two matrices of cell relative spans.
 
@@ -402,34 +416,28 @@ def grits_top(true_relative_span_grid, pred_relative_span_grid):
     relative to the current grid cell location, in grid coordinate units.
     Note that for a non-spanning cell this will always be [0, 0, 1, 1].
     """
-    return factored_2dmss(true_relative_span_grid,
-                          pred_relative_span_grid,
-                          reward_function=iou)
+    return factored_2dmss(true_relative_span_grid, pred_relative_span_grid, reward_function=iou)
 
 
-def grits_loc(true_bbox_grid, pred_bbox_grid):
+def grits_loc(true_bbox_grid: np.ndarray, pred_bbox_grid: np.ndarray) -> Tuple[float, float, float, float]:
     """
     Compute GriTS_Loc given two matrices of cell bounding boxes.
     """
-    return factored_2dmss(true_bbox_grid,
-                          pred_bbox_grid,
-                          reward_function=iou)
+    return factored_2dmss(true_bbox_grid, pred_bbox_grid, reward_function=iou)
 
 
-def grits_con(true_text_grid, pred_text_grid):
+def grits_con(true_text_grid: np.ndarray, pred_text_grid: np.ndarray) -> Tuple[float, float, float, float]:
     """
     Compute GriTS_Con given two matrices of cell text strings.
     """
-    return factored_2dmss(true_text_grid,
-                          pred_text_grid,
-                          reward_function=lcs_similarity)
+    return factored_2dmss(true_text_grid, pred_text_grid, reward_function=lcs_similarity)
 
 
 def remove_colgroup_tags(html_content: str) -> str:
-    soup = BeautifulSoup(html_content, 'html.parser')
+    soup = BeautifulSoup(html_content, "html.parser")
 
     # Find all 'colgroup' tags
-    colgroup_tags = soup.find_all('colgroup')
+    colgroup_tags = soup.find_all("colgroup")
 
     # Remove each 'colgroup' tag
     for tag in colgroup_tags:
@@ -440,38 +448,48 @@ def remove_colgroup_tags(html_content: str) -> str:
 
 
 def make_html_table_homogeneous(html_content: str) -> str:
-    soup = BeautifulSoup(html_content, 'html.parser')
+    soup = BeautifulSoup(html_content, "html.parser")
 
     # Find all 'tr' tags (rows)
-    rows = soup.find_all('tr')
+    rows = soup.find_all("tr")
 
     # Determine the maximum number of cells in any row
-    max_cells = max(len(row.find_all(['td', 'th'])) for row in rows)
+    max_cells = max(len(row.find_all(["td", "th"])) for row in rows)
 
     # Iterate over all rows
     for row in rows:
-        cells = row.find_all(['td', 'th'])
+        cells = row.find_all(["td", "th"])
         num_cells = len(cells)
 
         # If a row has fewer cells than max_cells, add additional cells
         if num_cells < max_cells:
             for _ in range(max_cells - num_cells):
-                new_cell = soup.new_tag('td')  # or 'th' if you want to add header cells
+                new_cell = soup.new_tag("td")  # or 'th' if you want to add header cells
                 row.append(new_cell)
 
     # Return the modified HTML as a string
     return str(soup)
 
 
-def html_to_cells(table_html: str):
+def html_to_cells(table_html: str) -> List[Dict[str, any]]:
     """
     Parse an HTML representation of a table into a list of cells.
+
+    Args:
+        table_html: HTML string representation of a table
+
+    Returns:
+        List of cell dictionaries, where each cell contains:
+            - row_nums: List of row indices this cell spans
+            - column_nums: List of column indices this cell spans
+            - is_column_header: Boolean indicating if cell is part of column header
+            - cell_text: Text content of the cell
     """
     try:
-        table_html = str(BeautifulSoup(table_html, 'html.parser'))
+        table_html = str(BeautifulSoup(table_html, "html.parser"))
         tree = ET.fromstring(table_html)
     except Exception as e:
-        logging.error(f'html_to_cells: {e}\n{table_html}')
+        logging.error(f"html_to_cells: {e}\n{table_html}")
         return None
 
     table_cells = []
@@ -485,10 +503,10 @@ def html_to_cells(table_html: str):
     while len(stack) > 0:
         current, in_header = stack.pop()
 
-        if current.tag == 'tr':
+        if current.tag == "tr":
             current_row += 1
 
-        if current.tag == 'td' or current.tag == 'th':
+        if current.tag == "td" or current.tag == "th":
             if "colspan" in current.attrib:
                 colspan = int(current.attrib["colspan"])
             else:
@@ -501,7 +519,8 @@ def html_to_cells(table_html: str):
             try:
                 max_occupied_column = max(occupied_columns_by_row[current_row])
                 current_column = min(
-                    set(range(max_occupied_column + 2)).difference(occupied_columns_by_row[current_row]))
+                    set(range(max_occupied_column + 2)).difference(occupied_columns_by_row[current_row])
+                )
             except:
                 current_column = 0
             column_nums = list(range(current_column, current_column + colspan))
@@ -509,24 +528,39 @@ def html_to_cells(table_html: str):
                 occupied_columns_by_row[row_num].update(column_nums)
 
             cell_dict = dict()
-            cell_dict['row_nums'] = row_nums
-            cell_dict['column_nums'] = column_nums
-            cell_dict['is_column_header'] = current.tag == 'th' or in_header
-            cell_dict['cell_text'] = ' '.join(current.itertext())
+            cell_dict["row_nums"] = row_nums
+            cell_dict["column_nums"] = column_nums
+            cell_dict["is_column_header"] = current.tag == "th" or in_header
+            cell_dict["cell_text"] = " ".join(current.itertext())
             table_cells.append(cell_dict)
 
         children = list(current)
         for child in children[::-1]:
-            stack.append((child, in_header or current.tag == 'th' or current.tag == 'thead'))
+            stack.append((child, in_header or current.tag == "th" or current.tag == "thead"))
 
     return table_cells
 
 
-def grits_from_html(true_html, pred_html, metrics=['top', 'con']) -> Dict[str, float]:
+def grits_from_html(true_html: str, pred_html: str, metrics: List[str] = ["top", "con"]) -> Dict[str, float]:
     """
-    Compute GriTS_Con and GriTS_Top for two HTML sequences.
-    """
+    Compute GriTS_Con and GriTS_Top for two HTML table representations.
 
+    As described in the PubTables-1M paper (Smock et al., 2022), GriTS is a
+    metric for evaluating table structure recognition that provides partial
+    credit for table extraction tasks. It includes:
+
+    - GriTS_Top: Evaluates topology recognition (spanning cell structure)
+    - GriTS_Con: Evaluates cell content recognition (text content similarity)
+    - GriTS_Loc: Evaluates cell location recognition (coordinates)
+
+    Args:
+        true_html: HTML string representation of the ground truth table
+        pred_html: HTML string representation of the predicted table
+        metrics: List of metrics to compute, options include 'top', 'con', 'alignment'
+
+    Returns:
+        Dictionary of GriTS metric scores (f1, precision, recall, upper_bound)
+    """
     outputs = {}
 
     # Convert HTML to list of cells
@@ -536,31 +570,36 @@ def grits_from_html(true_html, pred_html, metrics=['top', 'con']) -> Dict[str, f
     # Convert lists of cells to matrices of grid cells
     true_topology_grid = np.array(cells_to_relspan_grid(true_cells))
     pred_topology_grid = np.array(cells_to_relspan_grid(pred_cells))
-    true_text_grid = np.array(cells_to_grid(true_cells, key='cell_text'), dtype=object)
-    pred_text_grid = np.array(cells_to_grid(pred_cells, key='cell_text'), dtype=object)
+    true_text_grid = np.array(cells_to_grid(true_cells, key="cell_text"), dtype=object)
+    pred_text_grid = np.array(cells_to_grid(pred_cells, key="cell_text"), dtype=object)
 
     # Compute GriTS_Top (topology) for ground truth and predicted matrices
-    if 'top' in metrics:
-        (outputs['grits_top_f1'],
-         outputs['grits_top_precision'],
-         outputs['grits_top_recall'],
-         outputs['grits_top_upper_bound']) = grits_top(true_topology_grid, pred_topology_grid)
+    if "top" in metrics:
+        (
+            outputs["grits_top_f1"],
+            outputs["grits_top_precision"],
+            outputs["grits_top_recall"],
+            outputs["grits_top_upper_bound"],
+        ) = grits_top(true_topology_grid, pred_topology_grid)
 
-    if 'con' in metrics:
-        # Compute GriTS_Con (text content)  for ground truth and predicted matrices
-        (outputs['grits_con_f1'],
-         outputs['grits_con_precision'],
-         outputs['grits_con_recall'],
-         outputs['grits_con_upper_bound']) = grits_con(true_text_grid, pred_text_grid)
+    if "con" in metrics:
+        # Compute GriTS_Con (text content) for ground truth and predicted matrices
+        (
+            outputs["grits_con_f1"],
+            outputs["grits_con_precision"],
+            outputs["grits_con_recall"],
+            outputs["grits_con_upper_bound"],
+        ) = grits_con(true_text_grid, pred_text_grid)
 
-    if 'alignment' in metrics:
+    if "alignment" in metrics:
         true_substructure, pred_substructure = factored_2dmss(
-            true_text_grid, pred_text_grid, reward_function=lcs_similarity, return_substructures=True)
-        outputs['alignment'] = compute_lcs_df(true_substructure, pred_substructure)
+            true_text_grid, pred_text_grid, reward_function=lcs_similarity, return_substructures=True
+        )
+        outputs["alignment"] = compute_lcs_df(true_substructure, pred_substructure)
 
-    if 'upper_bound' not in metrics:
-        outputs.pop('grits_top_upper_bound', None)
-        outputs.pop('grits_con_upper_bound', None)
+    if "upper_bound" not in metrics:
+        outputs.pop("grits_top_upper_bound", None)
+        outputs.pop("grits_con_upper_bound", None)
 
     return outputs
 
