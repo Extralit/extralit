@@ -7,19 +7,26 @@
   --iframe-scale-factor: 0.75;
 }
 
-.md-tabs__item, .md-nav__item {
+.md-tabs__item,
+.md-nav__item {
   font-weight: 600;
 }
 
 .md-main .md-content {
-  
-  h1, h2, h3, h4, h5, h6 {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     /* font-family: 'Oswald'; */
   }
 
   /* font-family: 'Source Serif 4', serif; */
 
-  code, pre {
+  code,
+  pre {
     /* font-family: 'Source Code Pro', monospace; */
   }
 }
@@ -49,6 +56,10 @@
   --md-huggingface-accent-color: #FFD21E;
   --md-docker-fg-color: #1e5eff30;
   --md-docker-accent-color: #1e5eff;
+  --md-button-color: var(--md-accent-fg-color);
+  --md-button-border-color: var(--md-accent-fg-color);
+  --md-button-hover-bg-color: var(--md-accent-fg-color);
+  --md-button-hover-color: #000107;
 }
 
 .md-typeset a code {
@@ -113,6 +124,18 @@
   text-decoration: underline dotted;
   cursor: help;
   position: relative;
+}
+
+.md-typeset .md-button {
+  background-color: var(--md-button-bg-color);
+  border-color: var(--md-button-border-color);
+  color: var(--md-button-color);
+}
+
+.md-typeset .md-button:hover {
+  background-color: var(--md-button-hover-bg-color);
+  border-color: var(--md-button-hover-bg-color);
+  color: var(--md-button-hover-color);
 }
 
 @media screen and (min-width: 45em) {

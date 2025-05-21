@@ -18,11 +18,11 @@
         <link rel="prev" href="../query/">
       
       
-        <link rel="next" href="../use_markdown_to_format_rich_content/">
+        <link rel="next" href="../custom_fields/">
       
       
       <link rel="icon" href="../../assets/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.26">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.33">
     
     
       
@@ -30,7 +30,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.6543a935.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.3cba04c6.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
@@ -258,7 +258,7 @@
         <a href="https://github.com/extralit/extralit/" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
   </div>
   <div class="md-source__repository">
     extralit/extralit
@@ -429,6 +429,24 @@
   
 
       
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="https://extralit-public-demo.hf.space/sign-in" class="md-tabs__link">
+          
+  
+  UI Demo ↗
+
+        </a>
+      </li>
+    
+  
+
+      
     </ul>
   </div>
 </nav>
@@ -463,7 +481,7 @@
       <a href="https://github.com/extralit/extralit/" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
   </div>
   <div class="md-source__repository">
     extralit/extralit
@@ -566,6 +584,27 @@
   
   <span class="md-ellipsis">
     Quickstart
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting_started/development_setup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Development Setup
   </span>
   
 
@@ -699,190 +738,16 @@
   
   
   
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" >
-        
-          
-          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
-            
-  
-  <span class="md-ellipsis">
-    Data Pipeline
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_2">
-            <span class="md-nav__icon md-icon"></span>
-            Data Pipeline
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
     <li class="md-nav__item">
-      <a href="../../user_guide/documents_import/" class="md-nav__link">
+      <a href="../../user_guide/overview/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Documents import
+    Overview
   </span>
   
 
       </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../user_guide/schema_definition/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Schema definition
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../user_guide/text_table_ocr.md" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Text and table OCR
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../user_guide/llm_extraction.md" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    LLM-assisted extraction
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../user_guide/consensus_review.md" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Consensus review
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../user_guide/data_validation.md" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Data validation
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../user_guide/extraction_status.md" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Extraction status
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
     </li>
   
 
@@ -914,7 +779,7 @@
             
   
   <span class="md-ellipsis">
-    User Interface
+    Data Pipeline
   </span>
   
 
@@ -924,7 +789,7 @@
         <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3_3">
             <span class="md-nav__icon md-icon"></span>
-            User Interface
+            Data Pipeline
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -935,95 +800,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user_guide/navigation_layout.md" class="md-nav__link">
+      <a href="../../user_guide/schema_definition/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Navigation and layout
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../user_guide/create_manage_workspace.md" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Create and manage workspace
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../user_guide/search_filter.md" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Search and filter records
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../user_guide/performing_extractions.md" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Performing extractions
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../user_guide/review_validate_data.md" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Reviewing and validating data
+    Schema definition
   </span>
   
 
@@ -1067,7 +848,7 @@
             
   
   <span class="md-ellipsis">
-    Advanced Usage
+    User Interface
   </span>
   
 
@@ -1076,6 +857,75 @@
         
         <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            User Interface
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user_guide/command_line_interface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Using the command-line interface (CLI)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_5" id="__nav_3_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Advanced Usage
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_5">
             <span class="md-nav__icon md-icon"></span>
             Advanced Usage
           </label>
@@ -1093,48 +943,6 @@
   
   <span class="md-ellipsis">
     Customizing multiple extraction schemas
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../user_guide/optimizing_llm_performance.md" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Optimizing LLM performance
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../user_guide/using_the_api.md" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Using the API
   </span>
   
 
@@ -1608,6 +1416,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#import-settings-from-hub" class="md-nav__link">
+    <span class="md-ellipsis">
+      Import settings from Hub
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1751,6 +1568,104 @@
   
   
     <li class="md-nav__item">
+      <a href="../custom_fields/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Custom fields with layout templates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_3_2" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../webhooks/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Use webhooks to respond to server events
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4_3_2" id="__nav_4_3_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            Use webhooks to respond to server events
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../webhooks_internals/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Webhooks internals
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../use_markdown_to_format_rich_content/" class="md-nav__link">
         
   
@@ -1776,7 +1691,7 @@
         
   
   <span class="md-ellipsis">
-    Migrate your legacy datasets to Argilla V2
+    Migrate users, workspaces and datasets to Argilla V2
   </span>
   
 
@@ -1807,16 +1722,135 @@
   
   
   
-    <li class="md-nav__item">
-      <a href="../../tutorials/" class="md-nav__link">
+    
+    
+    
+      
+      
         
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../tutorials/" class="md-nav__link ">
+              
   
   <span class="md-ellipsis">
     Tutorials
   </span>
   
 
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Tutorials
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/text_classification/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Text classification
+  </span>
+  
+
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/token_classification/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Token classification
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/image_classification/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Image classification
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/image_preference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Image preference
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -2370,6 +2404,27 @@
   
   
     <li class="md-nav__item">
+      <a href="../../reference/argilla/webhooks/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Webhooks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../reference/argilla/markdown/" class="md-nav__link">
         
   
@@ -2633,6 +2688,48 @@
   
   
     <li class="md-nav__item">
+      <a href="../../community/developer/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Developer documentation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../community/adding_language/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Add a new language to Argilla
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../community/popular_issues.md" class="md-nav__link">
         
   
@@ -2659,6 +2756,74 @@
   
   <span class="md-ellipsis">
     Changelog
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    UI Demo ↗
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            UI Demo ↗
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://extralit-public-demo.hf.space/sign-in" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    None
   </span>
   
 
@@ -2734,6 +2899,15 @@
   <a href="#import-from-hub" class="md-nav__link">
     <span class="md-ellipsis">
       Import from Hub
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#import-settings-from-hub" class="md-nav__link">
+    <span class="md-ellipsis">
+      Import settings from Hub
     </span>
   </a>
   
@@ -2838,12 +3012,12 @@
   
 
 
-<h1 id="importing-and-exporting-datasets-and-records">Importing and exporting datasets and records<a class="headerlink" href="#importing-and-exporting-datasets-and-records" title="Permanent link">&para;</a></h1>
-<p>This guide provides an overview of how to import and export your dataset or its records to Python, your local disk, or the Hugging Face Hub.</p>
+<h1 id="importing-and-exporting-datasets-and-records">Importing and exporting datasets and <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr><a class="headerlink" href="#importing-and-exporting-datasets-and-records" title="Permanent link">&para;</a></h1>
+<p>This guide provides an overview of how to import and export your dataset or its <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> to Python, your local disk, or the Hugging Face Hub.</p>
 <p>In Argilla, you can import/export two main components of a dataset:</p>
 <ul>
 <li>The dataset's complete configuration is defined in <code>rg.Settings</code>. This is useful if you want to share your feedback task or restore it later in Argilla.</li>
-<li>The records stored in the dataset, including <code>Metadata</code>, <code>Vectors</code>, <code>Suggestions</code>, and <code>Responses</code>. This is useful if you want to use your dataset's records outside of Argilla.</li>
+<li>The <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> stored in the dataset, including <code>Metadata</code>, <code>Vectors</code>, <code>Suggestions</code>, and <code>Responses</code>. This is useful if you want to use your dataset's <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> outside of Argilla.</li>
 </ul>
 <p>Check the <a href="../../reference/argilla/datasets/datasets/">Dataset - Python Reference</a> to see the attributes, arguments, and methods of the export <code>Dataset</code> class in detail.</p>
 <div class="admonition info">
@@ -2905,7 +3079,7 @@
 </blockquote>
 </div>
 <h2 id="importing-and-exporting-datasets">Importing and exporting datasets<a class="headerlink" href="#importing-and-exporting-datasets" title="Permanent link">&para;</a></h2>
-<p>First, we will go through exporting a complete dataset from Argilla. This includes the dataset's settings and records. All of these methods use the <code>rg.Dataset.from_*</code> and <code>rg.Dataset.to_*</code> methods.</p>
+<p>First, we will go through exporting a complete dataset from Argilla. This includes the dataset's settings and <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>. All of these methods use the <code>rg.Dataset.from_*</code> and <code>rg.Dataset.to_*</code> methods.</p>
 <h3 id="hugging-face-hub">Hugging Face Hub<a class="headerlink" href="#hugging-face-hub" title="Permanent link">&para;</a></h3>
 <h4 id="export-to-hub">Export to Hub<a class="headerlink" href="#export-to-hub" title="Permanent link">&para;</a></h4>
 <p>You can push a dataset from Argilla to the Hugging Face Hub. This is useful if you want to share your dataset with the community or version control it. You can push the dataset to the Hugging Face Hub using the <code>rg.Dataset.to_hub</code> method.</p>
@@ -2918,8 +3092,8 @@
 </span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="n">dataset</span><span class="o">.</span><span class="n">to_hub</span><span class="p">(</span><span class="n">repo_id</span><span class="o">=</span><span class="s2">&quot;&lt;my_org&gt;/&lt;my_dataset&gt;&quot;</span><span class="p">)</span>
 </span></code></pre></div>
 <div class="admonition note">
-<p class="admonition-title">With or without records</p>
-<p>The example above will push the dataset's <code>Settings</code> and records to the hub. If you only want to push the dataset's configuration, you can set the <code>with_records</code> parameter to <code>False</code>. This is useful if you're just interested in a specific dataset template or you want to make changes in the dataset settings and/or records.</p>
+<p class="admonition-title">With or without <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr></p>
+<p>The example above will push the dataset's <code>Settings</code> and <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> to the hub. If you only want to push the dataset's configuration, you can set the <code>with_records</code> parameter to <code>False</code>. This is useful if you're just interested in a specific dataset template or you want to make changes in the dataset settings and/or <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">dataset</span><span class="o">.</span><span class="n">to_hub</span><span class="p">(</span><span class="n">repo_id</span><span class="o">=</span><span class="s2">&quot;&lt;my_org&gt;/&lt;my_dataset&gt;&quot;</span><span class="p">,</span> <span class="n">with_records</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </span></code></pre></div>
 </div>
@@ -2929,109 +3103,139 @@
 </span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
 </span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="n">client</span> <span class="o">=</span> <span class="n">rg</span><span class="o">.</span><span class="n">Argilla</span><span class="p">(</span><span class="n">api_url</span><span class="o">=</span><span class="s2">&quot;&lt;api_url&gt;&quot;</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;&lt;api_key&gt;&quot;</span><span class="p">)</span>
 </span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>
-</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="n">dataset</span> <span class="o">=</span> <span class="n">rg</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_hub</span><span class="p">(</span><span class="n">repo_id</span><span class="o">=</span><span class="s2">&quot;&lt;my_org&gt;/&lt;my_dataset&gt;&quot;</span><span class="p">)</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="n">rg</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_hub</span><span class="p">(</span><span class="n">repo_id</span><span class="o">=</span><span class="s2">&quot;&lt;my_org&gt;/&lt;my_dataset&gt;&quot;</span><span class="p">)</span>
 </span></code></pre></div>
-<p>The <code>rg.Dataset.from_hub</code> method loads the configuration and records from the dataset repo. If you only want to load records, you can pass a <code>datasets.Dataset</code> object to the <code>rg.Dataset.log</code> method. This enables you to configure your own dataset and reuse existing Hub datasets. See the <a href="../record/">guide on records</a> for more information.</p>
+<p>By default, the <code>Dataset.from_hub</code> method will return the URL of the dataset configuration page. This page will let you preview the dataset's configuration and <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> before creating it in Argilla.</p>
+<p>You can infer the settings of the dataset automatically by configuring the <code>settings</code> parameter to <code>"auto"</code>. This will infer the dataset's settings based on the dataset's features in <code>datasets.Features</code>.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kn">import</span> <span class="nn">argilla</span> <span class="k">as</span> <span class="nn">rg</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="n">client</span> <span class="o">=</span> <span class="n">rg</span><span class="o">.</span><span class="n">Argilla</span><span class="p">(</span><span class="n">api_url</span><span class="o">=</span><span class="s2">&quot;&lt;api_url&gt;&quot;</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;&lt;api_key&gt;&quot;</span><span class="p">)</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="n">dataset</span> <span class="o">=</span> <span class="n">rg</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_hub</span><span class="p">(</span><span class="n">repo_id</span><span class="o">=</span><span class="s2">&quot;&lt;my_org&gt;/&lt;my_dataset&gt;&quot;</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">)</span>
+</span></code></pre></div>
+<p>The <code>rg.Dataset.from_hub</code> method loads the configuration and <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> from the dataset repo. If you only want to load <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>, you can pass a <code>datasets.Dataset</code> object to the <code>rg.Dataset.log</code> method. This enables you to configure your own dataset and reuse existing Hub datasets. See the <a href="../record/">guide on <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr></a> for more information.</p>
 <div class="admonition note">
-<p class="admonition-title">With or without records</p>
-<p>The example above will pull the dataset's <code>Settings</code> and records from the hub. If you only want to pull the dataset's configuration, you can set the <code>with_records</code> parameter to <code>False</code>. This is useful if you're just interested in a specific dataset template or you want to make changes in the dataset settings and/or records.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">dataset</span> <span class="o">=</span> <span class="n">rg</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_hub</span><span class="p">(</span><span class="n">repo_id</span><span class="o">=</span><span class="s2">&quot;&lt;my_org&gt;/&lt;my_dataset&gt;&quot;</span><span class="p">,</span> <span class="n">with_records</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<p class="admonition-title">With or without <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr></p>
+<p>The example above will pull the dataset's <code>Settings</code> and <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> from the hub. If you only want to pull the dataset's configuration, you can set the <code>with_records</code> parameter to <code>False</code>. This is useful if you're just interested in a specific dataset template or you want to make changes in the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">dataset</span> <span class="o">=</span> <span class="n">rg</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_hub</span><span class="p">(</span><span class="n">repo_id</span><span class="o">=</span><span class="s2">&quot;&lt;my_org&gt;/&lt;my_dataset&gt;&quot;</span><span class="p">,</span> <span class="n">with_records</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">)</span>
 </span></code></pre></div>
-<p>With the dataset's configuration, you could then make changes to the dataset. For example, you could adapt the dataset's settings for a different task:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">dataset</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">questions</span> <span class="o">=</span> <span class="p">[</span><span class="n">rg</span><span class="o">.</span><span class="n">TextQuestion</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;answer&quot;</span><span class="p">)]</span>
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="n">dataset</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
-</span></code></pre></div>
-<p>You could then log the dataset's records using the <code>load_dataset</code> method of the <code>datasets</code> package and pass the dataset to the <code>rg.Dataset.log</code> method.</p>
+<p>You could then log the dataset's <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> using the <code>load_dataset</code> method of the <code>datasets</code> package and pass the dataset to the <code>rg.Dataset.log</code> method.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">hf_dataset</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="s2">&quot;&lt;my_org&gt;/&lt;my_dataset&gt;&quot;</span><span class="p">)</span>
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="n">dataset</span><span class="o">.</span><span class="n">records</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">hf_dataset</span><span class="p">)</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="n">dataset</span><span class="o">.</span><span class="n">records</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">hf_dataset</span><span class="p">)</span> <span class="c1"># (1)</span>
 </span></code></pre></div>
+<ol>
+<li>You could also use the <code>mapping</code> parameter to map <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> field names to argilla field and question names.</li>
+</ol>
 </div>
+<h4 id="import-settings-from-hub">Import settings from Hub<a class="headerlink" href="#import-settings-from-hub" title="Permanent link">&para;</a></h4>
+<p>When importing datasets from the hub, Argilla will load settings from the hub in three ways:</p>
+<ol>
+<li>If the dataset was pushed to hub by Argilla, then the settings will be loaded from the hub via the configuration file.</li>
+<li>If the dataset was loaded by another source, then Argilla will define the settings based on the dataset's features in <code>datasets.Features</code>. For example, creating a <code>TextField</code> for a text feature or a <code>LabelQuestion</code> for a label class.</li>
+<li>You can pass a custom <code>rg.Settings</code> object to the <code>rg.Dataset.from_hub</code> method via the <code>settings</code> parameter. This will override the settings loaded from the hub.</li>
+</ol>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">settings</span> <span class="o">=</span> <span class="n">rg</span><span class="o">.</span><span class="n">Settings</span><span class="p">(</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>    <span class="n">fields</span><span class="o">=</span><span class="p">[</span><span class="n">rg</span><span class="o">.</span><span class="n">TextField</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;text&quot;</span><span class="p">)],</span>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>    <span class="n">questions</span><span class="o">=</span><span class="p">[</span><span class="n">rg</span><span class="o">.</span><span class="n">TextQuestion</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;answer&quot;</span><span class="p">)]</span>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="p">)</span> <span class="c1"># (1)</span>
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>
+</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="n">dataset</span> <span class="o">=</span> <span class="n">rg</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_hub</span><span class="p">(</span><span class="n">repo_id</span><span class="o">=</span><span class="s2">&quot;&lt;my_org&gt;/&lt;my_dataset&gt;&quot;</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="n">settings</span><span class="p">)</span>
+</span></code></pre></div>
+<ol>
+<li>The settings that you pass to the <code>rg.Dataset.from_hub</code> method will override the settings loaded from the hub, and need to align with the dataset being loaded.</li>
+</ol>
 <h3 id="local-disk">Local Disk<a class="headerlink" href="#local-disk" title="Permanent link">&para;</a></h3>
 <h4 id="export-to-disk">Export to Disk<a class="headerlink" href="#export-to-disk" title="Permanent link">&para;</a></h4>
 <p>You can save a dataset from Argilla to your local disk. This is useful if you want to back up your dataset. You can use the <code>rg.Dataset.to_disk</code> method. We recommend you to use an empty directory.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="kn">import</span> <span class="nn">argilla</span> <span class="k">as</span> <span class="nn">rg</span>
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="n">client</span> <span class="o">=</span> <span class="n">rg</span><span class="o">.</span><span class="n">Argilla</span><span class="p">(</span><span class="n">api_url</span><span class="o">=</span><span class="s2">&quot;&lt;api_url&gt;&quot;</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;&lt;api_key&gt;&quot;</span><span class="p">)</span>
-</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>
-</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="n">dataset</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">datasets</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;my_dataset&quot;</span><span class="p">)</span>
-</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>
-</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="n">dataset</span><span class="o">.</span><span class="n">to_disk</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;&lt;path-empty-directory&gt;&quot;</span><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="kn">import</span> <span class="nn">argilla</span> <span class="k">as</span> <span class="nn">rg</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="n">client</span> <span class="o">=</span> <span class="n">rg</span><span class="o">.</span><span class="n">Argilla</span><span class="p">(</span><span class="n">api_url</span><span class="o">=</span><span class="s2">&quot;&lt;api_url&gt;&quot;</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;&lt;api_key&gt;&quot;</span><span class="p">)</span>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="n">dataset</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">datasets</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;my_dataset&quot;</span><span class="p">)</span>
+</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>
+</span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="n">dataset</span><span class="o">.</span><span class="n">to_disk</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;&lt;path-empty-directory&gt;&quot;</span><span class="p">)</span>
 </span></code></pre></div>
-<p>This will save the dataset's configuration and records to the specified path. If you only want to save the dataset's configuration, you can set the <code>with_records</code> parameter to <code>False</code>.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="n">dataset</span><span class="o">.</span><span class="n">to_disk</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;&lt;path-empty-directory&gt;&quot;</span><span class="p">,</span> <span class="n">with_records</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<p>This will save the dataset's configuration and <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> to the specified path. If you only want to save the dataset's configuration, you can set the <code>with_records</code> parameter to <code>False</code>.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">dataset</span><span class="o">.</span><span class="n">to_disk</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;&lt;path-empty-directory&gt;&quot;</span><span class="p">,</span> <span class="n">with_records</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </span></code></pre></div>
 <h4 id="import-from-disk">Import from Disk<a class="headerlink" href="#import-from-disk" title="Permanent link">&para;</a></h4>
 <p>You can load a dataset from your local disk to Argilla. This is useful if you want to restore a dataset's configuration. You can use the <code>rg.Dataset.from_disk</code> method.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kn">import</span> <span class="nn">argilla</span> <span class="k">as</span> <span class="nn">rg</span>
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>
-</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="n">dataset</span> <span class="o">=</span> <span class="n">rg</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_disk</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;&lt;path-dataset-directory&gt;&quot;</span><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="kn">import</span> <span class="nn">argilla</span> <span class="k">as</span> <span class="nn">rg</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="n">dataset</span> <span class="o">=</span> <span class="n">rg</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_disk</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;&lt;path-dataset-directory&gt;&quot;</span><span class="p">)</span>
 </span></code></pre></div>
 <div class="admonition note">
 <p class="admonition-title">Directing the dataset to a name and workspace</p>
 <p>You can also specify the name and workspace of the dataset when loading it from the disk.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">dataset</span> <span class="o">=</span> <span class="n">rg</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_disk</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;&lt;path-dataset-directory&gt;&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;my_dataset&quot;</span><span class="p">,</span> <span class="n">workspace</span><span class="o">=</span><span class="s2">&quot;my_workspace&quot;</span><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="n">dataset</span> <span class="o">=</span> <span class="n">rg</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_disk</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;&lt;path-dataset-directory&gt;&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;my_dataset&quot;</span><span class="p">,</span> <span class="n">workspace</span><span class="o">=</span><span class="s2">&quot;my_workspace&quot;</span><span class="p">)</span>
 </span></code></pre></div>
 </div>
-<h2 id="importing-and-exporting-records">Importing and exporting records<a class="headerlink" href="#importing-and-exporting-records" title="Permanent link">&para;</a></h2>
-<p>The records alone can be exported from a dataset in Argilla.  This is useful if you want to process the records in Python, export them to a different platform, or use them in model training. All of these methods use the <code>rg.Dataset.records</code> attribute.</p>
-<h3 id="export-records">Export records<a class="headerlink" href="#export-records" title="Permanent link">&para;</a></h3>
-<p>The records can be exported as a dictionary, a list of dictionaries, or a <code>Dataset</code> of the <code>datasets</code> package.</p>
+<h2 id="importing-and-exporting-records">Importing and exporting <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr><a class="headerlink" href="#importing-and-exporting-records" title="Permanent link">&para;</a></h2>
+<p>The <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> alone can be exported from a dataset in Argilla.  This is useful if you want to process the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> in Python, export them to a different platform, or use them in model training. All of these methods use the <code>rg.Dataset.records</code> attribute.</p>
+<h3 id="export-records">Export <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr><a class="headerlink" href="#export-records" title="Permanent link">&para;</a></h3>
+<p>The <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> can be exported as a dictionary, a list of dictionaries, or a <code>Dataset</code> of the <code>datasets</code> package.</p>
+<div class="admonition note">
+<p class="admonition-title">With images</p>
+<p>If your dataset includes images, the recommended approach for exporting <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> is to use the <code>to_datasets</code> method, which exports the images as rescaled PIL objects. With other methods, the images will be exported using the data URI schema.</p>
+</div>
 <div class="tabbed-set tabbed-alternate" data-tabs="2:3"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><input id="__tabbed_2_3" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">To a python dictionary</label><label for="__tabbed_2_2">To a python list</label><label for="__tabbed_2_3">To the <code>datasets</code> package</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<p>Records can be exported from <code>Dataset.records</code> as a dictionary. The <code>to_dict</code> method can be used to export records as a dictionary. You can specify the orientation of the dictionary output. You can also decide if to flatten or not the dictionary.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="kn">import</span> <span class="nn">argilla</span> <span class="k">as</span> <span class="nn">rg</span>
-</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>
-</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="n">client</span> <span class="o">=</span> <span class="n">rg</span><span class="o">.</span><span class="n">Argilla</span><span class="p">(</span><span class="n">api_url</span><span class="o">=</span><span class="s2">&quot;&lt;api_url&gt;&quot;</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;&lt;api_key&gt;&quot;</span><span class="p">)</span>
-</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="n">dataset</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">datasets</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;my_dataset&quot;</span><span class="p">)</span>
-</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>
-</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="c1"># Export records as a dictionary</span>
-</span><span id="__span-17-7"><a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="n">exported_records</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">records</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
-</span><span id="__span-17-8"><a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a><span class="c1"># {&#39;fields&#39;: [{&#39;text&#39;: &#39;Hello&#39;},{&#39;text&#39;: &#39;World&#39;}], suggestions&#39;: [{&#39;label&#39;: {&#39;value&#39;: &#39;positive&#39;}}, {&#39;label&#39;: {&#39;value&#39;: &#39;negative&#39;}}]</span>
-</span><span id="__span-17-9"><a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a>
-</span><span id="__span-17-10"><a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a><span class="c1"># Export records as a dictionary with orient=index</span>
-</span><span id="__span-17-11"><a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a><span class="n">exported_records</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">records</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="s2">&quot;index&quot;</span><span class="p">)</span>
-</span><span id="__span-17-12"><a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a><span class="c1"># {&quot;uuid&quot;: {&#39;fields&#39;: {&#39;text&#39;: &#39;Hello&#39;}, &#39;suggestions&#39;: {&#39;label&#39;: {&#39;value&#39;: &#39;positive&#39;}}}, {&quot;uuid&quot;: {&#39;fields&#39;: {&#39;text&#39;: &#39;World&#39;}, &#39;suggestions&#39;: {&#39;label&#39;: {&#39;value&#39;: &#39;negative&#39;}}},</span>
-</span><span id="__span-17-13"><a id="__codelineno-17-13" name="__codelineno-17-13" href="#__codelineno-17-13"></a>
-</span><span id="__span-17-14"><a id="__codelineno-17-14" name="__codelineno-17-14" href="#__codelineno-17-14"></a><span class="c1"># Export records as a dictionary with flatten=True</span>
-</span><span id="__span-17-15"><a id="__codelineno-17-15" name="__codelineno-17-15" href="#__codelineno-17-15"></a><span class="n">exported_records</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">records</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">flatten</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span id="__span-17-16"><a id="__codelineno-17-16" name="__codelineno-17-16" href="#__codelineno-17-16"></a><span class="c1"># {&quot;text&quot;: [&quot;Hello&quot;, &quot;World&quot;], &quot;label.suggestion&quot;: [&quot;greeting&quot;, &quot;greeting&quot;]}</span>
-</span></code></pre></div>
-</div>
-<div class="tabbed-block">
-<p>Records can be exported from <code>Dataset.records</code> as a list of dictionaries. The <code>to_list</code> method can be used to export records as a list of dictionaries. You can decide if to flatten it or not.</p>
+<p>Records can be exported from <code>Dataset.records</code> as a dictionary. The <code>to_dict</code> method can be used to export <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> as a dictionary. You can specify the orientation of the dictionary output. You can also decide if to flatten or not the dictionary.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="kn">import</span> <span class="nn">argilla</span> <span class="k">as</span> <span class="nn">rg</span>
 </span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>
 </span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="n">client</span> <span class="o">=</span> <span class="n">rg</span><span class="o">.</span><span class="n">Argilla</span><span class="p">(</span><span class="n">api_url</span><span class="o">=</span><span class="s2">&quot;&lt;api_url&gt;&quot;</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;&lt;api_key&gt;&quot;</span><span class="p">)</span>
-</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>
-</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="n">workspace</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">workspaces</span><span class="p">(</span><span class="s2">&quot;my_workspace&quot;</span><span class="p">)</span>
-</span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>
-</span><span id="__span-18-7"><a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="n">dataset</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">datasets</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;my_dataset&quot;</span><span class="p">,</span> <span class="n">workspace</span><span class="o">=</span><span class="n">workspace</span><span class="p">)</span>
-</span><span id="__span-18-8"><a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>
-</span><span id="__span-18-9"><a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a><span class="c1"># Export records as a list of dictionaries</span>
-</span><span id="__span-18-10"><a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a><span class="n">exported_records</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">records</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
-</span><span id="__span-18-11"><a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a><span class="c1"># [{&#39;fields&#39;: {&#39;text&#39;: &#39;Hello&#39;}, &#39;suggestion&#39;: {&#39;label&#39;: {value: &#39;greeting&#39;}}}, {&#39;fields&#39;: {&#39;text&#39;: &#39;World&#39;}, &#39;suggestion&#39;: {&#39;label&#39;: {value: &#39;greeting&#39;}}}]</span>
-</span><span id="__span-18-12"><a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a>
-</span><span id="__span-18-13"><a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a><span class="c1"># Export records as a list of dictionaries with flatten=True</span>
-</span><span id="__span-18-14"><a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a><span class="n">exported_records</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">records</span><span class="o">.</span><span class="n">to_list</span><span class="p">(</span><span class="n">flatten</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span id="__span-18-15"><a id="__codelineno-18-15" name="__codelineno-18-15" href="#__codelineno-18-15"></a><span class="c1"># [{&quot;text&quot;: &quot;Hello&quot;, &quot;label&quot;: &quot;greeting&quot;}, {&quot;text&quot;: &quot;World&quot;, &quot;label&quot;: &quot;greeting&quot;}]</span>
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="n">dataset</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">datasets</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;my_dataset&quot;</span><span class="p">)</span>
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>
+</span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="c1"># Export records as a dictionary</span>
+</span><span id="__span-18-7"><a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="n">exported_records</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">records</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+</span><span id="__span-18-8"><a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a><span class="c1"># {&#39;fields&#39;: [{&#39;text&#39;: &#39;Hello&#39;},{&#39;text&#39;: &#39;World&#39;}], suggestions&#39;: [{&#39;label&#39;: {&#39;value&#39;: &#39;positive&#39;}}, {&#39;label&#39;: {&#39;value&#39;: &#39;negative&#39;}}]</span>
+</span><span id="__span-18-9"><a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a>
+</span><span id="__span-18-10"><a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a><span class="c1"># Export records as a dictionary with orient=index</span>
+</span><span id="__span-18-11"><a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a><span class="n">exported_records</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">records</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="s2">&quot;index&quot;</span><span class="p">)</span>
+</span><span id="__span-18-12"><a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a><span class="c1"># {&quot;uuid&quot;: {&#39;fields&#39;: {&#39;text&#39;: &#39;Hello&#39;}, &#39;suggestions&#39;: {&#39;label&#39;: {&#39;value&#39;: &#39;positive&#39;}}}, {&quot;uuid&quot;: {&#39;fields&#39;: {&#39;text&#39;: &#39;World&#39;}, &#39;suggestions&#39;: {&#39;label&#39;: {&#39;value&#39;: &#39;negative&#39;}}},</span>
+</span><span id="__span-18-13"><a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a>
+</span><span id="__span-18-14"><a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a><span class="c1"># Export records as a dictionary with flatten=True</span>
+</span><span id="__span-18-15"><a id="__codelineno-18-15" name="__codelineno-18-15" href="#__codelineno-18-15"></a><span class="n">exported_records</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">records</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">flatten</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-18-16"><a id="__codelineno-18-16" name="__codelineno-18-16" href="#__codelineno-18-16"></a><span class="c1"># {&quot;text&quot;: [&quot;Hello&quot;, &quot;World&quot;], &quot;label.suggestion&quot;: [&quot;greeting&quot;, &quot;greeting&quot;]}</span>
 </span></code></pre></div>
 </div>
 <div class="tabbed-block">
-<p>Records can be exported from <code>Dataset.records</code> to the <code>datasets</code> package. The <code>to_dataset</code> method can be used to export records to the <code>datasets</code> package. You can specify the name of the dataset and the split to export the records.</p>
+<p>Records can be exported from <code>Dataset.records</code> as a list of dictionaries. The <code>to_list</code> method can be used to export <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> as a list of dictionaries. You can decide if to flatten it or not.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="kn">import</span> <span class="nn">argilla</span> <span class="k">as</span> <span class="nn">rg</span>
 </span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>
 </span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="n">client</span> <span class="o">=</span> <span class="n">rg</span><span class="o">.</span><span class="n">Argilla</span><span class="p">(</span><span class="n">api_url</span><span class="o">=</span><span class="s2">&quot;&lt;api_url&gt;&quot;</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;&lt;api_key&gt;&quot;</span><span class="p">)</span>
-</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="n">dataset</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">datasets</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;my_dataset&quot;</span><span class="p">)</span>
-</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>
-</span><span id="__span-19-6"><a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a><span class="c1"># Export records as a dictionary</span>
-</span><span id="__span-19-7"><a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a><span class="n">exported_dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">records</span><span class="o">.</span><span class="n">to_datasets</span><span class="p">()</span>
+</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>
+</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="n">workspace</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">workspaces</span><span class="p">(</span><span class="s2">&quot;my_workspace&quot;</span><span class="p">)</span>
+</span><span id="__span-19-6"><a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>
+</span><span id="__span-19-7"><a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a><span class="n">dataset</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">datasets</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;my_dataset&quot;</span><span class="p">,</span> <span class="n">workspace</span><span class="o">=</span><span class="n">workspace</span><span class="p">)</span>
+</span><span id="__span-19-8"><a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a>
+</span><span id="__span-19-9"><a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a><span class="c1"># Export records as a list of dictionaries</span>
+</span><span id="__span-19-10"><a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a><span class="n">exported_records</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">records</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+</span><span id="__span-19-11"><a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a><span class="c1"># [{&#39;fields&#39;: {&#39;text&#39;: &#39;Hello&#39;}, &#39;suggestion&#39;: {&#39;label&#39;: {value: &#39;greeting&#39;}}}, {&#39;fields&#39;: {&#39;text&#39;: &#39;World&#39;}, &#39;suggestion&#39;: {&#39;label&#39;: {value: &#39;greeting&#39;}}}]</span>
+</span><span id="__span-19-12"><a id="__codelineno-19-12" name="__codelineno-19-12" href="#__codelineno-19-12"></a>
+</span><span id="__span-19-13"><a id="__codelineno-19-13" name="__codelineno-19-13" href="#__codelineno-19-13"></a><span class="c1"># Export records as a list of dictionaries with flatten=True</span>
+</span><span id="__span-19-14"><a id="__codelineno-19-14" name="__codelineno-19-14" href="#__codelineno-19-14"></a><span class="n">exported_records</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">records</span><span class="o">.</span><span class="n">to_list</span><span class="p">(</span><span class="n">flatten</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-19-15"><a id="__codelineno-19-15" name="__codelineno-19-15" href="#__codelineno-19-15"></a><span class="c1"># [{&quot;text&quot;: &quot;Hello&quot;, &quot;label&quot;: &quot;greeting&quot;}, {&quot;text&quot;: &quot;World&quot;, &quot;label&quot;: &quot;greeting&quot;}]</span>
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<p>Records can be exported from <code>Dataset.records</code> to the <code>datasets</code> package. The <code>to_dataset</code> method can be used to export <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> to the <code>datasets</code> package. You can specify the name of the dataset and the split to export the <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr>.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="kn">import</span> <span class="nn">argilla</span> <span class="k">as</span> <span class="nn">rg</span>
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>
+</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="n">client</span> <span class="o">=</span> <span class="n">rg</span><span class="o">.</span><span class="n">Argilla</span><span class="p">(</span><span class="n">api_url</span><span class="o">=</span><span class="s2">&quot;&lt;api_url&gt;&quot;</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;&lt;api_key&gt;&quot;</span><span class="p">)</span>
+</span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="n">dataset</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">datasets</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;my_dataset&quot;</span><span class="p">)</span>
+</span><span id="__span-20-5"><a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a>
+</span><span id="__span-20-6"><a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a><span class="c1"># Export records as a dictionary</span>
+</span><span id="__span-20-7"><a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a><span class="n">exported_dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">records</span><span class="o">.</span><span class="n">to_datasets</span><span class="p">()</span>
 </span></code></pre></div>
 </div>
 </div>
 </div>
-<h3 id="import-records">Import records<a class="headerlink" href="#import-records" title="Permanent link">&para;</a></h3>
-<p>To import records to a dataset, use the <code>rg.Datasets.records.log</code> method. There is a guide on how to do this in <a href="../record/">How-to guides - Record</a>, or you can check the <a href="../../reference/argilla/records/records/">Record - Python Reference</a>.</p>
+<h3 id="import-records">Import <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr><a class="headerlink" href="#import-records" title="Permanent link">&para;</a></h3>
+<p>To import <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">records</abbr> to a dataset, use the <code>rg.Datasets.records.log</code> method. There is a guide on how to do this in <a href="../record/">How-to guides - Record</a>, or you can check the <a href="../../reference/argilla/records/records/">Record - Python Reference</a>.</p>
+<!-- General -->
+<!-- Argilla specific -->
 
 
 
@@ -3047,6 +3251,46 @@
   
 
 
+
+  <form class="md-feedback" name="feedback" hidden>
+    <fieldset>
+      <legend class="md-feedback__title">
+        Was this page helpful?
+      </legend>
+      <div class="md-feedback__inner">
+        <div class="md-feedback__list">
+          
+            <button class="md-feedback__icon md-icon" type="submit" title="This page was helpful" data-md-value="1">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5 9v12H1V9h4m4 12a2 2 0 0 1-2-2V9c0-.55.22-1.05.59-1.41L14.17 1l1.06 1.06c.27.27.44.64.44 1.05l-.03.32L14.69 8H21a2 2 0 0 1 2 2v2c0 .26-.05.5-.14.73l-3.02 7.05C19.54 20.5 18.83 21 18 21H9m0-2h9.03L21 12v-2h-8.79l1.13-5.32L9 9.03V19Z"/></svg>
+            </button>
+          
+            <button class="md-feedback__icon md-icon" type="submit" title="This page could be improved" data-md-value="0">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 15V3h4v12h-4M15 3a2 2 0 0 1 2 2v10c0 .55-.22 1.05-.59 1.41L9.83 23l-1.06-1.06c-.27-.27-.44-.64-.44-1.06l.03-.31.95-4.57H3a2 2 0 0 1-2-2v-2c0-.26.05-.5.14-.73l3.02-7.05C4.46 3.5 5.17 3 6 3h9m0 2H5.97L3 12v2h8.78l-1.13 5.32L15 14.97V5Z"/></svg>
+            </button>
+          
+        </div>
+        <div class="md-feedback__note">
+          
+            <div data-md-value="1" hidden>
+              
+              
+                
+              
+              Thanks for your feedback!
+            </div>
+          
+            <div data-md-value="0" hidden>
+              
+              
+                
+              
+              Thanks for your feedback! Help us improve this page by <a href="https://github.com/extralit/extralit/issues/new/?title=[Feedback]+Import%20and%20export%20datasets+-+/admin_guide/import_export/" target="_blank" rel="noopener">opening a GitHub issue</a>.
+            </div>
+          
+        </div>
+      </div>
+    </fieldset>
+  </form>
 
 
                 
@@ -3089,13 +3333,13 @@
         
         
           
-          <a href="../use_markdown_to_format_rich_content/" class="md-footer__link md-footer__link--next" aria-label="Next: Use Markdown to format rich content">
+          <a href="../custom_fields/" class="md-footer__link md-footer__link--next" aria-label="Next: Custom fields with layout templates">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Use Markdown to format rich content
+                Custom fields with layout templates
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -3112,7 +3356,7 @@
       <div class="md-copyright">
   
     <div class="md-copyright__highlight">
-      Copyright &copy; 2023 - 2024 Extralit
+      Copyright &copy; 2023 - 2025 Extralit
     </div>
   
   
@@ -3132,8 +3376,8 @@
       
       
     
-    <a href="https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ" target="_blank" rel="noopener" title="join.slack.com" class="md-social__link">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M94.12 315.1c0 25.9-21.16 47.06-47.06 47.06S0 341 0 315.1c0-25.9 21.16-47.06 47.06-47.06h47.06v47.06zm23.72 0c0-25.9 21.16-47.06 47.06-47.06s47.06 21.16 47.06 47.06v117.84c0 25.9-21.16 47.06-47.06 47.06s-47.06-21.16-47.06-47.06V315.1zm47.06-188.98c-25.9 0-47.06-21.16-47.06-47.06S139 32 164.9 32s47.06 21.16 47.06 47.06v47.06H164.9zm0 23.72c25.9 0 47.06 21.16 47.06 47.06s-21.16 47.06-47.06 47.06H47.06C21.16 243.96 0 222.8 0 196.9s21.16-47.06 47.06-47.06H164.9zm188.98 47.06c0-25.9 21.16-47.06 47.06-47.06 25.9 0 47.06 21.16 47.06 47.06s-21.16 47.06-47.06 47.06h-47.06V196.9zm-23.72 0c0 25.9-21.16 47.06-47.06 47.06-25.9 0-47.06-21.16-47.06-47.06V79.06c0-25.9 21.16-47.06 47.06-47.06 25.9 0 47.06 21.16 47.06 47.06V196.9zM283.1 385.88c25.9 0 47.06 21.16 47.06 47.06 0 25.9-21.16 47.06-47.06 47.06-25.9 0-47.06-21.16-47.06-47.06v-47.06h47.06zm0-23.72c-25.9 0-47.06-21.16-47.06-47.06 0-25.9 21.16-47.06 47.06-47.06h117.84c25.9 0 47.06 21.16 47.06 47.06 0 25.9-21.16 47.06-47.06 47.06H283.1z"/></svg>
+    <a href="https://join.slack.com/t/extralit/shared_invite/zt-32blg3602-0m0XewPBXF7776BQ3m7ZlA" target="_blank" rel="noopener" title="join.slack.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M94.12 315.1c0 25.9-21.16 47.06-47.06 47.06S0 341 0 315.1c0-25.9 21.16-47.06 47.06-47.06h47.06v47.06zm23.72 0c0-25.9 21.16-47.06 47.06-47.06s47.06 21.16 47.06 47.06v117.84c0 25.9-21.16 47.06-47.06 47.06s-47.06-21.16-47.06-47.06V315.1zm47.06-188.98c-25.9 0-47.06-21.16-47.06-47.06S139 32 164.9 32s47.06 21.16 47.06 47.06v47.06H164.9zm0 23.72c25.9 0 47.06 21.16 47.06 47.06s-21.16 47.06-47.06 47.06H47.06C21.16 243.96 0 222.8 0 196.9s21.16-47.06 47.06-47.06H164.9zm188.98 47.06c0-25.9 21.16-47.06 47.06-47.06 25.9 0 47.06 21.16 47.06 47.06s-21.16 47.06-47.06 47.06h-47.06V196.9zm-23.72 0c0 25.9-21.16 47.06-47.06 47.06-25.9 0-47.06-21.16-47.06-47.06V79.06c0-25.9 21.16-47.06 47.06-47.06 25.9 0 47.06 21.16 47.06 47.06V196.9zM283.1 385.88c25.9 0 47.06 21.16 47.06 47.06 0 25.9-21.16 47.06-47.06 47.06-25.9 0-47.06-21.16-47.06-47.06v-47.06h47.06zm0-23.72c-25.9 0-47.06-21.16-47.06-47.06 0-25.9 21.16-47.06 47.06-47.06h117.84c25.9 0 47.06 21.16 47.06 47.06 0 25.9-21.16 47.06-47.06 47.06H283.1z"/></svg>
     </a>
   
 </div>
@@ -3151,7 +3395,7 @@
     <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.instant", "navigation.sections", "navigation.tabs", "navigation.footer", "navigation.top", "navigation.tracking", "navigation.path", "toc.follow", "content.code.copy", "content.code.annotate", "content.action.edit", "content.tooltips", "search.suggest", "search.highlight", "search.share"], "search": "../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.ad660dcc.min.js"></script>
+      <script src="../../assets/javascripts/bundle.af256bd8.min.js"></script>
       
         <script src="../../js/open_in_new_tab.js"></script>
       
