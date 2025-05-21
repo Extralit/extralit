@@ -35,7 +35,7 @@ dependencies = [
     "beautifulsoup4 ~= 4.12.2",
     "pandas ~= 2.2.2",
     "pandera[io] ~= 0.19.3",
-    "numpy ~= 1.26.4",
+    "numpy >= 1.26.4,<2.0.0",
     "spacy ~= 3.7.2",
     "pyarrow == 14.*",
     "natsort ~= 8.4.0",

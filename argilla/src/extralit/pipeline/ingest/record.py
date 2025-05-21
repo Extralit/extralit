@@ -37,7 +37,7 @@ def get_record_data(
     answers = [answers] if isinstance(answers, str) else set(answers) if answers else []
     suggestions = [suggestions] if isinstance(suggestions, str) else set(suggestions) if suggestions else []
     metadatas = [metadatas] if isinstance(metadatas, str) else set(metadatas) if metadatas else []
-    users = [users] if isinstance(users, (UserModel, rg.User)) else list(users) if users else []
+    users = [users] if isinstance(users, (rg.User)) else list(users) if users else []
     responses = record.responses
 
     if users:
