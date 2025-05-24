@@ -2959,23 +2959,23 @@
 <h3 id="docker-deployment-update">Docker Deployment Update<a class="headerlink" href="#docker-deployment-update" title="Permanent link">&para;</a></h3>
 <ol>
 <li>
-<p>Update the <code>docker-compose.yml</code> file with the latest Extralit image version.</p>
+<p>Update the <code>docker-compose.yaml</code> file with the latest Extralit image version.</p>
 </li>
 <li>
 <p>Pull the updated images:</p>
 </li>
 </ol>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>docker-compose<span class="w"> </span>pull
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>pull
 </span></code></pre></div>
 <ol>
 <li>Restart the services with the new images:</li>
 </ol>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>docker-compose<span class="w"> </span>up<span class="w"> </span>-d
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d
 </span></code></pre></div>
 <ol>
 <li>For database schema changes, run migrations:</li>
 </ol>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>docker-compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>argilla<span class="w"> </span>argilla_server<span class="w"> </span>database<span class="w"> </span>migrate
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>argilla<span class="w"> </span>argilla_server<span class="w"> </span>database<span class="w"> </span>migrate
 </span></code></pre></div>
 <p><SwmMeta version="3.0.0"><sup>Powered by <a href="https://app.swimm.io/">Swimm</a></sup></SwmMeta></p>
 <!-- General -->
