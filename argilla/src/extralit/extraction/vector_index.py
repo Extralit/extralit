@@ -81,7 +81,7 @@ def create_local_index(
 
 def create_vector_index(
     paper: pd.Series,
-    weaviate_client: WeaviateClient,
+    weaviate_client: Optional[WeaviateClient] = None,
     preprocessing_dataset: Optional[rg.Dataset] = None,
     preprocessing_path='data/preprocessing/nougat/',
     index_name: Optional[str] = "LlamaIndexDocumentSections",
@@ -132,13 +132,43 @@ def create_vector_index(
             name=f"embed-{paper.name}", tags=[paper.name]
         )
 
-    vector_store = WeaviateVectorStore(weaviate_client=weaviate_client, index_name=index_name)
-    has_existing_node = vectordb_contains_any(paper.name, weaviate_client=weaviate_client, index_name=index_name)
-    if has_existing_node and overwrite:
-        delete_filters = [MetadataFilter(key="reference", value=paper.name, operator=FilterOperator.EQ)]
-        if isinstance(overwrite, str):
-            delete_filters.append(MetadataFilter(key="type", value=overwrite, operator=FilterOperator.EQ))
-        vector_store.delete_nodes(filters=MetadataFilters(filters=delete_filters,))
+
+    # Determine vector store (Weaviate or SimpleVectorStore)
+    if weaviate_client:
+        # Use Weaviate as vector store
+        vector_store = WeaviateVectorStore(weaviate_client=weaviate_client, index_name=index_name)
+        has_existing_node = vectordb_contains_any(
+            paper.name, weaviate_client=weaviate_client, index_name=index_name
+        )
+        
+        # Delete existing nodes if overwrite is specified
+        if has_existing_node and overwrite:
+            delete_filters = [MetadataFilter(key="reference", value=paper.name, operator=FilterOperator.EQ)]
+            if isinstance(overwrite, str):
+                delete_filters.append(MetadataFilter(key="type", value=overwrite, operator=FilterOperator.EQ))
+            vector_store.delete_nodes(filters=MetadataFilters(filters=delete_filters))
+    else:
+        # Use SimpleVectorStore (local) if no Weaviate client is provided
+        persist_dir = f"data/interim/vectorstore/{paper.name}/{embed_model}"
+        os.makedirs(persist_dir, exist_ok=True)
+        vector_store = SimpleVectorStore()
+        has_existing_node = False  # Local store starts empty
+
+    loaded_index.vector_store = vector_store
+
+    # Insert new nodes unless they already exist and we're not overwriting
+    for node in table_nodes:
+        if has_existing_node and overwrite != 'table':
+            continue
+        loaded_index.insert(node, node_parser=JSONNodeParser(chunk_size=chunk_size, chunk_overlap=chunk_overlap))
+
+    # Persist local vector store if using SimpleVectorStore
+    if not weaviate_client:
+        loaded_index.storage_context.persist(persist_dir)
+
+    return loaded_index
+
+
 
     embedding_model = OpenAIEmbedding(mode=retrieval_mode, model=embed_model, dimensions=dimensions)
     embed_model_context = ServiceContext.from_defaults(
