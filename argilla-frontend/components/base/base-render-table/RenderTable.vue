@@ -578,18 +578,26 @@ export default {
       this.updateTableJsonData(false, false, true, newFieldName, oldFieldName);
       // this.tabulator?.setColumns(this.columnsConfig);
     },
+    
     clearTable() {
       if (this.tabulator?.getDataCount() == 0) {
+        if (this.tabulator) {
+          this.tabulator.destroy();
+          this.tabulator = null;
+        }
         this.tableJSON = undefined;
+        this.$emit("change-text", null);
+        this.dropdownEditTableVisible = false;
         return;
       }
-      this.tabulator?.clearData()
+      this.tabulator?.clearData();
       this.columns?.forEach((column) => {
         if (!this.refColumns.includes(column)) {
           this.tabulator?.deleteColumn(column);
         }
       });
-    },
+      this.updateTableJsonData();
+    }
     addEmptyReferenceRows() {
       const combinations = this.generateCombinations(this.referenceValues);
 

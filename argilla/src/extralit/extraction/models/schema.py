@@ -321,27 +321,73 @@ class SchemaStructure(BaseModel):
         columns = list(self.__getitem__(schema).columns)
         return columns
 
+    def _validate_dependencies(self, order: List[str]) -> bool:
+        """
+        Check if a given ordering satisfies all dependencies.
+        
+        Args:
+            order: A list of schema names in the proposed order.
+            
+        Returns:
+            bool: True if the ordering is valid, False otherwise.
+        """
+
+        position = {name: idx for idx, name in enumerate(order)}
+        
+        for schema_name in order:
+            for dependency in self.downstream_dependencies.get(schema_name, []):
+                if dependency not in position:
+                    return False
+                if position[dependency] >= position[schema_name]:
+                    return False
+        
+        return True
+    
     @property
     def ordering(self) -> List[str]:
+        """
+        Returns the ordering of schemas based on the user's provided order, ensuring
+        dependencies are satisfied.
+        """
+    
+        user_order = [schema.name for schema in self.schemas]
+        
+        if self.singleton_schema:
+            if self.singleton_schema.name in user_order:
+                user_order.remove(self.singleton_schema.name)
+            user_order.insert(0, self.singleton_schema.name)
+        
+        if self._validate_dependencies(user_order):
+            return user_order
+        else:
+            raise ValueError(
+                "The provided schema order violates dependencies. "
+                "Please use the .reorder() method to automatically fix the ordering."
+            )
+    
+    def reorder(self) -> List[str]:
+        """
+        Reorders the schemas based on a topological sort algorithm to resolve dependencies.
+        
+        Returns:
+            List[str]: A valid ordering of schema names that satisfies all dependencies.
+        """
         visited = {schema.name: 0 for schema in self.schemas}
         stack = deque()
-
-        # Ensure singleton_schema is ordered first
+        
         if self.singleton_schema:
             stack.append(self.singleton_schema.name)
-            visited[self.singleton_schema.name] = 2  # Mark as visited (black)
-
+            visited[self.singleton_schema.name] = 2 
+        
         for schema in self.schemas:
             if visited[schema.name] == 0:
-                # If the node is white, visit it
                 topological_sort(schema.name, visited, stack, self.downstream_dependencies)
-
-        # Ensure singleton_schema is at the beginning of the list
+        
         ordered_list = list(stack)
         if self.singleton_schema and ordered_list[0] != self.singleton_schema.name:
             ordered_list.remove(self.singleton_schema.name)
             ordered_list.insert(0, self.singleton_schema.name)
-
+        
         return ordered_list
 
     def __iter__(self):
