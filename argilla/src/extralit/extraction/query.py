@@ -13,6 +13,32 @@ from weaviate.exceptions import WeaviateQueryError
 
 _LOGGER = logging.getLogger(__name__)
 
+import time
+import grpc
+from weaviate.exceptions import WeaviateQueryError
+
+MAX_RETRIES = 3
+RETRY_BACKOFF_SECONDS = 2  # Exponential backoff base
+
+def fetch_with_retry(collection, filters, return_properties, limit=None, timeout=10):
+    for attempt in range(1, MAX_RETRIES + 1):
+        try:
+            return collection.query.fetch_objects(
+                filters=filters,
+                return_properties=return_properties,
+                limit=limit,
+                timeout=timeout  # Add timeout to the call
+            )
+        except (grpc.RpcError, WeaviateQueryError) as e:
+            if isinstance(e, grpc.RpcError) and e.code() == grpc.StatusCode.DEADLINE_EXCEEDED:
+                _LOGGER.warning(f"[Attempt {attempt}] Query timed out. Retrying in {RETRY_BACKOFF_SECONDS ** attempt} seconds...")
+                time.sleep(RETRY_BACKOFF_SECONDS ** attempt)
+            else:
+                _LOGGER.error("Unexpected error while querying Weaviate: %s", e)
+                break
+    return None
+
+
 
 def get_nodes_metadata(weaviate_client: WeaviateClient,
                        filters: Union[Dict[str, Any], MetadataFilters],
@@ -66,19 +92,23 @@ def get_nodes_metadata(weaviate_client: WeaviateClient,
     collection = weaviate_client.collections.get(index_name)
 
     try:
-        query_result = collection.query.fetch_objects(
+        query_result = fetch_with_retry(
+            collection,
             filters=_to_weaviate_filter(filters),
             return_properties=properties,
             limit=limit,
+            timeout=10  # You can make this configurable if needed
         )
+
+        if not query_result or not hasattr(query_result, "objects"):
+            return []
 
         entries = [o.properties for o in query_result.objects]
         return entries
-    
-    except WeaviateQueryError as wqe:
-        _LOGGER.error("Error while querying Weaviate: %s", wqe)
-        return []
 
+    except Exception as e:
+        _LOGGER.error("Error while querying Weaviate: %s", e)
+        return []
 
 
 def vectordb_contains_any(reference: str, *, filters: Optional[Dict[str, str]] = None,
