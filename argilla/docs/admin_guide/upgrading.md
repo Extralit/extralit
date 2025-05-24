@@ -105,24 +105,24 @@ argilla_server database migrate
 
 ### Docker Deployment Update
 
-1. Update the `docker-compose.yml` file with the latest Extralit image version.
+1. Update the `docker-compose.yaml` file with the latest Extralit image version.
 
 2. Pull the updated images:
 
    ```bash
-   docker-compose pull
+   docker compose pull
    ```
 
 3. Restart the services with the new images:
 
    ```bash
-   docker-compose up -d
+   docker compose up -d
    ```
 
 4. For database schema changes, run migrations:
 
    ```bash
-   docker-compose exec argilla argilla_server database migrate
+   docker compose exec argilla argilla_server database migrate
    ```
 
 <SwmMeta version="3.0.0"><sup>Powered by [Swimm](https://app.swimm.io/)</sup></SwmMeta>
