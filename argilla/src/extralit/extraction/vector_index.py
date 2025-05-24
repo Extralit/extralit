@@ -35,6 +35,7 @@ def create_local_index(
     embed_model='text-embedding-3-small',
     dimensions=1536,
     retrieval_mode=DEFAULT_RETRIEVAL_MODE,
+    overwrite: Literal[True, 'text', 'table', 'figure'] = True,
     chunk_size=4096,
     chunk_overlap=200,
     verbose=True,
@@ -46,8 +47,27 @@ def create_local_index(
 
     _LOGGER.info(
         f"Creating index with {len(text_nodes)} text and {len(table_nodes)} table segments, `persist_dir={persist_dir}`")
+    
+    def get_storage_context(persist_dir: Optional[str] = None) -> StorageContext:
+        kwargs = {}
+        if persist_dir:
+            os.makedirs(persist_dir, exist_ok=True)
+            kwargs['persist_dir'] = persist_dir
+        return StorageContext.from_defaults(**kwargs)
 
     storage_context = get_storage_context(persist_dir=persist_dir)
+    if overwrite and persist_dir and os.path.exists(persist_dir):
+        # Delete existing nodes
+        filters = [MetadataFilter(key="reference", value=paper.name)]
+        if isinstance(overwrite, str):
+            filters.append(MetadataFilter(key="type", value=overwrite))
+        ids_to_delete = [
+            node_id for node_id, doc in storage_context.docstore.docs.items()
+            if all(f.apply(doc.metadata) for f in filters)
+        ]
+        if ids_to_delete:
+            storage_context.docstore.delete_documents(ids_to_delete)
+            storage_context.persist(persist_dir)
     embedding_model = OpenAIEmbedding(
         mode=retrieval_mode, model=embed_model, dimensions=dimensions,
     )
@@ -57,24 +77,34 @@ def create_local_index(
             name=f"embed-{paper.name}", tags=[paper.name]
         )
 
-    embed_model_context = ServiceContext.from_defaults(
-        embed_model=embedding_model,
-        node_parser=SentenceSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap),
-    )
-    index = VectorStoreIndex.from_documents(
-        text_nodes, storage_context=storage_context, service_context=embed_model_context)
+    service_context = ServiceContext.from_defaults(embed_model=embedding_model,node_parser=SentenceSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap ),)
+    if persist_dir and os.path.exists(persist_dir) and not overwrite:
+        index = VectorStoreIndex.from_vector_store(vector_store=storage_context.vector_store,storage_context=storage_context,service_context=service_context)
+    else:
+        index = VectorStoreIndex([], storage_context=storage_context, service_context=service_context )
 
-    index.insert_nodes(
-        table_nodes, node_parser=JSONNodeParser(chunk_size=chunk_size, chunk_overlap=chunk_overlap))
+    def should_insert(node_type: str) -> bool:
+        if not overwrite:
+            return False
+        return overwrite is True or overwrite == node_type
+
+    if should_insert('text'):
+        index.insert_nodes(text_nodes)
+
+    if should_insert('table'):
+        index.insert_nodes(table_nodes, node_parser=JSONNodeParser(chunk_size=chunk_size,chunk_overlap=chunk_overlap ) )
 
     if persist_dir and not storage_context.vector_store:
         assert os.path.exists(persist_dir)
         index.storage_context.persist(persist_dir)
 
     if verbose:
-        nodes_counts = Counter([doc.metadata['header'] for doc in index.docstore.docs.values()])
-        nodes_counts = [(header, count) for header, count in nodes_counts.most_common() if count > 1]
-        print(pd.DataFrame(nodes_counts, columns=['header', 'n_chunks'])) if nodes_counts else None
+        nodes_counts = Counter([doc.metadata.get('header', 'unknown') for doc in index.docstore.docs.values()])
+        nodes_counts = [(header, count) for header, count in nodes_counts.most_common()  if count > 1]
+        if nodes_counts:
+            print(pd.DataFrame(nodes_counts, columns=['Header', 'Chunk Count']))
+        else:
+            print(f"Index created with {len(index.docstore.docs)} nodes")
 
     return index
 
