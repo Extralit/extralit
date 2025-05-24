@@ -206,8 +206,8 @@ docker run -d --name postgres-for-extralit -p 5432:5432 -e POSTGRES_PASSWORD=pos
 Alternatively, you can start all required services using Docker Compose:
 
 ```bash
-# Start Elasticsearch and other services
-docker-compose up -d elasticsearch redis
+# Start all services using the docker-compose.yaml file in the root directory
+docker compose up -d
 ```
 
 ### 6. Run Database Migrations and Start the Server
