@@ -1,17 +1,16 @@
-#  coding=utf-8
-#  Copyright 2023-present, Extralit, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """
 Common environment vars / settings
@@ -109,23 +108,11 @@ class Settings(BaseSettings):
         description="SQLite database connection timeout in seconds",
     )
 
-    s3_endpoint: Optional[str] = Field(
-        default=None,
-        description="The S3 endpoint for data storage"
-    )
-    s3_access_key: Optional[str] = Field(
-        default=None,
-        description="The access key for the S3 storage"
-    )
-    s3_secret_key: Optional[str] = Field(
-        default=None,
-        description="The secret key for the S3 storage"
-    )
+    s3_endpoint: Optional[str] = Field(default=None, description="The S3 endpoint for data storage")
+    s3_access_key: Optional[str] = Field(default=None, description="The access key for the S3 storage")
+    s3_secret_key: Optional[str] = Field(default=None, description="The secret key for the S3 storage")
 
-    extralit_url: Optional[str] = Field(
-        default=None,
-        description="The extralit server url for LLM serving endpoint"
-    )
+    extralit_url: Optional[str] = Field(default=None, description="The extralit server url for LLM serving endpoint")
 
     elasticsearch: str = "http://localhost:9200"
     elasticsearch_ssl_verify: bool = True
@@ -225,7 +212,7 @@ class Settings(BaseSettings):
 
         if "postgres" in database_url:
             parsed_url = urlparse(database_url)
-            if parsed_url.scheme.__contains__('postgres'):
+            if parsed_url.scheme.__contains__("postgres"):
                 # warnings.warn(
                 #     "From version 1.14.0, Argilla will use `asyncpg` as default PostgreSQL driver. The protocol in the"
                 #     " provided database URL has been automatically replaced from `postgresql` to `postgresql+asyncpg`."
@@ -234,8 +221,10 @@ class Settings(BaseSettings):
                 new_scheme = "postgresql+asyncpg"
                 database_url = urlunparse(parsed_url._replace(scheme=new_scheme))
 
-            if not database_url.startswith('postgresql+asyncpg://'):
-                raise ValueError(f"Invalid database URL format. Expected: 'postgresql+asyncpg://...', given '{parsed_url.scheme}'")
+            if not database_url.startswith("postgresql+asyncpg://"):
+                raise ValueError(
+                    f"Invalid database URL format. Expected: 'postgresql+asyncpg://...', given '{parsed_url.scheme}'"
+                )
 
         return database_url
 

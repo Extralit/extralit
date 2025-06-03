@@ -1,29 +1,28 @@
-#  Copyright 2023-present, Extralit, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from datetime import datetime
 from typing import Dict, Iterable, Sequence, Union, List, Tuple, Optional
 from uuid import UUID
 
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy import select, and_, or_, case, func, Select
+from sqlalchemy import select, and_, or_, func, Select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload, contains_eager
 
 from argilla_server.api.schemas.v1.records import RecordUpdate
 from argilla_server.api.schemas.v1.vectors import Vector as VectorSchema
-from argilla_server.database import get_async_db
 from argilla_server.models import Dataset, Record, VectorSettings, Vector, Response, ResponseStatus, Suggestion
 from argilla_server.search_engine import SearchEngine
 from argilla_server.validators.records import RecordUpdateValidator
@@ -32,7 +31,6 @@ from argilla_server.webhooks.v1.records import (
     build_record_event as build_record_event_v1,
     notify_record_event as notify_record_event_v1,
 )
-
 
 
 async def list_dataset_records(
@@ -115,9 +113,9 @@ def _build_list_records_query(
                 Response.record_id == Record.id,
                 or_(
                     Response.user_id.in_(workspace_user_ids),
-                    Response.status.in_([ResponseStatus.submitted, ResponseStatus.discarded])
-                )
-            )
+                    Response.status.in_([ResponseStatus.submitted, ResponseStatus.discarded]),
+                ),
+            ),
         ).options(contains_eager(Record.responses))
     elif with_responses:
         query = query.options(selectinload(Record.responses))
