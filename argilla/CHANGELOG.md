@@ -24,19 +24,6 @@ These are the section headers that we use:
 - Fixed error when importing discarded responses without a response. ([#5756](https://github.com/argilla-io/argilla/pull/5756))
 - Fixed error when importing datasets with responses from existing users. ([#5756](https://github.com/argilla-io/argilla/pull/5756))
 
-## [Argilla] [2.5.0](https://github.com/argilla-io/argilla/compare/v2.4.0...v2.5.0)
-
-### Added
-
-- Added support to remove/override datasets settings. ([#5584](https://github.com/argilla-io/argilla/pull/5584))
-- Added support to update question attributes. ([#5680](https://github.com/argilla-io/argilla/pull/5680))
-- Added support to webhook listeners. ([#5502](https://github.com/argilla-io/argilla/pull/5502))
-- Added support to Python 3.13. ([#5652](https://github.com/argilla-io/argilla/pull/5652))
-
-### Fixed
-
-- Fixed error when update settings.distribution.min_submitted from defaults ([#5719](https://github.com/argilla-io/argilla/pull/5719))
-
 ## [Extralit] [0.4.1](https://github.com/extralit/extralit/compare/v0.3.0...v0.4.1)
 
 ### Fixed
@@ -66,6 +53,20 @@ These are the section headers that we use:
 
 ### Contributors
 - Special thanks to @priyankeshh and @Ashutoshx7 for their collaborative work on this release.
+
+
+## [Argilla] [2.5.0](https://github.com/argilla-io/argilla/compare/v2.4.0...v2.5.0)
+
+### Added
+
+- Added support to remove/override datasets settings. ([#5584](https://github.com/argilla-io/argilla/pull/5584))
+- Added support to update question attributes. ([#5680](https://github.com/argilla-io/argilla/pull/5680))
+- Added support to webhook listeners. ([#5502](https://github.com/argilla-io/argilla/pull/5502))
+- Added support to Python 3.13. ([#5652](https://github.com/argilla-io/argilla/pull/5652))
+
+### Fixed
+
+- Fixed error when update settings.distribution.min_submitted from defaults ([#5719](https://github.com/argilla-io/argilla/pull/5719))
 
 
 ## [Extralit] [0.3.0](https://github.com/extralit/extralit/compare/v0.2.3...v0.3.0)
