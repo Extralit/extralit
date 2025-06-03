@@ -1,10 +1,24 @@
+# Copyright 2024-present, Extralit Labs, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from typing import TYPE_CHECKING
 import pytest
-from unittest.mock import patch, MagicMock, AsyncMock
+from unittest.mock import patch, MagicMock
 
-from argilla_server.apis.v1.handlers.models import proxy
+from argilla_server.api.handlers.v1.models import proxy
 from argilla_server.models import User
-from argilla_server.errors import UnauthorizedError, BadRequestError
+from argilla_server.errors import BadRequestError
 
 from starlette.requests import Request
 from starlette.responses import StreamingResponse
@@ -12,13 +26,13 @@ from starlette.responses import StreamingResponse
 from tests.factories import WorkspaceFactory, AdminFactory, WorkspaceUserFactory
 
 if TYPE_CHECKING:
-    from httpx import AsyncClient
-    from sqlalchemy.ext.asyncio import AsyncSession
+    pass
 
 
 async def aiter(iterable):
     for item in iterable:
         yield item
+
 
 @pytest.mark.asyncio
 async def test_models_proxy_get_request_streaming_as_owner():
@@ -56,6 +70,7 @@ async def test_models_proxy_post_request_as_admin():
         assert response.status_code == 200
         assert isinstance(response, StreamingResponse)
 
+
 @pytest.mark.asyncio
 async def test_models_proxy_put_request():
     current_user = User(username="testuser", role="owner")
@@ -72,6 +87,7 @@ async def test_models_proxy_put_request():
         assert response.status_code == 200
         assert isinstance(response, StreamingResponse)
 
+
 @pytest.mark.asyncio
 async def test_models_proxy_delete_request():
     current_user = User(username="testuser", role="owner")
@@ -86,6 +102,7 @@ async def test_models_proxy_delete_request():
 
         assert response.status_code == 200
         assert isinstance(response, StreamingResponse)
+
 
 @pytest.mark.asyncio
 async def test_models_proxy_missing_workspace_param():

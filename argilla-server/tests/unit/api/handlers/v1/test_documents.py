@@ -1,18 +1,34 @@
+# Copyright 2024-present, Extralit Labs, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from typing import TYPE_CHECKING
-from argilla_server.contexts.files import get_pdf_s3_object_path, get_s3_object_url
-from argilla_server.models.database import Document
 import pytest
 from httpx import AsyncClient
 from unittest.mock import patch
-from uuid import uuid4, UUID
+from uuid import uuid4
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from argilla_server.schemas.v1.documents import DocumentCreateRequest, DocumentDeleteRequest
 from tests.factories import DocumentFactory, WorkspaceFactory
+
+from argilla_server.contexts.files import get_pdf_s3_object_path, get_s3_object_url
+from argilla_server.models.database import Document
+from argilla_server.api.schemas.v1.documents import DocumentDeleteRequest
 
 if TYPE_CHECKING:
     from httpx import AsyncClient
     from sqlalchemy.ext.asyncio import AsyncSession
+
 
 @pytest.mark.asyncio
 async def test_upload_document(async_client: "AsyncClient", db: "AsyncSession", owner_auth_header: dict):
@@ -32,22 +48,22 @@ async def test_upload_document(async_client: "AsyncClient", db: "AsyncSession", 
         "/api/v1/documents",
         params=document_json,
         files={"file_data": ("test.pdf", b"test file content", "application/pdf")},
-        headers=owner_auth_header
+        headers=owner_auth_header,
     )
 
     assert upload_response.status_code == 201
-    assert upload_response.json() == document_json['id']
+    assert upload_response.json() == document_json["id"]
 
     # Check if the document was created in the database with the correct URL
     result = await db.execute(select(Document))
     documents = result.scalars().all()
     assert [document.url for document in documents] == [
-        get_s3_object_url(workspace.name, get_pdf_s3_object_path(document_json['id']))
+        get_s3_object_url(workspace.name, get_pdf_s3_object_path(document_json["id"]))
     ]
 
     # Check if the file was uploaded to the S3 bucket
     get_response = await async_client.get(
-        get_s3_object_url(workspace.name, get_pdf_s3_object_path(document_json['id']))
+        get_s3_object_url(workspace.name, get_pdf_s3_object_path(document_json["id"]))
     )
     assert get_response.status_code == 200
     assert get_response.content == b"test file content"
@@ -70,7 +86,7 @@ async def test_upload_duplicate_document(async_client: "AsyncClient", db: "Async
         "/api/v1/documents",
         params=existing_document,
         files={"file_data": ("test.pdf", b"test file content", "application/pdf")},
-        headers=owner_auth_header
+        headers=owner_auth_header,
     )
 
     # Attempt to upload a new document with the same pmid, url, doi, or id
@@ -87,7 +103,7 @@ async def test_upload_duplicate_document(async_client: "AsyncClient", db: "Async
         "/api/v1/documents",
         params=update_document,
         files={"file_data": ("test.pdf", b"updated data", "application/pdf")},
-        headers=owner_auth_header
+        headers=owner_auth_header,
     )
 
     # Ensure no new document was created in the database
@@ -98,35 +114,32 @@ async def test_upload_duplicate_document(async_client: "AsyncClient", db: "Async
 
     # Check if the file was uploaded to the S3 bucket
     get_response = await async_client.get(
-        get_s3_object_url(workspace.name, get_pdf_s3_object_path(update_document['id']))
+        get_s3_object_url(workspace.name, get_pdf_s3_object_path(update_document["id"]))
     )
     assert get_response.status_code == 200
     assert get_response.content == b"updated data"
 
+
 @pytest.mark.asyncio
 async def test_get_document_by_pmid(async_client: "AsyncClient", db: "AsyncSession", owner_auth_header: dict):
     workspace = await WorkspaceFactory.create()
-    document = await DocumentFactory.create(pmid="123456", workspace=workspace, workspace_id = workspace.id)
+    document = await DocumentFactory.create(pmid="123456", workspace=workspace, workspace_id=workspace.id)
 
-    response = await async_client.get(
-        f"/api/v1/documents/by-pmid/{document.pmid}",
-        headers=owner_auth_header
-    )
+    response = await async_client.get(f"/api/v1/documents/by-pmid/{document.pmid}", headers=owner_auth_header)
 
     assert response.status_code == 200
     assert response.json()["pmid"] == document.pmid
+
 
 @pytest.mark.asyncio
 async def test_get_document_by_id(async_client: "AsyncClient", db: "AsyncSession", owner_auth_header: dict):
     document = await DocumentFactory.create()
 
-    response = await async_client.get(
-        f"/api/v1/documents/by-id/{document.id}",
-        headers=owner_auth_header
-    )
+    response = await async_client.get(f"/api/v1/documents/by-id/{document.id}", headers=owner_auth_header)
 
     assert response.status_code == 200
     assert response.json()["id"] == str(document.id)
+
 
 @pytest.mark.asyncio
 async def test_delete_documents_by_id(async_client: "AsyncClient", db: "AsyncSession", owner_auth_header: dict):
@@ -138,9 +151,7 @@ async def test_delete_documents_by_id(async_client: "AsyncClient", db: "AsyncSes
 
         document_delete = DocumentDeleteRequest(id=document.id)
         response = await async_client.delete(
-            f"/api/v1/documents/workspace/{workspace.id}",
-            params=document_delete.dict(),
-            headers=owner_auth_header
+            f"/api/v1/documents/workspace/{workspace.id}", params=document_delete.dict(), headers=owner_auth_header
         )
 
         assert response.status_code == 200
@@ -150,16 +161,14 @@ async def test_delete_documents_by_id(async_client: "AsyncClient", db: "AsyncSes
         documents = result.scalars().all()
         assert len(documents) == 0
 
+
 @pytest.mark.asyncio
 async def test_list_documents(async_client: "AsyncClient", db: "AsyncSession", owner_auth_header: dict):
     workspace = await WorkspaceFactory.create()
     document_a = await DocumentFactory.create(workspace=workspace)
     document_b = await DocumentFactory.create(workspace=workspace)
 
-    response = await async_client.get(
-        f"/api/v1/documents/workspace/{workspace.id}",
-        headers=owner_auth_header
-    )
+    response = await async_client.get(f"/api/v1/documents/workspace/{workspace.id}", headers=owner_auth_header)
 
     assert response.status_code == 200
     assert len(response.json()) == 2
