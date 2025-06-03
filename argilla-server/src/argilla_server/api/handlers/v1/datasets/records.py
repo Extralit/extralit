@@ -1,4 +1,4 @@
-# Copyright 2024-present, Extralit, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -52,7 +52,17 @@ from argilla_server.database import get_async_db
 from argilla_server.enums import RecordSortField, SuggestionType
 from argilla_server.errors.future import MissingVectorError, NotFoundError, UnprocessableEntityError
 from argilla_server.errors.future.base_errors import MISSING_VECTOR_ERROR_CODE
-from argilla_server.models import Dataset, Field, Record, User, VectorSettings, Response, Question, Suggestion, ResponseStatus
+from argilla_server.models import (
+    Dataset,
+    Field,
+    Record,
+    User,
+    VectorSettings,
+    Response,
+    Question,
+    Suggestion,
+    ResponseStatus,
+)
 from argilla_server.search_engine import (
     AndFilter,
     SearchEngine,
@@ -212,26 +222,23 @@ async def _validate_search_records_query(db: "AsyncSession", query: SearchRecord
 
 
 def add_suggestions_from_responses(
-        records: List[Record],
-        current_user: User,
-        workspace_users: UsersSchema,
-        dataset: Dataset,
-    ) -> Records:
+    records: List[Record],
+    current_user: User,
+    workspace_users: UsersSchema,
+    dataset: Dataset,
+) -> Records:
     workspace_users_id2name = {user.id: user.username for user in workspace_users.items}
     questions_name_map = {question.name: question for question in dataset.questions}
 
     for record in records:
-        other_user_responses = [
-            response for response in record.responses \
-            if response.user_id != current_user.id
-        ]
+        other_user_responses = [response for response in record.responses if response.user_id != current_user.id]
 
         for response in other_user_responses:
             suggestions = generate_suggestions_from_response(
                 response,
                 current_user=current_user,
                 workspace_users_id2name=workspace_users_id2name,
-                questions_name_map=questions_name_map
+                questions_name_map=questions_name_map,
             )
             record.suggestions.extend(suggestions)
 
@@ -244,11 +251,11 @@ def add_suggestions_from_responses(
 
 
 def generate_suggestions_from_response(
-        response: Response,
-        current_user: User,
-        workspace_users_id2name: Dict[UUID, str],
-        questions_name_map: Dict[str, Question],
-    ) -> List[Suggestion]:
+    response: Response,
+    current_user: User,
+    workspace_users_id2name: Dict[UUID, str],
+    questions_name_map: Dict[str, Question],
+) -> List[Suggestion]:
     suggestions = []
     if response.user_id == current_user.id or response.status == ResponseStatus.discarded:
         return suggestions
@@ -266,11 +273,12 @@ def generate_suggestions_from_response(
             agent=workspace_users_id2name.get(response.user_id),
             score=None,
             inserted_at=response.inserted_at,
-            updated_at=response.updated_at
+            updated_at=response.updated_at,
         )
         suggestions.append(suggestion)
 
     return suggestions
+
 
 @router.get("/datasets/{dataset_id}/records", response_model=Records, response_model_exclude_unset=True)
 async def list_dataset_records(
@@ -286,11 +294,12 @@ async def list_dataset_records(
     await authorize(current_user, DatasetPolicy.list_records_with_all_responses(dataset))
 
     if include and include.with_response_suggestions:
-        workspace_users = await list_workspace_users(db=db, workspace_id=dataset.workspace_id, current_user=current_user)
+        workspace_users = await list_workspace_users(
+            db=db, workspace_id=dataset.workspace_id, current_user=current_user
+        )
         workspace_user_ids = [user.id for user in workspace_users.items]
     else:
         workspace_user_ids = None
-
 
     include_args = (
         dict(
@@ -369,11 +378,12 @@ async def search_current_user_dataset_records(
     )
 
     if include and include.with_response_suggestions and not current_user.is_annotator:
-        workspace_users: UsersSchema = await list_workspace_users(db=db, workspace_id=dataset.workspace_id, current_user=current_user)
+        workspace_users: UsersSchema = await list_workspace_users(
+            db=db, workspace_id=dataset.workspace_id, current_user=current_user
+        )
         workspace_user_ids = [user.id for user in workspace_users.items]
     else:
         workspace_user_ids = None
-
 
     await authorize(current_user, DatasetPolicy.search_records(dataset))
 

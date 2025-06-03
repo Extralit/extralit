@@ -1,4 +1,4 @@
-# Copyright 2024-present, Extralit, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,10 +16,14 @@ from collections import defaultdict
 from datetime import datetime
 from typing import (
     TYPE_CHECKING,
+    Any,
+    Dict,
     Iterable,
     List,
+    Literal,
     Optional,
     Sequence,
+    Set,
     Union,
 )
 from uuid import UUID
@@ -64,7 +68,6 @@ from argilla_server.webhooks.v1.datasets import (
     notify_dataset_event as notify_dataset_event_v1,
 )
 from argilla_server.contexts import accounts, distribution
-from argilla_server.database import get_async_db
 from argilla_server.enums import DatasetStatus, UserRole
 from argilla_server.errors.future import NotUniqueError, UnprocessableEntityError
 from argilla_server.jobs import dataset_jobs
@@ -350,19 +353,23 @@ async def get_records_by_ids(
         if not user_id:
             query = query.options(joinedload(Record.responses))
         elif include.with_response_suggestions and workspace_user_ids:
-            query = query.outerjoin(
-                Response,
-                and_(
-                    Response.record_id == Record.id,
-                    or_(
-                        Response.user_id == user_id,
-                        and_(
-                            Response.user_id.in_(workspace_user_ids),
-                            Response.status.in_([ResponseStatus.submitted, ResponseStatus.discarded])
-                        )
-                    )
+            query = (
+                query.outerjoin(
+                    Response,
+                    and_(
+                        Response.record_id == Record.id,
+                        or_(
+                            Response.user_id == user_id,
+                            and_(
+                                Response.user_id.in_(workspace_user_ids),
+                                Response.status.in_([ResponseStatus.submitted, ResponseStatus.discarded]),
+                            ),
+                        ),
+                    ),
                 )
-            ).options(contains_eager(Record.responses)).order_by(case((Response.user_id == user_id, 0), else_=1))
+                .options(contains_eager(Record.responses))
+                .order_by(case((Response.user_id == user_id, 0), else_=1))
+            )
         else:
             query = query.outerjoin(
                 Response, and_(Response.record_id == Record.id, Response.user_id == user_id)
@@ -581,7 +588,6 @@ async def _load_users_from_responses(responses: Union[Response, Iterable[Respons
     # something similar to what we are already doing in _preload_suggestion_relationships_before_index.
     for response in responses:
         await response.awaitable_attrs.user
-
 
 
 async def _validate_record_metadata(
@@ -857,12 +863,13 @@ async def update_response(
 ):
     ResponseUpdateValidator.validate(response_update, response.record)
 
-    if response.values and 'duration' in response.values:
-        if response_update.values and 'duration' in response_update.values:
-            response_update.values['duration'].value = \
-                response.values['duration']['value'] + response_update.values['duration'].value
+    if response.values and "duration" in response.values:
+        if response_update.values and "duration" in response_update.values:
+            response_update.values["duration"].value = (
+                response.values["duration"]["value"] + response_update.values["duration"].value
+            )
         else:
-            response_update.values['duration'] = ResponseValueUpdate(value=response.values['duration']['value'])
+            response_update.values["duration"] = ResponseValueUpdate(value=response.values["duration"]["value"])
 
     response = await response.update(
         db,
@@ -1020,17 +1027,23 @@ async def create_document(db: "AsyncSession", dataset_create: DocumentCreateRequ
         pmid=dataset_create.pmid,
         doi=dataset_create.doi,
         workspace_id=dataset_create.workspace_id,
-        )
+    )
 
     return DocumentListItem.from_orm(document)
 
 
 async def delete_documents(
-    db: "AsyncSession", workspace_id: UUID, id: UUID = None, pmid: str = None, doi: str = None, url: str = None, reference: str = None
+    db: "AsyncSession",
+    workspace_id: UUID,
+    id: UUID = None,
+    pmid: str = None,
+    doi: str = None,
+    url: str = None,
+    reference: str = None,
 ) -> List[DocumentListItem]:
     async with db.begin_nested():
         params = [Document.workspace_id == workspace_id]
-        if id is not None and id != '':
+        if id is not None and id != "":
             params.append(Document.id == id)
         if pmid:
             params.append(Document.pmid == pmid)
@@ -1055,17 +1068,23 @@ async def create_document(db: "AsyncSession", dataset_create: DocumentCreateRequ
         pmid=dataset_create.pmid,
         doi=dataset_create.doi,
         workspace_id=dataset_create.workspace_id,
-        )
+    )
 
     return DocumentListItem.from_orm(document)
 
 
 async def delete_documents(
-    db: "AsyncSession", workspace_id: UUID, id: UUID = None, pmid: str = None, doi: str = None, url: str = None, reference: str = None
+    db: "AsyncSession",
+    workspace_id: UUID,
+    id: UUID = None,
+    pmid: str = None,
+    doi: str = None,
+    url: str = None,
+    reference: str = None,
 ) -> List[DocumentListItem]:
     async with db.begin_nested():
         params = [Document.workspace_id == workspace_id]
-        if id is not None and id != '':
+        if id is not None and id != "":
             params.append(Document.id == id)
         if pmid:
             params.append(Document.pmid == pmid)
@@ -1080,10 +1099,7 @@ async def delete_documents(
     return documents
 
 
-async def list_documents(
-    db: "AsyncSession", workspace_id: UUID
-) -> List[DocumentListItem]:
-
+async def list_documents(db: "AsyncSession", workspace_id: UUID) -> List[DocumentListItem]:
     result = await db.execute(select(Document).filter_by(workspace_id=workspace_id))
     documents: List[Document] = result.scalars().all()
     documents = [DocumentListItem.from_orm(doc) for doc in documents]

@@ -1,4 +1,4 @@
-# Copyright 2024-present, Extralit, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ import warnings
 from abc import abstractmethod
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, List, Optional, Union, overload
+from uuid import UUID
 
 from argilla._api._base import ResourceAPI
 from argilla._api._webhooks import WebhookModel
@@ -29,7 +30,6 @@ if TYPE_CHECKING:
     from argilla.client.core import Argilla
 
 __all__ = ["Users", "Workspaces", "Datasets", "Webhooks"]
-
 
 
 class Users(Sequence["User"], ResourceHTMLReprMixin):
@@ -251,10 +251,7 @@ class Datasets(Sequence["Dataset"], ResourceHTMLReprMixin):
         ...
 
     def __call__(
-        self,
-        name: str = None,
-        workspace: Optional[Union["Workspace", str]] = None,
-        id: Union[UUID, str] = None
+        self, name: str = None, workspace: Optional[Union["Workspace", str]] = None, id: Union[UUID, str] = None
     ) -> Union[Optional["Dataset"], List["Dataset"]]:
         """
         Get a dataset by name and workspace, by id, or all datasets for a workspace.

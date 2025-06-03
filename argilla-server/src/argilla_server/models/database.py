@@ -1,4 +1,4 @@
-# Copyright 2024-present, Extralit, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -169,7 +169,7 @@ class Suggestion(DatabaseModel):
             value = getattr(self, attr)
             if value is not None:
                 if attr == "value" and len(value) > 20:
-                    value = value[:20] + '...'
+                    value = value[:20] + "..."
                 attrs.append(f"{attr}={value}")
 
         return f"Suggestion({', '.join(attrs)})"
@@ -621,11 +621,7 @@ class User(DatabaseModel):
         if not workspace:
             return False
         return (
-            await WorkspaceUser.get_by(
-                self.current_async_session,
-                workspace_id=workspace.id,
-                user_id=self.id
-            )
+            await WorkspaceUser.get_by(self.current_async_session, workspace_id=workspace.id, user_id=self.id)
             is not None
         )
 
