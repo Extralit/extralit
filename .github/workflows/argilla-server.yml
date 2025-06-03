@@ -99,6 +99,7 @@ jobs:
         run: pdm install
 
       - name: Run tests 📈
+        id: run-tests
         continue-on-error: true
         env:
           HF_TOKEN_ARGILLA_INTERNAL_TESTING: ${{ secrets.HF_TOKEN_ARGILLA_INTERNAL_TESTING }}
@@ -106,15 +107,20 @@ jobs:
           ARGILLA_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/argilla
           ARGILLA_ELASTICSEARCH=http://localhost:9200
           ARGILLA_SEARCH_ENGINE=elasticsearch
-          pdm test tests/unit -vs --cov=argilla_server --cov-report=xml:coverage.xml --junitxml=junit.xml -o junit_family=legacy
+          pdm test tests/unit -vs --cov=argilla_server --cov-report=xml:coverage.xml --junitxml=junit.xml -o junit_family=legacy --tb=short
 
       - name: Upload test coverage
+        if: always()
         uses: codecov/codecov-action@v4
         with:
           file: coverage.xml
           flags: argilla-server
           token: ${{ secrets.CODECOV_TOKEN }}
 
+      - name: Check test status
+        if: steps.run-tests.outcome == 'failure'
+        run: exit 1
+        
       - name: Upload test results to Codecov
         if: ${{ !cancelled() }}
         uses: codecov/test-results-action@v1
@@ -157,11 +163,11 @@ jobs:
       || github.ref == 'refs/heads/develop'
       || contains(github.ref, 'releases/')
       || github.event_name == 'workflow_dispatch'
-      || (github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork)
+      || (github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && !github.event.pull_request.draft)
     needs:
       - build
     with:
-      is_release: ${{ github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' }}
+      is_release: ${{ github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' }}
       publish_latest: ${{ github.ref == 'refs/heads/main' }}
     secrets: inherit
 
@@ -169,7 +175,7 @@ jobs:
   publish_release:
     name: Publish Release
     runs-on: ubuntu-latest
-    if: ${{ github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' }}
+    if: ${{ github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' }}
 
     needs:
       - build

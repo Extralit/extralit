@@ -16,12 +16,13 @@ import inspect
 import random
 import uuid
 import factory
+from unittest.mock import MagicMock
 
 from factory.alchemy import SESSION_PERSISTENCE_COMMIT, SESSION_PERSISTENCE_FLUSH
 from factory.builder import BuildStep, StepBuilder, parse_declarations
 from sqlalchemy.ext.asyncio import async_object_session
 
-from argilla_server.contexts.files import ObjectMetadata, get_minio_client, put_object
+from argilla_server.contexts.files import ObjectMetadata, get_minio_client
 from argilla_server.enums import DatasetDistributionStrategy, FieldType, MetadataPropertyType, OptionsOrder
 from argilla_server.webhooks.v1.enums import WebhookEvent
 from argilla_server.models import (
@@ -164,6 +165,16 @@ class WorkspaceSyncFactory(BaseSyncFactory):
         model = Workspace
 
     name = factory.Sequence(lambda n: f"workspace-{n}")
+
+    @classmethod
+    async def create_with_s3(cls, **kwargs):
+        workspace = await cls.create(**kwargs)
+        minio_client = await get_minio_client()
+        try:
+            await minio_client.make_bucket(workspace.name)
+        except Exception as e:
+            print(f"Error creating bucket for workspace {workspace.name}: {str(e)}")
+        return workspace
 
 
 class WorkspaceFactory(BaseFactory):
@@ -551,34 +562,60 @@ class MinioFileFactory(factory.Factory):
 
     bucket_name = "test-bucket"
     object_name = factory.Sequence(lambda n: f"test-object-{n}")
-    version_tag = factory.Sequence(lambda n: f"v{n}")
+    last_modified = None
+    etag = None
+    size = 0
+    content_type = "application/octet-stream"
+    version_id = None
     is_latest = True
+    metadata = None
+    version_tag = factory.LazyAttribute(lambda o: f"v{factory.Faker('pyint', min_value=1, max_value=5).generate()}")
 
     @classmethod
-    def create(cls, **kwargs):
-        instance = cls.build(**kwargs)
-
-        # Create the bucket if it doesn't exist
-        client = get_minio_client()
-        if not client.bucket_exists(instance.bucket_name):
-            client.make_bucket(instance.bucket_name)
-
-        # Upload the file
-        data = kwargs.get("data", b"test data")
-        put_object(
-            client=client,
-            bucket_name=instance.bucket_name,
-            object_name=instance.object_name,
-            data=data,
-        )
-
-        return instance
+    def attributes(cls, **kwargs):
+        return {
+            "bucket_name": kwargs.get("bucket_name", cls.bucket_name),
+            "object_name": kwargs.get("object_name", f"test-object-0"),
+            "last_modified": kwargs.get("last_modified", None),
+            "etag": kwargs.get("etag", None),
+            "size": kwargs.get("size", 0),
+            "content_type": kwargs.get("content_type", "application/octet-stream"),
+            "version_id": kwargs.get("version_id", None),
+            "is_latest": kwargs.get("is_latest", True),
+            "metadata": kwargs.get("metadata", None),
+            "version_tag": kwargs.get("version_tag", "v1"),
+        }
 
     @classmethod
     def build(cls, **kwargs):
-        attributes = cls.attributes(kwargs)
+        attributes = cls.attributes(**kwargs)
         return cls._meta.model(**attributes)
 
     @classmethod
-    def _create(cls, model_class, *args, **kwargs):
-        return cls.create(**kwargs)
+    def create(cls, **kwargs):
+        """Create a MinioFile and mock the put_object and get_object methods to return it."""
+        from argilla_server.contexts.files import get_minio_client
+
+        file = cls.build(**kwargs)
+
+        client = get_minio_client()
+
+        # Store original methods
+        getattr(client, "put_object", None)
+        getattr(client, "get_object", None)
+
+        # Mock put_object to return our file
+        def mock_put_object(bucket_name, object_name, data, length, content_type=None, metadata=None):
+            return file
+
+        # Mock get_object to return file data
+        def mock_get_object(bucket_name, object_name, version_id=None):
+            response = MagicMock()
+            response.data = b"test data"
+            return response
+
+        # Apply mocks
+        client.put_object = mock_put_object
+        client.get_object = mock_get_object
+
+        return file
