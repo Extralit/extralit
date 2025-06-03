@@ -37,6 +37,10 @@ These are the section headers that we use:
 
 - Fixed error when update settings.distribution.min_submitted from defaults ([#5719](https://github.com/argilla-io/argilla/pull/5719))
 
+## [Extralit] [0.4.1](https://github.com/extralit/extralit/compare/v0.3.0...v0.4.1)
+
+### Fixed
+- Fixed missing 'selection' type in Suggestions, causing errors at `dataset.records.to_list()`
 
 ## [Extralit] [0.4.0](https://github.com/extralit/extralit/compare/v0.3.0...v0.4.0)
 

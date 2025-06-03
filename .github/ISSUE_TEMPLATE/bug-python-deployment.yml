@@ -3,7 +3,7 @@ description: Python or Deployment bugs and unexpected behavior
 title: "[BUG-python/deployment]"
 labels: ["bug", "python", "deployment"]
 assignees: []
-
+type: "Bug"
 body:
   - type: markdown
     attributes:
@@ -30,7 +30,7 @@ body:
         ```python
         # Your Python code here
         ```
-        
+
         ```bash
         # Your bash commands or stacktrace here
         ```
