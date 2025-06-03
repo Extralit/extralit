@@ -1,18 +1,17 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-import uuid
 from typing import TYPE_CHECKING, Dict, Generator, Optional
 
 import pytest
@@ -21,7 +20,6 @@ from sqlalchemy.engine.interfaces import IsolationLevel
 from httpx import AsyncClient
 from opensearchpy import OpenSearch
 
-from argilla_server import telemetry
 from argilla_server.contexts import distribution, datasets, records
 from argilla_server.api.routes import api_v1
 from argilla_server.constants import API_KEY_HEADER_NAME, DEFAULT_API_KEY
@@ -69,6 +67,11 @@ async def annotator() -> User:
 @pytest.fixture(scope="function")
 def owner_auth_header(owner: User) -> Dict[str, str]:
     return {API_KEY_HEADER_NAME: owner.api_key}
+
+
+@pytest.fixture(scope="function")
+def annotator_auth_header(owner: User) -> Dict[str, str]:
+    return {API_KEY_HEADER_NAME: annotator.api_key}
 
 
 @pytest_asyncio.fixture(scope="function")
