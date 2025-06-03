@@ -146,7 +146,7 @@ jobs:
           echo "$PACKAGE_NAME==$PACKAGE_VERSION"
 
       - name: Publish Package to PyPI test environment 🥪
-        run: pdm publish --no-build --repository testpypi
+        run: pdm publish --no-build --repository testpypi --username __token__ --password ${{ secrets.AR_TEST_PYPI_API_TOKEN }}
         continue-on-error: true
 
       - name: Test Installing 🍿
@@ -156,4 +156,4 @@ jobs:
 
       - name: Publish Package to PyPI 🥩
         if: github.ref == 'refs/heads/main'
-        run: pdm publish --no-build
+        run: pdm publish --no-build --username __token__ --password ${{ secrets.AR_PYPI_API_TOKEN }}

@@ -3,7 +3,7 @@ description: UI or UX bugs and unexpected behavior
 title: "[BUG-UI/UX]"
 labels: ["bug", "ui/ux"]
 assignees: []
-
+type: "Bug"
 body:
   - type: markdown
     attributes:

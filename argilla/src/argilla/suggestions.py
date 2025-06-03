@@ -44,7 +44,7 @@ class Suggestion(Resource):
         value: Any,
         score: Union[float, List[float], None] = None,
         agent: Optional[str] = None,
-        type: Optional[Literal["model", "human"]] = None,
+        type: Optional[Literal["model", "human", "selection"]] = None,
         _record: Optional["Record"] = None,
     ) -> None:
         super().__init__()
@@ -82,8 +82,8 @@ class Suggestion(Resource):
         self._model.question_name = value
 
     @property
-    def type(self) -> Optional[Literal["model", "human"]]:
-        """The type of suggestion, either 'model' or 'human'."""
+    def type(self) -> Optional[Literal["model", "human", "selection"]]:
+        """The type of suggestion, either 'model', 'human', or 'selection'."""
         return self._model.type
 
     @property

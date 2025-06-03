@@ -8,6 +8,9 @@
 - name: documentation
   color: 0075ca
   description: Documentation updates or fixes
+- name: refactor
+  color: 1d76db
+  description: Code refactoring or technical debt improvements
 
 # Technical Component Labels - Blue family
 - name: python
