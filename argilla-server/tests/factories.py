@@ -1,29 +1,32 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import inspect
 import random
+import uuid
 import factory
 
 from factory.alchemy import SESSION_PERSISTENCE_COMMIT, SESSION_PERSISTENCE_FLUSH
 from factory.builder import BuildStep, StepBuilder, parse_declarations
 from sqlalchemy.ext.asyncio import async_object_session
 
+from argilla_server.contexts.files import ObjectMetadata, get_minio_client, put_object
 from argilla_server.enums import DatasetDistributionStrategy, FieldType, MetadataPropertyType, OptionsOrder
 from argilla_server.webhooks.v1.enums import WebhookEvent
 from argilla_server.models import (
     Dataset,
+    Document,
     Field,
     MetadataProperty,
     Question,
@@ -436,3 +439,56 @@ class WebhookFactory(BaseFactory):
 
     url = factory.Sequence(lambda n: f"https://example-{n}.com")
     events = [WebhookEvent.response_created]
+
+
+class DocumentFactory(BaseFactory):
+    class Meta:
+        model = Document
+
+    id = factory.LazyFunction(uuid.uuid4)
+    reference = factory.Sequence(lambda n: f"Test Document {n}")
+    pmid = factory.Sequence(lambda n: f"{n}")
+    doi = factory.Sequence(lambda n: f"10.1234/test.doi.{n}")
+    file_name = factory.Sequence(lambda n: f"test{n}.pdf")
+    url = factory.Sequence(lambda n: f"https://example.com/documents/{n}.pdf")
+    workspace = factory.SubFactory(WorkspaceFactory)
+    workspace_id = factory.SelfAttribute("workspace.id")
+
+
+class MinioFileFactory(factory.Factory):
+    class Meta:
+        model = ObjectMetadata
+
+    bucket_name = "test-bucket"
+    object_name = factory.Sequence(lambda n: f"test-object-{n}")
+    version_tag = factory.Sequence(lambda n: f"v{n}")
+    is_latest = True
+
+    @classmethod
+    def create(cls, **kwargs):
+        instance = cls.build(**kwargs)
+
+        # Create the bucket if it doesn't exist
+        client = get_minio_client()
+        if not client.bucket_exists(instance.bucket_name):
+            client.make_bucket(instance.bucket_name)
+
+        # Upload the file
+        data = kwargs.get("data", b"test data")
+        put_object(
+            client=client,
+            bucket_name=instance.bucket_name,
+            object_name=instance.object_name,
+            data=data,
+        )
+
+        return instance
+
+    @classmethod
+    def build(cls, **kwargs):
+        attributes = cls.attributes(kwargs)
+        return cls._meta.model(**attributes)
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        return cls.create(**kwargs)
