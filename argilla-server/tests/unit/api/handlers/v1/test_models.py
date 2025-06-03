@@ -38,7 +38,7 @@ async def aiter(iterable):
 async def test_models_proxy_get_request_streaming_as_owner():
     current_user = User(username="testuser", role="owner")
 
-    with patch("argilla_server.apis.v1.handlers.models.client.send") as mock_send:
+    with patch("argilla_server.api.handlers.v1.models.client.send") as mock_send:
         mock_response = MagicMock()
         mock_response.aiter_raw = MagicMock(return_value=aiter([b"chunk1", b"chunk2"]))
         mock_send.return_value = mock_response
@@ -58,7 +58,7 @@ async def test_models_proxy_post_request_as_admin():
     user = await AdminFactory()
     await WorkspaceUserFactory(workspace_id=workspace.id, user_id=user.id)
 
-    with patch("argilla_server.apis.v1.handlers.models.client.send") as mock_send:
+    with patch("argilla_server.api.handlers.v1.models.client.send") as mock_send:
         mock_response = MagicMock()
         mock_response.aiter_raw.return_value = [b"chunk1", b"chunk2"]
         mock_send.return_value = mock_response
@@ -75,7 +75,7 @@ async def test_models_proxy_post_request_as_admin():
 async def test_models_proxy_put_request():
     current_user = User(username="testuser", role="owner")
 
-    with patch("argilla_server.apis.v1.handlers.models.client.send") as mock_send:
+    with patch("argilla_server.api.handlers.v1.models.client.send") as mock_send:
         mock_response = MagicMock()
         mock_response.aiter_raw.return_value = [b"chunk1", b"chunk2"]
         mock_send.return_value = mock_response
@@ -92,7 +92,7 @@ async def test_models_proxy_put_request():
 async def test_models_proxy_delete_request():
     current_user = User(username="testuser", role="owner")
 
-    with patch("argilla_server.apis.v1.handlers.models.client.send") as mock_send:
+    with patch("argilla_server.api.handlers.v1.models.client.send") as mock_send:
         mock_response = MagicMock()
         mock_response.aiter_raw.return_value = [b"chunk1", b"chunk2"]
         mock_send.return_value = mock_response

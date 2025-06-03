@@ -31,7 +31,7 @@ The server components are split into two main services:
 ```
 /extralit_server
   /api # Core extraction API endpoints
-    /handlers # FastAPI request handlers 
+    /handlers # FastAPI request handlers
     /schemas # Data models and validation
     /services # Business logic services
     /utils # Helper utilities
@@ -46,10 +46,10 @@ The server components are split into two main services:
 ```
 
 ```
-/argilla_server 
+/argilla_server
   /api # Annotation UI API endpoints
     /handlers
-    /schemas 
+    /schemas
   /models # Database models
   /auth # Authentication
   /tasks # Background jobs
@@ -117,6 +117,28 @@ python -m extralit_server worker
 ```
 
 See full CLI documentation in our [developer docs](https://docs.extralit.ai/latest/developer).
+
+## Running Tests
+
+The pytest suite is primarily designed to run in the CI environment using GitHub Actions as defined in `.github/workflows/argilla-server.yml`. This workflow sets up the necessary dependencies including Elasticsearch, PostgreSQL, Redis, and Minio.
+
+Note that some tests are specifically skipped when running locally due to differences between the CI environment and local development environments. These tests may involve:
+
+- Search engine dynamics (Elasticsearch/OpenSearch compatibility)
+- File storage operations with Minio
+- Authentication and permission checks
+
+To run tests in CI, create a pull request to trigger the test workflow.
+
+If you need to run a specific test locally for debugging purposes, you can use:
+
+```bash
+cd argilla-server
+python -m pytest [test_path] -v
+```
+
+However, expect some tests to fail or be skipped when running locally.
+
 
 ## Contributing
 
