@@ -70,7 +70,7 @@ def owner_auth_header(owner: User) -> Dict[str, str]:
 
 
 @pytest.fixture(scope="function")
-def annotator_auth_header(owner: User) -> Dict[str, str]:
+def annotator_auth_header(annotator: User) -> Dict[str, str]:
     return {API_KEY_HEADER_NAME: annotator.api_key}
 
 

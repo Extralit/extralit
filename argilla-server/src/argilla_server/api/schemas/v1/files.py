@@ -11,14 +11,14 @@ from minio.helpers import ObjectWriteResult
 class ObjectMetadata(BaseModel):
     bucket_name: str
     object_name: str
-    last_modified: Optional[datetime]
-    is_latest: Optional[bool]
-    etag: Optional[str]
-    size: Optional[int]
-    content_type: Optional[str]
-    version_id: Optional[str]
+    last_modified: Optional[datetime] = None
+    is_latest: Optional[bool] = None
+    etag: Optional[str] = None
+    size: Optional[int] = None
+    content_type: Optional[str] = None
+    version_id: Optional[str] = None
     version_tag: Optional[str] = None
-    metadata: Optional[Dict[str, Any]]
+    metadata: Optional[Dict[str, Any]] = None
 
     @field_validator('metadata', mode='before')
     def parse_metadata(cls, v):
