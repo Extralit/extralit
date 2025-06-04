@@ -16,7 +16,7 @@ These are the section headers that we use:
 
 ## [Extralit] [0.5.0](https://github.com/extralit/extralit/compare/v0.3.0...v0.5.0)
 
-## [Argilla] [2.7.0](https://github.com/argilla-io/argilla/compare/v2.6.0...v2.7.0)
+## [Argilla] [2.7.1](https://github.com/argilla-io/argilla/compare/v2.6.0...v2.7.1)
 
 ### Added
 
