@@ -20,12 +20,12 @@ Extralit is a free, open-source, self-hosted tool. This means you need to deploy
             <img src="https://huggingface.co/datasets/huggingface/badges/raw/main/deploy-to-spaces-lg.svg" />
         </a>
     </div>
-    
+
     You can use the default values following these steps:
 
     - Leave the default owner if using your personal account
       - Leave `ADMIN_USERNAME` and `ADMIN_PASSWORD` secrets empty since you'll sign in with your HF user as the Argilla Space `owner`.
-    
+
     - You must fill out the following Space secrets fields:
       - `OAUTH2_HUGGINGFACE_CLIENT_ID` and `OAUTH2_HUGGINGFACE_CLIENT_SECRET`: The Oauth.
       - `ARGILLA_DATABASE_URL`: The URL of the PostgreSQL database where the data will be stored. If you leave it blank, the data will be lost when the Space restarts.
@@ -57,6 +57,8 @@ Extralit is a free, open-source, self-hosted tool. This means you need to deploy
 
     Learn how to [create your first dataset](create-your-first-dataset.md).
 
+    !!! warning "Persistent storage `SMALL`"
+        Not setting persistent storage to `SMALL` means that **you will loose your data when the Space restarts**. Spaces get restarted due to maintenance, inactivity, and every time you change your Spaces settings. If you want to **use the Space just for testing** you can use `FREE` temporarily.
 
 !!! tip "Argilla API Key"
     Your Argilla API key can be found in the `My Settings` page of your Argilla Space. Take a look at the [sign in to the UI section](#sign-in-into-the-argilla-ui) to learn how to retrieve it.

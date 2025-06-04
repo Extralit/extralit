@@ -1,21 +1,22 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from datetime import datetime
 from typing import Dict, List, Sequence, Tuple, Union
 from uuid import UUID
 
+from datetime import UTC
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -26,7 +27,7 @@ from argilla_server.api.schemas.v1.records_bulk import (
     RecordsBulk,
     RecordsBulkCreate,
     RecordsBulkUpsert,
-    RecordsBulkWithUpdateInfo,
+    RecordsBulkWithUpdatedItemIds,
 )
 from argilla_server.api.schemas.v1.responses import UserResponseCreate
 from argilla_server.api.schemas.v1.suggestions import SuggestionCreate
@@ -39,7 +40,7 @@ from argilla_server.contexts.records import (
     fetch_records_by_ids_as_dict,
 )
 from argilla_server.errors.future import UnprocessableEntityError
-from argilla_server.models import Dataset, Record, Response, Suggestion, Vector, VectorSettings
+from argilla_server.models import Dataset, Record, Response, Suggestion, Vector
 from argilla_server.search_engine import SearchEngine
 from argilla_server.validators.records import RecordsBulkCreateValidator, RecordUpsertValidator
 
@@ -154,15 +155,11 @@ class CreateRecordsBulk:
             autocommit=False,
         )
 
-    @classmethod
-    def _metadata_is_set(cls, record_create: RecordCreate) -> bool:
-        return "metadata" in record_create.model_fields_set
-
 
 class UpsertRecordsBulk(CreateRecordsBulk):
     async def upsert_records_bulk(
         self, dataset: Dataset, bulk_upsert: RecordsBulkUpsert, raise_on_error: bool = True
-    ) -> RecordsBulkWithUpdateInfo:
+    ) -> RecordsBulkWithUpdatedItemIds:
         found_records = await self._fetch_existing_dataset_records(dataset, bulk_upsert.items)
 
         records = []
@@ -185,9 +182,14 @@ class UpsertRecordsBulk(CreateRecordsBulk):
                     external_id=record_upsert.external_id,
                     dataset_id=dataset.id,
                 )
-            elif self._metadata_is_set(record_upsert):
-                record.metadata_ = record_upsert.metadata
-                record.updated_at = datetime.utcnow()
+            else:
+                if record_upsert.is_set("metadata"):
+                    record.metadata_ = record_upsert.metadata
+                if record_upsert.is_set("fields"):
+                    record.fields = jsonable_encoder(record_upsert.fields)
+
+                if self._db.is_modified(record):
+                    record.updated_at = datetime.now(UTC)
 
             records.append(record)
 
@@ -203,7 +205,7 @@ class UpsertRecordsBulk(CreateRecordsBulk):
 
         await self._notify_upsert_record_events(records)
 
-        return RecordsBulkWithUpdateInfo(
+        return RecordsBulkWithUpdatedItemIds(
             items=records,
             updated_item_ids=[record.id for record in found_records.values()],
         )

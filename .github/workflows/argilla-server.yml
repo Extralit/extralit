@@ -101,6 +101,8 @@ jobs:
       - name: Run tests 📈
         id: run-tests
         continue-on-error: true
+        env:
+          HF_TOKEN_ARGILLA_INTERNAL_TESTING: ${{ secrets.HF_TOKEN_ARGILLA_INTERNAL_TESTING }}
         run: |
           ARGILLA_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/argilla
           ARGILLA_ELASTICSEARCH=http://localhost:9200
@@ -118,7 +120,7 @@ jobs:
       - name: Check test status
         if: steps.run-tests.outcome == 'failure'
         run: exit 1
-
+        
       - name: Upload test results to Codecov
         if: ${{ !cancelled() }}
         uses: codecov/test-results-action@v1

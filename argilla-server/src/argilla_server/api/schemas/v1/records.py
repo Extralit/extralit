@@ -1,16 +1,17 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from datetime import datetime
 from typing import Annotated, Any, Dict, List, Literal, Optional, Union
 from uuid import UUID
@@ -25,8 +26,6 @@ from pydantic import (
     BaseModel,
     Field,
     StrictStr,
-    root_validator,
-    validator,
     ValidationError,
     ConfigDict,
     model_validator,
@@ -183,18 +182,12 @@ class RecordCreate(BaseModel):
 
 
 class RecordUpdate(UpdateSchema):
-    metadata_: Optional[Dict[str, Any]] = Field(None, alias="metadata")
+    fields: Optional[Dict[str, FieldValueCreate]] = None
+    metadata: Optional[Dict[str, Any]] = None
     suggestions: Optional[List[SuggestionCreate]] = None
     vectors: Optional[Dict[str, List[float]]] = None
-    fields: Optional[Dict[str, Any]] = None
 
-    @property
-    def metadata(self) -> Optional[Dict[str, Any]]:
-        # Align with the RecordCreate model. Both should have the same name for the metadata field.
-        # TODO(@frascuchon): This will be properly adapted once the bulk records refactor is completed.
-        return self.metadata_
-
-    @field_validator("metadata_")
+    @field_validator("metadata")
     @classmethod
     def prevent_nan_values(cls, metadata: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
         if metadata is None:
@@ -206,14 +199,19 @@ class RecordUpdate(UpdateSchema):
 
         return {k: v for k, v in metadata.items() if v == v}  # By definition, NaN != NaN
 
+    def is_set(self, attribute: str) -> bool:
+        return attribute in self.model_fields_set
 
-class RecordUpdateWithId(RecordUpdate):
-    id: UUID
+    def has_changes(self) -> bool:
+        return self.model_dump(exclude_unset=True) != {}
 
 
 class RecordUpsert(RecordCreate):
     id: Optional[UUID] = None
     fields: Optional[Dict[str, FieldValueCreate]] = None
+
+    def is_set(self, attribute: str) -> bool:
+        return attribute in self.model_fields_set
 
 
 class RecordIncludeParam(BaseModel):
@@ -244,7 +242,7 @@ class RecordIncludeParam(BaseModel):
     @property
     def with_suggestions(self) -> bool:
         return self._has_relationships and RecordInclude.suggestions in self.relationships
-    
+
     @property
     def with_response_suggestions(self) -> bool:
         return self._has_relationships and RecordInclude.response_suggestions in self.relationships
@@ -281,13 +279,6 @@ class Records(BaseModel):
 
 class RecordsCreate(BaseModel):
     items: List[RecordCreate] = Field(..., min_length=RECORDS_CREATE_MIN_ITEMS, max_length=RECORDS_CREATE_MAX_ITEMS)
-
-
-class RecordsUpdate(BaseModel):
-    # TODO: review this definition and align to create model
-    items: List[RecordUpdateWithId] = Field(
-        ..., min_length=RECORDS_UPDATE_MIN_ITEMS, max_length=RECORDS_UPDATE_MAX_ITEMS
-    )
 
 
 class MetadataParsedQueryParam:

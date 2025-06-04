@@ -144,6 +144,7 @@ class LabelQuestion(QuestionBase):
         title: Optional[str] = None,
         description: Optional[str] = None,
         required: bool = True,
+        dynamic: bool = False,
         visible_labels: Optional[int] = None,
         client: Optional[Argilla] = None,
     ) -> None:
@@ -162,12 +163,14 @@ class LabelQuestion(QuestionBase):
                 Setting it to None show all options.
         """
 
+        settings_type = "dynamic_label_selection" if dynamic else "label_selection"
+        settings_type = "dynamic_multi_label_selection" if dynamic else "multi_label_selection"
         super().__init__(
             name=name,
             title=title,
             required=required,
             description=description,
-            settings=LabelQuestionSettings(
+            settings=MultiLabelQuestionSettings(
                 options=self._render_values_as_options(labels),
                 visible_options=visible_labels,
             ),

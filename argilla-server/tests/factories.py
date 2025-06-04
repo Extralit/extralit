@@ -160,7 +160,7 @@ class WorkspaceUserFactory(BaseFactory):
         model = WorkspaceUser
 
 
-class WorkspaceFactory(BaseFactory):
+class WorkspaceSyncFactory(BaseSyncFactory):
     class Meta:
         model = Workspace
 
@@ -177,7 +177,7 @@ class WorkspaceFactory(BaseFactory):
         return workspace
 
 
-class WorkspaceSyncFactory(BaseSyncFactory):
+class WorkspaceFactory(BaseFactory):
     class Meta:
         model = Workspace
 
@@ -212,8 +212,21 @@ class AdminFactory(UserFactory):
     role = UserRole.admin
 
 
+class AnnotatorSyncFactory(UserSyncFactory):
+    role = UserRole.annotator
+
+
 class AnnotatorFactory(UserFactory):
     role = UserRole.annotator
+
+
+class DatasetSyncFactory(BaseSyncFactory):
+    class Meta:
+        model = Dataset
+
+    name = factory.Sequence(lambda n: f"dataset-{n}")
+    distribution = {"strategy": DatasetDistributionStrategy.overlap, "min_submitted": 1}
+    workspace = factory.SubFactory(WorkspaceSyncFactory)
 
 
 class DatasetFactory(BaseFactory):
@@ -233,6 +246,18 @@ class DatasetUserFactory(BaseFactory):
     user = factory.SubFactory(UserFactory)
 
 
+class RecordSyncFactory(BaseSyncFactory):
+    class Meta:
+        model = Record
+
+    fields = {
+        "text": "This is a text",
+        "sentiment": "neutral",
+    }
+    external_id = factory.Sequence(lambda n: f"external-id-{n}")
+    dataset = factory.SubFactory(DatasetSyncFactory)
+
+
 class RecordFactory(BaseFactory):
     class Meta:
         model = Record
@@ -245,12 +270,30 @@ class RecordFactory(BaseFactory):
     dataset = factory.SubFactory(DatasetFactory)
 
 
+class ResponseSyncFactory(BaseSyncFactory):
+    class Meta:
+        model = Response
+
+    record = factory.SubFactory(RecordSyncFactory)
+    user = factory.SubFactory(UserSyncFactory)
+
+
 class ResponseFactory(BaseFactory):
     class Meta:
         model = Response
 
     record = factory.SubFactory(RecordFactory)
     user = factory.SubFactory(UserFactory)
+
+
+class VectorSettingsSyncFactory(BaseSyncFactory):
+    class Meta:
+        model = VectorSettings
+
+    name = factory.Sequence(lambda n: f"vector-{n}")
+    title = "Vector Title"
+    dimensions = factory.LazyAttribute(lambda _: random.randrange(16, 1024))
+    dataset = factory.SubFactory(DatasetSyncFactory)
 
 
 class VectorSettingsFactory(BaseFactory):
@@ -263,12 +306,29 @@ class VectorSettingsFactory(BaseFactory):
     dataset = factory.SubFactory(DatasetFactory)
 
 
+class VectorSyncFactory(BaseSyncFactory):
+    class Meta:
+        model = Vector
+
+    record = factory.SubFactory(RecordSyncFactory)
+    vector_settings = factory.SubFactory(VectorSettingsSyncFactory)
+
+
 class VectorFactory(BaseFactory):
     class Meta:
         model = Vector
 
     record = factory.SubFactory(RecordFactory)
     vector_settings = factory.SubFactory(VectorSettingsFactory)
+
+
+class FieldSyncFactory(BaseSyncFactory):
+    class Meta:
+        model = Field
+
+    name = factory.Sequence(lambda n: f"field-{n}")
+    title = "Field Title"
+    dataset = factory.SubFactory(DatasetSyncFactory)
 
 
 class FieldFactory(BaseFactory):
@@ -284,6 +344,7 @@ class TextFieldFactory(FieldFactory):
     settings = {
         "type": FieldType.text,
         "use_markdown": False,
+        "use_table": False,
     }
 
 
@@ -306,6 +367,16 @@ class CustomFieldFactory(FieldFactory):
         "template": "<div>{{ value }}</div>",
         "advanced_mode": False,
     }
+
+
+class MetadataPropertySyncFactory(BaseSyncFactory):
+    class Meta:
+        model = MetadataProperty
+
+    name = factory.Sequence(lambda n: f"metadata-property-{n}")
+    title = "Metadata property title"
+    allowed_roles = [UserRole.admin, UserRole.annotator]
+    dataset = factory.SubFactory(DatasetSyncFactory)
 
 
 class MetadataPropertyFactory(BaseFactory):
@@ -339,6 +410,17 @@ class IntegerMetadataPropertyFactory(MetadataPropertyFactory):
 
 class FloatMetadataPropertyFactory(MetadataPropertyFactory):
     settings = {"type": MetadataPropertyType.float}
+
+
+class QuestionSyncFactory(BaseSyncFactory):
+    class Meta:
+        model = Question
+
+    name = factory.Sequence(lambda n: f"question-{n}")
+    title = "Question Title"
+    description = "Question Description"
+    dataset = factory.SubFactory(DatasetSyncFactory)
+    settings = {}
 
 
 class QuestionFactory(BaseFactory):
@@ -433,6 +515,15 @@ class SpanQuestionFactory(QuestionFactory):
         "allow_overlapping": False,
         "allow_character_annotation": True,
     }
+
+
+class SuggestionSyncFactory(BaseSyncFactory):
+    class Meta:
+        model = Suggestion
+
+    record = factory.SubFactory(RecordSyncFactory)
+    question = factory.SubFactory(QuestionSyncFactory)
+    value = "negative"
 
 
 class SuggestionFactory(BaseFactory):

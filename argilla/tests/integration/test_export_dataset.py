@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,17 +14,14 @@
 
 import json
 import os
-import random
 import uuid
-from string import ascii_lowercase
 from tempfile import TemporaryDirectory
-from time import sleep
 from typing import Any, List
 
 import argilla as rg
 import pytest
-from argilla._exceptions import ConflictError, SettingsError
-from datasets import Dataset as HFDataset, Value, Features, ClassLabel, load_dataset
+from argilla._exceptions import SettingsError
+from datasets import load_dataset
 from huggingface_hub.utils._errors import BadRequestError, FileMetadataError, HfHubHTTPError
 
 _RETRIES = 5
@@ -173,14 +170,14 @@ class TestDiskImportExportMixin:
 )  # Hub consistency CICD pipline
 @pytest.mark.skipif(
     not os.getenv("HF_TOKEN_ARGILLA_INTERNAL_TESTING"),
-    reason="You are missing a token to write to `argilla-internal-testing` org on the Hugging Face Hub",
+    reason="You are missing a token to write to `extralit-dev` org on the Hugging Face Hub",
 )
 @pytest.mark.parametrize("with_records_export", [True, False])
 class TestHubImportExportMixin:
     def test_export_dataset_to_hub(
         self, token: str, dataset: rg.Dataset, mock_data: List[dict[str, Any]], with_records_export: bool
     ):
-        repo_id = f"argilla-internal-testing/test_export_dataset_to_hub_with_records_{with_records_export}"
+        repo_id = f"extralit-dev/test_export_dataset_to_hub_with_records_{with_records_export}"
         dataset.records.log(records=mock_data)
         dataset.to_hub(repo_id=repo_id, with_records=with_records_export, token=token)
 
@@ -194,7 +191,7 @@ class TestHubImportExportMixin:
         with_records_export: bool,
         with_records_import: bool,
     ):
-        repo_id = f"argilla-internal-testing/test_import_dataset_from_hub_with_records_{with_records_export}"
+        repo_id = f"extralit-dev/test_import_dataset_from_hub_with_records_{with_records_export}"
         dataset.records.log(records=mock_data)
 
         dataset.to_hub(repo_id=repo_id, with_records=with_records_export, token=token)
@@ -244,9 +241,7 @@ class TestHubImportExportMixin:
         with_records_export: bool,
         with_records_import: bool,
     ):
-        repo_id = (
-            f"argilla-internal-testing/test_import_dataset_from_hub_using_settings_with_records{with_records_export}"
-        )
+        repo_id = f"extralit-dev/test_import_dataset_from_hub_using_settings_with_records{with_records_export}"
         mock_dataset_name = f"test_import_dataset_from_hub_using_settings_{uuid.uuid4()}"
         dataset.records.log(records=mock_data)
 
@@ -303,9 +298,7 @@ class TestHubImportExportMixin:
         with_records_export: bool,
         with_records_import: bool,
     ):
-        repo_id = (
-            f"argilla-internal-testing/test_import_dataset_from_hub_using_settings_with_records{with_records_export}"
-        )
+        repo_id = f"extralit-dev/test_import_dataset_from_hub_using_settings_with_records{with_records_export}"
         mock_dataset_name = f"test_import_dataset_from_hub_using_settings_{uuid.uuid4()}"
         dataset.records.log(records=mock_data)
 
@@ -366,7 +359,7 @@ class TestHubImportExportMixin:
         mock_data: List[dict[str, Any]],
         with_records_export: bool,
     ):
-        repo_id = f"argilla-internal-testing/test_import_dataset_from_hub_using_wrong_settings_with_records_{with_records_export}"
+        repo_id = f"extralit-dev/test_import_dataset_from_hub_using_wrong_settings_with_records_{with_records_export}"
         dataset.records.log(records=mock_data)
         mock_dataset_name = f"test_import_dataset_from_hub_using_wrong_settings_{uuid.uuid4()}"
         dataset.to_hub(repo_id=repo_id, with_records=with_records_export, token=token)
@@ -389,7 +382,7 @@ class TestHubImportExportMixin:
     def test_import_dataset_from_hub_with_automatic_settings(
         self, token: str, dataset: rg.Dataset, client, mock_data: List[dict[str, Any]], with_records_export: bool
     ):
-        repo_id = f"argilla-internal-testing/test_import_dataset_from_hub_with_automatic_settings_{with_records_export}"
+        repo_id = f"extralit-dev/test_import_dataset_from_hub_with_automatic_settings_{with_records_export}"
         mock_dataset_name = f"test_import_dataset_from_hub_with_automatic_settings_{uuid.uuid4()}"
         mocked_external_dataset = load_dataset(path=repo_id, split="train")
 

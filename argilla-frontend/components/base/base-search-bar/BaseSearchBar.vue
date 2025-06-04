@@ -1,6 +1,6 @@
 <!--
   - coding=utf-8
-  - Copyright 2021-present, the Recognai S.L. team.
+  - Copyright 2023-present, Extralit, Inc.
   -
   - Licensed under the Apache License, Version 2.0 (the "License");
   - you may not use this file except in compliance with the License.
@@ -19,7 +19,11 @@
   <BaseInputContainer
     class="search-area"
     :class="[filter ? 'active' : null, isCollapsed ? '--collapsed' : null]"
-    ><BaseButton class="search-area__button__search" @click="toggleSearchBar">
+    ><BaseButton
+      class="search-area__button__search"
+      @click="toggleSearchBar"
+      aria-label="search"
+    >
       <svgicon
         name="search"
         width="20"
