@@ -344,6 +344,7 @@ class TextFieldFactory(FieldFactory):
     settings = {
         "type": FieldType.text,
         "use_markdown": False,
+        "use_table": False,
     }
 
 

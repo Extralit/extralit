@@ -77,7 +77,9 @@ class TestHubDatasetExporter:
     def test_export_to(self, sync_test_session, hf_api: HfApi, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
 
-        FieldSyncFactory.create(name="text", settings={"type": FieldType.text, "use_markdown": False}, dataset=dataset)
+        FieldSyncFactory.create(
+            name="text", settings={"type": FieldType.text, "use_markdown": False, "use_table": False}, dataset=dataset
+        )
         record = RecordSyncFactory.create(fields={"text": "Hello World"}, dataset=dataset)
 
         HubDatasetExporter(dataset).export_to(
@@ -104,7 +106,9 @@ class TestHubDatasetExporter:
     def test_export_to_with_custom_subset(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
 
-        FieldSyncFactory.create(name="text", settings={"type": FieldType.text, "use_markdown": False}, dataset=dataset)
+        FieldSyncFactory.create(
+            name="text", settings={"type": FieldType.text, "use_markdown": False, "use_table": False}, dataset=dataset
+        )
         RecordSyncFactory.create(fields={"text": "Hello World"}, dataset=dataset)
 
         HubDatasetExporter(dataset).export_to(
@@ -120,7 +124,9 @@ class TestHubDatasetExporter:
     def test_export_to_with_custom_split(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
 
-        FieldSyncFactory.create(name="text", settings={"type": FieldType.text, "use_markdown": False}, dataset=dataset)
+        FieldSyncFactory.create(
+            name="text", settings={"type": FieldType.text, "use_markdown": False, "use_table": False}, dataset=dataset
+        )
         RecordSyncFactory.create(fields={"text": "Hello World"}, dataset=dataset)
 
         HubDatasetExporter(dataset).export_to(
@@ -136,7 +142,9 @@ class TestHubDatasetExporter:
     def test_export_to_with_private_dataset(self, sync_test_session, hf_api: HfApi, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
 
-        FieldSyncFactory.create(name="text", settings={"type": FieldType.text, "use_markdown": False}, dataset=dataset)
+        FieldSyncFactory.create(
+            name="text", settings={"type": FieldType.text, "use_markdown": False, "use_table": False}, dataset=dataset
+        )
         RecordSyncFactory.create(fields={"text": "Hello World"}, dataset=dataset)
 
         HubDatasetExporter(dataset).export_to(
@@ -157,7 +165,9 @@ class TestHubDatasetExporter:
             {"role": "agent", "content": "Hello human!"},
         ]
 
-        FieldSyncFactory.create(name="chat", settings={"type": FieldType.chat, "use_markdown": False}, dataset=dataset)
+        FieldSyncFactory.create(
+            name="chat", settings={"type": FieldType.chat, "use_markdown": False, "use_table": False}, dataset=dataset
+        )
         RecordSyncFactory.create(fields={"chat": chat_record_value}, dataset=dataset)
 
         HubDatasetExporter(dataset).export_to(
@@ -238,12 +248,15 @@ class TestHubDatasetExporter:
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
         annotators = AnnotatorSyncFactory.create_batch(2, workspaces=[dataset.workspace])
 
-        FieldSyncFactory.create(name="text", settings={"type": FieldType.text, "use_markdown": False}, dataset=dataset)
+        FieldSyncFactory.create(
+            name="text", settings={"type": FieldType.text, "use_markdown": False, "use_table": False}, dataset=dataset
+        )
         QuestionSyncFactory.create(
             name="text-question",
             settings={
                 "type": QuestionType.text,
                 "use_markdown": False,
+                "use_table": False,
             },
             dataset=dataset,
         )
@@ -294,12 +307,15 @@ class TestHubDatasetExporter:
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
         annotators = AnnotatorSyncFactory.create_batch(2, workspaces=[dataset.workspace])
 
-        FieldSyncFactory.create(name="text", settings={"type": FieldType.text, "use_markdown": False}, dataset=dataset)
+        FieldSyncFactory.create(
+            name="text", settings={"type": FieldType.text, "use_markdown": False, "use_table": False}, dataset=dataset
+        )
         question = QuestionSyncFactory.create(
             name="text-question",
             settings={
                 "type": QuestionType.text,
                 "use_markdown": False,
+                "use_table": False,
             },
             dataset=dataset,
         )
@@ -360,7 +376,9 @@ class TestHubDatasetExporter:
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
         annotators = AnnotatorSyncFactory.create_batch(2, workspaces=[dataset.workspace])
 
-        FieldSyncFactory.create(name="text", settings={"type": FieldType.text, "use_markdown": False}, dataset=dataset)
+        FieldSyncFactory.create(
+            name="text", settings={"type": FieldType.text, "use_markdown": False, "use_table": False}, dataset=dataset
+        )
         QuestionSyncFactory.create(
             name="rating-question",
             settings={
@@ -421,7 +439,9 @@ class TestHubDatasetExporter:
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
         annotators = AnnotatorSyncFactory.create_batch(2, workspaces=[dataset.workspace])
 
-        FieldSyncFactory.create(name="text", settings={"type": FieldType.text, "use_markdown": False}, dataset=dataset)
+        FieldSyncFactory.create(
+            name="text", settings={"type": FieldType.text, "use_markdown": False, "use_table": False}, dataset=dataset
+        )
         question = QuestionSyncFactory.create(
             name="rating-question",
             settings={
@@ -492,7 +512,9 @@ class TestHubDatasetExporter:
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
         annotators = AnnotatorSyncFactory.create_batch(2, workspaces=[dataset.workspace])
 
-        FieldSyncFactory.create(name="text", settings={"type": FieldType.text, "use_markdown": False}, dataset=dataset)
+        FieldSyncFactory.create(
+            name="text", settings={"type": FieldType.text, "use_markdown": False, "use_table": False}, dataset=dataset
+        )
         QuestionSyncFactory.create(
             name="label-question",
             settings={
@@ -552,7 +574,9 @@ class TestHubDatasetExporter:
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
         annotators = AnnotatorSyncFactory.create_batch(2, workspaces=[dataset.workspace])
 
-        FieldSyncFactory.create(name="text", settings={"type": FieldType.text, "use_markdown": False}, dataset=dataset)
+        FieldSyncFactory.create(
+            name="text", settings={"type": FieldType.text, "use_markdown": False, "use_table": False}, dataset=dataset
+        )
         question = QuestionSyncFactory.create(
             name="label-question",
             settings={
@@ -622,7 +646,9 @@ class TestHubDatasetExporter:
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
         annotators = AnnotatorSyncFactory.create_batch(2, workspaces=[dataset.workspace])
 
-        FieldSyncFactory.create(name="text", settings={"type": FieldType.text, "use_markdown": False}, dataset=dataset)
+        FieldSyncFactory.create(
+            name="text", settings={"type": FieldType.text, "use_markdown": False, "use_table": False}, dataset=dataset
+        )
         QuestionSyncFactory.create(
             name="multi-label-question",
             settings={
@@ -682,7 +708,9 @@ class TestHubDatasetExporter:
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
         annotators = AnnotatorSyncFactory.create_batch(2, workspaces=[dataset.workspace])
 
-        FieldSyncFactory.create(name="text", settings={"type": FieldType.text, "use_markdown": False}, dataset=dataset)
+        FieldSyncFactory.create(
+            name="text", settings={"type": FieldType.text, "use_markdown": False, "use_table": False}, dataset=dataset
+        )
         question = QuestionSyncFactory.create(
             name="multi-label-question",
             settings={
@@ -752,7 +780,9 @@ class TestHubDatasetExporter:
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
         annotators = AnnotatorSyncFactory.create_batch(2, workspaces=[dataset.workspace])
 
-        FieldSyncFactory.create(name="text", settings={"type": FieldType.text, "use_markdown": False}, dataset=dataset)
+        FieldSyncFactory.create(
+            name="text", settings={"type": FieldType.text, "use_markdown": False, "use_table": False}, dataset=dataset
+        )
         QuestionSyncFactory.create(
             name="ranking-question",
             settings={
@@ -832,7 +862,9 @@ class TestHubDatasetExporter:
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
         annotators = AnnotatorSyncFactory.create_batch(2, workspaces=[dataset.workspace])
 
-        FieldSyncFactory.create(name="text", settings={"type": FieldType.text, "use_markdown": False}, dataset=dataset)
+        FieldSyncFactory.create(
+            name="text", settings={"type": FieldType.text, "use_markdown": False, "use_table": False}, dataset=dataset
+        )
         question = QuestionSyncFactory.create(
             name="ranking-question",
             settings={
@@ -932,7 +964,9 @@ class TestHubDatasetExporter:
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
         annotators = AnnotatorSyncFactory.create_batch(2, workspaces=[dataset.workspace])
 
-        FieldSyncFactory.create(name="text", settings={"type": FieldType.text, "use_markdown": False}, dataset=dataset)
+        FieldSyncFactory.create(
+            name="text", settings={"type": FieldType.text, "use_markdown": False, "use_table": False}, dataset=dataset
+        )
         QuestionSyncFactory.create(
             name="span-question",
             settings={
@@ -1007,7 +1041,9 @@ class TestHubDatasetExporter:
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
         annotators = AnnotatorSyncFactory.create_batch(2, workspaces=[dataset.workspace])
 
-        FieldSyncFactory.create(name="text", settings={"type": FieldType.text, "use_markdown": False}, dataset=dataset)
+        FieldSyncFactory.create(
+            name="text", settings={"type": FieldType.text, "use_markdown": False, "use_table": False}, dataset=dataset
+        )
         question = QuestionSyncFactory.create(
             name="span-question",
             settings={
@@ -1098,12 +1134,15 @@ class TestHubDatasetExporter:
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
         annotator = AnnotatorSyncFactory.create(workspaces=[dataset.workspace])
 
-        FieldSyncFactory.create(name="text", settings={"type": FieldType.text, "use_markdown": False}, dataset=dataset)
+        FieldSyncFactory.create(
+            name="text", settings={"type": FieldType.text, "use_markdown": False, "use_table": False}, dataset=dataset
+        )
         QuestionSyncFactory.create(
             name="text-question",
             settings={
                 "type": QuestionType.text,
                 "use_markdown": False,
+                "use_table": False,
             },
             dataset=dataset,
         )
@@ -1141,12 +1180,15 @@ class TestHubDatasetExporter:
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
         annotator = AnnotatorSyncFactory.create(workspaces=[dataset.workspace])
 
-        FieldSyncFactory.create(name="text", settings={"type": FieldType.text, "use_markdown": False}, dataset=dataset)
+        FieldSyncFactory.create(
+            name="text", settings={"type": FieldType.text, "use_markdown": False, "use_table": False}, dataset=dataset
+        )
         QuestionSyncFactory.create(
             name="text-question",
             settings={
                 "type": QuestionType.text,
                 "use_markdown": False,
+                "use_table": False,
             },
             dataset=dataset,
         )
@@ -1183,7 +1225,9 @@ class TestHubDatasetExporter:
     def test_export_to_with_metadata(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
 
-        FieldSyncFactory.create(name="text", settings={"type": FieldType.text, "use_markdown": False}, dataset=dataset)
+        FieldSyncFactory.create(
+            name="text", settings={"type": FieldType.text, "use_markdown": False, "use_table": False}, dataset=dataset
+        )
 
         MetadataPropertySyncFactory.create(
             name="metadata-terms",
@@ -1240,7 +1284,9 @@ class TestHubDatasetExporter:
     def test_export_to_with_vectors(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
 
-        FieldSyncFactory.create(name="text", settings={"type": FieldType.text, "use_markdown": False}, dataset=dataset)
+        FieldSyncFactory.create(
+            name="text", settings={"type": FieldType.text, "use_markdown": False, "use_table": False}, dataset=dataset
+        )
         record = RecordSyncFactory.create(fields={"text": "Hello World"}, dataset=dataset)
 
         vector_settings_a = VectorSettingsSyncFactory.create(
