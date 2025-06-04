@@ -99,6 +99,9 @@ class TestUpsertDatasetRecordsBulk:
             },
         )
 
+        if response.status_code == 422:
+            print(f"DEBUG - Error response from server: {response.json()}")
+            print(f"DEBUG - Record fields before update: {record.fields}")
         assert response.status_code == 200
 
         assert (await db.execute(select(func.count(Record.id)))).scalar_one() == 2

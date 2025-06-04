@@ -155,10 +155,6 @@ class CreateRecordsBulk:
             autocommit=False,
         )
 
-    @classmethod
-    def _metadata_is_set(cls, record_create: RecordCreate) -> bool:
-        return "metadata" in record_create.model_fields_set
-
 
 class UpsertRecordsBulk(CreateRecordsBulk):
     async def upsert_records_bulk(

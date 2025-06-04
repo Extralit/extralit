@@ -19,6 +19,7 @@ from PIL import Image
 from uuid import uuid4
 from typing import Generator
 from huggingface_hub import HfApi
+from huggingface_hub.errors import HfHubHTTPError
 from datasets import load_dataset, get_dataset_config_names, get_dataset_split_names
 
 from argilla_server.contexts import hub
@@ -129,15 +130,22 @@ class TestHubDatasetExporter:
         )
         RecordSyncFactory.create(fields={"text": "Hello World"}, dataset=dataset)
 
-        HubDatasetExporter(dataset).export_to(
-            name=hf_dataset_name,
-            subset="default",
-            split="custom",
-            private=False,
-            token=HF_TOKEN,
-        )
+        try:
+            HubDatasetExporter(dataset).export_to(
+                name=hf_dataset_name,
+                subset="default",
+                split="custom",
+                private=False,
+                token=HF_TOKEN,
+            )
 
-        assert get_dataset_split_names(hf_dataset_name) == ["custom"]
+            assert get_dataset_split_names(hf_dataset_name) == ["custom"]
+
+        except HfHubHTTPError as error:
+            if error.response.status_code == 429:
+                pytest.skip("Skipping test due to HuggingFace Hub rate limit (429 Too Many Requests)")
+            else:
+                raise error
 
     def test_export_to_with_private_dataset(self, sync_test_session, hf_api: HfApi, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
