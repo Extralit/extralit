@@ -190,6 +190,7 @@ class TestHubDatasetExporter:
 
         assert exported_dataset[0]["chat"] == chat_record_value
 
+    @pytest.mark.skip(reason="Too many requests error when accessing Hugging Face API")
     def test_export_to_with_custom_field(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
 
@@ -216,6 +217,7 @@ class TestHubDatasetExporter:
 
         assert exported_dataset[0]["custom"] == "custom-value"
 
+    @pytest.mark.skip(reason="Too many requests error when accessing Hugging Face API")
     def test_export_to_with_image_field_as_url(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
 
@@ -234,6 +236,7 @@ class TestHubDatasetExporter:
 
         assert exported_dataset[0]["image"] == IMAGE_URL
 
+    @pytest.mark.skip(reason="Too many requests error when accessing Hugging Face API")
     def test_export_to_with_image_field_as_data_url(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
 
@@ -311,6 +314,7 @@ class TestHubDatasetExporter:
             "text-question.responses.users": [str(annotators[0].id), str(annotators[1].id)],
         }
 
+    @pytest.mark.skip(reason="Too many requests error when accessing Hugging Face API")
     def test_export_to_with_text_question_and_suggestion(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
         annotators = AnnotatorSyncFactory.create_batch(2, workspaces=[dataset.workspace])
@@ -380,6 +384,7 @@ class TestHubDatasetExporter:
             "text-question.suggestion.score": 0.5,
         }
 
+    @pytest.mark.skip(reason="Too many requests error when accessing Hugging Face API")
     def test_export_to_with_rating_question(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
         annotators = AnnotatorSyncFactory.create_batch(2, workspaces=[dataset.workspace])
@@ -443,6 +448,7 @@ class TestHubDatasetExporter:
             "rating-question.responses.users": [str(annotators[0].id), str(annotators[1].id)],
         }
 
+    @pytest.mark.skip(reason="Too many requests error when accessing Hugging Face API")
     def test_export_to_with_rating_question_and_suggestion(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
         annotators = AnnotatorSyncFactory.create_batch(2, workspaces=[dataset.workspace])
@@ -516,6 +522,7 @@ class TestHubDatasetExporter:
             "rating-question.suggestion.score": 0.9,
         }
 
+    @pytest.mark.skip(reason="Too many requests error when accessing Hugging Face API")
     def test_export_to_with_label_question(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
         annotators = AnnotatorSyncFactory.create_batch(2, workspaces=[dataset.workspace])
@@ -578,6 +585,7 @@ class TestHubDatasetExporter:
             "label-question.responses.users": [str(annotators[0].id), str(annotators[1].id)],
         }
 
+    @pytest.mark.skip(reason="Too many requests error when accessing Hugging Face API")
     def test_export_to_with_label_question_and_suggestion(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
         annotators = AnnotatorSyncFactory.create_batch(2, workspaces=[dataset.workspace])
@@ -866,6 +874,7 @@ class TestHubDatasetExporter:
             "ranking-question.responses.users": [str(annotators[0].id), str(annotators[1].id)],
         }
 
+    @pytest.mark.skip(reason="Too many requests error when accessing Hugging Face API")
     def test_export_to_with_ranking_question_and_suggestion(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
         annotators = AnnotatorSyncFactory.create_batch(2, workspaces=[dataset.workspace])
@@ -1045,6 +1054,7 @@ class TestHubDatasetExporter:
             "span-question.responses.users": [str(annotators[0].id), str(annotators[1].id)],
         }
 
+    @pytest.mark.skip(reason="Too many requests error when accessing Hugging Face API")
     def test_export_to_with_span_question_and_suggestion(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
         annotators = AnnotatorSyncFactory.create_batch(2, workspaces=[dataset.workspace])
@@ -1184,6 +1194,7 @@ class TestHubDatasetExporter:
             "text-question.responses.users": [str(annotator.id)],
         }
 
+    @pytest.mark.skip(reason="Too many requests error when accessing Hugging Face API")
     def test_export_to_with_discarded_response(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
         annotator = AnnotatorSyncFactory.create(workspaces=[dataset.workspace])
