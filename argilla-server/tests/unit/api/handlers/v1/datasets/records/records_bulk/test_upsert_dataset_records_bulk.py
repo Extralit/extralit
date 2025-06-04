@@ -93,7 +93,6 @@ class TestUpsertDatasetRecordsBulk:
                     },
                     {
                         "id": str(record.id),
-                        "fields": {},
                     },
                 ],
             },
