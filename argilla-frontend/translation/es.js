@@ -346,6 +346,23 @@ export default {
     public: "Dataset público",
     exportingWarning: "Esto puede tardar unos segundos",
   },
+  exportToHub: {
+    dialogTitle: "Exportar dataset a Hugging Face",
+    ownerTooltip:
+      "Utiliza un nombre de usuario u organización de Hugging Face válidos",
+    tokenTooltip: `Utiliza un token de acceso existente o crear un <a href='https://huggingface.co/settings/tokens' target='_blank'>nuevo token</a> con "permiso de escritura"`,
+    validations: {
+      orgOrUsernameIsRequired:
+        "El nombre de usuario u organización es requerido",
+      hfTokenIsRequired: "El token de Hugging Face es requerido",
+      hfTokenInvalid: "El token de Hugging Face es inválido",
+      datasetNameIsRequired: "El nombre del dataset es requerido",
+    },
+    exporting: "Exportando al hub de Hugging Face",
+    private: "Dataset privado",
+    public: "Dataset público",
+    exportingWarning: "Esto puede tardar unos segundos",
+  },
   config: {
     field: {
       text: "Campo de texto",

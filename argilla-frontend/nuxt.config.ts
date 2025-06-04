@@ -219,6 +219,26 @@ const config: NuxtConfig = {
         },
       },
     },
+    postcss: {
+      postcssOptions: {
+        order: "presetEnvAndCssnanoLast",
+        plugins: {
+          cssnano:
+            process.env.NODE_ENV === "production"
+              ? {
+                  preset: [
+                    "default",
+                    {
+                      discardComments: {
+                        removeAll: true,
+                      },
+                    },
+                  ],
+                }
+              : false,
+        },
+      },
+    },
     babel: {
       plugins: [
         ['@babel/plugin-transform-private-methods', { loose: true }],

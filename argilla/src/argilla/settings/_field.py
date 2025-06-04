@@ -16,8 +16,6 @@ import os
 from abc import ABC
 from typing import Optional, Union, TYPE_CHECKING
 
-from argilla.settings._metadata import MetadataField
-from argilla.settings._vector import VectorField
 import requests
 
 from argilla import Argilla
@@ -342,21 +340,4 @@ def _field_from_model(model: FieldModel) -> Field:
 
 def _field_from_dict(data: dict) -> Field:
     """Create a field instance from a field dictionary"""
-    field_type = data["type"]
-
-    if field_type == "text":
-        return TextField.from_dict(data)
-    elif field_type == "image":
-        return ImageField.from_dict(data)
-    elif field_type == "chat":
-        return ChatField.from_dict(data)
-    elif field_type == "custom":
-        return CustomField.from_dict(data)
-    elif field_type == "table":
-        return TableField.from_dict(data)
-    elif field_type == "vector":
-        return VectorField.from_dict(data)
-    elif field_type == "metadata":
-        return MetadataField.from_dict(data)
-    else:
-        raise ArgillaError(f"Unsupported field type: {field_type}")
+    return _field_from_model(FieldModel(**data))

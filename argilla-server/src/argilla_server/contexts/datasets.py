@@ -42,19 +42,11 @@ from argilla_server.api.schemas.v1.responses import (
     ResponseValueUpdate,
 )
 from argilla_server.api.schemas.v1.vector_settings import (
-    VectorSettings as VectorSettingsSchema,
-)
-from argilla_server.api.schemas.v1.vector_settings import (
     VectorSettingsCreate,
 )
-from argilla_server.api.schemas.v1.vectors import Vector as VectorSchema
 from argilla_server.api.schemas.v1.documents import DocumentCreateRequest, DocumentListItem
 from argilla_server.models.database import DatasetUser
-from argilla_server.webhooks.v1.enums import DatasetEvent, ResponseEvent, RecordEvent
-from argilla_server.webhooks.v1.records import (
-    build_record_event as build_record_event_v1,
-    notify_record_event as notify_record_event_v1,
-)
+from argilla_server.webhooks.v1.enums import DatasetEvent, ResponseEvent
 from argilla_server.webhooks.v1.responses import (
     build_response_event as build_response_event_v1,
     notify_response_event as notify_response_event_v1,
@@ -63,8 +55,7 @@ from argilla_server.webhooks.v1.datasets import (
     build_dataset_event as build_dataset_event_v1,
     notify_dataset_event as notify_dataset_event_v1,
 )
-from argilla_server.contexts import accounts, distribution
-from argilla_server.database import get_async_db
+from argilla_server.contexts import distribution
 from argilla_server.enums import DatasetStatus, UserRole
 from argilla_server.errors.future import NotUniqueError, UnprocessableEntityError
 from argilla_server.jobs import dataset_jobs

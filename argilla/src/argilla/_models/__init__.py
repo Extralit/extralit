@@ -14,5 +14,61 @@
 
 # We skip the flake8 check because we are importing all the models and the import order is important
 # flake8: noqa
+from argilla._models._resource import ResourceModel
+from argilla._models._workspace import WorkspaceModel
+from argilla._models._user import UserModel, Role
+from argilla._models._dataset import DatasetModel
+from argilla._models._record._record import RecordModel, FieldValue
+from argilla._models._record._suggestion import SuggestionModel
+from argilla._models._record._response import UserResponseModel, ResponseStatus
+from argilla._models._record._vector import VectorModel, VectorValue
+from argilla._models._search import (
+    SearchQueryModel,
+    AndFilterModel,
+    FilterModel,
+    RangeFilterModel,
+    TermsFilterModel,
+    ScopeModel,
+)
+from argilla._models._settings._fields import (
+    FieldModel,
+    TextFieldSettings,
+    ImageFieldSettings,
+    ChatFieldSettings,
+    CustomFieldSettings,
+    FieldSettings,
+    TableFieldSettings,
+)
+from argilla._models._settings._questions import (
+    QuestionModel,
+    QuestionSettings,
+    SpanQuestionSettings,
+    TextQuestionSettings,
+    LabelQuestionSettings,
+    RatingQuestionSettings,
+    MultiLabelQuestionSettings,
+    RankingQuestionSettings,
+)
+from argilla._models._settings._metadata import (
+    MetadataFieldModel,
+    BaseMetadataPropertySettings,
+    TermsMetadataPropertySettings,
+    NumericMetadataPropertySettings,
+    FloatMetadataPropertySettings,
+    IntegerMetadataPropertySettings,
+)
+from argilla._models._settings._questions import (
+    QuestionModel,
+    QuestionSettings,
+    LabelQuestionSettings,
+    RatingQuestionSettings,
+    TextQuestionSettings,
+    MultiLabelQuestionSettings,
+    RankingQuestionSettings,
+    SpanQuestionSettings,
+)
+from argilla._models._settings._vectors import VectorFieldModel
 
-
+from argilla._models._user import UserModel, Role
+from argilla._models._workspace import WorkspaceModel
+from argilla._models._webhook import WebhookModel, EventType
