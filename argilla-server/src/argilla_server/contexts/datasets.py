@@ -1054,48 +1054,7 @@ async def delete_documents(
         documents = await Document.delete_many(db=db, params=params, autocommit=False)
 
     await db.commit()
-
-    return suggestion
-
-
-async def create_document(db: "AsyncSession", dataset_create: DocumentCreateRequest) -> DocumentListItem:
-    document = await Document.create(
-        db,
-        id=dataset_create.id,
-        reference=dataset_create.reference,
-        url=dataset_create.url,
-        file_name=dataset_create.file_name,
-        pmid=dataset_create.pmid,
-        doi=dataset_create.doi,
-        workspace_id=dataset_create.workspace_id,
-    )
-
-    return DocumentListItem.from_orm(document)
-
-
-async def delete_documents(
-    db: "AsyncSession",
-    workspace_id: UUID,
-    id: UUID = None,
-    pmid: str = None,
-    doi: str = None,
-    url: str = None,
-    reference: str = None,
-) -> List[DocumentListItem]:
-    async with db.begin_nested():
-        params = [Document.workspace_id == workspace_id]
-        if id is not None and id != "":
-            params.append(Document.id == id)
-        if pmid:
-            params.append(Document.pmid == pmid)
-        if doi:
-            params.append(Document.doi == doi)
-        if reference:
-            params.append(Document.reference == reference)
-        documents = await Document.delete_many(db=db, params=params, autocommit=False)
-
-    await db.commit()
-    documents = [DocumentListItem(**doc.__dict__) for doc in documents]
+    documents = [DocumentListItem.from_orm(doc) for doc in documents]
     return documents
 
 
