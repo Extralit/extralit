@@ -38,14 +38,14 @@ jobs:
           USERNAME: argilla
           PASSWORD: 12345678
           API_KEY: argilla.apikey
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     defaults:
       run:
         working-directory: argilla
     strategy:
-      fail-fast: true
-      matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+    fail-fast: true
+    matrix:
+      python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
       - name: Setup PDM
@@ -115,7 +115,7 @@ jobs:
           excluded_globs: "*.spec.js;**/*.{png,jpg,svg,md};**/!(*.module).ts,**/__pycache__/,**/__mocks__/,LICENSE*,**/.gitignore,**/*.egg-info/,**/.*/"
           output_file: "repo-visualizer.svg"
           should_push: false
-          
+
       - name: Upload repo visualizer diagram as artifact
         uses: actions/upload-artifact@v4
         with:

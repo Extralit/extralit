@@ -5,20 +5,12 @@
 # opens a pull request that modifies code in different parts of the repository.
 # The last matching pattern takes precedence.
 
-# Default owners for everything (fallback)
-* @extralit/core-team
-/argilla/**/* @extralit/contributors
-/argilla-server/**/* @extralit/contributors
-/argilla-v1/**/* @extralit/contributors
-
-# Python SDK (general files)
-/argilla/*.py @extralit/sdk
-/argilla/pyproject.toml @extralit/sdk
-/argilla/pdm.lock @extralit/sdk
-
-# Python SDK (source and tests)
+# SDK and Core Extraction
+/argilla/* @extralit/sdk
 /argilla/src/**/* @extralit/sdk
 /argilla/tests/**/* @extralit/sdk
+/argilla/pyproject.toml @extralit/sdk
+/argilla/pdm.lock @extralit/sdk
 
 # Backend Server
 /argilla-server/**/* @extralit/backend
@@ -29,23 +21,16 @@
 # Legacy compatibility layer
 /argilla-v1/**/* @extralit/sdk @extralit/backend
 
-# AI/ML-specific code (more specific paths take precedence)
-/argilla/src/extralit/extraction/**/* @extralit/ai
-/argilla/src/extralit/extraction/**/* @extralit/ai
-/argilla/src/extralit/metrics/**/* @extralit/ai
-/argilla/src/extralit/preprocessing/**/* @extralit/ai
-/argilla/src/extralit/schema/**/* @extralit/ai
-
-# AI services
+# AI/ML-specific code
+/argilla/src/extralit/{extraction,metrics,preprocessing,schema}/**/* @extralit/ai
 /argilla/src/extralit/pipeline/**/* @extralit/ai @extralit/backend
 /argilla/src/extralit/server/**/* @extralit/ai @extralit/backend
 /argilla/src/extralit/storage/**/* @extralit/ai @extralit/backend
 
-# Core infrastructure and configuration files
-/.github/workflows/**/* @extralit/infra
-/.github/ @extralit/infra
-/.devcontainer/ @extralit/infra
-/docker/ @extralit/infra
+# Infrastructure and configuration
+/.github/** @extralit/infra
+/.devcontainer/** @extralit/infra
+/docker/** @extralit/infra
 *.Dockerfile @extralit/infra
 Tiltfile @extralit/infra
 codecov.yml @extralit/infra
@@ -55,8 +40,7 @@ codecov.yml @extralit/infra
 /argilla/docs/**/* @extralit/docs
 /examples/**/* @extralit/docs @extralit/sdk
 
-
-# Security and legal files
+# Security and legal
 /.github/CODEOWNERS @extralit/core-team
 /SECURITY.md @extralit/core-team
 /LICENSE @extralit/core-team

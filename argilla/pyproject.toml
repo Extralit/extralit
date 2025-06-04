@@ -7,7 +7,7 @@ authors = [
 maintainers = [
     { name = "Extralit Labs", email = "extralit.contact@gmail.com" },
 ]
-requires-python = ">=3.9,!=3.10.0"
+requires-python = ">= 3.9, !=3.10.0"
 readme = "README.md"
 license = { text = "Apache 2.0" }
 

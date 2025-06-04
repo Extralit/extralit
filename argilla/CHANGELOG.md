@@ -14,11 +14,20 @@ These are the section headers that we use:
 * "Security" in case of vulnerabilities.
 -->
 
+## [Argilla] [2.6.0](https://github.com/argilla-io/argilla/compare/v2.5.0...v2.6.0)
+
+### Fixed
+
+- Fixed error when iterating over datasets and settings are not properly loaded. ([#5753](https://github.com/argilla-io/argilla/pull/5753))
+- Fixed error when loading field from raw dictionaries. ([#5756](https://github.com/argilla-io/argilla/pull/5756))
+- Fixed error when importing datasets from hub that already exists. ([#5756](https://github.com/argilla-io/argilla/pull/5756))
+- Fixed error when importing discarded responses without a response. ([#5756](https://github.com/argilla-io/argilla/pull/5756))
+- Fixed error when importing datasets with responses from existing users. ([#5756](https://github.com/argilla-io/argilla/pull/5756))
+
 ## [Extralit] [0.4.1](https://github.com/extralit/extralit/compare/v0.3.0...v0.4.1)
 
 ### Fixed
 - Fixed missing 'selection' type in Suggestions, causing errors at `dataset.records.to_list()`
-  
 
 ## [Extralit] [0.4.0](https://github.com/extralit/extralit/compare/v0.3.0...v0.4.0)
 
@@ -58,6 +67,7 @@ These are the section headers that we use:
 ### Fixed
 
 - Fixed error when update settings.distribution.min_submitted from defaults ([#5719](https://github.com/argilla-io/argilla/pull/5719))
+
 
 ## [Extralit] [0.3.0](https://github.com/extralit/extralit/compare/v0.2.3...v0.3.0)
 

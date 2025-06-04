@@ -14,10 +14,17 @@ These are the section headers that we use:
 * "Security" in case of vulnerabilities.
 -->
 
-## [Extralit] [0.4.0](https://github.com/extralit/extralit/compare/v0.3.0...v0.4.0)
-### Fixed
-- Fixed ES index type for TableField and TableQuestion
+## [Argilla] [2.6.0](https://github.com/argilla-io/argilla/compare/v2.5.0...v2.6.0)
 
+### Added
+
+- Add share progress feature ([#5727](https://github.com/argilla-io/argilla/pull/5727))
+- Added feature to export datasets from Argilla to Hugging Face hub from the UI ([#5730](https://github.com/argilla-io/argilla/pull/5730))
+
+### Fixed
+
+- Improved performance and accessibility ([#5724](https://github.com/argilla-io/argilla/pull/5724))
+- Fixed dataset update date information in the dataset list ([#5741](https://github.com/argilla-io/argilla/pull/#5741))
 
 ## [Argilla] [2.5.0](https://github.com/argilla-io/argilla/compare/v2.4.1...v2.5.0)
 
@@ -32,6 +39,11 @@ These are the section headers that we use:
 - Assign field to span question on dataset creation. ([#5717](https://github.com/argilla-io/argilla/pull/5717))
 - Fixed visible_options when updating question setting. ([#5716](https://github.com/argilla-io/argilla/pull/5716))
 - Fixed highlighting on same record ([#5693](https://github.com/argilla-io/argilla/pull/5693))
+
+## [Extralit] [0.4.0](https://github.com/extralit/extralit/compare/v0.3.0...v0.4.0)
+
+### Fixed
+- Fixed ES index type for TableField and TableQuestion
 
 ## [Extralit] [0.3.0](https://github.com/extralit/extralit/compare/v0.2.3...v0.3.0)
 

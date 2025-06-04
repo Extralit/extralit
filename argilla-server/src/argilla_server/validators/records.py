@@ -1,16 +1,16 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import copy
 import mimetypes
@@ -22,7 +22,7 @@ from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from argilla_server.api.schemas.v1.chat import ChatFieldValue
-from argilla_server.api.schemas.v1.records import RecordCreate, RecordUpsert
+from argilla_server.api.schemas.v1.records import RecordCreate, RecordUpsert, RecordUpdate
 from argilla_server.api.schemas.v1.records_bulk import RecordsBulkCreate
 from argilla_server.api.schemas.v1.responses import UserResponseCreate
 from argilla_server.api.schemas.v1.suggestions import SuggestionCreate
@@ -266,18 +266,32 @@ class RecordCreateValidator(RecordValidatorBase):
         await cls._validate_responses(record_create.responses, dataset, record=record)
 
 
+class RecordUpdateValidator(RecordValidatorBase):
+    @classmethod
+    async def validate(cls, record_update: RecordUpdate, dataset: Dataset, record: Record) -> None:
+        if record_update.is_set("fields"):
+            cls._validate_fields(record_update.fields, dataset)
+
+        cls._validate_metadata(record_update.metadata, dataset)
+        cls._validate_vectors(record_update.vectors, dataset)
+        cls._validate_suggestions(record_update.suggestions, dataset, record=record)
+
+
 class RecordUpsertValidator(RecordValidatorBase):
     @classmethod
     async def validate(cls, record_upsert: RecordUpsert, dataset: Dataset, record: Optional[Record]) -> None:
         if record is None:
-            cls._validate_fields(record_upsert.fields, dataset)
-            record = Record(fields=record_upsert.fields, dataset=dataset)
+            return await RecordCreateValidator.validate(record_upsert, dataset)
 
-        cls._validate_metadata(record_upsert.metadata, dataset)
-        cls._validate_vectors(record_upsert.vectors, dataset)
+        else:
+            if record_upsert.is_set("fields"):
+                cls._validate_fields(record_upsert.fields, dataset)
 
-        cls._validate_suggestions(record_upsert.suggestions, dataset, record=record)
-        await cls._validate_responses(record_upsert.responses, dataset, record=record)
+            cls._validate_metadata(record_upsert.metadata, dataset)
+            cls._validate_vectors(record_upsert.vectors, dataset)
+            cls._validate_suggestions(record_upsert.suggestions, dataset, record=record)
+
+            await cls._validate_responses(record_upsert.responses, dataset, record=record)
 
 
 class RecordsBulkCreateValidator:

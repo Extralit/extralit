@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,19 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
 import os
-import random
 import uuid
-from string import ascii_lowercase
-from tempfile import TemporaryDirectory
 from typing import Any, List
 
 import argilla as rg
 import pytest
-from argilla._exceptions import ConflictError, SettingsError
 from datasets import Dataset as HFDataset, Value, Features, ClassLabel
-from huggingface_hub.utils._errors import BadRequestError, FileMetadataError, HfHubHTTPError
 
 _RETRIES = 5
 
@@ -84,7 +78,7 @@ class TestImportFeaturesFromHub:
     def test_import_records_from_datasets_with_classlabel(
         self, token: str, dataset: rg.Dataset, client, mock_data: List[dict[str, Any]]
     ):
-        repo_id = f"argilla-internal-testing/test_import_dataset_from_hub_with_classlabel_{uuid.uuid4()}"
+        repo_id = f"extralit-dev/test_import_dataset_from_hub_with_classlabel_{uuid.uuid4()}"
 
         hf_dataset = HFDataset.from_dict(
             {
@@ -114,7 +108,7 @@ class TestImportFeaturesFromHub:
 
     def test_import_from_hub_with_upper_case_columns(self, client: rg.Argilla, token: str, dataset_name: str):
         created_dataset = rg.Dataset.from_hub(
-            "argilla-internal-testing/test_import_from_hub_with_upper_case_columns",
+            "extralit-dev/test_import_from_hub_with_upper_case_columns",
             token=token,
             name=dataset_name,
             settings="auto",
@@ -125,7 +119,7 @@ class TestImportFeaturesFromHub:
 
     def test_import_from_hub_with_unlabelled_classes(self, client: rg.Argilla, token: str, dataset_name: str):
         created_dataset = rg.Dataset.from_hub(
-            "argilla-internal-testing/test_import_from_hub_with_unlabelled_classes",
+            "extralit-dev/test_import_from_hub_with_unlabelled_classes",
             token=token,
             name=dataset_name,
             settings="auto",
@@ -136,7 +130,7 @@ class TestImportFeaturesFromHub:
 
     def test_import_with_row_id_as_record_id(self, client: rg.Argilla, token: str, dataset_name: str):
         created_dataset = rg.Dataset.from_hub(
-            "argilla-internal-testing/test_import_from_hub_with_unlabelled_classes",
+            "extralit-dev/test_import_from_hub_with_unlabelled_classes",
             token=token,
             name=dataset_name,
             split="train",

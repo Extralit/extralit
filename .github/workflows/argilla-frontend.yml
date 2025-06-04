@@ -10,7 +10,7 @@ on:
   pull_request:
     paths:
       - "argilla-frontend/**"
-      
+
     types:
       - opened
       - edited
@@ -43,7 +43,7 @@ jobs:
           excluded_globs: "*.spec.js;**/*.{png,jpg,svg,md};**/!(*.module).ts,**/__pycache__/,**/__mocks__/,LICENSE*,**/.gitignore,**/*.egg-info/,**/.*/"
           output_file: "repo-visualizer.svg"
           should_push: false
-          
+
       - name: Upload repo visualizer diagram as artifact
         uses: actions/upload-artifact@v4
         with:
@@ -73,7 +73,6 @@ jobs:
       - name: Build package 📦
         env:
           # BASE_URL is used in the server to support parameterizable base root path
-          # See scripts/build_frontend.sh
           BASE_URL: "@@baseUrl@@"
           DIST_FOLDER: ./dist
         run: |
@@ -96,8 +95,6 @@ jobs:
       image-name: extralit/argilla-frontend-for-dev
       dockerfile: argilla-frontend/dev.frontend.Dockerfile
       platforms: linux/amd64
-      build-args: |
-        ARGILLA_SERVER_TAG=main
     secrets: inherit
 
   # deploy:

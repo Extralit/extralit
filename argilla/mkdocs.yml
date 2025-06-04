@@ -211,6 +211,7 @@ nav:
             - Webhooks internals: admin_guide/webhooks_internals.md
         - Use Markdown to format rich content: admin_guide/use_markdown_to_format_rich_content.md
         - Migrate users, workspaces and datasets to Argilla V2: admin_guide/migrate_from_legacy_datasets.md
+        - Custom fields with layout templates: how_to_guides/custom_fields.md
   - Tutorials:
       - tutorials/index.md
       - Text classification: tutorials/text_classification.ipynb
