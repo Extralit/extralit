@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -227,7 +227,9 @@ class Datasets(Sequence["Dataset"], ResourceHTMLReprMixin):
     """A collection of datasets. It can be used to create a new dataset or to get an existing one."""
 
     class _Iterator(GenericIterator["Dataset"]):
-        pass
+        def __next__(self):
+            dataset = super().__next__()
+            return dataset.get()
 
     def __init__(self, client: "Argilla") -> None:
         self._client = client
@@ -249,10 +251,7 @@ class Datasets(Sequence["Dataset"], ResourceHTMLReprMixin):
         ...
 
     def __call__(
-        self,
-        name: str = None,
-        workspace: Optional[Union["Workspace", str]] = None,
-        id: Union[UUID, str] = None
+        self, name: str = None, workspace: Optional[Union["Workspace", str]] = None, id: Union[UUID, str] = None
     ) -> Union[Optional["Dataset"], List["Dataset"]]:
         """
         Get a dataset by name and workspace, by id, or all datasets for a workspace.
@@ -263,7 +262,7 @@ class Datasets(Sequence["Dataset"], ResourceHTMLReprMixin):
                 return self._from_model(model)
             warnings.warn(f"Dataset with id {id!r} not found")
             return None
-        
+
         elif name is not None and id is None:
             workspace_obj = workspace or self._client.workspaces.default
             if isinstance(workspace_obj, str):
@@ -271,13 +270,13 @@ class Datasets(Sequence["Dataset"], ResourceHTMLReprMixin):
 
             if workspace_obj is None:
                 raise ArgillaError("Workspace not found. Please provide a valid workspace name or id.")
-            
+
             for dataset in workspace_obj.datasets:
                 if dataset.name == name:
                     return dataset.get()
             warnings.warn(f"Dataset with name {name!r} not found in workspace {workspace_obj.name!r}")
             return None
-        
+
         elif name is None and id is None and workspace is not None:
             workspace_obj = workspace
             if isinstance(workspace_obj, str):
@@ -291,7 +290,7 @@ class Datasets(Sequence["Dataset"], ResourceHTMLReprMixin):
                 return self._from_model(model)
             warnings.warn(f"Dataset with id {id!r} not found")
             return None
-        
+
         else:
             raise ArgillaError("One of 'name', 'id', or 'workspace' must be provided")
 
@@ -308,7 +307,7 @@ class Datasets(Sequence["Dataset"], ResourceHTMLReprMixin):
 
     def __getitem__(self, index) -> "Dataset":
         model = self._api.list()[index]
-        return self._from_model(model)
+        return self._from_model(model).get()
 
     def __len__(self) -> int:
         return len(self._api.list())

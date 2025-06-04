@@ -8,7 +8,7 @@ The application defines three webhook listeners for the following events:
 - Dataset events: `dataset.created`, `dataset.updated`, `dataset.published`, `dataset.deleted`
 - Response events: `response.created`, `response.updated`
 
-You can visit the [Argilla documentation](https://docs.extralit.ai/dev/how_to_guides/webhooks) for more information.
+You can visit the [Extralit documentation](https://docs.extralit.ai/dev/how_to_guides/webhooks) for more information.
 
 ## Running the app
 
@@ -22,7 +22,7 @@ curl https://raw.githubusercontent.com/argilla-io/argilla/main/examples/deployme
 docker compose up -d
 ```
 
-For more information on how to install the argilla server, please refer to the [argilla documentation](https://docs.extralit.ai/latest/getting_started).
+For more information on how to install the server, please refer to the [Extralit documentation](https://docs.extralit.ai/latest/getting_started).
 
 Once the argilla server is up and running, start the webhook server by running the following command:
 

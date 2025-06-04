@@ -231,10 +231,7 @@ export default {
       gap: $base-space * 2;
     }
 
-    &__switch.re-switch {
-      :deep(label) {
-        color: var(--fg-primary);
-      }
+    &__switch.switch {
       @include media(">desktop") {
         :deep(label) {
           min-width: 180px;

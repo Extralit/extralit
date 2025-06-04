@@ -1,7 +1,7 @@
 <template>
   <div class="fields">
-    <div 
-      v-for="group in fieldsWithTabs" 
+    <div
+      v-for="group in fieldsWithTabs"
       :class="[group[0]?.isImageType ? 'fields__container--image' : '']"
       :key="group[0].id"
     >
@@ -52,9 +52,9 @@
         :title="group[0].title"
         :content="group[0].content"
       />
-      
-      <BaseCardWithTabs 
-        v-else-if="group.length > 1" 
+
+      <BaseCardWithTabs
+        v-else-if="group.length > 1"
         :tabs="group.map(field => ({ id: field.name, name: field.title, class: '--field', component: 'TextField' }))"
       >
         <template v-slot="{ currentComponent, currentTabId }">

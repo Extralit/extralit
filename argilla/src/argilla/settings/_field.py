@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,10 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import os
 from abc import ABC
 from typing import Optional, Union, TYPE_CHECKING
 
+from argilla.settings._metadata import MetadataField
+from argilla.settings._vector import VectorField
 import requests
 
 from argilla import Argilla
@@ -30,8 +33,7 @@ from argilla._models import (
     FieldSettings,
 )
 from argilla.settings._common import SettingsPropertyBase
-from argilla.settings._metadata import MetadataField, MetadataType
-from argilla.settings._vector import VectorField
+
 
 try:
     from typing import Self
@@ -338,7 +340,7 @@ def _field_from_model(model: FieldModel) -> Field:
         raise ArgillaError(f"Unsupported field type: {model.settings.type}")
 
 
-def _field_from_dict(data: dict) -> Union[Field, VectorField, MetadataType]:
+def _field_from_dict(data: dict) -> Field:
     """Create a field instance from a field dictionary"""
     field_type = data["type"]
 
