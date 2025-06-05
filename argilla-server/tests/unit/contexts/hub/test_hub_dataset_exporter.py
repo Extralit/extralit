@@ -81,7 +81,7 @@ def skip_on(exception: HfHubHTTPError, reason="Skip this test"):
             try:
                 return f(*args, **kwargs)
             except exception:
-                if exception.response.status_code == 429:
+                if hasattr(exception, "response") and exception.response.status_code == 429:
                     pytest.skip(reason)
                 else:
                     raise exception
