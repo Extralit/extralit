@@ -14,6 +14,8 @@ These are the section headers that we use:
 * "Security" in case of vulnerabilities.
 -->
 
+## [Extralit] [0.5.0](https://github.com/extralit/extralit/compare/v0.4.1...v0.5.0)
+
 
 ## [Argilla] [2.8.0](https://github.com/argilla-io/argilla/compare/v2.7.1...v2.8.0)
 
