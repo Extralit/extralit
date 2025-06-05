@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -163,14 +163,12 @@ class LabelQuestion(QuestionBase):
                 Setting it to None show all options.
         """
 
-        settings_type = "dynamic_label_selection" if dynamic else "label_selection"
-        settings_type = "dynamic_multi_label_selection" if dynamic else "multi_label_selection"
         super().__init__(
             name=name,
             title=title,
             required=required,
             description=description,
-            settings=MultiLabelQuestionSettings(
+            settings=LabelQuestionSettings(
                 options=self._render_values_as_options(labels),
                 visible_options=visible_labels,
             ),
@@ -183,7 +181,7 @@ class LabelQuestion(QuestionBase):
 
     @property
     def labels(self) -> List[str]:
-        return self._render_options_as_labels(getattr(self._model.settings, 'options', []))
+        return self._render_options_as_labels(getattr(self._model.settings, "options", []))
 
     @labels.setter
     def labels(self, labels: List[str]) -> None:
@@ -250,7 +248,7 @@ class MultiLabelQuestion(LabelQuestion):
 
     @classmethod
     def from_model(cls, model: QuestionModel) -> "Self":
-        instance = cls(name=model.name, labels=cls._render_options_as_labels(getattr(model.settings, 'options', [])))  # noqa
+        instance = cls(name=model.name, labels=cls._render_options_as_labels(getattr(model.settings, "options", [])))  # noqa
         instance._model = model
 
         return instance
@@ -510,7 +508,7 @@ class TableQuestion(QuestionBase):
         instance._model = model
 
         return instance
-    
+
 
 QuestionType = Union[
     LabelQuestion,

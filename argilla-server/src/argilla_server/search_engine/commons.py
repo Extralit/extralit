@@ -1,16 +1,16 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import dataclasses
 import logging
@@ -190,7 +190,7 @@ def es_mapping_for_field(field: Field) -> dict:
                 "properties": {
                     "data": {
                         "type": "nested",
-                        "dynamic": True  # Allow dynamic fields in data array
+                        "dynamic": True,  # Allow dynamic fields in data array
                     },
                     "schema": {
                         "type": "object",
@@ -201,8 +201,8 @@ def es_mapping_for_field(field: Field) -> dict:
                                 "properties": {
                                     "name": {"type": "keyword"},
                                     "type": {"type": "keyword"},
-                                    "extDtype": {"type": "keyword"}
-                                }
+                                    "extDtype": {"type": "keyword"},
+                                },
                             },
                             "metadata": {
                                 "type": "object",
@@ -212,16 +212,16 @@ def es_mapping_for_field(field: Field) -> dict:
                                     "version_id": {"type": "keyword"},
                                     "last_modified": {"type": "date"},
                                     "version_tag": {"type": "keyword"},
-                                    "is_latest": {"type": "boolean"}
-                                }
+                                    "is_latest": {"type": "boolean"},
+                                },
                             },
                             "schemaName": {"type": "keyword"},
                             "version_id": {"type": "keyword"},
-                            "is_latest": {"type": "boolean"}
-                        }
+                            "is_latest": {"type": "boolean"},
+                        },
                     },
-                    "reference": {"type": "keyword"}
-                }
+                    "reference": {"type": "keyword"},
+                },
             }
         }
     elif field.is_image:
@@ -254,8 +254,12 @@ def es_mapping_for_question(question: Question) -> dict:
     if question_type == QuestionType.rating:
         # See https://www.elastic.co/guide/en/elasticsearch/reference/current/number.html
         return {"type": "integer"}
-    elif question_type in [QuestionType.label_selection, QuestionType.dynamic_label_selection,
-                           QuestionType.multi_label_selection, QuestionType.dynamic_multi_label_selection]:
+    elif question_type in [
+        QuestionType.label_selection,
+        QuestionType.dynamic_label_selection,
+        QuestionType.multi_label_selection,
+        QuestionType.dynamic_multi_label_selection,
+    ]:
         return {"type": "keyword"}
     else:
         # The rest of the question types will be ignored for now. Once we have a filters feat we can design
@@ -916,11 +920,13 @@ class BaseElasticAndOpenSearchEngine(SearchEngine):
     def _map_record_fields_to_es(cls, fields: dict, dataset_fields: List[Field]) -> dict:
         for field in dataset_fields:
             if field.is_image:
-                fields[field.name] = None
-            elif field.is_custom:
-                fields[field.name] = str(fields.get(field.name, ""))
-            else:
-                fields[field.name] = fields.get(field.name, "")
+                continue
+
+            value = fields.get(field.name)
+            if field.is_custom and value is not None:
+                value = str(value)
+
+            fields[field.name] = value
 
         return fields
 
@@ -952,7 +958,6 @@ class BaseElasticAndOpenSearchEngine(SearchEngine):
     @abstractmethod
     def _mapping_for_vector_settings(self, vector_settings: VectorSettings) -> dict:
         """Defines one mapping property configuration for a vector_setting definition"""
-        pass
 
     @abstractmethod
     async def _request_similarity_search(
@@ -968,27 +973,22 @@ class BaseElasticAndOpenSearchEngine(SearchEngine):
         Applies the similarity search request based on a vector configuration, a vector value,
         the `k` number of results to retrieve and an optional filter configuration to apply
         """
-        pass
 
     @abstractmethod
     async def _create_index_request(self, index_name: str, mappings: dict, settings: dict) -> None:
         """Executes request for index creation"""
-        pass
 
     @abstractmethod
     async def _delete_index_request(self, index_name: str):
         """Executes request for index deletion"""
-        pass
 
     @abstractmethod
     async def _update_document_request(self, index_name: str, id: str, body: dict):
         """Executes request for index document (partial) update"""
-        pass
 
     @abstractmethod
     async def put_index_mapping_request(self, index: str, mappings: dict):
         """Executes request for index mapping (partial) update"""
-        pass
 
     @abstractmethod
     async def _index_search_request(
@@ -1001,14 +1001,11 @@ class BaseElasticAndOpenSearchEngine(SearchEngine):
         aggregations: Optional[dict] = None,
     ) -> dict:
         """Executes request for search documents on a index"""
-        pass
 
     @abstractmethod
     async def _index_exists_request(self, index_name: str) -> bool:
         """Executes request for check if index exists"""
-        pass
 
     @abstractmethod
     async def _bulk_op_request(self, actions: List[Dict[str, Any]]):
         """Executes request for bulk operations"""
-        pass

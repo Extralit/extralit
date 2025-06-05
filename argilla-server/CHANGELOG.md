@@ -16,6 +16,17 @@ These are the section headers that we use:
 
 ## [Extralit] [0.5.0](https://github.com/extralit/extralit/compare/v0.3.0...v0.5.0)
 
+## [Argilla] [2.7.1](https://github.com/argilla-io/argilla/compare/v2.6.0...v2.7.1)
+
+### Added
+
+- Added support to create users with predefined ids. ([#5786](https://github.com/argilla-io/argilla/pull/5786))
+- Added support to create workspaces with predefined ids. ([#5786](https://github.com/argilla-io/argilla/pull/5786))
+
+### Fixed
+
+- Fixed error when indexing records with missing chat fields. ([#5787](https://github.com/argilla-io/argilla/pull/5787))
+- Prevent store empty custom fields as `None`. ([#5787](https://github.com/argilla-io/argilla/pull/5787))
 
 ## [Argilla] [2.6.0](https://github.com/argilla-io/argilla/compare/v2.5.0...v2.6.0)
 
@@ -75,7 +86,7 @@ These are the section headers that we use:
 
 ### Added
 
-- Added new `POST /api/v1/datasets/:dataset_id/import` to import datasets from Hugging Face as a background job. ([#5572](https://github.com/argilla-io/argilla/pull/5572))
+- Added new `POST /api/v1/datasets/:dataset_id/import` endpoint to import datasets from Hugging Face as a background job. ([#5572](https://github.com/argilla-io/argilla/pull/5572))
 - Added new `metadata` attribute for endpoints getting, creating and updating Datasets so now it is possible to store metadata associated to a dataset. ([#5586](https://github.com/argilla-io/argilla/pull/5586))
 - Added new validation to avoid the creation of records with empty `fields` attributes. ([#5639](https://github.com/argilla-io/argilla/pull/5639))
 
@@ -253,7 +264,7 @@ These are the section headers that we use:
 
 ### Fixed
 - Fixed the k8s-tilt devcontainer for extralit
-- Fixed the weaviate url for /examples/deployments/k8s/extralit-deployment.yaml 
+- Fixed the weaviate url for /examples/deployments/k8s/extralit-deployment.yaml
 
 
 ## [Extralit] [v0.2.1](https://github.com/extralit/extralit/compare/v0.2.0...v0.2.1)

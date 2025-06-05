@@ -278,7 +278,6 @@ class SpanQuestionSettingsUpdate(UpdateSchema):
     allow_overlapping: Optional[bool] = None
 
 
-# Table question
 class TableQuestionSettings(BaseModel):
     type: Literal[QuestionType.table]
 
