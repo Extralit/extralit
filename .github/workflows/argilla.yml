@@ -48,6 +48,12 @@ jobs:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+          cache-dependency-glob: "argilla/pdm.lock"
       - name: Setup PDM
         uses: pdm-project/setup-pdm@v4
         with:
@@ -55,9 +61,29 @@ jobs:
           cache: true
           cache-dependency-path: |
             argilla/pdm.lock
+      - name: Configure PDM to use uv virtual environments
+        run: |
+          # Get uv's venv path and store it
+          UV_VENV_PATH=$(uv python dir)
+          echo "UV virtual environment path: $UV_VENV_PATH"
+
+          # Configure PDM to use uv's virtual environment path
+          pdm config python.use_venv true
+          pdm config python.virtualenv_install_location "$UV_VENV_PATH"
+
+          # Create a virtual environment in uv's location
+          pdm venv create -n argilla-venv
+
+          # Activate the virtual environment for PDM
+          pdm use $(pdm venv list | grep argilla-venv | awk '{print $2}')
+
+          # Verify configuration
+          echo "PDM is using Python at: $(pdm info --python)"
+          echo "PDM virtual environment path: $(pdm info --venv)"
       - name: Install dependencies
         run: |
-          pdm install
+          pdm install --dev
+          pdm list
       - name: Wait for argilla server to start
         run: |
           while ! curl -XGET http://localhost:6900/api/_status; do sleep 5; done
