@@ -189,7 +189,7 @@ describe("Records", () => {
       expect(record.page).toEqual(expectedRecord.page);
       expect(record.metadata).toEqual(expectedRecord.metadata);
       expect(record.score.value).toEqual(expectedRecord.score.value);
-      expect(record.taskDistribution.status).toEqual(expectedRecord.taskDistribution.status);
+      expect(record.taskDistribution.isCompleted).toEqual(expectedRecord.taskDistribution.isCompleted);
       expect(record.insertedAt).toEqual(expectedRecord.insertedAt);
     });
 
@@ -1068,7 +1068,7 @@ describe("Records", () => {
       expect(records.records[0].datasetId).toEqual("1");
       expect(records.records[0].page).toEqual(3);
       expect(records.records[0].score.value).toEqual(1);
-      expect(records.records[0].taskDistribution.status).toEqual("pending");
+      expect(records.records[0].taskDistribution.isCompleted).toEqual(false);
       expect(records.records[0].insertedAt).toEqual(new Date("2021-01-01T00:00:00.000Z"));
       
       // Second record
@@ -1076,7 +1076,7 @@ describe("Records", () => {
       expect(records.records[1].datasetId).toEqual("1");
       expect(records.records[1].page).toEqual(4);
       expect(records.records[1].score.value).toEqual(1);
-      expect(records.records[1].taskDistribution.status).toEqual("pending");
+      expect(records.records[1].taskDistribution.isCompleted).toEqual(false);
       expect(records.records[1].insertedAt).toEqual(new Date("2021-01-01T00:00:00.000Z"));
     });
 
@@ -1142,7 +1142,7 @@ describe("Records", () => {
       expect(records.records[0].datasetId).toEqual("1");
       expect(records.records[0].page).toEqual(3);
       expect(records.records[0].score.value).toEqual(1);
-      expect(records.records[0].taskDistribution.status).toEqual("pending");
+      expect(records.records[0].taskDistribution.isCompleted).toEqual(false);
       expect(records.records[0].insertedAt).toEqual(new Date("2021-01-01T00:00:00.000Z"));
       
       // Second record - with REPLACED dataset ID
@@ -1150,7 +1150,7 @@ describe("Records", () => {
       expect(records.records[1].datasetId).toEqual("REPLACED");
       expect(records.records[1].page).toEqual(4);
       expect(records.records[1].score.value).toEqual(1);
-      expect(records.records[1].taskDistribution.status).toEqual("pending");
+      expect(records.records[1].taskDistribution.isCompleted).toEqual(false);
       expect(records.records[1].insertedAt).toEqual(new Date("2021-01-01T00:00:00.000Z"));
       expect(records.total).toBe(200);
     });
