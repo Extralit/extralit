@@ -39,7 +39,7 @@ from tests.factories import (
     VectorSettingsSyncFactory,
     VectorSyncFactory,
 )
-from ...test_utils import skip_on
+from tests.test_utils import skip_on
 
 HF_ORGANIZATION = "extralit-dev"
 HF_TOKEN = os.environ.get("HF_TOKEN_ARGILLA_INTERNAL_TESTING")
