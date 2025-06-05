@@ -102,17 +102,11 @@ jobs:
           cache-dependency-path: argilla-server/pdm.lock
           cache: true
 
-      - name: Configure PDM to use uv
+      - name: Install dependencies
         run: |
           pdm config use_uv true
           pdm config python.install_root "$(uv python dir)"
-
-      - name: Install dependencies
-        run: |
-          echo "Installing dependencies with dev packages..."
-          pdm install --dev
-          echo "Listing installed packages:"
-          pdm list
+          pdm install
 
       - name: Run tests 📈
         id: run-tests

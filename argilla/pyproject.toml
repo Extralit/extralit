@@ -127,8 +127,8 @@ dev = [
 ]
 
 [tool.pdm.scripts]
-test = { cmd = "python -m pytest tests", env_file = ".env.test" }
-test-cov = { cmd = "python -m pytest tests --cov=argilla --cov-report=term --cov-report=xml", env_file = ".env.test" }
+test = { cmd = "pytest tests", env_file = ".env.test" }
+test-cov = { cmd = "pytest tests --cov=argilla --cov-report=term --cov-report=xml", env_file = ".env.test" }
 lint = "ruff check"
 format = "black ."
 all = { composite = ["format", "lint", "test"] }
