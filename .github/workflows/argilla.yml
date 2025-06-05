@@ -48,6 +48,13 @@ jobs:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          pyproject-file: "argilla/pyproject.toml"
+          enable-cache: true
+          python-version: ${{ matrix.python-version }}
+          cache-dependency-glob: "argilla/pdm.lock"
       - name: Setup PDM
         uses: pdm-project/setup-pdm@v4
         with:
@@ -57,7 +64,10 @@ jobs:
             argilla/pdm.lock
       - name: Install dependencies
         run: |
+          pdm config use_uv true
+          pdm config python.install_root "$(uv python dir)"
           pdm install
+          pdm list
       - name: Wait for argilla server to start
         run: |
           while ! curl -XGET http://localhost:6900/api/_status; do sleep 5; done
@@ -155,6 +165,12 @@ jobs:
           name: argilla
           path: argilla/dist
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          pyproject-file: "argilla/pyproject.toml"
+          enable-cache: true
+          cache-dependency-glob: "argilla/pdm.lock"
       - name: Setup PDM
         uses: pdm-project/setup-pdm@v4
         with:
@@ -163,6 +179,10 @@ jobs:
           cache-dependency-path: |
             argilla/pdm.lock
 
+      - name: Configure PDM with uv
+        run: |
+          pdm config use_uv true
+          pdm config python.install_root "$(uv python dir)"
       - name: Read package info
         run: |
           PACKAGE_VERSION=$(pdm show --version)
