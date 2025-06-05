@@ -95,7 +95,7 @@ jobs:
           path: argilla-frontend/dist
 
   build_dev_docker_image:
-    name: Build development argilla-fronted docker image
+    name: Build development argilla-frontend docker image
     needs: build
     uses: ./.github/workflows/argilla-frontend.build-push-dev-frontend-docker.yml
     if: |

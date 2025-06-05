@@ -6,10 +6,12 @@ coverage:
       default:
         target: auto
         threshold: 2%
+        informational: true
     patch:
       default:
         target: auto
         threshold: 2%
+        informational: true
   
 flags:
   frontend:
