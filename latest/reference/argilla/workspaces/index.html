@@ -3860,9 +3860,9 @@
 </span><span id="__span-0-54"><a id="__codelineno-0-54" name="__codelineno-0-54"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes a Workspace object with a client and a name or id</span>
 </span><span id="__span-0-55"><a id="__codelineno-0-55" name="__codelineno-0-55"></a>
 </span><span id="__span-0-56"><a id="__codelineno-0-56" name="__codelineno-0-56"></a><span class="sd">        Parameters:</span>
-</span><span id="__span-0-57"><a id="__codelineno-0-57" name="__codelineno-0-57"></a><span class="sd">            client (Argilla): The client used to interact with Argilla</span>
-</span><span id="__span-0-58"><a id="__codelineno-0-58" name="__codelineno-0-58"></a><span class="sd">            name (str): The name of the workspace</span>
-</span><span id="__span-0-59"><a id="__codelineno-0-59" name="__codelineno-0-59"></a><span class="sd">            id (UUID): The id of the workspace</span>
+</span><span id="__span-0-57"><a id="__codelineno-0-57" name="__codelineno-0-57"></a><span class="sd">            name (str): The name of the workspace</span>
+</span><span id="__span-0-58"><a id="__codelineno-0-58" name="__codelineno-0-58"></a><span class="sd">            id (UUID): The id of the workspace. If provided before a .create, the workspace will be created with this ID</span>
+</span><span id="__span-0-59"><a id="__codelineno-0-59" name="__codelineno-0-59"></a><span class="sd">            client (Argilla): The client used to interact with Argilla</span>
 </span><span id="__span-0-60"><a id="__codelineno-0-60" name="__codelineno-0-60"></a>
 </span><span id="__span-0-61"><a id="__codelineno-0-61" name="__codelineno-0-61"></a><span class="sd">        Returns:</span>
 </span><span id="__span-0-62"><a id="__codelineno-0-62" name="__codelineno-0-62"></a><span class="sd">            Workspace: The initialized workspace object</span>
@@ -4207,22 +4207,6 @@
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>client</code></td>
-            <td>
-                  <code><span title="argilla.client.Argilla">Argilla</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The client used to interact with Argilla</p>
-<!-- General -->
-<!-- Argilla specific -->
-              </div>
-            </td>
-            <td>
-                  <code>None</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
             <td><code>name</code></td>
             <td>
                   <code>str</code>
@@ -4245,7 +4229,23 @@
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The id of the workspace</p>
+                <p>The id of the workspace. If provided before a .create, the workspace will be created with this ID</p>
+<!-- General -->
+<!-- Argilla specific -->
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>client</code></td>
+            <td>
+                  <code><span title="argilla.client.Argilla">Argilla</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The client used to interact with Argilla</p>
 <!-- General -->
 <!-- Argilla specific -->
               </div>
@@ -4312,9 +4312,9 @@
 </span><span id="__span-0-54"><a id="__codelineno-0-54" name="__codelineno-0-54"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Initializes a Workspace object with a client and a name or id</span>
 </span><span id="__span-0-55"><a id="__codelineno-0-55" name="__codelineno-0-55"></a>
 </span><span id="__span-0-56"><a id="__codelineno-0-56" name="__codelineno-0-56"></a><span class="sd">    Parameters:</span>
-</span><span id="__span-0-57"><a id="__codelineno-0-57" name="__codelineno-0-57"></a><span class="sd">        client (Argilla): The client used to interact with Argilla</span>
-</span><span id="__span-0-58"><a id="__codelineno-0-58" name="__codelineno-0-58"></a><span class="sd">        name (str): The name of the workspace</span>
-</span><span id="__span-0-59"><a id="__codelineno-0-59" name="__codelineno-0-59"></a><span class="sd">        id (UUID): The id of the workspace</span>
+</span><span id="__span-0-57"><a id="__codelineno-0-57" name="__codelineno-0-57"></a><span class="sd">        name (str): The name of the workspace</span>
+</span><span id="__span-0-58"><a id="__codelineno-0-58" name="__codelineno-0-58"></a><span class="sd">        id (UUID): The id of the workspace. If provided before a .create, the workspace will be created with this ID</span>
+</span><span id="__span-0-59"><a id="__codelineno-0-59" name="__codelineno-0-59"></a><span class="sd">        client (Argilla): The client used to interact with Argilla</span>
 </span><span id="__span-0-60"><a id="__codelineno-0-60" name="__codelineno-0-60"></a>
 </span><span id="__span-0-61"><a id="__codelineno-0-61" name="__codelineno-0-61"></a><span class="sd">    Returns:</span>
 </span><span id="__span-0-62"><a id="__codelineno-0-62" name="__codelineno-0-62"></a><span class="sd">        Workspace: The initialized workspace object</span>

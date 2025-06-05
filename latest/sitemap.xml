@@ -2,342 +2,342 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://docs.extralit.ai/latest/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/faq/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/glossary/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/admin_guide/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/admin_guide/annotate/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/admin_guide/custom_fields/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/admin_guide/dataset/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/admin_guide/distribution/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/admin_guide/docker_deployment/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/admin_guide/import_export/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/admin_guide/k8s_deployment/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/admin_guide/migrate_from_legacy_datasets/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/admin_guide/query/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/admin_guide/record/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/admin_guide/upgrading/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/admin_guide/use_markdown_to_format_rich_content/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/admin_guide/user/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/admin_guide/webhooks/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/admin_guide/webhooks_internals/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/admin_guide/workspace/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/community/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/community/adding_language/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/community/changelog/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/community/contributor/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/community/developer/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/community/release_guide/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/community/integrations/llamaindex_rag_github/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/getting_started/development_setup/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/getting_started/faq/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/getting_started/how-to-configure-argilla-on-huggingface/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/getting_started/how-to-deploy-argilla-with-docker/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/getting_started/installation/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/getting_started/quickstart/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/notebooks/quickstart_workflow_feedback/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/argilla/SUMMARY/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/argilla/client/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/argilla/markdown/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/argilla/search/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/argilla/users/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/argilla/webhooks/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/argilla/workspaces/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/argilla/datasets/dataset_records/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/argilla/datasets/datasets/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/argilla/records/metadata/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/argilla/records/records/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/argilla/records/responses/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/argilla/records/suggestions/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/argilla/records/vectors/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/argilla/settings/fields/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/argilla/settings/metadata_property/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/argilla/settings/questions/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/argilla/settings/settings/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/argilla/settings/task_distribution/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/argilla/settings/vectors/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/argilla-server/configuration/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/argilla-server/telemetry/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/tutorials/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/tutorials/image_classification/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/tutorials/image_preference/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/tutorials/text_classification/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/tutorials/token_classification/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/user_guide/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/user_guide/command_line_interface/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/user_guide/core_concepts/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/user_guide/documents_import/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/user_guide/multi_schemas/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/user_guide/overview/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/user_guide/schema_definition/</loc>
-         <lastmod>2025-06-04</lastmod>
+         <lastmod>2025-06-05</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>
