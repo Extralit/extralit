@@ -95,7 +95,7 @@ async def delete_workspace(
     except Exception as e:
         # Log the error but continue with workspace deletion
         print(f"Error deleting bucket for workspace {workspace.name}: {str(e)}")
-    
+
     try:
         return await accounts.delete_workspace(db, workspace)
     except NotUniqueError as e:
@@ -105,7 +105,9 @@ async def delete_workspace(
     except Exception as e:
         # Handle any other unexpected errors
         print(f"Error deleting workspace {workspace.id}: {str(e)}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error deleting workspace: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error deleting workspace: {str(e)}"
+        )
 
 
 @router.get("/me/workspaces", response_model=Workspaces)

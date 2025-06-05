@@ -64,7 +64,7 @@ from argilla_server.webhooks.v1.datasets import (
     notify_dataset_event as notify_dataset_event_v1,
 )
 from argilla_server.contexts import accounts, distribution
-from argilla_server.database import get_async_db
+from argilla_server.database import get_async_db  # noqa: F401
 from argilla_server.enums import DatasetStatus, UserRole
 from argilla_server.errors.future import NotUniqueError, UnprocessableEntityError
 from argilla_server.jobs import dataset_jobs

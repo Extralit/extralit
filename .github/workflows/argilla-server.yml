@@ -120,7 +120,7 @@ jobs:
       - name: Check test status
         if: steps.run-tests.outcome == 'failure'
         run: exit 1
-        
+
       - name: Upload test results to Codecov
         if: ${{ !cancelled() }}
         uses: codecov/test-results-action@v1

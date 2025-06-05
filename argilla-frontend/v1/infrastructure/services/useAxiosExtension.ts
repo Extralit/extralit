@@ -5,7 +5,6 @@ import { loadErrorHandler } from "../repositories/AxiosErrorHandler";
 
 type PublicAxiosConfig = {
   enableErrors: boolean;
-  removeAuthorizationHeader?: boolean;
 };
 
 export interface PublicNuxtAxiosInstance extends NuxtAxiosInstance {
@@ -16,6 +15,7 @@ export const useAxiosExtension = (context: Context) => {
   const makePublic = (config: PublicAxiosConfig) => {
     const $axios = context.$axios.create({
       withCredentials: false,
+      headers: { Authorization: undefined },
     });
 
     if (config.enableErrors) {
@@ -23,20 +23,6 @@ export const useAxiosExtension = (context: Context) => {
         ...context,
         $axios,
       });
-    }
-
-    // Remove Authorization header for get requests if specified
-    if (config.removeAuthorizationHeader) {
-      const originalGet = $axios.get;
-      $axios.get = function(...args) {
-        const config = args[1] || {};
-        if (!config.headers) {
-          config.headers = {};
-        }
-        config.headers['Authorization'] = undefined;
-        args[1] = config;
-        return originalGet.apply(this, args);
-      };
     }
 
     loadCache($axios);
@@ -50,7 +36,6 @@ export const useAxiosExtension = (context: Context) => {
       makePublic: (
         config: PublicAxiosConfig = {
           enableErrors: true,
-          removeAuthorizationHeader: false
         }
       ) => makePublic(config),
     } as PublicNuxtAxiosInstance;
