@@ -48,6 +48,12 @@ jobs:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+          cache-dependency-glob: "argilla/pdm.lock"
       - name: Setup PDM
         uses: pdm-project/setup-pdm@v4
         with:
@@ -55,9 +61,15 @@ jobs:
           cache: true
           cache-dependency-path: |
             argilla/pdm.lock
+      - name: Configure PDM to use uv
+        run: |
+          pdm config use_uv true
+          pdm config python.install_root "$(uv python dir)"
       - name: Install dependencies
         run: |
-          pdm install
+          pdm install -v
+          echo "Verifying installation with uv..."
+          pdm run python -c "import sys; print(f'Using Python {sys.version}')"
       - name: Wait for argilla server to start
         run: |
           while ! curl -XGET http://localhost:6900/api/_status; do sleep 5; done
@@ -71,20 +83,20 @@ jobs:
         continue-on-error: true
         run: |
           pdm run test-cov tests/unit
-      
+
       - name: Run integration tests
         id: run-integration
         continue-on-error: true
         run: |
           pdm run test-cov tests/integration
-      
+
       - name: Generate coverage report
         if: always()
         continue-on-error: true
         run: |
           pdm run coverage xml -o coverage.xml
           pdm run coverage report
-      
+
       - name: Upload test coverage
         if: always()
         uses: codecov/codecov-action@v5.4.3
@@ -113,7 +125,7 @@ jobs:
   publish_release:
     name: Publish Release
     runs-on: ubuntu-latest
-    if: ${{ github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' }}
+    if: ${{ github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' }}
 
     permissions:
       # This permission is needed for private repositories.
@@ -155,6 +167,13 @@ jobs:
           name: argilla
           path: argilla/dist
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version-file: argilla/pyproject.toml
+          enable-cache: true
+          cache-dependency-glob: "argilla/pdm.lock"
+
       - name: Setup PDM
         uses: pdm-project/setup-pdm@v4
         with:
@@ -162,6 +181,11 @@ jobs:
           python-version-file: argilla/pyproject.toml
           cache-dependency-path: |
             argilla/pdm.lock
+
+      - name: Configure PDM to use uv
+        run: |
+          pdm config use_uv true
+          pdm config python.install_root "$(uv python dir)"
 
       - name: Read package info
         run: |
@@ -178,7 +202,7 @@ jobs:
       - name: Test Installing 🍿
         continue-on-error: true
         run: |
-          pip3 install --index-url https://test.pypi.org/simple --no-deps  $PACKAGE_NAME==$PACKAGE_VERSION
+          uv pip install --index-url https://test.pypi.org/simple --no-deps $PACKAGE_NAME==$PACKAGE_VERSION
 
       - name: Publish Package to PyPI 🥩
         if: github.ref == 'refs/heads/main'
