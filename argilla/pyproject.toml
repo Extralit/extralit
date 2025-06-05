@@ -37,12 +37,14 @@ dependencies = [
     "pandera[io] ~= 0.19.3",
     "numpy >= 1.26.4,<2.0.0",
     "spacy ~= 3.7.2",
-    "pyarrow == 14.*",
+    "pyarrow >= 14.0.0, != 14.0.2; python_version < '3.13'",
+    "pyarrow >= 15.0.0; python_version >= '3.13'",
     "natsort ~= 8.4.0",
     "rapidfuzz ~= 3.8.1",
     "dill ~= 0.3.8",
     "json-repair ~= 0.19.2",
-    "fastparquet",
+    "fastparquet >= 2023.10.0; python_version < '3.13'",
+    "fastparquet >= 2024.4.0; python_version >= '3.13'",
     "tiktoken",
     "pymupdf",
 
@@ -80,7 +82,7 @@ pdf = [
 legacy = ["argilla-v1[listeners]"]
 
 [build-system]
-requires = ["pdm-backend"]
+requires = ["pdm-backend>=2.0.0", "setuptools>=68.0.0"]
 build-backend = "pdm.backend"
 
 [tool.ruff]
@@ -120,7 +122,8 @@ dev = [
     "CairoSVG >= 2.7.1",
     "mknotebooks >= 0.8.0",
     "pytest-retry>=1.5",
-    "pyarrow>=14.0.0",
+    "pyarrow>=15.0.0; python_version >= '3.13'",
+    "pyarrow>=14.0.0; python_version < '3.13'",
 ]
 
 [tool.pdm.scripts]
