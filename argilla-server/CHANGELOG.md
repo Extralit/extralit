@@ -16,7 +16,20 @@ These are the section headers that we use:
 
 ## [Extralit] [0.5.0](https://github.com/extralit/extralit/compare/v0.3.0...v0.5.0)
 
-## [Argilla] [2.7.1](https://github.com/argilla-io/argilla/compare/v2.6.0...v2.7.1)
+## [Argilla] [2.8.0](https://github.com/argilla-io/argilla/compare/v2.7.1...v2.8.0)
+
+## Added
+
+- Add configuration switch to use Redis cluster vs Redis standalone via ARGILLA_REDIS_USE_CLUSTER ([#5799](https://github.com/argilla-io/argilla/pull/5799))
+
+### Fixed
+
+- Fixed error when computing user progress with PostgreSQL database. ([#5795](https://github.com/argilla-io/argilla/pull/5795))
+- Fixed error when updating records with PostgreSQL database. ([#5795](https://github.com/argilla-io/argilla/pull/5795))
+
+## [Argilla] [2.7.1](https://github.com/argilla-io/argilla/compare/v2.7.0...v2.7.1)
+
+## [Argilla] [2.7.0](https://github.com/argilla-io/argilla/compare/v2.6.0...v2.7.0)
 
 ### Added
 

@@ -19,6 +19,7 @@ from typing import TYPE_CHECKING, List, Optional, Union, overload
 from uuid import UUID
 
 from argilla._api._base import ResourceAPI
+from argilla._api._client import DEFAULT_HTTP_CONFIG  # noqa: F401
 from argilla._api._webhooks import WebhookModel
 from argilla._exceptions import ArgillaError, NotFoundError
 from argilla._helpers import GenericIterator
@@ -295,7 +296,7 @@ class Datasets(Sequence["Dataset"], ResourceHTMLReprMixin):
             raise ArgillaError("One of 'name', 'id', or 'workspace' must be provided")
 
     def __iter__(self):
-        return self._Iterator(self.list())
+        return self._Iterator([self._from_model(model) for model in self._api.list()])
 
     @overload
     @abstractmethod
@@ -328,7 +329,7 @@ class Datasets(Sequence["Dataset"], ResourceHTMLReprMixin):
         return dataset
 
     def list(self) -> List["Dataset"]:
-        return [self._from_model(model) for model in self._api.list()]
+        return list(self)
 
     ############################
     # Private methods

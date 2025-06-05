@@ -38,6 +38,7 @@ argilla:
 # To disable it, set `elasticsearch.useOperator` to `false`
 # and set `externalElasticsearch.host` to the host of your existing Elasticsearch instance.
 elasticsearch:
+  sslVerify: true
   useOperator: true
   version: 8.5.3
   nodeCount: 1
@@ -79,6 +80,12 @@ redis:
         limits:
           cpu: 1
           memory: 2Gi
+
+externalRedis:
+  enabled: false
+  url: "redis://localhost:6379/0"
+  is_redis_cluster: false
+
 serviceAccount:
   create: false
 

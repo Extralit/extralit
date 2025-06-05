@@ -14,6 +14,8 @@ These are the section headers that we use:
 * "Security" in case of vulnerabilities.
 -->
 
+## [Argilla] [2.8.0](https://github.com/argilla-io/argilla/compare/v2.6.0...v2.8.0)
+
 ## [Argilla] [2.7.0](https://github.com/argilla-io/argilla/compare/v2.6.0...v2.7.0)
 
 ### Added

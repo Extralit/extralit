@@ -15,6 +15,12 @@ These are the section headers that we use:
 -->
 
 
+## [Argilla] [2.8.0](https://github.com/argilla-io/argilla/compare/v2.7.1...v2.8.0)
+
+### Added
+
+- Added Japanese language ([#5816](https://github.com/argilla-io/argilla/pull/5816)). Contributed by @Tomoya-Matsubara.
+
 ## [Argilla] [2.7.1](https://github.com/argilla-io/argilla/compare/v2.7.0...v2.7.1)
 
 ### Fixed

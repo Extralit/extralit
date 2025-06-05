@@ -176,7 +176,6 @@ class WorkspaceSyncFactory(BaseSyncFactory):
             print(f"Error creating bucket for workspace {workspace.name}: {str(e)}")
         return workspace
 
-
 class WorkspaceFactory(BaseFactory):
     class Meta:
         model = Workspace

@@ -221,7 +221,8 @@ nav:
   - API Reference:
       - Argilla Python SDK: reference/argilla/
       - FastAPI Server:
-          - Server configuration: reference/argilla-server/configuration.md
+        - Server configuration: reference/argilla-server/configuration.md
+        - OAuth2 configuration: reference/argilla-server/oauth2_configuration.md
       - Telemetry:
           - Server Telemetry: reference/argilla-server/telemetry.md
   - FAQ: getting_started/faq.md
