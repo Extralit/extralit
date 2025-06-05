@@ -61,25 +61,19 @@ jobs:
           cache: true
           cache-dependency-path: |
             argilla/pdm.lock
-      - name: Configure PDM to use uv virtual environments
+      - name: Configure PDM to use uv
         run: |
-          # Get uv's venv path and store it
-          UV_VENV_PATH=$(uv python dir)
-          echo "UV virtual environment path: $UV_VENV_PATH"
+          # Configure PDM to use uv as its backend
+          echo "Configuring PDM to use uv..."
+          pdm config use_uv true
 
-          # Configure PDM to use uv's virtual environment path
-          pdm config python.use_venv true
-          pdm config python.virtualenv_install_location "$UV_VENV_PATH"
-
-          # Create a virtual environment in uv's location
-          pdm venv create -n argilla-venv
-
-          # Activate the virtual environment for PDM
-          pdm use $(pdm venv list | grep argilla-venv | awk '{print $2}')
+          # Reuse Python installations from uv
+          # This is the correct way to configure PDM with uv according to docs
+          pdm config python.install_root "$(uv python dir)"
 
           # Verify configuration
           echo "PDM is using Python at: $(pdm info --python)"
-          echo "PDM virtual environment path: $(pdm info --venv)"
+          echo "PDM Python installation root: $(pdm config python.install_root)"
       - name: Install dependencies
         run: |
           pdm install --dev
