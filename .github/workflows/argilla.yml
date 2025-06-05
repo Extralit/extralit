@@ -80,6 +80,7 @@ jobs:
       
       - name: Generate coverage report
         if: always()
+        continue-on-error: true
         run: |
           pdm run coverage xml -o coverage.xml
           pdm run coverage report
@@ -91,6 +92,7 @@ jobs:
           file: coverage.xml
           flags: argilla
           token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
 
       - name: Check test status
         if: steps.run-tests.outcome == 'failure'
