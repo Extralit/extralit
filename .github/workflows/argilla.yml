@@ -61,14 +61,11 @@ jobs:
           cache: true
           cache-dependency-path: |
             argilla/pdm.lock
-      - name: Configure PDM to use uv
-        run: |
-          pdm config use_uv true
       - name: Install dependencies
         run: |
-          echo "Installing dependencies with dev packages..."
+          pdm config use_uv true
+          pdm config python.install_root "$(uv python dir)"
           pdm install --dev
-          echo "Listing installed packages:"
           pdm list
       - name: Wait for argilla server to start
         run: |
@@ -167,13 +164,6 @@ jobs:
           name: argilla
           path: argilla/dist
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
-        with:
-          pyproject-file: "argilla-server/pyproject.toml"
-          enable-cache: true
-          cache-dependency-glob: "argilla/pdm.lock"
-
       - name: Setup PDM
         uses: pdm-project/setup-pdm@v4
         with:
@@ -181,10 +171,6 @@ jobs:
           python-version-file: argilla/pyproject.toml
           cache-dependency-path: |
             argilla/pdm.lock
-
-      - name: Configure PDM to use uv
-        run: |
-          pdm config use_uv true
 
       - name: Read package info
         run: |
@@ -201,7 +187,7 @@ jobs:
       - name: Test Installing 🍿
         continue-on-error: true
         run: |
-          uv pip install --index-url https://test.pypi.org/simple --no-deps $PACKAGE_NAME==$PACKAGE_VERSION
+          pip3 install --index-url https://test.pypi.org/simple --no-deps  $PACKAGE_NAME==$PACKAGE_VERSION
 
       - name: Publish Package to PyPI 🥩
         if: github.ref == 'refs/heads/main'
