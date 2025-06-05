@@ -68,7 +68,7 @@ jobs:
       - name: Install dependencies
         run: |
           echo "Installing dependencies with dev packages..."
-          pdm install --dev -v
+          pdm install --dev
           echo "Listing installed packages:"
           pdm list
       - name: Wait for argilla server to start
