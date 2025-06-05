@@ -48,6 +48,12 @@ jobs:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
+      - name: Get date for cache
+        id: get-date
+        run: echo "today=$(/bin/date -u '+%Y%m%d')" >> $GITHUB_OUTPUT
+        shell: bash
+        working-directory: .
+
       - name: Install uv
         uses: astral-sh/setup-uv@v5
         with:
@@ -62,6 +68,21 @@ jobs:
           cache: true
           cache-dependency-path: |
             argilla/pdm.lock
+      - name: Configure uv cache
+        run: |
+          mkdir -p ~/.cache/uv
+          echo "UV_CACHE_DIR=~/.cache/uv" >> $GITHUB_ENV
+
+      - name: Cache uv pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ matrix.python-version }}-${{ steps.get-date.outputs.today }}-${{ hashFiles('argilla/pyproject.toml', 'argilla/pdm.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-${{ matrix.python-version }}-${{ steps.get-date.outputs.today }}-
+            ${{ runner.os }}-uv-${{ matrix.python-version }}-
+            ${{ runner.os }}-uv-
+
       - name: Install dependencies
         env:
           PDM_IGNORE_ACTIVE_VENV: 1
@@ -69,6 +90,7 @@ jobs:
           pdm config use_uv true
           pdm config python.install_root "$(uv python dir)"
           pdm install
+          uv cache prune --ci
       - name: Wait for argilla server to start
         run: |
           while ! curl -XGET http://localhost:6900/api/_status; do sleep 5; done
