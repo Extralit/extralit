@@ -111,7 +111,7 @@ jobs:
 
       - name: Upload test coverage
         if: always()
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5.4.3
         with:
           file: coverage.xml
           flags: argilla-server

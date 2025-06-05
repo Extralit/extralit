@@ -100,6 +100,7 @@ path = "src/argilla/_version.py"
 dev = [
     "ipython>=8.12.3",
     "pytest>=7.4.4",
+    "pytest-cov>=4.1.0",
     "flake8>=5.0.4",
     "ruff>=0.1.12",
     "pytest-mock>=3.12.0",
@@ -124,6 +125,7 @@ dev = [
 
 [tool.pdm.scripts]
 test = { cmd = "pytest tests", env_file = ".env.test" }
+test-cov = { cmd = "pytest tests --cov=argilla --cov-report=term --cov-report=xml", env_file = ".env.test" }
 lint = "ruff check"
 format = "black ."
 all = { composite = ["format", "lint", "test"] }

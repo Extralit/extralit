@@ -70,13 +70,13 @@ jobs:
         id: run-tests
         continue-on-error: true
         run: |
-          pdm run test tests/unit -vs --cov=argilla
+          pdm run test-cov tests/unit
       
       - name: Run integration tests
         id: run-integration
         continue-on-error: true
         run: |
-          pdm run test tests/integration --cov=argilla --cov-append
+          pdm run test-cov tests/integration
       
       - name: Generate coverage report
         if: always()
@@ -87,7 +87,7 @@ jobs:
       
       - name: Upload test coverage
         if: always()
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5.4.3
         with:
           file: coverage.xml
           flags: argilla
