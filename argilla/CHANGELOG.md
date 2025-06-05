@@ -14,6 +14,18 @@ These are the section headers that we use:
 * "Security" in case of vulnerabilities.
 -->
 
+## [Argilla] [2.7.0](https://github.com/argilla-io/argilla/compare/v2.6.0...v2.7.0)
+
+### Added
+
+- Return similarity score when searching by similarity. ([#5778](https://github.com/argilla-io/argilla/pull/5778))
+- Added support to create users with predefined ids. ([#5786](https://github.com/argilla-io/argilla/pull/5786))
+- Added support to create workspaces with predefined ids. ([#5786](https://github.com/argilla-io/argilla/pull/5786))
+
+### Fixed
+
+- Fixed connection error when passing `verify=False` in the argilla client initialization. ([#5548](https://github.com/argilla-io/argilla/issues/5548)
+
 ## [Argilla] [2.6.0](https://github.com/argilla-io/argilla/compare/v2.5.0...v2.6.0)
 
 ### Fixed
@@ -86,6 +98,7 @@ These are the section headers that we use:
 
 ### Changed
 
+- User parameters can now be updated using the client ([#5614](https://github.com/argilla-io/argilla/issues/5614))
 - Changed `Dataset.from_hub` method to open configure URL when `settings="ui"`. ([#5622](https://github.com/argilla-io/argilla/pull/5622))
 - Terms metadata properties accept other values than `str`. ([#5594](https://github.com/argilla-io/argilla/pull/5594))
 - Added support for `with_vectors` while fetching records along with a search query. ([#5638](https://github.com/argilla-io/argilla/pull/5638))

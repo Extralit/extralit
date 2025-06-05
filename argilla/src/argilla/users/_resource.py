@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -47,8 +47,8 @@ class User(Resource):
         last_name: Optional[str] = None,
         role: Optional[str] = None,
         password: Optional[str] = None,
-        client: Optional["Argilla"] = None,
         id: Optional[UUID] = None,
+        client: Optional["Argilla"] = None,
         _model: Optional[UserModel] = None,
     ) -> None:
         """Initializes a User object with a client and a username
@@ -59,12 +59,14 @@ class User(Resource):
             last_name (str): The last name of the user
             role (str): The role of the user, either 'annotator', admin, or 'owner'
             password (str): The password of the user
+            id (UUID): The ID of the user. If provided before a .create, the will be created with this ID
             client (Argilla): The client used to interact with Argilla
 
         Returns:
             User: The initialized user object
         """
         from argilla.client.core import Argilla
+
         client = client or Argilla._get_default()
         super().__init__(client=client, api=client.api.users)
 
