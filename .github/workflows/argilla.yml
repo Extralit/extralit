@@ -70,7 +70,7 @@ jobs:
         id: run-tests
         continue-on-error: true
         run: |
-          pdm run test tests/unit -vs --cov=argilla --cov-report=term
+          pdm run test tests/unit -vs --cov=argilla
       
       - name: Run integration tests
         id: run-integration
