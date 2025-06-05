@@ -108,7 +108,11 @@ jobs:
           pdm config python.install_root "$(uv python dir)"
 
       - name: Install dependencies
-        run: pdm install
+        run: |
+          echo "Installing dependencies with dev packages..."
+          pdm install --dev -v
+          echo "Listing installed packages:"
+          pdm list
 
       - name: Run tests 📈
         id: run-tests
@@ -125,7 +129,7 @@ jobs:
         if: always()
         uses: codecov/codecov-action@v5.4.3
         with:
-          file: coverage.xml
+          files: coverage.xml
           flags: argilla-server
           token: ${{ secrets.CODECOV_TOKEN }}
 
