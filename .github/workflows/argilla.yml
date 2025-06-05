@@ -67,9 +67,7 @@ jobs:
           pdm config python.install_root "$(uv python dir)"
       - name: Install dependencies
         run: |
-          pdm install -v
-          echo "Verifying installation with uv..."
-          pdm run python -c "import sys; print(f'Using Python {sys.version}')"
+          pdm install
       - name: Wait for argilla server to start
         run: |
           while ! curl -XGET http://localhost:6900/api/_status; do sleep 5; done
