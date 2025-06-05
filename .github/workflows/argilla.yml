@@ -61,19 +61,16 @@ jobs:
           cache: true
           cache-dependency-path: |
             argilla/pdm.lock
-      - name: Configure PDM to use uv
+      - name: Configure PDM to use uv virtual environments
         run: |
-          # Configure PDM to use uv as its backend
-          echo "Configuring PDM to use uv..."
           pdm config use_uv true
-
-          # Reuse Python installations from uv
-          # This is the correct way to configure PDM with uv according to docs
-          pdm config python.install_root "$(uv python dir)"
+          pdm config python.install_root /home/runner/work/extralit/extralit/.venv
+          pdm use /home/runner/work/extralit/extralit/.venv/bin/python
+          pdm config python.use_venv true
 
           # Verify configuration
           echo "PDM is using Python at: $(pdm info --python)"
-          echo "PDM Python installation root: $(pdm config python.install_root)"
+          echo "PDM virtual environment: $(pdm info --venv)"
       - name: Install dependencies
         run: |
           pdm install --dev
