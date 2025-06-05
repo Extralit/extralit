@@ -74,18 +74,17 @@ def hf_dataset_name(hf_api: HfApi) -> Generator[str, None, None]:
     hf_api.delete_repo(hf_dataset_name, repo_type="dataset", missing_ok=True)
 
 
-def skip_on(exception: Exception, reason="Skip this test"):
-    # Func below is the real decorator and will receive the test function as param
+def skip_on(exception: HfHubHTTPError, reason="Skip this test"):
     def decorator_func(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
             try:
-                # Try to run the test
                 return f(*args, **kwargs)
             except exception:
-                # If exception of given type happens
-                # just swallow it and raise pytest.Skip with given reason
-                pytest.skip(reason)
+                if exception.response.status_code == 429:
+                    pytest.skip(reason)
+                else:
+                    raise exception
 
         return wrapper
 
