@@ -65,10 +65,20 @@ jobs:
         run: |
           npm run lint
 
-      - name: Run tests 🧪
+      - name: Run tests with coverage 🧪
+        id: run-tests
         continue-on-error: true
         run: |
-          npm run test
+          npm run test:coverage
+
+      - name: Upload frontend test coverage
+        if: always()
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage/lcov.info
+          flags: frontend
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
 
       - name: Build package 📦
         env:

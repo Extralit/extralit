@@ -18,6 +18,7 @@
     "e2e:report": "npx playwright show-report",
     "e2e:silent": "npx playwright test",
     "test": "jest --colors",
+    "test:coverage": "jest --colors --coverage",
     "test:watch": "jest --colors --watchAll"
   },
   "dependencies": {
