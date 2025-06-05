@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import wraps
 import os
 import pytest
 
@@ -39,7 +40,6 @@ from tests.factories import (
     VectorSettingsSyncFactory,
     VectorSyncFactory,
 )
-from tests.test_utils import skip_on
 
 HF_ORGANIZATION = "extralit-dev"
 HF_TOKEN = os.environ.get("HF_TOKEN_ARGILLA_INTERNAL_TESTING")
@@ -72,6 +72,24 @@ def hf_dataset_name(hf_api: HfApi) -> Generator[str, None, None]:
     yield hf_dataset_name
 
     hf_api.delete_repo(hf_dataset_name, repo_type="dataset", missing_ok=True)
+
+
+def skip_on(exception: Exception, reason="Skip this test"):
+    # Func below is the real decorator and will receive the test function as param
+    def decorator_func(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            try:
+                # Try to run the test
+                return f(*args, **kwargs)
+            except exception:
+                # If exception of given type happens
+                # just swallow it and raise pytest.Skip with given reason
+                pytest.skip(reason)
+
+        return wrapper
+
+    return decorator_func
 
 
 @pytest.mark.skipif(HF_TOKEN is None, reason="HF_TOKEN_ARGILLA_INTERNAL_TESTING is not defined")

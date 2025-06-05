@@ -13,7 +13,6 @@
 # limitations under the License.
 
 from typing import Any, Dict, List, Set
-from functools import wraps
 
 import pytest
 from argilla_server.utils import parse_query_param
@@ -85,21 +84,3 @@ def test_parse_query_param_raises_http_exception(config: Dict[str, Any], params:
 
     assert exc_info.value.status_code == 422
     assert exc_info.value.detail == expected_msg
-
-
-def skip_on(exception: Exception, reason="Skip this test"):
-    # Func below is the real decorator and will receive the test function as param
-    def decorator_func(f):
-        @wraps(f)
-        def wrapper(*args, **kwargs):
-            try:
-                # Try to run the test
-                return f(*args, **kwargs)
-            except exception:
-                # If exception of given type happens
-                # just swallow it and raise pytest.Skip with given reason
-                pytest.skip(reason)
-
-        return wrapper
-
-    return decorator_func
