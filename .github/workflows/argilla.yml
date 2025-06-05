@@ -68,7 +68,7 @@ jobs:
         run: |
           pdm config use_uv true
           pdm config python.install_root "$(uv python dir)"
-          pdm install --no-self
+          pdm install
           pdm list
       - name: Wait for argilla server to start
         run: |
@@ -81,24 +81,18 @@ jobs:
       - name: Run unit tests
         id: run-tests
         continue-on-error: true
-        env:
-          PDM_IGNORE_ACTIVE_VENV: 1
         run: |
           pdm run test-cov tests/unit
 
       - name: Run integration tests
         id: run-integration
         continue-on-error: true
-        env:
-          PDM_IGNORE_ACTIVE_VENV: 1
         run: |
           pdm run test-cov tests/integration
 
       - name: Generate coverage report
         if: always()
         continue-on-error: true
-        env:
-          PDM_IGNORE_ACTIVE_VENV: 1
         run: |
           pdm run coverage xml -o coverage.xml
           pdm run coverage report
@@ -117,8 +111,6 @@ jobs:
         run: exit 1
 
       - name: Build package
-        env:
-          PDM_IGNORE_ACTIVE_VENV: 1
         run: |
           pdm build
       - name: Upload artifact
@@ -190,14 +182,10 @@ jobs:
             argilla/pdm.lock
 
       - name: Configure PDM with uv
-        env:
-          PDM_IGNORE_ACTIVE_VENV: 1
         run: |
           pdm config use_uv true
           pdm config python.install_root "$(uv python dir)"
       - name: Read package info
-        env:
-          PDM_IGNORE_ACTIVE_VENV: 1
         run: |
           PACKAGE_VERSION=$(pdm show --version)
           PACKAGE_NAME=$(pdm show --name)
@@ -218,6 +206,4 @@ jobs:
 
       - name: Publish Package to PyPI 🥩
         if: github.ref == 'refs/heads/main'
-        env:
-          PDM_IGNORE_ACTIVE_VENV: 1
         run: pdm publish --no-build --username __token__ --password ${{ secrets.AR_PYPI_API_TOKEN }}
