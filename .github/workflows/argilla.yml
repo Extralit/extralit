@@ -65,13 +65,37 @@ jobs:
         run: |
           echo "HF_TOKEN_ARGILLA_INTERNAL_TESTING=${{ secrets.HF_TOKEN_ARGILLA_INTERNAL_TESTING }}" >> "$GITHUB_ENV"
           echo "Enable HF access token"
+
       - name: Run unit tests
-        run: |
-          pdm run test tests/unit
-      - name: Run integration tests
+        id: run-tests
         continue-on-error: true
         run: |
-          pdm run test tests/integration
+          pdm run test tests/unit -vs --cov=argilla --cov-report=term
+      
+      - name: Run integration tests
+        id: run-integration
+        continue-on-error: true
+        run: |
+          pdm run test tests/integration --cov=argilla --cov-append
+      
+      - name: Generate coverage report
+        if: always()
+        run: |
+          pdm run coverage xml -o coverage.xml
+          pdm run coverage report
+      
+      - name: Upload test coverage
+        if: always()
+        uses: codecov/codecov-action@v4
+        with:
+          file: coverage.xml
+          flags: argilla
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Check test status
+        if: steps.run-tests.outcome == 'failure'
+        run: exit 1
+
       - name: Build package
         run: |
           pdm build
