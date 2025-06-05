@@ -64,13 +64,7 @@ jobs:
       - name: Configure PDM and virtual environment
         run: |
           pdm config use_uv true
-          pdm config python.use_venv false
-
-          mkdir -p /home/runner/work/extralit/extralit/.venv
-          python -m venv /home/runner/work/extralit/extralit/.venv
           pdm use /home/runner/work/extralit/extralit/.venv/bin/python
-
-          /home/runner/work/extralit/extralit/.venv/bin/python -m pip install --upgrade pip setuptools wheel
 
           echo "PDM is using Python at: $(pdm info --python)"
           echo "PDM virtual environment: $(pdm info --venv)"
