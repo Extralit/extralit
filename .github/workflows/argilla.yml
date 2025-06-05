@@ -48,12 +48,6 @@ jobs:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-          enable-cache: true
-          cache-dependency-glob: "argilla/pdm.lock"
       - name: Setup PDM
         uses: pdm-project/setup-pdm@v4
         with:
@@ -61,17 +55,9 @@ jobs:
           cache: true
           cache-dependency-path: |
             argilla/pdm.lock
-      - name: Configure PDM and virtual environment
-        run: |
-          pdm config use_uv true
-          pdm use /home/runner/work/extralit/extralit/.venv/bin/python
-
-          echo "PDM is using Python at: $(pdm info --python)"
-          echo "PDM virtual environment: $(pdm info --venv)"
       - name: Install dependencies
         run: |
-          pdm install --dev
-          pdm list
+          pdm install
       - name: Wait for argilla server to start
         run: |
           while ! curl -XGET http://localhost:6900/api/_status; do sleep 5; done
