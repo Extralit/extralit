@@ -48,20 +48,13 @@ jobs:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
-      - name: Get date for cache
-        id: get-date
-        run: |
-          echo "today=$(/bin/date -u '+%Y%m%d')" >> $GITHUB_OUTPUT
-          echo "pdm_hash=$(sha256sum argilla/pdm.lock | cut -d ' ' -f1)" >> $GITHUB_OUTPUT
-        shell: bash
-        working-directory: .
-
       - name: Install uv
         uses: astral-sh/setup-uv@v5
         with:
           pyproject-file: "argilla/pyproject.toml"
-          enable-cache: true
           python-version: ${{ matrix.python-version }}
+          enable-cache: true
+          ignore-nothing-to-cache: true
           cache-dependency-glob: "argilla/pdm.lock"
       - name: Setup PDM
         uses: pdm-project/setup-pdm@v4
@@ -70,23 +63,6 @@ jobs:
           cache: true
           cache-dependency-path: |
             argilla/pdm.lock
-      - name: Configure uv cache
-        run: |
-          mkdir -p ~/.cache/uv
-          echo "UV_CACHE_DIR=~/.cache/uv" >> $GITHUB_ENV
-          echo "UV_NO_WAIT=1" >> $GITHUB_ENV
-
-      - name: Cache uv pip packages
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache/uv
-            ~/.cache/pip
-          key: ${{ runner.os }}-uv-${{ matrix.python-version }}-${{ steps.get-date.outputs.pdm_hash }}
-          restore-keys: |
-            ${{ runner.os }}-uv-${{ matrix.python-version }}-
-            ${{ runner.os }}-uv-
-
       - name: Install dependencies
         env:
           PDM_IGNORE_ACTIVE_VENV: 1
@@ -96,7 +72,7 @@ jobs:
 
           # Special handling for Python 3.13
           if [[ "${{ matrix.python-version }}" == "3.13" ]]; then
-            pip install --only-binary=:all: spacy thinc pyarrow
+            uv pip install --only-binary=:all: spacy thinc pyarrow
           fi
 
           pdm install
@@ -108,15 +84,14 @@ jobs:
         run: |
           echo "HF_TOKEN_ARGILLA_INTERNAL_TESTING=${{ secrets.HF_TOKEN_ARGILLA_INTERNAL_TESTING }}" >> "$GITHUB_ENV"
           echo "Enable HF access token"
-
       - name: Run unit tests
-        id: run-tests
+        id: tests-unit
         continue-on-error: true
         run: |
             pdm run test-cov tests/unit
 
       - name: Run integration tests
-        id: run-integration
+        id: tests-integration
         continue-on-error: true
         run: |
             pdm run test-cov tests/integration
@@ -138,7 +113,7 @@ jobs:
           fail_ci_if_error: false
 
       - name: Check test status
-        if: steps.run-tests.outcome == 'failure'
+        if: steps.tests-unit.outcome == 'failure' || steps.tests-integration.outcome == 'failure'
         run: exit 1
 
       - name: Build package
