@@ -37,7 +37,9 @@ dependencies = [
     "pandera[io] ~= 0.19.3",
     "numpy >= 1.26.4,<2.0.0",
     "spacy ~= 3.7.2; python_version < '3.13'",
-    "spacy-wheel >= 3.8.0; python_version >= '3.13'",
+    "spacy >= 3.8.0; python_version >= '3.13' and python_version < '3.13.3'",
+    # Install spaCy with wheels only for Python 3.13.3+
+    "spacy-wheel >= 3.8.0; python_version >= '3.13.3'",
     "pyarrow >= 14.0.0, != 14.0.2; python_version < '3.13'",
     "pyarrow >= 15.0.0; python_version >= '3.13'",
     "natsort ~= 8.4.0",
@@ -95,6 +97,7 @@ line-length = 120
 
 [tool.pdm]
 distribution = true
+use-venv = true
 
 [tool.pdm.version]
 source = "file"
@@ -132,6 +135,7 @@ test-cov = { cmd = "pytest tests --cov=argilla --cov-report=term --cov-report=xm
 lint = "ruff check"
 format = "black ."
 all = { composite = ["format", "lint", "test"] }
+install-wheel = "pip install --no-build-isolation --only-binary=:all: spacy thinc"
 
 [project.scripts]
 extralit = "argilla.cli.app:app"
