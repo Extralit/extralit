@@ -38,6 +38,10 @@ jobs:
           USERNAME: argilla
           PASSWORD: 12345678
           API_KEY: argilla.apikey
+          # Configure storage to use local files instead of MinIO
+          ARGILLA_S3_ENDPOINT: ""
+          ARGILLA_S3_ACCESS_KEY: ""
+          ARGILLA_S3_SECRET_KEY: ""
     runs-on: ubuntu-22.04
     defaults:
       run:
@@ -81,6 +85,9 @@ jobs:
       - name: Wait for argilla server to start
         run: |
           while ! curl -XGET http://localhost:6900/api/_status; do sleep 5; done
+          # Create a directory for local storage that the container can access
+          mkdir -p /tmp/argilla-files
+          chmod -R 777 /tmp/argilla-files
       - name: Set huggingface hub credentials
         run: |
           echo "HF_TOKEN_ARGILLA_INTERNAL_TESTING=${{ secrets.HF_TOKEN_ARGILLA_INTERNAL_TESTING }}" >> "$GITHUB_ENV"
