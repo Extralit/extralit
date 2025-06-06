@@ -128,8 +128,6 @@ jobs:
 
       - name: Install dependencies
         run: |
-          # Make sure pdm.lock is up to date with pyproject.toml
-          pdm lock --no-sync
           pdm config use_uv true
           pdm config python.install_root "$(uv python dir)"
           pdm install --dev
