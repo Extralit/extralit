@@ -170,7 +170,7 @@ def create_server_app() -> FastAPI:
     # This if-else clause is needed to simplify the test dependency setup. Otherwise, we cannot override dependencies
     # easily. We can review this once we have separate fastapi application for the api and the webapp.
     if settings.base_url and settings.base_url != "/":
-        _app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None, redirect_slashes=False)
+        _app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None, redirect_slashes=True)
         _app.mount(settings.base_url, app)
         return _app
     else:
@@ -304,9 +304,6 @@ def _show_telemetry_warning():
 
 async def _create_oauth_allowed_workspaces(db: AsyncSession):
     from argilla_server.security.settings import settings as security_settings
-
-    if not security_settings.oauth.enabled:
-        return
 
     for allowed_workspace in security_settings.oauth.allowed_workspaces:
         if await Workspace.get_by(db, name=allowed_workspace.name) is None:

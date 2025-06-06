@@ -22,7 +22,7 @@ import argilla as rg
 import pytest
 from argilla._exceptions import SettingsError
 from datasets import load_dataset
-from huggingface_hub.utils._errors import BadRequestError, FileMetadataError, HfHubHTTPError
+from huggingface_hub.errors import BadRequestError, FileMetadataError, HfHubHTTPError
 
 _RETRIES = 5
 

@@ -1484,7 +1484,7 @@ class TestSuiteDatasets:
         assert (await db.execute(select(func.count(Response.id)))).scalar() == 4
         assert (await db.execute(select(func.count(Suggestion.id)))).scalar() == 3
 
-        records = (await db.execute(select(Record))).scalars().all()
+        records = (await db.execute(select(Record).order_by(Record.inserted_at.asc()))).scalars().all()
         mock_search_engine.index_records.assert_called_once_with(dataset, records)
 
     async def test_create_dataset_records_with_response_for_multiple_users(
@@ -1552,7 +1552,7 @@ class TestSuiteDatasets:
         assert owner in dataset.users
         assert annotator in dataset.users
 
-        records = (await db.execute(select(Record))).scalars().all()
+        records = (await db.execute(select(Record).order_by(Record.inserted_at.asc()))).scalars().all()
         mock_search_engine.index_records.assert_called_once_with(dataset, records)
 
     async def test_create_dataset_records_with_response_for_unknown_user(
@@ -2114,7 +2114,9 @@ class TestSuiteDatasets:
         assert (await db.execute(select(func.count(Vector.id)))).scalar() == 3
 
         vector_a, vector_b, vector_c = (await db.execute(select(Vector))).scalars().all()
-        record_a, record_b, record_c = (await db.execute(select(Record))).scalars().all()
+        record_a, record_b, record_c = (
+            (await db.execute(select(Record).order_by(Record.inserted_at.asc()))).scalars().all()
+        )
         assert (
             vector_a.record_id == record_a.id
             and vector_a.vector_settings_id == vector_settings_a.id
@@ -2319,7 +2321,7 @@ class TestSuiteDatasets:
         assert (await db.execute(select(func.count(Record.id)))).scalar() == 5
         assert (await db.execute(select(func.count(Response.id)))).scalar() == 4
 
-        records = (await db.execute(select(Record))).scalars().all()
+        records = (await db.execute(select(Record).order_by(Record.inserted_at.asc()))).scalars().all()
         mock_search_engine.index_records.assert_called_once_with(dataset, records)
 
     async def test_create_dataset_records_as_annotator(self, async_client: "AsyncClient", db: "AsyncSession"):

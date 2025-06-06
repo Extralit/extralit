@@ -17,8 +17,9 @@
     "e2e": "npx playwright test --ui",
     "e2e:report": "npx playwright show-report",
     "e2e:silent": "npx playwright test",
-    "test": "jest --colors",
-    "test:watch": "jest --colors --watchAll"
+    "test": "jest --colors --maxWorkers=50%",
+    "test:coverage": "jest --colors --coverage --maxWorkers=50%",
+    "test:watch": "jest --colors --watchAll --maxWorkers=50%"
   },
   "dependencies": {
     "@codescouts/events": "^1.0.2",

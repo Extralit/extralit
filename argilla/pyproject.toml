@@ -7,7 +7,7 @@ authors = [
 maintainers = [
     { name = "Extralit Labs", email = "extralit.contact@gmail.com" },
 ]
-requires-python = ">= 3.9, !=3.10.0"
+requires-python = ">=3.9.2, <3.14"
 readme = "README.md"
 license = { text = "Apache 2.0" }
 
@@ -19,7 +19,7 @@ dependencies = [
     "huggingface_hub>=0.22.0",
     "tqdm>=4.60.0",
     "rich>=10.0.0",
-    "datasets>=2.0.0",
+    "datasets>=3.0.0",
     "pillow>=9.5.0",
     "standardwebhooks>=1.0.0",
     "typer>=0.9.0",
@@ -36,13 +36,18 @@ dependencies = [
     "pandas ~= 2.2.2",
     "pandera[io] ~= 0.19.3",
     "numpy >= 1.26.4,<2.0.0",
-    "spacy ~= 3.7.2",
-    "pyarrow == 14.*",
+    "spacy ~= 3.7.2; python_version < '3.13'",
+    "spacy >= 3.8.0; python_version >= '3.13' and python_version < '3.13.3'",
+    # Install spaCy with wheels only for Python 3.13.3+
+    "spacy-wheel >= 3.8.0; python_version >= '3.13.3'",
+    "pyarrow >= 14.0.0, != 14.0.2; python_version < '3.13'",
+    "pyarrow >= 15.0.0; python_version >= '3.13'",
     "natsort ~= 8.4.0",
     "rapidfuzz ~= 3.8.1",
     "dill ~= 0.3.8",
     "json-repair ~= 0.19.2",
-    "fastparquet",
+    "fastparquet >= 2023.10.0; python_version < '3.13'",
+    "fastparquet >= 2024.4.0; python_version >= '3.13'",
     "tiktoken",
     "pymupdf",
 
@@ -64,7 +69,8 @@ nlp = [
 ]
 ocr = [
     "nougat-ocr[api]",
-    "timm == 0.5.4",
+    "timm == 0.5.4; python_version < '3.13'",
+    "timm == 0.9.5; python_version >= '3.13'",
     "transformers ~= 4.25.1"
 ]
 pdf = [
@@ -80,7 +86,7 @@ pdf = [
 legacy = ["argilla-v1[listeners]"]
 
 [build-system]
-requires = ["pdm-backend"]
+requires = ["pdm-backend>=2.0.0", "setuptools>=68.0.0"]
 build-backend = "pdm.backend"
 
 [tool.ruff]
@@ -91,6 +97,7 @@ line-length = 120
 
 [tool.pdm]
 distribution = true
+use-venv = true
 
 [tool.pdm.version]
 source = "file"
@@ -100,6 +107,7 @@ path = "src/argilla/_version.py"
 dev = [
     "ipython>=8.12.3",
     "pytest>=7.4.4",
+    "pytest-cov>=4.1.0",
     "flake8>=5.0.4",
     "ruff>=0.1.12",
     "pytest-mock>=3.12.0",
@@ -119,14 +127,15 @@ dev = [
     "CairoSVG >= 2.7.1",
     "mknotebooks >= 0.8.0",
     "pytest-retry>=1.5",
-    "pyarrow~=14.0.0",
 ]
 
 [tool.pdm.scripts]
 test = { cmd = "pytest tests", env_file = ".env.test" }
+test-cov = { cmd = "pytest tests --cov=argilla --cov-report=term --cov-report=xml", env_file = ".env.test" }
 lint = "ruff check"
 format = "black ."
 all = { composite = ["format", "lint", "test"] }
+install-wheel = "pip install --no-build-isolation --only-binary=:all: spacy thinc"
 
 [project.scripts]
 extralit = "argilla.cli.app:app"

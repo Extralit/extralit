@@ -22,7 +22,7 @@ from httpx import AsyncClient
 from opensearchpy import OpenSearch
 from sqlalchemy.engine.interfaces import IsolationLevel
 
-from argilla_server.contexts import distribution, datasets
+from argilla_server.contexts import distribution, datasets, records
 from argilla_server.api.routes import api_v1
 from argilla_server.constants import API_KEY_HEADER_NAME, DEFAULT_API_KEY
 from argilla_server.database import get_async_db
