@@ -98,14 +98,14 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v5
         with:
-          pyproject-file: "argilla-server/pyproject.toml"
+          python-version: "3.12"
           enable-cache: true
           cache-dependency-glob: "argilla-server/pdm.lock"
 
       - name: Setup PDM
         uses: pdm-project/setup-pdm@v4
         with:
-          python-version-file: argilla-server/pyproject.toml
+          python-version: "3.12"
           cache-dependency-path: argilla-server/pdm.lock
           cache: true
 
