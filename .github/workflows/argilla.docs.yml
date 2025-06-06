@@ -15,6 +15,7 @@ on:
       - "develop"
       - "docs/**"
     paths:
+      - ".github/workflows/argilla.docs.yml"
       - "argilla/docs/**"
       - "argilla/mkdocs.yml"
 
