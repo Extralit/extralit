@@ -8,7 +8,7 @@ The application defines three webhook listeners for the following events:
 - Dataset events: `dataset.created`, `dataset.updated`, `dataset.published`, `dataset.deleted`
 - Response events: `response.created`, `response.updated`
 
-You can visit the [Extralit documentation](https://docs.extralit.ai/dev/how_to_guides/webhooks) for more information.
+You can visit the [Extralit documentation](https://docs.extralit.ai/dev/admin_guide/webhooks) for more information.
 
 ## Running the app
 
