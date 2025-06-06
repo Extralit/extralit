@@ -138,7 +138,6 @@ sw.*
 
 # yarn & npm
 yarn.lock
-package-lock.json
 
 # App generated files
 src/**/server/static/

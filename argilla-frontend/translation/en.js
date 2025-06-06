@@ -129,6 +129,7 @@ export default {
   button: {
     ignore_and_continue: "Ignore and continue",
     login: "Sign in",
+    signin_with_provider: "Sign in with {provider}",
     "hf-login": "Sign in with Hugging Face",
     sign_in_with_username: "Sign in with username",
     cancel: "Cancel",
@@ -337,21 +338,6 @@ export default {
     none: "None",
     noWorkspaces:
       "Please, follow this <a target='_blank' href='https://docs.extralit.ai/latest/admin_guide/workspace/#create-a-new-workspace'>guide</a> to create a workspace",
-  },
-  exportToHub: {
-    dialogTitle: "Push to Hugging Face Hub",
-    ownerTooltip: "Use a valid Hugging Face username or organisation",
-    tokenTooltip: `Use an existing access token or create a <a href='https://huggingface.co/settings/tokens' target='_blank'>new token</a> with "write permission"`,
-    validations: {
-      orgOrUsernameIsRequired: "Organization or username is required",
-      hfTokenIsRequired: "Hugging Face token is required",
-      hfTokenInvalid: "Invalid Hugging Face token",
-      datasetNameIsRequired: "Dataset name is required",
-    },
-    exporting: "Exporting to Hugging Face hub",
-    private: "Private dataset",
-    public: "Public dataset",
-    exportingWarning: "This might take a few seconds",
   },
   exportToHub: {
     dialogTitle: "Push to Hugging Face Hub",

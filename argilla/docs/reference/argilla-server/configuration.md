@@ -52,9 +52,10 @@ You can set the following environment variables to further configure your server
 
 #### Authentication
 
-- `ARGILLA_AUTH_SECRET_KEY`: The secret key used to sign the API token data. You can use `openssl rand -hex 32` to generate a 32 character string to use with this environment variable. By default a random value is generated, so if you are using more than one server worker (or more than one Argilla server) you will need to set the same value for all of them.
 - `USERNAME`: If provided, the owner username (Default: `None`).
 - `PASSWORD`: If provided, the owner password (Default: `None`).
+- `ARGILLA_AUTH_SECRET_KEY`: The secret key used to sign the API token data. You can use `openssl rand -hex 32` to generate a 32 character string to use with this environment variable. By default a random value is generated, so if you are using more than one server worker (or more than one Argilla server) you will need to set the same value for all of them.
+- `ARGILLA_AUTH_OAUTH_CFG`: Path to the OAuth2 configuration file (Default: `$PWD/.oauth.yml`).
 
 If `USERNAME` and `PASSWORD` are provided, the owner user will be created with these credentials on the server startup.
 
@@ -95,6 +96,7 @@ The following environment variables are useful only when PostgreSQL is used:
 Redis is used by Argilla to store information about jobs to be processed on background. The following environment variables are useful to config how Argilla connects to Redis:
 
 - `ARGILLA_REDIS_URL`: A URL string that contains the necessary information to connect to a Redis instance (Default: `redis://localhost:6379/0`).
+- `ARGILLA_REDIS_USE_CLUSTER`: If "True" tries the connection with the URL to a  Redis Cluster instead of a Redis Standalone instance.
 
 ### Datasets
 

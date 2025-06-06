@@ -160,7 +160,6 @@ When contributing to Extralit, consider these guidelines:
    - Keep database models focused on structure, not behavior
    - Use validators for input validation
 4. **Write tests**: Add tests for new functionality in the appropriate test directories
-5. **Document your changes**: Update documentation when adding or changing features
 
 ## Common Development Tasks
 
@@ -185,4 +184,3 @@ When contributing to Extralit, consider these guidelines:
 2. Create or update components in `components/features/`
 3. Connect to the backend using services in `v1/infrastructure/services/`
 4. Add tests for the new functionality
-

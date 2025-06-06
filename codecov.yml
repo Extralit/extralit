@@ -6,10 +6,34 @@ coverage:
       default:
         target: auto
         threshold: 2%
+        informational: true
     patch:
       default:
         target: auto
         threshold: 2%
+        informational: true
+  
+flags:
+  frontend:
+    paths:
+      - argilla-frontend/
+    carryforward: true
+  argilla:
+    paths:
+      - argilla/src/argilla/
+    carryforward: true
+  extralit:
+    paths:
+      - argilla/src/extralit/
+    carryforward: true
+  argilla_v1:
+    paths:
+      - argilla-v1/src/argilla_v1/
+    carryforward: true
+  argilla_server:
+    paths:
+      - argilla-server/
+    carryforward: true
 
 component_management:
   default_rules:

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import wraps
 import os
 import pytest
 
@@ -73,8 +74,26 @@ def hf_dataset_name(hf_api: HfApi) -> Generator[str, None, None]:
     hf_api.delete_repo(hf_dataset_name, repo_type="dataset", missing_ok=True)
 
 
+def skip_on(exception_type: type, reason="Skip this test"):
+    def decorator_func(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            try:
+                return f(*args, **kwargs)
+            except exception_type as e:
+                if hasattr(e, "response") and e.response.status_code == 429:
+                    pytest.skip(reason)
+                else:
+                    raise e
+
+        return wrapper
+
+    return decorator_func
+
+
 @pytest.mark.skipif(HF_TOKEN is None, reason="HF_TOKEN_ARGILLA_INTERNAL_TESTING is not defined")
 class TestHubDatasetExporter:
+    @skip_on(HfHubHTTPError, reason="Skipping due to HF 429 Client Error: Too Many Requests")
     def test_export_to(self, sync_test_session, hf_api: HfApi, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
 
@@ -104,6 +123,7 @@ class TestHubDatasetExporter:
         }
 
     @pytest.mark.skip(reason="the Hub is ignoring for some reason the subset and using default instead")
+    @skip_on(HfHubHTTPError, reason="Skipping due to HF 429 Client Error: Too Many Requests")
     def test_export_to_with_custom_subset(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
 
@@ -122,6 +142,7 @@ class TestHubDatasetExporter:
 
         assert get_dataset_config_names(hf_dataset_name) == ["custom"]
 
+    @skip_on(HfHubHTTPError, reason="Skipping due to HF 429 Client Error: Too Many Requests")
     def test_export_to_with_custom_split(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
 
@@ -147,6 +168,7 @@ class TestHubDatasetExporter:
             else:
                 raise error
 
+    @skip_on(HfHubHTTPError, reason="Skipping due to HF 429 Client Error: Too Many Requests")
     def test_export_to_with_private_dataset(self, sync_test_session, hf_api: HfApi, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
 
@@ -165,6 +187,7 @@ class TestHubDatasetExporter:
 
         assert hf_api.dataset_info(hf_dataset_name).private == True
 
+    @skip_on(HfHubHTTPError, reason="Skipping due to HF 429 Client Error: Too Many Requests")
     def test_export_to_with_chat_field(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
 
@@ -191,6 +214,7 @@ class TestHubDatasetExporter:
         assert exported_dataset[0]["chat"] == chat_record_value
 
     @pytest.mark.skip(reason="Too many requests error when accessing Hugging Face API")
+    @skip_on(HfHubHTTPError, reason="Skipping due to HF 429 Client Error: Too Many Requests")
     def test_export_to_with_custom_field(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
 
@@ -218,6 +242,7 @@ class TestHubDatasetExporter:
         assert exported_dataset[0]["custom"] == "custom-value"
 
     @pytest.mark.skip(reason="Too many requests error when accessing Hugging Face API")
+    @skip_on(HfHubHTTPError, reason="Skipping due to HF 429 Client Error: Too Many Requests")
     def test_export_to_with_image_field_as_url(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
 
@@ -237,6 +262,7 @@ class TestHubDatasetExporter:
         assert exported_dataset[0]["image"] == IMAGE_URL
 
     @pytest.mark.skip(reason="Too many requests error when accessing Hugging Face API")
+    @skip_on(HfHubHTTPError, reason="Skipping due to HF 429 Client Error: Too Many Requests")
     def test_export_to_with_image_field_as_data_url(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
 
@@ -255,6 +281,7 @@ class TestHubDatasetExporter:
 
         assert isinstance(exported_dataset[0]["image"], Image.Image)
 
+    @skip_on(HfHubHTTPError, reason="Skipping due to HF 429 Client Error: Too Many Requests")
     def test_export_to_with_text_question(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
         annotators = AnnotatorSyncFactory.create_batch(2, workspaces=[dataset.workspace])
@@ -315,6 +342,7 @@ class TestHubDatasetExporter:
         }
 
     @pytest.mark.skip(reason="Too many requests error when accessing Hugging Face API")
+    @skip_on(HfHubHTTPError, reason="Skipping due to HF 429 Client Error: Too Many Requests")
     def test_export_to_with_text_question_and_suggestion(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
         annotators = AnnotatorSyncFactory.create_batch(2, workspaces=[dataset.workspace])
@@ -385,6 +413,7 @@ class TestHubDatasetExporter:
         }
 
     @pytest.mark.skip(reason="Too many requests error when accessing Hugging Face API")
+    @skip_on(HfHubHTTPError, reason="Skipping due to HF 429 Client Error: Too Many Requests")
     def test_export_to_with_rating_question(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
         annotators = AnnotatorSyncFactory.create_batch(2, workspaces=[dataset.workspace])
@@ -449,6 +478,7 @@ class TestHubDatasetExporter:
         }
 
     @pytest.mark.skip(reason="Too many requests error when accessing Hugging Face API")
+    @skip_on(HfHubHTTPError, reason="Skipping due to HF 429 Client Error: Too Many Requests")
     def test_export_to_with_rating_question_and_suggestion(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
         annotators = AnnotatorSyncFactory.create_batch(2, workspaces=[dataset.workspace])
@@ -523,6 +553,7 @@ class TestHubDatasetExporter:
         }
 
     @pytest.mark.skip(reason="Too many requests error when accessing Hugging Face API")
+    @skip_on(HfHubHTTPError, reason="Skipping due to HF 429 Client Error: Too Many Requests")
     def test_export_to_with_label_question(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
         annotators = AnnotatorSyncFactory.create_batch(2, workspaces=[dataset.workspace])
@@ -586,6 +617,7 @@ class TestHubDatasetExporter:
         }
 
     @pytest.mark.skip(reason="Too many requests error when accessing Hugging Face API")
+    @skip_on(HfHubHTTPError, reason="Skipping due to HF 429 Client Error: Too Many Requests")
     def test_export_to_with_label_question_and_suggestion(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
         annotators = AnnotatorSyncFactory.create_batch(2, workspaces=[dataset.workspace])
@@ -658,6 +690,7 @@ class TestHubDatasetExporter:
             "label-question.suggestion.score": 0.3,
         }
 
+    @skip_on(HfHubHTTPError, reason="Skipping due to HF 429 Client Error: Too Many Requests")
     def test_export_to_with_multi_label_question(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
         annotators = AnnotatorSyncFactory.create_batch(2, workspaces=[dataset.workspace])
@@ -720,6 +753,7 @@ class TestHubDatasetExporter:
             "multi-label-question.responses.users": [str(annotators[0].id), str(annotators[1].id)],
         }
 
+    @skip_on(HfHubHTTPError, reason="Skipping due to HF 429 Client Error: Too Many Requests")
     def test_export_to_with_multi_label_question_and_suggestion(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
         annotators = AnnotatorSyncFactory.create_batch(2, workspaces=[dataset.workspace])
@@ -792,6 +826,7 @@ class TestHubDatasetExporter:
             "multi-label-question.suggestion.score": [0.8, 0.7],
         }
 
+    @skip_on(HfHubHTTPError, reason="Skipping due to HF 429 Client Error: Too Many Requests")
     def test_export_to_with_ranking_question(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
         annotators = AnnotatorSyncFactory.create_batch(2, workspaces=[dataset.workspace])
@@ -875,6 +910,7 @@ class TestHubDatasetExporter:
         }
 
     @pytest.mark.skip(reason="Too many requests error when accessing Hugging Face API")
+    @skip_on(HfHubHTTPError, reason="Skipping due to HF 429 Client Error: Too Many Requests")
     def test_export_to_with_ranking_question_and_suggestion(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
         annotators = AnnotatorSyncFactory.create_batch(2, workspaces=[dataset.workspace])
@@ -977,6 +1013,7 @@ class TestHubDatasetExporter:
             "ranking-question.suggestion.score": [0.5, 0.4, 0.3, 0.2],
         }
 
+    @skip_on(HfHubHTTPError, reason="Skipping due to HF 429 Client Error: Too Many Requests")
     def test_export_to_with_span_question(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
         annotators = AnnotatorSyncFactory.create_batch(2, workspaces=[dataset.workspace])
@@ -1055,6 +1092,7 @@ class TestHubDatasetExporter:
         }
 
     @pytest.mark.skip(reason="Too many requests error when accessing Hugging Face API")
+    @skip_on(HfHubHTTPError, reason="Skipping due to HF 429 Client Error: Too Many Requests")
     def test_export_to_with_span_question_and_suggestion(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
         annotators = AnnotatorSyncFactory.create_batch(2, workspaces=[dataset.workspace])
@@ -1148,6 +1186,7 @@ class TestHubDatasetExporter:
             "span-question.suggestion.score": [0.7, 0.6],
         }
 
+    @skip_on(HfHubHTTPError, reason="Skipping due to HF 429 Client Error: Too Many Requests")
     def test_export_to_with_draft_response(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
         annotator = AnnotatorSyncFactory.create(workspaces=[dataset.workspace])
@@ -1195,6 +1234,7 @@ class TestHubDatasetExporter:
         }
 
     @pytest.mark.skip(reason="Too many requests error when accessing Hugging Face API")
+    @skip_on(HfHubHTTPError, reason="Skipping due to HF 429 Client Error: Too Many Requests")
     def test_export_to_with_discarded_response(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
         annotator = AnnotatorSyncFactory.create(workspaces=[dataset.workspace])
@@ -1241,6 +1281,7 @@ class TestHubDatasetExporter:
             "text-question.responses.users": [str(annotator.id)],
         }
 
+    @skip_on(HfHubHTTPError, reason="Skipping due to HF 429 Client Error: Too Many Requests")
     def test_export_to_with_metadata(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
 
@@ -1300,6 +1341,7 @@ class TestHubDatasetExporter:
         assert exported_dataset[0]["metadata.metadata-integer"] == 42
         assert exported_dataset[0]["metadata.metadata-float"] == 3.14
 
+    @skip_on(HfHubHTTPError, reason="Skipping due to HF 429 Client Error: Too Many Requests")
     def test_export_to_with_vectors(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
 
