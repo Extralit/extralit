@@ -8,6 +8,7 @@ module.exports = {
     "^~~/(.*)$": "<rootDir>/$1",
     "^@/(.*)$": "<rootDir>/$1",
     '\\.(css|less)$': '<rootDir>/__mocks__/styleMock.js',
+    'tabulator-tables': '<rootDir>/__mocks__/tabulator-tables.js',
   },
   modulePathIgnorePatterns: ["<rootDir>/e2e"],
   transform: {
@@ -16,7 +17,7 @@ module.exports = {
     "^.+\\.svg$": "jest-transform-stub",
   },
   transformIgnorePatterns: [
-    "/node_modules/(?!(@nuxtjs/composition-api|@tiptap|vue-svgicon|tabulator-tables|vue-demi)/)",
+    "/node_modules/(?!(@nuxtjs/composition-api|@tiptap|vue-svgicon|vue-demi)/)",
   ],
   snapshotSerializers: ["<rootDir>/node_modules/jest-serializer-vue"],
   testEnvironment: "jsdom",

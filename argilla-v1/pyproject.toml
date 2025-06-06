@@ -161,7 +161,7 @@ extralit = "argilla_v1.cli.app:app"
 where = ["src"]
 
 [tool.setuptools.dynamic]
-version = { attr = "extralit.__version__" }
+version = { attr = "argilla_v1.__version__" }
 
 [tool.setuptools.package-data]
 "argilla_v1.client.feedback.integrations.huggingface.card" = [

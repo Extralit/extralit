@@ -12,18 +12,3 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import pytest
-from argilla_v1.client.feedback.integrations.huggingface.card import size_categories_parser
-
-
-@pytest.mark.parametrize(
-    "size,expected",
-    [
-        (1, "n<1K"),
-        (999, "n<1K"),
-        (1_000, "1K<n<10K"),
-        (10_000_000_000_001, "n>1T"),
-    ],
-)
-def test_size_categories_parser(size: int, expected: str) -> None:
-    assert size_categories_parser(size) == expected

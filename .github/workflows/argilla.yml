@@ -29,7 +29,7 @@ jobs:
   build:
     services:
       argilla-server:
-        image: extralitdev/argilla-hf-spaces
+        image: extralitdev/argilla-hf-spaces:develop
         ports:
           - 6900:6900
         env:
@@ -38,6 +38,10 @@ jobs:
           USERNAME: argilla
           PASSWORD: 12345678
           API_KEY: argilla.apikey
+          # Configure storage to use local files instead of MinIO
+          ARGILLA_S3_ENDPOINT: ""
+          ARGILLA_S3_ACCESS_KEY: ""
+          ARGILLA_S3_SECRET_KEY: ""
     runs-on: ubuntu-22.04
     defaults:
       run:
@@ -48,6 +52,15 @@ jobs:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          pyproject-file: "argilla/pyproject.toml"
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+          cache-local-path: ~/.cache/uv
+          ignore-nothing-to-cache: true
+          cache-dependency-glob: "argilla/pdm.lock"
       - name: Setup PDM
         uses: pdm-project/setup-pdm@v4
         with:
@@ -56,22 +69,61 @@ jobs:
           cache-dependency-path: |
             argilla/pdm.lock
       - name: Install dependencies
+        env:
+          PDM_IGNORE_ACTIVE_VENV: 1
         run: |
+          pdm config use_uv true
+          pdm config python.install_root "$(uv python dir)"
+
+          # Special handling for Python 3.13
+          if [[ "${{ matrix.python-version }}" == "3.13" ]]; then
+            uv pip install --only-binary=:all: spacy thinc pyarrow
+          fi
+
           pdm install
+          uv cache prune --ci
       - name: Wait for argilla server to start
         run: |
           while ! curl -XGET http://localhost:6900/api/_status; do sleep 5; done
+          # Create a directory for local storage that the container can access
+          mkdir -p /tmp/argilla-files
+          chmod -R 777 /tmp/argilla-files
       - name: Set huggingface hub credentials
         run: |
           echo "HF_TOKEN_ARGILLA_INTERNAL_TESTING=${{ secrets.HF_TOKEN_ARGILLA_INTERNAL_TESTING }}" >> "$GITHUB_ENV"
           echo "Enable HF access token"
       - name: Run unit tests
-        run: |
-          pdm run test tests/unit
-      - name: Run integration tests
+        id: tests-unit
         continue-on-error: true
         run: |
-          pdm run test tests/integration
+            pdm run test-cov tests/unit
+
+      - name: Run integration tests
+        id: tests-integration
+        continue-on-error: true
+        run: |
+            pdm run test-cov tests/integration
+
+      - name: Generate coverage report
+        if: always()
+        continue-on-error: true
+        run: |
+          pdm run coverage xml -o coverage.xml
+          pdm run coverage report
+
+      - name: Upload test coverage
+        if: always()
+        uses: codecov/codecov-action@v5.4.3
+        with:
+          files: coverage.xml
+          flags: argilla
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+
+      - name: Check test status
+        if: steps.tests-unit.outcome == 'failure'
+        run: exit 1
+
       - name: Build package
         run: |
           pdm build
@@ -87,7 +139,7 @@ jobs:
   publish_release:
     name: Publish Release
     runs-on: ubuntu-latest
-    if: ${{ github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' }}
+    if: ${{ github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' }}
 
     permissions:
       # This permission is needed for private repositories.

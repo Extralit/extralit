@@ -41,8 +41,11 @@ from argilla_server.contexts.records import (
 )
 from argilla_server.errors.future import UnprocessableEntityError
 from argilla_server.models import Dataset, Record, Response, Suggestion, Vector
+from argilla_server.models.database import DatasetUser
 from argilla_server.search_engine import SearchEngine
 from argilla_server.validators.records import RecordsBulkCreateValidator, RecordUpsertValidator
+from argilla_server.webhooks.v1.enums import RecordEvent
+from argilla_server.webhooks.v1.records import notify_record_event as notify_record_event_v1
 
 
 class CreateRecordsBulk:
@@ -189,7 +192,7 @@ class UpsertRecordsBulk(CreateRecordsBulk):
                     record.fields = jsonable_encoder(record_upsert.fields)
 
                 if self._db.is_modified(record):
-                    record.updated_at = datetime.now(UTC)
+                    record.updated_at = datetime.utcnow()
 
             records.append(record)
 

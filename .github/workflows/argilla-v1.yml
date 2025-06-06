@@ -34,9 +34,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Conda Env 🐍
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
-          miniforge-variant: Mambaforge
+          miniforge-variant: Miniforge3
           miniforge-version: latest
           use-mamba: true
           activate-environment: argilla
@@ -72,19 +72,19 @@ jobs:
       - name: Run unit tests 📈
         continue-on-error: true
         run: |
-          pip install -e ".[server,listeners]"
+          uv pip install -e ".[server,listeners]"
           pytest tests/unit -vs
 
       - name: Run tests with pandas v2 📈
         continue-on-error: true
         run: |
-          pip install "pandas~=2.0" pytest-custom_exit_code
+          uv pip install "pandas~=2.0" pytest-custom_exit_code
           pytest --suppress-no-test-exit-code tests/unit -vs
 
       - name: Run tests with pydantic v2 📈
         continue-on-error: true
         run: |
-          pip install "pydantic~=2.0" pytest-custom_exit_code
+          uv pip install "pydantic~=2.0" pytest-custom_exit_code
           pytest --suppress-no-test-exit-code tests/unit -vs
 
       - name: Build Package 🍟
