@@ -38,7 +38,7 @@ The `TextField` and `TextQuestion` provide the option to enable Markdown and the
 
 Argilla has basic multi-modal support in different ways, each with pros and cons, but they both offer the same UI experience because they both rely on HTML.
 
-![media](../assets/images/admin_guide/markdown/media.png)
+![media](../assets/images/how_to_guides/markdown/media.png)
 
 ### Local content through DataURLs
 
@@ -199,4 +199,4 @@ rg.Record(
 )
 ```
 
-![media](../assets/images/admin_guide/markdown/chat.png)
+![media](../assets/images/how_to_guides/markdown/chat.png)

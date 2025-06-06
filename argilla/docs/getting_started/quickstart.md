@@ -55,8 +55,6 @@ Extralit is a free, open-source, self-hosted tool. This means you need to deploy
     authenticated_client = rg.Argilla.deploy_on_spaces(api_key="<api_key>")
     ```
 
-    Learn how to [create your first dataset](create-your-first-dataset.md).
-
     !!! warning "Persistent storage `SMALL`"
         Not setting persistent storage to `SMALL` means that **you will loose your data when the Space restarts**. Spaces get restarted due to maintenance, inactivity, and every time you change your Spaces settings. If you want to **use the Space just for testing** you can use `FREE` temporarily.
 
