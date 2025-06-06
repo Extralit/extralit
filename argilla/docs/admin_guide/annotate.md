@@ -12,7 +12,7 @@ Argilla UI offers many functions to help you manage your annotation workflow, ai
 
 ### Flexible layout
 
-![UI overview](../assets/images/admin_guide/annotate/ui_overview.png)
+![UI overview](../assets/images/how_to_guides/annotate/ui_overview.png)
 
 The UI is responsive with two columns for larger devices and one column for smaller devices. This enables you to annotate data using your mobile phone for simple datasets (i.e., not very long text and 1-2 questions) or resize your screen to get a more compact UI.
 
@@ -88,7 +88,7 @@ If you agree with the suggestions, you just need to click on the `Submit` button
 
 ### Focus view
 
-![Focus view](../assets/images/admin_guide/annotate/focus_view.png){ width=10% height=10% }
+![Focus view](../assets/images/how_to_guides/annotate/focus_view.png){ width=10% height=10% }
 
 This is the default view to annotate your dataset linearly, displaying one record after another.
 
@@ -105,7 +105,7 @@ Each time the page is fully refreshed, the records with modified statuses (Pendi
 
 ### Bulk view
 
-![Bulk view](../assets/images/admin_guide/annotate/bulk_view.png){ width=10% height=10% }
+![Bulk view](../assets/images/how_to_guides/annotate/bulk_view.png){ width=10% height=10% }
 
 The bulk view is designed to speed up the annotation and get a quick overview of the whole dataset.
 

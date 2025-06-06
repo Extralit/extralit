@@ -170,7 +170,7 @@ As mentioned, we use [`mkdocs`](https://www.mkdocs.org/) to build the documentat
 - **Update the table of contents**: If you add a new page, include it in the relevant `index.md` or the `mkdocs.yml` file.
 
 !!! note "Contribute with a tutorial"
-    You can also contribute a tutorial (`.ipynb`) to the "Community" section. We recommend aligning the tutorial with the structure of the existing tutorials. For an example, check [this tutorial](../tutorials/getting_started.ipynb).
+    You can also contribute a tutorial (`.ipynb`) to the "Community" section. We recommend aligning the tutorial with the structure of the existing tutorials. For an example, check [this tutorial](../tutorials/image_classification.ipynb).
 
 ## Set up the databases
 
