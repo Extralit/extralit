@@ -54,6 +54,7 @@ jobs:
           pyproject-file: "argilla/pyproject.toml"
           python-version: ${{ matrix.python-version }}
           enable-cache: true
+          cache-local-path: ~/.cache/uv
           ignore-nothing-to-cache: true
           cache-dependency-glob: "argilla/pdm.lock"
       - name: Setup PDM

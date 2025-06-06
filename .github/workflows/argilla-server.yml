@@ -93,14 +93,15 @@ jobs:
         with:
           pyproject-file: "argilla-server/pyproject.toml"
           enable-cache: true
+          cache-local-path: ~/.cache/uv
           cache-dependency-glob: "argilla-server/pdm.lock"
 
       - name: Setup PDM
         uses: pdm-project/setup-pdm@v4
         with:
           python-version-file: argilla-server/pyproject.toml
-          cache-dependency-path: argilla-server/pdm.lock
           cache: true
+          cache-dependency-path: argilla-server/pdm.lock
 
       - name: Install dependencies
         run: |
@@ -117,7 +118,7 @@ jobs:
           ARGILLA_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/argilla
           ARGILLA_ELASTICSEARCH=http://localhost:9200
           ARGILLA_SEARCH_ENGINE=elasticsearch
-          pdm test tests/unit -vs --cov=argilla_server --cov-report=xml:coverage.xml --junitxml=junit.xml -o junit_family=legacy --tb=short
+          pdm test-cov tests/unit
 
       - name: Upload test coverage
         if: always()
