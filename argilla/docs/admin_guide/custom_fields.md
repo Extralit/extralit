@@ -97,7 +97,7 @@ dataset.records.log([
 
 The result will be the following:
 
-![example-gallery-end](../assets/images/how_to_guides/custom_field/images_in_two_columns.png)
+![example-gallery-end](../assets/images/admin_guide/custom_field/images_in_two_columns.png)
 
 ### Example Gallery
 
@@ -148,7 +148,7 @@ The result will be the following:
         }
     )
     ```
-    ![example-gallery-end](../assets/images/how_to_guides/custom_field/metadata_table.png)
+    ![example-gallery-end](../assets/images/admin_guide/custom_field/metadata_table.png)
 
 ??? "JSON viewer"
 
@@ -231,7 +231,7 @@ custom_field = rg.CustomField(
 
 Besides the new `CustomField` code above, reusing the same approach as in the [Using handlebars in your template](#using-handlebars-in-your-template) section, will create a dataset and log a record to it, yielding the same result.
 
-![example-gallery-end](../assets/images/how_to_guides/custom_field/images_in_two_columns.png)
+![example-gallery-end](../assets/images/admin_guide/custom_field/images_in_two_columns.png)
 
 ### Example Gallery
 
@@ -326,7 +326,7 @@ Besides the new `CustomField` code above, reusing the same approach as in the [U
     )
     ```
 
-    ![example-gallery-end](../assets/images/how_to_guides/custom_field/3d_object_viewer.png)
+    ![example-gallery-end](../assets/images/admin_guide/custom_field/3d_object_viewer.png)
 
 ## Updating templates
 

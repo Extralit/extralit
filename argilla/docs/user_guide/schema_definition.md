@@ -6,7 +6,7 @@ description: Learn how to define schemas in Extralit to extract structured data 
 
 In Extralit, schemas are defined using [Pandera's DataFrameModel](https://pandera.readthedocs.io/en/stable/dataframe_models.html). These schemas specify the structure and validation rules for the data you want to extract from each scientific paper reference. This guide will walk you through the process of defining a schema, explaining each component in detail.
 
-> **Note**: Before diving into schema definition, make sure you understand the concept of references in Extralit. References are unique identifiers for each scientific paper in your dataset. Learn more about references and other core concepts in the [Core Concepts](../core_concepts.md) guide.
+> **Note**: Before diving into schema definition, make sure you understand the concept of references in Extralit. References are unique identifiers for each scientific paper in your dataset. Learn more about references and other core concepts in the [Core Concepts](core_concepts.md) guide.
 
 
 ## Basic Usage
@@ -32,7 +32,7 @@ class Publication(pa.DataFrameModel):
     journal: Series[str] = pa.Field()
     publication_year: Series[int] = pa.Field(ge=1900, le=2100)
     doi: Series[str] = pa.Field(nullable=True)
-    
+
     class Config:
         singleton = {'enabled': True}  # Indicates this is a document-level schema
 ```
@@ -125,7 +125,7 @@ class StudyDesign(pa.DataFrameModel):
     This schema includes best practices for extracting structured data from scientific papers.
     """
     study_id: Index[str] = pa.Field(
-        unique=True, 
+        unique=True,
         str_length={'min_length': 5, 'max_length': 10},
         check_name=True
     )
@@ -138,11 +138,11 @@ class StudyDesign(pa.DataFrameModel):
         description="The type of study conducted",
         nullable=False
     )
-    
+
     @pa.check('sample_size')
     def check_sample_size(cls, sample_size: Series[int]) -> Series[bool]:
         return sample_size % 2 == 0  # Ensure sample size is even
-    
+
     class Config:
         strict = True
         coerce = True
@@ -150,7 +150,7 @@ class StudyDesign(pa.DataFrameModel):
 
 New features in this advanced schema:
 
-1. **String Length Validation**: 
+1. **String Length Validation**:
     ```python
     study_id: Index[str] = pa.Field(unique=True, str_length={'min_length': 5, 'max_length': 10},check_name=True)
     ```
@@ -231,7 +231,7 @@ If the data doesn't meet the schema requirements, Pandera will raise an informat
 5. **Use Appropriate Data Types**: Choose the most specific data type possible for each field. For example, use int for whole numbers and float for decimal values.
 
 6. **Implement Logical Constraints**: Use multi-field checks to ensure logical consistency between related fields.
-   
+
 7. **Allow for Flexibility**: Use nullable=True for fields that may not always be present in every paper. This acknowledges the variability in reporting across different studies.
 
 8. **Test Your Schema**: Create validate your schema to a small dataset to ensure the checks behave as expected with various input data.
