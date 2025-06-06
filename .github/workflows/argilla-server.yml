@@ -90,7 +90,9 @@ jobs:
 
       - name: Get date for cache
         id: get-date
-        run: echo "today=$(/bin/date -u '+%Y%m%d')" >> $GITHUB_OUTPUT
+        run: |
+          echo "today=$(/bin/date -u '+%Y%m%d')" >> $GITHUB_OUTPUT
+          echo "pdm_hash=$(sha256sum argilla-server/pdm.lock | cut -d ' ' -f1)" >> $GITHUB_OUTPUT
         shell: bash
         working-directory: .
       - name: Install uv
@@ -111,22 +113,28 @@ jobs:
         run: |
           mkdir -p ~/.cache/uv
           echo "UV_CACHE_DIR=~/.cache/uv" >> $GITHUB_ENV
+          echo "UV_NO_WAIT=1" >> $GITHUB_ENV
 
       - name: Cache uv pip packages
         uses: actions/cache@v4
         with:
-          path: ~/.cache/uv
-          key: ${{ runner.os }}-uv-server-${{ steps.get-date.outputs.today }}-${{ hashFiles('argilla-server/pyproject.toml', 'argilla-server/pdm.lock') }}
+          path: |
+            ~/.cache/uv
+            ~/.cache/pip
+          key: ${{ runner.os }}-uv-server-${{ steps.get-date.outputs.pdm_hash }}
           restore-keys: |
-            ${{ runner.os }}-uv-server-${{ steps.get-date.outputs.today }}-
             ${{ runner.os }}-uv-server-
             ${{ runner.os }}-uv-
 
       - name: Install dependencies
         run: |
+          # Make sure pdm.lock is up to date with pyproject.toml
+          pdm lock --no-sync
           pdm config use_uv true
           pdm config python.install_root "$(uv python dir)"
           pdm install --dev
+
+          # Clean up cache to prevent it from growing too large
           uv cache prune --ci
 
       - name: Run tests 📈
