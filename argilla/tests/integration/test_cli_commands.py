@@ -30,8 +30,6 @@ def test_workspace_name():
 
 @pytest.fixture
 def test_workspace(client: Argilla, test_workspace_name):
-    """Create a test workspace for CLI commands."""
-    # Create the workspace
     workspace = Workspace(name=test_workspace_name).create()
 
     yield workspace
@@ -43,8 +41,7 @@ def test_workspace(client: Argilla, test_workspace_name):
         pass
 
 
-def run_cli_command(command: subprocess._CMD):
-    """Run a CLI command and return the result."""
+def run_cli_command(command: str):
     result = subprocess.run(
         command,
         shell=True,

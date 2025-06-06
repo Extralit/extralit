@@ -45,7 +45,7 @@ except ImportError:
 from argilla import Argilla, Workspace
 
 
-def run_command(command, expected_success=True):
+def run_command(command: str, expected_success=True):
     """Run a command and print the result."""
     print(f"\nRunning command: {command}")
     result = subprocess.run(
