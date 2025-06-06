@@ -1784,7 +1784,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how_to_guides/custom_fields.md" class="md-nav__link">
+      <a href="../../admin_guide/custom_fields/" class="md-nav__link">
         
   
   
@@ -3194,7 +3194,7 @@
 <h1 id="schema-definition">Schema Definition<a class="headerlink" href="#schema-definition" title="Permanent link">&para;</a></h1>
 <p>In Extralit, schemas are defined using <a href="https://pandera.readthedocs.io/en/stable/dataframe_models.html">Pandera's DataFrameModel</a>. These schemas specify the structure and validation rules for the data you want to extract from each scientific paper reference. This guide will walk you through the process of defining a schema, explaining each component in detail.</p>
 <blockquote>
-<p><strong>Note</strong>: Before diving into schema definition, make sure you understand the concept of references in Extralit. References are unique identifiers for each scientific paper in your dataset. Learn more about references and other core concepts in the <a href="../core_concepts.md">Core Concepts</a> guide.</p>
+<p><strong>Note</strong>: Before diving into schema definition, make sure you understand the concept of references in Extralit. References are unique identifiers for each scientific paper in your dataset. Learn more about references and other core concepts in the <a href="../core_concepts/">Core Concepts</a> guide.</p>
 </blockquote>
 <h2 id="basic-usage">Basic Usage<a class="headerlink" href="#basic-usage" title="Permanent link">&para;</a></h2>
 <p>Let's start with two basic examples of schema definitions: one for document-level extraction and another for table extraction.</p>
@@ -3283,7 +3283,7 @@
 </span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="sd">    This schema includes best practices for extracting structured data from scientific papers.</span>
 </span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="sd">    &quot;&quot;&quot;</span>
 </span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="n">study_id</span><span class="p">:</span> <span class="n">Index</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span>
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>        <span class="n">unique</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>        <span class="n">unique</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 </span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>        <span class="n">str_length</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;min_length&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s1">&#39;max_length&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
 </span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>        <span class="n">check_name</span><span class="o">=</span><span class="kc">True</span>
 </span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>    <span class="p">)</span>
@@ -3308,7 +3308,7 @@
 <p>New features in this advanced schema:</p>
 <ol>
 <li>
-<p><strong>String Length Validation</strong>: 
+<p><strong>String Length Validation</strong>:
     <div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">study_id</span><span class="p">:</span> <span class="n">Index</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">unique</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">str_length</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;min_length&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s1">&#39;max_length&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span><span class="n">check_name</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span></code></pre></div>
     This ensures the <code>study_id</code> is a string between 5 and 10 characters long.</p>

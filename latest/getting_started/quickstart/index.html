@@ -1731,7 +1731,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how_to_guides/custom_fields.md" class="md-nav__link">
+      <a href="../../admin_guide/custom_fields/" class="md-nav__link">
         
   
   
@@ -3128,7 +3128,7 @@
 <li><code>ARGILLA_DATABASE_URL</code>: The URL of the PostgreSQL database where the data will be stored. If you leave it blank, the data will be lost when the Space restarts.</li>
 <li><code>S3_ENDPOINT</code>, <code>S3_ACCESS_KEY</code>, <code>S3_SECRET_KEY</code>: The name of the S3 bucket where papers and data extraction artifacts will be stored. If you leave it blank, the data will be lost when the Space restarts.</li>
 <li>Click Duplicate Space to build an Extralit instance 🚀.</li>
-<li>Once you see the UI, <a href="#sign-in-to-the-argilla-ui">go to the Sign in into the UI section</a>. If you see the <code>Building</code> message for longer than 2-3 min refresh the page.</li>
+<li>Once you see the UI, <a href="#sign-in-into-the-extralit-ui">go to the Sign in into the UI section</a>. If you see the <code>Building</code> message for longer than 2-3 min refresh the page.</li>
 </ul>
 <div class="tabbed-set tabbed-alternate" data-tabs="2:1"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Python <abbr title="Software Development Kit.">SDK</abbr></label></div>
 <div class="tabbed-content">
@@ -3141,7 +3141,7 @@
 </span></code></pre></div>
 <p>Next, we can use the <code>Argilla.deploy_on_spaces</code> method, which will create a Space in <a href="https://huggingface.co/">the Hugging Face Hub</a>. This method will automatically do the following:</p>
 <ul>
-<li>Deploy an Argilla Space on the Hugging Face Hub with <a href="#sign-in-into-the-argilla-ui">OAuth sign-in</a> and a URL like <code>https://&lt;your-username&gt;-argilla.hf.space</code>, which takes around 2-3 minutes.</li>
+<li>Deploy an Argilla Space on the Hugging Face Hub with <a href="#sign-in-into-the-extralit-ui">OAuth sign-in</a> and a URL like <code>https://&lt;your-username&gt;-argilla.hf.space</code>, which takes around 2-3 minutes.</li>
 <li>Create a default workspace called <code>argilla</code> with an owner called <code>&lt;your-username&gt;</code> and an Argilla token set to <code>api_key</code>.</li>
 <li>Automatically return the authenticated Argilla client, which can directly be used to interact with your Argilla server.</li>
 </ul>
@@ -3157,7 +3157,7 @@
 </div>
 <div class="admonition tip">
 <p class="admonition-title">Argilla <abbr title="Application Programming Interface.">API</abbr> Key</p>
-<p>Your Argilla <abbr title="Application Programming Interface.">API</abbr> key can be found in the <code>My Settings</code> page of your Argilla Space. Take a look at the <a href="#sign-in-into-the-argilla-ui">sign in to the UI section</a> to learn how to retrieve it.</p>
+<p>Your Argilla <abbr title="Application Programming Interface.">API</abbr> key can be found in the <code>My Settings</code> page of your Argilla Space. Take a look at the <a href="#sign-in-into-the-extralit-ui">sign in to the UI section</a> to learn how to retrieve it.</p>
 </div>
 <div class="admonition warning">
 <p class="admonition-title">Persistent storage <code>SMALL</code></p>
@@ -3200,7 +3200,7 @@
 <p><strong>Fields</strong> include the data that you want feedback on, like text, chats, or images. If you want to exclude any of the Fields that Argilla identified for you, simply select the "No mapping" option.</p>
 <p><strong>Questions</strong> are the feedback you want to collect, like labels, ratings, rankings, or text. If Argilla identified questions in your dataset that you don't want, you can eliminate them. You can also add questions of your own.</p>
 <p><img alt="Screenshot of the dataset configuration page" src="../../assets/images/getting_started/dataset_configurator.png" /></p>
-<p>Note that you will be able to modify some elements of the configuration of the dataset after it has been created from the Dataset Settings page e.g., the titles of fields and questions. Check all the settings you can modify in the <a href="../how_to_guides/dataset.md#update-a-dataset">Update a dataset</a> section.</p>
+<p>Note that you will be able to modify some elements of the configuration of the dataset after it has been created from the Dataset Settings page e.g., the titles of fields and questions. Check all the settings you can modify in the <a href="../../admin_guide/dataset/#update-a-dataset">Update a dataset</a> section.</p>
 <p>When you're happy with the result, you'll need to give a name to your dataset, select a workspace and choose a split, if applicable. Then, Argilla will start importing the dataset in the background. Now you're all set up to start annotating!</p>
 <div class="admonition info">
 <p class="admonition-title">Importing long datasets</p>
@@ -3243,7 +3243,7 @@ Then, paste and run your code snippet. This will import the remaining <abbr titl
 <p>To check that everything is running correctly, you can call <code>me</code>. This should return your user information:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">client</span><span class="o">.</span><span class="n">me</span>
 </span></code></pre></div>
-<p>From here, you can manage all of your assets in Argilla, including updating the dataset we created earlier and adding advanced information, such as vectors, metadata or suggestions. To learn how to do this, check our <a href="../how_to_guides/index.md">how to guides</a>.</p>
+<p>From here, you can manage all of your assets in Argilla, including updating the dataset we created earlier and adding advanced information, such as vectors, metadata or suggestions. To learn how to do this, check our <a href="../../admin_guide/">how to guides</a>.</p>
 <h2 id="export-your-dataset-to-the-hub">Export your dataset to the Hub<a class="headerlink" href="#export-your-dataset-to-the-hub" title="Permanent link">&para;</a></h2>
 <p>Once you've spent some time annotating your dataset in Argilla, you can upload it back to the Hugging Face Hub to share with others or version control it.</p>
 <p>To do that, first follow the steps in the previous section to connect to your Argilla server using the <abbr title="Software Development Kit.">SDK</abbr>. Then, you can load your dataset and export it to the hub like this:</p>
@@ -3251,7 +3251,7 @@ Then, paste and run your code snippet. This will import the remaining <abbr titl
 </span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
 </span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">dataset</span><span class="o">.</span><span class="n">to_hub</span><span class="p">(</span><span class="n">repo_id</span><span class="o">=</span><span class="s2">&quot;&lt;my_org&gt;/&lt;my_dataset&gt;&quot;</span><span class="p">)</span>
 </span></code></pre></div>
-<p>For more info on exporting datasets to the Hub, read our guide on <a href="../how_to_guides/import_export.md#export-to-hub">exporting datasets</a>.</p>
+<p>For more info on exporting datasets to the Hub, read our guide on <a href="../../admin_guide/import_export/#export-to-hub">exporting datasets</a>.</p>
 <h2 id="next-steps">Next steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <ul>
 <li>

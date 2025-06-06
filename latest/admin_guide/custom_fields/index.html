@@ -15,10 +15,10 @@
         <link rel="canonical" href="https://docs.extralit.ai/latest/admin_guide/custom_fields/">
       
       
-        <link rel="prev" href="../import_export/">
+        <link rel="prev" href="../migrate_from_legacy_datasets/">
       
       
-        <link rel="next" href="../webhooks/">
+        <link rel="next" href="../../tutorials/">
       
       
       <link rel="icon" href="../../assets/favicon.ico">
@@ -1769,10 +1769,32 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../how_to_guides/custom_fields.md" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Custom fields with layout templates
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1783,6 +1805,110 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#understanding-the-record-object" class="md-nav__link">
+    <span class="md-ellipsis">
+      Understanding the Record Object
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#using-handlebars-in-your-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      Using Handlebars in your template
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Using Handlebars in your template">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage example
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-gallery" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example Gallery
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced Mode
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced Mode">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage-example_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage example
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-gallery_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example Gallery
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#updating-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Updating templates
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -3249,7 +3375,7 @@
 </span><span id="__span-2-27"><a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a><span class="p">)</span>
 </span></code></pre></div>
 <p>The result will be the following:</p>
-<p><img alt="example-gallery-end" src="../../assets/images/how_to_guides/custom_field/images_in_two_columns.png" /></p>
+<p><img alt="example-gallery-end" src="../assets/images/admin_guide/custom_field/images_in_two_columns.png" /></p>
 <h3 id="example-gallery">Example Gallery<a class="headerlink" href="#example-gallery" title="Permanent link">&para;</a></h3>
 <details>
 <summary>Metadata in a table</summary>
@@ -3296,7 +3422,7 @@
 </span><span id="__span-3-40"><a id="__codelineno-3-40" name="__codelineno-3-40" href="#__codelineno-3-40"></a>    <span class="p">}</span>
 </span><span id="__span-3-41"><a id="__codelineno-3-41" name="__codelineno-3-41" href="#__codelineno-3-41"></a><span class="p">)</span>
 </span></code></pre></div>
-<img alt="example-gallery-end" src="../../assets/images/how_to_guides/custom_field/metadata_table.png" /></p>
+<img alt="example-gallery-end" src="../assets/images/admin_guide/custom_field/metadata_table.png" /></p>
 </details>
 <details>
 <summary>JSON viewer</summary>
@@ -3368,7 +3494,7 @@
 </span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="p">)</span>
 </span></code></pre></div>
 <p>Besides the new <code>CustomField</code> code above, reusing the same approach as in the <a href="#using-handlebars-in-your-template">Using handlebars in your template</a> section, will create a dataset and log a <abbr title="In Argilla, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Argilla and can be associated with various metadata, labels, and annotations.">record</abbr> to it, yielding the same result.</p>
-<p><img alt="example-gallery-end" src="../../assets/images/how_to_guides/custom_field/images_in_two_columns.png" /></p>
+<p><img alt="example-gallery-end" src="../assets/images/admin_guide/custom_field/images_in_two_columns.png" /></p>
 <h3 id="example-gallery_1">Example Gallery<a class="headerlink" href="#example-gallery_1" title="Permanent link">&para;</a></h3>
 <details>
 <summary>3D object viewer</summary>
@@ -3455,7 +3581,7 @@
 </span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    <span class="p">}</span>
 </span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="p">)</span>
 </span></code></pre></div>
-<p><img alt="example-gallery-end" src="../../assets/images/how_to_guides/custom_field/3d_object_viewer.png" /></p>
+<p><img alt="example-gallery-end" src="../assets/images/admin_guide/custom_field/3d_object_viewer.png" /></p>
 </details>
 <h2 id="updating-templates">Updating templates<a class="headerlink" href="#updating-templates" title="Permanent link">&para;</a></h2>
 <p>As described in the <a href="../dataset/">dataset guide</a>, you can update certain setting attributes for a published dataset. This includes the custom fields templates, which is a usefule feature when you want to iterate on the template of a custom field without the need to create a new dataset. The following example shows how to update the template of a custom field.</p>
@@ -3554,7 +3680,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../import_export/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Import and export datasets">
+          <a href="../migrate_from_legacy_datasets/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Migrate users, workspaces and datasets to Argilla V2">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -3564,20 +3690,20 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Import and export datasets
+                Migrate users, workspaces and datasets to Argilla V2
               </div>
             </div>
           </a>
         
         
           
-          <a href="../webhooks/" class="md-footer__link md-footer__link--next" aria-label="Next: Use webhooks to respond to server events">
+          <a href="../../tutorials/" class="md-footer__link md-footer__link--next" aria-label="Next: Tutorials">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Use webhooks to respond to server events
+                Tutorials
               </div>
             </div>
             <div class="md-footer__button md-icon">
