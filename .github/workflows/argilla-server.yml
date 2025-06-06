@@ -88,6 +88,11 @@ jobs:
       - name: Checkout Code 🛎
         uses: actions/checkout@v4
 
+      - name: Get date for cache
+        id: get-date
+        run: echo "today=$(/bin/date -u '+%Y%m%d')" >> $GITHUB_OUTPUT
+        shell: bash
+        working-directory: .
       - name: Install uv
         uses: astral-sh/setup-uv@v5
         with:
@@ -102,11 +107,27 @@ jobs:
           cache-dependency-path: argilla-server/pdm.lock
           cache: true
 
+      - name: Configure uv cache
+        run: |
+          mkdir -p ~/.cache/uv
+          echo "UV_CACHE_DIR=~/.cache/uv" >> $GITHUB_ENV
+
+      - name: Cache uv pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-server-${{ steps.get-date.outputs.today }}-${{ hashFiles('argilla-server/pyproject.toml', 'argilla-server/pdm.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-server-${{ steps.get-date.outputs.today }}-
+            ${{ runner.os }}-uv-server-
+            ${{ runner.os }}-uv-
+
       - name: Install dependencies
         run: |
           pdm config use_uv true
           pdm config python.install_root "$(uv python dir)"
           pdm install --dev
+          uv cache prune --ci
 
       - name: Run tests 📈
         id: run-tests
