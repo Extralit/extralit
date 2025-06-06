@@ -6,7 +6,7 @@ description: Overview of Extralit extraction features and capabilities
 
 This guide shows how to create and manage extraction projects in Extralit.
 
-## Create a New Extraction Project 
+## Create a New Extraction Project
 
 First create a new extraction project by creating a Workspace. This will also create a new file storage bucket to contain schemas and PDFs. Only users added to the workspace can access the project data files and records.
 
@@ -88,10 +88,8 @@ Use [9 - JT - Concensus extractions.ipynb](#) if the command line tool hasn't be
 
 ## Export the Extracted Data
 
-Export the extracted data from the workspace to a CSV file with the `extralit export` command. 
+Export the extracted data from the workspace to a CSV file with the `extralit export` command.
 
 ```bash
 extralit extraction export --workspace {WORKSPACE_NAME} --output {path/to/output.csv}
 ```
-
-Use [A - JT - Export data.ipynb](A%20-%20JT%20-%20Export%20data.ipynb) if the command line tool hasn't been implemented.

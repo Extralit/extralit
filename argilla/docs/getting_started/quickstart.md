@@ -31,7 +31,7 @@ Extralit is a free, open-source, self-hosted tool. This means you need to deploy
       - `ARGILLA_DATABASE_URL`: The URL of the PostgreSQL database where the data will be stored. If you leave it blank, the data will be lost when the Space restarts.
       - `S3_ENDPOINT`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`: The name of the S3 bucket where papers and data extraction artifacts will be stored. If you leave it blank, the data will be lost when the Space restarts.
     - Click Duplicate Space to build an Extralit instance 🚀.
-    - Once you see the UI, [go to the Sign in into the UI section](#sign-in-to-the-argilla-ui). If you see the `Building` message for longer than 2-3 min refresh the page.
+    - Once you see the UI, [go to the Sign in into the UI section](#sign-in-into-the-extralit-ui). If you see the `Building` message for longer than 2-3 min refresh the page.
 
     === "Python SDK"
 
@@ -45,7 +45,7 @@ Extralit is a free, open-source, self-hosted tool. This means you need to deploy
 
     Next, we can use the `Argilla.deploy_on_spaces` method, which will create a Space in [the Hugging Face Hub](https://huggingface.co/). This method will automatically do the following:
 
-    - Deploy an Argilla Space on the Hugging Face Hub with [OAuth sign-in](#sign-in-into-the-argilla-ui) and a URL like `https://<your-username>-argilla.hf.space`, which takes around 2-3 minutes.
+    - Deploy an Argilla Space on the Hugging Face Hub with [OAuth sign-in](#sign-in-into-the-extralit-ui) and a URL like `https://<your-username>-argilla.hf.space`, which takes around 2-3 minutes.
     - Create a default workspace called `argilla` with an owner called `<your-username>` and an Argilla token set to `api_key`.
     - Automatically return the authenticated Argilla client, which can directly be used to interact with your Argilla server.
 
@@ -61,7 +61,7 @@ Extralit is a free, open-source, self-hosted tool. This means you need to deploy
         Not setting persistent storage to `SMALL` means that **you will loose your data when the Space restarts**. Spaces get restarted due to maintenance, inactivity, and every time you change your Spaces settings. If you want to **use the Space just for testing** you can use `FREE` temporarily.
 
 !!! tip "Argilla API Key"
-    Your Argilla API key can be found in the `My Settings` page of your Argilla Space. Take a look at the [sign in to the UI section](#sign-in-into-the-argilla-ui) to learn how to retrieve it.
+    Your Argilla API key can be found in the `My Settings` page of your Argilla Space. Take a look at the [sign in to the UI section](#sign-in-into-the-extralit-ui) to learn how to retrieve it.
 
 !!! warning "Persistent storage `SMALL`"
     Not setting persistent storage to `SMALL` means that **you will loose your data when the Space restarts**. Spaces get restarted due to maintenance, inactivity, and every time you change your Spaces settings. If you want to **use the Space just for testing** you can use `FREE` temporarily.
@@ -112,7 +112,7 @@ Argilla will automatically interpret the columns in the dataset to map them to F
 
 ![Screenshot of the dataset configuration page](../assets/images/getting_started/dataset_configurator.png)
 
-Note that you will be able to modify some elements of the configuration of the dataset after it has been created from the Dataset Settings page e.g., the titles of fields and questions. Check all the settings you can modify in the [Update a dataset](../how_to_guides/dataset.md#update-a-dataset) section.
+Note that you will be able to modify some elements of the configuration of the dataset after it has been created from the Dataset Settings page e.g., the titles of fields and questions. Check all the settings you can modify in the [Update a dataset](../admin_guide/dataset.md#update-a-dataset) section.
 
 When you're happy with the result, you'll need to give a name to your dataset, select a workspace and choose a split, if applicable. Then, Argilla will start importing the dataset in the background. Now you're all set up to start annotating!
 
@@ -164,7 +164,7 @@ To check that everything is running correctly, you can call `me`. This should re
 client.me
 ```
 
-From here, you can manage all of your assets in Argilla, including updating the dataset we created earlier and adding advanced information, such as vectors, metadata or suggestions. To learn how to do this, check our [how to guides](../how_to_guides/index.md).
+From here, you can manage all of your assets in Argilla, including updating the dataset we created earlier and adding advanced information, such as vectors, metadata or suggestions. To learn how to do this, check our [how to guides](../admin_guide/index.md).
 
 ## Export your dataset to the Hub
 
@@ -178,7 +178,7 @@ dataset = client.datasets(name="my_dataset")
 dataset.to_hub(repo_id="<my_org>/<my_dataset>")
 ```
 
-For more info on exporting datasets to the Hub, read our guide on [exporting datasets](../how_to_guides/import_export.md#export-to-hub).
+For more info on exporting datasets to the Hub, read our guide on [exporting datasets](../admin_guide/import_export.md#export-to-hub).
 
 ## Next steps
 - To learn how to create your datasets, workspace, and manage users, check the [how-to guides](../admin_guide/index.md).

@@ -175,7 +175,7 @@ The fields in a dataset consist of one or more data items requiring annotation. 
         description="Field description",
     )
     ```
-    ![ImageField](../assets/images/how_to_guides/dataset/image_field.png)
+    ![ImageField](../assets/images/admin_guide/dataset/image_field.png)
 
 === "Chat"
 
@@ -188,7 +188,7 @@ The fields in a dataset consist of one or more data items requiring annotation. 
         description="Field description",
     )
     ```
-    ![ChatField](../assets/images/how_to_guides/dataset/chat_field.png)
+    ![ChatField](../assets/images/admin_guide/dataset/chat_field.png)
 
 === "Custom"
     A `CustomField` allows you to use a custom template for the field. This is useful if you want to use a custom UI for the field. You can use the `template` argument to pass a string that will be rendered as the field's UI.

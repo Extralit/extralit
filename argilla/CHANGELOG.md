@@ -208,7 +208,7 @@ These are the section headers that we use:
 
 ### Deprecated
 
-- Deprecated task specific dataset classes like `TextClassification` and `TokenClassification`. To migrate legacy datasets to `rg.Dataset` class, see the [how-to-guide](https://docs.v2.argilla.io/dev/how_to_guides/migrate_from_legacy_datasets/).
+- Deprecated task specific dataset classes like `TextClassification` and `TokenClassification`. To migrate legacy datasets to `rg.Dataset` class, see the [how-to-guide](https://docs.v2.argilla.io/dev/admin_guide/migrate_from_legacy_datasets/).
 - Deprecated use case extensions like `listeners` and `ArgillaTrainer`.
 
 ## [Argilla] [2.0.0rc1](https://github.com/argilla-io/argilla/compare/v1.29.0...v2.0.0rc1)

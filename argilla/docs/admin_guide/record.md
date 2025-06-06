@@ -155,7 +155,7 @@ You can add records to a dataset in two different ways: either by using a dictio
 
 ### Fields
 
-Fields are the main pieces of information of the record. These are shown at first sight in the UI together with the questions form. You may only include fields that you have previously configured in the [dataset settings](../how_to_guides/dataset.md#fields). Depending on the type of fields included in the dataset, the data format may be slightly different:
+Fields are the main pieces of information of the record. These are shown at first sight in the UI together with the questions form. You may only include fields that you have previously configured in the [dataset settings](../admin_guide/dataset.md#fields). Depending on the type of fields included in the dataset, the data format may be slightly different:
 
 === "Text"
     Text fields expect input in the form of a `string`.
