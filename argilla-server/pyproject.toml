@@ -183,8 +183,8 @@ server-dev.composite = [
     "cli database users create_default",
     "server",
 ]
-test = { cmd = "pytest", env_file = ".env.test" }
-test-cov = { cmd = "pytest tests --cov=argilla_server --cov-report=term --cov-report=xml", env_file = ".env.test" }
+test = { cmd = "pytest -v 1", env_file = ".env.test" }
+test-cov = { cmd = "pytest tests --cov=argilla_server --cov-report=term --cov-report=xml -v 0", env_file = ".env.test" }
 
 docker-build-argilla-server = { shell = "pdm build && cp -R dist docker/server && docker build -t extralit/argilla-server:local docker/server" }
 docker-build-argilla-hf-spaces = { shell = "pdm run docker-build-argilla-server && docker build --build-arg ARGILLA_VERSION=local -t extralit/argilla-hf-spaces:local docker/argilla-hf-spaces" }
