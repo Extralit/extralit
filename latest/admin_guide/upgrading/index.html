@@ -3174,7 +3174,7 @@
 <ol>
 <li>Pull the latest Extralit image:</li>
 </ol>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>docker<span class="w"> </span>pull<span class="w"> </span>extralit/argilla-quickstart:latest
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>docker<span class="w"> </span>pull<span class="w"> </span>extralit/argilla-hf-spaces:latest
 </span></code></pre></div>
 <ol>
 <li>Stop and remove the existing container:</li>
@@ -3187,7 +3187,7 @@
 </ol>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>--name<span class="w"> </span>extralit-quickstart<span class="w"> </span>-p<span class="w"> </span><span class="m">6900</span>:6900<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span>-e<span class="w"> </span><span class="nv">ARGILLA_AUTH_SECRET_KEY</span><span class="o">=</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-hex<span class="w"> </span><span class="m">32</span><span class="k">)</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">  </span>extralit/argilla-quickstart:latest
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">  </span>extralit/argilla-hf-spaces:latest
 </span></code></pre></div>
 <h3 id="docker-deployment-update">Docker Deployment Update<a class="headerlink" href="#docker-deployment-update" title="Permanent link">&para;</a></h3>
 <ol>
