@@ -153,10 +153,10 @@ class TestCLICommands:
         assert list_result.returncode == 0
         assert test_url[:10] in list_result.stdout
 
-    def test_schemas_download_command(self, test_workspace):
-        """Test the 'schemas download' command."""
+    def test_schemas_list_command(self, test_workspace):
+        """Test the 'schemas list' command."""
         with tempfile.TemporaryDirectory() as temp_dir:
-            result = run_cli_command(f"extralit schemas download {temp_dir} --workspace {test_workspace.name}")
+            result = run_cli_command(f"extralit schemas list --workspace {test_workspace.name}")
 
             assert (
                 result.returncode == 0
