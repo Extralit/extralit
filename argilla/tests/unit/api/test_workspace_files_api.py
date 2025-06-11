@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 from uuid import UUID
 
 import pytest
@@ -133,7 +133,8 @@ def test_delete_file(workspace_api):
     workspace_api.http_client.delete.assert_called_once_with(url="/api/v1/file/test-workspace/test-file.txt", params={})
 
 
-def test_add_document(workspace_api):
+@patch("uuid.uuid4", return_value=UUID("f6e99e43-0a96-4629-b1dd-32c38d829d9e"))
+def test_add_document(mock_uuid4, workspace_api):
     """Test adding a document to a workspace."""
     mock_response = MagicMock()
     mock_response.status_code = 201
@@ -142,6 +143,7 @@ def test_add_document(workspace_api):
 
     # Create a test document
     document = Document(
+        id=mock_uuid4.return_value,
         workspace_id=UUID("123e4567-e89b-12d3-a456-426614174000"),
         url="https://example.com",
         pmid="12345",
@@ -160,11 +162,15 @@ def test_add_document(workspace_api):
             "url": "https://example.com",
             "pmid": "12345",
             "doi": "10.1234/test",
+            "file_name": None,
+            "reference": None,
+            "id": str(document.id),
         },
     )
 
 
-def test_get_documents(workspace_api):
+@patch("uuid.uuid4", return_value=UUID("9bad2107-c2da-4d0b-a73c-866d96582c4b"))
+def test_get_documents(mock_uuid4, workspace_api):
     """Test getting documents from a workspace."""
     mock_response = MagicMock()
     mock_response.status_code = 200

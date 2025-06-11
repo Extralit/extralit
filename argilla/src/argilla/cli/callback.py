@@ -53,7 +53,7 @@ def init_callback() -> "Argilla":
         return client
     except Exception as e:
         echo_in_panel(
-            f"The Extralit Server you are logged in is not available or not responding. Please make sure it's running and try again.\n{e}",
+            f"The Extralit server ({ArgillaCredentials.load().api_url}) you are logged in is not available or not responding. Please make sure it's running and try again.\n{e}",
             title="Server not available",
             title_align="left",
             success=False,
