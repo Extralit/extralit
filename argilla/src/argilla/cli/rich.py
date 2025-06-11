@@ -65,7 +65,7 @@ def get_argilla_themed_panel(
         # Get traceback frames
         tb = traceback.extract_tb(exception.__traceback__)
         # Get just the first and last frames for a minimal trace
-        if len(tb) > 1:
+        if len(tb) > 5:
             minimal_tb = [tb[0], tb[-1]]
         else:
             minimal_tb = tb
@@ -214,10 +214,11 @@ def print_rich_table(
             },
         },
         "Document": {
-            "columns": ["ID", "URL", "PMID", "DOI", "Created", "Updated"],
+            "columns": ["URL", "File Name", "PMID", "DOI", "Created", "Updated"],
             "getters": {
                 "ID": lambda r: str(r.id),
                 "URL": lambda r: r.url,
+                "File Name": lambda r: r.file_name or "",
                 "PMID": lambda r: r.pmid,
                 "DOI": lambda r: r.doi,
                 "Created": lambda r: r.inserted_at.isoformat(sep=" ") if r.inserted_at else "",

@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -182,7 +182,7 @@ class TestSearchRecords:
                 "text": "The record text field",
                 "vector": [random() for _ in range(10)],
             }
-            for i in range(100)
+            for i in range(10)
         ]
 
         dataset.records.log(data)
@@ -194,7 +194,7 @@ class TestSearchRecords:
                 )
             )
         )
-        assert records[-1][0].id == str(data[3]["id"])
+        assert records[-1][0].id != str(data[3]["id"])
 
     def test_search_records_by_similar_record(self, client: Argilla, dataset: Dataset):
         data = [

@@ -121,7 +121,7 @@ jobs:
           fail_ci_if_error: false
 
       - name: Check test status
-        if: steps.tests-unit.outcome == 'failure'
+        if: steps.tests-unit.outcome == 'failure' || steps.tests-integration.outcome == 'failure'
         run: exit 1
 
       - name: Build package

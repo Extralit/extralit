@@ -39,33 +39,33 @@ Then, select from three different development environments through devcontainers
 
 === "Tilt on K8s (Recommended)"
     This environment provides full-stack development with Kubernetes and live-reloading capabilities:
-    
+
     ```bash
     # Initialize the Kubernetes cluster and deploy all services
     tilt up
     ```
 
     Then, simply monitor the deployment in the Tilt UI. The URL will be available in the "Ports" tab, usually http://localhost:10350, or another URL in your VSCode Ports tab.
-    
+
     **Advanced Configuration:** You can customize your deployment by setting environment variables:
-    
+
     ```bash
     # Use external database instead of deploying PostgreSQL
     export ARGILLA_DATABASE_URL="postgresql://user:password@external-host:5432/dbname"
-    
+
     # Use external S3-compatible storage instead of deploying MinIO
     export S3_ENDPOINT="https://your-s3-endpoint"
     export S3_ACCESS_KEY="your-access-key"
     export S3_SECRET_KEY="your-secret-key"
-    
+
     # Use external OpenAI API key
     export OPENAI_API_KEY="your-openai-api-key"
-    
+
     # Use external Weaviate instance
     export WCS_HTTP_URL="https://your-weaviate-instance"
     export WCS_GRPC_URL="grpc://your-weaviate-instance:50051"
     export WCS_API_KEY="your-weaviate-api-key"
-    
+
     # Start Tilt with custom configuration
     tilt up
     ```
@@ -74,35 +74,35 @@ Then, select from three different development environments through devcontainers
 
 === "Docker-Compose"
     This environment uses Docker Compose for a simpler, leaner setup without Kubernetes:
-    
+
     ```bash
     # Start all required services using Docker Compose (if not already started automatically in the devcontainer)
     cd .devcontainer/docker-compose
     docker-compose up -d
-    
+
     # Install server dependencies
     cd argilla-server
     pdm install
-    
+
     # Start the server in development mode
     pdm run server-dev
     ```
 
 === "UI/UX Design"
     This lightweight environment is focused solely on frontend development for UI changes only. It will connect directly to a public demo HF Spaces server instance and automatically load the live-reloading frontend as you make changes.
-    
-    If 
+
+    If
     ```bash
     # Navigate to the frontend directory
     cd argilla-frontend
-    
+
     # Install dependencies
     npm install
-    
+
     # Start the development server with mock API
     API_BASE_URL=https://extralit-public-demo.hf.space/ npm run dev
     ```
-    
+
 ### 3. Development workflow*
 
     - **Backend Development**: Changes to `argilla-server/src/argilla_server/` or `argilla/src/{argilla,extralit}/` are automatically updated if Tilt is running
@@ -151,7 +151,7 @@ We recommend using PDM for package management:
 
 ```bash
 # Install PDM if not already installed
-pip install pdm
+pip install pdm uv
 
 # Install server dependencies
 cd argilla-server
@@ -159,7 +159,7 @@ pdm install
 
 # Install client dependencies
 cd ../argilla
-pdm install --dev
+pdm install
 ```
 
 ### 3. Build the Frontend
@@ -269,9 +269,37 @@ kubectl apply -f weaviate-api-keys.yaml -n extralit-dev
 ENV=dev DOCKER_REPO=localhost:5005 tilt up --namespace extralit-dev --context kind-extralit-dev
 ```
 
+
 ## Option 4: Docker Deployment
 
-For a simpler setup using Docker without development capabilities:
+For a simpler setup using Docker without live development capabilities:
+
+
+### 0. Building the `argilla-server` and `argilla-hf-spaces` docker images
+
+To build and run the Argilla Server using Docker, follow these steps:
+
+```bash
+cd argilla-server
+pdm build && cp -r dist/ docker/server/
+```
+
+```bash
+docker build -t argilla-server:latest -f docker/server/Dockerfile docker/server/
+```
+
+To build the Argilla HF Spaces Docker image, which includes the Argilla Server, ElasticSearch, and Redis, use the following command:
+
+```bash
+docker build --build-arg ARGILLA_SERVER_IMAGE=argilla-server --build-arg ARGILLA_VERSION=latest -t argilla-hf-spaces:latest -f docker/argilla-hf-spaces/Dockerfile docker/argilla-hf-spaces/
+```
+
+Start the Argilla Server and other dependencies using Docker:
+
+```bash
+docker run --rm -p 6900:6900 -e ARGILLA_ENABLE_TELEMETRY=0 -e USERNAME=argilla -e PASSWORD=12345678 -e API_KEY=argilla.apikey --name argilla-hf-spaces argilla-hf-spaces:latest
+```
+
 
 ### 1. Create a Project Directory
 
@@ -282,13 +310,7 @@ mkdir extralit && cd extralit
 ### 2. Download Docker Compose Configuration
 
 ```bash
-wget -O docker-compose.yaml https://raw.githubusercontent.com/extralit/extralit/main/examples/deployments/docker/docker-compose.yaml
-```
-
-Or using curl:
-
-```bash
-curl https://raw.githubusercontent.com/extralit/extralit/main/examples/deployments/docker/docker-compose.yaml -o docker-compose.yaml
+curl https://raw.githubusercontent.com/extralit/extralit/main/docker-compose.yaml -o docker-compose.yaml
 ```
 
 ### 3. Start the Services

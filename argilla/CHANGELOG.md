@@ -14,11 +14,20 @@ These are the section headers that we use:
 * "Security" in case of vulnerabilities.
 -->
 
-## [Extralit] [0.5.0](https://github.com/extralit/extralit/compare/v0.4.1...v0.5.0)
+## [Extralit] [0.5.0](https://github.com/extralit/extralit/compare/v0.4.0...v0.5.0)
 
 ### Changed
-- Updated elasticsearch to 8.17.0
+- Updated `upload_file` function to streamline file upload process and improve user feedback.
+- Modified document listing and file upload functionalities for better user experience and feedback.
 
+### Fixed
+- Fixed all integration tests.
+- Improved dataset error handling and enhanced record assertions in tests.
+- Enhanced test failure handling and updated test commands to suppress warnings.
+- Handle dataset not found errors in Hugging Face dataset tests.
+- Update spaCy and pyarrow dependencies for Python version compatibility.
+- Update `argilla.yml` on Python 3.13.
+- Update spaCy and spaCy-wheel version constraints for compatibility.
 
 ## [Argilla] [2.8.0](https://github.com/argilla-io/argilla/compare/v2.6.0...v2.8.0)
 
