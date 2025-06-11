@@ -19,17 +19,22 @@ import json
 import hashlib
 import uuid
 import logging
+from datetime import datetime
 from pathlib import Path
-from typing import Any, BinaryIO, Dict, List, Optional, Union, Iterator
+from typing import Any, BinaryIO, Dict, List, Optional, Union
 from urllib.parse import urlparse
 from uuid import UUID
+from urllib3 import HTTPResponse
 
-from argilla_server.api.schemas.v1.files import ListObjectsResponse, ObjectMetadata, FileObjectResponse
-from argilla_server.settings import settings
 from fastapi import HTTPException
 from minio import Minio, S3Error
 from minio.versioningconfig import VersioningConfig
+from minio.helpers import ObjectWriteResult
 from minio.commonconfig import ENABLED
+
+from argilla_server.api.schemas.v1.files import ListObjectsResponse, ObjectMetadata, FileObjectResponse
+from argilla_server.settings import settings
+from argilla_server.api.schemas.v1.files import FileObjectResponse
 
 EXCLUDED_VERSIONING_PREFIXES = ["pdf"]
 
@@ -81,7 +86,7 @@ class LocalFileStorage:
         content_type: Optional[str] = None,
         part_size: int = None,
         metadata: Dict[str, Any] = None,
-    ) -> Dict[str, Any]:
+    ) -> ObjectWriteResult:
         # Ensure bucket exists
         bucket_path = self._get_bucket_path(bucket_name)
         bucket_path.mkdir(parents=True, exist_ok=True)
@@ -117,59 +122,100 @@ class LocalFileStorage:
         with open(meta_path, "w") as f:
             json.dump(metadata, f)
 
-        return {
-            "bucket_name": bucket_name,
-            "object_name": object_name,
-            "version_id": version_id,
-            "etag": content_hash,
-            "size": len(data_bytes),
-        }
+        return ObjectWriteResult(
+            bucket_name=bucket_name,
+            object_name=object_name,
+            version_id=version_id,
+            etag=content_hash,
+            http_headers={},
+            last_modified=None,
+            location=None,
+        )
 
-    def get_object(self, bucket_name: str, object_name: str, version_id: Optional[str] = None) -> io.BytesIO:
+    def get_object(
+        self, bucket_name: str, object_name: str, version_id: Optional[str] = None, include_versions: bool = False
+    ) -> "FileObjectResponse":
         if version_id:
             version_path = self._get_version_path(bucket_name, object_name).with_suffix(f".{version_id}")
             if not version_path.exists():
-                raise S3Error("NoSuchKey", "The specified version does not exist", resource=object_name)
+                raise S3Error("NoSuchKey", "The specified version does not exist", object_name, "", "", None)
             with open(version_path, "rb") as f:
-                return io.BytesIO(f.read())
+                content = f.read()
         else:
             object_path = self._get_object_path(bucket_name, object_name)
             if not object_path.exists():
-                raise S3Error("NoSuchKey", "The specified key does not exist", resource=object_name)
+                raise S3Error("NoSuchKey", "The specified key does not exist", object_name, "", "", None)
             with open(object_path, "rb") as f:
-                return io.BytesIO(f.read())
+                content = f.read()
 
-    def stat_object(self, bucket_name: str, object_name: str, version_id: Optional[str] = None) -> Dict[str, Any]:
+        meta_path = self._get_object_path(bucket_name, object_name).with_suffix(".metadata.json")
+        if not meta_path.exists():
+            raise S3Error("NoSuchKey", "The specified key does not exist", object_name, "", "", None)
+        with open(meta_path, "r") as f:
+            metadata_dict = json.load(f)
+
+        if version_id:
+            version_path = self._get_version_path(bucket_name, object_name).with_suffix(f".{version_id}")
+            stats = version_path.stat()
+        else:
+            object_path = self._get_object_path(bucket_name, object_name)
+            stats = object_path.stat()
+        last_modified = datetime.fromtimestamp(stats.st_mtime)
+        metadata = ObjectMetadata(
+            bucket_name=bucket_name,
+            object_name=object_name,
+            version_id=version_id or metadata_dict.get("version_id"),
+            etag=metadata_dict.get("etag"),
+            size=stats.st_size,
+            last_modified=last_modified,
+            metadata=metadata_dict,
+            content_type=metadata_dict.get("content_type", "application/octet-stream"),
+        )
+
+        http_response = HTTPResponse(body=io.BytesIO(content), preload_content=False)
+
+        versions = None
+        if include_versions:
+            objects = list(self.list_objects(bucket_name, prefix=object_name, include_version=True))
+            objects = [ObjectMetadata(**obj.dict()) for obj in objects]
+            versions = ListObjectsResponse(objects=objects)
+
+        return FileObjectResponse(response=http_response, metadata=metadata, versions=versions)
+
+    def stat_object(self, bucket_name: str, object_name: str, version_id: Optional[str] = None) -> ObjectMetadata:
         if version_id:
             version_path = self._get_version_path(bucket_name, object_name).with_suffix(f".{version_id}")
             if not version_path.exists():
-                raise S3Error("NoSuchKey", "The specified version does not exist", resource=object_name)
+                raise S3Error("NoSuchKey", "The specified version does not exist", object_name, "", "", None)
             path = version_path
         else:
             object_path = self._get_object_path(bucket_name, object_name)
             if not object_path.exists():
-                raise S3Error("NoSuchKey", "The specified key does not exist", resource=object_name)
+                raise S3Error("NoSuchKey", "The specified key does not exist", object_name, "", "", None)
             path = object_path
 
         # Get metadata from file
         meta_path = self._get_object_path(bucket_name, object_name).with_suffix(".metadata.json")
         if not meta_path.exists():
-            raise S3Error("NoSuchKey", "The specified key does not exist", resource=object_name)
+            raise S3Error("NoSuchKey", "The specified key does not exist", object_name, "", "", None)
 
         with open(meta_path, "r") as f:
             metadata = json.load(f)
 
         stats = path.stat()
-        return {
-            "bucket_name": bucket_name,
-            "object_name": object_name,
-            "version_id": version_id or metadata.get("version_id"),
-            "etag": metadata.get("etag"),
-            "size": stats.st_size,
-            "last_modified": stats.st_mtime,
-            "metadata": metadata,
-            "content_type": metadata.get("content_type", "application/octet-stream"),
-        }
+
+        last_modified = datetime.fromtimestamp(stats.st_mtime)
+
+        return ObjectMetadata(
+            bucket_name=bucket_name,
+            object_name=object_name,
+            version_id=version_id or metadata.get("version_id"),
+            etag=metadata.get("etag"),
+            size=stats.st_size,
+            last_modified=last_modified,
+            metadata=metadata,
+            content_type=metadata.get("content_type", "application/octet-stream"),
+        )
 
     def remove_object(self, bucket_name: str, object_name: str, version_id: Optional[str] = None):
         if version_id:
@@ -193,32 +239,26 @@ class LocalFileStorage:
         recursive: bool = False,
         include_version: bool = False,
         start_after: Optional[str] = None,
-    ) -> Iterator[Dict[str, Any]]:
+    ) -> List[ObjectMetadata]:
         bucket_path = self._get_bucket_path(bucket_name)
         if not bucket_path.exists():
-            raise S3Error("NoSuchBucket", "The specified bucket does not exist", resource=bucket_name)
+            raise S3Error("NoSuchBucket", "The specified bucket does not exist", bucket_name, "", "", None)
 
-        # Get all files in bucket (and subdirectories if recursive)
         pattern = "**/*" if recursive else "*"
         files = list(bucket_path.glob(pattern))
 
-        # Filter by prefix if provided
         if prefix:
             files = [f for f in files if str(f.relative_to(bucket_path)).startswith(prefix)]
 
-        # Filter out directories and metadata files
         files = [
             f for f in files if f.is_file() and not f.name.endswith(".metadata.json") and ".versions" not in str(f)
         ]
 
-        # Sort by name
         files.sort()
 
-        # Apply start_after if provided
         if start_after:
             files = [f for f in files if str(f.relative_to(bucket_path)) > start_after]
 
-        # Convert to objects
         for file_path in files:
             object_name = str(file_path.relative_to(bucket_path))
             stats = file_path.stat()
@@ -231,27 +271,24 @@ class LocalFileStorage:
             with open(meta_path, "r") as f:
                 metadata = json.load(f)
 
-            obj = {
-                "bucket_name": bucket_name,
-                "object_name": object_name,
-                "is_dir": False,
-                "etag": metadata.get("etag"),
-                "size": stats.st_size,
-                "last_modified": stats.st_mtime,
-                "metadata": metadata,
-                "content_type": metadata.get("content_type", "application/octet-stream"),
-            }
-
-            if include_version:
-                obj["version_id"] = metadata.get("version_id")
+            obj = ObjectMetadata(
+                bucket_name=bucket_name,
+                object_name=object_name,
+                etag=metadata.get("etag"),
+                size=stats.st_size,
+                last_modified=stats.st_mtime,
+                metadata=metadata,
+                content_type=metadata.get("content_type", "application/octet-stream"),
+                version_id=metadata.get("version_id") if include_version else None,
+            )
 
             yield obj
 
 
 def get_minio_client() -> Optional[Union[Minio, LocalFileStorage]]:
     if None in [settings.s3_endpoint, settings.s3_access_key, settings.s3_secret_key]:
-        # Use local file storage instead
-        local_storage_path = os.path.join(settings.home_path, "local_storage")
+        # Use local file system storage if S3 settings are not provided
+        local_storage_path = os.path.join(settings.home_path, "storage")
         _LOGGER.info(f"Using local file storage at: {local_storage_path}")
         return LocalFileStorage(local_storage_path)
 
@@ -333,7 +370,11 @@ def get_object(
             raise se
 
     try:
-        obj = client.get_object(bucket, object, version_id=stat.version_id)
+        obj = client.get_object(bucket, object, version_id=stat.version_id, include_versions=include_versions)
+
+        # If already a FileObjectResponse (from LocalFileStorage), return as is
+        if isinstance(obj, FileObjectResponse):
+            return obj
 
         if include_versions:
             versions = list_objects(client, bucket, prefix=object, include_version=include_versions)
@@ -347,7 +388,7 @@ def get_object(
         raise HTTPException(status_code=404, detail=f"Object {object} not found in bucket {bucket}")
     except Exception as e:
         _LOGGER.error(f"Error getting object {object} from bucket {bucket}: {e}")
-        raise HTTPException(status_code=500, detail=f"Internal server error: {e.message}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {getattr(e, 'message', str(e))}")
 
 
 def put_object(

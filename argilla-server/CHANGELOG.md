@@ -14,10 +14,26 @@ These are the section headers that we use:
 * "Security" in case of vulnerabilities.
 -->
 
-## [Extralit] [0.5.0](https://github.com/extralit/extralit/compare/v0.4.1...v0.5.0)
+## [Extralit] [0.5.0](https://github.com/extralit/extralit/compare/v0.4.0...v0.5.0)
+
+### Added
+- Added new fields (file_name and reference) to the Document model for improved metadata management.
+- Updated WorkspacesAPI to handle document creation from file paths and URLs.
+- Added unit tests for workspace files and schemas API, and improved test configurations.
+- Enhanced CLI commands for adding documents to include reference and improved error handling.
+- Added `from_file` method to Document for creating instances from file paths or URLs.
+
+
+### Fixed
+- LocalFileStorage implementation to mimic Minio or S3 storage.
+- Fixed `argilla-hf-spaces` s3 environment files.
+- Used `uv` in `argilla-server` and `argilla-hf-spaces` Dockerfiles
 
 ### Changed
-- Updated elasticsearch to 8.17.0
+- Adjustments to Dockerfiles for clarity and consistency.
+- Updated `argilla-server` Dockerfile to use `uv` for installing server dependencies.
+- Refactored API schemas to use `DocumentCreate` and `DocumentDelete` for better clarity.
+- Updated elasticsearch to 8.17.0 in `argilla-hf-spaces` Dockerfile.
 
 
 ## [Argilla] [2.8.0](https://github.com/argilla-io/argilla/compare/v2.7.1...v2.8.0)
@@ -55,6 +71,11 @@ These are the section headers that we use:
 - Added `GET /share-your-progress` endpoint to share user progress with the community. ([#5739](https://github.com/argilla-io/argilla/pull/5739))
 - Added `argilla.share_your_progress_enabled` attribute to `GET /api/v1/settings` endpoint. ([#5739](https://github.com/argilla-io/argilla/pull/5739))
 - Added new environment variable `ARGILLA_ENABLE_SHARE_YOUR_PROGRESS` to enable or disable the share your progress feature. ([#5727](https://github.com/argilla-io/argilla/pull/5727))
+
+## [Extralit] [0.4.0](https://github.com/extralit/extralit/compare/v0.3.0...v0.4.0)
+
+### Added
+- Added LocalFileStorage to replace Minio or S3 storage
 
 ## [Argilla] [2.5.0](https://github.com/argilla-io/argilla/compare/v2.4.1...v2.5.0)
 

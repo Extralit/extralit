@@ -100,18 +100,18 @@
       "python.testing.cwd": "${workspaceFolder}/argilla/",
       "python.testing.pytestArgs": [
         "-vv",
-        "--disable-warnings",
-        "--cov",
-        "--cov-report=xml:coverage.xml",
+        "--disable-warnings"
       ],
       "python.defaultInterpreterPath": "/opt/conda/bin/python",
       "python.condaPath": "/usr/local/bin/micromamba",
+      "python.envFile": "${workspaceFolder}/argilla/.env.test",
       "search.exclude": {
         "argilla-server/src/argilla_server/static/": true,
         "argilla-frontend/dist/": true,
         "_nuxt/": true,
         "node_modules/": true,
-        ".venv/": true
+        ".venv/": true,
+        "**/*.png": true
       },
       "files.watcherExclude": {
         "argilla-server/src/argilla_server/static/": true,

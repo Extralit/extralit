@@ -14,6 +14,7 @@
 
 from pathlib import Path
 from typing import List, TYPE_CHECKING, Optional, overload, Union, Sequence, Any
+from urllib.parse import unquote, urlparse
 
 from argilla._api._workspaces import WorkspacesAPI, DEFAULT_SCHEMA_S3_PATH
 from argilla._helpers import GenericIterator
@@ -157,6 +158,7 @@ class Workspace(Resource):
         self,
         file_path: Optional[str] = None,
         url: Optional[str] = None,
+        reference: Optional[str] = None,
         pmid: Optional[str] = None,
         doi: Optional[str] = None,
     ) -> "UUID":
@@ -165,6 +167,7 @@ class Workspace(Resource):
         Args:
             file_path: The local path of the file to upload.
             url: The URL of the document.
+            reference: A reference identifier for the document.
             pmid: The PMID of the document.
             doi: The DOI of the document.
 
@@ -173,7 +176,21 @@ class Workspace(Resource):
         """
         from argilla._models._documents import Document
 
-        document = Document(workspace_id=self.id, file_path=file_path, url=url, pmid=pmid, doi=doi)
+        # Create document from either local file or remote URL
+        if file_path:
+            document = Document.from_file(
+                file_path_or_url=file_path, reference=reference, pmid=pmid, doi=doi, workspace_id=self.id
+            )
+        elif url:
+            parsed_url = urlparse(url)
+            path = parsed_url.path
+            file_name = unquote(path).split("/")[-1]
+            document = Document(
+                url=url, file_name=file_name, reference=reference, pmid=pmid, doi=doi, workspace_id=self.id
+            )
+        else:
+            raise ValueError("Either file_path or url must be provided")
+
         return self._api.add_document(document)
 
     def get_documents(self) -> List["Document"]:
