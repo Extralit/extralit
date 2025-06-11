@@ -1,6 +1,19 @@
+# Copyright 2024-present, Extralit Labs, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Add a document to a workspace."""
 
-import sys
 from pathlib import Path
 from typing import Optional
 
@@ -14,10 +27,14 @@ from argilla.cli.rich import get_argilla_themed_panel
 
 def add_document(
     workspace: str = typer.Option(..., "--workspace", "-w", help="Workspace name"),
-    file_path: Optional[Path] = typer.Option(None, "--file", "-f", help="Path to the document file", exists=True, readable=True),
+    file_path: Optional[Path] = typer.Option(
+        None, "--file", "-f", help="Path to the document file", exists=True, readable=True
+    ),
     url: Optional[str] = typer.Option(None, "--url", "-u", help="URL of the document"),
+    reference: Optional[str] = typer.Option(None, "--reference", "-r", help="Reference of the document"),
     pmid: Optional[str] = typer.Option(None, "--pmid", "-p", help="PubMed ID of the document"),
     doi: Optional[str] = typer.Option(None, "--doi", "-d", help="DOI of the document"),
+    debug: bool = typer.Option(False, "--debug", help="Show minimal stack trace for debugging"),
 ) -> None:
     """Add a document to a workspace."""
     console = Console()
@@ -56,15 +73,16 @@ def add_document(
             console=console,
         ) as progress:
             task = progress.add_task(f"Adding document to workspace '{workspace}'...", total=None)
-            
+
             # Add the document
             document_id = workspace_obj.add_document(
                 file_path=str(file_path) if file_path else None,
                 url=url,
+                reference=reference,
                 pmid=pmid,
                 doi=doi,
             )
-            
+
             progress.update(task, completed=True, description=f"Document added to workspace '{workspace}'")
 
         # Print a success message
@@ -81,6 +99,8 @@ def add_document(
             f"Error adding document: {str(e)}",
             title="Error",
             title_align="left",
+            exception=e,
+            debug=debug,
             success=False,
         )
         console.print(panel)

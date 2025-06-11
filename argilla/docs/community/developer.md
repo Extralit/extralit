@@ -132,12 +132,9 @@ This format helps document the code, keeps the commit history clean, and makes i
 Running tests at the end of every development cycle is indispensable to ensure no breaking changes. GH Actions Workflows automatically run the tests on every commit and PR, but you can also run them locally.
 
 ```sh
-# Run all tests
-pdm run tests
-
-# Run specific tests
-pytest tests/integration
-pytest tests/unit
+cd argilla/
+pdm run test-cov tests/unit
+pdm run test-cov tests/integration
 ```
 
 ??? tip "Running linting, formatting, and tests"

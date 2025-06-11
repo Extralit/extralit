@@ -23,12 +23,12 @@ import httpx
 from argilla._api._base import ResourceAPI
 from argilla._exceptions._api import api_error_handler, ArgillaAPIError
 from argilla._models._workspace import WorkspaceModel
+from argilla._models._files import ListObjectsResponse, ObjectMetadata, FileObjectResponse
 
 from extralit.constants import DEFAULT_SCHEMA_S3_PATH
 
 if TYPE_CHECKING:
     from extralit.extraction.models.schema import SchemaStructure
-    from argilla._models._files import ListObjectsResponse, ObjectMetadata, FileObjectResponse
     from argilla._models._documents import Document
 
 
@@ -140,8 +140,6 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
             ArgillaAPIError: If the API request fails.
             ValueError: If the workspace name is invalid.
         """
-        from argilla._models._files import ListObjectsResponse
-
         if not workspace_name:
             logger.error("Workspace name cannot be empty")
             raise ValueError("Workspace name cannot be empty")
@@ -201,8 +199,6 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
             ValueError: If the workspace name or path is invalid.
             FileNotFoundError: If the file does not exist.
         """
-        from argilla._models._files import FileObjectResponse, ObjectMetadata
-
         if not workspace_name:
             logger.error("Workspace name cannot be empty")
             raise ValueError("Workspace name cannot be empty")
@@ -277,8 +273,6 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
             FileNotFoundError: If the local file does not exist.
             PermissionError: If the local file cannot be read.
         """
-        from argilla._models._files import ObjectMetadata
-
         if not workspace_name:
             logger.error("Workspace name cannot be empty")
             raise ValueError("Workspace name cannot be empty")
@@ -434,6 +428,7 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
             doc = Document(
                 id=doc_data.get("id"),
                 workspace_id=doc_data.get("workspace_id"),
+                file_name=doc_data.get("file_name"),
                 url=doc_data.get("url"),
                 pmid=doc_data.get("pmid"),
                 doi=doc_data.get("doi"),

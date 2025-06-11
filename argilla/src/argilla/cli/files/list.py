@@ -49,7 +49,7 @@ def list_files(
 
         if not files.objects:
             panel = get_argilla_themed_panel(
-                f"No files found in workspace '{workspace}' with path prefix '{path}'.",
+                f"No files found in workspace '{workspace}' at path '{path}'.",
                 title="No files found",
                 title_align="left",
                 success=True,
