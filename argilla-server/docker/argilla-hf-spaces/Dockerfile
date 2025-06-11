@@ -1,6 +1,6 @@
-# Multi-stage build to reduce image size
+# syntax=docker/dockerfile:1.4
 ARG ARGILLA_VERSION=latest
-ARG ARGILLA_SERVER_IMAGE=extralit/argilla-server
+ARG ARGILLA_SERVER_IMAGE=extralitdev/argilla-server
 
 # Base stage with common dependencies
 FROM ${ARGILLA_SERVER_IMAGE}:${ARGILLA_VERSION} AS base
@@ -11,39 +11,43 @@ COPY scripts/start.sh /home/argilla
 COPY Procfile /home/argilla
 COPY requirements.txt /packages/requirements.txt
 
-# Install apt dependencies - breaking up large installations
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends apt-transport-https gnupg wget && \
-    # Install Elasticsearch signing key
-    wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg && \
-    echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" | tee /etc/apt/sources.list.d/elastic-8.x.list && \
-    # Install Redis signing key
-    wget -qO - https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg && \
-    apt-get install -y --no-install-recommends lsb-release && \
-    echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/redis.list && \
-    apt-get update
+# Install system dependencies, Elasticsearch, and Redis in as few layers as possible
+RUN set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+    apt-transport-https \
+    gnupg \
+    wget \
+    lsb-release \
+    curl \
+    jq \
+    pwgen \
+    ; \
+    # Elasticsearch key and repo
+    wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg; \
+    echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" > /etc/apt/sources.list.d/elastic-8.x.list; \
+    # Redis key and repo
+    wget -qO - https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg; \
+    echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" > /etc/apt/sources.list.d/redis.list; \
+    apt-get update; \
+    # Install Elasticsearch and Redis
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    elasticsearch=8.17.0 \
+    redis \
+    ; \
+    # Remove build tools and clean up
+    apt-get purge -y --auto-remove wget gnupg lsb-release apt-transport-https; \
+    apt-get clean; \
+    rm -rf /var/lib/apt/lists/*
 
-# Create data directory
-RUN mkdir /data
+# Create data directory and set permissions
+RUN mkdir -p /data && chown -R argilla:argilla /data \
+    && chown -R argilla:argilla /usr/share/elasticsearch /etc/elasticsearch /var/lib/elasticsearch /var/log/elasticsearch \
+    && chown argilla:argilla /etc/default/elasticsearch
 
-# Install Elasticsearch - separate step to manage memory usage
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends elasticsearch=8.17.0 && \
-    chown -R argilla:argilla /usr/share/elasticsearch /etc/elasticsearch /var/lib/elasticsearch /var/log/elasticsearch && \
-    chown argilla:argilla /etc/default/elasticsearch
-
-# Install Redis - separate step to avoid memory allocation issues
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends redis
-
-# Install Python dependencies and additional utilities
-RUN pip install --no-cache-dir -r /packages/requirements.txt && \
-    chmod +x /home/argilla/start.sh && \
-    chmod +x /home/argilla/start_argilla_server.sh && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends curl jq pwgen && \
-    apt-get remove -y wget gnupg && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/* /packages && \
-    # Give ownership of the data directory to the argilla user
-    chown -R argilla:argilla /data
+# Install Python dependencies and utilities
+RUN pip install --no-cache-dir -r /packages/requirements.txt \
+    && chmod +x /home/argilla/start.sh /home/argilla/start_argilla_server.sh
 
 COPY config/elasticsearch.yml /etc/elasticsearch/elasticsearch.yml
 

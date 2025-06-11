@@ -28,7 +28,7 @@ This guide covers the update process for Extralit across different deployment op
     ```
 
     Finally, build the wheel containing the built argilla-frontend/dist
-    
+
     ```bash
     cp -r argilla-frontend/dist argilla-server/src/argilla_server/static
     rm -rf argilla-server/dist && python -m build -s argilla-server/
@@ -85,7 +85,7 @@ argilla_server database migrate
 1. Pull the latest Extralit image:
 
    ```bash
-   docker pull extralit/argilla-quickstart:latest
+   docker pull extralit/argilla-hf-spaces:latest
    ```
 
 2. Stop and remove the existing container:
@@ -100,7 +100,7 @@ argilla_server database migrate
    ```bash
    docker run -d --name extralit-quickstart -p 6900:6900 \
      -e ARGILLA_AUTH_SECRET_KEY=$(openssl rand -hex 32) \
-     extralit/argilla-quickstart:latest
+     extralit/argilla-hf-spaces:latest
    ```
 
 ### Docker Deployment Update

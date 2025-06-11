@@ -158,5 +158,7 @@ class TestCLICommands:
         with tempfile.TemporaryDirectory() as temp_dir:
             result = run_cli_command(f"extralit schemas download {temp_dir} --workspace {test_workspace.name}")
 
-            assert result.returncode == 0
+            assert (
+                result.returncode == 0
+            ), f"\n--- CLI stdout ---\n{result.stdout}\n--- CLI stderr ---\n{result.stderr}\n"
             assert "No schemas found" in result.stdout

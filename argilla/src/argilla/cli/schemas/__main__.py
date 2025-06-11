@@ -122,6 +122,16 @@ def list_schemas(
 
     console = Console()
 
+    if not workspace_data:
+        panel = get_argilla_themed_panel(
+            f"Workspace '{workspace}' not found.",
+            title="Workspace not found",
+            title_align="left",
+            success=False,
+        )
+        console.print(panel)
+        raise typer.Exit(code=1)
+
     try:
         workspace_schemas = workspace_data.list_schemas()
 
