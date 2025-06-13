@@ -55,10 +55,10 @@ To follow this guide, you will need to have the following prerequisites:
 
 If your current legacy datasets are on a server with Argilla release after 1.29, you could chose to recreate your legacy datasets as new datasets on the same server. You could then upgrade the server to Argilla 2.0 and carry on working their. Your legacy datasets will not be visible on the new server, but they will remain in storage layers if you need to access them.
 
-For migrating the  guides you will need to install the new `argilla` package. This includes a new `v1` module that allows you to connect to the Argilla V1 server.
+For migrating the  guides you will need to install the new `extralit` package. This includes a new `v1` module that allows you to connect to the Argilla V1 server.
 
 ```bash
-pip install "argilla>=2.0.0"
+pip install "extralit>=0.3.0"
 ```
 
 ## Migrate Users and Workspaces
