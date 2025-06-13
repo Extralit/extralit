@@ -3363,8 +3363,8 @@
 <p>This guide will recreate all <code>User</code>'s' and <code>Workspace</code>'s' on a new server. Hence, they will be created with new passwords and IDs. If you want to keep the same passwords and IDs, you can can copy the datasets to a temporary v2 instance, then upgrade your current instance to v2.0 and copy the datasets back to your original instance after.</p>
 </div>
 <p>If your current legacy datasets are on a server with Argilla release after 1.29, you could chose to recreate your legacy datasets as new datasets on the same server. You could then upgrade the server to Argilla 2.0 and carry on working their. Your legacy datasets will not be visible on the new server, but they will remain in storage layers if you need to access them.</p>
-<p>For migrating the  guides you will need to install the new <code>argilla</code> package. This includes a new <code>v1</code> module that allows you to connect to the Argilla V1 server.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;argilla&gt;=2.0.0&quot;</span>
+<p>For migrating the  guides you will need to install the new <code>extralit</code> package. This includes a new <code>v1</code> module that allows you to connect to the Argilla V1 server.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;extralit&gt;=0.3.0&quot;</span>
 </span></code></pre></div>
 <h2 id="migrate-users-and-workspaces">Migrate Users and Workspaces<a class="headerlink" href="#migrate-users-and-workspaces" title="Permanent link">&para;</a></h2>
 <p>The guide will take you through two steps:</p>
