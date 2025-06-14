@@ -201,6 +201,19 @@ class TestHubImportExportMixin:
                 expected_warning=UserWarning,
                 match="Trying to load a dataset `with_records=True` but dataset does not contain any records.",
             ):
+                try:
+                    new_dataset = rg.Dataset.from_hub(
+                        repo_id=repo_id,
+                        client=client,
+                        with_records=with_records_import,
+                        token=token,
+                        name=f"test_{uuid.uuid4()}",
+                        settings="auto",
+                    )
+                except HfHubHTTPError as e:
+                    pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
+        else:
+            try:
                 new_dataset = rg.Dataset.from_hub(
                     repo_id=repo_id,
                     client=client,
@@ -209,15 +222,8 @@ class TestHubImportExportMixin:
                     name=f"test_{uuid.uuid4()}",
                     settings="auto",
                 )
-        else:
-            new_dataset = rg.Dataset.from_hub(
-                repo_id=repo_id,
-                client=client,
-                with_records=with_records_import,
-                token=token,
-                name=f"test_{uuid.uuid4()}",
-                settings="auto",
-            )
+            except HfHubHTTPError as e:
+                pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
 
         if with_records_import and with_records_export:
             for i, record in enumerate(new_dataset.records(with_suggestions=True)):
@@ -236,7 +242,7 @@ class TestHubImportExportMixin:
         self,
         token: str,
         dataset: rg.Dataset,
-        client,
+        client: Argilla,
         mock_data: List[dict[str, Any]],
         with_records_export: bool,
         with_records_import: bool,
@@ -260,6 +266,19 @@ class TestHubImportExportMixin:
                 expected_warning=UserWarning,
                 match="Trying to load a dataset `with_records=True` but dataset does not contain any records.",
             ):
+                try:
+                    new_dataset = rg.Dataset.from_hub(
+                        repo_id=repo_id,
+                        client=client,
+                        with_records=with_records_import,
+                        token=token,
+                        settings=settings,
+                        name=mock_dataset_name,
+                    )
+                except HfHubHTTPError as e:
+                    pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
+        else:
+            try:
                 new_dataset = rg.Dataset.from_hub(
                     repo_id=repo_id,
                     client=client,
@@ -268,15 +287,8 @@ class TestHubImportExportMixin:
                     settings=settings,
                     name=mock_dataset_name,
                 )
-        else:
-            new_dataset = rg.Dataset.from_hub(
-                repo_id=repo_id,
-                client=client,
-                with_records=with_records_import,
-                token=token,
-                settings=settings,
-                name=mock_dataset_name,
-            )
+            except HfHubHTTPError as e:
+                pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
 
         if with_records_import and with_records_export:
             for i, record in enumerate(new_dataset.records(with_suggestions=True)):
@@ -293,7 +305,7 @@ class TestHubImportExportMixin:
         self,
         token: str,
         dataset: rg.Dataset,
-        client,
+        client: Argilla,
         mock_data: List[dict[str, Any]],
         with_records_export: bool,
         with_records_import: bool,
@@ -318,6 +330,19 @@ class TestHubImportExportMixin:
                 expected_warning=UserWarning,
                 match="Trying to load a dataset `with_records=True` but dataset does not contain any records.",
             ):
+                try:
+                    new_dataset = rg.Dataset.from_hub(
+                        repo_id=repo_id,
+                        client=client,
+                        with_records=with_records_import,
+                        token=token,
+                        settings=settings,
+                        name=mock_dataset_name,
+                    )
+                except HfHubHTTPError as e:
+                    pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
+        else:
+            try:
                 new_dataset = rg.Dataset.from_hub(
                     repo_id=repo_id,
                     client=client,
@@ -326,15 +351,8 @@ class TestHubImportExportMixin:
                     settings=settings,
                     name=mock_dataset_name,
                 )
-        else:
-            new_dataset = rg.Dataset.from_hub(
-                repo_id=repo_id,
-                client=client,
-                with_records=with_records_import,
-                token=token,
-                settings=settings,
-                name=mock_dataset_name,
-            )
+            except HfHubHTTPError as e:
+                pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
 
         if with_records_import and with_records_export:
             for i, record in enumerate(new_dataset.records(with_suggestions=True)):
@@ -355,7 +373,7 @@ class TestHubImportExportMixin:
         self,
         token: str,
         dataset: rg.Dataset,
-        client,
+        client: Argilla,
         mock_data: List[dict[str, Any]],
         with_records_export: bool,
     ):
@@ -373,11 +391,19 @@ class TestHubImportExportMixin:
         )
         if with_records_export:
             with pytest.raises(SettingsError):
+                try:
+                    rg.Dataset.from_hub(
+                        repo_id=repo_id, client=client, token=token, settings=settings, name=mock_dataset_name
+                    )
+                except HfHubHTTPError as e:
+                    pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
+        else:
+            try:
                 rg.Dataset.from_hub(
                     repo_id=repo_id, client=client, token=token, settings=settings, name=mock_dataset_name
                 )
-        else:
-            rg.Dataset.from_hub(repo_id=repo_id, client=client, token=token, settings=settings, name=mock_dataset_name)
+            except HfHubHTTPError as e:
+                pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
 
     def test_import_dataset_from_hub_with_automatic_settings(
         self, token: str, dataset: rg.Dataset, client, mock_data: List[dict[str, Any]], with_records_export: bool
@@ -403,7 +429,11 @@ class TestHubImportExportMixin:
                     assert record.fields["text"] == mocked_external_dataset[i]["text"]
                     assert record.suggestions["label"].value == int2str(mocked_external_dataset[i]["label"])
         except Exception as e:
-            if "DatasetNotFoundError" in str(e) or "doesn't exist on the Hub" in str(e):
-                pytest.skip(f"Dataset not found on Hub: {str(e)}")
+            if (
+                "DatasetNotFoundError" in str(e)
+                or "doesn't exist on the Hub" in str(e)
+                or isinstance(e, HfHubHTTPError)
+            ):
+                pytest.skip(f"Dataset not found on Hub or Hugging Face Hub HTTP error: {str(e)}")
             else:
                 raise e
