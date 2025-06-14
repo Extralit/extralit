@@ -132,9 +132,7 @@ class LocalFileStorage:
             location=None,
         )
 
-    def get_object(
-        self, bucket_name: str, object_name: str, version_id: Optional[str] = None, include_versions: bool = False
-    ) -> "FileObjectResponse":
+    def get_object(self, bucket_name: str, object_name: str, version_id: Optional[str] = None) -> HTTPResponse:
         if version_id:
             version_path = self._get_version_path(bucket_name, object_name).with_suffix(f".{version_id}")
             if not version_path.exists():
@@ -148,39 +146,15 @@ class LocalFileStorage:
             with open(object_path, "rb") as f:
                 content = f.read()
 
+        # The metadata is not needed for the HTTPResponse, but kept for consistency
+        # with the original implementation's metadata fetching.
         meta_path = self._get_object_path(bucket_name, object_name).with_suffix(".metadata.json")
         if not meta_path.exists():
             raise S3Error("NoSuchKey", "The specified key does not exist", object_name, "", "", None)
         with open(meta_path, "r") as f:
-            metadata_dict = json.load(f)
+            json.load(f)
 
-        if version_id:
-            version_path = self._get_version_path(bucket_name, object_name).with_suffix(f".{version_id}")
-            stats = version_path.stat()
-        else:
-            object_path = self._get_object_path(bucket_name, object_name)
-            stats = object_path.stat()
-        last_modified = datetime.fromtimestamp(stats.st_mtime)
-        metadata = ObjectMetadata(
-            bucket_name=bucket_name,
-            object_name=object_name,
-            version_id=version_id or metadata_dict.get("version_id"),
-            etag=metadata_dict.get("etag"),
-            size=stats.st_size,
-            last_modified=last_modified,
-            metadata=metadata_dict,
-            content_type=metadata_dict.get("content_type", "application/octet-stream"),
-        )
-
-        http_response = HTTPResponse(body=io.BytesIO(content), preload_content=False)
-
-        versions = None
-        if include_versions:
-            objects = list(self.list_objects(bucket_name, prefix=object_name, include_version=True))
-            objects = [ObjectMetadata(**obj.dict()) for obj in objects]
-            versions = ListObjectsResponse(objects=objects)
-
-        return FileObjectResponse(response=http_response, metadata=metadata, versions=versions)
+        return HTTPResponse(body=io.BytesIO(content), preload_content=False)
 
     def stat_object(self, bucket_name: str, object_name: str, version_id: Optional[str] = None) -> ObjectMetadata:
         if version_id:
@@ -370,11 +344,7 @@ def get_object(
             raise se
 
     try:
-        obj = client.get_object(bucket, object, version_id=stat.version_id, include_versions=include_versions)
-
-        # If already a FileObjectResponse (from LocalFileStorage), return as is
-        if isinstance(obj, FileObjectResponse):
-            return obj
+        obj = client.get_object(bucket, object, version_id=stat.version_id)
 
         if include_versions:
             versions = list_objects(client, bucket, prefix=object, include_version=include_versions)
