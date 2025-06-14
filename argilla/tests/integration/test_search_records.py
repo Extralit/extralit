@@ -194,7 +194,7 @@ class TestSearchRecords:
                 )
             )
         )
-        assert str(records[-1][0].id) != str(data[3]["id"])
+        assert records[0][0].id != str(data[3]["id"])
 
     def test_search_records_by_similar_record(self, client: Argilla, dataset: Dataset):
         data = [
