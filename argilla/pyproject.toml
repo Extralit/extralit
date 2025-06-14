@@ -28,7 +28,7 @@ dependencies = [
     "python-dotenv",
 
     # for extralit
-    "minio==7.2.15",
+    "minio ~= 7.2.15",
     "html5lib",
     "fastapi < 1.0.0",
     "pypandoc ~= 1.13",
