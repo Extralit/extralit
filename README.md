@@ -67,4 +67,4 @@ Extralit is built on top of Argilla, extending its capabilities with enhanced da
 
 ## Repo Activity
 
-![Alt](https://repobeats.axiom.co/api/embed/503055f15ba7ac2f51d697153f7c146ae81c6c04.svg "Repobeats analytics image")
+![Alt](https://repobeats.axiom.co/api/embed/3837e8b3ea152454b555ace7b6675060649004b7.svg "Repobeats analytics image")
