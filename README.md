@@ -15,11 +15,13 @@
 
 Extralit (EXTRAct LITerature) is a data extraction workflow with user-friendly UI, designed for **LLM-assisted scientific data extraction** and other **unstructured document intelligence** tasks. It focuses on data accuracy above all else, and further integrates human feedback loops for continuous LLM refinement and collaborative data extraction.
 
+Why Use Extralit?
+
 - 🔹 Precision First – Built for high data accuracy, ensuring reliable results.
 - 🔹 Human-in-the-Loop – Seamlessly integrate human annotations to refine LLM outputs and collaborate on data validation.
 - 🔹 Flexible & Scalable – Available as a Python SDK, CLI, and Web UI with multiple deployment options to fit your workflow.
 
-🌟 Key Features
+Key Features:
 
 - ✅ Schema-Driven Extraction – Define structured schemas for context-aware, high-accuracy data extraction across scientific domains.
 - ✅ Advanced PDF Processing – AI-powered OCR detects complex table structures in both digital and scanned PDFs.
@@ -28,6 +30,11 @@ Extralit (EXTRAct LITerature) is a data extraction workflow with user-friendly U
 - ✅ Data Flywheel – Collect human annotations to monitor performance and build fine-tuning datasets for continuous improvement.
 
 Start extracting smarter with Extralit! 🚀
+
+## Recent News
+
+- **May 2025**: Extralit selected for Google Summer of Code 2025! We're working on Scientific PDF Data Extraction and Interactive Schema Editor UI projects.
+- **Looking to contribute?** Check out our GSoC projects or open issues to get started!
 
 ## Getting started
 
@@ -61,4 +68,3 @@ Extralit is built on top of Argilla, extending its capabilities with enhanced da
 ## Repo Activity
 
 ![Alt](https://repobeats.axiom.co/api/embed/503055f15ba7ac2f51d697153f7c146ae81c6c04.svg "Repobeats analytics image")
-
