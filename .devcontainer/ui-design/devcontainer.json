@@ -11,7 +11,10 @@
                 "mrmlnc.vscode-scss",
                 "sibiraj-s.vscode-scss-formatter",
                 "esbenp.prettier-vscode",
-                "ms-vscode.live-server"
+                "ms-vscode.live-server",
+                "usernamehw.errorlens",
+                "charliermarsh.ruff",
+                "firsttris.vscode-jest-runner"
             ],
             "settings": {
                 "workbench.colorTheme": "Default Light+",
