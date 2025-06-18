@@ -34,7 +34,6 @@ from minio.commonconfig import ENABLED
 
 from argilla_server.api.schemas.v1.files import ListObjectsResponse, ObjectMetadata, FileObjectResponse
 from argilla_server.settings import settings
-from argilla_server.api.schemas.v1.files import FileObjectResponse
 
 EXCLUDED_VERSIONING_PREFIXES = ["pdf"]
 
