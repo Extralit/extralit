@@ -153,4 +153,4 @@ src/**/server/static/
 
 # App generated files
 argilla-server/src/argilla_server/static
-argilla/site
+extralit/site

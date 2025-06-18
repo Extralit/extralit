@@ -7,7 +7,7 @@ if ! pip list | grep -q "extralit"; then
     pdm config python.install_root /opt/conda/
     uv pip install -q "sentence-transformers<3.0.0" transformers "textdescriptives<3.0.0" \
         -e /workspaces/extralit/argilla-server/ && \
-        uv pip install -q -e /workspaces/extralit/argilla/
+        uv pip install -q -e /workspaces/extralit/extralit/
 else
     echo "Package 'extralit' is already installed. Skipping installation."
 fi

@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ if TYPE_CHECKING:
     from argilla.client import Argilla
 
 _SLEEP_TIME = 10
-_ARGILLA_SPACE_TEMPLATE_REPO = "argilla/argilla-template-space"
+_ARGILLA_SPACE_TEMPLATE_REPO = "extralit/public-demo"
 
 
 class SpacesDeploymentMixin(LoggingMixin):

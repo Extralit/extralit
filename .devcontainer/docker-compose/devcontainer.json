@@ -97,14 +97,14 @@
     },
     "settings": {
       "python.testing.pytestEnabled": true,
-      "python.testing.cwd": "${workspaceFolder}/argilla/",
+      "python.testing.cwd": "${workspaceFolder}/extralit/",
       "python.testing.pytestArgs": [
         "-vv",
         "--disable-warnings"
       ],
       "python.defaultInterpreterPath": "/opt/conda/bin/python",
       "python.condaPath": "/usr/local/bin/micromamba",
-      "python.envFile": "${workspaceFolder}/argilla/.env.test",
+      "python.envFile": "${workspaceFolder}/extralit/.env.test",
       "search.exclude": {
         "argilla-server/src/argilla_server/static/": true,
         "argilla-frontend/dist/": true,

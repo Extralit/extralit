@@ -8,7 +8,7 @@ copyright: Copyright &copy; 2023 - 2025 Extralit
 # Repository
 repo_name: extralit/extralit
 repo_url: https://github.com/extralit/extralit/
-edit_uri: edit/main/argilla/docs/
+edit_uri: edit/main/extralit/docs/
 
 extra:
   version:
