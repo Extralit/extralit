@@ -4,9 +4,9 @@ This directory contains GitHub Actions workflows for building, testing, and depl
 
 ## Key Workflows
 
-### `argilla.yml`
+### `extralit.yml`
 
-Builds and publishes the `argilla` SDK Python package.
+Builds and publishes the `extralit` SDK Python package.
 
 - **Trigger**: Push to main/develop/releases branches, pull requests, or manual dispatch
 - **Python versions**: 3.9, 3.10, 3.11, 3.12, 3.13
@@ -57,7 +57,7 @@ The workflows set various environment variables:
 
 Additional environment variables are set in specific workflows:
 - For `argilla-server.yml`: Database connection variables for Postgres, Elasticsearch, Redis, and MinIO
-- For `argilla.yml`: HuggingFace credentials for integration tests
+- For `extralit.yml`: HuggingFace credentials for integration tests
 
 ## Common Issues & Solutions
 
