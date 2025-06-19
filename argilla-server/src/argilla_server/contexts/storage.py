@@ -37,7 +37,7 @@ from argilla_server.settings import settings
 
 EXCLUDED_VERSIONING_PREFIXES = ["pdf"]
 
-_LOGGER = logging.getLogger("argilla")
+_LOGGER = logging.getLogger(__name__)
 
 
 class LocalFileStorage:
