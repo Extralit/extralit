@@ -49,6 +49,7 @@ dependencies = [
     "fastparquet >= 2023.10.0; python_version < '3.13'",
     "fastparquet >= 2024.4.0; python_version >= '3.13'",
     "tiktoken ~= 0.9.0",
+    "pymupdf==1.26.0",
 
     # for llama-index
     "llama-index ~= 0.10.68",
