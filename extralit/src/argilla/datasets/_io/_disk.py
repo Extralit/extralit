@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 
 import json
 import logging
@@ -35,7 +36,7 @@ class DiskImportExportMixin(ABC):
 
     _model: DatasetModel
     _DEFAULT_RECORDS_PATH = "records.json"
-    _DEFAULT_CONFIG_REPO_DIR = ".argilla"
+    _DEFAULT_CONFIG_REPO_DIR = ".extralit"
     _DEFAULT_SETTINGS_PATH = f"{_DEFAULT_CONFIG_REPO_DIR}/settings.json"
     _DEFAULT_DATASET_PATH = f"{_DEFAULT_CONFIG_REPO_DIR}/dataset.json"
     _DEFAULT_CONFIGURATION_FILES = [_DEFAULT_SETTINGS_PATH, _DEFAULT_DATASET_PATH]
