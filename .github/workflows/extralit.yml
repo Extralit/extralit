@@ -1,0 +1,211 @@
+name: Build and publish the `extralit` sdk python package
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.sha }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+
+  push:
+    branches:
+      - main
+      - develop
+      - releases/**
+    paths:
+      - "extralit/**"
+      - ".github/workflows/argilla.*"
+
+  pull_request:
+    paths:
+      - "extralit/**"
+      - "argilla-server/**"
+
+permissions:
+  id-token: write
+  contents: write
+
+jobs:
+  build:
+    services:
+      argilla-server:
+        image: extralitdev/argilla-hf-spaces:develop
+        ports:
+          - 6900:6900
+        env:
+          ARGILLA_ENABLE_TELEMETRY: 0
+          # Set credentials
+          USERNAME: argilla
+          PASSWORD: 12345678
+          API_KEY: argilla.apikey
+          # Configure storage to use local files instead of MinIO
+          ARGILLA_S3_ENDPOINT: ""
+          ARGILLA_S3_ACCESS_KEY: ""
+          ARGILLA_S3_SECRET_KEY: ""
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        working-directory: extralit
+    strategy:
+      fail-fast: true
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          pyproject-file: "extralit/pyproject.toml"
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+          cache-local-path: ~/.cache/uv
+          ignore-nothing-to-cache: true
+          cache-dependency-glob: "extralit/pdm.lock"
+      - name: Setup PDM
+        uses: pdm-project/setup-pdm@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: true
+          cache-dependency-path: |
+            extralit/pdm.lock
+      - name: Install dependencies
+        env:
+          PDM_IGNORE_ACTIVE_VENV: 1
+        run: |
+          pdm config use_uv true
+          pdm config python.install_root "$(uv python dir)"
+
+          # Special handling for Python 3.13
+          if [[ "${{ matrix.python-version }}" == "3.13" ]]; then
+            uv pip install --only-binary=:all: spacy thinc pyarrow
+          fi
+
+          pdm install
+          uv cache prune --ci
+      - name: Wait for argilla server to start
+        run: |
+          while ! curl -XGET http://localhost:6900/api/_status; do sleep 5; done
+          # Create a directory for local storage that the container can access
+          mkdir -p /tmp/argilla-files
+          chmod -R 777 /tmp/argilla-files
+      - name: Set huggingface hub credentials
+        run: |
+          echo "HF_TOKEN_ARGILLA_INTERNAL_TESTING=${{ secrets.HF_TOKEN_ARGILLA_INTERNAL_TESTING }}" >> "$GITHUB_ENV"
+          echo "Enable HF access token"
+      - name: Run unit tests
+        id: tests-unit
+        continue-on-error: true
+        run: |
+            pdm run test-cov tests/unit
+
+      - name: Run integration tests
+        id: tests-integration
+        continue-on-error: true
+        run: |
+            pdm run test-cov tests/integration
+
+      - name: Generate coverage report
+        if: always()
+        continue-on-error: true
+        run: |
+          pdm run coverage xml -o coverage.xml
+          pdm run coverage report
+
+      - name: Upload test coverage
+        if: always()
+        uses: codecov/codecov-action@v5.4.3
+        with:
+          files: coverage.xml
+          flags: argilla
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+
+      - name: Check test status
+        if: steps.tests-unit.outcome == 'failure' || steps.tests-integration.outcome == 'failure'
+        run: exit 1
+
+      - name: Build package
+        run: |
+          pdm build
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        # Upload the package to be used in the next jobs only once
+        if: ${{ matrix.python-version == '3.9' }}
+        with:
+          name: extralit
+          path: extralit/dist
+
+  # This job will publish argilla package into PyPI repository
+  publish_release:
+    name: Publish Release
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' }}
+
+    permissions:
+      # This permission is needed for private repositories.
+      # contents: read
+      # IMPORTANT: this permission is mandatory for trusted publishing on PyPI
+      id-token: write
+
+    needs:
+      - build
+
+    defaults:
+      run:
+        shell: bash -l {0}
+        working-directory: extralit
+
+    steps:
+      - name: Checkout Code 🛎
+        uses: actions/checkout@v4
+
+      - name: Update repo visualizer
+        uses: githubocto/repo-visualizer@0.7.1
+        with:
+          root_path: "extralit/"
+          excluded_paths: "dist,build,node_modules,docs,tests,.swm,assets,.github,package-lock.json,pdm.lock"
+          excluded_globs: "*.spec.js;**/*.{png,jpg,svg,md};**/!(*.module).ts,**/__pycache__/,**/__mocks__/,LICENSE*,**/.gitignore,**/*.egg-info/,**/.*/"
+          output_file: "repo-visualizer.svg"
+          should_push: false
+
+      - name: Upload repo visualizer diagram as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: repo-visualizer
+          path: repo-visualizer.svg
+          retention-days: 10
+
+      - name: Download python package
+        uses: actions/download-artifact@v4
+        with:
+          name: extralit
+          path: extralit/dist
+
+      - name: Setup PDM
+        uses: pdm-project/setup-pdm@v4
+        with:
+          cache: true
+          python-version-file: extralit/pyproject.toml
+          cache-dependency-path: |
+            extralit/pdm.lock
+
+      - name: Read package info
+        run: |
+          PACKAGE_VERSION=$(pdm show --version)
+          PACKAGE_NAME=$(pdm show --name)
+          echo "PACKAGE_VERSION=$PACKAGE_VERSION" >> $GITHUB_ENV
+          echo "PACKAGE_NAME=$PACKAGE_NAME" >> $GITHUB_ENV
+          echo "$PACKAGE_NAME==$PACKAGE_VERSION"
+
+      - name: Publish Package to PyPI test environment 🥪
+        run: pdm publish --no-build --repository testpypi --username __token__ --password ${{ secrets.AR_TEST_PYPI_API_TOKEN }}
+        continue-on-error: true
+
+      - name: Test Installing 🍿
+        continue-on-error: true
+        run: |
+          pip3 install --index-url https://test.pypi.org/simple --no-deps  $PACKAGE_NAME==$PACKAGE_VERSION
+
+      - name: Publish Package to PyPI 🥩
+        if: github.ref == 'refs/heads/main'
+        run: pdm publish --no-build --username __token__ --password ${{ secrets.AR_PYPI_API_TOKEN }}

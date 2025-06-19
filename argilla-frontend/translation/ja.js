@@ -286,7 +286,7 @@ export default {
     guidesText: "以下のガイドを参照してください",
     pasteRepoIdPlaceholder: "リポジトリIDを貼り付け <例> stanfordnlp/imdb",
     demoLink:
-      "こちらの<a href='https://huggingface.co/spaces/argilla/argilla-template-space' target='_blank'>デモ</a>にログインしてArgillaを試してみましょう",
+      "こちらの<a href='https://huggingface.co/spaces/extralit/public-demo' target='_blank'>デモ</a>にログインしてArgillaを試してみましょう",
     name: "データセット名",
     updatedAt: "更新日",
     createdAt: "作成日",
