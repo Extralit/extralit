@@ -22,6 +22,9 @@ These are the section headers that we use:
 - Refactored `argilla/*` to `extralit/*` to align with the new project structure.
 - Changed `EXTRALIT_CACHE_DIR` to `~/.extralit/` from `~/.argilla/` to align with new project structure.
 
+### Deprecated
+- `argilla-v1` is deprecated and will be removed in the next major release. Use `extralit` instead.
+
 ### Fixed
 - Fixed all integration tests.
 - Improved dataset error handling and enhanced record assertions in tests.
