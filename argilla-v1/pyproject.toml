@@ -63,7 +63,8 @@ dependencies = [
     "dill ~= 0.3.8",
     "json-repair ~= 0.19.2",
     "fastparquet",
-    "tiktoken",
+    "tiktoken ~= 0.9.0",
+    "pymupdf==1.26.0",
     # for llama-index
     "llama-index ~= 0.10.68",
     "llama-index-core ~= 0.10.68",
