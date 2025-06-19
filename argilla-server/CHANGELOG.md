@@ -23,17 +23,17 @@ These are the section headers that we use:
 - Enhanced CLI commands for adding documents to include reference and improved error handling.
 - Added `from_file` method to Document for creating instances from file paths or URLs.
 
-
-### Fixed
-- LocalFileStorage implementation to mimic Minio or S3 storage.
-- Fixed `argilla-hf-spaces` s3 environment files.
-- Used `uv` in `argilla-server` and `argilla-hf-spaces` Dockerfiles
-
 ### Changed
 - Adjustments to Dockerfiles for clarity and consistency.
 - Updated `argilla-server` Dockerfile to use `uv` for installing server dependencies.
 - Refactored API schemas to use `DocumentCreate` and `DocumentDelete` for better clarity.
 - Updated elasticsearch to 8.17.0 in `argilla-hf-spaces` Dockerfile.
+- Changed `home_path` to `~/.extralit/` from `~/.argilla/` to align with new project structure.
+
+### Fixed
+- LocalFileStorage implementation to mimic Minio or S3 storage.
+- Fixed `argilla-hf-spaces` s3 environment files.
+- Used `uv` in `argilla-server` and `argilla-hf-spaces` Dockerfiles
 
 
 ## [Argilla] [2.8.0](https://github.com/argilla-io/argilla/compare/v2.7.1...v2.8.0)
