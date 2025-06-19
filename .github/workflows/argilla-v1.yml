@@ -41,17 +41,16 @@ jobs:
           use-mamba: true
           activate-environment: argilla
 
-      - name: Get date for conda cache
-        id: get-date
-        run: echo "::set-output name=today::$(/bin/date -u '+%Y%m%d')"
-        shell: bash
-
       - name: Cache Conda env
         uses: actions/cache@v3
         id: cache
         with:
-          path: ${{ env.CONDA }}/envs
-          key: conda-${{ runner.os }}--${{ runner.arch }}--${{ steps.get-date.outputs.today }}-${{ hashFiles('argilla-v1/environment_dev.yml') }}-${{ env.CACHE_NUMBER }}
+          path: ${{ env.CONDA }}/envs/argilla
+          key: conda-${{ runner.os }}--${{ runner.arch }}--${{ hashFiles('argilla-v1/environment_dev.yml') }}-${{ env.CACHE_NUMBER }}
+          restore-keys: |
+            conda-${{ runner.os }}--${{ runner.arch }}--${{ hashFiles('argilla-v1/environment_dev.yml') }}
+            conda-${{ runner.os }}--${{ runner.arch }}--
+            conda-
 
       - name: Update environment
         if: steps.cache.outputs.cache-hit != 'true'
