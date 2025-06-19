@@ -19,6 +19,8 @@ These are the section headers that we use:
 ### Changed
 - Updated `upload_file` function to streamline file upload process and improve user feedback.
 - Modified document listing and file upload functionalities for better user experience and feedback.
+- Refactored `argilla/*` to `extralit/*` to align with the new project structure.
+- Changed `EXTRALIT_CACHE_DIR` to `~/.extralit/` from `~/.argilla/` to align with new project structure.
 
 ### Fixed
 - Fixed all integration tests.
