@@ -19,6 +19,11 @@ These are the section headers that we use:
 ### Changed
 - Updated `upload_file` function to streamline file upload process and improve user feedback.
 - Modified document listing and file upload functionalities for better user experience and feedback.
+- Refactored `argilla/*` to `extralit/*` to align with the new project structure.
+- Changed `EXTRALIT_CACHE_DIR` to `~/.extralit/` from `~/.argilla/` to align with new project structure.
+
+### Deprecated
+- `argilla-v1` is deprecated and will be removed in the next major release. Use `extralit` instead.
 
 ### Fixed
 - Fixed all integration tests.
@@ -26,7 +31,7 @@ These are the section headers that we use:
 - Enhanced test failure handling and updated test commands to suppress warnings.
 - Handle dataset not found errors in Hugging Face dataset tests.
 - Update spaCy and pyarrow dependencies for Python version compatibility.
-- Update `argilla.yml` on Python 3.13.
+- Update `extralit.yml` on Python 3.13.
 - Update spaCy and spaCy-wheel version constraints for compatibility.
 
 ## [Argilla] [2.8.0](https://github.com/argilla-io/argilla/compare/v2.6.0...v2.8.0)

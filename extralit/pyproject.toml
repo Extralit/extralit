@@ -25,11 +25,11 @@ dependencies = [
     "typer>=0.9.0",
 
     # for environment variables
-    "python-dotenv",
+    "python-dotenv~=1.1.0",
 
     # for extralit
     "minio ~= 7.2.15",
-    "html5lib",
+    "html5lib ~= 1.1",
     "fastapi < 1.0.0",
     "pypandoc ~= 1.13",
     "beautifulsoup4 ~= 4.12.2",
@@ -48,8 +48,8 @@ dependencies = [
     "json-repair ~= 0.19.2",
     "fastparquet >= 2023.10.0; python_version < '3.13'",
     "fastparquet >= 2024.4.0; python_version >= '3.13'",
-    "tiktoken",
-    "pymupdf",
+    "tiktoken ~= 0.9.0",
+    "pymupdf==1.26.0",
 
     # for llama-index
     "llama-index ~= 0.10.68",
@@ -78,9 +78,9 @@ pdf = [
     "llmsherpa ~= 0.1.3",
     "python-doctr ~= 0.8.1",
     "deepdoctection",
-    "pypdf",
+    "pypdf ~= 4.3.1",
     "pypdfium2",
-    "pymupdf",
+    "pymupdf==1.26.0",
     "pdf2image ~= 1.16.0",
 ]
 legacy = ["argilla-v1[listeners]"]

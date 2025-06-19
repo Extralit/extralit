@@ -15,13 +15,13 @@ on:
       - "develop"
       - "docs/**"
     paths:
-      - ".github/workflows/argilla.docs.yml"
-      - "argilla/docs/**"
-      - "argilla/mkdocs.yml"
+      - ".github/workflows/extralit.docs.yml"
+      - "extralit/docs/**"
+      - "extralit/mkdocs.yml"
 
 defaults:
   run:
-    working-directory: argilla
+    working-directory: extralit
 
 permissions:
   contents: write
@@ -45,12 +45,12 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v5
         with:
-          pyproject-file: "argilla/pyproject.toml"
+          pyproject-file: "extralit/pyproject.toml"
           python-version: "3.10"
           enable-cache: true
           cache-local-path: ~/.cache/uv
           ignore-nothing-to-cache: true
-          cache-dependency-glob: "argilla/pdm.lock"
+          cache-dependency-glob: "extralit/pdm.lock"
 
       - name: Setup PDM
         uses: pdm-project/setup-pdm@v4
@@ -58,7 +58,7 @@ jobs:
           python-version: "3.10"
           cache: true
           cache-dependency-path: |
-            argilla/pdm.lock
+            extralit/pdm.lock
 
       - name: Install dependencies
         env:
