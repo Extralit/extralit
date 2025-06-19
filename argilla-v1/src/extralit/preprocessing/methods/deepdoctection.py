@@ -4,9 +4,9 @@ from typing import List
 from PIL import Image
 from deepdoctection import Page, LayoutType, ImageAnnotationBaseView
 
-from extralit.convert.pdf import extract_image
-from extralit.preprocessing.segment import TableSegment, FigureSegment, Segments, Coordinates
-from extralit.preprocessing.tables import get_table_header_footer
+from extralit_v1.convert.pdf import extract_image
+from extralit_v1.preprocessing.segment import TableSegment, FigureSegment, Segments, Coordinates
+from extralit_v1.preprocessing.tables import get_table_header_footer
 
 
 def get_table_segments(pages: List[Page], output_dir=None, redo=True) -> Segments:

@@ -7,8 +7,8 @@ from typing import List, Optional, Union, Dict, Literal, Any
 import pandas as pd
 import pandera as pa
 
-from extralit.schema.checks.utils import make_same_length_arguments
-from extralit.server.models.extraction import ExtractionResponse
+from extralit_v1.schema.checks.utils import make_same_length_arguments
+from extralit_v1.server.models.extraction import ExtractionResponse
 
 _LOGGER = logging.getLogger(__name__)
 

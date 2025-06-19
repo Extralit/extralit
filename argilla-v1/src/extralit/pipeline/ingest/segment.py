@@ -4,8 +4,8 @@ import argilla_v1 as rg
 import pandas as pd
 from argilla_v1 import FeedbackRecord
 
-from extralit.pipeline.ingest.record import get_record_data
-from extralit.preprocessing.segment import Segments, FigureSegment, TableSegment
+from extralit_v1.pipeline.ingest.record import get_record_data
+from extralit_v1.preprocessing.segment import Segments, FigureSegment, TableSegment
 
 
 def get_paper_tables(

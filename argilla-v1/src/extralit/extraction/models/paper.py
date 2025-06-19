@@ -9,7 +9,7 @@ import pandera as pa
 from pandera.api.base.model import MetaModel
 from pydantic.v1 import BaseModel, Field
 
-from extralit.extraction.models.schema import SchemaStructure
+from extralit_v1.extraction.models.schema import SchemaStructure
 
 _LOGGER = logging.getLogger(__name__)
 

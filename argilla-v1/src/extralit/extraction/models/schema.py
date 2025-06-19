@@ -40,7 +40,7 @@ class SchemaStructure(BaseModel):
     Usage:
     ```python
     from pandera import DataFrameSchema
-    from extralit.extraction.models.schema import SchemaStructure
+    from extralit_v1.extraction.models.schema import SchemaStructure
 
     schema_structure = SchemaStructure(
         schemas=[

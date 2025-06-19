@@ -4,9 +4,9 @@ from typing import Dict, List, Iterator, Any
 from langfuse import Langfuse
 from langfuse.api import ObservationsView
 
-from extralit.extraction.models import PaperExtraction
-from extralit.metrics.extraction import grits_multi_tables
-from extralit.server.context.llamaindex import get_langfuse_callback
+from extralit_v1.extraction.models import PaperExtraction
+from extralit_v1.metrics.extraction import grits_multi_tables
+from extralit_v1.server.context.llamaindex import get_langfuse_callback
 
 langfuse_callback = get_langfuse_callback()
 langfuse_client = langfuse_callback.langfuse

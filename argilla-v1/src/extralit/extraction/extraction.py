@@ -16,18 +16,18 @@ from llama_index.core.vector_stores import (
 )
 from pydantic.v1 import BaseModel
 
-from extralit.extraction.models.paper import PaperExtraction
-from extralit.extraction.models.response import ResponseResult, ResponseResults
-from extralit.extraction.models.schema import SchemaStructure
-from extralit.extraction.prompts import (
+from extralit_v1.extraction.models.paper import PaperExtraction
+from extralit_v1.extraction.models.response import ResponseResult, ResponseResults
+from extralit_v1.extraction.models.schema import SchemaStructure
+from extralit_v1.extraction.prompts import (
     create_extraction_prompt,
     create_completion_prompt,
     DEFAULT_EXTRACTION_PROMPT_TMPL,
 )
-from extralit.extraction.schema import get_extraction_schema_model
-from extralit.extraction.utils import convert_response_to_dataframe, generate_reference_columns
-from extralit.extraction.vector_index import load_index
-from extralit.schema.references.assign import assign_unique_index, get_prefix
+from extralit_v1.extraction.schema import get_extraction_schema_model
+from extralit_v1.extraction.utils import convert_response_to_dataframe, generate_reference_columns
+from extralit_v1.extraction.vector_index import load_index
+from extralit_v1.schema.references.assign import assign_unique_index, get_prefix
 
 _LOGGER = logging.getLogger(__name__)
 

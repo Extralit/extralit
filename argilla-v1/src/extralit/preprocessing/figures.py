@@ -7,7 +7,7 @@ from PIL import Image
 from bs4 import BeautifulSoup
 from pydantic import BaseModel, Field
 
-from extralit.extraction.staging import heal_json
+from extralit_v1.extraction.staging import heal_json
 
 
 class FigureExtractionResponse(BaseModel):

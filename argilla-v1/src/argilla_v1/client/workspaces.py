@@ -36,7 +36,7 @@ from argilla_v1.client.utils import allowed_for_roles
 from argilla_v1.client.sdk.v1.files.models import FileObjectResponse, ListObjectsResponse
 
 import pandera as pa
-from extralit.extraction.models.schema import SchemaStructure, DEFAULT_SCHEMA_S3_PATH
+from extralit_v1.extraction.models.schema import SchemaStructure, DEFAULT_SCHEMA_S3_PATH
 
 if TYPE_CHECKING:
     import httpx

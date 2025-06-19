@@ -9,9 +9,9 @@ from argilla.client.feedback.dataset.remote.dataset import RemoteFeedbackDataset
 from llama_index.embeddings.openai import OpenAIEmbedding
 from tqdm import tqdm
 
-from extralit.convert.json_table import df_to_json
-from extralit.extraction.models.paper import PaperExtraction
-from extralit.extraction.models.response import ResponseResults
+from extralit_v1.convert.json_table import df_to_json
+from extralit_v1.extraction.models.paper import PaperExtraction
+from extralit_v1.extraction.models.response import ResponseResults
 
 _LOGGER = logging.getLogger(__name__)
 

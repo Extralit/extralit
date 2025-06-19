@@ -6,9 +6,9 @@ from llama_index.core import PromptTemplate, ChatPromptTemplate
 from llama_index.core.base.llms.types import MessageRole, ChatMessage
 from llama_index.core.prompts import chat_prompts
 
-from extralit.extraction.models import PaperExtraction
-from extralit.extraction.schema import get_extraction_schema_model, drop_type_def_from_schema_json
-from extralit.extraction.utils import filter_unique_columns, stringify_lists
+from extralit_v1.extraction.models import PaperExtraction
+from extralit_v1.extraction.schema import get_extraction_schema_model, drop_type_def_from_schema_json
+from extralit_v1.extraction.utils import filter_unique_columns, stringify_lists
 
 FIGURE_TABLE_EXT_PROMPT_TMPL = PromptTemplate(
     """Given the figure from a research paper, please extract only the variables and observations names of the figure/chart as columns header and rows index in an HTML table, but do not extract any numerical data values.

@@ -6,10 +6,10 @@ import pypandoc
 from llama_index.core.schema import NodeRelationship, RelatedNodeInfo
 from pydantic import BaseModel
 
-from extralit.convert.html_table import remove_html_styles
-from extralit.convert.text import remove_longest_repeated_subsequence
-from extralit.convert.text import remove_markdown_from_string
-from extralit.preprocessing.segment import TableSegment, TextSegment, Segments
+from extralit_v1.convert.html_table import remove_html_styles
+from extralit_v1.convert.text import remove_longest_repeated_subsequence
+from extralit_v1.convert.text import remove_markdown_from_string
+from extralit_v1.preprocessing.segment import TableSegment, TextSegment, Segments
 
 
 class NougatOutput(BaseModel):

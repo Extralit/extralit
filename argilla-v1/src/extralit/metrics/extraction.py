@@ -5,9 +5,9 @@ from typing import Optional, List, Dict, Union, Literal
 
 import pandas as pd
 
-from extralit.extraction.models.paper import PaperExtraction
-from extralit.metrics.grits import grits_from_html
-from extralit.metrics.utils import harmonize_columns, reorder_rows, convert_metrics_to_df
+from extralit_v1.extraction.models.paper import PaperExtraction
+from extralit_v1.metrics.grits import grits_from_html
+from extralit_v1.metrics.utils import harmonize_columns, reorder_rows, convert_metrics_to_df
 
 
 def grits_from_batch(

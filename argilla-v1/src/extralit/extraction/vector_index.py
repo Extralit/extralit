@@ -6,7 +6,7 @@ from typing import Optional, Literal
 import warnings
 
 import argilla_v1 as rg
-from extralit.storage.files import StorageType
+from extralit_v1.storage.files import StorageType
 import pandas as pd
 from llama_index.core import VectorStoreIndex, load_index_from_storage, global_handler
 from llama_index.core.node_parser import SentenceSplitter, JSONNodeParser
@@ -17,10 +17,10 @@ from llama_index.embeddings.openai import OpenAIEmbeddingMode, OpenAIEmbedding
 from llama_index.llms.openai import OpenAI
 from weaviate import WeaviateClient
 
-from extralit.extraction.chunking import create_nodes
-from extralit.extraction.query import vectordb_contains_any
-from extralit.extraction.storage import get_storage_context
-from extralit.extraction.vector_store import WeaviateVectorStore
+from extralit_v1.extraction.chunking import create_nodes
+from extralit_v1.extraction.query import vectordb_contains_any
+from extralit_v1.extraction.storage import get_storage_context
+from extralit_v1.extraction.vector_store import WeaviateVectorStore
 
 DEFAULT_RETRIEVAL_MODE = OpenAIEmbeddingMode.TEXT_SEARCH_MODE
 _LOGGER = logging.getLogger(__name__)

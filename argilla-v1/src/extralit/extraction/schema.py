@@ -5,8 +5,8 @@ import pandas as pd
 import pandera as pa
 from pydantic.v1 import BaseModel, Field, create_model
 
-from extralit.extraction.utils import stringify_lists
-from extralit.extraction.staging import heal_json, to_df
+from extralit_v1.extraction.utils import stringify_lists
+from extralit_v1.extraction.staging import heal_json, to_df
 
 
 class SchemaStructuredOutputResponseModel(BaseModel):

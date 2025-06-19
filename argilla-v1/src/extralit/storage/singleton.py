@@ -1,6 +1,6 @@
 import os
 from typing import Optional
-from extralit.storage.files import FileHandler, StorageType
+from extralit_v1.storage.files import FileHandler, StorageType
 
 
 class FileHandlerSingleton:

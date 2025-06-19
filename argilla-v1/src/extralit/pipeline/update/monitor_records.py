@@ -7,8 +7,8 @@ import argilla_v1 as rg
 from argilla.client.feedback.dataset.remote.dataset import RemoteFeedbackDataset
 from argilla.client.feedback.schemas.remote.records import RemoteFeedbackRecord
 
-from extralit.convert.json_table import json_to_df, df_to_json
-from extralit.pipeline.ingest.record import get_record_table, get_record_timestamp
+from extralit_v1.convert.json_table import json_to_df, df_to_json
+from extralit_v1.pipeline.ingest.record import get_record_table, get_record_timestamp
 
 
 class MonitorIntegrationDataset:

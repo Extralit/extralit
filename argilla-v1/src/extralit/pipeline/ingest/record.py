@@ -5,8 +5,8 @@ import argilla_v1 as rg
 from argilla.client.feedback.schemas.remote.records import RemoteFeedbackRecord
 from argilla.client.sdk.users.models import UserModel
 
-from extralit.convert.json_table import is_json_table
-from extralit.pipeline.update.suggestion import get_record_suggestion_value
+from extralit_v1.convert.json_table import is_json_table
+from extralit_v1.pipeline.update.suggestion import get_record_suggestion_value
 
 
 def get_record_data(

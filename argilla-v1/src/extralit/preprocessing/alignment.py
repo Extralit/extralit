@@ -11,9 +11,9 @@ from pydantic.v1 import BaseModel, Field, validator
 from rapidfuzz import fuzz
 from unstructured.documents.elements import Element, Header, FigureCaption, Image, Footer, Table as UnstructuredTable
 
-from extralit.convert.text import find_longest_superstrings
-from extralit.preprocessing.segment import TextSegment, TableSegment, CHUNK_DELIM, FigureSegment, Segments
-from extralit.preprocessing.tables import SAMPLE_HTML_TABLE
+from extralit_v1.convert.text import find_longest_superstrings
+from extralit_v1.preprocessing.segment import TextSegment, TableSegment, CHUNK_DELIM, FigureSegment, Segments
+from extralit_v1.preprocessing.tables import SAMPLE_HTML_TABLE
 
 
 class Alignments(BaseModel):

@@ -8,7 +8,7 @@ from typing import Union
 import pandas as pd
 from bs4 import BeautifulSoup
 
-from extralit.convert.text import remove_markdown_from_string
+from extralit_v1.convert.text import remove_markdown_from_string
 
 
 def html_table_to_json(s: str) -> str:

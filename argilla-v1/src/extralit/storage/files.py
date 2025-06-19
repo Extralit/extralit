@@ -8,7 +8,7 @@ from minio import Minio
 from minio.error import S3Error
 import fsspec
 
-from extralit.server.context.files import get_minio_client
+from extralit_v1.server.context.files import get_minio_client
 
 
 class StorageType(Enum):

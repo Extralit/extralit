@@ -4,7 +4,7 @@ from typing import Optional
 
 from PIL import Image
 
-from extralit.preprocessing.segment import Coordinates
+from extralit_v1.preprocessing.segment import Coordinates
 
 
 def extract_image(

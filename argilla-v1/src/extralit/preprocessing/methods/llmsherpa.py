@@ -3,9 +3,9 @@ from typing import List
 import spacy
 from llmsherpa.readers.layout_reader import Section, Document, Paragraph, Table
 
-from extralit.convert.html_table import fix_llmsherpa_html_table
-from extralit.preprocessing.segment import TableSegment, TextSegment, Segments
-from extralit.preprocessing.tables import table_extraction_qc, get_table_header_footer
+from extralit_v1.convert.html_table import fix_llmsherpa_html_table
+from extralit_v1.preprocessing.segment import TableSegment, TextSegment, Segments
+from extralit_v1.preprocessing.tables import table_extraction_qc, get_table_header_footer
 
 
 def get_table_segments(document: Document, caption_pattern=r"(?i)(Table)\s?(\d+\.?)(.*|$)") -> Segments:

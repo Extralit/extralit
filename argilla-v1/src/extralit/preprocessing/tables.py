@@ -2,7 +2,7 @@ import re
 from typing import TYPE_CHECKING, List, Callable, Any, Tuple, Set, Optional
 
 if TYPE_CHECKING:
-    from extralit.preprocessing.segment import TableSegment
+    from extralit_v1.preprocessing.segment import TableSegment
 
 
 def table_extraction_qc(segment: "TableSegment") -> bool:

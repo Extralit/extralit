@@ -11,10 +11,10 @@ from llama_index.core.schema import NodeRelationship, RelatedNodeType
 from llama_index.multi_modal_llms.openai import OpenAIMultiModal
 from pydantic.v1 import BaseModel, Field, validator
 
-from extralit.convert.html_table import html_table_to_json, html_to_df, llmsherpa_html_to_df
-from extralit.extraction import prompts
-from extralit.preprocessing.figures import encode_image, FigureExtractionResponse
-from extralit.preprocessing.tables import extract_table_number
+from extralit_v1.convert.html_table import html_table_to_json, html_to_df, llmsherpa_html_to_df
+from extralit_v1.extraction import prompts
+from extralit_v1.preprocessing.figures import encode_image, FigureExtractionResponse
+from extralit_v1.preprocessing.tables import extract_table_number
 
 CHUNK_DELIM = "\n\n---\n"
 

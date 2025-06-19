@@ -15,18 +15,18 @@ from minio import Minio
 from weaviate import WeaviateClient
 
 import argilla_v1 as rg
-from extralit.convert.json_table import json_to_df
-from extralit.extraction.extraction import extract_schema
-from extralit.extraction.models.paper import PaperExtraction
-from extralit.extraction.models.schema import SchemaStructure
-from extralit.extraction.prompts import DEFAULT_CHAT_PROMPT_TMPL, CHAT_SYSTEM_PROMPT
-from extralit.extraction.query import get_nodes_metadata, vectordb_contains_any
-from extralit.extraction.vector_index import create_vector_index, load_index
-from extralit.server.context.files import get_minio_client
-from extralit.server.context.llamaindex import get_langfuse_callback
-from extralit.server.context.vectordb import get_weaviate_client
-from extralit.server.models.extraction import ExtractionRequest, ExtractionResponse
-from extralit.server.models.segments import SegmentsResponse
+from extralit_v1.convert.json_table import json_to_df
+from extralit_v1.extraction.extraction import extract_schema
+from extralit_v1.extraction.models.paper import PaperExtraction
+from extralit_v1.extraction.models.schema import SchemaStructure
+from extralit_v1.extraction.prompts import DEFAULT_CHAT_PROMPT_TMPL, CHAT_SYSTEM_PROMPT
+from extralit_v1.extraction.query import get_nodes_metadata, vectordb_contains_any
+from extralit_v1.extraction.vector_index import create_vector_index, load_index
+from extralit_v1.server.context.files import get_minio_client
+from extralit_v1.server.context.llamaindex import get_langfuse_callback
+from extralit_v1.server.context.vectordb import get_weaviate_client
+from extralit_v1.server.models.extraction import ExtractionRequest, ExtractionResponse
+from extralit_v1.server.models.segments import SegmentsResponse
 
 _LOGGER = logging.getLogger(__name__)
 app = FastAPI()

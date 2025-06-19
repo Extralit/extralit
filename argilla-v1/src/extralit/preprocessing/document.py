@@ -6,8 +6,8 @@ from typing import Tuple, Optional
 import dill
 import pandas as pd
 
-from extralit.preprocessing.segment import Segments
-from extralit.storage.files import FileHandler, StorageType
+from extralit_v1.preprocessing.segment import Segments
+from extralit_v1.storage.files import FileHandler, StorageType
 
 __all__ = [
     "load_segments",
@@ -42,7 +42,7 @@ def create_or_load_unstructured_segments(
     redo=False,
     save=True,
 ) -> Tuple[Optional[Segments], Optional[Segments], Optional[Segments]]:
-    from extralit.preprocessing.methods import unstructured
+    from extralit_v1.preprocessing.methods import unstructured
     from unstructured.partition.pdf import partition_pdf
     from unstructured.staging.base import elements_to_json, elements_from_json
 
@@ -95,7 +95,7 @@ def create_or_load_llmsherpa_segments(
     redo=False,
     save=True,
 ) -> Tuple[Optional[Segments], Optional[Segments], Optional[Segments]]:
-    from extralit.preprocessing.methods import llmsherpa
+    from extralit_v1.preprocessing.methods import llmsherpa
     from llmsherpa.readers import LayoutPDFReader
 
     cache_path: str = join(preprocessing_path, "llmsherpa", paper.name)
@@ -141,7 +141,7 @@ def create_or_load_nougat_segments(
     redo=False,
     save=True,
 ) -> Tuple[Optional[Segments], Optional[Segments], Optional[Segments]]:
-    from extralit.preprocessing.methods import nougat
+    from extralit_v1.preprocessing.methods import nougat
 
     cache_path: str = join(preprocessing_path, "nougat", paper.name)
     model_output_path = join(cache_path, "predictions.json")
@@ -150,7 +150,7 @@ def create_or_load_nougat_segments(
         return load_segments(file_handler, cache_path)
 
     if not file_handler.exists(model_output_path) or redo:
-        from extralit.preprocessing.text import NougatOCR
+        from extralit_v1.preprocessing.text import NougatOCR
 
         print(f"Nougat {paper.name}: {cache_path}", flush=True)
         assert isinstance(nougat_model, NougatOCR), f"Invalid Nougat model: {nougat_model}"
@@ -227,7 +227,7 @@ def create_or_load_deepdoctection_segments(
     redo=False,
     save=True,
 ) -> Tuple[Optional[Segments], Optional[Segments], Optional[Segments]]:
-    from extralit.preprocessing.methods import deepdoctection
+    from extralit_v1.preprocessing.methods import deepdoctection
     import deepdoctection as dd
 
     cache_path: str = join(preprocessing_path, "deepdoctection", paper.name)

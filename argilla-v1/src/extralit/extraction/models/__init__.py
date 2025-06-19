@@ -1,4 +1,4 @@
-from extralit.schema.checks import register_check_methods
+from extralit_v1.schema.checks import register_check_methods
 
 register_check_methods()
 

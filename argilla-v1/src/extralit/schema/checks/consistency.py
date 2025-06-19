@@ -2,7 +2,7 @@ from typing import Union, List
 
 import pandas as pd
 
-from extralit.schema.checks.utils import make_same_length_arguments
+from extralit_v1.schema.checks.utils import make_same_length_arguments
 
 
 def check_less_than(

@@ -6,9 +6,9 @@ import spacy
 from pdf2image import convert_from_path
 from unstructured.documents.elements import Element, FigureCaption, Table, Image, Text
 
-from extralit.convert.pdf import extract_image
-from extralit.preprocessing.segment import TableSegment, FigureSegment, TextSegment, Segments, Coordinates
-from extralit.preprocessing.tables import table_extraction_qc, get_table_header_footer
+from extralit_v1.convert.pdf import extract_image
+from extralit_v1.preprocessing.segment import TableSegment, FigureSegment, TextSegment, Segments, Coordinates
+from extralit_v1.preprocessing.tables import table_extraction_qc, get_table_header_footer
 
 
 def get_table_segments(elements: List[Element], max_caption_look_head=5, output_dir=None, redo=False) -> Segments:

@@ -1,11 +1,11 @@
 import os
 from pathlib import Path
 from typing import Dict, Optional, List
-from extralit.extraction.model.schema import DEFAULT_SCHEMA_S3_PATH
+from extralit_v1.extraction.model.schema import DEFAULT_SCHEMA_S3_PATH
 import typer
 
 from argilla_v1.client.workspaces import Workspace
-from extralit.extraction.models import SchemaStructure
+from extralit_v1.extraction.models import SchemaStructure
 
 
 def delete_schema(

@@ -3,7 +3,7 @@ from typing import Dict, Optional, List
 import typer
 
 from argilla_v1.client.workspaces import Workspace
-from extralit.extraction.model.schema import SchemaStructure, DEFAULT_SCHEMA_S3_PATH
+from extralit_v1.extraction.model.schema import SchemaStructure, DEFAULT_SCHEMA_S3_PATH
 
 
 def list_schemas(

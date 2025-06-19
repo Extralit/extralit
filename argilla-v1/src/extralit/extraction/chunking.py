@@ -3,14 +3,14 @@ from os.path import join, exists
 from typing import Optional, List, Tuple, Dict, Any, Iterable
 
 import argilla_v1 as rg
-from extralit.storage.files import FileHandler, StorageType
+from extralit_v1.storage.files import FileHandler, StorageType
 import pandas as pd
 from llama_index.core.schema import Document
 
-from extralit.convert.html_table import html_to_df
-from extralit.pipeline.ingest.segment import get_paper_tables
-from extralit.preprocessing.document import create_or_load_nougat_segments
-from extralit.preprocessing.segment import Segments
+from extralit_v1.convert.html_table import html_to_df
+from extralit_v1.pipeline.ingest.segment import get_paper_tables
+from extralit_v1.preprocessing.document import create_or_load_nougat_segments
+from extralit_v1.preprocessing.segment import Segments
 
 INCLUDE_METADATA_KEYS = {"header": True, "footer": True, "level": True, "page_number": True, "type": True}
 EXCLUDE_LLM_METADATA_KEYS = ["type", "page_number", "reference", "level"]
