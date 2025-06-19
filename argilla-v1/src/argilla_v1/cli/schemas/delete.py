@@ -1,11 +1,12 @@
 import os
 from pathlib import Path
 from typing import Dict, Optional, List
-from extralit.constants import DEFAULT_SCHEMA_S3_PATH
+from extralit.extraction.model.schema import DEFAULT_SCHEMA_S3_PATH
 import typer
 
 from argilla_v1.client.workspaces import Workspace
 from extralit.extraction.models import SchemaStructure
+
 
 def delete_schema(
     ctx: typer.Context,
@@ -42,7 +43,7 @@ def delete_schema(
 
     except Exception as e:
         echo_in_panel(
-            f"Unable to list schemas in workspace:\n{e}", 
+            f"Unable to list schemas in workspace:\n{e}",
             title="Unexpected error",
             title_align="left",
             success=False,

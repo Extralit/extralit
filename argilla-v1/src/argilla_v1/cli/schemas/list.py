@@ -1,10 +1,9 @@
 from pathlib import Path
 from typing import Dict, Optional, List
-from extralit.constants import DEFAULT_SCHEMA_S3_PATH
 import typer
 
 from argilla_v1.client.workspaces import Workspace
-from extralit.extraction.models import SchemaStructure
+from extralit.extraction.model.schema import SchemaStructure, DEFAULT_SCHEMA_S3_PATH
 
 
 def list_schemas(
@@ -69,13 +68,13 @@ def list_schemas(
         if csv_path:
             df = console_table_to_pandas_df(table)
             df.to_csv(csv_path, index=False)
-        
+
         else:
             console.print(table)
 
     except Exception as e:
         echo_in_panel(
-            f"Unable to list schemas in workspace:\n{e}", 
+            f"Unable to list schemas in workspace:\n{e}",
             title="Unexpected error",
             title_align="left",
             success=False,
