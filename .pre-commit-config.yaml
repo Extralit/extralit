@@ -3,7 +3,7 @@ repos:
     rev: v4.6.0
     hooks:
       - id: check-yaml
-        exclude: argilla/mkdocs.yml|examples/deployments/k8s
+        exclude: extralit/mkdocs.yml|examples/deployments/k8s
       - id: end-of-file-fixer
         exclude_types: [text, jupyter]
       - id: trailing-whitespace
@@ -14,14 +14,14 @@ repos:
       - id: ruff-format
 
   ##############################################################################
-  # argilla specific hooks
+  # extralit SDK specific hooks
   ##############################################################################
   - repo: https://github.com/pycqa/autoflake
     rev: v2.2.1
     hooks:
       - id: autoflake
-        name: "Remove unused imports and variables in argilla"
-        files: '^argilla/.*\.py$'
+        name: "Remove unused imports and variables"
+        files: '^extralit/.*\.py$'
         args:
           - "--remove-all-unused-imports"
           - "--remove-unused-variables"
@@ -30,7 +30,7 @@ repos:
     rev: v0.4.8
     hooks:
       - id: ruff
-        files: 'argilla/src/.*\.py$'
+        files: 'extralit/src/.*\.py$'
         args:
           - --fix
   - repo: https://github.com/Lucas-C/pre-commit-hooks
@@ -38,17 +38,17 @@ repos:
     hooks:
       - id: insert-license
         name: "Insert license header in Python source files"
-        files: '^argilla/.*\.py$'
-        exclude: ^argilla/docs/snippets/
+        files: '^extralit/.*\.py$'
+        exclude: ^extralit/docs/snippets/
         args:
           - --license-filepath
-          - argilla/LICENSE_HEADER
+          - extralit/LICENSE_HEADER
           - --fuzzy-match-generates-todo
   - repo: https://github.com/kynan/nbstripout
     rev: 0.7.1
     hooks:
       - id: nbstripout
-        files: '^argilla/.*\.ipynb$'
+        files: '^extralit/.*\.ipynb$'
         args:
           - --keep-count
           - --keep-output
@@ -59,6 +59,7 @@ repos:
           # - --keep-execution-count
           # - --keep-metadata
           # - --keep-version
+
   ##############################################################################
   # argilla-server specific hooks
   ##############################################################################
@@ -90,6 +91,37 @@ repos:
         args:
           - --license-filepath
           - argilla-server/LICENSE_HEADER
+          - --fuzzy-match-generates-todo
+
+  ##############################################################################
+  # argilla-v1 SDK specific hooks
+  ##############################################################################
+  - repo: https://github.com/pycqa/autoflake
+    rev: v2.2.1
+    hooks:
+      - id: autoflake
+        name: "Remove unused imports and variables"
+        files: '^argilla-v1/.*\.py$'
+        args:
+          - "--remove-all-unused-imports"
+          - "--remove-unused-variables"
+          - "--in-place"
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.4.8
+    hooks:
+      - id: ruff
+        files: 'argilla-v1/src/.*\.py$'
+        args:
+          - --fix
+  - repo: https://github.com/Lucas-C/pre-commit-hooks
+    rev: v1.5.5
+    hooks:
+      - id: insert-license
+        name: "Insert license header in Python source files"
+        files: '^argilla-v1/.*\.py$'
+        args:
+          - --license-filepath
+          - extralit/LICENSE_HEADER
           - --fuzzy-match-generates-todo
 
   ##############################################################################

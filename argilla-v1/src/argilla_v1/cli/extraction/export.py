@@ -1,11 +1,10 @@
-
-
 from typing import Dict, Optional
 
 import typer
 
 from argilla_v1.client.enums import DatasetType
-from extralit.server.context.files import get_minio_client
+from extralit_v1.server.context.files import get_minio_client
+
 
 def export_data(
     ctx: typer.Context,
@@ -17,4 +16,3 @@ def export_data(
 ) -> None:
     print("export_data", ctx.obj, type_)
     print(get_minio_client())
-    

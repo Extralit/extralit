@@ -5,13 +5,14 @@ import pandas as pd
 import pytest
 from unittest.mock import MagicMock, patch
 
-from extralit.extraction.models.schema import SchemaStructure
+from extralit_v1.extraction.models.schema import SchemaStructure
 
 if TYPE_CHECKING:
     from fastapi.testclient import TestClient
     from pytest_mock import MockerFixture
 
 from tests.extralit.helpers import mock_chat_completion_stream_v1
+
 
 class CachedOpenAIApiKeys:
     """
@@ -60,6 +61,7 @@ def test_health_check(client: "TestClient"):
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
 
+
 def test_schemas(client: "TestClient", mocker: "MockerFixture"):
     mock_schema_structure = mocker.patch("extralit.server.app.SchemaStructure.from_s3")
     mock_schema_structure.return_value.ordering = {"schema": "value"}
@@ -71,99 +73,91 @@ def test_schemas(client: "TestClient", mocker: "MockerFixture"):
 
 @patch("llama_index.llms.openai.base.SyncOpenAI")
 def test_chat(
-    MockSyncOpenAI: MagicMock, client: "TestClient", mocker: "MockerFixture",
+    MockSyncOpenAI: MagicMock,
+    client: "TestClient",
+    mocker: "MockerFixture",
 ):
     with CachedOpenAIApiKeys(set_fake_key=True):
         mock_instance = MockSyncOpenAI.return_value
-        mock_instance.chat.completions.create.return_value = (
-            mock_chat_completion_stream_v1(responses=["res", "ponse"])
-        )
+        mock_instance.chat.completions.create.return_value = mock_chat_completion_stream_v1(responses=["res", "ponse"])
 
         mock_vectordb_contains_any = mocker.patch("extralit.server.app.vectordb_contains_any")
         mock_vectordb_contains_any.return_value = True
 
-        response = client.get("/chat", params={
-            "query": "test query",
-            "workspace": "test-workspace",
-            "reference": "test-reference",
-            "k": 5,
-            "chat_mode": "best",
-            "llm_model": "gpt-3.5-turbo",
-            "args": [None],
-            "kwargs": {}
-        })
-        
+        response = client.get(
+            "/chat",
+            params={
+                "query": "test query",
+                "workspace": "test-workspace",
+                "reference": "test-reference",
+                "k": 5,
+                "chat_mode": "best",
+                "llm_model": "gpt-3.5-turbo",
+                "args": [None],
+                "kwargs": {},
+            },
+        )
+
         assert response.status_code == 200
         assert response.content == b"response"
 
         MockSyncOpenAI.assert_called_once()
 
 
-def test_extraction(
-    client: "TestClient", 
-    mocker: "MockerFixture", 
-    schema_structure: "SchemaStructure"
-):
+def test_extraction(client: "TestClient", mocker: "MockerFixture", schema_structure: "SchemaStructure"):
     with CachedOpenAIApiKeys(set_fake_key=True):
         # mock_load_index = mocker.patch("extralit.server.app.load_index")
-        
+
         mock_extract_schema = mocker.patch("extralit.server.app.extract_schema")
         mock_extract_schema.return_value = (pd.DataFrame({"col": ["value"]}), MagicMock())
-        
+
         mock_schema_structure = mocker.patch("extralit.server.app.SchemaStructure.from_s3")
         mock_schema_structure.return_value = schema_structure
 
         response = client.post(
-            "/extraction", 
+            "/extraction",
             json={
                 "reference": "test-reference",
                 "schema_name": "MockSchema",
-                "extractions": {
-                    "MockSchema": [{"key": "value"}]
-                },
+                "extractions": {"MockSchema": [{"key": "value"}]},
                 "columns": ["col"],
                 "headers": ["header"],
                 "types": None,
                 "prompt": "test prompt",
-            }, 
-            params={
-                "workspace": "test-workspace",
-                "args": [None],
-                "kwargs": {}
-            }
+            },
+            params={"workspace": "test-workspace", "args": [None], "kwargs": {}},
         )
-        
+
         assert response.status_code == 201
         assert response.json() == {
             "data": [{"col": "value", "index": 0}],
-            'schema': {
-                'fields': [
-                    {'extDtype': None, 'name': 'index', 'type': 'integer'},
-                    {'extDtype': None, 'name': 'col','type': 'string'}
+            "schema": {
+                "fields": [
+                    {"extDtype": None, "name": "index", "type": "integer"},
+                    {"extDtype": None, "name": "col", "type": "string"},
                 ],
-                'pandas_version': '1.4.0',
-                'primaryKey': ['index']
+                "pandas_version": "1.4.0",
+                "primaryKey": ["index"],
             },
         }
 
 
 def test_segments(client: "TestClient", mocker: "MockerFixture"):
     mock_get_nodes_metadata = mocker.patch("extralit.server.app.get_nodes_metadata")
-    mock_get_nodes_metadata.return_value = [{
-        "doc_id": "test-doc-id",
-        "header": "test-header",
-        "page_number": 1,
-        "key": "value",
-    }]
+    mock_get_nodes_metadata.return_value = [
+        {
+            "doc_id": "test-doc-id",
+            "header": "test-header",
+            "page_number": 1,
+            "key": "value",
+        }
+    ]
 
-    response = client.get("/segments/", params={
-        "workspace": "test-workspace",
-        "reference": "test-reference",
-        "types": ["text"],
-        "limit": 100
-    })
+    response = client.get(
+        "/segments/",
+        params={"workspace": "test-workspace", "reference": "test-reference", "types": ["text"], "limit": 100},
+    )
     assert response.status_code == 200
-    assert response.json() == {'items': [
-        {'doc_id': 'test-doc-id', 'header': 'test-header', 'page_number': 1, 'type': None}
-        ]
+    assert response.json() == {
+        "items": [{"doc_id": "test-doc-id", "header": "test-header", "page_number": 1, "type": None}]
     }

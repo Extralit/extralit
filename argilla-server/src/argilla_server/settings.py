@@ -179,7 +179,7 @@ class Settings(BaseSettings):
     @field_validator("home_path", mode="before")
     @classmethod
     def set_home_path_default(cls, home_path: str):
-        return home_path or os.path.join(Path.home(), ".argilla")
+        return home_path or os.path.join(Path.home(), ".extralit")
 
     @field_validator("base_url")
     @classmethod

@@ -19,7 +19,7 @@ if ! pip list | grep -q "extralit"; then
     pdm config use_uv true
     pdm config python.install_root /opt/conda/
     uv pip install -e /workspaces/extralit/argilla-server/
-    uv pip install -e /workspaces/extralit/argilla/
+    uv pip install -e /workspaces/extralit/extralit/
 else
     echo 'Package 'extralit' is already installed. Skipping installation.'
 fi

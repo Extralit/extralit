@@ -32,7 +32,7 @@ from argilla_server.api.schemas.v1.documents import DocumentCreate, DocumentDele
 if TYPE_CHECKING:
     from argilla_server.models import Document
 
-_LOGGER = logging.getLogger("documents")
+_LOGGER = logging.getLogger(__name__)
 
 router = APIRouter(tags=["documents"])
 

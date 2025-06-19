@@ -13,7 +13,7 @@ on:
   #   - cron: '15 16 * * 3'
   pull_request:
     paths:
-      - "argilla/**"
+      - "extralit/**"
       - "argilla-server/**"
 
 # Declare default permissions as read only.

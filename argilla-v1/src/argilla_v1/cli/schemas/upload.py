@@ -3,7 +3,8 @@ from typing import Dict, Optional, List
 import typer
 
 from argilla_v1.client.workspaces import Workspace
-from extralit.extraction.models import SchemaStructure
+from extralit_v1.extraction.models import SchemaStructure
+
 
 def upload_schemas(
     ctx: typer.Context,
@@ -37,7 +38,7 @@ def upload_schemas(
 
         if not update_schemas.schemas:
             raise FileNotFoundError(f"No schemas found in directory '{path}'.")
-        
+
         uploaded_files = workspace.update_schemas(update_schemas, check_existing=not overwrite)
 
         if uploaded_files.objects:
@@ -66,7 +67,7 @@ def upload_schemas(
 
     except Exception as e:
         echo_in_panel(
-            f"Unable to update schemas in workspace:\n{e}", 
+            f"Unable to update schemas in workspace:\n{e}",
             title="Unexpected error",
             title_align="left",
             success=False,

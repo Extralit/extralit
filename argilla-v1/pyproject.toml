@@ -30,12 +30,16 @@ dependencies = [
     "httpx >= 0.15,<= 0.26",
     "deprecated ~= 1.2.0",
     "packaging >= 20.0",
+    # pandas -> For data loading
+    "pandas >=1.0.0",
     # Aligned pydantic version with server fastAPI
-    "pydantic >= 1.10.7",
+    "pydantic >= 1.10.7,<2",
     # monitoring
     "wrapt >= 1.14,< 1.15",
+    # weaksupervision
+    "numpy < 1.27.0",
     # for progressbars
-    "tqdm >= 4.66.1, < 5.0.0",
+    "tqdm >= 4.27.0",
     # monitor background consumers
     "backoff",
     "monotonic",
@@ -51,9 +55,7 @@ dependencies = [
     "fastapi < 1.0.0",
     "pypandoc ~= 1.13",
     "beautifulsoup4 ~= 4.12.2",
-    "pandas ~= 2.2.2",
     "pandera[io] ~= 0.19.3",
-    "numpy ~= 1.26.4",
     "spacy ~= 3.7.2",
     "pyarrow == 14.*",
     "natsort ~= 8.4.0",
@@ -61,8 +63,8 @@ dependencies = [
     "dill ~= 0.3.8",
     "json-repair ~= 0.19.2",
     "fastparquet",
-    "tiktoken",
-    "pymupdf",
+    "tiktoken ~= 0.9.0",
+    "pymupdf==1.26.0",
     # for llama-index
     "llama-index ~= 0.10.68",
     "llama-index-core ~= 0.10.68",
@@ -70,9 +72,6 @@ dependencies = [
     "llama-index-llms-openai ~= 0.1.31",
     "llama-index-embeddings-openai ~=0.1.11",
     "llama-index-multi-modal-llms-openai",
-    # for weaviate vector db
-    "weaviate-client >= 4",
-    "llama-index-vector-stores-weaviate ~= 1.0.0",
 ]
 dynamic = ["version"]
 # This line is just to force the build
