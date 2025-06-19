@@ -41,30 +41,10 @@ jobs:
           use-mamba: true
           activate-environment: argilla
 
-      - name: Cache Conda env
-        uses: actions/cache@v3
-        id: cache
-        with:
-          path: ${{ env.CONDA }}/envs/argilla
-          key: conda-${{ runner.os }}--${{ runner.arch }}--${{ hashFiles('argilla-v1/environment_dev.yml') }}-${{ env.CACHE_NUMBER }}
-          restore-keys: |
-            conda-${{ runner.os }}--${{ runner.arch }}--${{ hashFiles('argilla-v1/environment_dev.yml') }}
-            conda-${{ runner.os }}--${{ runner.arch }}--
-            conda-
-
       - name: Update environment
-        if: steps.cache.outputs.cache-hit != 'true'
         run: |
           mamba env update -n argilla -f environment_dev.yml
           uv pip install extralit
-          mamba clean -a -y
-          uv cache prune --ci
-
-      - name: Cache pip 👜
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ env.CACHE_NUMBER }}-${{ hashFiles('pyproject.toml') }}
 
       - name: Set huggingface hub credentials
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || startsWith(github.ref, 'refs/heads/releases')
