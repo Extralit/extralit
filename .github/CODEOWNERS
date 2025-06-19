@@ -6,26 +6,26 @@
 # The last matching pattern takes precedence.
 
 # SDK and Core Extraction
-/argilla/* @extralit/sdk
-/argilla/src/**/* @extralit/sdk
-/argilla/tests/**/* @extralit/sdk
-/argilla/pyproject.toml @extralit/sdk
-/argilla/pdm.lock @extralit/sdk
+/extralit/* @extralit/sdk
+/extralit/src/**/* @extralit/sdk
+/extralit/tests/**/* @extralit/sdk
+/extralit/pyproject.toml @extralit/sdk
+/extralit/pdm.lock @extralit/sdk
 
 # Backend Server
-/argilla-server/**/* @extralit/backend
+/extralit-server/**/* @extralit/backend
 
 # Frontend
-/argilla-frontend/**/* @extralit/frontend
+/extralit-frontend/**/* @extralit/frontend
 
 # Legacy compatibility layer
-/argilla-v1/**/* @extralit/sdk @extralit/backend
+/extralit-v1/**/* @extralit/sdk @extralit/backend
 
 # AI/ML-specific code
-/argilla/src/extralit/{extraction,metrics,preprocessing,schema}/**/* @extralit/ai
-/argilla/src/extralit/pipeline/**/* @extralit/ai @extralit/backend
-/argilla/src/extralit/server/**/* @extralit/ai @extralit/backend
-/argilla/src/extralit/storage/**/* @extralit/ai @extralit/backend
+/extralit/src/extralit/{extraction,metrics,preprocessing,schema}/**/* @extralit/ai
+/extralit/src/extralit/pipeline/**/* @extralit/ai @extralit/backend
+/extralit/src/extralit/server/**/* @extralit/ai @extralit/backend
+/extralit/src/extralit/storage/**/* @extralit/ai @extralit/backend
 
 # Infrastructure and configuration
 /.github/** @extralit/infra
@@ -37,7 +37,7 @@ codecov.yml @extralit/infra
 
 # Documentation
 *.md @extralit/docs
-/argilla/docs/**/* @extralit/docs
+/extralit/docs/**/* @extralit/docs
 /examples/**/* @extralit/docs @extralit/sdk
 
 # Security and legal

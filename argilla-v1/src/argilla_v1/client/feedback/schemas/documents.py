@@ -5,8 +5,9 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Literal, Optional, Union
 import uuid
 
-from argilla.pydantic_v1 import BaseModel, Field, Extra
+from argilla_v1.pydantic_v1 import BaseModel, Field, Extra
 from uuid import UUID
+
 
 class Document(BaseModel, ABC):
     """Schema for the `Document` model.
@@ -20,7 +21,10 @@ class Document(BaseModel, ABC):
         workspace_id: The workspace ID of the document. Required.
     """
 
-    id: Union[UUID, str] = Field(default_factory=uuid.uuid4(), description="The ID of the document, which gets assigned randomly if not provided.")
+    id: Union[UUID, str] = Field(
+        default_factory=uuid.uuid4(),
+        description="The ID of the document, which gets assigned randomly if not provided.",
+    )
     file_name: str = Field(...)
     reference: Optional[str] = None
     doi: Optional[str] = None
@@ -32,12 +36,19 @@ class Document(BaseModel, ABC):
     class Config:
         validate_assignment = True
         extra = Extra.forbid
-        json_encoders = {
-            UUID: str
-        }
+        json_encoders = {UUID: str}
 
     @classmethod
-    def from_file(cls, file_path: str, *, reference: str, id: Optional[str] = None, pmid: Optional[str] = None, doi: Optional[str] = None, workspace_id: Optional[UUID] = None) -> "Document":
+    def from_file(
+        cls,
+        file_path: str,
+        *,
+        reference: str,
+        id: Optional[str] = None,
+        pmid: Optional[str] = None,
+        doi: Optional[str] = None,
+        workspace_id: Optional[UUID] = None,
+    ) -> "Document":
         url = None
 
         if os.path.exists(file_path):
@@ -48,7 +59,7 @@ class Document(BaseModel, ABC):
             url = file_path
             parsed_url = urlparse(file_path)
             path = parsed_url.path
-            file_name = unquote(path).split('/')[-1]
+            file_name = unquote(path).split("/")[-1]
         else:
             raise ValueError(f"File path {file_path} does not exist")
 
@@ -58,7 +69,7 @@ class Document(BaseModel, ABC):
             file_name=file_name if isinstance(file_name, str) else None,
             url=url if isinstance(url, str) else None,
             id=id or uuid.uuid4(),
-            pmid=str(pmid) if isinstance(pmid, int) or isinstance(pmid, str) and len(pmid)>3 else None,
+            pmid=str(pmid) if isinstance(pmid, int) or isinstance(pmid, str) and len(pmid) > 3 else None,
             doi=doi if isinstance(doi, str) else None,
             workspace_id=workspace_id,
         )

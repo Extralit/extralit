@@ -18,7 +18,8 @@ from uuid import UUID
 
 from argilla_v1.client.feedback.schemas.enums import RecordSortField, SortOrder
 
-import argilla as rg
+import argilla_v1 as rg
+
 # Support backward compatibility for import of RankingValueSchema from records module
 from argilla_v1.client.feedback.schemas.response_values import RankingValueSchema  # noqa
 from argilla_v1.client.feedback.schemas.responses import ResponseSchema, ValueSchema  # noqa
@@ -104,7 +105,7 @@ class FeedbackRecord(BaseModel):
                 repr_args[i] = (name, [v.question_name for v in value])
 
         return repr_args
-    
+
     @validator("suggestions", always=True)
     def normalize_suggestions(cls, values: Any) -> Tuple:
         if not isinstance(values, tuple):
@@ -149,7 +150,8 @@ class FeedbackRecord(BaseModel):
             payload["responses"] = [response.to_server_payload() for response in self.responses]
         if question_name_to_id:
             payload["suggestions"] = [
-                suggestion.to_server_payload(question_name_to_id) for suggestion in self.suggestions \
+                suggestion.to_server_payload(question_name_to_id)
+                for suggestion in self.suggestions
                 if suggestion.question_name in question_name_to_id
             ]
 

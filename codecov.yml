@@ -12,7 +12,7 @@ coverage:
         target: auto
         threshold: 2%
         informational: true
-  
+
 flags:
   frontend:
     paths:
@@ -20,11 +20,11 @@ flags:
     carryforward: true
   argilla:
     paths:
-      - argilla/src/argilla/
+      - extralit/src/argilla/
     carryforward: true
   extralit:
     paths:
-      - argilla/src/extralit/
+      - extralit/src/extralit/
     carryforward: true
   argilla_v1:
     paths:
@@ -40,16 +40,16 @@ component_management:
     statuses:
       - type: project
         target: auto
-        
+
   individual_components:
     - component_id: extralit
       paths:
-        - argilla/src/extralit/**
+        - extralit/src/extralit/**
 
     - component_id: argilla
       name: argilla
       paths:
-        - argilla/src/argilla/**
+        - extralit/src/argilla/**
 
     - component_id: argilla_v1
       name: argilla_v1
@@ -59,7 +59,7 @@ component_management:
     - component_id: argilla-server
       paths:
         - argilla-server/**
-        
+
     - component_id: argilla-frontend
       paths:
         - argilla-frontend/**

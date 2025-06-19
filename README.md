@@ -1,6 +1,6 @@
 
 <h1 align="center">
-  <a href=""><img src="https://github.com/extralit/extralit/blob/develop/argilla/docs/assets/logo.png" alt="Extralit" width="500"></a>
+  <a href=""><img src="https://github.com/extralit/extralit/blob/develop/extralit/docs/assets/logo.png" alt="Extralit" width="500"></a>
 </h1>
 
 <h3>

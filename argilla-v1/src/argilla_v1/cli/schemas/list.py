@@ -1,10 +1,23 @@
+# Copyright 2024-present, Extralit Labs, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from pathlib import Path
-from typing import Dict, Optional, List
-from extralit.constants import DEFAULT_SCHEMA_S3_PATH
+from typing import Optional
 import typer
 
 from argilla_v1.client.workspaces import Workspace
-from extralit.extraction.models import SchemaStructure
+from extralit_v1.extraction.models.schema import DEFAULT_SCHEMA_S3_PATH
 
 
 def list_schemas(
@@ -69,13 +82,13 @@ def list_schemas(
         if csv_path:
             df = console_table_to_pandas_df(table)
             df.to_csv(csv_path, index=False)
-        
+
         else:
             console.print(table)
 
     except Exception as e:
         echo_in_panel(
-            f"Unable to list schemas in workspace:\n{e}", 
+            f"Unable to list schemas in workspace:\n{e}",
             title="Unexpected error",
             title_align="left",
             success=False,
