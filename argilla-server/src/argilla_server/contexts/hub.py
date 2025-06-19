@@ -412,7 +412,7 @@ class HubDatasetExporter:
         hf_api = HfApi(token=token)
 
         with TemporaryDirectory() as temporary_directory:
-            argilla_directory = os.path.join(temporary_directory, ".argilla")
+            argilla_directory = os.path.join(temporary_directory, ".extralit")
             os.makedirs(argilla_directory)
 
             self._create_version_file(argilla_directory)
