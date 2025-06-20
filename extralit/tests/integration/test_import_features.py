@@ -14,17 +14,18 @@
 
 import os
 import uuid
-from typing import Any, List
+from typing import Any, List, Generator
 
 import argilla as rg
 import pytest
 from datasets import Dataset as HFDataset, Value, Features, ClassLabel
+from huggingface_hub.errors import HfHubHTTPError
 
 _RETRIES = 5
 
 
 @pytest.fixture
-def dataset(client, dataset_name: str) -> rg.Dataset:
+def dataset(client, dataset_name: str) -> Generator[rg.Dataset, None, None]:
     settings = rg.Settings(
         fields=[
             rg.TextField(name="text"),
@@ -93,7 +94,10 @@ class TestImportFeaturesFromHub:
             ),
         )
 
-        hf_dataset.push_to_hub(repo_id=repo_id, token=token)
+        try:
+            hf_dataset.push_to_hub(repo_id=repo_id, token=token)
+        except HfHubHTTPError as e:
+            pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
 
         dataset.records.log(mock_data)
 
@@ -107,6 +111,7 @@ class TestImportFeaturesFromHub:
         assert exported_dataset["label.suggestion"] == [0, 1, 0]
 
     def test_import_from_hub_with_upper_case_columns(self, client: rg.Argilla, token: str, dataset_name: str):
+        created_dataset = None
         try:
             created_dataset = rg.Dataset.from_hub(
                 "extralit-dev/test_import_from_hub_with_upper_case_columns",
@@ -114,16 +119,20 @@ class TestImportFeaturesFromHub:
                 name=dataset_name,
                 settings="auto",
             )
-
-            assert created_dataset.settings.fields[0].name == "Text"
-            assert list(created_dataset.records)[0].fields["Text"] == "Hello World, how are you?"
+        except HfHubHTTPError as e:
+            pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
         except Exception as e:
             if "Repository Not Found" in str(e) or "Dataset not found" in str(e):
                 pytest.skip(f"Dataset not available on Hub: {str(e)}")
             else:
                 raise
 
+        if created_dataset:
+            assert created_dataset.settings.fields[0].name == "Text"
+            assert list(created_dataset.records)[0].fields["Text"] == "Hello World, how are you?"
+
     def test_import_from_hub_with_unlabelled_classes(self, client: rg.Argilla, token: str, dataset_name: str):
+        created_dataset = None
         try:
             created_dataset = rg.Dataset.from_hub(
                 "extralit-dev/test_import_from_hub_with_unlabelled_classes",
@@ -131,16 +140,19 @@ class TestImportFeaturesFromHub:
                 name=dataset_name,
                 settings="auto",
             )
-
-            assert created_dataset.settings.fields[0].name == "Text"
-            assert list(created_dataset.records)[0].fields["Text"] == "Hello World, how are you?"
+        except HfHubHTTPError as e:
+            pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
         except Exception as e:
             if "Repository Not Found" in str(e) or "Dataset not found" in str(e):
                 pytest.skip(f"Dataset not available on Hub: {str(e)}")
             else:
                 raise
+        if created_dataset:
+            assert created_dataset.settings.fields[0].name == "Text"
+            assert list(created_dataset.records)[0].fields["Text"] == "Hello World, how are you?"
 
     def test_import_with_row_id_as_record_id(self, client: rg.Argilla, token: str, dataset_name: str):
+        created_dataset = None
         try:
             created_dataset = rg.Dataset.from_hub(
                 "extralit-dev/test_import_from_hub_with_unlabelled_classes",
@@ -149,13 +161,16 @@ class TestImportFeaturesFromHub:
                 split="train",
                 settings="auto",
             )
-
-            records = list(created_dataset.records)
-
-            for idx, record in enumerate(records):
-                assert record.id == f"train_{idx}"
+        except HfHubHTTPError as e:
+            pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
         except Exception as e:
             if "Repository Not Found" in str(e) or "Dataset not found" in str(e):
                 pytest.skip(f"Dataset not available on Hub: {str(e)}")
             else:
                 raise
+
+        if created_dataset:
+            records = list(created_dataset.records)
+
+            for idx, record in enumerate(records):
+                assert record.id == f"train_{idx}"
