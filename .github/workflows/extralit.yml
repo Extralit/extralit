@@ -15,8 +15,6 @@ on:
     paths:
       - "extralit/**"
       - ".github/workflows/argilla.*"
-    paths-ignore:
-      - "extralit/docs/**"
 
   pull_request:
     paths:
