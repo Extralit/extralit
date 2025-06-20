@@ -73,10 +73,9 @@ pip install extralit
 Initialize the client:
 
 ```python
-import extralit as ex
 import argilla as rg
 
-client = rg.Extralit(
+client = rg.Argilla(
     api_url="https://your-deployment-url",
     api_key="your-api-key"
 )
