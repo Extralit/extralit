@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ import os
 import mkdocs_gen_files
 import requests
 
-REPOSITORY = "extralit/extralit"
-CHANGELOG_PATH = "argilla/CHANGELOG.md"
+REPOSITORY = "Extralit/extralit"
+CHANGELOG_PATH = "extralit/CHANGELOG.md"
 RETRIEVED_BRANCH = "develop"
 
 DATA_PATH = "community/changelog.md"
