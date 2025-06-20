@@ -61,13 +61,8 @@ jobs:
           cache-local-path: ~/.cache/uv
           ignore-nothing-to-cache: true
           cache-dependency-glob: "extralit/pdm.lock"
-      - name: Setup PDM
-        uses: pdm-project/setup-pdm@v4
-        with:
-          python-version: ${{ matrix.python-version }}
-          cache: true
-          cache-dependency-path: |
-            extralit/pdm.lock
+      - name: Install PDM
+        run: uv tool install pdm
       - name: Install dependencies
         env:
           PDM_IGNORE_ACTIVE_VENV: 1
@@ -181,13 +176,17 @@ jobs:
           name: extralit
           path: extralit/dist
 
-      - name: Setup PDM
-        uses: pdm-project/setup-pdm@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
         with:
-          cache: true
-          python-version-file: extralit/pyproject.toml
-          cache-dependency-path: |
-            extralit/pdm.lock
+          pyproject-file: "extralit/pyproject.toml"
+          python-version: "3.9"
+          enable-cache: true
+          cache-local-path: ~/.cache/uv
+          ignore-nothing-to-cache: true
+          cache-dependency-glob: "extralit/pdm.lock"
+      - name: Install PDM
+        run: uv tool install pdm
 
       - name: Read package info
         run: |
