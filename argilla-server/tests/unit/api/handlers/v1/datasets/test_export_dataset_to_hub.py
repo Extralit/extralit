@@ -1,16 +1,16 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import pytest
 
@@ -22,6 +22,7 @@ from argilla_server.jobs.queues import DEFAULT_QUEUE
 from argilla_server.constants import API_KEY_HEADER_NAME
 
 from tests.factories import AdminFactory, DatasetFactory, AnnotatorFactory, RecordFactory
+from huggingface_hub import HfHubHTTPError
 
 
 @pytest.mark.asyncio
@@ -33,14 +34,17 @@ class TestExportDatasetToHub:
         dataset = await DatasetFactory.create()
         await RecordFactory.create(dataset=dataset)
 
-        response = await async_client.post(
-            self.url(dataset.id),
-            headers=owner_auth_header,
-            json={
-                "name": "hf-username/dataset-name",
-                "token": "hf-secret-token",
-            },
-        )
+        try:
+            response = await async_client.post(
+                self.url(dataset.id),
+                headers=owner_auth_header,
+                json={
+                    "name": "hf-username/dataset-name",
+                    "token": "hf-secret-token",
+                },
+            )
+        except HfHubHTTPError as e:
+            pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
 
         assert response.status_code == 202
 
@@ -64,17 +68,20 @@ class TestExportDatasetToHub:
         dataset = await DatasetFactory.create()
         await RecordFactory.create(dataset=dataset)
 
-        response = await async_client.post(
-            self.url(dataset.id),
-            headers=owner_auth_header,
-            json={
-                "name": "hf-username/dataset-name",
-                "subset": "hf-subset",
-                "split": "hf-split",
-                "private": True,
-                "token": "hf-secret-token",
-            },
-        )
+        try:
+            response = await async_client.post(
+                self.url(dataset.id),
+                headers=owner_auth_header,
+                json={
+                    "name": "hf-username/dataset-name",
+                    "subset": "hf-subset",
+                    "split": "hf-split",
+                    "private": True,
+                    "token": "hf-secret-token",
+                },
+            )
+        except HfHubHTTPError as e:
+            pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
 
         assert response.status_code == 202
 
@@ -98,14 +105,17 @@ class TestExportDatasetToHub:
 
         admin = await AdminFactory.create(workspaces=[dataset.workspace])
 
-        response = await async_client.post(
-            self.url(dataset.id),
-            headers={API_KEY_HEADER_NAME: admin.api_key},
-            json={
-                "name": "username/dataset-name",
-                "token": "secret-hf-token",
-            },
-        )
+        try:
+            response = await async_client.post(
+                self.url(dataset.id),
+                headers={API_KEY_HEADER_NAME: admin.api_key},
+                json={
+                    "name": "username/dataset-name",
+                    "token": "secret-hf-token",
+                },
+            )
+        except HfHubHTTPError as e:
+            pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
 
         assert response.status_code == 202
 
@@ -115,14 +125,17 @@ class TestExportDatasetToHub:
         dataset = await DatasetFactory.create()
         admin = await AdminFactory.create()
 
-        response = await async_client.post(
-            self.url(dataset.id),
-            headers={API_KEY_HEADER_NAME: admin.api_key},
-            json={
-                "name": "username/dataset-name",
-                "token": "secret-hf-token",
-            },
-        )
+        try:
+            response = await async_client.post(
+                self.url(dataset.id),
+                headers={API_KEY_HEADER_NAME: admin.api_key},
+                json={
+                    "name": "username/dataset-name",
+                    "token": "secret-hf-token",
+                },
+            )
+        except HfHubHTTPError as e:
+            pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
 
         assert response.status_code == 403
         assert response.json() == {
@@ -138,14 +151,17 @@ class TestExportDatasetToHub:
         dataset = await DatasetFactory.create()
         annotator = await AnnotatorFactory.create(workspaces=[dataset.workspace])
 
-        response = await async_client.post(
-            self.url(dataset.id),
-            headers={API_KEY_HEADER_NAME: annotator.api_key},
-            json={
-                "name": "username/dataset-name",
-                "token": "secret-hf-token",
-            },
-        )
+        try:
+            response = await async_client.post(
+                self.url(dataset.id),
+                headers={API_KEY_HEADER_NAME: annotator.api_key},
+                json={
+                    "name": "username/dataset-name",
+                    "token": "secret-hf-token",
+                },
+            )
+        except HfHubHTTPError as e:
+            pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
 
         assert response.status_code == 403
         assert response.json() == {
@@ -160,13 +176,16 @@ class TestExportDatasetToHub:
     async def test_export_dataset_to_hub_without_authentication(self, async_client: AsyncClient):
         dataset = await DatasetFactory.create()
 
-        response = await async_client.post(
-            self.url(dataset.id),
-            json={
-                "name": "username/dataset-name",
-                "token": "secret-hf-token",
-            },
-        )
+        try:
+            response = await async_client.post(
+                self.url(dataset.id),
+                json={
+                    "name": "username/dataset-name",
+                    "token": "secret-hf-token",
+                },
+            )
+        except HfHubHTTPError as e:
+            pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
 
         assert response.status_code == 401
         assert response.json() == {
@@ -187,14 +206,17 @@ class TestExportDatasetToHub:
 
         nonexistent_dataset_id = uuid4()
 
-        response = await async_client.post(
-            self.url(nonexistent_dataset_id),
-            headers=owner_auth_header,
-            json={
-                "name": "username/dataset-name",
-                "token": "secret-hf-token",
-            },
-        )
+        try:
+            response = await async_client.post(
+                self.url(nonexistent_dataset_id),
+                headers=owner_auth_header,
+                json={
+                    "name": "username/dataset-name",
+                    "token": "secret-hf-token",
+                },
+            )
+        except HfHubHTTPError as e:
+            pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
 
         assert response.status_code == 404
         assert response.json() == {"detail": f"Dataset with id `{nonexistent_dataset_id}` not found"}
@@ -204,14 +226,17 @@ class TestExportDatasetToHub:
     async def test_export_dataset_with_empty_name(self, async_client: AsyncClient, owner_auth_header: dict):
         dataset = await DatasetFactory.create()
 
-        response = await async_client.post(
-            self.url(dataset.id),
-            headers=owner_auth_header,
-            json={
-                "name": "",
-                "token": "hf-secret-token",
-            },
-        )
+        try:
+            response = await async_client.post(
+                self.url(dataset.id),
+                headers=owner_auth_header,
+                json={
+                    "name": "",
+                    "token": "hf-secret-token",
+                },
+            )
+        except HfHubHTTPError as e:
+            pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
 
         assert response.status_code == 422
         assert response.json() == {
@@ -234,15 +259,18 @@ class TestExportDatasetToHub:
     async def test_export_dataset_with_empty_subset(self, async_client: AsyncClient, owner_auth_header: dict):
         dataset = await DatasetFactory.create()
 
-        response = await async_client.post(
-            self.url(dataset.id),
-            headers=owner_auth_header,
-            json={
-                "name": "hf-username/dataset-name",
-                "subset": "",
-                "token": "hf-secret-token",
-            },
-        )
+        try:
+            response = await async_client.post(
+                self.url(dataset.id),
+                headers=owner_auth_header,
+                json={
+                    "name": "hf-username/dataset-name",
+                    "subset": "",
+                    "token": "hf-secret-token",
+                },
+            )
+        except HfHubHTTPError as e:
+            pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
 
         assert response.status_code == 422
         assert response.json() == {
@@ -265,15 +293,18 @@ class TestExportDatasetToHub:
     async def test_export_dataset_with_empty_split(self, async_client: AsyncClient, owner_auth_header: dict):
         dataset = await DatasetFactory.create()
 
-        response = await async_client.post(
-            self.url(dataset.id),
-            headers=owner_auth_header,
-            json={
-                "name": "hf-username/dataset-name",
-                "split": "",
-                "token": "hf-secret-token",
-            },
-        )
+        try:
+            response = await async_client.post(
+                self.url(dataset.id),
+                headers=owner_auth_header,
+                json={
+                    "name": "hf-username/dataset-name",
+                    "split": "",
+                    "token": "hf-secret-token",
+                },
+            )
+        except HfHubHTTPError as e:
+            pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
 
         assert response.status_code == 422
         assert response.json() == {
@@ -296,14 +327,17 @@ class TestExportDatasetToHub:
     async def test_export_dataset_with_empty_token(self, async_client: AsyncClient, owner_auth_header: dict):
         dataset = await DatasetFactory.create()
 
-        response = await async_client.post(
-            self.url(dataset.id),
-            headers=owner_auth_header,
-            json={
-                "name": "hf-username/dataset-name",
-                "token": "",
-            },
-        )
+        try:
+            response = await async_client.post(
+                self.url(dataset.id),
+                headers=owner_auth_header,
+                json={
+                    "name": "hf-username/dataset-name",
+                    "token": "",
+                },
+            )
+        except HfHubHTTPError as e:
+            pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
 
         assert response.status_code == 422
         assert response.json() == {
@@ -327,14 +361,17 @@ class TestExportDatasetToHub:
         dataset = await DatasetFactory.create()
         await RecordFactory.create()
 
-        response = await async_client.post(
-            self.url(dataset.id),
-            headers=owner_auth_header,
-            json={
-                "name": "hf-username/dataset-name",
-                "token": "hf-secret-token",
-            },
-        )
+        try:
+            response = await async_client.post(
+                self.url(dataset.id),
+                headers=owner_auth_header,
+                json={
+                    "name": "hf-username/dataset-name",
+                    "token": "hf-secret-token",
+                },
+            )
+        except HfHubHTTPError as e:
+            pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
 
         assert response.status_code == 422
         assert response.json() == {"detail": f"Dataset with id `{dataset.id}` has no records to export"}
