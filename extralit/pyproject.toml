@@ -138,3 +138,7 @@ all = { composite = ["format", "lint", "test"] }
 
 [project.scripts]
 extralit = "argilla.cli.app:app"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+env = ["HF_HUB_DISABLE_TELEMETRY=1"]
