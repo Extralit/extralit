@@ -21,6 +21,7 @@ These are the section headers that we use:
 - Modified document listing and file upload functionalities for better user experience and feedback.
 - Refactored `argilla/*` to `extralit/*` to align with the new project structure.
 - Changed `EXTRALIT_CACHE_DIR` to `~/.extralit/` from `~/.argilla/` to align with new project structure.
+- GitHub Actions workflow to install PDM using `uv` and replace the PDM setup step
 
 ### Deprecated
 - `argilla-v1` is deprecated and will be removed in the next major release. Use `extralit` instead.
