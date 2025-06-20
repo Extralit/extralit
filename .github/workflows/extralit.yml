@@ -1,4 +1,4 @@
-name: Build and publish the `extralit` sdk python package
+name: Build Extralit Package & Publish
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.sha }}
