@@ -1,7 +1,7 @@
 argilla:
   replicaCount: 1
   image:
-    repository: argilla/argilla-server
+    repository: extralit/argilla-server
     tag: latest
   resources:
     requests:
