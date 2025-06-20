@@ -26,8 +26,8 @@ This guide provides a simplified, step-by-step process for creating a new releas
 
 ## 2. Open Pull Requests
 
-- Open a PR from `releases/vX.Y.Z` into `develop` (if any last-minute fixes are needed).
-- Open a PR from `releases/vX.Y.Z` into `main`.
+- Open a PR from `releases/vX.Y.Z` into `develop` (if any last-minute fixes are needed), merge it.
+- Open a PR from `develop` into `main`.
 - Use "Squash and merge" for a clean history if desired.
 
 ## 3. Merge and Tag the Release
