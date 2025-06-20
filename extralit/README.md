@@ -73,10 +73,10 @@ pip install extralit
 Initialize the client:
 
 ```python
-import extralit as ex
+import argilla as rg
 
-client = ex.Extralit(
-    api_url="https://your-deployment-url", 
+client = rg.Argilla(
+    api_url="https://your-deployment-url",
     api_key="your-api-key"
 )
 ```
@@ -85,35 +85,11 @@ client = ex.Extralit(
 
 Define what data you want to extract:
 
-```python
-schema = ex.Schema(
-    name="clinical_trial",
-    fields=[
-        ex.TextField(name="intervention", required=True),
-        ex.NumericField(name="sample_size", required=True),
-        ex.TextField(name="outcome_measure"),
-        ex.TableField(name="results_table")
-    ]
-)
-
-project = client.create_project(
-    name="trial_extraction",
-    schema=schema
-)
-```
+TBD
 
 ### Add documents and start extraction
 
-```python
-# Add PDFs to extract from
-project.add_documents("path/to/papers/*.pdf")
-
-# Start extraction
-extractions = project.extract()
-
-# Review and validate results
-validated_data = project.validate(extractions)
-```
+TBD
 
 Need more help? Check out our [detailed tutorials](https://docs.extralit.ai/latest/tutorials).
 
