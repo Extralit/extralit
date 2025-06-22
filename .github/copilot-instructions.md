@@ -12,6 +12,31 @@ Extralit is organized as a monorepo with several main components:
 - **argilla-v1**: Legacy compatibility layer
 - **examples**: Sample implementations and deployment configurations
 
+## Data Aggregation and Normalization Architecture
+
+Extralit uses a normalized database approach for storing and presenting extracted data. Each document's extractions are split into separate records (like database tables) with reference keys connecting them, similar to a relational database schema.
+
+### Document Data Extraction Flow
+
+1. **PaperExtraction Model** (`extralit/src/extralit/extraction/models/paper.py`)
+   - Central container for a document's extraction data
+   - Contains multiple pandas DataFrames organized by schema name
+   - Holds SchemaStructure defining data organization across schemas
+
+2. **Data Normalization Process** (`extralit/src/extralit/pipeline/export/record.py`)
+   - **Document-Level Record**: Creates a single "publication" record for document metadata
+     - Based on singleton schema in SchemaStructure
+     - Created by `create_publication_records()` function
+   - **Schema-Level Records**: Creates separate "extraction" records for each schema
+     - Each record contains one DataFrame of extracted data as serialized JSON
+     - Created by `create_extraction_records()` function
+     - References connect to the publication record and other extraction records
+
+3. **Dataset Configuration** (`extralit/src/extralit/pipeline/export/dataset.py`)
+   - Defines structure of Argilla datasets to store normalized records
+   - `create_papers_dataset()` configures datasets for document-level records
+   - `create_extraction_dataset()` configures datasets for schema-level records
+
 ## Core Components
 
 ### Frontend (`argilla-frontend`)
@@ -184,3 +209,56 @@ When contributing to Extralit, consider these guidelines:
 2. Create or update components in `components/features/`
 3. Connect to the backend using services in `v1/infrastructure/services/`
 4. Add tests for the new functionality
+
+### Working with Schema and Data Models
+
+1. Define schema in `extralit/src/extralit/extraction/models/schema.py`
+2. Implement extraction logic in `extralit/src/extralit/extraction/models/paper.py`
+3. Define dataset structure in `extralit/src/extralit/pipeline/export/dataset.py`
+4. Create records using functions in `extralit/src/extralit/pipeline/export/record.py`
+
+## Data Aggregation and Annotation Workflow
+
+This section describes how extracted data from documents is structured, stored, and presented to the user for annotation. Extralit uses a relational database approach where data is split into different tables and linked through reference keys.
+
+### 1. The `PaperExtraction` Model
+
+- Core container for document extractions (`extralit/src/extralit/extraction/models/paper.py`)
+- Holds multiple pandas DataFrames keyed by schema name
+- Contains `SchemaStructure` (`extralit/src/extralit/extraction/models/schema.py`) that defines organization of schemas
+
+### 2. Data Normalization into Argilla Records
+
+Data from `PaperExtraction` is normalized into multiple `rg.Record` objects in Argilla datasets, separating document metadata from specific extractions:
+
+- **Document-Level Record**: (`extralit/src/extralit/pipeline/export/record.py:create_publication_records()`)
+  - Single "publication" record per document
+  - Contains document metadata defined by "singleton" schema
+  - Serves as the primary reference point for all extraction records
+
+- **Schema-Level Records**: (`extralit/src/extralit/pipeline/export/record.py:create_extraction_records()`)
+  - Separate record for each schema (authors, methods, results, etc.)
+  - Each contains one DataFrame as serialized JSON
+  - Contains reference columns connecting to the publication record
+
+### 3. Frontend Annotation and Data Joining
+
+The frontend presents normalized data as a unified view for annotation:
+
+- **Table Display**: (`argilla-frontend/components/base/base-render-table/useSchemaTableViewModel.ts`)
+  - Manages display and validation of individual tables
+  - Identifies primary keys and reference columns
+  - Configures table grouping based on references
+
+- **Reference Resolution**: (`argilla-frontend/components/base/base-render-table/useReferenceTablesViewModel.ts`)
+  - Identifies reference columns (`_ref` or `_ID` suffix)
+  - Dynamically fetches related records from other tables
+  - Joins data to create a unified table view for the annotator
+  - Manages reference values and combinations for relationships
+
+### 4. Dataset Configuration
+
+- Dataset structure defined in `extralit/src/extralit/pipeline/export/dataset.py`
+- `create_papers_dataset()` configures document-level metadata datasets
+- `create_extraction_dataset()` configures schema-specific extraction datasets
+- Each dataset includes proper field definitions, questions, and metadata properties
