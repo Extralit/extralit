@@ -29,6 +29,7 @@ from pathlib import Path
 import backoff
 from brotli_asgi import BrotliMiddleware
 from fastapi import FastAPI, Request, Query
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.datastructures import URL
 from starlette.middleware.cors import CORSMiddleware
@@ -255,7 +256,7 @@ def configure_app_statics(app: FastAPI):
         BASE_URL_VAR_NAME = "@@baseUrl@@"
         temp_dir = tempfile.mkdtemp()
         new_folder = shutil.copytree(path_from, temp_dir + "/statics")
-        base_url = helpers.remove_suffix(settings.base_url, suffix="/")
+        base_url = helpers.remove_suffix(settings.base_url or "", suffix="/")
         for extension in ["*.js", "*.html"]:
             for file in glob.glob(
                 f"{new_folder}/**/{extension}",
@@ -328,6 +329,11 @@ async def configure_database():
     async with contextlib.asynccontextmanager(get_async_db)() as db:
         await _show_default_user_warning(db)
         await _create_oauth_allowed_workspaces(db)
+        try:
+            await db.execute(text("SELECT 1"))
+        except Exception as e:
+            _LOGGER.error(f"Database connection test failed at startup: {e}")
+            raise
 
 
 async def configure_search_engine():
@@ -360,7 +366,7 @@ def configure_redis():
     def ping_redis():
         try:
             REDIS_CONNECTION.ping()
-        except redis.exceptions.ConnectionError:
+        except redis.ConnectionError:
             raise ConnectionError(
                 f"Your redis instance at {settings.redis_url} is not available or not responding.\n"
                 "Please make sure your redis instance is launched and correctly running and\n"
