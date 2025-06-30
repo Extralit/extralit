@@ -120,7 +120,7 @@ When you're happy with the result, you'll need to give a name to your dataset, s
     To do that, open your dataset and copy the code snippet provided under "Import data". Now, open a Jupyter or Google Colab notebook and install argilla:
 
     ```python
-    !pip install argilla
+    !pip install extralit
     ```
     Then, paste and run your code snippet. This will import the remaining records to your dataset.
 
@@ -131,7 +131,7 @@ For getting started with Argilla and its SDK, we recommend to use Jupyter Notebo
 In your notebook, you can install the Argilla SDK with pip as follows:
 
 ```python
-!pip install argilla
+!pip install extralit
 ```
 
 To start interacting with your Argilla server, you need to instantiate a client with an API key and API URL:
