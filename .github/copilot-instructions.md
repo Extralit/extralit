@@ -1,6 +1,6 @@
 # Extralit Codebase Organization Guide
 
-This guide provides an overview of the Extralit codebase architecture to help new contributors understand how the project is organized. Extralit is a monorepo containing multiple interconnected components that work together to provide document extraction, processing, and annotation capabilities.
+This guide provides an overview of the Extralit codebase (https://github.com/Extralit/extralit) architecture to help new contributors understand how the project is organized. Extralit is a monorepo containing multiple interconnected components that work together to provide document extraction, processing, and annotation capabilities.
 
 ## Repository Structure
 

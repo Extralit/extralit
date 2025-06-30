@@ -16,7 +16,7 @@
       />
       <TextField
         v-else-if="group[0].isTextType"
-        :id="`${id}-${record.id}`"
+        :id="`${group[0].id}-${record.id}`"
         :title="group[0].title"
         :fieldText="group[0].content"
         :useMarkdown="group[0].settings.use_markdown"
@@ -26,7 +26,7 @@
       />
       <ChatField
         v-else-if="group[0].isChatType"
-        :id="`${id}-${record.id}`"
+        :id="`${group[0].id}-${record.id}`"
         :title="group[0].title"
         :useMarkdown="group[0].settings.use_markdown"
         :content="group[0].content"
