@@ -17,7 +17,7 @@ Get started by publishing your first dataset.
 To work with Argilla datasets, you need to use the Argilla SDK. You can install the SDK with pip as follows:
 
 ```sh
-pip install argilla
+pip install extralit
 ```
 
 ### 2. Connect to your Argilla server

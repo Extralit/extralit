@@ -30,7 +30,7 @@ This dataset contains:
 
 ### Load with Argilla
 
-To load with Argilla, you'll just need to install Argilla as `pip install argilla --upgrade` and then use the following code:
+To load with Argilla, you'll just need to install Argilla as `pip install extralit --upgrade` and then use the following code:
 
 ```python
 import argilla_v1 as rg
