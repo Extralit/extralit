@@ -95,6 +95,60 @@ export default {
     hasSpanQuestion(fieldName) {
       return !!this.getSpanQuestion(fieldName);
     },
+    orderFieldGroupsByDependencies(fieldGroups) {
+      const groupNames = Object.keys(fieldGroups);
+      
+      // Build a simple dependency graph based on field analysis
+      const dependencyGraph = new Map();
+      
+      groupNames.forEach(groupName => {
+        const dependencies = [];
+        const fields = fieldGroups[groupName];
+        
+        // Check fields in this group for references to other groups
+        fields.forEach(field => {
+          const fieldName = field.name;
+          // Look for reference patterns like "other_schema_ref" or "other_schema_ID"
+          if (fieldName.includes('_ref') || fieldName.includes('_ID')) {
+            const parts = fieldName.split(/[_-]/);
+            if (parts.length > 1) {
+              const potentialRef = parts[0];
+              if (potentialRef !== groupName && groupNames.includes(potentialRef)) {
+                dependencies.push(potentialRef);
+              }
+            }
+          }
+        });
+        
+        dependencyGraph.set(groupName, [...new Set(dependencies)]);
+      });
+      
+      // Simple topological sort
+      const visited = new Set();
+      const result = [];
+      
+      const visit = (groupName) => {
+        if (visited.has(groupName)) return;
+        
+        const deps = dependencyGraph.get(groupName) || [];
+        deps.forEach(dep => {
+          if (groupNames.includes(dep)) {
+            visit(dep);
+          }
+        });
+        
+        visited.add(groupName);
+        result.push(fieldGroups[groupName]);
+      };
+      
+      groupNames.forEach(groupName => {
+        if (!visited.has(groupName)) {
+          visit(groupName);
+        }
+      });
+      
+      return result;
+    },
   },
   computed: {
     spanQuestions() {
@@ -110,7 +164,9 @@ export default {
         return groups;
       }, {});
 
-      return Object.values(fieldGroups);
+      // Apply schema ordering based on dependencies
+      const orderedGroups = this.orderFieldGroupsByDependencies(fieldGroups);
+      return orderedGroups;
     },
   },
 };
