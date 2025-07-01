@@ -1,0 +1,75 @@
+name: "Copilot Setup Steps"
+
+# Automatically run the setup steps when they are changed to allow for easy validation, and
+# allow manual testing through the repository's "Actions" tab
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+  pull_request:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+
+jobs:
+  copilot-setup-steps:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read # for actions/checkout
+
+    # Define steps that will run before the Copilot agent starts
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+          cache: "pip"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pandoc
+
+      - name: Install Python tools
+        run: |
+          pip install --upgrade pip
+          pip install uv pdm
+          pdm config use_uv true
+          pip install pytest pytest-cov pytest-mock pytest-asyncio==0.21.1 pytest-env factory_boy~=3.2.1 ipython<8.0.0 pytest-randomly>=3.15.0
+          pip install pre-commit
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      # Install argilla-server first to avoid package dependency conflicts
+      - name: Install argilla-server (editable)
+        run: |
+          cd argilla-server/
+          uv pip install -e .
+
+      - name: Install extralit (editable)
+        run: |
+          cd extralit/
+          uv pip install -e .
+
+      # Build frontend if needed for development
+      - name: Build frontend if needed
+        run: |
+          if [ ! -d "argilla-frontend/dist" ]; then
+            cd argilla-frontend
+            npm install
+            npm run build
+          fi
+
+          # Copy frontend dist to server static folder if needed
+          if [ ! -d "argilla-server/src/argilla_server/static" ]; then
+            mkdir -p argilla-server/src/argilla_server/static
+            cp -r argilla-frontend/dist/* argilla-server/src/argilla_server/static/
+          fi
