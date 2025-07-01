@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -39,6 +39,11 @@ __all__ = ["APIClient"]
 
 ARGILLA_API_URL = get_secret("ARGILLA_API_URL") or _DEFAULT_API_URL
 ARGILLA_API_KEY = get_secret("ARGILLA_API_KEY")
+
+if ARGILLA_API_KEY is None:
+    raise ArgillaCredentialsError(
+        "No API key found. Please set the 'ARGILLA_API_KEY' environment variable or configure your credentials."
+    )
 
 DEFAULT_HTTP_CONFIG = HTTPClientConfig(api_url=ARGILLA_API_URL, api_key=ARGILLA_API_KEY)
 
