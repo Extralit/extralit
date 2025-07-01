@@ -78,6 +78,10 @@ export class Record {
     return !!original && !isEqual(original, rest);
   }
 
+  get reference(): string | null {
+    return this.metadata?.reference || null;
+  }
+
   getModified() {
     const { original, ...rest } = this;
 

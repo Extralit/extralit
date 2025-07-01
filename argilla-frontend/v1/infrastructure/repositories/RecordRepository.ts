@@ -212,6 +212,8 @@ export class RecordRepository {
     try {
       const url = `/v1/me/datasets/${datasetId}/records/search`;
 
+      const statusArray = Array.isArray(status) ? status : [status];
+      
       const body: BackendAdvanceSearchQuery = {
         query: {},
         filters: {
@@ -222,20 +224,20 @@ export class RecordRepository {
                 entity: "response",
                 property: "status",
               },
-              values: [status],
+              values: statusArray,
             },
           ],
         },
       };
 
-      if (status === "pending") {
+      if (statusArray.includes("pending")) {
         body.filters.and.push({
           type: "terms",
           scope: {
             entity: "record",
             property: "status",
           },
-          values: [status],
+          values: ["pending"],
         });
       }
 

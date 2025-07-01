@@ -9,7 +9,7 @@ import { RecordStatus } from "./RecordAnswer";
 
 interface IRecordCriteria {
   readonly page: PageCriteria;
-  readonly status: RecordStatus;
+  readonly status: RecordStatus | RecordStatus[];
   readonly searchText: SearchTextCriteria;
   readonly metadata: MetadataCriteria;
   readonly sortBy: SortCriteria;
@@ -20,7 +20,7 @@ interface IRecordCriteria {
 
 class CommittedRecordCriteria implements IRecordCriteria {
   public readonly page: PageCriteria;
-  public readonly status: RecordStatus;
+  public readonly status: RecordStatus | RecordStatus[];
   public readonly searchText: SearchTextCriteria;
   public readonly metadata: MetadataCriteria;
   public readonly sortBy: SortCriteria;
@@ -56,7 +56,8 @@ class CommittedRecordCriteria implements IRecordCriteria {
   }
 
   get isPending() {
-    return this.status === "pending";
+    const status = Array.isArray(this.status) ? this.status : [this.status];
+    return status.includes("pending");
   }
 }
 
@@ -76,7 +77,7 @@ export class RecordCriteria implements IRecordCriteria {
   constructor(
     public readonly datasetId: string,
     page: string,
-    public status: RecordStatus,
+    public status: RecordStatus | RecordStatus[],
     searchText: string,
     metadata: string,
     sortBy: string,
@@ -186,7 +187,7 @@ export class RecordCriteria implements IRecordCriteria {
 
   complete(
     page: string,
-    status: RecordStatus,
+    status: RecordStatus | RecordStatus[],
     searchText: string,
     metadata: string,
     sortBy: string,
@@ -276,7 +277,7 @@ export class RecordCriteria implements IRecordCriteria {
     if (!previous) return false;
     if (!actual) return false;
 
-    if (actual.status !== previous.status) return true;
+    if (JSON.stringify(actual.status) !== JSON.stringify(previous.status)) return true;
 
     if (!previous.searchText.isEqual(actual.searchText)) return true;
     if (!previous.page.isEqual(actual.page)) return true;

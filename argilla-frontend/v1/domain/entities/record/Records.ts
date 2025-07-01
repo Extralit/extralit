@@ -111,7 +111,19 @@ export class Records {
   }
 
   private arrangeQueue() {
-    this.records = this.records.sort((r1, r2) => (r1.page < r2.page ? -1 : 1));
+    // Group records by reference, then sort by page within each group
+    this.records = this.records.sort((r1, r2) => {
+      const ref1 = r1.reference || '';
+      const ref2 = r2.reference || '';
+      
+      // First sort by reference
+      if (ref1 !== ref2) {
+        return ref1.localeCompare(ref2);
+      }
+      
+      // Then sort by page within the same reference group
+      return r1.page < r2.page ? -1 : 1;
+    });
   }
 
   get lastRecord() {
@@ -120,6 +132,30 @@ export class Records {
 
   get firstRecord() {
     return this.records[0];
+  }
+
+  /**
+   * Group records by reference for display purposes
+   */
+  get recordsByReference(): Map<string, Record[]> {
+    const grouped = new Map<string, Record[]>();
+    
+    this.records.forEach(record => {
+      const reference = record.reference || 'unknown';
+      if (!grouped.has(reference)) {
+        grouped.set(reference, []);
+      }
+      grouped.get(reference)!.push(record);
+    });
+    
+    return grouped;
+  }
+
+  /**
+   * Check if records should be displayed as groups
+   */
+  get hasMultipleReferences(): boolean {
+    return this.recordsByReference.size > 1;
   }
 
   private recordsAnnotatedOnQueue(status: RecordStatus) {

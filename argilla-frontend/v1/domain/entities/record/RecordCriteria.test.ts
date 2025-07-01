@@ -841,4 +841,92 @@ describe("RecordCriteria", () => {
       });
     });
   });
+
+  describe("Multi-status functionality", () => {
+    test("should support single status", () => {
+      const criteria = new RecordCriteria(
+        "datasetId",
+        "1",
+        "pending",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      );
+
+      expect(criteria.status).toBe("pending");
+    });
+
+    test("should support multiple statuses", () => {
+      const criteria = new RecordCriteria(
+        "datasetId",
+        "1",
+        ["pending", "submitted"],
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      );
+
+      expect(criteria.status).toEqual(["pending", "submitted"]);
+    });
+
+    test("isPending should return true when status is pending", () => {
+      const criteria = new RecordCriteria(
+        "datasetId",
+        "1",
+        "pending",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      );
+
+      criteria.commit();
+
+      expect(criteria.committed.isPending).toBe(true);
+    });
+
+    test("isPending should return true when pending is in status array", () => {
+      const criteria = new RecordCriteria(
+        "datasetId",
+        "1",
+        ["pending", "submitted"],
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      );
+
+      criteria.commit();
+
+      expect(criteria.committed.isPending).toBe(true);
+    });
+
+    test("isPending should return false when pending is not in status array", () => {
+      const criteria = new RecordCriteria(
+        "datasetId",
+        "1",
+        ["submitted", "discarded"],
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      );
+
+      criteria.commit();
+
+      expect(criteria.committed.isPending).toBe(false);
+    });
+  });
 });
