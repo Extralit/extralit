@@ -97,6 +97,7 @@ jobs:
         with:
           node-version: "18"
           cache: "npm"
+          cache-dependency-path: argilla-frontend/package-lock.json
 
       # Install argilla-server first to avoid package dependency conflicts
       - name: Install argilla-server (editable)
