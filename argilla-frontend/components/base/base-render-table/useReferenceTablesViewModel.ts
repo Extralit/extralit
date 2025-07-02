@@ -88,7 +88,12 @@ export const useReferenceTablesViewModel = (
             return schemaName?.toLowerCase() === field.replace(/(_ref|_ID)$/i, '').toLowerCase();
           });
 
-        for (const matchingTable of matchingTables) {
+        for (let matchingTable of matchingTables) {
+          // Ensure matchingTable is a TableData instance
+          if (!(matchingTable instanceof TableData)) {
+            const mt: any = matchingTable;
+            matchingTable = new TableData(mt.data, mt.schema, mt.reference);
+          }
           if (!matchingTable.hasOwnProperty('columnUniqueCounts')) {
             matchingTable.columnUniqueCounts = matchingTable.getColumnUniqueCounts();
           }
