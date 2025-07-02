@@ -73,22 +73,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
         with:
+          pyproject-file: "argilla-server/pyproject.toml"
           python-version: "3.10"
-          cache: "pip"
-
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y pandoc
+          enable-cache: true
+          cache-local-path: ~/.cache/uv
+          cache-dependency-glob: "argilla-server/pdm.lock"
 
       - name: Install Python tools
         run: |
           pip install --upgrade pip
           pip install uv pdm
           pdm config use_uv true
+          pdm config python.install_root "$(uv python dir)"
+
           pip install pytest pytest-cov pytest-mock pytest-asyncio==0.21.1 pytest-env factory_boy~=3.2.1 ipython<8.0.0 pytest-randomly>=3.15.0
           pip install pre-commit
 
