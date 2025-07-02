@@ -101,7 +101,7 @@ jobs:
       - name: Install argilla-server (editable)
         run: |
           cd argilla-server/
-          uv pip install -e .[server,postgresql]
+          pdm build
 
       # Build frontend if needed for development
       - name: Run Argilla server in development mode
