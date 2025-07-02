@@ -71,11 +71,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y pandoc libpq-dev
-
       - name: Install uv
         uses: astral-sh/setup-uv@v5
         with:
@@ -106,12 +101,7 @@ jobs:
       - name: Install argilla-server (editable)
         run: |
           cd argilla-server/
-          uv pip install -e .
-
-      - name: Install extralit (editable)
-        run: |
-          cd extralit/
-          uv pip install -e .
+          uv pip install -e .[server,postgresql]
 
       # Build frontend if needed for development
       - name: Run Argilla server in development mode
@@ -126,6 +116,11 @@ jobs:
           S3_ENDPOINT: ${{ env.S3_ENDPOINT }}
           S3_ACCESS_KEY: ${{ env.S3_ACCESS_KEY }}
           S3_SECRET_KEY: ${{ env.S3_SECRET_KEY }}
+
+      - name: Install extralit (editable)
+        run: |
+          cd extralit/
+          uv pip install -e .
 
       - name: Run frontend in dev mode (optional)
         if: ${{ always() && env.RUN_FRONTEND_DEV == 'true' }}
