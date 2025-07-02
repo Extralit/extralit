@@ -6,11 +6,11 @@ This guide provides an overview of the Extralit codebase (https://github.com/Ext
 
 Extralit is organized as a monorepo with several main components:
 
-- **argilla**: Python SDK and core extraction functionality
-- **argilla-server**: Backend server implementation
-- **argilla-frontend**: Frontend web application
-- **argilla-v1**: Legacy compatibility layer
-- **examples**: Sample implementations and deployment configurations
+- **extralit/**: Python SDK and core extraction functionality
+- **argilla-server/**: Backend server implementation
+- **argilla-frontend/**: Frontend web application
+- **argilla-v1/**: Legacy compatibility layer
+- **examples/**: Sample implementations and deployment configurations
 
 ## Data Aggregation and Normalization Architecture
 
@@ -262,3 +262,11 @@ The frontend presents normalized data as a unified view for annotation:
 - `create_papers_dataset()` configures document-level metadata datasets
 - `create_extraction_dataset()` configures schema-specific extraction datasets
 - Each dataset includes proper field definitions, questions, and metadata properties
+
+
+When modifying the data architecture or refactoring modules in this codebase, please update this `.github/copilot-instructions.md` file to reflect the changes. Keep the documentation synchronized with the actual implementation to ensure accurate guidance for future development and maintenance.
+
+
+
+
+
