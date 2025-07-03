@@ -21,7 +21,7 @@ import logging
 _LOGGER = logging.getLogger(__name__)
 
 
-def get_minio_client() -> Optional[Minio]:
+def get_storage_client() -> Optional[Minio]:
     s3_endpoint = os.getenv("S3_ENDPOINT")
     s3_access_key = os.getenv("S3_ACCESS_KEY")
     s3_secret_key = os.getenv("S3_SECRET_KEY")

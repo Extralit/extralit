@@ -31,7 +31,7 @@ class TestSchemaService:
         storage = LocalFileStorage(tempfile.mkdtemp())
         service = SchemaService(storage)
         assert service is not None
-        assert service.minio_client is not None
+        assert service.storage_client is not None
 
     async def test_get_workspace_schema_configuration_empty(self):
         """Test getting schema configuration from workspace with no metadata."""

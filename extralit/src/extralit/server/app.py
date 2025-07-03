@@ -35,7 +35,7 @@ from extralit.extraction.models.schema import SchemaStructure
 from extralit.extraction.prompts import DEFAULT_CHAT_PROMPT_TMPL, CHAT_SYSTEM_PROMPT
 from extralit.extraction.query import get_nodes_metadata, vectordb_contains_any
 from extralit.extraction.vector_index import create_vector_index, load_index
-from extralit.server.context.files import get_minio_client
+from extralit.server.context.files import get_storage_client
 from extralit.server.context.llamaindex import get_langfuse_callback
 from extralit.server.context.vectordb import get_weaviate_client
 from extralit.server.context.datasets import get_argilla_client
@@ -54,17 +54,17 @@ app = FastAPI()
 # )
 
 weaviate_client: Optional[WeaviateClient] = None
-minio_client: Optional[Minio] = None
+storage_client: Optional[Minio] = None
 argilla_client: Optional[rg.Argilla] = None
 
 
 @app.on_event("startup")
 async def startup():
-    global weaviate_client, minio_client, argilla_client
+    global weaviate_client, storage_client, argilla_client
     if weaviate_client is None:
         weaviate_client = get_weaviate_client()
-    if minio_client is None:
-        minio_client = get_minio_client()
+    if storage_client is None:
+        storage_client = get_storage_client()
     if argilla_client is None:
         argilla_client = get_argilla_client()
 
@@ -77,7 +77,7 @@ async def health_check():
             return {"status": "error", "message": "Weaviate client not initialized"}
 
         # Check minio connection
-        if minio_client is None:
+        if storage_client is None:
             return {"status": "error", "message": "Minio client not initialized"}
 
         return {"status": "ok"}
@@ -90,7 +90,7 @@ async def health_check():
 async def schemas(
     workspace: str = "itn-recalibration",
 ):
-    ss = SchemaStructure.from_s3(workspace_name=workspace, minio_client=minio_client)
+    ss = SchemaStructure.from_s3(workspace_name=workspace, storage_client=storage_client)
     return ss.ordering
 
 
@@ -165,7 +165,7 @@ async def extraction(
     prompt_template: str = "completion",
     langfuse_callback: Optional[LlamaIndexCallbackHandler] = Depends(get_langfuse_callback),
 ):
-    schema_structure = SchemaStructure.from_s3(workspace_name=workspace, minio_client=minio_client)
+    schema_structure = SchemaStructure.from_s3(workspace_name=workspace, storage_client=storage_client)
     schema = schema_structure[extraction_request.schema_name]
 
     extraction_dfs = {}

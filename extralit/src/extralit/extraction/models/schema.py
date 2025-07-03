@@ -149,7 +149,7 @@ class SchemaStructure(BaseModel):
     def from_s3(
         cls,
         workspace_name: str,
-        minio_client: "Minio",
+        storage_client: "Minio",
         prefix: str = DEFAULT_SCHEMA_S3_PATH,
         exclude: List[str] = [],
         verbose: bool = True,
@@ -159,7 +159,7 @@ class SchemaStructure(BaseModel):
 
         Args:
             workspace:  The workspace name.
-            minio_client:  The Minio client.
+            storage_client:  The Minio client.
             prefix: The prefix to search for schemas.
             exclude:  A list of schema names to exclude from the schema structure.
             verbose:  Whether to log verbose output.
@@ -168,7 +168,7 @@ class SchemaStructure(BaseModel):
             SchemaStructure
         """
         schemas = {}
-        objects = minio_client.list_objects(workspace_name, prefix=prefix, include_version=False)
+        objects = storage_client.list_objects(workspace_name, prefix=prefix, include_version=False)
 
         # Sort the objects by file extension
         objects = sorted(
@@ -180,7 +180,7 @@ class SchemaStructure(BaseModel):
             file_extension = os.path.splitext(filepath)[1]
 
             try:
-                data = minio_client.get_object(workspace_name, filepath)
+                data = storage_client.get_object(workspace_name, filepath)
                 file_data = BytesIO(data.read())
 
                 if not file_extension or file_extension == ".json":
@@ -201,14 +201,14 @@ class SchemaStructure(BaseModel):
         return cls(schemas=list(schemas.values()))
 
     def to_s3(
-        self, workspace_name: str, minio_client: "Minio", prefix: str = "schemas/", delete_excluded: bool = False
+        self, workspace_name: str, storage_client: "Minio", prefix: str = "schemas/", delete_excluded: bool = False
     ):
         """
         This method is used to upload the schemas to an S3 bucket and optionally delete the excluded schemas.
 
         Args:
             workspace (str): The workspace name.
-            minio_client (Minio): The Minio client.
+            storage_client (Minio): The Minio client.
             prefix (str, optional): The prefix to use for the schemas in the S3 bucket. Default is 'schemas/'.
             delete_excluded (bool, optional): A flag to determine whether to delete the excluded schemas or not. Default is True.
 
@@ -227,7 +227,7 @@ class SchemaStructure(BaseModel):
             object_name = os.path.join(prefix, schema.name)
 
             # Upload the BytesIO object to the S3 bucket
-            minio_client.put_object(
+            storage_client.put_object(
                 bucket_name=workspace_name,
                 object_name=object_name,
                 data=schema_bytes,
@@ -236,13 +236,13 @@ class SchemaStructure(BaseModel):
             )
 
         if delete_excluded:
-            objects = minio_client.list_objects(workspace_name, prefix=prefix, include_version=False)
+            objects = storage_client.list_objects(workspace_name, prefix=prefix, include_version=False)
             bucket_schema_paths = [os.path.splitext(obj.object_name)[0] for obj in objects]
             self_schema_paths = [os.path.join(prefix, schema.name) for schema in self.schemas]
             schemas_to_delete = set(bucket_schema_paths) - set(self_schema_paths)
             print("Deleting schemas:", schemas_to_delete)
             for schema_path in schemas_to_delete:
-                minio_client.remove_object(workspace_name, schema_path)
+                storage_client.remove_object(workspace_name, schema_path)
 
     def get_joined_schema(self, schema_name: str):
         combined_columns = {}

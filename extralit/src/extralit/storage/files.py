@@ -19,7 +19,7 @@ import dill
 from typing import Optional
 from minio.error import S3Error
 
-from extralit.server.context.files import get_minio_client
+from extralit.server.context.files import get_storage_client
 
 
 class StorageType(Enum):
@@ -35,7 +35,7 @@ class FileHandler:
 
         if storage_type == StorageType.S3:
             assert bucket_name is not None
-            self.client = get_minio_client()
+            self.client = get_storage_client()
 
     def _get_full_path(self, path: str) -> str:
         return os.path.join(self.base_path, path)

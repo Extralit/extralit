@@ -169,9 +169,9 @@ class WorkspaceSyncFactory(BaseSyncFactory):
     @classmethod
     async def create_with_s3(cls, **kwargs):
         workspace = await cls.create(**kwargs)
-        minio_client = await get_storage_client()
+        storage_client = await get_storage_client()
         try:
-            await minio_client.make_bucket(workspace.name)
+            await storage_client.make_bucket(workspace.name)
         except Exception as e:
             print(f"Error creating bucket for workspace {workspace.name}: {str(e)}")
         return workspace
