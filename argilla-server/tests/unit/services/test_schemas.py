@@ -15,12 +15,10 @@
 import json
 import pytest
 import tempfile
-from datetime import datetime
-from io import BytesIO
 from unittest.mock import patch, MagicMock, AsyncMock
 from dataclasses import dataclass
 
-from argilla_server.services.schemas import SchemaService
+from argilla_server.contexts.schemas import SchemaService
 from argilla_server.contexts.files import LocalFileStorage
 
 from tests.factories import WorkspaceFactory
@@ -79,7 +77,7 @@ class TestSchemaService:
         service = SchemaService(storage)
 
         # Mock PANDERA_AVAILABLE to False
-        with patch("argilla_server.services.schemas.PANDERA_AVAILABLE", False):
+        with patch("argilla_server.contexts.schemas.PANDERA_AVAILABLE", False):
             is_valid, error = await service.validate_schema(workspace, "test_schema")
 
             assert is_valid is False
@@ -134,10 +132,10 @@ class TestSchemaService:
         # Mock file response - using MagicMock instead of dataclass to avoid mutable default issues
         mock_response = MagicMock()
         mock_response.data = json.dumps(schema_data).encode("utf-8")
-        
+
         mock_metadata = MagicMock()
         mock_metadata.version_id = "test_version_123"
-        
+
         mock_file_response = MagicMock()
         mock_file_response.response = mock_response
         mock_file_response.metadata = mock_metadata
@@ -145,10 +143,11 @@ class TestSchemaService:
         # Mock the async session
         mock_db = AsyncMock()
 
-        with patch("argilla_server.services.schemas.PANDERA_AVAILABLE", True), \
-             patch("argilla_server.contexts.files.get_object") as mock_get_object, \
-             patch("argilla_server.services.schemas.from_json") as mock_from_json:
-            
+        with (
+            patch("argilla_server.contexts.schemas.PANDERA_AVAILABLE", True),
+            patch("argilla_server.contexts.files.get_object") as mock_get_object,
+            patch("argilla_server.contexts.schemas.from_json") as mock_from_json,
+        ):
             mock_get_object.return_value = mock_file_response
             mock_from_json.return_value = MagicMock()  # Mock pandera schema
 
@@ -175,10 +174,10 @@ class TestSchemaService:
         service = SchemaService(storage)
         mock_db = AsyncMock()
 
-        with patch("argilla_server.services.schemas.PANDERA_AVAILABLE", False):
+        with patch("argilla_server.contexts.schemas.PANDERA_AVAILABLE", False):
             with pytest.raises(RuntimeError) as exc_info:
                 await service.sync_s3_schema_to_metadata(mock_db, workspace, "test_schema")
-            
+
             assert "Pandera is not available" in str(exc_info.value)
 
     async def test_sync_s3_schema_to_metadata_invalid_json(self):
@@ -191,13 +190,14 @@ class TestSchemaService:
         # Mock invalid JSON response
         mock_response = MagicMock()
         mock_response.data = b"invalid json"
-        
+
         mock_file_response = MagicMock()
         mock_file_response.response = mock_response
 
-        with patch("argilla_server.services.schemas.PANDERA_AVAILABLE", True), \
-             patch("argilla_server.contexts.files.get_object") as mock_get_object:
-            
+        with (
+            patch("argilla_server.contexts.schemas.PANDERA_AVAILABLE", True),
+            patch("argilla_server.contexts.files.get_object") as mock_get_object,
+        ):
             mock_get_object.return_value = mock_file_response
 
             with pytest.raises(json.JSONDecodeError):
@@ -233,18 +233,19 @@ class TestSchemaService:
 
         mock_response = MagicMock()
         mock_response.data = json.dumps(schema_data).encode("utf-8")
-        
+
         mock_metadata = MagicMock()
         mock_metadata.version_id = "new_version_456"
-        
+
         mock_file_response = MagicMock()
         mock_file_response.response = mock_response
         mock_file_response.metadata = mock_metadata
 
-        with patch("argilla_server.services.schemas.PANDERA_AVAILABLE", True), \
-             patch("argilla_server.contexts.files.get_object") as mock_get_object, \
-             patch("argilla_server.services.schemas.from_json") as mock_from_json:
-            
+        with (
+            patch("argilla_server.contexts.schemas.PANDERA_AVAILABLE", True),
+            patch("argilla_server.contexts.files.get_object") as mock_get_object,
+            patch("argilla_server.contexts.schemas.from_json") as mock_from_json,
+        ):
             mock_get_object.return_value = mock_file_response
             mock_from_json.return_value = MagicMock()
 
@@ -302,10 +303,11 @@ class TestSchemaService:
         mock_file_response2.response = mock_response2
         mock_file_response2.metadata = mock_metadata2
 
-        with patch("argilla_server.services.schemas.PANDERA_AVAILABLE", True), \
-             patch("argilla_server.contexts.files.list_objects") as mock_list_objects, \
-             patch("argilla_server.contexts.files.get_object") as mock_get_object:
-            
+        with (
+            patch("argilla_server.contexts.schemas.PANDERA_AVAILABLE", True),
+            patch("argilla_server.contexts.files.list_objects") as mock_list_objects,
+            patch("argilla_server.contexts.files.get_object") as mock_get_object,
+        ):
             mock_list_objects.return_value = objects_response
             # Return different responses for different files
             mock_get_object.side_effect = [mock_file_response1, mock_file_response2]
@@ -315,12 +317,12 @@ class TestSchemaService:
             # Verify the result
             assert "schemas" in result
             assert len(result["schemas"]) == 2
-            
+
             # Check schema1 (singleton)
             schema1 = next(s for s in result["schemas"] if s["name"] == "schema1")
             assert schema1["is_singleton"] is True
             assert schema1["s3_path"] == "schemas/schema1.json"
-            
+
             # Check schema2 (not singleton)
             schema2 = next(s for s in result["schemas"] if s["name"] == "schema2")
             assert schema2["is_singleton"] is False
@@ -341,10 +343,10 @@ class TestSchemaService:
         service = SchemaService(storage)
         mock_db = AsyncMock()
 
-        with patch("argilla_server.services.schemas.PANDERA_AVAILABLE", False):
+        with patch("argilla_server.contexts.schemas.PANDERA_AVAILABLE", False):
             with pytest.raises(RuntimeError) as exc_info:
                 await service.sync_all_s3_schemas_to_metadata(mock_db, workspace, "schemas/")
-            
+
             assert "Pandera is not available" in str(exc_info.value)
 
     async def test_sync_all_s3_schemas_to_metadata_skip_invalid_schema(self):
@@ -388,10 +390,11 @@ class TestSchemaService:
         mock_invalid_file_response.response = mock_invalid_response
         mock_invalid_file_response.metadata = mock_invalid_metadata
 
-        with patch("argilla_server.services.schemas.PANDERA_AVAILABLE", True), \
-             patch("argilla_server.contexts.files.list_objects") as mock_list_objects, \
-             patch("argilla_server.contexts.files.get_object") as mock_get_object:
-            
+        with (
+            patch("argilla_server.contexts.schemas.PANDERA_AVAILABLE", True),
+            patch("argilla_server.contexts.files.list_objects") as mock_list_objects,
+            patch("argilla_server.contexts.files.get_object") as mock_get_object,
+        ):
             mock_list_objects.return_value = objects_response
             mock_get_object.side_effect = [mock_valid_file_response, mock_invalid_file_response]
 
@@ -450,12 +453,13 @@ class TestSchemaService:
         mock_pub_schema = MagicMock()
         mock_method_schema = MagicMock()
 
-        with patch("argilla_server.services.schemas.EXTRALIT_AVAILABLE", True), \
-             patch("argilla_server.services.schemas.PANDERA_AVAILABLE", True), \
-             patch("argilla_server.services.schemas.SchemaStructure") as mock_schema_structure_class, \
-             patch("argilla_server.contexts.files.get_object") as mock_get_object, \
-             patch("argilla_server.services.schemas.from_json") as mock_from_json:
-            
+        with (
+            patch("argilla_server.contexts.schemas.EXTRALIT_AVAILABLE", True),
+            patch("argilla_server.contexts.schemas.PANDERA_AVAILABLE", True),
+            patch("argilla_server.contexts.schemas.SchemaStructure") as mock_schema_structure_class,
+            patch("argilla_server.contexts.files.get_object") as mock_get_object,
+            patch("argilla_server.contexts.schemas.from_json") as mock_from_json,
+        ):
             mock_get_object.side_effect = [mock_pub_file_response, mock_method_file_response]
             mock_from_json.side_effect = [mock_pub_schema, mock_method_schema]
             mock_schema_structure_class.return_value = mock_schema_structure
@@ -465,8 +469,7 @@ class TestSchemaService:
             # Verify SchemaStructure was created with correct parameters
             assert result == mock_schema_structure
             mock_schema_structure_class.assert_called_once_with(
-                schemas=[mock_pub_schema, mock_method_schema], 
-                singleton_schema=mock_pub_schema
+                schemas=[mock_pub_schema, mock_method_schema], singleton_schema=mock_pub_schema
             )
 
             # Verify S3 calls were made with correct parameters
@@ -474,9 +477,7 @@ class TestSchemaService:
             mock_get_object.assert_any_call(
                 storage, workspace.name, "schemas/publication.json", version_id="pub_version"
             )
-            mock_get_object.assert_any_call(
-                storage, workspace.name, "schemas/method.json", version_id="method_version"
-            )
+            mock_get_object.assert_any_call(storage, workspace.name, "schemas/method.json", version_id="method_version")
 
     async def test_create_schema_structure_from_metadata_without_extralit(self):
         """Test creating SchemaStructure when extralit is not available."""
@@ -484,7 +485,7 @@ class TestSchemaService:
         storage = LocalFileStorage(tempfile.mkdtemp())
         service = SchemaService(storage)
 
-        with patch("argilla_server.services.schemas.EXTRALIT_AVAILABLE", False):
+        with patch("argilla_server.contexts.schemas.EXTRALIT_AVAILABLE", False):
             result = await service.create_schema_structure_from_metadata(workspace)
             assert result is None
 
@@ -494,8 +495,10 @@ class TestSchemaService:
         storage = LocalFileStorage(tempfile.mkdtemp())
         service = SchemaService(storage)
 
-        with patch("argilla_server.services.schemas.EXTRALIT_AVAILABLE", True), \
-             patch("argilla_server.services.schemas.PANDERA_AVAILABLE", False):
+        with (
+            patch("argilla_server.contexts.schemas.EXTRALIT_AVAILABLE", True),
+            patch("argilla_server.contexts.schemas.PANDERA_AVAILABLE", False),
+        ):
             result = await service.create_schema_structure_from_metadata(workspace)
             assert result is None
 
@@ -507,10 +510,11 @@ class TestSchemaService:
 
         mock_schema_structure = MagicMock()
 
-        with patch("argilla_server.services.schemas.EXTRALIT_AVAILABLE", True), \
-             patch("argilla_server.services.schemas.PANDERA_AVAILABLE", True), \
-             patch("argilla_server.services.schemas.SchemaStructure") as mock_schema_structure_class:
-            
+        with (
+            patch("argilla_server.contexts.schemas.EXTRALIT_AVAILABLE", True),
+            patch("argilla_server.contexts.schemas.PANDERA_AVAILABLE", True),
+            patch("argilla_server.contexts.schemas.SchemaStructure") as mock_schema_structure_class,
+        ):
             mock_schema_structure_class.return_value = mock_schema_structure
 
             result = await service.create_schema_structure_from_metadata(workspace)
@@ -545,9 +549,10 @@ class TestSchemaService:
         cached_structure = MagicMock()
         service._schema_cache[cache_key] = cached_structure
 
-        with patch("argilla_server.services.schemas.EXTRALIT_AVAILABLE", True), \
-             patch("argilla_server.services.schemas.PANDERA_AVAILABLE", True):
-            
+        with (
+            patch("argilla_server.contexts.schemas.EXTRALIT_AVAILABLE", True),
+            patch("argilla_server.contexts.schemas.PANDERA_AVAILABLE", True),
+        ):
             result = await service.create_schema_structure_from_metadata(workspace)
 
             # Should return cached result without S3 calls
@@ -593,12 +598,13 @@ class TestSchemaService:
         mock_schema_structure = MagicMock()
         mock_valid_schema = MagicMock()
 
-        with patch("argilla_server.services.schemas.EXTRALIT_AVAILABLE", True), \
-             patch("argilla_server.services.schemas.PANDERA_AVAILABLE", True), \
-             patch("argilla_server.services.schemas.SchemaStructure") as mock_schema_structure_class, \
-             patch("argilla_server.contexts.files.get_object") as mock_get_object, \
-             patch("argilla_server.services.schemas.from_json") as mock_from_json:
-            
+        with (
+            patch("argilla_server.contexts.schemas.EXTRALIT_AVAILABLE", True),
+            patch("argilla_server.contexts.schemas.PANDERA_AVAILABLE", True),
+            patch("argilla_server.contexts.schemas.SchemaStructure") as mock_schema_structure_class,
+            patch("argilla_server.contexts.files.get_object") as mock_get_object,
+            patch("argilla_server.contexts.schemas.from_json") as mock_from_json,
+        ):
             # First call succeeds, second call fails
             mock_get_object.side_effect = [mock_valid_file_response, Exception("File not found")]
             mock_from_json.return_value = mock_valid_schema
@@ -608,10 +614,7 @@ class TestSchemaService:
 
             # Should create SchemaStructure with only the valid schema
             assert result == mock_schema_structure
-            mock_schema_structure_class.assert_called_once_with(
-                schemas=[mock_valid_schema], 
-                singleton_schema=None
-            )
+            mock_schema_structure_class.assert_called_once_with(schemas=[mock_valid_schema], singleton_schema=None)
 
             # Verify both S3 calls were attempted
             assert mock_get_object.call_count == 2
