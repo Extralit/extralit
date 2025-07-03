@@ -101,9 +101,9 @@ jobs:
       - name: Install argilla-server (editable)
         run: |
           cd argilla-server/
-          pdm build
+          pdm install --dev
 
-      # Build frontend if needed for development
+      # Run argilla-server with live reload mode
       - name: Run Argilla server in development mode
         run: |
           bash argilla-server/docker/server/scripts/start_argilla_server.sh
