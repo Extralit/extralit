@@ -159,28 +159,24 @@ class TestSuiteWorkspaces:
         assert response.status_code == 200
         assert len(response.json()["items"]) == 0
 
-    # Schema Configuration Tests
     async def test_get_workspace_schema_configuration_empty(self, async_client: AsyncClient, owner_auth_header: dict):
         """Test getting schema configuration from workspace with no metadata."""
         workspace = await WorkspaceFactory.create(name="test-workspace")
 
         response = await async_client.get(
-            f"/api/v1/workspaces/{workspace.id}/schema-configuration", 
-            headers=owner_auth_header
+            f"/api/v1/workspaces/{workspace.id}/schema-configuration", headers=owner_auth_header
         )
 
         assert response.status_code == 200
-        assert response.json() == {
-            "schemas": [],
-            "last_sync": None
-        }
+        assert response.json() == {"schemas": [], "last_sync": None}
 
     @pytest.mark.skip(reason="Test workspace factory integration - core functionality tested elsewhere")
-    async def test_get_workspace_schema_configuration_with_metadata(self, async_client: AsyncClient, owner_auth_header: dict):
+    async def test_get_workspace_schema_configuration_with_metadata(
+        self, async_client: AsyncClient, owner_auth_header: dict
+    ):
         """Test getting schema configuration from workspace with metadata."""
         # Note: This test is skipped as it requires more complex database session handling
         # The core functionality is verified through the update test which works correctly
-        pass
 
     async def test_update_workspace_schema_configuration(self, async_client: AsyncClient, owner_auth_header: dict):
         """Test updating workspace schema configuration."""
@@ -192,18 +188,16 @@ class TestSuiteWorkspaces:
                     {
                         "name": "new_schema",
                         "is_singleton": False,
-                        "s3_path": "schemas/new_schema.json", 
+                        "s3_path": "schemas/new_schema.json",
                         "version_id": "def456",
-                        "dependencies": []
+                        "dependencies": [],
                     }
                 ]
             }
         }
 
         response = await async_client.put(
-            f"/api/v1/workspaces/{workspace.id}/schema-configuration",
-            headers=owner_auth_header,
-            json=update_data
+            f"/api/v1/workspaces/{workspace.id}/schema-configuration", headers=owner_auth_header, json=update_data
         )
 
         assert response.status_code == 200
@@ -223,8 +217,7 @@ class TestSuiteWorkspaces:
         workspace = await WorkspaceFactory.create(name="test-workspace")
 
         response = await async_client.get(
-            f"/api/v1/workspaces/{workspace.id}/schemas/validate",
-            headers=owner_auth_header
+            f"/api/v1/workspaces/{workspace.id}/schemas/validate", headers=owner_auth_header
         )
 
         assert response.status_code == 200

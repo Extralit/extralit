@@ -14,6 +14,13 @@ These are the section headers that we use:
 * "Security" in case of vulnerabilities.
 -->
 
+## [Unreleased]
+
+### Added
+
+### Changed
+
+
 ## [Extralit] [0.5.0](https://github.com/extralit/extralit/compare/v0.4.0...v0.5.0)
 
 ### Added
