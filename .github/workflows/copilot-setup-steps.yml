@@ -61,7 +61,7 @@ jobs:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: argilla
-      RUN_FRONTEND_DEV: false
+      RUN_FRONTEND_DEV: true
 
     permissions:
       contents: read # for actions/checkout
@@ -75,7 +75,7 @@ jobs:
         uses: astral-sh/setup-uv@v5
         with:
           pyproject-file: "argilla-server/pyproject.toml"
-          python-version: "3.10"
+          python-version: "3.11"
           enable-cache: true
           cache-local-path: ~/.cache/uv
           cache-dependency-glob: "argilla-server/pdm.lock"
