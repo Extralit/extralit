@@ -36,7 +36,7 @@ async def get_file(
     bucket: str,
     object: str,
     version_id: Optional[str] = None,
-    client: Minio = Depends(files.get_minio_client),
+    client: Minio = Depends(files.get_storage_client),
     current_user: Optional[User] = Security(auth.get_optional_current_user),
 ):
     # TODO Check if the current user is in the workspace to have access to the s3 bucket of the same name
@@ -64,7 +64,7 @@ async def put_file(
     bucket: str,
     object: str,
     file: UploadFile = File(...),
-    client: Minio = Depends(files.get_minio_client),
+    client: Minio = Depends(files.get_storage_client),
     current_user: User = Security(auth.get_current_user),
 ):
     # Check if the current user is in the workspace to have access to the s3 bucket of the same name
@@ -87,7 +87,7 @@ async def list_objects(
     include_version=True,
     recursive=True,
     start_after: Optional[str] = None,
-    client: Minio = Depends(files.get_minio_client),
+    client: Minio = Depends(files.get_storage_client),
     current_user: User = Security(auth.get_current_user),
 ):
     # Check if the current user is in the workspace to have access to the s3 bucket of the same name
@@ -119,7 +119,7 @@ async def delete_files(
     bucket: str,
     object: str,
     version_id: Optional[str] = None,
-    client: Minio = Depends(files.get_minio_client),
+    client: Minio = Depends(files.get_storage_client),
     current_user: User = Security(auth.get_current_user),
 ):
     # Check if the current user is in the workspace to have access to the s3 bucket of the same name

@@ -168,7 +168,7 @@ Getting Storage Client:
 from argilla_server.contexts import files
 
 # Get appropriate client (Minio or LocalFileStorage)
-client = files.get_minio_client()
+client = files.get_storage_client()
 if client is None:
     raise HTTPException(status_code=500, detail="Storage client not available")
 ```

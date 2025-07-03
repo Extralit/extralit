@@ -65,7 +65,7 @@ async def create_workspace(
     db: AsyncSession = Depends(get_async_db),
     workspace_create: WorkspaceCreate,
     current_user: User = Security(auth.get_current_user),
-    minio_client: Union[Minio, files.LocalFileStorage] = Depends(files.get_minio_client),
+    minio_client: Union[Minio, files.LocalFileStorage] = Depends(files.get_storage_client),
 ):
     await authorize(current_user, WorkspacePolicy.create)
 
@@ -88,7 +88,7 @@ async def delete_workspace(
     db: AsyncSession = Depends(get_async_db),
     workspace_id: UUID,
     current_user: User = Security(auth.get_current_user),
-    minio_client: Union[Minio, files.LocalFileStorage] = Depends(files.get_minio_client),
+    minio_client: Union[Minio, files.LocalFileStorage] = Depends(files.get_storage_client),
 ):
     await authorize(current_user, WorkspacePolicy.delete)
 
@@ -190,7 +190,7 @@ async def delete_workspace_user(
 
 def _get_schema_service() -> SchemaService:
     """Get a SchemaService instance with the appropriate client."""
-    minio_client = files.get_minio_client()
+    minio_client = files.get_storage_client()
     if minio_client is None:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Storage client not available")
     return SchemaService(minio_client)

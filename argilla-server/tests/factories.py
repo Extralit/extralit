@@ -22,7 +22,7 @@ from factory.alchemy import SESSION_PERSISTENCE_COMMIT, SESSION_PERSISTENCE_FLUS
 from factory.builder import BuildStep, StepBuilder, parse_declarations
 from sqlalchemy.ext.asyncio import async_object_session
 
-from argilla_server.contexts.files import ObjectMetadata, get_minio_client
+from argilla_server.contexts.files import ObjectMetadata, get_storage_client
 from argilla_server.enums import DatasetDistributionStrategy, FieldType, MetadataPropertyType, OptionsOrder
 from argilla_server.webhooks.v1.enums import WebhookEvent
 from argilla_server.models import (
@@ -169,12 +169,13 @@ class WorkspaceSyncFactory(BaseSyncFactory):
     @classmethod
     async def create_with_s3(cls, **kwargs):
         workspace = await cls.create(**kwargs)
-        minio_client = await get_minio_client()
+        minio_client = await get_storage_client()
         try:
             await minio_client.make_bucket(workspace.name)
         except Exception as e:
             print(f"Error creating bucket for workspace {workspace.name}: {str(e)}")
         return workspace
+
 
 class WorkspaceFactory(BaseFactory):
     class Meta:
@@ -594,11 +595,11 @@ class MinioFileFactory(factory.Factory):
     @classmethod
     def create(cls, **kwargs):
         """Create a MinioFile and mock the put_object and get_object methods to return it."""
-        from argilla_server.contexts.files import get_minio_client
+        from argilla_server.contexts.files import get_storage_client
 
         file = cls.build(**kwargs)
 
-        client = get_minio_client()
+        client = get_storage_client()
 
         # Store original methods
         getattr(client, "put_object", None)
