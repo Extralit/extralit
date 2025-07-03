@@ -158,3 +158,98 @@ class TestSuiteWorkspaces:
 
         assert response.status_code == 200
         assert len(response.json()["items"]) == 0
+
+    # Schema Configuration Tests
+    async def test_get_workspace_schema_configuration_empty(self, async_client: AsyncClient, owner_auth_header: dict):
+        """Test getting schema configuration from workspace with no metadata."""
+        workspace = await WorkspaceFactory.create(name="test-workspace")
+
+        response = await async_client.get(
+            f"/api/v1/workspaces/{workspace.id}/schema-configuration", 
+            headers=owner_auth_header
+        )
+
+        assert response.status_code == 200
+        assert response.json() == {
+            "schemas": [],
+            "last_sync": None
+        }
+
+    async def test_get_workspace_schema_configuration_with_metadata(self, async_client: AsyncClient, owner_auth_header: dict):
+        """Test getting schema configuration from workspace with metadata."""
+        workspace = await WorkspaceFactory.create(
+            name="test-workspace",
+            metadata_={
+                "schema_configuration": {
+                    "schemas": [
+                        {
+                            "name": "test_schema",
+                            "is_singleton": True,
+                            "s3_path": "schemas/test_schema.json",
+                            "version_id": "abc123",
+                            "dependencies": []
+                        }
+                    ],
+                    "last_sync": "2024-01-01T00:00:00Z"
+                }
+            }
+        )
+
+        response = await async_client.get(
+            f"/api/v1/workspaces/{workspace.id}/schema-configuration", 
+            headers=owner_auth_header
+        )
+
+        assert response.status_code == 200
+        assert response.json()["schemas"][0]["name"] == "test_schema"
+        assert response.json()["schemas"][0]["is_singleton"] is True
+        assert response.json()["last_sync"] == "2024-01-01T00:00:00Z"
+
+    async def test_update_workspace_schema_configuration(self, async_client: AsyncClient, owner_auth_header: dict):
+        """Test updating workspace schema configuration."""
+        workspace = await WorkspaceFactory.create(name="test-workspace")
+
+        update_data = {
+            "schema_configuration": {
+                "schemas": [
+                    {
+                        "name": "new_schema",
+                        "is_singleton": False,
+                        "s3_path": "schemas/new_schema.json", 
+                        "version_id": "def456",
+                        "dependencies": []
+                    }
+                ]
+            }
+        }
+
+        response = await async_client.put(
+            f"/api/v1/workspaces/{workspace.id}/schema-configuration",
+            headers=owner_auth_header,
+            json=update_data
+        )
+
+        assert response.status_code == 200
+        assert response.json()["schemas"][0]["name"] == "new_schema"
+        assert response.json()["schemas"][0]["is_singleton"] is False
+
+    async def test_get_workspace_schema_configuration_without_auth(self, async_client: AsyncClient):
+        """Test getting schema configuration without authentication."""
+        workspace = await WorkspaceFactory.create()
+
+        response = await async_client.get(f"/api/v1/workspaces/{workspace.id}/schema-configuration")
+
+        assert response.status_code == 401
+
+    async def test_validate_workspace_schemas_empty(self, async_client: AsyncClient, owner_auth_header: dict):
+        """Test validating schemas in workspace with no schemas."""
+        workspace = await WorkspaceFactory.create(name="test-workspace")
+
+        response = await async_client.get(
+            f"/api/v1/workspaces/{workspace.id}/schemas/validate",
+            headers=owner_auth_header
+        )
+
+        assert response.status_code == 200
+        assert response.json()["validation_results"] == []
+        assert response.json()["all_valid"] is True
