@@ -47,7 +47,6 @@ jobs:
 
     env:
       HF_HUB_DISABLE_TELEMETRY: 1
-      RUN_FRONTEND_DEV: true
 
     permissions:
       contents: read # for actions/checkout
@@ -78,11 +77,6 @@ jobs:
           pdm install --dev
 
       # Run argilla-server with live reload mode
-      - name: Run Argilla server in development mode with `.env.dev` environment
-        working-directory: argilla-server
-        run: |
-          pdm run server-dev
-
       - name: Install extralit (editable)
         working-directory: extralit
         run: |
@@ -96,10 +90,8 @@ jobs:
           cache-dependency-path: argilla-frontend/package-lock.json
 
       - name: Run frontend in dev mode (optional)
-        if: ${{ always() && env.RUN_FRONTEND_DEV == 'true' }}
         working-directory: argilla-frontend
         env:
           API_BASE_URL: http://localhost:3000
         run: |
           npm install
-          npm run dev
