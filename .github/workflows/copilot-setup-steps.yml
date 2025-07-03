@@ -73,14 +73,14 @@ jobs:
           pdm install --dev
 
       # Run argilla-server with live reload mode
-      - name: Run Argilla server in development mode
+      - name: Run Argilla server in development mode with `.env.dev` environment
         working-directory: argilla-server
         run: |
-          pdm run server-dev.composite
+          pdm run server-dev
 
       - name: Install extralit (editable)
+        working-directory: extralit
         run: |
-          cd extralit/
           uv pip install -e .
 
       - name: Install Node.js
