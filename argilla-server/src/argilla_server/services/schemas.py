@@ -143,7 +143,7 @@ class SchemaService:
 
             # Get current schema configuration
             current_config = await self.get_workspace_schema_configuration(workspace)
-            schemas = current_config.get("schemas", [])
+            schemas = current_config.get("schema_configuration", {}).get("schemas", [])
 
             # Check if schema is singleton
             is_singleton = any(
@@ -269,7 +269,7 @@ class SchemaService:
             return self._schema_cache[cache_key]
 
         schema_config = await self.get_workspace_schema_configuration(workspace)
-        schemas_data = schema_config.get("schemas", [])
+        schemas_data = schema_config.get("schema_configuration", {}).get("schemas", [])
 
         if not schemas_data:
             return SchemaStructure(schemas=[])
@@ -323,7 +323,7 @@ class SchemaService:
             schema_config = await self.get_workspace_schema_configuration(workspace)
             schema_data = None
 
-            for s in schema_config.get("schemas", []):
+            for s in schema_config.get("schema_configuration", {}).get("schemas", []):
                 if s["name"] == schema_name:
                     schema_data = s
                     break
@@ -361,7 +361,7 @@ class SchemaService:
             Dict mapping schema names to validation results
         """
         schema_config = await self.get_workspace_schema_configuration(workspace)
-        schemas_data = schema_config.get("schemas", [])
+        schemas_data = schema_config.get("schema_configuration", {}).get("schemas", [])
 
         results = {}
         for schema_data in schemas_data:
