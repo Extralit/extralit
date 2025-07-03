@@ -2,6 +2,34 @@
 
 This guide provides an overview of the Extralit codebase (https://github.com/Extralit/extralit) architecture to help new contributors understand how the project is organized. Extralit is a monorepo containing multiple interconnected components that work together to provide document extraction, processing, and annotation capabilities.
 
+## Development Workflow
+
+- For backend development:
+  1. Make sure elasticsearch, redis, and minio services are running locally
+  2. Navigate to the `argilla-server/` directory
+  3. Install dependencies with `pdm install --dev` if not already done
+  4. Run `pdm run server-dev`, which loads env vars from `argilla-server/.env.dev`.
+- For frontend development:
+  1. Navigate to the `argilla-frontend/` directory
+  2. Install dependencies with `npm install`  if not already done
+  3. Start the development server with `npm run dev`
+- For Python SDK development:
+  1. Navigate to the `extralit/` directory
+  2. Install dependencies with `pdm install --dev` if not already done
+  3. Run tests with `pdm run test`
+
+When contributing to Extralit, consider these guidelines:
+
+1. **Understand the context**: Identify which domain context your change belongs to
+2. **Follow existing patterns**: Look at similar implementations for guidance
+3. **Maintain separation of concerns**:
+   - Keep API handlers thin, delegating to contexts for business logic
+   - Keep database models focused on structure, not behavior
+   - Use validators for input validation
+4. **Write tests**: Add tests for new functionality in the appropriate test directories
+5. **Update docs**: Reflect the new changes made to the data architecture or refactored modules to `.github/copilot-instructions.md`.
+
+
 ## Repository Structure
 
 Extralit is organized as a monorepo with several main components:
@@ -11,31 +39,6 @@ Extralit is organized as a monorepo with several main components:
 - **argilla-frontend/**: Frontend web application
 - **argilla-v1/**: Legacy compatibility layer
 - **examples/**: Sample implementations and deployment configurations
-
-## Data Aggregation and Normalization Architecture
-
-Extralit uses a normalized database approach for storing and presenting extracted data. Each document's extractions are split into separate records (like database tables) with reference keys connecting them, similar to a relational database schema.
-
-### Document Data Extraction Flow
-
-1. **PaperExtraction Model** (`extralit/src/extralit/extraction/models/paper.py`)
-   - Central container for a document's extraction data
-   - Contains multiple pandas DataFrames organized by schema name
-   - Holds SchemaStructure defining data organization across schemas
-
-2. **Data Normalization Process** (`extralit/src/extralit/pipeline/export/record.py`)
-   - **Document-Level Record**: Creates a single "publication" record for document metadata
-     - Based on singleton schema in SchemaStructure
-     - Created by `create_publication_records()` function
-   - **Schema-Level Records**: Creates separate "extraction" records for each schema
-     - Each record contains one DataFrame of extracted data as serialized JSON
-     - Created by `create_extraction_records()` function
-     - References connect to the publication record and other extraction records
-
-3. **Dataset Configuration** (`extralit/src/extralit/pipeline/export/dataset.py`)
-   - Defines structure of Argilla datasets to store normalized records
-   - `create_papers_dataset()` configures datasets for document-level records
-   - `create_extraction_dataset()` configures datasets for schema-level records
 
 ## Core Components
 
@@ -163,28 +166,32 @@ Implementation:
 - The system uses Pandera for schema validation
 - References are managed through `argilla/src/extralit/schema/references/`
 
-### Data Extraction Workflow
 
-The extraction workflow involves document import, OCR, schema application, LLM-assisted extraction, review, and export.
+### Data Aggregation and Normalization Architecture
 
-Implementation:
-- Document import is handled in `contexts/files.py`
-- OCR and text extraction is implemented in `extralit/preprocessing/`
-- LLM-assisted extraction is in `extralit/extraction/`
-- Review functionality is provided through the frontend components
-- Export capabilities are in `extralit/pipeline/export/`
+Extralit uses a normalized database approach for storing and presenting extracted data. Each document's extractions are split into separate records (like database tables) with reference keys connecting them, similar to a relational database schema.
 
-## Development Workflow
+#### Document Data Extraction Flow
 
-When contributing to Extralit, consider these guidelines:
+1. **PaperExtraction Model** (`extralit/src/extralit/extraction/models/paper.py`)
+   - Central container for a document's extraction data
+   - Contains multiple pandas DataFrames organized by schema name
+   - Holds SchemaStructure defining data organization across schemas
 
-1. **Understand the context**: Identify which domain context your change belongs to
-2. **Follow existing patterns**: Look at similar implementations for guidance
-3. **Maintain separation of concerns**:
-   - Keep API handlers thin, delegating to contexts for business logic
-   - Keep database models focused on structure, not behavior
-   - Use validators for input validation
-4. **Write tests**: Add tests for new functionality in the appropriate test directories
+2. **Data Normalization Process** (`extralit/src/extralit/pipeline/export/record.py`)
+   - **Document-Level Record**: Creates a single "publication" record for document metadata
+     - Based on singleton schema in SchemaStructure
+     - Created by `create_publication_records()` function
+   - **Schema-Level Records**: Creates separate "extraction" records for each schema
+     - Each record contains one DataFrame of extracted data as serialized JSON
+     - Created by `create_extraction_records()` function
+     - References connect to the publication record and other extraction records
+
+3. **Dataset Configuration** (`extralit/src/extralit/pipeline/export/dataset.py`)
+   - Defines structure of Argilla datasets to store normalized records
+   - `create_papers_dataset()` configures datasets for document-level records
+   - `create_extraction_dataset()` configures datasets for schema-level records
+
 
 ## Common Development Tasks
 
@@ -264,9 +271,4 @@ The frontend presents normalized data as a unified view for annotation:
 - Each dataset includes proper field definitions, questions, and metadata properties
 
 
-When modifying the data architecture or refactoring modules in this codebase, please update this `.github/copilot-instructions.md` file to reflect the changes. Keep the documentation synchronized with the actual implementation to ensure accurate guidance for future development and maintenance.
-
-
-
-
-
+Keep the documentation synchronized with the actual implementation to ensure accurate guidance for future development and maintenance.
