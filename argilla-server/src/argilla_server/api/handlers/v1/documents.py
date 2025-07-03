@@ -69,7 +69,7 @@ async def add_document(
     document_create: DocumentCreate = Depends(),
     file_data: UploadFile = File(None),
     db: AsyncSession = Depends(get_async_db),
-    client: Minio = Depends(files.get_minio_client),
+    client: Minio = Depends(files.get_storage_client),
     current_user: User = Security(auth.get_current_user),
 ):
     await authorize(current_user, DocumentPolicy.create())
@@ -200,7 +200,7 @@ async def delete_documents_by_workspace_id(
     workspace_id: Union[UUID, str],
     document_delete: DocumentDelete = Body(None),
     db: AsyncSession = Depends(get_async_db),
-    client: Minio = Depends(files.get_minio_client),
+    client: Minio = Depends(files.get_storage_client),
     current_user: User = Security(auth.get_current_user),
 ):
     await authorize(current_user, DocumentPolicy.delete(workspace_id))

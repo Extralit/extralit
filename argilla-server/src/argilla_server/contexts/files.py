@@ -258,7 +258,7 @@ class LocalFileStorage:
             yield obj
 
 
-def get_minio_client() -> Optional[Union[Minio, LocalFileStorage]]:
+def get_storage_client() -> Optional[Union[Minio, LocalFileStorage]]:
     if None in [settings.s3_endpoint, settings.s3_access_key, settings.s3_secret_key]:
         # Use local file system storage if S3 settings are not provided
         local_storage_path = os.path.join(settings.home_path, "storage")

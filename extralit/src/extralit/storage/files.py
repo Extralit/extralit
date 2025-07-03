@@ -1,20 +1,31 @@
+# Copyright 2024-present, Extralit Labs, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from enum import Enum
 import os
 import json
 import dill
-import pandas as pd
-from typing import Optional, Tuple
-from minio import Minio
+from typing import Optional
 from minio.error import S3Error
-import fsspec
 
 from extralit.server.context.files import get_minio_client
 
 
 class StorageType(Enum):
-    FILE = 'file'
-    S3 = 's3'
-    
+    FILE = "file"
+    S3 = "s3"
+
 
 class FileHandler:
     def __init__(self, base_path: str, storage_type: StorageType = StorageType.FILE, bucket_name: Optional[str] = None):
@@ -33,7 +44,7 @@ class FileHandler:
         full_path = self._get_full_path(path)
         if self.storage_type.value == StorageType.FILE.value:
             return os.path.exists(full_path)
-        
+
         elif self.storage_type.value == StorageType.S3.value:
             try:
                 self.client.stat_object(self.bucket_name, full_path)
@@ -46,29 +57,29 @@ class FileHandler:
     def read_json(self, path: str) -> dict:
         full_path = self._get_full_path(path)
         if self.storage_type.value == StorageType.FILE.value:
-            with open(full_path, 'r') as file:
+            with open(full_path, "r") as file:
                 return json.load(file)
-            
+
         elif self.storage_type.value == StorageType.S3.value:
             response = self.client.get_object(self.bucket_name, full_path)
-            return json.loads(response.read().decode('utf-8'))
+            return json.loads(response.read().decode("utf-8"))
 
     def write_json(self, path: str, data: dict):
         full_path = self._get_full_path(path)
         if self.storage_type.value == StorageType.FILE.value:
             os.makedirs(os.path.dirname(full_path), exist_ok=True)
-            with open(full_path, 'w') as file:
+            with open(full_path, "w") as file:
                 json.dump(data, file)
 
         elif self.storage_type.value == StorageType.S3.value:
-            self.client.put_object(self.bucket_name, full_path, json.dumps(data).encode('utf-8'), len(json.dumps(data)))
+            self.client.put_object(self.bucket_name, full_path, json.dumps(data).encode("utf-8"), len(json.dumps(data)))
 
     def read_dill(self, path: str):
         full_path = self._get_full_path(path)
         if self.storage_type.value == StorageType.FILE.value:
-            with open(full_path, 'rb') as file:
+            with open(full_path, "rb") as file:
                 return dill.load(file)
-            
+
         elif self.storage_type.value == StorageType.S3.value:
             response = self.client.get_object(self.bucket_name, full_path)
             return dill.loads(response.read())
@@ -77,7 +88,7 @@ class FileHandler:
         full_path = self._get_full_path(path)
         if self.storage_type.value == StorageType.FILE.value:
             os.makedirs(os.path.dirname(full_path), exist_ok=True)
-            with open(full_path, 'wb') as file:
+            with open(full_path, "wb") as file:
                 dill.dump(data, file)
 
         elif self.storage_type.value == StorageType.S3.value:
@@ -86,22 +97,22 @@ class FileHandler:
     def read_text(self, path: str) -> str:
         full_path = self._get_full_path(path)
         if self.storage_type.value == StorageType.FILE.value:
-            with open(full_path, 'r') as file:
+            with open(full_path, "r") as file:
                 return file.read()
-            
+
         elif self.storage_type.value == StorageType.S3.value:
             response = self.client.get_object(self.bucket_name, full_path)
-            return response.read().decode('utf-8')
+            return response.read().decode("utf-8")
 
     def write_text(self, path: str, data: str):
         full_path = self._get_full_path(path)
         if self.storage_type.value == StorageType.FILE.value:
             os.makedirs(os.path.dirname(full_path), exist_ok=True)
-            with open(full_path, 'w') as file:
+            with open(full_path, "w") as file:
                 file.write(data)
 
         elif self.storage_type.value == StorageType.S3.value:
-            self.client.put_object(self.bucket_name, full_path, data.encode('utf-8'), len(data))
+            self.client.put_object(self.bucket_name, full_path, data.encode("utf-8"), len(data))
 
     def delete(self, path: str):
         full_path = self._get_full_path(path)
@@ -110,7 +121,7 @@ class FileHandler:
                 os.remove(full_path)
             else:
                 raise FileNotFoundError(f"The file {full_path} does not exist.")
-        
+
         elif self.storage_type.value == StorageType.S3.value:
             try:
                 self.client.remove_object(self.bucket_name, full_path)

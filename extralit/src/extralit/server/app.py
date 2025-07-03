@@ -1,11 +1,23 @@
+# Copyright 2024-present, Extralit Labs, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import logging
 from typing import Optional, Union, List, Literal
 from uuid import UUID
 
-from extralit.server.errors import BaseError
 import pandas as pd
 from fastapi import FastAPI, Depends, Body, Query, status, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from langfuse.llama_index import LlamaIndexCallbackHandler
 from langfuse.model import ChatPromptClient
@@ -45,6 +57,7 @@ weaviate_client: Optional[WeaviateClient] = None
 minio_client: Optional[Minio] = None
 argilla_client: Optional[rg.Argilla] = None
 
+
 @app.on_event("startup")
 async def startup():
     global weaviate_client, minio_client, argilla_client
@@ -75,7 +88,7 @@ async def health_check():
 
 @app.get("/schemas/{workspace}")
 async def schemas(
-    workspace: str = 'itn-recalibration',
+    workspace: str = "itn-recalibration",
 ):
     ss = SchemaStructure.from_s3(workspace_name=workspace, minio_client=minio_client)
     return ss.ordering
@@ -93,8 +106,13 @@ async def chat(
     prompt_template: str = "chat",
     langfuse_callback: Optional[LlamaIndexCallbackHandler] = Depends(get_langfuse_callback),
 ):
-    index = load_index(paper=pd.Series(name=reference), llm_model=llm_model, embed_model='text-embedding-3-small',
-                       weaviate_client=weaviate_client, index_name="LlamaIndexDocumentSections")
+    index = load_index(
+        paper=pd.Series(name=reference),
+        llm_model=llm_model,
+        embed_model="text-embedding-3-small",
+        weaviate_client=weaviate_client,
+        index_name="LlamaIndexDocumentSections",
+    )
 
     if not vectordb_contains_any(reference, weaviate_client=weaviate_client, index_name="LlamaIndexDocumentSections"):
         raise HTTPException(status_code=404, detail=f"No context found for reference: {reference}")
@@ -105,7 +123,7 @@ async def chat(
                 name=f"chat-{reference}",
                 user_id=username,
                 session_id=reference,
-                tags=[workspace, reference, 'chat'],
+                tags=[workspace, reference, "chat"],
             )
     except Exception as e:
         _LOGGER.error(f"Failed to set trace params: {e}")
@@ -113,7 +131,7 @@ async def chat(
     # Get the system prompt
     try:
         chat_prompts: ChatPromptClient = langfuse_callback.langfuse.get_prompt(prompt_template, cache_ttl_seconds=3000)
-        system_prompt = chat_prompts.prompt[0]['content']
+        system_prompt = chat_prompts.prompt[0]["content"]
     except Exception as e:
         _LOGGER.error(f"Failed to get system prompt: {e}")
         system_prompt = None
@@ -156,15 +174,13 @@ async def extraction(
         extraction_dfs[schema.name] = json_to_df(extraction_dict, schema=schema)
 
     extractions = PaperExtraction(
-        reference=extraction_request.reference,
-        extractions=extraction_dfs,
-        schemas=schema_structure
+        reference=extraction_request.reference, extractions=extraction_dfs, schemas=schema_structure
     )
 
     # Get the system prompt
     try:
         system_prompt = langfuse_callback.langfuse.get_prompt(prompt_template, cache_ttl_seconds=3000, max_retries=0)
-    except Exception as e:
+    except Exception:
         system_prompt = None
 
     try:
@@ -173,41 +189,52 @@ async def extraction(
                 name=f"extract-{extraction_request.reference}",
                 user_id=username,
                 session_id=extraction_request.reference,
-                tags=[workspace, extraction_request.reference, extraction_request.schema_name, 'partial-extraction'],
+                tags=[workspace, extraction_request.reference, extraction_request.schema_name, "partial-extraction"],
             )
     except Exception as e:
         _LOGGER.error(f"Failed to set trace params: {e}")
 
     ### Create or load the index ###
     try:
-        index = load_index(paper=pd.Series(name=extraction_request.reference), llm_model=model,
-                           embed_model='text-embedding-3-small', weaviate_client=weaviate_client,
-                           index_name="LlamaIndexDocumentSections")
+        index = load_index(
+            paper=pd.Series(name=extraction_request.reference),
+            llm_model=model,
+            embed_model="text-embedding-3-small",
+            weaviate_client=weaviate_client,
+            index_name="LlamaIndexDocumentSections",
+        )
     except Exception as e:
         _LOGGER.error(f"Failed to create or load the index: {e}")
-        raise HTTPException(status_code=500, detail=f'Failed to create an extraction request: {e}')
+        raise HTTPException(status_code=500, detail=f"Failed to create an extraction request: {e}")
 
     if extraction_request.headers and len(extraction_request.headers) > similarity_top_k:
         similarity_top_k = len(extraction_request.headers)
 
     try:
         ### Extract entities ###
-        df, rag_response = extract_schema(schema=schema, extractions=extractions, index=index,
-                                          include_fields=extraction_request.columns, headers=extraction_request.headers,
-                                          types=extraction_request.types, similarity_top_k=similarity_top_k,
-                                          system_prompt=system_prompt, user_prompt=extraction_request.prompt,
-                                          vector_store_query_mode="hybrid")
+        df, rag_response = extract_schema(
+            schema=schema,
+            extractions=extractions,
+            index=index,
+            include_fields=extraction_request.columns,
+            headers=extraction_request.headers,
+            types=extraction_request.types,
+            similarity_top_k=similarity_top_k,
+            system_prompt=system_prompt,
+            user_prompt=extraction_request.prompt,
+            vector_store_query_mode="hybrid",
+        )
 
         if not isinstance(df, pd.DataFrame) or df.empty:
             if rag_response.source_nodes is None or len(rag_response.source_nodes) == 0:
                 raise HTTPException(
                     status_code=404,
-                    detail=f'There were no context selected due to stringent filters. Please modify your <br>'
-                           f'filters: {dict(headers=extraction_request.headers, types=extraction_request.types)}')
-            raise HTTPException(status_code=404,
-                                detail="No extraction found with the selected context and your query.")
+                    detail=f"There were no context selected due to stringent filters. Please modify your <br>"
+                    f"filters: {dict(headers=extraction_request.headers, types=extraction_request.types)}",
+                )
+            raise HTTPException(status_code=404, detail="No extraction found with the selected context and your query.")
 
-        response = ExtractionResponse.parse_raw(df.to_json(orient='table'))
+        response = ExtractionResponse.parse_raw(df.to_json(orient="table"))
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -223,7 +250,7 @@ async def segments(
     *,
     workspace: str = Query(...),
     reference: str = Query(...),
-    types: Optional[List[Literal['text', 'table', 'figure']]] = Query(None),
+    types: Optional[List[Literal["text", "table", "figure"]]] = Query(None),
     username: Optional[Union[str, UUID]] = Query(None),
     limit=100,
 ):
@@ -235,8 +262,10 @@ async def segments(
     filters.append(MetadataFilter(key="reference", value=reference, operator=FilterOperator.EQ))
 
     entries = get_nodes_metadata(
-        weaviate_client=weaviate_client, filters=MetadataFilters(filters=filters),
-        limit=limit, index_name="LlamaIndexDocumentSections",
+        weaviate_client=weaviate_client,
+        filters=MetadataFilters(filters=filters),
+        limit=limit,
+        index_name="LlamaIndexDocumentSections",
     )
 
     return SegmentsResponse(items=entries)
@@ -251,9 +280,10 @@ async def create_index(
     username: Optional[Union[str, UUID]] = Query(None),
 ):
     try:
-        preprocessing_dataset = argilla_client.datasets(name=preprocessing_dataset, workspace=workspace) \
-            if preprocessing_dataset else None
-    except Exception as e:
+        preprocessing_dataset = (
+            argilla_client.datasets(name=preprocessing_dataset, workspace=workspace) if preprocessing_dataset else None
+        )
+    except Exception:
         preprocessing_dataset = None
 
     try:

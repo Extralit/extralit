@@ -48,7 +48,7 @@ def client(request, mocker: "MockerFixture") -> Generator[TestClient, None, None
 @pytest.fixture(autouse=True)
 def mock_dependencies(mocker: "MockerFixture"):
     mocker.patch("extralit.server.context.vectordb.get_weaviate_client", return_value=MagicMock())
-    mocker.patch("extralit.server.context.files.get_minio_client", return_value=MagicMock())
+    mocker.patch("extralit.server.context.files.get_storage_client", return_value=MagicMock())
     mocker.patch("extralit.server.context.llamaindex.get_langfuse_callback", return_value=MagicMock())
 
 
