@@ -42,7 +42,7 @@ from argilla_server.errors import GenericServerError
 from argilla_server.errors.future import NotFoundError, UnprocessableEntityError, NotUniqueError
 from argilla_server.models import User, Workspace, WorkspaceUser
 from argilla_server.security import auth
-from argilla_server.services.schemas import SchemaService
+from argilla_server.contexts.schemas import SchemaService
 
 router = APIRouter(tags=["workspaces"])
 
