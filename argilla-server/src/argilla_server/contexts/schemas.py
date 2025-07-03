@@ -62,8 +62,8 @@ class SchemaService:
     - Cache schema configurations for improved performance
     """
 
-    def __init__(self, minio_client: Union[Minio, files.LocalFileStorage]):
-        self.minio_client = minio_client
+    def __init__(self, storage_client: Union[Minio, files.LocalFileStorage]):
+        self.storage_client = storage_client
         self._schema_cache: Dict[str, Any] = {}
 
     async def get_workspace_schema_configuration(self, workspace: Workspace) -> Dict[str, Any]:
@@ -135,7 +135,7 @@ class SchemaService:
 
         try:
             # Get schema file from S3
-            file_response = files.get_object(self.minio_client, bucket_name, schema_path, include_versions=True)
+            file_response = files.get_object(self.storage_client, bucket_name, schema_path, include_versions=True)
 
             # Parse schema to validate it
             schema_data = json.loads(file_response.response.data.decode("utf-8"))
@@ -204,7 +204,7 @@ class SchemaService:
         try:
             # List all schema files in S3
             objects_response = files.list_objects(
-                self.minio_client, bucket_name, prefix=prefix, include_version=False, recursive=True
+                self.storage_client, bucket_name, prefix=prefix, include_version=False, recursive=True
             )
 
             schemas = []
@@ -214,7 +214,7 @@ class SchemaService:
 
                     try:
                         # Get and parse schema
-                        file_response = files.get_object(self.minio_client, bucket_name, obj.object_name)
+                        file_response = files.get_object(self.storage_client, bucket_name, obj.object_name)
 
                         schema_data = json.loads(file_response.response.data.decode("utf-8"))
 
@@ -282,7 +282,7 @@ class SchemaService:
             try:
                 # Get schema from S3
                 file_response = files.get_object(
-                    self.minio_client, bucket_name, schema_data["s3_path"], version_id=schema_data.get("version_id")
+                    self.storage_client, bucket_name, schema_data["s3_path"], version_id=schema_data.get("version_id")
                 )
 
                 # Parse schema
@@ -334,7 +334,7 @@ class SchemaService:
             # Get schema from S3
             bucket_name = workspace.name
             file_response = files.get_object(
-                self.minio_client, bucket_name, schema_data["s3_path"], version_id=schema_data.get("version_id")
+                self.storage_client, bucket_name, schema_data["s3_path"], version_id=schema_data.get("version_id")
             )
 
             # Parse and validate schema

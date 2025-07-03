@@ -12,6 +12,9 @@ coverage:
         threshold: 2%
         informational: true
 
+github_checks:
+  annotations: false
+
 flags:
   frontend:
     paths:
