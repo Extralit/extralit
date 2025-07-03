@@ -64,9 +64,9 @@ class TestSchemaService:
 
         config = await service.get_workspace_schema_configuration(workspace)
 
-        assert config["schemas"][0]["name"] == "test_schema"
-        assert config["schemas"][0]["is_singleton"] is True
-        assert config["last_sync"] == "2024-01-01T00:00:00Z"
+        assert config["schema_configuration"]["schemas"][0]["name"] == "test_schema"
+        assert config["schema_configuration"]["schemas"][0]["is_singleton"] is True
+        assert config["schema_configuration"]["last_sync"] == "2024-01-01T00:00:00Z"
 
     async def test_validate_schema_without_pandera(self):
         """Test schema validation when pandera is not available."""
