@@ -228,7 +228,7 @@ async def update_workspace_schema_configuration(
     current_user: User = Security(auth.get_current_user),
 ):
     """Update the schema configuration for a workspace."""
-    await authorize(current_user, WorkspacePolicy.update(workspace_id))
+    await authorize(current_user, WorkspacePolicy.get(workspace_id))
     
     workspace = await Workspace.get_or_raise(db, workspace_id)
     schema_service = _get_schema_service()
@@ -251,7 +251,7 @@ async def sync_workspace_schema(
     current_user: User = Security(auth.get_current_user),
 ):
     """Sync a specific schema from S3 to workspace metadata."""
-    await authorize(current_user, WorkspacePolicy.update(workspace_id))
+    await authorize(current_user, WorkspacePolicy.get(workspace_id))
     
     workspace = await Workspace.get_or_raise(db, workspace_id)
     schema_service = _get_schema_service()
@@ -283,7 +283,7 @@ async def sync_all_workspace_schemas(
     current_user: User = Security(auth.get_current_user),
 ):
     """Sync all schemas from S3 to workspace metadata."""
-    await authorize(current_user, WorkspacePolicy.update(workspace_id))
+    await authorize(current_user, WorkspacePolicy.get(workspace_id))
     
     workspace = await Workspace.get_or_raise(db, workspace_id)
     schema_service = _get_schema_service()
