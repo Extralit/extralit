@@ -27,6 +27,8 @@ When contributing to Extralit, consider these guidelines:
    - Keep database models focused on structure, not behavior
    - Use validators for input validation
 4. **Write tests**: Add tests for new functionality in the appropriate test directories
+   - **Avoid running full test suite** - Only run specific test files: `pdm run test tests/unit/services/test_schemas.py -v`
+   - **Most tests are better running in GH Actions** - focus on targeted testing during development
 5. **Update docs**: Reflect the new changes made to the data architecture or refactored modules to `.github/copilot-instructions.md`.
 
 
@@ -146,6 +148,44 @@ The API follows a RESTful design with endpoints organized by resource type. The 
 
 API handlers in `api/handlers/` implement the actual request processing logic, while schemas in `api/schemas/` define the request and response data structures.
 
+### Authorization Patterns
+
+Available Workspace Policies Examples:
+- `WorkspacePolicy.get(workspace_id)` - For read/update operations
+- `WorkspacePolicy.create(actor)` - For workspace creation
+- `WorkspacePolicy.delete(actor)` - For workspace deletion
+- `WorkspacePolicy.list_workspaces_me(actor)` - For listing user workspaces
+
+Pattern usage:
+```python
+await authorize(current_user, WorkspacePolicy.get(workspace_id))
+```
+
+### S3 and Files Context
+
+Getting Storage Client:
+```python
+from argilla_server.contexts import files
+
+# Get appropriate client (Minio or LocalFileStorage)
+client = files.get_minio_client()
+if client is None:
+    raise HTTPException(status_code=500, detail="Storage client not available")
+```
+
+File Operations:
+```python
+# List objects
+files.list_objects(client, bucket_name, prefix="schemas/", include_version=False)
+
+# Get object
+files.get_object(client, bucket_name, object_path, version_id=None)
+
+# Put object
+files.put_object(client, bucket_name, object_path, data, content_type="application/json")
+```
+
+
 ## Core Concepts Implementation
 
 ### Workspaces and Datasets
@@ -195,6 +235,11 @@ Extralit uses a normalized database approach for storing and presenting extracte
 
 ## Common Development Tasks
 
+### Environment Configuration
+- Development environment variables are in `argilla-server/.env.dev`
+- Test environment uses temporary databases
+- Database paths use `${HOME}/.extralit/` pattern in development
+
 ### Adding a new API endpoint
 
 1. Define the request/response schemas in `api/schemas/`
@@ -206,9 +251,20 @@ Extralit uses a normalized database approach for storing and presenting extracte
 ### Modifying database models
 
 1. Update the model in `models/database.py`
-2. Create a migration using Alembic
+2. Create a migration using Alembic:
+   ```bash
+   cd argilla-server
+   pdm run alembic -c src/argilla_server/alembic.ini revision -m "description of change"
+   ```
 3. Update related schemas and validators
 4. Test the changes thoroughly
+
+#### Database Migration Guidelines
+- Database migrations are automatically configured via environment variables:
+  - Dev: `${HOME}/.extralit/argilla-dev.db`
+  - Test: Uses temporary databases managed by pytest
+- Use `pdm run alembic -c src/argilla_server/alembic.ini check` to verify migration state
+- Always test both upgrade and downgrade paths
 
 ### Adding frontend functionality
 
