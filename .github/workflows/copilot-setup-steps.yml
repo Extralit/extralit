@@ -65,7 +65,7 @@ jobs:
           cache-local-path: ~/.cache/uv
           cache-dependency-glob: "argilla-server/pdm.lock"
 
-      - name: Install Python tools and argilla-server (editable)
+      - name: Setup Python env and Install argilla-server editable package
         env:
           PDM_IGNORE_ACTIVE_VENV: 1
         run: |
@@ -76,8 +76,7 @@ jobs:
           cd argilla-server/
           pdm install --dev
 
-      # Run argilla-server with live reload mode
-      - name: Install extralit (editable)
+      - name: Install extralit editable package
         working-directory: extralit
         run: |
           uv pip install -e .
@@ -89,7 +88,7 @@ jobs:
           cache: "npm"
           cache-dependency-path: argilla-frontend/package-lock.json
 
-      - name: Run frontend in dev mode (optional)
+      - name: Setup argilla-frontend dependencies
         working-directory: argilla-frontend
         env:
           API_BASE_URL: http://localhost:3000
