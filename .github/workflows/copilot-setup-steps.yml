@@ -16,6 +16,14 @@ jobs:
     runs-on: ubuntu-latest
 
     services:
+      elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
+        ports:
+          - 9200:9200
+        env:
+          discovery.type: single-node
+          xpack.security.enabled: false
+
       redis:
         image: redis
         options: >-
@@ -39,9 +47,6 @@ jobs:
 
     env:
       HF_HUB_DISABLE_TELEMETRY: 1
-      S3_ENDPOINT: http://localhost:9000
-      S3_ACCESS_KEY: minioadmin
-      S3_SECRET_KEY: minioadmin
       RUN_FRONTEND_DEV: true
 
     permissions:
