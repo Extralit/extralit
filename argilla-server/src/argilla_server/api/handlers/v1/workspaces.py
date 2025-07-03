@@ -43,7 +43,6 @@ from argilla_server.errors.future import NotFoundError, UnprocessableEntityError
 from argilla_server.models import User, Workspace, WorkspaceUser
 from argilla_server.security import auth
 from argilla_server.services.schemas import SchemaService
-from argilla_server.settings import settings
 
 router = APIRouter(tags=["workspaces"])
 
@@ -189,16 +188,11 @@ async def delete_workspace_user(
     return await workspace_user.awaitable_attrs.user
 
 
-# Schema Configuration Endpoints
-
 def _get_schema_service() -> SchemaService:
     """Get a SchemaService instance with the appropriate client."""
     minio_client = files.get_minio_client()
     if minio_client is None:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Storage client not available"
-        )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Storage client not available")
     return SchemaService(minio_client)
 
 
@@ -211,10 +205,10 @@ async def get_workspace_schema_configuration(
 ):
     """Get the schema configuration for a workspace."""
     await authorize(current_user, WorkspacePolicy.get(workspace_id))
-    
+
     workspace = await Workspace.get_or_raise(db, workspace_id)
     schema_service = _get_schema_service()
-    
+
     config = await schema_service.get_workspace_schema_configuration(workspace)
     return WorkspaceSchemaConfiguration(**config.get("schema_configuration", {"schemas": [], "last_sync": None}))
 
@@ -229,15 +223,15 @@ async def update_workspace_schema_configuration(
 ):
     """Update the schema configuration for a workspace."""
     await authorize(current_user, WorkspacePolicy.get(workspace_id))
-    
+
     workspace = await Workspace.get_or_raise(db, workspace_id)
     schema_service = _get_schema_service()
-    
+
     # Convert to dict for storage
     config_dict = config_update.schema_configuration.model_dump()
-    
+
     await schema_service.update_workspace_schema_configuration(db, workspace, config_dict)
-    
+
     return config_update.schema_configuration
 
 
@@ -252,25 +246,24 @@ async def sync_workspace_schema(
 ):
     """Sync a specific schema from S3 to workspace metadata."""
     await authorize(current_user, WorkspacePolicy.get(workspace_id))
-    
+
     workspace = await Workspace.get_or_raise(db, workspace_id)
     schema_service = _get_schema_service()
-    
+
     try:
         updated_config = await schema_service.sync_s3_schema_to_metadata(
             db, workspace, schema_name, sync_request.prefix
         )
-        
+
         return SchemaSyncResponse(
             schema_configuration=WorkspaceSchemaConfiguration(**updated_config),
             schemas_synced=1,
-            message=f"Successfully synced schema '{schema_name}' from S3"
+            message=f"Successfully synced schema '{schema_name}' from S3",
         )
-        
+
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to sync schema '{schema_name}': {str(e)}"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to sync schema '{schema_name}': {str(e)}"
         )
 
 
@@ -284,27 +277,24 @@ async def sync_all_workspace_schemas(
 ):
     """Sync all schemas from S3 to workspace metadata."""
     await authorize(current_user, WorkspacePolicy.get(workspace_id))
-    
+
     workspace = await Workspace.get_or_raise(db, workspace_id)
     schema_service = _get_schema_service()
-    
+
     try:
-        updated_config = await schema_service.sync_all_s3_schemas_to_metadata(
-            db, workspace, sync_request.prefix
-        )
-        
+        updated_config = await schema_service.sync_all_s3_schemas_to_metadata(db, workspace, sync_request.prefix)
+
         schemas_count = len(updated_config.get("schemas", []))
-        
+
         return SchemaSyncResponse(
             schema_configuration=WorkspaceSchemaConfiguration(**updated_config),
             schemas_synced=schemas_count,
-            message=f"Successfully synced {schemas_count} schemas from S3"
+            message=f"Successfully synced {schemas_count} schemas from S3",
         )
-        
+
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to sync schemas: {str(e)}"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to sync schemas: {str(e)}"
         )
 
 
@@ -317,32 +307,26 @@ async def validate_workspace_schemas(
 ):
     """Validate all schemas in a workspace."""
     await authorize(current_user, WorkspacePolicy.get(workspace_id))
-    
+
     workspace = await Workspace.get_or_raise(db, workspace_id)
     schema_service = _get_schema_service()
-    
+
     try:
         validation_results = await schema_service.validate_all_schemas(workspace)
-        
+
         results = []
         all_valid = True
-        
+
         for schema_name, (is_valid, error_message) in validation_results.items():
-            results.append(SchemaValidationResult(
-                schema_name=schema_name,
-                is_valid=is_valid,
-                error_message=error_message
-            ))
+            results.append(
+                SchemaValidationResult(schema_name=schema_name, is_valid=is_valid, error_message=error_message)
+            )
             if not is_valid:
                 all_valid = False
-        
-        return WorkspaceSchemaValidationResponse(
-            validation_results=results,
-            all_valid=all_valid
-        )
-        
+
+        return WorkspaceSchemaValidationResponse(validation_results=results, all_valid=all_valid)
+
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to validate schemas: {str(e)}"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to validate schemas: {str(e)}"
         )
