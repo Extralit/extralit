@@ -16,21 +16,6 @@ jobs:
     runs-on: ubuntu-latest
 
     services:
-      postgres:
-        image: postgres:14
-        env:
-          POSTGRES_HOST: localhost
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: argilla
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
       redis:
         image: redis
         options: >-
@@ -57,10 +42,6 @@ jobs:
       S3_ENDPOINT: http://localhost:9000
       S3_ACCESS_KEY: minioadmin
       S3_SECRET_KEY: minioadmin
-      POSTGRES_HOST: localhost
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: argilla
       RUN_FRONTEND_DEV: true
 
     permissions:
@@ -80,13 +61,6 @@ jobs:
           cache-local-path: ~/.cache/uv
           cache-dependency-glob: "argilla-server/pdm.lock"
 
-      - name: Install Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "18"
-          cache: "npm"
-          cache-dependency-path: argilla-frontend/package-lock.json
-
       - name: Install Python tools and argilla-server (editable)
         env:
           PDM_IGNORE_ACTIVE_VENV: 1
@@ -95,7 +69,6 @@ jobs:
           pdm config use_uv true
           pdm config python.install_root "$(uv python dir)"
 
-          uv pip install pytest pytest-cov pytest-mock pytest-asyncio==0.21.1 pytest-env factory_boy~=3.2.1 pytest-randomly>=3.15.0 pre-commit
           cd argilla-server/
           pdm install --dev
 
@@ -103,19 +76,19 @@ jobs:
       - name: Run Argilla server in development mode
         working-directory: argilla-server
         run: |
-          pdm run server
-        env:
-          ENV: dev
-          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
-          POSTGRES_HOST: ${{ env.POSTGRES_HOST }}
-          S3_ENDPOINT: ${{ env.S3_ENDPOINT }}
-          S3_ACCESS_KEY: ${{ env.S3_ACCESS_KEY }}
-          S3_SECRET_KEY: ${{ env.S3_SECRET_KEY }}
+          pdm run server-dev.composite
 
       - name: Install extralit (editable)
         run: |
           cd extralit/
           uv pip install -e .
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+          cache-dependency-path: argilla-frontend/package-lock.json
 
       - name: Run frontend in dev mode (optional)
         if: ${{ always() && env.RUN_FRONTEND_DEV == 'true' }}
