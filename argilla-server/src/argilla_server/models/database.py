@@ -546,6 +546,7 @@ class Workspace(DatabaseModel):
     __tablename__ = "workspaces"
 
     name: Mapped[str] = mapped_column(unique=True, index=True)
+    metadata_: Mapped[Optional[dict]] = mapped_column("metadata", JSON, nullable=True)
 
     datasets: Mapped[List["Dataset"]] = relationship(back_populates="workspace", order_by=Dataset.inserted_at.asc())
     users: Mapped[List["User"]] = relationship(
