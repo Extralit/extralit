@@ -1,0 +1,155 @@
+# Implementation Plan
+
+- [ ] 1. Set up backend API structure and schemas
+  - Create import analysis API handler with endpoint structure
+  - Define Pydantic schemas for ImportAnalysisRequest, ImportAnalysisResponse, and related models
+  - Add basic validation and error handling for the analysis endpoint
+  - _Requirements: 1.1, 2.1_
+
+- [ ] 2. Implement import analysis logic
+- [ ] 2.1 Create import context service for document analysis
+  - Write analyze_import_status() function to check existing documents by reference/DOI/PMID
+  - Implement compare_file_sizes() function to determine if file updates are needed
+  - Create validate_document_metadata() function for DocumentCreate validation
+  - Write unit tests for import analysis logic
+  - _Requirements: 2.3, 2.4, 2.5_
+
+- [ ] 2.2 Implement import analysis API endpoint
+  - Code POST /api/v1/imports/analyze endpoint handler
+  - Integrate with import context service for status determination
+  - Add proper error handling and validation
+  - Write integration tests for the analysis endpoint
+  - _Requirements: 2.1, 2.2_
+
+- [ ] 3. Create bulk document upload endpoint
+- [ ] 3.1 Implement bulk upload API handler
+  - Create POST /documents/bulk endpoint in documents.py handler
+  - Handle multipart form data with documents_metadata and files
+  - Implement pagination support for 20-50 PDFs per request
+  - Add file validation and error handling
+  - _Requirements: 3.1, 3.2_
+
+- [ ] 3.2 Create document upload job system
+  - Write upload_document_job() function in jobs/document_jobs.py
+  - Reuse existing document upload logic from POST /documents endpoint
+  - Implement job creation and queuing for individual document uploads
+  - Add retry logic and error handling for failed uploads
+  - Write unit tests for document upload jobs
+  - _Requirements: 3.1, 3.3, 3.4_
+
+- [ ] 3.3 Integrate bulk upload with job queue
+  - Connect bulk upload endpoint to document upload jobs
+  - Implement reference-key indexed job_id response mapping
+  - Add proper cleanup of temporary files after job completion
+  - Write integration tests for bulk upload workflow
+  - _Requirements: 3.2, 3.5_
+
+- [ ] 4. Implement frontend BibTeX parsing and file matching
+- [ ] 4.1 Create BibTeX parser component
+  - Add JavaScript BibTeX parser library dependency (bibtex-parse-js or similar)
+  - Implement BibTeX file parsing in ImportUpload.vue component
+  - Extract metadata (title, authors, year, DOI, PMID, reference key)
+  - Add error handling for malformed BibTeX entries
+  - Write unit tests for BibTeX parsing functionality
+  - _Requirements: 1.1, 5.1_
+
+- [ ] 4.2 Implement file-to-reference matching logic
+  - Create file matching algorithm based on filename patterns
+  - Implement exact match, partial match, and fuzzy matching strategies
+  - Allow manual file-to-reference association by user
+  - Add validation for PDF file types and sizes
+  - Write unit tests for file matching algorithms
+  - _Requirements: 1.3, 1.6_
+
+- [ ] 5. Create import upload and preview components
+- [ ] 5.1 Implement ImportUpload.vue component
+  - Create drag-and-drop interface for .bib file and PDF folder uploads
+  - Integrate BibTeX parsing and file matching functionality
+  - Add collection tag input and file validation
+  - Implement progress indicators for file processing
+  - Send ImportAnalysisRequest to backend (metadata only, not file contents)
+  - _Requirements: 1.1, 1.2, 1.4_
+
+- [ ] 5.2 Create ImportPreview.vue component
+  - Display tabular view of documents with add/update/skip/failed status
+  - Show document metadata (title, authors, year) and associated files
+  - Allow user to modify actions for individual documents
+  - Implement bulk confirmation interface
+  - Add validation before proceeding to upload phase
+  - _Requirements: 2.1, 2.2, 2.7_
+
+- [ ] 6. Implement bulk upload execution and progress tracking
+- [ ] 6.1 Create bulk upload execution logic
+  - Implement paginated bulk upload requests (20-50 PDFs per batch)
+  - Send ImportExecuteRequest with actual file contents to POST /documents/bulk
+  - Handle multiple paginated requests for large document sets
+  - Add error handling for failed upload requests
+  - _Requirements: 3.1, 3.2_
+
+- [ ] 6.2 Implement ImportProgress.vue component
+  - Create real-time progress tracking using job status polling
+  - Display document-by-document upload status
+  - Show overall progress across all paginated requests
+  - Implement error reporting for failed uploads
+  - Add cancellation support for ongoing uploads
+  - _Requirements: 3.2, 3.3_
+
+- [ ] 7. Create import results and workspace integration
+- [ ] 7.1 Implement ImportResults.vue component
+  - Display import summary statistics (added, updated, skipped, failed)
+  - Show detailed error information for failed imports
+  - Provide navigation to workspace documents list
+  - Add option to retry failed imports
+  - _Requirements: 3.5, 4.3_
+
+- [ ] 7.2 Integrate imported documents with workspace features
+  - Ensure imported documents appear in workspace documents list
+  - Verify document metadata is properly stored and displayed
+  - Test compatibility with existing document processing features
+  - Add proper metadata tags for collection and source tracking
+  - _Requirements: 4.1, 4.2, 4.4, 4.6_
+
+- [ ] 8. Add comprehensive error handling and validation
+- [ ] 8.1 Implement robust error handling
+  - Add specific error messages for BibTeX parsing failures
+  - Handle corrupted PDF files with detailed error reporting
+  - Implement retry mechanisms for network and storage failures
+  - Add workspace storage quota validation
+  - _Requirements: 5.1, 5.2, 5.3, 5.5_
+
+- [ ] 8.2 Add security and performance optimizations
+  - Implement file type and size validation
+  - Add rate limiting for bulk upload requests
+  - Ensure proper file sanitization and virus scanning integration
+  - Add cleanup of temporary files and partial uploads
+  - _Requirements: 6.1, 6.2, 6.5, 6.6_
+
+- [ ] 9. Create import page and routing
+- [ ] 9.1 Implement main import page
+  - Create import.vue page in argilla-frontend/pages/workspace/_id/
+  - Integrate all import components (upload, preview, progress, results)
+  - Add proper routing and navigation
+  - Implement state management for import workflow
+  - _Requirements: 4.3, 4.4_
+
+- [ ] 9.2 Add import workflow orchestration
+  - Coordinate transitions between upload, preview, and execution phases
+  - Implement proper state persistence across browser sessions
+  - Add workflow validation and error recovery
+  - Write end-to-end tests for complete import workflow
+  - _Requirements: 5.6, 3.6_
+
+- [ ] 10. Write comprehensive tests and documentation
+- [ ] 10.1 Create unit and integration tests
+  - Write unit tests for all backend services and API endpoints
+  - Create integration tests for complete import workflow
+  - Add performance tests for large file processing
+  - Implement security tests for file upload validation
+  - _Requirements: All requirements validation_
+
+- [ ] 10.2 Add documentation and final validation
+  - Document API endpoints and request/response schemas
+  - Create user guide for import functionality
+  - Add developer documentation for extending import features
+  - Perform final end-to-end testing with real .bib files and PDFs
+  - _Requirements: Complete feature validation_
