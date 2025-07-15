@@ -10,61 +10,58 @@ The design follows Extralit's existing patterns: context-based backend architect
 
 ### High-Level Flow
 
-1. **Upload Phase**: User uploads .bib file and PDF folder through frontend interface
-2. **Processing Phase**: Backend parses .bib entries, matches PDFs, and analyzes import status
-3. **Preview Phase**: Frontend displays import preview with add/update/skip/failed status for each document
-4. **Import Phase**: User confirms import, backend creates individual document upload jobs using existing job queue
-5. **Results Phase**: Frontend tracks job progress and displays import results
+1. **Frontend Processing Phase**: User uploads .bib file and PDFs to frontend, which parses BibTeX entries and matches files to references
+2. **Analysis Phase**: Frontend sends file metadata (not file contents) to backend for add/update/skip status analysis
+3. **Preview Phase**: Frontend displays import preview with status for each document based on server analysis
+4. **Bulk Upload Phase**: User confirms import, frontend sends paginated requests to bulk upload endpoint with actual file contents
+5. **Progress Tracking Phase**: Frontend polls job status endpoints to track upload progress
 
 ### Component Interaction
 
 ```mermaid
 graph TD
-    A[Frontend Upload Component] --> B[Backend Import API]
-    B --> C[BibTeX Parser Service]
-    B --> D[PDF Matching Service]
-    C --> E[Import Analysis Service]
-    D --> E
-    E --> F[Import Preview Response]
-    F --> G[Frontend Preview Component]
-    G --> H[User Confirmation]
-    H --> I[Bulk Document Upload Endpoint]
-    I --> J[RQ Job Queue System]
-    J --> K[Individual Document Upload Jobs]
-    K --> L[Existing File Storage Service]
-    K --> M[Existing Database Updates]
-    J --> N[Job Status Tracking via /jobs/{job_id}]
-    L --> O[S3 Storage]
-    M --> O
-    N --> P[Import Results]
-    O --> P
+    A[Frontend Upload Component] --> B[Frontend BibTeX Parser]
+    A --> C[Frontend File Matcher]
+    B --> D[File Metadata Analysis Request]
+    C --> D
+    D --> E[Backend Import Analysis API]
+    E --> F[Existing Document Check]
+    F --> G[Import Analysis Response]
+    G --> H[Frontend Preview Component]
+    H --> I[User Confirmation]
+    I --> J[Paginated Bulk Upload Requests]
+    J --> K[Backend Bulk Upload Endpoint]
+    K --> L[RQ Job Queue System]
+    L --> M[Individual Document Upload Jobs]
+    M --> N[Existing File Storage & DB Logic]
+    L --> O[Job Status Tracking via /jobs/{job_id}]
+    N --> P[S3 Storage & Database]
+    O --> Q[Frontend Progress Tracking]
+    P --> Q
 ```
 
 ## Components and Interfaces
 
 ### Backend Components
 
-#### 1. Import API Handler (`argilla-server/src/argilla_server/api/handlers/v1/imports.py`)
+#### 1. Import Analysis API Handler (`argilla-server/src/argilla_server/api/handlers/v1/imports.py`)
 
 **Endpoints:**
-- `POST /api/v1/imports/analyze` - Upload and analyze .bib + PDFs, returns analysis with temporary storage
-- `POST /api/v1/imports/execute` - Execute confirmed import using bulk document upload endpoint
+- `POST /api/v1/imports/analyze` - Analyze file metadata to determine add/update/skip status
 
 **Key Functions:**
 ```python
 async def analyze_import(
-    bib_file: UploadFile,
-    pdf_files: List[UploadFile],
-    collection_tag: str,
-    workspace_id: UUID,
+    analysis_request: ImportAnalysisRequest,
     current_user: User
 ) -> ImportAnalysisResponse
-
-async def execute_import(
-    import_request: ImportExecuteRequest,
-    current_user: User
-) -> List[str]  # Returns list of job_ids for tracking
 ```
+
+**Functionality:**
+- Receives file metadata (not file contents) from frontend
+- Checks existing documents by reference, DOI, PMID to determine status
+- Compares file sizes to determine if updates are needed
+- Returns status analysis for frontend preview
 
 #### 2. Bulk Document Upload Handler (`argilla-server/src/argilla_server/api/handlers/v1/documents.py`)
 
@@ -75,49 +72,18 @@ async def execute_import(
 ```python
 async def bulk_upload_documents(
     *,
-    documents_metadata: str = Form(...),  # JSON string of List[DocumentCreate]
+    documents_metadata: str = Form(...),  # JSON string of BulkUploadMetadata
     files: List[UploadFile] = File(...),  # Multiple PDF files
     current_user: User = Security(auth.get_current_user)
 ) -> BulkUploadResponse
 ```
 
-**Request Structure:**
-- Uses `multipart/form-data` to support multiple file uploads
-- `documents_metadata`: JSON string containing document metadata and file associations
-- `files`: List of PDF files uploaded simultaneously
-- File matching handled by filename-to-reference-key mapping in metadata
-
-**Response:**
-```python
-class BulkUploadResponse(BaseModel):
-    job_ids: List[str]  # List of job IDs for tracking individual uploads
-    total_documents: int
-    upload_session_id: str  # For tracking overall bulk upload progress
-```
-
-**Benefits:**
-- **Multi-file support**: Handles multiple PDF uploads in single request using FastAPI's `List[UploadFile]`
-- **Reliable file association**: Metadata includes filename-to-reference mapping from BibTeX analysis
-- **Asynchronous processing**: Each document becomes individual job for parallel processing
-- **Progress tracking**: Both individual job status and overall session progress
-- **Fault tolerance**: Failed individual uploads don't affect others
-
 #### 3. Import Context (`argilla-server/src/argilla_server/contexts/imports.py`)
 
 **Core Services:**
-- `parse_bibtex_file()` - Parse .bib file and extract metadata
-- `match_pdfs_to_references()` - Match PDF files to bibliographic entries
-- `analyze_import_status()` - Determine add/update/skip/failed status by checking existing documents
-- `prepare_bulk_upload_data()` - Prepare DocumentCreate objects and file data for bulk upload endpoint
-
-#### 3. BibTeX Parser Service
-
-**Dependencies:** `bibtexparser` Python package
-**Functions:**
-- Parse .bib file entries
-- Extract metadata (title, authors, year, DOI, PMID, reference key)
-- Handle malformed entries gracefully
-- Sanitize input for security
+- `analyze_import_status()` - Check existing documents by reference/DOI/PMID to determine add/update/skip status
+- `compare_file_sizes()` - Compare existing file sizes with new files to determine if updates are needed
+- `validate_document_metadata()` - Validate DocumentCreate objects from frontend
 
 #### 4. Document Upload Job (`argilla-server/src/argilla_server/jobs/document_jobs.py`)
 
@@ -153,11 +119,15 @@ async def upload_document_job(
 **Features:**
 - Drag-and-drop .bib file upload
 - Folder/multiple PDF file upload
+- **Frontend BibTeX parsing** using JavaScript BibTeX parser library
+- **Frontend file-to-reference matching** by filename patterns
 - Collection tag input
-- Upload progress indicators
-- File validation
+- File validation and metadata extraction
+- Sends file metadata (not contents) to backend for analysis
 
-**Dependencies:** `vue-dropzone` or similar for file uploads
+**Dependencies:**
+- `vue-dropzone` or similar for file uploads
+- JavaScript BibTeX parser library (e.g., `bibtex-parse-js` or `@retorquere/bibtex-parser`)
 
 #### 3. Preview Component (`argilla-frontend/components/features/import/ImportPreview.vue`)
 
@@ -190,34 +160,36 @@ async def upload_document_job(
 #### Import Analysis Request
 ```python
 class ImportAnalysisRequest(BaseModel):
-    bib_file: UploadFile
-    pdf_files: List[UploadFile]
-    collection_tag: str
     workspace_id: UUID
+    documents: Dict[str, FileMetadataInfo]  # reference_key -> file metadata
+
+class FileMetadataInfo(BaseModel):
+    document_create: DocumentCreate  # Contains reference, doi, pmid, etc.
+    title: str  # For display
+    authors: List[str]  # For display
+    year: Optional[int]  # For display
+    associated_files: List[FileInfo]  # PDF file metadata (not contents)
+
+class FileInfo(BaseModel):
+    filename: str
+    size: int  # File size in bytes for comparison
 ```
 
 #### Import Analysis Response
 ```python
 class ImportAnalysisResponse(BaseModel):
     import_id: UUID
-    documents: List[ImportDocumentPreview]
+    documents: Dict[str, ImportDocumentInfo]  # reference_key -> document info
     summary: ImportSummary
 
-class ImportDocumentPreview(BaseModel):
-    reference_key: str
-    title: str
-    authors: List[str]
-    year: Optional[int]
-    doi: Optional[str]
-    pmid: Optional[str]
-    files: List[ImportFileInfo]
+class ImportDocumentInfo(BaseModel):
+    document_create: DocumentCreate  # Reuse existing schema
+    title: str  # For display only
+    authors: List[str]  # For display only
+    year: Optional[int]  # For display only
+    associated_files: List[str]  # PDF filenames matched to this reference
     status: ImportStatus  # add, update, skip, failed
     existing_document_id: Optional[UUID]
-
-class ImportFileInfo(BaseModel):
-    filename: str
-    size: int
-    matched: bool
 
 class ImportSummary(BaseModel):
     total_documents: int
@@ -237,6 +209,32 @@ class ImportAction(BaseModel):
     action: str  # add, update, skip
     files_to_import: List[str]
 ```
+
+#### Bulk Upload Request/Response
+```python
+# Multipart form data structure (paginated by 20-50 PDFs):
+# - documents_metadata: str (JSON string of BulkUploadMetadata)
+# - files: List[UploadFile] (Multiple PDF files, max 20-50 per request)
+
+class BulkUploadMetadata(BaseModel):
+    documents: List[BulkDocumentInfo]  # List of documents to upload
+
+class BulkDocumentInfo(BaseModel):
+    reference_key: str  # BibTeX reference key for job tracking
+    document_create: DocumentCreate  # Each document has one associated PDF file
+    associated_file: str  # Single PDF filename (one file per DocumentCreate)
+
+class BulkUploadResponse(BaseModel):
+    job_ids: Dict[str, str]  # reference_key -> job_id mapping for frontend tracking
+    total_documents: int
+    failed_validations: List[str]  # Files that failed validation
+```
+
+**Pagination Strategy:**
+- Frontend sends multiple paginated requests (20-50 PDFs each) to avoid large payload failures
+- Each `DocumentCreate` is associated with exactly one PDF file
+- Multiple documents may share the same BibTeX reference but have different files
+- Response includes `job_ids` indexed by reference key for easy frontend tracking
 
 ## Data Models
 
