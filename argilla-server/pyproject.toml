@@ -74,6 +74,9 @@ postgresql = [
     # Async PostgreSQL
     "asyncpg ~= 0.30.0",
 ]
+extralit = [
+    "extralit"
+]
 
 [project.urls]
 homepage = "https://extralit.ai"
