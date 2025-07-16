@@ -54,6 +54,8 @@ services:
       POSTGRES_DB: argilla
     networks:
       - argilla
+    ports:
+      - "5432:5432"
     volumes:
       - postgresdata:/var/lib/postgresql/data
 
@@ -73,6 +75,8 @@ services:
         hard: -1
     networks:
       - argilla
+    ports:
+      - "9200:9200"
     volumes:
       - elasticdata:/usr/share/elasticsearch/data/
 
@@ -89,6 +93,8 @@ services:
     image: redis
     networks:
       - argilla
+    ports:
+      - "6379:6379"
 
 networks:
   argilla:
