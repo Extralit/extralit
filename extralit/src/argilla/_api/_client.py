@@ -38,7 +38,7 @@ __all__ = ["APIClient"]
 
 
 ARGILLA_API_URL = get_secret("ARGILLA_API_URL") or _DEFAULT_API_URL
-ARGILLA_API_KEY = get_secret("ARGILLA_API_KEY")
+ARGILLA_API_KEY = get_secret("ARGILLA_API_KEY") or ""
 
 DEFAULT_HTTP_CONFIG = HTTPClientConfig(api_url=ARGILLA_API_URL, api_key=ARGILLA_API_KEY)
 
