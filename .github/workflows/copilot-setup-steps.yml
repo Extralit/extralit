@@ -65,6 +65,11 @@ jobs:
           cache-local-path: ~/.cache/uv
           cache-dependency-glob: "argilla-server/pdm.lock"
 
+      - name: Install extralit editable package with dependencies
+        working-directory: extralit
+        run: |
+          uv pip install -e ".[dev]"
+
       - name: Setup Python env and Install argilla-server editable package
         env:
           PDM_IGNORE_ACTIVE_VENV: 1
@@ -75,11 +80,6 @@ jobs:
 
           cd argilla-server/
           pdm install --dev
-
-      - name: Install extralit editable package with dependencies
-        working-directory: extralit
-        run: |
-          uv pip install -e ".[dev]"
 
       - name: Install Node.js
         uses: actions/setup-node@v4
