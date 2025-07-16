@@ -14,7 +14,7 @@ The feature consists of two main components: a backend import service that proce
 
 #### Acceptance Criteria
 
-1. WHEN I upload a .bib file THEN the system SHALL parse the bibliographic entries and extract metadata (title, authors, year, DOI, PMID, reference key)
+1. WHEN I upload a .bib file THEN the system SHALL parse the bibliographic entries and extract metadata (title, authors, venue, year, DOI, PMID, reference key)
 2. WHEN I upload a folder of PDF files THEN the system SHALL process each PDF and attempt to match it with bibliographic entries
 3. WHEN a PDF filename matches a .bib entry reference key THEN the system SHALL associate the PDF with that bibliographic entry
 4. WHEN I provide a collection tag THEN the system SHALL add this tag to all imported documents' metadata
@@ -28,7 +28,7 @@ The feature consists of two main components: a backend import service that proce
 #### Acceptance Criteria
 
 1. WHEN the import process completes analysis THEN the system SHALL display a list of all documents with their import status
-2. WHEN viewing the import preview THEN the system SHALL show reference key, title, authors, year, and associated files for each document
+2. WHEN viewing the import preview THEN the system SHALL show reference key, title, authors, venue, year, and associated files for each document
 3. WHEN a document has a new reference key THEN the system SHALL mark it as "add"
 4. WHEN a document has an existing reference key but new/updated files THEN the system SHALL mark it as "update"
 5. WHEN a document already exists with no changes THEN the system SHALL mark it as "skip"

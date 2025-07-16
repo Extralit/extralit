@@ -81,7 +81,7 @@ async def bulk_upload_documents(
 #### 3. Import Context (`argilla-server/src/argilla_server/contexts/imports.py`)
 
 **Core Services:**
-- `analyze_import_status()` - Check existing documents by reference/DOI/PMID to determine add/update/skip status
+- `analyze_import_status()` - Uses existing `check_existing_document()` function from documents handler to determine add/update/skip status
 - `compare_file_sizes()` - Compare existing file sizes with new files to determine if updates are needed
 - `validate_document_metadata()` - Validate DocumentCreate objects from frontend
 
@@ -134,7 +134,7 @@ async def upload_document_job(
 **Features:**
 - Tabular display of documents to import
 - Status indicators (add/update/skip/failed)
-- Document metadata display (title, authors, year)
+- Document metadata display (title, authors, venue, year)
 - Associated files listing
 - Action selection (allow user to change add/update/skip)
 - Bulk confirmation interface
@@ -167,6 +167,7 @@ class FileMetadataInfo(BaseModel):
     document_create: DocumentCreate  # Contains reference, doi, pmid, etc.
     title: str  # For display
     authors: List[str]  # For display
+    venue: Optional[str]  # Journal, publisher, or institution from BibTeX
     year: Optional[int]  # For display
     associated_files: List[FileInfo]  # PDF file metadata (not contents)
 
@@ -178,7 +179,6 @@ class FileInfo(BaseModel):
 #### Import Analysis Response
 ```python
 class ImportAnalysisResponse(BaseModel):
-    import_id: UUID
     documents: Dict[str, ImportDocumentInfo]  # reference_key -> document info
     summary: ImportSummary
 
@@ -186,6 +186,7 @@ class ImportDocumentInfo(BaseModel):
     document_create: DocumentCreate  # Reuse existing schema
     title: str  # For display only
     authors: List[str]  # For display only
+    venue: Optional[str]  # Journal, publisher, or institution from BibTeX
     year: Optional[int]  # For display only
     associated_files: List[str]  # PDF filenames matched to this reference
     status: ImportStatus  # add, update, skip, failed
