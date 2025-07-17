@@ -254,7 +254,7 @@ class ImportDocumentInfo(BaseModel):
     year: Optional[int]  # For display only
     associated_files: List[str]  # PDF filenames matched to this reference
     status: ImportStatus  # add, update, skip, failed
-    existing_document_id: Optional[UUID]
+    validation_errors: List[str] # Validation error messages if any
 
 class ImportSummary(BaseModel):
     total_documents: int

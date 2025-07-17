@@ -59,12 +59,12 @@ class ImportDocumentInfo(BaseModel):
 
     document_create: DocumentCreate = Field(..., description="Document creation data")
     title: str = Field(..., description="Document title for display")
-    authors: List[str] = Field(default_factory=list, description="Document authors for display")
+    authors: Optional[List[str]] = Field(default_factory=list, description="Document authors for display")
     year: Optional[int] = Field(None, description="Publication year for display")
     venue: Optional[str] = Field(None, description="Publication venue (journal, publisher, or institution)")
     associated_files: List[str] = Field(default_factory=list, description="PDF filenames matched to this reference")
     status: ImportStatus = Field(..., description="Import status (add, update, skip, failed)")
-    existing_document_id: Optional[UUID] = Field(None, description="ID of existing document if found")
+    validation_errors: Optional[List[str]] = Field(default_factory=list, description="Validation error messages if any")
 
 
 class ImportSummary(BaseModel):
