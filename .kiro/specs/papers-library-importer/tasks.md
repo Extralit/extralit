@@ -21,6 +21,14 @@
   - Write integration tests for the analysis endpoint
   - _Requirements: 2.1, 2.2_
 
+- [ ] 2.3 Create CLI import analysis testing function
+  - Add import_bibtex() function to extralit/src/argilla/cli/documents/add.py
+  - Parse BibTeX file and match PDF files from folder using Python bibtexparser
+  - Send ImportAnalysisRequest to argilla-server for testing import analysis functionality
+  - Display analysis results (add/update/skip status) in CLI output
+  - Enable easy testing of backend import analysis before building frontend
+  - _Requirements: 1.1, 2.1, 2.2_
+
 - [ ] 3. Create bulk document upload endpoint
 - [ ] 3.1 Implement bulk upload API handler
   - Create POST /documents/bulk endpoint in documents.py handler
@@ -37,12 +45,21 @@
   - Write unit tests for document upload jobs
   - _Requirements: 3.1, 3.3, 3.4_
 
-- [ ] 3.3 Integrate bulk upload with job queue
+- [ ] 3.3 Implement ImportHistory database model
+  - Create ImportHistory model in database.py with required fields
+  - Add relationships to Workspace and User models
+  - Create migration script for the new table
+  - Write unit tests for the ImportHistory model
+  - _Requirements: 3.5, 4.1_
+
+- [ ] 3.4 Integrate bulk upload with job queue and history logging
   - Connect bulk upload endpoint to document upload jobs
   - Implement reference-key indexed job_id response mapping
+  - Create import history record for each bulk import
+  - Store BibTeX document metadata and import summary in history
   - Add proper cleanup of temporary files after job completion
-  - Write integration tests for bulk upload workflow
-  - _Requirements: 3.2, 3.5_
+  - Write integration tests for bulk upload workflow and history logging
+  - _Requirements: 3.2, 3.5, 4.1_
 
 - [ ] 4. Implement frontend BibTeX parsing and file matching
 - [ ] 4.1 Create BibTeX parser component

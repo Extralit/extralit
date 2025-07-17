@@ -16,7 +16,6 @@ from datetime import datetime
 from typing import Dict, List, Sequence, Tuple, Union
 from uuid import UUID
 
-from datetime import UTC
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession

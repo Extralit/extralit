@@ -129,6 +129,69 @@ async def upload_document_job(
 - `vue-dropzone` or similar for file uploads
 - JavaScript BibTeX parser library (e.g., `bibtex-parse-js` or `@retorquere/bibtex-parser`)
 
+Example BibTeX files:
+
+```zotero_export.bib
+@misc{lal_decoding_2024,
+	title = {Decoding sequence determinants of gene expression in diverse cellular and disease states},
+	copyright = {http://creativecommons.org/licenses/by-nc/4.0/},
+	url = {http://biorxiv.org/lookup/doi/10.1101/2024.10.09.617507},
+	doi = {10.1101/2024.10.09.617507},
+	abstract = {...},
+	language = {en},
+	urldate = {2025-04-23},
+	publisher = {Genomics},
+	author = {Lal, Avantika and Karollus, Alexander and Gunsalus, Laura and Garfield, David and Nair, Surag and Tseng, Alex M and Gordon, M Grace and Blischak, John D and Van De Geijn, Bryce and Bhangale, Tushar and Collier, Jenna L and Diamant, Nathaniel and Biancalani, Tommaso and Corrada Bravo, Hector and Scalia, Gabriele and Eraslan, Gokcen},
+	month = oct,
+	year = {2024},
+	file = {PDF:files/2/Lal et al. - 2024 - Decoding sequence determinants of gene expression in diverse cellular and disease states.pdf:application/pdf},
+}
+
+@article{linder_predicting_2025,
+	title = {Predicting {RNA}-seq coverage from {DNA} sequence as a unifying model of gene regulation},
+	volume = {57},
+	issn = {1061-4036, 1546-1718},
+	url = {https://www.nature.com/articles/s41588-024-02053-6},
+	doi = {10.1038/s41588-024-02053-6},
+    abstract = {...},
+	language = {en},
+	number = {4},
+	urldate = {2025-04-23},
+	journal = {Nature Genetics},
+	author = {Linder, Johannes and Srivastava, Divyanshi and Yuan, Han and Agarwal, Vikram and Kelley, David R.},
+	month = apr,
+	year = {2025},
+	pages = {949--961},
+	file = {PDF:files/4/Linder et al. - 2025 - Predicting RNA-seq coverage from DNA sequence as a unifying model of gene regulation.pdf:application/pdf;Suppl. Material:files/3/Linder et al. - 2025 - Predicting RNA-seq coverage from DNA sequence as a unifying model of gene regulation.pdf:application/pdf},
+}
+```
+
+```mendeley_export.bib
+@article{Hawley2003a,
+   author = {William A Hawley and Penelope A Phillips-Howard and Feiko O ter  Kuile and Dianne J Terlouw and John M Vulule and Maurice Ombok and Bernard L Nahlen and John E Gimnig and Simon K Kariuki and Margarette S Kolczak and Allen W Hightower},
+   city = {Division of Parasitic Diseases, National Center for Infectious Diseases, Centers for Disease Control and Prevention, Atlanta, Georgia 30341, USA.},
+   issue = {4 Suppl},
+   abstract = {...},
+   journal = {The American Journal of Tropical Medicine and Hygiene},
+   keywords = {malaria},
+   month = {4},
+   pages = {121-127},
+   publisher = {The American Society of Tropical Medicine and Hygiene},
+   title = {Community-wide effects of permethrin-treated bed nets on child mortality and malaria morbidity in western Kenya.},
+   volume = {68},
+   url = {http://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi?dbfrom=pubmed&id=12749495&retmode=ref&cmd=prlinks papers3://publication/uuid/5A812181-A7D6-4C84-B9E3-D9CCDE93C497},
+   year = {2003}
+}
+
+@techReport{PMI2019,
+   author = {PMI},
+   institution = {PMI},
+   title = {Durability Monitoring of LLINs in Zanzibar, Tanzania},
+   url = {https://www.pmi.gov/docs/default-source/default-document-library/pmi-reports/durability-monitoring-of-llin-in-zanzibar-final-report-after-36-months-follow-up-2019.pdf?sfvrsn=4},
+   year = {2019}
+}
+```
+
 #### 3. Preview Component (`argilla-frontend/components/features/import/ImportPreview.vue`)
 
 **Features:**
@@ -238,6 +301,31 @@ class BulkUploadResponse(BaseModel):
 - Response includes `job_ids` indexed by reference key for easy frontend tracking
 
 ## Data Models
+
+### Import History Database Schema
+
+**New Model: ImportHistory**
+```python
+class ImportHistory(DatabaseModel):
+    __tablename__ = "import_history"
+
+    import_id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    workspace_id: Mapped[UUID] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    bib_filename: Mapped[str] = mapped_column(String, nullable=False)
+    document_info: Mapped[dict] = mapped_column(JSON, nullable=False)  # BibTeX document metadata
+    import_summary: Mapped[dict] = mapped_column(JSON, nullable=False)  # ImportSummary counts
+    submitted_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+
+    workspace: Mapped["Workspace"] = relationship("Workspace")
+    user: Mapped["User"] = relationship("User")
+```
+
+**Purpose:**
+- Log all submitted bulk imports with complete audit trail
+- Store BibTeX document information for historical reference
+- Track import summary statistics (add/update/skip/failed counts)
+- Enable import history viewing and analysis
 
 ### Document Field Mapping
 The import process maps BibTeX entries to existing Document model fields:
