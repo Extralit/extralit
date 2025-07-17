@@ -118,7 +118,7 @@ def import_bibtex(
     collection: Optional[str] = typer.Option(
         None, "--collection", "-c", help="Collection tag to add to all imported documents"
     ),
-    analyze_only: bool = typer.Option(False, "--analyze-only", help="Only analyze the import without executing it"),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Only analyze the import without executing it"),
     debug: bool = typer.Option(False, "--debug", help="Show detailed debug information"),
 ) -> None:
     """
@@ -167,6 +167,7 @@ def import_bibtex(
         pdf_files = {}
         all_pdf_files = list(pdf_folder.rglob("*.pdf"))
         pdf_files_by_name = {pdf.name: pdf for pdf in all_pdf_files}
+
         matched_via_file_tag = 0
         matched_via_fallback = 0
         with Progress(
@@ -180,7 +181,7 @@ def import_bibtex(
                 reference_key = entry.get("ID")
                 if not reference_key:
                     continue
-                # Try to match using the 'file' tag from Zotero
+
                 file_tag = entry.get("file")
                 matched_pdfs = []
                 if file_tag:
@@ -200,6 +201,7 @@ def import_bibtex(
                         pdf_files[reference_key] = matched_pdfs
                         matched_via_file_tag += len(matched_pdfs)
                         continue  # skip fallback if matched
+
                 # Fallback: match by reference key in file name
                 fallback_matches = [pdf for pdf in all_pdf_files if reference_key in pdf.stem]
                 if fallback_matches:
@@ -285,10 +287,10 @@ def import_bibtex(
         # Display analysis results
         _display_import_analysis_results(console, analysis_result)
 
-        # If analyze_only flag is set, stop here
-        if analyze_only:
+        # If dry_run flag is set, stop here
+        if dry_run:
             panel = get_argilla_themed_panel(
-                "Import analysis completed. Use --analyze-only=false to execute the import.",
+                "Import analysis completed. Use --dry-run=false to execute the import.",
                 title="Import Analysis Complete",
                 title_align="left",
                 success=True,
