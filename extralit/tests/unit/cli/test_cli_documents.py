@@ -61,23 +61,42 @@ def test_import_bibtex_help(runner):
     assert result.exit_code == 0
     assert "import documents from a bibtex file" in result.stdout.lower()
     assert "--bibtex" in result.stdout
-    assert "--pdf-folder" in result.stdout
+    assert "pdf_folder" in result.stdout  # positional argument
     assert "--collection" in result.stdout
     assert "--analyze-only" in result.stdout
 
 
-@patch("argilla.cli.documents.__main__.import_bibtex")
-@pytest.mark.skip(reason="Test temporarily disabled")
-def test_import_bibtex_analysis(mock_import_bibtex, runner):
+@patch("argilla.client.Argilla.from_credentials")
+@patch(
+    "builtins.open",
+    new_callable=MagicMock,
+    read_data="@article{key1, title={Test Title}, author={Author One and Author Two}, year={2025}}",
+)
+@patch("bibtexparser.load")
+def test_import_bibtex_analysis(mock_bibtex_load, mock_file_open, mock_from_credentials, runner):
     """Test the 'import-bibtex' command with analysis only."""
     # Set up the mock to return None (function doesn't return anything)
+    mock_import_bibtex = MagicMock()
     mock_import_bibtex.return_value = None
 
     # Run the command
-    result = runner.invoke(
-        app,
-        ["documents", "import-bibtex", "--workspace", "test-workspace", "--bibtex", "test.bib", "--analyze-only"],
-    )
+    with runner.isolated_filesystem():
+        with open("test.bib", "w") as f:
+            f.write("@article{key1, title={Test Title}, author={Author One and Author Two}, year={2025}}")
+        Path("pdfs").mkdir()
+        result = runner.invoke(
+            app,
+            [
+                "documents",
+                "import-bibtex",
+                "--workspace",
+                "test-workspace",
+                "--bibtex",
+                "test.bib",
+                "pdfs",  # positional argument
+                "--analyze-only",
+            ],
+        )
 
     # Check that the command executed successfully
     assert result.exit_code == 0
@@ -89,34 +108,44 @@ def test_import_bibtex_analysis(mock_import_bibtex, runner):
     # Check that the parameters were passed correctly
     assert kwargs["workspace"] == "test-workspace"
     assert kwargs["bibtex_file"].name == "test.bib"
+    assert kwargs["pdf_folder"] == Path("pdfs")
     assert kwargs["analyze_only"] is True
 
 
-@patch("argilla.cli.documents.__main__.import_bibtex")
-@pytest.mark.skip(reason="Test temporarily disabled")
-def test_import_bibtex_with_pdf_matching(mock_import_bibtex, runner):
+@patch("argilla.client.Argilla.from_credentials")
+@patch("builtins.open", new_callable=MagicMock)
+@patch("bibtexparser.load")
+@patch("pathlib.Path.glob")
+@patch("pathlib.Path.stat")
+def test_import_bibtex_with_pdf_matching(
+    mock_stat, mock_glob, mock_bibtex_load, mock_file_open, mock_from_credentials, runner
+):
     """Test the 'import-bibtex' command with PDF matching."""
     # Set up the mock to return None (function doesn't return anything)
+    mock_import_bibtex = MagicMock()
     mock_import_bibtex.return_value = None
 
     # Create a temporary PDF folder path
     pdf_folder = Path("pdfs")
 
     # Run the command
-    result = runner.invoke(
-        app,
-        [
-            "documents",
-            "import-bibtex",
-            "--workspace",
-            "test-workspace",
-            "--bibtex",
-            "test.bib",
-            "--pdf-folder",
-            str(pdf_folder),
-            "--analyze-only",
-        ],
-    )
+    with runner.isolated_filesystem():
+        with open("test.bib", "w") as f:
+            f.write("@article{key1, title={Test Title}, author={Author One and Author Two}, year={2025}}")
+        Path("pdfs").mkdir()
+        result = runner.invoke(
+            app,
+            [
+                "documents",
+                "import-bibtex",
+                "--workspace",
+                "test-workspace",
+                "--bibtex",
+                "test.bib",
+                "pdfs",  # positional argument
+                "--analyze-only",
+            ],
+        )
 
     # Check that the command executed successfully
     assert result.exit_code == 0
@@ -132,17 +161,21 @@ def test_import_bibtex_with_pdf_matching(mock_import_bibtex, runner):
     assert kwargs["analyze_only"] is True
 
 
-@patch("argilla.cli.documents.__main__.import_bibtex")
-@pytest.mark.skip(reason="Test temporarily disabled")
-def test_import_bibtex_workspace_not_found(mock_import_bibtex, runner):
+@patch("argilla.client.Argilla.from_credentials")
+def test_import_bibtex_workspace_not_found(mock_from_credentials, runner):
     """Test the 'import-bibtex' command with a non-existent workspace."""
     # Set up the mock to raise a typer.Exit with code 1
+    mock_import_bibtex = MagicMock()
     mock_import_bibtex.side_effect = lambda **kwargs: runner.exit_code(1)
 
     # Run the command
-    result = runner.invoke(
-        app, ["documents", "import-bibtex", "--workspace", "nonexistent-workspace", "--bibtex", "test.bib"]
-    )
+    with runner.isolated_filesystem():
+        with open("test.bib", "w") as f:
+            f.write("@article{key1, title={Test Title}, author={Author One}, year={2025}}")
+        Path("pdfs").mkdir()
+        result = runner.invoke(
+            app, ["documents", "import-bibtex", "--workspace", "nonexistent-workspace", "--bibtex", "test.bib", "pdfs"]
+        )
 
     # Check the result
     assert result.exit_code == 1
@@ -156,17 +189,20 @@ def test_import_bibtex_workspace_not_found(mock_import_bibtex, runner):
     assert kwargs["bibtex_file"].name == "test.bib"
 
 
-@patch("argilla.cli.documents.__main__.import_bibtex")
-@pytest.mark.skip(reason="Test temporarily disabled")
-def test_import_bibtex_file_error(mock_import_bibtex, runner):
+@patch("argilla.client.Argilla.from_credentials")
+@patch("builtins.open", side_effect=Exception("Error reading file"))
+def test_import_bibtex_file_error(mock_open, mock_from_credentials, runner):
     """Test the 'import-bibtex' command with a file error."""
     # Set up the mock to raise an exception
+    mock_import_bibtex = MagicMock()
     mock_import_bibtex.side_effect = Exception("Error reading file")
 
     # Run the command
-    result = runner.invoke(
-        app, ["documents", "import-bibtex", "--workspace", "test-workspace", "--bibtex", "nonexistent.bib"]
-    )
+    with runner.isolated_filesystem():
+        Path("pdfs").mkdir()
+        result = runner.invoke(
+            app, ["documents", "import-bibtex", "--workspace", "test-workspace", "--bibtex", "nonexistent.bib", "pdfs"]
+        )
 
     # Check the result
     assert result.exit_code == 1
@@ -180,15 +216,26 @@ def test_import_bibtex_file_error(mock_import_bibtex, runner):
     assert kwargs["bibtex_file"].name == "nonexistent.bib"
 
 
-@patch("argilla.cli.documents.__main__.import_bibtex")
-@pytest.mark.skip(reason="Test temporarily disabled")
-def test_import_bibtex_api_error(mock_import_bibtex, runner):
+@patch("argilla.client.Argilla.from_credentials")
+@patch(
+    "builtins.open",
+    new_callable=MagicMock,
+    read_data="@article{key1, title={Test Title}, author={Author One}, year={2025}}",
+)
+@patch("bibtexparser.load")
+@patch("argilla.cli.documents.add._display_import_analysis_results")
+def test_import_bibtex_api_error(mock_display, mock_bibtex_load, mock_file_open, mock_from_credentials, runner):
     """Test the 'import-bibtex' command with an API error."""
     # Set up the mock to raise a ValueError with a specific error message
+    mock_import_bibtex = MagicMock()
     mock_import_bibtex.side_effect = ValueError("Error analyzing import: Validation error")
 
     # Run the command
-    result = runner.invoke(app, ["documents", "import-bibtex", "--workspace", "test-workspace", "--bibtex", "test.bib"])
+    with runner.isolated_filesystem():
+        Path("pdfs").mkdir()
+        result = runner.invoke(
+            app, ["documents", "import-bibtex", "--workspace", "test-workspace", "--bibtex", "test.bib", "pdfs"]
+        )
 
     # Check the result
     assert result.exit_code == 1
