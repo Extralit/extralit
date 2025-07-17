@@ -50,7 +50,7 @@ async def analyze_import_status(db: AsyncSession, analysis_request: ImportAnalys
 
     for reference_key, file_metadata in analysis_request.documents.items():
         try:
-            existing_document = await _check_existing_document(db, file_metadata.document_create)
+            existing_documents = await _check_existing_document(db, file_metadata.document_create)
 
             validation_errors = validate_document_metadata(file_metadata)
             if validation_errors:
@@ -58,13 +58,17 @@ async def analyze_import_status(db: AsyncSession, analysis_request: ImportAnalys
                 failed_count += 1
                 _LOGGER.warning(f"Document {reference_key} failed validation: {validation_errors}")
 
-            elif existing_document is None:
+            elif not existing_documents:
                 status = ImportStatus.ADD
                 add_count += 1
-
+                existing_document_id = None
             else:
-                needs_update = await _needs_file_update(existing_document, file_metadata.associated_files)
-                if needs_update:
+                # Use the first document for ID reference, but check all documents for files
+                primary_document = existing_documents[0]
+                existing_document_id = primary_document.id
+
+                has_new_files = await _has_new_files(db, existing_documents, file_metadata.associated_files)
+                if has_new_files:
                     status = ImportStatus.UPDATE
                     update_count += 1
                 else:
@@ -79,7 +83,7 @@ async def analyze_import_status(db: AsyncSession, analysis_request: ImportAnalys
                 venue=file_metadata.venue,
                 associated_files=[f.filename for f in file_metadata.associated_files],
                 status=status,
-                existing_document_id=existing_document.id if existing_document else None,
+                existing_document_id=existing_document_id if "existing_document_id" in locals() else None,
             )
 
         except Exception as e:
@@ -107,17 +111,17 @@ async def analyze_import_status(db: AsyncSession, analysis_request: ImportAnalys
     return ImportAnalysisResponse(documents=documents_info, summary=summary)
 
 
-async def _check_existing_document(db: AsyncSession, document_create: DocumentCreate) -> Optional[Document]:
+async def _check_existing_document(db: AsyncSession, document_create: DocumentCreate) -> List[Document]:
     """
-    Check if a document already exists based on reference, DOI, PMID, or ID.
-    Reuses the logic from the existing document handler.
+    Check if documents already exist based on reference, DOI, PMID, or ID.
+    Reuses the logic from the existing document handler but returns all matching documents.
 
     Args:
         db: Database session
         document_create: Document creation data
 
     Returns:
-        Existing document if found, None otherwise
+        List of existing documents if found, empty list otherwise
     """
     conditions = []
 
@@ -133,40 +137,54 @@ async def _check_existing_document(db: AsyncSession, document_create: DocumentCr
         conditions.append(Document.reference == document_create.reference)
 
     if not conditions:
-        return None
+        return []
 
-    # Check if a document with the same pmid, url, doi, id, or reference already exists
+    # Check if documents with the same pmid, url, doi, id, or reference already exist
     result = await db.execute(
         select(Document).where(and_(Document.workspace_id == document_create.workspace_id, or_(*conditions)))
     )
-    existing_document = result.scalars().first()
+    existing_documents = result.scalars().all()
 
-    return existing_document
+    return list(existing_documents)
 
 
-async def _needs_file_update(existing_document: Document, new_files: List[FileInfo]) -> bool:
+async def _has_new_files(db: AsyncSession, existing_documents: List[Document], new_files: List[FileInfo]) -> bool:
     """
-    Determine if an existing document needs file updates by comparing file sizes.
+    Check if there are new files to add to existing documents.
+
+    This function determines if any of the new files are not already associated with the documents.
+    It's specifically designed to handle supplemental files being added to a reference that
+    already has the main PDF uploaded.
 
     Args:
-        existing_document: Existing document in database
+        db: Database session
+        existing_documents: List of existing documents in database
         new_files: List of new files to be imported
 
     Returns:
-        True if files need to be updated, False otherwise
+        True if there are new files to add, False otherwise
     """
     # If no new files, no update needed
     if not new_files:
         return False
 
-    # If existing document has no file, update is needed
-    if not existing_document.url:
+    # If no existing documents or no documents with files, update is needed
+    if not existing_documents or not any(doc.url for doc in existing_documents):
         return True
 
-    # For now, we'll consider any new files as requiring an update
-    # In a more sophisticated implementation, we could compare file hashes
-    # or check if the existing file matches any of the new files by size
-    return True
+    # Extract the filenames from all existing documents
+    existing_filenames = set()
+    for doc in existing_documents:
+        if doc.file_name:
+            existing_filenames.add(doc.file_name)
+
+    # Check if any of the new files have names that don't exist in the existing files
+    for file_info in new_files:
+        if file_info.filename not in existing_filenames:
+            return True
+
+    # No new files found
+    return False
 
 
 def compare_file_sizes(existing_size: Optional[int], new_files: List[FileInfo]) -> bool:
