@@ -25,64 +25,75 @@ from argilla_server.api.schemas.v1.imports import (
     ImportStatus,
 )
 
-from tests.factories import DocumentFactory, WorkspaceFactory
+from argilla_server.models import UserRole
+from tests.factories import DocumentFactory, WorkspaceFactory, UserFactory
 
 
 @pytest.mark.asyncio
 class TestImportsAPI:
     """Test suite for imports API endpoints."""
 
-    async def test_analyze_import_unauthorized(self, client: AsyncClient):
+    async def test_analyze_import_unauthorized(self, async_client: AsyncClient):
         """Test that unauthorized users cannot access the analyze endpoint."""
         # Create a request with a valid workspace ID
         request = ImportAnalysisRequest(workspace_id=uuid4(), documents={})
 
         # Make request without authentication
-        response = await client.post("/api/v1/imports/analyze", json=request.model_dump())
+        response = await async_client.post("/api/v1/imports/analyze", json=request.model_dump(mode="json"))
 
         # Verify response
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
-    async def test_analyze_import_empty_documents(self, authenticated_client: AsyncClient, admin_user):
+    async def test_analyze_import_empty_documents(self, async_client: AsyncClient):
         """Test analyze endpoint with empty documents list."""
-        # Create workspace
-        workspace = await WorkspaceFactory.create(owner=admin_user)
+        # Create owner user and workspace
+        owner = await UserFactory.create(role=UserRole.owner)
+        workspaces = await WorkspaceFactory.create_batch(1)
+        # Optionally assign workspaces to owner if needed by your logic
+        # owner.workspaces = workspaces
+        workspace = workspaces[0]
 
         # Create request with empty documents
         request = ImportAnalysisRequest(workspace_id=workspace.id, documents={})
 
         # Make request
-        response = await authenticated_client.post("/api/v1/imports/analyze", json=request.model_dump())
+        response = await async_client.post("/api/v1/imports/analyze", json=request.model_dump(mode="json"))
 
         # Verify response
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         assert "No documents provided for analysis" in str(response.json())
 
-    async def test_analyze_import_invalid_workspace(self, authenticated_client: AsyncClient):
+    async def test_analyze_import_invalid_workspace(self, async_client: AsyncClient):
         """Test analyze endpoint with invalid workspace ID."""
         # Create request with non-existent workspace ID
         request = ImportAnalysisRequest(
             workspace_id=uuid4(),
             documents={
                 "test_ref": FileMetadataInfo(
-                    document_create=DocumentCreate(workspace_id=uuid4(), reference="test_ref"),
+                    document_create=DocumentCreate(
+                        workspace_id=uuid4(), reference="test_ref", url=None, file_name=None, pmid=None, doi=None
+                    ),
                     title="Test Document",
                     authors=["Test Author"],
+                    year=None,
+                    venue=None,
                 )
             },
         )
 
         # Make request
-        response = await authenticated_client.post("/api/v1/imports/analyze", json=request.model_dump())
+        response = await async_client.post("/api/v1/imports/analyze", json=request.model_dump(mode="json"))
 
         # Verify response
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         assert "not found" in response.json()["detail"]
 
-    async def test_analyze_import_mismatched_workspace_ids(self, authenticated_client: AsyncClient, admin_user):
+    async def test_analyze_import_mismatched_workspace_ids(self, async_client: AsyncClient):
         """Test analyze endpoint with mismatched workspace IDs."""
-        # Create workspace
-        workspace = await WorkspaceFactory.create(owner=admin_user)
+        # Create owner user and workspace
+        owner = await UserFactory.create(role=UserRole.owner)
+        workspaces = await WorkspaceFactory.create_batch(1)
+        workspace = workspaces[0]
         other_workspace_id = uuid4()
 
         # Create request with mismatched workspace IDs
@@ -90,24 +101,34 @@ class TestImportsAPI:
             workspace_id=workspace.id,
             documents={
                 "test_ref": FileMetadataInfo(
-                    document_create=DocumentCreate(workspace_id=other_workspace_id, reference="test_ref"),
+                    document_create=DocumentCreate(
+                        workspace_id=other_workspace_id,
+                        reference="test_ref",
+                        url=None,
+                        file_name=None,
+                        pmid=None,
+                        doi=None,
+                    ),
                     title="Test Document",
                     authors=["Test Author"],
+                    year=None,
+                    venue=None,
                 )
             },
         )
 
         # Make request
-        response = await authenticated_client.post("/api/v1/imports/analyze", json=request.model_dump())
+        response = await async_client.post("/api/v1/imports/analyze", json=request.model_dump(mode="json"))
 
         # Verify response
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         assert "mismatched workspace_id" in str(response.json())
 
-    async def test_analyze_import_invalid_document_metadata(self, authenticated_client: AsyncClient, admin_user):
+    async def test_analyze_import_invalid_document_metadata(self, async_client: AsyncClient):
         """Test analyze endpoint with invalid document metadata - should not raise exceptions."""
-        # Create workspace
-        workspace = await WorkspaceFactory.create(owner=admin_user)
+        owner = await UserFactory.create(role=UserRole.owner)
+        workspaces = await WorkspaceFactory.create_batch(1)
+        workspace = workspaces[0]
 
         # Create request with invalid DOI format
         request = ImportAnalysisRequest(
@@ -118,16 +139,21 @@ class TestImportsAPI:
                         workspace_id=workspace.id,
                         reference="test_ref",
                         doi="invalid-doi-format",  # Invalid DOI format
+                        url=None,
+                        file_name=None,
+                        pmid=None,
                     ),
                     title="Test Document",
                     authors=["Test Author"],
+                    year=None,
+                    venue=None,
                     associated_files=[FileInfo(filename="test.pdf", size=1024)],
                 )
             },
         )
 
         # Make request
-        response = await authenticated_client.post("/api/v1/imports/analyze", json=request.model_dump())
+        response = await async_client.post("/api/v1/imports/analyze", json=request.model_dump(mode="json"))
 
         # Verify response - should succeed but mark document as failed
         assert response.status_code == status.HTTP_200_OK
@@ -137,10 +163,11 @@ class TestImportsAPI:
         assert data["documents"]["test_ref"]["status"] == ImportStatus.FAILED
         assert data["summary"]["failed_count"] == 1
 
-    async def test_analyze_import_new_documents(self, authenticated_client: AsyncClient, admin_user):
+    async def test_analyze_import_new_documents(self, async_client: AsyncClient):
         """Test analyze endpoint with new documents."""
-        # Create workspace
-        workspace = await WorkspaceFactory.create(owner=admin_user)
+        owner = await UserFactory.create(role=UserRole.owner)
+        workspaces = await WorkspaceFactory.create_batch(1)
+        workspace = workspaces[0]
 
         # Create request with new document
         request = ImportAnalysisRequest(
@@ -151,6 +178,9 @@ class TestImportsAPI:
                         workspace_id=workspace.id,
                         reference="new_ref",
                         doi="10.1234/new.doi",
+                        url=None,
+                        file_name=None,
+                        pmid=None,
                     ),
                     title="New Document",
                     authors=["New Author"],
@@ -162,7 +192,7 @@ class TestImportsAPI:
         )
 
         # Make request
-        response = await authenticated_client.post("/api/v1/imports/analyze", json=request.model_dump())
+        response = await async_client.post("/api/v1/imports/analyze", json=request.model_dump(mode="json"))
 
         # Verify response
         assert response.status_code == status.HTTP_200_OK
@@ -175,10 +205,11 @@ class TestImportsAPI:
         assert data["summary"]["skip_count"] == 0
         assert data["summary"]["failed_count"] == 0
 
-    async def test_analyze_import_existing_documents(self, authenticated_client: AsyncClient, admin_user):
+    async def test_analyze_import_existing_documents(self, async_client: AsyncClient):
         """Test analyze endpoint with existing documents."""
-        # Create workspace
-        workspace = await WorkspaceFactory.create(owner=admin_user)
+        owner = await UserFactory.create(role=UserRole.owner)
+        workspaces = await WorkspaceFactory.create_batch(1)
+        workspace = workspaces[0]
 
         # Create existing document
         existing_doc = await DocumentFactory.create(
@@ -194,6 +225,9 @@ class TestImportsAPI:
                         workspace_id=workspace.id,
                         reference="existing_ref",
                         doi="10.1234/existing.doi",
+                        url=None,
+                        file_name=None,
+                        pmid=None,
                     ),
                     title="Existing Document",
                     authors=["Existing Author"],
@@ -205,7 +239,7 @@ class TestImportsAPI:
         )
 
         # Make request
-        response = await authenticated_client.post("/api/v1/imports/analyze", json=request.model_dump())
+        response = await async_client.post("/api/v1/imports/analyze", json=request.model_dump(mode="json"))
 
         # Verify response
         assert response.status_code == status.HTTP_200_OK
@@ -219,10 +253,11 @@ class TestImportsAPI:
         assert data["summary"]["skip_count"] == 1
         assert data["summary"]["failed_count"] == 0
 
-    async def test_analyze_import_update_documents(self, authenticated_client: AsyncClient, admin_user):
+    async def test_analyze_import_update_documents(self, async_client: AsyncClient):
         """Test analyze endpoint with documents that need updates."""
-        # Create workspace
-        workspace = await WorkspaceFactory.create(owner=admin_user)
+        owner = await UserFactory.create(role=UserRole.owner)
+        workspaces = await WorkspaceFactory.create_batch(1)
+        workspace = workspaces[0]
 
         # Create existing document
         existing_doc = await DocumentFactory.create(
@@ -238,6 +273,9 @@ class TestImportsAPI:
                         workspace_id=workspace.id,
                         reference="update_ref",
                         doi="10.1234/update.doi",
+                        url=None,
+                        file_name=None,
+                        pmid=None,
                     ),
                     title="Update Document",
                     authors=["Update Author"],
@@ -249,7 +287,7 @@ class TestImportsAPI:
         )
 
         # Make request
-        response = await authenticated_client.post("/api/v1/imports/analyze", json=request.model_dump())
+        response = await async_client.post("/api/v1/imports/analyze", json=request.model_dump(mode="json"))
 
         # Verify response
         assert response.status_code == status.HTTP_200_OK
@@ -263,10 +301,11 @@ class TestImportsAPI:
         assert data["summary"]["skip_count"] == 0
         assert data["summary"]["failed_count"] == 0
 
-    async def test_analyze_import_mixed_documents(self, authenticated_client: AsyncClient, admin_user):
+    async def test_analyze_import_mixed_documents(self, async_client: AsyncClient):
         """Test analyze endpoint with mixed document types."""
-        # Create workspace
-        workspace = await WorkspaceFactory.create(owner=admin_user)
+        owner = await UserFactory.create(role=UserRole.owner)
+        workspaces = await WorkspaceFactory.create_batch(1)
+        workspace = workspaces[0]
 
         # Create existing documents
         existing_skip = await DocumentFactory.create(workspace=workspace, reference="skip_ref", doi="10.1234/skip.doi")
@@ -280,7 +319,12 @@ class TestImportsAPI:
             documents={
                 "new_ref": FileMetadataInfo(
                     document_create=DocumentCreate(
-                        workspace_id=workspace.id, reference="new_ref", doi="10.1234/new.doi"
+                        workspace_id=workspace.id,
+                        reference="new_ref",
+                        doi="10.1234/new.doi",
+                        url=None,
+                        file_name=None,
+                        pmid=None,
                     ),
                     title="New Document",
                     authors=["New Author"],
@@ -290,7 +334,12 @@ class TestImportsAPI:
                 ),
                 "skip_ref": FileMetadataInfo(
                     document_create=DocumentCreate(
-                        workspace_id=workspace.id, reference="skip_ref", doi="10.1234/skip.doi"
+                        workspace_id=workspace.id,
+                        reference="skip_ref",
+                        doi="10.1234/skip.doi",
+                        url=None,
+                        file_name=None,
+                        pmid=None,
                     ),
                     title="Skip Document",
                     authors=["Skip Author"],
@@ -300,7 +349,12 @@ class TestImportsAPI:
                 ),
                 "update_ref": FileMetadataInfo(
                     document_create=DocumentCreate(
-                        workspace_id=workspace.id, reference="update_ref", doi="10.1234/update.doi"
+                        workspace_id=workspace.id,
+                        reference="update_ref",
+                        doi="10.1234/update.doi",
+                        url=None,
+                        file_name=None,
+                        pmid=None,
                     ),
                     title="Update Document",
                     authors=["Update Author"],
@@ -313,6 +367,9 @@ class TestImportsAPI:
                         workspace_id=workspace.id,
                         reference="failed_ref",
                         doi="invalid-doi-format",  # Invalid DOI format
+                        url=None,
+                        file_name=None,
+                        pmid=None,
                     ),
                     title="Failed Document",
                     authors=["Failed Author"],
@@ -324,7 +381,7 @@ class TestImportsAPI:
         )
 
         # Make request
-        response = await authenticated_client.post("/api/v1/imports/analyze", json=request.model_dump())
+        response = await async_client.post("/api/v1/imports/analyze", json=request.model_dump(mode="json"))
 
         # Verify response - should succeed with mixed statuses
         assert response.status_code == status.HTTP_200_OK
