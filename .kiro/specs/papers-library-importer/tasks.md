@@ -10,7 +10,7 @@
 - [x] 2.1 Create import context service for document analysis
   - Write analyze_import_status() function to check existing documents by reference/DOI/PMID
   - Implement compare_file_sizes() function to determine if file updates are needed
-  - Create validate_document_metadata() function for DocumentCreate validation
+  - Create validate_document_metadata() function for FileMetadataInfo validation
   - Write unit tests for import analysis logic
   - _Requirements: 2.3, 2.4, 2.5_
 
@@ -24,6 +24,7 @@
 - [x] 2.3 Create CLI import analysis testing function
   - Add import_bibtex() function to extralit/src/argilla/cli/documents/add.py
   - Parse BibTeX file and match PDF files from folder using Python bibtexparser
+  - Perform filename matching to create the analysis_request
   - Send ImportAnalysisRequest to argilla-server for testing import analysis functionality
   - Display analysis results (add/update/skip status) in CLI output
   - Enable easy testing of backend import analysis before building frontend

@@ -117,13 +117,33 @@ def test_import_bibtex_analysis(mock_bibtex_load, mock_file_open, mock_from_cred
 @patch("bibtexparser.load")
 @patch("pathlib.Path.glob")
 @patch("pathlib.Path.stat")
+@patch("pathlib.Path.rglob")
 def test_import_bibtex_with_pdf_matching(
-    mock_stat, mock_glob, mock_bibtex_load, mock_file_open, mock_from_credentials, runner
+    mock_rglob, mock_stat, mock_glob, mock_bibtex_load, mock_file_open, mock_from_credentials, runner
 ):
     """Test the 'import-bibtex' command with PDF matching."""
     # Set up the mock to return None (function doesn't return anything)
     mock_import_bibtex = MagicMock()
     mock_import_bibtex.return_value = None
+
+    # Mock bibtex parser to return entries with reference keys
+    mock_bibtex_db = MagicMock()
+    mock_bibtex_db.entries = [
+        {"ID": "key1", "title": "Test Title", "author": "Author One and Author Two", "year": "2025"},
+        {"ID": "key2", "title": "Another Title", "author": "Author Three", "year": "2024"},
+    ]
+    mock_bibtex_load.return_value = mock_bibtex_db
+
+    # Mock PDF files that match reference keys
+    mock_pdf_files = [
+        MagicMock(name="pdfs/key1.pdf", stem="key1"),
+        MagicMock(name="pdfs/key2_paper.pdf", stem="key2_paper"),
+        MagicMock(name="pdfs/unmatched.pdf", stem="unmatched"),
+    ]
+    mock_rglob.return_value = mock_pdf_files
+
+    # Mock file stats to return file sizes
+    mock_stat.return_value.st_size = 1024
 
     # Create a temporary PDF folder path
     pdf_folder = Path("pdfs")
@@ -159,6 +179,9 @@ def test_import_bibtex_with_pdf_matching(
     assert kwargs["bibtex_file"].name == "test.bib"
     assert kwargs["pdf_folder"] == pdf_folder
     assert kwargs["dry_run"] is True
+
+    # Verify that rglob was called to find PDF files
+    mock_rglob.assert_called_with("*.pdf")
 
 
 @patch("argilla.client.Argilla.from_credentials")
@@ -301,3 +324,95 @@ def test_display_import_analysis_results(mock_print, mock_add_row):
 
     # Verify that console.print was called twice (once for each table)
     assert console.print.call_count == 2
+
+
+@patch("argilla.client.Argilla.from_credentials")
+@patch("builtins.open", new_callable=MagicMock)
+@patch("bibtexparser.load")
+@patch("pathlib.Path.rglob")
+@patch("pathlib.Path.stat")
+@patch("requests.post")
+def test_import_bibtex_filename_matching(
+    mock_post, mock_stat, mock_rglob, mock_bibtex_load, mock_file_open, mock_from_credentials, runner
+):
+    """Test the filename matching in the import_bibtex function."""
+    # Mock client
+    mock_client = MagicMock()
+    mock_workspace = MagicMock()
+    mock_workspace.id = "workspace-uuid"
+    mock_client.workspaces.return_value = mock_workspace
+    mock_from_credentials.return_value = mock_client
+
+    # Mock bibtex parser to return entries with reference keys
+    mock_bibtex_db = MagicMock()
+    mock_bibtex_db.entries = [
+        {"ID": "key1", "title": "Test Title", "author": "Author One", "year": "2025"},
+        {"ID": "key2", "title": "Another Title", "author": "Author Two", "year": "2024"},
+        {"ID": "key3", "title": "Third Title", "author": "Author Three", "year": "2023"},
+    ]
+    mock_bibtex_load.return_value = mock_bibtex_db
+
+    # Mock PDF files with different naming patterns
+    mock_pdf_files = [
+        MagicMock(name="pdfs/key1.pdf", stem="key1"),  # Exact match
+        MagicMock(name="pdfs/paper_key2.pdf", stem="paper_key2"),  # Partial match
+        MagicMock(name="pdfs/key3_2023.pdf", stem="key3_2023"),  # Partial match with year
+        MagicMock(name="pdfs/unmatched.pdf", stem="unmatched"),  # No match
+    ]
+    mock_rglob.return_value = mock_pdf_files
+
+    # Mock file stats to return file sizes
+    mock_stat.return_value.st_size = 1024
+
+    # Mock API response for analysis
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {
+        "documents": {
+            "key1": {"status": "add", "associated_files": ["key1.pdf"]},
+            "key2": {"status": "add", "associated_files": ["paper_key2.pdf"]},
+            "key3": {"status": "add", "associated_files": ["key3_2023.pdf"]},
+        },
+        "summary": {"total_documents": 3, "add_count": 3, "update_count": 0, "skip_count": 0, "failed_count": 0},
+    }
+    mock_post.return_value = mock_response
+
+    # Run the command
+    with runner.isolated_filesystem():
+        with open("test.bib", "w") as f:
+            f.write("@article{key1, title={Test Title}, author={Author One}, year={2025}}")
+        Path("pdfs").mkdir()
+        result = runner.invoke(
+            app,
+            [
+                "documents",
+                "import-bibtex",
+                "--workspace",
+                "test-workspace",
+                "--bibtex",
+                "test.bib",
+                "pdfs",
+                "--dry-run",
+            ],
+        )
+
+    # Check that the command executed successfully
+    assert result.exit_code == 0
+
+    # Verify that the API was called with the correct file matching
+    call_args = mock_post.call_args
+    assert call_args is not None
+
+    # Extract the JSON payload from the API call
+    json_payload = call_args[1]["json"]
+    assert "documents" in json_payload
+
+    # Verify that files were matched to the correct reference keys
+    assert "key1" in json_payload["documents"]
+    assert "key2" in json_payload["documents"]
+    assert "key3" in json_payload["documents"]
+
+    # Check that the file matching worked correctly
+    assert any(f["filename"] == "key1.pdf" for f in json_payload["documents"]["key1"]["associated_files"])
+    assert any(f["filename"] == "paper_key2.pdf" for f in json_payload["documents"]["key2"]["associated_files"])
+    assert any(f["filename"] == "key3_2023.pdf" for f in json_payload["documents"]["key3"]["associated_files"])

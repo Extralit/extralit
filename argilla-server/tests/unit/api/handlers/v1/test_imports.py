@@ -105,7 +105,7 @@ class TestImportsAPI:
         assert "mismatched workspace_id" in str(response.json())
 
     async def test_analyze_import_invalid_document_metadata(self, authenticated_client: AsyncClient, admin_user):
-        """Test analyze endpoint with invalid document metadata."""
+        """Test analyze endpoint with invalid document metadata - should not raise exceptions."""
         # Create workspace
         workspace = await WorkspaceFactory.create(owner=admin_user)
 
@@ -121,6 +121,7 @@ class TestImportsAPI:
                     ),
                     title="Test Document",
                     authors=["Test Author"],
+                    associated_files=[FileInfo(filename="test.pdf", size=1024)],
                 )
             },
         )
@@ -128,9 +129,13 @@ class TestImportsAPI:
         # Make request
         response = await authenticated_client.post("/api/v1/imports/analyze", json=request.model_dump())
 
-        # Verify response
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-        assert "Invalid DOI format" in str(response.json())
+        # Verify response - should succeed but mark document as failed
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        assert "documents" in data
+        assert "test_ref" in data["documents"]
+        assert data["documents"]["test_ref"]["status"] == ImportStatus.FAILED
+        assert data["summary"]["failed_count"] == 1
 
     async def test_analyze_import_new_documents(self, authenticated_client: AsyncClient, admin_user):
         """Test analyze endpoint with new documents."""
@@ -313,7 +318,7 @@ class TestImportsAPI:
                     authors=["Failed Author"],
                     year=2024,
                     venue="Failed Journal",
-                    associated_files=[],
+                    associated_files=[FileInfo(filename="failed.pdf", size=1024)],
                 ),
             },
         )
@@ -321,6 +326,22 @@ class TestImportsAPI:
         # Make request
         response = await authenticated_client.post("/api/v1/imports/analyze", json=request.model_dump())
 
-        # Verify response
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-        assert "Invalid DOI format" in str(response.json())
+        # Verify response - should succeed with mixed statuses
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+
+        # Check document statuses
+        assert data["documents"]["new_ref"]["status"] == ImportStatus.ADD
+        assert data["documents"]["skip_ref"]["status"] == ImportStatus.SKIP
+        assert data["documents"]["update_ref"]["status"] == ImportStatus.UPDATE
+        assert data["documents"]["failed_ref"]["status"] == ImportStatus.FAILED
+
+        # Check summary counts
+        assert data["summary"]["add_count"] == 1
+        assert data["summary"]["update_count"] == 1
+        assert data["summary"]["skip_count"] == 1
+        assert data["summary"]["failed_count"] == 1
+
+        # Check existing document IDs
+        assert data["documents"]["skip_ref"]["existing_document_id"] == str(existing_skip.id)
+        assert data["documents"]["update_ref"]["existing_document_id"] == str(existing_update.id)
