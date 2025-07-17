@@ -63,7 +63,7 @@ def test_import_bibtex_help(runner):
     assert "--bibtex" in result.stdout
     assert "pdf_folder" in result.stdout  # positional argument
     assert "--collection" in result.stdout
-    assert "--analyze-only" in result.stdout
+    assert "--dry-run" in result.stdout
 
 
 @patch("argilla.client.Argilla.from_credentials")
@@ -94,7 +94,7 @@ def test_import_bibtex_analysis(mock_bibtex_load, mock_file_open, mock_from_cred
                 "--bibtex",
                 "test.bib",
                 "pdfs",  # positional argument
-                "--analyze-only",
+                "--dry-run",
             ],
         )
 
@@ -109,7 +109,7 @@ def test_import_bibtex_analysis(mock_bibtex_load, mock_file_open, mock_from_cred
     assert kwargs["workspace"] == "test-workspace"
     assert kwargs["bibtex_file"].name == "test.bib"
     assert kwargs["pdf_folder"] == Path("pdfs")
-    assert kwargs["analyze_only"] is True
+    assert kwargs["dry_run"] is True
 
 
 @patch("argilla.client.Argilla.from_credentials")
@@ -143,7 +143,7 @@ def test_import_bibtex_with_pdf_matching(
                 "--bibtex",
                 "test.bib",
                 "pdfs",  # positional argument
-                "--analyze-only",
+                "--dry-run",
             ],
         )
 
@@ -158,7 +158,7 @@ def test_import_bibtex_with_pdf_matching(
     assert kwargs["workspace"] == "test-workspace"
     assert kwargs["bibtex_file"].name == "test.bib"
     assert kwargs["pdf_folder"] == pdf_folder
-    assert kwargs["analyze_only"] is True
+    assert kwargs["dry_run"] is True
 
 
 @patch("argilla.client.Argilla.from_credentials")
