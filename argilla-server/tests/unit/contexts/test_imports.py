@@ -320,56 +320,53 @@ class TestValidateDocumentMetadata:
         document_create = DocumentCreate(
             workspace_id=uuid4(), reference="valid_ref", doi="10.1234/valid.doi", pmid="12345", file_name="valid.pdf"
         )
-
-        errors = validate_document_metadata(document_create)
+        file_metadata = FileMetadataInfo(document_create=document_create, title="Valid Doc")
+        errors = validate_document_metadata(file_metadata)
         assert len(errors) == 0
 
     def test_validate_document_metadata_missing_workspace_id(self):
         """Test validation when workspace_id is missing."""
         # Create a valid document first
         document_create = DocumentCreate(workspace_id=uuid4(), reference="test_ref")
-
-        # Then manually set workspace_id to None for validation testing
-        # This bypasses Pydantic validation but allows us to test our custom validation
         document_create.__dict__["workspace_id"] = None
-
-        errors = validate_document_metadata(document_create)
+        file_metadata = FileMetadataInfo(document_create=document_create, title="Test Doc")
+        errors = validate_document_metadata(file_metadata)
         assert "workspace_id is required" in errors
 
     def test_validate_document_metadata_no_identifiers(self):
         """Test validation when no identifiers are provided."""
         document_create = DocumentCreate(workspace_id=uuid4())
-
-        errors = validate_document_metadata(document_create)
+        file_metadata = FileMetadataInfo(document_create=document_create, title="No ID Doc")
+        errors = validate_document_metadata(file_metadata)
         assert any("At least one identifier" in error for error in errors)
 
     def test_validate_document_metadata_invalid_doi(self):
         """Test validation of invalid DOI format."""
         document_create = DocumentCreate(workspace_id=uuid4(), doi="invalid-doi-format")
-
-        errors = validate_document_metadata(document_create)
+        file_metadata = FileMetadataInfo(document_create=document_create, title="Invalid DOI Doc")
+        errors = validate_document_metadata(file_metadata)
         assert any("Invalid DOI format" in error for error in errors)
 
     def test_validate_document_metadata_valid_doi(self):
         """Test validation of valid DOI format."""
         document_create = DocumentCreate(workspace_id=uuid4(), doi="10.1234/valid.doi")
-
-        errors = validate_document_metadata(document_create)
+        file_metadata = FileMetadataInfo(document_create=document_create, title="Valid DOI Doc")
+        errors = validate_document_metadata(file_metadata)
         doi_errors = [error for error in errors if "DOI format" in error]
         assert len(doi_errors) == 0
 
     def test_validate_document_metadata_invalid_pmid(self):
         """Test validation of invalid PMID format."""
         document_create = DocumentCreate(workspace_id=uuid4(), pmid="invalid-pmid")
-
-        errors = validate_document_metadata(document_create)
+        file_metadata = FileMetadataInfo(document_create=document_create, title="Invalid PMID Doc")
+        errors = validate_document_metadata(file_metadata)
         assert any("Invalid PMID format" in error for error in errors)
 
     def test_validate_document_metadata_valid_pmid(self):
         """Test validation of valid PMID format."""
         document_create = DocumentCreate(workspace_id=uuid4(), pmid="12345678")
-
-        errors = validate_document_metadata(document_create)
+        file_metadata = FileMetadataInfo(document_create=document_create, title="Valid PMID Doc")
+        errors = validate_document_metadata(file_metadata)
         pmid_errors = [error for error in errors if "PMID format" in error]
         assert len(pmid_errors) == 0
 
@@ -377,11 +374,9 @@ class TestValidateDocumentMetadata:
         """Test validation with multiple errors."""
         # Create a valid document first
         document_create = DocumentCreate(workspace_id=uuid4(), doi="invalid-doi", pmid="invalid-pmid")
-
-        # Then manually set workspace_id to None for validation testing
         document_create.__dict__["workspace_id"] = None
-
-        errors = validate_document_metadata(document_create)
+        file_metadata = FileMetadataInfo(document_create=document_create, title="Multi Error Doc")
+        errors = validate_document_metadata(file_metadata)
         assert len(errors) >= 3  # workspace_id, doi, pmid errors
         assert "workspace_id is required" in errors
         assert any("Invalid DOI format" in error for error in errors)
