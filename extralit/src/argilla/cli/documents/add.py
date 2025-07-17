@@ -255,9 +255,9 @@ def import_bibtex(
         ) as progress:
             task = progress.add_task("Analyzing import status...", total=None)
 
-            # Send request to server
-            analysis_response = workspace_obj._session.post(
-                f"{workspace_obj._client.api_url}/api/v1/imports/analyze",
+            # Send request to server using the public API client
+            analysis_response = client.api.http_client.post(
+                f"{client.api_url}/api/v1/imports/analyze",
                 json={"workspace_id": str(workspace_obj.id), "documents": documents},
             )
 
