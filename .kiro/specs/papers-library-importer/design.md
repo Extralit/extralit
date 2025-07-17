@@ -59,9 +59,10 @@ async def analyze_import(
 
 **Functionality:**
 - Receives file metadata (not file contents) from frontend
-- Checks existing documents by reference, DOI, PMID to determine status
+- Only raises exceptions for ill-formed analysis_request, not for ill-formed documents
+- Checks existing documents by reference, DOI, PMID to determine status (add/update/skip/failed)
 - Compares file sizes to determine if updates are needed
-- Returns status analysis for frontend preview
+- Returns status analysis for frontend preview without blocking on document validation errors
 
 #### 2. Bulk Document Upload Handler (`argilla-server/src/argilla_server/api/handlers/v1/documents.py`)
 
@@ -83,7 +84,7 @@ async def bulk_upload_documents(
 **Core Services:**
 - `analyze_import_status()` - Uses existing `check_existing_document()` function from documents handler to determine add/update/skip status
 - `compare_file_sizes()` - Compare existing file sizes with new files to determine if updates are needed
-- `validate_document_metadata()` - Validate DocumentCreate objects from frontend
+- `validate_document_metadata()` - Validate FileMetadataInfo objects (not just DocumentCreate) from frontend
 
 #### 4. Document Upload Job (`argilla-server/src/argilla_server/jobs/document_jobs.py`)
 
