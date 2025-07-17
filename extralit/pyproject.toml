@@ -62,6 +62,7 @@ dependencies = [
     # for weaviate vector db
     "weaviate-client >= 4",
     "llama-index-vector-stores-weaviate ~= 1.0.0",
+    "bibtexparser>=1.4.3",
 ]
 nlp = [
     "textdescriptives",

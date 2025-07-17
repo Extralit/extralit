@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = []
 lock_version = "4.5.0"
-content_hash = "sha256:e3aaa42b207be6ce13eab4a906d734dbf6c789a380aa85a53c572e673a760d7f"
+content_hash = "sha256:f906865c102010941dd8ca4f75c36df8420eeb54e7ffffa833d6b4138eb943fd"
 
 [[metadata.targets]]
 requires_python = ">=3.9.2,<3.14"
@@ -271,6 +271,17 @@ dependencies = [
 files = [
     {file = "beautifulsoup4-4.12.3-py3-none-any.whl", hash = "sha256:b80878c9f40111313e55da8ba20bdba06d8fa3969fc68304167741bbf9e082ed"},
     {file = "beautifulsoup4-4.12.3.tar.gz", hash = "sha256:74e3d1928edc070d21748185c46e3fb33490f22f52a3addee9aee0f4f7781051"},
+]
+
+[[package]]
+name = "bibtexparser"
+version = "1.4.3"
+summary = ""
+dependencies = [
+    "pyparsing",
+]
+files = [
+    {file = "bibtexparser-1.4.3.tar.gz", hash = "sha256:a9c7ded64bc137720e4df0b1b7f12734edc1361185f1c9097048ff7c35af2b8f"},
 ]
 
 [[package]]
@@ -1059,7 +1070,7 @@ summary = ""
 dependencies = [
     "dill",
     "filelock",
-    "fsspec",
+    "fsspec[http]",
     "huggingface-hub",
     "multiprocess",
     "numpy",
@@ -2219,7 +2230,7 @@ dependencies = [
     "pydantic",
     "pyyaml",
     "requests",
-    "sqlalchemy",
+    "sqlalchemy[asyncio]",
     "tenacity",
     "tiktoken",
     "tqdm",
@@ -2277,7 +2288,7 @@ dependencies = [
     "openai",
     "pandas",
     "requests",
-    "sqlalchemy",
+    "sqlalchemy[asyncio]",
     "tenacity",
     "tiktoken",
     "typing-extensions",
@@ -3094,7 +3105,7 @@ version = "7.16.6"
 summary = ""
 dependencies = [
     "beautifulsoup4",
-    "bleach",
+    "bleach[css]",
     "defusedxml",
     "importlib-metadata; python_full_version < \"3.10\"",
     "jinja2",
@@ -4079,7 +4090,7 @@ name = "pytest-cov"
 version = "6.1.1"
 summary = ""
 dependencies = [
-    "coverage",
+    "coverage[toml]",
     "pytest",
 ]
 files = [

@@ -14,14 +14,14 @@
   - Write unit tests for import analysis logic
   - _Requirements: 2.3, 2.4, 2.5_
 
-- [-] 2.2 Implement import analysis API endpoint
+- [x] 2.2 Implement import analysis API endpoint
   - Code POST /api/v1/imports/analyze endpoint handler
   - Integrate with import context service for status determination
   - Add proper error handling and validation
   - Write integration tests for the analysis endpoint
   - _Requirements: 2.1, 2.2_
 
-- [ ] 2.3 Create CLI import analysis testing function
+- [x] 2.3 Create CLI import analysis testing function
   - Add import_bibtex() function to extralit/src/argilla/cli/documents/add.py
   - Parse BibTeX file and match PDF files from folder using Python bibtexparser
   - Send ImportAnalysisRequest to argilla-server for testing import analysis functionality
