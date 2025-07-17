@@ -112,8 +112,8 @@ def add_document(
 def import_bibtex(
     workspace: str = typer.Option(..., "--workspace", "-w", help="Workspace name"),
     bibtex_file: Path = typer.Option(..., "--bibtex", "-b", help="Path to the BibTeX file", exists=True, readable=True),
-    pdf_folder: Optional[Path] = typer.Option(
-        None, "--pdf-folder", "-p", help="Path to folder containing PDF files", exists=True, readable=True
+    pdf_folder: Path = typer.Argument(
+        ..., help="Path to folder containing PDF files", exists=True, readable=True, file_okay=False
     ),
     collection: Optional[str] = typer.Option(
         None, "--collection", "-c", help="Collection tag to add to all imported documents"
