@@ -13,12 +13,16 @@
 # limitations under the License.
 
 import logging
+import json
 from typing import Dict, List, Optional
 
+from fastapi import HTTPException, status, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import and_, or_, select
+from minio import Minio
 
 from argilla_server.models.database import Document
+from argilla_server.models import User, Workspace
 from argilla_server.api.schemas.v1.documents import DocumentCreate
 from argilla_server.api.schemas.v1.imports import (
     FileInfo,
@@ -28,6 +32,8 @@ from argilla_server.api.schemas.v1.imports import (
     ImportDocumentInfo,
     ImportStatus,
     ImportSummary,
+    BulkUploadMetadata,
+    BulkUploadResponse,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -261,3 +267,154 @@ def _is_valid_pmid(pmid: str) -> bool:
 
     # PMID should be numeric
     return pmid.isdigit()
+
+
+async def check_existing_document(db: AsyncSession, document_create: DocumentCreate) -> Optional[Document]:
+    """
+    Check if a document already exists based on reference, DOI, PMID, or ID.
+
+    Args:
+        db: Database session
+        document_create: Document creation data
+
+    Returns:
+        Existing document if found, None otherwise
+    """
+    # Add conditions for non-empty attributes
+    conditions = []
+    if document_create.pmid:
+        conditions.append(Document.pmid == document_create.pmid)
+    if document_create.url:
+        conditions.append(Document.url == document_create.url)
+    if document_create.doi:
+        conditions.append(Document.doi == document_create.doi)
+    if document_create.id:
+        conditions.append(Document.id == document_create.id)
+    if document_create.reference:
+        conditions.append(Document.reference == document_create.reference)
+
+    if not conditions:
+        return None
+
+    # Check if a document with the same pmid, url, or doi already exists
+    existing_document = await db.execute(
+        select(Document).where(and_(Document.workspace_id == document_create.workspace_id, or_(*conditions)))
+    )
+    existing_document = existing_document.scalars().first()
+
+    return existing_document
+
+
+async def process_bulk_upload(
+    documents_metadata: str,
+    files: List[UploadFile],
+    db: AsyncSession,
+    client: Minio,
+    current_user: User,
+) -> BulkUploadResponse:
+    """
+    Process bulk document upload with associated PDF files.
+
+    Args:
+        documents_metadata: JSON string containing BulkUploadMetadata
+        files: List of PDF files to upload
+        db: Database session
+        client: Minio client for S3 operations
+        current_user: Current authenticated user
+
+    Returns:
+        BulkUploadResponse with job IDs and validation results
+    """
+    # Parse the documents_metadata JSON string
+    try:
+        metadata_dict = json.loads(documents_metadata)
+        bulk_metadata = BulkUploadMetadata.model_validate(metadata_dict)
+    except json.JSONDecodeError:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Invalid JSON in documents_metadata",
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Invalid metadata format: {str(e)}",
+        )
+
+    if not bulk_metadata.documents:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="No documents provided for upload",
+        )
+
+    # Check if workspace exists for all documents
+    workspace_ids = {doc.document_create.workspace_id for doc in bulk_metadata.documents}
+    for workspace_id in workspace_ids:
+        workspace = await Workspace.get(db, workspace_id)
+        if not workspace:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Workspace with id `{workspace_id}` not found",
+            )
+
+    # Create a mapping of filenames to file objects for quick lookup
+    file_mapping = {file.filename: file for file in files}
+
+    # Validate that all referenced files are included in the upload
+    missing_files = []
+    for doc in bulk_metadata.documents:
+        if doc.associated_file not in file_mapping:
+            missing_files.append(doc.associated_file)
+
+    if missing_files:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Referenced files not found in upload: {', '.join(missing_files)}",
+        )
+
+    # Process each document and create jobs
+    job_ids = {}
+    failed_validations = []
+
+    for doc in bulk_metadata.documents:
+        try:
+            # Get the associated file
+            file = file_mapping[doc.associated_file]
+
+            # Validate file type (simple check, could be enhanced)
+            if not file.filename.lower().endswith(".pdf"):
+                failed_validations.append(f"{file.filename}: Not a PDF file")
+                continue
+
+            # Read file content
+            file_content = await file.read()
+
+            # Validate file size (optional, adjust limits as needed)
+            if len(file_content) > 100 * 1024 * 1024:  # 100 MB limit
+                failed_validations.append(f"{file.filename}: File exceeds maximum size of 100 MB")
+                continue
+
+            # Reset file position for potential future reads
+            await file.seek(0)
+
+            # Set filename if not already set
+            if not doc.document_create.file_name:
+                doc.document_create.file_name = file.filename
+
+            # Import the job function here to avoid circular imports
+            from argilla_server.jobs.document_jobs import upload_document_job
+
+            # Create a job for document upload
+            job = upload_document_job.delay(
+                document_data=doc.document_create.model_dump(), file_data=file_content, user_id=str(current_user.id)
+            )
+
+            # Store job ID mapped to reference key for tracking
+            job_ids[doc.reference_key] = job.id
+
+        except Exception as e:
+            _LOGGER.error(f"Error processing document {doc.reference_key}: {str(e)}")
+            failed_validations.append(f"{doc.reference_key}: {str(e)}")
+
+    return BulkUploadResponse(
+        job_ids=job_ids, total_documents=len(bulk_metadata.documents), failed_validations=failed_validations
+    )

@@ -82,3 +82,25 @@ class ImportAnalysisResponse(BaseModel):
 
     documents: Dict[str, ImportDocumentInfo] = Field(..., description="Reference key to document info mapping")
     summary: ImportSummary = Field(..., description="Import analysis summary")
+
+
+class BulkDocumentInfo(BaseModel):
+    """Information about a document in the bulk upload request."""
+
+    reference_key: str = Field(..., description="BibTeX reference key for job tracking")
+    document_create: DocumentCreate = Field(..., description="Document creation data")
+    associated_file: str = Field(..., description="Single PDF filename (one file per DocumentCreate)")
+
+
+class BulkUploadMetadata(BaseModel):
+    """Metadata for bulk document upload."""
+
+    documents: List[BulkDocumentInfo] = Field(..., description="List of documents to upload")
+
+
+class BulkUploadResponse(BaseModel):
+    """Response schema for bulk document upload."""
+
+    job_ids: Dict[str, str] = Field(..., description="Reference key to job_id mapping for frontend tracking")
+    total_documents: int = Field(..., description="Total number of documents in the request")
+    failed_validations: List[str] = Field(default_factory=list, description="Files that failed validation")

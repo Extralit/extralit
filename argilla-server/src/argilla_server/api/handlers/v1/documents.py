@@ -16,18 +16,19 @@ import logging
 from uuid import UUID
 from typing import TYPE_CHECKING, List, Union
 
-from fastapi import APIRouter, Body, Depends, File, HTTPException, UploadFile, Path, status, Security
+from fastapi import APIRouter, Body, Depends, File, Form, HTTPException, UploadFile, Path, status, Security
 from minio import Minio
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import and_, or_, select
+from sqlalchemy import select
 
 from argilla_server.database import get_async_db
 from argilla_server.models.database import Document
 from argilla_server.security import auth
 from argilla_server.models import User, Workspace
-from argilla_server.contexts import datasets, files
+from argilla_server.contexts import datasets, files, imports
 from argilla_server.api.policies.v1 import DocumentPolicy, authorize
 from argilla_server.api.schemas.v1.documents import DocumentCreate, DocumentDelete, DocumentListItem
+from argilla_server.api.schemas.v1.imports import BulkUploadResponse
 
 if TYPE_CHECKING:
     from argilla_server.models import Document
@@ -37,30 +38,8 @@ _LOGGER = logging.getLogger(__name__)
 router = APIRouter(tags=["documents"])
 
 
-async def check_existing_document(db: AsyncSession, document_create: DocumentCreate):
-    # Add conditions for non-empty attributes
-    conditions = []
-    if document_create.pmid:
-        conditions.append(Document.pmid == document_create.pmid)
-    if document_create.url:
-        conditions.append(Document.url == document_create.url)
-    if document_create.doi:
-        conditions.append(Document.doi == document_create.doi)
-    if document_create.id:
-        conditions.append(Document.id == document_create.id)
-    if document_create.reference:
-        conditions.append(Document.reference == document_create.reference)
-
-    if not conditions:
-        return None
-
-    # Check if a document with the same pmid, url, or doi already exists
-    existing_document = await db.execute(
-        select(Document).where(and_(Document.workspace_id == document_create.workspace_id, or_(*conditions)))
-    )
-    existing_document = existing_document.scalars().first()
-
-    return existing_document
+# Use the check_existing_document function from imports context
+from argilla_server.contexts.imports import check_existing_document
 
 
 @router.post("/documents", status_code=status.HTTP_201_CREATED, response_model=UUID)
@@ -239,3 +218,29 @@ async def list_documents(
     documents = await datasets.list_documents(db, workspace_id)
 
     return [DocumentListItem.model_validate(doc) for doc in documents]
+
+
+@router.post("/documents/bulk", status_code=status.HTTP_202_ACCEPTED, response_model=BulkUploadResponse)
+async def bulk_upload_documents(
+    *,
+    documents_metadata: str = Form(...),
+    files: List[UploadFile] = File(...),
+    db: AsyncSession = Depends(get_async_db),
+    client: Minio = Depends(files.get_minio_client),
+    current_user: User = Security(auth.get_current_user),
+) -> BulkUploadResponse:
+    """
+    Bulk upload documents with associated PDF files.
+
+    This endpoint accepts a multipart form with:
+    - documents_metadata: JSON string containing BulkUploadMetadata
+    - files: List of PDF files to upload
+
+    It processes the documents in batches and returns job IDs for tracking.
+    """
+    await authorize(current_user, DocumentPolicy.create())
+
+    # Use the imports context to process the bulk upload
+    return await imports.process_bulk_upload(
+        documents_metadata=documents_metadata, files=files, db=db, client=client, current_user=current_user
+    )

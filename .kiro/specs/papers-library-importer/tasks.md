@@ -31,19 +31,19 @@
   - _Requirements: 1.1, 2.1, 2.2_
 
 - [ ] 3. Create bulk document upload endpoint
-- [ ] 3.1 Implement bulk upload API handler
+- [x] 3.1 Implement bulk upload API handler
   - Create POST /documents/bulk endpoint in documents.py handler
   - Handle multipart form data with documents_metadata and files
   - Implement pagination support for 20-50 PDFs per request
   - Add file validation and error handling
   - _Requirements: 3.1, 3.2_
 
-- [ ] 3.2 Create document upload job system
+- [-] 3.2 Create document upload job system
   - Write upload_document_job() function in jobs/document_jobs.py
   - Reuse existing document upload logic from POST /documents endpoint
   - Implement job creation and queuing for individual document uploads
   - Add retry logic and error handling for failed uploads
-  - Write unit tests for document upload jobs
+  - Update CLI function `import_bibtex` in `extralit/src/argilla/cli/documents/add.py` to submit bulk document upload to test happy path
   - _Requirements: 3.1, 3.3, 3.4_
 
 - [ ] 3.3 Implement ImportHistory database model
