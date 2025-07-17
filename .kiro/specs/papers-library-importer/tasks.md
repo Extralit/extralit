@@ -38,7 +38,7 @@
   - Add file validation and error handling
   - _Requirements: 3.1, 3.2_
 
-- [-] 3.2 Create document upload job system
+- [x] 3.2 Create document upload job system
   - Write upload_document_job() function in jobs/document_jobs.py
   - Reuse existing document upload logic from POST /documents endpoint
   - Implement job creation and queuing for individual document uploads

@@ -14,6 +14,7 @@
 
 """Add a document or import documents to a workspace."""
 
+import json
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -307,14 +308,134 @@ def import_bibtex(
             console.print(panel)
             return
 
-        # TODO: Implement actual import execution in a future task
-        panel = get_argilla_themed_panel(
-            "Import execution is not yet implemented. This will be added in a future update.",
-            title="Import Execution Not Available",
-            title_align="left",
-            success=False,
-        )
-        console.print(panel)
+        # Execute the import by submitting bulk document upload requests
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console,
+        ) as progress:
+            task = progress.add_task("Executing import...", total=None)
+
+            # Group documents by status (add/update)
+            documents_to_import = {}
+            for ref_key, doc_info in analysis_result.get("documents", {}).items():
+                status = doc_info.get("status", "")
+                if status in ["add", "update"]:
+                    documents_to_import[ref_key] = doc_info
+
+            if not documents_to_import:
+                progress.update(task, completed=True, description="No documents to import")
+                panel = get_argilla_themed_panel(
+                    "No documents to add or update.",
+                    title="Import Complete",
+                    title_align="left",
+                    success=True,
+                )
+                console.print(panel)
+                return
+
+            # Prepare bulk upload request
+            bulk_documents = []
+            files_to_upload = []
+
+            for ref_key, doc_info in documents_to_import.items():
+                document_create = doc_info.get("document_create", {})
+                associated_files = doc_info.get("associated_files", [])
+
+                for file_name in associated_files:
+                    # Find the file in the PDF folder
+                    file_path = None
+                    for pdf_path in pdf_folder.rglob("*.pdf"):
+                        if pdf_path.name == file_name:
+                            file_path = pdf_path
+                            break
+
+                    if file_path:
+                        bulk_documents.append(
+                            {
+                                "reference_key": ref_key,
+                                "document_create": document_create,
+                                "associated_file": file_path.name,
+                            }
+                        )
+                        files_to_upload.append(("files", (file_path.name, open(file_path, "rb"), "application/pdf")))
+
+            # Submit bulk upload request
+            if bulk_documents:
+                bulk_metadata = {"documents": bulk_documents}
+                files_to_upload.insert(0, ("documents_metadata", (None, json.dumps(bulk_metadata))))
+
+                try:
+                    # Send request to server using the public API client
+                    upload_response = client.api.http_client.post(
+                        f"{client.api_url}/documents/bulk", files=files_to_upload
+                    )
+
+                    # Close all file handles
+                    for _, (_, file_obj, _) in files_to_upload[1:]:
+                        if hasattr(file_obj, "close"):
+                            file_obj.close()
+
+                    if upload_response.status_code != 202:
+                        progress.update(task, completed=True, description="Import execution failed")
+                        error_detail = upload_response.json().get("detail", str(upload_response.text))
+                        raise ValueError(f"Error executing import: {error_detail}")
+
+                    upload_result = upload_response.json()
+                    job_ids = upload_result.get("job_ids", {})
+                    failed_validations = upload_result.get("failed_validations", [])
+
+                    progress.update(
+                        task,
+                        completed=True,
+                        description=f"Import submitted: {len(job_ids)} documents queued, {len(failed_validations)} failed validation",
+                    )
+
+                    # Display job IDs for tracking
+                    if job_ids:
+                        jobs_table = Table(title="Import Jobs")
+                        jobs_table.add_column("Reference Key", style="cyan")
+                        jobs_table.add_column("Job ID", style="green")
+
+                        for ref_key, job_id in job_ids.items():
+                            jobs_table.add_row(ref_key, job_id)
+
+                        console.print(jobs_table)
+
+                    # Display failed validations
+                    if failed_validations:
+                        failed_table = Table(title="Failed Validations", style="red")
+                        failed_table.add_column("Error", style="red")
+
+                        for error in failed_validations:
+                            failed_table.add_row(error)
+
+                        console.print(failed_table)
+
+                    panel = get_argilla_themed_panel(
+                        f"Import submitted successfully. {len(job_ids)} documents queued for processing.",
+                        title="Import Execution Complete",
+                        title_align="left",
+                        success=True,
+                    )
+                    console.print(panel)
+
+                except Exception as e:
+                    progress.update(task, completed=True, description="Import execution failed")
+                    # Close all file handles in case of exception
+                    for _, (_, file_obj, _) in files_to_upload[1:]:
+                        if hasattr(file_obj, "close"):
+                            file_obj.close()
+                    raise e
+            else:
+                progress.update(task, completed=True, description="No files to upload")
+                panel = get_argilla_themed_panel(
+                    "No files found to upload.",
+                    title="Import Complete",
+                    title_align="left",
+                    success=True,
+                )
+                console.print(panel)
 
     except Exception as e:
         panel = get_argilla_themed_panel(
