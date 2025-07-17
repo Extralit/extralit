@@ -170,10 +170,11 @@ class TestImportAnalysis:
         """Test analysis of documents that fail validation."""
         workspace = await WorkspaceFactory.create()
 
-        # Create request with invalid document (no workspace_id)
+        # Create request with invalid document (invalid DOI format)
         document_create = DocumentCreate(
-            workspace_id=None,  # Invalid
+            workspace_id=workspace.id,
             reference="invalid_ref",
+            doi="invalid-doi-format",  # Invalid DOI format
         )
 
         file_metadata = FileMetadataInfo(
@@ -240,8 +241,9 @@ class TestImportAnalysis:
             ),
             "failed_ref": FileMetadataInfo(
                 document_create=DocumentCreate(
-                    workspace_id=None,  # Invalid
+                    workspace_id=workspace.id,
                     reference="failed_ref",
+                    doi="invalid-doi-format",  # Invalid DOI format
                 ),
                 title="Failed Document",
                 authors=["Failed Author"],
@@ -324,7 +326,12 @@ class TestValidateDocumentMetadata:
 
     def test_validate_document_metadata_missing_workspace_id(self):
         """Test validation when workspace_id is missing."""
-        document_create = DocumentCreate(workspace_id=None, reference="test_ref")
+        # Create a valid document first
+        document_create = DocumentCreate(workspace_id=uuid4(), reference="test_ref")
+
+        # Then manually set workspace_id to None for validation testing
+        # This bypasses Pydantic validation but allows us to test our custom validation
+        document_create.__dict__["workspace_id"] = None
 
         errors = validate_document_metadata(document_create)
         assert "workspace_id is required" in errors
@@ -368,7 +375,11 @@ class TestValidateDocumentMetadata:
 
     def test_validate_document_metadata_multiple_errors(self):
         """Test validation with multiple errors."""
-        document_create = DocumentCreate(workspace_id=None, doi="invalid-doi", pmid="invalid-pmid")
+        # Create a valid document first
+        document_create = DocumentCreate(workspace_id=uuid4(), doi="invalid-doi", pmid="invalid-pmid")
+
+        # Then manually set workspace_id to None for validation testing
+        document_create.__dict__["workspace_id"] = None
 
         errors = validate_document_metadata(document_create)
         assert len(errors) >= 3  # workspace_id, doi, pmid errors
