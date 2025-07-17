@@ -23,7 +23,7 @@ from argilla_server.database import get_async_db
 from argilla_server.security import auth
 from argilla_server.models import User, Workspace
 from argilla_server.api.policies.v1 import DocumentPolicy, authorize
-from argilla_server.contexts.imports import analyze_import_status, validate_document_metadata
+from argilla_server.contexts.imports import analyze_import_status
 from argilla_server.api.schemas.v1.imports import (
     ImportAnalysisRequest,
     ImportAnalysisResponse,
@@ -80,7 +80,6 @@ async def analyze_import(
         )
 
     try:
-        # Use the imports context service to analyze the import status
         response = await analyze_import_status(db, analysis_request)
         _LOGGER.info(
             f"Import analysis completed for workspace {workspace.id}: "
@@ -139,11 +138,5 @@ def _validate_analysis_request(analysis_request: ImportAnalysisRequest) -> List[
                 f"Document {reference_key} has mismatched workspace_id: "
                 f"{file_metadata.document_create.workspace_id} != {analysis_request.workspace_id}"
             )
-
-        # Validate document metadata
-        doc_errors = validate_document_metadata(file_metadata.document_create)
-        if doc_errors:
-            for error in doc_errors:
-                errors.append(f"Document {reference_key}: {error}")
 
     return errors

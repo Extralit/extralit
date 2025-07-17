@@ -22,6 +22,7 @@ from argilla_server.models.database import Document
 from argilla_server.api.schemas.v1.documents import DocumentCreate
 from argilla_server.api.schemas.v1.imports import (
     FileInfo,
+    FileMetadataInfo,
     ImportAnalysisRequest,
     ImportAnalysisResponse,
     ImportDocumentInfo,
@@ -49,21 +50,19 @@ async def analyze_import_status(db: AsyncSession, analysis_request: ImportAnalys
 
     for reference_key, file_metadata in analysis_request.documents.items():
         try:
-            # Check if document already exists
             existing_document = await _check_existing_document(db, file_metadata.document_create)
 
-            # Validate document metadata
-            validation_errors = validate_document_metadata(file_metadata.document_create)
+            validation_errors = validate_document_metadata(file_metadata)
             if validation_errors:
                 status = ImportStatus.FAILED
                 failed_count += 1
                 _LOGGER.warning(f"Document {reference_key} failed validation: {validation_errors}")
+
             elif existing_document is None:
-                # New document - add
                 status = ImportStatus.ADD
                 add_count += 1
+
             else:
-                # Document exists - check if update is needed
                 needs_update = await _needs_file_update(existing_document, file_metadata.associated_files)
                 if needs_update:
                     status = ImportStatus.UPDATE
@@ -195,7 +194,7 @@ def compare_file_sizes(existing_size: Optional[int], new_files: List[FileInfo]) 
     return False
 
 
-def validate_document_metadata(document_create: DocumentCreate) -> List[str]:
+def validate_document_metadata(file_metadata: FileMetadataInfo) -> List[str]:
     """
     Validate DocumentCreate object for import requirements.
 
@@ -207,43 +206,35 @@ def validate_document_metadata(document_create: DocumentCreate) -> List[str]:
     """
     errors = []
 
-    # Check required fields
-    if not document_create.workspace_id:
+    if not file_metadata.document_create.workspace_id:
         errors.append("workspace_id is required")
 
-    # Check that at least one identifier is provided
+    if not file_metadata.associated_files:
+        errors.append("At least one associated file is required")
+
     if not any(
         [
-            document_create.reference,
-            document_create.doi,
-            document_create.pmid,
-            document_create.url,
-            document_create.file_name,
+            file_metadata.document_create.reference,
+            file_metadata.document_create.doi,
+            file_metadata.document_create.pmid,
+            file_metadata.document_create.url,
+            file_metadata.document_create.file_name,
         ]
     ):
         errors.append("At least one identifier (reference, doi, pmid, url, or file_name) is required")
 
     # Validate DOI format if provided
-    if document_create.doi and not _is_valid_doi(document_create.doi):
-        errors.append(f"Invalid DOI format: {document_create.doi}")
+    if file_metadata.document_create.doi and not _is_valid_doi(file_metadata.document_create.doi):
+        errors.append(f"Invalid DOI format: {file_metadata.document_create.doi}")
 
     # Validate PMID format if provided
-    if document_create.pmid and not _is_valid_pmid(document_create.pmid):
-        errors.append(f"Invalid PMID format: {document_create.pmid}")
+    if file_metadata.document_create.pmid and not _is_valid_pmid(file_metadata.document_create.pmid):
+        errors.append(f"Invalid PMID format: {file_metadata.document_create.pmid}")
 
     return errors
 
 
 def _is_valid_doi(doi: str) -> bool:
-    """
-    Validate DOI format.
-
-    Args:
-        doi: DOI string to validate
-
-    Returns:
-        True if DOI format is valid, False otherwise
-    """
     if not doi:
         return False
 
@@ -252,15 +243,6 @@ def _is_valid_doi(doi: str) -> bool:
 
 
 def _is_valid_pmid(pmid: str) -> bool:
-    """
-    Validate PMID format.
-
-    Args:
-        pmid: PMID string to validate
-
-    Returns:
-        True if PMID format is valid, False otherwise
-    """
     if not pmid:
         return False
 
