@@ -215,7 +215,10 @@ class LocalFileStorage:
     ) -> List[ObjectMetadata]:
         bucket_path = self._get_bucket_path(bucket_name)
         if not bucket_path.exists():
-            raise S3Error("NoSuchBucket", "The specified bucket does not exist", bucket_name, "", "", None)
+            _LOGGER.warning(
+                f"LocalFileStorage: Bucket {bucket_name} did not exist, created new bucket at {bucket_path}"
+            )
+            self.make_bucket(bucket_name)
 
         pattern = "**/*" if recursive else "*"
         files = list(bucket_path.glob(pattern))

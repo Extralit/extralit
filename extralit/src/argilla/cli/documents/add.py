@@ -32,8 +32,8 @@ def add_document(
     file_path: Optional[Path] = typer.Option(
         None, "--file", "-f", help="Path to the document file", exists=True, readable=True
     ),
+    reference: str = typer.Option(..., "--reference", "-r", help="Reference of the document"),
     url: Optional[str] = typer.Option(None, "--url", "-u", help="URL of the document"),
-    reference: Optional[str] = typer.Option(None, "--reference", "-r", help="Reference of the document"),
     pmid: Optional[str] = typer.Option(None, "--pmid", "-p", help="PubMed ID of the document"),
     doi: Optional[str] = typer.Option(None, "--doi", "-d", help="DOI of the document"),
     debug: bool = typer.Option(False, "--debug", help="Show minimal stack trace for debugging"),
@@ -131,7 +131,6 @@ def import_bibtex(
     console = Console()
 
     try:
-        # Get the client
         client = Argilla.from_credentials()
 
         # Get the workspace
@@ -140,6 +139,16 @@ def import_bibtex(
             panel = get_argilla_themed_panel(
                 f"Workspace '{workspace}' not found.",
                 title="Workspace not found",
+                title_align="left",
+                success=False,
+            )
+            console.print(panel)
+            raise typer.Exit(code=1)
+
+        if not pdf_folder.exists() or not pdf_folder.is_dir():
+            panel = get_argilla_themed_panel(
+                f"PDF folder '{pdf_folder}' does not exist or is not a directory.",
+                title="Invalid PDF Folder",
                 title_align="left",
                 success=False,
             )

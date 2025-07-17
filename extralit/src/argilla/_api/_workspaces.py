@@ -427,6 +427,7 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
         for doc_data in response.json():
             doc = Document(
                 id=doc_data.get("id"),
+                reference=doc_data.get("reference"),
                 workspace_id=doc_data.get("workspace_id"),
                 file_name=doc_data.get("file_name"),
                 url=doc_data.get("url"),

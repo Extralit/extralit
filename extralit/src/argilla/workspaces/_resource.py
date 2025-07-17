@@ -156,9 +156,9 @@ class Workspace(Resource):
 
     def add_document(
         self,
+        reference: str,
         file_path: Optional[str] = None,
         url: Optional[str] = None,
-        reference: Optional[str] = None,
         pmid: Optional[str] = None,
         doi: Optional[str] = None,
     ) -> "UUID":

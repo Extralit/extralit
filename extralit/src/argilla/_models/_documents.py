@@ -36,10 +36,10 @@ class Document(BaseModel):
     id: Optional[UUID] = Field(
         default_factory=uuid.uuid4, description="The ID of the document, which gets assigned randomly if not provided."
     )
+    reference: str = Field(..., description="A reference to the document, e.g., an identifier.")
     workspace_id: Optional[UUID] = Field(None, description="The workspace ID to which the document belongs to")
     file_name: Optional[str] = Field(None)
     file_path: Optional[str] = Field(None, description="Local file path")
-    reference: Optional[str] = None
     doi: Optional[str] = None
     pmid: Optional[str] = None
     url: Optional[str] = None
