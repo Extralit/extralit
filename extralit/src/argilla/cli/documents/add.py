@@ -165,39 +165,52 @@ def import_bibtex(
 
         # Match PDF files to BibTeX entries
         pdf_files = {}
-        if pdf_folder:
-            with Progress(
-                SpinnerColumn(),
-                TextColumn("[progress.description]{task.description}"),
-                console=console,
-            ) as progress:
-                task = progress.add_task("Matching PDF files to BibTeX entries...", total=None)
+        all_pdf_files = list(pdf_folder.rglob("*.pdf"))
+        pdf_files_by_name = {pdf.name: pdf for pdf in all_pdf_files}
+        matched_via_file_tag = 0
+        matched_via_fallback = 0
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console,
+        ) as progress:
+            task = progress.add_task("Matching PDF files to BibTeX entries...", total=None)
 
-                # Get all PDF files in the folder
-                all_pdf_files = list(pdf_folder.glob("**/*.pdf"))
+            for entry in entries:
+                reference_key = entry.get("ID")
+                if not reference_key:
+                    continue
+                # Try to match using the 'file' tag from Zotero
+                file_tag = entry.get("file")
+                matched_pdfs = []
+                if file_tag:
+                    # Split by semicolon, get only the file name before the first colon
+                    file_entries = [f.strip() for f in file_tag.split(";") if f.strip()]
+                    for file_entry in file_entries:
+                        # Format: <desc>:<relative_path>:<mime_type> or just <relative_path>
+                        parts = file_entry.split(":")
+                        if len(parts) >= 2:
+                            file_name = Path(parts[1]).name
+                        else:
+                            file_name = Path(parts[0]).name
+                        pdf = pdf_files_by_name.get(file_name)
+                        if pdf:
+                            matched_pdfs.append(pdf)
+                    if matched_pdfs:
+                        pdf_files[reference_key] = matched_pdfs
+                        matched_via_file_tag += len(matched_pdfs)
+                        continue  # skip fallback if matched
+                # Fallback: match by reference key in file name
+                fallback_matches = [pdf for pdf in all_pdf_files if reference_key in pdf.stem]
+                if fallback_matches:
+                    pdf_files[reference_key] = fallback_matches
+                    matched_via_fallback += len(fallback_matches)
 
-                # Match PDF files to BibTeX entries
-                for entry in entries:
-                    reference_key = entry.get("ID")
-                    if not reference_key:
-                        continue
-
-                    # Try exact match first
-                    exact_matches = [pdf for pdf in all_pdf_files if pdf.stem == reference_key]
-                    if exact_matches:
-                        pdf_files[reference_key] = exact_matches
-                        continue
-
-                    # Try partial match
-                    partial_matches = [pdf for pdf in all_pdf_files if reference_key in pdf.stem]
-                    if partial_matches:
-                        pdf_files[reference_key] = partial_matches
-
-                progress.update(
-                    task,
-                    completed=True,
-                    description=f"Matched {sum(len(files) for files in pdf_files.values())} PDF files to {len(pdf_files)} BibTeX entries",
-                )
+            progress.update(
+                task,
+                completed=True,
+                description=f"Matched {matched_via_file_tag} PDFs via file tag, {matched_via_fallback} via fallback, total {sum(len(files) for files in pdf_files.values())} PDF files to {len(pdf_files)} BibTeX entries",
+            )
 
         # Prepare import analysis request
         documents = {}
