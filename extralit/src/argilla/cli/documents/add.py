@@ -381,6 +381,7 @@ def _display_import_analysis_results(console: Console, analysis_result: Dict) ->
     docs_table.add_column("Authors", style="cyan")
     docs_table.add_column("Status", style="cyan")
     docs_table.add_column("Files", style="cyan")
+    docs_table.add_column("Errors", style="red")
 
     for ref_key, doc_info in documents.items():
         status = doc_info.get("status", "")
@@ -391,13 +392,15 @@ def _display_import_analysis_results(console: Console, analysis_result: Dict) ->
             title = title[:47] + "..."
 
         authors = ", ".join(doc_info.get("authors", []))
-        if len(authors) > 50:
-            authors = authors[:47] + "..."
+        if len(authors) > 10:
+            authors = authors[:12] + "..."
 
         files = ", ".join(doc_info.get("associated_files", []))
-        if len(files) > 30:
-            files = files[:27] + "..."
+        if len(files) > 10:
+            files = files[:10] + "..."
 
-        docs_table.add_row(ref_key, title, authors, f"[{status_style}]{status}[/{status_style}]", files)
+        errors = ", ".join(doc_info.get("validation_errors", []))
+
+        docs_table.add_row(ref_key, title, authors, f"[{status_style}]{status}[/{status_style}]", files, errors)
 
     console.print(docs_table)
