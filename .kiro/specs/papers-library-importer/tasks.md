@@ -7,14 +7,14 @@
   - _Requirements: 1.1, 2.1_
 
 - [ ] 2. Implement import analysis logic
-- [ ] 2.1 Create import context service for document analysis
+- [x] 2.1 Create import context service for document analysis
   - Write analyze_import_status() function to check existing documents by reference/DOI/PMID
   - Implement compare_file_sizes() function to determine if file updates are needed
   - Create validate_document_metadata() function for DocumentCreate validation
   - Write unit tests for import analysis logic
   - _Requirements: 2.3, 2.4, 2.5_
 
-- [ ] 2.2 Implement import analysis API endpoint
+- [-] 2.2 Implement import analysis API endpoint
   - Code POST /api/v1/imports/analyze endpoint handler
   - Integrate with import context service for status determination
   - Add proper error handling and validation
