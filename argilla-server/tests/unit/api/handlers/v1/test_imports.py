@@ -247,7 +247,6 @@ class TestImportsAPI:
         assert "documents" in data
         assert "existing_ref" in data["documents"]
         assert data["documents"]["existing_ref"]["status"] == ImportStatus.SKIP
-        assert data["documents"]["existing_ref"]["existing_document_id"] == str(existing_doc.id)
         assert data["summary"]["add_count"] == 0
         assert data["summary"]["update_count"] == 0
         assert data["summary"]["skip_count"] == 1
@@ -295,7 +294,6 @@ class TestImportsAPI:
         assert "documents" in data
         assert "update_ref" in data["documents"]
         assert data["documents"]["update_ref"]["status"] == ImportStatus.UPDATE
-        assert data["documents"]["update_ref"]["existing_document_id"] == str(existing_doc.id)
         assert data["summary"]["add_count"] == 0
         assert data["summary"]["update_count"] == 1
         assert data["summary"]["skip_count"] == 0
@@ -398,7 +396,3 @@ class TestImportsAPI:
         assert data["summary"]["update_count"] == 1
         assert data["summary"]["skip_count"] == 1
         assert data["summary"]["failed_count"] == 1
-
-        # Check existing document IDs
-        assert data["documents"]["skip_ref"]["existing_document_id"] == str(existing_skip.id)
-        assert data["documents"]["update_ref"]["existing_document_id"] == str(existing_update.id)

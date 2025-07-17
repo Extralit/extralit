@@ -75,7 +75,6 @@ class TestImportAnalysis:
         assert doc_info.year == 2024
         assert doc_info.venue == "Test Journal"
         assert doc_info.associated_files == ["new_document.pdf"]
-        assert doc_info.existing_document_id is None
 
         # Verify summary
         assert response.summary.total_documents == 1
@@ -120,7 +119,6 @@ class TestImportAnalysis:
         assert len(response.documents) == 1
         doc_info = response.documents["existing_ref"]
         assert doc_info.status == ImportStatus.SKIP
-        assert doc_info.existing_document_id == existing_doc.id
 
         # Verify summary
         assert response.summary.skip_count == 1
@@ -161,7 +159,6 @@ class TestImportAnalysis:
         assert len(response.documents) == 1
         doc_info = response.documents["update_ref"]
         assert doc_info.status == ImportStatus.UPDATE
-        assert doc_info.existing_document_id == existing_doc.id
 
         # Verify summary
         assert response.summary.update_count == 1

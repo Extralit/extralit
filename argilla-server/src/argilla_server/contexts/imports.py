@@ -50,7 +50,7 @@ async def analyze_import_status(db: AsyncSession, analysis_request: ImportAnalys
 
     for reference_key, file_metadata in analysis_request.documents.items():
         try:
-            existing_documents = await _check_existing_document(db, file_metadata.document_create)
+            existing_documents = await _check_existing_documents(db, file_metadata.document_create)
 
             validation_errors = validate_document_metadata(file_metadata)
             if validation_errors:
@@ -61,12 +61,7 @@ async def analyze_import_status(db: AsyncSession, analysis_request: ImportAnalys
             elif not existing_documents:
                 status = ImportStatus.ADD
                 add_count += 1
-                existing_document_id = None
             else:
-                # Use the first document for ID reference, but check all documents for files
-                primary_document = existing_documents[0]
-                existing_document_id = primary_document.id
-
                 has_new_files = await _has_new_files(db, existing_documents, file_metadata.associated_files)
                 if has_new_files:
                     status = ImportStatus.UPDATE
@@ -83,7 +78,7 @@ async def analyze_import_status(db: AsyncSession, analysis_request: ImportAnalys
                 venue=file_metadata.venue,
                 associated_files=[f.filename for f in file_metadata.associated_files],
                 status=status,
-                existing_document_id=existing_document_id if "existing_document_id" in locals() else None,
+                validation_errors=validation_errors if validation_errors else [],
             )
 
         except Exception as e:
@@ -96,7 +91,7 @@ async def analyze_import_status(db: AsyncSession, analysis_request: ImportAnalys
                 venue=file_metadata.venue,
                 associated_files=[f.filename for f in file_metadata.associated_files],
                 status=ImportStatus.FAILED,
-                existing_document_id=None,
+                validation_errors=[f"Error analyzing document: {str(e)}"],
             )
             failed_count += 1
 
@@ -111,7 +106,7 @@ async def analyze_import_status(db: AsyncSession, analysis_request: ImportAnalys
     return ImportAnalysisResponse(documents=documents_info, summary=summary)
 
 
-async def _check_existing_document(db: AsyncSession, document_create: DocumentCreate) -> List[Document]:
+async def _check_existing_documents(db: AsyncSession, document_create: DocumentCreate) -> List[Document]:
     """
     Check if documents already exist based on reference, DOI, PMID, or ID.
     Reuses the logic from the existing document handler but returns all matching documents.
