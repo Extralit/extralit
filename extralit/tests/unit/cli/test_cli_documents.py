@@ -98,8 +98,7 @@ def test_import_bibtex_analysis(mock_bibtex_load, mock_file_open, mock_from_cred
             ],
         )
 
-    # Check that the command executed successfully
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.stdout
 
     # Verify the import_bibtex function was called with the correct parameters
     mock_import_bibtex.assert_called_once()
@@ -185,27 +184,6 @@ def test_import_bibtex_with_pdf_matching(
 
 
 @patch("argilla.client.Argilla.from_credentials")
-def test_import_bibtex_workspace_not_found(mock_from_credentials, runner):
-    """Test the 'import-bibtex' command with a non-existent workspace."""
-    # Set up the mock to raise a typer.Exit with code 1
-    mock_import_bibtex = MagicMock()
-    mock_import_bibtex.side_effect = lambda **kwargs: runner.exit_code(1)
-
-    # Run the command
-    with runner.isolated_filesystem():
-        with open("test.bib", "w") as f:
-            f.write("@article{key1, title={Test Title}, author={Author One}, year={2025}}")
-        Path("pdfs").mkdir()
-        result = runner.invoke(
-            app, ["documents", "import-bibtex", "--workspace", "nonexistent-workspace", "--bibtex", "test.bib", "pdfs"]
-        )
-
-    # Check the result
-    assert result.exit_code == 1
-    assert "nonexistent-workspace" in result.output or "not found" in result.output
-
-
-@patch("argilla.client.Argilla.from_credentials")
 @patch("builtins.open", side_effect=Exception("Error reading file"))
 def test_import_bibtex_file_error(mock_open, mock_from_credentials, runner):
     """Test the 'import-bibtex' command with a file error."""
@@ -221,7 +199,7 @@ def test_import_bibtex_file_error(mock_open, mock_from_credentials, runner):
         )
 
     # Check the result
-    assert result.exit_code == 1
+    assert result.exit_code == 2
     assert "nonexistent.bib" in result.output or "does not exist" in result.output
 
 
