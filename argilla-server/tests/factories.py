@@ -565,9 +565,28 @@ class ImportHistoryFactory(BaseFactory):
     id = factory.LazyFunction(uuid.uuid4)
     workspace = factory.SubFactory(WorkspaceFactory)
     user = factory.SubFactory(UserFactory)
-    bib_filename = factory.Sequence(lambda n: f"library-{n}.bib")
-    document_info = {"reference_keys": ["ref1", "ref2", "ref3"]}
-    import_summary = {"total": 3, "added": 2, "updated": 1, "skipped": 0, "failed": 0}
+    filename = factory.Sequence(lambda n: f"library-{n}.bib")
+    metadata = {
+        "documents": {
+            "ref1": {
+                "document_create": {
+                    "reference": "ref1",
+                    "pmid": None,
+                    "doi": None,
+                    "file_name": "paper1.pdf",
+                    "url": None,
+                },
+                "title": "Test Paper 1",
+                "authors": ["Author A"],
+                "year": 2025,
+                "venue": "Test Journal",
+                "associated_files": ["paper1.pdf"],
+                "status": "add",
+                "validation_errors": [],
+            }
+        },
+        "summary": {"total_documents": 1, "add_count": 1, "update_count": 0, "skip_count": 0, "failed_count": 0},
+    }
 
 
 class MinioFileFactory(factory.Factory):

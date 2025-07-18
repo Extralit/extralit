@@ -27,9 +27,28 @@ class ImportHistoryFactory(BaseFactory):
     id = factory.LazyFunction(uuid4)
     workspace = factory.SubFactory(WorkspaceFactory)
     user = factory.SubFactory(UserFactory)
-    bib_filename = factory.Sequence(lambda n: f"library-{n}.bib")
-    document_info = {"reference_keys": ["ref1", "ref2", "ref3"]}
-    import_summary = {"total": 3, "added": 2, "updated": 1, "skipped": 0, "failed": 0}
+    filename = factory.Sequence(lambda n: f"library-{n}.bib")
+    metadata = {
+        "documents": {
+            "ref1": {
+                "document_create": {
+                    "reference": "ref1",
+                    "pmid": None,
+                    "doi": None,
+                    "file_name": "paper1.pdf",
+                    "url": None,
+                },
+                "title": "Test Paper 1",
+                "authors": ["Author A"],
+                "year": 2025,
+                "venue": "Test Journal",
+                "associated_files": ["paper1.pdf"],
+                "status": "add",
+                "validation_errors": [],
+            }
+        },
+        "summary": {"total_documents": 1, "add_count": 1, "update_count": 0, "skip_count": 0, "failed_count": 0},
+    }
 
 
 @pytest.mark.asyncio
@@ -39,19 +58,39 @@ class TestImportHistory:
         workspace = await WorkspaceFactory.create()
         user = await UserFactory.create()
 
+        metadata = {
+            "documents": {
+                "ref1": {
+                    "document_create": {
+                        "reference": "ref1",
+                        "pmid": None,
+                        "doi": None,
+                        "file_name": "paper1.pdf",
+                        "url": None,
+                    },
+                    "title": "Test Paper 1",
+                    "authors": ["Author A"],
+                    "year": 2025,
+                    "venue": "Test Journal",
+                    "associated_files": ["paper1.pdf"],
+                    "status": "add",
+                    "validation_errors": [],
+                }
+            },
+            "summary": {"total_documents": 1, "add_count": 1, "update_count": 0, "skip_count": 0, "failed_count": 0},
+        }
+
         import_history = await ImportHistoryFactory.create(
             workspace=workspace,
             user=user,
-            bib_filename="test-library.bib",
-            document_info={"reference_keys": ["ref1", "ref2"]},
-            import_summary={"total": 2, "added": 2, "updated": 0, "skipped": 0, "failed": 0},
+            filename="test-library.bib",
+            metadata=metadata,
         )
 
         assert import_history.workspace_id == workspace.id
         assert import_history.user_id == user.id
-        assert import_history.bib_filename == "test-library.bib"
-        assert import_history.document_info == {"reference_keys": ["ref1", "ref2"]}
-        assert import_history.import_summary == {"total": 2, "added": 2, "updated": 0, "skipped": 0, "failed": 0}
+        assert import_history.filename == "test-library.bib"
+        assert import_history.metadata == metadata
         assert import_history.inserted_at is not None
 
     async def test_import_history_relationships(self):
@@ -66,33 +105,66 @@ class TestImportHistory:
         assert import_history.user.id == user.id
         assert import_history.user.username == user.username
 
-    async def test_import_history_json_fields(self):
-        """Test that the JSON fields in ImportHistory can store complex data structures."""
-        document_info = {
-            "reference_keys": ["ref1", "ref2", "ref3"],
-            "metadata": {
+    async def test_import_history_metadata_field(self):
+        """Test that the metadata field in ImportHistory can store ImportAnalysisResponse data structures."""
+        metadata = {
+            "documents": {
                 "ref1": {
+                    "document_create": {
+                        "reference": "ref1",
+                        "pmid": "12345",
+                        "doi": "10.1234/test",
+                        "file_name": "paper1.pdf",
+                        "url": None,
+                    },
                     "title": "Paper 1",
                     "authors": ["Author A", "Author B"],
                     "year": 2025,
                     "venue": "Journal of Testing",
+                    "associated_files": ["paper1.pdf"],
+                    "status": "add",
+                    "validation_errors": [],
                 },
-                "ref2": {"title": "Paper 2", "authors": ["Author C"], "year": 2024, "venue": "Conference on Testing"},
+                "ref2": {
+                    "document_create": {
+                        "reference": "ref2",
+                        "pmid": None,
+                        "doi": None,
+                        "file_name": "paper2.pdf",
+                        "url": None,
+                    },
+                    "title": "Paper 2",
+                    "authors": ["Author C"],
+                    "year": 2024,
+                    "venue": "Conference on Testing",
+                    "associated_files": ["paper2.pdf"],
+                    "status": "update",
+                    "validation_errors": [],
+                },
+                "ref3": {
+                    "document_create": {
+                        "reference": "ref3",
+                        "pmid": None,
+                        "doi": None,
+                        "file_name": "paper3.pdf",
+                        "url": None,
+                    },
+                    "title": "Paper 3",
+                    "authors": ["Author D"],
+                    "year": 2023,
+                    "venue": "Workshop Proceedings",
+                    "associated_files": [],
+                    "status": "skip",
+                    "validation_errors": ["Missing PDF file"],
+                },
             },
+            "summary": {"total_documents": 3, "add_count": 1, "update_count": 1, "skip_count": 1, "failed_count": 0},
         }
 
-        import_summary = {
-            "total": 3,
-            "added": 1,
-            "updated": 1,
-            "skipped": 1,
-            "failed": 0,
-            "details": {"ref1": "added", "ref2": "updated", "ref3": "skipped"},
-        }
+        import_history = await ImportHistoryFactory.create(metadata=metadata)
 
-        import_history = await ImportHistoryFactory.create(document_info=document_info, import_summary=import_summary)
-
-        assert import_history.document_info == document_info
-        assert import_history.import_summary == import_summary
-        assert import_history.document_info["metadata"]["ref1"]["title"] == "Paper 1"
-        assert import_history.import_summary["details"]["ref2"] == "updated"
+        assert import_history.metadata == metadata
+        assert import_history.metadata["documents"]["ref1"]["title"] == "Paper 1"
+        assert import_history.metadata["documents"]["ref2"]["status"] == "update"
+        assert import_history.metadata["summary"]["total_documents"] == 3
+        assert import_history.metadata["summary"]["add_count"] == 1
