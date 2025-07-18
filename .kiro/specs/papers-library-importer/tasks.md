@@ -46,10 +46,10 @@
   - Update CLI function `import_bibtex` in `extralit/src/argilla/cli/documents/add.py` to submit bulk document upload to test happy path
   - _Requirements: 3.1, 3.3, 3.4_
 
-- [ ] 3.3 Implement ImportHistory database model
+- [x] 3.3 Implement ImportHistory database model
   - Create ImportHistory model in database.py with required fields
   - Add relationships to Workspace and User models
-  - Create migration script for the new table
+  - Create migration script for the new table. Refer to the `### Working with Database Revisions` section in `extralit/docs/community/developer.md`
   - Write unit tests for the ImportHistory model
   - _Requirements: 3.5, 4.1_
 
