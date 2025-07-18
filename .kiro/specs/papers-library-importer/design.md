@@ -73,10 +73,10 @@ async def analyze_import(
 ```python
 async def bulk_upload_documents(
     *,
-    documents_metadata: str = Form(...),  # JSON string of BulkUploadMetadata
+    documents_metadata: str = Form(...),  # JSON string of DocumentsBulkCreate
     files: List[UploadFile] = File(...),  # Multiple PDF files
     current_user: User = Security(auth.get_current_user)
-) -> BulkUploadResponse
+) -> DocumentsBulkResponse
 ```
 
 #### 3. Import Context (`argilla-server/src/argilla_server/contexts/imports.py`)
@@ -84,7 +84,7 @@ async def bulk_upload_documents(
 **Core Services:**
 - `analyze_import_status()` - Uses existing `check_existing_document()` function from documents handler to determine add/update/skip status
 - `compare_file_sizes()` - Compare existing file sizes with new files to determine if updates are needed
-- `validate_document_metadata()` - Validate FileMetadataInfo objects (not just DocumentCreate) from frontend
+- `validate_document_metadata()` - Validate DocumentMetadata objects (not just DocumentCreate) from frontend
 
 #### 4. Document Upload Job (`argilla-server/src/argilla_server/jobs/document_jobs.py`)
 
@@ -225,9 +225,9 @@ Example BibTeX files:
 ```python
 class ImportAnalysisRequest(BaseModel):
     workspace_id: UUID
-    documents: Dict[str, FileMetadataInfo]  # reference_key -> file metadata
+    documents: Dict[str, DocumentMetadata]  # reference_key -> file metadata
 
-class FileMetadataInfo(BaseModel):
+class DocumentMetadata(BaseModel):
     document_create: DocumentCreate  # Contains reference, doi, pmid, etc.
     title: str  # For display
     authors: List[str]  # For display
@@ -243,10 +243,10 @@ class FileInfo(BaseModel):
 #### Import Analysis Response
 ```python
 class ImportAnalysisResponse(BaseModel):
-    documents: Dict[str, ImportDocumentInfo]  # reference_key -> document info
+    documents: Dict[str, DocumentImportAnalysis]  # reference_key -> document info
     summary: ImportSummary
 
-class ImportDocumentInfo(BaseModel):
+class DocumentImportAnalysis(BaseModel):
     document_create: DocumentCreate  # Reuse existing schema
     title: str  # For display only
     authors: List[str]  # For display only
@@ -278,10 +278,10 @@ class ImportAction(BaseModel):
 #### Bulk Upload Request/Response
 ```python
 # Multipart form data structure (paginated by 20-50 PDFs):
-# - documents_metadata: str (JSON string of BulkUploadMetadata)
+# - documents_metadata: str (JSON string of DocumentsBulkCreate)
 # - files: List[UploadFile] (Multiple PDF files, max 20-50 per request)
 
-class BulkUploadMetadata(BaseModel):
+class DocumentsBulkCreate(BaseModel):
     documents: List[BulkDocumentInfo]  # List of documents to upload
 
 class BulkDocumentInfo(BaseModel):
@@ -289,7 +289,7 @@ class BulkDocumentInfo(BaseModel):
     document_create: DocumentCreate  # Each document has one associated PDF file
     associated_file: str  # Single PDF filename (one file per DocumentCreate)
 
-class BulkUploadResponse(BaseModel):
+class DocumentsBulkResponse(BaseModel):
     job_ids: Dict[str, str]  # reference_key -> job_id mapping for frontend tracking
     total_documents: int
     failed_validations: List[str]  # Files that failed validation

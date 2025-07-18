@@ -10,7 +10,7 @@
 - [x] 2.1 Create import context service for document analysis
   - Write analyze_import_status() function to check existing documents by reference/DOI/PMID
   - Implement compare_file_sizes() function to determine if file updates are needed
-  - Create validate_document_metadata() function for FileMetadataInfo validation
+  - Create validate_document_metadata() function for DocumentMetadata validation
   - Write unit tests for import analysis logic
   - _Requirements: 2.3, 2.4, 2.5_
 

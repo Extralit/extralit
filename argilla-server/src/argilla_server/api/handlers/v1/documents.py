@@ -12,12 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
 import logging
 from uuid import UUID
 from typing import TYPE_CHECKING, List, Union
 
-from fastapi import APIRouter, Body, Depends, File, Form, HTTPException, UploadFile, Path, status, Security
+from fastapi import APIRouter, Body, Depends, File, HTTPException, UploadFile, Path, status, Security
 from minio import Minio
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -29,7 +28,7 @@ from argilla_server.models import User, Workspace
 from argilla_server.contexts import datasets, files, imports
 from argilla_server.api.policies.v1 import DocumentPolicy, authorize
 from argilla_server.api.schemas.v1.documents import DocumentCreate, DocumentDelete, DocumentListItem
-from argilla_server.api.schemas.v1.imports import BulkUploadResponse
+from argilla_server.api.schemas.v1.imports import DocumentsBulkResponse
 
 if TYPE_CHECKING:
     from argilla_server.models import Document
@@ -221,48 +220,33 @@ async def list_documents(
     return [DocumentListItem.model_validate(doc) for doc in documents]
 
 
-@router.post("/documents/bulk", status_code=status.HTTP_202_ACCEPTED, response_model=BulkUploadResponse)
+@router.post("/documents/bulk", status_code=status.HTTP_202_ACCEPTED, response_model=DocumentsBulkResponse)
 async def bulk_upload_documents(
     *,
-    documents_metadata: str = Form(...),
+    bulk_create: DocumentsBulkCreate,
     files: List[UploadFile] = File(...),
     db: AsyncSession = Depends(get_async_db),
     client: Minio = Depends(files.get_minio_client),
     current_user: User = Security(auth.get_current_user),
-) -> BulkUploadResponse:
+) -> DocumentsBulkResponse:
     """
     Bulk upload documents with associated PDF files.
 
     This endpoint accepts a multipart form with:
-    - documents_metadata: JSON string containing BulkUploadMetadata
+    - documents_metadata: JSON string containing DocumentsBulkCreate
     - files: List of PDF files to upload
 
     It processes the documents in batches and returns job IDs for tracking.
     """
     await authorize(current_user, DocumentPolicy.create())
 
-    try:
-        metadata_dict = json.loads(documents_metadata)
-        bulk_metadata = imports.BulkUploadMetadata.model_validate(metadata_dict)
-    except json.JSONDecodeError:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Invalid JSON in documents_metadata",
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Invalid metadata format: {str(e)}",
-        )
-
-    if not bulk_metadata.documents:
+    if not bulk_create.documents:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="No documents provided for upload",
         )
 
-    # Check if workspace exists for all documents
-    workspace_ids = {doc.document_create.workspace_id for doc in bulk_metadata.documents}
+    workspace_ids = {doc.document_create.workspace_id for doc in bulk_create.documents}
     for workspace_id in workspace_ids:
         workspace = await Workspace.get(db, workspace_id)
         if not workspace:
@@ -271,4 +255,4 @@ async def bulk_upload_documents(
                 detail=f"Workspace with id `{workspace_id}` not found",
             )
 
-    return await imports.process_bulk_upload(bulk_metadata=bulk_metadata, files=files)
+    return await imports.process_bulk_upload(bulk_create=bulk_create, files=files)
