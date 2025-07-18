@@ -13,16 +13,13 @@
 # limitations under the License.
 
 import logging
-import json
 from typing import Dict, List, Optional
 
 from fastapi import HTTPException, status, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import and_, or_, select
-from minio import Minio
 
 from argilla_server.models.database import Document
-from argilla_server.models import User, Workspace
 from argilla_server.api.schemas.v1.documents import DocumentCreate
 from argilla_server.api.schemas.v1.imports import (
     FileInfo,
@@ -306,54 +303,19 @@ async def check_existing_document(db: AsyncSession, document_create: DocumentCre
 
 
 async def process_bulk_upload(
-    documents_metadata: str,
+    bulk_metadata: BulkUploadMetadata,
     files: List[UploadFile],
-    db: AsyncSession,
-    client: Minio,
-    current_user: User,
 ) -> BulkUploadResponse:
     """
     Process bulk document upload with associated PDF files.
 
     Args:
-        documents_metadata: JSON string containing BulkUploadMetadata
+        bulk_metadata: BulkUploadMetadata
         files: List of PDF files to upload
-        db: Database session
-        client: Minio client for S3 operations
-        current_user: Current authenticated user
 
     Returns:
         BulkUploadResponse with job IDs and validation results
     """
-    try:
-        metadata_dict = json.loads(documents_metadata)
-        bulk_metadata = BulkUploadMetadata.model_validate(metadata_dict)
-    except json.JSONDecodeError:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Invalid JSON in documents_metadata",
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Invalid metadata format: {str(e)}",
-        )
-
-    if not bulk_metadata.documents:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="No documents provided for upload",
-        )
-
-    # Check if workspace exists for all documents
-    workspace_ids = {doc.document_create.workspace_id for doc in bulk_metadata.documents}
-    for workspace_id in workspace_ids:
-        workspace = await Workspace.get(db, workspace_id)
-        if not workspace:
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail=f"Workspace with id `{workspace_id}` not found",
-            )
 
     # Create a mapping of filenames to file objects for quick lookup
     file_mapping = {file.filename: file for file in files}
@@ -399,9 +361,7 @@ async def process_bulk_upload(
                 doc.document_create.file_name = file.filename
 
             # Create a job for document upload
-            job = upload_document_job.delay(
-                document_data=doc.document_create.model_dump(), file_data=file_content, user_id=str(current_user.id)
-            )
+            job = upload_document_job.delay(document_data=doc.document_create.model_dump(), file_data=file_content)
 
             # Store job ID mapped to reference key for tracking
             job_ids[doc.reference_key] = job.id
