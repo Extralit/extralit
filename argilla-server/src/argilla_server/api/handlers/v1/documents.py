@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import logging
 from uuid import UUID
 from typing import TYPE_CHECKING, List, Union
 
-from fastapi import APIRouter, Body, Depends, File, HTTPException, UploadFile, Path, status, Security
+from fastapi import APIRouter, Body, Depends, File, Form, HTTPException, UploadFile, Path, status, Security
 from minio import Minio
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -28,7 +29,7 @@ from argilla_server.models import User, Workspace
 from argilla_server.contexts import datasets, files, imports
 from argilla_server.api.policies.v1 import DocumentPolicy, authorize
 from argilla_server.api.schemas.v1.documents import DocumentCreate, DocumentDelete, DocumentListItem
-from argilla_server.api.schemas.v1.imports import DocumentsBulkResponse
+from argilla_server.api.schemas.v1.imports import DocumentsBulkResponse, DocumentsBulkCreate
 
 if TYPE_CHECKING:
     from argilla_server.models import Document
@@ -36,10 +37,6 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 router = APIRouter(tags=["documents"])
-
-
-# Use the check_existing_document function from imports context
-from argilla_server.contexts.imports import check_existing_document
 
 
 @router.post("/documents", status_code=status.HTTP_201_CREATED, response_model=UUID)
@@ -98,7 +95,7 @@ async def add_document(
             if file_data.filename and not document_create.file_name:
                 document_create.file_name = file_data.filename
 
-    existing_document = await check_existing_document(db, document_create)
+    existing_document = await imports.check_existing_document(db, document_create)
     if existing_document is not None:
         return existing_document.id
 
@@ -220,25 +217,45 @@ async def list_documents(
     return [DocumentListItem.model_validate(doc) for doc in documents]
 
 
-@router.post("/documents/bulk", status_code=status.HTTP_202_ACCEPTED, response_model=DocumentsBulkResponse)
-async def bulk_upload_documents(
+@router.post("/documents/bulk", status_code=status.HTTP_201_CREATED, response_model=DocumentsBulkResponse)
+async def create_documents_bulk(
     *,
-    bulk_create: DocumentsBulkCreate,
+    documents_metadata: str = Form(..., description="JSON string matching the DocumentsBulkCreate schema"),
     files: List[UploadFile] = File(...),
     db: AsyncSession = Depends(get_async_db),
-    client: Minio = Depends(files.get_minio_client),
     current_user: User = Security(auth.get_current_user),
 ) -> DocumentsBulkResponse:
     """
     Bulk upload documents with associated PDF files.
 
-    This endpoint accepts a multipart form with:
-    - documents_metadata: JSON string containing DocumentsBulkCreate
-    - files: List of PDF files to upload
+        - `documents_metadata`: JSON string matching the DocumentsBulkCreate schema.
+        Example:
+        {
+            "documents": [
+            {
+                "reference_key": "ref1",
+                "document_create": { ... },
+                "associated_file": "file1.pdf"
+            }
+            ]
+        }
+        - `files`: List of PDF files to upload.
 
     It processes the documents in batches and returns job IDs for tracking.
     """
-    await authorize(current_user, DocumentPolicy.create())
+    try:
+        metadata_dict = json.loads(documents_metadata)
+        bulk_create = DocumentsBulkCreate.model_validate(metadata_dict)
+    except json.JSONDecodeError:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Invalid JSON in documents_metadata",
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Invalid metadata format: {str(e)}",
+        )
 
     if not bulk_create.documents:
         raise HTTPException(
@@ -254,5 +271,6 @@ async def bulk_upload_documents(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail=f"Workspace with id `{workspace_id}` not found",
             )
+        await authorize(current_user, DocumentPolicy.bulk_create(workspace_id))
 
     return await imports.process_bulk_upload(bulk_create=bulk_create, files=files)
