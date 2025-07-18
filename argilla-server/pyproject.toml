@@ -176,6 +176,7 @@ _.env_file = ".env.dev"
 cli = { cmd = "python -m argilla_server.cli" }
 server = { cmd = "uvicorn argilla_server:app --host 0.0.0.0 --port 6900 --reload" }
 migrate = { cmd = "alembic upgrade head" }
+alembic = { cmd = "alembic -c src/argilla_server/alembic.ini" }
 revision = { cmd = "alembic -c src/argilla_server/alembic.ini revision --autogenerate" }
 worker = { cmd = "python -m argilla_server worker" }
 server-dev.composite = [
