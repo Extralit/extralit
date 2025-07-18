@@ -707,11 +707,11 @@ async def create_document(db: "AsyncSession", dataset_create: DocumentCreate) ->
 async def delete_documents(
     db: "AsyncSession",
     workspace_id: UUID,
-    id: UUID = None,
-    pmid: str = None,
-    doi: str = None,
-    url: str = None,
-    reference: str = None,
+    id: Optional[UUID] = None,
+    pmid: Optional[str] = None,
+    doi: Optional[str] = None,
+    url: Optional[str] = None,
+    reference: Optional[str] = None,
 ) -> List[DocumentListItem]:
     async with db.begin_nested():
         params = [Document.workspace_id == workspace_id]

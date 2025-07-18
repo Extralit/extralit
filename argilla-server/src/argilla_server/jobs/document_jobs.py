@@ -19,17 +19,17 @@ from typing import Dict, Any
 
 from rq import Retry
 
+from argilla_server.database import AsyncSessionLocal
 from argilla_server.jobs import job, DEFAULT_QUEUE, JOB_TIMEOUT_DISABLED
 from argilla_server.api.schemas.v1.documents import DocumentCreate
 from argilla_server.models.database import Document
 from argilla_server.contexts import datasets, files, imports
-from argilla_server.database import get_async_db
 
 _LOGGER = logging.getLogger(__name__)
 
 
 @job(DEFAULT_QUEUE, timeout=JOB_TIMEOUT_DISABLED, retry=Retry(max=3, interval=[10, 30, 60]))
-async def upload_document_job(document_data: Dict[str, Any], file_data: bytes, user_id: str) -> Dict[str, Any]:
+async def upload_document_job(document_data: Dict[str, Any], file_data: bytes) -> Dict[str, Any]:
     """
     Asynchronous job to upload a document with its associated file.
 
@@ -45,12 +45,8 @@ async def upload_document_job(document_data: Dict[str, Any], file_data: bytes, u
         Dictionary with upload result (document_id or error)
     """
     try:
-        # Convert document_data to DocumentCreate
         document_create = DocumentCreate.model_validate(document_data)
-
-        # Get database session
-        async with get_async_db() as db:
-            # Check if document already exists
+        async with AsyncSessionLocal() as db:
             existing_document = await imports.check_existing_document(db, document_create)
             if existing_document is not None:
                 _LOGGER.info(f"Document already exists with ID {existing_document.id}")
@@ -62,10 +58,12 @@ async def upload_document_job(document_data: Dict[str, Any], file_data: bytes, u
                     "reference": document_create.reference,
                 }
 
-            # Get minio client
             client = files.get_minio_client()
+            if client is None:
+                error_msg = "Failed to get minio client"
+                _LOGGER.error(error_msg)
+                return {"success": False, "error": error_msg, "reference": document_create.reference}
 
-            # Get workspace
             from argilla_server.models import Workspace
 
             workspace = await Workspace.get(db, document_create.workspace_id)
@@ -75,7 +73,11 @@ async def upload_document_job(document_data: Dict[str, Any], file_data: bytes, u
                 return {"success": False, "error": error_msg, "reference": document_create.reference}
 
             try:
-                # Upload file to S3
+                if document_create.id is None:
+                    import uuid
+
+                    document_create.id = uuid.uuid4()
+
                 object_path = files.get_pdf_s3_object_path(document_create.id)
 
                 # Check if file already exists with same hash
@@ -112,9 +114,10 @@ async def upload_document_job(document_data: Dict[str, Any], file_data: bytes, u
 
                         document_create.url = files.get_s3_object_url(response.bucket_name, response.object_name)
                     except Exception as e:
-                        _LOGGER.error(f"Error uploading file to S3: {str(e)}")
+                        error_msg = f"Error uploading file to S3: {str(e)}"
+                        _LOGGER.error(error_msg)
                         # This will trigger the job retry mechanism
-                        raise Exception(f"Error uploading file to S3: {str(e)}")
+                        raise Exception(error_msg)
 
                 # Create document in database
                 new_document = Document(
@@ -125,11 +128,20 @@ async def upload_document_job(document_data: Dict[str, Any], file_data: bytes, u
                     url=document_create.url,
                     file_name=document_create.file_name,
                     workspace_id=document_create.workspace_id,
-                    metadata=document_create.metadata,
                 )
 
                 try:
-                    document = await datasets.create_document(db, new_document)
+                    # Convert Document to DocumentCreate for the create_document function
+                    document_create_for_db = DocumentCreate(
+                        id=new_document.id,
+                        reference=new_document.reference,
+                        pmid=new_document.pmid,
+                        doi=new_document.doi,
+                        url=new_document.url,
+                        file_name=new_document.file_name,
+                        workspace_id=new_document.workspace_id,
+                    )
+                    document = await datasets.create_document(db, document_create_for_db)
                     _LOGGER.info(f"Document created successfully with ID {document.id}")
                     return {
                         "success": True,
@@ -139,17 +151,20 @@ async def upload_document_job(document_data: Dict[str, Any], file_data: bytes, u
                         "reference": document_create.reference,
                     }
                 except Exception as e:
-                    _LOGGER.error(f"Error creating document in database: {str(e)}")
+                    error_msg = f"Error creating document in database: {str(e)}"
+                    _LOGGER.error(error_msg)
                     # This will trigger the job retry mechanism
-                    raise Exception(f"Error creating document in database: {str(e)}")
+                    raise Exception(error_msg)
 
             except Exception as e:
-                _LOGGER.error(f"Error processing document: {str(e)}")
+                error_msg = f"Error processing document: {str(e)}"
+                _LOGGER.error(error_msg)
                 # Re-raise to trigger retry
                 raise
 
     except Exception as e:
-        _LOGGER.error(f"Error in upload_document_job: {str(e)}")
+        error_msg = f"Error in upload_document_job: {str(e)}"
+        _LOGGER.error(error_msg)
         return {
             "success": False,
             "error": str(e),

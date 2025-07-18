@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import logging
 from uuid import UUID
 from typing import TYPE_CHECKING, List, Union
@@ -240,6 +241,34 @@ async def bulk_upload_documents(
     """
     await authorize(current_user, DocumentPolicy.create())
 
-    return await imports.process_bulk_upload(
-        documents_metadata=documents_metadata, files=files, db=db, client=client, current_user=current_user
-    )
+    try:
+        metadata_dict = json.loads(documents_metadata)
+        bulk_metadata = imports.BulkUploadMetadata.model_validate(metadata_dict)
+    except json.JSONDecodeError:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Invalid JSON in documents_metadata",
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Invalid metadata format: {str(e)}",
+        )
+
+    if not bulk_metadata.documents:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="No documents provided for upload",
+        )
+
+    # Check if workspace exists for all documents
+    workspace_ids = {doc.document_create.workspace_id for doc in bulk_metadata.documents}
+    for workspace_id in workspace_ids:
+        workspace = await Workspace.get(db, workspace_id)
+        if not workspace:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Workspace with id `{workspace_id}` not found",
+            )
+
+    return await imports.process_bulk_upload(bulk_metadata=bulk_metadata, files=files)
