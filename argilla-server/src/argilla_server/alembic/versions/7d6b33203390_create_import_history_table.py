@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""add metadata column to workspaces table
+"""create import_history table
 
 Revision ID: 7d6b33203390
 Revises: 580a6553186f
