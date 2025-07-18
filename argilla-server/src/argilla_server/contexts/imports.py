@@ -35,6 +35,7 @@ from argilla_server.api.schemas.v1.imports import (
     BulkUploadMetadata,
     BulkUploadResponse,
 )
+from argilla_server.jobs.document_jobs import upload_document_job
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -62,7 +63,6 @@ async def analyze_import_status(db: AsyncSession, analysis_request: ImportAnalys
             if validation_errors:
                 status = ImportStatus.FAILED
                 failed_count += 1
-                _LOGGER.warning(f"Document {reference_key} failed validation: {validation_errors}")
 
             elif not existing_documents:
                 status = ImportStatus.ADD
@@ -325,7 +325,6 @@ async def process_bulk_upload(
     Returns:
         BulkUploadResponse with job IDs and validation results
     """
-    # Parse the documents_metadata JSON string
     try:
         metadata_dict = json.loads(documents_metadata)
         bulk_metadata = BulkUploadMetadata.model_validate(metadata_dict)
@@ -380,8 +379,7 @@ async def process_bulk_upload(
             # Get the associated file
             file = file_mapping[doc.associated_file]
 
-            # Validate file type (simple check, could be enhanced)
-            if not file.filename.lower().endswith(".pdf"):
+            if not file.filename or not file.filename.lower().endswith(".pdf"):
                 failed_validations.append(f"{file.filename}: Not a PDF file")
                 continue
 
@@ -399,9 +397,6 @@ async def process_bulk_upload(
             # Set filename if not already set
             if not doc.document_create.file_name:
                 doc.document_create.file_name = file.filename
-
-            # Import the job function here to avoid circular imports
-            from argilla_server.jobs.document_jobs import upload_document_job
 
             # Create a job for document upload
             job = upload_document_job.delay(

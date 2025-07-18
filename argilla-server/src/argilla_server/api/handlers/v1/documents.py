@@ -240,7 +240,6 @@ async def bulk_upload_documents(
     """
     await authorize(current_user, DocumentPolicy.create())
 
-    # Use the imports context to process the bulk upload
     return await imports.process_bulk_upload(
         documents_metadata=documents_metadata, files=files, db=db, client=client, current_user=current_user
     )
