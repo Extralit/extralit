@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 from pathlib import Path
 from typing import Dict, List, Optional
 
 import typer
-import json
 import bibtexparser
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
@@ -232,7 +232,7 @@ def _build_documents_payload(entries: List[Dict], pdf_files, workspace_obj, coll
     return documents
 
 
-def _send_import_analysis_request(client: Argilla, workspace_obj, documents, console: Console):
+def _send_import_analysis_request(client, workspace_obj, documents, console):
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
@@ -252,7 +252,7 @@ def _send_import_analysis_request(client: Argilla, workspace_obj, documents, con
     return analysis_result
 
 
-def _execute_document_bulk_import(client: Argilla, analysis_result, pdf_folder, console: Console):
+def _execute_document_bulk_import(client, analysis_result, pdf_folder, console):
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
@@ -295,7 +295,7 @@ def _execute_document_bulk_import(client: Argilla, analysis_result, pdf_folder, 
                     )
                     files_to_upload.append(("files", (file_path.name, open(file_path, "rb"), "application/pdf")))
         if bulk_documents:
-            files_to_upload.insert(0, ("bulk_create", (None, json.dumps({"documents": bulk_documents}))))
+            files_to_upload.insert(0, ("documents_metadata", (None, json.dumps({"documents": bulk_documents}))))
             try:
                 upload_response = client.api.http_client.post(
                     f"{client.api_url}/api/v1/documents/bulk", files=files_to_upload
