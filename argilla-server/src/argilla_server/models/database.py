@@ -65,6 +65,7 @@ __all__ = [
     "Document",
     "Webhook",
     "DatasetUser",
+    "ImportHistory",
 ]
 
 _USER_API_KEY_BYTES_LENGTH = 80
@@ -670,5 +671,25 @@ class Webhook(DatabaseModel):
         return (
             f"Webhook(id={str(self.id)!r}, url={self.url!r}, events={self.events!r}, "
             f"enabled={self.enabled!r}, description={self.description!r}, "
+            f"inserted_at={str(self.inserted_at)!r}, updated_at={str(self.updated_at)!r})"
+        )
+
+
+class ImportHistory(DatabaseModel):
+    __tablename__ = "import_history"
+
+    workspace_id: Mapped[UUID] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    bib_filename: Mapped[str] = mapped_column(String, nullable=False)
+    document_info: Mapped[dict] = mapped_column(MutableDict.as_mutable(JSON), nullable=False)
+    import_summary: Mapped[dict] = mapped_column(MutableDict.as_mutable(JSON), nullable=False)
+
+    workspace: Mapped["Workspace"] = relationship("Workspace")
+    user: Mapped["User"] = relationship("User")
+
+    def __repr__(self):
+        return (
+            f"ImportHistory(id={str(self.id)!r}, workspace_id={str(self.workspace_id)!r}, "
+            f"user_id={str(self.user_id)!r}, bib_filename={self.bib_filename!r}, "
             f"inserted_at={str(self.inserted_at)!r}, updated_at={str(self.updated_at)!r})"
         )

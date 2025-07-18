@@ -29,6 +29,7 @@ from argilla_server.models import (
     Dataset,
     Document,
     Field,
+    ImportHistory,
     MetadataProperty,
     Question,
     QuestionType,
@@ -175,6 +176,7 @@ class WorkspaceSyncFactory(BaseSyncFactory):
         except Exception as e:
             print(f"Error creating bucket for workspace {workspace.name}: {str(e)}")
         return workspace
+
 
 class WorkspaceFactory(BaseFactory):
     class Meta:
@@ -554,6 +556,18 @@ class DocumentFactory(BaseFactory):
     url = factory.Sequence(lambda n: f"https://example.com/documents/{n}.pdf")
     workspace = factory.SubFactory(WorkspaceFactory)
     workspace_id = factory.SelfAttribute("workspace.id")
+
+
+class ImportHistoryFactory(BaseFactory):
+    class Meta:
+        model = ImportHistory
+
+    import_id = factory.LazyFunction(uuid.uuid4)
+    workspace = factory.SubFactory(WorkspaceFactory)
+    user = factory.SubFactory(UserFactory)
+    bib_filename = factory.Sequence(lambda n: f"library-{n}.bib")
+    document_info = {"reference_keys": ["ref1", "ref2", "ref3"]}
+    import_summary = {"total": 3, "added": 2, "updated": 1, "skipped": 0, "failed": 0}
 
 
 class MinioFileFactory(factory.Factory):
