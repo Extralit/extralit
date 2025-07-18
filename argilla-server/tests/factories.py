@@ -562,7 +562,7 @@ class ImportHistoryFactory(BaseFactory):
     class Meta:
         model = ImportHistory
 
-    import_id = factory.LazyFunction(uuid.uuid4)
+    id = factory.LazyFunction(uuid.uuid4)
     workspace = factory.SubFactory(WorkspaceFactory)
     user = factory.SubFactory(UserFactory)
     bib_filename = factory.Sequence(lambda n: f"library-{n}.bib")

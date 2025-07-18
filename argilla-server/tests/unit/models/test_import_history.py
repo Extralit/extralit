@@ -14,7 +14,6 @@
 
 import pytest
 from uuid import uuid4
-from datetime import datetime
 import factory
 
 from argilla_server.models.database import ImportHistory
@@ -25,13 +24,12 @@ class ImportHistoryFactory(BaseFactory):
     class Meta:
         model = ImportHistory
 
-    import_id = factory.LazyFunction(uuid4)
+    id = factory.LazyFunction(uuid4)
     workspace = factory.SubFactory(WorkspaceFactory)
     user = factory.SubFactory(UserFactory)
     bib_filename = factory.Sequence(lambda n: f"library-{n}.bib")
     document_info = {"reference_keys": ["ref1", "ref2", "ref3"]}
     import_summary = {"total": 3, "added": 2, "updated": 1, "skipped": 0, "failed": 0}
-    submitted_at = factory.LazyFunction(datetime.utcnow)
 
 
 @pytest.mark.asyncio
@@ -54,7 +52,7 @@ class TestImportHistory:
         assert import_history.bib_filename == "test-library.bib"
         assert import_history.document_info == {"reference_keys": ["ref1", "ref2"]}
         assert import_history.import_summary == {"total": 2, "added": 2, "updated": 0, "skipped": 0, "failed": 0}
-        assert import_history.submitted_at is not None
+        assert import_history.inserted_at is not None
 
     async def test_import_history_relationships(self):
         """Test that the ImportHistory relationships to Workspace and User are properly set up."""
