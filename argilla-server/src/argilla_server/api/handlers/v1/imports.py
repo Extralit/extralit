@@ -59,10 +59,8 @@ async def analyze_import(
     Raises:
         HTTPException: If workspace doesn't exist or other validation errors occur
     """
-    # Authorize user for document creation
     await authorize(current_user, DocumentPolicy.create())
 
-    # Verify workspace exists
     workspace = await Workspace.get(db, analysis_request.workspace_id)
     if not workspace:
         raise HTTPException(
@@ -70,7 +68,6 @@ async def analyze_import(
             detail=f"Workspace with id `{analysis_request.workspace_id}` not found",
         )
 
-    # Validate request
     validation_errors = _validate_analysis_request(analysis_request)
     if validation_errors:
         _LOGGER.warning(f"Import analysis validation errors: {validation_errors}")
@@ -116,23 +113,18 @@ def _validate_analysis_request(analysis_request: ImportAnalysisRequest) -> List[
     """
     errors = []
 
-    # Check if documents are provided
     if not analysis_request.documents:
         errors.append("No documents provided for analysis")
         return errors
 
-    # Check if there are too many documents
     if len(analysis_request.documents) > 1000:
         errors.append(f"Too many documents provided ({len(analysis_request.documents)}). Maximum is 1000.")
 
-    # Validate each document's metadata
     for reference_key, file_metadata in analysis_request.documents.items():
-        # Check if reference key is valid
         if not reference_key or not isinstance(reference_key, str):
             errors.append(f"Invalid reference key: {reference_key}")
             continue
 
-        # Ensure document_create has the correct workspace_id
         if file_metadata.document_create.workspace_id != analysis_request.workspace_id:
             errors.append(
                 f"Document {reference_key} has mismatched workspace_id: "

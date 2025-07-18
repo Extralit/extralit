@@ -39,7 +39,6 @@ async def upload_document_job(document_data: Dict[str, Any], file_data: bytes) -
     Args:
         document_data: Dictionary containing DocumentCreate data
         file_data: Binary content of the PDF file
-        user_id: ID of the user who initiated the upload
 
     Returns:
         Dictionary with upload result (document_id or error)

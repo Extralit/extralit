@@ -20,7 +20,7 @@ from httpx import AsyncClient
 from argilla_server.api.schemas.v1.documents import DocumentCreate
 from argilla_server.api.schemas.v1.imports import (
     FileInfo,
-    FileMetadataInfo,
+    DocumentMetadata,
     ImportAnalysisRequest,
     ImportStatus,
 )
@@ -69,7 +69,7 @@ class TestImportsAPI:
         request = ImportAnalysisRequest(
             workspace_id=uuid4(),
             documents={
-                "test_ref": FileMetadataInfo(
+                "test_ref": DocumentMetadata(
                     document_create=DocumentCreate(
                         workspace_id=uuid4(), reference="test_ref", url=None, file_name=None, pmid=None, doi=None
                     ),
@@ -100,7 +100,7 @@ class TestImportsAPI:
         request = ImportAnalysisRequest(
             workspace_id=workspace.id,
             documents={
-                "test_ref": FileMetadataInfo(
+                "test_ref": DocumentMetadata(
                     document_create=DocumentCreate(
                         workspace_id=other_workspace_id,
                         reference="test_ref",
@@ -134,7 +134,7 @@ class TestImportsAPI:
         request = ImportAnalysisRequest(
             workspace_id=workspace.id,
             documents={
-                "test_ref": FileMetadataInfo(
+                "test_ref": DocumentMetadata(
                     document_create=DocumentCreate(
                         workspace_id=workspace.id,
                         reference="test_ref",
@@ -173,7 +173,7 @@ class TestImportsAPI:
         request = ImportAnalysisRequest(
             workspace_id=workspace.id,
             documents={
-                "new_ref": FileMetadataInfo(
+                "new_ref": DocumentMetadata(
                     document_create=DocumentCreate(
                         workspace_id=workspace.id,
                         reference="new_ref",
@@ -220,7 +220,7 @@ class TestImportsAPI:
         request = ImportAnalysisRequest(
             workspace_id=workspace.id,
             documents={
-                "existing_ref": FileMetadataInfo(
+                "existing_ref": DocumentMetadata(
                     document_create=DocumentCreate(
                         workspace_id=workspace.id,
                         reference="existing_ref",
@@ -267,7 +267,7 @@ class TestImportsAPI:
         request = ImportAnalysisRequest(
             workspace_id=workspace.id,
             documents={
-                "update_ref": FileMetadataInfo(
+                "update_ref": DocumentMetadata(
                     document_create=DocumentCreate(
                         workspace_id=workspace.id,
                         reference="update_ref",
@@ -315,7 +315,7 @@ class TestImportsAPI:
         request = ImportAnalysisRequest(
             workspace_id=workspace.id,
             documents={
-                "new_ref": FileMetadataInfo(
+                "new_ref": DocumentMetadata(
                     document_create=DocumentCreate(
                         workspace_id=workspace.id,
                         reference="new_ref",
@@ -330,7 +330,7 @@ class TestImportsAPI:
                     venue="New Journal",
                     associated_files=[FileInfo(filename="new.pdf", size=1024)],
                 ),
-                "skip_ref": FileMetadataInfo(
+                "skip_ref": DocumentMetadata(
                     document_create=DocumentCreate(
                         workspace_id=workspace.id,
                         reference="skip_ref",
@@ -345,7 +345,7 @@ class TestImportsAPI:
                     venue="Skip Journal",
                     associated_files=[],  # No new files
                 ),
-                "update_ref": FileMetadataInfo(
+                "update_ref": DocumentMetadata(
                     document_create=DocumentCreate(
                         workspace_id=workspace.id,
                         reference="update_ref",
@@ -360,7 +360,7 @@ class TestImportsAPI:
                     venue="Update Journal",
                     associated_files=[FileInfo(filename="update.pdf", size=2048)],
                 ),
-                "failed_ref": FileMetadataInfo(
+                "failed_ref": DocumentMetadata(
                     document_create=DocumentCreate(
                         workspace_id=workspace.id,
                         reference="failed_ref",

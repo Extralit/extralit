@@ -20,7 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from argilla_server.api.schemas.v1.documents import DocumentCreate
 from argilla_server.api.schemas.v1.imports import (
     FileInfo,
-    FileMetadataInfo,
+    DocumentMetadata,
     ImportAnalysisRequest,
     ImportStatus,
 )
@@ -50,7 +50,7 @@ class TestImportAnalysis:
             file_name="new_document.pdf",
         )
 
-        file_metadata = FileMetadataInfo(
+        file_metadata = DocumentMetadata(
             document_create=document_create,
             title="New Document Title",
             authors=["Author One", "Author Two"],
@@ -101,7 +101,7 @@ class TestImportAnalysis:
             file_name="existing_document.pdf",
         )
 
-        file_metadata = FileMetadataInfo(
+        file_metadata = DocumentMetadata(
             document_create=document_create,
             title="Existing Document Title",
             authors=["Existing Author"],
@@ -141,7 +141,7 @@ class TestImportAnalysis:
             file_name="updated_document.pdf",
         )
 
-        file_metadata = FileMetadataInfo(
+        file_metadata = DocumentMetadata(
             document_create=document_create,
             title="Updated Document Title",
             authors=["Updated Author"],
@@ -174,7 +174,7 @@ class TestImportAnalysis:
             doi="invalid-doi-format",  # Invalid DOI format
         )
 
-        file_metadata = FileMetadataInfo(
+        file_metadata = DocumentMetadata(
             document_create=document_create,
             title="Invalid Document",
             authors=["Invalid Author"],
@@ -210,7 +210,7 @@ class TestImportAnalysis:
 
         # Prepare mixed documents
         documents = {
-            "new_ref": FileMetadataInfo(
+            "new_ref": DocumentMetadata(
                 document_create=DocumentCreate(workspace_id=workspace.id, reference="new_ref", doi="10.1234/new.doi"),
                 title="New Document",
                 authors=["New Author"],
@@ -218,7 +218,7 @@ class TestImportAnalysis:
                 venue="New Journal",
                 associated_files=[FileInfo(filename="new.pdf", size=1024)],
             ),
-            "skip_ref": FileMetadataInfo(
+            "skip_ref": DocumentMetadata(
                 document_create=DocumentCreate(workspace_id=workspace.id, reference="skip_ref", doi="10.1234/skip.doi"),
                 title="Skip Document",
                 authors=["Skip Author"],
@@ -226,7 +226,7 @@ class TestImportAnalysis:
                 venue="Skip Journal",
                 associated_files=[],  # No new files
             ),
-            "update_ref": FileMetadataInfo(
+            "update_ref": DocumentMetadata(
                 document_create=DocumentCreate(
                     workspace_id=workspace.id, reference="update_ref", doi="10.1234/update.doi"
                 ),
@@ -236,7 +236,7 @@ class TestImportAnalysis:
                 venue="Update Journal",
                 associated_files=[FileInfo(filename="update.pdf", size=2048)],
             ),
-            "failed_ref": FileMetadataInfo(
+            "failed_ref": DocumentMetadata(
                 document_create=DocumentCreate(
                     workspace_id=workspace.id,
                     reference="failed_ref",
@@ -317,7 +317,7 @@ class TestValidateDocumentMetadata:
         document_create = DocumentCreate(
             workspace_id=uuid4(), reference="valid_ref", doi="10.1234/valid.doi", pmid="12345", file_name="valid.pdf"
         )
-        file_metadata = FileMetadataInfo(document_create=document_create, title="Valid Doc")
+        file_metadata = DocumentMetadata(document_create=document_create, title="Valid Doc")
         errors = validate_document_metadata(file_metadata)
         assert len(errors) == 0
 
@@ -326,28 +326,28 @@ class TestValidateDocumentMetadata:
         # Create a valid document first
         document_create = DocumentCreate(workspace_id=uuid4(), reference="test_ref")
         document_create.__dict__["workspace_id"] = None
-        file_metadata = FileMetadataInfo(document_create=document_create, title="Test Doc")
+        file_metadata = DocumentMetadata(document_create=document_create, title="Test Doc")
         errors = validate_document_metadata(file_metadata)
         assert "workspace_id is required" in errors
 
     def test_validate_document_metadata_no_identifiers(self):
         """Test validation when no identifiers are provided."""
         document_create = DocumentCreate(workspace_id=uuid4())
-        file_metadata = FileMetadataInfo(document_create=document_create, title="No ID Doc")
+        file_metadata = DocumentMetadata(document_create=document_create, title="No ID Doc")
         errors = validate_document_metadata(file_metadata)
         assert any("At least one identifier" in error for error in errors)
 
     def test_validate_document_metadata_invalid_doi(self):
         """Test validation of invalid DOI format."""
         document_create = DocumentCreate(workspace_id=uuid4(), doi="invalid-doi-format")
-        file_metadata = FileMetadataInfo(document_create=document_create, title="Invalid DOI Doc")
+        file_metadata = DocumentMetadata(document_create=document_create, title="Invalid DOI Doc")
         errors = validate_document_metadata(file_metadata)
         assert any("Invalid DOI format" in error for error in errors)
 
     def test_validate_document_metadata_valid_doi(self):
         """Test validation of valid DOI format."""
         document_create = DocumentCreate(workspace_id=uuid4(), doi="10.1234/valid.doi")
-        file_metadata = FileMetadataInfo(document_create=document_create, title="Valid DOI Doc")
+        file_metadata = DocumentMetadata(document_create=document_create, title="Valid DOI Doc")
         errors = validate_document_metadata(file_metadata)
         doi_errors = [error for error in errors if "DOI format" in error]
         assert len(doi_errors) == 0
@@ -355,14 +355,14 @@ class TestValidateDocumentMetadata:
     def test_validate_document_metadata_invalid_pmid(self):
         """Test validation of invalid PMID format."""
         document_create = DocumentCreate(workspace_id=uuid4(), pmid="invalid-pmid")
-        file_metadata = FileMetadataInfo(document_create=document_create, title="Invalid PMID Doc")
+        file_metadata = DocumentMetadata(document_create=document_create, title="Invalid PMID Doc")
         errors = validate_document_metadata(file_metadata)
         assert any("Invalid PMID format" in error for error in errors)
 
     def test_validate_document_metadata_valid_pmid(self):
         """Test validation of valid PMID format."""
         document_create = DocumentCreate(workspace_id=uuid4(), pmid="12345678")
-        file_metadata = FileMetadataInfo(document_create=document_create, title="Valid PMID Doc")
+        file_metadata = DocumentMetadata(document_create=document_create, title="Valid PMID Doc")
         errors = validate_document_metadata(file_metadata)
         pmid_errors = [error for error in errors if "PMID format" in error]
         assert len(pmid_errors) == 0
@@ -372,7 +372,7 @@ class TestValidateDocumentMetadata:
         # Create a valid document first
         document_create = DocumentCreate(workspace_id=uuid4(), doi="invalid-doi", pmid="invalid-pmid")
         document_create.__dict__["workspace_id"] = None
-        file_metadata = FileMetadataInfo(document_create=document_create, title="Multi Error Doc")
+        file_metadata = DocumentMetadata(document_create=document_create, title="Multi Error Doc")
         errors = validate_document_metadata(file_metadata)
         assert len(errors) >= 3  # workspace_id, doi, pmid errors
         assert "workspace_id is required" in errors

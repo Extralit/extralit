@@ -23,14 +23,14 @@ from argilla_server.models.database import Document
 from argilla_server.api.schemas.v1.documents import DocumentCreate
 from argilla_server.api.schemas.v1.imports import (
     FileInfo,
-    FileMetadataInfo,
+    DocumentMetadata,
     ImportAnalysisRequest,
     ImportAnalysisResponse,
-    ImportDocumentInfo,
+    DocumentImportAnalysis,
     ImportStatus,
     ImportSummary,
-    BulkUploadMetadata,
-    BulkUploadResponse,
+    DocumentsBulkCreate,
+    DocumentsBulkResponse,
 )
 from argilla_server.jobs.document_jobs import upload_document_job
 
@@ -49,7 +49,7 @@ async def analyze_import_status(db: AsyncSession, analysis_request: ImportAnalys
     Returns:
         ImportAnalysisResponse with document statuses and summary
     """
-    documents_info: Dict[str, ImportDocumentInfo] = {}
+    documents_info: Dict[str, DocumentImportAnalysis] = {}
     add_count = update_count = skip_count = failed_count = 0
 
     for reference_key, file_metadata in analysis_request.documents.items():
@@ -73,7 +73,7 @@ async def analyze_import_status(db: AsyncSession, analysis_request: ImportAnalys
                     status = ImportStatus.SKIP
                     skip_count += 1
 
-            documents_info[reference_key] = ImportDocumentInfo(
+            documents_info[reference_key] = DocumentImportAnalysis(
                 document_create=file_metadata.document_create,
                 title=file_metadata.title,
                 authors=file_metadata.authors,
@@ -86,7 +86,7 @@ async def analyze_import_status(db: AsyncSession, analysis_request: ImportAnalys
 
         except Exception as e:
             _LOGGER.error(f"Error analyzing document {reference_key}: {str(e)}")
-            documents_info[reference_key] = ImportDocumentInfo(
+            documents_info[reference_key] = DocumentImportAnalysis(
                 document_create=file_metadata.document_create,
                 title=file_metadata.title,
                 authors=file_metadata.authors,
@@ -210,7 +210,7 @@ def compare_file_sizes(existing_size: Optional[int], new_files: List[FileInfo]) 
     return False
 
 
-def validate_document_metadata(file_metadata: FileMetadataInfo) -> List[str]:
+def validate_document_metadata(file_metadata: DocumentMetadata) -> List[str]:
     """
     Validate DocumentCreate object for import requirements.
 
@@ -303,18 +303,18 @@ async def check_existing_document(db: AsyncSession, document_create: DocumentCre
 
 
 async def process_bulk_upload(
-    bulk_metadata: BulkUploadMetadata,
+    bulk_create: DocumentsBulkCreate,
     files: List[UploadFile],
-) -> BulkUploadResponse:
+) -> DocumentsBulkResponse:
     """
     Process bulk document upload with associated PDF files.
 
     Args:
-        bulk_metadata: BulkUploadMetadata
+        bulk_metadata: DocumentsBulkCreate
         files: List of PDF files to upload
 
     Returns:
-        BulkUploadResponse with job IDs and validation results
+        DocumentsBulkResponse with job IDs and validation results
     """
 
     # Create a mapping of filenames to file objects for quick lookup
@@ -322,7 +322,7 @@ async def process_bulk_upload(
 
     # Validate that all referenced files are included in the upload
     missing_files = []
-    for doc in bulk_metadata.documents:
+    for doc in bulk_create.documents:
         if doc.associated_file not in file_mapping:
             missing_files.append(doc.associated_file)
 
@@ -336,7 +336,7 @@ async def process_bulk_upload(
     job_ids = {}
     failed_validations = []
 
-    for doc in bulk_metadata.documents:
+    for doc in bulk_create.documents:
         try:
             # Get the associated file
             file = file_mapping[doc.associated_file]
@@ -370,6 +370,6 @@ async def process_bulk_upload(
             _LOGGER.error(f"Error processing document {doc.reference_key}: {str(e)}")
             failed_validations.append(f"{doc.reference_key}: {str(e)}")
 
-    return BulkUploadResponse(
-        job_ids=job_ids, total_documents=len(bulk_metadata.documents), failed_validations=failed_validations
+    return DocumentsBulkResponse(
+        job_ids=job_ids, total_documents=len(bulk_create.documents), failed_validations=failed_validations
     )

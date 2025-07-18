@@ -36,7 +36,7 @@ class FileInfo(BaseModel):
     size: int = Field(..., description="File size in bytes for comparison")
 
 
-class FileMetadataInfo(BaseModel):
+class DocumentMetadata(BaseModel):
     """Metadata information for a document to be imported."""
 
     document_create: DocumentCreate = Field(..., description="Document creation data")
@@ -51,10 +51,10 @@ class ImportAnalysisRequest(BaseModel):
     """Request schema for import analysis."""
 
     workspace_id: UUID = Field(..., description="Target workspace ID")
-    documents: Dict[str, FileMetadataInfo] = Field(..., description="Reference key to file metadata mapping")
+    documents: Dict[str, DocumentMetadata] = Field(..., description="Reference key to file metadata mapping")
 
 
-class ImportDocumentInfo(BaseModel):
+class DocumentImportAnalysis(BaseModel):
     """Information about a document in the import analysis response."""
 
     document_create: DocumentCreate = Field(..., description="Document creation data")
@@ -80,7 +80,7 @@ class ImportSummary(BaseModel):
 class ImportAnalysisResponse(BaseModel):
     """Response schema for import analysis."""
 
-    documents: Dict[str, ImportDocumentInfo] = Field(..., description="Reference key to document info mapping")
+    documents: Dict[str, DocumentImportAnalysis] = Field(..., description="Reference key to document info mapping")
     summary: ImportSummary = Field(..., description="Import analysis summary")
 
 
@@ -92,13 +92,13 @@ class BulkDocumentInfo(BaseModel):
     associated_file: str = Field(..., description="Single PDF filename (one file per DocumentCreate)")
 
 
-class BulkUploadMetadata(BaseModel):
+class DocumentsBulkCreate(BaseModel):
     """Metadata for bulk document upload."""
 
     documents: List[BulkDocumentInfo] = Field(..., description="List of documents to upload")
 
 
-class BulkUploadResponse(BaseModel):
+class DocumentsBulkResponse(BaseModel):
     """Response schema for bulk document upload."""
 
     job_ids: Dict[str, str] = Field(..., description="Reference key to job_id mapping for frontend tracking")
