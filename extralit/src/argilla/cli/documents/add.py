@@ -190,7 +190,7 @@ def _match_pdfs_to_entries(entries: List[Dict], pdf_folder: Path, console: Conso
             completed=True,
             description=f"Matched {matched_via_file_tag} PDFs via file tag, {matched_via_fallback} via fallback, total {sum(len(files) for files in pdf_files.values())} PDF files to {len(pdf_files)} BibTeX entries",
         )
-    return pdf_files, matched_via_file_tag, matched_via_fallback
+    return pdf_files
 
 
 def _build_documents_payload(entries: List[Dict], pdf_files, workspace_obj, collection):
@@ -387,7 +387,7 @@ def import_bibtex(
             console.print(panel)
             raise typer.Exit(code=1)
         entries = _parse_bibtex_file(bibtex_file, console)
-        pdf_files, matched_via_file_tag, matched_via_fallback = _match_pdfs_to_entries(entries, pdf_folder, console)
+        pdf_files = _match_pdfs_to_entries(entries, pdf_folder, console)
         documents = _build_documents_payload(entries, pdf_files, workspace_obj, collection)
         analysis_result = _send_import_analysis_request(client, workspace_obj, documents, console)
         _display_import_analysis_results(console, analysis_result)
@@ -411,7 +411,9 @@ def import_bibtex(
             )
             console.print(panel)
             raise typer.Exit(code=0)
+
         _execute_document_bulk_import(client, analysis_result, pdf_folder, console)
+
     except Exception as e:
         panel = get_argilla_themed_panel(
             f"Error importing documents: {str(e)}",

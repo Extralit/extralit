@@ -11,14 +11,12 @@
   - Write analyze_import_status() function to check existing documents by reference/DOI/PMID
   - Implement compare_file_sizes() function to determine if file updates are needed
   - Create validate_document_metadata() function for DocumentMetadata validation
-  - Write unit tests for import analysis logic
   - _Requirements: 2.3, 2.4, 2.5_
 
 - [x] 2.2 Implement import analysis API endpoint
   - Code POST /api/v1/imports/analyze endpoint handler
   - Integrate with import context service for status determination
   - Add proper error handling and validation
-  - Write integration tests for the analysis endpoint
   - _Requirements: 2.1, 2.2_
 
 - [x] 2.3 Create CLI import analysis testing function
@@ -43,23 +41,21 @@
   - Reuse existing document upload logic from POST /documents endpoint
   - Implement job creation and queuing for individual document uploads
   - Add retry logic and error handling for failed uploads
-  - Update CLI function `import_bibtex` in `extralit/src/argilla/cli/documents/add.py` to submit bulk document upload to test happy path
+  - Update CLI function `import_bibtex` in `extralit/src/argilla/cli/documents/add.py` to test bulk upload
   - _Requirements: 3.1, 3.3, 3.4_
 
 - [x] 3.3 Implement ImportHistory database model
   - Create ImportHistory model in database.py with required fields
   - Add relationships to Workspace and User models
-  - Create migration script for the new table. Refer to the `### Working with Database Revisions` section in `extralit/docs/community/developer.md`
-  - Write unit tests for the ImportHistory model
+  - Create migration script for the new table
   - _Requirements: 3.5, 4.1_
 
 - [ ] 3.4 Integrate bulk upload with job queue and history logging
   - Connect bulk upload endpoint to document upload jobs
   - Implement reference-key indexed job_id response mapping
   - Create import history record for each bulk import
-  - Store BibTeX document metadata and import summary in history
+  - Store ImportAnalysisResponse data in the metadata JSON field
   - Add proper cleanup of temporary files after job completion
-  - Write integration tests for bulk upload workflow and history logging
   - _Requirements: 3.2, 3.5, 4.1_
 
 - [ ] 4. Implement frontend BibTeX parsing and file matching
@@ -68,7 +64,6 @@
   - Implement BibTeX file parsing in ImportUpload.vue component
   - Extract metadata (title, authors, year, DOI, PMID, reference key)
   - Add error handling for malformed BibTeX entries
-  - Write unit tests for BibTeX parsing functionality
   - _Requirements: 1.1, 5.1_
 
 - [ ] 4.2 Implement file-to-reference matching logic
@@ -76,7 +71,6 @@
   - Implement exact match, partial match, and fuzzy matching strategies
   - Allow manual file-to-reference association by user
   - Add validation for PDF file types and sizes
-  - Write unit tests for file matching algorithms
   - _Requirements: 1.3, 1.6_
 
 - [ ] 5. Create import upload and preview components
@@ -99,7 +93,7 @@
 - [ ] 6. Implement bulk upload execution and progress tracking
 - [ ] 6.1 Create bulk upload execution logic
   - Implement paginated bulk upload requests (20-50 PDFs per batch)
-  - Send ImportExecuteRequest with actual file contents to POST /documents/bulk
+  - Send DocumentImportExecuteRequest with actual file contents to POST /documents/bulk
   - Handle multiple paginated requests for large document sets
   - Add error handling for failed upload requests
   - _Requirements: 3.1, 3.2_
@@ -138,7 +132,6 @@
 - [ ] 8.2 Add security and performance optimizations
   - Implement file type and size validation
   - Add rate limiting for bulk upload requests
-  - Ensure proper file sanitization and virus scanning integration
   - Add cleanup of temporary files and partial uploads
   - _Requirements: 6.1, 6.2, 6.5, 6.6_
 
@@ -154,18 +147,9 @@
   - Coordinate transitions between upload, preview, and execution phases
   - Implement proper state persistence across browser sessions
   - Add workflow validation and error recovery
-  - Write end-to-end tests for complete import workflow
   - _Requirements: 5.6, 3.6_
 
-- [ ] 10. Write comprehensive tests and documentation
-- [ ] 10.1 Create unit and integration tests
-  - Write unit tests for all backend services and API endpoints
-  - Create integration tests for complete import workflow
-  - Add performance tests for large file processing
-  - Implement security tests for file upload validation
-  - _Requirements: All requirements validation_
-
-- [ ] 10.2 Add documentation and final validation
+- [ ] 10. Add documentation and final validation
   - Document API endpoints and request/response schemas
   - Create user guide for import functionality
   - Add developer documentation for extending import features

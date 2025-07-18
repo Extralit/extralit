@@ -223,77 +223,93 @@ Example BibTeX files:
 
 #### Import Analysis Request
 ```python
-class ImportAnalysisRequest(BaseModel):
-    workspace_id: UUID
-    documents: Dict[str, DocumentMetadata]  # reference_key -> file metadata
+class FileInfo(BaseModel):
+    """Information about a file to be imported."""
+    filename: str = Field(..., description="Name of the file")
+    size: int = Field(..., description="File size in bytes for comparison")
 
 class DocumentMetadata(BaseModel):
-    document_create: DocumentCreate  # Contains reference, doi, pmid, etc.
-    title: str  # For display
-    authors: List[str]  # For display
-    venue: Optional[str]  # Journal, publisher, or institution from BibTeX
-    year: Optional[int]  # For display
-    associated_files: List[FileInfo]  # PDF file metadata (not contents)
+    """Metadata information for a document to be imported."""
+    document_create: DocumentCreate = Field(..., description="Document creation data")
+    title: str = Field(..., description="Document title for display")
+    authors: List[str] = Field(default_factory=list, description="Document authors for display")
+    year: Optional[int] = Field(None, description="Publication year for display")
+    venue: Optional[str] = Field(None, description="Publication venue (journal, publisher, or institution)")
+    associated_files: List[FileInfo] = Field(default_factory=list, description="PDF file metadata (not contents)")
 
-class FileInfo(BaseModel):
-    filename: str
-    size: int  # File size in bytes for comparison
+class ImportAnalysisRequest(BaseModel):
+    """Request schema for import analysis."""
+    workspace_id: UUID = Field(..., description="Target workspace ID")
+    documents: Dict[str, DocumentMetadata] = Field(..., description="Reference key to file metadata mapping")
 ```
 
 #### Import Analysis Response
 ```python
-class ImportAnalysisResponse(BaseModel):
-    documents: Dict[str, DocumentImportAnalysis]  # reference_key -> document info
-    summary: ImportSummary
+class ImportStatus(str, Enum):
+    """Status of a document in the import process."""
+    ADD = "add"
+    UPDATE = "update"
+    SKIP = "skip"
+    FAILED = "failed"
 
 class DocumentImportAnalysis(BaseModel):
-    document_create: DocumentCreate  # Reuse existing schema
-    title: str  # For display only
-    authors: List[str]  # For display only
-    venue: Optional[str]  # Journal, publisher, or institution from BibTeX
-    year: Optional[int]  # For display only
-    associated_files: List[str]  # PDF filenames matched to this reference
-    status: ImportStatus  # add, update, skip, failed
-    validation_errors: List[str] # Validation error messages if any
+    """Information about a document in the import analysis response."""
+    document_create: DocumentCreate = Field(..., description="Document creation data")
+    title: str = Field(..., description="Document title for display")
+    authors: Optional[List[str]] = Field(default_factory=list, description="Document authors for display")
+    year: Optional[int] = Field(None, description="Publication year for display")
+    venue: Optional[str] = Field(None, description="Publication venue (journal, publisher, or institution)")
+    associated_files: List[str] = Field(default_factory=list, description="PDF filenames matched to this reference")
+    status: ImportStatus = Field(..., description="Import status (add, update, skip, failed)")
+    validation_errors: Optional[List[str]] = Field(default_factory=list, description="Validation error messages if any")
 
 class ImportSummary(BaseModel):
-    total_documents: int
-    add_count: int
-    update_count: int
-    skip_count: int
-    failed_count: int
-```
+    """Summary statistics for import analysis."""
+    total_documents: int = Field(..., description="Total number of documents analyzed")
+    add_count: int = Field(..., description="Number of documents to be added")
+    update_count: int = Field(..., description="Number of documents to be updated")
+    skip_count: int = Field(..., description="Number of documents to be skipped")
+    failed_count: int = Field(..., description="Number of documents that failed analysis")
 
-#### Import Execute Request
-```python
-class ImportExecuteRequest(BaseModel):
-    import_id: UUID
-    document_actions: Dict[str, ImportAction]  # reference_key -> action
-
-class ImportAction(BaseModel):
-    action: str  # add, update, skip
-    files_to_import: List[str]
+class ImportAnalysisResponse(BaseModel):
+    """Response schema for import analysis."""
+    documents: Dict[str, DocumentImportAnalysis] = Field(..., description="Reference key to document info mapping")
+    summary: ImportSummary = Field(..., description="Import analysis summary")
 ```
 
 #### Bulk Upload Request/Response
 ```python
-# Multipart form data structure (paginated by 20-50 PDFs):
-# - documents_metadata: str (JSON string of DocumentsBulkCreate)
-# - files: List[UploadFile] (Multiple PDF files, max 20-50 per request)
+class BulkDocumentInfo(BaseModel):
+    """Information about a document in the bulk upload request."""
+    reference_key: str = Field(..., description="BibTeX reference key for job tracking")
+    document_create: DocumentCreate = Field(..., description="Document creation data")
+    associated_file: str = Field(..., description="Single PDF filename (one file per DocumentCreate)")
 
 class DocumentsBulkCreate(BaseModel):
-    documents: List[BulkDocumentInfo]  # List of documents to upload
-
-class BulkDocumentInfo(BaseModel):
-    reference_key: str  # BibTeX reference key for job tracking
-    document_create: DocumentCreate  # Each document has one associated PDF file
-    associated_file: str  # Single PDF filename (one file per DocumentCreate)
+    """Metadata for bulk document upload."""
+    documents: List[BulkDocumentInfo] = Field(..., description="List of documents to upload")
 
 class DocumentsBulkResponse(BaseModel):
-    job_ids: Dict[str, str]  # reference_key -> job_id mapping for frontend tracking
-    total_documents: int
-    failed_validations: List[str]  # Files that failed validation
+    """Response schema for bulk document upload."""
+    job_ids: Dict[str, str] = Field(..., description="Reference key to job_id mapping for frontend tracking")
+    total_documents: int = Field(..., description="Total number of documents in the request")
+    failed_validations: List[str] = Field(default_factory=list, description="Files that failed validation")
 ```
+
+#### Import Execute Request
+```python
+class DocumentImportAction(BaseModel):
+    """Action to take for a document during import execution."""
+    action: ImportStatus = Field(..., description="Action to take (add, update, skip)")
+    files_to_import: List[str] = Field(default_factory=list, description="Files to import for this document")
+
+class DocumentImportExecuteRequest(BaseModel):
+    """Request schema for import execution."""
+    workspace_id: UUID = Field(..., description="Target workspace ID")
+    document_actions: Dict[str, DocumentImportAction] = Field(..., description="Reference key to action mapping")
+```
+
+Note: The user may use the DocumentImportExecuteRequest to switch between add or update to skip status before final execution.
 
 **Pagination Strategy:**
 - Frontend sends multiple paginated requests (20-50 PDFs each) to avoid large payload failures
@@ -310,23 +326,21 @@ class DocumentsBulkResponse(BaseModel):
 class ImportHistory(DatabaseModel):
     __tablename__ = "import_history"
 
-    import_id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
     workspace_id: Mapped[UUID] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
     user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
-    bib_filename: Mapped[str] = mapped_column(String, nullable=False)
-    document_info: Mapped[dict] = mapped_column(JSON, nullable=False)  # BibTeX document metadata
-    import_summary: Mapped[dict] = mapped_column(JSON, nullable=False)  # ImportSummary counts
-    submitted_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+    filename: Mapped[str] = mapped_column(String, nullable=False)  # BibTeX filename
+    metadata: Mapped[dict] = mapped_column(MutableDict.as_mutable(JSON), nullable=False)  # ImportAnalysisResponse data
 
     workspace: Mapped["Workspace"] = relationship("Workspace")
     user: Mapped["User"] = relationship("User")
 ```
 
 **Purpose:**
-- Log all submitted bulk imports with complete audit trail
-- Store BibTeX document information for historical reference
-- Track import summary statistics (add/update/skip/failed counts)
-- Enable import history viewing and analysis
+- Records the actual database committed operations (not necessarily the job status)
+- Stores the complete ImportAnalysisResponse JSON in the metadata field
+- The ImportHistory records the actual database committed operations, not just the job status
+- Provides audit trail of what was actually imported vs. what was requested
+- Enables import history viewing and analysis
 
 ### Document Field Mapping
 The import process maps BibTeX entries to existing Document model fields:
@@ -383,7 +397,6 @@ The import process maps BibTeX entries to existing Document model fields:
 - BibTeX parser with various .bib file formats
 - PDF matching algorithms with different filename patterns
 - Import status analysis logic
-- Database operations and model validations
 
 ### Integration Tests
 - End-to-end import workflow
@@ -395,13 +408,11 @@ The import process maps BibTeX entries to existing Document model fields:
 - Large .bib file processing (1000+ entries)
 - Bulk PDF upload handling
 - Concurrent import operations
-- Database performance with large document sets
 
 ### Security Tests
 - File upload validation and sanitization
 - BibTeX input sanitization
 - Authorization checks for workspace access
-- S3 storage security and access controls
 
 ## Implementation Considerations
 

@@ -680,9 +680,8 @@ class ImportHistory(DatabaseModel):
 
     workspace_id: Mapped[UUID] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
     user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
-    bib_filename: Mapped[str] = mapped_column(String, nullable=False)
-    document_info: Mapped[dict] = mapped_column(MutableDict.as_mutable(JSON), nullable=False)
-    import_summary: Mapped[dict] = mapped_column(MutableDict.as_mutable(JSON), nullable=False)
+    filename: Mapped[str] = mapped_column(String, nullable=False)
+    metadata_: Mapped[Optional[dict]] = mapped_column("metadata", MutableDict.as_mutable(JSON), nullable=True)
 
     workspace: Mapped["Workspace"] = relationship("Workspace")
     user: Mapped["User"] = relationship("User")
@@ -690,6 +689,6 @@ class ImportHistory(DatabaseModel):
     def __repr__(self):
         return (
             f"ImportHistory(id={str(self.id)!r}, workspace_id={str(self.workspace_id)!r}, "
-            f"user_id={str(self.user_id)!r}, bib_filename={self.bib_filename!r}, "
+            f"user_id={str(self.user_id)!r}, filename={self.filename!r}, "
             f"inserted_at={str(self.inserted_at)!r}, updated_at={str(self.updated_at)!r})"
         )
