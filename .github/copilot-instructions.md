@@ -254,7 +254,7 @@ Extralit uses a normalized database approach for storing and presenting extracte
 2. Create a migration using Alembic:
    ```bash
    cd argilla-server
-   pdm run alembic -c src/argilla_server/alembic.ini revision -m "description of change"
+   pdm run revision -m "description of change"
    ```
 3. Update related schemas and validators
 4. Test the changes thoroughly

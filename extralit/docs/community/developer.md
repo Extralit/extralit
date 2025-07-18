@@ -186,7 +186,7 @@ When making changes to the database schema, you need to create database revision
 
 ```bash
 cd argilla-server
-PYTHONPATH=. alembic revision --autogenerate -m "Brief description of the change"
+pdm run revision -m "description of change"
 ```
 
 3. Review the generated revision file in `argilla-server/migrations/versions/`
