@@ -16,7 +16,7 @@ import os
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional, Union
 from urllib.parse import unquote, urlparse
-from uuid import UUID, uuid4
+from uuid import UUID
 
 try:
     from typing import Self
@@ -101,7 +101,6 @@ class Document(Resource):
         *,
         reference: str,
         workspace_id: Optional[UUID] = None,
-        id: Optional[UUID] = None,
         pmid: Optional[str] = None,
         doi: Optional[str] = None,
         client: Optional["Argilla"] = None,
@@ -141,11 +140,10 @@ class Document(Resource):
             raise ValueError(f"File path {file_path_or_url} does not exist")
 
         return cls(
-            id=id or uuid4(),
             workspace_id=workspace_id,
+            reference=reference,
             file_name=file_name,
             file_path=file_path,
-            reference=reference,
             url=url,
             pmid=pmid,
             doi=doi,
