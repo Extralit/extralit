@@ -136,7 +136,7 @@ class TestDocumentResourceCRUD:
             workspace_id=sample_workspace_id,
             reference="Test2023",
             pmid="87654321",
-            _client=client
+            client=client
         )
         
         # Mock the API response
@@ -196,7 +196,7 @@ class TestDocumentResourceCRUD:
             id=sample_document_id,
             workspace_id=sample_workspace_id,
             reference="Original2023",
-            _client=client
+            client=client
         )
         
         # Update some fields
@@ -234,7 +234,7 @@ class TestDocumentResourceCRUD:
             id=sample_document_id,
             workspace_id=sample_workspace_id,
             reference="ToDelete2023",
-            _client=client
+            client=client
         )
         
         # Call delete
