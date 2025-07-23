@@ -14,10 +14,10 @@
 
 import pytest
 from uuid import UUID, uuid4
-from argilla_server.constants import API_KEY_HEADER_NAME
-from argilla_server.contexts import accounts
-from argilla_server.enums import UserRole
-from argilla_server.models import User
+from extralit_server.constants import API_KEY_HEADER_NAME
+from extralit_server.contexts import accounts
+from extralit_server.enums import UserRole
+from extralit_server.models import User
 from httpx import AsyncClient
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession

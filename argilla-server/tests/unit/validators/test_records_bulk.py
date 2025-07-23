@@ -13,11 +13,11 @@
 #  limitations under the License.
 
 import pytest
-from argilla_server.api.schemas.v1.records import RecordCreate, RecordUpsert
-from argilla_server.api.schemas.v1.records_bulk import RecordsBulkCreate, RecordsBulkUpsert
-from argilla_server.errors.future import UnprocessableEntityError
-from argilla_server.models import Dataset
-from argilla_server.validators.records import RecordsBulkCreateValidator
+from extralit_server.api.schemas.v1.records import RecordCreate, RecordUpsert
+from extralit_server.api.schemas.v1.records_bulk import RecordsBulkCreate, RecordsBulkUpsert
+from extralit_server.errors.future import UnprocessableEntityError
+from extralit_server.models import Dataset
+from extralit_server.validators.records import RecordsBulkCreateValidator
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from tests.factories import DatasetFactory, RecordFactory, TextFieldFactory

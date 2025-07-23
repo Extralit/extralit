@@ -15,9 +15,9 @@
 from uuid import UUID
 
 import pytest
-from argilla_server.constants import API_KEY_HEADER_NAME
-from argilla_server.enums import UserRole, RecordStatus
-from argilla_server.search_engine import SearchEngine, SearchResponseItem, SearchResponses
+from extralit_server.constants import API_KEY_HEADER_NAME
+from extralit_server.enums import UserRole, RecordStatus
+from extralit_server.search_engine import SearchEngine, SearchResponseItem, SearchResponses
 from httpx import AsyncClient
 
 from tests.factories import (

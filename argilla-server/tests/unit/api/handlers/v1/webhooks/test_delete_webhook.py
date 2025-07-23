@@ -19,9 +19,9 @@ from uuid import UUID, uuid4
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from argilla_server.webhooks.v1.enums import WebhookEvent
-from argilla_server.models import Webhook
-from argilla_server.constants import API_KEY_HEADER_NAME
+from extralit_server.webhooks.v1.enums import WebhookEvent
+from extralit_server.models import Webhook
+from extralit_server.constants import API_KEY_HEADER_NAME
 
 from tests.factories import AdminFactory, AnnotatorFactory, WebhookFactory
 

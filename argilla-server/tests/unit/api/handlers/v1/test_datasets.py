@@ -22,16 +22,16 @@ from uuid import UUID, uuid4
 import pytest
 from sqlalchemy import func, inspect, select
 
-from argilla_server.api.handlers.v1.datasets.records import LIST_DATASET_RECORDS_LIMIT_DEFAULT
-from argilla_server.api.schemas.v1.datasets import DATASET_GUIDELINES_MAX_LENGTH, DATASET_NAME_MAX_LENGTH
-from argilla_server.api.schemas.v1.fields import FIELD_CREATE_NAME_MAX_LENGTH, FIELD_CREATE_TITLE_MAX_LENGTH
-from argilla_server.api.schemas.v1.records import RECORDS_CREATE_MAX_ITEMS, RECORDS_CREATE_MIN_ITEMS
-from argilla_server.api.schemas.v1.vector_settings import (
+from extralit_server.api.handlers.v1.datasets.records import LIST_DATASET_RECORDS_LIMIT_DEFAULT
+from extralit_server.api.schemas.v1.datasets import DATASET_GUIDELINES_MAX_LENGTH, DATASET_NAME_MAX_LENGTH
+from extralit_server.api.schemas.v1.fields import FIELD_CREATE_NAME_MAX_LENGTH, FIELD_CREATE_TITLE_MAX_LENGTH
+from extralit_server.api.schemas.v1.records import RECORDS_CREATE_MAX_ITEMS, RECORDS_CREATE_MIN_ITEMS
+from extralit_server.api.schemas.v1.vector_settings import (
     VECTOR_SETTINGS_CREATE_NAME_MAX_LENGTH,
     VECTOR_SETTINGS_CREATE_TITLE_MAX_LENGTH,
 )
-from argilla_server.constants import API_KEY_HEADER_NAME
-from argilla_server.enums import (
+from extralit_server.constants import API_KEY_HEADER_NAME
+from extralit_server.enums import (
     DatasetDistributionStrategy,
     DatasetStatus,
     OptionsOrder,
@@ -41,7 +41,7 @@ from argilla_server.enums import (
     SimilarityOrder,
     SortOrder,
 )
-from argilla_server.models import (
+from extralit_server.models import (
     Dataset,
     Field,
     Question,
@@ -54,7 +54,7 @@ from argilla_server.models import (
     Vector,
     VectorSettings,
 )
-from argilla_server.search_engine import (
+from extralit_server.search_engine import (
     AndFilter,
     MetadataFilterScope,
     Order,

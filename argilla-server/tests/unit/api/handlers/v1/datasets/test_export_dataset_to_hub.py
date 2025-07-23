@@ -18,8 +18,8 @@ from uuid import UUID, uuid4
 from rq.job import JobStatus
 from httpx import AsyncClient
 
-from argilla_server.jobs.queues import DEFAULT_QUEUE
-from argilla_server.constants import API_KEY_HEADER_NAME
+from extralit_server.jobs.queues import DEFAULT_QUEUE
+from extralit_server.constants import API_KEY_HEADER_NAME
 
 from tests.factories import AdminFactory, DatasetFactory, AnnotatorFactory, RecordFactory
 from huggingface_hub.errors import HfHubHTTPError

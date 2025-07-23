@@ -16,9 +16,9 @@ from typing import TYPE_CHECKING
 import pytest
 from unittest.mock import patch, MagicMock
 
-from argilla_server.api.handlers.v1.models import proxy
-from argilla_server.models import User
-from argilla_server.errors import BadRequestError
+from extralit_server.api.handlers.v1.models import proxy
+from extralit_server.models import User
+from extralit_server.errors import BadRequestError
 
 from starlette.requests import Request
 from starlette.responses import StreamingResponse

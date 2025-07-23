@@ -18,8 +18,8 @@ from unittest.mock import patch, MagicMock
 import os
 
 import pytest
-from argilla_server.contexts.files import ListObjectsResponse, ObjectMetadata
-from argilla_server.constants import API_KEY_HEADER_NAME
+from extralit_server.contexts.files import ListObjectsResponse, ObjectMetadata
+from extralit_server.constants import API_KEY_HEADER_NAME
 
 from tests.factories import (
     MinioFileFactory,

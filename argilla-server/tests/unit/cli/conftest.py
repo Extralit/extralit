@@ -13,7 +13,7 @@
 #  limitations under the License.
 
 import pytest
-from argilla_server.cli import app
+from extralit_server.cli import app
 from typer import Typer
 from typer.testing import CliRunner
 

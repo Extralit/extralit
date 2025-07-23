@@ -16,7 +16,7 @@ import os
 from typing import TYPE_CHECKING
 from unittest import mock
 
-from argilla_server.models import User, UserRole, Workspace, WorkspaceUser
+from extralit_server.models import User, UserRole, Workspace, WorkspaceUser
 from click.testing import CliRunner
 from typer import Typer
 

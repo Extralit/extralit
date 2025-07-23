@@ -17,11 +17,11 @@ import pytest
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from argilla_server.api.schemas.v1.datasets import HubDatasetMapping, HubDatasetMappingItem
-from argilla_server.enums import DatasetStatus, QuestionType
-from argilla_server.models import Record
-from argilla_server.contexts.hub import HubDataset
-from argilla_server.search_engine import SearchEngine
+from extralit_server.api.schemas.v1.datasets import HubDatasetMapping, HubDatasetMappingItem
+from extralit_server.enums import DatasetStatus, QuestionType
+from extralit_server.models import Record
+from extralit_server.contexts.hub import HubDataset
+from extralit_server.search_engine import SearchEngine
 
 from tests.factories import (
     ChatFieldFactory,

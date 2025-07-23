@@ -21,11 +21,11 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from argilla_server.enums import UserRole
-from argilla_server.errors.future import AuthenticationError
-from argilla_server.models import User
-from argilla_server.security.authentication import JWT
-from argilla_server.security.authentication.oauth2 import OAuth2Settings
+from extralit_server.enums import UserRole
+from extralit_server.errors.future import AuthenticationError
+from extralit_server.models import User
+from extralit_server.security.authentication import JWT
+from extralit_server.security.authentication.oauth2 import OAuth2Settings
 from tests.factories import AdminFactory, AnnotatorFactory, WorkspaceFactory
 
 

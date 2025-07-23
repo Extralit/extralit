@@ -22,14 +22,14 @@ from httpx import AsyncClient
 from opensearchpy import OpenSearch
 from sqlalchemy.engine.interfaces import IsolationLevel
 
-from argilla_server.contexts import distribution, datasets, records
-from argilla_server.api.routes import api_v1
-from argilla_server.constants import API_KEY_HEADER_NAME, DEFAULT_API_KEY
-from argilla_server.database import get_async_db
-from argilla_server.models import User, UserRole, Workspace
-from argilla_server.search_engine import SearchEngine, get_search_engine
-from argilla_server.settings import settings
-from argilla_server.telemetry import TelemetryClient
+from extralit_server.contexts import distribution, datasets, records
+from extralit_server.api.routes import api_v1
+from extralit_server.constants import API_KEY_HEADER_NAME, DEFAULT_API_KEY
+from extralit_server.database import get_async_db
+from extralit_server.models import User, UserRole, Workspace
+from extralit_server.search_engine import SearchEngine, get_search_engine
+from extralit_server.settings import settings
+from extralit_server.telemetry import TelemetryClient
 
 from tests.database import TestSession
 from tests.factories import AnnotatorFactory, OwnerFactory, UserFactory
@@ -81,7 +81,7 @@ def annotator_auth_header(annotator: User) -> Dict[str, str]:
 async def async_client(
     request, mock_search_engine: SearchEngine, mocker: "MockerFixture"
 ) -> Generator["AsyncClient", None, None]:
-    from argilla_server import app
+    from extralit_server import app
 
     async def override_get_async_db(isolation_level: Optional[IsolationLevel] = None):
         session = TestSession()

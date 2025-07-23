@@ -15,7 +15,7 @@
 
 import pytest
 
-from argilla_server.api.schemas.v1.users import User, UserCreate
+from extralit_server.api.schemas.v1.users import User, UserCreate
 from tests.factories import UserFactory
 
 

@@ -15,7 +15,7 @@
 from typing import Any, Dict, List, Set
 
 import pytest
-from argilla_server.utils import parse_query_param
+from extralit_server.utils import parse_query_param
 from fastapi import HTTPException
 
 from pydantic import BaseModel, Field

@@ -15,11 +15,11 @@
 import uuid
 from datetime import datetime
 
-import argilla as rg
+import extralit as rg
 import pytest
-from argilla import Argilla, Workspace
-from argilla._exceptions._responses import RecordResponsesError
-from argilla._exceptions._suggestions import RecordSuggestionsError
+from extralit import Argilla, Workspace
+from extralit._exceptions._responses import RecordResponsesError
+from extralit._exceptions._suggestions import RecordSuggestionsError
 
 
 def test_add_records(client):

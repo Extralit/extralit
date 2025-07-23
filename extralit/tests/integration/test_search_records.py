@@ -17,7 +17,7 @@ from random import random
 
 import pytest
 
-from argilla import (
+from extralit import (
     Argilla,
     Workspace,
     Dataset,

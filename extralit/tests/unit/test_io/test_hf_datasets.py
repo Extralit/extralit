@@ -16,9 +16,9 @@ from uuid import uuid4
 
 from datasets import Value, Sequence, load_dataset
 
-import argilla as rg
-from argilla.records._io import HFDatasetsIO
-from argilla.records._mapping import IngestedRecordMapper
+import extralit as rg
+from extralit.records._io import HFDatasetsIO
+from extralit.records._mapping import IngestedRecordMapper
 
 
 class TestHFDatasetsIO:

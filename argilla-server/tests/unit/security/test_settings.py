@@ -16,8 +16,8 @@ import os
 import tempfile
 from unittest import mock
 
-from argilla_server.security.authentication.oauth2 import OAuth2Settings
-from argilla_server.security.settings import Settings
+from extralit_server.security.authentication.oauth2 import OAuth2Settings
+from extralit_server.security.settings import Settings
 
 
 def test_default_security_settings():

@@ -27,7 +27,7 @@ except ImportError:
     PANDERA_AVAILABLE = False
     pytest.skip("pandera and extralit are required for schema tests", allow_module_level=True)
 
-from argilla import Workspace
+from extralit import Workspace
 
 
 @pytest.fixture

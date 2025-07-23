@@ -21,8 +21,8 @@ from datetime import datetime
 from httpx import AsyncClient
 from sqlalchemy import func, select
 
-from argilla_server.enums import FieldType
-from argilla_server.models import Field
+from extralit_server.enums import FieldType
+from extralit_server.models import Field
 
 from tests.factories import DatasetFactory
 

@@ -20,7 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing_extensions import Any
 from uuid import UUID
 
-from argilla_server.enums import FieldType
+from extralit_server.enums import FieldType
 
 from tests.factories import ImageFieldFactory, ChatFieldFactory
 

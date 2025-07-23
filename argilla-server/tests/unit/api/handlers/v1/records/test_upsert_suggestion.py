@@ -17,8 +17,8 @@ from typing import List
 from uuid import UUID, uuid4
 
 import pytest
-from argilla_server.enums import QuestionType, SuggestionType
-from argilla_server.models import Suggestion
+from extralit_server.enums import QuestionType, SuggestionType
+from extralit_server.models import Suggestion
 from httpx import AsyncClient
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession

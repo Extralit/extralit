@@ -17,7 +17,7 @@ import pytest
 from uuid import UUID
 from httpx import AsyncClient
 
-from argilla_server.enums import FieldType
+from extralit_server.enums import FieldType
 
 from tests.factories import DatasetFactory, ImageFieldFactory, ChatFieldFactory
 

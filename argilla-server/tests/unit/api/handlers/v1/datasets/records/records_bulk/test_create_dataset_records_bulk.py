@@ -20,7 +20,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.encoders import jsonable_encoder
 
-from argilla_server.enums import (
+from extralit_server.enums import (
     DatasetStatus,
     QuestionType,
     ResponseStatus,
@@ -28,11 +28,11 @@ from argilla_server.enums import (
     RecordStatus,
     DatasetDistributionStrategy,
 )
-from argilla_server.jobs.queues import HIGH_QUEUE
-from argilla_server.models.database import Record, Response, Suggestion, User
-from argilla_server.webhooks.v1.enums import RecordEvent
-from argilla_server.webhooks.v1.records import build_record_event
-from argilla_server.models.database import Record, Response, Suggestion, User
+from extralit_server.jobs.queues import HIGH_QUEUE
+from extralit_server.models.database import Record, Response, Suggestion, User
+from extralit_server.webhooks.v1.enums import RecordEvent
+from extralit_server.webhooks.v1.records import build_record_event
+from extralit_server.models.database import Record, Response, Suggestion, User
 
 from tests.factories import (
     DatasetFactory,

@@ -17,9 +17,9 @@ from typing import TYPE_CHECKING, Any, Type
 from uuid import uuid4
 
 import pytest
-from argilla_server.constants import API_KEY_HEADER_NAME
-from argilla_server.models import DatasetStatus, Response, ResponseStatus, UserRole
-from argilla_server.search_engine import SearchEngine
+from extralit_server.constants import API_KEY_HEADER_NAME
+from extralit_server.models import DatasetStatus, Response, ResponseStatus, UserRole
+from extralit_server.search_engine import SearchEngine
 from sqlalchemy import func, select
 
 from tests.factories import (
@@ -38,7 +38,7 @@ from tests.factories import (
 )
 
 if TYPE_CHECKING:
-    from argilla_server.models import User
+    from extralit_server.models import User
     from httpx import AsyncClient
     from sqlalchemy.ext.asyncio import AsyncSession
 

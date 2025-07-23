@@ -23,15 +23,15 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.encoders import jsonable_encoder
 
-from argilla_server.constants import API_KEY_HEADER_NAME
-from argilla_server.enums import DatasetDistributionStrategy, ResponseStatus, RecordStatus
-from argilla_server.jobs.queues import HIGH_QUEUE
-from argilla_server.models import Response, User
-from argilla_server.search_engine import SearchEngine
-from argilla_server.use_cases.responses.upsert_responses_in_bulk import UpsertResponsesInBulkUseCase
-from argilla_server.webhooks.v1.enums import RecordEvent, ResponseEvent
-from argilla_server.webhooks.v1.responses import build_response_event
-from argilla_server.webhooks.v1.records import build_record_event
+from extralit_server.constants import API_KEY_HEADER_NAME
+from extralit_server.enums import DatasetDistributionStrategy, ResponseStatus, RecordStatus
+from extralit_server.jobs.queues import HIGH_QUEUE
+from extralit_server.models import Response, User
+from extralit_server.search_engine import SearchEngine
+from extralit_server.use_cases.responses.upsert_responses_in_bulk import UpsertResponsesInBulkUseCase
+from extralit_server.webhooks.v1.enums import RecordEvent, ResponseEvent
+from extralit_server.webhooks.v1.responses import build_response_event
+from extralit_server.webhooks.v1.records import build_record_event
 from tests.factories import (
     AnnotatorFactory,
     DatasetFactory,
@@ -410,8 +410,8 @@ class TestCreateCurrentUserResponsesBulk:
 
     @pytest.mark.skipif(reason="Profiling is not active", condition=not bool(os.getenv("TEST_PROFILING", None)))
     async def test_create_responses_in_bulk_profiling(self, db: "AsyncSession", elasticsearch_config: dict):
-        from argilla_server.api.schemas.v1.responses import DraftResponseUpsert
-        from argilla_server.search_engine import ElasticSearchEngine
+        from extralit_server.api.schemas.v1.responses import DraftResponseUpsert
+        from extralit_server.search_engine import ElasticSearchEngine
         from pyinstrument import Profiler
 
         from tests.factories import OwnerFactory, TextFieldFactory

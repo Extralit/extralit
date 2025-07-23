@@ -22,7 +22,7 @@ from opensearchpy import OpenSearch
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
-from argilla_server.enums import (
+from extralit_server.enums import (
     MetadataPropertyType,
     QuestionType,
     ResponseStatusFilter,
@@ -31,8 +31,8 @@ from argilla_server.enums import (
     SortOrder,
     DatasetStatus,
 )
-from argilla_server.models import Dataset, Question, Record, User, VectorSettings, Vector
-from argilla_server.search_engine import (
+from extralit_server.models import Dataset, Question, Record, User, VectorSettings, Vector
+from extralit_server.search_engine import (
     ResponseFilterScope,
     SuggestionFilterScope,
     TermsFilter,
@@ -44,12 +44,12 @@ from argilla_server.search_engine import (
     RecordFilterScope,
     AndFilter,
 )
-from argilla_server.search_engine.commons import (
+from extralit_server.search_engine.commons import (
     BaseElasticAndOpenSearchEngine,
     es_index_name_for_dataset,
     es_field_for_vector_settings,
 )
-from argilla_server.settings import settings as server_settings
+from extralit_server.settings import settings as server_settings
 from tests.factories import (
     DatasetFactory,
     FloatMetadataPropertyFactory,

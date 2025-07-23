@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from argilla_server.security.authentication.oauth2._backends import KeycloakOpenId, Strategy
+from extralit_server.security.authentication.oauth2._backends import KeycloakOpenId, Strategy
 
 
 class TestKeyCloackOpenIdBackend:

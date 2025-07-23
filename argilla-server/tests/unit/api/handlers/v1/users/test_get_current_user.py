@@ -13,7 +13,7 @@
 #  limitations under the License.
 
 import pytest
-from argilla_server.models import User
+from extralit_server.models import User
 from httpx import AsyncClient
 
 

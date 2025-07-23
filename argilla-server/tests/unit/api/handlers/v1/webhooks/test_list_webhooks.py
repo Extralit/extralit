@@ -16,8 +16,8 @@ import pytest
 
 from httpx import AsyncClient
 
-from argilla_server.webhooks.v1.enums import WebhookEvent
-from argilla_server.constants import API_KEY_HEADER_NAME
+from extralit_server.webhooks.v1.enums import WebhookEvent
+from extralit_server.constants import API_KEY_HEADER_NAME
 
 from tests.factories import AdminFactory, AnnotatorFactory, WebhookFactory
 

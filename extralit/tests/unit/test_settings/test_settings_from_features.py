@@ -13,10 +13,10 @@
 # limitations under the License.
 
 import pytest
-import argilla as rg
+import extralit as rg
 
-from argilla._exceptions._settings import SettingsError
-from argilla.settings._io._hub import _define_settings_from_features
+from extralit._exceptions._settings import SettingsError
+from extralit.settings._io._hub import _define_settings_from_features
 
 
 def test_define_settings_from_features_text():

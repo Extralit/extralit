@@ -18,10 +18,10 @@ from datetime import datetime
 import httpx
 from pytest_httpx import HTTPXMock
 
-import argilla as rg
-from argilla._models import FieldModel
-from argilla._models._settings._fields import ImageFieldSettings, ChatFieldSettings
-from argilla.settings._field import ImageField, ChatField, CustomField
+import extralit as rg
+from extralit._models import FieldModel
+from extralit._models._settings._fields import ImageFieldSettings, ChatFieldSettings
+from extralit.settings._field import ImageField, ChatField, CustomField
 
 
 class TestImageField:

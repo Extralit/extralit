@@ -14,8 +14,8 @@
 
 import pytest
 
-from argilla_server.errors.future import NotFoundError
-from argilla_server.security.authentication.oauth2 import OAuth2Settings
+from extralit_server.errors.future import NotFoundError
+from extralit_server.security.authentication.oauth2 import OAuth2Settings
 
 
 class TestOAuth2Settings:

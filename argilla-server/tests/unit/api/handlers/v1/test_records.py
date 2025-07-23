@@ -19,10 +19,10 @@ from uuid import UUID, uuid4
 
 import pytest
 
-from argilla_server.constants import API_KEY_HEADER_NAME
-from argilla_server.enums import RecordStatus, ResponseStatus
-from argilla_server.models import Dataset, Record, Response, Suggestion, User, UserRole
-from argilla_server.search_engine import SearchEngine
+from extralit_server.constants import API_KEY_HEADER_NAME
+from extralit_server.enums import RecordStatus, ResponseStatus
+from extralit_server.models import Dataset, Record, Response, Suggestion, User, UserRole
+from extralit_server.search_engine import SearchEngine
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -49,7 +49,7 @@ from tests.factories import (
 )
 
 if TYPE_CHECKING:
-    from argilla_server.models import Dataset
+    from extralit_server.models import Dataset
     from httpx import AsyncClient
     from sqlalchemy.ext.asyncio import AsyncSession
 

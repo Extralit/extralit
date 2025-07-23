@@ -13,7 +13,7 @@
 # limitations under the License.
 import uuid
 
-from argilla import Argilla, Workspace, User
+from extralit import Argilla, Workspace, User
 
 
 class TestWorkspacesManagement:

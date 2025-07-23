@@ -16,7 +16,7 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from argilla_server.models import DatasetUser
+from extralit_server.models import DatasetUser
 from tests.factories import UserFactory, DatasetFactory
 
 

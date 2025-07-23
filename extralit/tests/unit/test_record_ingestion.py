@@ -16,9 +16,9 @@ from uuid import uuid4
 
 import pytest
 
-import argilla as rg
-from argilla._exceptions import RecordsIngestionError
-from argilla.records._dataset_records import RecordErrorHandling
+import extralit as rg
+from extralit._exceptions import RecordsIngestionError
+from extralit.records._dataset_records import RecordErrorHandling
 
 
 @pytest.fixture

@@ -16,8 +16,8 @@ import uuid
 
 import pytest
 
-from argilla import UserResponse, Response, Dataset, Workspace, Record
-from argilla._models import UserResponseModel, ResponseStatus
+from extralit import UserResponse, Response, Dataset, Workspace, Record
+from extralit._models import UserResponseModel, ResponseStatus
 
 
 class TestResponses:

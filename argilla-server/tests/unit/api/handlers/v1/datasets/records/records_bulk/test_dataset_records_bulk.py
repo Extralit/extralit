@@ -16,9 +16,9 @@ from uuid import UUID
 
 import pytest
 
-from argilla_server.constants import API_KEY_HEADER_NAME
-from argilla_server.enums import DatasetStatus, RecordStatus
-from argilla_server.models import Dataset, Record
+from extralit_server.constants import API_KEY_HEADER_NAME
+from extralit_server.enums import DatasetStatus, RecordStatus
+from extralit_server.models import Dataset, Record
 from httpx import AsyncClient
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession

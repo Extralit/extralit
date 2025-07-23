@@ -16,7 +16,7 @@ import os
 import uuid
 from typing import Any, List, Generator
 
-import argilla as rg
+import extralit as rg
 import pytest
 from datasets import Dataset as HFDataset, Value, Features, ClassLabel
 from huggingface_hub.errors import HfHubHTTPError

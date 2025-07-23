@@ -18,10 +18,10 @@ import pytest
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from argilla_server.jobs.queues import HIGH_QUEUE
-from argilla_server.jobs.webhook_jobs import enqueue_notify_events
-from argilla_server.webhooks.v1.enums import ResponseEvent
-from argilla_server.webhooks.v1.responses import build_response_event
+from extralit_server.jobs.queues import HIGH_QUEUE
+from extralit_server.jobs.webhook_jobs import enqueue_notify_events
+from extralit_server.webhooks.v1.enums import ResponseEvent
+from extralit_server.webhooks.v1.responses import build_response_event
 
 from tests.factories import ResponseFactory, WebhookFactory
 

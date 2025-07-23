@@ -14,9 +14,9 @@
 
 import uuid
 
-import argilla as rg
-from argilla._helpers._resource_repr import ResourceHTMLReprMixin
-from argilla._models import DatasetModel
+import extralit as rg
+from extralit._helpers._resource_repr import ResourceHTMLReprMixin
+from extralit._models import DatasetModel
 
 
 class TestResourceHTMLReprMixin:

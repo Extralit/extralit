@@ -16,8 +16,8 @@ from typing import AsyncGenerator
 
 import pytest
 import pytest_asyncio
-from argilla_server.search_engine import ElasticSearchEngine, OpenSearchEngine
-from argilla_server.settings import settings
+from extralit_server.search_engine import ElasticSearchEngine, OpenSearchEngine
+from extralit_server.settings import settings
 
 
 @pytest.fixture

@@ -20,9 +20,9 @@ import pytest
 from pytest_mock import MockerFixture
 from starlette.testclient import TestClient
 
-from argilla_server._app import create_server_app
-from argilla_server.settings import settings
-from argilla_server.telemetry import TelemetryClient
+from extralit_server._app import create_server_app
+from extralit_server.settings import settings
+from extralit_server.telemetry import TelemetryClient
 
 
 class TestAPITelemetry:

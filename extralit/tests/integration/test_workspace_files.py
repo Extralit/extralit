@@ -19,7 +19,7 @@ from pathlib import Path
 
 import pytest
 
-from argilla import Argilla, Workspace
+from extralit import Argilla, Workspace
 
 
 class TestWorkspaceFiles:

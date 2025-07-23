@@ -15,7 +15,7 @@
 import pytest
 from typer.testing import CliRunner
 
-from argilla.cli.app import app
+from extralit.cli.app import app
 
 
 @pytest.fixture

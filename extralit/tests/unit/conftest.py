@@ -15,7 +15,7 @@
 import pytest
 from unittest.mock import patch
 from httpx import Timeout
-from argilla import Argilla
+from extralit import Argilla
 
 
 @pytest.fixture(autouse=True)

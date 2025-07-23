@@ -17,7 +17,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from httpx import Timeout
 
-from argilla import Argilla
+from extralit import Argilla
 
 
 class TestHTTPClient:

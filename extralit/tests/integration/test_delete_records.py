@@ -16,7 +16,7 @@ import uuid
 
 import pytest
 
-import argilla as rg
+import extralit as rg
 
 
 @pytest.fixture

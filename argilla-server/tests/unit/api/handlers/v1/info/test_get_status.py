@@ -13,8 +13,8 @@
 #  limitations under the License.
 
 import pytest
-from argilla_server._version import __version__
-from argilla_server.search_engine import SearchEngine
+from extralit_server._version import __version__
+from extralit_server.search_engine import SearchEngine
 from httpx import AsyncClient
 
 

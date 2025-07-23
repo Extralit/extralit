@@ -16,8 +16,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from argilla._api._workspaces import WorkspacesAPI
-from argilla._models._files import ListObjectsResponse, ObjectMetadata, FileObjectResponse
+from extralit._api._workspaces import WorkspacesAPI
+from extralit._models._files import ListObjectsResponse, ObjectMetadata, FileObjectResponse
 
 try:
     import pandera as pa

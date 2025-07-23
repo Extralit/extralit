@@ -16,8 +16,8 @@ import uuid
 
 import pytest
 
-import argilla as rg
-from argilla._models import MetadataFieldModel, TermsMetadataPropertySettings
+import extralit as rg
+from extralit._models import MetadataFieldModel, TermsMetadataPropertySettings
 
 
 class TestMetadata:

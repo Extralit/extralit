@@ -20,22 +20,22 @@ from uuid import UUID
 import pytest
 from sqlalchemy import func, select
 
-from argilla_server.api.schemas.v1.metadata_properties import (
+from extralit_server.api.schemas.v1.metadata_properties import (
     METADATA_PROPERTY_CREATE_NAME_MAX_LENGTH,
     METADATA_PROPERTY_CREATE_TITLE_MAX_LENGTH,
     TERMS_METADATA_PROPERTY_VALUES_MAX_ITEMS,
 )
-from argilla_server.constants import API_KEY_HEADER_NAME
-from argilla_server.enums import (
+from extralit_server.constants import API_KEY_HEADER_NAME
+from extralit_server.enums import (
     DatasetStatus,
 )
-from argilla_server.models import (
+from extralit_server.models import (
     Field,
     MetadataProperty,
     Question,
     UserRole,
 )
-from argilla_server.search_engine import (
+from extralit_server.search_engine import (
     SearchEngine,
 )
 from tests.factories import (

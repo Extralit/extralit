@@ -18,9 +18,9 @@ import uuid
 from tempfile import TemporaryDirectory
 from typing import Any, List
 
-import argilla as rg
+import extralit as rg
 import pytest
-from argilla._exceptions import SettingsError
+from extralit._exceptions import SettingsError
 from datasets import load_dataset
 from huggingface_hub.errors import BadRequestError, FileMetadataError, HfHubHTTPError
 

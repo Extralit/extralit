@@ -13,9 +13,9 @@
 #  limitations under the License.
 
 import pytest
-from argilla_server.search_engine import OpenSearchEngine
-from argilla_server.search_engine.commons import es_index_name_for_dataset
-from argilla_server.settings import settings
+from extralit_server.search_engine import OpenSearchEngine
+from extralit_server.search_engine.commons import es_index_name_for_dataset
+from extralit_server.settings import settings
 from opensearchpy import OpenSearch, RequestError
 from sqlalchemy.ext.asyncio import AsyncSession
 

@@ -14,7 +14,7 @@
 
 import pytest
 from unittest import mock
-from argilla.settings._templates import DefaultSettingsMixin
+from extralit.settings._templates import DefaultSettingsMixin
 
 
 class TestDefaultSettingsMixin:

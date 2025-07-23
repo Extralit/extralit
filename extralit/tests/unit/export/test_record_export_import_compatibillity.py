@@ -17,8 +17,8 @@ import uuid
 
 import pytest
 
-import argilla as rg
-from argilla.records._resource import Record
+import extralit as rg
+from extralit.records._resource import Record
 
 
 @pytest.fixture

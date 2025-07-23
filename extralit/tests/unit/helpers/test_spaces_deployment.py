@@ -17,7 +17,7 @@ from unittest.mock import Mock, patch
 import pytest
 from huggingface_hub import SpaceStage
 
-from argilla.client import Argilla
+from extralit.client import Argilla
 
 
 class TestSpacesDeploymentMixin:

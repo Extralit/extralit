@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from argilla import Argilla, Dataset, Settings, TextField, TextQuestion, Workspace, TaskDistribution
+from extralit import Argilla, Dataset, Settings, TextField, TextQuestion, Workspace, TaskDistribution
 
 
 class TestDatasetsList:

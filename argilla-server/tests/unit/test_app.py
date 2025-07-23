@@ -20,20 +20,20 @@ from pytest_mock import MockerFixture
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from argilla_server._app import (
+from extralit_server._app import (
     create_server_app,
     configure_database,
     _create_oauth_allowed_workspaces,
     track_server_startup,
 )
-from argilla_server.models import Workspace
-from argilla_server.security.authentication.oauth2 import OAuth2Settings
-from argilla_server.security.authentication.oauth2.settings import AllowedWorkspace
-from argilla_server.settings import Settings, settings
+from extralit_server.models import Workspace
+from extralit_server.security.authentication.oauth2 import OAuth2Settings
+from extralit_server.security.authentication.oauth2.settings import AllowedWorkspace
+from extralit_server.settings import Settings, settings
 from starlette.routing import Mount
 from starlette.testclient import TestClient
 
-from argilla_server.telemetry import TelemetryClient
+from extralit_server.telemetry import TelemetryClient
 from tests.factories import WorkspaceFactory
 
 

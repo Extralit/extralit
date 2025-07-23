@@ -16,7 +16,7 @@ from fastapi import Request, APIRouter
 from fastapi.routing import APIRoute
 from starlette.routing import Mount
 
-from argilla_server.utils._fastapi import resolve_endpoint_path_for_request
+from extralit_server.utils._fastapi import resolve_endpoint_path_for_request
 
 
 def mock_endpoint(*args, **kwargs):
