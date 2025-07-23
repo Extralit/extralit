@@ -102,21 +102,7 @@ use-venv = true
 source = "file"
 path = "src/argilla/_version.py"
 
-[tool.pdm.scripts]
-test = { cmd = "pytest tests --disable-warnings", env_file = ".env.test" }
-test-cov = { cmd = "pytest tests --disable-warnings --cov=argilla --cov-report=term --cov-report=xml", env_file = ".env.test" }
-lint = "ruff check"
-format = "black ."
-all = { composite = ["format", "lint", "test"] }
-
-[project.scripts]
-extralit = "argilla.cli.app:app"
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-env = ["HF_HUB_DISABLE_TELEMETRY=1"]
-
-[dependency-groups]
+[tool.pdm.dev-dependencies]
 dev = [
     "ipython>=8.12.3",
     "pytest>=8.4.1",
@@ -141,3 +127,17 @@ dev = [
     "mknotebooks >= 0.8.0",
     "pytest-retry>=1.5",
 ]
+
+[tool.pdm.scripts]
+test = { cmd = "pytest tests --disable-warnings", env_file = ".env.test" }
+test-cov = { cmd = "pytest tests --disable-warnings --cov=argilla --cov-report=term --cov-report=xml", env_file = ".env.test" }
+lint = "ruff check"
+format = "black ."
+all = { composite = ["format", "lint", "test"] }
+
+[project.scripts]
+extralit = "argilla.cli.app:app"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+env = ["HF_HUB_DISABLE_TELEMETRY=1"]

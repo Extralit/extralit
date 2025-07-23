@@ -16,9 +16,8 @@ import os
 from typing import Any, Dict, Optional
 from urllib.parse import unquote, urlparse
 from uuid import UUID
-import uuid
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from argilla._models._base import ResourceModel
 
@@ -51,7 +50,7 @@ class DocumentModel(ResourceModel):
         file_path_or_url: str,
         *,
         reference: str,
-        id: Optional[str] = None,
+        id: Optional[UUID] = None,
         pmid: Optional[str] = None,
         doi: Optional[str] = None,
         workspace_id: Optional[UUID] = None,
@@ -60,7 +59,6 @@ class DocumentModel(ResourceModel):
 
         if os.path.exists(file_path_or_url):
             file_name = file_path_or_url.split("/")[-1]
-            print("file_name", file_name)
 
         elif urlparse(file_path_or_url).scheme:
             url = file_path_or_url
@@ -68,12 +66,11 @@ class DocumentModel(ResourceModel):
             parsed_url = urlparse(url)
             path = parsed_url.path
             file_name = unquote(path).split("/")[-1]
-            print("file_name", file_name)
         else:
             raise ValueError(f"File path {file_path_or_url} does not exist")
 
         return cls(
-            id=id,  # Use the provided id or None
+            id=id,
             workspace_id=workspace_id,
             file_name=file_name if isinstance(file_name, str) else None,
             file_path=file_path_or_url,
