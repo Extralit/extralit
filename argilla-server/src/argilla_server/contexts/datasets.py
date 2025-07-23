@@ -704,6 +704,12 @@ async def create_document(db: "AsyncSession", dataset_create: DocumentCreate) ->
     return DocumentListItem.from_orm(document)
 
 
+async def update_document(db: "AsyncSession", document: Document) -> Document:
+    """Update an existing document in the database."""
+    await document.save(db, autocommit=True)
+    return document
+
+
 async def delete_documents(
     db: "AsyncSession",
     workspace_id: UUID,

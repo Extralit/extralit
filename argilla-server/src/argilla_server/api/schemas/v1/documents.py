@@ -42,6 +42,14 @@ class DocumentDelete(BaseModel):
     doi: Optional[str] = Field(None, description="The DOI of the document.")
 
 
+class DocumentUpdate(BaseModel):
+    """Schema for updating a document."""
+    reference: Optional[str] = Field(None, description="Extraction reference for the document")
+    pmid: Optional[str] = Field(None, description="The PubMed ID of the document.")
+    doi: Optional[str] = Field(None, description="The DOI of the document.")
+    file_name: Optional[str] = Field(None, description="The name of the file.")
+
+
 class DocumentListItem(BaseModel):
     id: UUID
     workspace_id: UUID

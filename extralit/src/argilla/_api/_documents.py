@@ -160,21 +160,46 @@ class DocumentsAPI(ResourceAPI):
         """
         url = f"/api/v1/documents/workspace/{workspace_id}"
         delete_data = {"id": str(id)}
-        response = self.http_client.delete(url=url, json=delete_data)
+        response = self.http_client.request("DELETE", url=url, json=delete_data)
         response.raise_for_status()
 
+    @api_error_handler
     def update(self, model: "DocumentModel") -> "DocumentModel":
         """Update a document.
-
-        Note: Document updates are not currently supported by the backend API.
 
         Args:
             model: The document model to update.
 
         Returns:
             The updated document model.
-
-        Raises:
-            ArgillaAPIError: Always raised as updates are not supported.
         """
-        raise ArgillaAPIError("Document updates are not currently supported by the API")
+        from argilla._models._documents import DocumentModel
+
+        if not model.id:
+            raise ValueError("Document ID is required for updates")
+
+        url = f"/api/v1/documents/{model.id}"
+        update_data = {
+            "reference": model.reference,
+            "pmid": model.pmid,
+            "doi": model.doi,
+            "file_name": model.file_name,
+        }
+        # Remove None values
+        update_data = {k: v for k, v in update_data.items() if v is not None}
+        
+        response = self.http_client.patch(url=url, json=update_data)
+        response.raise_for_status()
+
+        doc_data = response.json()
+        return DocumentModel(
+            id=doc_data.get("id"),
+            workspace_id=doc_data.get("workspace_id"),
+            file_name=doc_data.get("file_name"),
+            reference=doc_data.get("reference"),
+            url=doc_data.get("url"),
+            pmid=doc_data.get("pmid"),
+            doi=doc_data.get("doi"),
+            inserted_at=doc_data.get("inserted_at"),
+            updated_at=doc_data.get("updated_at"),
+        )
