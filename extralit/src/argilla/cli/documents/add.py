@@ -16,6 +16,7 @@ import json
 from pathlib import Path
 from typing import Dict, List, Optional
 
+from argilla.workspaces._resource import Workspace
 import typer
 import bibtexparser
 from rich.console import Console
@@ -193,7 +194,7 @@ def _match_pdfs_to_entries(entries: List[Dict], pdf_folder: Path, console: Conso
     return pdf_files
 
 
-def _build_documents_payload(entries: List[Dict], pdf_files, workspace_obj, collection):
+def _build_documents_payload(entries: List[Dict], pdf_files, workspace_obj: Workspace, collection):
     documents = {}
     for entry in entries:
         reference_key = entry.get("ID")
@@ -232,7 +233,7 @@ def _build_documents_payload(entries: List[Dict], pdf_files, workspace_obj, coll
     return documents
 
 
-def _send_import_analysis_request(client, workspace_obj, documents, console):
+def _send_import_analysis_request(client: Argilla, workspace_obj: Workspace, documents, console: Console):
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
@@ -252,14 +253,14 @@ def _send_import_analysis_request(client, workspace_obj, documents, console):
     return analysis_result
 
 
-def _execute_document_bulk_import(client, analysis_result, pdf_folder, console):
+def _execute_document_bulk_import(client: Argilla, analysis_result: Dict, pdf_folder: Path, console: Console) -> None:
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
         console=console,
     ) as progress:
         task = progress.add_task("Executing import...", total=None)
-        documents_to_import = {}
+        documents_to_import: Dict[str, Dict] = {}
         for ref_key, doc_info in analysis_result.get("documents", {}).items():
             status = doc_info.get("status", "")
             if status in ["add", "update"]:
@@ -274,17 +275,14 @@ def _execute_document_bulk_import(client, analysis_result, pdf_folder, console):
             )
             console.print(panel)
             return
-        bulk_documents = []
-        files_to_upload = []
+        bulk_documents: List[Dict] = []
+        files_to_upload: List = []
+        pdf_file_map = {pdf_path.name: pdf_path for pdf_path in pdf_folder.rglob("*.pdf")}
         for ref_key, doc_info in documents_to_import.items():
             document_create = doc_info.get("document_create", {})
             associated_files = doc_info.get("associated_files", [])
             for file_name in associated_files:
-                file_path = None
-                for pdf_path in pdf_folder.rglob("*.pdf"):
-                    if pdf_path.name == file_name:
-                        file_path = pdf_path
-                        break
+                file_path = pdf_file_map.get(file_name)
                 if file_path:
                     bulk_documents.append(
                         {
@@ -300,10 +298,12 @@ def _execute_document_bulk_import(client, analysis_result, pdf_folder, console):
                 upload_response = client.api.http_client.post(
                     f"{client.api_url}/api/v1/documents/bulk", files=files_to_upload
                 )
+                # Always close file objects
                 for _, (_, file_obj, _) in files_to_upload[1:]:
                     if hasattr(file_obj, "close"):
                         file_obj.close()
-                if upload_response.status_code != 202:
+                # Accept any 2xx status code as success
+                if not (200 <= upload_response.status_code < 300):
                     progress.update(task, completed=True, description="Import execution failed")
                     error_detail = upload_response.json().get("detail", str(upload_response.text))
                     raise ValueError(f"Error executing import: {error_detail}")
@@ -340,7 +340,7 @@ def _execute_document_bulk_import(client, analysis_result, pdf_folder, console):
                 for _, (_, file_obj, _) in files_to_upload[1:]:
                     if hasattr(file_obj, "close"):
                         file_obj.close()
-                raise e
+                _handle_cli_exception(console, e)
         else:
             progress.update(task, completed=True, description="No files to upload")
             panel = get_argilla_themed_panel(
@@ -350,6 +350,19 @@ def _execute_document_bulk_import(client, analysis_result, pdf_folder, console):
                 success=True,
             )
             console.print(panel)
+
+
+def _handle_cli_exception(console: Console, e: Exception, debug: bool = False) -> None:
+    panel = get_argilla_themed_panel(
+        f"Error: {str(e)}",
+        title="Error",
+        title_align="left",
+        exception=e,
+        debug=debug,
+        success=False,
+    )
+    console.print(panel)
+    raise typer.Exit(code=1)
 
 
 def import_bibtex(
@@ -410,7 +423,7 @@ def import_bibtex(
                 success=False,
             )
             console.print(panel)
-            raise typer.Exit(code=0)
+            return
 
         _execute_document_bulk_import(client, analysis_result, pdf_folder, console)
 
