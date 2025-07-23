@@ -41,7 +41,7 @@ def list_documents(
             console.print(panel)
             raise typer.Exit(code=1)
 
-        documents = workspace_obj.get_documents()
+        documents = workspace_obj.documents
 
         if not documents:
             panel = get_argilla_themed_panel(

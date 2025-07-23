@@ -20,8 +20,10 @@ import uuid
 
 from pydantic import BaseModel, Field
 
+from argilla._models._base import ResourceModel
 
-class Document(BaseModel):
+
+class DocumentModel(ResourceModel):
     """Schema for the `Document` model.
 
     Args:
@@ -33,9 +35,6 @@ class Document(BaseModel):
         workspace_id: The workspace ID of the document. Required.
     """
 
-    id: Optional[UUID] = Field(
-        default_factory=uuid.uuid4, description="The ID of the document, which gets assigned randomly if not provided."
-    )
     workspace_id: Optional[UUID] = Field(None, description="The workspace ID to which the document belongs to")
     file_name: Optional[str] = Field(None)
     file_path: Optional[str] = Field(None, description="Local file path")
@@ -54,7 +53,7 @@ class Document(BaseModel):
         pmid: Optional[str] = None,
         doi: Optional[str] = None,
         workspace_id: Optional[UUID] = None,
-    ) -> "Document":
+    ) -> "DocumentModel":
         url = None
 
         if os.path.exists(file_path_or_url):
@@ -101,3 +100,7 @@ class Document(BaseModel):
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(file_name={self.file_name!r}, url={self.url!r}, pmid={self.pmid!r}, doi={self.doi!r}, workspace_id={self.workspace_id!r})"
+
+
+# Backwards compatibility alias
+Document = DocumentModel

@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,12 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from argilla._api._datasets import *  # noqa 403
-from argilla._api._documents import *  # noqa 403
-from argilla._api._http import *  # noqa 403
-from argilla._api._workspaces import *  # noqa 403
-from argilla._api._users import *  # noqa 403
-from argilla._api._client import *  # noqa 403
-from argilla._api._fields import *  # noqa 403
-from argilla._api._records import *  # noqa 403
-from argilla._api._questions import *  # noqa 403
+from argilla.documents._resource import Document
+
+__all__ = ["Document"]
