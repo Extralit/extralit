@@ -35,6 +35,8 @@ class DocumentModel(ResourceModel):
         workspace_id: The workspace ID of the document. Required.
     """
 
+    # Override the id field to not auto-generate unless explicitly requested
+    id: Optional[UUID] = None
     workspace_id: Optional[UUID] = Field(None, description="The workspace ID to which the document belongs to")
     file_name: Optional[str] = Field(None)
     file_path: Optional[str] = Field(None, description="Local file path")
@@ -71,7 +73,7 @@ class DocumentModel(ResourceModel):
             raise ValueError(f"File path {file_path_or_url} does not exist")
 
         return cls(
-            id=id or uuid.uuid4(),
+            id=id,  # Use the provided id or None
             workspace_id=workspace_id,
             file_name=file_name if isinstance(file_name, str) else None,
             file_path=file_path_or_url,
@@ -93,7 +95,8 @@ class DocumentModel(ResourceModel):
             "pmid": self.pmid,
             "doi": self.doi,
         }
-        if isinstance(self.id, UUID):
+        # Only include ID if it was explicitly provided (not None)
+        if self.id is not None:
             json["id"] = str(self.id)
 
         return json
