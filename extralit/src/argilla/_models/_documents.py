@@ -66,6 +66,7 @@ class DocumentModel(ResourceModel):
             parsed_url = urlparse(url)
             path = parsed_url.path
             file_name = unquote(path).split("/")[-1]
+
         else:
             raise ValueError(f"File path {file_path_or_url} does not exist")
 
