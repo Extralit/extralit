@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = []
 lock_version = "4.5.0"
-content_hash = "sha256:e3aaa42b207be6ce13eab4a906d734dbf6c789a380aa85a53c572e673a760d7f"
+content_hash = "sha256:41b56e9f338891aad80395df38ce524be2c9b711a856ee67eee815707e3c2a29"
 
 [[metadata.targets]]
 requires_python = ">=3.9.2,<3.14"
@@ -1059,7 +1059,7 @@ summary = ""
 dependencies = [
     "dill",
     "filelock",
-    "fsspec",
+    "fsspec[http]",
     "huggingface-hub",
     "multiprocess",
     "numpy",
@@ -2219,7 +2219,7 @@ dependencies = [
     "pydantic",
     "pyyaml",
     "requests",
-    "sqlalchemy",
+    "sqlalchemy[asyncio]",
     "tenacity",
     "tiktoken",
     "tqdm",
@@ -2277,7 +2277,7 @@ dependencies = [
     "openai",
     "pandas",
     "requests",
-    "sqlalchemy",
+    "sqlalchemy[asyncio]",
     "tenacity",
     "tiktoken",
     "typing-extensions",
@@ -3094,7 +3094,7 @@ version = "7.16.6"
 summary = ""
 dependencies = [
     "beautifulsoup4",
-    "bleach",
+    "bleach[css]",
     "defusedxml",
     "importlib-metadata; python_full_version < \"3.10\"",
     "jinja2",
@@ -4003,21 +4003,6 @@ files = [
 ]
 
 [[package]]
-name = "pymupdf"
-version = "1.26.0"
-summary = ""
-files = [
-    {file = "pymupdf-1.26.0-cp39-abi3-macosx_10_9_x86_64.whl", hash = "sha256:86195673a5f2b3fbf0f75c73c40975a893fc42bf3d5c2a7cce9fb160704d9997"},
-    {file = "pymupdf-1.26.0-cp39-abi3-macosx_11_0_arm64.whl", hash = "sha256:26c5df128a0ed7c38b80a1e7ddd792dd4d8b264839b6b8b6b6b768b13c0bb60e"},
-    {file = "pymupdf-1.26.0-cp39-abi3-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:84a4dc96144a6bdf13f7d78c21500b3d1bef14d658156afd479acb3995f650c3"},
-    {file = "pymupdf-1.26.0-cp39-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:a3f6a45fcf8177763a2629a2ab2cad326e8950a0d120b174b56369365355a2a7"},
-    {file = "pymupdf-1.26.0-cp39-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:b5d4751696ba888ab1a91c6a0208c5d31724ee0bebe406f7a83067a08214f88b"},
-    {file = "pymupdf-1.26.0-cp39-abi3-win32.whl", hash = "sha256:eeb04a439355e2077f7675b8ad9377263d81990fc507748f2254a87d771d682b"},
-    {file = "pymupdf-1.26.0-cp39-abi3-win_amd64.whl", hash = "sha256:e39cc74ff030d773c4e76b9e5c5919cc4683895b73bd63bfd7a349a53ab5e8d7"},
-    {file = "pymupdf-1.26.0.tar.gz", hash = "sha256:ffe023f820379c84a0ddae38b0d07ea4016e1de84929491c34415520c629bcce"},
-]
-
-[[package]]
 name = "pypandoc"
 version = "1.15"
 summary = ""
@@ -4079,7 +4064,7 @@ name = "pytest-cov"
 version = "6.1.1"
 summary = ""
 dependencies = [
-    "coverage",
+    "coverage[toml]",
     "pytest",
 ]
 files = [
