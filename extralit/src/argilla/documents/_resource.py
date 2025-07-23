@@ -29,7 +29,7 @@ from argilla._resource import Resource
 from argilla.client import Argilla
 
 if TYPE_CHECKING:
-    from argilla.workspaces._resource import Workspace
+    pass
 
 __all__ = ["Document"]
 
@@ -80,7 +80,7 @@ class Document(Resource):
         client = client or Argilla._get_default()
         super().__init__(client=client, api=client.api.documents)
 
-        self._model = DocumentModel(
+        self._model: DocumentModel = DocumentModel(
             id=id,
             workspace_id=workspace_id,
             file_name=file_name,
@@ -90,6 +90,9 @@ class Document(Resource):
             pmid=pmid,
             doi=doi,
         )
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(reference={self.reference!r}, file_name={self.file_name!r}, url={self.url!r}, pmid={self.pmid!r}, doi={self.doi!r})"
 
     @classmethod
     def from_file(

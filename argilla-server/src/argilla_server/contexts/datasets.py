@@ -713,23 +713,16 @@ async def update_document(db: "AsyncSession", document: Document) -> Document:
 async def delete_documents(
     db: "AsyncSession",
     workspace_id: UUID,
-    id: UUID = None,
-    pmid: str = None,
-    doi: str = None,
-    url: str = None,
-    reference: str = None,
+    id: Optional[UUID] = None,
+    reference: Optional[str] = None,
 ) -> List[DocumentListItem]:
     async with db.begin_nested():
         params = [Document.workspace_id == workspace_id]
         if id is not None and id != "":
             params.append(Document.id == id)
-        if pmid:
-            params.append(Document.pmid == pmid)
-        if doi:
-            params.append(Document.doi == doi)
         if reference:
             params.append(Document.reference == reference)
-        documents = await Document.delete_many(db=db, params=params, autocommit=False)
+        documents = await Document.delete_many(db=db, conditions=params, autocommit=False)
 
     await db.commit()
     documents = [DocumentListItem.from_orm(doc) for doc in documents]

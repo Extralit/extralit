@@ -14,7 +14,7 @@
 
 from datetime import datetime
 from uuid import UUID
-from typing import Optional, Union
+from typing import Optional
 from pydantic import BaseModel, Field, ConfigDict
 
 
@@ -35,15 +35,13 @@ class DocumentCreate(BaseModel):
 class DocumentDelete(BaseModel):
     """Query Schema for deleting a document (within a Workspace)."""
 
-    id: Optional[Union[UUID, str]] = None
-    url: Optional[str] = None
+    id: UUID
     reference: Optional[str] = Field(None, description="Extraction reference for the document")
-    pmid: Optional[str] = Field(None, description="The PubMed ID of the document.")
-    doi: Optional[str] = Field(None, description="The DOI of the document.")
 
 
 class DocumentUpdate(BaseModel):
     """Schema for updating a document."""
+
     reference: Optional[str] = Field(None, description="Extraction reference for the document")
     pmid: Optional[str] = Field(None, description="The PubMed ID of the document.")
     doi: Optional[str] = Field(None, description="The DOI of the document.")
