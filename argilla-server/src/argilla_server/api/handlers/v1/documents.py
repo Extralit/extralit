@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import logging
-from uuid import UUID
+from uuid import UUID, uuid4
 from typing import TYPE_CHECKING, List
 
 from fastapi import APIRouter, Body, Depends, File, HTTPException, UploadFile, Path, status, Security
@@ -80,6 +80,9 @@ async def add_document(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Workspace with id `{document_create.workspace_id}` not found",
         )
+
+    if not document_create.id:
+        document_create.id = uuid4()
 
     if file_data is not None:
         object_path = files.get_pdf_s3_object_path(document_create.id)

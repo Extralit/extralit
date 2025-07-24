@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import os
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
 from urllib.parse import unquote, urlparse
 from uuid import UUID
 
@@ -34,9 +34,8 @@ class DocumentModel(ResourceModel):
         workspace_id: The workspace ID of the document. Required.
     """
 
-    # Override the id field to not auto-generate unless explicitly requested
     id: Optional[UUID] = None
-    workspace_id: Optional[UUID] = Field(None, description="The workspace ID to which the document belongs to")
+    workspace_id: UUID = Field(None, description="The workspace ID to which the document belongs to")
     file_name: Optional[str] = Field(None)
     file_path: Optional[str] = Field(None, description="Local file path")
     reference: Optional[str] = None
@@ -50,10 +49,9 @@ class DocumentModel(ResourceModel):
         file_path_or_url: str,
         *,
         reference: str,
+        workspace_id: Union[UUID, str],
         id: Optional[UUID] = None,
-        pmid: Optional[str] = None,
-        doi: Optional[str] = None,
-        workspace_id: Optional[UUID] = None,
+        **kwargs: Any,
     ) -> "DocumentModel":
         url = None
 
@@ -77,8 +75,7 @@ class DocumentModel(ResourceModel):
             file_path=file_path_or_url,
             reference=reference,
             url=url if isinstance(url, str) else None,
-            pmid=str(pmid) if isinstance(pmid, int) or isinstance(pmid, str) and len(pmid) > 3 else None,
-            doi=doi if isinstance(doi, str) else None,
+            **kwargs,
         )
 
     def to_server_payload(self) -> Dict[str, Any]:
@@ -93,7 +90,6 @@ class DocumentModel(ResourceModel):
             "pmid": self.pmid,
             "doi": self.doi,
         }
-        # Only include ID if it was explicitly provided (not None)
         if self.id is not None:
             json["id"] = str(self.id)
 
