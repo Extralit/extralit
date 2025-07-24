@@ -61,12 +61,12 @@ services:
 
   minio:
     image: quay.io/minio/minio:RELEASE.2024-08-29T01-40-52Z
-    command: minio server /data --address :9099 --console-address :9090
+    command: minio server /data --console-address :9090
     environment:
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
     ports:
-      - "9099:9099"
+      - "9000:9000"
       - "9090:9090"
     deploy:
       resources:
