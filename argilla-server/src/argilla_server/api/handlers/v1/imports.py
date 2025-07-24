@@ -120,14 +120,14 @@ def _validate_analysis_request(analysis_request: ImportAnalysisRequest) -> List[
     if len(analysis_request.documents) > 1000:
         errors.append(f"Too many documents provided ({len(analysis_request.documents)}). Maximum is 1000.")
 
-    for reference_key, file_metadata in analysis_request.documents.items():
-        if not reference_key or not isinstance(reference_key, str):
-            errors.append(f"Invalid reference key: {reference_key}")
+    for reference, file_metadata in analysis_request.documents.items():
+        if not reference or not isinstance(reference, str):
+            errors.append(f"Invalid reference key: {reference}")
             continue
 
         if file_metadata.document_create.workspace_id != analysis_request.workspace_id:
             errors.append(
-                f"Document {reference_key} has mismatched workspace_id: "
+                f"Document {reference} has mismatched workspace_id: "
                 f"{file_metadata.document_create.workspace_id} != {analysis_request.workspace_id}"
             )
 

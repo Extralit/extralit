@@ -194,8 +194,8 @@ def _match_pdfs_to_entries(entries: List[Dict], pdf_folder: Path, console: Conso
     ) as progress:
         task = progress.add_task("Matching PDF files to BibTeX entries...", total=None)
         for entry in entries:
-            reference_key = entry.get("ID")
-            if not reference_key:
+            reference = entry.get("ID")
+            if not reference:
                 continue
             file_tag = entry.get("file")
             matched_pdfs = []
@@ -211,12 +211,12 @@ def _match_pdfs_to_entries(entries: List[Dict], pdf_folder: Path, console: Conso
                     if pdf:
                         matched_pdfs.append(pdf)
                 if matched_pdfs:
-                    pdf_files[reference_key] = matched_pdfs
+                    pdf_files[reference] = matched_pdfs
                     matched_via_file_tag += len(matched_pdfs)
                     continue
-            fallback_matches = [pdf for pdf in all_pdf_files if reference_key in pdf.stem]
+            fallback_matches = [pdf for pdf in all_pdf_files if reference in pdf.stem]
             if fallback_matches:
-                pdf_files[reference_key] = fallback_matches
+                pdf_files[reference] = fallback_matches
                 matched_via_fallback += len(fallback_matches)
         progress.update(
             task,
@@ -229,8 +229,8 @@ def _match_pdfs_to_entries(entries: List[Dict], pdf_folder: Path, console: Conso
 def _build_documents_payload(entries: List[Dict], pdf_files, workspace_obj: Workspace, collection):
     documents = {}
     for entry in entries:
-        reference_key = entry.get("ID")
-        if not reference_key:
+        reference = entry.get("ID")
+        if not reference:
             continue
         title = entry.get("title", "").strip("{}")
         authors = _parse_authors(entry.get("author", ""))
@@ -240,7 +240,7 @@ def _build_documents_payload(entries: List[Dict], pdf_files, workspace_obj: Work
         pmid = entry.get("pmid", "")
         document_create = {
             "workspace_id": str(workspace_obj.id),
-            "reference": reference_key,
+            "reference": reference,
             "doi": doi,
             "pmid": pmid,
         }
@@ -251,10 +251,10 @@ def _build_documents_payload(entries: List[Dict], pdf_files, workspace_obj: Work
         if metadata:
             document_create["metadata"] = metadata
         associated_files = []
-        if reference_key in pdf_files:
-            for pdf_file in pdf_files[reference_key]:
+        if reference in pdf_files:
+            for pdf_file in pdf_files[reference]:
                 associated_files.append({"filename": pdf_file.name, "size": pdf_file.stat().st_size})
-        documents[reference_key] = {
+        documents[reference] = {
             "document_create": document_create,
             "title": title,
             "authors": authors,
@@ -318,7 +318,7 @@ def _execute_document_bulk_import(client: Argilla, analysis_result: Dict, pdf_fo
                 if file_path:
                     bulk_documents.append(
                         {
-                            "reference_key": ref_key,
+                            "reference": ref_key,
                             "document_create": document_create,
                             "associated_file": file_path.name,
                         }

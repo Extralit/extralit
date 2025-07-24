@@ -36,13 +36,13 @@
   - Add file validation and error handling
   - _Requirements: 3.1, 3.2_
 
-- [x] 3.2 Create document upload job system
-  - Write upload_document_job() function in jobs/document_jobs.py
-  - Reuse existing document upload logic from POST /documents endpoint
-  - Implement job creation and queuing for individual document uploads
-  - Add retry logic and error handling for failed uploads
+- [x] 3.2 Create document upload job system for multiple files per reference
+  - Write upload_reference_documents_job() function in jobs/document_jobs.py to handle multiple files per reference
+  - Reuse existing document upload logic from POST /documents endpoint for each file
+  - Implement job creation and queuing for reference-based document uploads (one job per reference)
+  - Add retry logic and error handling for failed uploads with per-file error tracking
   - Update CLI function `import_bibtex` in `extralit/src/argilla/cli/documents/add.py` to test bulk upload
-  - _Requirements: 3.1, 3.3, 3.4_
+  - _Requirements: 3.1, 3.3, 3.4, 3.7_
 
 - [x] 3.3 Implement ImportHistory database model
   - Create ImportHistory model in database.py with required fields
@@ -50,13 +50,14 @@
   - Create migration script for the new table
   - _Requirements: 3.5, 4.1_
 
-- [ ] 3.4 Integrate bulk upload with job queue and history logging
-  - Connect bulk upload endpoint to document upload jobs
-  - Implement reference-key indexed job_id response mapping
-  - Create import history record for each bulk import
-  - Store ImportAnalysisResponse data in the metadata JSON field
+- [ ] 3.4 Integrate bulk upload with job queue and history logging for multi-file references
+  - Connect bulk upload endpoint to reference-based document upload jobs
+  - Implement `reference_key` indexed job_id response mapping
+  - Create import history record for each bulk import with complete reference and file information
+  - Store ImportAnalysisResponse data in the metadata JSON field including multi-file associations
   - Add proper cleanup of temporary files after job completion
-  - _Requirements: 3.2, 3.5, 4.1_
+  - Handle multiple files per reference in job processing and error reporting
+  - _Requirements: 3.2, 3.5, 4.1, 4.6_
 
 - [ ] 4. Implement frontend BibTeX parsing and file matching
 - [ ] 4.1 Create BibTeX parser component
@@ -91,20 +92,22 @@
   - _Requirements: 2.1, 2.2, 2.7_
 
 - [ ] 6. Implement bulk upload execution and progress tracking
-- [ ] 6.1 Create bulk upload execution logic
-  - Implement paginated bulk upload requests (20-50 PDFs per batch)
+- [ ] 6.1 Create bulk upload execution logic for multi-file references
+  - Implement paginated bulk upload requests (10-20 references per batch)
   - Send DocumentImportExecuteRequest with actual file contents to POST /documents/bulk
+  - Handle multiple files per reference in each batch request
   - Handle multiple paginated requests for large document sets
-  - Add error handling for failed upload requests
-  - _Requirements: 3.1, 3.2_
+  - Add error handling for failed upload requests with per-file error tracking
+  - _Requirements: 3.1, 3.2, 3.7_
 
-- [ ] 6.2 Implement ImportProgress.vue component
+- [ ] 6.2 Implement ImportProgress.vue component for multi-file tracking
   - Create real-time progress tracking using job status polling
-  - Display document-by-document upload status
-  - Show overall progress across all paginated requests
-  - Implement error reporting for failed uploads
+  - Display reference-by-reference upload status with file-level details
+  - Show overall progress across all paginated requests and files
+  - Implement error reporting for failed uploads with reference and file context
   - Add cancellation support for ongoing uploads
-  - _Requirements: 3.2, 3.3_
+  - Track progress at both reference and individual file levels
+  - _Requirements: 3.2, 3.3, 3.7_
 
 - [ ] 7. Create import results and workspace integration
 - [ ] 7.1 Implement ImportResults.vue component
@@ -114,12 +117,13 @@
   - Add option to retry failed imports
   - _Requirements: 3.5, 4.3_
 
-- [ ] 7.2 Integrate imported documents with workspace features
-  - Ensure imported documents appear in workspace documents list
-  - Verify document metadata is properly stored and displayed
+- [ ] 7.2 Integrate imported documents with workspace features for multi-file references
+  - Ensure imported documents appear in workspace documents list with proper reference grouping
+  - Verify document metadata is properly stored and displayed for multiple files per reference
   - Test compatibility with existing document processing features
   - Add proper metadata tags for collection and source tracking
-  - _Requirements: 4.1, 4.2, 4.4, 4.6_
+  - Implement UI grouping of multiple files by reference key while maintaining individual document records
+  - _Requirements: 4.1, 4.2, 4.4, 4.6, 4.7_
 
 - [ ] 8. Add comprehensive error handling and validation
 - [ ] 8.1 Implement robust error handling

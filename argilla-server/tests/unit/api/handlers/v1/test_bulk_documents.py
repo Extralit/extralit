@@ -35,7 +35,7 @@ class TestBulkDocumentsAPI:
         documents_metadata = {
             "documents": [
                 {
-                    "reference_key": "test_ref",
+                    "reference": "test_ref",
                     "document_create": {
                         "workspace_id": str(uuid4()),
                         "reference": "test_ref",
@@ -98,7 +98,7 @@ class TestBulkDocumentsAPI:
         documents_metadata = {
             "documents": [
                 {
-                    "reference_key": "test_ref",
+                    "reference": "test_ref",
                     "document_create": {
                         "workspace_id": str(workspace.id),
                         "reference": "test_ref",
@@ -135,7 +135,7 @@ class TestBulkDocumentsAPI:
         documents_metadata = {
             "documents": [
                 {
-                    "reference_key": "test_ref",
+                    "reference": "test_ref",
                     "document_create": {
                         "workspace_id": str(uuid4()),  # Non-existent workspace
                         "reference": "test_ref",
@@ -178,7 +178,7 @@ class TestBulkDocumentsAPI:
         documents_metadata = {
             "documents": [
                 {
-                    "reference_key": "test_ref",
+                    "reference": "test_ref",
                     "document_create": {
                         "workspace_id": str(workspace.id),
                         "reference": "test_ref",
@@ -228,7 +228,7 @@ class TestBulkDocumentsAPI:
         documents_metadata = {
             "documents": [
                 {
-                    "reference_key": "ref1",
+                    "reference": "ref1",
                     "document_create": {
                         "workspace_id": str(workspace.id),
                         "reference": "ref1",
@@ -236,7 +236,7 @@ class TestBulkDocumentsAPI:
                     "associated_file": "test1.pdf",
                 },
                 {
-                    "reference_key": "ref2",
+                    "reference": "ref2",
                     "document_create": {
                         "workspace_id": str(workspace.id),
                         "reference": "ref2",
@@ -287,7 +287,7 @@ class TestBulkDocumentsAPI:
         documents_metadata = {
             "documents": [
                 {
-                    "reference_key": "valid_ref",
+                    "reference": "valid_ref",
                     "document_create": {
                         "workspace_id": str(workspace.id),
                         "reference": "valid_ref",
@@ -295,7 +295,7 @@ class TestBulkDocumentsAPI:
                     "associated_file": "valid.pdf",
                 },
                 {
-                    "reference_key": "invalid_ref",
+                    "reference": "invalid_ref",
                     "document_create": {
                         "workspace_id": str(workspace.id),
                         "reference": "invalid_ref",
