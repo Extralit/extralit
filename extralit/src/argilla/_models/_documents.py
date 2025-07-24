@@ -13,15 +13,16 @@
 # limitations under the License.
 
 import os
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
 from urllib.parse import unquote, urlparse
 from uuid import UUID
-import uuid
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+
+from argilla._models._base import ResourceModel
 
 
-class Document(BaseModel):
+class DocumentModel(ResourceModel):
     """Schema for the `Document` model.
 
     Args:
@@ -33,11 +34,9 @@ class Document(BaseModel):
         workspace_id: The workspace ID of the document. Required.
     """
 
-    id: Optional[UUID] = Field(
-        default_factory=uuid.uuid4, description="The ID of the document, which gets assigned randomly if not provided."
-    )
+    id: Optional[UUID] = None
     reference: str = Field(..., description="A reference to the document, e.g., an identifier.")
-    workspace_id: Optional[UUID] = Field(None, description="The workspace ID to which the document belongs to")
+    workspace_id: UUID = Field(..., description="The workspace ID to which the document belongs to")
     file_name: Optional[str] = Field(None)
     file_path: Optional[str] = Field(None, description="Local file path")
     doi: Optional[str] = None
@@ -50,16 +49,14 @@ class Document(BaseModel):
         file_path_or_url: str,
         *,
         reference: str,
-        id: Optional[str] = None,
-        pmid: Optional[str] = None,
-        doi: Optional[str] = None,
-        workspace_id: Optional[UUID] = None,
-    ) -> "Document":
+        workspace_id: Union[UUID, str],
+        id: Optional[UUID] = None,
+        **kwargs: Any,
+    ) -> "DocumentModel":
         url = None
 
         if os.path.exists(file_path_or_url):
             file_name = file_path_or_url.split("/")[-1]
-            print("file_name", file_name)
 
         elif urlparse(file_path_or_url).scheme:
             url = file_path_or_url
@@ -67,19 +64,18 @@ class Document(BaseModel):
             parsed_url = urlparse(url)
             path = parsed_url.path
             file_name = unquote(path).split("/")[-1]
-            print("file_name", file_name)
+
         else:
             raise ValueError(f"File path {file_path_or_url} does not exist")
 
         return cls(
-            id=id or uuid.uuid4(),
+            id=id,
             workspace_id=workspace_id,
             file_name=file_name if isinstance(file_name, str) else None,
             file_path=file_path_or_url,
             reference=reference,
             url=url if isinstance(url, str) else None,
-            pmid=str(pmid) if isinstance(pmid, int) or isinstance(pmid, str) and len(pmid) > 3 else None,
-            doi=doi if isinstance(doi, str) else None,
+            **kwargs,
         )
 
     def to_server_payload(self) -> Dict[str, Any]:
@@ -94,10 +90,14 @@ class Document(BaseModel):
             "pmid": self.pmid,
             "doi": self.doi,
         }
-        if isinstance(self.id, UUID):
+        if self.id is not None:
             json["id"] = str(self.id)
 
         return json
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(file_name={self.file_name!r}, url={self.url!r}, pmid={self.pmid!r}, doi={self.doi!r}, workspace_id={self.workspace_id!r})"
+
+
+# Backwards compatibility alias
+Document = DocumentModel

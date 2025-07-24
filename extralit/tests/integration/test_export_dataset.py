@@ -23,6 +23,7 @@ import pytest
 from argilla._exceptions import SettingsError
 from datasets import load_dataset
 from huggingface_hub.errors import BadRequestError, FileMetadataError, HfHubHTTPError
+from requests.exceptions import ReadTimeout, ConnectTimeout, HTTPError, RequestException
 
 _RETRIES = 5
 
@@ -166,7 +167,7 @@ class TestDiskImportExportMixin:
 
 
 @pytest.mark.flaky(
-    retries=_RETRIES, only_on=[BadRequestError, FileMetadataError, HfHubHTTPError, OSError, FileNotFoundError]
+    retries=_RETRIES, only_on=[BadRequestError, FileMetadataError, HfHubHTTPError, OSError, FileNotFoundError, ReadTimeout, ConnectTimeout, HTTPError]
 )  # Hub consistency CICD pipline
 @pytest.mark.skipif(
     not os.getenv("HF_TOKEN_ARGILLA_INTERNAL_TESTING"),
@@ -181,8 +182,8 @@ class TestHubImportExportMixin:
         dataset.records.log(records=mock_data)
         try:
             dataset.to_hub(repo_id=repo_id, with_records=with_records_export, token=token)
-        except HfHubHTTPError as e:
-            pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
+        except (HfHubHTTPError, ReadTimeout, ConnectTimeout, HTTPError, RequestException) as e:
+            pytest.skip(f"Skipping test due to Hugging Face Hub connection error: {e}")
 
     @pytest.mark.parametrize("with_records_import", [True, False])
     def test_import_dataset_from_hub(
@@ -199,8 +200,8 @@ class TestHubImportExportMixin:
 
         try:
             dataset.to_hub(repo_id=repo_id, with_records=with_records_export, token=token)
-        except HfHubHTTPError as e:
-            pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
+        except (HfHubHTTPError, ReadTimeout, ConnectTimeout, HTTPError, RequestException) as e:
+            pytest.skip(f"Skipping test due to Hugging Face Hub connection error: {e}")
 
         if with_records_import and not with_records_export:
             with pytest.warns(
@@ -216,8 +217,8 @@ class TestHubImportExportMixin:
                         name=f"test_{uuid.uuid4()}",
                         settings="auto",
                     )
-                except HfHubHTTPError as e:
-                    pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
+                except (HfHubHTTPError, ReadTimeout, ConnectTimeout, HTTPError, RequestException) as e:
+                    pytest.skip(f"Skipping test due to Hugging Face Hub connection error: {e}")
         else:
             try:
                 new_dataset = rg.Dataset.from_hub(
@@ -228,8 +229,8 @@ class TestHubImportExportMixin:
                     name=f"test_{uuid.uuid4()}",
                     settings="auto",
                 )
-            except HfHubHTTPError as e:
-                pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
+            except (HfHubHTTPError, ReadTimeout, ConnectTimeout, HTTPError, RequestException) as e:
+                pytest.skip(f"Skipping test due to Hugging Face Hub connection error: {e}")
 
         if with_records_import and with_records_export:
             for i, record in enumerate(new_dataset.records(with_suggestions=True)):
@@ -259,8 +260,8 @@ class TestHubImportExportMixin:
 
         try:
             dataset.to_hub(repo_id=repo_id, with_records=with_records_export, token=token)
-        except HfHubHTTPError as e:
-            pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
+        except (HfHubHTTPError, ReadTimeout, ConnectTimeout, HTTPError, RequestException) as e:
+            pytest.skip(f"Skipping test due to Hugging Face Hub connection error: {e}")
         settings = rg.Settings(
             fields=[
                 rg.TextField(name="text"),
@@ -284,8 +285,8 @@ class TestHubImportExportMixin:
                         settings=settings,
                         name=mock_dataset_name,
                     )
-                except HfHubHTTPError as e:
-                    pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
+                except (HfHubHTTPError, ReadTimeout, ConnectTimeout, HTTPError, RequestException) as e:
+                    pytest.skip(f"Skipping test due to Hugging Face Hub connection error: {e}")
         else:
             try:
                 new_dataset = rg.Dataset.from_hub(
@@ -296,8 +297,8 @@ class TestHubImportExportMixin:
                     settings=settings,
                     name=mock_dataset_name,
                 )
-            except HfHubHTTPError as e:
-                pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
+            except (HfHubHTTPError, ReadTimeout, ConnectTimeout, HTTPError, RequestException) as e:
+                pytest.skip(f"Skipping test due to Hugging Face Hub connection error: {e}")
 
         if with_records_import and with_records_export:
             for i, record in enumerate(new_dataset.records(with_suggestions=True)):
@@ -327,8 +328,8 @@ class TestHubImportExportMixin:
         mock_dataset_name = f"test_import_dataset_from_hub_using_wrong_settings_{uuid.uuid4()}"
         try:
             dataset.to_hub(repo_id=repo_id, with_records=with_records_export, token=token)
-        except HfHubHTTPError as e:
-            pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
+        except (HfHubHTTPError, ReadTimeout, ConnectTimeout, HTTPError, RequestException) as e:
+            pytest.skip(f"Skipping test due to Hugging Face Hub connection error: {e}")
         settings = rg.Settings(
             fields=[
                 rg.TextField(name="text"),
@@ -343,15 +344,15 @@ class TestHubImportExportMixin:
                     rg.Dataset.from_hub(
                         repo_id=repo_id, client=client, token=token, settings=settings, name=mock_dataset_name
                     )
-                except HfHubHTTPError as e:
-                    pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
+                except (HfHubHTTPError, ReadTimeout, ConnectTimeout, HTTPError, RequestException) as e:
+                    pytest.skip(f"Skipping test due to Hugging Face Hub connection error: {e}")
         else:
             try:
                 rg.Dataset.from_hub(
                     repo_id=repo_id, client=client, token=token, settings=settings, name=mock_dataset_name
                 )
-            except HfHubHTTPError as e:
-                pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
+            except (HfHubHTTPError, ReadTimeout, ConnectTimeout, HTTPError, RequestException) as e:
+                pytest.skip(f"Skipping test due to Hugging Face Hub connection error: {e}")
 
     def test_import_dataset_from_hub_with_automatic_settings(
         self, token: str, dataset: rg.Dataset, client, mock_data: List[dict[str, Any]], with_records_export: bool
@@ -380,8 +381,8 @@ class TestHubImportExportMixin:
             if (
                 "DatasetNotFoundError" in str(e)
                 or "doesn't exist on the Hub" in str(e)
-                or isinstance(e, HfHubHTTPError)
+                or isinstance(e, (HfHubHTTPError, ReadTimeout, ConnectTimeout, HTTPError, RequestException))
             ):
-                pytest.skip(f"Dataset not found on Hub or Hugging Face Hub HTTP error: {str(e)}")
+                pytest.skip(f"Dataset not found on Hub or Hugging Face Hub connection error: {str(e)}")
             else:
                 raise e
