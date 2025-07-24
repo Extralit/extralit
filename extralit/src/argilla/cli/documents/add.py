@@ -409,6 +409,7 @@ def import_bibtex(
     dry_run: bool = typer.Option(False, "--dry-run", help="Only analyze the import without executing it"),
     debug: bool = typer.Option(False, "--debug", help="Show detailed debug information"),
 ) -> None:
+    """Import documents from a BibTeX file and match them with PDFs in a folder."""
     console = Console()
     try:
         client = Argilla.from_credentials()
