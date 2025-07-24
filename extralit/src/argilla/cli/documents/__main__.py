@@ -16,7 +16,6 @@
 
 from argilla.cli.typer_ext import ArgillaTyper
 
-# Import all documents CLI commands
 from argilla.cli.documents.list import list_documents
 from argilla.cli.documents.add import add_document, import_bibtex
 from argilla.cli.documents.delete import delete_document
