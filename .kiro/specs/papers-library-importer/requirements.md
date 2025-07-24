@@ -41,25 +41,27 @@ The feature consists of two main components: a backend import service that proce
 
 #### Acceptance Criteria
 
-1. WHEN I confirm the import THEN the system SHALL execute the bulk upsert operation asynchronously
-2. WHEN the import is running THEN the system SHALL display real-time progress indicators showing completed/total documents
-3. WHEN documents are being processed THEN the system SHALL upload PDF files to S3 storage and create database records
-4. WHEN a document already exists THEN the system SHALL update existing records rather than create duplicates based on reference key
-5. WHEN the import completes THEN the system SHALL display a summary of successfully added, updated, skipped, and failed documents
-6. IF individual documents fail during import THEN the system SHALL continue processing remaining documents and report specific errors
+1. WHEN I confirm the import THEN the system SHALL execute the bulk upsert operation asynchronously with one job per reference
+2. WHEN the import is running THEN the system SHALL display real-time progress indicators showing completed/total references and files
+3. WHEN references with multiple files are being processed THEN the system SHALL upload all associated PDF files to S3 storage and create separate database records
+4. WHEN a reference already exists THEN the system SHALL update existing records rather than create duplicates based on reference key
+5. WHEN the import completes THEN the system SHALL display a summary of successfully added, updated, skipped, and failed references and files
+6. IF individual files fail during import THEN the system SHALL continue processing remaining files and report specific errors with reference context
+7. WHEN processing references with multiple files THEN the system SHALL track progress at both reference and file levels
 
 ### Requirement 4
 
-**User Story:** As a researcher, I want imported documents to include proper metadata and integrate with existing workspace features, so that I can immediately use them for extraction workflows.
+**User Story:** As a researcher, I want imported documents to handle multiple files per reference and integrate with existing workspace features, so that I can immediately use them for extraction workflows.
 
 #### Acceptance Criteria
 
-1. WHEN documents are imported THEN the system SHALL store bibliographic metadata in a structured format
-2. WHEN documents are imported THEN the system SHALL add collection and source metadata (e.g., `{"collections": ["NetRecalibration/ITN"], "source": "bib_import"}`)
-3. WHEN documents are imported THEN the system SHALL make them available in the workspace documents list
-4. WHEN I view imported documents THEN the system SHALL display them alongside manually uploaded documents with proper metadata
-5. WHEN documents have multiple files THEN the system SHALL associate all files with the same reference key
-6. WHEN I select imported documents THEN the system SHALL support all existing document processing features (extraction, annotation, etc.)
+1. WHEN a reference has multiple associated files THEN the system SHALL create separate document records for each file while maintaining the reference relationship
+2. WHEN documents are imported THEN the system SHALL store bibliographic metadata in a structured format
+3. WHEN documents are imported THEN the system SHALL add collection and source metadata (e.g., `{"collections": ["NetRecalibration/ITN"], "source": "bib_import"}`)
+4. WHEN documents are imported THEN the system SHALL make them available in the workspace documents list
+5. WHEN I view imported documents THEN the system SHALL display them alongside manually uploaded documents with proper metadata
+6. WHEN documents have multiple files per reference THEN the system SHALL group them by reference key in the UI while maintaining individual document records
+7. WHEN I select imported documents THEN the system SHALL support all existing document processing features (extraction, annotation, etc.)
 
 ### Requirement 5
 

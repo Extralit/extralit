@@ -79,6 +79,11 @@ async def bulk_upload_documents(
 ) -> DocumentsBulkResponse
 ```
 
+**Job Processing Strategy:**
+- Each reference creates one job that processes all associated files for that reference
+- Job handles multiple file uploads and creates separate document records for each file
+- All files for a reference share the same bibliographic metadata but have unique file paths
+
 #### 3. Import Context (`argilla-server/src/argilla_server/contexts/imports.py`)
 
 **Core Services:**
@@ -91,19 +96,23 @@ async def bulk_upload_documents(
 **Async Job Functions:**
 ```python
 @job(DEFAULT_QUEUE, timeout=JOB_TIMEOUT_DISABLED, retry=Retry(max=3))
-async def upload_document_job(
+async def upload_reference_documents_job(
+    reference_key: str,
     document_data: DocumentCreate,
-    file_data: bytes,
+    file_data_list: List[Tuple[str, bytes]],  # List of (filename, file_data) tuples
     user_id: UUID
-) -> dict  # Returns upload result with document_id or error
+) -> dict  # Returns upload results with document_ids or errors for each file
 ```
 
 **Job Implementation:**
+- Processes multiple files for a single reference in one job
+- Creates separate document records for each file while maintaining reference relationship
 - Reuses existing document upload logic from `POST /documents` endpoint
 - Leverages existing document deduplication logic (pmid, doi, reference matching)
-- Handles file storage to S3 and database record creation
-- Returns success/failure status with detailed error information
+- Handles file storage to S3 and database record creation for each file
+- Returns success/failure status with detailed error information for each file
 - Automatic retry on transient failures (network, storage issues)
+- Maintains transaction consistency across multiple file uploads per reference
 
 ### Frontend Components
 
@@ -283,7 +292,7 @@ class BulkDocumentInfo(BaseModel):
     """Information about a document in the bulk upload request."""
     reference_key: str = Field(..., description="BibTeX reference key for job tracking")
     document_create: DocumentCreate = Field(..., description="Document creation data")
-    associated_file: str = Field(..., description="Single PDF filename (one file per DocumentCreate)")
+    associated_files: List[str] = Field(..., description="Multiple PDF filenames for this reference")
 
 class DocumentsBulkCreate(BaseModel):
     """Metadata for bulk document upload."""
@@ -312,10 +321,11 @@ class DocumentImportExecuteRequest(BaseModel):
 Note: The user may use the DocumentImportExecuteRequest to switch between add or update to skip status before final execution.
 
 **Pagination Strategy:**
-- Frontend sends multiple paginated requests (20-50 PDFs each) to avoid large payload failures
-- Each `DocumentCreate` is associated with exactly one PDF file
-- Multiple documents may share the same BibTeX reference but have different files
+- Frontend sends multiple paginated requests (10-20 references each) to avoid large payload failures
+- Each reference may have multiple associated PDF files processed in a single job
+- Multiple files for the same reference are processed together to maintain consistency
 - Response includes `job_ids` indexed by reference key for easy frontend tracking
+- Job processing handles multiple files per reference efficiently
 
 ## Data Models
 
@@ -337,10 +347,11 @@ class ImportHistory(DatabaseModel):
 
 **Purpose:**
 - Records the actual database committed operations (not necessarily the job status)
-- Stores the complete ImportAnalysisResponse JSON in the metadata field
+- Stores the complete ImportAnalysisResponse JSON in the metadata field containing all reference and file information
 - The ImportHistory records the actual database committed operations, not just the job status
 - Provides audit trail of what was actually imported vs. what was requested
 - Enables import history viewing and analysis
+- Metadata field contains references with their associated files and processing status
 
 ### Document Field Mapping
 The import process maps BibTeX entries to existing Document model fields:
