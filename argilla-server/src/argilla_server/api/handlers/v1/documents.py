@@ -14,7 +14,7 @@
 
 import logging
 from uuid import UUID
-from typing import TYPE_CHECKING, List, Union
+from typing import TYPE_CHECKING, List
 
 from fastapi import APIRouter, Body, Depends, File, HTTPException, UploadFile, Path, status, Security
 from minio import Minio
@@ -27,7 +27,7 @@ from argilla_server.security import auth
 from argilla_server.models import User, Workspace
 from argilla_server.contexts import datasets, files
 from argilla_server.api.policies.v1 import DocumentPolicy, authorize
-from argilla_server.api.schemas.v1.documents import DocumentCreate, DocumentDelete, DocumentListItem
+from argilla_server.api.schemas.v1.documents import DocumentCreate, DocumentDelete, DocumentListItem, DocumentUpdate
 
 if TYPE_CHECKING:
     from argilla_server.models import Document
@@ -189,15 +189,49 @@ async def get_document_by_id(
     return DocumentListItem.model_validate(document)
 
 
+@router.patch("/documents/{id}", response_model=DocumentListItem)
+async def update_document(
+    *,
+    id: UUID = Path(..., title="The UUID of the document to update"),
+    document_update: DocumentUpdate,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Security(auth.get_current_user),
+):
+    """Update a document by ID."""
+    # First, get the document to ensure it exists and check permissions
+    query = await db.execute(select(Document).where(Document.id == id))
+    result = query.fetchone()
+
+    if result is None or len(result) == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Document with id `{id}` not found",
+        )
+
+    document: Document = result[0]
+    await authorize(current_user, DocumentPolicy.get())
+
+    # Update the document fields
+    update_data = document_update.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        if hasattr(document, field):
+            setattr(document, field, value)
+
+    # Save the changes
+    await datasets.update_document(db, document)
+
+    return DocumentListItem.model_validate(document)
+
+
 @router.delete(
     "/documents/workspace/{workspace_id}",
     status_code=status.HTTP_200_OK,
     response_model=int,
-    description="Delete all documents by workspace_id, or a specific document by id, pmid, doi, or url",
+    description="Delete a specific document by id only",
 )
 async def delete_documents_by_workspace_id(
     *,
-    workspace_id: Union[UUID, str],
+    workspace_id: UUID,
     document_delete: DocumentDelete = Body(None),
     db: AsyncSession = Depends(get_async_db),
     client: Minio = Depends(files.get_minio_client),
@@ -205,16 +239,15 @@ async def delete_documents_by_workspace_id(
 ):
     await authorize(current_user, DocumentPolicy.delete(workspace_id))
 
-    workspace = await Workspace.get(db, workspace_id)
+    if not document_delete or not document_delete.id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Document ID is required for deletion")
+
+    workspace: Workspace = await Workspace.get(db, workspace_id)
 
     documents = await datasets.delete_documents(
         db,
         workspace_id,
-        id=document_delete.id if document_delete else None,
-        pmid=document_delete.pmid if document_delete else None,
-        doi=document_delete.doi if document_delete else None,
-        url=document_delete.url if document_delete else None,
-        reference=document_delete.reference if document_delete else None,
+        id=document_delete.id,
     )
 
     _LOGGER.info(f"Deleting {len(documents)} documents")

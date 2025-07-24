@@ -158,12 +158,12 @@ def test_add_document(mock_uuid4, workspace_api):
     workspace_api.http_client.post.assert_called_once_with(
         url="/api/v1/documents",
         params={
-            "workspace_id": "123e4567-e89b-12d3-a456-426614174000",
-            "url": "https://example.com",
-            "pmid": "12345",
-            "doi": "10.1234/test",
             "file_name": None,
             "reference": None,
+            "url": "https://example.com",
+            "workspace_id": "123e4567-e89b-12d3-a456-426614174000",
+            "pmid": "12345",
+            "doi": "10.1234/test",
             "id": str(document.id),
         },
     )
