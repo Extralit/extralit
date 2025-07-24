@@ -391,21 +391,12 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
         Returns:
             The ID of the added document.
         """
-        url = "/api/v1/documents"
-        document_payload = document.to_server_payload()
-
-        if document.file_path:
-            file_name = os.path.basename(document.file_path)
-            with open(document.file_path, "rb") as file_data:
-                files = {
-                    "file_data": (file_name, file_data, "application/pdf"),
-                }
-                response = self.http_client.post(url=url, params=document_payload, files=files)
-        else:
-            response = self.http_client.post(url=url, params=document_payload)
-
-        response.raise_for_status()
-        return UUID(response.json())
+        from argilla._api._documents import DocumentsAPI
+        
+        # Create a DocumentsAPI instance to handle the operation
+        documents_api = DocumentsAPI(http_client=self.http_client)
+        created_document = documents_api.create(document)
+        return created_document.id
 
     @api_error_handler
     def get_documents(self, workspace_id: "UUID") -> List["Document"]:
@@ -417,27 +408,15 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
         Returns:
             A list of documents.
         """
-        from argilla._models._documents import Document
+        from argilla._api._documents import DocumentsAPI
+        from argilla._models._documents import DocumentModel
 
-        url = f"/api/v1/documents/workspace/{workspace_id}"
-        response = self.http_client.get(url=url)
-        response.raise_for_status()
-
-        documents = []
-        for doc_data in response.json():
-            doc = Document(
-                id=doc_data.get("id"),
-                workspace_id=doc_data.get("workspace_id"),
-                file_name=doc_data.get("file_name"),
-                url=doc_data.get("url"),
-                pmid=doc_data.get("pmid"),
-                doi=doc_data.get("doi"),
-                inserted_at=doc_data.get("inserted_at"),
-                updated_at=doc_data.get("updated_at"),
-            )
-            documents.append(doc)
-
-        return documents
+        # Create a DocumentsAPI instance to handle the operation
+        documents_api = DocumentsAPI(http_client=self.http_client)
+        document_models = documents_api.list(workspace_id)
+        
+        # Return the DocumentModels directly (since Document is an alias for DocumentModel)
+        return document_models
 
     ####################
     # Schema methods #

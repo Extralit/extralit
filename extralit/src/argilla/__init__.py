@@ -15,6 +15,7 @@
 from argilla._version import __version__  # noqa
 from argilla.client import *  # noqa
 from argilla.datasets import *  # noqa
+from argilla.documents import *  # noqa
 from argilla.workspaces import *  # noqa
 from argilla.users import *  # noqa
 from argilla.settings import *  # noqa

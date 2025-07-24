@@ -23,6 +23,7 @@ from argilla._exceptions._client import ArgillaCredentialsError
 
 from argilla._api import HTTPClientConfig, create_http_client
 from argilla._api._datasets import DatasetsAPI
+from argilla._api._documents import DocumentsAPI
 from argilla._api._fields import FieldsAPI
 from argilla._api._metadata import MetadataAPI
 from argilla._api._questions import QuestionsAPI
@@ -53,6 +54,7 @@ class ArgillaAPI:
         self.__workspaces = WorkspacesAPI(http_client=self.http_client)
 
         self.__datasets = DatasetsAPI(http_client=self.http_client)
+        self.__documents = DocumentsAPI(http_client=self.http_client)
         self.__fields = FieldsAPI(http_client=self.http_client)
         self.__questions = QuestionsAPI(http_client=self.http_client)
         self.__vectors = VectorsAPI(http_client=self.http_client)
@@ -73,6 +75,10 @@ class ArgillaAPI:
     @property
     def datasets(self) -> "DatasetsAPI":
         return self.__datasets
+
+    @property
+    def documents(self) -> "DocumentsAPI":
+        return self.__documents
 
     @property
     def fields(self) -> "FieldsAPI":

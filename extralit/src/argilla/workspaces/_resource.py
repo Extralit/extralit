@@ -27,8 +27,9 @@ if TYPE_CHECKING:
     from uuid import UUID
     from argilla.users._resource import User
     from argilla.datasets._resource import Dataset
+    from argilla.documents._resource import Document
     from argilla._models._files import ListObjectsResponse, ObjectMetadata, FileObjectResponse
-    from argilla._models._documents import Document
+    from argilla._models._documents import DocumentModel
     from extralit.extraction.models.schema import SchemaStructure
 
 
@@ -97,6 +98,18 @@ class Workspace(Resource):
         datasets = self._client.api.datasets.list(self.id)
         self._log_message(f"Got {len(datasets)} datasets for workspace {self.id}")
         return [Dataset.from_model(model=dataset, client=self._client) for dataset in datasets]
+
+    def list_documents(self) -> List["Document"]:
+        """List documents in the workspace as Document resource objects.
+
+        Returns:
+            List[Document]: A list of Document resource objects in the workspace.
+        """
+        from argilla.documents import Document
+
+        documents = self._client.api.documents.list(self.id)
+        self._log_message(f"Got {len(documents)} documents for workspace {self.id}")
+        return [Document.from_model(model=document, client=self._client) for document in documents]
 
     ####################
     # File methods #
@@ -174,18 +187,18 @@ class Workspace(Resource):
         Returns:
             The ID of the added document.
         """
-        from argilla._models._documents import Document
+        from argilla._models._documents import DocumentModel
 
         # Create document from either local file or remote URL
         if file_path:
-            document = Document.from_file(
+            document = DocumentModel.from_file(
                 file_path_or_url=file_path, reference=reference, pmid=pmid, doi=doi, workspace_id=self.id
             )
         elif url:
             parsed_url = urlparse(url)
             path = parsed_url.path
             file_name = unquote(path).split("/")[-1]
-            document = Document(
+            document = DocumentModel(
                 url=url, file_name=file_name, reference=reference, pmid=pmid, doi=doi, workspace_id=self.id
             )
         else:
@@ -193,7 +206,7 @@ class Workspace(Resource):
 
         return self._api.add_document(document)
 
-    def get_documents(self) -> List["Document"]:
+    def get_documents(self) -> List["DocumentModel"]:
         """Get documents from the workspace.
 
         Returns:
@@ -270,6 +283,15 @@ class Workspace(Resource):
             List[Dataset]: A list of all datasets in the workspace
         """
         return self.list_datasets()
+
+    @property
+    def documents(self) -> List["Document"]:
+        """List all documents in the workspace
+
+        Returns:
+            List[Document]: A list of all documents in the workspace
+        """
+        return self.list_documents()
 
     @property
     def users(self) -> "WorkspaceUsers":
