@@ -25,6 +25,7 @@ from rich.table import Table
 
 from argilla.client import Argilla
 from argilla.cli.rich import get_argilla_themed_panel
+from argilla.documents import Document
 
 
 def add_document(
@@ -76,14 +77,45 @@ def add_document(
         ) as progress:
             task = progress.add_task(f"Adding document to workspace '{workspace}'...", total=None)
 
-            # Add the document
-            document_id = workspace_obj.add_document(
-                file_path=str(file_path) if file_path else None,
-                url=url,
-                reference=reference,
-                pmid=pmid,
-                doi=doi,
-            )
+            # Create the document using the new resource API
+            if file_path:
+                document = Document.from_file(
+                    file_path_or_url=file_path,
+                    reference=reference,
+                    workspace_id=workspace_obj.id,
+                    pmid=pmid,
+                    doi=doi,
+                    client=client,
+                )
+            elif url:
+                document = Document(
+                    url=url,
+                    reference=reference,
+                    workspace_id=workspace_obj.id,
+                    pmid=pmid,
+                    doi=doi,
+                    client=client,
+                )
+            elif pmid:
+                document = Document.from_pmid(
+                    pmid=pmid,
+                    reference=reference,
+                    workspace_id=workspace_obj.id,
+                    client=client,
+                )
+            elif doi:
+                document = Document.from_doi(
+                    doi=doi,
+                    reference=reference,
+                    workspace_id=workspace_obj.id,
+                    client=client,
+                )
+            else:
+                raise ValueError("At least one of file_path, url, pmid, or doi must be provided")
+
+            # Create the document on the server
+            document.create()
+            document_id = document.id
 
             progress.update(task, completed=True, description=f"Document added to workspace '{workspace}'")
 

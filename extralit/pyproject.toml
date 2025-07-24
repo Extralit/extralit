@@ -108,6 +108,7 @@ dev = [
     "ipython>=8.12.3",
     "pytest>=7.4.4",
     "pytest-cov>=4.1.0",
+    "pytest-asyncio~=0.21.1",
     "flake8>=5.0.4",
     "ruff>=0.1.12",
     "pytest-mock>=3.12.0",
