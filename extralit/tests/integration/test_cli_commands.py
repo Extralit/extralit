@@ -142,7 +142,9 @@ class TestCLICommands:
     def test_documents_add_and_list_command(self, test_workspace):
         """Test the 'documents add' and 'documents list' commands."""
         test_url = f"https://example.com/test_cli_{uuid.uuid4().hex[:8]}"
-        add_result = run_cli_command(f"extralit documents add --workspace {test_workspace.name} --url {test_url}")
+        add_result = run_cli_command(
+            f"extralit documents add --workspace {test_workspace.name} --reference test_url --url {test_url}"
+        )
 
         assert add_result.returncode == 0
         assert "Document added successfully" in add_result.stdout

@@ -23,6 +23,11 @@ from extralit_server.models import Record
 from extralit_server.contexts.hub import HubDataset
 from extralit_server.search_engine import SearchEngine
 
+# Import Hugging Face and network-related exceptions
+from huggingface_hub.errors import HfHubHTTPError
+from datasets.exceptions import DataFilesNotFoundError
+from requests.exceptions import ReadTimeout, ConnectTimeout, HTTPError, RequestException
+
 from tests.factories import (
     ChatFieldFactory,
     DatasetFactory,
@@ -67,7 +72,10 @@ class TestHubDataset:
             ),
         )
 
-        await hub_dataset.take(1).import_to(db, mock_search_engine, dataset)
+        try:
+            await hub_dataset.take(1).import_to(db, mock_search_engine, dataset)
+        except (HfHubHTTPError, DataFilesNotFoundError, ReadTimeout, ConnectTimeout, HTTPError, RequestException) as e:
+            pytest.skip(f"Skipping test due to Hugging Face Hub connection error: {e}")
 
         record = (await db.execute(select(Record))).scalar_one()
         assert record.external_id == "7bd227d9-afc9-11e6-aba1-c4b301cdf627"
@@ -121,7 +129,10 @@ class TestHubDataset:
             ),
         )
 
-        await hub_dataset.take(1).import_to(db, mock_search_engine, dataset)
+        try:
+            await hub_dataset.take(1).import_to(db, mock_search_engine, dataset)
+        except (HfHubHTTPError, DataFilesNotFoundError, ReadTimeout, ConnectTimeout, HTTPError, RequestException) as e:
+            pytest.skip(f"Skipping test due to Hugging Face Hub connection error: {e}")
 
         record = (await db.execute(select(Record))).scalar_one()
         assert record.suggestions[0].value == 4
@@ -164,7 +175,10 @@ class TestHubDataset:
             ),
         )
 
-        await hub_dataset.take(1).import_to(db, mock_search_engine, dataset)
+        try:
+            await hub_dataset.take(1).import_to(db, mock_search_engine, dataset)
+        except (HfHubHTTPError, DataFilesNotFoundError, ReadTimeout, ConnectTimeout, HTTPError, RequestException) as e:
+            pytest.skip(f"Skipping test due to Hugging Face Hub connection error: {e}")
 
         record = (await db.execute(select(Record))).scalar_one()
         assert record.suggestions[0].value == "neg"
@@ -209,7 +223,10 @@ class TestHubDataset:
             ),
         )
 
-        await hub_dataset.take(1).import_to(db, mock_search_engine, dataset)
+        try:
+            await hub_dataset.take(1).import_to(db, mock_search_engine, dataset)
+        except (HfHubHTTPError, DataFilesNotFoundError, ReadTimeout, ConnectTimeout, HTTPError, RequestException) as e:
+            pytest.skip(f"Skipping test due to Hugging Face Hub connection error: {e}")
 
         record = (await db.execute(select(Record))).scalar_one()
         assert record.suggestions[0].value == ["neutral"]
@@ -238,7 +255,10 @@ class TestHubDataset:
             ),
         )
 
-        await hub_dataset.take(1).import_to(db, mock_search_engine, dataset)
+        try:
+            await hub_dataset.take(1).import_to(db, mock_search_engine, dataset)
+        except (HfHubHTTPError, DataFilesNotFoundError, ReadTimeout, ConnectTimeout, HTTPError, RequestException) as e:
+            pytest.skip(f"Skipping test due to Hugging Face Hub connection error: {e}")
 
         record = (await db.execute(select(Record))).scalar_one()
         assert record.fields["label"] == "neg"
@@ -280,7 +300,10 @@ class TestHubDataset:
             ),
         )
 
-        await hub_dataset.take(1).import_to(db, mock_search_engine, dataset)
+        try:
+            await hub_dataset.take(1).import_to(db, mock_search_engine, dataset)
+        except (HfHubHTTPError, DataFilesNotFoundError, ReadTimeout, ConnectTimeout, HTTPError, RequestException) as e:
+            pytest.skip(f"Skipping test due to Hugging Face Hub connection error: {e}")
 
         record = (await db.execute(select(Record))).scalar_one()
         assert record.suggestions == []
@@ -309,7 +332,10 @@ class TestHubDataset:
             ),
         )
 
-        await hub_dataset.take(1).import_to(db, mock_search_engine, dataset)
+        try:
+            await hub_dataset.take(1).import_to(db, mock_search_engine, dataset)
+        except (HfHubHTTPError, DataFilesNotFoundError, ReadTimeout, ConnectTimeout, HTTPError, RequestException) as e:
+            pytest.skip(f"Skipping test due to Hugging Face Hub connection error: {e}")
 
         record = (await db.execute(select(Record))).scalar_one()
         assert "label" not in record.fields
@@ -334,7 +360,10 @@ class TestHubDataset:
             ),
         )
 
-        await hub_dataset.take(1).import_to(db, mock_search_engine, dataset)
+        try:
+            await hub_dataset.take(1).import_to(db, mock_search_engine, dataset)
+        except (HfHubHTTPError, DataFilesNotFoundError, ReadTimeout, ConnectTimeout, HTTPError, RequestException) as e:
+            pytest.skip(f"Skipping test due to Hugging Face Hub connection error: {e}")
 
         record = (await db.execute(select(Record))).scalar_one()
         assert record.fields["messages"]
@@ -360,7 +389,10 @@ class TestHubDataset:
             ),
         )
 
-        await hub_dataset.take(1).import_to(db, mock_search_engine, dataset)
+        try:
+            await hub_dataset.take(1).import_to(db, mock_search_engine, dataset)
+        except (HfHubHTTPError, DataFilesNotFoundError, ReadTimeout, ConnectTimeout, HTTPError, RequestException) as e:
+            pytest.skip(f"Skipping test due to Hugging Face Hub connection error: {e}")
 
         record = (await db.execute(select(Record))).scalar_one()
         assert record.external_id == "vlfeedback_1"
@@ -431,11 +463,14 @@ class TestHubDataset:
             ),
         )
 
-        await hub_dataset.import_to(db, mock_search_engine, dataset)
-        assert (await db.execute(select(func.count(Record.id)))).scalar_one() == 5
+        try:
+            await hub_dataset.import_to(db, mock_search_engine, dataset)
+            assert (await db.execute(select(func.count(Record.id)))).scalar_one() == 5
 
-        await hub_dataset.import_to(db, mock_search_engine, dataset)
-        assert (await db.execute(select(func.count(Record.id)))).scalar_one() == 5
+            await hub_dataset.import_to(db, mock_search_engine, dataset)
+            assert (await db.execute(select(func.count(Record.id)))).scalar_one() == 5
+        except (HfHubHTTPError, DataFilesNotFoundError, ReadTimeout, ConnectTimeout, HTTPError, RequestException) as e:
+            pytest.skip(f"Skipping test due to Hugging Face Hub connection error: {e}")
 
         records = (await db.execute(select(Record).order_by(Record.inserted_at.asc()))).scalars().all()
         assert [record.external_id for record in records] == [
@@ -468,11 +503,14 @@ class TestHubDataset:
             ),
         )
 
-        await hub_dataset.import_to(db, mock_search_engine, dataset)
-        assert (await db.execute(select(func.count(Record.id)))).scalar_one() == 5
+        try:
+            await hub_dataset.import_to(db, mock_search_engine, dataset)
+            assert (await db.execute(select(func.count(Record.id)))).scalar_one() == 5
 
-        await hub_dataset.import_to(db, mock_search_engine, dataset)
-        assert (await db.execute(select(func.count(Record.id)))).scalar_one() == 5
+            await hub_dataset.import_to(db, mock_search_engine, dataset)
+            assert (await db.execute(select(func.count(Record.id)))).scalar_one() == 5
+        except (HfHubHTTPError, DataFilesNotFoundError, ReadTimeout, ConnectTimeout, HTTPError, RequestException) as e:
+            pytest.skip(f"Skipping test due to Hugging Face Hub connection error: {e}")
 
         records = (await db.execute(select(Record).order_by(Record.inserted_at.asc()))).scalars().all()
         assert [record.external_id for record in records] == ["train_0", "train_1", "train_2", "train_3", "train_4"]
@@ -510,17 +548,20 @@ class TestHubDataset:
             ),
         )
 
-        await hub_dataset_train.import_to(db, mock_search_engine, dataset)
-        assert (await db.execute(select(func.count(Record.id)))).scalar_one() == 5
+        try:
+            await hub_dataset_train.import_to(db, mock_search_engine, dataset)
+            assert (await db.execute(select(func.count(Record.id)))).scalar_one() == 5
 
-        await hub_dataset_train.import_to(db, mock_search_engine, dataset)
-        assert (await db.execute(select(func.count(Record.id)))).scalar_one() == 5
+            await hub_dataset_train.import_to(db, mock_search_engine, dataset)
+            assert (await db.execute(select(func.count(Record.id)))).scalar_one() == 5
 
-        await hub_dataset_test.import_to(db, mock_search_engine, dataset)
-        assert (await db.execute(select(func.count(Record.id)))).scalar_one() == 10
+            await hub_dataset_test.import_to(db, mock_search_engine, dataset)
+            assert (await db.execute(select(func.count(Record.id)))).scalar_one() == 10
 
-        await hub_dataset_test.import_to(db, mock_search_engine, dataset)
-        assert (await db.execute(select(func.count(Record.id)))).scalar_one() == 10
+            await hub_dataset_test.import_to(db, mock_search_engine, dataset)
+            assert (await db.execute(select(func.count(Record.id)))).scalar_one() == 10
+        except (HfHubHTTPError, DataFilesNotFoundError, ReadTimeout, ConnectTimeout, HTTPError, RequestException) as e:
+            pytest.skip(f"Skipping test due to Hugging Face Hub connection error: {e}")
 
         records = (await db.execute(select(Record))).scalars().all()
         assert [record.external_id for record in records] == [

@@ -74,7 +74,7 @@ jobs:
           pdm config python.install_root "$(uv python dir)"
 
           cd argilla-server/
-          pdm install --dev
+          pdm install -G test
 
       - name: Install extralit editable package with dependencies
         working-directory: extralit
