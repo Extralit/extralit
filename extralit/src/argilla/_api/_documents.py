@@ -13,11 +13,10 @@
 # limitations under the License.
 
 import os
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, List
 from uuid import UUID
 
 from argilla._api._base import ResourceAPI
-from argilla._exceptions import ArgillaAPIError
 from argilla._exceptions._api import api_error_handler
 
 if TYPE_CHECKING:
@@ -37,7 +36,6 @@ class DocumentsAPI(ResourceAPI):
         Returns:
             The created document model.
         """
-        from argilla._models._documents import DocumentModel
 
         url = "/api/v1/documents"
         document_payload = model.to_server_payload()
@@ -54,8 +52,7 @@ class DocumentsAPI(ResourceAPI):
 
         response.raise_for_status()
         document_id = UUID(response.json())
-        
-        # Return the model with the new ID
+
         model.id = document_id
         return model
 
@@ -187,7 +184,7 @@ class DocumentsAPI(ResourceAPI):
         }
         # Remove None values
         update_data = {k: v for k, v in update_data.items() if v is not None}
-        
+
         response = self.http_client.patch(url=url, json=update_data)
         response.raise_for_status()
 
