@@ -65,6 +65,8 @@ services:
     environment:
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
+    networks:
+      - argilla
     ports:
       - "9090:9090"
     deploy:
