@@ -37,6 +37,43 @@ from argilla_server.jobs.document_jobs import upload_document_job
 _LOGGER = logging.getLogger(__name__)
 
 
+async def _check_existing_documents(db: AsyncSession, document_create: DocumentCreate) -> List[Document]:
+    """
+    Check if documents already exist based on reference, DOI, PMID, or ID.
+    Reuses the logic from the existing document handler but returns all matching documents.
+
+    Args:
+        db: Database session
+        document_create: Document creation data
+
+    Returns:
+        List of existing documents if found, empty list otherwise
+    """
+    conditions = []
+
+    if document_create.pmid:
+        conditions.append(Document.pmid == document_create.pmid)
+    if document_create.url:
+        conditions.append(Document.url == document_create.url)
+    if document_create.doi:
+        conditions.append(Document.doi == document_create.doi)
+    if document_create.id:
+        conditions.append(Document.id == document_create.id)
+    if document_create.reference:
+        conditions.append(Document.reference == document_create.reference)
+
+    if not conditions:
+        return []
+
+    # Check if documents with the same pmid, url, doi, id, or reference already exist
+    result = await db.execute(
+        select(Document).where(and_(Document.workspace_id == document_create.workspace_id, or_(*conditions)))
+    )
+    existing_documents = result.scalars().all()
+
+    return list(existing_documents)
+
+
 async def analyze_import_status(db: AsyncSession, analysis_request: ImportAnalysisRequest) -> ImportAnalysisResponse:
     """
     Analyze import status for documents by checking existing documents and determining
@@ -107,43 +144,6 @@ async def analyze_import_status(db: AsyncSession, analysis_request: ImportAnalys
     )
 
     return ImportAnalysisResponse(documents=documents_info, summary=summary)
-
-
-async def _check_existing_documents(db: AsyncSession, document_create: DocumentCreate) -> List[Document]:
-    """
-    Check if documents already exist based on reference, DOI, PMID, or ID.
-    Reuses the logic from the existing document handler but returns all matching documents.
-
-    Args:
-        db: Database session
-        document_create: Document creation data
-
-    Returns:
-        List of existing documents if found, empty list otherwise
-    """
-    conditions = []
-
-    if document_create.pmid:
-        conditions.append(Document.pmid == document_create.pmid)
-    if document_create.url:
-        conditions.append(Document.url == document_create.url)
-    if document_create.doi:
-        conditions.append(Document.doi == document_create.doi)
-    if document_create.id:
-        conditions.append(Document.id == document_create.id)
-    if document_create.reference:
-        conditions.append(Document.reference == document_create.reference)
-
-    if not conditions:
-        return []
-
-    # Check if documents with the same pmid, url, doi, id, or reference already exist
-    result = await db.execute(
-        select(Document).where(and_(Document.workspace_id == document_create.workspace_id, or_(*conditions)))
-    )
-    existing_documents = result.scalars().all()
-
-    return list(existing_documents)
 
 
 async def _has_new_files(db: AsyncSession, existing_documents: List[Document], new_files: List[FileInfo]) -> bool:

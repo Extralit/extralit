@@ -4,6 +4,8 @@
 
 The Papers Library Importer feature enables researchers to import their existing reference libraries from .bib files and PDF folders into Extralit workspaces. The system leverages the existing document upload endpoint (`POST /documents`) and job queue system to process bibliographic metadata from .bib files, match PDF files to references, and provide a user-friendly interface for reviewing and confirming imports before executing bulk operations.
 
+**Generalized Tabular Import Support**: The import system is designed to handle tabular data beyond just BibTeX files. The core functionality supports CSV imports and other structured data formats by storing imported data as dataframes with schema information. This enables future expansion to support various research data import formats while maintaining consistent processing workflows.
+
 The design follows Extralit's existing patterns: context-based backend architecture, FastAPI endpoints with proper authorization, Vue.js frontend components, and the existing RQ-based asynchronous job processing system for bulk operations.
 
 ## Architecture
@@ -284,6 +286,7 @@ class ImportAnalysisResponse(BaseModel):
     """Response schema for import analysis."""
     documents: Dict[str, DocumentImportAnalysis] = Field(..., description="Reference key to document info mapping")
     summary: ImportSummary = Field(..., description="Import analysis summary")
+    data: Dict = Field(..., description="Tabular dataframe representation of imported data for generalized import support")
 ```
 
 #### Bulk Upload Request/Response
@@ -327,6 +330,66 @@ Note: The user may use the DocumentImportExecuteRequest to switch between add or
 - Response includes `job_ids` indexed by reference key for easy frontend tracking
 - Job processing handles multiple files per reference efficiently
 
+#### Dataframe Structure for Generalized Import Support
+
+The `data` field in `ImportAnalysisResponse` follows this structure for tabular data representation:
+
+```json
+{
+    "schema": {
+        "fields": [
+            {
+                "name": "reference",
+                "type": "string"
+            },
+            {
+                "name": "title",
+                "type": "string"
+            },
+            {
+                "name": "authors",
+                "type": "string"
+            },
+            {
+                "name": "year",
+                "type": "integer"
+            },
+            {
+                "name": "venue",
+                "type": "string"
+            },
+            {
+                "name": "doi",
+                "type": "string"
+            },
+            {
+                "name": "pmid",
+                "type": "string"
+            }
+        ],
+        "primaryKey": ["reference"]
+    },
+    "data": [
+        {
+            "reference": "Hawley2003a",
+            "title": "Community-wide effects of permethrin-treated bed nets",
+            "authors": "William A Hawley, Penelope A Phillips-Howard",
+            "year": 2003,
+            "venue": "The American Journal of Tropical Medicine and Hygiene",
+            "doi": "10.4269/ajtmh.2003.68.121",
+            "pmid": "12749495"
+        }
+    ]
+}
+```
+
+This structure enables:
+- **Schema Definition**: Field names, types, and primary key specification
+- **Type Safety**: Explicit type information for each column
+- **Extensibility**: Support for different import formats (BibTeX, CSV, etc.)
+- **Querying**: Efficient database indexing on primary key fields
+- **Analysis**: Structured data for import history and analytics
+
 ## Data Models
 
 ### Import History Database Schema
@@ -338,20 +401,68 @@ class ImportHistory(DatabaseModel):
 
     workspace_id: Mapped[UUID] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
     user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
-    filename: Mapped[str] = mapped_column(String, nullable=False)  # BibTeX filename
+    filename: Mapped[str] = mapped_column(String, nullable=False)  # Import filename (.bib, .csv, etc.)
     metadata: Mapped[dict] = mapped_column(MutableDict.as_mutable(JSON), nullable=False)  # ImportAnalysisResponse data
+    data: Mapped[dict] = mapped_column(MutableDict.as_mutable(JSON), nullable=False)  # Tabular dataframe data
 
     workspace: Mapped["Workspace"] = relationship("Workspace")
     user: Mapped["User"] = relationship("User")
+
+    # Index on reference field within the JSONB data column for efficient querying
+    __table_args__ = (
+        Index('ix_import_history_data_reference', text("(data->'data'->0->>'reference')")),
+    )
 ```
 
 **Purpose:**
 - Records the actual database committed operations (not necessarily the job status)
 - Stores the complete ImportAnalysisResponse JSON in the metadata field containing all reference and file information
+- **NEW**: Stores tabular data as a dataframe structure in the `data` field for generalized import support
 - The ImportHistory records the actual database committed operations, not just the job status
 - Provides audit trail of what was actually imported vs. what was requested
 - Enables import history viewing and analysis
 - Metadata field contains references with their associated files and processing status
+- **NEW**: Data field enables querying and analysis of imported tabular data across different import types (.bib, .csv, etc.)
+
+**Dataframe Structure in `data` field:**
+```json
+{
+    "schema": {
+        "fields": [
+            {
+                "name": "reference",
+                "type": "string"
+            },
+            {
+                "name": "title",
+                "type": "string"
+            },
+            {
+                "name": "authors",
+                "type": "string"
+            },
+            {
+                "name": "year",
+                "type": "integer"
+            },
+            {
+                "name": "doi",
+                "type": "string"
+            }
+        ],
+        "primaryKey": ["reference"]
+    },
+    "data": [
+        {
+            "reference": "Hawley2003a",
+            "title": "Community-wide effects of permethrin-treated bed nets",
+            "authors": "William A Hawley, Penelope A Phillips-Howard",
+            "year": 2003,
+            "doi": "10.4269/ajtmh.2003.68.121"
+        }
+    ]
+}
+```
 
 ### Document Field Mapping
 The import process maps BibTeX entries to existing Document model fields:
@@ -373,6 +484,24 @@ The import process maps BibTeX entries to existing Document model fields:
 - **Year**: Used for display in preview, not stored in Document model
 - **DOI/PMID**: Maps to `Document.doi` and `Document.pmid` fields
 - **File Matching**: Associates PDF files with reference keys for upload
+
+### Generalized Tabular Data Processing
+The import system processes tabular data (BibTeX, CSV, etc.) into a standardized dataframe format:
+
+**BibTeX to Dataframe Mapping:**
+- `reference` (primary key) → BibTeX ID field
+- `title` → BibTeX title field
+- `authors` → Concatenated author names
+- `year` → Publication year as integer
+- `venue` → Journal, booktitle, or publisher
+- `doi` → DOI identifier
+- `pmid` → PubMed identifier
+
+**Future CSV Support:**
+- First column as primary key (configurable)
+- Column headers map to dataframe field names
+- Type inference for string, integer, float fields
+- Flexible schema definition for different data sources
 
 ### PDF-to-Reference Matching Logic
 1. **Exact Match**: PDF filename matches reference key exactly
