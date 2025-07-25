@@ -318,7 +318,7 @@ def _execute_document_bulk_import(client: Argilla, analysis_result: Dict, pdf_fo
                 if file_path:
                     bulk_documents.append(
                         {
-                            "reference_key": ref_key,
+                            "reference": ref_key,
                             "document_create": document_create,
                             "associated_file": file_path.name,
                         }

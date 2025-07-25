@@ -87,7 +87,7 @@ class ImportAnalysisResponse(BaseModel):
 class BulkDocumentInfo(BaseModel):
     """Information about a document in the bulk upload request."""
 
-    reference_key: str = Field(..., description="BibTeX reference key for job tracking")
+    reference: str = Field(..., description="BibTeX reference key for job tracking")
     document_create: DocumentCreate = Field(..., description="Document creation data")
     associated_file: str = Field(..., description="Single PDF filename (one file per DocumentCreate)")
 
