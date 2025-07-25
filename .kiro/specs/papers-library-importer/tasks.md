@@ -19,6 +19,13 @@
   - Add proper error handling and validation
   - _Requirements: 2.1, 2.2_
 
+- [-] 2.4 Add dataframe support to ImportAnalysisResponse schema
+  - Add `data` field to ImportAnalysisResponse schema for tabular dataframe representation
+  - Update import analysis logic to build dataframe structure from BibTeX entries
+  - Implement dataframe schema with fields, types, and primaryKey for generalized import support
+  - Enable future CSV and other tabular data import formats
+  - _Requirements: 2.1, 2.2_
+
 - [x] 2.3 Create CLI import analysis testing function
   - Add import_bibtex() function to extralit/src/argilla/cli/documents/add.py
   - Parse BibTeX file and match PDF files from folder using Python bibtexparser
@@ -45,7 +52,7 @@
   - _Requirements: 3.1, 3.3, 3.4, 3.7_
 
 - [x] 3.3 Implement ImportHistory database model
-  - Create ImportHistory model in database.py with required fields
+  - Create ImportHistory model in database.py with required fields, with the alembic upgrade path at `argilla-server/src/argilla_server/alembic/versions/7d6b33203390_create_import_history_table.py`
   - Add relationships to Workspace and User models
   - Create migration script for the new table
   - _Requirements: 3.5, 4.1_
@@ -55,6 +62,7 @@
   - Implement `reference_key` indexed job_id response mapping
   - Create import history record for each bulk import with complete reference and file information
   - Store ImportAnalysisResponse data in the metadata JSON field including multi-file associations
+  - Store tabular dataframe representation in the data JSON field for generalized import support
   - Add proper cleanup of temporary files after job completion
   - Handle multiple files per reference in job processing and error reporting
   - _Requirements: 3.2, 3.5, 4.1, 4.6_
