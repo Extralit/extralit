@@ -269,7 +269,7 @@ async def create_documents_bulk(
         {
             "documents": [
             {
-                "reference_key": "ref1",
+                "reference": "ref1",
                 "document_create": { ... },
                 "associated_file": "file1.pdf"
             }

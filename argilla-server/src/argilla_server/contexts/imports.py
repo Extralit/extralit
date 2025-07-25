@@ -364,11 +364,11 @@ async def process_bulk_upload(
             job = upload_document_job.delay(document_data=doc.document_create.model_dump(), file_data=file_content)
 
             # Store job ID mapped to reference key for tracking
-            job_ids[doc.reference_key] = job.id
+            job_ids[doc.reference] = job.id
 
         except Exception as e:
-            _LOGGER.error(f"Error processing document {doc.reference_key}: {str(e)}")
-            failed_validations.append(f"{doc.reference_key}: {str(e)}")
+            _LOGGER.error(f"Error processing document {doc.reference}: {str(e)}")
+            failed_validations.append(f"{doc.reference}: {str(e)}")
 
     return DocumentsBulkResponse(
         job_ids=job_ids, total_documents=len(bulk_create.documents), failed_validations=failed_validations
