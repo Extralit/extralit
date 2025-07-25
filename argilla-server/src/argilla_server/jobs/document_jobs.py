@@ -51,7 +51,7 @@ async def upload_document_job(document_data: Dict[str, Any], file_data: bytes) -
                 _LOGGER.info(f"Document already exists with ID {existing_document.id}")
                 return {
                     "success": True,
-                    "document_id": str(existing_document.id),
+                    "id": str(existing_document.id),
                     "status": "existing",
                     "message": "Document already exists",
                     "reference": document_create.reference,
@@ -144,7 +144,7 @@ async def upload_document_job(document_data: Dict[str, Any], file_data: bytes) -
                     _LOGGER.info(f"Document created successfully with ID {document.id}")
                     return {
                         "success": True,
-                        "document_id": str(document.id),
+                        "id": str(document.id),
                         "status": "created",
                         "message": "Document created successfully",
                         "reference": document_create.reference,
