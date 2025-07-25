@@ -52,7 +52,7 @@ async def analyze_import_status(db: AsyncSession, analysis_request: ImportAnalys
     documents_info: Dict[str, DocumentImportAnalysis] = {}
     add_count = update_count = skip_count = failed_count = 0
 
-    for reference_key, file_metadata in analysis_request.documents.items():
+    for reference, file_metadata in analysis_request.documents.items():
         try:
             existing_documents = await _check_existing_documents(db, file_metadata.document_create)
 
@@ -73,7 +73,7 @@ async def analyze_import_status(db: AsyncSession, analysis_request: ImportAnalys
                     status = ImportStatus.SKIP
                     skip_count += 1
 
-            documents_info[reference_key] = DocumentImportAnalysis(
+            documents_info[reference] = DocumentImportAnalysis(
                 document_create=file_metadata.document_create,
                 title=file_metadata.title,
                 authors=file_metadata.authors,
@@ -85,8 +85,8 @@ async def analyze_import_status(db: AsyncSession, analysis_request: ImportAnalys
             )
 
         except Exception as e:
-            _LOGGER.error(f"Error analyzing document {reference_key}: {str(e)}")
-            documents_info[reference_key] = DocumentImportAnalysis(
+            _LOGGER.error(f"Error analyzing document {reference}: {str(e)}")
+            documents_info[reference] = DocumentImportAnalysis(
                 document_create=file_metadata.document_create,
                 title=file_metadata.title,
                 authors=file_metadata.authors,

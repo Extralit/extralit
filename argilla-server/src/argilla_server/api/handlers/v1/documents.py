@@ -268,11 +268,11 @@ async def create_documents_bulk(
         Example:
         {
             "documents": [
-            {
-                "reference": "ref1",
-                "document_create": { ... },
-                "associated_file": "file1.pdf"
-            }
+                {
+                    "reference": "ref1",
+                    "document_create": { ... },
+                    "associated_file": "file1.pdf"
+                }
             ]
         }
         - `files`: List of PDF files to upload.
