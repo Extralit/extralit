@@ -14,6 +14,7 @@
 
 import logging
 from typing import List
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Security, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -21,7 +22,7 @@ from pydantic import ValidationError
 
 from argilla_server.database import get_async_db
 from argilla_server.security import auth
-from argilla_server.models import User, Workspace
+from argilla_server.models import User, Workspace, ImportHistory
 from argilla_server.api.policies.v1 import DocumentPolicy, authorize
 from argilla_server.contexts.imports import analyze_import_status, create_import_history
 from argilla_server.api.schemas.v1.imports import (
@@ -267,3 +268,128 @@ def _validate_import_history_request(import_history_create: ImportHistoryCreate)
                         errors.append(f"Associated files for reference '{ref_key}' must be a list")
 
     return errors
+
+
+@router.get("/imports/history", status_code=status.HTTP_200_OK)
+async def list_import_histories(
+    *,
+    workspace_id: UUID,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Security(auth.get_current_user),
+) -> List[ImportHistoryResponse]:
+    """
+    List import history records for a workspace.
+
+    Args:
+        workspace_id: Workspace ID to filter import histories
+        db: Database session
+        current_user: Authenticated user
+
+    Returns:
+        List of ImportHistoryResponse records
+
+    Raises:
+        HTTPException: If workspace doesn't exist or access denied
+    """
+    await authorize(current_user, DocumentPolicy.create())
+
+    workspace = await Workspace.get(db, workspace_id)
+    if not workspace:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Workspace with id `{workspace_id}` not found",
+        )
+
+    try:
+        # Query import histories for the workspace
+        from sqlalchemy import select
+
+        result = await db.execute(
+            select(ImportHistory)
+            .where(ImportHistory.workspace_id == workspace_id)
+            .order_by(ImportHistory.inserted_at.desc())
+        )
+        import_histories = result.scalars().all()
+
+        # Convert to response format
+        response_list = []
+        for history in import_histories:
+            response_list.append(
+                ImportHistoryResponse(
+                    id=history.id,
+                    workspace_id=history.workspace_id,
+                    filename=history.filename,
+                    created_at=history.inserted_at,
+                )
+            )
+
+        _LOGGER.info(f"Retrieved {len(response_list)} import histories for workspace {workspace_id}")
+        return response_list
+
+    except Exception as e:
+        _LOGGER.error(f"Error retrieving import histories: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error retrieving import histories: {str(e)}",
+        )
+
+
+@router.get("/imports/history/{history_id}", status_code=status.HTTP_200_OK)
+async def get_import_history(
+    *,
+    history_id: UUID,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Security(auth.get_current_user),
+) -> dict:
+    """
+    Get detailed import history record including data and metadata.
+
+    Args:
+        history_id: Import history record ID
+        db: Database session
+        current_user: Authenticated user
+
+    Returns:
+        Complete import history record with data and metadata
+
+    Raises:
+        HTTPException: If record doesn't exist or access denied
+    """
+    await authorize(current_user, DocumentPolicy.create())
+
+    try:
+        history = await ImportHistory.get(db, history_id)
+        if not history:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Import history with id `{history_id}` not found",
+            )
+
+        # Check workspace access
+        workspace = await Workspace.get(db, history.workspace_id)
+        if not workspace:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Workspace not found",
+            )
+
+        response = {
+            "id": str(history.id),
+            "workspace_id": str(history.workspace_id),
+            "filename": history.filename,
+            "data": history.data,
+            "metadata": history.metadata_,
+            "created_at": history.inserted_at.isoformat(),
+        }
+
+        _LOGGER.info(f"Retrieved import history {history_id}")
+        return response
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        _LOGGER.error(f"Error retrieving import history {history_id}: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error retrieving import history: {str(e)}",
+        )
