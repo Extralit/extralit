@@ -23,6 +23,7 @@ from argilla_server.api.schemas.v1.imports import (
     DocumentMetadata,
     ImportAnalysisRequest,
     ImportStatus,
+    ImportHistoryCreate,
 )
 
 from argilla_server.models import UserRole
@@ -396,3 +397,248 @@ class TestImportsAPI:
         assert data["summary"]["update_count"] == 1
         assert data["summary"]["skip_count"] == 1
         assert data["summary"]["failed_count"] == 1
+
+    async def test_create_import_history_unauthorized(self, async_client: AsyncClient):
+        """Test that unauthorized users cannot access the import history endpoint."""
+        # Create a request with a valid workspace ID
+        request = ImportHistoryCreate(
+            workspace_id=uuid4(),
+            filename="test.bib",
+            data={"schema": {"fields": [], "primaryKey": []}, "data": []},
+        )
+
+        # Make request without authentication
+        response = await async_client.post("/api/v1/imports/history", json=request.model_dump(mode="json"))
+
+        # Verify response
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    async def test_create_import_history_invalid_workspace(self, async_client: AsyncClient):
+        """Test import history endpoint with invalid workspace ID."""
+        # Create request with non-existent workspace ID
+        request = ImportHistoryCreate(
+            workspace_id=uuid4(),
+            filename="test.bib",
+            data={"schema": {"fields": [], "primaryKey": []}, "data": []},
+        )
+
+        # Make request
+        response = await async_client.post("/api/v1/imports/history", json=request.model_dump(mode="json"))
+
+        # Verify response
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert "not found" in response.json()["detail"]
+
+    async def test_create_import_history_invalid_data(self, async_client: AsyncClient):
+        """Test import history endpoint with invalid data structure."""
+        # Create owner user and workspace
+        owner = await UserFactory.create(role=UserRole.owner)
+        workspaces = await WorkspaceFactory.create_batch(1)
+        workspace = workspaces[0]
+
+        # Create request with invalid data structure
+        request = ImportHistoryCreate(
+            workspace_id=workspace.id,
+            filename="test.bib",
+            data={"invalid": "structure"},  # Missing schema and data fields
+        )
+
+        # Make request
+        response = await async_client.post("/api/v1/imports/history", json=request.model_dump(mode="json"))
+
+        # Verify response
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        error_detail = response.json()["detail"]
+        assert "Data must contain 'schema' field" in str(error_detail)
+        assert "Data must contain 'data' field" in str(error_detail)
+
+    async def test_create_import_history_empty_filename(self, async_client: AsyncClient):
+        """Test import history endpoint with empty filename."""
+        # Create owner user and workspace
+        owner = await UserFactory.create(role=UserRole.owner)
+        workspaces = await WorkspaceFactory.create_batch(1)
+        workspace = workspaces[0]
+
+        # Create request with empty filename
+        request = ImportHistoryCreate(
+            workspace_id=workspace.id,
+            filename="",
+            data={"schema": {"fields": [], "primaryKey": []}, "data": []},
+        )
+
+        # Make request
+        response = await async_client.post("/api/v1/imports/history", json=request.model_dump(mode="json"))
+
+        # Verify response
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert "Filename cannot be empty" in str(response.json())
+
+    async def test_create_import_history_invalid_metadata(self, async_client: AsyncClient):
+        """Test import history endpoint with invalid metadata structure."""
+        # Create owner user and workspace
+        owner = await UserFactory.create(role=UserRole.owner)
+        workspaces = await WorkspaceFactory.create_batch(1)
+        workspace = workspaces[0]
+
+        # Create request with invalid metadata
+        request = ImportHistoryCreate(
+            workspace_id=workspace.id,
+            filename="test.bib",
+            data={"schema": {"fields": [], "primaryKey": []}, "data": []},
+            metadata={
+                "ref1": {
+                    "status": "invalid_status",  # Invalid status
+                    "associated_files": "not_a_list",  # Should be a list
+                },
+                "ref2": "not_a_dict",  # Should be a dictionary
+            },
+        )
+
+        # Make request
+        response = await async_client.post("/api/v1/imports/history", json=request.model_dump(mode="json"))
+
+        # Verify response
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        error_detail = response.json()["detail"]
+        assert "Invalid status 'invalid_status'" in str(error_detail)
+        assert "Associated files for reference 'ref1' must be a list" in str(error_detail)
+        assert "Metadata for reference 'ref2' must be a dictionary" in str(error_detail)
+
+    async def test_create_import_history_success(self, async_client: AsyncClient):
+        """Test successful import history creation."""
+        # Create owner user and workspace
+        owner = await UserFactory.create(role=UserRole.owner)
+        workspaces = await WorkspaceFactory.create_batch(1)
+        workspace = workspaces[0]
+
+        # Create valid dataframe data
+        dataframe_data = {
+            "schema": {
+                "fields": [
+                    {"name": "reference", "type": "string"},
+                    {"name": "title", "type": "string"},
+                    {"name": "authors", "type": "string"},
+                    {"name": "year", "type": "integer"},
+                    {"name": "doi", "type": "string"},
+                ],
+                "primaryKey": ["reference"],
+            },
+            "data": [
+                {
+                    "reference": "Smith2024",
+                    "title": "Test Paper",
+                    "authors": "John Smith",
+                    "year": 2024,
+                    "doi": "10.1234/test.doi",
+                },
+                {
+                    "reference": "Doe2023",
+                    "title": "Another Paper",
+                    "authors": "Jane Doe",
+                    "year": 2023,
+                    "doi": "10.5678/another.doi",
+                },
+            ],
+        }
+
+        # Create metadata with import status and associated files
+        metadata = {
+            "Smith2024": {"status": "add", "associated_files": ["smith2024.pdf"]},
+            "Doe2023": {"status": "update", "associated_files": ["doe2023.pdf", "doe2023_supplement.pdf"]},
+        }
+
+        # Create request
+        request = ImportHistoryCreate(
+            workspace_id=workspace.id,
+            filename="test_import.bib",
+            data=dataframe_data,
+            metadata=metadata,
+        )
+
+        # Make request
+        response = await async_client.post("/api/v1/imports/history", json=request.model_dump(mode="json"))
+
+        # Verify response
+        assert response.status_code == status.HTTP_201_CREATED
+        data = response.json()
+        assert "id" in data
+        assert data["workspace_id"] == str(workspace.id)
+        assert data["filename"] == "test_import.bib"
+        assert "created_at" in data
+
+    async def test_create_import_history_bibtex_data(self, async_client: AsyncClient):
+        """Test import history creation with BibTeX-style dataframe data."""
+        # Create owner user and workspace
+        owner = await UserFactory.create(role=UserRole.owner)
+        workspaces = await WorkspaceFactory.create_batch(1)
+        workspace = workspaces[0]
+
+        # Create BibTeX-style dataframe data
+        bibtex_dataframe = {
+            "schema": {
+                "fields": [
+                    {"name": "reference", "type": "string"},
+                    {"name": "title", "type": "string"},
+                    {"name": "authors", "type": "string"},
+                    {"name": "year", "type": "integer"},
+                    {"name": "venue", "type": "string"},
+                    {"name": "doi", "type": "string"},
+                    {"name": "pmid", "type": "string"},
+                    {"name": "file_name", "type": "string"},
+                    {"name": "status", "type": "string"},
+                    {"name": "associated_files", "type": "string"},
+                ],
+                "primaryKey": ["reference"],
+            },
+            "data": [
+                {
+                    "reference": "Hawley2003a",
+                    "title": "Community-wide effects of permethrin-treated bed nets",
+                    "authors": "William A Hawley, Penelope A Phillips-Howard",
+                    "year": 2003,
+                    "venue": "The American Journal of Tropical Medicine and Hygiene",
+                    "doi": "",
+                    "pmid": "12749495",
+                    "file_name": "hawley2003.pdf",
+                    "status": "add",
+                    "associated_files": "hawley2003.pdf",
+                },
+                {
+                    "reference": "PMI2019",
+                    "title": "Durability Monitoring of LLINs in Zanzibar, Tanzania",
+                    "authors": "PMI",
+                    "year": 2019,
+                    "venue": "",
+                    "doi": "",
+                    "pmid": "",
+                    "file_name": "pmi2019.pdf",
+                    "status": "add",
+                    "associated_files": "pmi2019.pdf",
+                },
+            ],
+        }
+
+        # Create metadata with import status and associated files for each reference
+        bibtex_metadata = {
+            "Hawley2003a": {"status": "add", "associated_files": ["hawley2003.pdf"]},
+            "PMI2019": {"status": "add", "associated_files": ["pmi2019.pdf"]},
+        }
+
+        # Create request
+        request = ImportHistoryCreate(
+            workspace_id=workspace.id,
+            filename="zotero_export.bib",
+            data=bibtex_dataframe,
+            metadata=bibtex_metadata,
+        )
+
+        # Make request
+        response = await async_client.post("/api/v1/imports/history", json=request.model_dump(mode="json"))
+
+        # Verify response
+        assert response.status_code == status.HTTP_201_CREATED
+        data = response.json()
+        assert "id" in data
+        assert data["workspace_id"] == str(workspace.id)
+        assert data["filename"] == "zotero_export.bib"
+        assert "created_at" in data
