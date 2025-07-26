@@ -55,15 +55,15 @@ def _clean_bibtex_field(value: str) -> str:
     return value.replace("{", "").replace("}", "").strip()
 
 
-def _parse_authors(author_string: str) -> str:
-    """Parse author string from BibTeX entry into cleaned format."""
+def _parse_authors(author_string: str) -> List[str]:
+    """Parse author string from BibTeX entry into list of author names."""
     if not author_string:
-        return ""
+        return []
 
     cleaned = _clean_bibtex_field(author_string)
-    # Split by 'and' and rejoin with semicolons for consistency
+    # Split by 'and' and return as list
     authors = [author.strip() for author in cleaned.split(" and ") if author.strip()]
-    return "; ".join(authors)
+    return authors
 
 
 def _parse_year(year_string: str) -> Optional[int]:
@@ -96,29 +96,19 @@ def _parse_bibtex_to_dataframe(bibtex_file: Path, console: Console) -> pd.DataFr
                 progress.update(task, completed=True, description="No entries found in BibTeX file")
                 return pd.DataFrame()
 
-            # Convert entries to DataFrame with proper field handling
+            # Convert entries to DataFrame storing all fields as-is
             data_rows = []
             for entry in entries:
-                row = {
-                    "reference": entry.get("ID", ""),
-                    "title": _clean_bibtex_field(entry.get("title", "")),
-                    "authors": _parse_authors(entry.get("author", "")),
-                    "year": _parse_year(entry.get("year", "")),
-                    "journal": _clean_bibtex_field(entry.get("journal", "")),
-                    "booktitle": _clean_bibtex_field(entry.get("booktitle", "")),
-                    "publisher": _clean_bibtex_field(entry.get("publisher", "")),
-                    "doi": _clean_bibtex_field(entry.get("doi", "")),
-                    "pmid": _clean_bibtex_field(entry.get("pmid", "")),
-                    "url": _clean_bibtex_field(entry.get("url", "")),
-                    "abstract": _clean_bibtex_field(entry.get("abstract", "")),
-                    "keywords": _clean_bibtex_field(entry.get("keywords", "")),
-                    "file": entry.get("file", ""),  # Keep original for file matching
-                    "files": "",  # Will be populated with matched PDF paths
-                }
+                # Start with the reference field (ID)
+                row = {"reference": entry.get("ID", "")}
 
-                # Create venue field from journal, booktitle, or publisher
-                venue_parts = [row["journal"], row["booktitle"], row["publisher"]]
-                row["venue"] = next((part for part in venue_parts if part), "")
+                # Add all other fields as-is, cleaning only braces
+                for key, value in entry.items():
+                    if key != "ID":  # Skip ID since we already have it as 'reference'
+                        row[key] = _clean_bibtex_field(str(value)) if value else ""
+
+                # Add empty files column for PDF matching
+                row["files"] = ""
 
                 data_rows.append(row)
 
@@ -289,13 +279,9 @@ def _build_documents_payload(df: pd.DataFrame, workspace_obj: Workspace, collect
                 if pdf_path.exists():
                     associated_files.append({"filename": pdf_path.name, "size": pdf_path.stat().st_size})
 
-        # Build DocumentMetadata structure for analysis request
+        # Build DocumentMetadata structure for analysis request - extract basic fields
         documents[reference] = {
             "document_create": document_create,
-            "title": row.get("title", ""),
-            "authors": row.get("authors", "").split("; ") if row.get("authors") else [],
-            "year": row.get("year") if pd.notna(row.get("year")) else None,
-            "venue": row.get("venue", ""),
             "associated_files": associated_files,
         }
 
