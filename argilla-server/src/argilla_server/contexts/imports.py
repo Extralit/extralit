@@ -419,7 +419,6 @@ async def process_bulk_upload(
 
     for doc in bulk_create.documents:
         try:
-            # Get the associated file
             file = file_mapping[doc.associated_file]
 
             if not file.filename or not file.filename.lower().endswith(".pdf"):
