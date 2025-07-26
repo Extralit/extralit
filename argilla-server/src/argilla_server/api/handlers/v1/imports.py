@@ -226,17 +226,28 @@ def _validate_import_history_request(import_history_create: ImportHistoryCreate)
             if "data" not in import_history_create.data:
                 errors.append("Data must contain 'data' field")
 
-            # Validate schema structure if present
+            # Validate schema structure if present - only check for reference column
             if "schema" in import_history_create.data:
                 schema = import_history_create.data["schema"]
                 if not isinstance(schema, dict):
                     errors.append("Schema must be a dictionary")
+                elif "fields" in schema:
+                    # Check that reference field exists in schema
+                    fields = schema.get("fields", [])
+                    if isinstance(fields, list):
+                        field_names = [field.get("name") for field in fields if isinstance(field, dict)]
+                        if "reference" not in field_names:
+                            errors.append("Schema must contain a 'reference' field")
 
-            # Validate data structure if present
+            # Validate data structure if present - only check for reference column
             if "data" in import_history_create.data:
                 data_rows = import_history_create.data["data"]
                 if not isinstance(data_rows, list):
                     errors.append("Data rows must be a list")
+                elif data_rows:  # If there are data rows, check for reference column
+                    first_row = data_rows[0]
+                    if isinstance(first_row, dict) and "reference" not in first_row:
+                        errors.append("Data rows must contain a 'reference' column")
 
     # Validate metadata structure if present
     if import_history_create.metadata is not None:
@@ -307,15 +318,17 @@ async def list_import_histories(
         )
         import_histories = result.scalars().all()
 
-        # Convert to response format
+        # Convert to response format (include metadata but not data for list view)
         response_list = []
         for history in import_histories:
             response_list.append(
                 ImportHistoryResponse(
                     id=history.id,
                     workspace_id=history.workspace_id,
+                    user_id=history.user_id,
                     filename=history.filename,
                     created_at=history.inserted_at,
+                    metadata=history.metadata_,  # Include metadata in list view
                 )
             )
 
@@ -336,7 +349,7 @@ async def get_import_history(
     history_id: UUID,
     db: AsyncSession = Depends(get_async_db),
     current_user: User = Security(auth.get_current_user),
-) -> dict:
+) -> ImportHistoryResponse:
     """
     Get detailed import history record including data and metadata.
 
@@ -369,15 +382,15 @@ async def get_import_history(
                 detail=f"Workspace not found",
             )
 
-        response = {
-            "id": str(history.id),
-            "workspace_id": str(history.workspace_id),
-            "username": history.user.username if history.user else "N/A",
-            "filename": history.filename,
-            "data": history.data,
-            "metadata": history.metadata_,
-            "created_at": history.inserted_at.isoformat(),
-        }
+        response = ImportHistoryResponse(
+            id=history.id,
+            workspace_id=history.workspace_id,
+            user_id=history.user_id,
+            filename=history.filename,
+            created_at=history.inserted_at,
+            data=history.data,  # Include data in detailed view
+            metadata=history.metadata_,  # Include metadata in detailed view
+        )
 
         _LOGGER.info(f"Retrieved import history {history_id}")
         return response

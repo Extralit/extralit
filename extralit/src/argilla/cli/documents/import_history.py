@@ -100,14 +100,23 @@ def list_import_histories(
         table = Table(title=f"Import Histories for Workspace '{workspace}'")
         table.add_column("ID", style="cyan")
         table.add_column("Filename", style="green")
+        table.add_column("User ID", style="blue")
         table.add_column("Created At", style="yellow")
+        table.add_column("References", style="magenta")
 
         for history in histories:
             created_at = datetime.fromisoformat(history["created_at"].replace("Z", "+00:00"))
+
+            # Count references from metadata if available
+            metadata = history.get("metadata", {})
+            ref_count = len(metadata) if metadata else "N/A"
+
             table.add_row(
-                str(history["id"])[:8] + "...",
+                str(history["id"])[:8] + "...",  # Truncate ID for display
                 history["filename"],
+                str(history["user_id"])[:8] + "...",  # Truncate user ID for display
                 created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                str(ref_count),
             )
 
         console.print(table)
@@ -384,6 +393,7 @@ def _display_import_history_summary(history: Dict, console: Console) -> None:
     info_table.add_row("ID", str(history["id"]))
     info_table.add_row("Filename", history["filename"])
     info_table.add_row("Workspace ID", str(history["workspace_id"]))
+    info_table.add_row("User ID", str(history["user_id"]))
     info_table.add_row("Created At", created_at.strftime("%Y-%m-%d %H:%M:%S"))
 
     console.print(info_table)

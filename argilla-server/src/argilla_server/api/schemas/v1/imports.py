@@ -135,9 +135,14 @@ class ImportHistoryCreate(BaseModel):
 
 
 class ImportHistoryResponse(BaseModel):
-    """Response schema for import history creation."""
+    """Response schema for import history creation and retrieval."""
 
     id: UUID = Field(..., description="Import history record ID")
     workspace_id: UUID = Field(..., description="Workspace ID")
+    user_id: UUID = Field(..., description="User ID who created the import")
     filename: str = Field(..., description="Import filename")
     created_at: datetime = Field(..., description="Creation timestamp")
+    data: Optional[Dict[str, Any]] = Field(None, description="Tabular dataframe data (only in detailed view)")
+    metadata: Optional[Dict[str, Any]] = Field(
+        None, description="Import metadata with status and files (in list and detailed view)"
+    )
