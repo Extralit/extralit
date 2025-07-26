@@ -341,7 +341,9 @@ def _send_import_analysis_request(client: Argilla, workspace_obj: Workspace, doc
     return analysis_result
 
 
-def _execute_document_bulk_import(client: Argilla, analysis_result: Dict, pdf_folder: Path, console: Console) -> None:
+def _execute_document_bulk_import(
+    client: Argilla, analysis_result: Dict, pdf_folder: Path, bibtex_file: Path, console: Console
+) -> None:
     """Execute bulk document import with multi-file support per reference."""
     with Progress(
         SpinnerColumn(),
@@ -443,6 +445,12 @@ def _execute_document_bulk_import(client: Argilla, analysis_result: Dict, pdf_fo
                         failed_table.add_row(error)
                     console.print(failed_table)
 
+                # Store import history after successful bulk upload (non-blocking)
+                try:
+                    _store_import_history(client, analysis_result, bibtex_file, console)
+                except Exception as e:
+                    console.print(f"[yellow]Warning: Could not store import history: {str(e)}[/yellow]")
+
                 panel = get_argilla_themed_panel(
                     f"Import submitted successfully. {len(job_ids)} references queued for processing with {len(bulk_documents)} total files.",
                     title="Import Execution Complete",
@@ -467,6 +475,82 @@ def _execute_document_bulk_import(client: Argilla, analysis_result: Dict, pdf_fo
                 success=True,
             )
             console.print(panel)
+
+
+def _store_import_history(client: Argilla, analysis_result: Dict, bibtex_file: Path, console: Console) -> None:
+    """
+    Store import history record with dataframe data and metadata.
+
+    This function calls the POST /imports/history endpoint to store:
+    - data: Tabular dataframe representation of the BibTeX import
+    - metadata: Import status and associated files for each reference
+
+    This provides an audit trail of all imports for analysis and querying.
+    """
+    try:
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console,
+        ) as progress:
+            task = progress.add_task("Storing import history...", total=None)
+
+            # Extract workspace_id from analysis result
+            documents = analysis_result.get("documents", {})
+            if not documents:
+                progress.update(task, completed=True, description="No documents to store in history")
+                return
+
+            # Get workspace_id from first document
+            first_doc = next(iter(documents.values()))
+            workspace_id = first_doc.get("document_create", {}).get("workspace_id")
+            if not workspace_id:
+                progress.update(task, completed=True, description="Could not determine workspace ID")
+                return
+
+            # Build dataframe data from analysis result
+            dataframe_data = analysis_result.get("data", {})
+
+            # Validate dataframe data structure
+            if not dataframe_data or not isinstance(dataframe_data, dict):
+                progress.update(task, completed=True, description="Invalid dataframe data structure")
+                console.print("[yellow]Warning: Could not store import history - invalid dataframe data[/yellow]")
+                return
+
+            # Build metadata with import status and associated files for each reference
+            metadata = {}
+            for ref_key, doc_info in documents.items():
+                metadata[ref_key] = {
+                    "status": doc_info.get("status", "unknown"),
+                    "associated_files": doc_info.get("associated_files", []),
+                }
+
+            # Create import history payload
+            import_history_payload = {
+                "workspace_id": workspace_id,
+                "filename": bibtex_file.name,
+                "data": dataframe_data,
+                "metadata": metadata,
+            }
+
+            # Send request to store import history
+            history_response = client.api.http_client.post(
+                f"{client.api_url}/api/v1/imports/history", json=import_history_payload
+            )
+
+            if history_response.status_code == 201:
+                history_result = history_response.json()
+                progress.update(
+                    task,
+                    completed=True,
+                    description=f"Import history stored (ID: {history_result.get('id', 'unknown')})",
+                )
+            else:
+                progress.update(task, completed=True, description="Failed to store import history")
+                console.print(f"[yellow]Warning: Could not store import history: {history_response.text}[/yellow]")
+
+    except Exception as e:
+        console.print(f"[yellow]Warning: Error storing import history: {str(e)}[/yellow]")
 
 
 def _handle_cli_exception(console: Console, e: Exception, debug: bool = False) -> None:
@@ -546,9 +630,11 @@ def import_bibtex(
     2. Send analysis request to determine add/update/skip status
     3. Display preview of import actions
     4. Execute bulk import with job tracking (one job per reference)
+    5. Store import history for audit trail and analysis
 
     Each reference may have multiple associated PDF files, which are processed
-    together in a single job to maintain consistency.
+    together in a single job to maintain consistency. The import history stores
+    both the tabular dataframe data and metadata about import status and files.
     """
     console = Console()
     try:
@@ -593,7 +679,7 @@ def import_bibtex(
             return
 
         # Phase 7: Execute bulk import (mirrors frontend bulk upload execution)
-        _execute_document_bulk_import(client, analysis_result, pdf_folder, console)
+        _execute_document_bulk_import(client, analysis_result, pdf_folder, bibtex_file, console)
 
     except Exception as e:
         _handle_cli_exception(console, e, debug)
