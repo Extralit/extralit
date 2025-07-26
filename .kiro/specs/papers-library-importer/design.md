@@ -106,7 +106,7 @@ async def bulk_upload_documents(
 ```python
 @job(DEFAULT_QUEUE, timeout=JOB_TIMEOUT_DISABLED, retry=Retry(max=3))
 async def upload_reference_documents_job(
-    reference_key: str,
+    reference: str,
     document_data: DocumentCreate,
     file_data_list: List[Tuple[str, bytes]],  # List of (filename, file_data) tuples
     user_id: UUID
@@ -291,7 +291,7 @@ class ImportAnalysisResponse(BaseModel):
 ```python
 class BulkDocumentInfo(BaseModel):
     """Information about a document in the bulk upload request."""
-    reference_key: str = Field(..., description="BibTeX reference key for job tracking")
+    reference: str = Field(..., description="BibTeX reference key for job tracking")
     document_create: DocumentCreate = Field(..., description="Document creation data")
     associated_files: List[str] = Field(..., description="Multiple PDF filenames for this reference")
 
@@ -356,12 +356,14 @@ The `data` field in `ImportHistory` follows this structure for generic tabular d
                 "name": "reference",
                 "type": "string"
             },
+            ...
         ],
         "primaryKey": ["reference"]
     },
     "data": [
         {
             "reference": "Hawley2003a",
+            ...
         }
     ]
 }
