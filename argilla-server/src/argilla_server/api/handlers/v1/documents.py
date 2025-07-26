@@ -309,4 +309,4 @@ async def create_documents_bulk(
             )
         await authorize(current_user, DocumentPolicy.bulk_create(workspace_id))
 
-    return await imports.process_bulk_upload(bulk_create=bulk_create, files=files)
+    return await imports.process_bulk_upload(bulk_create=bulk_create, files=files, user_id=str(current_user.id))

@@ -56,7 +56,7 @@
   - Create migration script for the new table
   - _Requirements: 3.5, 4.1_
 
-- [ ] 3.4 Integrate bulk upload with job queue and progress tracking for multi-file references
+- [x] 3.4 Integrate bulk upload with job queue and progress tracking for multi-file references
   - Connect bulk upload endpoint to reference-based document upload jobs
   - Implement `reference` indexed job_id response mapping for frontend tracking
   - Add proper cleanup of temporary files after job completion

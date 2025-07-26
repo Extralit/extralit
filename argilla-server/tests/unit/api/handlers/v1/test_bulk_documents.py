@@ -40,7 +40,7 @@ class TestBulkDocumentsAPI:
                         "workspace_id": str(uuid4()),
                         "reference": "test_ref",
                     },
-                    "associated_file": "test.pdf",
+                    "associated_files": ["test.pdf"],
                 }
             ]
         }
@@ -103,7 +103,7 @@ class TestBulkDocumentsAPI:
                         "workspace_id": str(workspace.id),
                         "reference": "test_ref",
                     },
-                    "associated_file": "missing.pdf",
+                    "associated_files": ["missing.pdf"],
                 }
             ]
         }
@@ -140,7 +140,7 @@ class TestBulkDocumentsAPI:
                         "workspace_id": str(uuid4()),  # Non-existent workspace
                         "reference": "test_ref",
                     },
-                    "associated_file": "test.pdf",
+                    "associated_files": ["test.pdf"],
                 }
             ]
         }
@@ -183,7 +183,7 @@ class TestBulkDocumentsAPI:
                         "workspace_id": str(workspace.id),
                         "reference": "test_ref",
                     },
-                    "associated_file": "test.pdf",
+                    "associated_files": ["test.pdf"],
                 }
             ]
         }
@@ -233,7 +233,7 @@ class TestBulkDocumentsAPI:
                         "workspace_id": str(workspace.id),
                         "reference": "ref1",
                     },
-                    "associated_file": "test1.pdf",
+                    "associated_files": ["test1.pdf"],
                 },
                 {
                     "reference": "ref2",
@@ -241,7 +241,7 @@ class TestBulkDocumentsAPI:
                         "workspace_id": str(workspace.id),
                         "reference": "ref2",
                     },
-                    "associated_file": "test2.pdf",
+                    "associated_files": ["test2.pdf"],
                 },
             ]
         }
@@ -292,7 +292,7 @@ class TestBulkDocumentsAPI:
                         "workspace_id": str(workspace.id),
                         "reference": "valid_ref",
                     },
-                    "associated_file": "valid.pdf",
+                    "associated_files": ["valid.pdf"],
                 },
                 {
                     "reference": "invalid_ref",
@@ -300,7 +300,7 @@ class TestBulkDocumentsAPI:
                         "workspace_id": str(workspace.id),
                         "reference": "invalid_ref",
                     },
-                    "associated_file": "invalid.txt",  # Not a PDF
+                    "associated_files": ["invalid.txt"],  # Not a PDF
                 },
             ]
         }
