@@ -112,7 +112,7 @@ def list_import_histories(
             ref_count = len(metadata) if metadata else "N/A"
 
             table.add_row(
-                str(history["id"])[:8] + "...",  # Truncate ID for display
+                str(history["id"]),
                 history["filename"],
                 str(history["user_id"])[:8] + "...",  # Truncate user ID for display
                 created_at.strftime("%Y-%m-%d %H:%M:%S"),
@@ -312,7 +312,7 @@ def _export_metadata_to_csv(metadata: Dict, output_path: Path, console: Console)
 
 def show_import_history(
     workspace: str = typer.Option(..., "--workspace", "-w", help="Workspace name"),
-    history_id: str = typer.Option(..., "--history-id", "-h", help="Import history ID to show"),
+    history_id: str = typer.Argument(..., help="Import history ID to show"),
     debug: bool = typer.Option(False, "--debug", help="Show detailed debug information"),
 ) -> None:
     """
@@ -400,17 +400,15 @@ def _display_import_history_summary(history: Dict, console: Console) -> None:
 
     # Data summary
     data = history.get("data", {})
-    data_rows = data.get("data", [])
     schema = data.get("schema", {})
     fields = schema.get("fields", [])
+    data_table = Table(title="Data")
+    for field in fields:
+        data_table.add_column(field.get("name", ""), style="blue")
 
-    data_table = Table(title="Data Summary")
-    data_table.add_column("Property", style="cyan")
-    data_table.add_column("Value", style="yellow")
-
-    data_table.add_row("Total Records", str(len(data_rows)))
-    data_table.add_row("Fields Count", str(len(fields)))
-    data_table.add_row("Primary Key", ", ".join(schema.get("primaryKey", [])))
+    for row in data.get("data", []):
+        row_values = [str(row.get(field.get("name", ""), "")) for field in fields]
+        data_table.add_row(*row_values)
 
     console.print(data_table)
 
@@ -436,14 +434,3 @@ def _display_import_history_summary(history: Dict, console: Console) -> None:
             metadata_table.add_row(f"Status: {status}", str(count))
 
         console.print(metadata_table)
-
-    # Fields schema if available
-    if fields:
-        fields_table = Table(title="Data Schema Fields")
-        fields_table.add_column("Field Name", style="cyan")
-        fields_table.add_column("Type", style="green")
-
-        for field in fields:
-            fields_table.add_row(field.get("name", ""), field.get("type", ""))
-
-        console.print(fields_table)

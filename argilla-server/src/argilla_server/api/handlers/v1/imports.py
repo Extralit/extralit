@@ -18,6 +18,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Security, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from pydantic import ValidationError
 
 from argilla_server.database import get_async_db
@@ -308,9 +309,6 @@ async def list_import_histories(
         )
 
     try:
-        # Query import histories for the workspace
-        from sqlalchemy import select
-
         result = await db.execute(
             select(ImportHistory)
             .where(ImportHistory.workspace_id == workspace_id)

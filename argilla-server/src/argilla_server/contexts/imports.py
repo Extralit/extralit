@@ -344,7 +344,7 @@ def _build_dataframe_from_documents(documents: Dict[str, DocumentImportAnalysis]
         }
         data_rows.append(row)
 
-    return DataframeData(table_schema=schema, data=data_rows)
+    return DataframeData(schema=schema, data=data_rows)
 
 
 async def check_existing_document(db: AsyncSession, document_create: DocumentCreate) -> Optional[Document]:
