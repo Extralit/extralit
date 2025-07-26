@@ -26,7 +26,7 @@
   - _Requirements: 2.1, 2.2_
 
 - [x] 2.3 Create CLI import analysis testing function
-  - Add import_bibtex() function to extralit/src/argilla/cli/documents/add.py
+  - Add import() function to extralit/src/argilla/cli/documents/add.py
   - Parse BibTeX file and match PDF files from folder using Python bibtexparser
   - Perform filename matching to create the analysis_request
   - Send ImportAnalysisRequest to argilla-server for testing import analysis functionality
@@ -47,7 +47,7 @@
   - Reuse existing document upload logic from POST /documents endpoint for each file
   - Implement job creation and queuing for reference-based document uploads (one job per reference)
   - Add retry logic and error handling for failed uploads with per-file error tracking
-  - Update CLI function `import_bibtex` in `extralit/src/argilla/cli/documents/add.py` to test bulk upload
+  - Update CLI function `import` in `extralit/src/argilla/cli/documents/add.py` to test bulk upload
   - _Requirements: 3.1, 3.3, 3.4, 3.7_
 
 - [x] 3.3 Implement ImportHistory database model

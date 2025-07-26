@@ -31,7 +31,7 @@ app = ArgillaTyper(help="Manage documents in workspaces", no_args_is_help=True)
 # Register all commands
 app.command(name="list")(list_documents)
 app.command(name="add")(add_document)
-app.command(name="import-bibtex")(import_bib)
+app.command(name="import")(import_bib)
 app.command(name="delete")(delete_document)
 
 # Import history commands
