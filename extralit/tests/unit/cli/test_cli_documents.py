@@ -56,8 +56,8 @@ def test_documents_delete_command_help(runner):
 
 
 def test_import_bibtex_help(runner):
-    """Test the help message for the 'import-bibtex' subcommand."""
-    result = runner.invoke(app, ["documents", "import-bibtex", "--help"])
+    """Test the help message for the 'import' subcommand."""
+    result = runner.invoke(app, ["documents", "import", "--help"])
     assert result.exit_code == 0
     assert "import documents from a bibtex file" in result.stdout.lower()
     assert "--bibtex" in result.stdout
@@ -74,7 +74,7 @@ def test_import_bibtex_help(runner):
 )
 @patch("bibtexparser.load")
 def test_import_bibtex_analysis(mock_bibtex_load, mock_file_open, mock_from_credentials, runner):
-    """Test the 'import-bibtex' command with analysis only."""
+    """Test the 'import' command with analysis only."""
     # Mock bibtex parser to return entries with reference keys
     mock_bibtex_db = MagicMock()
     mock_bibtex_db.entries = [
@@ -90,7 +90,7 @@ def test_import_bibtex_analysis(mock_bibtex_load, mock_file_open, mock_from_cred
             app,
             [
                 "documents",
-                "import-bibtex",
+                "import",
                 "--workspace",
                 "test-workspace",
                 "--bibtex",
@@ -112,7 +112,7 @@ def test_import_bibtex_analysis(mock_bibtex_load, mock_file_open, mock_from_cred
 def test_import_bibtex_with_pdf_matching(
     mock_rglob, mock_stat, mock_glob, mock_bibtex_load, mock_file_open, mock_from_credentials, runner
 ):
-    """Test the 'import-bibtex' command with PDF matching."""
+    """Test the 'import' command with PDF matching."""
     # Mock bibtex parser to return entries with reference keys
     mock_bibtex_db = MagicMock()
     mock_bibtex_db.entries = [
@@ -139,7 +139,7 @@ def test_import_bibtex_with_pdf_matching(
             app,
             [
                 "documents",
-                "import-bibtex",
+                "import",
                 "--workspace",
                 "test-workspace",
                 "--bibtex",
@@ -156,11 +156,11 @@ def test_import_bibtex_with_pdf_matching(
 @patch("argilla.client.Argilla.from_credentials")
 @patch("builtins.open", side_effect=Exception("Error reading file"))
 def test_import_bibtex_file_error(mock_open, mock_from_credentials, runner):
-    """Test the 'import-bibtex' command with a file error."""
+    """Test the 'import' command with a file error."""
     with runner.isolated_filesystem():
         Path("pdfs").mkdir()
         result = runner.invoke(
-            app, ["documents", "import-bibtex", "--workspace", "test-workspace", "--bibtex", "nonexistent.bib", "pdfs"]
+            app, ["documents", "import", "--workspace", "test-workspace", "--bibtex", "nonexistent.bib", "pdfs"]
         )
     # Typer returns exit code 2 for usage errors (file not found, etc.)
     assert result.exit_code == 2
@@ -176,13 +176,13 @@ def test_import_bibtex_file_error(mock_open, mock_from_credentials, runner):
 @patch("bibtexparser.load")
 @patch("argilla.cli.documents.add._display_import_analysis_results")
 def test_import_bibtex_api_error(mock_display, mock_bibtex_load, mock_file_open, mock_from_credentials, runner):
-    """Test the 'import-bibtex' command with an API error."""
+    """Test the 'import' command with an API error."""
     # Simulate API error by raising ValueError in analysis
     mock_bibtex_load.side_effect = ValueError("Error analyzing import: Validation error")
     with runner.isolated_filesystem():
         Path("pdfs").mkdir()
         result = runner.invoke(
-            app, ["documents", "import-bibtex", "--workspace", "test-workspace", "--bibtex", "test.bib", "pdfs"]
+            app, ["documents", "import", "--workspace", "test-workspace", "--bibtex", "test.bib", "pdfs"]
         )
     # Application error should return exit code 1
     assert result.exit_code == 1
@@ -298,7 +298,7 @@ def test_import_bibtex_filename_matching(
             app,
             [
                 "documents",
-                "import-bibtex",
+                "import",
                 "--workspace",
                 "test-workspace",
                 "--bibtex",
