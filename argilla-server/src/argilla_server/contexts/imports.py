@@ -19,7 +19,7 @@ from fastapi import HTTPException, status, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import and_, or_, select
 
-from argilla_server.models.database import Document
+from argilla_server.models.database import Document, ImportHistory
 from argilla_server.api.schemas.v1.documents import DocumentCreate
 from argilla_server.api.schemas.v1.imports import (
     FileInfo,
@@ -34,6 +34,8 @@ from argilla_server.api.schemas.v1.imports import (
     DataframeData,
     DataframeSchema,
     DataframeField,
+    ImportHistoryCreate,
+    ImportHistoryResponse,
 )
 from argilla_server.jobs.document_jobs import upload_document_job
 
@@ -452,3 +454,60 @@ async def process_bulk_upload(
     return DocumentsBulkResponse(
         job_ids=job_ids, total_documents=len(bulk_create.documents), failed_validations=failed_validations
     )
+
+
+async def create_import_history(
+    db: AsyncSession, import_history_create: ImportHistoryCreate, user_id: str
+) -> ImportHistoryResponse:
+    """
+    Create an import history record to store tabular dataframe data and import metadata.
+
+    This function is called after bulk upload completion to store the complete
+    import record with the original parsed data (BibTeX, CSV, etc.) in a
+    standardized dataframe format, along with metadata about import status
+    and associated files for each reference.
+
+    Args:
+        db: Database session
+        import_history_create: Import history creation data
+        user_id: ID of the user creating the import history
+
+    Returns:
+        ImportHistoryResponse with created record information
+
+    Raises:
+        HTTPException: If workspace doesn't exist or creation fails
+    """
+    try:
+        # Create the import history record
+        import_history = ImportHistory(
+            workspace_id=import_history_create.workspace_id,
+            user_id=user_id,
+            filename=import_history_create.filename,
+            data=import_history_create.data,
+            metadata_=import_history_create.metadata,
+        )
+
+        db.add(import_history)
+        await db.commit()
+        await db.refresh(import_history)
+
+        _LOGGER.info(
+            f"Created import history record {import_history.id} for workspace {import_history.workspace_id} "
+            f"with filename {import_history.filename}"
+        )
+
+        return ImportHistoryResponse(
+            id=import_history.id,
+            workspace_id=import_history.workspace_id,
+            filename=import_history.filename,
+            created_at=import_history.inserted_at,
+        )
+
+    except Exception as e:
+        _LOGGER.error(f"Error creating import history: {str(e)}")
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error creating import history: {str(e)}",
+        )

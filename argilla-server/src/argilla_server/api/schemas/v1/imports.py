@@ -14,6 +14,7 @@
 
 from uuid import UUID
 from typing import Any, Dict, List, Optional
+from datetime import datetime
 from pydantic import BaseModel, Field
 from enum import Enum
 
@@ -120,3 +121,23 @@ class DocumentsBulkResponse(BaseModel):
     job_ids: Dict[str, str] = Field(..., description="Reference key to job_id mapping for frontend tracking")
     total_documents: int = Field(..., description="Total number of documents in the request")
     failed_validations: List[str] = Field(default_factory=list, description="Files that failed validation")
+
+
+class ImportHistoryCreate(BaseModel):
+    """Request schema for creating import history record."""
+
+    workspace_id: UUID = Field(..., description="Target workspace ID")
+    filename: str = Field(..., description="Import filename (.bib, .csv, etc.)")
+    data: Dict[str, Any] = Field(..., description="Tabular dataframe data converted from BibTeX file")
+    metadata: Optional[Dict[str, Any]] = Field(
+        default=None, description="Import metadata including ImportStatus and associated files for each reference"
+    )
+
+
+class ImportHistoryResponse(BaseModel):
+    """Response schema for import history creation."""
+
+    id: UUID = Field(..., description="Import history record ID")
+    workspace_id: UUID = Field(..., description="Workspace ID")
+    filename: str = Field(..., description="Import filename")
+    created_at: datetime = Field(..., description="Creation timestamp")

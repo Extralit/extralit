@@ -311,7 +311,7 @@ class DocumentsBulkResponse(BaseModel):
 class DocumentImportAction(BaseModel):
     """Action to take for a document during import execution."""
     action: ImportStatus = Field(..., description="Action to take (add, update, skip)")
-    files_to_import: List[str] = Field(default_factory=list, description="Files to import for this document")
+    associated_files: List[str] = Field(default_factory=list, description="Files to import for this document")
 
 class DocumentImportExecuteRequest(BaseModel):
     """Request schema for import execution."""

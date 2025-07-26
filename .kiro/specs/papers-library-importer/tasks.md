@@ -19,11 +19,10 @@
   - Add proper error handling and validation
   - _Requirements: 2.1, 2.2_
 
-- [ ] 2.4 Add POST /import/history endpoint for storing generic dataframe data
+- [x] 2.4 Add POST /import/history endpoint for storing generic dataframe data
   - Create POST /api/v1/imports/history endpoint in imports.py handler
   - Add ImportHistoryCreate and ImportHistoryResponse schemas
   - Implement endpoint to store generic tabular dataframe data after bulk upload completion
-  - Enable frontend to send parsed BibTeX dataframe data after all batches are finished
   - _Requirements: 2.1, 2.2_
 
 - [x] 2.3 Create CLI import analysis testing function

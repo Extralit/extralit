@@ -23,10 +23,12 @@ from argilla_server.database import get_async_db
 from argilla_server.security import auth
 from argilla_server.models import User, Workspace
 from argilla_server.api.policies.v1 import DocumentPolicy, authorize
-from argilla_server.contexts.imports import analyze_import_status
+from argilla_server.contexts.imports import analyze_import_status, create_import_history
 from argilla_server.api.schemas.v1.imports import (
     ImportAnalysisRequest,
     ImportAnalysisResponse,
+    ImportHistoryCreate,
+    ImportHistoryResponse,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -130,5 +132,138 @@ def _validate_analysis_request(analysis_request: ImportAnalysisRequest) -> List[
                 f"Document {reference} has mismatched workspace_id: "
                 f"{file_metadata.document_create.workspace_id} != {analysis_request.workspace_id}"
             )
+
+    return errors
+
+
+@router.post("/imports/history", status_code=status.HTTP_201_CREATED, response_model=ImportHistoryResponse)
+async def create_import_history_endpoint(
+    *,
+    import_history_create: ImportHistoryCreate,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Security(auth.get_current_user),
+) -> ImportHistoryResponse:
+    """
+    Create import history record to store generic tabular dataframe data.
+
+    This endpoint is called after bulk upload completion to store the complete
+    import record with the original parsed data (BibTeX, CSV, etc.) in a
+    standardized dataframe format.
+
+    Args:
+        import_history_create: Import history creation data
+        db: Database session
+        current_user: Authenticated user
+
+    Returns:
+        ImportHistoryResponse with created record information
+
+    Raises:
+        HTTPException: If workspace doesn't exist or creation fails
+    """
+    await authorize(current_user, DocumentPolicy.create())
+
+    workspace = await Workspace.get(db, import_history_create.workspace_id)
+    if not workspace:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Workspace with id `{import_history_create.workspace_id}` not found",
+        )
+
+    validation_errors = _validate_import_history_request(import_history_create)
+    if validation_errors:
+        _LOGGER.warning(f"Import history validation errors: {validation_errors}")
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={"message": "Invalid import history request", "errors": validation_errors},
+        )
+
+    try:
+        response = await create_import_history(db, import_history_create, current_user.id)
+        _LOGGER.info(
+            f"Import history created for workspace {workspace.id}: "
+            f"filename={import_history_create.filename}, "
+            f"record_id={response.id}"
+        )
+        return response
+
+    except Exception as e:
+        _LOGGER.error(f"Error creating import history: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error creating import history: {str(e)}",
+        )
+
+
+def _validate_import_history_request(import_history_create: ImportHistoryCreate) -> List[str]:
+    """
+    Validate the import history creation request.
+
+    Args:
+        import_history_create: Request to validate
+
+    Returns:
+        List of validation error messages (empty if valid)
+    """
+    errors = []
+
+    if not import_history_create.filename:
+        errors.append("Filename is required")
+
+    if not import_history_create.filename.strip():
+        errors.append("Filename cannot be empty")
+
+    if not import_history_create.data:
+        errors.append("Data is required")
+
+    # Validate that data contains expected structure for dataframe
+    if import_history_create.data:
+        if not isinstance(import_history_create.data, dict):
+            errors.append("Data must be a dictionary")
+        else:
+            # Check for expected dataframe structure (schema and data fields)
+            if "schema" not in import_history_create.data:
+                errors.append("Data must contain 'schema' field")
+            if "data" not in import_history_create.data:
+                errors.append("Data must contain 'data' field")
+
+            # Validate schema structure if present
+            if "schema" in import_history_create.data:
+                schema = import_history_create.data["schema"]
+                if not isinstance(schema, dict):
+                    errors.append("Schema must be a dictionary")
+                elif "fields" not in schema or "primaryKey" not in schema:
+                    errors.append("Schema must contain 'fields' and 'primaryKey'")
+
+            # Validate data structure if present
+            if "data" in import_history_create.data:
+                data_rows = import_history_create.data["data"]
+                if not isinstance(data_rows, list):
+                    errors.append("Data rows must be a list")
+
+    # Validate metadata structure if present
+    if import_history_create.metadata is not None:
+        if not isinstance(import_history_create.metadata, dict):
+            errors.append("Metadata must be a dictionary")
+        else:
+            # Validate that metadata contains reference-level information
+            # Expected structure: {"reference_key": {"status": "add|update|skip|failed", "associated_files": [...]}}
+            for ref_key, ref_metadata in import_history_create.metadata.items():
+                if not isinstance(ref_metadata, dict):
+                    errors.append(f"Metadata for reference '{ref_key}' must be a dictionary")
+                    continue
+
+                # Validate status field
+                if "status" in ref_metadata:
+                    valid_statuses = ["add", "update", "skip", "failed"]
+                    if ref_metadata["status"] not in valid_statuses:
+                        errors.append(
+                            f"Invalid status '{ref_metadata['status']}' for reference '{ref_key}'. Must be one of: {valid_statuses}"
+                        )
+
+                # Validate associated_files field if present
+                if "associated_files" in ref_metadata:
+                    if not isinstance(ref_metadata["associated_files"], list):
+                        errors.append(f"Associated files for reference '{ref_key}' must be a list")
 
     return errors
