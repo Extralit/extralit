@@ -305,7 +305,7 @@ def _build_dataframe_from_documents(documents: Dict[str, DocumentImportAnalysis]
 
     # Build data rows from document analysis
     data_rows = []
-    for reference_key, doc_analysis in documents.items():
+    for reference, doc_analysis in documents.items():
         doc_create = doc_analysis.document_create
 
         # Extract available metadata fields from DocumentCreate
@@ -331,7 +331,7 @@ def _build_dataframe_from_documents(documents: Dict[str, DocumentImportAnalysis]
         associated_files_str = ", ".join(doc_analysis.associated_files) if doc_analysis.associated_files else ""
 
         row = {
-            "reference": reference_key,
+            "reference": reference,
             "title": title,
             "authors": authors,
             "year": year_int,

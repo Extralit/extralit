@@ -247,7 +247,7 @@ def _validate_import_history_request(import_history_create: ImportHistoryCreate)
             errors.append("Metadata must be a dictionary")
         else:
             # Validate that metadata contains reference-level information
-            # Expected structure: {"reference_key": {"status": "add|update|skip|failed", "associated_files": [...]}}
+            # Expected structure: {"reference": {"status": "add|update|skip|failed", "associated_files": [...]}}
             for ref_key, ref_metadata in import_history_create.metadata.items():
                 if not isinstance(ref_metadata, dict):
                     errors.append(f"Metadata for reference '{ref_key}' must be a dictionary")

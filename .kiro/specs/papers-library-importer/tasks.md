@@ -58,7 +58,7 @@
 
 - [ ] 3.4 Integrate bulk upload with job queue and progress tracking for multi-file references
   - Connect bulk upload endpoint to reference-based document upload jobs
-  - Implement `reference_key` indexed job_id response mapping for frontend tracking
+  - Implement `reference` indexed job_id response mapping for frontend tracking
   - Add proper cleanup of temporary files after job completion
   - Handle multiple files per reference in job processing and error reporting
   - Remove import history creation from bulk upload (moved to separate endpoint)
