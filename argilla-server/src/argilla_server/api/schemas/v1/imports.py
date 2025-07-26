@@ -29,6 +29,20 @@ class ImportStatus(str, Enum):
     FAILED = "failed"
 
 
+class DataframeField(BaseModel):
+    """Schema definition for a dataframe field."""
+
+    name: str = Field(..., description="Field name")
+    type: str = Field(..., description="Field type (string, integer, float, boolean)")
+
+
+class DataframeSchema(BaseModel):
+    """Schema definition for tabular dataframe structure."""
+
+    fields: List[DataframeField] = Field(..., description="List of field definitions")
+    primaryKey: List[str] = Field(..., description="Primary key field names")
+
+
 class FileInfo(BaseModel):
     """Information about a file to be imported."""
 
@@ -40,10 +54,6 @@ class DocumentMetadata(BaseModel):
     """Metadata information for a document to be imported."""
 
     document_create: DocumentCreate = Field(..., description="Document creation data")
-    title: str = Field(..., description="Document title for display")
-    authors: List[str] = Field(default_factory=list, description="Document authors for display")
-    year: Optional[int] = Field(None, description="Publication year for display")
-    venue: Optional[str] = Field(None, description="Publication venue (journal, publisher, or institution)")
     associated_files: List[FileInfo] = Field(default_factory=list, description="PDF file metadata (not contents)")
 
 
@@ -58,10 +68,6 @@ class DocumentImportAnalysis(BaseModel):
     """Information about a document in the import analysis response."""
 
     document_create: DocumentCreate = Field(..., description="Document creation data")
-    title: str = Field(..., description="Document title for display")
-    authors: Optional[List[str]] = Field(default_factory=list, description="Document authors for display")
-    year: Optional[int] = Field(None, description="Publication year for display")
-    venue: Optional[str] = Field(None, description="Publication venue (journal, publisher, or institution)")
     associated_files: List[str] = Field(default_factory=list, description="PDF filenames matched to this reference")
     status: ImportStatus = Field(..., description="Import status (add, update, skip, failed)")
     validation_errors: Optional[List[str]] = Field(default_factory=list, description="Validation error messages if any")
@@ -75,6 +81,13 @@ class ImportSummary(BaseModel):
     update_count: int = Field(..., description="Number of documents to be updated")
     skip_count: int = Field(..., description="Number of documents to be skipped")
     failed_count: int = Field(..., description="Number of documents that failed analysis")
+
+
+class DataframeData(BaseModel):
+    """Tabular dataframe representation for generalized import support."""
+
+    schema: DataframeSchema = Field(..., description="Schema definition with fields and primary key")
+    data: List[Dict[str, Any]] = Field(..., description="List of data rows as dictionaries")
 
 
 class ImportAnalysisResponse(BaseModel):
