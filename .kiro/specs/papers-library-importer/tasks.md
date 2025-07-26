@@ -19,11 +19,11 @@
   - Add proper error handling and validation
   - _Requirements: 2.1, 2.2_
 
-- [-] 2.4 Add dataframe support to ImportAnalysisResponse schema
-  - Add `data` field to ImportAnalysisResponse schema for tabular dataframe representation
-  - Update import analysis logic to build dataframe structure from BibTeX entries
-  - Implement dataframe schema with fields, types, and primaryKey for generalized import support
-  - Enable future CSV and other tabular data import formats
+- [ ] 2.4 Add POST /import/history endpoint for storing generic dataframe data
+  - Create POST /api/v1/imports/history endpoint in imports.py handler
+  - Add ImportHistoryCreate and ImportHistoryResponse schemas
+  - Implement endpoint to store generic tabular dataframe data after bulk upload completion
+  - Enable frontend to send parsed BibTeX dataframe data after all batches are finished
   - _Requirements: 2.1, 2.2_
 
 - [x] 2.3 Create CLI import analysis testing function
@@ -57,22 +57,22 @@
   - Create migration script for the new table
   - _Requirements: 3.5, 4.1_
 
-- [ ] 3.4 Integrate bulk upload with job queue and history logging for multi-file references
+- [ ] 3.4 Integrate bulk upload with job queue and progress tracking for multi-file references
   - Connect bulk upload endpoint to reference-based document upload jobs
-  - Implement `reference_key` indexed job_id response mapping
-  - Create import history record for each bulk import with complete reference and file information
-  - Store ImportAnalysisResponse data in the metadata JSON field including multi-file associations
-  - Store tabular dataframe representation in the data JSON field for generalized import support
+  - Implement `reference_key` indexed job_id response mapping for frontend tracking
   - Add proper cleanup of temporary files after job completion
   - Handle multiple files per reference in job processing and error reporting
+  - Remove import history creation from bulk upload (moved to separate endpoint)
   - _Requirements: 3.2, 3.5, 4.1, 4.6_
 
 - [ ] 4. Implement frontend BibTeX parsing and file matching
-- [ ] 4.1 Create BibTeX parser component
+- [ ] 4.1 Create BibTeX parser component with generic dataframe conversion
   - Add JavaScript BibTeX parser library dependency (bibtex-parse-js or similar)
   - Implement BibTeX file parsing in ImportUpload.vue component
-  - Extract metadata (title, authors, year, DOI, PMID, reference key)
+  - Convert BibTeX entries to generic dataframe format (preserve all fields)
+  - Extract metadata (title, authors, year, DOI, PMID, reference key) for document creation
   - Add error handling for malformed BibTeX entries
+  - Store parsed dataframe data for later submission to import history endpoint
   - _Requirements: 1.1, 5.1_
 
 - [ ] 4.2 Implement file-to-reference matching logic
@@ -115,6 +115,7 @@
   - Implement error reporting for failed uploads with reference and file context
   - Add cancellation support for ongoing uploads
   - Track progress at both reference and individual file levels
+  - After all batches complete, send generic dataframe data to POST /import/history endpoint
   - _Requirements: 3.2, 3.3, 3.7_
 
 - [ ] 7. Create import results and workspace integration

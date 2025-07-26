@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from uuid import UUID
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field
 from enum import Enum
 
@@ -64,6 +64,13 @@ class ImportAnalysisRequest(BaseModel):
     documents: Dict[str, DocumentMetadata] = Field(..., description="Reference key to file metadata mapping")
 
 
+class DataframeData(BaseModel):
+    """Tabular dataframe representation for generalized import support."""
+
+    table_schema: DataframeSchema = Field(..., description="Schema definition with fields and primary key")
+    data: List[Dict[str, Any]] = Field(..., description="List of data rows as dictionaries")
+
+
 class DocumentImportAnalysis(BaseModel):
     """Information about a document in the import analysis response."""
 
@@ -83,18 +90,14 @@ class ImportSummary(BaseModel):
     failed_count: int = Field(..., description="Number of documents that failed analysis")
 
 
-class DataframeData(BaseModel):
-    """Tabular dataframe representation for generalized import support."""
-
-    schema: DataframeSchema = Field(..., description="Schema definition with fields and primary key")
-    data: List[Dict[str, Any]] = Field(..., description="List of data rows as dictionaries")
-
-
 class ImportAnalysisResponse(BaseModel):
     """Response schema for import analysis."""
 
     documents: Dict[str, DocumentImportAnalysis] = Field(..., description="Reference key to document info mapping")
     summary: ImportSummary = Field(..., description="Import analysis summary")
+    data: DataframeData = Field(
+        ..., description="Tabular dataframe representation of imported data for BibTeX or CSV generalized import"
+    )
 
 
 class BulkDocumentInfo(BaseModel):

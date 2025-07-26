@@ -12,11 +12,12 @@ The design follows Extralit's existing patterns: context-based backend architect
 
 ### High-Level Flow
 
-1. **Frontend Processing Phase**: User uploads .bib file and PDFs to frontend, which parses BibTeX entries and matches files to references
+1. **Frontend Processing Phase**: User uploads .bib file and PDFs to frontend, which parses BibTeX entries into generic dataframe format and matches files to references
 2. **Analysis Phase**: Frontend sends file metadata (not file contents) to backend for add/update/skip status analysis
 3. **Preview Phase**: Frontend displays import preview with status for each document based on server analysis
 4. **Bulk Upload Phase**: User confirms import, frontend sends paginated requests to bulk upload endpoint with actual file contents
 5. **Progress Tracking Phase**: Frontend polls job status endpoints to track upload progress
+6. **Import History Phase**: After all bulk upload batches complete, frontend sends parsed dataframe data to POST `/import/history` endpoint to store complete import record
 
 ### Component Interaction
 
@@ -25,21 +26,26 @@ graph TD
     A[Frontend Upload Component] --> B[Frontend BibTeX Parser]
     A --> C[Frontend File Matcher]
     B --> D[File Metadata Analysis Request]
+    B --> E[Generic Dataframe Conversion]
     C --> D
-    D --> E[Backend Import Analysis API]
-    E --> F[Existing Document Check]
-    F --> G[Import Analysis Response]
-    G --> H[Frontend Preview Component]
-    H --> I[User Confirmation]
-    I --> J[Paginated Bulk Upload Requests]
-    J --> K[Backend Bulk Upload Endpoint]
-    K --> L[RQ Job Queue System]
-    L --> M[Individual Document Upload Jobs]
-    M --> N[Existing File Storage & DB Logic]
-    L --> O[Job Status Tracking via /jobs/{job_id}]
-    N --> P[S3 Storage & Database]
-    O --> Q[Frontend Progress Tracking]
-    P --> Q
+    D --> F[Backend Import Analysis API]
+    F --> G[Existing Document Check]
+    G --> H[Import Analysis Response]
+    H --> I[Frontend Preview Component]
+    I --> J[User Confirmation]
+    J --> K[Paginated Bulk Upload Requests]
+    K --> L[Backend Bulk Upload Endpoint]
+    L --> M[RQ Job Queue System]
+    M --> N[Individual Document Upload Jobs]
+    N --> O[Existing File Storage & DB Logic]
+    M --> P[Job Status Tracking via /jobs/{job_id}]
+    O --> Q[S3 Storage & Database]
+    P --> R[Frontend Progress Tracking]
+    Q --> R
+    R --> S[All Batches Complete]
+    S --> T[POST /import/history with Dataframe]
+    E --> T
+    T --> U[Import History Storage]
 ```
 
 ## Components and Interfaces
@@ -50,6 +56,7 @@ graph TD
 
 **Endpoints:**
 - `POST /api/v1/imports/analyze` - Analyze file metadata to determine add/update/skip status
+- `POST /api/v1/imports/history` - Store import history with generic dataframe data after bulk upload completion
 
 **Key Functions:**
 ```python
@@ -278,7 +285,6 @@ class ImportAnalysisResponse(BaseModel):
     """Response schema for import analysis."""
     documents: Dict[str, DocumentImportAnalysis] = Field(..., description="Reference key to document info mapping")
     summary: ImportSummary = Field(..., description="Import analysis summary")
-    data: Dict = Field(..., description="Tabular dataframe representation of imported data for BibText or csv generalized import")
 ```
 
 #### Bulk Upload Request/Response
@@ -315,6 +321,22 @@ class DocumentImportExecuteRequest(BaseModel):
 
 Note: The user may use the DocumentImportExecuteRequest to switch between add or update to skip status before final execution.
 
+#### Import History Request/Response
+```python
+class ImportHistoryCreate(BaseModel):
+    """Request schema for creating import history record."""
+    workspace_id: UUID = Field(..., description="Target workspace ID")
+    filename: str = Field(..., description="Import filename (.bib, .csv, etc.)")
+    data: Dict = Field(..., description="Generic tabular dataframe data converted from source format")
+
+class ImportHistoryResponse(BaseModel):
+    """Response schema for import history creation."""
+    id: UUID = Field(..., description="Import history record ID")
+    workspace_id: UUID = Field(..., description="Workspace ID")
+    filename: str = Field(..., description="Import filename")
+    created_at: datetime = Field(..., description="Creation timestamp")
+```
+
 **Pagination Strategy:**
 - Frontend sends multiple paginated requests (10-20 references each) to avoid large payload failures
 - Each reference may have multiple associated PDF files processed in a single job
@@ -322,9 +344,9 @@ Note: The user may use the DocumentImportExecuteRequest to switch between add or
 - Response includes `job_ids` indexed by reference key for easy frontend tracking
 - Job processing handles multiple files per reference efficiently
 
-#### Dataframe Structure for Generalized Import Support
+#### Dataframe Structure for Import History Storage
 
-The `data` field in `ImportAnalysisResponse` follows this structure for tabular data representation:
+The `data` field in `ImportHistory` follows this structure for generic tabular data representation:
 
 ```json
 {
@@ -334,49 +356,19 @@ The `data` field in `ImportAnalysisResponse` follows this structure for tabular 
                 "name": "reference",
                 "type": "string"
             },
-            {
-                "name": "title",
-                "type": "string"
-            },
-            {
-                "name": "authors",
-                "type": "string"
-            },
-            {
-                "name": "year",
-                "type": "integer"
-            },
-            {
-                "name": "venue",
-                "type": "string"
-            },
-            {
-                "name": "doi",
-                "type": "string"
-            },
-            {
-                "name": "pmid",
-                "type": "string"
-            }
         ],
         "primaryKey": ["reference"]
     },
     "data": [
         {
             "reference": "Hawley2003a",
-            "title": "Community-wide effects of permethrin-treated bed nets",
-            "authors": "William A Hawley, Penelope A Phillips-Howard",
-            "year": 2003,
-            "venue": "The American Journal of Tropical Medicine and Hygiene",
-            "doi": "10.4269/ajtmh.2003.68.121",
-            "pmid": "12749495"
         }
     ]
 }
 ```
 
 This structure enables:
-- **Schema Definition**: Field names, types, and primary key specification
+- **Generic Field Support**: Preserves all original BibTeX fields without predefined mapping
 - **Type Safety**: Explicit type information for each column
 - **Extensibility**: Support for different import formats (BibTeX, CSV, etc.)
 - **Querying**: Efficient database indexing on primary key fields
@@ -394,8 +386,7 @@ class ImportHistory(DatabaseModel):
     workspace_id: Mapped[UUID] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
     user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
     filename: Mapped[str] = mapped_column(String, nullable=False)  # Import filename (.bib, .csv, etc.)
-    metadata: Mapped[dict] = mapped_column(MutableDict.as_mutable(JSON), nullable=False)  # ImportAnalysisResponse data
-    data: Mapped[dict] = mapped_column(MutableDict.as_mutable(JSON), nullable=False)  # Tabular dataframe data
+    data: Mapped[dict] = mapped_column(MutableDict.as_mutable(JSON), nullable=False)  # Generic tabular dataframe data
 
     workspace: Mapped["Workspace"] = relationship("Workspace")
     user: Mapped["User"] = relationship("User")
@@ -407,54 +398,12 @@ class ImportHistory(DatabaseModel):
 ```
 
 **Purpose:**
-- Records the actual database committed operations (not necessarily the job status)
-- Stores the complete ImportAnalysisResponse JSON in the metadata field containing all reference and file information
-- **NEW**: Stores tabular data as a dataframe structure in the `data` field for generalized import support
-- The ImportHistory records the actual database committed operations, not just the job status
-- Provides audit trail of what was actually imported vs. what was requested
-- Enables import history viewing and analysis
-- Metadata field contains references with their associated files and processing status
-- **NEW**: Data field enables querying and analysis of imported tabular data across different import types (.bib, .csv, etc.)
-
-**Dataframe Structure in `data` field:**
-```json
-{
-    "schema": {
-        "fields": [
-            {
-                "name": "reference",
-                "type": "string"
-            },
-            {
-                "name": "title",
-                "type": "string"
-            },
-            {
-                "name": "authors",
-                "type": "string"
-            },
-            {
-                "name": "year",
-                "type": "integer"
-            },
-            {
-                "name": "doi",
-                "type": "string"
-            }
-        ],
-        "primaryKey": ["reference"]
-    },
-    "data": [
-        {
-            "reference": "Hawley2003a",
-            "title": "Community-wide effects of permethrin-treated bed nets",
-            "authors": "William A Hawley, Penelope A Phillips-Howard",
-            "year": 2003,
-            "doi": "10.4269/ajtmh.2003.68.121"
-        }
-    ]
-}
-```
+- Records complete import history after all bulk upload batches are finished
+- Stores generic tabular dataframe data (converted from BibTeX, CSV, etc.) in the `data` field
+- Created via POST `/import/history` endpoint after bulk upload completion
+- Provides audit trail and enables analysis of imported data regardless of source format
+- Enables querying and analysis of imported tabular data across different import types (.bib, .csv, etc.)
+- No predefined field mapping - preserves all original fields from source data
 
 ### Document Field Mapping
 The import process maps BibTeX entries to existing Document model fields:
@@ -480,20 +429,23 @@ The import process maps BibTeX entries to existing Document model fields:
 ### Generalized Tabular Data Processing
 The import system processes tabular data (BibTeX, CSV, etc.) into a standardized dataframe format:
 
-**BibTeX to Dataframe Mapping:**
-- `reference` (primary key) → BibTeX ID field
-- `title` → BibTeX title field
-- `authors` → Concatenated author names
-- `year` → Publication year as integer
-- `venue` → Journal, booktitle, or publisher
-- `doi` → DOI identifier
-- `pmid` → PubMed identifier
+**BibTeX to Generic Dataframe Conversion:**
+- Frontend parses BibTeX entries and converts all available fields to dataframe format
+- No predefined field mapping - preserves all BibTeX fields as-is (title, author, journal, year, doi, pmid, etc.)
+- Reference key (ID field) serves as primary key
+- Type inference applied automatically (string, integer, float)
+- Schema generated dynamically based on available fields
 
 **Future CSV Support:**
 - First column as primary key (configurable)
 - Column headers map to dataframe field names
 - Type inference for string, integer, float fields
 - Flexible schema definition for different data sources
+
+**Import History Storage:**
+- Complete dataframe stored in `import_history.data` field after bulk upload completion
+- Enables analysis and querying of imported data regardless of original format
+- Preserves all original metadata without field-specific mapping requirements
 
 ### PDF-to-Reference Matching Logic
 1. **Exact Match**: PDF filename matches reference key exactly
@@ -523,7 +475,7 @@ The import system processes tabular data (BibTeX, CSV, etc.) into a standardized
 - Ability to retry failed operations
 - Progress preservation across browser sessions
 
-## Testing Strategy
+## Testing Strategy (Don't write tests until all tasks have finished)
 
 ### Unit Tests
 - BibTeX parser with various .bib file formats
