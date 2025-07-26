@@ -68,7 +68,7 @@ class ImportAnalysisRequest(BaseModel):
 class DataframeData(BaseModel):
     """Tabular dataframe representation for generalized import support."""
 
-    table_schema: DataframeSchema = Field(..., description="Schema definition with fields and primary key")
+    schema: DataframeSchema = Field(..., description="Schema definition with fields and primary key")
     data: List[Dict[str, Any]] = Field(..., description="List of data rows as dictionaries")
 
 
