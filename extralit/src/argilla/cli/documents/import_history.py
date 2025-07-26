@@ -105,7 +105,7 @@ def list_import_histories(
         for history in histories:
             created_at = datetime.fromisoformat(history["created_at"].replace("Z", "+00:00"))
             table.add_row(
-                str(history["id"])[:8] + "...",  # Truncate ID for display
+                str(history["id"])[:8] + "...",
                 history["filename"],
                 created_at.strftime("%Y-%m-%d %H:%M:%S"),
             )
