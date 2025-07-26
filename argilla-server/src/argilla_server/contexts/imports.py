@@ -31,6 +31,9 @@ from argilla_server.api.schemas.v1.imports import (
     ImportSummary,
     DocumentsBulkCreate,
     DocumentsBulkResponse,
+    DataframeData,
+    DataframeSchema,
+    DataframeField,
 )
 from argilla_server.jobs.document_jobs import upload_document_job
 
@@ -135,7 +138,10 @@ async def analyze_import_status(db: AsyncSession, analysis_request: ImportAnalys
         failed_count=failed_count,
     )
 
-    return ImportAnalysisResponse(documents=documents_info, summary=summary)
+    # Build dataframe structure for generalized import support
+    dataframe_data = _build_dataframe_from_documents(documents_info)
+
+    return ImportAnalysisResponse(documents=documents_info, summary=summary, data=dataframe_data)
 
 
 async def _has_new_files(db: AsyncSession, existing_documents: List[Document], new_files: List[FileInfo]) -> bool:
@@ -256,6 +262,87 @@ def _is_valid_pmid(pmid: str) -> bool:
 
     # PMID should be numeric
     return pmid.isdigit()
+
+
+def _build_dataframe_from_documents(documents: Dict[str, DocumentImportAnalysis]) -> DataframeData:
+    """
+    Build dataframe structure from document analysis results for generalized import support.
+
+    This creates a tabular representation of the imported data that can be used for
+    BibTeX, CSV, and other structured data formats. The dataframe provides a standardized
+    way to represent import data regardless of the source format.
+
+    Args:
+        documents: Dictionary of reference keys to document analysis results
+
+    Returns:
+        DataframeData with schema and data for tabular representation
+
+    Note:
+        Currently, bibliographic metadata (title, authors, venue, year) from BibTeX parsing
+        is not stored in the DocumentCreate schema, so these fields will be empty.
+        Future enhancement: Extend DocumentMetadata to include parsed BibTeX metadata
+        so the dataframe can contain the full bibliographic information.
+    """
+    # Define the schema for BibTeX-style imports with support for future CSV and other formats
+    schema = DataframeSchema(
+        fields=[
+            DataframeField(name="reference", type="string"),
+            DataframeField(name="title", type="string"),
+            DataframeField(name="authors", type="string"),
+            DataframeField(name="year", type="integer"),
+            DataframeField(name="venue", type="string"),
+            DataframeField(name="doi", type="string"),
+            DataframeField(name="pmid", type="string"),
+            DataframeField(name="file_name", type="string"),
+            DataframeField(name="status", type="string"),
+            DataframeField(name="associated_files", type="string"),
+        ],
+        primaryKey=["reference"],
+    )
+
+    # Build data rows from document analysis
+    data_rows = []
+    for reference_key, doc_analysis in documents.items():
+        doc_create = doc_analysis.document_create
+
+        # Extract available metadata fields from DocumentCreate
+        # Note: DocumentCreate schema currently only has basic fields (reference, doi, pmid, file_name)
+        # Bibliographic metadata (title, authors, venue, year) would need to be passed separately
+        title = getattr(doc_create, "title", None) or ""
+        authors = getattr(doc_create, "authors", None) or ""
+        year = getattr(doc_create, "year", None)
+        venue = getattr(doc_create, "venue", None) or ""
+        doi = doc_create.doi or ""
+        pmid = doc_create.pmid or ""
+        file_name = doc_create.file_name or ""
+
+        # Convert year to integer if it's a valid number, otherwise None
+        year_int = None
+        if year is not None:
+            try:
+                year_int = int(year)
+            except (ValueError, TypeError):
+                year_int = None
+
+        # Join associated files into a comma-separated string
+        associated_files_str = ", ".join(doc_analysis.associated_files) if doc_analysis.associated_files else ""
+
+        row = {
+            "reference": reference_key,
+            "title": title,
+            "authors": authors,
+            "year": year_int,
+            "venue": venue,
+            "doi": doi,
+            "pmid": pmid,
+            "file_name": file_name,
+            "status": doc_analysis.status.value,
+            "associated_files": associated_files_str,
+        }
+        data_rows.append(row)
+
+    return DataframeData(table_schema=schema, data=data_rows)
 
 
 async def check_existing_document(db: AsyncSession, document_create: DocumentCreate) -> Optional[Document]:
