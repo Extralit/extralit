@@ -106,7 +106,7 @@ class BulkDocumentInfo(BaseModel):
 
     reference: str = Field(..., description="BibTeX reference key for job tracking")
     document_create: DocumentCreate = Field(..., description="Document creation data")
-    associated_file: str = Field(..., description="Single PDF filename (one file per DocumentCreate)")
+    associated_files: List[str] = Field(..., description="Multiple PDF filenames for this reference")
 
 
 class DocumentsBulkCreate(BaseModel):

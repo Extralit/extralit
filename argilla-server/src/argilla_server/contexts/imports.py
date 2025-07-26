@@ -37,7 +37,7 @@ from argilla_server.api.schemas.v1.imports import (
     ImportHistoryCreate,
     ImportHistoryResponse,
 )
-from argilla_server.jobs.document_jobs import upload_document_job
+from argilla_server.jobs.document_jobs import upload_reference_documents_job
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -386,26 +386,37 @@ async def check_existing_document(db: AsyncSession, document_create: DocumentCre
 async def process_bulk_upload(
     bulk_create: DocumentsBulkCreate,
     files: List[UploadFile],
+    user_id: str,
 ) -> DocumentsBulkResponse:
     """
-    Process bulk document upload with associated PDF files.
+    Process bulk document upload with associated PDF files using reference-based jobs.
+
+    This function creates one job per reference that handles multiple files for that reference.
+    It validates all files, groups them by reference, and creates reference-based upload jobs
+    for efficient processing and progress tracking.
 
     Args:
-        bulk_metadata: DocumentsBulkCreate
+        bulk_create: DocumentsBulkCreate with reference-based document information
         files: List of PDF files to upload
+        user_id: ID of the user creating the documents
 
     Returns:
-        DocumentsBulkResponse with job IDs and validation results
+        DocumentsBulkResponse with job IDs indexed by reference and validation results
     """
+    from argilla_server.jobs import DEFAULT_QUEUE
 
     # Create a mapping of filenames to file objects for quick lookup
     file_mapping = {file.filename: file for file in files}
 
     # Validate that all referenced files are included in the upload
     missing_files = []
+    all_referenced_files = set()
+
     for doc in bulk_create.documents:
-        if doc.associated_file not in file_mapping:
-            missing_files.append(doc.associated_file)
+        for filename in doc.associated_files:
+            all_referenced_files.add(filename)
+            if filename not in file_mapping:
+                missing_files.append(filename)
 
     if missing_files:
         raise HTTPException(
@@ -413,45 +424,84 @@ async def process_bulk_upload(
             detail=f"Referenced files not found in upload: {', '.join(missing_files)}",
         )
 
-    # Process each document and create jobs
+    # Group documents by reference (should be 1:1 but validate)
+    reference_to_doc = {}
+    for doc in bulk_create.documents:
+        if doc.reference in reference_to_doc:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Duplicate reference key found: {doc.reference}",
+            )
+        reference_to_doc[doc.reference] = doc
+
+    # Process each reference and create reference-based jobs
     job_ids = {}
     failed_validations = []
 
-    for doc in bulk_create.documents:
+    for reference, doc in reference_to_doc.items():
         try:
-            file = file_mapping[doc.associated_file]
+            # Validate and read all files for this reference
+            file_data_list = []
+            reference_failed = False
 
-            if not file.filename or not file.filename.lower().endswith(".pdf"):
-                failed_validations.append(f"{file.filename}: Not a PDF file")
+            for filename in doc.associated_files:
+                try:
+                    file = file_mapping[filename]
+
+                    if not file.filename or not file.filename.lower().endswith(".pdf"):
+                        failed_validations.append(f"{filename}: Not a PDF file")
+                        reference_failed = True
+                        continue
+
+                    # Read file content
+                    file_content = await file.read()
+
+                    # Validate file size (100 MB limit)
+                    if len(file_content) > 100 * 1024 * 1024:
+                        failed_validations.append(f"{filename}: File exceeds maximum size of 100 MB")
+                        reference_failed = True
+                        continue
+
+                    # Reset file position for potential future reads
+                    await file.seek(0)
+
+                    file_data_list.append((filename, file_content))
+
+                except Exception as e:
+                    _LOGGER.error(f"Error processing file {filename} for reference {reference}: {str(e)}")
+                    failed_validations.append(f"{filename}: {str(e)}")
+                    reference_failed = True
+
+            # Skip this reference if any files failed validation
+            if reference_failed:
                 continue
 
-            # Read file content
-            file_content = await file.read()
+            # Set a default filename if not already set (use first file)
+            if not doc.document_create.file_name and file_data_list:
+                doc.document_create.file_name = file_data_list[0][0]
 
-            # Validate file size (optional, adjust limits as needed)
-            if len(file_content) > 100 * 1024 * 1024:  # 100 MB limit
-                failed_validations.append(f"{file.filename}: File exceeds maximum size of 100 MB")
-                continue
+            # Create a reference-based job for multiple files
+            job = DEFAULT_QUEUE.enqueue(
+                upload_reference_documents_job,
+                reference=reference,
+                document_data=doc.document_create.model_dump(),
+                file_data_list=file_data_list,
+                user_id=user_id,
+                job_timeout=None,  # No timeout for large uploads
+            )
 
-            # Reset file position for potential future reads
-            await file.seek(0)
-
-            # Set filename if not already set
-            if not doc.document_create.file_name:
-                doc.document_create.file_name = file.filename
-
-            # Create a job for document upload
-            job = upload_document_job.delay(document_data=doc.document_create.model_dump(), file_data=file_content)
-
-            # Store job ID mapped to reference key for tracking
-            job_ids[doc.reference] = job.id
+            # Store job ID mapped to reference key for frontend tracking
+            job_ids[reference] = job.id
+            _LOGGER.info(
+                f"Created reference-based job {job.id} for reference {reference} with {len(file_data_list)} files"
+            )
 
         except Exception as e:
-            _LOGGER.error(f"Error processing document {doc.reference}: {str(e)}")
-            failed_validations.append(f"{doc.reference}: {str(e)}")
+            _LOGGER.error(f"Error processing reference {reference}: {str(e)}")
+            failed_validations.append(f"{reference}: {str(e)}")
 
     return DocumentsBulkResponse(
-        job_ids=job_ids, total_documents=len(bulk_create.documents), failed_validations=failed_validations
+        job_ids=job_ids, total_documents=len(reference_to_doc), failed_validations=failed_validations
     )
 
 

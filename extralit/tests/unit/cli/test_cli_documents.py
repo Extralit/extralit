@@ -18,7 +18,7 @@ from unittest.mock import patch, MagicMock
 from pathlib import Path
 
 from argilla.cli.app import app
-from argilla.cli.documents.add import _parse_authors, _parse_year, _display_import_analysis_results
+from argilla.cli.documents.import_bib import _parse_authors, _parse_year, _display_import_analysis_results
 
 
 @pytest.fixture
