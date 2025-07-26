@@ -388,7 +388,8 @@ class ImportHistory(DatabaseModel):
     workspace_id: Mapped[UUID] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
     user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
     filename: Mapped[str] = mapped_column(String, nullable=False)  # Import filename (.bib, .csv, etc.)
-    data: Mapped[dict] = mapped_column(MutableDict.as_mutable(JSON), nullable=False)  # Generic tabular dataframe data
+    data: Mapped[dict] = mapped_column(MutableDict.as_mutable(JSON()), nullable=False)
+    metadata_: Mapped[Optional[dict]] = mapped_column("metadata", MutableDict.as_mutable(JSON()), nullable=True)
 
     workspace: Mapped["Workspace"] = relationship("Workspace")
     user: Mapped["User"] = relationship("User")
