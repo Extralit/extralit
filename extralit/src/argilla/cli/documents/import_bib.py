@@ -357,20 +357,24 @@ def _execute_document_bulk_import(
             document_create = doc_info.get("document_create", {})
             associated_files = doc_info.get("associated_files", [])
 
-            # Create one BulkDocumentInfo entry per file
+            # Collect all valid file names for this reference
+            valid_file_names = []
             for file_info in associated_files:
                 file_name = file_info if isinstance(file_info, str) else file_info.get("filename")
                 file_path = file_map.get(file_name)
                 if file_path:
-                    # Each file gets its own document entry with the same reference
-                    bulk_documents.append(
-                        {
-                            "reference": ref_key,
-                            "document_create": document_create,
-                            "associated_file": file_path.name,
-                        }
-                    )
+                    valid_file_names.append(file_path.name)
                     files_to_upload.append(("files", (file_path.name, open(file_path, "rb"), "application/pdf")))
+
+            # Create one BulkDocumentInfo entry per reference with multiple files
+            if valid_file_names:
+                bulk_documents.append(
+                    {
+                        "reference": ref_key,
+                        "document_create": document_create,
+                        "associated_files": valid_file_names,
+                    }
+                )
 
         if bulk_documents:
             # Add metadata as first form field
@@ -410,8 +414,9 @@ def _execute_document_bulk_import(
                     jobs_table.add_column("Files Count", style="yellow")
 
                     for ref_key, job_id in job_ids.items():
-                        # Count files for this reference
-                        file_count = len([doc for doc in bulk_documents if doc["reference"] == ref_key])
+                        # Count files for this reference from the bulk_documents entry
+                        ref_doc = next((doc for doc in bulk_documents if doc["reference"] == ref_key), None)
+                        file_count = len(ref_doc.get("associated_files", [])) if ref_doc else 0
                         jobs_table.add_row(ref_key, job_id, str(file_count))
 
                     console.print(jobs_table)
@@ -430,8 +435,11 @@ def _execute_document_bulk_import(
                 except Exception as e:
                     console.print(f"[yellow]Warning: Could not store import history: {str(e)}[/yellow]")
 
+                # Calculate total files across all references
+                total_files = sum(len(doc.get("associated_files", [])) for doc in bulk_documents)
+
                 panel = get_argilla_themed_panel(
-                    f"Import submitted successfully. {len(job_ids)} references queued for processing with {len(bulk_documents)} total files.",
+                    f"Import submitted successfully. {len(job_ids)} references queued for processing with {total_files} total files.",
                     title="Import Execution Complete",
                     title_align="left",
                     success=True,
