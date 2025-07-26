@@ -223,8 +223,6 @@ def _validate_import_history_request(import_history_create: ImportHistoryCreate)
             errors.append("Data must be a dictionary")
         else:
             # Check for expected dataframe structure (schema and data fields)
-            if "schema" not in import_history_create.data:
-                errors.append("Data must contain 'schema' field")
             if "data" not in import_history_create.data:
                 errors.append("Data must contain 'data' field")
 
@@ -233,8 +231,6 @@ def _validate_import_history_request(import_history_create: ImportHistoryCreate)
                 schema = import_history_create.data["schema"]
                 if not isinstance(schema, dict):
                     errors.append("Schema must be a dictionary")
-                elif "fields" not in schema or "primaryKey" not in schema:
-                    errors.append("Schema must contain 'fields' and 'primaryKey'")
 
             # Validate data structure if present
             if "data" in import_history_create.data:
@@ -376,6 +372,7 @@ async def get_import_history(
         response = {
             "id": str(history.id),
             "workspace_id": str(history.workspace_id),
+            "username": history.user.username if history.user else "N/A",
             "filename": history.filename,
             "data": history.data,
             "metadata": history.metadata_,

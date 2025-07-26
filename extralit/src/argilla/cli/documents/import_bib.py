@@ -374,24 +374,27 @@ def _store_import_history(client: Argilla, analysis_result: Dict, bibtex_file: P
     This provides an audit trail of all imports for analysis and querying.
     """
     try:
-        with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            console=console,
-        ) as progress:
-            task = progress.add_task("Storing import history...", total=None)
+        # Check if a live display is already active on the console
+        live_display_active = getattr(console, "_live", None) is not None
 
+        def do_store(progress=None, task=None):
             # Extract workspace_id from analysis result
             documents = analysis_result.get("documents", {})
             if not documents:
-                progress.update(task, completed=True, description="No documents to store in history")
+                if progress and task is not None:
+                    progress.update(task, completed=True, description="No documents to store in history")
+                else:
+                    console.print("[yellow]No documents to store in history[/yellow]")
                 return
 
             # Get workspace_id from first document
             first_doc = next(iter(documents.values()))
             workspace_id = first_doc.get("document_create", {}).get("workspace_id")
             if not workspace_id:
-                progress.update(task, completed=True, description="Could not determine workspace ID")
+                if progress and task is not None:
+                    progress.update(task, completed=True, description="Could not determine workspace ID")
+                else:
+                    console.print("[yellow]Could not determine workspace ID[/yellow]")
                 return
 
             # Build dataframe data from analysis result
@@ -399,7 +402,8 @@ def _store_import_history(client: Argilla, analysis_result: Dict, bibtex_file: P
 
             # Validate dataframe data structure
             if not dataframe_data or not isinstance(dataframe_data, dict):
-                progress.update(task, completed=True, description="Invalid dataframe data structure")
+                if progress and task is not None:
+                    progress.update(task, completed=True, description="Invalid dataframe data structure")
                 console.print("[yellow]Warning: Could not store import history - invalid dataframe data[/yellow]")
                 return
 
@@ -426,17 +430,35 @@ def _store_import_history(client: Argilla, analysis_result: Dict, bibtex_file: P
 
             if history_response.status_code == 201:
                 history_result = history_response.json()
-                progress.update(
-                    task,
-                    completed=True,
-                    description=f"Import history stored (ID: {history_result.get('id', 'unknown')})",
-                )
+                msg = f"Import history stored (ID: {history_result.get('id', 'unknown')})"
+                if progress and task is not None:
+                    progress.update(task, completed=True, description=msg)
+                else:
+                    console.print(f"[green]{msg}[/green]")
             else:
-                progress.update(task, completed=True, description="Failed to store import history")
-                console.print(f"[yellow]Warning: Could not store import history: {history_response.text}[/yellow]")
+                msg = f"Failed to store import history: {history_response.text}"
+                if progress and task is not None:
+                    progress.update(task, completed=True, description="Failed to store import history")
+                console.print(f"[yellow]Warning: {msg}[/yellow]")
+
+        if live_display_active:
+            # Just print status updates, don't use Progress
+            console.print("[cyan]Storing import history...[/cyan]")
+            do_store()
+        else:
+            from rich.progress import Progress, SpinnerColumn, TextColumn
+
+            with Progress(
+                SpinnerColumn(),
+                TextColumn("[progress.description]{task.description}"),
+                console=console,
+            ) as progress:
+                task = progress.add_task("Storing import history...", total=None)
+                do_store(progress, task)
 
     except Exception as e:
         console.print(f"[yellow]Warning: Error storing import history: {str(e)}[/yellow]")
+        raise e
 
 
 def _handle_cli_exception(console: Console, e: Exception, debug: bool = False) -> None:

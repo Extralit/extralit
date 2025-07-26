@@ -478,7 +478,6 @@ async def create_import_history(
         HTTPException: If workspace doesn't exist or creation fails
     """
     try:
-        # Create the import history record
         import_history = ImportHistory(
             workspace_id=import_history_create.workspace_id,
             user_id=user_id,
