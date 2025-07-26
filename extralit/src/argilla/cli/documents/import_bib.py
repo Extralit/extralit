@@ -13,48 +13,57 @@
 # limitations under the License.
 
 """
-Document import CLI with multi-file support per reference.
+Document import CLI with pandas-based BibTeX processing and dataframe support.
 
 This module implements the CLI interface for the papers library importer feature,
-supporting the new multi-file schema where:
+using pandas for proper BibTeX parsing and dataframe handling:
 
-- Each reference may have multiple associated files (DocumentImportAnalysis.associated_files)
-- Jobs are created per reference (not per file) to process multiple files together
-- BulkDocumentInfo supports one file per entry, but multiple entries per reference
-- DocumentsBulkResponse returns job_ids indexed by reference key
-- Import analysis tracks files at both reference and individual file levels
+- Parses BibTeX files into pandas DataFrame with proper field handling
+- Matches PDF files to references and stores file paths in 'files' column
+- Uses DataFrame for import_history.data storage
+- Simplified and refactored code for better reuse and maintainability
 
-The CLI mirrors the frontend UI workflow:
-1. Parse BibTeX and match PDF files (frontend processing)
-2. Send analysis request with file metadata (ImportAnalysisRequest)
-3. Display preview with multi-file information (ImportAnalysisResponse)
-4. Execute bulk upload with job tracking (DocumentsBulkResponse)
+The CLI workflow:
+1. Parse BibTeX file into pandas DataFrame with proper field parsing
+2. Match PDF files to references and add to 'files' column
+3. Send analysis request with file metadata
+4. Display preview with multi-file information
+5. Execute bulk upload with job tracking
+6. Store import history with DataFrame data
 """
 
 import json
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from argilla.workspaces._resource import Workspace
+import pandas as pd
 import typer
 import bibtexparser
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
 
+from argilla.workspaces._resource import Workspace
 from argilla.client import Argilla
 from argilla.cli.rich import get_argilla_themed_panel
 
 
-def _parse_authors(author_string: str) -> List[str]:
-    """Parse author string from BibTeX entry into a list of author names."""
-    if not author_string:
-        return []
+def _clean_bibtex_field(value: str) -> str:
+    """Clean BibTeX field by removing braces and extra whitespace."""
+    if not value:
+        return ""
+    return value.replace("{", "").replace("}", "").strip()
 
-    # Remove braces and split by 'and'
-    cleaned = author_string.replace("{", "").replace("}", "")
-    authors = [author.strip() for author in cleaned.split(" and ")]
-    return authors
+
+def _parse_authors(author_string: str) -> str:
+    """Parse author string from BibTeX entry into cleaned format."""
+    if not author_string:
+        return ""
+
+    cleaned = _clean_bibtex_field(author_string)
+    # Split by 'and' and rejoin with semicolons for consistency
+    authors = [author.strip() for author in cleaned.split(" and ") if author.strip()]
+    return "; ".join(authors)
 
 
 def _parse_year(year_string: str) -> Optional[int]:
@@ -62,43 +71,81 @@ def _parse_year(year_string: str) -> Optional[int]:
     if not year_string:
         return None
 
+    cleaned = _clean_bibtex_field(year_string)
     try:
-        return int(year_string)
+        return int(cleaned)
     except ValueError:
         return None
 
 
-def _parse_bibtex_file(bibtex_file: Path, console: Console) -> list:
+def _parse_bibtex_to_dataframe(bibtex_file: Path, console: Console) -> pd.DataFrame:
+    """Parse BibTeX file into a pandas DataFrame with proper field handling."""
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
         console=console,
     ) as progress:
-        task = progress.add_task("Parsing BibTeX file...", total=None)
-        with open(bibtex_file, "r", encoding="utf-8") as bibtex_fp:
-            try:
+        task = progress.add_task("Parsing BibTeX file to DataFrame...", total=None)
+
+        try:
+            with open(bibtex_file, "r", encoding="utf-8") as bibtex_fp:
                 bib_database = bibtexparser.load(bibtex_fp)
                 entries = bib_database.entries
-                progress.update(task, completed=True, description=f"Parsed {len(entries)} BibTeX entries")
-                return entries
-            except Exception as e:
-                progress.update(task, completed=True, description="Failed to parse BibTeX file")
-                raise ValueError(f"Error parsing BibTeX file: {str(e)}")
+
+            if not entries:
+                progress.update(task, completed=True, description="No entries found in BibTeX file")
+                return pd.DataFrame()
+
+            # Convert entries to DataFrame with proper field handling
+            data_rows = []
+            for entry in entries:
+                row = {
+                    "reference": entry.get("ID", ""),
+                    "title": _clean_bibtex_field(entry.get("title", "")),
+                    "authors": _parse_authors(entry.get("author", "")),
+                    "year": _parse_year(entry.get("year", "")),
+                    "journal": _clean_bibtex_field(entry.get("journal", "")),
+                    "booktitle": _clean_bibtex_field(entry.get("booktitle", "")),
+                    "publisher": _clean_bibtex_field(entry.get("publisher", "")),
+                    "doi": _clean_bibtex_field(entry.get("doi", "")),
+                    "pmid": _clean_bibtex_field(entry.get("pmid", "")),
+                    "url": _clean_bibtex_field(entry.get("url", "")),
+                    "abstract": _clean_bibtex_field(entry.get("abstract", "")),
+                    "keywords": _clean_bibtex_field(entry.get("keywords", "")),
+                    "file": entry.get("file", ""),  # Keep original for file matching
+                    "files": "",  # Will be populated with matched PDF paths
+                }
+
+                # Create venue field from journal, booktitle, or publisher
+                venue_parts = [row["journal"], row["booktitle"], row["publisher"]]
+                row["venue"] = next((part for part in venue_parts if part), "")
+
+                data_rows.append(row)
+
+            df = pd.DataFrame(data_rows)
+            progress.update(task, completed=True, description=f"Parsed {len(df)} entries to DataFrame")
+            return df
+
+        except Exception as e:
+            progress.update(task, completed=True, description="Failed to parse BibTeX file")
+            raise ValueError(f"Error parsing BibTeX file: {str(e)}")
 
 
-def _match_pdfs_to_entries(entries: List[Dict], pdf_folder: Path, console: Console):
+def _match_pdfs_to_dataframe(df: pd.DataFrame, pdf_folder: Path, console: Console) -> pd.DataFrame:
     """
-    Match PDF files to BibTeX entries with support for multiple files per reference.
+    Match PDF files to BibTeX DataFrame entries and populate 'files' column.
 
     Matching strategies:
     1. File tag parsing: Extract filenames from BibTeX 'file' field (Zotero/Mendeley format)
     2. Fallback matching: Match PDFs containing the reference key in filename
-    3. Multiple files per reference are supported and tracked separately
+    3. Store matched file paths in 'files' column as semicolon-separated string
 
     Returns:
-        Dict mapping reference keys to lists of matched PDF file paths
+        Updated DataFrame with 'files' column populated
     """
-    pdf_files = {}
+    if df.empty:
+        return df
+
     all_pdf_files = list(pdf_folder.rglob("*.pdf"))
     pdf_files_by_name = {pdf.name: pdf for pdf in all_pdf_files}
     matched_via_file_tag = 0
@@ -109,17 +156,20 @@ def _match_pdfs_to_entries(entries: List[Dict], pdf_folder: Path, console: Conso
         TextColumn("[progress.description]{task.description}"),
         console=console,
     ) as progress:
-        task = progress.add_task("Matching PDF files to BibTeX entries (multi-file support)...", total=None)
+        task = progress.add_task("Matching PDF files to DataFrame entries...", total=None)
 
-        for entry in entries:
-            reference = entry.get("ID")
+        # Create a copy to avoid modifying the original
+        df_matched = df.copy()
+
+        for idx, row in df_matched.iterrows():
+            reference = row["reference"]
             if not reference:
                 continue
 
             matched_pdfs = []
 
             # Strategy 1: Parse 'file' field from BibTeX entry (supports multiple files)
-            file_tag = entry.get("file")
+            file_tag = row.get("file", "")
             if file_tag:
                 file_entries = [f.strip() for f in file_tag.split(";") if f.strip()]
                 for file_entry in file_entries:
@@ -134,51 +184,91 @@ def _match_pdfs_to_entries(entries: List[Dict], pdf_folder: Path, console: Conso
 
                     pdf = pdf_files_by_name.get(file_name)
                     if pdf:
-                        matched_pdfs.append(pdf)
+                        matched_pdfs.append(str(pdf))
 
                 if matched_pdfs:
-                    pdf_files[reference] = matched_pdfs
                     matched_via_file_tag += len(matched_pdfs)
-                    continue
+                else:
+                    # Strategy 2: Fallback - find PDFs containing reference key in filename
+                    fallback_matches = [str(pdf) for pdf in all_pdf_files if reference in pdf.stem]
+                    if fallback_matches:
+                        matched_pdfs = fallback_matches
+                        matched_via_fallback += len(fallback_matches)
+            else:
+                # Strategy 2: Fallback - find PDFs containing reference key in filename
+                fallback_matches = [str(pdf) for pdf in all_pdf_files if reference in pdf.stem]
+                if fallback_matches:
+                    matched_pdfs = fallback_matches
+                    matched_via_fallback += len(fallback_matches)
 
-            # Strategy 2: Fallback - find PDFs containing reference key in filename
-            fallback_matches = [pdf for pdf in all_pdf_files if reference in pdf.stem]
-            if fallback_matches:
-                pdf_files[reference] = fallback_matches
-                matched_via_fallback += len(fallback_matches)
+            # Store matched files as semicolon-separated string
+            df_matched.at[idx, "files"] = "; ".join(matched_pdfs) if matched_pdfs else ""
 
-        total_files = sum(len(files) for files in pdf_files.values())
-        total_refs_with_files = len(pdf_files)
+        total_files = matched_via_file_tag + matched_via_fallback
+        refs_with_files = len(df_matched[df_matched["files"] != ""])
 
         progress.update(
             task,
             completed=True,
-            description=f"Matched {matched_via_file_tag} files via file tag, {matched_via_fallback} via fallback. Total: {total_files} files across {total_refs_with_files} references",
+            description=f"Matched {matched_via_file_tag} files via file tag, {matched_via_fallback} via fallback. Total: {total_files} files across {refs_with_files} references",
         )
 
-    return pdf_files
+    return df_matched
 
 
-def _build_documents_payload(entries: List[Dict], pdf_files, workspace_obj: Workspace, collection):
-    """Build documents payload for import analysis request with multi-file support."""
+def _dataframe_to_import_history_format(df: pd.DataFrame) -> Dict:
+    """Convert DataFrame to import history data format."""
+    if df.empty:
+        return {"schema": {"fields": []}, "data": []}
+
+    # Build schema from DataFrame columns
+    schema_fields = []
+    for col in df.columns:
+        dtype = df[col].dtype
+        if pd.api.types.is_integer_dtype(dtype):
+            field_type = "integer"
+        elif pd.api.types.is_float_dtype(dtype):
+            field_type = "float"
+        elif pd.api.types.is_bool_dtype(dtype):
+            field_type = "boolean"
+        else:
+            field_type = "string"
+
+        schema_fields.append({"name": col, "type": field_type})
+
+    schema = {"fields": schema_fields, "primaryKey": ["reference"]}
+
+    # Convert DataFrame to list of dictionaries, handling NaN values
+    data_rows = []
+    for _, row in df.iterrows():
+        row_dict = {}
+        for col in df.columns:
+            value = row[col]
+            # Handle NaN values
+            if pd.isna(value):
+                row_dict[col] = None if col in ["year"] else ""
+            else:
+                row_dict[col] = value
+        data_rows.append(row_dict)
+
+    return {"schema": schema, "data": data_rows}
+
+
+def _build_documents_payload(df: pd.DataFrame, workspace_obj: Workspace, collection: Optional[str]) -> Dict:
+    """Build documents payload for import analysis request from DataFrame."""
     documents = {}
-    for entry in entries:
-        reference = entry.get("ID")
+
+    for _, row in df.iterrows():
+        reference = row["reference"]
         if not reference:
             continue
-        title = entry.get("title", "").strip("{}")
-        authors = _parse_authors(entry.get("author", ""))
-        year = _parse_year(entry.get("year", ""))
-        venue = entry.get("journal") or entry.get("booktitle") or entry.get("publisher") or ""
-        doi = entry.get("doi", "")
-        pmid = entry.get("pmid", "")
 
         # Build document_create payload
         document_create = {
             "workspace_id": str(workspace_obj.id),
             "reference": reference,
-            "doi": doi,
-            "pmid": pmid,
+            "doi": row.get("doi", ""),
+            "pmid": row.get("pmid", ""),
         }
 
         # Add metadata if collection is specified
@@ -189,21 +279,26 @@ def _build_documents_payload(entries: List[Dict], pdf_files, workspace_obj: Work
         if metadata:
             document_create["metadata"] = metadata
 
-        # Build associated_files list with FileInfo structure
+        # Build associated_files list from 'files' column
         associated_files = []
-        if reference in pdf_files:
-            for pdf_file in pdf_files[reference]:
-                associated_files.append({"filename": pdf_file.name, "size": pdf_file.stat().st_size})
+        files_str = row.get("files", "")
+        if files_str:
+            file_paths = [f.strip() for f in files_str.split(";") if f.strip()]
+            for file_path in file_paths:
+                pdf_path = Path(file_path)
+                if pdf_path.exists():
+                    associated_files.append({"filename": pdf_path.name, "size": pdf_path.stat().st_size})
 
         # Build DocumentMetadata structure for analysis request
         documents[reference] = {
             "document_create": document_create,
-            "title": title,
-            "authors": authors,
-            "year": year,
-            "venue": venue,
+            "title": row.get("title", ""),
+            "authors": row.get("authors", "").split("; ") if row.get("authors") else [],
+            "year": row.get("year") if pd.notna(row.get("year")) else None,
+            "venue": row.get("venue", ""),
             "associated_files": associated_files,
         }
+
     return documents
 
 
@@ -228,7 +323,7 @@ def _send_import_analysis_request(client: Argilla, workspace_obj: Workspace, doc
 
 
 def _execute_document_bulk_import(
-    client: Argilla, analysis_result: Dict, pdf_folder: Path, bibtex_file: Path, console: Console
+    client: Argilla, analysis_result: Dict, df: pd.DataFrame, df_data: Dict, bibtex_file: Path, console: Console
 ) -> None:
     """Execute bulk document import with multi-file support per reference."""
     with Progress(
@@ -259,15 +354,27 @@ def _execute_document_bulk_import(
         # Build bulk upload payload - one entry per file (not per reference)
         bulk_documents: List[Dict] = []
         files_to_upload: List = []
-        pdf_file_map = {pdf_path.name: pdf_path for pdf_path in pdf_folder.rglob("*.pdf")}
+
+        # Create file mapping from DataFrame
+        file_map = {}
+        for _, row in df.iterrows():
+            row["reference"]
+            files_str = row.get("files", "")
+            if files_str:
+                file_paths = [f.strip() for f in files_str.split(";") if f.strip()]
+                for file_path in file_paths:
+                    pdf_path = Path(file_path)
+                    if pdf_path.exists():
+                        file_map[pdf_path.name] = pdf_path
 
         for ref_key, doc_info in documents_to_import.items():
             document_create = doc_info.get("document_create", {})
             associated_files = doc_info.get("associated_files", [])
 
             # Create one BulkDocumentInfo entry per file
-            for file_name in associated_files:
-                file_path = pdf_file_map.get(file_name)
+            for file_info in associated_files:
+                file_name = file_info if isinstance(file_info, str) else file_info.get("filename")
+                file_path = file_map.get(file_name)
                 if file_path:
                     # Each file gets its own document entry with the same reference
                     bulk_documents.append(
@@ -333,7 +440,7 @@ def _execute_document_bulk_import(
 
                 # Store import history after successful bulk upload (non-blocking)
                 try:
-                    _store_import_history(client, analysis_result, bibtex_file, console)
+                    _store_import_history(client, analysis_result, df_data, bibtex_file, console)
                 except Exception as e:
                     console.print(f"[yellow]Warning: Could not store import history: {str(e)}[/yellow]")
 
@@ -363,7 +470,9 @@ def _execute_document_bulk_import(
             console.print(panel)
 
 
-def _store_import_history(client: Argilla, analysis_result: Dict, bibtex_file: Path, console: Console) -> None:
+def _store_import_history(
+    client: Argilla, analysis_result: Dict, df_data: Dict, bibtex_file: Path, console: Console
+) -> None:
     """
     Store import history record with dataframe data and metadata.
 
@@ -397,13 +506,12 @@ def _store_import_history(client: Argilla, analysis_result: Dict, bibtex_file: P
                     console.print("[yellow]Could not determine workspace ID[/yellow]")
                 return
 
-            # Build dataframe data from analysis result
-            dataframe_data = analysis_result.get("data", {})
+            # Use the provided DataFrame data
+            dataframe_data = df_data
 
             # Validate dataframe data structure
             if not dataframe_data or not isinstance(dataframe_data, dict):
-                if progress and task is not None:
-                    progress.update(task, completed=True, description="Invalid dataframe data structure")
+                progress.update(task, completed=True, description="Invalid dataframe data structure")
                 console.print("[yellow]Warning: Could not store import history - invalid dataframe data[/yellow]")
                 return
 
@@ -550,12 +658,12 @@ def import_bib(
         client = Argilla.from_credentials()
         workspace_obj = _validate_workspace_and_folder(client, workspace, pdf_folder, console)
 
-        # Phase 1: Parse BibTeX and match files (mirrors frontend processing)
-        entries = _parse_bibtex_file(bibtex_file, console)
-        pdf_files = _match_pdfs_to_entries(entries, pdf_folder, console)
+        # Phase 1: Parse BibTeX to DataFrame and match PDF files
+        df = _parse_bibtex_to_dataframe(bibtex_file, console)
+        df_with_files = _match_pdfs_to_dataframe(df, pdf_folder, console)
 
-        # Phase 2: Build analysis request payload (mirrors frontend analysis request)
-        documents = _build_documents_payload(entries, pdf_files, workspace_obj, collection)
+        # Phase 2: Build analysis request payload from DataFrame
+        documents = _build_documents_payload(df_with_files, workspace_obj, collection)
 
         # Phase 3: Send analysis request to backend (mirrors frontend API call)
         analysis_result = _send_import_analysis_request(client, workspace_obj, documents, console)
@@ -586,8 +694,9 @@ def import_bib(
             console.print(panel)
             return
 
-        # Phase 7: Execute bulk import (mirrors frontend bulk upload execution)
-        _execute_document_bulk_import(client, analysis_result, pdf_folder, bibtex_file, console)
+        # Phase 7: Execute bulk import with DataFrame
+        df_data = _dataframe_to_import_history_format(df_with_files)
+        _execute_document_bulk_import(client, analysis_result, df_with_files, df_data, bibtex_file, console)
 
     except Exception as e:
         _handle_cli_exception(console, e, debug)
