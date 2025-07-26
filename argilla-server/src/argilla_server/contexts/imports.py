@@ -112,10 +112,6 @@ async def analyze_import_status(db: AsyncSession, analysis_request: ImportAnalys
 
             documents_info[reference] = DocumentImportAnalysis(
                 document_create=file_metadata.document_create,
-                title=file_metadata.title,
-                authors=file_metadata.authors,
-                year=file_metadata.year,
-                venue=file_metadata.venue,
                 associated_files=[f.filename for f in file_metadata.associated_files],
                 status=status,
                 validation_errors=validation_errors if validation_errors else [],
@@ -125,10 +121,6 @@ async def analyze_import_status(db: AsyncSession, analysis_request: ImportAnalys
             _LOGGER.error(f"Error analyzing document {reference}: {str(e)}")
             documents_info[reference] = DocumentImportAnalysis(
                 document_create=file_metadata.document_create,
-                title=file_metadata.title,
-                authors=file_metadata.authors,
-                year=file_metadata.year,
-                venue=file_metadata.venue,
                 associated_files=[f.filename for f in file_metadata.associated_files],
                 status=ImportStatus.FAILED,
                 validation_errors=[f"Error analyzing document: {str(e)}"],

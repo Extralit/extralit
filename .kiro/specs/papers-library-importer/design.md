@@ -242,10 +242,6 @@ class FileInfo(BaseModel):
 class DocumentMetadata(BaseModel):
     """Metadata information for a document to be imported."""
     document_create: DocumentCreate = Field(..., description="Document creation data")
-    title: str = Field(..., description="Document title for display")
-    authors: List[str] = Field(default_factory=list, description="Document authors for display")
-    year: Optional[int] = Field(None, description="Publication year for display")
-    venue: Optional[str] = Field(None, description="Publication venue (journal, publisher, or institution)")
     associated_files: List[FileInfo] = Field(default_factory=list, description="PDF file metadata (not contents)")
 
 class ImportAnalysisRequest(BaseModel):
@@ -266,10 +262,6 @@ class ImportStatus(str, Enum):
 class DocumentImportAnalysis(BaseModel):
     """Information about a document in the import analysis response."""
     document_create: DocumentCreate = Field(..., description="Document creation data")
-    title: str = Field(..., description="Document title for display")
-    authors: Optional[List[str]] = Field(default_factory=list, description="Document authors for display")
-    year: Optional[int] = Field(None, description="Publication year for display")
-    venue: Optional[str] = Field(None, description="Publication venue (journal, publisher, or institution)")
     associated_files: List[str] = Field(default_factory=list, description="PDF filenames matched to this reference")
     status: ImportStatus = Field(..., description="Import status (add, update, skip, failed)")
     validation_errors: Optional[List[str]] = Field(default_factory=list, description="Validation error messages if any")
@@ -286,7 +278,7 @@ class ImportAnalysisResponse(BaseModel):
     """Response schema for import analysis."""
     documents: Dict[str, DocumentImportAnalysis] = Field(..., description="Reference key to document info mapping")
     summary: ImportSummary = Field(..., description="Import analysis summary")
-    data: Dict = Field(..., description="Tabular dataframe representation of imported data for generalized import support")
+    data: Dict = Field(..., description="Tabular dataframe representation of imported data for BibText or csv generalized import")
 ```
 
 #### Bulk Upload Request/Response
