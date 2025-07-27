@@ -9,9 +9,7 @@
       :disabled="isExporting"
     >
       <svgicon class="export-to-hub__button__icon" name="export" />
-      <span class="export-to-hub__button__text">{{
-        $t("button.exportToHub")
-      }}</span>
+      <span class="export-to-hub__button__text">{{ $t("button.exportToHub") }}</span>
     </BaseButton>
     <transition name="fade" appear>
       <dialog
@@ -24,34 +22,19 @@
         class="export-to-hub__dialog"
       >
         <div v-if="isExporting" class="export-to-hub__exporting-message">
-          <h2
-            class="export-to-hub__title"
-            v-text="$t('exportToHub.exporting')"
-          />
-          <p
-            class="export-to-hub__exporting-message__warning"
-            v-text="$t('exportToHub.exportingWarning')"
-          />
+          <h2 class="export-to-hub__title" v-text="$t('exportToHub.exporting')" />
+          <p class="export-to-hub__exporting-message__warning" v-text="$t('exportToHub.exportingWarning')" />
           <p
             class="export-to-hub__exporting-message__name"
-            v-text="
-              `${exportToHubForm.orgOrUsername}/${exportToHubForm.datasetName}`
-            "
+            v-text="`${exportToHubForm.orgOrUsername}/${exportToHubForm.datasetName}`"
           />
           <p
             class="export-to-hub__exporting-message__private"
-            v-text="
-              exportToHubForm.isPrivate
-                ? $t('exportToHub.private')
-                : $t('exportToHub.public')
-            "
+            v-text="exportToHubForm.isPrivate ? $t('exportToHub.private') : $t('exportToHub.public')"
           />
         </div>
         <form v-else @submit.prevent="exportToHub" class="export-to-hub__form">
-          <h2
-            class="export-to-hub__title"
-            v-text="$t('exportToHub.dialogTitle')"
-          />
+          <h2 class="export-to-hub__title" v-text="$t('exportToHub.dialogTitle')" />
 
           <div class="export-to-hub__form__dataset">
             <div class="export-to-hub__form__group --small">
@@ -79,11 +62,7 @@
                 aria-required="true"
               />
             </div>
-            <span
-              aria-hidden="true"
-              class="export-to-hub__form__separator"
-              v-text="'/'"
-            />
+            <span aria-hidden="true" class="export-to-hub__form__separator" v-text="'/'" />
             <div class="export-to-hub__form__group">
               <label for="datasetName">Dataset name</label>
               <input
@@ -127,24 +106,14 @@
           </div>
 
           <div class="export-to-hub__form__group">
-            <BaseSwitch
-              class="export-to-hub__form__switch"
-              v-model="exportToHubForm.isPrivate"
-              >{{ $t("private") }}</BaseSwitch
-            >
+            <BaseSwitch class="export-to-hub__form__switch" v-model="exportToHubForm.isPrivate">{{
+              $t("private")
+            }}</BaseSwitch>
           </div>
           <span>
-            <Validation
-              v-for="(error, index) in errors"
-              :key="index"
-              :validations="error"
-            />
+            <Validation v-for="(error, index) in errors" :key="index" :validations="error" />
           </span>
-          <BaseButton
-            type="submit"
-            :disabled="!isValid"
-            class="primary full-width export-to-hub__form__button"
-          >
+          <BaseButton type="submit" :disabled="!isValid" class="primary full-width export-to-hub__form__button">
             {{ $t("button.exportToHub") }}
           </BaseButton>
         </form>

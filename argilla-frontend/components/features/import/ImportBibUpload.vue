@@ -16,14 +16,14 @@
 
 <script>
 export default {
-  name: 'ImportBibUpload',
+  name: "ImportBibUpload",
 
   methods: {
     reset() {
       // Placeholder method
-    }
-  }
-}
+    },
+  },
+};
 </script>
 
 <style lang="scss" scoped>

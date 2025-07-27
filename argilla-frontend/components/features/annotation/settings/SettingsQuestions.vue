@@ -4,55 +4,29 @@
       <div class="settings__edition-form__content">
         <h2 class="--heading5 --medium" v-text="$t('settings.editQuestions')" />
         <div v-for="question in settings.questions" :key="question.id">
-          <form
-            @submit.prevent="onSubmit(question)"
-            class="settings__edition-form__questions"
-          >
+          <form @submit.prevent="onSubmit(question)" class="settings__edition-form__questions">
             <div class="settings__edition-form__header">
               <div class="settings__edition-form__name">
                 <h4 class="--body1 --medium" v-text="question.name" />
-                <BaseBadge
-                  class="--capitalized"
-                  :text="`${$t(question.type)}`"
-                />
+                <BaseBadge class="--capitalized" :text="`${$t(question.type)}`" />
               </div>
               <p v-if="question.isRequired" v-text="$t('required')" />
               <p v-else v-text="$t('optional')" />
             </div>
 
-            <Validation
-              :validations="question.validate().title"
-              class="settings__edition-form__group"
-            >
+            <Validation :validations="question.validate().title" class="settings__edition-form__group">
               <label :for="`title-${question.id}`" v-text="$t('title')" />
-              <input
-                type="type"
-                :id="`title-${question.id}`"
-                v-model="question.title"
-              />
+              <input type="type" :id="`title-${question.id}`" v-model="question.title" />
             </Validation>
 
-            <Validation
-              :validations="question.validate().description"
-              class="settings__edition-form__group"
-            >
-              <label
-                :for="`description-${question.id}`"
-                v-text="$t('description')"
-              />
-              <textarea
-                :id="`description-${question.id}`"
-                v-model="question.description"
-              />
+            <Validation :validations="question.validate().description" class="settings__edition-form__group">
+              <label :for="`description-${question.id}`" v-text="$t('description')" />
+              <textarea :id="`description-${question.id}`" v-model="question.description" />
             </Validation>
 
             <div
               class="settings__edition-form__group --subcategories"
-              v-if="
-                question.isMultiLabelType ||
-                question.isSingleLabelType ||
-                question.isSpanType
-              "
+              v-if="question.isMultiLabelType || question.isSingleLabelType || question.isSpanType"
             >
               <label :for="`options-${question.id}`" v-text="$t('labels')" />
               <BaseSwitch
@@ -73,10 +47,7 @@
                 >{{ $t("visibleLabels") }}</BaseRangeSlider
               >
 
-              <label
-                v-text="$t('order')"
-                class="settings__edition-form__label --subcategory"
-              />
+              <label v-text="$t('order')" class="settings__edition-form__label --subcategory" />
               <draggable
                 class="label__container"
                 ghost-class="label__item__ghost"
@@ -84,16 +55,9 @@
                 :group="{ name: question.name }"
                 @end="question.reloadAnswerFromOptions()"
               >
-                <div
-                  v-for="option in question.settings.options"
-                  :key="option.value"
-                >
+                <div v-for="option in question.settings.options" :key="option.value">
                   <label class="label__item">
-                    <svgicon
-                      width="6"
-                      name="draggable"
-                      :id="`${option.value}-icon`"
-                    />
+                    <svgicon width="6" name="draggable" :id="`${option.value}-icon`" />
                     <span>{{ option.text }}</span>
                   </label>
                 </div>
@@ -105,7 +69,8 @@
               class="settings__edition-form__switch"
               :id="`use-markdown-${question.id}`"
               v-model="question.settings.use_markdown"
-              >{{ $t("useMarkdown") }}</BaseSwitch>
+              >{{ $t("useMarkdown") }}</BaseSwitch
+            >
 
             <BaseSwitch
               v-if="question.isTextType"

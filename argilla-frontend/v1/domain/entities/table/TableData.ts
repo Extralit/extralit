@@ -60,9 +60,9 @@ export class TableData {
   getColumnUniqueCounts(): Record<string, number> {
     // tableJSON is an object of the form {data: [{column: value, ...}, ...]}
     // returns an object of the form {column: uniqueCount, ...}
-    let uniqueCounts: Record<string, number> = {};
-    for (let key of Object.keys(this.data[0])) {
-      let values = this.data
+    const uniqueCounts: Record<string, number> = {};
+    for (const key of Object.keys(this.data[0])) {
+      const values = this.data
         .map(row => row[key])
         .filter(value => value != null && value !== 'NA');
       uniqueCounts[key] = new Set(values).size;

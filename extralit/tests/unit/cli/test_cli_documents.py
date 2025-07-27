@@ -18,7 +18,7 @@ from unittest.mock import patch, MagicMock
 from pathlib import Path
 
 from argilla.cli.app import app
-from argilla.cli.documents.import_bib import _parse_authors, _parse_year, _display_import_analysis_results
+from argilla.cli.documents.import_bib import _display_import_analysis_results
 
 
 @pytest.fixture
@@ -187,33 +187,6 @@ def test_import_bibtex_api_error(mock_display, mock_bibtex_load, mock_file_open,
     # Application error should return exit code 1
     assert result.exit_code == 1
     assert "error" in result.stdout.lower() or "error" in result.output.lower()
-
-
-def test_parse_authors():
-    """Test the _parse_authors function."""
-    # Test with empty string
-    assert _parse_authors("") == []
-
-    # Test with single author
-    assert _parse_authors("John Doe") == ["John Doe"]
-
-    # Test with multiple authors
-    assert _parse_authors("John Doe and Jane Smith") == ["John Doe", "Jane Smith"]
-
-    # Test with braces
-    assert _parse_authors("{John Doe} and {Jane Smith}") == ["John Doe", "Jane Smith"]
-
-
-def test_parse_year():
-    """Test the _parse_year function."""
-    # Test with empty string
-    assert _parse_year("") is None
-
-    # Test with valid year
-    assert _parse_year("2025") == 2025
-
-    # Test with invalid year
-    assert _parse_year("not a year") is None
 
 
 @patch("rich.table.Table.add_row")

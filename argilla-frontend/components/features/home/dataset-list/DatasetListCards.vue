@@ -1,20 +1,11 @@
 <template>
-  <TransitionGroup
-    v-if="datasets.length"
-    name="list"
-    tag="ul"
-    class="dataset-list__cards"
-  >
+  <TransitionGroup v-if="datasets.length" name="list" tag="ul" class="dataset-list__cards">
     <li v-for="dataset in datasets" :key="dataset.id" :id="dataset.id">
       <DatasetCard v-if="hydrate[dataset.id]" :dataset="dataset" />
     </li>
   </TransitionGroup>
 
-  <p
-    v-else
-    class="dataset-list__empty-message --heading3"
-    v-text="$t('home.zeroDatasetsFound')"
-  />
+  <p v-else class="dataset-list__empty-message --heading3" v-text="$t('home.zeroDatasetsFound')" />
 </template>
 
 <script>

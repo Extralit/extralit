@@ -8,20 +8,9 @@
     />
     <ul class="sort-categories__list">
       <template v-for="group in filteredGroups">
-        <span
-          class="sort-categories__group"
-          :key="group"
-          v-text="$t(`sorting.${group}`)"
-        />
-        <li
-          v-for="category in getCategoriesByGroup(group)"
-          :key="category.id"
-          :title="category.tooltip"
-        >
-          <BaseButton
-            :disabled="!category.canSort"
-            @on-click="includeCategory(category)"
-            class="sort-categories__item"
+        <span class="sort-categories__group" :key="group" v-text="$t(`sorting.${group}`)" />
+        <li v-for="category in getCategoriesByGroup(group)" :key="category.id" :title="category.tooltip">
+          <BaseButton :disabled="!category.canSort" @on-click="includeCategory(category)" class="sort-categories__item"
             ><span>{{ category.title }}</span></BaseButton
           >
         </li>
@@ -47,14 +36,10 @@ export default {
       return [...new Set(this.categories.map((cat) => cat.group))];
     },
     categoriesFilteredBySearchText() {
-      return this.categories.filter((cat) =>
-        cat.title.toLowerCase().includes(this.searchText.toLowerCase())
-      );
+      return this.categories.filter((cat) => cat.title.toLowerCase().includes(this.searchText.toLowerCase()));
     },
     filteredGroups() {
-      const groups = this.categoriesFilteredBySearchText.map(
-        (cat) => cat.group
-      );
+      const groups = this.categoriesFilteredBySearchText.map((cat) => cat.group);
       return this.groups.filter((group) => groups.includes(group));
     },
   },
@@ -63,9 +48,7 @@ export default {
       this.$emit("include-category", category);
     },
     getCategoriesByGroup(group) {
-      return this.categoriesFilteredBySearchText.filter(
-        (cat) => cat.group === group
-      );
+      return this.categoriesFilteredBySearchText.filter((cat) => cat.group === group);
     },
   },
 };

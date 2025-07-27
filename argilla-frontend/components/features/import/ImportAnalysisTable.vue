@@ -30,7 +30,7 @@
 
 <script>
 export default {
-  name: 'ImportAnalysisTable',
+  name: "ImportAnalysisTable",
 
   props: {
     analysisData: {
@@ -42,22 +42,22 @@ export default {
           add_count: 0,
           update_count: 0,
           skip_count: 0,
-          failed_count: 0
-        }
-      })
+          failed_count: 0,
+        },
+      }),
     },
     isLoading: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
 
   methods: {
     reset() {
       // Placeholder method
-    }
-  }
-}
+    },
+  },
+};
 </script>
 
 <style lang="scss" scoped>

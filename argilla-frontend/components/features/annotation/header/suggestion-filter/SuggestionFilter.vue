@@ -1,10 +1,6 @@
 <template>
   <div class="suggestion-filter" v-if="suggestionFilters.hasFilters">
-    <BaseDropdown
-      boundary="viewport"
-      :visible="visibleDropdown"
-      @visibility="onToggleVisibility"
-    >
+    <BaseDropdown boundary="viewport" :visible="visibleDropdown" @visibility="onToggleVisibility">
       <span slot="dropdown-header">
         <FilterButtonWithBadges
           :is-active="visibleDropdown"
@@ -25,18 +21,9 @@
           @select-category="selectSuggestion"
         />
         <template v-else>
-          <div
-            v-if="!selectedConfiguration"
-            class="suggestion-filter__header"
-            @click="selectSuggestion(null)"
-          >
+          <div v-if="!selectedConfiguration" class="suggestion-filter__header" @click="selectSuggestion(null)">
             <span v-text="selectedSuggestion.name" />
-            <svgicon
-              name="chevron-left"
-              width="12"
-              height="12"
-              aria-hidden="true"
-            />
+            <svgicon name="chevron-left" width="12" height="12" aria-hidden="true" />
           </div>
           <div>
             <CategoriesSelector
@@ -48,10 +35,7 @@
               @select-category="selectConfiguration"
             />
             <template v-else>
-              <div
-                class="suggestion-filter__header"
-                @click="selectConfiguration(null)"
-              >
+              <div class="suggestion-filter__header" @click="selectConfiguration(null)">
                 <span
                   >{{ $t(`suggestion.filter.${selectedConfiguration.name}`) }} /
                   <strong>{{ selectedSuggestion.name }}</strong></span
@@ -60,14 +44,8 @@
               </div>
               <div class="suggestion-filter__content">
                 <div v-if="selectedConfiguration.name === 'value'">
-                  <LabelsSelector
-                    v-if="selectedConfiguration.isTerms"
-                    :filter="selectedConfiguration"
-                  />
-                  <RangeSelector
-                    v-else
-                    :filter="selectedConfiguration.rangeValue"
-                  />
+                  <LabelsSelector v-if="selectedConfiguration.isTerms" :filter="selectedConfiguration" />
+                  <RangeSelector v-else :filter="selectedConfiguration.rangeValue" />
                 </div>
                 <div v-if="selectedConfiguration.name === 'score'">
                   <RangeSelector :filter="selectedConfiguration" />
@@ -146,9 +124,7 @@ export default {
       this.appliedCategoriesFilters = this.suggestionFilters.filteredCategories;
     },
     openSuggestionFilter(suggestion) {
-      this.visibleDropdown = this.visibleDropdown
-        ? suggestion !== this.selectedSuggestion
-        : true;
+      this.visibleDropdown = this.visibleDropdown ? suggestion !== this.selectedSuggestion : true;
 
       this.selectSuggestion(suggestion);
     },

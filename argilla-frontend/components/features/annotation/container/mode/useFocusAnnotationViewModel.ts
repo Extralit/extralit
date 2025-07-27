@@ -9,7 +9,7 @@ import { useDebounce } from "~/v1/infrastructure/services/useDebounce";
 import { useDocument } from "~/v1/infrastructure/storage/DocumentStorage";
 
 export const useFocusAnnotationViewModel = (
-  props: { 
+  props: {
     datasetId: string,
     record: Record,
   },
@@ -65,7 +65,7 @@ export const useFocusAnnotationViewModel = (
 
   const submit = async (record: Record, durationWrapper?: { value: number }) => {
     isSubmitting.value = true;
-    let duration = incrementDuration(record, durationWrapper);
+    const duration = incrementDuration(record, durationWrapper);
 
     await submitUseCase.execute(record, duration);
     await debounceForSubmit.wait();
@@ -75,7 +75,7 @@ export const useFocusAnnotationViewModel = (
 
   const saveAsDraft = async (record: Record, durationWrapper?: { value: number }) => {
     isDraftSaving.value = true;
-    let duration = incrementDuration(record, durationWrapper);
+    const duration = incrementDuration(record, durationWrapper);
 
     await debounceForSaveDraft.wait();
     await saveDraftUseCase.execute(record, duration);

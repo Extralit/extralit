@@ -14,7 +14,7 @@ export class GetExtractionSchemaUseCase {
 
   async fetch(
     workspaceName: string,
-    schemaName: string, 
+    schemaName: string,
     versionId?: string,
   ): Promise<[ValidationSchema, FileMetadata]> {
 
@@ -36,7 +36,7 @@ export class GetExtractionSchemaUseCase {
       }
 
       const SchemaMetadata: FileMetadata = {
-        schemaName: schemaName,
+        schemaName,
         etag: headers.get('etag'),
         version_id: headers.get('version-id'),
         version_tag: headers.get('version-tag'),

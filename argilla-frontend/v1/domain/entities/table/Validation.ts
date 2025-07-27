@@ -24,7 +24,7 @@ export interface ValidationSchema {
   columns: SchemaColumns;
   index: SchemaIndexColumns[];
   checks?: Checks;
-};
+}
 
 export type Checks = {
   check_less_than?: ColumnsConsistencyCheck;

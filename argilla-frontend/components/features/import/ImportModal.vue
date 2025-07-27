@@ -1,9 +1,23 @@
 <template>
-  <div v-if="isVisible"
-    style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: red; color: white; padding: 20px; font-size: 24px; z-index: 99999; border: 3px solid yellow;">
+  <div
+    v-if="isVisible"
+    style="
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: red;
+      color: white;
+      padding: 20px;
+      font-size: 24px;
+      z-index: 99999;
+      border: 3px solid yellow;
+    "
+  >
     TEST MODAL - isVisible: {{ isVisible }}
-    <button @click="$emit('close')"
-      style="margin-left: 20px; background: white; color: black; padding: 5px;">Close</button>
+    <button @click="$emit('close')" style="margin-left: 20px; background: white; color: black; padding: 5px">
+      Close
+    </button>
   </div>
 </template>
 
@@ -13,30 +27,30 @@ import "assets/icons/danger";
 import "assets/icons/import";
 
 export default {
-  name: 'ImportModal',
+  name: "ImportModal",
 
   props: {
     isVisible: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
 
   watch: {
     isVisible(newValue) {
-      console.log('ImportModal isVisible changed to:', newValue);
+      console.log("ImportModal isVisible changed to:", newValue);
       if (newValue) {
-        this.resetModal()
+        this.resetModal();
       }
-    }
+    },
   },
 
   mounted() {
-    console.log('ImportModal mounted, isVisible:', this.isVisible);
+    console.log("ImportModal mounted, isVisible:", this.isVisible);
   },
 
   updated() {
-    console.log('ImportModal updated, isVisible:', this.isVisible);
+    console.log("ImportModal updated, isVisible:", this.isVisible);
   },
 
   data() {
@@ -47,20 +61,20 @@ export default {
       isAnalyzing: false,
       isUploading: false,
       hasError: false,
-      errorMessage: '',
+      errorMessage: "",
       canRetryError: false,
 
       // Step data
       bibData: {
-        fileName: '',
+        fileName: "",
         parsedEntries: [],
         dataframeData: null,
-        rawContent: ''
+        rawContent: "",
       },
       pdfData: {
         matchedFiles: [],
         unmatchedFiles: [],
-        totalFiles: 0
+        totalFiles: 0,
       },
       analysisData: {
         documents: {},
@@ -69,8 +83,8 @@ export default {
           add_count: 0,
           update_count: 0,
           skip_count: 0,
-          failed_count: 0
-        }
+          failed_count: 0,
+        },
       },
       uploadData: {
         confirmedDocuments: {},
@@ -78,7 +92,7 @@ export default {
         currentBatch: 0,
         jobIds: {},
         completedJobs: 0,
-        failedJobs: 0
+        failedJobs: 0,
       },
       summaryData: {
         totalProcessed: 0,
@@ -87,100 +101,100 @@ export default {
         skipped: 0,
         failed: 0,
         errors: [],
-        importId: null
+        importId: null,
       },
 
       // Step definitions
       steps: [
         {
-          id: 'bib-upload',
-          title: 'Upload Bibliography',
-          description: 'Upload your .bib file with reference metadata'
+          id: "bib-upload",
+          title: "Upload Bibliography",
+          description: "Upload your .bib file with reference metadata",
         },
         {
-          id: 'pdf-upload',
-          title: 'Upload PDFs',
-          description: 'Upload PDF files and match them to references'
+          id: "pdf-upload",
+          title: "Upload PDFs",
+          description: "Upload PDF files and match them to references",
         },
         {
-          id: 'analysis',
-          title: 'Review Import',
-          description: 'Review and confirm which documents to import'
+          id: "analysis",
+          title: "Review Import",
+          description: "Review and confirm which documents to import",
         },
         {
-          id: 'progress',
-          title: 'Import Progress',
-          description: 'Track the progress of your document import'
+          id: "progress",
+          title: "Import Progress",
+          description: "Track the progress of your document import",
         },
         {
-          id: 'summary',
-          title: 'Import Summary',
-          description: 'View the results of your import operation'
-        }
-      ]
-    }
+          id: "summary",
+          title: "Import Summary",
+          description: "View the results of your import operation",
+        },
+      ],
+    };
   },
 
   computed: {
     progressPercentage() {
-      return Math.round((this.currentStep / this.totalSteps) * 100)
+      return Math.round((this.currentStep / this.totalSteps) * 100);
     },
 
     canProceedFromStep1() {
-      return this.bibData.parsedEntries.length > 0 && !this.hasError
+      return this.bibData.parsedEntries.length > 0 && !this.hasError;
     },
 
     canProceedFromStep2() {
-      return this.pdfData.matchedFiles.length > 0 && !this.hasError
+      return this.pdfData.matchedFiles.length > 0 && !this.hasError;
     },
 
     canProceedFromStep3() {
-      return Object.keys(this.analysisData.documents).length > 0 && !this.hasError
-    }
+      return Object.keys(this.analysisData.documents).length > 0 && !this.hasError;
+    },
   },
 
   watch: {
     isVisible(newValue) {
       if (newValue) {
-        this.resetModal()
+        this.resetModal();
       }
-    }
+    },
   },
 
   methods: {
     // Navigation methods
     goToNextStep() {
       if (this.currentStep < this.totalSteps && this.canProceedToNextStep()) {
-        this.currentStep++
-        this.clearError()
-        this.handleStepEntered()
+        this.currentStep++;
+        this.clearError();
+        this.handleStepEntered();
       }
     },
 
     goToPreviousStep() {
       if (this.currentStep > 1 && this.currentStep < 4) {
-        this.currentStep--
-        this.clearError()
+        this.currentStep--;
+        this.clearError();
       }
     },
 
     canProceedToNextStep() {
       switch (this.currentStep) {
         case 1:
-          return this.canProceedFromStep1
+          return this.canProceedFromStep1;
         case 2:
-          return this.canProceedFromStep2
+          return this.canProceedFromStep2;
         case 3:
-          return this.canProceedFromStep3
+          return this.canProceedFromStep3;
         default:
-          return false
+          return false;
       }
     },
 
     handleStepEntered() {
       // Perform any necessary actions when entering a step
       if (this.currentStep === 3) {
-        this.performImportAnalysis()
+        this.performImportAnalysis();
       }
     },
 
@@ -190,9 +204,9 @@ export default {
         fileName: data.fileName,
         parsedEntries: data.parsedEntries,
         dataframeData: data.dataframeData,
-        rawContent: data.rawContent
-      }
-      this.clearError()
+        rawContent: data.rawContent,
+      };
+      this.clearError();
     },
 
     // Step 2: PDF Upload handlers
@@ -200,131 +214,131 @@ export default {
       this.pdfData = {
         matchedFiles: data.matchedFiles,
         unmatchedFiles: data.unmatchedFiles,
-        totalFiles: data.totalFiles
-      }
-      this.clearError()
+        totalFiles: data.totalFiles,
+      };
+      this.clearError();
     },
 
     // Step 3: Analysis handlers
     async performImportAnalysis() {
-      if (this.isAnalyzing) return
+      if (this.isAnalyzing) return;
 
-      this.isAnalyzing = true
-      this.clearError()
+      this.isAnalyzing = true;
+      this.clearError();
 
       try {
         // Create analysis request from bib and PDF data
-        const analysisRequest = this.createAnalysisRequest()
+        const analysisRequest = this.createAnalysisRequest();
 
         // Call backend analysis API (placeholder for now)
-        const response = await this.callImportAnalysisAPI(analysisRequest)
+        const response = await this.callImportAnalysisAPI(analysisRequest);
 
-        this.analysisData = response
+        this.analysisData = response;
       } catch (error) {
-        this.showError(`Analysis failed: ${error.message}`, true)
+        this.showError(`Analysis failed: ${error.message}`, true);
       } finally {
-        this.isAnalyzing = false
+        this.isAnalyzing = false;
       }
     },
 
     handleAnalysisConfirmed(confirmedDocuments) {
-      this.uploadData.confirmedDocuments = confirmedDocuments
-      this.clearError()
+      this.uploadData.confirmedDocuments = confirmedDocuments;
+      this.clearError();
     },
 
     // Step 4: Upload handlers
     async startImport() {
-      if (!this.canProceedFromStep3) return
+      if (!this.canProceedFromStep3) return;
 
-      this.currentStep = 4
-      this.isUploading = true
-      this.clearError()
+      this.currentStep = 4;
+      this.isUploading = true;
+      this.clearError();
 
       try {
         // Initialize upload data
-        this.initializeUploadData()
+        this.initializeUploadData();
 
         // Start batch upload process (placeholder for now)
-        await this.startBatchUpload()
+        await this.startBatchUpload();
       } catch (error) {
-        this.showError(`Import failed: ${error.message}`, true)
-        this.isUploading = false
+        this.showError(`Import failed: ${error.message}`, true);
+        this.isUploading = false;
       }
     },
 
     handleUploadCompleted(summaryData) {
-      this.summaryData = summaryData
-      this.isUploading = false
-      this.currentStep = 5
-      this.clearError()
+      this.summaryData = summaryData;
+      this.isUploading = false;
+      this.currentStep = 5;
+      this.clearError();
     },
 
     handleUploadCancelled() {
-      this.isUploading = false
-      this.showError('Import was cancelled by user', false)
+      this.isUploading = false;
+      this.showError("Import was cancelled by user", false);
     },
 
     handleUploadError(error) {
-      this.isUploading = false
-      this.showError(`Upload failed: ${error.message}`, true)
+      this.isUploading = false;
+      this.showError(`Upload failed: ${error.message}`, true);
     },
 
     cancelUpload() {
       if (this.$refs.batchProgressComponent) {
-        this.$refs.batchProgressComponent.cancelUpload()
+        this.$refs.batchProgressComponent.cancelUpload();
       }
     },
 
     // Step 5: Summary handlers
     handleReturnToLibrary() {
-      this.handleClose()
+      this.handleClose();
       // Navigate to workspace documents (would be handled by parent)
-      this.$emit('navigate-to-library')
+      this.$emit("navigate-to-library");
     },
 
     handleViewImportHistory() {
-      this.handleClose()
+      this.handleClose();
       // Navigate to import history (would be handled by parent)
-      this.$emit('navigate-to-import-history')
+      this.$emit("navigate-to-import-history");
     },
 
     // Error handling
     handleValidationError(error) {
-      this.showError(error.message || error, true)
+      this.showError(error.message || error, true);
     },
 
     showError(message, canRetry = false) {
-      this.hasError = true
-      this.errorMessage = message
-      this.canRetryError = canRetry
+      this.hasError = true;
+      this.errorMessage = message;
+      this.canRetryError = canRetry;
     },
 
     clearError() {
-      this.hasError = false
-      this.errorMessage = ''
-      this.canRetryError = false
+      this.hasError = false;
+      this.errorMessage = "";
+      this.canRetryError = false;
     },
 
     retryCurrentStep() {
-      this.clearError()
+      this.clearError();
 
       switch (this.currentStep) {
         case 1:
           if (this.$refs.bibUploadComponent) {
-            this.$refs.bibUploadComponent.reset()
+            this.$refs.bibUploadComponent.reset();
           }
-          break
+          break;
         case 2:
           if (this.$refs.pdfUploadComponent) {
-            this.$refs.pdfUploadComponent.reset()
+            this.$refs.pdfUploadComponent.reset();
           }
-          break
+          break;
         case 3:
-          this.performImportAnalysis()
-          break
+          this.performImportAnalysis();
+          break;
         case 4:
-          this.startImport()
-          break
+          this.startImport();
+          break;
       }
     },
 
@@ -332,34 +346,34 @@ export default {
     handleClose() {
       if (this.isUploading) {
         // Confirm before closing during upload
-        if (confirm('Import is in progress. Are you sure you want to cancel?')) {
-          this.cancelUpload()
-          this.$emit('close')
+        if (confirm("Import is in progress. Are you sure you want to cancel?")) {
+          this.cancelUpload();
+          this.$emit("close");
         }
       } else {
-        this.$emit('close')
+        this.$emit("close");
       }
     },
 
     resetModal() {
-      this.currentStep = 1
-      this.isProcessing = false
-      this.isAnalyzing = false
-      this.isUploading = false
-      this.clearError()
+      this.currentStep = 1;
+      this.isProcessing = false;
+      this.isAnalyzing = false;
+      this.isUploading = false;
+      this.clearError();
 
       // Reset all step data
       this.bibData = {
-        fileName: '',
+        fileName: "",
         parsedEntries: [],
         dataframeData: null,
-        rawContent: ''
-      }
+        rawContent: "",
+      };
       this.pdfData = {
         matchedFiles: [],
         unmatchedFiles: [],
-        totalFiles: 0
-      }
+        totalFiles: 0,
+      };
       this.analysisData = {
         documents: {},
         summary: {
@@ -367,17 +381,17 @@ export default {
           add_count: 0,
           update_count: 0,
           skip_count: 0,
-          failed_count: 0
-        }
-      }
+          failed_count: 0,
+        },
+      };
       this.uploadData = {
         confirmedDocuments: {},
         totalBatches: 0,
         currentBatch: 0,
         jobIds: {},
         completedJobs: 0,
-        failedJobs: 0
-      }
+        failedJobs: 0,
+      };
       this.summaryData = {
         totalProcessed: 0,
         successfullyAdded: 0,
@@ -385,27 +399,27 @@ export default {
         skipped: 0,
         failed: 0,
         errors: [],
-        importId: null
-      }
+        importId: null,
+      };
 
       // Reset child components
       this.$nextTick(() => {
         if (this.$refs.bibUploadComponent) {
-          this.$refs.bibUploadComponent.reset()
+          this.$refs.bibUploadComponent.reset();
         }
         if (this.$refs.pdfUploadComponent) {
-          this.$refs.pdfUploadComponent.reset()
+          this.$refs.pdfUploadComponent.reset();
         }
         if (this.$refs.analysisTableComponent) {
-          this.$refs.analysisTableComponent.reset()
+          this.$refs.analysisTableComponent.reset();
         }
         if (this.$refs.batchProgressComponent) {
-          this.$refs.batchProgressComponent.reset()
+          this.$refs.batchProgressComponent.reset();
         }
         if (this.$refs.summaryComponent) {
-          this.$refs.summaryComponent.reset()
+          this.$refs.summaryComponent.reset();
         }
-      })
+      });
     },
 
     // Placeholder API methods (to be implemented in future tasks)
@@ -413,8 +427,8 @@ export default {
       // This will create the ImportAnalysisRequest from bibData and pdfData
       return {
         workspace_id: this.$route.params.id, // Assuming workspace ID from route
-        documents: {} // Will be populated from parsed data
-      }
+        documents: {}, // Will be populated from parsed data
+      };
     },
 
     async callImportAnalysisAPI(request) {
@@ -428,21 +442,19 @@ export default {
               add_count: Math.floor(this.bibData.parsedEntries.length * 0.7),
               update_count: Math.floor(this.bibData.parsedEntries.length * 0.2),
               skip_count: Math.floor(this.bibData.parsedEntries.length * 0.1),
-              failed_count: 0
-            }
-          })
-        }, 1000)
-      })
+              failed_count: 0,
+            },
+          });
+        }, 1000);
+      });
     },
 
     initializeUploadData() {
       // Initialize upload tracking data
-      this.uploadData.totalBatches = Math.ceil(
-        Object.keys(this.uploadData.confirmedDocuments).length / 20
-      )
-      this.uploadData.currentBatch = 0
-      this.uploadData.completedJobs = 0
-      this.uploadData.failedJobs = 0
+      this.uploadData.totalBatches = Math.ceil(Object.keys(this.uploadData.confirmedDocuments).length / 20);
+      this.uploadData.currentBatch = 0;
+      this.uploadData.completedJobs = 0;
+      this.uploadData.failedJobs = 0;
     },
 
     async startBatchUpload() {
@@ -456,23 +468,38 @@ export default {
             skipped: Math.floor(this.bibData.parsedEntries.length * 0.05),
             failed: 0,
             errors: [],
-            importId: 'import_' + Date.now()
-          })
-        }, 3000)
-      })
-    }
+            importId: "import_" + Date.now(),
+          });
+        }, 3000);
+      });
+    },
   },
 
   // Dynamic component imports (these will be created in future tasks)
   components: {
-    BaseSpinner: () => import('@/components/base/base-spinner/BaseSpinner.vue'),
-    ImportBibUpload: () => import('./ImportBibUpload.vue').catch(() => ({ template: '<div>ImportBibUpload component not yet implemented</div>' })),
-    ImportPdfUpload: () => import('./ImportPdfUpload.vue').catch(() => ({ template: '<div>ImportPdfUpload component not yet implemented</div>' })),
-    ImportAnalysisTable: () => import('./ImportAnalysisTable.vue').catch(() => ({ template: '<div>ImportAnalysisTable component not yet implemented</div>' })),
-    ImportBatchProgress: () => import('./ImportBatchProgress.vue').catch(() => ({ template: '<div>ImportBatchProgress component not yet implemented</div>' })),
-    ImportSummary: () => import('./ImportSummary.vue').catch(() => ({ template: '<div>ImportSummary component not yet implemented</div>' }))
-  }
-}
+    BaseSpinner: () => import("@/components/base/base-spinner/BaseSpinner.vue"),
+    ImportBibUpload: () =>
+      import("./ImportBibUpload.vue").catch(() => ({
+        template: "<div>ImportBibUpload component not yet implemented</div>",
+      })),
+    ImportPdfUpload: () =>
+      import("./ImportPdfUpload.vue").catch(() => ({
+        template: "<div>ImportPdfUpload component not yet implemented</div>",
+      })),
+    ImportAnalysisTable: () =>
+      import("./ImportAnalysisTable.vue").catch(() => ({
+        template: "<div>ImportAnalysisTable component not yet implemented</div>",
+      })),
+    ImportBatchProgress: () =>
+      import("./ImportBatchProgress.vue").catch(() => ({
+        template: "<div>ImportBatchProgress component not yet implemented</div>",
+      })),
+    ImportSummary: () =>
+      import("./ImportSummary.vue").catch(() => ({
+        template: "<div>ImportSummary component not yet implemented</div>",
+      })),
+  },
+};
 </script>
 
 <style lang="scss" scoped>
@@ -738,4 +765,5 @@ export default {
   margin-right: $base-space;
 }
 
-// Note: CSS variables are defined globally in the theme system</style>
+// Note: CSS variables are defined globally in the theme system
+</style>

@@ -1,9 +1,7 @@
 <template>
   <div class="badge">
     <p v-if="!clickable" v-html="text" />
-    <BaseButton @click="onClick" v-else class="--clickable">{{
-      text
-    }}</BaseButton>
+    <BaseButton @click="onClick" v-else class="--clickable">{{ text }}</BaseButton>
   </div>
 </template>
 

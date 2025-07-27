@@ -10,14 +10,8 @@
           :showSettingButton="true"
           :showCopyButton="true"
         >
-          <template
-            slot="topbar-buttons"
-            v-if="dataset && dataset.id && user.isAdminOrOwner"
-          >
-            <ImportData
-              v-if="dataset.createdFromUI"
-              :snippet="dataset.createCodeSnippetFromHub(user)"
-            />
+          <template slot="topbar-buttons" v-if="dataset && dataset.id && user.isAdminOrOwner">
+            <ImportData v-if="dataset.createdFromUI" :snippet="dataset.createCodeSnippetFromHub(user)" />
             <ExportToHub :dataset="dataset" />
           </template>
         </HeaderFeedbackTask>
@@ -49,8 +43,8 @@ export default {
   },
   head() {
     return {
-      title: this.dataset.name
-    }
-  }
+      title: this.dataset.name,
+    };
+  },
 };
 </script>

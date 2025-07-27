@@ -74,7 +74,7 @@
   - Store parsed dataframe data for later submission to import history endpoint
   - _Requirements: 1.1, 5.1_
 
-- [ ] 4.2 Implement file-to-reference matching logic
+- [x] 4.2 Implement file-to-reference matching logic
   - Create file matching algorithm based on filepath or filename patterns
   - Implement exact match, partial match, and fuzzy matching strategies
   - Allow manual file-to-reference association by user

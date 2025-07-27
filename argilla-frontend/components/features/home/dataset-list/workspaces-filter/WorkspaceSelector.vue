@@ -9,14 +9,8 @@
     <div class="labels-selector__items">
       <BaseCheckbox
         class="labels-selector__item"
-        :class="
-          index === preSelectionIndex
-            ? 'labels-selector__item--highlighted'
-            : null
-        "
-        v-for="(
-          { name, numberOfDatasets }, index
-        ) in workspacesFilteredBySearchText"
+        :class="index === preSelectionIndex ? 'labels-selector__item--highlighted' : null"
+        v-for="({ name, numberOfDatasets }, index) in workspacesFilteredBySearchText"
         :key="name"
         :value="selectedWorkspaces.includes(name)"
         @change="toggleSelectedOption(name)"
@@ -69,9 +63,7 @@ export default {
     includePreselectedOption() {
       if (!this.workspacesFilteredBySearchText.length) return;
 
-      this.toggleSelectedOption(
-        this.workspacesFilteredBySearchText[this.preSelectionIndex]
-      );
+      this.toggleSelectedOption(this.workspacesFilteredBySearchText[this.preSelectionIndex]);
 
       this.preSelectionIndex = 0;
     },
@@ -84,14 +76,10 @@ export default {
       }
     },
     preselectNextOption() {
-      this.preSelectionIndex === this.workspacesLength - 1
-        ? (this.preSelectionIndex = 0)
-        : this.preSelectionIndex++;
+      this.preSelectionIndex === this.workspacesLength - 1 ? (this.preSelectionIndex = 0) : this.preSelectionIndex++;
     },
     preselectPreviousOption() {
-      this.preSelectionIndex === 0
-        ? (this.preSelectionIndex = this.workspacesLength - 1)
-        : this.preSelectionIndex--;
+      this.preSelectionIndex === 0 ? (this.preSelectionIndex = this.workspacesLength - 1) : this.preSelectionIndex--;
     },
   },
 };

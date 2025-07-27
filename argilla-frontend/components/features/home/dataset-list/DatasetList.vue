@@ -15,18 +15,11 @@
           :sorted-order="sortedOrder"
           :sort-options="sortOptions"
         />
-        <BaseSearchBar
-          @input="onSearch"
-          :querySearch="querySearch"
-          :placeholder="$t('searchDatasets')"
-        />
+        <BaseSearchBar @input="onSearch" :querySearch="querySearch" :placeholder="$t('searchDatasets')" />
       </div>
     </div>
     <div class="dataset-list__content">
-      <DatasetListCards
-        v-if="datasets.length"
-        :datasets="filteredDatasetsByWorkspaces"
-      />
+      <DatasetListCards v-if="datasets.length" :datasets="filteredDatasetsByWorkspaces" />
       <DatasetsEmpty v-else @on-click-card="cardAction" />
     </div>
   </div>
@@ -65,26 +58,21 @@ export default {
     },
     filteredDatasetsByWorkspaces() {
       return this.selectedWorkspaces.length
-        ? this.filteredDatasets.filter((dataset) =>
-            this.selectedWorkspaces.includes(dataset.workspaceName)
-          )
+        ? this.filteredDatasets.filter((dataset) => this.selectedWorkspaces.includes(dataset.workspaceName))
         : this.filteredDatasets;
     },
     sortedDatasets() {
       const compare = (a, b) => {
         const fieldA = a[this.sortedByField];
         const fieldB = b[this.sortedByField];
-        return this.sortedOrder === "asc"
-          ? fieldA.localeCompare(fieldB)
-          : fieldB.localeCompare(fieldA);
+        return this.sortedOrder === "asc" ? fieldA.localeCompare(fieldB) : fieldB.localeCompare(fieldA);
       };
       return this.datasets.sort(compare);
     },
     formattedWorkspaces() {
       return this.workspaces.map(({ name }) => ({
         name,
-        numberOfDatasets: this.datasets.filter((d) => d.workspaceName === name)
-          .length,
+        numberOfDatasets: this.datasets.filter((d) => d.workspaceName === name).length,
       }));
     },
   },

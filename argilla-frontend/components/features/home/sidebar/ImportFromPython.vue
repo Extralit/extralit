@@ -12,11 +12,7 @@
     >
     <transition name="fade" appear>
       <dialog class="import-from-python__dialog" v-if="visibleSnippet">
-        <span
-          v-if="isRunningOnHF"
-          class="import-from-python__warning"
-          v-html="$t('home.importFromPythonHFWarning')"
-        />
+        <span v-if="isRunningOnHF" class="import-from-python__warning" v-html="$t('home.importFromPythonHFWarning')" />
         <div class="import-from-python__content" v-copy-code>
           <pre><code class="import-from-python__code" language="python" v-highlight>{{ snippet }}</code></pre>
         </div>
@@ -106,18 +102,10 @@ export default {
   &__button.button {
     min-height: 42px;
     color: var(--fg-primary);
-    background: linear-gradient(
-      177.33deg,
-      var(--bg-accent-grey-5) 20%,
-      var(--bg-opacity-4) 100%
-    );
+    background: linear-gradient(177.33deg, var(--bg-accent-grey-5) 20%, var(--bg-opacity-4) 100%);
     box-shadow: 0 0 0 1px var(--bg-opacity-10);
     &:hover {
-      background: linear-gradient(
-        177.33deg,
-        var(--bg-accent-grey-5) 20%,
-        var(--bg-opacity-2) 100%
-      );
+      background: linear-gradient(177.33deg, var(--bg-accent-grey-5) 20%, var(--bg-opacity-2) 100%);
     }
   }
   &__button__icon {

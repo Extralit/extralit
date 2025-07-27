@@ -2,12 +2,7 @@
   <div role="alert" :class="validations.length ? '--has-error' : null">
     <slot></slot>
     <template v-if="validations.length">
-      <span
-        class="--error-message"
-        v-for="error in validations"
-        :key="error"
-        v-html="$t(error)"
-      />
+      <span class="--error-message" v-for="error in validations" :key="error" v-html="$t(error)" />
     </template>
   </div>
 </template>

@@ -86,16 +86,7 @@ $bullet-size: 8px;
   left: -2px;
   border-radius: $border-radius;
   border: solid 2px transparent;
-  border-image: conic-gradient(
-      from var(--angle),
-      #e70000,
-      #ff8c00,
-      #ffef00,
-      #00811f,
-      #3064a9,
-      #87189d
-    )
-    1;
+  border-image: conic-gradient(from var(--angle), #e70000, #ff8c00, #ffef00, #00811f, #3064a9, #87189d) 1;
   animation: 2s rotate linear infinite;
   filter: blur(1px);
   z-index: -1;

@@ -30,7 +30,7 @@
 
 <script>
 export default {
-  name: 'ImportSummary',
+  name: "ImportSummary",
 
   props: {
     summaryData: {
@@ -42,17 +42,17 @@ export default {
         skipped: 0,
         failed: 0,
         errors: [],
-        importId: null
-      })
-    }
+        importId: null,
+      }),
+    },
   },
 
   methods: {
     reset() {
       // Placeholder method
-    }
-  }
-}
+    },
+  },
+};
 </script>
 
 <style lang="scss" scoped>

@@ -12,21 +12,21 @@
 
 <script>
 export default {
-  name: 'TestImportPage',
+  name: "TestImportPage",
 
   data() {
     return {
-      parsedData: null
-    }
+      parsedData: null,
+    };
   },
 
   methods: {
     onFileParsed(data) {
-      console.log('File parsed:', data)
-      this.parsedData = data
-    }
-  }
-}
+      console.log("File parsed:", data);
+      this.parsedData = data;
+    },
+  },
+};
 </script>
 
 <style lang="scss" scoped>

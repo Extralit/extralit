@@ -1,9 +1,5 @@
 <template>
-  <FilterButton
-    :button-name="$t('sorting.label')"
-    icon-name="sort"
-    :is-button-active="isButtonActive"
-  />
+  <FilterButton :button-name="$t('sorting.label')" icon-name="sort" :is-button-active="isButtonActive" />
 </template>
 
 <script>

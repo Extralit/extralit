@@ -38,11 +38,7 @@ export default {
   border: 1px solid var(--bg-opacity-10);
   border-radius: $border-radius-xl;
   font-size: v-bind(fontSize);
-  background: linear-gradient(
-    90deg,
-    hsl(from v-bind(color) h s l / 10%) 0%,
-    hsl(from v-bind(color) h s l / 1%) 30px
-  );
+  background: linear-gradient(90deg, hsl(from v-bind(color) h s l / 10%) 0%, hsl(from v-bind(color) h s l / 1%) 30px);
 
   &__icon-wrapper {
     display: flex;
@@ -51,8 +47,7 @@ export default {
     padding: calc($base-space / 1.8) $base-space;
     border-radius: $border-radius-xl;
     & + .dataset-badge__text {
-      padding: calc($base-space / 2) $base-space calc($base-space / 2)
-        calc($base-space / 2);
+      padding: calc($base-space / 2) $base-space calc($base-space / 2) calc($base-space / 2);
     }
   }
   &__icon {
