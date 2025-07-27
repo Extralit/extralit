@@ -81,51 +81,96 @@
   - Add validation for PDF file types and sizes
   - _Requirements: 1.3, 1.6_
 
-- [ ] 5. Create import upload and preview components
-- [ ] 5.1 Implement ImportUpload.vue component
-  - Create drag-and-drop interface for .bib file and PDF folder uploads
-  - Integrate BibTeX parsing and file matching functionality
-  - Add collection tag input and file validation
-  - Implement progress indicators for file processing
-  - Send ImportAnalysisRequest to backend (metadata only, not file contents)
-  - _Requirements: 1.1, 1.2, 1.4_
+- [ ] 5. Create home page integration and modal workflow
+- [ ] 5.1 Add Import Documents button to home page
+  - Add "Import Documents" button above ImportFromHub and ImportFromPython components in pages/index.vue
+  - Style button to match existing import section design
+  - Connect button to open full-page import modal
+  - _Requirements: 1.1, 4.3_
 
-- [ ] 5.2 Create ImportPreview.vue component
-  - Display tabular view of documents with add/update/skip/failed status
-  - Show document metadata (title, authors, year) and associated files
-  - Allow user to modify actions for individual documents
-  - Implement bulk confirmation interface
-  - Add validation before proceeding to upload phase
+- [ ] 5.2 Create ImportModal.vue full-page modal component
+  - Implement full-page modal using existing base-modal component
+  - Create multi-step workflow with navigation between steps
+  - Add step indicators and progress tracking
+  - Implement modal state management and step validation
+  - _Requirements: 2.1, 4.3_
+
+- [ ] 6. Implement upload step components
+- [ ] 6.1 Create ImportBibUpload.vue component (Step 1)
+  - Implement .bib file upload with drag-and-drop interface
+  - Add file validation and BibTeX parsing preview
+  - Display upload status and reference count after parsing
+  - Show supported file formats (Zotero, EndNote, Mendeley exports)
+  - _Requirements: 1.1, 5.1_
+
+- [ ] 6.2 Create ImportPdfUpload.vue component (Step 2)
+  - Implement multiple PDF file upload with drag-and-drop or folder selection
+  - Add file matching preview with bibliography entries
+  - Display upload progress and file validation results
+  - Show summary status with matched/unmatched files count
+  - _Requirements: 1.2, 1.3_
+
+- [ ] 7. Create simple table component and analysis interface
+- [ ] 7.1 Implement BaseSimpleTable.vue component
+  - Create new reusable table component using Tabulator library
+  - Build simpler alternative to base-render-table for basic tabular display
+  - Add support for custom column renderers and actions
+  - Implement built-in sorting, filtering, and pagination
+  - _Requirements: 2.1, 2.2_
+
+- [ ] 7.2 Create ImportAnalysisTable.vue component (Step 3)
+  - Implement tabular display using BaseSimpleTable component
+  - Add columns: Reference Key, Title, Authors, Year, Import Status
+  - Create toggle functionality for Add/Update/Skip selection (one-way: can go to Skip, but not back)
+  - Add status indicators with color coding (Add: green, Update: blue, Skip: gray, Failed: red)
+  - Implement Save, Cancel, and Confirm Import buttons
+  - Send ImportAnalysisRequest to backend and display results
   - _Requirements: 2.1, 2.2, 2.7_
 
-- [ ] 6. Implement bulk upload execution and progress tracking
-- [ ] 6.1 Create bulk upload execution logic for multi-file references
-  - Implement paginated bulk upload requests (10-20 references per batch)
-  - Send DocumentImportExecuteRequest with actual file contents to POST /documents/bulk
+- [ ] 8. Implement batch upload execution and progress tracking
+- [ ] 8.1 Create sequential batch upload logic
+  - Implement batch processing where next batch starts only when all jobs in previous batch have success or failed status
+  - Send paginated bulk upload requests (10-20 references per batch)
   - Handle multiple files per reference in each batch request
-  - Handle multiple paginated requests for large document sets
+  - Add batch completion detection and automatic progression to next batch
   - Add error handling for failed upload requests with per-file error tracking
   - _Requirements: 3.1, 3.2, 3.7_
 
-- [ ] 6.2 Implement ImportProgress.vue component for multi-file tracking
-  - Create real-time progress tracking using job status polling
-  - Display reference-by-reference upload status with file-level details
-  - Show overall progress across all paginated requests and files
-  - Implement error reporting for failed uploads with reference and file context
-  - Add cancellation support for ongoing uploads
-  - Track progress at both reference and individual file levels
+- [ ] 8.2 Implement ImportBatchProgress.vue component (Step 4)
+  - Create live reloading progress bar showing overall completion percentage
+  - Display current batch status with detailed progress information
+  - Implement real-time status updates using job status polling
+  - Show batch-by-batch progress with individual file status
+  - Add Cancel button to stop the upload process
+  - Track progress at both batch and individual file levels
   - After all batches complete, send generic dataframe data to POST /import/history endpoint
   - _Requirements: 3.2, 3.3, 3.7_
 
-- [ ] 7. Create import results and workspace integration
-- [ ] 7.1 Implement ImportResults.vue component
-  - Display import summary statistics (added, updated, skipped, failed)
-  - Show detailed error information for failed imports
-  - Provide navigation to workspace documents list
-  - Add option to retry failed imports
+- [ ] 9. Create import summary and history components
+- [ ] 9.1 Implement ImportSummary.vue component (Step 5)
+  - Display import metadata summary with statistics (total processed, successfully added, updated, skipped, failed)
+  - Show detailed breakdown of results with error information
+  - Create failed imports table with retry options
+  - Add "View Import Log" button to access detailed history
+  - Add "Return to Library" button for navigation back to workspace
   - _Requirements: 3.5, 4.3_
 
-- [ ] 7.2 Integrate imported documents with workspace features for multi-file references
+- [ ] 9.2 Create ImportHistoryList.vue component
+  - Display list of all import operations with metadata table
+  - Add columns: Import ID, Uploaded By, Date & Time, Source File Name, Total Papers, Success/Updated/Skipped/Failed counts
+  - Implement "View Details" action for each import to display detailed data table
+  - Add pagination and filtering for large import history
+  - _Requirements: 3.5, 4.3_
+
+- [ ] 9.3 Create ImportHistoryDetails.vue component
+  - Implement detailed data table showing individual reference results
+  - Add columns: Reference Key, Title, Authors, Year, Error Message, Actions
+  - Add filter and search functionality
+  - Implement export options for import results
+  - _Requirements: 3.5, 4.3_
+
+- [ ] 10. Integrate imported documents with workspace features
+- [ ] 10.1 Integrate imported documents with workspace features for multi-file references
   - Ensure imported documents appear in workspace documents list with proper reference grouping
   - Verify document metadata is properly stored and displayed for multiple files per reference
   - Test compatibility with existing document processing features
@@ -133,35 +178,36 @@
   - Implement UI grouping of multiple files by reference key while maintaining individual document records
   - _Requirements: 4.1, 4.2, 4.4, 4.6, 4.7_
 
-- [ ] 8. Add comprehensive error handling and validation
-- [ ] 8.1 Implement robust error handling
+- [ ] 11. Add comprehensive error handling and validation
+- [ ] 11.1 Implement robust error handling
   - Add specific error messages for BibTeX parsing failures
   - Handle corrupted PDF files with detailed error reporting
   - Implement retry mechanisms for network and storage failures
   - Add workspace storage quota validation
   - _Requirements: 5.1, 5.2, 5.3, 5.5_
 
-- [ ] 8.2 Add security and performance optimizations
+- [ ] 11.2 Add security and performance optimizations
   - Implement file type and size validation
   - Add rate limiting for bulk upload requests
   - Add cleanup of temporary files and partial uploads
   - _Requirements: 6.1, 6.2, 6.5, 6.6_
 
-- [ ] 9. Create import page and routing
-- [ ] 9.1 Implement main import page
-  - Create import.vue page in argilla-frontend/pages/workspace/_id/
-  - Integrate all import components (upload, preview, progress, results)
-  - Add proper routing and navigation
-  - Implement state management for import workflow
-  - _Requirements: 4.3, 4.4_
-
-- [ ] 9.2 Add import workflow orchestration
-  - Coordinate transitions between upload, preview, and execution phases
-  - Implement proper state persistence across browser sessions
-  - Add workflow validation and error recovery
+- [ ] 12. Add modal workflow orchestration and state management
+- [ ] 12.1 Implement modal workflow state management
+  - Coordinate transitions between all 5 steps in the modal workflow
+  - Implement proper state persistence during the import process
+  - Add step validation and error recovery between steps
+  - Handle modal close/cancel scenarios with proper cleanup
   - _Requirements: 5.6, 3.6_
 
-- [ ] 10. Add documentation and final validation
+- [ ] 12.2 Add workflow navigation and validation
+  - Implement step-by-step navigation with back/next buttons
+  - Add validation checks before allowing progression to next step
+  - Handle workflow interruption and resume functionality
+  - Add proper loading states and user feedback throughout workflow
+  - _Requirements: 4.3, 4.4_
+
+- [ ] 13. Add documentation and final validation
   - Document API endpoints and request/response schemas
   - Create user guide for import functionality
   - Add developer documentation for extending import features
