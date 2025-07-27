@@ -36,7 +36,7 @@
       />
     </template>
     <template v-slot:page-sidebar>
-      <template v-if="isAdminOrOwnerRole">
+      <template v-if="true || isAdminOrOwnerRole">
         <div class="home__sidebar__buttons">
           <ImportDocuments @on-click="openImportModal" />
           <ImportFromHub
@@ -90,6 +90,9 @@
     </template>
 
     <!-- Import Documents Modal -->
+    <div v-if="showImportModal" style="position: fixed; top: 0; left: 0; background: blue; color: white; padding: 10px; z-index: 9999;">
+      showImportModal is true
+    </div>
     <ImportModal
       :is-visible="showImportModal"
       @close="showImportModal = false"
@@ -123,13 +126,22 @@ export default {
       this.getNewDatasetByRepoId(repoId);
     },
     openImportModal() {
+      console.log('openImportModal called');
+      console.log('showImportModal before:', this.showImportModal);
       this.showImportModal = true;
+      console.log('showImportModal after:', this.showImportModal);
+      this.$nextTick(() => {
+        console.log('showImportModal in nextTick:', this.showImportModal);
+      });
     },
   },
   components: {
     Home,
     ImportDocuments: () => import("@/components/features/home/sidebar/ImportDocuments"),
-    ImportModal: () => import("@/components/features/import/ImportModal"),
+    ImportModal: () => import("@/components/features/import/ImportModal").catch(err => {
+      console.error('Failed to load ImportModal:', err);
+      return { template: '<div style="background: yellow; padding: 20px;">Failed to load ImportModal</div>' };
+    }),
   },
   setup() {
     return useHomeViewModel();
