@@ -278,6 +278,7 @@ export default {
     importButton: "データセットをインポート",
     importFromHub: "Hugging Faceからデータセットをインポート",
     importFromPython: "Pythonからインポート",
+    importDocuments: "ドキュメントをインポート",
     importFromPythonHFWarning:
       "プライベートスペースを使用している場合は<a target='_blank' href='https://docs.argilla.io/latest/getting_started/how-to-configure-argilla-on-huggingface/#how-to-use-private-spaces'>ドキュメント</a>を参照してください。",
     exampleDatasetsTitle: "どこから始めればいいかわかりませんか？",

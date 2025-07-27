@@ -272,6 +272,7 @@ export default {
     importButton: "Importar dataset",
     importFromHub: "Importar dataset desde Hugging Face",
     importFromPython: "Importar desde Python",
+    importDocuments: "Importar Documentos",
     importFromPythonHFWarning:
       "Si estás usando un Espacio privado, consulta la <a target='_blank' href='https://docs.extralit.ai/latest/getting_started/how-to-configure-argilla-on-huggingface/#how-to-use-private-spaces'>documentación</a>.",
     exampleDatasetsTitle: "¿No sabes por dónde empezar?",
