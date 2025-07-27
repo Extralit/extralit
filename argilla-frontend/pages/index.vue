@@ -108,7 +108,6 @@ export default {
   data() {
     return {
       showImportDatasetInput: false,
-      showImportModal: false,
     };
   },
   methods: {
@@ -125,15 +124,7 @@ export default {
     importDataset(repoId) {
       this.getNewDatasetByRepoId(repoId);
     },
-    openImportModal() {
-      console.log('openImportModal called');
-      console.log('showImportModal before:', this.showImportModal);
-      this.showImportModal = true;
-      console.log('showImportModal after:', this.showImportModal);
-      this.$nextTick(() => {
-        console.log('showImportModal in nextTick:', this.showImportModal);
-      });
-    },
+
   },
   components: {
     Home,

@@ -17,6 +17,7 @@ export const useHomeViewModel = () => {
   const getDatasetsUseCase = useResolve(GetDatasetsUseCase);
   const getDatasetCreationUseCase = useResolve(GetDatasetCreationUseCase);
   const error = ref("");
+  const showImportModal = ref(false);
 
   useFocusTab(async () => {
     await onLoadDatasets();
@@ -75,6 +76,13 @@ export const useHomeViewModel = () => {
     isLoadingDatasets.value = false;
   };
 
+  const openImportModal = () => {
+    console.log('openImportModal called from useHomeViewModel');
+    console.log('showImportModal before:', showImportModal.value);
+    showImportModal.value = true;
+    console.log('showImportModal after:', showImportModal.value);
+  };
+
   return {
     datasets,
     workspaces,
@@ -83,5 +91,7 @@ export const useHomeViewModel = () => {
     isAdminOrOwnerRole,
     exampleDatasets,
     error,
+    showImportModal,
+    openImportModal,
   };
 };
