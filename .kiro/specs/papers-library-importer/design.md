@@ -125,24 +125,35 @@ async def upload_reference_documents_job(
 
 ### Frontend Components
 
-#### 1. Import Page (`argilla-frontend/pages/workspace/_id/import.vue`)
+#### 1. Home Page Integration (`argilla-frontend/pages/index.vue`)
 
-**Main import workflow page with:**
-- File upload interface
-- Import preview display
-- Progress tracking
-- Results summary
+**Import Documents Button:**
+- Add "Import Documents" button above existing ImportFromHub and ImportFromPython components
+- Button opens full-page modal for import workflow
+- Positioned prominently in the import section of the home page
 
-#### 2. Upload Component (`argilla-frontend/components/features/import/ImportUpload.vue`)
+#### 2. Import Modal Workflow (`argilla-frontend/components/features/import/ImportModal.vue`)
 
-**Features:**
-- Drag-and-drop .bib file upload
-- Folder/multiple PDF file upload
-- **Frontend BibTeX parsing** using JavaScript BibTeX parser library
-- **Frontend file-to-reference matching** by filename patterns
-- Collection tag input
-- File validation and metadata extraction
-- Sends file metadata (not contents) to backend for analysis
+**Full-page modal using existing base-modal component with multi-step workflow:**
+- Step 1: Upload Bibliography File (.bib file upload)
+- Step 2: Upload Full-Text PDFs (multiple PDF file upload)
+- Step 3: Import Analysis & Selection (table with toggle functionality)
+- Step 4: Batch Upload Progress (live progress tracking)
+- Step 5: Import Summary & History (results and navigation)
+
+#### 3. Upload Steps Components
+
+**Step 1: Bibliography Upload (`argilla-frontend/components/features/import/ImportBibUpload.vue`)**
+- Single .bib file upload with drag-and-drop or file picker
+- Support for ";"-separated values (especially the `file` attribute in zotero_export.bib)
+- Parsing preview of dataframe columns parsed from the .bib file,
+- Display upload status and reference count
+
+**Step 2: PDF Upload (`argilla-frontend/components/features/import/ImportPdfUpload.vue`)**
+- Multiple PDF file upload with drag-and-drop or folder selection
+- File path matching preview with bibliography entries
+- Upload progress and file validation
+- Summary status showing matched/unmatched files
 
 **Dependencies:**
 - `vue-dropzone` or similar for file uploads
@@ -211,31 +222,54 @@ Example BibTeX files:
 }
 ```
 
-#### 3. Preview Component (`argilla-frontend/components/features/import/ImportPreview.vue`)
+#### 4. Import Analysis Table (`argilla-frontend/components/features/import/ImportAnalysisTable.vue`)
+
+**Features using new simple table component:**
+- Create new simple table component using Tabulator (similar to base-render-table)
+- Tabular display with columns: Reference Key, Title, Authors, Year, Import Status
+- Toggle functionality for each reference to select Add/Update/Skip
+- User can toggle from Add or Update to Ignore
+- Status indicators with color coding (Add: green, Update: blue, Skip: gray, Ignore: gray, Failed: red)
+- Filterable columns on the status indicator
+- Bulk action buttons (Save, Cancel, Confirm Import)
+
+**Table Component (`argilla-frontend/components/base/base-simple-table/BaseSimpleTable.vue`)**
+- New reusable table component built on Tabulator
+- Simpler than base-render-table, focused on basic tabular display
+- Support for custom column renderers and actions
+- Built-in sorting, filtering, and pagination
+
+#### 5. Batch Upload Progress (`argilla-frontend/components/features/import/ImportBatchProgress.vue`)
 
 **Features:**
-- Tabular display of documents to import
-- Status indicators (add/update/skip/failed)
-- Document metadata display (title, authors, venue, year)
-- Associated files listing
-- Action selection (allow user to change add/update/skip)
-- Bulk confirmation interface
+- Files uploaded in batches with sequential batch processing
+- Next batch starts only when all jobs in previous batch have success or failed status
+- Live reloading progress bar showing overall completion percentage
+- Real-time status updates for each batch and individual files
+- Current batch status display with detailed progress information
+- Cancel button to stop the upload process
+- Error reporting for failed uploads with retry options
 
-#### 4. Progress Component (`argilla-frontend/components/features/import/ImportProgress.vue`)
+#### 6. Import Summary & History Components
 
-**Features:**
-- Real-time progress tracking
-- Document-by-document status updates
-- Error reporting
-- Cancellation support
+**Import Summary (`argilla-frontend/components/features/import/ImportSummary.vue`)**
+- Import metadata summary with statistics (total processed, successfully added, updated, skipped, failed)
+- Detailed breakdown of results with error information
+- Failed imports table with retry options
+- "View Import Log" button to access detailed history
+- "Return to Library" button for navigation
 
-#### 5. Results Component (`argilla-frontend/components/features/import/ImportResults.vue`)
+**Import History List (`argilla-frontend/components/features/import/ImportHistoryList.vue`)**
+- Display list of all import operations with metadata
+- Columns: Import ID, Uploaded By, Date & Time, Source File Name, Total Papers, Success/Updated/Skipped/Failed counts
+- "View Details" action for each import to display detailed data table
+- Pagination and filtering for large import history
 
-**Features:**
-- Import summary statistics
-- Success/failure breakdown
-- Error details for failed imports
-- Navigation to workspace documents
+**Import History Details (`argilla-frontend/components/features/import/ImportHistoryDetails.vue`)**
+- Detailed data table showing individual reference results
+- Columns: Reference Key, Title, Authors, Year, Error Message, Actions
+- Filter and search functionality
+- Export options for import results
 
 ### API Schemas
 
@@ -390,7 +424,7 @@ class ImportHistory(DatabaseModel):
 
     workspace_id: Mapped[UUID] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
     user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
-    filename: Mapped[str] = mapped_column(String, nullable=False)  # Import filename (.bib, .csv, etc.)
+    filename: Mapped[str] = mapped_column(String, nullable=False)
     data: Mapped[dict] = mapped_column(MutableDict.as_mutable(JSON()), nullable=False)
     metadata_: Mapped[Optional[dict]] = mapped_column("metadata", MutableDict.as_mutable(JSON()), nullable=True)
 
