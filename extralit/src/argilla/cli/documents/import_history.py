@@ -28,7 +28,7 @@ status and associated files for each reference.
 import csv
 from datetime import datetime
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Optional
 
 import typer
 from rich.console import Console
@@ -41,13 +41,20 @@ from argilla.cli.rich import get_argilla_themed_panel
 
 def list_import_histories(
     workspace: str = typer.Option(..., "--workspace", "-w", help="Workspace name"),
+    history_id: Optional[str] = typer.Argument(None, help="Import history ID to show or export"),
+    export: bool = typer.Option(False, "--export", "-e", help="Export the import history to CSV files"),
+    output_dir: Path = typer.Option(
+        Path("."), "--output-dir", "-o", help="Output directory for CSV files (only used with --export)"
+    ),
     debug: bool = typer.Option(False, "--debug", help="Show detailed debug information"),
 ) -> None:
     """
-    List import history records for a workspace.
+    Manage import history records for a workspace.
 
-    Shows a table of all import history records including filename,
-    creation date, and basic statistics about the import.
+    Commands:
+    - history list: List all import histories
+    - history {history_id}: Show detailed information about a specific import
+    - history {history_id} --export: Export import data to CSV files
     """
     console = Console()
 
@@ -65,73 +72,20 @@ def list_import_histories(
             console.print(panel)
             raise typer.Exit(code=1)
 
-        # Fetch import histories
-        with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            console=console,
-        ) as progress:
-            task = progress.add_task("Fetching import histories...", total=None)
-
-            response = client.api.http_client.get(
-                f"{client.api_url}/api/v1/imports/history", params={"workspace_id": str(workspace_obj.id)}
-            )
-
-            if response.status_code != 200:
-                progress.update(task, completed=True, description="Failed to fetch import histories")
-                error_detail = response.json().get("detail", str(response.text))
-                raise ValueError(f"Error fetching import histories: {error_detail}")
-
-            histories = response.json()
-            progress.update(task, completed=True, description=f"Found {len(histories)} import histories")
-
-        # Display results
-        if not histories:
-            panel = get_argilla_themed_panel(
-                f"No import histories found for workspace '{workspace}'.",
-                title="No Import Histories",
-                title_align="left",
-                success=True,
-            )
-            console.print(panel)
+        # If history_id is provided and not "list", show or export specific history
+        if history_id and history_id != "list":
+            if export:
+                _export_import_history_internal(client, workspace_obj, history_id, output_dir, console, debug)
+            else:
+                _show_import_history_internal(client, workspace_obj, history_id, console, debug)
             return
 
-        # Create table
-        table = Table(title=f"Import Histories for Workspace '{workspace}'")
-        table.add_column("ID", style="cyan")
-        table.add_column("Filename", style="green")
-        table.add_column("User ID", style="blue")
-        table.add_column("Created At", style="yellow")
-        table.add_column("References", style="magenta")
-
-        for history in histories:
-            created_at = datetime.fromisoformat(history["created_at"].replace("Z", "+00:00"))
-
-            # Count references from metadata if available
-            metadata = history.get("metadata", {})
-            ref_count = len(metadata) if metadata else "N/A"
-
-            table.add_row(
-                str(history["id"]),
-                history["filename"],
-                str(history["user_id"])[:8] + "...",  # Truncate user ID for display
-                created_at.strftime("%Y-%m-%d %H:%M:%S"),
-                str(ref_count),
-            )
-
-        console.print(table)
-
-        panel = get_argilla_themed_panel(
-            f"Found {len(histories)} import history records. Use 'export-import-history' to download data.",
-            title="Import Histories Listed",
-            title_align="left",
-            success=True,
-        )
-        console.print(panel)
+        # Otherwise, list all histories (either no history_id or history_id is "list")
+        _list_import_histories_internal(client, workspace_obj, workspace, console, debug)
 
     except Exception as e:
         panel = get_argilla_themed_panel(
-            f"Error listing import histories: {str(e)}",
+            f"Error managing import histories: {str(e)}",
             title="Error",
             title_align="left",
             exception=e,
@@ -142,96 +96,164 @@ def list_import_histories(
         raise typer.Exit(code=1)
 
 
-def export_import_history(
-    workspace: str = typer.Option(..., "--workspace", "-w", help="Workspace name"),
-    history_id: str = typer.Option(..., "--history-id", "-h", help="Import history ID to export"),
-    output_dir: Path = typer.Option(Path("."), "--output-dir", "-o", help="Output directory for CSV files"),
-    debug: bool = typer.Option(False, "--debug", help="Show detailed debug information"),
+def _list_import_histories_internal(
+    client: Argilla, workspace_obj, workspace: str, console: Console, debug: bool
 ) -> None:
-    """
-    Export import history data and metadata to CSV files.
+    """Internal function to list import histories."""
+    # Fetch import histories
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        console=console,
+    ) as progress:
+        task = progress.add_task("Fetching import histories...", total=None)
 
-    Creates two CSV files:
-    - {filename}_data.csv: Tabular dataframe data from the BibTeX import
-    - {filename}_metadata.csv: Import status and associated files for each reference
-    """
-    console = Console()
+        response = client.api.http_client.get(
+            f"{client.api_url}/api/v1/imports/history", params={"workspace_id": str(workspace_obj.id)}
+        )
 
-    try:
-        # Initialize client and get workspace
-        client = Argilla.from_credentials()
-        workspace_obj = client.workspaces(name=workspace)
-        if not workspace_obj:
+        if response.status_code != 200:
+            progress.update(task, completed=True, description="Failed to fetch import histories")
+            error_detail = response.json().get("detail", str(response.text))
+            raise ValueError(f"Error fetching import histories: {error_detail}")
+
+        histories = response.json()
+        progress.update(task, completed=True, description=f"Found {len(histories)} import histories")
+
+    # Display results
+    if not histories:
+        panel = get_argilla_themed_panel(
+            f"No import histories found for workspace '{workspace}'.",
+            title="No Import Histories",
+            title_align="left",
+            success=True,
+        )
+        console.print(panel)
+        return
+
+    # Create table
+    table = Table(title=f"Import Histories for Workspace '{workspace}'")
+    table.add_column("ID", style="cyan")
+    table.add_column("Filename", style="green")
+    table.add_column("User ID", style="blue")
+    table.add_column("Created At", style="yellow")
+    table.add_column("References", style="magenta")
+
+    for history in histories:
+        created_at = datetime.fromisoformat(history["created_at"].replace("Z", "+00:00"))
+
+        # Count references from metadata if available
+        metadata = history.get("metadata", {})
+        ref_count = len(metadata) if metadata else "N/A"
+
+        table.add_row(
+            str(history["id"]),
+            history["filename"],
+            str(history["user_id"])[:8] + "...",  # Truncate user ID for display
+            created_at.strftime("%Y-%m-%d %H:%M:%S"),
+            str(ref_count),
+        )
+
+    console.print(table)
+
+    panel = get_argilla_themed_panel(
+        f"Found {len(histories)} import history records. Use 'history <history_id> --export' to download data.",
+        title="Import Histories Listed",
+        title_align="left",
+        success=True,
+    )
+    console.print(panel)
+
+
+def _export_import_history_internal(
+    client: Argilla, workspace_obj, history_id: str, output_dir: Path, console: Console, debug: bool
+) -> None:
+    """Internal function to export import history."""
+    # Ensure output directory exists
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Fetch detailed import history
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        console=console,
+    ) as progress:
+        task = progress.add_task("Fetching import history details...", total=None)
+
+        response = client.api.http_client.get(f"{client.api_url}/api/v1/imports/history/{history_id}")
+
+        if response.status_code == 404:
+            progress.update(task, completed=True, description="Import history not found")
             panel = get_argilla_themed_panel(
-                f"Workspace '{workspace}' not found.",
-                title="Workspace not found",
+                f"Import history with ID '{history_id}' not found.",
+                title="Import History Not Found",
                 title_align="left",
                 success=False,
             )
             console.print(panel)
             raise typer.Exit(code=1)
+        elif response.status_code != 200:
+            progress.update(task, completed=True, description="Failed to fetch import history")
+            error_detail = response.json().get("detail", str(response.text))
+            raise ValueError(f"Error fetching import history: {error_detail}")
 
-        # Ensure output directory exists
-        output_dir.mkdir(parents=True, exist_ok=True)
+        history = response.json()
+        progress.update(task, completed=True, description="Import history retrieved")
 
-        # Fetch detailed import history
-        with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            console=console,
-        ) as progress:
-            task = progress.add_task("Fetching import history details...", total=None)
+    # Extract filename for output files
+    base_filename = Path(history["filename"]).stem
 
-            response = client.api.http_client.get(f"{client.api_url}/api/v1/imports/history/{history_id}")
+    # Export data CSV
+    data_csv_path = output_dir / f"{base_filename}_data.csv"
+    _export_data_to_csv(history["data"], data_csv_path, console)
 
-            if response.status_code == 404:
-                progress.update(task, completed=True, description="Import history not found")
-                panel = get_argilla_themed_panel(
-                    f"Import history with ID '{history_id}' not found.",
-                    title="Import History Not Found",
-                    title_align="left",
-                    success=False,
-                )
-                console.print(panel)
-                raise typer.Exit(code=1)
-            elif response.status_code != 200:
-                progress.update(task, completed=True, description="Failed to fetch import history")
-                error_detail = response.json().get("detail", str(response.text))
-                raise ValueError(f"Error fetching import history: {error_detail}")
+    # Export metadata CSV
+    metadata_csv_path = output_dir / f"{base_filename}_metadata.csv"
+    _export_metadata_to_csv(history["metadata"], metadata_csv_path, console)
 
-            history = response.json()
-            progress.update(task, completed=True, description="Import history retrieved")
+    panel = get_argilla_themed_panel(
+        f"Export completed:\n• Data: {data_csv_path}\n• Metadata: {metadata_csv_path}",
+        title="Export Successful",
+        title_align="left",
+        success=True,
+    )
+    console.print(panel)
 
-        # Extract filename for output files
-        base_filename = Path(history["filename"]).stem
 
-        # Export data CSV
-        data_csv_path = output_dir / f"{base_filename}_data.csv"
-        _export_data_to_csv(history["data"], data_csv_path, console)
+def _show_import_history_internal(
+    client: Argilla, workspace_obj, history_id: str, console: Console, debug: bool
+) -> None:
+    """Internal function to show import history details."""
+    # Fetch detailed import history
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        console=console,
+    ) as progress:
+        task = progress.add_task("Fetching import history details...", total=None)
 
-        # Export metadata CSV
-        metadata_csv_path = output_dir / f"{base_filename}_metadata.csv"
-        _export_metadata_to_csv(history["metadata"], metadata_csv_path, console)
+        response = client.api.http_client.get(f"{client.api_url}/api/v1/imports/history/{history_id}")
 
-        panel = get_argilla_themed_panel(
-            f"Export completed:\n• Data: {data_csv_path}\n• Metadata: {metadata_csv_path}",
-            title="Export Successful",
-            title_align="left",
-            success=True,
-        )
-        console.print(panel)
+        if response.status_code == 404:
+            progress.update(task, completed=True, description="Import history not found")
+            panel = get_argilla_themed_panel(
+                f"Import history with ID '{history_id}' not found.",
+                title="Import History Not Found",
+                title_align="left",
+                success=False,
+            )
+            console.print(panel)
+            raise typer.Exit(code=1)
+        elif response.status_code != 200:
+            progress.update(task, completed=True, description="Failed to fetch import history")
+            error_detail = response.json().get("detail", str(response.text))
+            raise ValueError(f"Error fetching import history: {error_detail}")
 
-    except Exception as e:
-        panel = get_argilla_themed_panel(
-            f"Error exporting import history: {str(e)}",
-            title="Error",
-            title_align="left",
-            exception=e,
-            debug=debug,
-            success=False,
-        )
-        console.print(panel)
-        raise typer.Exit(code=1)
+        history = response.json()
+        progress.update(task, completed=True, description="Import history retrieved")
+
+    # Display summary information
+    _display_import_history_summary(history, console)
 
 
 def _export_data_to_csv(data: Dict, output_path: Path, console: Console) -> None:
@@ -310,77 +332,6 @@ def _export_metadata_to_csv(metadata: Dict, output_path: Path, console: Console)
         progress.update(task, completed=True, description=f"Exported {len(rows)} references to {output_path.name}")
 
 
-def show_import_history(
-    workspace: str = typer.Option(..., "--workspace", "-w", help="Workspace name"),
-    history_id: str = typer.Argument(..., help="Import history ID to show"),
-    debug: bool = typer.Option(False, "--debug", help="Show detailed debug information"),
-) -> None:
-    """
-    Show detailed information about a specific import history record.
-
-    Displays summary statistics, data schema, and metadata overview
-    without exporting to files.
-    """
-    console = Console()
-
-    try:
-        # Initialize client and get workspace
-        client = Argilla.from_credentials()
-        workspace_obj = client.workspaces(name=workspace)
-        if not workspace_obj:
-            panel = get_argilla_themed_panel(
-                f"Workspace '{workspace}' not found.",
-                title="Workspace not found",
-                title_align="left",
-                success=False,
-            )
-            console.print(panel)
-            raise typer.Exit(code=1)
-
-        # Fetch detailed import history
-        with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            console=console,
-        ) as progress:
-            task = progress.add_task("Fetching import history details...", total=None)
-
-            response = client.api.http_client.get(f"{client.api_url}/api/v1/imports/history/{history_id}")
-
-            if response.status_code == 404:
-                progress.update(task, completed=True, description="Import history not found")
-                panel = get_argilla_themed_panel(
-                    f"Import history with ID '{history_id}' not found.",
-                    title="Import History Not Found",
-                    title_align="left",
-                    success=False,
-                )
-                console.print(panel)
-                raise typer.Exit(code=1)
-            elif response.status_code != 200:
-                progress.update(task, completed=True, description="Failed to fetch import history")
-                error_detail = response.json().get("detail", str(response.text))
-                raise ValueError(f"Error fetching import history: {error_detail}")
-
-            history = response.json()
-            progress.update(task, completed=True, description="Import history retrieved")
-
-        # Display summary information
-        _display_import_history_summary(history, console)
-
-    except Exception as e:
-        panel = get_argilla_themed_panel(
-            f"Error showing import history: {str(e)}",
-            title="Error",
-            title_align="left",
-            exception=e,
-            debug=debug,
-            success=False,
-        )
-        console.print(panel)
-        raise typer.Exit(code=1)
-
-
 def _display_import_history_summary(history: Dict, console: Console) -> None:
     """Display summary information about an import history record."""
 
@@ -401,10 +352,10 @@ def _display_import_history_summary(history: Dict, console: Console) -> None:
     # Data summary
     data = history.get("data", {})
     schema = data.get("schema", {})
-    fields = schema.get("fields", [])
+    fields = schema.get("fields", [])[:10]  # Limit to first 5 fields for display
     data_table = Table(title="Data")
     for field in fields:
-        data_table.add_column(field.get("name", ""), style="blue")
+        data_table.add_column(field.get("name", ""), style="blue", max_width=20, no_wrap=True, overflow="ellipsis")
 
     for row in data.get("data", []):
         row_values = [str(row.get(field.get("name", ""), "")) for field in fields]
