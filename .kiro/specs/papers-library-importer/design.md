@@ -138,9 +138,64 @@ Note to reuse existing styles in argilla-frontend/assets/scss/base/base.scss, ar
 - Button opens full-page modal for import workflow
 - Positioned prominently in the import section of the home page
 
-#### 2. Import Modal Workflow (`argilla-frontend/components/features/import/ImportModal.vue`)
+#### 2. FlowModal Base Component (`argilla-frontend/components/base/base-flow-modal/BaseFlowModal.vue`)
 
-**Full-page modal using existing base-modal component with multi-step workflow:**
+**New full-screen modal component designed for multi-step workflows:**
+
+**Design Principles:**
+- Full-screen overlay that cannot be closed by clicking outside (prevents accidental data loss)
+- Built-in step navigation with progress indicator
+- Consistent header with title and close button (with confirmation if needed)
+- Flexible content area that adapts to different step requirements
+- Built-in navigation controls (Previous, Next, Cancel, Finish)
+- Support for step validation before allowing navigation
+- Responsive design that works on all screen sizes
+
+**Key Features:**
+- **Step Management**: Automatic step tracking with progress visualization
+- **Navigation Control**: Configurable navigation buttons with validation hooks
+- **Data Persistence**: Maintains step data across navigation
+- **Confirmation Dialogs**: Built-in confirmation for destructive actions (close, cancel)
+- **Accessibility**: Full keyboard navigation and screen reader support
+- **Theming**: Consistent with existing design system
+
+**Props Interface:**
+```typescript
+interface FlowModalProps {
+  visible: boolean;
+  title: string;
+  steps: Array<{
+    id: string;
+    title: string;
+    component: string;
+    optional?: boolean;
+  }>;
+  currentStep: number;
+  canGoBack?: boolean;
+  canGoNext?: boolean;
+  canClose?: boolean;
+  confirmClose?: boolean;
+  loading?: boolean;
+}
+```
+
+**Events:**
+- `@step-change` - Emitted when user navigates between steps
+- `@close` - Emitted when user closes the modal
+- `@cancel` - Emitted when user cancels the workflow
+- `@complete` - Emitted when user completes the workflow
+- `@validate-step` - Emitted to validate current step before navigation
+
+**Styling:**
+- Uses existing SCSS variables and design tokens
+- Full-screen overlay with proper z-index management
+- Consistent spacing and typography with the design system
+- Smooth transitions between steps
+- Loading states and disabled button styling
+
+#### 3. Import Modal Workflow (`argilla-frontend/components/features/import/ImportModal.vue`)
+
+**Full-page modal using new BaseFlowModal component with multi-step workflow:**
 - Step 1: Upload Bibliography File (.bib file upload)
 - Step 2: Upload Full-Text PDFs (multiple PDF file upload)
 - Step 3: Import Analysis & Selection (table with toggle functionality)
