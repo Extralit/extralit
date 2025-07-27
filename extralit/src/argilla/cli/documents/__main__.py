@@ -20,11 +20,7 @@ from argilla.cli.documents.list import list_documents
 from argilla.cli.documents.add import add_document
 from argilla.cli.documents.import_bib import import_bib
 from argilla.cli.documents.delete import delete_document
-from argilla.cli.documents.import_history import (
-    list_import_histories,
-    export_import_history,
-    show_import_history,
-)
+from argilla.cli.documents.import_history import list_import_histories
 
 app = ArgillaTyper(help="Manage documents in workspaces", no_args_is_help=True)
 
@@ -34,10 +30,8 @@ app.command(name="add")(add_document)
 app.command(name="import")(import_bib)
 app.command(name="delete")(delete_document)
 
-# Import history commands
-app.command(name="list-imports")(list_import_histories)
-app.command(name="export-imports")(export_import_history)
-app.command(name="show-imports")(show_import_history)
+# Import history commands - new structure
+app.command(name="history")(list_import_histories)
 
 if __name__ == "__main__":
     app()

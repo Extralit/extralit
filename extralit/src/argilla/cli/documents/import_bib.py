@@ -55,29 +55,6 @@ def _clean_bibtex_field(value: str) -> str:
     return value.replace("{", "").replace("}", "").strip()
 
 
-def _parse_authors(author_string: str) -> List[str]:
-    """Parse author string from BibTeX entry into list of author names."""
-    if not author_string:
-        return []
-
-    cleaned = _clean_bibtex_field(author_string)
-    # Split by 'and' and return as list
-    authors = [author.strip() for author in cleaned.split(" and ") if author.strip()]
-    return authors
-
-
-def _parse_year(year_string: str) -> Optional[int]:
-    """Parse year string from BibTeX entry into an integer."""
-    if not year_string:
-        return None
-
-    cleaned = _clean_bibtex_field(year_string)
-    try:
-        return int(cleaned)
-    except ValueError:
-        return None
-
-
 def _parse_bibtex_to_dataframe(bibtex_file: Path, console: Console) -> pd.DataFrame:
     """Parse BibTeX file into a pandas DataFrame with proper field handling."""
     with Progress(
