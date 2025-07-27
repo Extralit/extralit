@@ -81,6 +81,11 @@ export const useHomeViewModel = () => {
     console.log('showImportModal before:', showImportModal.value);
     showImportModal.value = !showImportModal.value; // Toggle to see if it helps
     console.log('showImportModal after:', showImportModal.value);
+
+    // Force DOM update
+    setTimeout(() => {
+      console.log('After timeout, showImportModal:', showImportModal.value);
+    }, 100);
   };
 
   const isImportModalVisible = computed(() => {
