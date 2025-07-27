@@ -65,7 +65,7 @@
   - _Requirements: 3.2, 3.5, 4.1, 4.6_
 
 - [ ] 4. Implement frontend BibTeX parsing and file matching
-- [ ] 4.1 Create BibTeX parser component with generic dataframe conversion
+- [x] 4.1 Create BibTeX parser component with generic dataframe conversion
   - Add JavaScript BibTeX parser library dependency (bibtex-parse-js or similar)
   - Implement BibTeX file parsing in ImportUpload.vue component
   - Convert BibTeX entries to generic dataframe format (preserve all fields)
@@ -75,14 +75,14 @@
   - _Requirements: 1.1, 5.1_
 
 - [ ] 4.2 Implement file-to-reference matching logic
-  - Create file matching algorithm based on filename patterns
+  - Create file matching algorithm based on filepath or filename patterns
   - Implement exact match, partial match, and fuzzy matching strategies
   - Allow manual file-to-reference association by user
   - Add validation for PDF file types and sizes
   - _Requirements: 1.3, 1.6_
 
 - [ ] 5. Create home page integration and modal workflow
-- [ ] 5.1 Add Import Documents button to home page
+- [-] 5.1 Add Import Documents button to home page
   - Add "Import Documents" button above ImportFromHub and ImportFromPython components in pages/index.vue
   - Style button to match existing import section design
   - Connect button to open full-page import modal
