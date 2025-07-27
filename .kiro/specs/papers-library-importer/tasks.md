@@ -88,7 +88,7 @@
   - Connect button to open full-page import modal
   - _Requirements: 1.1, 4.3_
 
-- [ ] 5.2 Create ImportModal.vue full-page modal component
+- [x] 5.2 Create ImportModal.vue full-page modal component
   - Implement full-page modal using existing base-modal component
   - Create multi-step workflow with navigation between steps
   - Add step indicators and progress tracking
@@ -101,14 +101,14 @@
   - Add file validation and BibTeX parsing preview
   - Display upload status and reference count after parsing
   - Show supported file formats (Zotero, EndNote, Mendeley exports)
-  - _Requirements: 1.1, 5.1_
+  - _Requirements: 1.1, 5.1, 4.2_
 
 - [ ] 6.2 Create ImportPdfUpload.vue component (Step 2)
   - Implement multiple PDF file upload with drag-and-drop or folder selection
   - Add file matching preview with bibliography entries
   - Display upload progress and file validation results
   - Show summary status with matched/unmatched files count
-  - _Requirements: 1.2, 1.3_
+  - _Requirements: 1.2, 1.3, 4.2_
 
 - [ ] 7. Create simple table component and analysis interface
 - [ ] 7.1 Implement BaseSimpleTable.vue component

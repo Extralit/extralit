@@ -125,6 +125,12 @@ async def upload_reference_documents_job(
 
 ### Frontend Components
 
+Note to reuse existing styles in argilla-frontend/assets/scss/base/base.scss, argilla-frontend/assets/scss/abstract/variables/_variables.scss and existing components in `components/base` where possible to keep similar the design system and code reuse and best practices.
+
+- `argilla-frontend/components/base`:
+    base-action-tooltip, base-badge, base-banner, base-brand-icon, base-breadcrumbs, base-button, base-card, base-checkbox, base-code, base-collpasable-panel, base-date, base-documentation-viewer, base-dropdown, base-feedback, base-icon, base-input, base-loading, base-modal, base-pdf-viewer, base-progress, base-radio-button, base-range, base-render-html, base-render-markdown, base-render-table, base-resizable, base-scroll, base-search-bar, base-separator, base-shapes, base-slider, base-spinner, base-switch, base-tabs, base-tag, base-toast, base-tooltip, base-topbar-brand
+
+
 #### 1. Home Page Integration (`argilla-frontend/pages/index.vue`)
 
 **Import Documents Button:**
