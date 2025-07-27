@@ -16,7 +16,16 @@
   -->
 
 <template>
-  <Home>
+  <div>
+    <!-- DEBUG DIVS OUTSIDE HOME COMPONENT -->
+    <div style="position: fixed; top: 0; left: 0; background: green; color: white; padding: 10px; z-index: 99999 !important; font-size: 16px !important;">
+      showImportModal value: {{ showImportModal }}
+    </div>
+    <div v-if="isImportModalVisible" style="position: fixed; top: 30px; left: 0; background: blue; color: white; padding: 10px; z-index: 99999 !important; font-size: 16px !important;">
+      isImportModalVisible is true
+    </div>
+
+    <Home>
     <template v-slot:header>
       <AppHeader
         class="home__header"
@@ -90,17 +99,12 @@
     </template>
 
     <!-- Import Documents Modal -->
-    <div style="position: fixed; top: 0; left: 0; background: green; color: white; padding: 10px; z-index: 99999 !important; font-size: 16px !important;">
-      showImportModal value: {{ showImportModal }}
-    </div>
-    <div v-if="isImportModalVisible" style="position: fixed; top: 30px; left: 0; background: blue; color: white; padding: 10px; z-index: 99999 !important; font-size: 16px !important;">
-      isImportModalVisible is true
-    </div>
     <ImportModal
       :is-visible="isImportModalVisible"
       @close="showImportModal = false"
     />
   </Home>
+  </div>
 </template>
 
 <script>
