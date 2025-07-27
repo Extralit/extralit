@@ -1,132 +1,8 @@
 <template>
   <BaseModal v-if="isVisible" :modal-visible="isVisible" :allow-close="true" :prevent-body-scroll="true"
     modal-class="import-modal" modal-position="modal-center" @close-modal="handleClose">
-    <div class="import-modal__container">
-      <!-- Modal Header -->
-      <div class="import-modal__header">
-        <h2 class="import-modal__title">Import Documents</h2>
-        <p class="import-modal__subtitle">
-          Import your reference library from .bib files and PDF folders
-        </p>
-      </div>
-
-      <!-- Step Indicators -->
-      <div class="import-modal__steps">
-        <div v-for="(step, index) in steps" :key="step.id" class="import-modal__step" :class="{
-          'import-modal__step--active': currentStep === index + 1,
-          'import-modal__step--completed': currentStep > index + 1,
-          'import-modal__step--disabled': currentStep < index + 1
-        }">
-          <div class="import-modal__step-indicator">
-            <svgicon v-if="currentStep > index + 1" name="check" width="16" height="16" color="white"
-              class="import-modal__step-icon import-modal__step-icon--completed" />
-            <span v-else class="import-modal__step-number" :class="{
-              'import-modal__step-number--active': currentStep === index + 1
-            }">
-              {{ index + 1 }}
-            </span>
-          </div>
-          <div class="import-modal__step-content">
-            <h3 class="import-modal__step-title">{{ step.title }}</h3>
-            <p class="import-modal__step-description">{{ step.description }}</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Progress Bar -->
-      <div class="import-modal__progress">
-        <div class="import-modal__progress-bar">
-          <div class="import-modal__progress-fill" :style="{ width: `${progressPercentage}%` }" />
-        </div>
-        <span class="import-modal__progress-text">
-          Step {{ currentStep }} of {{ totalSteps }}
-        </span>
-      </div>
-
-      <!-- Step Content -->
-      <div class="import-modal__content">
-        <!-- Step 1: Bibliography Upload -->
-        <div v-if="currentStep === 1" class="import-modal__step-content-wrapper">
-          <ImportBibUpload ref="bibUploadComponent" @file-parsed="handleBibFileParsed"
-            @validation-error="handleValidationError" />
-        </div>
-
-        <!-- Step 2: PDF Upload -->
-        <div v-else-if="currentStep === 2" class="import-modal__step-content-wrapper">
-          <ImportPdfUpload ref="pdfUploadComponent" :bib-entries="bibData.parsedEntries"
-            @files-matched="handlePdfFilesMatched" @validation-error="handleValidationError" />
-        </div>
-
-        <!-- Step 3: Import Analysis -->
-        <div v-else-if="currentStep === 3" class="import-modal__step-content-wrapper">
-          <ImportAnalysisTable ref="analysisTableComponent" :analysis-data="analysisData" :is-loading="isAnalyzing"
-            @analysis-confirmed="handleAnalysisConfirmed" @validation-error="handleValidationError" />
-        </div>
-
-        <!-- Step 4: Batch Upload Progress -->
-        <div v-else-if="currentStep === 4" class="import-modal__step-content-wrapper">
-          <ImportBatchProgress ref="batchProgressComponent" :upload-data="uploadData" :is-uploading="isUploading"
-            @upload-completed="handleUploadCompleted" @upload-cancelled="handleUploadCancelled"
-            @upload-error="handleUploadError" />
-        </div>
-
-        <!-- Step 5: Import Summary -->
-        <div v-else-if="currentStep === 5" class="import-modal__step-content-wrapper">
-          <ImportSummary ref="summaryComponent" :summary-data="summaryData" @return-to-library="handleReturnToLibrary"
-            @view-import-history="handleViewImportHistory" />
-        </div>
-      </div>
-
-      <!-- Navigation Buttons -->
-      <div class="import-modal__navigation">
-        <BaseButton v-if="currentStep > 1 && currentStep < 4" class="secondary" @click="goToPreviousStep"
-          :disabled="isProcessing">
-          Back
-        </BaseButton>
-
-        <div class="import-modal__navigation-right">
-          <BaseButton v-if="currentStep < 3" class="secondary" @click="handleClose" :disabled="isProcessing">
-            Cancel
-          </BaseButton>
-
-          <BaseButton v-if="currentStep === 1" class="primary" @click="goToNextStep"
-            :disabled="!canProceedFromStep1 || isProcessing">
-            Next: Upload PDFs
-          </BaseButton>
-
-          <BaseButton v-else-if="currentStep === 2" class="primary" @click="goToNextStep"
-            :disabled="!canProceedFromStep2 || isProcessing">
-            Next: Review Import
-          </BaseButton>
-
-          <BaseButton v-else-if="currentStep === 3" class="primary" @click="startImport"
-            :disabled="!canProceedFromStep3 || isProcessing">
-            <BaseSpinner v-if="isAnalyzing" :size="16" class="import-modal__button-spinner" />
-            <span v-if="!isAnalyzing">Start Import</span>
-            <span v-else>Analyzing...</span>
-          </BaseButton>
-
-          <BaseButton v-else-if="currentStep === 4" class="secondary" @click="cancelUpload" :disabled="!isUploading">
-            Cancel Upload
-          </BaseButton>
-
-          <BaseButton v-else-if="currentStep === 5" class="primary" @click="handleReturnToLibrary">
-            Return to Library
-          </BaseButton>
-        </div>
-      </div>
-
-      <!-- Error Display -->
-      <div v-if="hasError" class="import-modal__error">
-        <svgicon name="danger" width="20" height="20" class="import-modal__error-icon" />
-        <div class="import-modal__error-content">
-          <h4>Error</h4>
-          <p>{{ errorMessage }}</p>
-          <BaseButton v-if="canRetryError" class="secondary small" @click="retryCurrentStep">
-            Retry
-          </BaseButton>
-        </div>
-      </div>
+    <div style="background: red; color: white; padding: 20px; font-size: 24px;">
+      TEST MODAL - isVisible: {{ isVisible }}
     </div>
   </BaseModal>
 </template>
@@ -143,6 +19,15 @@ export default {
     isVisible: {
       type: Boolean,
       default: false
+    }
+  },
+
+  watch: {
+    isVisible(newValue) {
+      console.log('ImportModal isVisible changed to:', newValue);
+      if (newValue) {
+        this.resetModal()
+      }
     }
   },
 
@@ -845,5 +730,4 @@ export default {
   margin-right: $base-space;
 }
 
-// Note: CSS variables are defined globally in the theme system
-</style>
+// Note: CSS variables are defined globally in the theme system</style>
