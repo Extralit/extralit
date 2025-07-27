@@ -1,5 +1,5 @@
 import { useResolve } from "ts-injecty";
-import { ref, useFetch } from "@nuxtjs/composition-api";
+import { ref, useFetch, computed } from "@nuxtjs/composition-api";
 import { useRoutes, useFocusTab } from "~/v1/infrastructure/services";
 import { GetDatasetCreationUseCase } from "~/v1/domain/usecases/get-dataset-creation-use-case";
 import { GetDatasetsUseCase } from "@/v1/domain/usecases/get-datasets-use-case";
@@ -79,9 +79,14 @@ export const useHomeViewModel = () => {
   const openImportModal = () => {
     console.log('openImportModal called from useHomeViewModel');
     console.log('showImportModal before:', showImportModal.value);
-    showImportModal.value = true;
+    showImportModal.value = !showImportModal.value; // Toggle to see if it helps
     console.log('showImportModal after:', showImportModal.value);
   };
+
+  const isImportModalVisible = computed(() => {
+    console.log('isImportModalVisible computed:', showImportModal.value);
+    return showImportModal.value;
+  });
 
   return {
     datasets,
@@ -92,6 +97,7 @@ export const useHomeViewModel = () => {
     exampleDatasets,
     error,
     showImportModal,
+    isImportModalVisible,
     openImportModal,
   };
 };
