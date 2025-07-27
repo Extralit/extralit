@@ -96,7 +96,7 @@
   - _Requirements: 2.1, 4.3_
 
 - [ ] 6. Implement upload step components
-- [ ] 6.1 Create ImportBibUpload.vue component (Step 1)
+- [x] 6.1 Create ImportBibUpload.vue component (Step 1)
   - Implement .bib file upload with drag-and-drop interface
   - Add file validation and BibTeX parsing preview
   - Display upload status and reference count after parsing
