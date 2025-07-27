@@ -90,11 +90,14 @@
     </template>
 
     <!-- Import Documents Modal -->
-    <div v-if="showImportModal" style="position: fixed; top: 0; left: 0; background: blue; color: white; padding: 10px; z-index: 9999;">
-      showImportModal is true
+    <div style="position: fixed; top: 0; left: 0; background: green; color: white; padding: 10px; z-index: 9999;">
+      showImportModal value: {{ showImportModal }}
+    </div>
+    <div v-if="isImportModalVisible" style="position: fixed; top: 30px; left: 0; background: blue; color: white; padding: 10px; z-index: 9999;">
+      isImportModalVisible is true
     </div>
     <ImportModal
-      :is-visible="showImportModal"
+      :is-visible="isImportModalVisible"
       @close="showImportModal = false"
     />
   </Home>
