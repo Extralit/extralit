@@ -271,6 +271,7 @@ export default {
     importButton: "Datensatz importieren",
     importFromHub: "Direkt vom Hub importieren",
     importFromPython: "Mit Python importieren",
+    importDocuments: "Dokumente importieren",
     importFromPythonHFWarning:
       "Wenn Sie einen privaten Space verwenden, lesen Sie die <a target='_blank' href='https://docs.extralit.ai/latest/getting_started/how-to-configure-argilla-on-huggingface/#how-to-use-private-spaces'>Dokumentation</a>.",
     exampleDatasetsTitle: "Sie wissen nicht, wo Sie anfangen sollen?",

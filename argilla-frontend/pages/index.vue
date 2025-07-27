@@ -38,6 +38,7 @@
     <template v-slot:page-sidebar>
       <template v-if="isAdminOrOwnerRole">
         <div class="home__sidebar__buttons">
+          <ImportDocuments @on-click="openImportModal" />
           <ImportFromHub
             :is-expanded="showImportDatasetInput"
             @on-expand="showImportDatasetInput = true"
@@ -87,6 +88,12 @@
         </div>
       </template>
     </template>
+
+    <!-- Import Documents Modal -->
+    <ImportModal
+      :is-visible="showImportModal"
+      @close="showImportModal = false"
+    />
   </Home>
 </template>
 
@@ -98,6 +105,7 @@ export default {
   data() {
     return {
       showImportDatasetInput: false,
+      showImportModal: false,
     };
   },
   methods: {
@@ -114,9 +122,14 @@ export default {
     importDataset(repoId) {
       this.getNewDatasetByRepoId(repoId);
     },
+    openImportModal() {
+      this.showImportModal = true;
+    },
   },
   components: {
     Home,
+    ImportDocuments: () => import("@/components/features/home/sidebar/ImportDocuments"),
+    ImportModal: () => import("@/components/features/import/ImportModal"),
   },
   setup() {
     return useHomeViewModel();

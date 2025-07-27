@@ -82,7 +82,7 @@
   - _Requirements: 1.3, 1.6_
 
 - [ ] 5. Create home page integration and modal workflow
-- [-] 5.1 Add Import Documents button to home page
+- [x] 5.1 Add Import Documents button to home page
   - Add "Import Documents" button above ImportFromHub and ImportFromPython components in pages/index.vue
   - Style button to match existing import section design
   - Connect button to open full-page import modal
