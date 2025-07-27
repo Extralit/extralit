@@ -1,24 +1,83 @@
 <template>
-  <div
-    v-if="isVisible"
-    style="
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: red;
-      color: white;
-      padding: 20px;
-      font-size: 24px;
-      z-index: 99999;
-      border: 3px solid yellow;
-    "
+  <BaseFlowModal
+    :visible="isVisible"
+    :title="$t('import.title') || 'Import Documents'"
+    :steps="steps"
+    :current-step="currentStep"
+    :can-go-back="canGoBack"
+    :can-go-next="canGoNext"
+    :can-complete="canComplete"
+    :loading="isProcessing"
+    :step-data="stepData"
+    :confirm-close="true"
+    @step-change="handleStepChange"
+    @validate-step="handleValidateStep"
+    @complete="handleComplete"
+    @close="handleClose"
+    @cancel="handleCancel"
   >
-    TEST MODAL - isVisible: {{ isVisible }}
-    <button @click="$emit('close')" style="margin-left: 20px; background: white; color: black; padding: 5px">
-      Close
-    </button>
-  </div>
+    <template #default="{ currentStep: stepIndex }">
+      <!-- Step 1: Bibliography Upload -->
+      <ImportBibUpload
+        v-if="stepIndex === 0"
+        ref="bibUploadComponent"
+        @update="handleBibUpdate"
+      />
+
+      <!-- Step 2: PDF Upload -->
+      <ImportPdfUpload
+        v-if="stepIndex === 1"
+        ref="pdfUploadComponent"
+        :bib-entries="bibData.parsedEntries"
+        @update="handlePdfUpdate"
+      />
+
+      <!-- Step 3: Import Analysis -->
+      <ImportAnalysisTable
+        v-if="stepIndex === 2"
+        ref="analysisTableComponent"
+        :analysis-data="analysisData"
+        :loading="isAnalyzing"
+        @update="handleAnalysisUpdate"
+        @retry="performImportAnalysis"
+      />
+
+      <!-- Step 4: Upload Progress -->
+      <ImportBatchProgress
+        v-if="stepIndex === 3"
+        ref="batchProgressComponent"
+        :upload-data="uploadData"
+        @completed="handleUploadCompleted"
+        @cancelled="handleUploadCancelled"
+        @error="handleUploadError"
+      />
+
+      <!-- Step 5: Import Summary -->
+      <ImportSummary
+        v-if="stepIndex === 4"
+        ref="summaryComponent"
+        :summary-data="summaryData"
+        @return-to-library="handleReturnToLibrary"
+        @view-import-history="handleViewImportHistory"
+      />
+
+      <!-- Error Display -->
+      <div v-if="hasError" class="import-modal__error">
+        <BaseIcon icon-name="danger" class="import-modal__error-icon" />
+        <div class="import-modal__error-content">
+          <h4>{{ $t('import.error') || 'Error' }}</h4>
+          <p>{{ errorMessage }}</p>
+          <BaseButton
+            v-if="canRetryError"
+            class="secondary"
+            @click="retryCurrentStep"
+          >
+            {{ $t('common.retry') || 'Retry' }}
+          </BaseButton>
+        </div>
+      </div>
+    </template>
+  </BaseFlowModal>
 </template>
 
 <script>
@@ -38,19 +97,10 @@ export default {
 
   watch: {
     isVisible(newValue) {
-      console.log("ImportModal isVisible changed to:", newValue);
       if (newValue) {
         this.resetModal();
       }
     },
-  },
-
-  mounted() {
-    console.log("ImportModal mounted, isVisible:", this.isVisible);
-  },
-
-  updated() {
-    console.log("ImportModal updated, isVisible:", this.isVisible);
   },
 
   data() {
@@ -108,28 +158,23 @@ export default {
       steps: [
         {
           id: "bib-upload",
-          title: "Upload Bibliography",
-          description: "Upload your .bib file with reference metadata",
+          title: this.$t('import.steps.bibUpload') || "Upload Bibliography",
         },
         {
           id: "pdf-upload",
-          title: "Upload PDFs",
-          description: "Upload PDF files and match them to references",
+          title: this.$t('import.steps.pdfUpload') || "Upload PDFs",
         },
         {
           id: "analysis",
-          title: "Review Import",
-          description: "Review and confirm which documents to import",
+          title: this.$t('import.steps.analysis') || "Review Import",
         },
         {
           id: "progress",
-          title: "Import Progress",
-          description: "Track the progress of your document import",
+          title: this.$t('import.steps.progress') || "Import Progress",
         },
         {
           id: "summary",
-          title: "Import Summary",
-          description: "View the results of your import operation",
+          title: this.$t('import.steps.summary') || "Import Summary",
         },
       ],
     };
