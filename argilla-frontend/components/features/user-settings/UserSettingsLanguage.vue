@@ -7,13 +7,7 @@
       :text="name"
       :minimalist="false"
     >
-      <input
-        type="radio"
-        :id="code"
-        :value="code"
-        v-model="$i18n.locale"
-        @input="change(code)"
-      />
+      <input type="radio" :id="code" :value="code" v-model="$i18n.locale" @input="change(code)" />
       <label :for="code"> {{ code }}</label>
     </BaseTooltip>
   </div>

@@ -36,8 +36,7 @@ describe("Ranking adapter should", () => {
   });
 
   it("get ranking correctly based on question", () => {
-    const { slots, questions, getRanking } =
-      adaptQuestionsToSlots(settingsFake);
+    const { slots, questions, getRanking } = adaptQuestionsToSlots(settingsFake);
 
     slots[1].items.push(questions[0]);
 
@@ -47,8 +46,7 @@ describe("Ranking adapter should", () => {
   });
 
   it("get the same ranking when slot has two questions ranked", () => {
-    const { slots, questions, getRanking } =
-      adaptQuestionsToSlots(settingsFake);
+    const { slots, questions, getRanking } = adaptQuestionsToSlots(settingsFake);
 
     slots[1].items.push(questions[0]);
     slots[1].items.push(questions[1]);

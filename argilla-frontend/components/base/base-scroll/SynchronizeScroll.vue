@@ -21,14 +21,11 @@ export default {
 
       const applyProportionalScroll = (elementScrolling, elementToScroll) => {
         const elementScrollingTop = elementScrolling.scrollTop;
-        const elementScrollingTotal =
-          elementScrolling.scrollHeight - elementScrolling.clientHeight;
+        const elementScrollingTotal = elementScrolling.scrollHeight - elementScrolling.clientHeight;
 
-        const toScrollTotal =
-          elementToScroll.scrollHeight - elementToScroll.clientHeight;
+        const toScrollTotal = elementToScroll.scrollHeight - elementToScroll.clientHeight;
 
-        const proportionalScrolling =
-          elementScrollingTop / elementScrollingTotal;
+        const proportionalScrolling = elementScrollingTop / elementScrollingTotal;
 
         elementToScroll.scrollTop = toScrollTotal * proportionalScrolling;
       };

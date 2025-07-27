@@ -9,12 +9,12 @@ export class TabulatorFull {
   }
 
   addRow(data, position, index) {
-    const newRow = { 
+    const newRow = {
       _row: { data },
       getData: () => data,
       getElement: () => document.createElement("div"),
       getTable: () => this,
-      delete: () => true
+      delete: () => true,
     };
     this.rows.push(newRow);
     this.data.push(data);
@@ -30,12 +30,12 @@ export class TabulatorFull {
   }
 
   getColumns() {
-    return this.columns.map(col => ({
+    return this.columns.map((col) => ({
       getField: () => col.field,
       getDefinition: () => col,
       getElement: () => document.createElement("div"),
       getTable: () => this,
-      updateDefinition: () => true
+      updateDefinition: () => true,
     }));
   }
 
@@ -59,12 +59,14 @@ export class TabulatorFull {
 
   setData(data) {
     this.data = data || [];
-    this.rows = data ? data.map(item => ({ 
-      data: item, 
-      _row: { data: item },
-      getData: () => item,
-      getElement: () => document.createElement("div")
-    })) : [];
+    this.rows = data
+      ? data.map((item) => ({
+          data: item,
+          _row: { data: item },
+          getData: () => item,
+          getElement: () => document.createElement("div"),
+        }))
+      : [];
     return true;
   }
 
@@ -127,7 +129,7 @@ export class ColumnComponent {
   getDefinition() {
     return {
       field: this.field,
-      title: this.title
+      title: this.title,
     };
   }
 
@@ -138,5 +140,5 @@ export class ColumnComponent {
 
 export default {
   TabulatorFull,
-  ColumnComponent
+  ColumnComponent,
 };

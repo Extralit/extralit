@@ -1,10 +1,6 @@
 <template>
   <div class="metadata-filter" v-if="metadataFilters.hasFilters">
-    <BaseDropdown
-      boundary="viewport"
-      :visible="visibleDropdown"
-      @visibility="onMetadataToggleVisibility"
-    >
+    <BaseDropdown boundary="viewport" :visible="visibleDropdown" @visibility="onMetadataToggleVisibility">
       <span slot="dropdown-header">
         <FilterButtonWithBadges
           :is-active="visibleDropdown"
@@ -16,11 +12,7 @@
           :name="$t('metadata')"
         />
       </span>
-      <span
-        v-if="!!metadataFilters"
-        slot="dropdown-content"
-        class="metadata-filter__container"
-      >
+      <span v-if="!!metadataFilters" slot="dropdown-content" class="metadata-filter__container">
         <CategoriesSelector
           v-if="!visibleCategory"
           name="metadataCategories"
@@ -29,23 +21,12 @@
           @select-category="selectMetadataCategory"
         />
         <template v-else>
-          <div
-            class="metadata-filter__header"
-            @click="selectMetadataCategory(null)"
-          >
+          <div class="metadata-filter__header" @click="selectMetadataCategory(null)">
             <span v-text="visibleCategory.title" />
-            <svgicon
-              name="chevron-left"
-              width="12"
-              height="12"
-              aria-hidden="true"
-            />
+            <svgicon name="chevron-left" width="12" height="12" aria-hidden="true" />
           </div>
           <div class="metadata-filter__content">
-            <LabelsSelector
-              v-if="visibleCategory.isTerms"
-              :filter="visibleCategory"
-            />
+            <LabelsSelector v-if="visibleCategory.isTerms" :filter="visibleCategory" />
             <div v-else>
               <RangeSelector :filter="visibleCategory" />
             </div>
@@ -109,9 +90,7 @@ export default {
       this.appliedCategoriesFilters = this.metadataFilters.filteredCategories;
     },
     openCategoryFilter(category) {
-      this.visibleDropdown = this.visibleDropdown
-        ? category !== this.visibleCategory
-        : true;
+      this.visibleDropdown = this.visibleDropdown ? category !== this.visibleCategory : true;
 
       this.selectMetadataCategory(category);
     },

@@ -12,11 +12,7 @@
       </BaseButton>
     </BaseActionTooltip>
     <transition name="fade" appear>
-      <dialog
-        v-if="isDialogOpen"
-        class="share__dialog"
-        v-click-outside="closeDialog"
-      >
+      <dialog v-if="isDialogOpen" class="share__dialog" v-click-outside="closeDialog">
         <div class="share__dialog--container">
           <BaseSpinner v-if="!sharingImage.loaded" :size="20" />
           <img v-else :src="sharingImage.src" />

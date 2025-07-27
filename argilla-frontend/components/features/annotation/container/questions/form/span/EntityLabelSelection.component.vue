@@ -1,9 +1,5 @@
 <template>
-  <div
-    class="container"
-    v-click-outside="clickOutside"
-    @keydown="keyboardHandler"
-  >
+  <div class="container" v-click-outside="clickOutside" @keydown="keyboardHandler">
     <div class="component-header" v-if="showSearch || showCollapseButton">
       <div class="left-header">
         <SearchLabelComponent
@@ -22,16 +18,8 @@
           v-if="showCollapseButton"
           @click="toggleShowLess"
         >
-          <span
-            :class="isExpanded ? '--less' : '--more'"
-            v-text="textToShowInTheCollapseButton"
-          />
-          <svgicon
-            width="18"
-            height="18"
-            :name="iconToShowInTheCollapseButton"
-            aria-hidden="true"
-          />
+          <span :class="isExpanded ? '--less' : '--more'" v-text="textToShowInTheCollapseButton" />
+          <svgicon width="18" height="18" :name="iconToShowInTheCollapseButton" aria-hidden="true" />
         </button>
       </div>
     </div>
@@ -120,11 +108,7 @@ export default {
           this.$nextTick(() => {
             const options = this.$refs?.options;
 
-            if (
-              options.some((o) =>
-                o.$refs.inputRef.contains(document.activeElement)
-              )
-            ) {
+            if (options.some((o) => o.$refs.inputRef.contains(document.activeElement))) {
               return;
             }
 
@@ -157,22 +141,16 @@ export default {
     },
     filteredOptions() {
       return this.options.filter((option) =>
-        String(option.text)
-          .toLowerCase()
-          .includes(this.searchInput.toLowerCase())
+        String(option.text).toLowerCase().includes(this.searchInput.toLowerCase())
       );
     },
     remainingVisibleOptions() {
-      return this.filteredOptions
-        .slice(this.maxVisibleOptions)
-        .filter((option) => option.isSelected);
+      return this.filteredOptions.slice(this.maxVisibleOptions).filter((option) => option.isSelected);
     },
     visibleOptions() {
       if (this.isExpanded) return this.filteredOptions;
 
-      return this.filteredOptions
-        .slice(0, this.maxVisibleOptions)
-        .concat(this.remainingVisibleOptions);
+      return this.filteredOptions.slice(0, this.maxVisibleOptions).concat(this.remainingVisibleOptions);
     },
     maxVisibleOptions() {
       return this.maxOptionsToShowBeforeCollapse ?? this.options.length + 1;
@@ -184,10 +162,7 @@ export default {
       return this.filteredOptions.length > this.maxVisibleOptions;
     },
     showSearch() {
-      return (
-        this.options.length >= OPTIONS_THRESHOLD_TO_ENABLE_SEARCH ||
-        this.showCollapseButton
-      );
+      return this.options.length >= OPTIONS_THRESHOLD_TO_ENABLE_SEARCH || this.showCollapseButton;
     },
     textToShowInTheCollapseButton() {
       if (this.isExpanded) {
@@ -221,9 +196,7 @@ export default {
       )
         return;
 
-      const isSearchActive =
-        document.activeElement ===
-        this.$refs.searchComponentRef?.searchInputRef;
+      const isSearchActive = document.activeElement === this.$refs.searchComponentRef?.searchInputRef;
 
       if (isSearchActive) return;
 
@@ -244,20 +217,15 @@ export default {
       }, 300);
     },
     hasJustOneCoincidence(keyCode) {
-      return (
-        this.$refs.options.filter((o) =>
-          o.$refs.inputRef.dataset.keyboard.startsWith(keyCode)
-        ).length == 1
-      );
+      return this.$refs.options.filter((o) => o.$refs.inputRef.dataset.keyboard.startsWith(keyCode)).length == 1;
     },
     reset() {
       this.keyCode = "";
       this.timer = null;
     },
     selectByKeyCode($event, keyCode) {
-      const match = this.$refs.options.find(
-        (option) => option.$refs.inputRef.dataset.keyboard === keyCode
-      )?.$refs.inputRef;
+      const match = this.$refs.options.find((option) => option.$refs.inputRef.dataset.keyboard === keyCode)?.$refs
+        .inputRef;
 
       if (match) {
         $event.preventDefault();

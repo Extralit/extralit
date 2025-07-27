@@ -1,22 +1,13 @@
 <template>
-  <BaseButton
-    class="example-dataset"
-    @click="$emit('on-import-dataset', dataset.repoId)"
-  >
+  <BaseButton class="example-dataset" @click="$emit('on-import-dataset', dataset.repoId)">
     <div class="example-dataset__content">
       <p class="example-dataset__title">{{ dataset.repoId }}</p>
       <div class="example-dataset__tags">
-        <DatasetBadge
-          :text="dataset.task"
-          :icon="dataset.icon"
-          :color="dataset.color"
-        />
+        <DatasetBadge :text="dataset.task" :icon="dataset.icon" :color="dataset.color" />
         <DatasetBadge v-for="tag in dataset.tags" :text="tag" :key="tag" />
       </div>
       <p class="example-dataset__rows">
-        <svgicon name="records" color="var('--fg-tertiary')" height="10" />{{
-          dataset.rows
-        }}
+        <svgicon name="records" color="var('--fg-tertiary')" height="10" />{{ dataset.rows }}
         {{ $t("rows") }}
       </p>
     </div>

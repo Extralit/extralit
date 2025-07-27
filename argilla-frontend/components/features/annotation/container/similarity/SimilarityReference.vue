@@ -1,29 +1,14 @@
 <template>
-  <div
-    class="similarity-reference"
-    v-if="recordCriteria.isFilteringBySimilarity"
-  >
+  <div class="similarity-reference" v-if="recordCriteria.isFilteringBySimilarity">
     <div class="similarity-reference__left">
-      <SimilarityFilterLimit
-        class="similarity-reference__dropdown"
-        v-model="recordCriteria.similaritySearch.limit"
-      />
-      <SimilarityFilterOrder
-        class="similarity-reference__dropdown"
-        v-model="recordCriteria.similaritySearch.order"
-      />
+      <SimilarityFilterLimit class="similarity-reference__dropdown" v-model="recordCriteria.similaritySearch.limit" />
+      <SimilarityFilterOrder class="similarity-reference__dropdown" v-model="recordCriteria.similaritySearch.order" />
       <p>{{ $t("similarity.similarTo") }}</p>
       <span class="similarity-reference__preview">
-        <span
-          v-for="text in preview"
-          :title="text"
-          :key="text"
-          class="similarity-reference__preview__text"
-          >{{ text }}</span
-        >
-        <BaseButton
-          class="similarity-reference__preview__button-close"
-          @on-click="removeSimilaritySearch"
+        <span v-for="text in preview" :title="text" :key="text" class="similarity-reference__preview__text">{{
+          text
+        }}</span>
+        <BaseButton class="similarity-reference__preview__button-close" @on-click="removeSimilaritySearch"
           ><svgicon name="close" height="10"
         /></BaseButton>
       </span>
@@ -37,23 +22,11 @@
 
     <div class="similarity-reference__right">
       <BaseButton
-        :data-title="
-          !visibleReferenceRecord
-            ? $t('similarity.expand')
-            : $t('similarity.collapse')
-        "
+        :data-title="!visibleReferenceRecord ? $t('similarity.expand') : $t('similarity.collapse')"
         class="similarity-reference__button-icon"
         :title="visibleReferenceRecord ? $t('minimize') : $t('expand')"
-        @on-click="
-          $emit(
-            visibleReferenceRecord
-              ? 'hide-reference-record'
-              : 'show-reference-record'
-          )
-        "
-        ><svgicon
-          height="16"
-          :name="visibleReferenceRecord ? 'minimize-arrows' : 'expand-arrows'"
+        @on-click="$emit(visibleReferenceRecord ? 'hide-reference-record' : 'show-reference-record')"
+        ><svgicon height="16" :name="visibleReferenceRecord ? 'minimize-arrows' : 'expand-arrows'"
       /></BaseButton>
     </div>
   </div>

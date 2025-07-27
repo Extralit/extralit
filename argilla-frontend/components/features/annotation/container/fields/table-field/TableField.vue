@@ -2,11 +2,7 @@
   <div class="table_field_component">
     <div class="title-area --body2">
       <span class="table_field_component__title-content" v-text="title" />
-      <BaseActionTooltip
-        class="table_field_component__tooltip"
-        :tooltip="$t('copied')"
-        tooltip-position="left"
-      >
+      <BaseActionTooltip class="table_field_component__tooltip" :tooltip="$t('copied')" tooltip-position="left">
         <BaseButton
           :title="$t('button.tooltip.copyToClipboard')"
           class="table_field_component__copy-button"
@@ -16,17 +12,13 @@
         </BaseButton>
       </BaseActionTooltip>
     </div>
-    <RenderTable
-      :tableJSON="content"
-      :editable="false"
-    />
+    <RenderTable :tableJSON="content" :editable="false" />
   </div>
 </template>
 
 <script lang="ts">
-
 export default {
-  name: 'TableField',
+  name: "TableField",
   props: {
     name: {
       type: String,

@@ -12,11 +12,7 @@
       class="textarea"
       :value="question.suggestion?.suggestedAnswer"
     />
-    <MarkdownRenderer
-      v-else
-      class="textarea--markdown"
-      :markdown="question.suggestion?.value"
-    />
+    <MarkdownRenderer v-else class="textarea--markdown" :markdown="question.suggestion?.value" />
     <BaseActionTooltip :tooltip="$t('copied')" class="button-copy">
       <BaseButton @on-click="$copyToClipboard(question.suggestion?.value)">
         <svgicon name="copy" width="16" height="16" />
@@ -51,8 +47,7 @@ export default {
     onUpdateAnswer(tableJsonString) {
       this.question.answer.value = tableJsonString;
     },
-  }
-
+  },
 };
 </script>
 

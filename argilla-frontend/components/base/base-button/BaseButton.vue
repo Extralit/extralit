@@ -55,12 +55,7 @@
     @mouseover="$emit('mouseover')"
     @mouseleave="$emit('mouseleave')"
   >
-    <BaseSpinner
-      class="spinner"
-      v-if="loading"
-      :size="20"
-      :progress="loadingProgress"
-    />
+    <BaseSpinner class="spinner" v-if="loading" :size="20" :progress="loadingProgress" />
     <slot />
   </button>
 </template>

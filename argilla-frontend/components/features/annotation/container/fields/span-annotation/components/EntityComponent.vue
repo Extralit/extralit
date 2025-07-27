@@ -12,12 +12,7 @@
         }"
       ></span>
     </template>
-    <div
-      class="span-entity__container"
-      :style="entityRelativePosition"
-      ref="spanEntityRef"
-      id="spanEntity"
-    >
+    <div class="span-entity__container" :style="entityRelativePosition" ref="spanEntityRef" id="spanEntity">
       <div
         v-on="!singleOption ? { click: toggleDropdown } : {}"
         @mouseenter="hoverSpan(true)"
@@ -28,31 +23,18 @@
         ]"
         v-if="!visibleDropdown"
       >
-        <BaseButton
-          class="span-entity__close-button"
-          @click.stop="removeSelectedSpan(span)"
-        >
+        <BaseButton class="span-entity__close-button" @click.stop="removeSelectedSpan(span)">
           <svgicon name="close" width="10" height="10" color="#fff"
         /></BaseButton>
-        <span class="span-entity__text"
-          ><span v-text="selectedOption.text"
-        /></span>
+        <span class="span-entity__text"><span v-text="selectedOption.text" /></span>
         <svgicon
           v-if="!!suggestion"
-          :class="
-            suggestedScore
-              ? 'span-entity__suggestion--score'
-              : 'span-entity__suggestion'
-          "
+          :class="suggestedScore ? 'span-entity__suggestion--score' : 'span-entity__suggestion'"
           name="suggestion"
           width="8"
           height="8"
         />
-        <span
-          v-if="suggestedScore"
-          class="span-entity__score"
-          v-text="suggestedScore"
-        />
+        <span v-if="suggestedScore" class="span-entity__score" v-text="suggestedScore" />
       </div>
       <template v-else>
         <EntityDropdownOverlapping
@@ -175,17 +157,12 @@ export default {
       };
     },
     getLevelInEntitiesInRange() {
-      return this.spanInRange.findIndex(
-        ({ entity }) => entity.id === this.entity.id
-      );
+      return this.spanInRange.findIndex(({ entity }) => entity.id === this.entity.id);
     },
     overlappingDropdownPosition() {
       return {
         left: `${this.spanEntityPosition.left}px`,
-        top: `${
-          this.spanEntityPosition.top -
-          this.getLevelInEntitiesInRange * this.entityPosition.baseEntityGap
-        }px`,
+        top: `${this.spanEntityPosition.top - this.getLevelInEntitiesInRange * this.entityPosition.baseEntityGap}px`,
       };
     },
   },
@@ -221,8 +198,7 @@ export default {
     getPosition() {
       const position = this.$refs.spanEntityRef.getBoundingClientRect();
       this.spanEntityPosition.left = position.left;
-      this.spanEntityPosition.top =
-        position.top + this.$refs.spanEntityRef.scrollTop;
+      this.spanEntityPosition.top = position.top + this.$refs.spanEntityRef.scrollTop;
     },
     getScrollParent(element) {
       if (!element) return;

@@ -1,27 +1,15 @@
 <template>
-  <BaseDropdown
-    class="column-selector"
-    :visible="dropdownIsVisible"
-    @visibility="onVisibility"
-  >
+  <BaseDropdown class="column-selector" :visible="dropdownIsVisible" @visibility="onVisibility">
     <template slot="dropdown-header">
       <svgicon name="assign" height="12" />
       {{ $t("datasetCreation.applyToaAField") }}
-      <span
-        v-if="options.length"
-        class="column-selector__chip"
-        v-text="value"
-      />
+      <span v-if="options.length" class="column-selector__chip" v-text="value" />
     </template>
     <template slot="dropdown-content">
       <span class="column-selector__options__intro" v-text="$t('field')" />
       <ul class="column-selector__options">
         <li
-          :class="
-            option === value
-              ? 'column-selector__option--selected'
-              : 'column-selector__option'
-          "
+          :class="option === value ? 'column-selector__option--selected' : 'column-selector__option'"
           v-for="(option, index) in filteredOptions"
           :key="index"
           @click="selectOption(option)"
@@ -57,9 +45,7 @@ export default {
   },
   computed: {
     filteredOptions() {
-      return this.options.filter(
-        (option) => JSON.stringify(option) !== JSON.stringify(this.value)
-      );
+      return this.options.filter((option) => JSON.stringify(option) !== JSON.stringify(this.value));
     },
     optionNames() {
       return this.options.map((option) => option.name);

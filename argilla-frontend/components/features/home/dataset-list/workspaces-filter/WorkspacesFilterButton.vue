@@ -1,9 +1,5 @@
 <template>
-  <FilterButton
-    :button-name="$t('Workspaces')"
-    icon-name="filter"
-    :is-button-active="isButtonActive"
-  />
+  <FilterButton :button-name="$t('Workspaces')" icon-name="filter" :is-button-active="isButtonActive" />
 </template>
 
 <script>

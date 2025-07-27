@@ -18,92 +18,100 @@
 <template>
   <div>
     <!-- DEBUG DIVS OUTSIDE HOME COMPONENT -->
-    <div style="position: fixed; top: 0; left: 0; background: green; color: white; padding: 10px; z-index: 99999 !important; font-size: 16px !important;">
+    <div
+      style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        background: green;
+        color: white;
+        padding: 10px;
+        z-index: 99999 !important;
+        font-size: 16px !important;
+      "
+    >
       showImportModal value: {{ showImportModal }}
     </div>
-    <div v-if="isImportModalVisible" style="position: fixed; top: 30px; left: 0; background: blue; color: white; padding: 10px; z-index: 99999 !important; font-size: 16px !important;">
+    <div
+      v-if="isImportModalVisible"
+      style="
+        position: fixed;
+        top: 30px;
+        left: 0;
+        background: blue;
+        color: white;
+        padding: 10px;
+        z-index: 99999 !important;
+        font-size: 16px !important;
+      "
+    >
       isImportModalVisible is true
     </div>
 
     <Home>
-    <template v-slot:header>
-      <AppHeader
-        class="home__header"
-        :breadcrumbs="[
-          { action: 'clearFilters', name: $t('breadcrumbs.home') },
-        ]"
-        @breadcrumb-action="onBreadcrumbAction"
-      />
-      <PersistentStorageBanner class="home__banner" />
-    </template>
-    <template v-slot:page-content>
-      <BaseLoading v-if="isLoadingDatasets" />
-      <DatasetList
-        :workspaces="workspaces"
-        :datasets="datasets.datasets"
-        @on-click-card="cardAction"
-      />
-    </template>
-    <template v-slot:page-sidebar>
-      <template v-if="true || isAdminOrOwnerRole">
-        <div class="home__sidebar__buttons">
-          <ImportDocuments @on-click="openImportModal" />
-          <ImportFromHub
-            :is-expanded="showImportDatasetInput"
-            @on-expand="showImportDatasetInput = true"
-            @on-close="showImportDatasetInput = false"
-            @on-import-dataset="importDataset"
-            :error="error"
-          />
-          <ImportFromPython v-if="!showImportDatasetInput" />
-        </div>
-        <BaseSeparator class="home__sidebar__separator" />
-        <div class="home__sidebar__content">
-          <p
-            class="home__sidebar__title"
-            v-text="$t('home.exampleDatasetsTitle')"
-          />
-          <p
-            class="home__sidebar__subtitle"
-            v-text="$t('home.exampleDatasetsText')"
-          />
-          <div class="home__sidebar__cards">
-            <ExampleDatasetCard
-              v-for="dataset in exampleDatasets"
-              :key="dataset.repoId"
-              :dataset="dataset"
+      <template v-slot:header>
+        <AppHeader
+          class="home__header"
+          :breadcrumbs="[{ action: 'clearFilters', name: $t('breadcrumbs.home') }]"
+          @breadcrumb-action="onBreadcrumbAction"
+        />
+        <PersistentStorageBanner class="home__banner" />
+      </template>
+      <template v-slot:page-content>
+        <BaseLoading v-if="isLoadingDatasets" />
+        <DatasetList :workspaces="workspaces" :datasets="datasets.datasets" @on-click-card="cardAction" />
+      </template>
+      <template v-slot:page-sidebar>
+        <template v-if="true || isAdminOrOwnerRole">
+          <div class="home__sidebar__buttons">
+            <ImportDocuments @on-click="openImportModal" />
+            <ImportFromHub
+              :is-expanded="showImportDatasetInput"
+              @on-expand="showImportDatasetInput = true"
+              @on-close="showImportDatasetInput = false"
               @on-import-dataset="importDataset"
+              :error="error"
             />
+            <ImportFromPython v-if="!showImportDatasetInput" />
           </div>
-        </div>
-      </template>
-      <template v-else>
-        <div class="home__sidebar__content">
-          <p class="home__sidebar__title" v-text="$t('home.guidesTitle')" />
-          <p class="home__sidebar__subtitle" v-text="$t('home.guidesText')" />
-          <div class="home__sidebar__cards">
-            <LinkCard
-              type="How to guide"
-              text="Annotate your dataset"
-              link="https://docs.extralit.ai/latest/admin_guide/annotate/"
-            />
-            <LinkCard
-              type="How to guide"
-              text="Query and filter records"
-              link="https://docs.extralit.ai/latest/admin_guide/query/"
-            />
+          <BaseSeparator class="home__sidebar__separator" />
+          <div class="home__sidebar__content">
+            <p class="home__sidebar__title" v-text="$t('home.exampleDatasetsTitle')" />
+            <p class="home__sidebar__subtitle" v-text="$t('home.exampleDatasetsText')" />
+            <div class="home__sidebar__cards">
+              <ExampleDatasetCard
+                v-for="dataset in exampleDatasets"
+                :key="dataset.repoId"
+                :dataset="dataset"
+                @on-import-dataset="importDataset"
+              />
+            </div>
           </div>
-          <p class="home__sidebar__link" v-html="$t('home.demoLink')" />
-        </div>
+        </template>
+        <template v-else>
+          <div class="home__sidebar__content">
+            <p class="home__sidebar__title" v-text="$t('home.guidesTitle')" />
+            <p class="home__sidebar__subtitle" v-text="$t('home.guidesText')" />
+            <div class="home__sidebar__cards">
+              <LinkCard
+                type="How to guide"
+                text="Annotate your dataset"
+                link="https://docs.extralit.ai/latest/admin_guide/annotate/"
+              />
+              <LinkCard
+                type="How to guide"
+                text="Query and filter records"
+                link="https://docs.extralit.ai/latest/admin_guide/query/"
+              />
+            </div>
+            <p class="home__sidebar__link" v-html="$t('home.demoLink')" />
+          </div>
+        </template>
       </template>
-    </template>
 
-    <!-- Import Documents Modal -->
-    <ImportModal
-      :is-visible="isImportModalVisible"
-      @close="showImportModal = false"
-    />
-  </Home>
+      <!-- Import Documents Modal -->
+      <ImportModal :is-visible="isImportModalVisible" @close="showImportModal = false" />
+    </Home>
   </div>
 </template>
 
@@ -131,15 +139,15 @@ export default {
     importDataset(repoId) {
       this.getNewDatasetByRepoId(repoId);
     },
-
   },
   components: {
     Home,
     ImportDocuments: () => import("@/components/features/home/sidebar/ImportDocuments"),
-    ImportModal: () => import("@/components/features/import/ImportModal").catch(err => {
-      console.error('Failed to load ImportModal:', err);
-      return { template: '<div style="background: yellow; padding: 20px;">Failed to load ImportModal</div>' };
-    }),
+    ImportModal: () =>
+      import("@/components/features/import/ImportModal").catch((err) => {
+        console.error("Failed to load ImportModal:", err);
+        return { template: '<div style="background: yellow; padding: 20px;">Failed to load ImportModal</div>' };
+      }),
   },
   setup() {
     return useHomeViewModel();

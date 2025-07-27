@@ -2,15 +2,11 @@
   <div class="datasets-filter" v-if="workspaces.length">
     <BaseDropdown :visible="visibleDropdown" @visibility="onToggleVisibility">
       <span slot="dropdown-header"
-        ><WorkspacesFilterButton
-          :is-active="visibleDropdown || !!selectedWorkspaces.length"
+        ><WorkspacesFilterButton :is-active="visibleDropdown || !!selectedWorkspaces.length"
       /></span>
       <span slot="dropdown-content" class="datasets-filter__container">
         <div class="datasets-filter__content">
-          <WorkspaceSelector
-            :workspaces="workspaces"
-            :selected-workspaces="selectedWorkspaces"
-          />
+          <WorkspaceSelector :workspaces="workspaces" :selected-workspaces="selectedWorkspaces" />
         </div>
       </span>
     </BaseDropdown>

@@ -1,21 +1,10 @@
 <template>
-  <BaseDropdown
-    class="option-selector"
-    :visible="dropdownIsVisible"
-    @visibility="onVisibility"
-    v-if="options.length"
-  >
-    <template slot="dropdown-header">
-      {{ value }}<svgicon name="chevron-down" height="8" />
-    </template>
+  <BaseDropdown class="option-selector" :visible="dropdownIsVisible" @visibility="onVisibility" v-if="options.length">
+    <template slot="dropdown-header"> {{ value }}<svgicon name="chevron-down" height="8" /> </template>
     <template slot="dropdown-content">
       <ul class="option-selector__options">
         <li
-          :class="
-            value === option
-              ? 'option-selector__option--selected'
-              : 'option-selector__option'
-          "
+          :class="value === option ? 'option-selector__option--selected' : 'option-selector__option'"
           v-for="option in options"
           :key="option"
           @click="selectOption(option)"

@@ -45,8 +45,7 @@ export default {
   document: "Document",
   taskDistribution: "Task distribution",
   minimumSubmittedResponses: "Minimum submitted responses",
-  taskDistributionTooltip:
-    "A task is complete when all records have the \nminimum number of submitted responses",
+  taskDistributionTooltip: "A task is complete when all records have the \nminimum number of submitted responses",
   noAnnotationGuidelines: "This dataset has no annotation guidelines",
   required: "Required",
   optional: "Optional",
@@ -57,8 +56,7 @@ export default {
   rows: "rows",
   datasetName: "Dataset name",
   noRecordsMessages: {
-    datasetEmptyForAnnotator:
-      "The dataset is empty. Ask an administrator to upload records and come back soon.",
+    datasetEmptyForAnnotator: "The dataset is empty. Ask an administrator to upload records and come back soon.",
     datasetEmptyForAdmin:
       "The dataset is empty. You can add records using the Python SDK, see <a href='https://docs.extralit.ai/latest/admin_guide/record/'>documentation</a> on adding records.",
     taskDistributionCompleted: "🎉 The task is completed!",
@@ -85,8 +83,7 @@ export default {
     discarded: "discarded",
     submitted: "submitted",
     validated: "validated",
-    completedTooltip:
-      "The record is complete, it has the \nminimum number of responses",
+    completedTooltip: "The record is complete, it has the \nminimum number of responses",
   },
   userSettings: {
     title: "My settings",
@@ -97,8 +94,7 @@ export default {
       workspaces: "Workspaces",
     },
     apiKey: "API key",
-    apiKeyDescription:
-      "API key tokens allow you to manage datasets using the Python SDK.",
+    apiKeyDescription: "API key tokens allow you to manage datasets using the Python SDK.",
     theme: "Theme",
     language: "Language",
     copyKey: "Copy key",
@@ -158,8 +154,7 @@ export default {
     selectAllResults: "Select all {total} matched records",
     haveSelectedRecords: "You have selected all {total} records",
     actionConfirmation: "Bulk action confirmation",
-    actionConfirmationText:
-      "This action will affect {total} records, do you want to continue? ",
+    actionConfirmationText: "This action will affect {total} records, do you want to continue? ",
     allRecordsAnnotated: "The {total} records have been {action}",
     affectedAll: {
       submitted: "submitted",
@@ -278,8 +273,7 @@ export default {
     argillaDatasets: "Your datasets",
     none: "None yet",
     importTitle: "Import a dataset from Hugging Face Hub",
-    importText:
-      "Start with a dataset from the Hub by simply pasting the repository name",
+    importText: "Start with a dataset from the Hub by simply pasting the repository name",
     importButton: "Import dataset",
     importFromHub: "Import dataset from Hugging Face",
     importFromPython: "Import from Python",
@@ -385,8 +379,7 @@ export default {
   persistentStorage: {
     adminOrOwner:
       "Persistent storage is not enabled. All data will be lost if this space restarts. Go to the space settings to enable it.",
-    annotator:
-      "Persistent storage is not enabled. All data will be lost if this space restarts.",
+    annotator: "Persistent storage is not enabled. All data will be lost if this space restarts.",
   },
   colorSchema: {
     system: "System",
@@ -400,8 +393,7 @@ export default {
         message: "Vector not found for the selected record",
       },
       update_distribution_with_existing_responses: {
-        message:
-          "Distribution settings can't be modified for a dataset containing user responses",
+        message: "Distribution settings can't be modified for a dataset containing user responses",
       },
     },
     http: {
@@ -422,5 +414,5 @@ export default {
 
   errors: {
     saving: `Failed to save draft due to "{error}"<br/> Please try again and save your work if this persists to avoid losing your progress`,
-  }
+  },
 };

@@ -1,12 +1,6 @@
 <template>
   <div v-if="$auth.loggedIn" v-click-outside="close" class="user">
-    <a
-      v-circle
-      class="user__button"
-      @click.prevent="showSelector"
-      role="button"
-      aria-label="User Button"
-    >
+    <a v-circle class="user__button" @click.prevent="showSelector" role="button" aria-label="User Button">
       {{ user.avatar }}
     </a>
     <div v-if="visibleSelector && user" class="user__content">
@@ -27,21 +21,10 @@
         <NuxtLink class="user__link" :to="{ name: 'user-settings' }">
           {{ $t("userAvatarTooltip.settings") }}
         </NuxtLink>
-        <a
-          class="user__link"
-          :href="$config.documentationSite"
-          target="_blank"
-          v-text="$t('userAvatarTooltip.docs')"
-        />
-        <a
-          class="user__link"
-          @click.prevent="logout"
-          v-text="$t('userAvatarTooltip.logout')"
-        />
+        <a class="user__link" :href="$config.documentationSite" target="_blank" v-text="$t('userAvatarTooltip.docs')" />
+        <a class="user__link" @click.prevent="logout" v-text="$t('userAvatarTooltip.logout')" />
       </div>
-      <span class="copyright"
-        >© {{ currentYear }} Extralit ({{ $config.clientVersion }})</span
-      >
+      <span class="copyright">© {{ currentYear }} Extralit ({{ $config.clientVersion }})</span>
     </div>
   </div>
 </template>

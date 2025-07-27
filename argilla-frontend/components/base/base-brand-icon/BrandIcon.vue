@@ -27,7 +27,7 @@
   >
     <mask
       id="mask0_229_2069"
-      style="mask-type:alpha"
+      style="mask-type: alpha"
       maskUnits="userSpaceOnUse"
       x="64"
       y="29"
@@ -68,7 +68,7 @@
   >
     <mask
       id="mask0_229_2069"
-      style="mask-type:alpha"
+      style="mask-type: alpha"
       maskUnits="userSpaceOnUse"
       x="64"
       y="29"

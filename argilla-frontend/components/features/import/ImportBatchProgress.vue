@@ -29,7 +29,7 @@
 
 <script>
 export default {
-  name: 'ImportBatchProgress',
+  name: "ImportBatchProgress",
 
   props: {
     uploadData: {
@@ -40,13 +40,13 @@ export default {
         currentBatch: 0,
         jobIds: {},
         completedJobs: 0,
-        failedJobs: 0
-      })
+        failedJobs: 0,
+      }),
     },
     isUploading: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
 
   methods: {
@@ -56,10 +56,10 @@ export default {
 
     cancelUpload() {
       // Placeholder method
-      this.$emit('upload-cancelled')
-    }
-  }
-}
+      this.$emit("upload-cancelled");
+    },
+  },
+};
 </script>
 
 <style lang="scss" scoped>

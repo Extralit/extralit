@@ -18,9 +18,7 @@
     <label
       v-else
       class="dataset-config-label__label"
-      v-text="
-        $t('datasetCreation.questions.labelSelection.optionsSeparatedByComma')
-      "
+      v-text="$t('datasetCreation.questions.labelSelection.optionsSeparatedByComma')"
     />
 
     <DatasetConfigurationFieldSelector

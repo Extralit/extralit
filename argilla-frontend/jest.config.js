@@ -7,8 +7,8 @@ module.exports = {
     "^~/(.*)$": "<rootDir>/$1",
     "^~~/(.*)$": "<rootDir>/$1",
     "^@/(.*)$": "<rootDir>/$1",
-    '\\.(css|less)$': '<rootDir>/__mocks__/styleMock.js',
-    'tabulator-tables': '<rootDir>/__mocks__/tabulator-tables.js',
+    "\\.(css|less)$": "<rootDir>/__mocks__/styleMock.js",
+    "tabulator-tables": "<rootDir>/__mocks__/tabulator-tables.js",
   },
   modulePathIgnorePatterns: ["<rootDir>/e2e"],
   transform: {
@@ -16,15 +16,10 @@ module.exports = {
     ".*\\.(vue)$": "@vue/vue2-jest",
     "^.+\\.svg$": "jest-transform-stub",
   },
-  transformIgnorePatterns: [
-    "/node_modules/(?!(@nuxtjs/composition-api|@tiptap|vue-svgicon|vue-demi)/)",
-  ],
+  transformIgnorePatterns: ["/node_modules/(?!(@nuxtjs/composition-api|@tiptap|vue-svgicon|vue-demi)/)"],
   snapshotSerializers: ["<rootDir>/node_modules/jest-serializer-vue"],
   testEnvironment: "jsdom",
-  collectCoverageFrom: [
-    "<rootDir>/components/**/*.vue",
-    "<rootDir>/pages/*.vue",
-  ],
+  collectCoverageFrom: ["<rootDir>/components/**/*.vue", "<rootDir>/pages/*.vue"],
   setupFiles: ["<rootDir>/jest.setup.ts"],
   testEnvironmentOptions: {
     customExportConditions: ["node", "node-addons"],
