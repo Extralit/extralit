@@ -12,7 +12,7 @@
 </template>
 
 <script>
-import { useNewDatasetViewModel } from "./useNewDatasetViewModel";
+import { useNewDatasetViewModel } from "@/pages/useNewDatasetViewModel";
 
 export default {
   middleware({ route, redirect }) {
@@ -21,7 +21,8 @@ export default {
     }
   },
   mounted() {
-    this.getNewDatasetByRepoIdFromUrl();
+    const repoId = this.$route.params.repoId;
+    this.getNewDatasetByRepoId(decodeURIComponent(repoId));
   },
   setup() {
     return useNewDatasetViewModel();
