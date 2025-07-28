@@ -1,108 +1,65 @@
 <template>
-  <!-- Debug overlay to test visibility -->
-  <div
-    v-if="isVisible"
-    style="
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(255, 0, 0, 0.5);
-      z-index: 999999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 24px;
-      font-weight: bold;
-    "
-  >
-    DEBUG: Modal is visible (isVisible={{ isVisible }})
-    <button @click="$emit('close')" style="margin-left: 20px; padding: 10px; background: white; color: black;">
-      Close
-    </button>
-  </div>
+  <div>
+    <!-- Debug overlay to test visibility -->
+    <div v-if="isVisible" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(255, 0, 0, 0.5);
+        z-index: 999999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 24px;
+        font-weight: bold;
+      ">
+      DEBUG: Modal is visible (isVisible={{ isVisible }})
+      <button @click="$emit('close')" style="margin-left: 20px; padding: 10px; background: white; color: black;">
+        Close
+      </button>
+    </div>
 
-  <BaseFlowModal
-    :visible="isVisible"
-    :title="$t('import.title') || 'Import Documents'"
-    :steps="steps"
-    :current-step="currentStep"
-    :can-go-back="canGoBack"
-    :can-go-next="canGoNext"
-    :can-complete="canComplete"
-    :loading="isProcessing"
-    :step-data="stepData"
-    :confirm-close="true"
-    @step-change="handleStepChange"
-    @validate-step="handleValidateStep"
-    @complete="handleComplete"
-    @close="handleClose"
-    @cancel="handleCancel"
-  >
-    <template #default="{ currentStep: stepIndex }">
-      <!-- Step 1: Bibliography Upload -->
-      <ImportBibUpload
-        v-if="stepIndex === 0"
-        ref="bibUploadComponent"
-        @update="handleBibUpdate"
-      />
+    <BaseFlowModal :visible="isVisible" :title="$t('import.title') || 'Import Documents'" :steps="steps"
+      :current-step="currentStep" :can-go-back="canGoBack" :can-go-next="canGoNext" :can-complete="canComplete"
+      :loading="isProcessing" :step-data="stepData" :confirm-close="true" @step-change="handleStepChange"
+      @validate-step="handleValidateStep" @complete="handleComplete" @close="handleClose" @cancel="handleCancel">
+      <template #default="{ currentStep: stepIndex }">
+        <!-- Step 1: Bibliography Upload -->
+        <ImportBibUpload v-if="stepIndex === 0" ref="bibUploadComponent" @update="handleBibUpdate" />
 
-      <!-- Step 2: PDF Upload -->
-      <ImportPdfUpload
-        v-if="stepIndex === 1"
-        ref="pdfUploadComponent"
-        :bib-entries="bibData.parsedEntries"
-        @update="handlePdfUpdate"
-      />
+        <!-- Step 2: PDF Upload -->
+        <ImportPdfUpload v-if="stepIndex === 1" ref="pdfUploadComponent" :bib-entries="bibData.parsedEntries"
+          @update="handlePdfUpdate" />
 
-      <!-- Step 3: Import Analysis -->
-      <ImportAnalysisTable
-        v-if="stepIndex === 2"
-        ref="analysisTableComponent"
-        :analysis-data="analysisData"
-        :loading="isAnalyzing"
-        @update="handleAnalysisUpdate"
-        @retry="performImportAnalysis"
-      />
+        <!-- Step 3: Import Analysis -->
+        <ImportAnalysisTable v-if="stepIndex === 2" ref="analysisTableComponent" :analysis-data="analysisData"
+          :loading="isAnalyzing" @update="handleAnalysisUpdate" @retry="performImportAnalysis" />
 
-      <!-- Step 4: Upload Progress -->
-      <ImportBatchProgress
-        v-if="stepIndex === 3"
-        ref="batchProgressComponent"
-        :upload-data="uploadData"
-        @completed="handleUploadCompleted"
-        @cancelled="handleUploadCancelled"
-        @error="handleUploadError"
-      />
+        <!-- Step 4: Upload Progress -->
+        <ImportBatchProgress v-if="stepIndex === 3" ref="batchProgressComponent" :upload-data="uploadData"
+          @completed="handleUploadCompleted" @cancelled="handleUploadCancelled" @error="handleUploadError" />
 
-      <!-- Step 5: Import Summary -->
-      <ImportSummary
-        v-if="stepIndex === 4"
-        ref="summaryComponent"
-        :summary-data="summaryData"
-        @return-to-library="handleReturnToLibrary"
-        @view-import-history="handleViewImportHistory"
-      />
+        <!-- Step 5: Import Summary -->
+        <ImportSummary v-if="stepIndex === 4" ref="summaryComponent" :summary-data="summaryData"
+          @return-to-library="handleReturnToLibrary" @view-import-history="handleViewImportHistory" />
 
-      <!-- Error Display -->
-      <div v-if="hasError" class="import-modal__error">
-        <BaseIcon icon-name="danger" class="import-modal__error-icon" />
-        <div class="import-modal__error-content">
-          <h4>{{ $t('import.error') || 'Error' }}</h4>
-          <p>{{ errorMessage }}</p>
-          <BaseButton
-            v-if="canRetryError"
-            class="secondary"
-            @click="retryCurrentStep"
-          >
-            {{ $t('common.retry') || 'Retry' }}
-          </BaseButton>
+        <!-- Error Display -->
+        <div v-if="hasError" class="import-modal__error">
+          <BaseIcon icon-name="danger" class="import-modal__error-icon" />
+          <div class="import-modal__error-content">
+            <h4>{{ $t('import.error') || 'Error' }}</h4>
+            <p>{{ errorMessage }}</p>
+            <BaseButton v-if="canRetryError" class="secondary" @click="retryCurrentStep">
+              {{ $t('common.retry') || 'Retry' }}
+            </BaseButton>
+          </div>
         </div>
-      </div>
-    </template>
-  </BaseFlowModal>
+      </template>
+    </BaseFlowModal>
+  </div>
 </template>
 
 <script>
