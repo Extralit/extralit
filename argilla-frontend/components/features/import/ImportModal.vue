@@ -181,20 +181,35 @@ export default {
   },
 
   computed: {
-    progressPercentage() {
-      return Math.round((this.currentStep / this.totalSteps) * 100);
+    canGoBack() {
+      return this.currentStep > 0 && this.currentStep < 3 && !this.isProcessing;
     },
 
-    canProceedFromStep1() {
-      return this.bibData.parsedEntries.length > 0 && !this.hasError;
+    canGoNext() {
+      switch (this.currentStep) {
+        case 0:
+          return this.bibData.parsedEntries.length > 0 && !this.hasError;
+        case 1:
+          return this.pdfData.matchedFiles.length > 0 && !this.hasError;
+        case 2:
+          return Object.keys(this.analysisData.documents).length > 0 && !this.hasError;
+        default:
+          return false;
+      }
     },
 
-    canProceedFromStep2() {
-      return this.pdfData.matchedFiles.length > 0 && !this.hasError;
+    canComplete() {
+      return this.currentStep === 4; // Only on summary step
     },
 
-    canProceedFromStep3() {
-      return Object.keys(this.analysisData.documents).length > 0 && !this.hasError;
+    stepData() {
+      return {
+        bibData: this.bibData,
+        pdfData: this.pdfData,
+        analysisData: this.analysisData,
+        uploadData: this.uploadData,
+        summaryData: this.summaryData,
+      };
     },
   },
 
@@ -207,60 +222,73 @@ export default {
   },
 
   methods: {
-    // Navigation methods
-    goToNextStep() {
-      if (this.currentStep < this.totalSteps && this.canProceedToNextStep()) {
-        this.currentStep++;
-        this.clearError();
-        this.handleStepEntered();
-      }
-    },
+    // Flow modal event handlers
+    handleStepChange(newStep) {
+      this.currentStep = newStep;
+      this.clearError();
 
-    goToPreviousStep() {
-      if (this.currentStep > 1 && this.currentStep < 4) {
-        this.currentStep--;
-        this.clearError();
-      }
-    },
-
-    canProceedToNextStep() {
-      switch (this.currentStep) {
-        case 1:
-          return this.canProceedFromStep1;
-        case 2:
-          return this.canProceedFromStep2;
-        case 3:
-          return this.canProceedFromStep3;
-        default:
-          return false;
-      }
-    },
-
-    handleStepEntered() {
       // Perform any necessary actions when entering a step
-      if (this.currentStep === 3) {
+      if (newStep === 2) {
         this.performImportAnalysis();
+      } else if (newStep === 3) {
+        this.startImport();
       }
     },
 
-    // Step 1: Bibliography Upload handlers
-    handleBibFileParsed(data) {
+    handleValidateStep({ step, callback }) {
+      // Validate current step before allowing navigation
+      let isValid = false;
+
+      switch (step) {
+        case 0:
+          isValid = this.bibData.parsedEntries.length > 0 && !this.hasError;
+          break;
+        case 1:
+          isValid = this.pdfData.matchedFiles.length > 0 && !this.hasError;
+          break;
+        case 2:
+          isValid = Object.keys(this.analysisData.documents).length > 0 && !this.hasError;
+          break;
+        default:
+          isValid = true;
+      }
+
+      callback(isValid);
+    },
+
+    handleComplete() {
+      this.handleReturnToLibrary();
+    },
+
+    handleCancel() {
+      if (this.isUploading) {
+        this.cancelUpload();
+      }
+      this.$emit('close');
+    },
+
+    // Step handlers
+    handleBibUpdate(data) {
       this.bibData = {
-        fileName: data.fileName,
-        parsedEntries: data.parsedEntries,
-        dataframeData: data.dataframeData,
-        rawContent: data.rawContent,
+        fileName: data.fileName || "",
+        parsedEntries: data.parsedEntries || [],
+        dataframeData: data.dataframeData || null,
+        rawContent: data.rawContent || "",
       };
       this.clearError();
     },
 
-    // Step 2: PDF Upload handlers
-    handlePdfFilesMatched(data) {
+    handlePdfUpdate(data) {
       this.pdfData = {
-        matchedFiles: data.matchedFiles,
-        unmatchedFiles: data.unmatchedFiles,
-        totalFiles: data.totalFiles,
+        matchedFiles: data.matchedFiles || [],
+        unmatchedFiles: data.unmatchedFiles || [],
+        totalFiles: data.totalFiles || 0,
       };
+      this.clearError();
+    },
+
+    handleAnalysisUpdate(data) {
+      this.uploadData.confirmedDocuments = data.confirmedDocuments || {};
       this.clearError();
     },
 
@@ -286,17 +314,11 @@ export default {
       }
     },
 
-    handleAnalysisConfirmed(confirmedDocuments) {
-      this.uploadData.confirmedDocuments = confirmedDocuments;
-      this.clearError();
-    },
-
-    // Step 4: Upload handlers
     async startImport() {
-      if (!this.canProceedFromStep3) return;
+      if (Object.keys(this.uploadData.confirmedDocuments).length === 0) return;
 
-      this.currentStep = 4;
       this.isUploading = true;
+      this.isProcessing = true;
       this.clearError();
 
       try {
@@ -308,23 +330,27 @@ export default {
       } catch (error) {
         this.showError(`Import failed: ${error.message}`, true);
         this.isUploading = false;
+        this.isProcessing = false;
       }
     },
 
     handleUploadCompleted(summaryData) {
       this.summaryData = summaryData;
       this.isUploading = false;
-      this.currentStep = 5;
+      this.isProcessing = false;
+      this.currentStep = 4; // Move to summary step
       this.clearError();
     },
 
     handleUploadCancelled() {
       this.isUploading = false;
+      this.isProcessing = false;
       this.showError("Import was cancelled by user", false);
     },
 
     handleUploadError(error) {
       this.isUploading = false;
+      this.isProcessing = false;
       this.showError(`Upload failed: ${error.message}`, true);
     },
 
@@ -368,20 +394,20 @@ export default {
       this.clearError();
 
       switch (this.currentStep) {
-        case 1:
+        case 0:
           if (this.$refs.bibUploadComponent) {
             this.$refs.bibUploadComponent.reset();
           }
           break;
-        case 2:
+        case 1:
           if (this.$refs.pdfUploadComponent) {
             this.$refs.pdfUploadComponent.reset();
           }
           break;
-        case 3:
+        case 2:
           this.performImportAnalysis();
           break;
-        case 4:
+        case 3:
           this.startImport();
           break;
       }
@@ -401,7 +427,7 @@ export default {
     },
 
     resetModal() {
-      this.currentStep = 1;
+      this.currentStep = 0;
       this.isProcessing = false;
       this.isAnalyzing = false;
       this.isUploading = false;
@@ -520,9 +546,11 @@ export default {
     },
   },
 
-  // Dynamic component imports (these will be created in future tasks)
+  // Dynamic component imports
   components: {
-    BaseSpinner: () => import("@/components/base/base-spinner/BaseSpinner.vue"),
+    BaseFlowModal: () => import("@/components/base/base-flow-modal/BaseFlowModal.vue"),
+    BaseIcon: () => import("@/components/base/base-icon/BaseIcon.vue"),
+    BaseButton: () => import("@/components/base/base-button/BaseButton.vue"),
     ImportBibUpload: () =>
       import("./ImportBibUpload.vue").catch(() => ({
         template: "<div>ImportBibUpload component not yet implemented</div>",
@@ -548,213 +576,21 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.import-modal {
-  max-width: 1200px !important;
-  width: 90vw !important;
-  max-height: 90vh !important;
-  padding: 0 !important;
-  overflow: hidden;
-}
-
-.import-modal__container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  max-height: 90vh;
-}
-
-.import-modal__header {
-  padding: $base-space * 4 $base-space * 4 $base-space * 2 $base-space * 4;
-  border-bottom: 1px solid var(--border-color);
-  text-align: center;
-}
-
-.import-modal__title {
-  @include font-size(32px);
-  @include line-height(40px);
-  font-weight: 600;
-  margin: 0 0 $base-space 0;
-  color: var(--fg-primary);
-}
-
-.import-modal__subtitle {
-  @include font-size(16px);
-  @include line-height(24px);
-  color: var(--fg-secondary);
-  margin: 0;
-}
-
-.import-modal__steps {
-  display: flex;
-  justify-content: space-between;
-  padding: $base-space * 3 $base-space * 4;
-  border-bottom: 1px solid var(--border-color);
-  background: var(--bg-secondary);
-  overflow-x: auto;
-}
-
-.import-modal__step {
-  display: flex;
-  align-items: center;
-  gap: $base-space + 2px;
-  min-width: 200px;
-  opacity: 0.5;
-  transition: $swift-ease-out;
-
-  &--active,
-  &--completed {
-    opacity: 1;
-  }
-
-  &--active {
-    .import-modal__step-title {
-      color: var(--primary-color);
-      font-weight: 600;
-    }
-  }
-
-  &--completed {
-    .import-modal__step-title {
-      color: var(--success-color);
-    }
-  }
-}
-
-.import-modal__step-indicator {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: $base-space * 4;
-  height: $base-space * 4;
-  border-radius: $border-radius-rounded;
-  background: var(--bg-tertiary);
-  border: 2px solid var(--border-color);
-  flex-shrink: 0;
-  transition: $swift-ease-out;
-
-  .import-modal__step--active & {
-    background: var(--primary-color);
-    border-color: var(--primary-color);
-  }
-
-  .import-modal__step--completed & {
-    background: var(--success-color);
-    border-color: var(--success-color);
-  }
-}
-
-.import-modal__step-number {
-  @include font-size(14px);
-  @include line-height(18px);
-  font-weight: 600;
-  color: var(--fg-secondary);
-
-  &--active {
-    color: white;
-  }
-}
-
-.import-modal__step-icon {
-  font-size: 1rem;
-
-  &--completed {
-    color: white;
-  }
-}
-
-.import-modal__step-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.import-modal__step-title {
-  @include font-size(14px);
-  @include line-height(18px);
-  font-weight: 500;
-  margin: 0 0 calc($base-space / 2) 0;
-  color: var(--fg-primary);
-  transition: $swift-ease-out;
-}
-
-.import-modal__step-description {
-  @include font-size(12px);
-  @include line-height(16px);
-  color: var(--fg-secondary);
-  margin: 0;
-}
-
-.import-modal__progress {
-  display: flex;
-  align-items: center;
-  gap: $base-space * 2;
-  padding: $base-space * 2 $base-space * 4;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.import-modal__progress-bar {
-  flex: 1;
-  height: $base-space;
-  background: var(--bg-tertiary);
-  border-radius: $border-radius-s;
-  overflow: hidden;
-}
-
-.import-modal__progress-fill {
-  height: 100%;
-  background: var(--primary-color);
-  border-radius: $border-radius-s;
-  transition: $swift-ease-out;
-}
-
-.import-modal__progress-text {
-  @include font-size(14px);
-  @include line-height(18px);
-  color: var(--fg-secondary);
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.import-modal__content {
-  flex: 1;
-  overflow-y: auto;
-  padding: $base-space * 4;
-  min-height: 400px;
-}
-
-.import-modal__step-content-wrapper {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.import-modal__navigation {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: $base-space * 3 $base-space * 4;
-  border-top: 1px solid var(--border-color);
-  background: var(--bg-secondary);
-}
-
-.import-modal__navigation-right {
-  display: flex;
-  gap: $base-space * 2;
-  align-items: center;
-}
-
 .import-modal__error {
   display: flex;
   align-items: flex-start;
-  gap: $base-space + 2px;
-  padding: $base-space * 2 $base-space * 4;
-  background: var(--error-bg);
-  border-top: 1px solid var(--error-color);
+  gap: $base-space;
+  padding: $base-space * 2;
+  background: var(--bg-banner-error);
+  border: 1px solid var(--color-danger);
+  border-radius: $border-radius;
+  margin-top: $base-space * 2;
 }
 
 .import-modal__error-icon {
-  color: var(--error-color);
+  color: var(--color-danger);
   font-size: 1.2rem;
-  margin-top: calc($base-space / 4);
+  margin-top: 0.1rem;
   flex-shrink: 0;
 }
 
@@ -762,53 +598,16 @@ export default {
   flex: 1;
 
   h4 {
-    @include font-size(16px);
-    @include line-height(24px);
     margin: 0 0 $base-space 0;
-    color: var(--error-color);
+    color: var(--color-danger);
     font-weight: 600;
+    font-size: 1rem;
   }
 
   p {
-    @include font-size(14px);
-    @include line-height(18px);
-    margin: 0 0 $base-space + 2px 0;
+    margin: 0 0 $base-space 0;
     color: var(--fg-primary);
+    font-size: 0.9rem;
   }
 }
-
-// Responsive design
-@include media("<desktop") {
-  .import-modal {
-    width: 95vw !important;
-    max-height: 95vh !important;
-  }
-
-  .import-modal__steps {
-    flex-direction: column;
-    gap: $base-space * 2;
-    align-items: flex-start;
-  }
-
-  .import-modal__step {
-    min-width: auto;
-    width: 100%;
-  }
-
-  .import-modal__navigation {
-    flex-direction: column;
-    gap: $base-space * 2;
-    align-items: stretch;
-  }
-
-  .import-modal__navigation-right {
-    justify-content: center;
-  }
-}
-
-.import-modal__button-spinner {
-  margin-right: $base-space;
-}
-
-// Note: CSS variables are defined globally in the theme system
 </style>

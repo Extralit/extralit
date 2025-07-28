@@ -292,12 +292,8 @@ export default {
         await this.addFiles(validFiles);
         this.performMatching();
 
-        // Emit event to parent
-        this.$emit("files-uploaded", {
-          files: this.uploadedFiles,
-          matchedCount: this.matchedCount,
-          unmatchedCount: this.unmatchedCount,
-        });
+        // Emit update to parent
+        this.emitUpdate();
       }
     },
 
@@ -503,11 +499,7 @@ export default {
       }
 
       // Emit update to parent
-      this.$emit("files-updated", {
-        files: this.uploadedFiles,
-        matchedCount: this.matchedCount,
-        unmatchedCount: this.unmatchedCount,
-      });
+      this.emitUpdate();
     },
 
     removeFile(fileId) {
@@ -516,11 +508,7 @@ export default {
         this.uploadedFiles.splice(index, 1);
 
         // Emit update to parent
-        this.$emit("files-updated", {
-          files: this.uploadedFiles,
-          matchedCount: this.matchedCount,
-          unmatchedCount: this.unmatchedCount,
-        });
+        this.emitUpdate();
       }
     },
 
@@ -556,6 +544,14 @@ export default {
       };
     },
 
+    emitUpdate() {
+      this.$emit("update", {
+        matchedFiles: this.getMatchedFiles(),
+        unmatchedFiles: this.getUnmatchedFiles(),
+        totalFiles: this.uploadedFiles.length,
+      });
+    },
+
     reset() {
       this.isDragOver = false;
       this.hasError = false;
@@ -564,6 +560,7 @@ export default {
       this.uploadedFiles = [];
       this.matchingStrategy = "exact";
       this.fileIdCounter = 0;
+      this.emitUpdate();
     },
   },
 };

@@ -20,7 +20,7 @@
           <li>Failed Jobs: {{ uploadData.failedJobs }}</li>
         </ul>
       </div>
-      <div v-if="isUploading" class="uploading-indicator">
+      <div v-if="uploadData.totalBatches > 0" class="uploading-indicator">
         <p>Upload in progress...</p>
       </div>
     </div>
@@ -43,11 +43,9 @@ export default {
         failedJobs: 0,
       }),
     },
-    isUploading: {
-      type: Boolean,
-      default: false,
-    },
   },
+
+  emits: ['completed', 'cancelled', 'error'],
 
   methods: {
     reset() {
@@ -56,7 +54,7 @@ export default {
 
     cancelUpload() {
       // Placeholder method
-      this.$emit("upload-cancelled");
+      this.$emit("cancelled");
     },
   },
 };

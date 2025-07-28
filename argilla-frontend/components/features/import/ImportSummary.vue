@@ -47,6 +47,8 @@ export default {
     },
   },
 
+  emits: ['return-to-library', 'view-import-history'],
+
   methods: {
     reset() {
       // Placeholder method

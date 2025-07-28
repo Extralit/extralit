@@ -21,7 +21,7 @@
           <li>Failed: {{ analysisData.summary.failed_count }}</li>
         </ul>
       </div>
-      <div v-if="isLoading" class="loading-indicator">
+      <div v-if="loading" class="loading-indicator">
         <p>Analyzing import status...</p>
       </div>
     </div>
@@ -46,11 +46,13 @@ export default {
         },
       }),
     },
-    isLoading: {
+    loading: {
       type: Boolean,
       default: false,
     },
   },
+
+  emits: ['update', 'retry'],
 
   methods: {
     reset() {
