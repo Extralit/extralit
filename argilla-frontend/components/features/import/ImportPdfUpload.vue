@@ -1,8 +1,10 @@
 <template>
   <div class="import-pdf-upload">
     <div class="import-pdf-upload__header">
-      <h2 class="import-pdf-upload__title">Upload PDF Files</h2>
-      <p class="import-pdf-upload__description">Upload PDF files to match with your bibliography entries</p>
+      <h3 class="import-pdf-upload__title">Upload PDF Files</h3>
+      <p class="import-pdf-upload__description">
+        Upload PDF files to match with your bibliography entries
+      </p>
     </div>
 
     <div class="import-pdf-upload__content">
@@ -13,14 +15,30 @@
           :class="{
             'import-pdf-upload__dropzone--dragover': isDragOver,
             'import-pdf-upload__dropzone--error': hasError,
-            'import-pdf-upload__dropzone--success': uploadedFiles.length > 0,
+            'import-pdf-upload__dropzone--success': hasFiles,
           }"
           @drop="handleDrop"
           @dragover="handleDragOver"
           @dragleave="handleDragLeave"
           @click="triggerFileInput"
         >
-          <input ref="fileInput" type="file" accept=".pdf" multiple style="display: none" @change="handleFileSelect" />
+          <input
+            ref="fileInput"
+            type="file"
+            accept=".pdf"
+            multiple
+            webkitdirectory
+            style="display: none"
+            @change="handleFileSelect"
+          />
+          <input
+            ref="multiFileInput"
+            type="file"
+            accept=".pdf"
+            multiple
+            style="display: none"
+            @change="handleFileSelect"
+          />
 
           <div class="import-pdf-upload__dropzone-content">
             <BaseIcon :icon-name="getDropzoneIcon" class="import-pdf-upload__dropzone-icon" />
@@ -28,8 +46,30 @@
               {{ getDropzoneText }}
             </p>
             <p class="import-pdf-upload__dropzone-subtext">
-              Supported format: PDF files only. Maximum size: 50MB per file.
+              Drop PDF files here or click to browse
             </p>
+            <div class="import-pdf-upload__dropzone-buttons">
+              <BaseButton class="secondary" @click.stop="selectMultipleFiles">
+                Select Files
+              </BaseButton>
+              <BaseButton class="secondary" @click.stop="selectFolder">
+                Select Folder
+              </BaseButton>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upload Progress -->
+        <div v-if="isProcessing" class="import-pdf-upload__progress">
+          <div class="import-pdf-upload__progress-header">
+            <h4>Processing Files...</h4>
+            <span>{{ processedFiles }}/{{ totalFiles }} files</span>
+          </div>
+          <div class="import-pdf-upload__progress-bar">
+            <div
+              class="import-pdf-upload__progress-fill"
+              :style="{ width: `${progressPercentage}%` }"
+            ></div>
           </div>
         </div>
 
@@ -47,127 +87,121 @@
           </div>
         </div>
 
-        <!-- Upload Summary -->
-        <div v-if="uploadedFiles.length > 0" class="import-pdf-upload__summary">
-          <div class="import-pdf-upload__summary-stats">
-            <div class="import-pdf-upload__stat">
-              <span class="import-pdf-upload__stat-label">Total Files:</span>
-              <span class="import-pdf-upload__stat-value">{{ uploadedFiles.length }}</span>
+        <!-- Summary Stats -->
+        <div v-if="hasFiles && !isProcessing" class="import-pdf-upload__summary">
+          <div class="import-pdf-upload__summary-header">
+            <h4>File Matching Summary</h4>
+            <BaseButton
+              v-if="unmatchedFiles.length > 0"
+              class="tertiary small"
+              @click="showUnmatchedFiles = !showUnmatchedFiles"
+            >
+              {{ showUnmatchedFiles ? 'Hide' : 'Show' }} Unmatched Files
+            </BaseButton>
+          </div>
+
+          <div class="import-pdf-upload__stats">
+            <div class="import-pdf-upload__stat import-pdf-upload__stat--success">
+              <BaseIcon icon-name="check" class="import-pdf-upload__stat-icon" />
+              <div class="import-pdf-upload__stat-content">
+                <span class="import-pdf-upload__stat-value">{{ matchedFiles.length }}</span>
+                <span class="import-pdf-upload__stat-label">Matched Files</span>
+              </div>
             </div>
-            <div class="import-pdf-upload__stat">
-              <span class="import-pdf-upload__stat-label">Matched:</span>
-              <span class="import-pdf-upload__stat-value import-pdf-upload__stat-value--success">
-                {{ matchedCount }}
-              </span>
+
+            <div class="import-pdf-upload__stat import-pdf-upload__stat--warning">
+              <BaseIcon icon-name="unavailable" class="import-pdf-upload__stat-icon" />
+              <div class="import-pdf-upload__stat-content">
+                <span class="import-pdf-upload__stat-value">{{ unmatchedFiles.length }}</span>
+                <span class="import-pdf-upload__stat-label">Unmatched Files</span>
+              </div>
             </div>
+
             <div class="import-pdf-upload__stat">
-              <span class="import-pdf-upload__stat-label">Unmatched:</span>
-              <span class="import-pdf-upload__stat-value import-pdf-upload__stat-value--warning">
-                {{ unmatchedCount }}
-              </span>
+              <BaseIcon icon-name="document" class="import-pdf-upload__stat-icon" />
+              <div class="import-pdf-upload__stat-content">
+                <span class="import-pdf-upload__stat-value">{{ totalFiles }}</span>
+                <span class="import-pdf-upload__stat-label">Total Files</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       <!-- File Matching Preview -->
-      <div v-if="uploadedFiles.length > 0" class="import-pdf-upload__matching">
-        <h3 class="import-pdf-upload__matching-title">File Matching Preview</h3>
+      <div v-if="hasFiles && !isProcessing" class="import-pdf-upload__preview">
+        <h4 class="import-pdf-upload__preview-title">File Matching Preview</h4>
 
-        <!-- Matching Strategy Controls -->
-        <div class="import-pdf-upload__controls">
-          <div class="import-pdf-upload__control-group">
-            <label class="import-pdf-upload__control-label">Matching Strategy:</label>
-            <select v-model="matchingStrategy" class="import-pdf-upload__select" @change="performMatching">
-              <option value="exact">Exact Match</option>
-              <option value="partial">Partial Match</option>
-              <option value="fuzzy">Fuzzy Match</option>
-            </select>
+        <!-- Matched Files Table -->
+        <div v-if="matchedFiles.length > 0" class="import-pdf-upload__matched-section">
+          <h5 class="import-pdf-upload__section-title">
+            <BaseIcon icon-name="check" class="import-pdf-upload__section-icon" />
+            Matched Files ({{ matchedFiles.length }})
+          </h5>
+
+          <div class="import-pdf-upload__table-container">
+            <table class="import-pdf-upload__table">
+              <thead>
+                <tr>
+                  <th>PDF File</th>
+                  <th>Reference Key</th>
+                  <th>Title</th>
+                  <th>Authors</th>
+                  <th>Match Type</th>
+                  <th>File Size</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="match in matchedFiles" :key="match.file.name">
+                  <td class="import-pdf-upload__table-cell--filename">
+                    <BaseIcon icon-name="document" class="import-pdf-upload__file-icon" />
+                    {{ match.file.name }}
+                  </td>
+                  <td class="import-pdf-upload__table-cell--key">{{ match.bibEntry.reference }}</td>
+                  <td class="import-pdf-upload__table-cell--title">{{ match.bibEntry.title || "N/A" }}</td>
+                  <td class="import-pdf-upload__table-cell--authors">{{ match.bibEntry.authors || "N/A" }}</td>
+                  <td class="import-pdf-upload__table-cell--match">
+                    <span
+                      class="import-pdf-upload__match-badge"
+                      :class="`import-pdf-upload__match-badge--${match.matchType}`"
+                    >
+                      {{ getMatchTypeLabel(match.matchType) }}
+                    </span>
+                  </td>
+                  <td class="import-pdf-upload__table-cell--size">{{ formatFileSize(match.file.size) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Unmatched Files Section -->
+        <div v-if="unmatchedFiles.length > 0 && showUnmatchedFiles" class="import-pdf-upload__unmatched-section">
+          <h5 class="import-pdf-upload__section-title">
+            <BaseIcon icon-name="unavailable" class="import-pdf-upload__section-icon" />
+            Unmatched Files ({{ unmatchedFiles.length }})
+          </h5>
+
+          <div class="import-pdf-upload__unmatched-list">
+            <div
+              v-for="file in unmatchedFiles"
+              :key="file.name"
+              class="import-pdf-upload__unmatched-item"
+            >
+              <BaseIcon icon-name="document" class="import-pdf-upload__file-icon" />
+              <div class="import-pdf-upload__unmatched-info">
+                <span class="import-pdf-upload__unmatched-name">{{ file.name }}</span>
+                <span class="import-pdf-upload__unmatched-size">{{ formatFileSize(file.size) }}</span>
+              </div>
+            </div>
           </div>
 
-          <BaseButton class="secondary small" @click="performMatching"> Re-match Files </BaseButton>
-        </div>
-
-        <!-- File Matching Table -->
-        <div class="import-pdf-upload__table-container">
-          <table class="import-pdf-upload__table">
-            <thead>
-              <tr>
-                <th>PDF File</th>
-                <th>File Size</th>
-                <th>Matched Reference</th>
-                <th>Match Type</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="file in uploadedFiles"
-                :key="file.id"
-                :class="{
-                  'import-pdf-upload__table-row--matched': file.matchedReference,
-                  'import-pdf-upload__table-row--unmatched': !file.matchedReference,
-                }"
-              >
-                <td class="import-pdf-upload__table-cell--filename">
-                  <div class="import-pdf-upload__file-info">
-                    <BaseIcon icon-name="document" class="import-pdf-upload__file-icon" />
-                    <span class="import-pdf-upload__filename" :title="file.name">
-                      {{ file.name }}
-                    </span>
-                  </div>
-                </td>
-                <td class="import-pdf-upload__table-cell--size">
-                  {{ formatFileSize(file.size) }}
-                </td>
-                <td class="import-pdf-upload__table-cell--reference">
-                  <div v-if="file.matchedReference" class="import-pdf-upload__matched-ref">
-                    <span class="import-pdf-upload__ref-key">{{ file.matchedReference.reference }}</span>
-                    <span class="import-pdf-upload__ref-title">{{ file.matchedReference.title || "No title" }}</span>
-                  </div>
-                  <span v-else class="import-pdf-upload__unmatched">No match found</span>
-                </td>
-                <td class="import-pdf-upload__table-cell--match-type">
-                  <span
-                    v-if="file.matchType"
-                    class="import-pdf-upload__match-badge"
-                    :class="`import-pdf-upload__match-badge--${file.matchType}`"
-                  >
-                    {{ file.matchType }}
-                  </span>
-                  <span v-else class="import-pdf-upload__no-match">-</span>
-                </td>
-                <td class="import-pdf-upload__table-cell--actions">
-                  <div class="import-pdf-upload__actions">
-                    <!-- Manual Reference Selection -->
-                    <select
-                      v-model="file.manualReferenceId"
-                      class="import-pdf-upload__reference-select"
-                      @change="handleManualMatch(file)"
-                    >
-                      <option value="">Select reference...</option>
-                      <option v-for="entry in bibEntries" :key="entry.reference" :value="entry.reference">
-                        {{ entry.reference }} - {{ entry.title || "No title" }}
-                      </option>
-                    </select>
-
-                    <!-- Remove File Button -->
-                    <BaseButton class="danger small" @click="removeFile(file.id)">
-                      <BaseIcon icon-name="trash-empty" />
-                    </BaseButton>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Unmatched Files Warning -->
-        <div v-if="unmatchedCount > 0" class="import-pdf-upload__warning">
-          <BaseIcon icon-name="danger" class="import-pdf-upload__warning-icon" />
-          <div class="import-pdf-upload__warning-content">
-            <h4>{{ unmatchedCount }} file(s) could not be automatically matched</h4>
-            <p>Please manually select references for unmatched files or they will be skipped during import.</p>
+          <div class="import-pdf-upload__unmatched-help">
+            <BaseIcon icon-name="info" class="import-pdf-upload__help-icon" />
+            <p>
+              These files couldn't be automatically matched to bibliography entries.
+              They will be skipped during import unless manually associated.
+            </p>
           </div>
         </div>
       </div>
@@ -176,6 +210,13 @@
 </template>
 
 <script>
+import "assets/icons/check";
+import "assets/icons/danger";
+import "assets/icons/document";
+import "assets/icons/import";
+import "assets/icons/info";
+import "assets/icons/unavailable";
+
 export default {
   name: "ImportPdfUpload",
 
@@ -189,45 +230,51 @@ export default {
   data() {
     return {
       isDragOver: false,
+      isProcessing: false,
       hasError: false,
       errorMessage: "",
       fileErrors: [],
       uploadedFiles: [],
-      matchingStrategy: "exact",
-      fileIdCounter: 0,
+      matchedFiles: [],
+      unmatchedFiles: [],
+      processedFiles: 0,
+      totalFiles: 0,
+      showUnmatchedFiles: false,
     };
   },
 
   computed: {
+    hasFiles() {
+      return this.uploadedFiles.length > 0;
+    },
+
     getDropzoneIcon() {
       if (this.hasError) return "danger";
-      if (this.uploadedFiles.length > 0) return "check";
+      if (this.hasFiles) return "check";
       return "import";
     },
 
     getDropzoneText() {
-      if (this.hasError) return "Error uploading files";
-      if (this.uploadedFiles.length > 0) {
-        return `${this.uploadedFiles.length} file(s) uploaded`;
-      }
-      return "Drop your PDF files here or click to browse";
+      if (this.hasError) return "Error processing files";
+      if (this.hasFiles) return `${this.totalFiles} files uploaded`;
+      return "Drop PDF files here or click to browse";
     },
 
-    matchedCount() {
-      return this.uploadedFiles.filter((file) => file.matchedReference).length;
+    progressPercentage() {
+      if (this.totalFiles === 0) return 0;
+      return Math.round((this.processedFiles / this.totalFiles) * 100);
     },
 
-    unmatchedCount() {
-      return this.uploadedFiles.filter((file) => !file.matchedReference).length;
+    isValid() {
+      return this.hasFiles && !this.hasError && this.matchedFiles.length > 0;
     },
   },
 
   watch: {
     bibEntries: {
       handler() {
-        // Re-perform matching when bibliography entries change
-        if (this.uploadedFiles.length > 0) {
-          this.performMatching();
+        if (this.hasFiles) {
+          this.performFileMatching();
         }
       },
       immediate: true,
@@ -235,8 +282,17 @@ export default {
   },
 
   methods: {
-    triggerFileInput() {
+    selectMultipleFiles() {
+      this.$refs.multiFileInput.click();
+    },
+
+    selectFolder() {
       this.$refs.fileInput.click();
+    },
+
+    triggerFileInput() {
+      // Default to multiple file selection
+      this.selectMultipleFiles();
     },
 
     handleDragOver(event) {
@@ -262,194 +318,244 @@ export default {
     },
 
     async processFiles(files) {
-      // Reset error state
+      // Reset state
       this.hasError = false;
       this.errorMessage = "";
       this.fileErrors = [];
+      this.uploadedFiles = [];
+      this.matchedFiles = [];
+      this.unmatchedFiles = [];
+      this.processedFiles = 0;
 
-      const validFiles = [];
-      const errors = [];
+      // Filter for PDF files only
+      const pdfFiles = files.filter(file => this.isValidPdfFile(file));
 
-      // Validate each file
-      for (const file of files) {
-        const validation = this.validateFile(file);
-        if (validation.isValid) {
-          validFiles.push(file);
-        } else {
-          errors.push(`${file.name}: ${validation.error}`);
-        }
-      }
-
-      // Show errors if any
-      if (errors.length > 0) {
-        this.fileErrors = errors;
-        this.hasError = true;
-        this.errorMessage = `${errors.length} file(s) failed validation`;
-      }
-
-      // Process valid files
-      if (validFiles.length > 0) {
-        await this.addFiles(validFiles);
-        this.performMatching();
-
-        // Emit update to parent
-        this.emitUpdate();
-      }
-    },
-
-    validateFile(file) {
-      // Check file type
-      if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
-        return {
-          isValid: false,
-          error: "Only PDF files are allowed",
-        };
-      }
-
-      // Check file size (50MB limit)
-      const maxSize = 50 * 1024 * 1024; // 50MB in bytes
-      if (file.size > maxSize) {
-        return {
-          isValid: false,
-          error: `File size (${this.formatFileSize(file.size)}) exceeds 50MB limit`,
-        };
-      }
-
-      // Check for duplicate filenames
-      const isDuplicate = this.uploadedFiles.some((existingFile) => existingFile.name === file.name);
-      if (isDuplicate) {
-        return {
-          isValid: false,
-          error: "File with this name already uploaded",
-        };
-      }
-
-      return { isValid: true };
-    },
-
-    async addFiles(files) {
-      for (const file of files) {
-        const fileData = {
-          id: ++this.fileIdCounter,
-          name: file.name,
-          size: file.size,
-          file: file,
-          matchedReference: null,
-          matchType: null,
-          matchScore: 0,
-          manualReferenceId: "",
-        };
-
-        this.uploadedFiles.push(fileData);
-      }
-    },
-
-    performMatching() {
-      if (this.bibEntries.length === 0) {
-        // Clear all matches if no bibliography entries
-        this.uploadedFiles.forEach((file) => {
-          file.matchedReference = null;
-          file.matchType = null;
-          file.matchScore = 0;
-        });
+      if (pdfFiles.length === 0) {
+        this.showError("No valid PDF files found. Please upload PDF files only.");
         return;
       }
 
-      this.uploadedFiles.forEach((file) => {
-        const match = this.findBestMatch(file, this.bibEntries);
-        file.matchedReference = match.reference;
-        file.matchType = match.type;
-        file.matchScore = match.score;
+      if (pdfFiles.length !== files.length) {
+        const skippedCount = files.length - pdfFiles.length;
+        this.fileErrors.push(`${skippedCount} non-PDF files were skipped`);
+      }
+
+      this.totalFiles = pdfFiles.length;
+      this.isProcessing = true;
+
+      try {
+        // Process files with validation
+        for (const file of pdfFiles) {
+          await this.processFile(file);
+          this.processedFiles++;
+        }
+
+        this.uploadedFiles = pdfFiles;
+
+        // Perform file matching with bibliography entries
+        this.performFileMatching();
+
+        this.isProcessing = false;
+        this.emitUpdate();
+      } catch (error) {
+        this.isProcessing = false;
+        this.showError(`Failed to process files: ${error.message}`);
+      }
+    },
+
+    async processFile(file) {
+      // Validate file size (max 50MB per file)
+      const maxSize = 50 * 1024 * 1024; // 50MB
+      if (file.size > maxSize) {
+        throw new Error(`File ${file.name} is too large (max 50MB)`);
+      }
+
+      // Basic PDF validation (check file signature)
+      if (!await this.validatePdfFile(file)) {
+        throw new Error(`File ${file.name} is not a valid PDF`);
+      }
+
+      // Simulate processing delay for UX
+      await new Promise(resolve => setTimeout(resolve, 100));
+    },
+
+    isValidPdfFile(file) {
+      return file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+    },
+
+    async validatePdfFile(file) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const arrayBuffer = e.target.result;
+          const uint8Array = new Uint8Array(arrayBuffer.slice(0, 4));
+
+          // Check PDF signature (%PDF)
+          const pdfSignature = [0x25, 0x50, 0x44, 0x46]; // %PDF
+          const isValidPdf = pdfSignature.every((byte, index) => uint8Array[index] === byte);
+          resolve(isValidPdf);
+        };
+        reader.onerror = () => resolve(false);
+        reader.readAsArrayBuffer(file.slice(0, 4));
       });
     },
 
-    findBestMatch(file, bibEntries) {
-      const fileName = file.name.toLowerCase();
-      const fileNameWithoutExt = fileName.replace(/\.pdf$/, "");
+    performFileMatching() {
+      if (!this.bibEntries || this.bibEntries.length === 0 || this.uploadedFiles.length === 0) {
+        return;
+      }
 
-      let bestMatch = {
-        reference: null,
-        type: null,
-        score: 0,
-      };
+      this.matchedFiles = [];
+      this.unmatchedFiles = [];
 
-      for (const entry of bibEntries) {
-        const referenceKey = entry.reference.toLowerCase();
-        let match = null;
+      for (const file of this.uploadedFiles) {
+        const match = this.findBestMatch(file);
 
-        switch (this.matchingStrategy) {
-          case "exact":
-            match = this.exactMatch(fileNameWithoutExt, referenceKey);
-            break;
-          case "partial":
-            match = this.partialMatch(fileNameWithoutExt, referenceKey);
-            break;
-          case "fuzzy":
-            match = this.fuzzyMatch(fileNameWithoutExt, referenceKey);
-            break;
-        }
-
-        if (match && match.score > bestMatch.score) {
-          bestMatch = {
-            reference: entry,
-            type: match.type,
-            score: match.score,
-          };
+        if (match) {
+          this.matchedFiles.push({
+            file,
+            bibEntry: match.entry,
+            matchType: match.type,
+            confidence: match.confidence,
+          });
+        } else {
+          this.unmatchedFiles.push(file);
         }
       }
 
-      // Only return matches above a minimum threshold
-      const minThreshold = this.matchingStrategy === "fuzzy" ? 0.6 : 0.8;
-      if (bestMatch.score >= minThreshold) {
-        return bestMatch;
-      }
-
-      return {
-        reference: null,
-        type: null,
-        score: 0,
-      };
+      // Sort matched files by confidence (highest first)
+      this.matchedFiles.sort((a, b) => b.confidence - a.confidence);
     },
 
-    exactMatch(fileName, referenceKey) {
-      if (fileName === referenceKey) {
-        return { type: "exact", score: 1.0 };
+    findBestMatch(file) {
+      const fileName = file.name.toLowerCase().replace(/\.pdf$/, "");
+      let bestMatch = null;
+      let bestConfidence = 0;
+
+      for (const entry of this.bibEntries) {
+        const matches = [
+          // Exact reference key match
+          this.checkExactMatch(fileName, entry.reference),
+          // Partial reference key match
+          this.checkPartialMatch(fileName, entry.reference),
+          // File field match (Zotero exports)
+          this.checkFileFieldMatch(fileName, entry.file),
+          // Fuzzy title match
+          this.checkTitleMatch(fileName, entry.title),
+        ].filter(Boolean);
+
+        if (matches.length > 0) {
+          const bestFileMatch = matches.reduce((best, current) =>
+            current.confidence > best.confidence ? current : best
+          );
+
+          if (bestFileMatch.confidence > bestConfidence) {
+            bestMatch = {
+              entry,
+              type: bestFileMatch.type,
+              confidence: bestFileMatch.confidence,
+            };
+            bestConfidence = bestFileMatch.confidence;
+          }
+        }
+      }
+
+      // Only return matches with reasonable confidence
+      return bestConfidence >= 0.6 ? bestMatch : null;
+    },
+
+    checkExactMatch(fileName, reference) {
+      if (!reference) return null;
+
+      const refKey = reference.toLowerCase();
+      if (fileName === refKey) {
+        return { type: "exact", confidence: 1.0 };
       }
       return null;
     },
 
-    partialMatch(fileName, referenceKey) {
-      // Check if filename contains reference key
-      if (fileName.includes(referenceKey)) {
-        return { type: "partial", score: 0.9 };
-      }
+    checkPartialMatch(fileName, reference) {
+      if (!reference) return null;
 
-      // Check if reference key contains filename (for shorter filenames)
-      if (referenceKey.includes(fileName) && fileName.length > 3) {
-        return { type: "partial", score: 0.85 };
+      const refKey = reference.toLowerCase();
+      if (fileName.includes(refKey) || refKey.includes(fileName)) {
+        const similarity = this.calculateStringSimilarity(fileName, refKey);
+        if (similarity >= 0.7) {
+          return { type: "partial", confidence: similarity };
+        }
       }
-
       return null;
     },
 
-    fuzzyMatch(fileName, referenceKey) {
-      const similarity = this.calculateStringSimilarity(fileName, referenceKey);
+    checkFileFieldMatch(fileName, fileField) {
+      if (!fileField) return null;
 
-      if (similarity >= 0.6) {
-        return { type: "fuzzy", score: similarity };
+      // Parse Zotero file field format: "PDF:files/2/filename.pdf:application/pdf"
+      const filePaths = fileField.split(";").map(f => f.trim());
+
+      for (const filePath of filePaths) {
+        const parts = filePath.split(":");
+        if (parts.length >= 2) {
+          const path = parts[1].toLowerCase();
+          const pathFileName = path.split("/").pop().replace(/\.pdf$/, "");
+
+          if (fileName === pathFileName) {
+            return { type: "file_field", confidence: 0.95 };
+          }
+
+          const similarity = this.calculateStringSimilarity(fileName, pathFileName);
+          if (similarity >= 0.8) {
+            return { type: "file_field", confidence: similarity };
+          }
+        }
+      }
+      return null;
+    },
+
+    checkTitleMatch(fileName, title) {
+      if (!title) return null;
+
+      // Clean and normalize title for comparison
+      const cleanTitle = title
+        .toLowerCase()
+        .replace(/[^\w\s]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+
+      const cleanFileName = fileName
+        .replace(/[^\w\s]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+
+      // Check if filename contains significant words from title
+      const titleWords = cleanTitle.split(" ").filter(word => word.length > 3);
+      const fileWords = cleanFileName.split(" ");
+
+      let matchedWords = 0;
+      for (const titleWord of titleWords) {
+        if (fileWords.some(fileWord =>
+          fileWord.includes(titleWord) || titleWord.includes(fileWord)
+        )) {
+          matchedWords++;
+        }
+      }
+
+      if (titleWords.length > 0) {
+        const confidence = matchedWords / titleWords.length;
+        if (confidence >= 0.6) {
+          return { type: "title", confidence: confidence * 0.8 }; // Lower confidence for title matches
+        }
       }
 
       return null;
     },
 
     calculateStringSimilarity(str1, str2) {
-      // Levenshtein distance-based similarity
+      // Simple Levenshtein distance-based similarity
       const longer = str1.length > str2.length ? str1 : str2;
       const shorter = str1.length > str2.length ? str2 : str1;
 
-      if (longer.length === 0) {
-        return 1.0;
-      }
+      if (longer.length === 0) return 1.0;
 
       const distance = this.levenshteinDistance(longer, shorter);
       return (longer.length - distance) / longer.length;
@@ -472,9 +578,9 @@ export default {
             matrix[i][j] = matrix[i - 1][j - 1];
           } else {
             matrix[i][j] = Math.min(
-              matrix[i - 1][j - 1] + 1, // substitution
-              matrix[i][j - 1] + 1, // insertion
-              matrix[i - 1][j] + 1 // deletion
+              matrix[i - 1][j - 1] + 1,
+              matrix[i][j - 1] + 1,
+              matrix[i - 1][j] + 1
             );
           }
         }
@@ -483,83 +589,64 @@ export default {
       return matrix[str2.length][str1.length];
     },
 
-    handleManualMatch(file) {
-      if (file.manualReferenceId) {
-        const selectedReference = this.bibEntries.find((entry) => entry.reference === file.manualReferenceId);
-
-        if (selectedReference) {
-          file.matchedReference = selectedReference;
-          file.matchType = "manual";
-          file.matchScore = 1.0;
-        }
-      } else {
-        file.matchedReference = null;
-        file.matchType = null;
-        file.matchScore = 0;
-      }
-
-      // Emit update to parent
-      this.emitUpdate();
-    },
-
-    removeFile(fileId) {
-      const index = this.uploadedFiles.findIndex((file) => file.id === fileId);
-      if (index !== -1) {
-        this.uploadedFiles.splice(index, 1);
-
-        // Emit update to parent
-        this.emitUpdate();
-      }
+    getMatchTypeLabel(matchType) {
+      const labels = {
+        exact: "Exact",
+        partial: "Partial",
+        file_field: "File Path",
+        title: "Title",
+      };
+      return labels[matchType] || "Unknown";
     },
 
     formatFileSize(bytes) {
-      if (bytes === 0) return "0 Bytes";
+      if (bytes === 0) return "0 B";
 
       const k = 1024;
-      const sizes = ["Bytes", "KB", "MB", "GB"];
+      const sizes = ["B", "KB", "MB", "GB"];
       const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
     },
 
-    // Public methods for parent components
-    getMatchedFiles() {
-      return this.uploadedFiles.filter((file) => file.matchedReference);
-    },
-
-    getUnmatchedFiles() {
-      return this.uploadedFiles.filter((file) => !file.matchedReference);
-    },
-
-    getAllFiles() {
-      return this.uploadedFiles;
-    },
-
-    getFileMatchingData() {
-      return {
-        files: this.uploadedFiles,
-        matchedCount: this.matchedCount,
-        unmatchedCount: this.unmatchedCount,
-        strategy: this.matchingStrategy,
-      };
+    showError(message) {
+      this.hasError = true;
+      this.errorMessage = message;
+      this.emitUpdate();
     },
 
     emitUpdate() {
       this.$emit("update", {
-        matchedFiles: this.getMatchedFiles(),
-        unmatchedFiles: this.getUnmatchedFiles(),
-        totalFiles: this.uploadedFiles.length,
+        isValid: this.isValid,
+        matchedFiles: this.matchedFiles,
+        unmatchedFiles: this.unmatchedFiles,
+        totalFiles: this.totalFiles,
+        hasError: this.hasError,
+        errorMessage: this.errorMessage,
       });
+    },
+
+    // Public methods for parent components
+    getUploadData() {
+      return {
+        matchedFiles: this.matchedFiles,
+        unmatchedFiles: this.unmatchedFiles,
+        totalFiles: this.totalFiles,
+      };
     },
 
     reset() {
       this.isDragOver = false;
+      this.isProcessing = false;
       this.hasError = false;
       this.errorMessage = "";
       this.fileErrors = [];
       this.uploadedFiles = [];
-      this.matchingStrategy = "exact";
-      this.fileIdCounter = 0;
+      this.matchedFiles = [];
+      this.unmatchedFiles = [];
+      this.processedFiles = 0;
+      this.totalFiles = 0;
+      this.showUnmatchedFiles = false;
       this.emitUpdate();
     },
   },
@@ -568,19 +655,17 @@ export default {
 
 <style lang="scss" scoped>
 .import-pdf-upload {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 2rem;
+  padding: $base-space * 3;
 
   &__header {
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: $base-space * 3;
   }
 
   &__title {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: 600;
-    margin-bottom: 0.5rem;
+    margin-bottom: $base-space;
     color: var(--fg-primary);
   }
 
@@ -592,43 +677,43 @@ export default {
   &__content {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: $base-space * 3;
   }
 
   &__file-section {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: $base-space * 2;
   }
 
   &__dropzone {
-    border: 2px dashed var(--border-color);
-    border-radius: 8px;
-    padding: 3rem 2rem;
+    border: 2px dashed var(--border-field);
+    border-radius: $border-radius-m;
+    padding: $base-space * 4 $base-space * 3;
     text-align: center;
     cursor: pointer;
-    transition: all 0.2s ease;
-    background: var(--bg-secondary);
+    transition: $swift-ease-out;
+    background: var(--bg-accent-grey-1);
 
     &:hover {
-      border-color: var(--primary-color);
-      background: var(--bg-tertiary);
+      border-color: var(--bg-action);
+      background: var(--bg-accent-grey-2);
     }
 
     &--dragover {
-      border-color: var(--primary-color);
-      background: var(--bg-tertiary);
+      border-color: var(--bg-action);
+      background: var(--bg-accent-grey-2);
       transform: scale(1.02);
     }
 
     &--error {
-      border-color: var(--error-color);
-      background: var(--error-bg);
+      border-color: var(--color-danger);
+      background: var(--bg-banner-error);
     }
 
     &--success {
-      border-color: var(--success-color);
-      background: var(--success-bg);
+      border-color: var(--color-success);
+      background: var(--bg-solid-grey-2);
     }
   }
 
@@ -636,7 +721,7 @@ export default {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1rem;
+    gap: $base-space * 2;
   }
 
   &__dropzone-icon {
@@ -657,132 +742,208 @@ export default {
     margin: 0;
   }
 
+  &__dropzone-buttons {
+    display: flex;
+    gap: $base-space;
+    margin-top: $base-space;
+  }
+
+  &__progress {
+    padding: $base-space * 2;
+    background: var(--bg-accent-grey-2);
+    border-radius: $border-radius;
+    border: 1px solid var(--border-field);
+  }
+
+  &__progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $base-space;
+
+    h4 {
+      margin: 0;
+      font-size: 1rem;
+      color: var(--fg-primary);
+    }
+
+    span {
+      font-size: 0.9rem;
+      color: var(--fg-secondary);
+    }
+  }
+
+  &__progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--bg-accent-grey-3);
+    border-radius: $border-radius-s;
+    overflow: hidden;
+  }
+
+  &__progress-fill {
+    height: 100%;
+    background: var(--bg-action);
+    border-radius: $border-radius-s;
+    transition: width 0.3s ease;
+  }
+
   &__error {
     display: flex;
     align-items: flex-start;
-    gap: 0.75rem;
-    padding: 1rem;
-    background: var(--error-bg);
-    border: 1px solid var(--error-color);
-    border-radius: 6px;
+    gap: $base-space;
+    padding: $base-space * 2;
+    background: var(--bg-banner-error);
+    border: 1px solid var(--color-danger);
+    border-radius: $border-radius;
   }
 
   &__error-icon {
-    color: var(--error-color);
+    color: var(--color-danger);
     font-size: 1.2rem;
     margin-top: 0.1rem;
   }
 
   &__error-content h4 {
-    margin: 0 0 0.5rem 0;
-    color: var(--error-color);
+    margin: 0 0 $base-space 0;
+    color: var(--color-danger);
     font-size: 1rem;
   }
 
   &__error-content p {
-    margin: 0 0 0.5rem 0;
+    margin: 0 0 $base-space 0;
     color: var(--fg-primary);
   }
 
   &__error-list {
     margin: 0;
-    padding-left: 1.5rem;
+    padding-left: $base-space * 2;
     color: var(--fg-secondary);
     font-size: 0.9rem;
   }
 
   &__summary {
-    padding: 1rem;
-    background: var(--bg-tertiary);
-    border-radius: 6px;
-    border: 1px solid var(--border-color);
+    padding: $base-space * 2;
+    background: var(--bg-accent-grey-2);
+    border-radius: $border-radius;
+    border: 1px solid var(--border-field);
   }
 
-  &__summary-stats {
+  &__summary-header {
     display: flex;
-    gap: 2rem;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $base-space * 2;
+
+    h4 {
+      margin: 0;
+      font-size: 1.1rem;
+      color: var(--fg-primary);
+    }
+  }
+
+  &__stats {
+    display: flex;
+    gap: $base-space * 3;
     flex-wrap: wrap;
   }
 
   &__stat {
     display: flex;
+    align-items: center;
+    gap: $base-space;
+    padding: $base-space;
+    background: var(--bg-accent-grey-1);
+    border-radius: $border-radius;
+    border: 1px solid var(--border-field);
+
+    &--success {
+      border-color: var(--color-success);
+      background: var(--bg-solid-grey-2);
+    }
+
+    &--warning {
+      border-color: var(--color-warning);
+      background: var(--bg-banner-warning);
+    }
+  }
+
+  &__stat-icon {
+    font-size: 1.2rem;
+    color: var(--fg-secondary);
+
+    .import-pdf-upload__stat--success & {
+      color: var(--color-success);
+    }
+
+    .import-pdf-upload__stat--warning & {
+      color: var(--color-warning);
+    }
+  }
+
+  &__stat-content {
+    display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: $base-space / 4;
+  }
+
+  &__stat-value {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--fg-primary);
   }
 
   &__stat-label {
     font-size: 0.9rem;
     color: var(--fg-secondary);
-    font-weight: 500;
   }
 
-  &__stat-value {
+  &__preview {
+    border: 1px solid var(--border-field);
+    border-radius: $border-radius-m;
+    padding: $base-space * 2;
+    background: var(--bg-accent-grey-1);
+  }
+
+  &__preview-title {
     font-size: 1.1rem;
-    color: var(--fg-primary);
     font-weight: 600;
-
-    &--success {
-      color: var(--success-color);
-    }
-
-    &--warning {
-      color: var(--warning-color);
-    }
-  }
-
-  &__matching {
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 1.5rem;
-    background: var(--bg-primary);
-  }
-
-  &__matching-title {
-    font-size: 1.2rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
+    margin-bottom: $base-space * 2;
     color: var(--fg-primary);
   }
 
-  &__controls {
+  &__matched-section,
+  &__unmatched-section {
+    margin-bottom: $base-space * 3;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  &__section-title {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-    flex-wrap: wrap;
-  }
-
-  &__control-group {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  &__control-label {
-    font-size: 0.9rem;
-    font-weight: 500;
+    gap: $base-space;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: $base-space * 2;
     color: var(--fg-primary);
   }
 
-  &__select {
-    padding: 0.5rem;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    background: var(--bg-primary);
-    color: var(--fg-primary);
-    font-size: 0.9rem;
+  &__section-icon {
+    font-size: 1.1rem;
+    color: var(--color-success);
 
-    &:focus {
-      outline: none;
-      border-color: var(--primary-color);
+    .import-pdf-upload__unmatched-section & {
+      color: var(--color-warning);
     }
   }
 
   &__table-container {
     overflow-x: auto;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    margin-bottom: 1rem;
+    border: 1px solid var(--border-field);
+    border-radius: $border-radius;
   }
 
   &__table {
@@ -791,19 +952,22 @@ export default {
     font-size: 0.9rem;
 
     th {
-      background: var(--bg-secondary);
-      padding: 0.75rem;
+      background: var(--bg-accent-grey-2);
+      padding: $base-space;
       text-align: left;
       font-weight: 600;
       color: var(--fg-primary);
-      border-bottom: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--border-field);
     }
 
     td {
-      padding: 0.75rem;
-      border-bottom: 1px solid var(--border-color);
+      padding: $base-space;
+      border-bottom: 1px solid var(--border-field);
       color: var(--fg-primary);
-      vertical-align: top;
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     tr:last-child td {
@@ -811,183 +975,135 @@ export default {
     }
 
     tr:hover {
-      background: var(--bg-tertiary);
-    }
-  }
-
-  &__table-row {
-    &--matched {
-      background: rgba(56, 142, 60, 0.05);
-    }
-
-    &--unmatched {
-      background: rgba(245, 124, 0, 0.05);
+      background: var(--bg-accent-grey-3);
     }
   }
 
   &__table-cell {
     &--filename {
+      display: flex;
+      align-items: center;
+      gap: $base-space / 2;
+      font-weight: 500;
       max-width: 250px;
     }
 
-    &--size {
-      white-space: nowrap;
+    &--key {
+      font-family: $quaternary-font-family;
+      font-weight: 600;
+      color: var(--bg-action);
     }
 
-    &--reference {
+    &--title {
+      font-weight: 500;
       max-width: 300px;
     }
 
-    &--actions {
-      min-width: 200px;
+    &--authors {
+      max-width: 250px;
+    }
+
+    &--match {
+      text-align: center;
+    }
+
+    &--size {
+      text-align: right;
+      font-family: $quaternary-font-family;
     }
   }
 
-  &__file-info {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
   &__file-icon {
-    color: var(--primary-color);
-    font-size: 1.1rem;
-  }
-
-  &__filename {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-weight: 500;
-  }
-
-  &__matched-ref {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-
-  &__ref-key {
-    font-family: monospace;
-    font-weight: 600;
-    color: var(--primary-color);
-    font-size: 0.9rem;
-  }
-
-  &__ref-title {
-    color: var(--fg-secondary);
-    font-size: 0.85rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  &__unmatched {
-    color: var(--warning-color);
-    font-style: italic;
+    color: var(--color-danger);
+    font-size: 1rem;
+    flex-shrink: 0;
   }
 
   &__match-badge {
     display: inline-block;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
+    padding: $base-space / 4 $base-space / 2;
+    border-radius: $border-radius-s;
     font-size: 0.8rem;
     font-weight: 500;
     text-transform: uppercase;
 
     &--exact {
-      background: var(--success-bg);
-      color: var(--success-color);
+      background: var(--color-success);
+      color: white;
     }
 
     &--partial {
-      background: var(--info-bg);
-      color: var(--info-color);
+      background: var(--bg-action);
+      color: white;
     }
 
-    &--fuzzy {
-      background: var(--warning-bg);
-      color: var(--warning-color);
+    &--file_field {
+      background: var(--bg-action);
+      color: white;
     }
 
-    &--manual {
-      background: var(--primary-bg);
-      color: var(--primary-color);
+    &--title {
+      background: var(--color-warning);
+      color: white;
     }
   }
 
-  &__no-match {
-    color: var(--fg-tertiary);
+  &__unmatched-list {
+    display: flex;
+    flex-direction: column;
+    gap: $base-space;
+    margin-bottom: $base-space * 2;
   }
 
-  &__actions {
+  &__unmatched-item {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: $base-space;
+    padding: $base-space;
+    background: var(--bg-accent-grey-1);
+    border-radius: $border-radius;
+    border: 1px solid var(--border-field);
   }
 
-  &__reference-select {
+  &__unmatched-info {
+    display: flex;
+    flex-direction: column;
+    gap: $base-space / 4;
     flex: 1;
-    min-width: 150px;
-    padding: 0.4rem;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    background: var(--bg-primary);
-    color: var(--fg-primary);
-    font-size: 0.85rem;
-
-    &:focus {
-      outline: none;
-      border-color: var(--primary-color);
-    }
   }
 
-  &__warning {
+  &__unmatched-name {
+    font-weight: 500;
+    color: var(--fg-primary);
+  }
+
+  &__unmatched-size {
+    font-size: 0.9rem;
+    color: var(--fg-secondary);
+    font-family: $quaternary-font-family;
+  }
+
+  &__unmatched-help {
     display: flex;
     align-items: flex-start;
-    gap: 0.75rem;
-    padding: 1rem;
-    background: var(--warning-bg);
-    border: 1px solid var(--warning-color);
-    border-radius: 6px;
+    gap: $base-space;
+    padding: $base-space * 2;
+    background: var(--bg-banner-info);
+    border: 1px solid var(--bg-action);
+    border-radius: $border-radius;
   }
 
-  &__warning-icon {
-    color: var(--warning-color);
-    font-size: 1.2rem;
+  &__help-icon {
+    color: var(--bg-action);
+    font-size: 1.1rem;
     margin-top: 0.1rem;
+    flex-shrink: 0;
   }
 
-  &__warning-content h4 {
-    margin: 0 0 0.5rem 0;
-    color: var(--warning-color);
-    font-size: 1rem;
-  }
-
-  &__warning-content p {
+  &__unmatched-help p {
     margin: 0;
+    font-size: 0.9rem;
     color: var(--fg-primary);
   }
-}
-
-// CSS variables (these would typically be defined in your theme)
-:root {
-  --fg-primary: #1a1a1a;
-  --fg-secondary: #666666;
-  --fg-tertiary: #999999;
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8f9fa;
-  --bg-tertiary: #f1f3f4;
-  --border-color: #e1e5e9;
-  --primary-color: #1976d2;
-  --primary-bg: #e3f2fd;
-  --error-color: #d32f2f;
-  --error-bg: #ffebee;
-  --success-color: #388e3c;
-  --success-bg: #e8f5e8;
-  --warning-color: #f57c00;
-  --warning-bg: #fff3e0;
-  --info-color: #0288d1;
-  --info-bg: #e1f5fe;
 }
 </style>

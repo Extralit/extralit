@@ -6,7 +6,7 @@
   - Add basic validation and error handling for the analysis endpoint
   - _Requirements: 1.1, 2.1_
 
-- [ ] 2. Implement import analysis logic
+- [x] 2. Implement import analysis logic
 - [x] 2.1 Create import context service for document analysis
   - Write analyze_import_status() function to check existing documents by reference/DOI/PMID
   - Implement compare_file_sizes() function to determine if file updates are needed
@@ -81,7 +81,7 @@
   - Add validation for PDF file types and sizes
   - _Requirements: 1.3, 1.6_
 
-- [ ] 5. Create home page integration and modal workflow
+- [x] 5. Create home page integration and modal workflow
 - [x] 5.1 Add Import Documents button to home page
   - Add "Import Documents" button above ImportFromHub and ImportFromPython components in pages/index.vue
   - Style button to match existing import section design
@@ -103,7 +103,7 @@
   - Show supported file formats (Zotero, EndNote, Mendeley exports)
   - _Requirements: 1.1, 5.1, 4.2_
 
-- [ ] 6.2 Create ImportPdfUpload.vue component (Step 2)
+- [x] 6.2 Create ImportPdfUpload.vue component (Step 2)
   - Implement multiple PDF file upload with drag-and-drop or folder selection
   - Add file matching preview with bibliography entries
   - Display upload progress and file validation results
