@@ -5,7 +5,7 @@ description: Get started with Extralit in less 10 minutes
 # Quickstart
 >:warning: This page is currently under construction. Please check back later for updates.
 
-Extralit is a free, open-source, self-hosted tool. This means you need to deploy its UI to start using it. There is two main ways to deploy Extralit:
+Extralit is a free, open-source, self-hosted tool. This means you need to deploy its UI to start using it. There are two main ways to deploy Extralit:
 
 !!! huggingface "Deploy on the Hugging Face Hub"
 
