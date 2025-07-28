@@ -63,10 +63,10 @@
     </Home>
 
     <!-- Test Modal - Rendered outside layout -->
-    <TestModal :visible="isImportModalVisible" @close="showImportModal = false" />
+    <!-- <TestModal :visible="isImportModalVisible" @close="showImportModal = false" /> -->
 
     <!-- Import Documents Modal - Rendered outside layout -->
-    <!-- <ImportModal :is-visible="isImportModalVisible" @close="showImportModal = false" /> -->
+    <ImportModal :is-visible="isImportModalVisible" @close="showImportModal = false" />
   </div>
 </template>
 
@@ -97,15 +97,6 @@ export default {
   },
   components: {
     Home,
-    ImportDocuments: () => import("@/components/features/home/sidebar/ImportDocuments"),
-    TestModal: () => import("@/components/features/import/TestModal"),
-    ImportModal: () =>
-      import("@/components/features/import/ImportModal").catch((err) => {
-        console.error("Failed to load ImportModal:", err);
-        return {
-          template: '<div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: yellow; padding: 20px; z-index: 999999;">Failed to load ImportModal: ' + err.message + '</div>'
-        };
-      }),
   },
   setup() {
     return useHomeViewModel();
