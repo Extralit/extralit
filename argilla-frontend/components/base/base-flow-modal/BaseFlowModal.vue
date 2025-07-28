@@ -1,18 +1,17 @@
 <template>
-  <transition v-if="visible" name="flow-modal" appear>
-    <div class="flow-modal-mask">
-      <div class="flow-modal-container">
+  <div v-if="visible" class="flow-modal-mask">
+    <div class="flow-modal-container">
         <!-- Header -->
         <div class="flow-modal__header">
           <div class="flow-modal__header-content">
             <h2 class="flow-modal__title">{{ title }}</h2>
-            <BaseButton
+            <button
               v-if="canClose"
               class="flow-modal__close-button"
               @click="handleClose"
             >
-              <BaseIcon icon-name="close" />
-            </BaseButton>
+              ×
+            </button>
           </div>
 
           <!-- Progress Indicator -->
@@ -35,11 +34,7 @@
                 }"
               >
                 <div class="flow-modal__step-indicator">
-                  <BaseIcon
-                    v-if="index < currentStep"
-                    icon-name="check"
-                    class="flow-modal__step-icon"
-                  />
+                  <span v-if="index < currentStep" class="flow-modal__step-icon">✓</span>
                   <span v-else class="flow-modal__step-number">{{ index + 1 }}</span>
                 </div>
                 <span class="flow-modal__step-title">{{ step.title }}</span>
@@ -59,54 +54,54 @@
         <div class="flow-modal__footer">
           <div class="flow-modal__navigation">
             <div class="flow-modal__nav-left">
-              <BaseButton
+              <button
                 v-if="canGoBack && currentStep > 0"
-                class="secondary"
+                class="btn secondary"
                 :disabled="loading"
                 @click="handlePrevious"
               >
-                {{ $t('common.previous') || 'Previous' }}
-              </BaseButton>
+                Previous
+              </button>
             </div>
 
             <div class="flow-modal__nav-right">
-              <BaseButton
+              <button
                 v-if="showCancelButton"
-                class="secondary outline"
+                class="btn secondary outline"
                 :disabled="loading"
                 @click="handleCancel"
               >
-                {{ $t('common.cancel') || 'Cancel' }}
-              </BaseButton>
+                Cancel
+              </button>
 
-              <BaseButton
+              <button
                 v-if="!isLastStep"
-                class="primary"
+                class="btn primary"
                 :disabled="!canGoNext || loading"
-                :loading="loading"
                 @click="handleNext"
               >
-                {{ $t('common.next') || 'Next' }}
-              </BaseButton>
+                Next
+              </button>
 
-              <BaseButton
+              <button
                 v-if="isLastStep"
-                class="primary"
+                class="btn primary"
                 :disabled="!canComplete || loading"
-                :loading="loading"
                 @click="handleComplete"
               >
-                {{ completeButtonText || $t('common.finish') || 'Finish' }}
-              </BaseButton>
+                {{ completeButtonText || 'Finish' }}
+              </button>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </transition>
 </template>
 
 <script>
+import "assets/icons/close";
+import "assets/icons/check";
+
 export default {
   name: "BaseFlowModal",
 
@@ -190,17 +185,12 @@ export default {
 
   watch: {
     visible(newValue) {
-      console.log("BaseFlowModal visible changed to:", newValue);
       if (newValue) {
         document.body.classList.add('flow-modal-open');
       } else {
         document.body.classList.remove('flow-modal-open');
       }
     },
-  },
-
-  mounted() {
-    console.log("BaseFlowModal mounted, visible:", this.visible);
   },
 
   beforeDestroy() {
@@ -482,6 +472,52 @@ export default {
 .flow-modal-enter .flow-modal-container,
 .flow-modal-leave-to .flow-modal-container {
   transform: scale(0.95);
+}
+
+// Basic button styles
+.btn {
+  padding: $base-space * 1.5 $base-space * 3;
+  border: 1px solid transparent;
+  border-radius: $border-radius;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &.primary {
+    background: var(--bg-action);
+    color: var(--color-white);
+    border-color: var(--bg-action);
+
+    &:hover:not(:disabled) {
+      background: var(--bg-action-hover);
+      border-color: var(--bg-action-hover);
+    }
+  }
+
+  &.secondary {
+    background: var(--bg-accent-grey-2);
+    color: var(--fg-primary);
+    border-color: var(--border-field);
+
+    &:hover:not(:disabled) {
+      background: var(--bg-accent-grey-3);
+    }
+
+    &.outline {
+      background: transparent;
+      border-color: var(--border-field);
+
+      &:hover:not(:disabled) {
+        background: var(--bg-opacity-6);
+      }
+    }
+  }
 }
 
 // Global body class to prevent scrolling

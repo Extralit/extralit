@@ -1,65 +1,29 @@
 <template>
-  <div>
-    <!-- Debug overlay to test visibility -->
-    <div v-if="isVisible" style="
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background: rgba(255, 0, 0, 0.5);
-        z-index: 999999;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 24px;
-        font-weight: bold;
-      ">
-      DEBUG: Modal is visible (isVisible={{ isVisible }})
-      <button @click="$emit('close')" style="margin-left: 20px; padding: 10px; background: white; color: black;">
-        Close
-      </button>
-    </div>
+  <BaseFlowModal :visible="isVisible" :title="$t('import.title') || 'Import Documents'" :steps="steps"
+    :current-step="currentStep" :can-go-back="canGoBack" :can-go-next="canGoNext" :can-complete="canComplete"
+    :loading="isProcessing" :step-data="stepData" :confirm-close="true" @step-change="handleStepChange"
+    @validate-step="handleValidateStep" @complete="handleComplete" @close="handleClose" @cancel="handleCancel">
+    <template #default="{ currentStep: stepIndex }">
+      <!-- Step 1: Bibliography Upload -->
+      <ImportBibUpload v-if="stepIndex === 0" ref="bibUploadComponent" @update="handleBibUpdate" />
 
-    <BaseFlowModal :visible="isVisible" :title="$t('import.title') || 'Import Documents'" :steps="steps"
-      :current-step="currentStep" :can-go-back="canGoBack" :can-go-next="canGoNext" :can-complete="canComplete"
-      :loading="isProcessing" :step-data="stepData" :confirm-close="true" @step-change="handleStepChange"
-      @validate-step="handleValidateStep" @complete="handleComplete" @close="handleClose" @cancel="handleCancel">
-      <template #default="{ currentStep: stepIndex }">
-        <!-- Step 1: Bibliography Upload -->
-        <ImportBibUpload v-if="stepIndex === 0" ref="bibUploadComponent" @update="handleBibUpdate" />
+      <!-- Step 2: PDF Upload -->
+      <ImportPdfUpload v-if="stepIndex === 1" ref="pdfUploadComponent" :bib-entries="bibData.parsedEntries"
+        @update="handlePdfUpdate" />
 
-        <!-- Step 2: PDF Upload -->
-        <ImportPdfUpload v-if="stepIndex === 1" ref="pdfUploadComponent" :bib-entries="bibData.parsedEntries"
-          @update="handlePdfUpdate" />
+      <!-- Step 3: Import Analysis -->
+      <ImportAnalysisTable v-if="stepIndex === 2" ref="analysisTableComponent" :analysis-data="analysisData"
+        :loading="isAnalyzing" @update="handleAnalysisUpdate" @retry="performImportAnalysis" />
 
-        <!-- Step 3: Import Analysis -->
-        <ImportAnalysisTable v-if="stepIndex === 2" ref="analysisTableComponent" :analysis-data="analysisData"
-          :loading="isAnalyzing" @update="handleAnalysisUpdate" @retry="performImportAnalysis" />
+      <!-- Step 4: Upload Progress -->
+      <ImportBatchProgress v-if="stepIndex === 3" ref="batchProgressComponent" :upload-data="uploadData"
+        @completed="handleUploadCompleted" @cancelled="handleUploadCancelled" @error="handleUploadError" />
 
-        <!-- Step 4: Upload Progress -->
-        <ImportBatchProgress v-if="stepIndex === 3" ref="batchProgressComponent" :upload-data="uploadData"
-          @completed="handleUploadCompleted" @cancelled="handleUploadCancelled" @error="handleUploadError" />
-
-        <!-- Step 5: Import Summary -->
-        <ImportSummary v-if="stepIndex === 4" ref="summaryComponent" :summary-data="summaryData"
-          @return-to-library="handleReturnToLibrary" @view-import-history="handleViewImportHistory" />
-
-        <!-- Error Display -->
-        <div v-if="hasError" class="import-modal__error">
-          <BaseIcon icon-name="danger" class="import-modal__error-icon" />
-          <div class="import-modal__error-content">
-            <h4>{{ $t('import.error') || 'Error' }}</h4>
-            <p>{{ errorMessage }}</p>
-            <BaseButton v-if="canRetryError" class="secondary" @click="retryCurrentStep">
-              {{ $t('common.retry') || 'Retry' }}
-            </BaseButton>
-          </div>
-        </div>
-      </template>
-    </BaseFlowModal>
-  </div>
+      <!-- Step 5: Import Summary -->
+      <ImportSummary v-if="stepIndex === 4" ref="summaryComponent" :summary-data="summaryData"
+        @return-to-library="handleReturnToLibrary" @view-import-history="handleViewImportHistory" />
+    </template>
+  </BaseFlowModal>
 </template>
 
 <script>
@@ -77,22 +41,11 @@ export default {
     },
   },
 
-  watch: {
-    isVisible(newValue) {
-      console.log("ImportModal isVisible changed to:", newValue);
-      if (newValue) {
-        this.resetModal();
-      }
-    },
-  },
 
-  mounted() {
-    console.log("ImportModal mounted, isVisible:", this.isVisible);
-  },
 
   data() {
     return {
-      currentStep: 1,
+      currentStep: 0,
       totalSteps: 5,
       isProcessing: false,
       isAnalyzing: false,
@@ -145,23 +98,23 @@ export default {
       steps: [
         {
           id: "bib-upload",
-          title: this.$t('import.steps.bibUpload') || "Upload Bibliography",
+          title: "Upload Bibliography",
         },
         {
           id: "pdf-upload",
-          title: this.$t('import.steps.pdfUpload') || "Upload PDFs",
+          title: "Upload PDFs",
         },
         {
           id: "analysis",
-          title: this.$t('import.steps.analysis') || "Review Import",
+          title: "Review Import",
         },
         {
           id: "progress",
-          title: this.$t('import.steps.progress') || "Import Progress",
+          title: "Import Progress",
         },
         {
           id: "summary",
-          title: this.$t('import.steps.summary') || "Import Summary",
+          title: "Import Summary",
         },
       ],
     };
@@ -489,7 +442,7 @@ export default {
       };
     },
 
-    async callImportAnalysisAPI(request) {
+    async callImportAnalysisAPI() {
       // Placeholder for actual API call
       return new Promise((resolve) => {
         setTimeout(() => {
@@ -533,37 +486,7 @@ export default {
     },
   },
 
-  // Dynamic component imports
-  components: {
-    BaseFlowModal: () => import("../../base/base-flow-modal/BaseFlowModal.vue").catch((err) => {
-      console.error("Failed to load BaseFlowModal:", err);
-      return {
-        template: '<div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: red; color: white; padding: 20px; z-index: 999999;">Failed to load BaseFlowModal: ' + err.message + '</div>'
-      };
-    }),
-    BaseIcon: () => import("@/components/base/base-icon/BaseIcon.vue"),
-    BaseButton: () => import("@/components/base/base-button/BaseButton.vue"),
-    ImportBibUpload: () =>
-      import("./ImportBibUpload.vue").catch(() => ({
-        template: "<div>ImportBibUpload component not yet implemented</div>",
-      })),
-    ImportPdfUpload: () =>
-      import("./ImportPdfUpload.vue").catch(() => ({
-        template: "<div>ImportPdfUpload component not yet implemented</div>",
-      })),
-    ImportAnalysisTable: () =>
-      import("./ImportAnalysisTable.vue").catch(() => ({
-        template: "<div>ImportAnalysisTable component not yet implemented</div>",
-      })),
-    ImportBatchProgress: () =>
-      import("./ImportBatchProgress.vue").catch(() => ({
-        template: "<div>ImportBatchProgress component not yet implemented</div>",
-      })),
-    ImportSummary: () =>
-      import("./ImportSummary.vue").catch(() => ({
-        template: "<div>ImportSummary component not yet implemented</div>",
-      })),
-  },
+  // Components are auto-imported by Nuxt
 };
 </script>
 

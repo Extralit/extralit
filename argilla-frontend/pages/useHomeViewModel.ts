@@ -77,13 +77,10 @@ export const useHomeViewModel = () => {
   };
 
   const openImportModal = () => {
-    console.log("openImportModal called, current value:", showImportModal.value);
     showImportModal.value = !showImportModal.value;
-    console.log("openImportModal new value:", showImportModal.value);
   };
 
   const isImportModalVisible = computed(() => {
-    console.log("isImportModalVisible computed, showImportModal.value:", showImportModal.value);
     return showImportModal.value;
   });
 

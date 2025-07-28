@@ -10,14 +10,14 @@ describe("ImportModal", () => {
         isVisible: true,
       },
       stubs: {
-        "base-modal": true,
-        "base-button": true,
-        "base-spinner": true,
-        "import-bib-upload": true,
-        "import-pdf-upload": true,
-        "import-analysis-table": true,
-        "import-batch-progress": true,
-        "import-summary": true,
+        "BaseFlowModal": true,
+        "BaseButton": true,
+        "BaseIcon": true,
+        "ImportBibUpload": true,
+        "ImportPdfUpload": true,
+        "ImportAnalysisTable": true,
+        "ImportBatchProgress": true,
+        "ImportSummary": true,
         svgicon: true,
       },
     });
@@ -29,7 +29,7 @@ describe("ImportModal", () => {
 
   describe("Modal State Management", () => {
     it("should initialize with correct default state", () => {
-      expect(wrapper.vm.currentStep).toBe(1);
+      expect(wrapper.vm.currentStep).toBe(0);
       expect(wrapper.vm.totalSteps).toBe(5);
       expect(wrapper.vm.isProcessing).toBe(false);
       expect(wrapper.vm.isAnalyzing).toBe(false);
@@ -45,7 +45,7 @@ describe("ImportModal", () => {
       await wrapper.setProps({ isVisible: false });
       await wrapper.setProps({ isVisible: true });
 
-      expect(wrapper.vm.currentStep).toBe(1);
+      expect(wrapper.vm.currentStep).toBe(0);
       expect(wrapper.vm.hasError).toBe(false);
       expect(wrapper.vm.errorMessage).toBe("");
     });
