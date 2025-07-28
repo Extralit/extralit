@@ -159,7 +159,7 @@ const config: NuxtConfig = {
   // Build Configuration (https://go.nuxtjs.dev/config-build)
   build: {
     cssSourceMap: false,
-    cache: true,
+    cache: process.env.NODE_ENV === 'production',
     parallel: true,
     quiet: true,
     analyze: false,
@@ -245,7 +245,7 @@ const config: NuxtConfig = {
         }
       },
     },
-    extractCSS: true,
+    extractCSS: process.env.NODE_ENV === 'production',
     splitChunks: {
       pages: false,
       commons: false,
