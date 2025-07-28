@@ -39,7 +39,6 @@ export default {
   emits: ["on-click"],
   methods: {
     handleClick() {
-      console.log("ImportDocuments button clicked");
       this.$emit("on-click");
     },
   },

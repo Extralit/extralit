@@ -14,7 +14,10 @@ These are the section headers that we use:
 * "Security" in case of vulnerabilities.
 -->
 
-## [Extralit] [0.5.0](https://github.com/extralit/extralit/compare/v0.4.1...v0.5.0)
+## [Extralit] [0.6.0](https://github.com/extralit/extralit/compare/v0.4.1...v0.6.0)
+
+## Changed
+- Updated route new dataset view from `/{dataset.repoId}` to `/new/hf/{dataset.repoId}` to prevent url conflicts.
 
 
 ## [Argilla] [2.8.0](https://github.com/argilla-io/argilla/compare/v2.7.1...v2.8.0)
