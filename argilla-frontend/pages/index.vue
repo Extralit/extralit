@@ -19,11 +19,8 @@
   <div>
     <Home>
       <template v-slot:header>
-        <AppHeader
-          class="home__header"
-          :breadcrumbs="[{ action: 'clearFilters', name: $t('breadcrumbs.home') }]"
-          @breadcrumb-action="onBreadcrumbAction"
-        />
+        <AppHeader class="home__header" :breadcrumbs="[{ action: 'clearFilters', name: $t('breadcrumbs.home') }]"
+          @breadcrumb-action="onBreadcrumbAction" />
         <PersistentStorageBanner class="home__banner" />
       </template>
       <template v-slot:page-content>
@@ -34,13 +31,8 @@
         <template v-if="true || isAdminOrOwnerRole">
           <div class="home__sidebar__buttons">
             <ImportDocuments @on-click="openImportModal" />
-            <ImportFromHub
-              :is-expanded="showImportDatasetInput"
-              @on-expand="showImportDatasetInput = true"
-              @on-close="showImportDatasetInput = false"
-              @on-import-dataset="importDataset"
-              :error="error"
-            />
+            <ImportFromHub :is-expanded="showImportDatasetInput" @on-expand="showImportDatasetInput = true"
+              @on-close="showImportDatasetInput = false" @on-import-dataset="importDataset" :error="error" />
             <ImportFromPython v-if="!showImportDatasetInput" />
           </div>
           <BaseSeparator class="home__sidebar__separator" />
@@ -48,12 +40,8 @@
             <p class="home__sidebar__title" v-text="$t('home.exampleDatasetsTitle')" />
             <p class="home__sidebar__subtitle" v-text="$t('home.exampleDatasetsText')" />
             <div class="home__sidebar__cards">
-              <ExampleDatasetCard
-                v-for="dataset in exampleDatasets"
-                :key="dataset.repoId"
-                :dataset="dataset"
-                @on-import-dataset="importDataset"
-              />
+              <ExampleDatasetCard v-for="dataset in exampleDatasets" :key="dataset.repoId" :dataset="dataset"
+                @on-import-dataset="importDataset" />
             </div>
           </div>
         </template>
@@ -62,25 +50,23 @@
             <p class="home__sidebar__title" v-text="$t('home.guidesTitle')" />
             <p class="home__sidebar__subtitle" v-text="$t('home.guidesText')" />
             <div class="home__sidebar__cards">
-              <LinkCard
-                type="How to guide"
-                text="Annotate your dataset"
-                link="https://docs.extralit.ai/latest/admin_guide/annotate/"
-              />
-              <LinkCard
-                type="How to guide"
-                text="Query and filter records"
-                link="https://docs.extralit.ai/latest/admin_guide/query/"
-              />
+              <LinkCard type="How to guide" text="Annotate your dataset"
+                link="https://docs.extralit.ai/latest/admin_guide/annotate/" />
+              <LinkCard type="How to guide" text="Query and filter records"
+                link="https://docs.extralit.ai/latest/admin_guide/query/" />
             </div>
             <p class="home__sidebar__link" v-html="$t('home.demoLink')" />
           </div>
         </template>
       </template>
 
-      <!-- Import Documents Modal -->
-      <ImportModal :is-visible="isImportModalVisible" @close="showImportModal = false" />
     </Home>
+
+    <!-- Test Modal - Rendered outside layout -->
+    <TestModal :visible="isImportModalVisible" @close="showImportModal = false" />
+
+    <!-- Import Documents Modal - Rendered outside layout -->
+    <!-- <ImportModal :is-visible="isImportModalVisible" @close="showImportModal = false" /> -->
   </div>
 </template>
 
@@ -112,10 +98,13 @@ export default {
   components: {
     Home,
     ImportDocuments: () => import("@/components/features/home/sidebar/ImportDocuments"),
+    TestModal: () => import("@/components/features/import/TestModal"),
     ImportModal: () =>
       import("@/components/features/import/ImportModal").catch((err) => {
         console.error("Failed to load ImportModal:", err);
-        return { template: '<div style="background: yellow; padding: 20px;">Failed to load ImportModal</div>' };
+        return {
+          template: '<div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: yellow; padding: 20px; z-index: 999999;">Failed to load ImportModal: ' + err.message + '</div>'
+        };
       }),
   },
   setup() {
@@ -130,22 +119,27 @@ export default {
     display: flex;
     flex-direction: column;
     height: 100vh;
+
     @include media("<desktop") {
       max-height: 100svh;
     }
   }
+
   &__header {
     min-height: $topbarHeight;
   }
+
   &__banner {
     width: auto;
   }
+
   &__table {
     min-height: 0;
     height: 100%;
     overflow: auto;
     padding: 0;
   }
+
   &__sidebar {
     &__content {
       display: flex;
@@ -153,29 +147,35 @@ export default {
       gap: $base-space;
       overflow: auto;
     }
+
     &__buttons {
       display: flex;
       gap: $base-space;
       flex-wrap: wrap;
     }
+
     &__title {
       margin: 0;
       font-weight: 500;
     }
+
     &__subtitle {
       margin: 0 0 $base-space * 3 0;
       font-weight: 300;
     }
+
     &__cards {
       display: flex;
       flex-direction: column;
       gap: $base-space * 2;
       margin-bottom: $base-space;
     }
+
     &__link {
       margin-top: $base-space * 4;
       color: var(--fg-secondary);
     }
+
     &__separator {
       max-width: 75%;
     }

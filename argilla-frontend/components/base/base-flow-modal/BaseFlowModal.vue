@@ -190,12 +190,17 @@ export default {
 
   watch: {
     visible(newValue) {
+      console.log("BaseFlowModal visible changed to:", newValue);
       if (newValue) {
         document.body.classList.add('flow-modal-open');
       } else {
         document.body.classList.remove('flow-modal-open');
       }
     },
+  },
+
+  mounted() {
+    console.log("BaseFlowModal mounted, visible:", this.visible);
   },
 
   beforeDestroy() {
@@ -278,7 +283,7 @@ export default {
   width: 100%;
   height: 100vh;
   background: var(--bg-opacity-54);
-  z-index: 9999;
+  z-index: 99999;
   display: flex;
   align-items: center;
   justify-content: center;

@@ -1,4 +1,29 @@
 <template>
+  <!-- Debug overlay to test visibility -->
+  <div
+    v-if="isVisible"
+    style="
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(255, 0, 0, 0.5);
+      z-index: 999999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
+    "
+  >
+    DEBUG: Modal is visible (isVisible={{ isVisible }})
+    <button @click="$emit('close')" style="margin-left: 20px; padding: 10px; background: white; color: black;">
+      Close
+    </button>
+  </div>
+
   <BaseFlowModal
     :visible="isVisible"
     :title="$t('import.title') || 'Import Documents'"
@@ -97,10 +122,15 @@ export default {
 
   watch: {
     isVisible(newValue) {
+      console.log("ImportModal isVisible changed to:", newValue);
       if (newValue) {
         this.resetModal();
       }
     },
+  },
+
+  mounted() {
+    console.log("ImportModal mounted, isVisible:", this.isVisible);
   },
 
   data() {
@@ -548,7 +578,12 @@ export default {
 
   // Dynamic component imports
   components: {
-    BaseFlowModal: () => import("@/components/base/base-flow-modal/BaseFlowModal.vue"),
+    BaseFlowModal: () => import("../../base/base-flow-modal/BaseFlowModal.vue").catch((err) => {
+      console.error("Failed to load BaseFlowModal:", err);
+      return {
+        template: '<div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: red; color: white; padding: 20px; z-index: 999999;">Failed to load BaseFlowModal: ' + err.message + '</div>'
+      };
+    }),
     BaseIcon: () => import("@/components/base/base-icon/BaseIcon.vue"),
     BaseButton: () => import("@/components/base/base-button/BaseButton.vue"),
     ImportBibUpload: () =>
