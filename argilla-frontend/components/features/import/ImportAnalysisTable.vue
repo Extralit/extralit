@@ -73,17 +73,7 @@ import type {
   ImportConfirmationData,
 } from './types';
 import { useImportAnalysisViewModel } from './useImportAnalysisViewModel';
-import { ImportAnalysisUseCase } from '~/v1/domain/usecases/import-analysis-use-case';
 
-/**
- * ImportAnalysisTable Component
- *
- * Data Mapping:
- * - analysisData.documents -> ImportAnalysisResponse.documents (DocumentImportAnalysis)
- * - dataframeData -> ImportHistoryCreate.data (DataframeData)
- * - filePaths -> associated_files (array of file paths)
- * - documentActions[reference] -> DocumentImportAction.action (user's editable status)
- */
 export default {
   name: "ImportAnalysisTable",
 
@@ -104,6 +94,10 @@ export default {
     // Add dataframe data prop for direct table display
     dataframeData: {
       type: Object as () => DataframeData | null,
+      default: null,
+    },
+    workspaceId: {
+      type: String,
       default: null,
     },
     loading: {
@@ -152,7 +146,6 @@ export default {
         return data;
       }
 
-      // Fallback to dataframe data with default statuses while analysis is pending
       if (this.dataframeData && this.dataframeData.data.length > 0) {
         return this.dataframeData.data.map((row: Record<string, any>) => {
           const reference = row.reference || row.key || `row_${Math.random()}`;
@@ -497,11 +490,7 @@ export default {
   },
 
   setup(props) {
-    const viewModel = useImportAnalysisViewModel(props);
-
-    return {
-      ...viewModel,
-    };
+    return useImportAnalysisViewModel(props);
   }
 };
 </script>

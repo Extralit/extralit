@@ -143,6 +143,11 @@ Note to reuse existing styles in argilla-frontend/assets/scss/base/base.scss, ar
 - Button opens full-page modal for import workflow
 - Positioned prominently in the import section of the home page
 
+**Workspace Selection Integration:**
+- Modify WorkspacesFilter component to support single workspace selection instead of multi-select
+- Pass selected workspace ID to ImportModal component for import analysis
+- Ensure workspace context is maintained throughout the import workflow
+
 #### 2. FlowModal Base Component (`argilla-frontend/components/base/base-flow-modal/BaseFlowModal.vue`)
 
 **New full-screen modal component designed for multi-step workflows:**
@@ -206,6 +211,11 @@ interface FlowModalProps {
 - Step 3: Import Analysis & Selection (table with toggle functionality)
 - Step 4: Batch Upload Progress (live progress tracking)
 - Step 5: Import Summary & History (results and navigation)
+
+**Workspace Context:**
+- Receives selected workspace ID as prop from home page
+- Passes workspace ID to ImportAnalysisTable for backend analysis requests
+- Maintains workspace context throughout the import workflow
 
 #### 3. Upload Steps Components
 
@@ -292,6 +302,7 @@ Example BibTeX files:
 
 **Features using new simple table component:**
 - Uses `ImportAnalysisUseCase` from `~/v1/domain/usecases/import-analysis-use-case.ts` for backend communication
+- Uses `useImportAnalysisViewModel` for reactive state management and API integration
 - Imports backend API types from `~/v1/domain/entities/import/ImportAnalysis.ts`
 - Imports UI component types from `./types.ts` for table configuration and component state
 - Tabular display with columns: Reference (first column freeze), and Files, Import Status (last column freeze), while the rest of the columns imported from are sorted Title, Authors, Year, to the rest of the table
@@ -300,6 +311,8 @@ Example BibTeX files:
 - Status indicators with color coding (Add: green, Update: blue, Skip: gray, Ignore: gray, Failed: red)
 - Filterable columns on the status indicator
 - Sends POST requests to `/api/v1/imports/analyze` with `ImportAnalysisRequest` to prepopulate Import Status column
+- Receives workspace ID as prop and passes it to the analysis use case
+- Automatically triggers analysis when dataframe data is available and workspace ID is provided
 
 **Table Component (`argilla-frontend/components/base/base-simple-table/BaseSimpleTable.vue`)**
 - New reusable table component built on Tabulator
@@ -616,11 +629,15 @@ argilla-frontend/
 │   │   └── ImportAnalysis.ts          # Backend API data structures
 │   └── usecases/
 │       └── import-analysis-use-case.ts # API communication logic
+├── components/features/home/dataset-list/workspaces-filter/
+│   ├── WorkspacesFilter.vue           # Modified for single workspace selection
+│   └── WorkspaceSelector.vue          # Modified for single workspace selection
 └── components/features/import/
     ├── types.ts                       # UI component types + re-exports
-    ├── ImportModal.vue                # Main workflow modal
+    ├── ImportModal.vue                # Main workflow modal (receives workspace ID)
     ├── ImportFileUpload.vue           # Step 1 & 2: File uploads
-    ├── ImportAnalysisTable.vue        # Step 3: Analysis & selection
+    ├── ImportAnalysisTable.vue        # Step 3: Analysis & selection (uses workspace ID)
+    ├── useImportAnalysisViewModel.ts  # View model that calls import-analysis-use-case.ts
     └── ImportBatchProgress.vue        # Step 4: Upload progress
 ```
 

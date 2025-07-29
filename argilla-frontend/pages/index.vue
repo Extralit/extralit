@@ -28,7 +28,12 @@
       </template>
       <template v-slot:page-content>
         <BaseLoading v-if="isLoadingDatasets" />
-        <DatasetList :workspaces="workspaces" :datasets="datasets.datasets" @on-click-card="cardAction" />
+        <DatasetList
+          :workspaces="workspaces"
+          :datasets="datasets.datasets"
+          @on-click-card="cardAction"
+          @workspace-selected="onWorkspaceSelected"
+        />
       </template>
       <template v-slot:page-sidebar>
         <template v-if="true || isAdminOrOwnerRole">
@@ -79,11 +84,11 @@
       </template>
     </Home>
 
-    <!-- Test Modal - Rendered outside layout -->
-    <!-- <TestModal :visible="isImportModalVisible" @close="showImportModal = false" /> -->
-
-    <!-- Import Documents Modal - Rendered outside layout -->
-    <ImportModal :is-visible="isImportModalVisible" @close="showImportModal = false" />
+    <ImportModal
+      :is-visible="isImportModalVisible"
+      :workspace-id="selectedWorkspaceId"
+      @close="showImportModal = false"
+    />
   </div>
 </template>
 
@@ -95,6 +100,7 @@ export default {
   data() {
     return {
       showImportDatasetInput: false,
+      selectedWorkspaceId: null,
     };
   },
   methods: {
@@ -110,6 +116,9 @@ export default {
     },
     importDataset(repoId) {
       this.getNewDatasetByRepoId(repoId);
+    },
+    onWorkspaceSelected(workspaceId) {
+      this.selectedWorkspaceId = workspaceId;
     },
   },
   components: {

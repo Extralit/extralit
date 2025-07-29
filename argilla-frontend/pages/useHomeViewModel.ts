@@ -84,6 +84,13 @@ export const useHomeViewModel = () => {
     return showImportModal.value;
   });
 
+  // Workspace selection for import
+  const selectedWorkspaceId = ref<string | null>(null);
+
+  const setSelectedWorkspaceId = (workspaceId: string | null) => {
+    selectedWorkspaceId.value = workspaceId;
+  };
+
   return {
     datasets,
     workspaces,
@@ -95,5 +102,7 @@ export const useHomeViewModel = () => {
     showImportModal,
     isImportModalVisible,
     openImportModal,
+    selectedWorkspaceId,
+    setSelectedWorkspaceId,
   };
 };

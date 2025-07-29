@@ -32,6 +32,7 @@
         ref="analysisTableComponent"
         :analysis-data="analysisData"
         :dataframe-data="bibData.dataframeData"
+        :workspace-id="workspaceId"
         :loading="isAnalyzing"
         @update="handleAnalysisUpdate"
         @retry="performImportAnalysis"
@@ -71,6 +72,10 @@ export default {
     isVisible: {
       type: Boolean,
       default: false,
+    },
+    workspaceId: {
+      type: String,
+      default: null,
     },
   },
 
@@ -156,9 +161,9 @@ export default {
     canGoNext() {
       switch (this.currentStep) {
         case 0:
-          return this.bibData.parsedEntries.length > 0 && this.pdfData.matchedFiles.length > 0 && !this.hasError;
+          return this.bibData.parsedEntries.length > 0 && this.pdfData.matchedFiles.length > 0 && !this.hasError && this.workspaceId;
         case 1:
-          return Object.keys(this.analysisData.documents).length > 0 && !this.hasError;
+          return Object.keys(this.analysisData.documents).length > 0 && !this.hasError && this.workspaceId;
         default:
           return false;
       }
@@ -207,10 +212,10 @@ export default {
 
       switch (step) {
         case 0:
-          isValid = this.bibData.parsedEntries.length > 0 && this.pdfData.matchedFiles.length > 0 && !this.hasError;
+          isValid = this.bibData.parsedEntries.length > 0 && this.pdfData.matchedFiles.length > 0 && !this.hasError && this.workspaceId;
           break;
         case 1:
-          isValid = Object.keys(this.analysisData.documents).length > 0 && !this.hasError;
+          isValid = Object.keys(this.analysisData.documents).length > 0 && !this.hasError && this.workspaceId;
           break;
         default:
           isValid = true;
@@ -452,7 +457,7 @@ export default {
     createAnalysisRequest() {
       // This will create the ImportAnalysisRequest from bibData and pdfData
       return {
-        workspace_id: this.$route.params.id, // Assuming workspace ID from route
+        workspace_id: this.workspaceId, // Use workspace ID from props
         documents: {}, // Will be populated from parsed data
       };
     },
