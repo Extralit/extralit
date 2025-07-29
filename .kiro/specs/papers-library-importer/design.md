@@ -292,7 +292,6 @@ Example BibTeX files:
 - User can toggle from Add or Update to Ignore, or back
 - Status indicators with color coding (Add: green, Update: blue, Skip: gray, Ignore: gray, Failed: red)
 - Filterable columns on the status indicator
-- Bulk action buttons (Save, Cancel, Confirm Import)
 
 **Table Component (`argilla-frontend/components/base/base-simple-table/BaseSimpleTable.vue`)**
 - New reusable table component built on Tabulator

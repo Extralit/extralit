@@ -30,6 +30,7 @@
         v-if="stepIndex === 1"
         ref="analysisTableComponent"
         :analysis-data="analysisData"
+        :dataframe-data="bibData.dataframeData"
         :loading="isAnalyzing"
         @update="handleAnalysisUpdate"
         @retry="performImportAnalysis"

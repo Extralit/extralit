@@ -71,6 +71,32 @@ describe('ImportAnalysisTable', () => {
     },
   };
 
+  const mockDataframeData = {
+    schema: {
+      fields: [
+        { name: 'reference', type: 'string' },
+        { name: 'title', type: 'string' },
+        { name: 'authors', type: 'string' },
+        { name: 'year', type: 'string' },
+      ],
+      primaryKey: ['reference'],
+    },
+    data: [
+      {
+        reference: 'Smith2023',
+        title: 'A Study on Machine Learning',
+        authors: 'John Smith, Jane Doe',
+        year: '2023',
+      },
+      {
+        reference: 'Brown2024',
+        title: 'Deep Learning Applications',
+        authors: 'Alice Brown',
+        year: '2024',
+      },
+    ],
+  };
+
   it('renders without crashing', () => {
     const wrapper = mount(ImportAnalysisTable, {
       propsData: {
@@ -81,6 +107,25 @@ describe('ImportAnalysisTable', () => {
 
     expect(wrapper.exists()).toBe(true);
     expect(wrapper.find('.import-analysis-table').exists()).toBe(true);
+  });
+
+  it('renders with dataframe data', () => {
+    const wrapper = mount(ImportAnalysisTable, {
+      propsData: {
+        analysisData: mockAnalysisData,
+        dataframeData: mockDataframeData,
+        loading: false,
+      },
+    });
+
+    expect(wrapper.exists()).toBe(true);
+    expect(wrapper.find('.import-analysis-table').exists()).toBe(true);
+
+    // Should show dataframe data in table
+    const tableData = wrapper.vm.tableData;
+    expect(tableData).toHaveLength(2);
+    expect(tableData[0].reference).toBe('Smith2023');
+    expect(tableData[0].title).toBe('A Study on Machine Learning');
   });
 
   it('shows loading state when loading prop is true', () => {
