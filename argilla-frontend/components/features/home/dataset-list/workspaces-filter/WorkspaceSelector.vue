@@ -7,18 +7,19 @@
   >
     <BaseSearch v-model="searchText" :placeholder="$t('search')" />
     <div class="labels-selector__items">
-      <BaseCheckbox
+      <BaseRadioButton
         class="labels-selector__item"
         :class="index === preSelectionIndex ? 'labels-selector__item--highlighted' : null"
         v-for="({ name, numberOfDatasets }, index) in workspacesFilteredBySearchText"
         :key="name"
-        :value="selectedWorkspaces.includes(name)"
-        @change="toggleSelectedOption(name)"
+        :value="name"
+        :checked="selectedWorkspace === name"
+        @change="selectWorkspace(name)"
         @mouseover.native="preSelectionIndex = index"
       >
         {{ name }}
         <span class="labels-selector__number">({{ numberOfDatasets }})</span>
-      </BaseCheckbox>
+      </BaseRadioButton>
     </div>
   </div>
 </template>
@@ -29,13 +30,13 @@ export default {
       type: Array,
       required: true,
     },
-    selectedWorkspaces: {
-      type: Array,
-      required: true,
+    selectedWorkspace: {
+      type: String,
+      default: null,
     },
   },
   model: {
-    prop: "selectedWorkspaces",
+    prop: "selectedWorkspace",
     event: "input",
   },
   data: () => {
@@ -63,16 +64,16 @@ export default {
     includePreselectedOption() {
       if (!this.workspacesFilteredBySearchText.length) return;
 
-      this.toggleSelectedOption(this.workspacesFilteredBySearchText[this.preSelectionIndex]);
+      this.selectWorkspace(this.workspacesFilteredBySearchText[this.preSelectionIndex].name);
 
       this.preSelectionIndex = 0;
     },
-    toggleSelectedOption(workspace) {
-      const index = this.selectedWorkspaces.indexOf(workspace);
-      if (index === -1) {
-        this.selectedWorkspaces.push(workspace);
+    selectWorkspace(workspaceName) {
+      // Toggle selection - if already selected, deselect
+      if (this.selectedWorkspace === workspaceName) {
+        this.$emit('input', null);
       } else {
-        this.selectedWorkspaces.splice(index, 1);
+        this.$emit('input', workspaceName);
       }
     },
     preselectNextOption() {
@@ -94,7 +95,7 @@ export default {
     margin-top: $base-space;
   }
   &__item {
-    &.checkbox {
+    &.radio-button {
       display: flex;
       padding: 6px $base-space;
       border-radius: $border-radius;
@@ -102,7 +103,7 @@ export default {
     &--highlighted {
       background: var(--bg-opacity-4);
     }
-    :deep(.checkbox__container) {
+    :deep(.radio-button__container) {
       background: none !important;
       border: 0 !important;
     }
@@ -111,7 +112,7 @@ export default {
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    &.checkbox :deep(.checkbox__container .svg-icon) {
+    &.radio-button :deep(.radio-button__container .svg-icon) {
       fill: var(--fg-cuaternary);
       min-width: 16px;
     }

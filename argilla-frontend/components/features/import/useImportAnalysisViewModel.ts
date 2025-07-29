@@ -7,15 +7,14 @@ import type {
 } from '~/v1/domain/entities/import/ImportAnalysis';
 import { ImportAnalysisUseCase } from '~/v1/domain/usecases/import-analysis-use-case';
 
-interface ImportAnalysisViewModelProps {
+export function useImportAnalysisViewModel(props: {
   analysisData: ImportAnalysisResponse;
   dataframeData: DataframeData | null;
+  workspaceId: string | null;
   loading: boolean;
-}
-
-export function useImportAnalysisViewModel(props: ImportAnalysisViewModelProps) {
-  // Use Nuxt context
-  const { $axios, $route } = useContext();
+}) {
+  // Access Nuxt axios instance
+  const { $axios } = useContext();
 
   // Create use case instance
   const importAnalysisUseCase = new ImportAnalysisUseCase($axios);
@@ -28,10 +27,7 @@ export function useImportAnalysisViewModel(props: ImportAnalysisViewModelProps) 
   const documentActions = ref<Record<string, ImportStatus>>({});
   const originalStatuses = ref<Record<string, ImportStatus>>({});
 
-  // Computed properties
-  const workspaceId = computed(() => {
-    return $route?.params?.id || '';
-  });
+  const workspaceId = computed(() => props.workspaceId);
 
   const shouldAnalyze = computed(() => {
     return props.dataframeData &&

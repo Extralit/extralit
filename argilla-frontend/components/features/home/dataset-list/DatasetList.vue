@@ -5,8 +5,8 @@
       <div class="dataset-list__filters" v-if="datasets.length">
         <WorkspacesFilter
           :workspaces="formattedWorkspaces"
-          v-model="selectedWorkspaces"
-          @on-change-workspaces-filter="onChangeWorkspaceFilter"
+          v-model="selectedWorkspace"
+          @on-change-workspace-filter="onChangeWorkspaceFilter"
         />
         <DatasetsSort
           @on-change-direction="onChangeDirection"
@@ -47,7 +47,7 @@ export default {
         { value: "lastActivityAt", label: this.$t("home.updatedAt") },
         { value: "createdAt", label: this.$t("home.createdAt") },
       ],
-      selectedWorkspaces: [],
+      selectedWorkspace: null,
     };
   },
   computed: {
@@ -57,8 +57,8 @@ export default {
       );
     },
     filteredDatasetsByWorkspaces() {
-      return this.selectedWorkspaces.length
-        ? this.filteredDatasets.filter((dataset) => this.selectedWorkspaces.includes(dataset.workspaceName))
+      return this.selectedWorkspace
+        ? this.filteredDatasets.filter((dataset) => dataset.workspaceName === this.selectedWorkspace)
         : this.filteredDatasets;
     },
     sortedDatasets() {
@@ -86,17 +86,24 @@ export default {
     onChangeField(field) {
       this.sortedByField = field;
     },
-    onChangeWorkspaceFilter(workspaces) {
-      this.selectedWorkspaces = workspaces;
+    onChangeWorkspaceFilter(workspace) {
+      this.selectedWorkspace = workspace;
+      // Emit workspace ID for import modal
+      const selectedWorkspaceObj = this.workspaces.find(w => w.name === workspace);
+      if (selectedWorkspaceObj) {
+        this.$emit('workspace-selected', selectedWorkspaceObj.id);
+      } else {
+        this.$emit('workspace-selected', null);
+      }
     },
     cardAction(action) {
       this.$emit("on-click-card", action);
     },
   },
   mounted() {
-    this.currentWorkspace = this.$route.query.workspaces;
+    this.currentWorkspace = this.$route.query.workspace;
     if (this.currentWorkspace) {
-      this.onChangeWorkspaceFilter(this.currentWorkspace.split(","));
+      this.onChangeWorkspaceFilter(this.currentWorkspace);
     }
   },
 };

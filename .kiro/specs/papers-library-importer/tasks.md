@@ -89,17 +89,22 @@
   - _Requirements: 1.3, 1.6_
 
 - [x] 5. Create home page integration and modal workflow
-- [x] 5.1 Add Import Documents button to home page
+- [x] 5.1 Add Import Documents button to home page and modify workspace selection
   - Add "Import Documents" button above ImportFromHub and ImportFromPython components in pages/index.vue
   - Style button to match existing import section design
   - Connect button to open full-page import modal
+  - Modify WorkspacesFilter and WorkspaceSelector components to support single workspace selection instead of multi-select
+  - Pass selected workspace ID to ImportModal component
+  - Update DatasetList.vue to handle single workspace selection and pass workspace ID to import modal
   - _Requirements: 1.1, 4.3_
 
-- [x] 5.2 Create ImportModal.vue full-page modal component
+- [x] 5.2 Create ImportModal.vue full-page modal component with workspace context
   - Implement full-page modal using existing base-modal component
   - Create multi-step workflow with navigation between steps
   - Add step indicators and progress tracking
   - Implement modal state management and step validation
+  - Accept workspace ID as prop from home page
+  - Pass workspace ID to ImportAnalysisTable component
   - _Requirements: 2.1, 4.3_
 
 - [ ] 6. Implement upload step components
@@ -117,6 +122,14 @@
   - Show summary status with matched/unmatched files count
   - _Requirements: 1.2, 1.3, 4.2_
 
+- [ ] 6.3 Update workspace selection for single workspace mode
+  - Modify WorkspacesFilter.vue to support single workspace selection instead of multi-select
+  - Update WorkspaceSelector.vue to use radio buttons instead of checkboxes for single selection
+  - Update DatasetList.vue to handle single workspace selection and emit workspace ID
+  - Update useHomeViewModel.ts to track selected workspace ID and pass it to ImportModal
+  - Ensure workspace context is maintained and passed to import components
+  - _Requirements: 1.1, 4.3_
+
 - [ ] 7. Create simple table component and analysis interface
 - [x] 7.1 Implement BaseSimpleTable.vue component
   - Create new reusable table component using Tabulator library
@@ -125,7 +138,7 @@
   - Implement built-in sorting, filtering, and pagination
   - _Requirements: 2.1, 2.2_
 
-- [x] 7.2 Create ImportAnalysisTable.vue component (Step 3)
+- [ ] 7.2 Create ImportAnalysisTable.vue component (Step 3) with workspace integration
   - Implement tabular display using BaseSimpleTable component
   - Add columns: Reference, Title, Authors, Year, Import Status
   - Create toggle functionality for Add/Update/Skip selection
@@ -133,7 +146,10 @@
   - Send ImportAnalysisRequest to backend and display results using ImportAnalysisUseCase
   - Import backend API types from ~/v1/domain/entities/import/ImportAnalysis.ts
   - Import UI component types from ./types.ts for table configuration
-  - Implement performAnalysis() method with axios integration
+  - Use useImportAnalysisViewModel for reactive state management and API integration
+  - Accept workspace ID as prop and pass it to the analysis use case
+  - Automatically trigger analysis when dataframe data is available and workspace ID is provided
+  - Fix workspaceId reference in useImportAnalysisViewModel.ts to properly access workspace from parent component
   - Add public analyzeImportData() method for parent component integration
   - _Requirements: 2.1, 2.2, 2.7_
 
@@ -202,24 +218,3 @@
   - Add cleanup of temporary files and partial uploads
   - _Requirements: 6.1, 6.2, 6.5, 6.6_
 
-- [ ] 12. Add modal workflow orchestration and state management
-- [ ] 12.1 Implement modal workflow state management
-  - Coordinate transitions between all 5 steps in the modal workflow
-  - Implement proper state persistence during the import process
-  - Add step validation and error recovery between steps
-  - Handle modal close/cancel scenarios with proper cleanup
-  - _Requirements: 5.6, 3.6_
-
-- [ ] 12.2 Add workflow navigation and validation
-  - Implement step-by-step navigation with back/next buttons
-  - Add validation checks before allowing progression to next step
-  - Handle workflow interruption and resume functionality
-  - Add proper loading states and user feedback throughout workflow
-  - _Requirements: 4.3, 4.4_
-
-- [ ] 13. Add documentation and final validation
-  - Document API endpoints and request/response schemas
-  - Create user guide for import functionality
-  - Add developer documentation for extending import features
-  - Perform final end-to-end testing with real .bib files and PDFs
-  - _Requirements: Complete feature validation_
