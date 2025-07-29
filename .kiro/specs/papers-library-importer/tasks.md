@@ -118,10 +118,10 @@
   - Implement built-in sorting, filtering, and pagination
   - _Requirements: 2.1, 2.2_
 
-- [ ] 7.2 Create ImportAnalysisTable.vue component (Step 3)
+- [x] 7.2 Create ImportAnalysisTable.vue component (Step 3)
   - Implement tabular display using BaseSimpleTable component
   - Add columns: Reference, Title, Authors, Year, Import Status
-  - Create toggle functionality for Add/Update/Skip selection (one-way: can go to Skip, but not back)
+  - Create toggle functionality for Add/Update/Skip selection
   - Add status indicators with color coding (Add: green, Update: blue, Skip: gray, Failed: red)
   - Implement Save, Cancel, and Confirm Import buttons
   - Send ImportAnalysisRequest to backend and display results

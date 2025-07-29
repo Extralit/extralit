@@ -1102,7 +1102,7 @@ export default {
   }
 
   &__success-content h4 {
-    margin: 0 0 $base-space / 2 0;
+    margin: 0 0 calc($base-space / 2) 0;
     color: var(--color-success);
     font-size: 1rem;
   }
@@ -1264,7 +1264,7 @@ export default {
   &__stat-content {
     display: flex;
     flex-direction: column;
-    gap: $base-space / 4;
+    gap: calc($base-space / 4);
   }
 
   &__stat-value {
@@ -1343,7 +1343,7 @@ export default {
     &--filename {
       display: flex;
       align-items: center;
-      gap: $base-space / 2;
+      gap: calc($base-space / 2);
       font-weight: 500;
       max-width: 200px;
     }
@@ -1361,7 +1361,7 @@ export default {
 
   &__match-badge {
     display: inline-block;
-    padding: $base-space / 4 $base-space / 2;
+    padding: calc($base-space / 4) calc($base-space / 2);
     border-radius: $border-radius-s;
     font-size: 0.8rem;
     font-weight: 500;

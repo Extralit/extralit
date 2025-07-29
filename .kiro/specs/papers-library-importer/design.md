@@ -287,9 +287,9 @@ Example BibTeX files:
 
 **Features using new simple table component:**
 - Create new simple table component using Tabulator (similar to base-render-table)
-- Tabular display with columns: Reference, Title, Authors, Year, Import Status
+- Tabular display with columns: Reference (first column freeze), and Files, Import Status (last column freeze), while the rest of the columns imported from are sorted Title, Authors, Year, to the rest of the table
 - Toggle functionality for each reference to select Add/Update/Skip
-- User can toggle from Add or Update to Ignore
+- User can toggle from Add or Update to Ignore, or back
 - Status indicators with color coding (Add: green, Update: blue, Skip: gray, Ignore: gray, Failed: red)
 - Filterable columns on the status indicator
 - Bulk action buttons (Save, Cancel, Confirm Import)
