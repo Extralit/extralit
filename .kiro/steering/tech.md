@@ -25,6 +25,7 @@ Extralit is a multi-component system with 5 core components:
 
 ## Frontend (argilla-frontend/)
 - **Framework**: Nuxt.js 2.17 (Vue.js 2.7)
+- **Component Import**: Nuxt automatically scans the ~/components directory and makes all .vue files
 - **Build System**: npm/yarn
 - **UI Components**: Custom component library with SCSS
 - **State Management**: Pinia + Vuex

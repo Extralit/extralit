@@ -4,23 +4,21 @@
     :loading="isProcessing" :step-data="stepData" :confirm-close="true" @step-change="handleStepChange"
     @validate-step="handleValidateStep" @complete="handleComplete" @close="handleClose" @cancel="handleCancel">
     <template #default="{ currentStep: stepIndex }">
-      <!-- Step 1: Bibliography Upload -->
-      <ImportBibUpload v-if="stepIndex === 0" ref="bibUploadComponent" @update="handleBibUpdate" />
+      <!-- Step 1: Combined File Upload -->
+      <ImportFileUpload v-if="stepIndex === 0" ref="fileUploadComponent"
+        @bib-update="handleBibUpdate"
+        @pdf-update="handlePdfUpdate" />
 
-      <!-- Step 2: PDF Upload -->
-      <ImportPdfUpload v-if="stepIndex === 1" ref="pdfUploadComponent" :bib-entries="bibData.parsedEntries"
-        @update="handlePdfUpdate" />
-
-      <!-- Step 3: Import Analysis -->
-      <ImportAnalysisTable v-if="stepIndex === 2" ref="analysisTableComponent" :analysis-data="analysisData"
+      <!-- Step 2: Import Analysis -->
+      <ImportAnalysisTable v-if="stepIndex === 1" ref="analysisTableComponent" :analysis-data="analysisData"
         :loading="isAnalyzing" @update="handleAnalysisUpdate" @retry="performImportAnalysis" />
 
-      <!-- Step 4: Upload Progress -->
-      <ImportBatchProgress v-if="stepIndex === 3" ref="batchProgressComponent" :upload-data="uploadData"
+      <!-- Step 3: Upload Progress -->
+      <ImportBatchProgress v-if="stepIndex === 2" ref="batchProgressComponent" :upload-data="uploadData"
         @completed="handleUploadCompleted" @cancelled="handleUploadCancelled" @error="handleUploadError" />
 
-      <!-- Step 5: Import Summary -->
-      <ImportSummary v-if="stepIndex === 4" ref="summaryComponent" :summary-data="summaryData"
+      <!-- Step 4: Import Summary -->
+      <ImportSummary v-if="stepIndex === 3" ref="summaryComponent" :summary-data="summaryData"
         @return-to-library="handleReturnToLibrary" @view-import-history="handleViewImportHistory" />
     </template>
   </BaseFlowModal>
@@ -46,7 +44,7 @@ export default {
   data() {
     return {
       currentStep: 0,
-      totalSteps: 5,
+      totalSteps: 4,
       isProcessing: false,
       isAnalyzing: false,
       isUploading: false,
@@ -97,12 +95,8 @@ export default {
       // Step definitions
       steps: [
         {
-          id: "bib-upload",
-          title: "Upload Bibliography",
-        },
-        {
-          id: "pdf-upload",
-          title: "Upload PDFs",
+          id: "file-upload",
+          title: "Upload Files",
         },
         {
           id: "analysis",
@@ -122,16 +116,14 @@ export default {
 
   computed: {
     canGoBack() {
-      return this.currentStep > 0 && this.currentStep < 3 && !this.isProcessing;
+      return this.currentStep > 0 && this.currentStep < 2 && !this.isProcessing;
     },
 
     canGoNext() {
       switch (this.currentStep) {
         case 0:
-          return this.bibData.parsedEntries.length > 0 && !this.hasError;
+          return this.bibData.parsedEntries.length > 0 && this.pdfData.matchedFiles.length > 0 && !this.hasError;
         case 1:
-          return this.pdfData.matchedFiles.length > 0 && !this.hasError;
-        case 2:
           return Object.keys(this.analysisData.documents).length > 0 && !this.hasError;
         default:
           return false;
@@ -139,7 +131,7 @@ export default {
     },
 
     canComplete() {
-      return this.currentStep === 4; // Only on summary step
+      return this.currentStep === 3; // Only on summary step
     },
 
     stepData() {
@@ -168,9 +160,9 @@ export default {
       this.clearError();
 
       // Perform any necessary actions when entering a step
-      if (newStep === 2) {
+      if (newStep === 1) {
         this.performImportAnalysis();
-      } else if (newStep === 3) {
+      } else if (newStep === 2) {
         this.startImport();
       }
     },
@@ -181,12 +173,9 @@ export default {
 
       switch (step) {
         case 0:
-          isValid = this.bibData.parsedEntries.length > 0 && !this.hasError;
+          isValid = this.bibData.parsedEntries.length > 0 && this.pdfData.matchedFiles.length > 0 && !this.hasError;
           break;
         case 1:
-          isValid = this.pdfData.matchedFiles.length > 0 && !this.hasError;
-          break;
-        case 2:
           isValid = Object.keys(this.analysisData.documents).length > 0 && !this.hasError;
           break;
         default:
@@ -278,7 +267,7 @@ export default {
       this.summaryData = summaryData;
       this.isUploading = false;
       this.isProcessing = false;
-      this.currentStep = 4; // Move to summary step
+      this.currentStep = 3; // Move to summary step
       this.clearError();
     },
 
@@ -335,19 +324,14 @@ export default {
 
       switch (this.currentStep) {
         case 0:
-          if (this.$refs.bibUploadComponent) {
-            this.$refs.bibUploadComponent.reset();
+          if (this.$refs.fileUploadComponent) {
+            this.$refs.fileUploadComponent.reset();
           }
           break;
         case 1:
-          if (this.$refs.pdfUploadComponent) {
-            this.$refs.pdfUploadComponent.reset();
-          }
-          break;
-        case 2:
           this.performImportAnalysis();
           break;
-        case 3:
+        case 2:
           this.startImport();
           break;
       }
@@ -415,11 +399,8 @@ export default {
 
       // Reset child components
       this.$nextTick(() => {
-        if (this.$refs.bibUploadComponent) {
-          this.$refs.bibUploadComponent.reset();
-        }
-        if (this.$refs.pdfUploadComponent) {
-          this.$refs.pdfUploadComponent.reset();
+        if (this.$refs.fileUploadComponent) {
+          this.$refs.fileUploadComponent.reset();
         }
         if (this.$refs.analysisTableComponent) {
           this.$refs.analysisTableComponent.reset();

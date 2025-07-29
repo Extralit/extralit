@@ -31,14 +31,7 @@
             style="display: none"
             @change="handleFileSelect"
           />
-          <input
-            ref="multiFileInput"
-            type="file"
-            accept=".pdf"
-            multiple
-            style="display: none"
-            @change="handleFileSelect"
-          />
+
 
           <div class="import-pdf-upload__dropzone-content">
             <BaseIcon :icon-name="getDropzoneIcon" class="import-pdf-upload__dropzone-icon" />
@@ -49,9 +42,6 @@
               Drop PDF files here or click to browse
             </p>
             <div class="import-pdf-upload__dropzone-buttons">
-              <BaseButton class="secondary" @click.stop="selectMultipleFiles">
-                Select Files
-              </BaseButton>
               <BaseButton class="secondary" @click.stop="selectFolder">
                 Select Folder
               </BaseButton>
@@ -282,17 +272,13 @@ export default {
   },
 
   methods: {
-    selectMultipleFiles() {
-      this.$refs.multiFileInput.click();
-    },
-
     selectFolder() {
       this.$refs.fileInput.click();
     },
 
     triggerFileInput() {
-      // Default to multiple file selection
-      this.selectMultipleFiles();
+      // Use folder selection
+      this.selectFolder();
     },
 
     handleDragOver(event) {
