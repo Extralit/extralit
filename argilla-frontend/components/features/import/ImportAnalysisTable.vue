@@ -184,14 +184,13 @@ export default {
           field: "year",
           title: "Year",
           width: 80,
-          headerFilter: "input",
         },
         {
           field: "files",
           title: "Files",
           width: 150,
           formatter: this.filesFormatter,
-          visible: !this.dataframeData, // Hide files column for dataframe-only display
+          // visible: !this.dataframeData, // Hide files column for dataframe-only display
         },
         {
           field: "status",
@@ -211,7 +210,7 @@ export default {
               "failed": "Failed"
             }
           },
-          visible: !this.dataframeData, // Hide status column for dataframe-only display
+          // visible: !this.dataframeData, // Hide status column for dataframe-only display
         },
       ];
     },
@@ -331,14 +330,16 @@ export default {
     },
 
     canToggleStatus(originalStatus) {
-      // Can toggle from Add or Update to Skip, but not back
-      return originalStatus === "add" || originalStatus === "update";
+      // Can toggle from Add or Update to Skip
+      return originalStatus === "add" || originalStatus === "update" || originalStatus === "ignore";
     },
 
     getNextStatus(currentStatus, originalStatus) {
-      // One-way toggle: Add/Update -> Skip, but not back
+      // Toggle between Add/Update and Skip
       if ((originalStatus === "add" || originalStatus === "update") && currentStatus !== "ignore") {
         return "ignore";
+      } else if (currentStatus === "ignore") {
+        return originalStatus; // Revert to original status
       }
       return currentStatus; // No change if can't toggle
     },
