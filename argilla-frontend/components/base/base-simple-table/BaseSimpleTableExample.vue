@@ -9,17 +9,8 @@
       <BaseButton @click="exportData">Export CSV</BaseButton>
     </div>
 
-    <BaseSimpleTable
-      ref="simpleTable"
-      :data="tableData"
-      :columns="columns"
-      :options="tableOptions"
-      :loading="loading"
-      @table-built="onTableBuilt"
-      @row-click="onRowClick"
-      @cell-edited="onCellEdited"
-      @data-changed="onDataChanged"
-    />
+    <BaseSimpleTable ref="simpleTable" :data="tableData" :columns="columns" :options="tableOptions" :loading="loading"
+      @table-built="onTableBuilt" @row-click="onRowClick" @cell-edited="onCellEdited" @data-changed="onDataChanged" />
 
     <div v-if="selectedRow" class="selected-info">
       <h4>Selected Row:</h4>
