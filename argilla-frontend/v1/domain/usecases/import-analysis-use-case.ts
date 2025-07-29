@@ -30,6 +30,8 @@ export class ImportAnalysisUseCase {
         request
       );
 
+      console.log(data)
+
       return data;
 
     } catch (error) {

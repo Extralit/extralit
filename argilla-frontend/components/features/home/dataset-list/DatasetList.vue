@@ -2,7 +2,7 @@
   <div class="dataset-list__wrapper">
     <div class="dataset-list__header">
       <h1 class="dataset-list__title" v-text="$t('home.argillaDatasets')" />
-      <div class="dataset-list__filters" v-if="datasets.length">
+      <div class="dataset-list__filters">
         <WorkspacesFilter
           :workspaces="formattedWorkspaces"
           v-model="selectedWorkspace"
