@@ -45,28 +45,45 @@
       <div class="flow-modal__footer">
         <div class="flow-modal__navigation">
           <div class="flow-modal__nav-left">
-            <button
+            <BaseButton
               v-if="canGoBack && currentStep > 0"
-              class="btn secondary"
+              class="secondary"
               :disabled="loading"
               @click="handlePrevious"
             >
               Previous
-            </button>
+            </BaseButton>
           </div>
 
           <div class="flow-modal__nav-right">
-            <button v-if="showCancelButton" class="btn secondary outline" :disabled="loading" @click="handleCancel">
+            <BaseButton
+              v-if="showCancelButton"
+              class="secondary outline"
+              :disabled="loading"
+              @click="handleCancel"
+            >
               Cancel
-            </button>
+            </BaseButton>
 
-            <button v-if="!isLastStep" class="btn primary" :disabled="!canGoNext || loading" @click="handleNext">
-              Next
-            </button>
+            <BaseButton
+              v-if="!isLastStep"
+              class="primary"
+              :disabled="!canGoNext || loading"
+              :loading="loading"
+              @click="handleNext"
+            >
+              {{ getNextButtonText() }}
+            </BaseButton>
 
-            <button v-if="isLastStep" class="btn primary" :disabled="!canComplete || loading" @click="handleComplete">
+            <BaseButton
+              v-if="isLastStep"
+              class="primary"
+              :disabled="!canComplete || loading"
+              :loading="loading"
+              @click="handleComplete"
+            >
               {{ completeButtonText || "Finish" }}
-            </button>
+            </BaseButton>
           </div>
         </div>
       </div>
@@ -137,6 +154,14 @@ export default {
     },
     completeButtonText: {
       type: String,
+      default: null,
+    },
+    nextButtonText: {
+      type: String,
+      default: "Next",
+    },
+    submitStepIndex: {
+      type: Number,
       default: null,
     },
   },
@@ -237,6 +262,13 @@ export default {
       ) {
         this.$emit("close");
       }
+    },
+
+    getNextButtonText() {
+      if (this.submitStepIndex !== null && this.currentStep === this.submitStepIndex) {
+        return "Submit";
+      }
+      return this.nextButtonText;
     },
   },
 };
@@ -451,51 +483,7 @@ export default {
   transform: scale(0.95);
 }
 
-// Basic button styles
-.btn {
-  padding: $base-space * 1.5 $base-space * 3;
-  border: 1px solid transparent;
-  border-radius: $border-radius;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
 
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  &.primary {
-    background: var(--bg-action);
-    color: var(--color-white);
-    border-color: var(--bg-action);
-
-    &:hover:not(:disabled) {
-      background: var(--bg-action-hover);
-      border-color: var(--bg-action-hover);
-    }
-  }
-
-  &.secondary {
-    background: var(--bg-accent-grey-2);
-    color: var(--fg-primary);
-    border-color: var(--border-field);
-
-    &:hover:not(:disabled) {
-      background: var(--bg-accent-grey-3);
-    }
-
-    &.outline {
-      background: transparent;
-      border-color: var(--border-field);
-
-      &:hover:not(:disabled) {
-        background: var(--bg-opacity-6);
-      }
-    }
-  }
-}
 
 // Global body class to prevent scrolling
 :global(.flow-modal-open) {
