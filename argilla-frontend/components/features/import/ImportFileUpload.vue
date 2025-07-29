@@ -41,8 +41,7 @@
                     <div v-if="bibUploaded && !bibHasError" class="import-file-upload__upload-success">
                         <BaseIcon icon-name="check" class="import-file-upload__upload-success-icon" />
                         <span class="import-file-upload__upload-success-text">
-                            Successfully uploaded {{ bibData.fileName }} ({{ bibData.parsedEntries.length }} entries
-                            found)
+                            Successfully uploaded {{ bibData.fileName }} ({{ bibData.parsedEntries.length }} entries found)
                         </span>
                     </div>
 
@@ -80,11 +79,9 @@
                             <p class="import-file-upload__dropzone-text">
                                 {{ getPdfDropzoneText }}
                             </p>
-                            <div v-if="!pdfUploaded" class="import-file-upload__dropzone-buttons">
-                                <BaseButton class="secondary" @click.stop="triggerPdfFolderInput">
-                                    Upload PDF Files
-                                </BaseButton>
-                            </div>
+                            <p class="import-file-upload__dropzone-subtext">
+                                Upload a folder containing your PDF files.<br>
+                            </p>
                         </div>
                     </div>
 
