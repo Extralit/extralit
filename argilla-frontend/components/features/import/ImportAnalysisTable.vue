@@ -73,6 +73,7 @@ import type {
   ImportConfirmationData,
 } from './types';
 import { useImportAnalysisViewModel } from './useImportAnalysisViewModel';
+import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
 
 export default {
   name: "ImportAnalysisTable",
@@ -96,8 +97,8 @@ export default {
       type: Object as () => DataframeData | null,
       default: null,
     },
-    workspaceId: {
-      type: String,
+    workspace: {
+      type: Workspace,
       default: null,
     },
     loading: {

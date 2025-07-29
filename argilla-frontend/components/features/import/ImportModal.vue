@@ -1,7 +1,7 @@
 <template>
   <BaseFlowModal
     :visible="isVisible"
-    :title="$t('import.title') || 'Import Documents'"
+    :title="$t('import.title', { workspaceName: workspace?.name })"
     :steps="steps"
     :current-step="currentStep"
     :can-go-back="canGoBack"
@@ -32,7 +32,7 @@
         ref="analysisTableComponent"
         :analysis-data="analysisData"
         :dataframe-data="bibData.dataframeData"
-        :workspace-id="workspaceId"
+        :workspace="workspace"
         :loading="isAnalyzing"
         @update="handleAnalysisUpdate"
         @retry="performImportAnalysis"
@@ -60,10 +60,11 @@
   </BaseFlowModal>
 </template>
 
-<script>
+<script lang="ts">
 import "assets/icons/check";
 import "assets/icons/danger";
 import "assets/icons/import";
+import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
 
 export default {
   name: "ImportModal",
@@ -73,8 +74,8 @@ export default {
       type: Boolean,
       default: false,
     },
-    workspaceId: {
-      type: String,
+    workspace: {
+      type: Workspace,
       default: null,
     },
   },
@@ -161,9 +162,9 @@ export default {
     canGoNext() {
       switch (this.currentStep) {
         case 0:
-          return this.bibData.parsedEntries.length > 0 && this.pdfData.matchedFiles.length > 0 && !this.hasError && this.workspaceId;
+          return this.bibData.parsedEntries.length > 0 && this.pdfData.matchedFiles.length > 0 && !this.hasError && !!this.workspace;
         case 1:
-          return Object.keys(this.analysisData.documents).length > 0 && !this.hasError && this.workspaceId;
+          return Object.keys(this.analysisData.documents).length > 0 && !this.hasError && !!this.workspace;
         default:
           return false;
       }
@@ -212,10 +213,10 @@ export default {
 
       switch (step) {
         case 0:
-          isValid = this.bibData.parsedEntries.length > 0 && this.pdfData.matchedFiles.length > 0 && !this.hasError && this.workspaceId;
+          isValid = this.bibData.parsedEntries.length > 0 && this.pdfData.matchedFiles.length > 0 && !this.hasError && !!this.workspace;
           break;
         case 1:
-          isValid = Object.keys(this.analysisData.documents).length > 0 && !this.hasError && this.workspaceId;
+          isValid = Object.keys(this.analysisData.documents).length > 0 && !this.hasError && !!this.workspace;
           break;
         default:
           isValid = true;
@@ -457,7 +458,7 @@ export default {
     createAnalysisRequest() {
       // This will create the ImportAnalysisRequest from bibData and pdfData
       return {
-        workspace_id: this.workspaceId, // Use workspace ID from props
+        workspace_id: this.workspace.id, // Use workspace ID from props
         documents: {}, // Will be populated from parsed data
       };
     },

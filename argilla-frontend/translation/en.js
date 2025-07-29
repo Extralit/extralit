@@ -140,6 +140,10 @@ export default {
       datasetSettings: "Dataset settings",
     },
   },
+  common: {
+    confirmCancel: "Are you sure you want to cancel? Any unsaved changes will be lost.",
+
+  },
   to_submit_complete_required: "To submit complete \nrequired responses",
   some_records_failed_to_annotate: "Some records failed to annotate",
   changes_no_submit: "You didn't submit your changes",
@@ -290,6 +294,9 @@ export default {
     name: "Dataset name",
     updatedAt: "Updated",
     createdAt: "Created",
+  },
+  import: {
+    title: "Import Documents to {workspaceName} Workspace",
   },
   datasetCreation: {
     questions: {
