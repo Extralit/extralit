@@ -103,7 +103,7 @@ export class ImportAnalysisUseCase {
           url: row.url,
           abstract: row.abstract,
           keywords: row.keywords ? (Array.isArray(row.keywords) ? row.keywords : [row.keywords]) : undefined,
-          reference: reference,
+          reference,
           pmid: row.pmid,
           workspace_id: workspaceId,
           metadata: this.extractMetadata(row)
