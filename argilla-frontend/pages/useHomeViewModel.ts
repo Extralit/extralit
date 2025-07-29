@@ -102,7 +102,7 @@ export const useHomeViewModel = () => {
     showImportModal,
     isImportModalVisible,
     openImportModal,
-    selectedWorkspaceId,
+    selectedWorkspace: selectedWorkspaceId,
     setSelectedWorkspaceId,
   };
 };

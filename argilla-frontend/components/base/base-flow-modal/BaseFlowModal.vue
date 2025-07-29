@@ -245,20 +245,16 @@ export default {
     },
 
     showCancelConfirmation() {
-      // This would typically use a confirmation dialog component
-      // For now, using browser confirm
       if (
-        confirm(this.$t("common.confirmCancel") || "Are you sure you want to cancel? Any unsaved changes will be lost.")
+        confirm(this.$t("common.confirmCancel"))
       ) {
         this.$emit("cancel");
       }
     },
 
     showCloseConfirmation() {
-      // This would typically use a confirmation dialog component
-      // For now, using browser confirm
       if (
-        confirm(this.$t("common.confirmClose") || "Are you sure you want to close? Any unsaved changes will be lost.")
+        confirm(this.$t("common.confirmCancel"))
       ) {
         this.$emit("close");
       }

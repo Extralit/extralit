@@ -234,8 +234,8 @@ export default {
 
     getBibDropzoneText() {
       if (this.bibHasError) return "Error parsing bibliography file";
-      if (this.bibUploaded) return "Upload .bib File";
-      return "Upload .bib File";
+      if (this.bibUploaded) return "Upload BibTeX File";
+      return "Upload BibTeX File";
     },
 
     getPdfDropzoneIcon() {

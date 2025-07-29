@@ -86,22 +86,23 @@
 
     <ImportModal
       :is-visible="isImportModalVisible"
-      :workspace-id="selectedWorkspaceId"
+      :workspace="selectedWorkspace"
       @close="showImportModal = false"
     />
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import Home from "@/layouts/Home";
 import { useHomeViewModel } from "./useHomeViewModel";
+import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
 
 
 export default {
   data() {
     return {
       showImportDatasetInput: false,
-      selectedWorkspaceId: null,
+      selectedWorkspace: null,
     };
   },
   methods: {
@@ -115,11 +116,11 @@ export default {
         this.showImportDatasetInput = true;
       }
     },
-    importDataset(repoId) {
+    importDataset(repoId: string) {
       this.getNewDatasetByRepoId(repoId);
     },
-    onWorkspaceSelected(workspaceId) {
-      this.selectedWorkspaceId = workspaceId;
+    onWorkspaceSelected(workspace: Workspace) {
+      this.selectedWorkspace = workspace;
     },
   },
   components: {

@@ -91,7 +91,7 @@ export default {
       // Emit workspace ID for import modal
       const selectedWorkspaceObj = this.workspaces.find(w => w.name === workspace);
       if (selectedWorkspaceObj) {
-        this.$emit('workspace-selected', selectedWorkspaceObj.id);
+        this.$emit('workspace-selected', selectedWorkspaceObj);
       } else {
         this.$emit('workspace-selected', null);
       }

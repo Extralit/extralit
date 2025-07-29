@@ -5,12 +5,13 @@ import type {
   DataframeData,
   DocumentImportAnalysis,
 } from '~/v1/domain/entities/import/ImportAnalysis';
+import { Workspace } from '~/v1/domain/entities/workspace/Workspace';
 import { ImportAnalysisUseCase } from '~/v1/domain/usecases/import-analysis-use-case';
 
 export function useImportAnalysisViewModel(props: {
   analysisData: ImportAnalysisResponse;
   dataframeData: DataframeData | null;
-  workspaceId: string | null;
+  workspace: Workspace;
   loading: boolean;
 }) {
   // Access Nuxt axios instance
@@ -27,7 +28,7 @@ export function useImportAnalysisViewModel(props: {
   const documentActions = ref<Record<string, ImportStatus>>({});
   const originalStatuses = ref<Record<string, ImportStatus>>({});
 
-  const workspaceId = computed(() => props.workspaceId);
+  const workspaceId = computed(() => props.workspace.id);
 
   const shouldAnalyze = computed(() => {
     return props.dataframeData &&

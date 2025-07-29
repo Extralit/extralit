@@ -2,13 +2,15 @@
   <div class="datasets-filter" v-if="workspaces.length">
     <BaseDropdown :visible="visibleDropdown" @visibility="onToggleVisibility">
       <span slot="dropdown-header"
-        ><WorkspacesFilterButton :is-active="visibleDropdown || !!selectedWorkspace"
-      /></span>
+        ><WorkspacesFilterButton
+          :is-active="visibleDropdown || !!localSelectedWorkspace"
+          :selected-workspace="localSelectedWorkspace"
+        /></span>
       <span slot="dropdown-content" class="datasets-filter__container">
         <div class="datasets-filter__content">
           <WorkspaceSelector
             :workspaces="workspaces"
-            v-model="selectedWorkspace"
+            v-model="localSelectedWorkspace"
           />
         </div>
       </span>
@@ -16,7 +18,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import "assets/icons/chevron-left";
 
 export default {
@@ -37,18 +39,25 @@ export default {
   data() {
     return {
       visibleDropdown: false,
+      localSelectedWorkspace: this.selectedWorkspace,
     };
   },
-  created() {
-    // Auto-assign the first workspace if none is selected and workspaces exist
-    if (!this.selectedWorkspace && this.workspaces.length > 0) {
-      this.$emit("on-change-workspace-filter", this.workspaces[0].name);
-    }
-  },
   watch: {
-    selectedWorkspace() {
-      this.$emit("on-change-workspace-filter", this.selectedWorkspace);
+    selectedWorkspace(newValue: string) {
+      this.localSelectedWorkspace = newValue;
     },
+    localSelectedWorkspace(newValue: string) {
+      this.$emit("on-change-workspace-filter", newValue);
+    },
+    workspaces: {
+      immediate: true,
+      handler(newWorkspaces) {
+        // Auto-assign the first workspace if none is selected and workspaces exist
+        if (!this.localSelectedWorkspace && newWorkspaces && newWorkspaces.length > 0) {
+          this.localSelectedWorkspace = newWorkspaces[0].name;
+        }
+      }
+    }
   },
   methods: {
     onToggleVisibility(value) {
