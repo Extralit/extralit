@@ -125,6 +125,11 @@ async def upload_reference_documents_job(
 
 ### Frontend Components
 
+**Architecture Pattern:**
+- **Backend API Types**: Located in `argilla-frontend/v1/domain/entities/import/ImportAnalysis.ts` - contains data structures that map directly to backend API schemas (ImportAnalysisRequest, ImportAnalysisResponse, DocumentImportAnalysis, etc.)
+- **Frontend Component Types**: Located in `argilla-frontend/components/features/import/types.ts` - contains UI-specific types (AnalysisTableRow, TableColumn, ImportConfirmationData, etc.) and re-exports backend types for convenience
+- **Use Cases**: Located in `argilla-frontend/v1/domain/usecases/import-analysis-use-case.ts` - handles API communication with ImportAnalysisUseCase class for POST /api/v1/imports/analyze requests
+
 Note to reuse existing styles in argilla-frontend/assets/scss/base/base.scss, argilla-frontend/assets/scss/abstract/variables/_variables.scss and existing components in `components/base` where possible to keep similar the design system and code reuse and best practices.
 
 - `argilla-frontend/components/base`:
@@ -286,12 +291,15 @@ Example BibTeX files:
 #### 4. Import Analysis Table (`argilla-frontend/components/features/import/ImportAnalysisTable.vue`)
 
 **Features using new simple table component:**
-- Create new simple table component using Tabulator (similar to base-render-table)
+- Uses `ImportAnalysisUseCase` from `~/v1/domain/usecases/import-analysis-use-case.ts` for backend communication
+- Imports backend API types from `~/v1/domain/entities/import/ImportAnalysis.ts`
+- Imports UI component types from `./types.ts` for table configuration and component state
 - Tabular display with columns: Reference (first column freeze), and Files, Import Status (last column freeze), while the rest of the columns imported from are sorted Title, Authors, Year, to the rest of the table
 - Toggle functionality for each reference to select Add/Update/Skip
 - User can toggle from Add or Update to Ignore, or back
 - Status indicators with color coding (Add: green, Update: blue, Skip: gray, Ignore: gray, Failed: red)
 - Filterable columns on the status indicator
+- Sends POST requests to `/api/v1/imports/analyze` with `ImportAnalysisRequest` to prepopulate Import Status column
 
 **Table Component (`argilla-frontend/components/base/base-simple-table/BaseSimpleTable.vue`)**
 - New reusable table component built on Tabulator
@@ -597,6 +605,30 @@ The import system processes tabular data (BibTeX, CSV, etc.) into a standardized
 - File upload validation and sanitization
 - BibTeX input sanitization
 - Authorization checks for workspace access
+
+## Implementation Structure
+
+### File Organization
+```
+argilla-frontend/
+├── v1/domain/
+│   ├── entities/import/
+│   │   └── ImportAnalysis.ts          # Backend API data structures
+│   └── usecases/
+│       └── import-analysis-use-case.ts # API communication logic
+└── components/features/import/
+    ├── types.ts                       # UI component types + re-exports
+    ├── ImportModal.vue                # Main workflow modal
+    ├── ImportFileUpload.vue           # Step 1 & 2: File uploads
+    ├── ImportAnalysisTable.vue        # Step 3: Analysis & selection
+    └── ImportBatchProgress.vue        # Step 4: Upload progress
+```
+
+### Type Import Pattern
+Components should import:
+- Backend API types from `~/v1/domain/entities/import/ImportAnalysis`
+- UI component types from `./types` (local to component directory)
+- Use cases from `~/v1/domain/usecases/`
 
 ## Implementation Considerations
 
