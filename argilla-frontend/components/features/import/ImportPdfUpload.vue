@@ -10,27 +10,13 @@
     <div class="import-pdf-upload__content">
       <!-- File Upload Section -->
       <div class="import-pdf-upload__file-section">
-        <div
-          class="import-pdf-upload__dropzone"
-          :class="{
-            'import-pdf-upload__dropzone--dragover': isDragOver,
-            'import-pdf-upload__dropzone--error': hasError,
-            'import-pdf-upload__dropzone--success': hasFiles,
-          }"
-          @drop="handleDrop"
-          @dragover="handleDragOver"
-          @dragleave="handleDragLeave"
-          @click="triggerFileInput"
-        >
-          <input
-            ref="fileInput"
-            type="file"
-            accept=".pdf"
-            multiple
-            webkitdirectory
-            style="display: none"
-            @change="handleFileSelect"
-          />
+        <div class="import-pdf-upload__dropzone" :class="{
+          'import-pdf-upload__dropzone--dragover': isDragOver,
+          'import-pdf-upload__dropzone--error': hasError,
+          'import-pdf-upload__dropzone--success': hasFiles,
+        }" @drop="handleDrop" @dragover="handleDragOver" @dragleave="handleDragLeave" @click="triggerFileInput">
+          <input ref="fileInput" type="file" accept=".pdf" multiple webkitdirectory style="display: none"
+            @change="handleFileSelect" />
 
 
           <div class="import-pdf-upload__dropzone-content">
@@ -56,10 +42,7 @@
             <span>{{ processedFiles }}/{{ totalFiles }} files</span>
           </div>
           <div class="import-pdf-upload__progress-bar">
-            <div
-              class="import-pdf-upload__progress-fill"
-              :style="{ width: `${progressPercentage}%` }"
-            ></div>
+            <div class="import-pdf-upload__progress-fill" :style="{ width: `${progressPercentage}%` }"></div>
           </div>
         </div>
 
@@ -81,11 +64,8 @@
         <div v-if="hasFiles && !isProcessing" class="import-pdf-upload__summary">
           <div class="import-pdf-upload__summary-header">
             <h4>File Matching Summary</h4>
-            <BaseButton
-              v-if="unmatchedFiles.length > 0"
-              class="tertiary small"
-              @click="showUnmatchedFiles = !showUnmatchedFiles"
-            >
+            <BaseButton v-if="unmatchedFiles.length > 0" class="tertiary small"
+              @click="showUnmatchedFiles = !showUnmatchedFiles">
               {{ showUnmatchedFiles ? 'Hide' : 'Show' }} Unmatched Files
             </BaseButton>
           </div>
@@ -151,10 +131,8 @@
                   <td class="import-pdf-upload__table-cell--title">{{ match.bibEntry.title || "N/A" }}</td>
                   <td class="import-pdf-upload__table-cell--authors">{{ match.bibEntry.authors || "N/A" }}</td>
                   <td class="import-pdf-upload__table-cell--match">
-                    <span
-                      class="import-pdf-upload__match-badge"
-                      :class="`import-pdf-upload__match-badge--${match.matchType}`"
-                    >
+                    <span class="import-pdf-upload__match-badge"
+                      :class="`import-pdf-upload__match-badge--${match.matchType}`">
                       {{ getMatchTypeLabel(match.matchType) }}
                     </span>
                   </td>
@@ -173,11 +151,7 @@
           </h5>
 
           <div class="import-pdf-upload__unmatched-list">
-            <div
-              v-for="file in unmatchedFiles"
-              :key="file.name"
-              class="import-pdf-upload__unmatched-item"
-            >
+            <div v-for="file in unmatchedFiles" :key="file.name" class="import-pdf-upload__unmatched-item">
               <BaseIcon icon-name="document" class="import-pdf-upload__file-icon" />
               <div class="import-pdf-upload__unmatched-info">
                 <span class="import-pdf-upload__unmatched-name">{{ file.name }}</span>
