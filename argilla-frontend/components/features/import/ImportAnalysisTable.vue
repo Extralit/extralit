@@ -12,7 +12,7 @@
       <div class="error-content">
         <h4>Analysis Failed</h4>
         <p>{{ errorMessage }}</p>
-        <BaseButton variant="outline" @click="$emit('retry')">
+        <BaseButton variant="outline" @click="reset(); $emit('retry')">
           Retry Analysis
         </BaseButton>
       </div>
@@ -26,23 +26,23 @@
         <div class="summary-stats">
           <div class="stat-item">
             <span class="stat-label">Total:</span>
-            <span class="stat-value">{{ analysisData.summary.total_documents }}</span>
+            <span class="stat-value">{{ (analysisResult || analysisData).summary.total_documents }}</span>
           </div>
           <div class="stat-item stat-add">
             <span class="stat-label">Add:</span>
-            <span class="stat-value">{{ analysisData.summary.add_count }}</span>
+            <span class="stat-value">{{ (analysisResult || analysisData).summary.add_count }}</span>
           </div>
           <div class="stat-item stat-update">
             <span class="stat-label">Update:</span>
-            <span class="stat-value">{{ analysisData.summary.update_count }}</span>
+            <span class="stat-value">{{ (analysisResult || analysisData).summary.update_count }}</span>
           </div>
           <div class="stat-item stat-skip">
             <span class="stat-label">Skip:</span>
-            <span class="stat-value">{{ analysisData.summary.skip_count }}</span>
+            <span class="stat-value">{{ (analysisResult || analysisData).summary.skip_count }}</span>
           </div>
           <div class="stat-item stat-failed">
             <span class="stat-label">Failed:</span>
-            <span class="stat-value">{{ analysisData.summary.failed_count }}</span>
+            <span class="stat-value">{{ (analysisResult || analysisData).summary.failed_count }}</span>
           </div>
         </div>
       </div>
@@ -72,6 +72,7 @@ import type {
   TableColumn,
   ImportConfirmationData,
 } from './types';
+import { useImportAnalysisViewModel } from './useImportAnalysisViewModel';
 import { ImportAnalysisUseCase } from '~/v1/domain/usecases/import-analysis-use-case';
 
 /**
@@ -115,22 +116,47 @@ export default {
 
   data() {
     return {
-      hasError: false,
-      errorMessage: "",
-      documentActions: {} as Record<string, ImportStatus>, // Track user-modified actions for each document
-      originalStatuses: {} as Record<string, ImportStatus>, // Track original statuses from analysis
-      isAnalyzing: false,
-      importAnalysisUseCase: null as ImportAnalysisUseCase | null,
+      // Local state for table interactions
+      localDocumentActions: {} as Record<string, ImportStatus>,
     };
   },
 
   computed: {
     tableData(): AnalysisTableRow[] {
-      // If we have dataframe data, use it directly for table display
+      // Use analysis result from view model if available
+      const analysisData = this.analysisResult || this.analysisData;
+      const documentActions = { ...this.documentActions, ...this.localDocumentActions };
+
+      // If we have analysis result, use it
+      if (analysisData && analysisData.documents && Object.keys(analysisData.documents).length > 0) {
+        const data: AnalysisTableRow[] = [];
+
+        Object.entries(analysisData.documents).forEach(([reference, docInfo]: [string, DocumentImportAnalysis]) => {
+          // Get current action (user-modified or original)
+          const currentAction = documentActions[reference] || docInfo.status;
+
+          data.push({
+            reference,
+            title: docInfo.document_create?.title || "N/A",
+            authors: this.formatAuthors(docInfo.document_create?.authors),
+            year: String(docInfo.document_create?.year || "N/A"),
+            files: this.formatFiles(docInfo.associated_files),
+            filePaths: docInfo.associated_files || [], // Include file paths array
+            status: currentAction,
+            originalStatus: docInfo.status,
+            validationErrors: docInfo.validation_errors || [],
+            canToggle: this.canToggleStatus(docInfo.status),
+          });
+        });
+
+        return data;
+      }
+
+      // Fallback to dataframe data with default statuses while analysis is pending
       if (this.dataframeData && this.dataframeData.data.length > 0) {
         return this.dataframeData.data.map((row: Record<string, any>) => {
           const reference = row.reference || row.key || `row_${Math.random()}`;
-          const currentAction = this.documentActions[reference] || 'add';
+          const currentAction = documentActions[reference] || 'add'; // Default while analyzing
 
           // Use pre-processed file paths from ImportFileUpload.vue
           const filePaths = row.filePaths || [];
@@ -145,33 +171,12 @@ export default {
             status: currentAction,
             originalStatus: 'add', // Default for new entries
             validationErrors: [],
-            canToggle: true,
+            canToggle: !this.isAnalyzing, // Disable toggle while analyzing
           };
         });
       }
 
-      // Fallback to analysis data structure
-      const data: AnalysisTableRow[] = [];
-
-      Object.entries(this.analysisData.documents || {}).forEach(([reference, docInfo]: [string, DocumentImportAnalysis]) => {
-        // Get current action (user-modified or original)
-        const currentAction = this.documentActions[reference] || docInfo.status;
-
-        data.push({
-          reference,
-          title: docInfo.document_create?.title || "N/A",
-          authors: this.formatAuthors(docInfo.document_create?.authors),
-          year: String(docInfo.document_create?.year || "N/A"),
-          files: this.formatFiles(docInfo.associated_files),
-          filePaths: docInfo.associated_files || [], // Include file paths array
-          status: currentAction,
-          originalStatus: docInfo.status,
-          validationErrors: docInfo.validation_errors || [],
-          canToggle: this.canToggleStatus(docInfo.status),
-        });
-      });
-
-      return data;
+      return [];
     },
 
     tableColumns(): TableColumn[] {
@@ -245,11 +250,14 @@ export default {
     },
 
     confirmedCount() {
-      return Object.values(this.documentActions).filter(action =>
+      const analysisData = this.analysisResult || this.analysisData;
+      const documentActions = { ...this.documentActions, ...this.localDocumentActions };
+
+      return Object.values(documentActions).filter(action =>
         action === "add" || action === "update"
       ).length +
-        Object.entries(this.analysisData.documents || {}).filter(([ref, docInfo]: [string, any]) =>
-          !this.documentActions[ref] && (docInfo.status === "add" || docInfo.status === "update")
+        Object.entries(analysisData.documents || {}).filter(([ref, docInfo]: [string, any]) =>
+          !documentActions[ref] && (docInfo.status === "add" || docInfo.status === "update")
         ).length;
     },
 
@@ -259,63 +267,23 @@ export default {
   },
 
   watch: {
-    analysisData: {
+    analysisResult: {
       handler(newData) {
-        // Reset document actions when new analysis data arrives
-        this.documentActions = {};
-        this.originalStatuses = {};
-
-        // Store original statuses
-        Object.entries(newData.documents || {}).forEach(([reference, docInfo]: [string, any]) => {
-          this.originalStatuses[reference] = docInfo.status;
-        });
+        if (newData) {
+          // Reset local document actions when new analysis data arrives
+          this.localDocumentActions = {};
+          // Emit the analysis complete event
+          this.$emit('analysis-complete', newData);
+        }
       },
       deep: true,
-      immediate: true,
     },
   },
 
-  created() {
-    // Initialize the use case with axios instance
-    this.importAnalysisUseCase = new ImportAnalysisUseCase(this.$axios);
-  },
-
   methods: {
-    // Analysis methods
-    async performAnalysis(workspaceId: string, pdfFiles?: File[]) {
-      if (!this.dataframeData || !this.importAnalysisUseCase) {
-        this.showError("No data available for analysis");
-        return;
-      }
-
-      this.isAnalyzing = true;
-      this.hasError = false;
-
-      try {
-        const analysisResult = await this.importAnalysisUseCase.analyzeImport(
-          workspaceId,
-          this.dataframeData,
-          pdfFiles
-        );
-
-        // Update the analysis data
-        this.$emit('analysis-complete', analysisResult);
-
-        // Reset document actions for new analysis
-        this.documentActions = {};
-        this.originalStatuses = {};
-
-        // Store original statuses
-        Object.entries(analysisResult.documents || {}).forEach(([reference, docInfo]: [string, DocumentImportAnalysis]) => {
-          this.originalStatuses[reference] = docInfo.status;
-        });
-
-      } catch (error) {
-        console.error('Analysis failed:', error);
-        this.showError(error.message || 'Failed to analyze import data');
-      } finally {
-        this.isAnalyzing = false;
-      }
+    // Analysis methods (delegated to view model)
+    async performAnalysis(pdfFiles?: File[]) {
+      return await this.performAnalysis(pdfFiles);
     },
     // Formatters for table cells
     referenceFormatter(cell: any) {
@@ -412,12 +380,12 @@ export default {
       const originalStatus = row.originalStatus;
       const reference = row.reference;
 
-      if (!row.canToggle) return;
+      if (!row.canToggle || this.isAnalyzing) return;
 
       const nextStatus = this.getNextStatus(currentStatus, originalStatus);
       if (nextStatus !== currentStatus) {
-        // Update the document action
-        this.$set(this.documentActions, reference, nextStatus);
+        // Update the local document action
+        this.$set(this.localDocumentActions, reference, nextStatus);
 
         // Update the cell value
         cell.getRow().update({ status: nextStatus });
@@ -432,12 +400,27 @@ export default {
     emitUpdate() {
       // Create confirmed documents object mapping to DocumentImportAction schema
       const confirmedDocuments: Record<string, DocumentImportAction> = {};
+      const analysisData = this.analysisResult || this.analysisData;
+      const documentActions = { ...this.documentActions, ...this.localDocumentActions };
 
-      // Handle dataframe data case
-      if (this.dataframeData && this.dataframeData.data.length > 0) {
+      // Handle analysis data case (preferred)
+      if (analysisData && analysisData.documents && Object.keys(analysisData.documents).length > 0) {
+        Object.entries(analysisData.documents).forEach(([reference, docInfo]: [string, DocumentImportAnalysis]) => {
+          const finalAction = documentActions[reference] || docInfo.status;
+
+          // Only include documents that will be processed (add or update)
+          if (finalAction === "add" || finalAction === "update") {
+            confirmedDocuments[reference] = {
+              action: finalAction,
+              associated_files: docInfo.associated_files, // Already in correct format
+            };
+          }
+        });
+      } else if (this.dataframeData && this.dataframeData.data.length > 0) {
+        // Fallback to dataframe data case
         this.dataframeData.data.forEach((row: Record<string, any>) => {
           const reference = row.reference || row.key || `row_${Math.random()}`;
-          const finalAction = this.documentActions[reference] || 'add';
+          const finalAction = documentActions[reference] || 'add';
           const filePaths = row.filePaths || [];
 
           // Only include documents that will be processed (add or update)
@@ -448,43 +431,23 @@ export default {
             };
           }
         });
-      } else {
-        // Handle analysis data case
-        Object.entries(this.analysisData.documents || {}).forEach(([reference, docInfo]: [string, DocumentImportAnalysis]) => {
-          const finalAction = this.documentActions[reference] || docInfo.status;
-
-          // Only include documents that will be processed (add or update)
-          if (finalAction === "add" || finalAction === "update") {
-            confirmedDocuments[reference] = {
-              action: finalAction,
-              associated_files: docInfo.associated_files, // Already in correct format
-            };
-          }
-        });
       }
 
       this.$emit("update", {
         confirmedDocuments,
         totalConfirmed: Object.keys(confirmedDocuments).length,
-        documentActions: { ...this.documentActions },
+        documentActions: documentActions,
       });
     },
 
     reset() {
-      this.hasError = false;
-      this.errorMessage = "";
-      this.documentActions = {};
-      this.originalStatuses = {};
-    },
-
-    showError(message: string) {
-      this.hasError = true;
-      this.errorMessage = message;
+      this.localDocumentActions = {};
+      this.reset(); // Call view model reset
     },
 
     // Public method to trigger analysis (called by parent component)
-    async analyzeImportData(workspaceId: string, pdfFiles?: File[]) {
-      await this.performAnalysis(workspaceId, pdfFiles);
+    async analyzeImportData(pdfFiles?: File[]) {
+      return await this.performAnalysis(pdfFiles);
     },
 
     // Helper method to prepare data for ImportHistoryCreate payload
@@ -495,8 +458,9 @@ export default {
       }
 
       // Convert analysis data to dataframe format if needed
+      const analysisData = this.analysisResult || this.analysisData;
       const dataRows = [];
-      Object.entries(this.analysisData.documents || {}).forEach(([reference, docInfo]: [string, DocumentImportAnalysis]) => {
+      Object.entries(analysisData.documents || {}).forEach(([reference, docInfo]: [string, DocumentImportAnalysis]) => {
         dataRows.push({
           reference,
           title: docInfo.document_create?.title || "",
@@ -531,6 +495,14 @@ export default {
       };
     },
   },
+
+  setup(props) {
+    const viewModel = useImportAnalysisViewModel(props);
+
+    return {
+      ...viewModel,
+    };
+  }
 };
 </script>
 
