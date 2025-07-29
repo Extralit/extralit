@@ -1,7 +1,7 @@
 <template>
     <div class="import-file-upload">
         <div class="import-file-upload__header">
-            <h3 class="import-file-upload__title">Upload Bibliography and PDF Files</h3>
+            <h1 class="import-file-upload__title">Upload Bibliography and PDF Files</h1>
             <p class="import-file-upload__description">
                 Upload your bibliography file and PDF folder to import your library
             </p>
@@ -80,9 +80,6 @@
                             <p class="import-file-upload__dropzone-text">
                                 {{ getPdfDropzoneText }}
                             </p>
-                            <p class="import-file-upload__dropzone-subtext">
-                                ~12 PDF files uploaded
-                            </p>
                             <div v-if="!pdfUploaded" class="import-file-upload__dropzone-buttons">
                                 <BaseButton class="secondary" @click.stop="triggerPdfFolderInput">
                                     Upload PDF Files
@@ -124,7 +121,10 @@
             </div>
 
             <!-- Summary Sidebar -->
-            <div class="import-file-upload__sidebar">
+            <div
+                class="import-file-upload__sidebar"
+                :style="{ visibility: bibUploaded || pdfUploaded ? 'visible' : 'hidden' }"
+            >
                 <h4 class="import-file-upload__sidebar-title">Summary status:</h4>
 
                 <div class="import-file-upload__sidebar-stats">
@@ -153,84 +153,6 @@
                             {{ pdfData.matchedFiles.length }} matched, {{ pdfData.unmatchedFiles.length }} mismatch{{
                                 pdfData.unmatchedFiles.length === 1 ? '' : 'es' }} detected
                         </span>
-                    </div>
-                </div>
-
-                <!-- Continue Button -->
-                <div v-if="isValid" class="import-file-upload__sidebar-action">
-                    <BaseButton class="primary" @click="$emit('continue')">
-                        Continue to Import Summary
-                    </BaseButton>
-                </div>
-            </div>
-
-            <!-- Combined Preview Section (only show when both files are uploaded and valid) -->
-            <div v-if="bibUploaded && pdfUploaded && !bibHasError && !pdfHasError && !pdfProcessing"
-                class="import-file-upload__preview">
-                <h4 class="import-file-upload__preview-title">Import Preview</h4>
-
-                <!-- Summary Stats -->
-                <div class="import-file-upload__stats">
-                    <div class="import-file-upload__stat">
-                        <BaseIcon icon-name="document" class="import-file-upload__stat-icon" />
-                        <div class="import-file-upload__stat-content">
-                            <span class="import-file-upload__stat-value">{{ bibData.parsedEntries.length }}</span>
-                            <span class="import-file-upload__stat-label">Bibliography Entries</span>
-                        </div>
-                    </div>
-
-                    <div class="import-file-upload__stat import-file-upload__stat--success">
-                        <BaseIcon icon-name="check" class="import-file-upload__stat-icon" />
-                        <div class="import-file-upload__stat-content">
-                            <span class="import-file-upload__stat-value">{{ pdfData.matchedFiles.length }}</span>
-                            <span class="import-file-upload__stat-label">Matched PDFs</span>
-                        </div>
-                    </div>
-
-                    <div class="import-file-upload__stat import-file-upload__stat--warning">
-                        <BaseIcon icon-name="unavailable" class="import-file-upload__stat-icon" />
-                        <div class="import-file-upload__stat-content">
-                            <span class="import-file-upload__stat-value">{{ pdfData.unmatchedFiles.length }}</span>
-                            <span class="import-file-upload__stat-label">Unmatched PDFs</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Quick Preview Table -->
-                <div class="import-file-upload__quick-preview">
-                    <h5 class="import-file-upload__quick-preview-title">Sample Matches</h5>
-                    <div class="import-file-upload__table-container">
-                        <table class="import-file-upload__table">
-                            <thead>
-                                <tr>
-                                    <th>Reference Key</th>
-                                    <th>Title</th>
-                                    <th>PDF File</th>
-                                    <th>Match Type</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="match in previewMatches" :key="match.bibEntry.reference">
-                                    <td class="import-file-upload__table-cell--key">{{ match.bibEntry.reference }}</td>
-                                    <td class="import-file-upload__table-cell--title">{{ match.bibEntry.title || "N/A"
-                                    }}
-                                    </td>
-                                    <td class="import-file-upload__table-cell--filename">
-                                        <BaseIcon icon-name="document" class="import-file-upload__file-icon" />
-                                        {{ match.file.name }}
-                                    </td>
-                                    <td class="import-file-upload__table-cell--match">
-                                        <span class="import-file-upload__match-badge"
-                                            :class="`import-file-upload__match-badge--${match.matchType}`">
-                                            {{ getMatchTypeLabel(match.matchType) }}
-                                        </span>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div v-if="pdfData.matchedFiles.length > 3" class="import-file-upload__preview-note">
-                        <p>Showing first 3 matches. Full details will be available in the next step.</p>
                     </div>
                 </div>
             </div>
@@ -974,7 +896,7 @@ export default {
     }
 
     &__title {
-        font-size: 1.25rem;
+        font-size: 1.5rem;
         font-weight: 600;
         margin-bottom: $base-space;
         color: var(--fg-primary);
