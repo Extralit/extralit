@@ -72,7 +72,7 @@ export default {
 
     processedColumns() {
       return this.columns.map((col) => {
-        const column = {
+        const column: any = {
           field: col.field,
           title: col.title,
           headerSort: col.sortable !== false,
@@ -122,6 +122,11 @@ export default {
         // Set CSS class
         if (col.cssClass) {
           column.cssClass = col.cssClass;
+        }
+
+        // Set frozen column
+        if (col.frozen) {
+          column.frozen = col.frozen;
         }
 
         return column;
