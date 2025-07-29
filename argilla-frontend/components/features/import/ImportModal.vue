@@ -10,6 +10,7 @@
     :loading="isProcessing"
     :step-data="stepData"
     :confirm-close="true"
+    :submit-step-index="1"
     @step-change="handleStepChange"
     @validate-step="handleValidateStep"
     @complete="handleComplete"
@@ -148,7 +149,8 @@ export default {
 
   computed: {
     canGoBack() {
-      return this.currentStep > 0 && this.currentStep < 2 && !this.isProcessing;
+      // Can't go back after step 1 (ImportAnalysisTable)
+      return this.currentStep > 0 && this.currentStep <= 1 && !this.isProcessing;
     },
 
     canGoNext() {
