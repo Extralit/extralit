@@ -1,25 +1,58 @@
 <template>
-  <BaseFlowModal :visible="isVisible" :title="$t('import.title') || 'Import Documents'" :steps="steps"
-    :current-step="currentStep" :can-go-back="canGoBack" :can-go-next="canGoNext" :can-complete="canComplete"
-    :loading="isProcessing" :step-data="stepData" :confirm-close="true" @step-change="handleStepChange"
-    @validate-step="handleValidateStep" @complete="handleComplete" @close="handleClose" @cancel="handleCancel">
+  <BaseFlowModal
+    :visible="isVisible"
+    :title="$t('import.title') || 'Import Documents'"
+    :steps="steps"
+    :current-step="currentStep"
+    :can-go-back="canGoBack"
+    :can-go-next="canGoNext"
+    :can-complete="canComplete"
+    :loading="isProcessing"
+    :step-data="stepData"
+    :confirm-close="true"
+    @step-change="handleStepChange"
+    @validate-step="handleValidateStep"
+    @complete="handleComplete"
+    @close="handleClose"
+    @cancel="handleCancel"
+  >
     <template #default="{ currentStep: stepIndex }">
       <!-- Step 1: Combined File Upload -->
-      <ImportFileUpload v-if="stepIndex === 0" ref="fileUploadComponent"
+      <ImportFileUpload
+        v-if="stepIndex === 0"
+        ref="fileUploadComponent"
         @bib-update="handleBibUpdate"
-        @pdf-update="handlePdfUpdate" />
+        @pdf-update="handlePdfUpdate"
+      />
 
       <!-- Step 2: Import Analysis -->
-      <ImportAnalysisTable v-if="stepIndex === 1" ref="analysisTableComponent" :analysis-data="analysisData"
-        :loading="isAnalyzing" @update="handleAnalysisUpdate" @retry="performImportAnalysis" />
+      <ImportAnalysisTable
+        v-if="stepIndex === 1"
+        ref="analysisTableComponent"
+        :analysis-data="analysisData"
+        :loading="isAnalyzing"
+        @update="handleAnalysisUpdate"
+        @retry="performImportAnalysis"
+      />
 
       <!-- Step 3: Upload Progress -->
-      <ImportBatchProgress v-if="stepIndex === 2" ref="batchProgressComponent" :upload-data="uploadData"
-        @completed="handleUploadCompleted" @cancelled="handleUploadCancelled" @error="handleUploadError" />
+      <ImportBatchProgress
+        v-if="stepIndex === 2"
+        ref="batchProgressComponent"
+        :upload-data="uploadData"
+        @completed="handleUploadCompleted"
+        @cancelled="handleUploadCancelled"
+        @error="handleUploadError"
+      />
 
       <!-- Step 4: Import Summary -->
-      <ImportSummary v-if="stepIndex === 3" ref="summaryComponent" :summary-data="summaryData"
-        @return-to-library="handleReturnToLibrary" @view-import-history="handleViewImportHistory" />
+      <ImportSummary
+        v-if="stepIndex === 3"
+        ref="summaryComponent"
+        :summary-data="summaryData"
+        @return-to-library="handleReturnToLibrary"
+        @view-import-history="handleViewImportHistory"
+      />
     </template>
   </BaseFlowModal>
 </template>
@@ -38,8 +71,6 @@ export default {
       default: false,
     },
   },
-
-
 
   data() {
     return {
@@ -193,7 +224,7 @@ export default {
       if (this.isUploading) {
         this.cancelUpload();
       }
-      this.$emit('close');
+      this.$emit("close");
     },
 
     // Step handlers

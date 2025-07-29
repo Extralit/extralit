@@ -287,7 +287,7 @@ Example BibTeX files:
 
 **Features using new simple table component:**
 - Create new simple table component using Tabulator (similar to base-render-table)
-- Tabular display with columns: Reference Key, Title, Authors, Year, Import Status
+- Tabular display with columns: Reference, Title, Authors, Year, Import Status
 - Toggle functionality for each reference to select Add/Update/Skip
 - User can toggle from Add or Update to Ignore
 - Status indicators with color coding (Add: green, Update: blue, Skip: gray, Ignore: gray, Failed: red)
@@ -296,7 +296,7 @@ Example BibTeX files:
 
 **Table Component (`argilla-frontend/components/base/base-simple-table/BaseSimpleTable.vue`)**
 - New reusable table component built on Tabulator
-- Simpler than base-render-table, focused on basic tabular display
+- Simpler than base-render-table, focused on basic tabular display using the `/dist/css/tabulator_semanticui.min.css` theme
 - Support for custom column renderers and actions
 - Built-in sorting, filtering, and pagination
 
@@ -328,7 +328,7 @@ Example BibTeX files:
 
 **Import History Details (`argilla-frontend/components/features/import/ImportHistoryDetails.vue`)**
 - Detailed data table showing individual reference results
-- Columns: Reference Key, Title, Authors, Year, Error Message, Actions
+- Columns: Reference, Title, Authors, Year, Error Message, Actions
 - Filter and search functionality
 - Export options for import results
 
@@ -349,7 +349,7 @@ class DocumentMetadata(BaseModel):
 class ImportAnalysisRequest(BaseModel):
     """Request schema for import analysis."""
     workspace_id: UUID = Field(..., description="Target workspace ID")
-    documents: Dict[str, DocumentMetadata] = Field(..., description="Reference key to file metadata mapping")
+    documents: Dict[str, DocumentMetadata] = Field(..., description="Reference to file metadata mapping")
 ```
 
 #### Import Analysis Response
@@ -378,7 +378,7 @@ class ImportSummary(BaseModel):
 
 class ImportAnalysisResponse(BaseModel):
     """Response schema for import analysis."""
-    documents: Dict[str, DocumentImportAnalysis] = Field(..., description="Reference key to document info mapping")
+    documents: Dict[str, DocumentImportAnalysis] = Field(..., description="Reference to document info mapping")
     summary: ImportSummary = Field(..., description="Import analysis summary")
 ```
 
@@ -386,7 +386,7 @@ class ImportAnalysisResponse(BaseModel):
 ```python
 class BulkDocumentInfo(BaseModel):
     """Information about a document in the bulk upload request."""
-    reference: str = Field(..., description="BibTeX reference key for job tracking")
+    reference: str = Field(..., description="BibTeX Reference for job tracking")
     document_create: DocumentCreate = Field(..., description="Document creation data")
     associated_files: List[str] = Field(..., description="Multiple PDF filenames for this reference")
 
@@ -396,7 +396,7 @@ class DocumentsBulkCreate(BaseModel):
 
 class DocumentsBulkResponse(BaseModel):
     """Response schema for bulk document upload."""
-    job_ids: Dict[str, str] = Field(..., description="Reference key to job_id mapping for frontend tracking")
+    job_ids: Dict[str, str] = Field(..., description="Reference to job_id mapping for frontend tracking")
     total_documents: int = Field(..., description="Total number of documents in the request")
     failed_validations: List[str] = Field(default_factory=list, description="Files that failed validation")
 ```
@@ -411,7 +411,7 @@ class DocumentImportAction(BaseModel):
 class DocumentImportExecuteRequest(BaseModel):
     """Request schema for import execution."""
     workspace_id: UUID = Field(..., description="Target workspace ID")
-    document_actions: Dict[str, DocumentImportAction] = Field(..., description="Reference key to action mapping")
+    document_actions: Dict[str, DocumentImportAction] = Field(..., description="Reference to action mapping")
 ```
 
 Note: The user may use the DocumentImportExecuteRequest to switch between add or update to skip status before final execution.
@@ -439,7 +439,7 @@ class ImportHistoryResponse(BaseModel):
 - Frontend sends multiple paginated requests (10-20 references each) to avoid large payload failures
 - Each reference may have multiple associated PDF files processed in a single job
 - Multiple files for the same reference are processed together to maintain consistency
-- Response includes `job_ids` indexed by reference key for easy frontend tracking
+- Response includes `job_ids` indexed by Reference for easy frontend tracking
 - Job processing handles multiple files per reference efficiently
 
 #### Dataframe Structure for Import History Storage
@@ -511,7 +511,7 @@ The import process maps BibTeX entries to existing Document model fields:
 
 ```python
 # Existing Document model fields used:
-- reference: str  # BibTeX reference key (e.g., "Hawley2003a")
+- reference: str  # BibTeX Reference (e.g., "Hawley2003a")
 - file_name: str  # Original PDF filename
 - doi: str       # DOI from BibTeX entry
 - pmid: str      # PMID from BibTeX entry
@@ -520,12 +520,12 @@ The import process maps BibTeX entries to existing Document model fields:
 ```
 
 ### BibTeX Entry Processing
-- **Reference Key**: Maps to `Document.reference` field for deduplication
+- **Reference**: Maps to `Document.reference` field for deduplication
 - **Title**: Used for display in preview, not stored in Document model
 - **Authors**: Used for display in preview, not stored in Document model
 - **Year**: Used for display in preview, not stored in Document model
 - **DOI/PMID**: Maps to `Document.doi` and `Document.pmid` fields
-- **File Matching**: Associates PDF files with reference keys for upload
+- **File Matching**: Associates PDF files with References for upload
 
 ### Generalized Tabular Data Processing
 The import system processes tabular data (BibTeX, CSV, etc.) into a standardized dataframe format:
@@ -533,7 +533,7 @@ The import system processes tabular data (BibTeX, CSV, etc.) into a standardized
 **BibTeX to Generic Dataframe Conversion:**
 - Frontend parses BibTeX entries and converts all available fields to dataframe format
 - No predefined field mapping - preserves all BibTeX fields as-is (title, author, journal, year, doi, pmid, etc.)
-- Reference key (ID field) serves as primary key
+- Reference (ID field) serves as primary key
 - Type inference applied automatically (string, integer, float)
 - Schema generated dynamically based on available fields
 
@@ -549,8 +549,8 @@ The import system processes tabular data (BibTeX, CSV, etc.) into a standardized
 - Preserves all original metadata without field-specific mapping requirements
 
 ### PDF-to-Reference Matching Logic
-1. **Exact Match**: PDF filename matches reference key exactly
-2. **Partial Match**: PDF filename contains reference key
+1. **Exact Match**: PDF filename matches Reference exactly
+2. **Partial Match**: PDF filename contains Reference
 3. **Fuzzy Match**: Use string similarity for close matches
 4. **Manual Association**: Allow user to manually associate files
 
@@ -559,7 +559,7 @@ The import system processes tabular data (BibTeX, CSV, etc.) into a standardized
 ### BibTeX Parsing Errors
 - Malformed entries: Skip and report specific line/entry errors
 - Encoding issues: Attempt multiple encodings, report failures
-- Duplicate reference keys: Append suffix or prompt user resolution
+- Duplicate References: Append suffix or prompt user resolution
 
 ### PDF Processing Errors
 - Corrupted files: Skip and report file-specific errors
