@@ -19,8 +19,11 @@
   <div>
     <Home>
       <template v-slot:header>
-        <AppHeader class="home__header" :breadcrumbs="[{ action: 'clearFilters', name: $t('breadcrumbs.home') }]"
-          @breadcrumb-action="onBreadcrumbAction" />
+        <AppHeader
+          class="home__header"
+          :breadcrumbs="[{ action: 'clearFilters', name: $t('breadcrumbs.home') }]"
+          @breadcrumb-action="onBreadcrumbAction"
+        />
         <PersistentStorageBanner class="home__banner" />
       </template>
       <template v-slot:page-content>
@@ -31,8 +34,13 @@
         <template v-if="true || isAdminOrOwnerRole">
           <div class="home__sidebar__buttons">
             <ImportDocuments @on-click="openImportModal" />
-            <ImportFromHub :is-expanded="showImportDatasetInput" @on-expand="showImportDatasetInput = true"
-              @on-close="showImportDatasetInput = false" @on-import-dataset="importDataset" :error="error" />
+            <ImportFromHub
+              :is-expanded="showImportDatasetInput"
+              @on-expand="showImportDatasetInput = true"
+              @on-close="showImportDatasetInput = false"
+              @on-import-dataset="importDataset"
+              :error="error"
+            />
             <ImportFromPython v-if="!showImportDatasetInput" />
           </div>
           <BaseSeparator class="home__sidebar__separator" />
@@ -40,8 +48,12 @@
             <p class="home__sidebar__title" v-text="$t('home.exampleDatasetsTitle')" />
             <p class="home__sidebar__subtitle" v-text="$t('home.exampleDatasetsText')" />
             <div class="home__sidebar__cards">
-              <ExampleDatasetCard v-for="dataset in exampleDatasets" :key="dataset.repoId" :dataset="dataset"
-                @on-import-dataset="importDataset" />
+              <ExampleDatasetCard
+                v-for="dataset in exampleDatasets"
+                :key="dataset.repoId"
+                :dataset="dataset"
+                @on-import-dataset="importDataset"
+              />
             </div>
           </div>
         </template>
@@ -50,16 +62,21 @@
             <p class="home__sidebar__title" v-text="$t('home.guidesTitle')" />
             <p class="home__sidebar__subtitle" v-text="$t('home.guidesText')" />
             <div class="home__sidebar__cards">
-              <LinkCard type="How to guide" text="Annotate your dataset"
-                link="https://docs.extralit.ai/latest/admin_guide/annotate/" />
-              <LinkCard type="How to guide" text="Query and filter records"
-                link="https://docs.extralit.ai/latest/admin_guide/query/" />
+              <LinkCard
+                type="How to guide"
+                text="Annotate your dataset"
+                link="https://docs.extralit.ai/latest/admin_guide/annotate/"
+              />
+              <LinkCard
+                type="How to guide"
+                text="Query and filter records"
+                link="https://docs.extralit.ai/latest/admin_guide/query/"
+              />
             </div>
             <p class="home__sidebar__link" v-html="$t('home.demoLink')" />
           </div>
         </template>
       </template>
-
     </Home>
 
     <!-- Test Modal - Rendered outside layout -->

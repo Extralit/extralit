@@ -69,7 +69,7 @@
   - Add JavaScript BibTeX parser library dependency (bibtex-parse-js or similar)
   - Implement BibTeX file parsing in ImportUpload.vue component
   - Convert BibTeX entries to generic dataframe format (preserve all fields)
-  - Extract metadata (title, authors, year, DOI, PMID, reference key) for document creation
+  - Extract metadata (title, authors, year, DOI, PMID, Reference) for document creation
   - Add error handling for malformed BibTeX entries
   - Store parsed dataframe data for later submission to import history endpoint
   - _Requirements: 1.1, 5.1_
@@ -111,7 +111,7 @@
   - _Requirements: 1.2, 1.3, 4.2_
 
 - [ ] 7. Create simple table component and analysis interface
-- [ ] 7.1 Implement BaseSimpleTable.vue component
+- [-] 7.1 Implement BaseSimpleTable.vue component
   - Create new reusable table component using Tabulator library
   - Build simpler alternative to base-render-table for basic tabular display
   - Add support for custom column renderers and actions
@@ -120,7 +120,7 @@
 
 - [ ] 7.2 Create ImportAnalysisTable.vue component (Step 3)
   - Implement tabular display using BaseSimpleTable component
-  - Add columns: Reference Key, Title, Authors, Year, Import Status
+  - Add columns: Reference, Title, Authors, Year, Import Status
   - Create toggle functionality for Add/Update/Skip selection (one-way: can go to Skip, but not back)
   - Add status indicators with color coding (Add: green, Update: blue, Skip: gray, Failed: red)
   - Implement Save, Cancel, and Confirm Import buttons
@@ -164,7 +164,7 @@
 
 - [ ] 9.3 Create ImportHistoryDetails.vue component
   - Implement detailed data table showing individual reference results
-  - Add columns: Reference Key, Title, Authors, Year, Error Message, Actions
+  - Add columns: Reference, Title, Authors, Year, Error Message, Actions
   - Add filter and search functionality
   - Implement export options for import results
   - _Requirements: 3.5, 4.3_
@@ -175,7 +175,7 @@
   - Verify document metadata is properly stored and displayed for multiple files per reference
   - Test compatibility with existing document processing features
   - Add proper metadata tags for collection and source tracking
-  - Implement UI grouping of multiple files by reference key while maintaining individual document records
+  - Implement UI grouping of multiple files by Reference while maintaining individual document records
   - _Requirements: 4.1, 4.2, 4.4, 4.6, 4.7_
 
 - [ ] 11. Add comprehensive error handling and validation

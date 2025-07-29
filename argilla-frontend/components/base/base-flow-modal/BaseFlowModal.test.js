@@ -93,18 +93,16 @@ describe("BaseFlowModal", () => {
     });
 
     it("should show Next button when not on last step", () => {
-      const nextButton = wrapper.findAll(".flow-modal__nav-right button").filter(btn =>
-        btn.text().includes("Next")
-      );
+      const nextButton = wrapper.findAll(".flow-modal__nav-right button").filter((btn) => btn.text().includes("Next"));
       expect(nextButton).toHaveLength(1);
     });
 
     it("should show Finish button on last step", async () => {
       await wrapper.setProps({ currentStep: 2 });
 
-      const finishButton = wrapper.findAll(".flow-modal__nav-right button").filter(btn =>
-        btn.text().includes("Finish")
-      );
+      const finishButton = wrapper
+        .findAll(".flow-modal__nav-right button")
+        .filter((btn) => btn.text().includes("Finish"));
       expect(finishButton).toHaveLength(1);
     });
 
@@ -112,7 +110,7 @@ describe("BaseFlowModal", () => {
       await wrapper.setProps({ loading: true, currentStep: 1, canGoBack: true });
 
       const buttons = wrapper.findAll(".flow-modal__nav-left button, .flow-modal__nav-right button");
-      buttons.wrappers.forEach(button => {
+      buttons.wrappers.forEach((button) => {
         expect(button.attributes("disabled")).toBeDefined();
       });
     });
@@ -130,9 +128,10 @@ describe("BaseFlowModal", () => {
     });
 
     it("should emit validate-step before navigation", async () => {
-      const nextButton = wrapper.findAll(".flow-modal__nav-right button").filter(btn =>
-        btn.text().includes("Next")
-      ).at(0);
+      const nextButton = wrapper
+        .findAll(".flow-modal__nav-right button")
+        .filter((btn) => btn.text().includes("Next"))
+        .at(0);
 
       await nextButton.trigger("click");
 
@@ -146,9 +145,10 @@ describe("BaseFlowModal", () => {
     it("should emit complete on finish button click", async () => {
       await wrapper.setProps({ currentStep: 2 });
 
-      const finishButton = wrapper.findAll(".flow-modal__nav-right button").filter(btn =>
-        btn.text().includes("Finish")
-      ).at(0);
+      const finishButton = wrapper
+        .findAll(".flow-modal__nav-right button")
+        .filter((btn) => btn.text().includes("Finish"))
+        .at(0);
 
       await finishButton.trigger("click");
 
@@ -166,9 +166,7 @@ describe("BaseFlowModal", () => {
 
   describe("Props Validation", () => {
     it("should validate steps prop structure", () => {
-      const validSteps = [
-        { id: "test", title: "Test Step" },
-      ];
+      const validSteps = [{ id: "test", title: "Test Step" }];
 
       const invalidSteps = [
         { title: "Missing ID" },
