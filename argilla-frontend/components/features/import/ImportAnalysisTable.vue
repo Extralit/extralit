@@ -1,9 +1,9 @@
 <template>
   <div class="import-analysis-table">
     <!-- Loading state -->
-    <div v-if="loading" class="loading-state">
+    <div v-if="loading || isAnalyzing" class="loading-state">
       <BaseSpinner />
-      <p>Analyzing import status...</p>
+      <p>{{ isAnalyzing ? 'Analyzing import status...' : 'Loading...' }}</p>
     </div>
 
     <!-- Error state -->
@@ -62,13 +62,17 @@ import "assets/icons/danger";
 import "assets/icons/chevron-down";
 import type {
   ImportAnalysisResponse,
-  AnalysisTableRow,
-  TableColumn,
   ImportStatus,
   DataframeData,
   DocumentImportAnalysis,
   DocumentImportAction,
+} from '~/v1/domain/entities/import/ImportAnalysis';
+import type {
+  AnalysisTableRow,
+  TableColumn,
+  ImportConfirmationData,
 } from './types';
+import { ImportAnalysisUseCase } from '~/v1/domain/usecases/import-analysis-use-case';
 
 /**
  * ImportAnalysisTable Component
@@ -107,7 +111,7 @@ export default {
     },
   },
 
-  emits: ["update", "retry"],
+  emits: ["update", "retry", "analysis-complete"],
 
   data() {
     return {
@@ -115,6 +119,8 @@ export default {
       errorMessage: "",
       documentActions: {} as Record<string, ImportStatus>, // Track user-modified actions for each document
       originalStatuses: {} as Record<string, ImportStatus>, // Track original statuses from analysis
+      isAnalyzing: false,
+      importAnalysisUseCase: null as ImportAnalysisUseCase | null,
     };
   },
 
@@ -269,7 +275,48 @@ export default {
     },
   },
 
+  created() {
+    // Initialize the use case with axios instance
+    this.importAnalysisUseCase = new ImportAnalysisUseCase(this.$axios);
+  },
+
   methods: {
+    // Analysis methods
+    async performAnalysis(workspaceId: string, pdfFiles?: File[]) {
+      if (!this.dataframeData || !this.importAnalysisUseCase) {
+        this.showError("No data available for analysis");
+        return;
+      }
+
+      this.isAnalyzing = true;
+      this.hasError = false;
+
+      try {
+        const analysisResult = await this.importAnalysisUseCase.analyzeImport(
+          workspaceId,
+          this.dataframeData,
+          pdfFiles
+        );
+
+        // Update the analysis data
+        this.$emit('analysis-complete', analysisResult);
+
+        // Reset document actions for new analysis
+        this.documentActions = {};
+        this.originalStatuses = {};
+
+        // Store original statuses
+        Object.entries(analysisResult.documents || {}).forEach(([reference, docInfo]: [string, DocumentImportAnalysis]) => {
+          this.originalStatuses[reference] = docInfo.status;
+        });
+
+      } catch (error) {
+        console.error('Analysis failed:', error);
+        this.showError(error.message || 'Failed to analyze import data');
+      } finally {
+        this.isAnalyzing = false;
+      }
+    },
     // Formatters for table cells
     referenceFormatter(cell: any) {
       const value = cell.getValue();
@@ -343,12 +390,12 @@ export default {
       return statusMap[status] || status;
     },
 
-    canToggleStatus(originalStatus) {
+    canToggleStatus(originalStatus: ImportStatus) {
       // Can toggle from Add or Update to Skip
       return originalStatus === "add" || originalStatus === "update" || originalStatus === "ignore";
     },
 
-    getNextStatus(currentStatus, originalStatus) {
+    getNextStatus(currentStatus: ImportStatus, originalStatus: ImportStatus) {
       // Toggle between Add/Update and Skip
       if ((originalStatus === "add" || originalStatus === "update") && currentStatus !== "ignore") {
         return "ignore";
@@ -430,9 +477,14 @@ export default {
       this.originalStatuses = {};
     },
 
-    showError(message) {
+    showError(message: string) {
       this.hasError = true;
       this.errorMessage = message;
+    },
+
+    // Public method to trigger analysis (called by parent component)
+    async analyzeImportData(workspaceId: string, pdfFiles?: File[]) {
+      await this.performAnalysis(workspaceId, pdfFiles);
     },
 
     // Helper method to prepare data for ImportHistoryCreate payload

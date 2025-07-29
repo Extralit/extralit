@@ -64,14 +64,21 @@
   - Remove import history creation from bulk upload (moved to separate endpoint)
   - _Requirements: 3.2, 3.5, 4.1, 4.6_
 
-- [ ] 4. Implement frontend BibTeX parsing and file matching
+- [ ] 4. Create frontend domain architecture and implement BibTeX parsing
+- [x] 4.0 Create frontend domain entities and use cases
+  - Create ImportAnalysis.ts in ~/v1/domain/entities/import/ with backend API data structures
+  - Create import-analysis-use-case.ts in ~/v1/domain/usecases/ for API communication
+  - Update components/features/import/types.ts to contain only UI-specific component types
+  - Implement ImportAnalysisUseCase with axios integration for POST /api/v1/imports/analyze
+  - _Requirements: 2.1, 2.2, 4.3_
 - [x] 4.1 Create BibTeX parser component with generic dataframe conversion
   - Add JavaScript BibTeX parser library dependency (bibtex-parse-js or similar)
-  - Implement BibTeX file parsing in ImportUpload.vue component
+  - Implement BibTeX file parsing in ImportFileUpload.vue component
   - Convert BibTeX entries to generic dataframe format (preserve all fields)
   - Extract metadata (title, authors, year, DOI, PMID, Reference) for document creation
   - Add error handling for malformed BibTeX entries
   - Store parsed dataframe data for later submission to import history endpoint
+  - Use DataframeData type from ~/v1/domain/entities/import/ImportAnalysis.ts
   - _Requirements: 1.1, 5.1_
 
 - [x] 4.2 Implement file-to-reference matching logic
@@ -123,7 +130,11 @@
   - Add columns: Reference, Title, Authors, Year, Import Status
   - Create toggle functionality for Add/Update/Skip selection
   - Add status indicators with color coding (Add: green, Update: blue, Skip: gray, Failed: red)
-  - Send ImportAnalysisRequest to backend and display results
+  - Send ImportAnalysisRequest to backend and display results using ImportAnalysisUseCase
+  - Import backend API types from ~/v1/domain/entities/import/ImportAnalysis.ts
+  - Import UI component types from ./types.ts for table configuration
+  - Implement performAnalysis() method with axios integration
+  - Add public analyzeImportData() method for parent component integration
   - _Requirements: 2.1, 2.2, 2.7_
 
 - [ ] 8. Implement batch upload execution and progress tracking
