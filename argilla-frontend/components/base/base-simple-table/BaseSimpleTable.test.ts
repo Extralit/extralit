@@ -1,6 +1,5 @@
 import { mount } from '@vue/test-utils';
 import BaseSimpleTable from './BaseSimpleTable.vue';
-import { SimpleTableColumn } from './types';
 
 // Mock Tabulator
 jest.mock('tabulator-tables', () => ({
@@ -36,7 +35,7 @@ jest.mock('tabulator-tables', () => ({
 }));
 
 describe('BaseSimpleTable', () => {
-  const mockColumns: SimpleTableColumn[] = [
+  const mockColumns = [
     {
       field: 'name',
       title: 'Name',
