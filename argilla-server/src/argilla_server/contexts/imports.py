@@ -204,7 +204,7 @@ def compare_file_sizes(existing_size: Optional[int], new_files: List[FileInfo]) 
 
     # Check if any new file has a different size than the existing file
     for file_info in new_files:
-        if file_info.size != existing_size:
+        if file_info.size and file_info.size != existing_size:
             return True
 
     return False

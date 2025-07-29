@@ -34,7 +34,7 @@ class FileInfo(BaseModel):
     """Information about a file to be imported."""
 
     filename: str = Field(..., description="Name of the file")
-    size: int = Field(..., description="File size in bytes for comparison")
+    size: Optional[int] = Field(None, description="File size in bytes for comparison")
 
 
 class DocumentMetadata(BaseModel):

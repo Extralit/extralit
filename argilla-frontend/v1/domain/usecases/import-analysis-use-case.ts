@@ -25,12 +25,12 @@ export class ImportAnalysisUseCase {
     try {
       const request = this.createAnalysisRequest(workspaceId, dataframeData, pdfFiles);
 
+      console.log(request)
+
       const { data } = await this.axios.post<ImportAnalysisResponse>(
         `/v1/imports/analyze`,
         request
       );
-
-      console.log(data)
 
       return data;
 
@@ -62,53 +62,34 @@ export class ImportAnalysisUseCase {
   ): ImportAnalysisRequest {
     const documents: Record<string, DocumentMetadata> = {};
 
+    const fileNameMap: Record<string, File> = {};
+    if (pdfFiles && pdfFiles.length > 0) {
+      pdfFiles.forEach(file => {
+        fileNameMap[file.name] = file;
+      });
+    }
+
     // Convert dataframe data to document metadata
     dataframeData.data.forEach((row: Record<string, any>) => {
       const reference = row.reference || row.key;
       if (!reference) return;
 
       // Extract file information for this reference
-      const associatedFiles: FileInfo[] = [];
       const filePaths = row.filePaths || [];
-
-      // Match PDF files to this reference
-      if (pdfFiles && filePaths.length > 0) {
-        filePaths.forEach((filePath: string) => {
-          const matchingFile = pdfFiles.find(file =>
-            file.name.includes(filePath) || filePath.includes(file.name)
-          );
-
-          if (matchingFile) {
-            associatedFiles.push({
-              filename: matchingFile.name,
-              size: matchingFile.size
-            });
-          } else {
-            // Include file info even if PDF not found (for analysis)
-            associatedFiles.push({
-              filename: filePath,
-              size: 0 // Unknown size
-            });
-          }
-        });
-      }
+      const associatedFiles: FileInfo[] = filePaths.map((filename: string) => {
+        const fileObj = fileNameMap[filename];
+        return {
+          filename,
+          size: fileObj?.size,
+        };
+      });
 
       documents[reference] = {
         document_create: {
-          title: row.title,
-          authors: Array.isArray(row.authors) ? row.authors : [row.authors].filter(Boolean),
-          year: String(row.year || ''),
-          journal: row.journal,
-          volume: row.volume,
-          pages: row.pages,
+          reference: reference,
           doi: row.doi,
-          url: row.url,
-          abstract: row.abstract,
-          keywords: row.keywords ? (Array.isArray(row.keywords) ? row.keywords : [row.keywords]) : undefined,
-          reference,
           pmid: row.pmid,
           workspace_id: workspaceId,
-          metadata: this.extractMetadata(row)
         },
         associated_files: associatedFiles
       };
