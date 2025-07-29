@@ -601,6 +601,9 @@ The import system processes tabular data (BibTeX, CSV, etc.) into a standardized
 
 ## Implementation Considerations
 
+Some best practices are:
+- No need to create README files for new components unless asked
+
 ### File Upload Handling
 - Use multipart form uploads for large files
 - Implement chunked upload for very large PDF collections
