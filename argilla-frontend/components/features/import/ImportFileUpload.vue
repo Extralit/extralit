@@ -125,30 +125,34 @@
                 <h4 class="import-file-upload__sidebar-title">Summary status:</h4>
 
                 <div class="import-file-upload__sidebar-stats">
-                    <!-- Bibliography Status -->
                     <div v-if="bibUploaded && !bibHasError" class="import-file-upload__sidebar-stat">
-                        <BaseIcon icon-name="document"
+                        <BaseIcon icon-name="records"
                             class="import-file-upload__sidebar-stat-icon import-file-upload__sidebar-stat-icon--bib" />
                         <span class="import-file-upload__sidebar-stat-text">{{ bibData.parsedEntries.length }}
                             references found</span>
                     </div>
 
-                    <!-- PDF Status -->
                     <div v-if="pdfUploaded && !pdfHasError && !pdfProcessing" class="import-file-upload__sidebar-stat">
-                        <BaseIcon icon-name="folder"
+                        <BaseIcon icon-name="import"
                             class="import-file-upload__sidebar-stat-icon import-file-upload__sidebar-stat-icon--pdf" />
-                        <span class="import-file-upload__sidebar-stat-text">{{ pdfData.totalFiles }} PDF files
-                            uploaded</span>
+                        <span class="import-file-upload__sidebar-stat-text">{{ pdfData.totalFiles }} PDF files uploaded</span>
                     </div>
 
-                    <!-- Matching Status -->
                     <div v-if="pdfUploaded && !pdfHasError && !pdfProcessing && pdfData.matchedFiles.length > 0"
                         class="import-file-upload__sidebar-stat">
                         <BaseIcon icon-name="check"
                             class="import-file-upload__sidebar-stat-icon import-file-upload__sidebar-stat-icon--match" />
                         <span class="import-file-upload__sidebar-stat-text">
-                            {{ pdfData.matchedFiles.length }} matched, {{ pdfData.unmatchedFiles.length }} mismatch{{
-                                pdfData.unmatchedFiles.length === 1 ? '' : 'es' }} detected
+                            {{ pdfData.matchedFiles.length }} matched
+                        </span>
+                    </div>
+
+                    <div v-if="pdfUploaded && !pdfHasError && !pdfProcessing && pdfData.matchedFiles.length > 0"
+                        class="import-file-upload__sidebar-stat">
+                        <BaseIcon icon-name="danger"
+                            class="import-file-upload__sidebar-stat-icon import-file-upload__sidebar-stat-icon--match" />
+                        <span class="import-file-upload__sidebar-stat-text">
+                            {{ pdfData.unmatchedFiles.length }} mismatch{{pdfData.unmatchedFiles.length === 1 ? '' : 'es' }} detected
                         </span>
                     </div>
                 </div>
@@ -203,7 +207,7 @@ export default {
         getBibDropzoneIcon() {
             if (this.bibHasError) return "danger";
             if (this.bibUploaded) return "check";
-            return "document";
+            return "import";
         },
 
         getBibDropzoneText() {
@@ -215,7 +219,7 @@ export default {
         getPdfDropzoneIcon() {
             if (this.pdfHasError) return "danger";
             if (this.pdfUploaded) return "check";
-            return "folder";
+            return "import";
         },
 
         getPdfDropzoneText() {
