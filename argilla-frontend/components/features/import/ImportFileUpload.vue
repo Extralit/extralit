@@ -155,7 +155,7 @@
           <!-- PDF Status -->
           <div v-if="pdfUploaded && !pdfHasError && !pdfProcessing" class="import-file-upload__sidebar-stat">
             <BaseIcon
-              icon-name="folder"
+              icon-name="import"
               class="import-file-upload__sidebar-stat-icon import-file-upload__sidebar-stat-icon--pdf"
             />
             <span class="import-file-upload__sidebar-stat-text">{{ pdfData.totalFiles }} PDF files uploaded</span>
@@ -241,7 +241,7 @@ export default {
     getPdfDropzoneIcon() {
       if (this.pdfHasError) return "danger";
       if (this.pdfUploaded) return "check";
-      return "folder";
+      return "import";
     },
 
     getPdfDropzoneText() {
@@ -413,23 +413,28 @@ export default {
         throw new Error("Missing citation key (reference)");
       }
 
-      // Extract and clean fields
+      // Use createDataframeEntry as the primary method, but extract specific processed fields
+      const dataframeEntry = this.createDataframeEntry(entry);
+
+      // Return processed entry with specific field handling
       return {
         reference: entry.citationKey,
         type: entry.entryType || "unknown",
-        title: this.cleanBibTexField(entry.entryTags?.title),
-        authors: this.extractAuthors(entry.entryTags?.author),
-        year: this.extractYear(entry.entryTags?.year || entry.entryTags?.date),
-        doi: this.cleanBibTexField(entry.entryTags?.doi),
-        pmid: this.cleanBibTexField(entry.entryTags?.pmid),
-        url: this.cleanBibTexField(entry.entryTags?.url),
-        journal: this.cleanBibTexField(entry.entryTags?.journal),
-        volume: this.cleanBibTexField(entry.entryTags?.volume),
-        pages: this.cleanBibTexField(entry.entryTags?.pages),
-        publisher: this.cleanBibTexField(entry.entryTags?.publisher),
-        abstract: this.cleanBibTexField(entry.entryTags?.abstract),
-        keywords: this.cleanBibTexField(entry.entryTags?.keywords),
-        file: this.cleanBibTexField(entry.entryTags?.file),
+        title: dataframeEntry.title,
+        authors: dataframeEntry.authors,
+        year: dataframeEntry.year,
+        doi: dataframeEntry.doi,
+        pmid: dataframeEntry.pmid,
+        url: dataframeEntry.url,
+        journal: dataframeEntry.journal,
+        volume: dataframeEntry.volume,
+        pages: dataframeEntry.pages,
+        publisher: dataframeEntry.publisher,
+        abstract: dataframeEntry.abstract,
+        keywords: dataframeEntry.keywords,
+        file: dataframeEntry.file,
+        filePaths: dataframeEntry.filePaths, // Parsed file paths
+        ...dataframeEntry, // Include all other fields
       };
     },
 
@@ -440,11 +445,43 @@ export default {
         type: entry.entryType || "unknown",
       };
 
-      // Add all entry tags, preserving original field names and values
+      // Add all entry tags, preserving original field names and values with processing
       if (entry.entryTags) {
         Object.keys(entry.entryTags).forEach((key) => {
-          dataframeEntry[key] = this.cleanBibTexField(entry.entryTags[key]);
+          const rawValue = entry.entryTags[key];
+          let processedValue = this.cleanBibTexField(rawValue);
+
+          // Special processing for specific fields
+          switch (key.toLowerCase()) {
+            case 'author':
+              processedValue = this.extractAuthors(rawValue);
+              dataframeEntry['authors'] = processedValue; // Standardize to 'authors'
+              break;
+            case 'year':
+            case 'date':
+              processedValue = this.extractYear(rawValue);
+              if (processedValue && !dataframeEntry['year']) {
+                dataframeEntry['year'] = processedValue; // Prefer year over date
+              }
+              break;
+            case 'file':
+              processedValue = this.cleanBibTexField(rawValue);
+              dataframeEntry['filePaths'] = this.parseFilePaths(rawValue);
+              break;
+            default:
+              // Keep original field name and processed value
+              break;
+          }
+
+          dataframeEntry[key] = processedValue;
         });
+
+        // Handle year/date precedence - prefer year field over date field
+        if (entry.entryTags.year && entry.entryTags.date) {
+          dataframeEntry['year'] = this.extractYear(entry.entryTags.year);
+        } else if (entry.entryTags.date && !entry.entryTags.year) {
+          dataframeEntry['year'] = this.extractYear(entry.entryTags.date);
+        }
       }
 
       return dataframeEntry;
@@ -530,6 +567,31 @@ export default {
       // Extract 4-digit year from various formats
       const yearMatch = cleaned.match(/\b(19|20)\d{2}\b/);
       return yearMatch ? yearMatch[0] : null;
+    },
+
+    parseFilePaths(fileField) {
+      if (!fileField) return [];
+
+      const cleaned = this.cleanBibTexField(fileField);
+      if (!cleaned) return [];
+
+      // Parse Zotero/Mendeley file field format: "PDF:files/2/filename.pdf:application/pdf"
+      // Can have multiple files separated by semicolons
+      const filePaths = [];
+      const fileEntries = cleaned.split(';').map(f => f.trim()).filter(f => f.length > 0);
+
+      for (const fileEntry of fileEntries) {
+        const parts = fileEntry.split(':');
+        if (parts.length >= 2) {
+          // Extract the file path (second part)
+          const filePath = parts[1].trim();
+          if (filePath && filePath !== '') {
+            filePaths.push(filePath);
+          }
+        }
+      }
+
+      return filePaths;
     },
 
     showBibError(message) {
@@ -629,14 +691,17 @@ export default {
       return new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = (e) => {
-          const arrayBuffer = e.target.result;
-          // ts-ignore-next-line
-          const uint8Array = new Uint8Array(arrayBuffer.slice(0, 4));
+          const result = e.target.result;
+          if (result instanceof ArrayBuffer) {
+            const uint8Array = new Uint8Array(result.slice(0, 4));
 
-          // Check PDF signature (%PDF)
-          const pdfSignature = [0x25, 0x50, 0x44, 0x46]; // %PDF
-          const isValidPdf = pdfSignature.every((byte, index) => uint8Array[index] === byte);
-          resolve(isValidPdf);
+            // Check PDF signature (%PDF)
+            const pdfSignature = [0x25, 0x50, 0x44, 0x46]; // %PDF
+            const isValidPdf = pdfSignature.every((byte, index) => uint8Array[index] === byte);
+            resolve(isValidPdf);
+          } else {
+            resolve(false);
+          }
         };
         reader.onerror = () => resolve(false);
         reader.readAsArrayBuffer(file.slice(0, 4));
@@ -675,18 +740,21 @@ export default {
 
     findBestMatch(file: File) {
       const fileName = file.name.toLowerCase().replace(/\.pdf$/, "");
+      const filePath = file.webkitRelativePath || file.name;
       let bestMatch = null;
       let bestConfidence = 0;
 
       for (const entry of this.bibData.parsedEntries) {
         const matches = [
-          // Exact reference key match
+          // 1. WebkitRelativePath match (highest priority for folder uploads)
+          this.checkWebkitPathMatch(filePath, entry.filePaths),
+          // 2. File field path match (Zotero exports)
+          this.checkFileFieldMatch(fileName, entry.file, entry.filePaths),
+          // 3. Exact reference key match
           this.checkExactMatch(fileName, entry.reference),
-          // Partial reference key match
+          // 4. Partial reference key match
           this.checkPartialMatch(fileName, entry.reference),
-          // File field match (Zotero exports)
-          this.checkFileFieldMatch(fileName, entry.file),
-          // Fuzzy title match
+          // 5. Fuzzy title match (lowest priority)
           this.checkTitleMatch(fileName, entry.title),
         ].filter(Boolean);
 
@@ -733,10 +801,62 @@ export default {
       return null;
     },
 
-    checkFileFieldMatch(fileName, fileField) {
+    checkWebkitPathMatch(filePath, parsedFilePaths) {
+      if (!parsedFilePaths || parsedFilePaths.length === 0) return null;
+
+      const normalizedFilePath = this.normalizePath(filePath);
+
+      for (const bibFilePath of parsedFilePaths) {
+        const normalizedBibPath = this.normalizePath(bibFilePath);
+
+        // Check for exact path match
+        if (normalizedFilePath === normalizedBibPath) {
+          return { type: "webkit_path_exact", confidence: 1.0 };
+        }
+
+        // Check for suffix path match (e.g., "files/14/paper.pdf" matches "some/folder/files/14/paper.pdf")
+        if (this.checkSuffixPathMatch(normalizedFilePath, normalizedBibPath)) {
+          return { type: "webkit_path_suffix", confidence: 0.95 };
+        }
+
+        // Check for filename match within path
+        const filePathName = this.extractFileNameFromPath(normalizedFilePath);
+        const bibPathName = this.extractFileNameFromPath(normalizedBibPath);
+
+        if (filePathName && bibPathName) {
+          const similarity = this.calculateStringSimilarity(filePathName, bibPathName);
+          if (similarity >= 0.9) {
+            return { type: "webkit_path_filename", confidence: similarity * 0.9 };
+          }
+        }
+      }
+
+      return null;
+    },
+
+    checkFileFieldMatch(fileName, fileField, parsedFilePaths) {
+      // First try the parsed file paths (more reliable)
+      if (parsedFilePaths && parsedFilePaths.length > 0) {
+        for (const filePath of parsedFilePaths) {
+          const pathFileName = this.extractFileNameFromPath(filePath);
+          if (pathFileName) {
+            const cleanPathFileName = pathFileName.toLowerCase().replace(/\.pdf$/, "");
+
+            if (fileName === cleanPathFileName) {
+              return { type: "file_field_parsed", confidence: 0.95 };
+            }
+
+            const similarity = this.calculateStringSimilarity(fileName, cleanPathFileName);
+            if (similarity >= 0.8) {
+              return { type: "file_field_parsed", confidence: similarity * 0.9 };
+            }
+          }
+        }
+      }
+
+      // Fallback to original file field parsing
       if (!fileField) return null;
 
-      // Parse Zotero file field format: "PDF:files/2/filename.pdf:application/pdf"
       const filePaths = fileField.split(";").map((f) => f.trim());
 
       for (const filePath of filePaths) {
@@ -749,12 +869,12 @@ export default {
             .replace(/\.pdf$/, "");
 
           if (fileName === pathFileName) {
-            return { type: "file_field", confidence: 0.95 };
+            return { type: "file_field", confidence: 0.9 };
           }
 
           const similarity = this.calculateStringSimilarity(fileName, pathFileName);
           if (similarity >= 0.8) {
-            return { type: "file_field", confidence: similarity };
+            return { type: "file_field", confidence: similarity * 0.85 };
           }
         }
       }
@@ -832,11 +952,62 @@ export default {
       return matrix[str2.length][str1.length];
     },
 
+    normalizePath(path) {
+      if (!path) return "";
+
+      return path
+        .toLowerCase()
+        .replace(/\\/g, "/") // Convert Windows backslashes to forward slashes
+        .replace(/\/+/g, "/") // Remove duplicate slashes
+        .replace(/^\/*/, "") // Remove leading slashes
+        .replace(/\/*$/, "") // Remove trailing slashes
+        .trim();
+    },
+
+    extractFileNameFromPath(path) {
+      if (!path) return null;
+
+      const normalizedPath = this.normalizePath(path);
+      const parts = normalizedPath.split("/");
+      const fileName = parts[parts.length - 1];
+
+      return fileName ? fileName.replace(/\.pdf$/, "") : null;
+    },
+
+    checkSuffixPathMatch(filePath, bibPath) {
+      if (!filePath || !bibPath) return false;
+
+      // Check if one path is a suffix of the other
+      // This handles cases where the uploaded file has a longer path than the bib entry
+      const filePathParts = filePath.split("/");
+      const bibPathParts = bibPath.split("/");
+
+      // Try matching from the end of both paths
+      const minLength = Math.min(filePathParts.length, bibPathParts.length);
+
+      for (let i = 1; i <= minLength; i++) {
+        const filePathSuffix = filePathParts.slice(-i).join("/");
+        const bibPathSuffix = bibPathParts.slice(-i).join("/");
+
+        if (filePathSuffix === bibPathSuffix) {
+          // The more path components that match, the higher the confidence
+          const matchRatio = i / Math.max(filePathParts.length, bibPathParts.length);
+          return matchRatio >= 0.5; // At least half the path components should match
+        }
+      }
+
+      return false;
+    },
+
     getMatchTypeLabel(matchType) {
       const labels = {
+        webkit_path_exact: "Path Exact",
+        webkit_path_suffix: "Path Suffix",
+        webkit_path_filename: "Path Filename",
+        file_field_parsed: "File Field",
+        file_field: "File Field (Legacy)",
         exact: "Exact",
         partial: "Partial",
-        file_field: "File Path",
         title: "Title",
       };
       return labels[matchType] || "Unknown";

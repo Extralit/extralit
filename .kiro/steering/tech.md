@@ -31,6 +31,9 @@ Extralit is a multi-component system with 5 core components:
 - **State Management**: Pinia + Vuex
 - **Testing**: Jest (unit), Playwright (e2e)
 - **Node**: >=18.16.1
+- **TypeScript**: Use `<script lang="ts">` for Vue.js TypeScript support
+- **Linting**: ESLint + Prettier
+- **README and Tests**: Skip creating new README and tests for each page or component unless asked to
 
 ### Key Dependencies
 - TypeScript support
