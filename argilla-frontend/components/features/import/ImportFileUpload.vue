@@ -183,7 +183,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import bibtexParse from "bibtex-parse-js";
 import "assets/icons/check";
 import "assets/icons/danger";
@@ -323,7 +323,7 @@ export default {
       }
     },
 
-    async processBibFile(file) {
+    async processBibFile(file: File) {
       // Reset bib state
       this.bibHasError = false;
       this.bibErrorMessage = "";
@@ -360,13 +360,13 @@ export default {
       }
     },
 
-    isValidBibFileType(file) {
+    isValidBibFileType(file: File) {
       const validExtensions = [".bib", ".bibtex"];
       const fileName = file.name.toLowerCase();
       return validExtensions.some((ext) => fileName.endsWith(ext));
     },
 
-    readFileContent(file) {
+    readFileContent(file: File) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = (e) => resolve(e.target.result);
@@ -493,7 +493,7 @@ export default {
       return "string";
     },
 
-    cleanBibTexField(field) {
+    cleanBibTexField(field: string | null): string | null {
       if (!field) return null;
 
       // Remove BibTeX formatting (braces, quotes)
@@ -565,7 +565,7 @@ export default {
       this.processPdfFiles(files);
     },
 
-    async processPdfFiles(files) {
+    async processPdfFiles(files: File[]) {
       // Reset PDF state
       this.pdfHasError = false;
       this.pdfErrorMessage = "";
@@ -588,7 +588,6 @@ export default {
       this.pdfProcessing = true;
 
       try {
-        // Process files with validation
         const validFiles = [];
         for (const file of pdfFiles) {
           await this.processPdfFile(file);
@@ -598,7 +597,6 @@ export default {
 
         this.pdfData.totalFiles = validFiles.length;
 
-        // Perform file matching with bibliography entries
         this.performFileMatching(validFiles);
 
         this.pdfProcessing = false;
@@ -609,14 +607,12 @@ export default {
       }
     },
 
-    async processPdfFile(file) {
-      // Validate file size (max 50MB per file)
-      const maxSize = 50 * 1024 * 1024; // 50MB
+    async processPdfFile(file: File) {
+      const maxSize = 200 * 1024 * 1024; // 200MB
       if (file.size > maxSize) {
-        throw new Error(`File ${file.name} is too large (max 50MB)`);
+        throw new Error(`File ${file.name} is too large (max 200MB)`);
       }
 
-      // Basic PDF validation (check file signature)
       if (!(await this.validatePdfFile(file))) {
         throw new Error(`File ${file.name} is not a valid PDF`);
       }
@@ -625,15 +621,16 @@ export default {
       await new Promise((resolve) => setTimeout(resolve, 50));
     },
 
-    isValidPdfFile(file) {
+    isValidPdfFile(file: File) {
       return file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
     },
 
-    async validatePdfFile(file) {
+    async validatePdfFile(file: File) {
       return new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = (e) => {
           const arrayBuffer = e.target.result;
+          // ts-ignore-next-line
           const uint8Array = new Uint8Array(arrayBuffer.slice(0, 4));
 
           // Check PDF signature (%PDF)
@@ -676,7 +673,7 @@ export default {
       this.pdfData.matchedFiles.sort((a, b) => b.confidence - a.confidence);
     },
 
-    findBestMatch(file) {
+    findBestMatch(file: File) {
       const fileName = file.name.toLowerCase().replace(/\.pdf$/, "");
       let bestMatch = null;
       let bestConfidence = 0;
