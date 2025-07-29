@@ -393,7 +393,7 @@ export default {
             const processedEntry = this.processBibTexEntry(entry, index);
             if (processedEntry) {
               this.bibData.parsedEntries.push(processedEntry);
-              dataframeEntries.push(this.createDataframeEntry(entry));
+              dataframeEntries.push(processedEntry);
             }
           } catch (error) {
             console.warn(`Entry ${index + 1}: ${error.message}`);
@@ -413,39 +413,13 @@ export default {
         throw new Error("Missing citation key (reference)");
       }
 
-      // Use createDataframeEntry as the primary method, but extract specific processed fields
-      const dataframeEntry = this.createDataframeEntry(entry);
-
-      // Return processed entry with specific field handling
-      return {
-        reference: entry.citationKey,
-        type: entry.entryType || "unknown",
-        title: dataframeEntry.title,
-        authors: dataframeEntry.authors,
-        year: dataframeEntry.year,
-        doi: dataframeEntry.doi,
-        pmid: dataframeEntry.pmid,
-        url: dataframeEntry.url,
-        journal: dataframeEntry.journal,
-        volume: dataframeEntry.volume,
-        pages: dataframeEntry.pages,
-        publisher: dataframeEntry.publisher,
-        abstract: dataframeEntry.abstract,
-        keywords: dataframeEntry.keywords,
-        file: dataframeEntry.file,
-        filePaths: dataframeEntry.filePaths, // Parsed file paths
-        ...dataframeEntry, // Include all other fields
-      };
-    },
-
-    createDataframeEntry(entry) {
-      // Create a flattened entry preserving all original fields
-      const dataframeEntry = {
+      // Start with basic fields
+      const processedEntry = {
         reference: entry.citationKey,
         type: entry.entryType || "unknown",
       };
 
-      // Add all entry tags, preserving original field names and values with processing
+      // Process all entry tags
       if (entry.entryTags) {
         Object.keys(entry.entryTags).forEach((key) => {
           const rawValue = entry.entryTags[key];
@@ -454,37 +428,30 @@ export default {
           // Special processing for specific fields
           switch (key.toLowerCase()) {
             case 'author':
-              processedValue = this.extractAuthors(rawValue);
-              dataframeEntry['authors'] = processedValue; // Standardize to 'authors'
+              processedEntry['authors'] = this.extractAuthors(rawValue);
               break;
             case 'year':
+              processedEntry['year'] = this.extractYear(rawValue);
+              break;
             case 'date':
-              processedValue = this.extractYear(rawValue);
-              if (processedValue && !dataframeEntry['year']) {
-                dataframeEntry['year'] = processedValue; // Prefer year over date
+              // Only process date if year doesn't exist
+              if (!processedEntry['year']) {
+                processedEntry['year'] = this.extractYear(rawValue);
               }
+              // Don't add date field to avoid duplication
               break;
             case 'file':
-              processedValue = this.cleanBibTexField(rawValue);
-              dataframeEntry['filePaths'] = this.parseFilePaths(rawValue);
+              processedEntry['filePaths'] = this.parseFilePaths(rawValue);
               break;
             default:
-              // Keep original field name and processed value
+              // Add all other fields as-is
+              processedEntry[key] = processedValue;
               break;
           }
-
-          dataframeEntry[key] = processedValue;
         });
-
-        // Handle year/date precedence - prefer year field over date field
-        if (entry.entryTags.year && entry.entryTags.date) {
-          dataframeEntry['year'] = this.extractYear(entry.entryTags.year);
-        } else if (entry.entryTags.date && !entry.entryTags.year) {
-          dataframeEntry['year'] = this.extractYear(entry.entryTags.date);
-        }
       }
 
-      return dataframeEntry;
+      return processedEntry;
     },
 
     createGenericDataframe(entries) {

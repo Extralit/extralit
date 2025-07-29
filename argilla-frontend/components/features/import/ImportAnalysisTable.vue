@@ -374,6 +374,7 @@ export default {
     emitUpdate() {
       // Create confirmed documents object
       const confirmedDocuments = {};
+      console.log(this.analysisData)
 
       Object.entries(this.analysisData.documents || {}).forEach(([reference, docInfo]: [string, any]) => {
         const finalAction = this.documentActions[reference] || docInfo.status;
@@ -537,15 +538,6 @@ export default {
   border: 1px solid var(--border-field);
   border-radius: $border-radius;
   overflow: hidden;
-}
-
-// Action buttons
-.action-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: $base-space * 2;
-  padding: $base-space * 2 0;
-  border-top: 1px solid var(--border-field);
 }
 
 // Table cell styles (applied globally to override Tabulator)
