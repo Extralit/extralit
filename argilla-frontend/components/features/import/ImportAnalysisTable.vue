@@ -57,22 +57,6 @@
         />
       </div>
 
-      <!-- Action buttons -->
-      <div class="action-buttons">
-        <BaseButton variant="outline" @click="handleCancel">
-          Cancel
-        </BaseButton>
-        <BaseButton variant="outline" @click="handleSave">
-          Save Changes
-        </BaseButton>
-        <BaseButton
-          variant="primary"
-          :disabled="!canConfirmImport"
-          @click="handleConfirmImport"
-        >
-          Confirm Import ({{ confirmedCount }} documents)
-        </BaseButton>
-      </div>
     </div>
   </div>
 </template>
@@ -165,12 +149,12 @@ export default {
           field: "year",
           title: "Year",
           width: 80,
-          headerFilter: "input",
         },
         {
           field: "files",
           title: "Files",
           width: 150,
+          frozen: true,
           formatter: this.filesFormatter,
         },
         {
@@ -349,36 +333,6 @@ export default {
       this.emitUpdate();
     },
 
-    handleCancel() {
-      // Reset all document actions
-      this.documentActions = {};
-
-      // Reset table data to original statuses
-      const resetData = this.tableData.map(row => ({
-        ...row,
-        status: row.originalStatus
-      }));
-
-      // Update table
-      this.$nextTick(() => {
-        // The table will reactively update due to computed tableData
-      });
-    },
-
-    handleSave() {
-      // Save current state without proceeding to import
-      this.emitUpdate();
-
-      // Show feedback (could be enhanced with toast notification later)
-      console.log("Changes saved successfully");
-    },
-
-    handleConfirmImport() {
-      if (!this.canConfirmImport) return;
-
-      this.emitUpdate();
-    },
-
     emitUpdate() {
       // Create confirmed documents object
       const confirmedDocuments = {};
@@ -542,6 +496,7 @@ export default {
 .table-container {
   flex: 1;
   min-height: 300px;
+  height: 100%;
   border: 1px solid var(--border-field);
   border-radius: $border-radius;
   overflow: hidden;
