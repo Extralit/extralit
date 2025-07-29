@@ -61,18 +61,27 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import "assets/icons/check";
 import "assets/icons/danger";
 import "assets/icons/chevron-down";
+import type {
+  ImportAnalysisData,
+  ImportConfirmationData,
+  AnalysisTableRow,
+  TableColumn,
+  ImportStatus,
+  DataframeData,
+  BibTexEntry
+} from './types';
 
 export default {
   name: "ImportAnalysisTable",
 
   props: {
     analysisData: {
-      type: Object,
-      default: () => ({
+      type: Object as () => ImportAnalysisData,
+      default: (): ImportAnalysisData => ({
         documents: {},
         summary: {
           total_documents: 0,
@@ -82,6 +91,11 @@ export default {
           failed_count: 0,
         },
       }),
+    },
+    // Add dataframe data prop for direct table display
+    dataframeData: {
+      type: Object as () => DataframeData | null,
+      default: null,
     },
     loading: {
       type: Boolean,
@@ -95,16 +109,37 @@ export default {
     return {
       hasError: false,
       errorMessage: "",
-      documentActions: {}, // Track user-modified actions for each document
-      originalStatuses: {}, // Track original statuses from analysis
+      documentActions: {} as Record<string, ImportStatus>, // Track user-modified actions for each document
+      originalStatuses: {} as Record<string, ImportStatus>, // Track original statuses from analysis
     };
   },
 
   computed: {
-    tableData() {
-      const data = [];
+    tableData(): AnalysisTableRow[] {
+      // If we have dataframe data, use it directly for table display
+      if (this.dataframeData && this.dataframeData.data.length > 0) {
+        return this.dataframeData.data.map((row: Record<string, any>) => {
+          const reference = row.reference || row.key || `row_${Math.random()}`;
+          const currentAction = this.documentActions[reference] || 'add';
 
-      Object.entries(this.analysisData.documents || {}).forEach(([reference, docInfo]) => {
+          return {
+            reference,
+            title: row.title || "N/A",
+            authors: this.formatAuthors(row.authors || row.author),
+            year: String(row.year || "N/A"),
+            files: "No files", // Files will be matched separately
+            status: currentAction,
+            originalStatus: 'add', // Default for new entries
+            validationErrors: [],
+            canToggle: true,
+          };
+        });
+      }
+
+      // Fallback to analysis data structure
+      const data: AnalysisTableRow[] = [];
+
+      Object.entries(this.analysisData.documents || {}).forEach(([reference, docInfo]: [string, any]) => {
         // Get current action (user-modified or original)
         const currentAction = this.documentActions[reference] || docInfo.status;
 
@@ -124,7 +159,7 @@ export default {
       return data;
     },
 
-    tableColumns() {
+    tableColumns(): TableColumn[] {
       return [
         {
           field: "reference",
@@ -149,13 +184,14 @@ export default {
           field: "year",
           title: "Year",
           width: 80,
+          headerFilter: "input",
         },
         {
           field: "files",
           title: "Files",
           width: 150,
-          frozen: true,
           formatter: this.filesFormatter,
+          visible: !this.dataframeData, // Hide files column for dataframe-only display
         },
         {
           field: "status",
@@ -174,7 +210,8 @@ export default {
               "ignore": "Ignore",
               "failed": "Failed"
             }
-          }
+          },
+          visible: !this.dataframeData, // Hide status column for dataframe-only display
         },
       ];
     },
@@ -197,7 +234,7 @@ export default {
       return Object.values(this.documentActions).filter(action =>
         action === "add" || action === "update"
       ).length +
-      Object.entries(this.analysisData.documents || {}).filter(([ref, docInfo]) =>
+      Object.entries(this.analysisData.documents || {}).filter(([ref, docInfo]: [string, any]) =>
         !this.documentActions[ref] && (docInfo.status === "add" || docInfo.status === "update")
       ).length;
     },
@@ -215,7 +252,7 @@ export default {
         this.originalStatuses = {};
 
         // Store original statuses
-        Object.entries(newData.documents || {}).forEach(([reference, docInfo]) => {
+        Object.entries(newData.documents || {}).forEach(([reference, docInfo]: [string, any]) => {
           this.originalStatuses[reference] = docInfo.status;
         });
       },
@@ -337,7 +374,7 @@ export default {
       // Create confirmed documents object
       const confirmedDocuments = {};
 
-      Object.entries(this.analysisData.documents || {}).forEach(([reference, docInfo]) => {
+      Object.entries(this.analysisData.documents || {}).forEach(([reference, docInfo]: [string, any]) => {
         const finalAction = this.documentActions[reference] || docInfo.status;
 
         // Only include documents that will be processed (add or update)
@@ -496,7 +533,6 @@ export default {
 .table-container {
   flex: 1;
   min-height: 300px;
-  height: 100%;
   border: 1px solid var(--border-field);
   border-radius: $border-radius;
   overflow: hidden;

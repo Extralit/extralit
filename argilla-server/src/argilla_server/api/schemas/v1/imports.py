@@ -30,20 +30,6 @@ class ImportStatus(str, Enum):
     FAILED = "failed"
 
 
-class DataframeField(BaseModel):
-    """Schema definition for a dataframe field."""
-
-    name: str = Field(..., description="Field name")
-    type: str = Field(..., description="Field type (string, integer, float, boolean)")
-
-
-class DataframeSchema(BaseModel):
-    """Schema definition for tabular dataframe structure."""
-
-    fields: List[DataframeField] = Field(..., description="List of field definitions")
-    primaryKey: List[str] = Field(..., description="Primary key field names")
-
-
 class FileInfo(BaseModel):
     """Information about a file to be imported."""
 
@@ -63,6 +49,20 @@ class ImportAnalysisRequest(BaseModel):
 
     workspace_id: UUID = Field(..., description="Target workspace ID")
     documents: Dict[str, DocumentMetadata] = Field(..., description="Reference key to file metadata mapping")
+
+
+class DataframeField(BaseModel):
+    """Schema definition for a dataframe field."""
+
+    name: str = Field(..., description="Field name")
+    type: str = Field(..., description="Field type (string, integer, float, boolean)")
+
+
+class DataframeSchema(BaseModel):
+    """Schema definition for tabular dataframe structure."""
+
+    fields: List[DataframeField] = Field(..., description="List of field definitions")
+    primaryKey: List[str] = Field(..., description="Primary key field names")
 
 
 class DataframeData(BaseModel):

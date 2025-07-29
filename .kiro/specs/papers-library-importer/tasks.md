@@ -123,7 +123,6 @@
   - Add columns: Reference, Title, Authors, Year, Import Status
   - Create toggle functionality for Add/Update/Skip selection
   - Add status indicators with color coding (Add: green, Update: blue, Skip: gray, Failed: red)
-  - Implement Save, Cancel, and Confirm Import buttons
   - Send ImportAnalysisRequest to backend and display results
   - _Requirements: 2.1, 2.2, 2.7_
 
