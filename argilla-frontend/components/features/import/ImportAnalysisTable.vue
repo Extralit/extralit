@@ -49,12 +49,7 @@
 
       <!-- Table -->
       <div class="table-container">
-        <BaseSimpleTable
-          :data="tableData"
-          :columns="tableColumns"
-          :options="tableOptions"
-          @cell-edited="handleCellEdit"
-        />
+        <BaseSimpleTable :data="tableData" :columns="tableColumns" :options="tableOptions" />
       </div>
 
     </div>
@@ -66,22 +61,31 @@ import "assets/icons/check";
 import "assets/icons/danger";
 import "assets/icons/chevron-down";
 import type {
-  ImportAnalysisData,
-  ImportConfirmationData,
+  ImportAnalysisResponse,
   AnalysisTableRow,
   TableColumn,
   ImportStatus,
   DataframeData,
-  BibTexEntry
+  DocumentImportAnalysis,
+  DocumentImportAction,
 } from './types';
 
+/**
+ * ImportAnalysisTable Component
+ *
+ * Data Mapping:
+ * - analysisData.documents -> ImportAnalysisResponse.documents (DocumentImportAnalysis)
+ * - dataframeData -> ImportHistoryCreate.data (DataframeData)
+ * - filePaths -> associated_files (array of file paths)
+ * - documentActions[reference] -> DocumentImportAction.action (user's editable status)
+ */
 export default {
   name: "ImportAnalysisTable",
 
   props: {
     analysisData: {
-      type: Object as () => ImportAnalysisData,
-      default: (): ImportAnalysisData => ({
+      type: Object as () => ImportAnalysisResponse,
+      default: (): ImportAnalysisResponse => ({
         documents: {},
         summary: {
           total_documents: 0,
@@ -122,12 +126,16 @@ export default {
           const reference = row.reference || row.key || `row_${Math.random()}`;
           const currentAction = this.documentActions[reference] || 'add';
 
+          // Use pre-processed file paths from ImportFileUpload.vue
+          const filePaths = row.filePaths || [];
+
           return {
             reference,
             title: row.title || "N/A",
             authors: this.formatAuthors(row.authors || row.author),
             year: String(row.year || "N/A"),
-            files: "No files", // Files will be matched separately
+            files: filePaths.length > 0 ? this.formatFiles(filePaths) : "No files",
+            filePaths, // Include file paths array
             status: currentAction,
             originalStatus: 'add', // Default for new entries
             validationErrors: [],
@@ -139,7 +147,7 @@ export default {
       // Fallback to analysis data structure
       const data: AnalysisTableRow[] = [];
 
-      Object.entries(this.analysisData.documents || {}).forEach(([reference, docInfo]: [string, any]) => {
+      Object.entries(this.analysisData.documents || {}).forEach(([reference, docInfo]: [string, DocumentImportAnalysis]) => {
         // Get current action (user-modified or original)
         const currentAction = this.documentActions[reference] || docInfo.status;
 
@@ -147,8 +155,9 @@ export default {
           reference,
           title: docInfo.document_create?.title || "N/A",
           authors: this.formatAuthors(docInfo.document_create?.authors),
-          year: docInfo.document_create?.year || "N/A",
+          year: String(docInfo.document_create?.year || "N/A"),
           files: this.formatFiles(docInfo.associated_files),
+          filePaths: docInfo.associated_files || [], // Include file paths array
           status: currentAction,
           originalStatus: docInfo.status,
           validationErrors: docInfo.validation_errors || [],
@@ -233,9 +242,9 @@ export default {
       return Object.values(this.documentActions).filter(action =>
         action === "add" || action === "update"
       ).length +
-      Object.entries(this.analysisData.documents || {}).filter(([ref, docInfo]: [string, any]) =>
-        !this.documentActions[ref] && (docInfo.status === "add" || docInfo.status === "update")
-      ).length;
+        Object.entries(this.analysisData.documents || {}).filter(([ref, docInfo]: [string, any]) =>
+          !this.documentActions[ref] && (docInfo.status === "add" || docInfo.status === "update")
+        ).length;
     },
 
     canConfirmImport() {
@@ -262,30 +271,33 @@ export default {
 
   methods: {
     // Formatters for table cells
-    referenceFormatter(cell) {
+    referenceFormatter(cell: any) {
       const value = cell.getValue();
       return `<span class="reference-cell" title="${value}">${value}</span>`;
     },
 
-    titleFormatter(cell) {
+    titleFormatter(cell: any) {
       const value = cell.getValue();
       const truncated = value.length > 50 ? value.substring(0, 50) + "..." : value;
       return `<span class="title-cell" title="${value}">${truncated}</span>`;
     },
 
-    authorsFormatter(cell) {
+    authorsFormatter(cell: any) {
       const value = cell.getValue();
       const truncated = value.length > 30 ? value.substring(0, 30) + "..." : value;
       return `<span class="authors-cell" title="${value}">${truncated}</span>`;
     },
 
-    filesFormatter(cell) {
+    filesFormatter(cell: any) {
       const files = cell.getValue();
-      const fileCount = files.split(", ").length;
+      if (files === "No files") {
+        return `<span class="files-cell no-files">${files}</span>`;
+      }
+      const fileCount = files.split(", ").filter((f: string) => f.trim().length > 0).length;
       return `<span class="files-cell" title="${files}">${fileCount} file${fileCount !== 1 ? 's' : ''}</span>`;
     },
 
-    statusFormatter(cell) {
+    statusFormatter(cell: any) {
       const status = cell.getValue();
       const row = cell.getRow().getData();
       const canToggle = row.canToggle;
@@ -304,7 +316,7 @@ export default {
     },
 
     // Helper methods
-    formatAuthors(authors) {
+    formatAuthors(authors: any) {
       if (!authors || authors.length === 0) return "N/A";
       if (typeof authors === "string") return authors;
       if (Array.isArray(authors)) {
@@ -313,12 +325,14 @@ export default {
       return "N/A";
     },
 
-    formatFiles(files) {
+    formatFiles(files: any) {
       if (!files || files.length === 0) return "No files";
       return files.join(", ");
     },
 
-    getStatusText(status) {
+
+
+    getStatusText(status: string) {
       const statusMap = {
         add: "Add",
         update: "Update",
@@ -345,7 +359,7 @@ export default {
     },
 
     // Event handlers
-    handleStatusClick(e, cell) {
+    handleStatusClick(_e: any, cell: any) {
       const row = cell.getRow().getData();
       const currentStatus = row.status;
       const originalStatus = row.originalStatus;
@@ -366,28 +380,41 @@ export default {
       }
     },
 
-    handleCellEdit(cell) {
-      // Handle any cell edits if needed
-      this.emitUpdate();
-    },
+
 
     emitUpdate() {
-      // Create confirmed documents object
-      const confirmedDocuments = {};
-      console.log(this.analysisData)
+      // Create confirmed documents object mapping to DocumentImportAction schema
+      const confirmedDocuments: Record<string, DocumentImportAction> = {};
 
-      Object.entries(this.analysisData.documents || {}).forEach(([reference, docInfo]: [string, any]) => {
-        const finalAction = this.documentActions[reference] || docInfo.status;
+      // Handle dataframe data case
+      if (this.dataframeData && this.dataframeData.data.length > 0) {
+        this.dataframeData.data.forEach((row: Record<string, any>) => {
+          const reference = row.reference || row.key || `row_${Math.random()}`;
+          const finalAction = this.documentActions[reference] || 'add';
+          const filePaths = row.filePaths || [];
 
-        // Only include documents that will be processed (add or update)
-        if (finalAction === "add" || finalAction === "update") {
-          confirmedDocuments[reference] = {
-            action: finalAction,
-            document_create: docInfo.document_create,
-            associated_files: docInfo.associated_files,
-          };
-        }
-      });
+          // Only include documents that will be processed (add or update)
+          if (finalAction === "add" || finalAction === "update") {
+            confirmedDocuments[reference] = {
+              action: finalAction,
+              associated_files: filePaths, // Map filePaths to associated_files
+            };
+          }
+        });
+      } else {
+        // Handle analysis data case
+        Object.entries(this.analysisData.documents || {}).forEach(([reference, docInfo]: [string, DocumentImportAnalysis]) => {
+          const finalAction = this.documentActions[reference] || docInfo.status;
+
+          // Only include documents that will be processed (add or update)
+          if (finalAction === "add" || finalAction === "update") {
+            confirmedDocuments[reference] = {
+              action: finalAction,
+              associated_files: docInfo.associated_files, // Already in correct format
+            };
+          }
+        });
+      }
 
       this.$emit("update", {
         confirmedDocuments,
@@ -406,6 +433,50 @@ export default {
     showError(message) {
       this.hasError = true;
       this.errorMessage = message;
+    },
+
+    // Helper method to prepare data for ImportHistoryCreate payload
+    getImportHistoryData() {
+      if (this.dataframeData) {
+        // Return dataframe data in the format expected by ImportHistoryCreate.data
+        return this.dataframeData;
+      }
+
+      // Convert analysis data to dataframe format if needed
+      const dataRows = [];
+      Object.entries(this.analysisData.documents || {}).forEach(([reference, docInfo]: [string, DocumentImportAnalysis]) => {
+        dataRows.push({
+          reference,
+          title: docInfo.document_create?.title || "",
+          authors: Array.isArray(docInfo.document_create?.authors)
+            ? docInfo.document_create.authors.join(", ")
+            : docInfo.document_create?.authors || "",
+          year: docInfo.document_create?.year || "",
+          doi: docInfo.document_create?.doi || "",
+          pmid: docInfo.document_create?.pmid || "",
+          journal: docInfo.document_create?.journal || "",
+          abstract: docInfo.document_create?.abstract || "",
+          file: docInfo.associated_files.join(";"), // Store file paths as semicolon-separated
+        });
+      });
+
+      return {
+        schema: {
+          fields: [
+            { name: "reference", type: "string" },
+            { name: "title", type: "string" },
+            { name: "authors", type: "string" },
+            { name: "year", type: "string" },
+            { name: "doi", type: "string" },
+            { name: "pmid", type: "string" },
+            { name: "journal", type: "string" },
+            { name: "abstract", type: "string" },
+            { name: "file", type: "string" },
+          ],
+          primaryKey: ["reference"]
+        },
+        data: dataRows
+      };
     },
   },
 };
@@ -563,6 +634,11 @@ export default {
     color: var(--fg-secondary);
     font-size: 0.9rem;
     font-style: italic;
+
+    &.no-files {
+      color: var(--fg-tertiary);
+      opacity: 0.7;
+    }
   }
 
   .status-cell {
