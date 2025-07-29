@@ -67,7 +67,7 @@
         <div class="import-file-upload__section">
           <div class="import-file-upload__section-header">
             <h4 class="import-file-upload__section-title">
-              <BaseIcon icon-name="folder" class="import-file-upload__section-icon" />
+              <BaseIcon icon-name="import" class="import-file-upload__section-icon" />
               PDF Files
             </h4>
             <p class="import-file-upload__section-description">
@@ -219,7 +219,6 @@ import bibtexParse from "bibtex-parse-js";
 import "assets/icons/check";
 import "assets/icons/danger";
 import "assets/icons/document";
-import "assets/icons/folder";
 import "assets/icons/import";
 import "assets/icons/info";
 import "assets/icons/unavailable";
