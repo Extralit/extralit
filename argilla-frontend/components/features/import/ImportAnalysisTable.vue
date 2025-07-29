@@ -6,7 +6,7 @@
       <p>Features will include:</p>
       <ul>
         <li>Tabular display using BaseSimpleTable component</li>
-        <li>Columns: Reference Key, Title, Authors, Year, Import Status</li>
+        <li>Columns: Reference, Title, Authors, Year, Import Status</li>
         <li>Toggle functionality for Add/Update/Skip selection</li>
         <li>Status indicators with color coding</li>
         <li>Save, Cancel, and Confirm Import buttons</li>
@@ -52,7 +52,7 @@ export default {
     },
   },
 
-  emits: ['update', 'retry'],
+  emits: ["update", "retry"],
 
   methods: {
     reset() {

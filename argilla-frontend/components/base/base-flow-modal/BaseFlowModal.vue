@@ -1,101 +1,77 @@
 <template>
   <div v-if="visible" class="flow-modal-mask">
     <div class="flow-modal-container">
-        <!-- Header -->
-        <div class="flow-modal__header">
-          <div class="flow-modal__header-content">
-            <h2 class="flow-modal__title">{{ title }}</h2>
-            <button
-              v-if="canClose"
-              class="flow-modal__close-button"
-              @click="handleClose"
+      <!-- Header -->
+      <div class="flow-modal__header">
+        <div class="flow-modal__header-content">
+          <h2 class="flow-modal__title">{{ title }}</h2>
+          <button v-if="canClose" class="flow-modal__close-button" @click="handleClose">×</button>
+        </div>
+
+        <!-- Progress Indicator -->
+        <div v-if="steps.length > 1" class="flow-modal__progress">
+          <div class="flow-modal__progress-bar">
+            <div class="flow-modal__progress-fill" :style="{ width: progressPercentage + '%' }"></div>
+          </div>
+          <div class="flow-modal__steps">
+            <div
+              v-for="(step, index) in steps"
+              :key="step.id"
+              class="flow-modal__step"
+              :class="{
+                'flow-modal__step--active': index === currentStep,
+                'flow-modal__step--completed': index < currentStep,
+                'flow-modal__step--optional': step.optional,
+              }"
             >
-              ×
-            </button>
-          </div>
-
-          <!-- Progress Indicator -->
-          <div v-if="steps.length > 1" class="flow-modal__progress">
-            <div class="flow-modal__progress-bar">
-              <div
-                class="flow-modal__progress-fill"
-                :style="{ width: progressPercentage + '%' }"
-              ></div>
-            </div>
-            <div class="flow-modal__steps">
-              <div
-                v-for="(step, index) in steps"
-                :key="step.id"
-                class="flow-modal__step"
-                :class="{
-                  'flow-modal__step--active': index === currentStep,
-                  'flow-modal__step--completed': index < currentStep,
-                  'flow-modal__step--optional': step.optional
-                }"
-              >
-                <div class="flow-modal__step-indicator">
-                  <span v-if="index < currentStep" class="flow-modal__step-icon">✓</span>
-                  <span v-else class="flow-modal__step-number">{{ index + 1 }}</span>
-                </div>
-                <span class="flow-modal__step-title">{{ step.title }}</span>
+              <div class="flow-modal__step-indicator">
+                <span v-if="index < currentStep" class="flow-modal__step-icon">✓</span>
+                <span v-else class="flow-modal__step-number">{{ index + 1 }}</span>
               </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Content Area -->
-        <div class="flow-modal__content">
-          <div class="flow-modal__content-inner">
-            <slot :current-step="currentStep" :step-data="stepData" />
-          </div>
-        </div>
-
-        <!-- Footer Navigation -->
-        <div class="flow-modal__footer">
-          <div class="flow-modal__navigation">
-            <div class="flow-modal__nav-left">
-              <button
-                v-if="canGoBack && currentStep > 0"
-                class="btn secondary"
-                :disabled="loading"
-                @click="handlePrevious"
-              >
-                Previous
-              </button>
-            </div>
-
-            <div class="flow-modal__nav-right">
-              <button
-                v-if="showCancelButton"
-                class="btn secondary outline"
-                :disabled="loading"
-                @click="handleCancel"
-              >
-                Cancel
-              </button>
-
-              <button
-                v-if="!isLastStep"
-                class="btn primary"
-                :disabled="!canGoNext || loading"
-                @click="handleNext"
-              >
-                Next
-              </button>
-
-              <button
-                v-if="isLastStep"
-                class="btn primary"
-                :disabled="!canComplete || loading"
-                @click="handleComplete"
-              >
-                {{ completeButtonText || 'Finish' }}
-              </button>
+              <span class="flow-modal__step-title">{{ step.title }}</span>
             </div>
           </div>
         </div>
       </div>
+
+      <!-- Content Area -->
+      <div class="flow-modal__content">
+        <div class="flow-modal__content-inner">
+          <slot :current-step="currentStep" :step-data="stepData" />
+        </div>
+      </div>
+
+      <!-- Footer Navigation -->
+      <div class="flow-modal__footer">
+        <div class="flow-modal__navigation">
+          <div class="flow-modal__nav-left">
+            <button
+              v-if="canGoBack && currentStep > 0"
+              class="btn secondary"
+              :disabled="loading"
+              @click="handlePrevious"
+            >
+              Previous
+            </button>
+          </div>
+
+          <div class="flow-modal__nav-right">
+            <button v-if="showCancelButton" class="btn secondary outline" :disabled="loading" @click="handleCancel">
+              Cancel
+            </button>
+
+            <button v-if="!isLastStep" class="btn primary" :disabled="!canGoNext || loading" @click="handleNext">
+              Next
+            </button>
+
+            <button v-if="isLastStep" class="btn primary" :disabled="!canComplete || loading" @click="handleComplete">
+              {{ completeButtonText || "Finish" }}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 </template>
 
 <script>
@@ -118,11 +94,8 @@ export default {
       type: Array,
       required: true,
       validator: (steps) => {
-        return steps.every(step =>
-          step.id &&
-          step.title &&
-          typeof step.id === 'string' &&
-          typeof step.title === 'string'
+        return steps.every(
+          (step) => step.id && step.title && typeof step.id === "string" && typeof step.title === "string"
         );
       },
     },
@@ -186,31 +159,31 @@ export default {
   watch: {
     visible(newValue) {
       if (newValue) {
-        document.body.classList.add('flow-modal-open');
+        document.body.classList.add("flow-modal-open");
       } else {
-        document.body.classList.remove('flow-modal-open');
+        document.body.classList.remove("flow-modal-open");
       }
     },
   },
 
   beforeDestroy() {
-    document.body.classList.remove('flow-modal-open');
+    document.body.classList.remove("flow-modal-open");
   },
 
   methods: {
     handlePrevious() {
       if (this.currentStep > 0 && !this.loading) {
-        this.$emit('step-change', this.currentStep - 1);
+        this.$emit("step-change", this.currentStep - 1);
       }
     },
 
     handleNext() {
       if (!this.isLastStep && this.canGoNext && !this.loading) {
-        this.$emit('validate-step', {
+        this.$emit("validate-step", {
           step: this.currentStep,
           callback: (isValid) => {
             if (isValid) {
-              this.$emit('step-change', this.currentStep + 1);
+              this.$emit("step-change", this.currentStep + 1);
             }
           },
         });
@@ -219,11 +192,11 @@ export default {
 
     handleComplete() {
       if (this.canComplete && !this.loading) {
-        this.$emit('validate-step', {
+        this.$emit("validate-step", {
           step: this.currentStep,
           callback: (isValid) => {
             if (isValid) {
-              this.$emit('complete');
+              this.$emit("complete");
             }
           },
         });
@@ -234,7 +207,7 @@ export default {
       if (this.confirmClose) {
         this.showCancelConfirmation();
       } else {
-        this.$emit('cancel');
+        this.$emit("cancel");
       }
     },
 
@@ -242,23 +215,27 @@ export default {
       if (this.confirmClose) {
         this.showCloseConfirmation();
       } else {
-        this.$emit('close');
+        this.$emit("close");
       }
     },
 
     showCancelConfirmation() {
       // This would typically use a confirmation dialog component
       // For now, using browser confirm
-      if (confirm(this.$t('common.confirmCancel') || 'Are you sure you want to cancel? Any unsaved changes will be lost.')) {
-        this.$emit('cancel');
+      if (
+        confirm(this.$t("common.confirmCancel") || "Are you sure you want to cancel? Any unsaved changes will be lost.")
+      ) {
+        this.$emit("cancel");
       }
     },
 
     showCloseConfirmation() {
       // This would typically use a confirmation dialog component
       // For now, using browser confirm
-      if (confirm(this.$t('common.confirmClose') || 'Are you sure you want to close? Any unsaved changes will be lost.')) {
-        this.$emit('close');
+      if (
+        confirm(this.$t("common.confirmClose") || "Are you sure you want to close? Any unsaved changes will be lost.")
+      ) {
+        this.$emit("close");
       }
     },
   },

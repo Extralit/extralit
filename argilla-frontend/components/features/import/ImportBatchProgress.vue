@@ -45,7 +45,7 @@ export default {
     },
   },
 
-  emits: ['completed', 'cancelled', 'error'],
+  emits: ["completed", "cancelled", "error"],
 
   methods: {
     reset() {
