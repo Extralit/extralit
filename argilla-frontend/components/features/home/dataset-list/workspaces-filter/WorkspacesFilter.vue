@@ -6,7 +6,10 @@
       /></span>
       <span slot="dropdown-content" class="datasets-filter__container">
         <div class="datasets-filter__content">
-          <WorkspaceSelector :workspaces="workspaces" :selected-workspace="selectedWorkspace" />
+          <WorkspaceSelector
+            :workspaces="workspaces"
+            v-model="selectedWorkspace"
+          />
         </div>
       </span>
     </BaseDropdown>
@@ -35,6 +38,12 @@ export default {
     return {
       visibleDropdown: false,
     };
+  },
+  created() {
+    // Auto-assign the first workspace if none is selected and workspaces exist
+    if (!this.selectedWorkspace && this.workspaces.length > 0) {
+      this.$emit("on-change-workspace-filter", this.workspaces[0].name);
+    }
   },
   watch: {
     selectedWorkspace() {

@@ -1,21 +1,15 @@
 <template>
-  <div
-    class="labels-selector"
-    @keyup.enter="includePreselectedOption"
-    @keyup.up="preselectPreviousOption"
-    @keyup.down="preselectNextOption"
-  >
+  <div class="labels-selector">
     <BaseSearch v-model="searchText" :placeholder="$t('search')" />
     <div class="labels-selector__items">
       <BaseRadioButton
         class="labels-selector__item"
-        :class="index === preSelectionIndex ? 'labels-selector__item--highlighted' : null"
-        v-for="({ name, numberOfDatasets }, index) in workspacesFilteredBySearchText"
+        v-for="({ name, numberOfDatasets }) in workspacesFilteredBySearchText"
         :key="name"
+        :id="name"
+        :name="name"
         :value="name"
-        :checked="selectedWorkspace === name"
-        @change="selectWorkspace(name)"
-        @mouseover.native="preSelectionIndex = index"
+        v-model="selectedWorkspaceValue"
       >
         {{ name }}
         <span class="labels-selector__number">({{ numberOfDatasets }})</span>
@@ -42,45 +36,21 @@ export default {
   data: () => {
     return {
       searchText: "",
-      preSelectionIndex: 0,
     };
   },
-  watch: {
-    searchText() {
-      this.preSelectionIndex = 0;
-    },
-  },
   computed: {
+    selectedWorkspaceValue: {
+      get() {
+        return this.selectedWorkspace;
+      },
+      set(value) {
+        this.$emit('input', value);
+      }
+    },
     workspacesFilteredBySearchText() {
       return this.workspaces.filter((workspace) =>
         workspace.name.toLowerCase().includes(this.searchText.toLowerCase())
       );
-    },
-    workspacesLength() {
-      return this.workspaces.length;
-    },
-  },
-  methods: {
-    includePreselectedOption() {
-      if (!this.workspacesFilteredBySearchText.length) return;
-
-      this.selectWorkspace(this.workspacesFilteredBySearchText[this.preSelectionIndex].name);
-
-      this.preSelectionIndex = 0;
-    },
-    selectWorkspace(workspaceName) {
-      // Toggle selection - if already selected, deselect
-      if (this.selectedWorkspace === workspaceName) {
-        this.$emit('input', null);
-      } else {
-        this.$emit('input', workspaceName);
-      }
-    },
-    preselectNextOption() {
-      this.preSelectionIndex === this.workspacesLength - 1 ? (this.preSelectionIndex = 0) : this.preSelectionIndex++;
-    },
-    preselectPreviousOption() {
-      this.preSelectionIndex === 0 ? (this.preSelectionIndex = this.workspacesLength - 1) : this.preSelectionIndex--;
     },
   },
 };

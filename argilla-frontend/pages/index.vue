@@ -96,6 +96,7 @@
 import Home from "@/layouts/Home";
 import { useHomeViewModel } from "./useHomeViewModel";
 
+
 export default {
   data() {
     return {
