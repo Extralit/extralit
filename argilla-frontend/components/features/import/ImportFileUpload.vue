@@ -273,10 +273,10 @@ export default {
         // Only initialize if data has actually changed and we're not already initializing
         if (!this.isInitializing && newData && (newData.fileName || newData.parsedEntries.length > 0)) {
           // Check if the data is actually different to avoid unnecessary updates
-          const hasChanged = !oldData || 
+          const hasChanged = !oldData ||
             newData.fileName !== oldData.fileName ||
             newData.parsedEntries.length !== oldData.parsedEntries.length;
-          
+
           if (hasChanged) {
             this.initializeWithExistingData();
           }
@@ -285,7 +285,7 @@ export default {
       deep: true,
       immediate: true,
     },
-    
+
     initialPdfData: {
       handler(newData, oldData) {
         // Only initialize if data has actually changed and we're not already initializing
@@ -295,7 +295,7 @@ export default {
             newData.matchedFiles.length !== oldData.matchedFiles.length ||
             newData.unmatchedFiles.length !== oldData.unmatchedFiles.length ||
             newData.totalFiles !== oldData.totalFiles;
-          
+
           if (hasChanged) {
             this.initializeWithExistingData();
           }
@@ -732,9 +732,30 @@ export default {
       this.pdfData.matchedFiles = [];
       this.pdfData.unmatchedFiles = [];
 
-      for (const file of filesToMatch) {
-        const match: { entry: File; type: string; confidence: number } = this.findBestMatch(file);
+      // Track which references have been matched to prevent duplicates
+      const matchedReferences = new Set();
+      const webkitMatchedFiles = new Set();
 
+      // Phase 1: Webkit path matching (highest priority)
+      for (const file of filesToMatch) {
+        const webkitMatch = this.findWebkitPathMatch(file);
+        if (webkitMatch && !matchedReferences.has(webkitMatch.entry.reference)) {
+          this.pdfData.matchedFiles.push({
+            file,
+            bibEntry: webkitMatch.entry,
+            matchType: webkitMatch.type,
+            confidence: webkitMatch.confidence,
+          });
+          matchedReferences.add(webkitMatch.entry.reference);
+          webkitMatchedFiles.add(file);
+        }
+      }
+
+      // Phase 2: Other matching methods for remaining files
+      const remainingFiles = filesToMatch.filter(file => !webkitMatchedFiles.has(file));
+
+      for (const file of remainingFiles) {
+        const match = this.findBestNonWebkitMatch(file, matchedReferences);
         if (match) {
           this.pdfData.matchedFiles.push({
             file,
@@ -742,6 +763,7 @@ export default {
             matchType: match.type,
             confidence: match.confidence,
           });
+          matchedReferences.add(match.entry.reference);
         } else {
           this.pdfData.unmatchedFiles.push(file);
         }
@@ -752,33 +774,44 @@ export default {
     },
 
     /**
-     * Attempts to find the best matching BibTeX entry for a given PDF file.
-     * @param {File} file - The PDF file to match.
-     * @returns {{
-     *   entry: any,
-     *   type: string,
-     *   confidence: number
-     * } | null}
+     * Find webkit path matches (highest priority)
      */
-    findBestMatch(
-      file: File
-    ): { entry: File; type: string; confidence: number } {
-      const fileName: string = file.name.toLowerCase().replace(/\.pdf$/, "");
+    findWebkitPathMatch(file: File) {
       const filePath: string = (file as any).webkitRelativePath || file.name;
+
+      for (const entry of this.bibData.parsedEntries as any[]) {
+        const webkitMatch = this.checkWebkitPathMatch(filePath, entry.filePaths);
+        if (webkitMatch) {
+          return {
+            entry,
+            type: webkitMatch.type,
+            confidence: webkitMatch.confidence,
+          };
+        }
+      }
+      return null;
+    },
+
+    /**
+     * Find best match using non-webkit methods for remaining files
+     */
+    findBestNonWebkitMatch(file: File, matchedReferences: Set) {
+      const fileName: string = file.name.toLowerCase().replace(/\.pdf$/, "");
       let bestMatch: { entry: any; type: string; confidence: number } | null = null;
       let bestConfidence: number = 0;
 
       for (const entry of this.bibData.parsedEntries as any[]) {
+        // Skip if this reference is already matched
+        if (matchedReferences.has(entry.reference)) {
+          continue;
+        }
+
         const matches: Array<{ type: string; confidence: number }> = [
-          // 1. WebkitRelativePath match (highest priority for folder uploads)
-          this.checkWebkitPathMatch(filePath, entry.filePaths),
-          // 2. File field path match (Zotero exports)
+          // 1. File field path match (Zotero exports)
           this.checkFileFieldMatch(fileName, entry.file, entry.filePaths),
-          // 3. Exact reference key match
+          // 2. Exact reference key match
           this.checkExactMatch(fileName, entry.reference),
-          // 4. Partial reference key match
-          this.checkPartialMatch(fileName, entry.reference),
-          // 5. Fuzzy title match (lowest priority)
+          // 3. Fuzzy title match (lowest priority)
           this.checkTitleMatch(fileName, entry.title),
         ].filter(Boolean) as Array<{ type: string; confidence: number }>;
 
@@ -810,18 +843,7 @@ export default {
       return null;
     },
 
-    checkPartialMatch(fileName, reference) {
-      if (!reference) return null;
 
-      const refKey = reference.toLowerCase();
-      if (fileName.includes(refKey) || refKey.includes(fileName)) {
-        const similarity = this.calculateStringSimilarity(fileName, refKey);
-        if (similarity >= 0.7) {
-          return { type: "partial", confidence: similarity };
-        }
-      }
-      return null;
-    },
 
     checkWebkitPathMatch(filePath, parsedFilePaths) {
       if (!parsedFilePaths || parsedFilePaths.length === 0) return null;
