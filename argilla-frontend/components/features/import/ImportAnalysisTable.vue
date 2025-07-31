@@ -240,7 +240,6 @@ export default {
 
     tableOptions() {
       return {
-        height: "400px",
         layout: "fitDataTable",
         pagination: true,
         paginationSize: 20,
@@ -687,11 +686,8 @@ export default {
 
 // Table container
 .table-container {
-  flex: 1;
   min-height: 300px;
-  border: 1px solid var(--border-field);
   border-radius: $border-radius;
-  overflow: hidden;
 }
 
 // Table cell styles (applied globally to override Tabulator)

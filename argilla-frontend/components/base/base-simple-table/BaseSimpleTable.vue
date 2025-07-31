@@ -1,7 +1,5 @@
 <template>
-  <div class="base-simple-table">
-    <div ref="tabulator" class="tabulator-container" />
-  </div>
+  <div ref="tabulator" class="tabulator-container" />
 </template>
 
 <script lang="ts">
@@ -42,7 +40,7 @@ export default {
       const defaultOptions = {
         data: this.data,
         layout: "fitDataTable",
-        height: "auto",
+        maxHeight: "100%",
         resizableColumns: true,
         movableColumns: false,
         movableRows: false,
@@ -364,164 +362,172 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.base-simple-table {
-  width: 100%;
+.tabulator-container {
+  display: flex;
+  flex-flow: column;
+  position: relative;
+  max-width: 100%;
+  max-height: 80vh;
+  border: 1px solid var(--border-field);
+  border-radius: $border-radius;
+  background: var(--bg-accent-grey-1);
 
-  .tabulator-container {
-    border: 1px solid var(--border-field);
-    border-radius: $border-radius;
+  .__table {
+    white-space: normal;
+    position: relative;
+    resize: vertical;
+    overflow: auto;
+  }
+
+  // Override Tabulator Semantic UI theme colors to match our design system
+  :deep(.tabulator) {
     background: var(--bg-accent-grey-1);
+    border: none;
+    font-family: $primary-font-family;
+    font-size: $base-font-size;
 
-    // Override Tabulator Semantic UI theme colors to match our design system
-    :deep(.tabulator) {
-      background: var(--bg-accent-grey-1);
-      border: none;
-      font-family: $primary-font-family;
-      font-size: $base-font-size;
+    .tabulator-header {
+      background: var(--bg-solid-grey-2);
+      border-bottom: 1px solid var(--border-field);
 
-      .tabulator-header {
+      .tabulator-col {
         background: var(--bg-solid-grey-2);
-        border-bottom: 1px solid var(--border-field);
+        border-right: 1px solid var(--border-field);
 
-        .tabulator-col {
-          background: var(--bg-solid-grey-2);
-          border-right: 1px solid var(--border-field);
-
-          .tabulator-col-content {
-            color: var(--fg-primary);
-            font-weight: 600;
-            padding: $base-space;
-          }
-
-          &:hover {
-            background: var(--bg-solid-grey-3);
-          }
-
-          &.tabulator-sortable {
-            .tabulator-col-title {
-              cursor: pointer;
-            }
-          }
+        .tabulator-col-content {
+          color: var(--fg-primary);
+          font-weight: 600;
+          padding: $base-space;
         }
 
-        .tabulator-col-resize-handle {
-          background: var(--border-field);
+        &:hover {
+          background: var(--bg-solid-grey-3);
+        }
+
+        &.tabulator-sortable {
+          .tabulator-col-title {
+            cursor: pointer;
+          }
         }
       }
 
-      .tabulator-tableHolder {
+      .tabulator-col-resize-handle {
+        background: var(--border-field);
+      }
+    }
+
+    .tabulator-tableHolder {
+      background: var(--bg-accent-grey-1);
+
+      .tabulator-table {
         background: var(--bg-accent-grey-1);
 
-        .tabulator-table {
+        .tabulator-row {
           background: var(--bg-accent-grey-1);
+          border-bottom: 1px solid var(--bg-solid-grey-2);
 
-          .tabulator-row {
-            background: var(--bg-accent-grey-1);
-            border-bottom: 1px solid var(--bg-solid-grey-2);
+          &:hover {
+            background: var(--bg-solid-grey-2);
+          }
 
-            &:hover {
-              background: var(--bg-solid-grey-2);
-            }
-
-            &.tabulator-selected {
-              background: var(--bg-status-submitted);
-
-              .tabulator-cell {
-                color: var(--fg-status-submitted);
-              }
-            }
+          &.tabulator-selected {
+            background: var(--bg-status-submitted);
 
             .tabulator-cell {
-              color: var(--fg-primary);
-              border-right: 1px solid var(--bg-solid-grey-2);
-              padding: $base-space;
-
-              &.tabulator-editing {
-                background: var(--bg-accent-grey-2);
-                border: 2px solid var(--bg-action);
-              }
+              color: var(--fg-status-submitted);
             }
           }
 
-          .tabulator-row-odd {
-            background: var(--bg-accent-grey-1);
+          .tabulator-cell {
+            color: var(--fg-primary);
+            border-right: 1px solid var(--bg-solid-grey-2);
+            padding: $base-space;
 
-            &:hover {
-              background: var(--bg-solid-grey-2);
-            }
-          }
-
-          .tabulator-row-even {
-            background: var(--bg-accent-grey-2);
-
-            &:hover {
-              background: var(--bg-solid-grey-3);
+            &.tabulator-editing {
+              background: var(--bg-accent-grey-2);
+              border: 2px solid var(--bg-action);
             }
           }
         }
-      }
 
-      .tabulator-footer {
-        background: var(--bg-solid-grey-2);
-        border-top: 1px solid var(--border-field);
-        color: var(--fg-secondary);
-
-        .tabulator-page {
+        .tabulator-row-odd {
           background: var(--bg-accent-grey-1);
-          border: 1px solid var(--border-field);
-          color: var(--fg-primary);
-          margin: 0 2px;
+
+          &:hover {
+            background: var(--bg-solid-grey-2);
+          }
+        }
+
+        .tabulator-row-even {
+          background: var(--bg-accent-grey-2);
 
           &:hover {
             background: var(--bg-solid-grey-3);
           }
-
-          &.tabulator-page-active {
-            background: var(--bg-action);
-            color: var(--fg-lighter);
-          }
-        }
-
-        .tabulator-paginator {
-          color: var(--fg-secondary);
         }
       }
+    }
 
-      .tabulator-placeholder {
+    .tabulator-footer {
+      background: var(--bg-solid-grey-2);
+      border-top: 1px solid var(--border-field);
+      color: var(--fg-secondary);
+
+      .tabulator-page {
         background: var(--bg-accent-grey-1);
-        color: var(--fg-secondary);
-        text-align: center;
-        padding: $base-space * 4;
-        font-style: italic;
-      }
+        border: 1px solid var(--border-field);
+        color: var(--fg-primary);
+        margin: 0 2px;
 
-      // Loading overlay
-      .tabulator-loader {
-        background: rgba(var(--bg-accent-grey-1), 0.8);
+        &:hover {
+          background: var(--bg-solid-grey-3);
+        }
 
-        .tabulator-loader-msg {
-          background: var(--bg-accent-grey-1);
-          border: 1px solid var(--border-field);
-          color: var(--fg-primary);
-          border-radius: $border-radius;
-          padding: $base-space * 2;
+        &.tabulator-page-active {
+          background: var(--bg-action);
+          color: var(--fg-lighter);
         }
       }
 
-      // Header filters
-      .tabulator-header-filter {
-        input {
-          background: var(--bg-accent-grey-1);
-          border: 1px solid var(--border-field);
-          color: var(--fg-primary);
-          border-radius: $border-radius-s;
-          padding: 4px 8px;
-          font-size: 12px;
+      .tabulator-paginator {
+        color: var(--fg-secondary);
+      }
+    }
 
-          &:focus {
-            border-color: var(--bg-action);
-            outline: none;
-          }
+    .tabulator-placeholder {
+      background: var(--bg-accent-grey-1);
+      color: var(--fg-secondary);
+      text-align: center;
+      padding: $base-space * 4;
+      font-style: italic;
+    }
+
+    // Loading overlay
+    .tabulator-loader {
+      background: rgba(var(--bg-accent-grey-1), 0.8);
+
+      .tabulator-loader-msg {
+        background: var(--bg-accent-grey-1);
+        border: 1px solid var(--border-field);
+        color: var(--fg-primary);
+        border-radius: $border-radius;
+        padding: $base-space * 2;
+      }
+    }
+
+    // Header filters
+    .tabulator-header-filter {
+      input {
+        background: var(--bg-accent-grey-1);
+        border: 1px solid var(--border-field);
+        color: var(--fg-primary);
+        border-radius: $border-radius-s;
+        padding: 4px 8px;
+        font-size: 12px;
+
+        &:focus {
+          border-color: var(--bg-action);
+          outline: none;
         }
       }
     }

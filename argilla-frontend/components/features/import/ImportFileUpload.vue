@@ -793,12 +793,13 @@ export default {
     },
 
     /**
-     * Find best match using non-webkit methods for remaining files
-     */
-    findBestNonWebkitMatch(file: File, matchedReferences: Set) {
-      const fileName: string = file.name.toLowerCase().replace(/\.pdf$/, "");
-      let bestMatch: { entry: any; type: string; confidence: number } | null = null;
-      let bestConfidence: number = 0;
+     /**
+      * Find best match using non-webkit methods for remaining files
+      */
+     findBestNonWebkitMatch(file: File, matchedReferences: Set<any>) {
+       const fileName: string = file.name.toLowerCase().replace(/\.pdf$/, "");
+       let bestMatch: { entry: any; type: string; confidence: number } | null = null;
+       let bestConfidence: number = 0;
 
       for (const entry of this.bibData.parsedEntries as any[]) {
         // Skip if this reference is already matched
