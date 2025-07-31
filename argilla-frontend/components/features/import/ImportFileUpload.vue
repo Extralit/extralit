@@ -221,28 +221,6 @@ export default {
     this.initializeWithExistingData();
   },
 
-  watch: {
-    // Watch for changes in initial data props (when navigating back)
-    initialBibData: {
-      handler(newData) {
-        if (newData && (newData.fileName || newData.parsedEntries.length > 0)) {
-          this.initializeWithExistingData();
-        }
-      },
-      deep: true,
-      immediate: true,
-    },
-    initialPdfData: {
-      handler(newData) {
-        if (newData && (newData.matchedFiles.length > 0 || newData.unmatchedFiles.length > 0)) {
-          this.initializeWithExistingData();
-        }
-      },
-      deep: true,
-      immediate: true,
-    },
-  },
-
   computed: {
     getBibDropzoneIcon() {
       if (this.bibHasError) return "danger";
@@ -287,6 +265,26 @@ export default {
   },
 
   watch: {
+    initialBibData: {
+      handler(newData) {
+        if (newData && (newData.fileName || newData.parsedEntries.length > 0)) {
+          this.initializeWithExistingData();
+        }
+      },
+      deep: true,
+      immediate: true,
+    },
+    
+    initialPdfData: {
+      handler(newData) {
+        if (newData && (newData.matchedFiles.length > 0 || newData.unmatchedFiles.length > 0)) {
+          this.initializeWithExistingData();
+        }
+      },
+      deep: true,
+      immediate: true,
+    },
+
     bibData: {
       handler() {
         this.emitBibUpdate();
