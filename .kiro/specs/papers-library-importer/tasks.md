@@ -155,7 +155,7 @@
   - Fix component lifecycle management to show uploaded files when returning to step 0
   - _Requirements: 2.1, 2.2, 4.3_
 - [ ] 8. Implement batch upload execution and progress tracking
-- [ ] 8.1 Create sequential batch upload logic
+- [x] 8.1 Create sequential batch upload logic
   - Implement batch processing where next batch starts only when all jobs in previous batch have success or failed status
   - Send paginated bulk upload requests (10-20 references per batch)
   - Handle multiple files per reference in each batch request

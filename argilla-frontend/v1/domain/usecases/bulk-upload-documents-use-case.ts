@@ -1,0 +1,86 @@
+/**
+ * Use case for bulk document upload with sequential batch processing
+ */
+
+import { useResolve } from "ts-injecty";
+import type { AxiosInstance } from "axios";
+import type { DocumentMetadata } from "~/v1/domain/entities/import/ImportAnalysis";
+
+// Bulk upload request structure
+export interface BulkDocumentInfo {
+  reference: string;
+  document_create: any; // DocumentCreate from backend
+  associated_files: string[]; // Multiple PDF filenames for this reference
+}
+
+export interface DocumentsBulkCreate {
+  documents: BulkDocumentInfo[];
+}
+
+export interface DocumentsBulkResponse {
+  job_ids: Record<string, string>; // Reference to job_id mapping
+  total_documents: number;
+  failed_validations: string[];
+}
+
+export class BulkUploadDocumentsUseCase {
+  constructor(private readonly axios: AxiosInstance = useResolve("axios")) {}
+
+  async execute(
+    confirmedDocuments: Record<string, DocumentMetadata>,
+    files: File[]
+  ): Promise<DocumentsBulkResponse> {
+    // Create file mapping for quick lookup
+    const fileMapping = new Map<string, File>();
+    files.forEach(file => {
+      fileMapping.set(file.name, file);
+    });
+
+    // Convert confirmed documents to bulk upload format
+    const bulkDocuments: BulkDocumentInfo[] = [];
+    
+    for (const [reference, docMetadata] of Object.entries(confirmedDocuments)) {
+      bulkDocuments.push({
+        reference,
+        document_create: docMetadata.document_create,
+        associated_files: docMetadata.associated_files.map(f => f.filename),
+      });
+    }
+
+    const bulkCreate: DocumentsBulkCreate = {
+      documents: bulkDocuments,
+    };
+
+    // Prepare form data
+    const formData = new FormData();
+    formData.append("documents_metadata", JSON.stringify(bulkCreate));
+
+    // Add all referenced files to form data
+    const addedFiles = new Set<string>();
+    for (const doc of bulkDocuments) {
+      for (const filename of doc.associated_files) {
+        if (!addedFiles.has(filename)) {
+          const file = fileMapping.get(filename);
+          if (file) {
+            formData.append("files", file);
+            addedFiles.add(filename);
+          }
+        }
+      }
+    }
+
+    // Send bulk upload request
+    const response = await this.axios.post<DocumentsBulkResponse>(
+      "/api/v1/documents/bulk",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        timeout: 300000, // 5 minute timeout for large uploads
+      }
+    );
+
+    return response.data;
+  }
+}

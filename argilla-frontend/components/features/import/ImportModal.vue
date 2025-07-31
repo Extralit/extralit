@@ -1,63 +1,28 @@
 <template>
-  <BaseFlowModal
-    :visible="isVisible"
-    :title="$t('import.title', { workspaceName: workspace?.name })"
-    :steps="steps"
-    :current-step="currentStep"
-    :can-go-back="canGoBack"
-    :can-go-next="canGoNext"
-    :can-complete="canComplete"
-    :loading="isProcessing"
-    :step-data="stepData"
-    :confirm-close="true"
-    :submit-step-index="1"
-    @step-change="handleStepChange"
-    @validate-step="handleValidateStep"
-    @complete="handleComplete"
-    @close="handleClose"
-    @cancel="handleCancel"
-  >
+  <BaseFlowModal :visible="isVisible" :title="$t('import.title', { workspaceName: workspace?.name })" :steps="steps"
+    :current-step="currentStep" :can-go-back="canGoBack" :can-go-next="canGoNext" :can-complete="canComplete"
+    :loading="isProcessing" :step-data="stepData" :confirm-close="true" :submit-step-index="1"
+    @step-change="handleStepChange" @validate-step="handleValidateStep" @complete="handleComplete" @close="handleClose"
+    @cancel="handleCancel">
     <template #default="{ currentStep: stepIndex }">
       <!-- Step 1: Combined File Upload -->
-      <ImportFileUpload
-        v-if="stepIndex === 0"
-        ref="fileUploadComponent"
-        :initial-bib-data="bibData"
-        :initial-pdf-data="pdfData"
-        @bib-update="handleBibUpdate"
-        @pdf-update="handlePdfUpdate"
-      />
+      <ImportFileUpload v-if="stepIndex === 0" ref="fileUploadComponent" :initial-bib-data="bibData"
+        :initial-pdf-data="pdfData" @bib-update="handleBibUpdate" @pdf-update="handlePdfUpdate" />
 
       <!-- Step 2: Import Analysis -->
-      <ImportAnalysisTable
-        v-if="stepIndex === 1"
-        ref="analysisTableComponent"
-        :dataframe-data="bibData.dataframeData"
-        :pdf-data="pdfData"
-        :workspace="workspace"
-        :loading="isAnalyzing"
-        @update="handleAnalysisUpdate"
-        @analysis-complete="handleAnalysisComplete"
-      />
+      <ImportAnalysisTable v-if="stepIndex === 1" ref="analysisTableComponent" :dataframe-data="bibData.dataframeData"
+        :pdf-data="pdfData" :workspace="workspace" :loading="isAnalyzing" @update="handleAnalysisUpdate"
+        @analysis-complete="handleAnalysisComplete" />
 
       <!-- Step 3: Upload Progress -->
-      <ImportBatchProgress
-        v-if="stepIndex === 2"
-        ref="batchProgressComponent"
-        :upload-data="uploadData"
-        @completed="handleUploadCompleted"
-        @cancelled="handleUploadCancelled"
-        @error="handleUploadError"
-      />
+      <ImportBatchProgress v-if="stepIndex === 2" ref="batchProgressComponent" :upload-data="uploadData"
+        :workspace="workspace" :dataframe-data="bibData.dataframeData" :bib-file-name="bibData.fileName"
+        :pdf-files="getAllPdfFiles()" @completed="handleUploadCompleted" @cancelled="handleUploadCancelled"
+        @error="handleUploadError" @progress="handleUploadProgress" />
 
       <!-- Step 4: Import Summary -->
-      <ImportSummary
-        v-if="stepIndex === 3"
-        ref="summaryComponent"
-        :summary-data="summaryData"
-        @return-to-library="handleReturnToLibrary"
-        @view-import-history="handleViewImportHistory"
-      />
+      <ImportSummary v-if="stepIndex === 3" ref="summaryComponent" :summary-data="summaryData"
+        @return-to-library="handleReturnToLibrary" @view-import-history="handleViewImportHistory" />
     </template>
   </BaseFlowModal>
 </template>
@@ -157,8 +122,8 @@ export default {
 
   computed: {
     canGoBack() {
-      // Allow going back from step 1 to step 0, but not from later steps
-      return this.currentStep > 0 && this.currentStep <= 1 && !this.isProcessing;
+      // Allow going back from step 1 to step 0, but not during upload or from later steps
+      return this.currentStep > 0 && this.currentStep <= 1 && !this.isProcessing && !this.isUploading;
     },
 
     canGoNext() {
@@ -171,7 +136,10 @@ export default {
             !!this.workspace
           );
         case 1:
-          return Object.keys(this.analysisData.documents).length > 0 && !this.hasError && !!this.workspace;
+          return Object.keys(this.uploadData.confirmedDocuments).length > 0 && !this.hasError && !!this.workspace;
+        case 2:
+          // Can't go next from upload progress step - must wait for completion
+          return false;
         default:
           return false;
       }
@@ -205,7 +173,7 @@ export default {
     handleStepChange(newStep) {
       this.currentStep = newStep;
       this.clearError();
-      
+
       // Ensure component refs are updated after step change
       this.$nextTick(() => {
         // If going back to step 0, ensure the file upload component is properly initialized
@@ -228,7 +196,16 @@ export default {
             !!this.workspace;
           break;
         case 1:
-          isValid = Object.keys(this.analysisData.documents).length > 0 && !this.hasError && !!this.workspace;
+          isValid = Object.keys(this.uploadData.confirmedDocuments).length > 0 && !this.hasError && !!this.workspace;
+
+          // If moving to step 2 (upload progress), start the upload process
+          if (isValid && step === 1) {
+            this.$nextTick(() => {
+              // The ImportBatchProgress component will auto-start when it receives uploadData
+              this.isUploading = true;
+              this.isProcessing = true;
+            });
+          }
           break;
         default:
           isValid = true;
@@ -273,6 +250,14 @@ export default {
       this.clearError();
     },
 
+    handleUploadProgress(progressData) {
+      // Update upload data with progress information
+      this.uploadData.currentBatch = progressData.currentBatch || 0;
+      this.uploadData.totalBatches = progressData.totalBatches || 0;
+      this.uploadData.completedJobs = progressData.completedJobs || 0;
+      this.uploadData.failedJobs = progressData.failedJobs || 0;
+    },
+
     handleAnalysisComplete(analysisData) {
       this.analysisData = analysisData;
       this.clearError();
@@ -302,8 +287,12 @@ export default {
       this.summaryData = summaryData;
       this.isUploading = false;
       this.isProcessing = false;
-      this.currentStep = 3; // Move to summary step
       this.clearError();
+
+      // Automatically move to summary step
+      this.$nextTick(() => {
+        this.currentStep = 3;
+      });
     },
 
     handleUploadCancelled() {
@@ -444,20 +433,25 @@ export default {
       this.uploadData.failedJobs = 0;
     },
 
+    getAllPdfFiles() {
+      // Collect all PDF files from the matched files
+      const files = [];
+      if (this.pdfData.matchedFiles) {
+        this.pdfData.matchedFiles.forEach(matchedFile => {
+          if (matchedFile.file) {
+            files.push(matchedFile.file);
+          }
+        });
+      }
+      return files;
+    },
+
     async startBatchUpload() {
-      // Placeholder for batch upload logic
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          resolve({
-            totalProcessed: this.bibData.parsedEntries.length,
-            successfullyAdded: Math.floor(this.bibData.parsedEntries.length * 0.8),
-            updated: Math.floor(this.bibData.parsedEntries.length * 0.15),
-            skipped: Math.floor(this.bibData.parsedEntries.length * 0.05),
-            failed: 0,
-            errors: [],
-            importId: "import_" + Date.now(),
-          });
-        }, 3000);
+      // The actual batch upload is now handled by ImportBatchProgress component
+      // This method is kept for compatibility but the real work happens in the component
+      return new Promise<void>((resolve) => {
+        // The ImportBatchProgress component will handle the upload and emit completion
+        resolve();
       });
     },
   },

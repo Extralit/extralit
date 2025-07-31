@@ -75,6 +75,7 @@ import { GetWorkspacesUseCase } from "@/v1/domain/usecases/get-workspaces-use-ca
 import { GetDatasetQuestionsGroupedUseCase } from "@/v1/domain/usecases/get-dataset-questions-grouped-use-case";
 import { GetDatasetFieldsGroupedUseCase } from "@/v1/domain/usecases/get-dataset-fields-grouped-use-case";
 import { GetImportAnalysisUseCase } from "@/v1/domain/usecases/get-import-analysis-use-case";
+import { CreateImportHistoryUseCase } from "@/v1/domain/usecases/create-import-history-use-case";
 import { LoadUserUseCase } from "@/v1/domain/usecases/load-user-use-case";
 import { CreateDatasetUseCase } from "@/v1/domain/usecases/create-dataset-use-case";
 import { GetFirstRecordFromHub } from "@/v1/domain/usecases/get-first-record-from-hub";
@@ -137,6 +138,10 @@ export const loadDependencyContainer = (context: Context) => {
       .build(),
 
     register(GetImportAnalysisUseCase)
+      .withDependency(useAxios)
+      .build(),
+
+    register(CreateImportHistoryUseCase)
       .withDependency(useAxios)
       .build(),
 
