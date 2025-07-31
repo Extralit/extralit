@@ -418,7 +418,8 @@ async def process_bulk_upload(
             if filename not in file_mapping:
                 missing_files.append(filename)
 
-    if missing_files:
+    # Only validate missing files if there are any referenced files
+    if all_referenced_files and missing_files:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Referenced files not found in upload: {', '.join(missing_files)}",
@@ -443,6 +444,25 @@ async def process_bulk_upload(
             # Validate and read all files for this reference
             file_data_list = []
             reference_failed = False
+
+            # Handle documents with no associated files
+            if not doc.associated_files:
+                # Create a reference-based job for documents without files
+                job = DEFAULT_QUEUE.enqueue(
+                    upload_reference_documents_job,
+                    reference=reference,
+                    document_data=doc.document_create.model_dump(),
+                    file_data_list=[],
+                    user_id=user_id,
+                    job_timeout=None,  # No timeout for large uploads
+                )
+
+                # Store job ID mapped to reference key for frontend tracking
+                job_ids[reference] = job.id
+                _LOGGER.info(
+                    f"Created reference-based job {job.id} for reference {reference} with no files"
+                )
+                continue
 
             for filename in doc.associated_files:
                 try:

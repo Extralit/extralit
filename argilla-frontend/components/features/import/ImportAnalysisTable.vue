@@ -239,7 +239,7 @@ export default {
 
     tableOptions() {
       return {
-        layout: "fitDataTable",
+        layout: "fitDataFill",
         pagination: true,
         paginationSize: 20,
         paginationSizeSelector: [10, 20, 50],

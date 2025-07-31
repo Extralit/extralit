@@ -46,6 +46,15 @@ export class BulkUploadDocumentsUseCase {
       });
     }
 
+    // Check if there are any documents to upload
+    if (bulkDocuments.length === 0) {
+      return {
+        job_ids: {},
+        total_documents: 0,
+        failed_validations: ["No documents to upload"]
+      };
+    }
+
     const bulkCreate: DocumentsBulkCreate = {
       documents: bulkDocuments,
     };

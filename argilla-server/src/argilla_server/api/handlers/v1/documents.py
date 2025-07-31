@@ -221,7 +221,12 @@ async def delete_documents_by_workspace_id(
     if not document_delete or not document_delete.id:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Document ID is required for deletion")
 
-    workspace: Workspace = await Workspace.get(db, workspace_id)
+    workspace = await Workspace.get(db, workspace_id)
+    if not workspace:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Workspace with id `{workspace_id}` not found",
+        )
 
     documents = await datasets.delete_documents(
         db,
