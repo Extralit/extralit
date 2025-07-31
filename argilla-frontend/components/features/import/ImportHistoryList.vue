@@ -20,7 +20,7 @@
             @input="debouncedSearch"
           />
         </div>
-        
+
         <div class="filter-group">
           <label class="filter-label">Date range:</label>
           <div class="date-range">
@@ -62,7 +62,7 @@
 
     <!-- Error State -->
     <div v-else-if="error" class="error-container">
-      <BaseIcon name="danger" class="error-icon" />
+                  <BaseIcon icon-name="danger" class="error-icon" />
       <h4>Failed to Load Import History</h4>
       <p>{{ error }}</p>
       <BaseButton variant="outline" @click="loadHistory">
@@ -72,7 +72,7 @@
 
     <!-- Empty State -->
     <div v-else-if="!historyData.items.length" class="empty-container">
-      <BaseIcon name="document" class="empty-icon" />
+              <BaseIcon icon-name="document" class="empty-icon" />
       <h4>No Import History Found</h4>
       <p v-if="hasActiveFilters">
         No imports match your current filters. Try adjusting your search criteria.
@@ -107,7 +107,7 @@
         >
           Previous
         </BaseButton>
-        
+
         <div class="page-numbers">
           <BaseButton
             v-for="page in visiblePages"
@@ -119,7 +119,7 @@
             {{ page }}
           </BaseButton>
         </div>
-        
+
         <BaseButton
           variant="outline"
           :disabled="currentPage >= historyData.pages"
@@ -182,22 +182,22 @@ export default {
         size: 20,
         pages: 0,
       } as ImportHistoryListResponse,
-      
+
       // UI state
       isLoading: false,
       error: null as string | null,
-      
+
       // Pagination
       currentPage: 1,
       pageSize: 20,
-      
+
       // Filters
       filters: {
         filename: "",
         date_from: "",
         date_to: "",
       } as ImportHistoryFilters,
-      
+
       // Search debouncing
       searchTimeout: null as NodeJS.Timeout | null,
     };
@@ -388,7 +388,7 @@ export default {
 
       try {
         const useCase = this.$nuxt.$di.get<GetImportHistoryUseCase>('GetImportHistoryUseCase');
-        
+
         const params = {
           page: this.currentPage,
           size: this.pageSize,
@@ -413,7 +413,7 @@ export default {
       if (this.searchTimeout) {
         clearTimeout(this.searchTimeout);
       }
-      
+
       this.searchTimeout = setTimeout(() => {
         this.applyFilters();
       }, 500);
@@ -436,7 +436,7 @@ export default {
 
     async goToPage(page: number) {
       if (page < 1 || page > this.historyData.pages) return;
-      
+
       this.currentPage = page;
       await this.loadHistory();
     },

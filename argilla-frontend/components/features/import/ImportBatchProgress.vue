@@ -84,7 +84,7 @@
     <!-- Upload completed -->
     <div v-else-if="isCompleted" class="completion-container">
       <div class="completion-header">
-        <BaseIcon name="check" class="completion-icon" />
+        <BaseIcon icon-name="check" class="completion-icon" />
         <h3>Import Completed</h3>
         <p>All batches have been processed successfully</p>
       </div>
@@ -114,7 +114,7 @@
     <!-- Upload cancelled -->
     <div v-else-if="isCancelled" class="cancellation-container">
       <div class="cancellation-header">
-        <BaseIcon name="close" class="cancellation-icon" />
+        <BaseIcon icon-name="close" class="cancellation-icon" />
         <h3>Import Cancelled</h3>
         <p>The import process was cancelled by user</p>
       </div>
@@ -134,7 +134,7 @@
     <!-- Error state -->
     <div v-else-if="hasError" class="error-container">
       <div class="error-header">
-        <BaseIcon name="danger" class="error-icon" />
+        <BaseIcon icon-name="danger" class="error-icon" />
         <h3>Import Failed</h3>
         <p>{{ errorMessage }}</p>
       </div>

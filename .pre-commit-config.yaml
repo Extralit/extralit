@@ -125,6 +125,18 @@ repos:
           - --fuzzy-match-generates-todo
 
   ##############################################################################
+  # argilla-frontend specific hooks
+  ##############################################################################
+  - repo: local
+    hooks:
+      - id: frontend-lint
+        name: "Lint and fix argilla-frontend files"
+        entry: bash -c 'cd argilla-frontend && npm run lint -- --fix'
+        language: system
+        files: '^argilla-frontend/.*\.(js|ts|vue)$'
+        pass_filenames: false
+
+  ##############################################################################
   # Helm lint hook
   ##############################################################################
   - repo: https://github.com/gruntwork-io/pre-commit
@@ -147,4 +159,5 @@ ci:
     - helmlint # Disabling helmlint on CI by now because helm dependency is not available
     - frontend-eslint # Requires npm dependencies to be installed in argilla-frontend
     - frontend-prettier # Requires npm dependencies to be installed in argilla-frontend
+    - frontend-lint # Requires npm dependencies to be installed in argilla-frontend
   submodules: false

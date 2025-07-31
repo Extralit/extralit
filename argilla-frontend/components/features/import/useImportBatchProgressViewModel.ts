@@ -4,8 +4,8 @@
  */
 
 import { useResolve } from "ts-injecty";
-import type { DocumentMetadata } from "~/v1/domain/entities/import/ImportAnalysis";
 import type { ImportSummaryData } from "./types";
+import type { DocumentMetadata } from "~/v1/domain/entities/import/ImportAnalysis";
 import { BulkUploadDocumentsUseCase } from "~/v1/domain/usecases/bulk-upload-documents-use-case";
 import { GetJobStatusUseCase, type JobStatus } from "~/v1/domain/usecases/get-job-status-use-case";
 import { CreateImportHistoryUseCase } from "~/v1/domain/usecases/create-import-history-use-case";
@@ -35,7 +35,7 @@ export function useImportBatchProgressViewModel(props: any) {
     importHistoryUseCase,
 
     // Batch processing methods
-    createBatches(confirmedDocuments: Record<string, DocumentMetadata>, batchSize: number = 15): BatchInfo[] {
+    createBatches(confirmedDocuments: Record<string, DocumentMetadata>, batchSize = 15): BatchInfo[] {
       const references = Object.keys(confirmedDocuments);
       const batches: BatchInfo[] = [];
 
@@ -124,7 +124,7 @@ export function useImportBatchProgressViewModel(props: any) {
     async waitForBatchCompletion(
       batch: BatchInfo,
       jobStatuses: Record<string, JobStatus>,
-      pollingIntervalMs: number = 2000
+      pollingIntervalMs = 2000
     ): Promise<void> {
       const jobIds = Object.values(batch.jobIds);
 

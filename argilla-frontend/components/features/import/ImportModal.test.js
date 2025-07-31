@@ -251,6 +251,5 @@ describe("ImportModal", () => {
       expect(wrapper.vm.isAnalyzing).toBe(false);
       expect(wrapper.vm.analysisData).toBeDefined();
     });
-
   });
 });

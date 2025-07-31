@@ -67,7 +67,7 @@ export class GetImportAnalysisUseCase {
         if (filename && reference) {
           fileInfoMap[filename] = {
             file: matchedFile.file,
-            reference: reference
+            reference
           };
         }
       });

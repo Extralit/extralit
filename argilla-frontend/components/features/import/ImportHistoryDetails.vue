@@ -6,7 +6,7 @@
         <div class="header-info">
           <h3>Import Details</h3>
           <p class="details-subtitle">
-            {{ importDetails?.filename || 'Unknown File' }} - 
+            {{ importDetails?.filename || 'Unknown File' }} -
             {{ formatDate(importDetails?.created_at) }}
           </p>
         </div>
@@ -17,7 +17,7 @@
             :disabled="isExporting"
             class="export-btn"
           >
-            <BaseIcon name="export" />
+            <BaseIcon icon-name="export" />
             {{ isExporting ? 'Exporting...' : 'Export Results' }}
           </BaseButton>
           <BaseButton
@@ -25,7 +25,7 @@
             @click="close"
             class="close-btn"
           >
-            <BaseIcon name="close" />
+            <BaseIcon icon-name="close" />
             Close
           </BaseButton>
         </div>
@@ -70,7 +70,7 @@
             @input="debouncedSearch"
           />
         </div>
-        
+
         <div class="filter-group">
           <label class="filter-label">Search title:</label>
           <BaseInput
@@ -80,7 +80,7 @@
             @input="debouncedSearch"
           />
         </div>
-        
+
         <div class="filter-group">
           <label class="filter-label">Status:</label>
           <select
@@ -116,7 +116,7 @@
 
     <!-- Error State -->
     <div v-else-if="error" class="error-container">
-      <BaseIcon name="danger" class="error-icon" />
+              <BaseIcon icon-name="danger" class="error-icon" />
       <h4>Failed to Load Import Details</h4>
       <p>{{ error }}</p>
       <BaseButton variant="outline" @click="loadDetails">
@@ -126,7 +126,7 @@
 
     <!-- Empty State -->
     <div v-else-if="!detailItems.length" class="empty-container">
-      <BaseIcon name="document" class="empty-icon" />
+              <BaseIcon icon-name="document" class="empty-icon" />
       <h4>No Details Found</h4>
       <p v-if="hasActiveFilters">
         No items match your current filters. Try adjusting your search criteria.
@@ -160,7 +160,7 @@
         >
           Previous
         </BaseButton>
-        
+
         <div class="page-numbers">
           <BaseButton
             v-for="page in visiblePages"
@@ -172,7 +172,7 @@
             {{ page }}
           </BaseButton>
         </div>
-        
+
         <BaseButton
           variant="outline"
           :disabled="currentPage >= totalPages"
@@ -239,18 +239,18 @@ export default {
       // Data state
       importDetails: null as ImportHistoryDetailsResponse | null,
       detailItems: [] as ImportHistoryDetailItem[],
-      
+
       // UI state
       isLoading: false,
       isExporting: false,
       error: null as string | null,
-      
+
       // Pagination
       currentPage: 1,
       pageSize: 20,
       totalItems: 0,
       totalPages: 0,
-      
+
       // Filters
       filters: {
         reference: "",
@@ -259,7 +259,7 @@ export default {
         status: "",
         error_message: "",
       } as ImportHistoryDetailsFilters,
-      
+
       // Search debouncing
       searchTimeout: null as NodeJS.Timeout | null,
     };
@@ -465,7 +465,7 @@ export default {
 
       try {
         const useCase = this.$nuxt.$di.get<GetImportHistoryDetailsUseCase>('GetImportHistoryDetailsUseCase');
-        
+
         const params = {
           page: this.currentPage,
           size: this.pageSize,
@@ -475,7 +475,7 @@ export default {
         };
 
         const result = await useCase.execute(this.importId, params);
-        
+
         this.importDetails = result.details;
         this.detailItems = result.items;
         this.totalItems = result.total;
@@ -492,7 +492,7 @@ export default {
       if (this.searchTimeout) {
         clearTimeout(this.searchTimeout);
       }
-      
+
       this.searchTimeout = setTimeout(() => {
         this.applyFilters();
       }, 500);
@@ -517,7 +517,7 @@ export default {
 
     async goToPage(page: number) {
       if (page < 1 || page > this.totalPages) return;
-      
+
       this.currentPage = page;
       await this.loadDetails();
     },
@@ -529,20 +529,20 @@ export default {
       try {
         // Create CSV content
         const csvContent = this.createCSVContent();
-        
+
         // Create and download file
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         const url = URL.createObjectURL(blob);
-        
+
         link.setAttribute('href', url);
         link.setAttribute('download', `import-details-${this.importId}.csv`);
         link.style.visibility = 'hidden';
-        
+
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        
+
         URL.revokeObjectURL(url);
       } catch (error) {
         console.error('Error exporting results:', error);
@@ -565,7 +565,7 @@ export default {
         'Associated Files',
         'Error Message'
       ];
-      
+
       const rows = this.detailItems.map(item => [
         item.reference,
         item.title,
@@ -576,10 +576,10 @@ export default {
         item.associated_files.join('; '),
         item.error_message || ''
       ]);
-      
+
       const csvRows = [headers, ...rows];
-      
-      return csvRows.map(row => 
+
+      return csvRows.map(row =>
         row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(',')
       ).join('\n');
     },

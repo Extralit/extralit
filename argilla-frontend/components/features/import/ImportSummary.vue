@@ -2,7 +2,7 @@
   <div class="import-summary">
     <!-- Summary Header -->
     <div class="summary-header">
-      <BaseIcon name="check" class="summary-icon" />
+      <BaseIcon icon-name="check" class="summary-icon" />
       <h3>Import Complete</h3>
       <p class="summary-subtitle">
         Your document import has been processed successfully
@@ -16,22 +16,22 @@
           <div class="stat-value">{{ summaryData.totalProcessed }}</div>
           <div class="stat-label">Total Processed</div>
         </div>
-        
+
         <div class="stat-card stat-added">
           <div class="stat-value">{{ summaryData.successfullyAdded }}</div>
           <div class="stat-label">Successfully Added</div>
         </div>
-        
+
         <div class="stat-card stat-updated">
           <div class="stat-value">{{ summaryData.updated }}</div>
           <div class="stat-label">Updated</div>
         </div>
-        
+
         <div class="stat-card stat-skipped">
           <div class="stat-value">{{ summaryData.skipped }}</div>
           <div class="stat-label">Skipped</div>
         </div>
-        
+
         <div v-if="summaryData.failed > 0" class="stat-card stat-failed">
           <div class="stat-value">{{ summaryData.failed }}</div>
           <div class="stat-label">Failed</div>
@@ -42,11 +42,11 @@
     <!-- Detailed Results Breakdown -->
     <div class="results-breakdown">
       <h4>Import Results</h4>
-      
+
       <!-- Success Summary -->
       <div v-if="hasSuccessfulImports" class="result-section success-section">
         <div class="section-header">
-          <BaseIcon name="check" class="section-icon success-icon" />
+          <BaseIcon icon-name="check" class="section-icon success-icon" />
           <span class="section-title">Successfully Imported</span>
           <span class="section-count">{{ successfulCount }}</span>
         </div>
@@ -58,7 +58,7 @@
       <!-- Skipped Summary -->
       <div v-if="summaryData.skipped > 0" class="result-section skipped-section">
         <div class="section-header">
-          <BaseIcon name="info" class="section-icon skipped-icon" />
+          <BaseIcon icon-name="info" class="section-icon skipped-icon" />
           <span class="section-title">Skipped Documents</span>
           <span class="section-count">{{ summaryData.skipped }}</span>
         </div>
@@ -70,7 +70,7 @@
       <!-- Failed Summary -->
       <div v-if="summaryData.failed > 0" class="result-section failed-section">
         <div class="section-header">
-          <BaseIcon name="danger" class="section-icon failed-icon" />
+          <BaseIcon icon-name="danger" class="section-icon failed-icon" />
           <span class="section-title">Failed Imports</span>
           <span class="section-count">{{ summaryData.failed }}</span>
         </div>
@@ -91,7 +91,7 @@
           class="failed-imports-table"
         />
       </div>
-      
+
       <!-- Retry Options -->
       <div class="retry-section">
         <p class="retry-description">
@@ -137,16 +137,16 @@
         @click="viewImportLog"
         class="action-button"
       >
-        <BaseIcon name="document" />
+        <BaseIcon icon-name="document" />
         View Import Log
       </BaseButton>
-      
+
       <BaseButton
         variant="primary"
         @click="returnToLibrary"
         class="action-button primary-action"
       >
-        <BaseIcon name="external-link" />
+        <BaseIcon icon-name="external-link" />
         Return to Library
       </BaseButton>
     </div>

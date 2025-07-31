@@ -8,7 +8,7 @@
 
     <!-- Error state -->
     <div v-else-if="hasError" class="error-state">
-      <BaseIcon name="danger" class="error-icon" />
+      <BaseIcon icon-name="danger" class="error-icon" />
       <div class="error-content">
         <h4>Analysis Failed</h4>
         <p>{{ errorMessage }}</p>
@@ -108,7 +108,7 @@ export default {
       if (this.analysisResult) {
         return this.analysisResult.summary;
       }
-      
+
       // Default summary when no analysis result
       return {
         total_documents: this.dataframeData?.data?.length || 0,
@@ -128,7 +128,7 @@ export default {
 
       return this.dataframeData.data.map((row: Record<string, any>) => {
         const reference = row.reference || row.key || `row_${Math.random()}`;
-        
+
         // Get analysis info if available
         const analysisInfo = this.analysisResult?.documents?.[reference];
         const currentStatus = documentActions[reference] || analysisInfo?.status || 'add';
@@ -222,7 +222,7 @@ export default {
       // Add dynamic columns from dataframe schema
       if (this.dataframeData?.schema?.fields) {
         const excludedFields = ['reference', 'title', 'authors', 'author', 'year', 'filePaths', 'type'];
-        
+
         this.dataframeData.schema.fields.forEach(field => {
           if (!excludedFields.includes(field.name)) {
             columns.push({
