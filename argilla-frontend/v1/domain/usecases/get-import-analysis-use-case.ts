@@ -86,7 +86,7 @@ export class GetImportAnalysisUseCase {
 
       documents[reference] = {
         document_create: {
-          reference: reference,
+          reference,
           doi: row.doi,
           pmid: row.pmid,
           workspace_id: workspaceId,

@@ -89,11 +89,11 @@ export default {
     onChangeWorkspaceFilter(workspace) {
       this.selectedWorkspace = workspace;
       // Emit workspace ID for import modal
-      const selectedWorkspaceObj = this.workspaces.find(w => w.name === workspace);
+      const selectedWorkspaceObj = this.workspaces.find((w) => w.name === workspace);
       if (selectedWorkspaceObj) {
-        this.$emit('workspace-selected', selectedWorkspaceObj);
+        this.$emit("workspace-selected", selectedWorkspaceObj);
       } else {
-        this.$emit('workspace-selected', null);
+        this.$emit("workspace-selected", null);
       }
     },
     cardAction(action) {

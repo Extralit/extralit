@@ -56,12 +56,7 @@
           </div>
 
           <div class="flow-modal__nav-right">
-            <BaseButton
-              v-if="showCancelButton"
-              class="secondary outline"
-              :disabled="loading"
-              @click="handleCancel"
-            >
+            <BaseButton v-if="showCancelButton" class="secondary outline" :disabled="loading" @click="handleCancel">
               Cancel
             </BaseButton>
 
@@ -245,17 +240,13 @@ export default {
     },
 
     showCancelConfirmation() {
-      if (
-        confirm(this.$t("common.confirmCancel"))
-      ) {
+      if (confirm(this.$t("common.confirmCancel"))) {
         this.$emit("cancel");
       }
     },
 
     showCloseConfirmation() {
-      if (
-        confirm(this.$t("common.confirmCancel"))
-      ) {
+      if (confirm(this.$t("common.confirmCancel"))) {
         this.$emit("close");
       }
     },
@@ -478,8 +469,6 @@ export default {
 .flow-modal-leave-to .flow-modal-container {
   transform: scale(0.95);
 }
-
-
 
 // Global body class to prevent scrolling
 :global(.flow-modal-open) {

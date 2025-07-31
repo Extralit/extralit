@@ -93,7 +93,7 @@
 </template>
 
 <script lang="ts">
-import Home from "@/layouts/Home";
+import Home from "@/layouts/Home.vue";
 import { useHomeViewModel } from "./useHomeViewModel";
 import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
 

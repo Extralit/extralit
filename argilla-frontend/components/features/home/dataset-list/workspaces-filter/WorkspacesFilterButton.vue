@@ -1,9 +1,5 @@
 <template>
-  <FilterButton
-    :button-name="buttonDisplayName"
-    icon-name="filter"
-    :is-button-active="isButtonActive"
-  />
+  <FilterButton :button-name="buttonDisplayName" icon-name="filter" :is-button-active="isButtonActive" />
 </template>
 
 <script>
@@ -24,7 +20,7 @@ export default {
       return this.isActive;
     },
     buttonDisplayName() {
-      return this.selectedWorkspace || this.$t('Workspaces');
+      return this.selectedWorkspace || this.$t("Workspaces");
     },
   },
 };

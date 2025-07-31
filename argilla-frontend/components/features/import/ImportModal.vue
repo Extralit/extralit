@@ -65,6 +65,7 @@ import "assets/icons/check";
 import "assets/icons/danger";
 import "assets/icons/import";
 import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
+import { GetImportAnalysisUseCase } from "~/v1/domain/usecases/get-import-analysis-use-case";
 
 export default {
   name: "ImportModal",
@@ -162,7 +163,12 @@ export default {
     canGoNext() {
       switch (this.currentStep) {
         case 0:
-          return this.bibData.parsedEntries.length > 0 && this.pdfData.matchedFiles.length > 0 && !this.hasError && !!this.workspace;
+          return (
+            this.bibData.parsedEntries.length > 0 &&
+            this.pdfData.matchedFiles.length > 0 &&
+            !this.hasError &&
+            !!this.workspace
+          );
         case 1:
           return Object.keys(this.analysisData.documents).length > 0 && !this.hasError && !!this.workspace;
         default:
@@ -213,7 +219,11 @@ export default {
 
       switch (step) {
         case 0:
-          isValid = this.bibData.parsedEntries.length > 0 && this.pdfData.matchedFiles.length > 0 && !this.hasError && !!this.workspace;
+          isValid =
+            this.bibData.parsedEntries.length > 0 &&
+            this.pdfData.matchedFiles.length > 0 &&
+            !this.hasError &&
+            !!this.workspace;
           break;
         case 1:
           isValid = Object.keys(this.analysisData.documents).length > 0 && !this.hasError && !!this.workspace;
@@ -454,9 +464,7 @@ export default {
       });
     },
 
-    // Placeholder API methods (to be implemented in future tasks)
     createAnalysisRequest() {
-      // This will create the ImportAnalysisRequest from bibData and pdfData
       return {
         workspace_id: this.workspace.id, // Use workspace ID from props
         documents: {}, // Will be populated from parsed data

@@ -4,7 +4,7 @@
     <div class="labels-selector__items">
       <BaseRadioButton
         class="labels-selector__item"
-        v-for="({ name, numberOfDatasets }) in workspacesFilteredBySearchText"
+        v-for="{ name, numberOfDatasets } in workspacesFilteredBySearchText"
         :key="name"
         :id="name"
         :name="name"
@@ -44,8 +44,8 @@ export default {
         return this.selectedWorkspace;
       },
       set(value) {
-        this.$emit('input', value);
-      }
+        this.$emit("input", value);
+      },
     },
     workspacesFilteredBySearchText() {
       return this.workspaces.filter((workspace) =>
