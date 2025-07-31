@@ -59,11 +59,13 @@ export class BulkUploadDocumentsUseCase {
       documents: bulkDocuments,
     };
 
-    // Prepare form data
-    const formData = new FormData();
-    formData.append("documents_metadata", JSON.stringify(bulkCreate));
+    // Create files array to match Python implementation
+    const filesToUpload: [string, any][] = [];
+    
+    // Add metadata as first element (matching Python: files_to_upload.insert(0, ("documents_metadata", ...)))
+    filesToUpload.push(["documents_metadata", JSON.stringify(bulkCreate)]);
 
-    // Add all referenced files to form data
+    // Add all referenced files (matching Python: files_to_upload.append(("files", ...)))
     const addedFiles = new Set<string>();
     const missingFiles: string[] = [];
 
@@ -72,7 +74,7 @@ export class BulkUploadDocumentsUseCase {
         if (!addedFiles.has(filename)) {
           const file = fileMapping.get(filename);
           if (file) {
-            formData.append("files", file);
+            filesToUpload.push(["files", file]);
             addedFiles.add(filename);
           } else {
             missingFiles.push(filename);
@@ -93,10 +95,9 @@ export class BulkUploadDocumentsUseCase {
     }
 
     try {
-      // Send bulk upload request
       const response = await this.axios.post<DocumentsBulkResponse>(
-      "/v1/documents/bulk",
-        formData,
+        "/v1/documents/bulk",
+        filesToUpload,
         {
           headers: {
             "Content-Type": "multipart/form-data",
