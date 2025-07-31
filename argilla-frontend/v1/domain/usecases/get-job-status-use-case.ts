@@ -16,7 +16,7 @@ export class GetJobStatusUseCase {
   constructor(private readonly axios: NuxtAxiosInstance) {}
 
   async execute(jobId: string): Promise<JobResponse> {
-    const response = await this.axios.get<JobResponse>(`/api/v1/jobs/${jobId}`);
+    const response = await this.axios.get<JobResponse>(`/v1/jobs/${jobId}`);
     return response.data;
   }
 

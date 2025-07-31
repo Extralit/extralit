@@ -456,7 +456,6 @@ export default {
         });
       }
 
-      console.log('getAllPdfFiles: collected', files.length, 'files');
       return files;
     },
 
