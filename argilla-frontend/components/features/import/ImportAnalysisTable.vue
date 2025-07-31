@@ -212,6 +212,7 @@ export default {
           field: "files",
           title: "Files",
           width: 150,
+          frozen: true,
           formatter: this.filesFormatter,
         },
         {

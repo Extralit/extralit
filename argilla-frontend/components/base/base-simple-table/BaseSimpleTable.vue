@@ -41,6 +41,7 @@ export default {
         data: this.data,
         layout: "fitDataTable",
         maxHeight: "100%",
+        renderHorizontal: "virtual",
         resizableColumns: true,
         movableColumns: false,
         movableRows: false,
@@ -51,7 +52,6 @@ export default {
         sortMode: "local",
         filterMode: "local",
         placeholder: "No data available",
-        responsiveLayout: "hide",
         tooltipsHeader: true,
         tooltips: true,
         columnDefaults: {
