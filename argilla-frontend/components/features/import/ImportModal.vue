@@ -35,7 +35,6 @@
         :workspace="workspace"
         :loading="isAnalyzing"
         @update="handleAnalysisUpdate"
-        @retry="performImportAnalysis"
       />
 
       <!-- Step 3: Upload Progress -->
@@ -65,7 +64,6 @@ import "assets/icons/check";
 import "assets/icons/danger";
 import "assets/icons/import";
 import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
-import { GetImportAnalysisUseCase } from "~/v1/domain/usecases/get-import-analysis-use-case";
 
 export default {
   name: "ImportModal",
@@ -204,13 +202,6 @@ export default {
     handleStepChange(newStep) {
       this.currentStep = newStep;
       this.clearError();
-
-      // Perform any necessary actions when entering a step
-      if (newStep === 1) {
-        this.performImportAnalysis();
-      } else if (newStep === 2) {
-        this.startImport();
-      }
     },
 
     handleValidateStep({ step, callback }) {
@@ -269,28 +260,6 @@ export default {
     handleAnalysisUpdate(data) {
       this.uploadData.confirmedDocuments = data.confirmedDocuments || {};
       this.clearError();
-    },
-
-    // Step 3: Analysis handlers
-    async performImportAnalysis() {
-      if (this.isAnalyzing) return;
-
-      this.isAnalyzing = true;
-      this.clearError();
-
-      try {
-        // Create analysis request from bib and PDF data
-        const analysisRequest = this.createAnalysisRequest();
-
-        // Call backend analysis API (placeholder for now)
-        const response = await this.callImportAnalysisAPI(analysisRequest);
-
-        this.analysisData = response;
-      } catch (error) {
-        this.showError(`Analysis failed: ${error.message}`, true);
-      } finally {
-        this.isAnalyzing = false;
-      }
     },
 
     async startImport() {
@@ -372,22 +341,8 @@ export default {
     retryCurrentStep() {
       this.clearError();
 
-      switch (this.currentStep) {
-        case 0:
-          if (this.$refs.fileUploadComponent) {
-            this.$refs.fileUploadComponent.reset();
-          }
-          break;
-        case 1:
-          this.performImportAnalysis();
-          break;
-        case 2:
-          this.startImport();
-          break;
-      }
     },
 
-    // Modal lifecycle
     handleClose() {
       if (this.isUploading) {
         // Confirm before closing during upload
@@ -471,23 +426,6 @@ export default {
       };
     },
 
-    async callImportAnalysisAPI() {
-      // Placeholder for actual API call
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          resolve({
-            documents: {},
-            summary: {
-              total_documents: this.bibData.parsedEntries.length,
-              add_count: Math.floor(this.bibData.parsedEntries.length * 0.7),
-              update_count: Math.floor(this.bibData.parsedEntries.length * 0.2),
-              skip_count: Math.floor(this.bibData.parsedEntries.length * 0.1),
-              failed_count: 0,
-            },
-          });
-        }, 1000);
-      });
-    },
 
     initializeUploadData() {
       // Initialize upload tracking data
@@ -514,8 +452,6 @@ export default {
       });
     },
   },
-
-  // Components are auto-imported by Nuxt
 };
 </script>
 

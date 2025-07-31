@@ -252,14 +252,5 @@ describe("ImportModal", () => {
       expect(wrapper.vm.analysisData).toBeDefined();
     });
 
-    it("should handle analysis errors", async () => {
-      jest.spyOn(wrapper.vm, "callImportAnalysisAPI").mockRejectedValue(new Error("API Error"));
-
-      await wrapper.vm.performImportAnalysis();
-
-      expect(wrapper.vm.isAnalyzing).toBe(false);
-      expect(wrapper.vm.hasError).toBe(true);
-      expect(wrapper.vm.errorMessage).toContain("Analysis failed");
-    });
   });
 });
