@@ -65,6 +65,7 @@ export function useImportBatchProgressViewModel(props: any) {
       // Prepare documents for this batch
       const batchDocuments: Record<string, DocumentMetadata> = {};
       const batchFiles: File[] = [];
+      const addedFiles = new Set<string>(); // Track files to avoid duplicates
 
       for (const reference of batch.references) {
         const docMetadata = confirmedDocuments[reference];
@@ -74,12 +75,27 @@ export function useImportBatchProgressViewModel(props: any) {
 
           // Find and add associated files
           for (const fileInfo of docMetadata.associated_files) {
-            const file = pdfFiles.find(f => f.name === fileInfo.filename);
-            if (file) {
-              batchFiles.push(file);
-              console.log(`  - Found file: ${fileInfo.filename}`);
+            // Handle both FileInfo objects and string filenames
+            let filename: string;
+            if (typeof fileInfo === 'string') {
+              filename = fileInfo;
+            } else if (fileInfo && typeof fileInfo === 'object' && fileInfo.filename) {
+              filename = fileInfo.filename;
             } else {
-              console.warn(`  - File not found: ${fileInfo.filename}`);
+              console.warn(`  - Invalid file info:`, fileInfo);
+              continue;
+            }
+
+            // Only add each file once to avoid duplicates
+            if (!addedFiles.has(filename)) {
+              const file = pdfFiles.find(f => f.name === filename);
+              if (file) {
+                batchFiles.push(file);
+                addedFiles.add(filename);
+                console.log(`  - Found file: ${filename}`);
+              } else {
+                console.warn(`  - File not found: ${filename}`);
+              }
             }
           }
         }

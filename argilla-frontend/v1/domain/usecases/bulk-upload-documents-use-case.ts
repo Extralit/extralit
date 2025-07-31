@@ -43,10 +43,24 @@ export class BulkUploadDocumentsUseCase {
     const bulkDocuments: BulkDocumentInfo[] = [];
 
     for (const [reference, docMetadata] of Object.entries(confirmedDocuments)) {
+      // Handle both FileInfo objects and string filenames in associated_files
+      const associatedFiles = docMetadata.associated_files
+        .map(f => {
+          if (typeof f === 'string') {
+            return f;
+          } else if (f && typeof f === 'object' && f.filename) {
+            return f.filename;
+          } else {
+            console.warn(`Invalid file info for reference ${reference}:`, f);
+            return null;
+          }
+        })
+        .filter(filename => filename !== null) as string[];
+
       bulkDocuments.push({
         reference,
         document_create: docMetadata.document_create,
-        associated_files: docMetadata.associated_files.map(f => f.filename),
+        associated_files: associatedFiles,
       });
     }
 
@@ -74,7 +88,7 @@ export class BulkUploadDocumentsUseCase {
     const missingFiles: string[] = [];
 
     for (const doc of bulkDocuments) {
-      console.log(`Processing document: ${doc.reference}`, doc.associated_files);
+      console.log(`Processing document: ${doc.reference} with ${doc.associated_files.length} files:`, doc.associated_files);
       for (const filename of doc.associated_files) {
         if (!addedFiles.has(filename)) {
           const file = fileMapping.get(filename);
@@ -85,6 +99,7 @@ export class BulkUploadDocumentsUseCase {
             formData.append("files", file, filename);
             addedFiles.add(filename);
           } else {
+            console.log(`File not found in mapping: ${filename}. Available files:`, Array.from(fileMapping.keys()));
             missingFiles.push(filename);
           }
         } else {
@@ -106,7 +121,7 @@ export class BulkUploadDocumentsUseCase {
 
     try {
       // Send bulk upload request
-      console.log('formData:', JSON.stringify(formData));
+      console.log('Sending bulk upload request with', addedFiles.size, 'files and', bulkDocuments.length, 'documents');
       const response = await this.axios.post<DocumentsBulkResponse>(
         "/v1/documents/bulk",
         formData,
