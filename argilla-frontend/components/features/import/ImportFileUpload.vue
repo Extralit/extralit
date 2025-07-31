@@ -292,7 +292,6 @@ export default {
   },
 
   methods: {
-    // Bibliography methods
     triggerBibFileInput() {
       this.$refs.bibFileInput.click();
     },
@@ -617,7 +616,7 @@ export default {
       this.pdfProcessing = true;
 
       try {
-        const validFiles = [];
+        const validFiles: File[] = [];
         for (const file of pdfFiles) {
           await this.processPdfFile(file);
           validFiles.push(file);
@@ -675,7 +674,7 @@ export default {
       });
     },
 
-    performFileMatching(uploadedFiles = null) {
+    performFileMatching(uploadedFiles: File[] | null = null) {
       const filesToMatch =
         uploadedFiles || this.pdfData.matchedFiles.concat(this.pdfData.unmatchedFiles).map((item) => item.file || item);
 

@@ -25,7 +25,7 @@ export class GetImportAnalysisUseCase {
     try {
       const request = this.createAnalysisRequest(workspaceId, dataframeData, pdfFiles);
 
-      console.log(request)
+      console.log('request:', request)
 
       const { data } = await this.axios.post<ImportAnalysisResponse>(
         `/v1/imports/analyze`,

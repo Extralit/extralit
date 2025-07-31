@@ -27,9 +27,7 @@ export type {
   ImportHistoryCreate,
 } from '~/v1/domain/entities/import/ImportAnalysis';
 
-// UI-specific types for frontend components
 
-// PDF file matching information
 export interface PdfFileInfo {
   filename: string;
   path: string;
@@ -109,16 +107,4 @@ export interface TableColumn {
   editor?: any;
   editorParams?: Record<string, any>;
   validator?: any;
-}
-
-// Props for ImportAnalysisTable component
-export interface ImportAnalysisTableProps {
-  analysisData: ImportAnalysisResponse;
-  loading: boolean;
-}
-
-// Events emitted by ImportAnalysisTable
-export interface ImportAnalysisTableEvents {
-  update: ImportConfirmationData;
-  retry: void;
 }

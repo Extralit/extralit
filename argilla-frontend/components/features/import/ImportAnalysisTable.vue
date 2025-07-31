@@ -92,7 +92,6 @@ export default {
         },
       }),
     },
-    // Add dataframe data prop for direct table display
     dataframeData: {
       type: Object as () => DataframeData | null,
       default: null,
@@ -111,7 +110,6 @@ export default {
 
   data() {
     return {
-      // Local state for table interactions
       localDocumentActions: {} as Record<string, ImportStatus>,
     };
   },
@@ -275,10 +273,6 @@ export default {
   },
 
   methods: {
-    // Analysis methods (delegated to view model)
-    async performAnalysis(pdfFiles?: File[]) {
-      return await this.performAnalysis(pdfFiles);
-    },
     // Formatters for table cells
     referenceFormatter(cell: any) {
       const value = cell.getValue();
@@ -353,18 +347,16 @@ export default {
     },
 
     canToggleStatus(originalStatus: ImportStatus) {
-      // Can toggle from Add or Update to Skip
       return originalStatus === "add" || originalStatus === "update" || originalStatus === "ignore";
     },
 
     getNextStatus(currentStatus: ImportStatus, originalStatus: ImportStatus) {
-      // Toggle between Add/Update and Skip
       if ((originalStatus === "add" || originalStatus === "update") && currentStatus !== "ignore") {
         return "ignore";
       } else if (currentStatus === "ignore") {
-        return originalStatus; // Revert to original status
+        return originalStatus;
       }
-      return currentStatus; // No change if can't toggle
+      return currentStatus;
     },
 
     // Event handlers

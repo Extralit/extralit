@@ -1,4 +1,5 @@
-import { ref, computed, watch, useContext } from '@nuxtjs/composition-api';
+import { ref, computed, watch } from '@nuxtjs/composition-api';
+import { useResolve } from "ts-injecty";
 import type {
   ImportAnalysisResponse,
   ImportStatus,
@@ -14,11 +15,7 @@ export function useImportAnalysisViewModel(props: {
   workspace: Workspace;
   loading: boolean;
 }) {
-  // Access Nuxt axios instance
-  const { $axios } = useContext();
-
-  // Create use case instance
-  const getImportAnalysisUseCase = new GetImportAnalysisUseCase($axios);
+  const getImportAnalysisUseCase = useResolve(GetImportAnalysisUseCase);
 
   // Reactive state
   const isAnalyzing = ref(false);
@@ -92,7 +89,6 @@ export function useImportAnalysisViewModel(props: {
     isAnalyzing.value = false;
   };
 
-  // Watch for dataframe data changes and trigger analysis
   watch(
     () => props.dataframeData,
     async (newData) => {
@@ -107,16 +103,6 @@ export function useImportAnalysisViewModel(props: {
       }
     },
     { immediate: true }
-  );
-
-  // Watch for workspace changes
-  watch(
-    workspaceId,
-    () => {
-      if (shouldAnalyze.value) {
-        performAnalysis();
-      }
-    }
   );
 
   return {

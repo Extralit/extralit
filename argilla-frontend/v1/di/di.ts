@@ -3,6 +3,7 @@ import Container, { register } from "ts-injecty";
 
 import { useEventDispatcher } from "@codescouts/events";
 
+import { use } from "vue/types/umd";
 import { useTeamProgress } from "../infrastructure/storage/TeamProgressStorage";
 import {
   UpdateMetricsEventHandler,
@@ -73,6 +74,7 @@ import { GetEnvironmentUseCase } from "@/v1/domain/usecases/get-environment-use-
 import { GetWorkspacesUseCase } from "@/v1/domain/usecases/get-workspaces-use-case";
 import { GetDatasetQuestionsGroupedUseCase } from "@/v1/domain/usecases/get-dataset-questions-grouped-use-case";
 import { GetDatasetFieldsGroupedUseCase } from "@/v1/domain/usecases/get-dataset-fields-grouped-use-case";
+import { GetImportAnalysisUseCase } from "@/v1/domain/usecases/get-import-analysis-use-case";
 import { LoadUserUseCase } from "@/v1/domain/usecases/load-user-use-case";
 import { CreateDatasetUseCase } from "@/v1/domain/usecases/create-dataset-use-case";
 import { GetFirstRecordFromHub } from "@/v1/domain/usecases/get-first-record-from-hub";
@@ -254,6 +256,8 @@ export const loadDependencyContainer = (context: Context) => {
       .build(),
 
     register(GetFirstRecordFromHub).withDependency(HubRepository).build(),
+
+    register(GetImportAnalysisUseCase).withDependency(useAxios).build(),
 
     register(ExportDatasetToHubUseCase)
       .withDependencies(DatasetRepository, useLocalStorage)
