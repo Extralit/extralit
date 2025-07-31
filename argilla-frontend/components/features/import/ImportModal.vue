@@ -30,11 +30,12 @@
       <ImportAnalysisTable
         v-if="stepIndex === 1"
         ref="analysisTableComponent"
-        :analysis-data="analysisData"
         :dataframe-data="bibData.dataframeData"
+        :pdf-data="pdfData"
         :workspace="workspace"
         :loading="isAnalyzing"
         @update="handleAnalysisUpdate"
+        @analysis-complete="handleAnalysisComplete"
       />
 
       <!-- Step 3: Upload Progress -->
@@ -259,6 +260,11 @@ export default {
 
     handleAnalysisUpdate(data) {
       this.uploadData.confirmedDocuments = data.confirmedDocuments || {};
+      this.clearError();
+    },
+
+    handleAnalysisComplete(analysisData) {
+      this.analysisData = analysisData;
       this.clearError();
     },
 

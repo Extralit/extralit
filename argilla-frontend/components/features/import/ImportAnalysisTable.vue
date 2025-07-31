@@ -410,20 +410,43 @@ export default {
 
 
 
+    formatColumnTitle(fieldName: string) {
+      // Convert field names to readable titles
+      return fieldName
+        .replace(/([A-Z])/g, ' $1')
+        .replace(/^./, str => str.toUpperCase())
+        .trim();
+    },
+
+    genericFormatter(cell: any) {
+      const value = cell.getValue();
+      if (value === null || value === undefined) return '';
+      if (typeof value === 'string' && value.length > 50) {
+        return `<span title="${value}">${value.substring(0, 50)}...</span>`;
+      }
+      return String(value);
+    },
+
+    retryAnalysis() {
+      if (this.workspace && this.dataframeData && this.pdfData?.matchedFiles) {
+        this.analyzeImport(this.workspace, this.dataframeData, this.pdfData.matchedFiles);
+      }
+    },
+
     emitUpdate() {
-      const confirmedDocuments: Record<string, ImportAnalysisRequest> = {};
-      const analysisData = this.analysisResult || this.analysisData;
+      const confirmedDocuments: Record<string, any> = {};
       const documentActions = { ...this.documentActions, ...this.localDocumentActions };
 
       // Handle analysis data case (preferred)
-      if (analysisData && analysisData.documents && Object.keys(analysisData.documents).length > 0) {
-        Object.entries(analysisData.documents).forEach(([reference, docInfo]: [string, ImportAnalysisRequest]) => {
+      if (this.analysisResult && this.analysisResult.documents && Object.keys(this.analysisResult.documents).length > 0) {
+        Object.entries(this.analysisResult.documents).forEach(([reference, docInfo]: [string, any]) => {
           const finalAction = documentActions[reference] || docInfo.status;
 
           // Only include documents that will be processed (add or update)
           if (finalAction === "add" || finalAction === "update") {
             confirmedDocuments[reference] = {
-              associated_files: docInfo.documents[reference].associated_files, // Already in correct format
+              document_create: docInfo.document_create,
+              associated_files: docInfo.associated_files || [],
             };
           }
         });
@@ -436,7 +459,25 @@ export default {
           // Only include documents that will be processed (add or update)
           if (finalAction === "add" || finalAction === "update") {
             confirmedDocuments[reference] = {
-              associated_files: filePaths, // Map filePaths to associated_files
+              document_create: {
+                reference,
+                title: row.title,
+                authors: Array.isArray(row.authors) ? row.authors : (row.authors ? [row.authors] : undefined),
+                year: row.year ? String(row.year) : undefined,
+                journal: row.journal,
+                volume: row.volume,
+                pages: row.pages,
+                doi: row.doi,
+                url: row.url,
+                abstract: row.abstract,
+                keywords: Array.isArray(row.keywords) ? row.keywords : (row.keywords ? [row.keywords] : undefined),
+                pmid: row.pmid,
+                workspace_id: this.workspace?.id,
+              },
+              associated_files: filePaths.map((filename: string) => ({
+                filename,
+                size: this.getFileSize(filename) || 0
+              })),
             };
           }
         });
@@ -449,9 +490,22 @@ export default {
       });
     },
 
+    getFileSize(filename: string): number {
+      // Try to find the file size from matched files
+      if (this.pdfData?.matchedFiles) {
+        const matchedFile = this.pdfData.matchedFiles.find((mf: any) => mf.file.name === filename);
+        if (matchedFile) {
+          return matchedFile.file.size || 0;
+        }
+      }
+      return 0;
+    },
+
     reset() {
       this.localDocumentActions = {};
-      this.reset(); // Call view model reset
+      if (this.reset) { // Call view model reset if available
+        this.reset();
+      }
     },
 
 
@@ -463,41 +517,44 @@ export default {
       }
 
       // Convert analysis data to dataframe format if needed
-      const analysisData = this.analysisResult || this.analysisData;
-      const dataRows = [];
-      Object.entries(analysisData.documents || {}).forEach(([reference, docInfo]: [string, DocumentImportAnalysis]) => {
-        dataRows.push({
-          reference,
-          title: docInfo.document_create?.title || "",
-          authors: Array.isArray(docInfo.document_create?.authors)
-            ? docInfo.document_create.authors.join(", ")
-            : docInfo.document_create?.authors || "",
-          year: docInfo.document_create?.year || "",
-          doi: docInfo.document_create?.doi || "",
-          pmid: docInfo.document_create?.pmid || "",
-          journal: docInfo.document_create?.journal || "",
-          abstract: docInfo.document_create?.abstract || "",
-          file: docInfo.associated_files.join(";"), // Store file paths as semicolon-separated
+      if (this.analysisResult && this.analysisResult.documents) {
+        const dataRows: any[] = [];
+        Object.entries(this.analysisResult.documents).forEach(([reference, docInfo]: [string, any]) => {
+          dataRows.push({
+            reference,
+            title: docInfo.document_create?.title || "",
+            authors: Array.isArray(docInfo.document_create?.authors)
+              ? docInfo.document_create.authors.join(", ")
+              : docInfo.document_create?.authors || "",
+            year: docInfo.document_create?.year || "",
+            doi: docInfo.document_create?.doi || "",
+            pmid: docInfo.document_create?.pmid || "",
+            journal: docInfo.document_create?.journal || "",
+            abstract: docInfo.document_create?.abstract || "",
+            file: docInfo.associated_files.join(";"), // Store file paths as semicolon-separated
+          });
         });
-      });
 
-      return {
-        schema: {
-          fields: [
-            { name: "reference", type: "string" },
-            { name: "title", type: "string" },
-            { name: "authors", type: "string" },
-            { name: "year", type: "string" },
-            { name: "doi", type: "string" },
-            { name: "pmid", type: "string" },
-            { name: "journal", type: "string" },
-            { name: "abstract", type: "string" },
-            { name: "file", type: "string" },
-          ],
-          primaryKey: ["reference"]
-        },
-        data: dataRows
-      };
+        return {
+          schema: {
+            fields: [
+              { name: "reference", type: "string" },
+              { name: "title", type: "string" },
+              { name: "authors", type: "string" },
+              { name: "year", type: "string" },
+              { name: "doi", type: "string" },
+              { name: "pmid", type: "string" },
+              { name: "journal", type: "string" },
+              { name: "abstract", type: "string" },
+              { name: "file", type: "string" },
+            ],
+            primaryKey: ["reference"]
+          },
+          data: dataRows
+        };
+      }
+
+      return null;
     },
   },
 
