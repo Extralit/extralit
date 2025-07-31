@@ -163,13 +163,13 @@
   - Add error handling for failed upload requests with per-file error tracking
   - _Requirements: 3.1, 3.2, 3.7_
 
-- [-] 8.2 Implement ImportBatchProgress.vue component (Step 4)
+- [x] 8.2 Implement ImportBatchProgress.vue component (Step 4)
   - Create live reloading progress bar showing overall completion percentage
   - Display current batch status with detailed progress information
   - Implement real-time status updates using job status polling
   - Show batch-by-batch progress with individual file status
   - Add Cancel button to stop the upload process
-  - Track progress at both batch and individual file levels
+  - Track progress at both batch and individual reference (which contains multiple files) levels
   - After all batches complete, send generic dataframe data to POST /import/history endpoint
   - _Requirements: 3.2, 3.3, 3.7_
 

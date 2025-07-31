@@ -429,6 +429,7 @@ class ImportHistoryCreate(BaseModel):
     workspace_id: UUID = Field(..., description="Target workspace ID")
     filename: str = Field(..., description="Import filename (.bib, .csv, etc.)")
     data: Dict = Field(..., description="Generic tabular dataframe data converted from source format")
+    metadata: Optional[Dict] = Field(None, description="Import metadata with status and files (in list and detailed view)")
 
 class ImportHistoryResponse(BaseModel):
     """Response schema for import history creation and retrieval."""

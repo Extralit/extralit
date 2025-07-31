@@ -150,7 +150,8 @@ export function useImportBatchProgressViewModel(props: any) {
     async createImportHistory(
       workspace: any,
       bibFileName: string,
-      dataframeData: any
+      dataframeData: any,
+      metadata?: Record<string, any>
     ) {
       if (!dataframeData || !workspace) {
         return null;
@@ -160,6 +161,7 @@ export function useImportBatchProgressViewModel(props: any) {
         workspace_id: workspace.id,
         filename: bibFileName || "import.bib",
         data: dataframeData,
+        metadata,
       });
     },
 

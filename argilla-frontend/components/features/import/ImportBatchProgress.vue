@@ -17,10 +17,7 @@
           <span class="progress-percentage">{{ overallProgressPercentage }}%</span>
         </div>
         <div class="progress-bar">
-          <div 
-            class="progress-fill" 
-            :style="{ width: overallProgressPercentage + '%' }"
-          ></div>
+          <div class="progress-fill" :style="{ width: overallProgressPercentage + '%' }"></div>
         </div>
         <div class="progress-stats">
           <span>{{ completedReferences }} of {{ totalReferences }} references completed</span>
@@ -36,10 +33,7 @@
             <span class="progress-percentage">{{ batchProgressPercentage }}%</span>
           </div>
           <div class="progress-bar">
-            <div 
-              class="progress-fill batch-fill" 
-              :style="{ width: batchProgressPercentage + '%' }"
-            ></div>
+            <div class="progress-fill batch-fill" :style="{ width: batchProgressPercentage + '%' }"></div>
           </div>
           <div class="progress-stats">
             <span>{{ completedInCurrentBatch }} of {{ currentBatchSize }} references in current batch</span>
@@ -81,11 +75,7 @@
 
       <!-- Cancel button -->
       <div class="upload-actions">
-        <BaseButton 
-          variant="outline" 
-          @click="cancelUpload"
-          :disabled="isCancelling"
-        >
+        <BaseButton variant="outline" @click="cancelUpload" :disabled="isCancelling">
           {{ isCancelling ? 'Cancelling...' : 'Cancel Upload' }}
         </BaseButton>
       </div>
@@ -241,7 +231,7 @@ export default {
       // Job tracking
       allJobIds: {} as Record<string, string>, // reference -> jobId
       jobStatuses: {} as Record<string, JobStatus>,
-      
+
       // Progress tracking
       completedReferences: 0,
       totalReferences: 0,
@@ -485,11 +475,13 @@ export default {
       this.isCompleted = true;
 
       try {
-        // Create import history record
+        // Create import history record with metadata
+        const metadata = this.createImportMetadata();
         await this.viewModel.createImportHistory(
           this.workspace,
           this.bibFileName,
-          this.dataframeData
+          this.dataframeData,
+          metadata
         );
 
         // Create and emit summary data
@@ -516,7 +508,7 @@ export default {
 
       // Note: We can't actually cancel running jobs, but we can stop processing new batches
       // The jobs will continue to run in the background
-      
+
       setTimeout(() => {
         this.isCancelled = true;
         this.isUploading = false;
@@ -542,6 +534,22 @@ export default {
     handleBatchError(batch: BatchInfo, error: any) {
       const batchErrors = this.viewModel.handleBatchError(batch, error);
       this.errors.push(...batchErrors);
+    },
+
+    createImportMetadata() {
+      const metadata: Record<string, any> = {};
+
+      // Create metadata for each reference with status and associated files
+      Object.entries(this.uploadData.confirmedDocuments).forEach(([reference, docMetadata]) => {
+        metadata[reference] = {
+          status: 'add', // Default status for uploaded documents
+          associated_files: docMetadata.associated_files.map(fileInfo =>
+            typeof fileInfo === 'string' ? fileInfo : fileInfo.filename
+          ),
+        };
+      });
+
+      return metadata;
     },
 
     reset() {

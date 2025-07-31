@@ -91,5 +91,6 @@ export interface ImportAnalysisResponse {
 export interface ImportHistoryCreate {
   workspace_id: string;
   filename: string;
-  data: DataframeData; // Generic tabular dataframe data converted from source format
+  data: Record<string, any>; // Tabular dataframe data converted from BibTeX file
+  metadata?: Record<string, any>; // Import metadata including ImportStatus and associated files for each reference
 }
