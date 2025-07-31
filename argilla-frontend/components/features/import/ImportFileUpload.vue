@@ -188,6 +188,9 @@ export default {
 
   data() {
     return {
+      // Internal flag to prevent recursive updates during initialization
+      isInitializing: false,
+
       // Bibliography state
       bibDragOver: false,
       bibUploaded: false,
@@ -266,9 +269,17 @@ export default {
 
   watch: {
     initialBibData: {
-      handler(newData) {
-        if (newData && (newData.fileName || newData.parsedEntries.length > 0)) {
-          this.initializeWithExistingData();
+      handler(newData, oldData) {
+        // Only initialize if data has actually changed and we're not already initializing
+        if (!this.isInitializing && newData && (newData.fileName || newData.parsedEntries.length > 0)) {
+          // Check if the data is actually different to avoid unnecessary updates
+          const hasChanged = !oldData || 
+            newData.fileName !== oldData.fileName ||
+            newData.parsedEntries.length !== oldData.parsedEntries.length;
+          
+          if (hasChanged) {
+            this.initializeWithExistingData();
+          }
         }
       },
       deep: true,
@@ -276,9 +287,18 @@ export default {
     },
     
     initialPdfData: {
-      handler(newData) {
-        if (newData && (newData.matchedFiles.length > 0 || newData.unmatchedFiles.length > 0)) {
-          this.initializeWithExistingData();
+      handler(newData, oldData) {
+        // Only initialize if data has actually changed and we're not already initializing
+        if (!this.isInitializing && newData && (newData.matchedFiles.length > 0 || newData.unmatchedFiles.length > 0)) {
+          // Check if the data is actually different to avoid unnecessary updates
+          const hasChanged = !oldData ||
+            newData.matchedFiles.length !== oldData.matchedFiles.length ||
+            newData.unmatchedFiles.length !== oldData.unmatchedFiles.length ||
+            newData.totalFiles !== oldData.totalFiles;
+          
+          if (hasChanged) {
+            this.initializeWithExistingData();
+          }
         }
       },
       deep: true,
@@ -287,9 +307,12 @@ export default {
 
     bibData: {
       handler() {
-        this.emitBibUpdate();
-        if (this.bibUploaded && this.pdfUploaded) {
-          this.performFileMatching();
+        // Only emit updates if we're not in the middle of initializing
+        if (!this.isInitializing) {
+          this.emitBibUpdate();
+          if (this.bibUploaded && this.pdfUploaded) {
+            this.performFileMatching();
+          }
         }
       },
       deep: true,
@@ -297,7 +320,10 @@ export default {
 
     pdfData: {
       handler() {
-        this.emitPdfUpdate();
+        // Only emit updates if we're not in the middle of initializing
+        if (!this.isInitializing) {
+          this.emitPdfUpdate();
+        }
       },
       deep: true,
     },
@@ -1039,6 +1065,9 @@ export default {
 
     // Initialize component with existing data when navigating back
     initializeWithExistingData() {
+      // Set flag to prevent recursive updates
+      this.isInitializing = true;
+
       // Initialize bibliography data
       if (this.initialBibData && (this.initialBibData.fileName || this.initialBibData.parsedEntries.length > 0)) {
         this.bibData = {
@@ -1065,8 +1094,10 @@ export default {
         this.pdfProcessing = false;
       }
 
-      // Emit updates to parent to ensure consistency
+      // Clear the initialization flag and emit updates after all data is set
       this.$nextTick(() => {
+        this.isInitializing = false;
+        // Emit updates to parent to ensure consistency
         this.emitBibUpdate();
         this.emitPdfUpdate();
       });
@@ -1074,6 +1105,9 @@ export default {
 
     // Public methods for parent components
     reset() {
+      // Set flag to prevent recursive updates during reset
+      this.isInitializing = true;
+
       // Reset bibliography state
       this.bibDragOver = false;
       this.bibUploaded = false;
@@ -1100,8 +1134,12 @@ export default {
         totalFiles: 0,
       };
 
-      this.emitBibUpdate();
-      this.emitPdfUpdate();
+      // Clear the initialization flag and emit updates after reset
+      this.$nextTick(() => {
+        this.isInitializing = false;
+        this.emitBibUpdate();
+        this.emitPdfUpdate();
+      });
     },
   },
 };
