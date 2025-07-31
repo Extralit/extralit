@@ -67,9 +67,9 @@
 - [ ] 4. Create frontend domain architecture and implement BibTeX parsing
 - [x] 4.0 Create frontend domain entities and use cases
   - Create ImportAnalysis.ts in ~/v1/domain/entities/import/ with backend API data structures
-  - Create import-analysis-use-case.ts in ~/v1/domain/usecases/ for API communication
+  - Create get-import-analysis-use-case.ts in ~/v1/domain/usecases/ for API communication
   - Update components/features/import/types.ts to contain only UI-specific component types
-  - Implement ImportAnalysisUseCase with axios integration for POST /api/v1/imports/analyze
+  - Implement GetImportAnalysisUseCase with axios integration for POST /api/v1/imports/analyze
   - _Requirements: 2.1, 2.2, 4.3_
 - [x] 4.1 Create BibTeX parser component with generic dataframe conversion
   - Add JavaScript BibTeX parser library dependency (bibtex-parse-js or similar)
@@ -122,7 +122,7 @@
   - Show summary status with matched/unmatched files count
   - _Requirements: 1.2, 1.3, 4.2_
 
-- [ ] 6.3 Update workspace selection for single workspace mode
+- [x] 6.3 Update workspace selection for single workspace mode
   - Modify WorkspacesFilter.vue to support single workspace selection instead of multi-select
   - Update WorkspaceSelector.vue to use radio buttons instead of checkboxes for single selection
   - Update DatasetList.vue to handle single workspace selection and emit workspace ID
@@ -138,12 +138,9 @@
   - Implement built-in sorting, filtering, and pagination
   - _Requirements: 2.1, 2.2_
 
-- [ ] 7.2 Create ImportAnalysisTable.vue component (Step 3) with workspace integration
-  - Implement tabular display using BaseSimpleTable component
-  - Add columns: Reference, Title, Authors, Year, Import Status
+- [x] 7.2 Create ImportAnalysisTable.vue component (Step 3) with workspace integration
   - Create toggle functionality for Add/Update/Skip selection
-  - Add status indicators with color coding (Add: green, Update: blue, Skip: gray, Failed: red)
-  - Send ImportAnalysisRequest to backend and display results using ImportAnalysisUseCase
+  - Send ImportAnalysisRequest to backend and display results using GetImportAnalysisUseCase
   - Import backend API types from ~/v1/domain/entities/import/ImportAnalysis.ts
   - Import UI component types from ./types.ts for table configuration
   - Use useImportAnalysisViewModel for reactive state management and API integration
@@ -153,6 +150,7 @@
   - Add public analyzeImportData() method for parent component integration
   - _Requirements: 2.1, 2.2, 2.7_
 
+- [ ] 7.3 
 - [ ] 8. Implement batch upload execution and progress tracking
 - [ ] 8.1 Create sequential batch upload logic
   - Implement batch processing where next batch starts only when all jobs in previous batch have success or failed status

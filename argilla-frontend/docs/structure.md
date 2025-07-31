@@ -30,7 +30,7 @@
 │ │ ├── entities -> Data structures and types
 │ │ │ └── import -> Import-related entities (ImportAnalysis.ts)
 │ │ └── usecases -> Business logic use cases
-│ │   └── import-analysis-use-case.ts -> Import analysis API communication
+│ │   └── get-import-analysis-use-case.ts -> Import analysis API communication
 │ ├── infrastructure -> Infrastructure layer
 │ │ ├── services -> External services and utilities
 │ │ └── storage -> Data storage and state management

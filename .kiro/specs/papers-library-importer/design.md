@@ -128,7 +128,7 @@ async def upload_reference_documents_job(
 **Architecture Pattern:**
 - **Backend API Types**: Located in `argilla-frontend/v1/domain/entities/import/ImportAnalysis.ts` - contains data structures that map directly to backend API schemas (ImportAnalysisRequest, ImportAnalysisResponse, DocumentImportAnalysis, etc.)
 - **Frontend Component Types**: Located in `argilla-frontend/components/features/import/types.ts` - contains UI-specific types (AnalysisTableRow, TableColumn, ImportConfirmationData, etc.) and re-exports backend types for convenience
-- **Use Cases**: Located in `argilla-frontend/v1/domain/usecases/import-analysis-use-case.ts` - handles API communication with ImportAnalysisUseCase class for POST /api/v1/imports/analyze requests
+- **Use Cases**: Located in `argilla-frontend/v1/domain/usecases/get-import-analysis-use-case.ts` - handles API communication with ImportAnalysisUseCase class for POST /api/v1/imports/analyze requests
 
 Note to reuse existing styles in argilla-frontend/assets/scss/base/base.scss, argilla-frontend/assets/scss/abstract/variables/_variables.scss and existing components in `components/base` where possible to keep similar the design system and code reuse and best practices.
 
@@ -301,7 +301,7 @@ Example BibTeX files:
 #### 4. Import Analysis Table (`argilla-frontend/components/features/import/ImportAnalysisTable.vue`)
 
 **Features using new simple table component:**
-- Uses `ImportAnalysisUseCase` from `~/v1/domain/usecases/import-analysis-use-case.ts` for backend communication
+- Uses `GetImportAnalysisUseCase` from `~/v1/domain/usecases/get-import-analysis-use-case.ts` for backend communication
 - Uses `useImportAnalysisViewModel` for reactive state management and API integration
 - Imports backend API types from `~/v1/domain/entities/import/ImportAnalysis.ts`
 - Imports UI component types from `./types.ts` for table configuration and component state
@@ -628,7 +628,7 @@ argilla-frontend/
 │   ├── entities/import/
 │   │   └── ImportAnalysis.ts          # Backend API data structures
 │   └── usecases/
-│       └── import-analysis-use-case.ts # API communication logic
+│       └── get-import-analysis-use-case.ts # API communication logic
 ├── components/features/home/dataset-list/workspaces-filter/
 │   ├── WorkspacesFilter.vue           # Modified for single workspace selection
 │   └── WorkspaceSelector.vue          # Modified for single workspace selection
@@ -637,7 +637,7 @@ argilla-frontend/
     ├── ImportModal.vue                # Main workflow modal (receives workspace ID)
     ├── ImportFileUpload.vue           # Step 1 & 2: File uploads
     ├── ImportAnalysisTable.vue        # Step 3: Analysis & selection (uses workspace ID)
-    ├── useImportAnalysisViewModel.ts  # View model that calls import-analysis-use-case.ts
+    ├── useImportAnalysisViewModel.ts  # View model that calls get-import-analysis-use-case.ts
     └── ImportBatchProgress.vue        # Step 4: Upload progress
 ```
 

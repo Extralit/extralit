@@ -12,7 +12,7 @@ const IMPORT_ANALYSIS_API_ERRORS = {
   ERROR_FETCHING_IMPORT_ANALYSIS: "ERROR_FETCHING_IMPORT_ANALYSIS",
 };
 
-export class ImportAnalysisUseCase {
+export class GetImportAnalysisUseCase {
   constructor(
     private readonly axios: NuxtAxiosInstance,
   ) {}

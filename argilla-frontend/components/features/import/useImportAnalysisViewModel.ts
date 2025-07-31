@@ -6,7 +6,7 @@ import type {
   DocumentImportAnalysis,
 } from '~/v1/domain/entities/import/ImportAnalysis';
 import { Workspace } from '~/v1/domain/entities/workspace/Workspace';
-import { ImportAnalysisUseCase } from '~/v1/domain/usecases/import-analysis-use-case';
+import { GetImportAnalysisUseCase } from '~/v1/domain/usecases/get-import-analysis-use-case';
 
 export function useImportAnalysisViewModel(props: {
   analysisData: ImportAnalysisResponse;
@@ -18,7 +18,7 @@ export function useImportAnalysisViewModel(props: {
   const { $axios } = useContext();
 
   // Create use case instance
-  const importAnalysisUseCase = new ImportAnalysisUseCase($axios);
+  const getImportAnalysisUseCase = new GetImportAnalysisUseCase($axios);
 
   // Reactive state
   const isAnalyzing = ref(false);
@@ -50,7 +50,7 @@ export function useImportAnalysisViewModel(props: {
     errorMessage.value = '';
 
     try {
-      const result = await importAnalysisUseCase.analyzeImport(
+      const result = await getImportAnalysisUseCase.analyzeImport(
         workspaceId.value,
         props.dataframeData,
         pdfFiles
@@ -121,7 +121,7 @@ export function useImportAnalysisViewModel(props: {
 
   return {
     // State
-    importAnalysisUseCase,
+    getImportAnalysisUseCase,
     isAnalyzing,
     hasError,
     errorMessage,
