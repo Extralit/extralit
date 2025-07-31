@@ -434,8 +434,10 @@ export default {
     },
 
     getAllPdfFiles() {
-      // Collect all PDF files from the matched files
+      // Collect all PDF files from both matched and unmatched files
       const files = [];
+      
+      // Add matched files
       if (this.pdfData.matchedFiles) {
         this.pdfData.matchedFiles.forEach(matchedFile => {
           if (matchedFile.file) {
@@ -443,6 +445,18 @@ export default {
           }
         });
       }
+      
+      // Add unmatched files
+      if (this.pdfData.unmatchedFiles) {
+        this.pdfData.unmatchedFiles.forEach(unmatchedFile => {
+          // Unmatched files are stored directly as File objects
+          if (unmatchedFile instanceof File) {
+            files.push(unmatchedFile);
+          }
+        });
+      }
+      
+      console.log('getAllPdfFiles: collected', files.length, 'files');
       return files;
     },
 

@@ -58,6 +58,10 @@ export function useImportBatchProgressViewModel(props: any) {
       confirmedDocuments: Record<string, DocumentMetadata>,
       pdfFiles: File[]
     ) {
+      console.log('uploadBatch called with:');
+      console.log('- batch references:', batch.references);
+      console.log('- pdfFiles:', pdfFiles.length, 'files');
+      
       // Prepare documents for this batch
       const batchDocuments: Record<string, DocumentMetadata> = {};
       const batchFiles: File[] = [];
@@ -66,16 +70,22 @@ export function useImportBatchProgressViewModel(props: any) {
         const docMetadata = confirmedDocuments[reference];
         if (docMetadata) {
           batchDocuments[reference] = docMetadata;
+          console.log(`- Processing reference ${reference} with ${docMetadata.associated_files.length} associated files`);
 
           // Find and add associated files
           for (const fileInfo of docMetadata.associated_files) {
             const file = pdfFiles.find(f => f.name === fileInfo.filename);
             if (file) {
               batchFiles.push(file);
+              console.log(`  - Found file: ${fileInfo.filename}`);
+            } else {
+              console.warn(`  - File not found: ${fileInfo.filename}`);
             }
           }
         }
       }
+
+      console.log(`- Batch prepared: ${Object.keys(batchDocuments).length} documents, ${batchFiles.length} files`);
 
       // Log warning if no files are found for this batch
       if (batchFiles.length === 0) {

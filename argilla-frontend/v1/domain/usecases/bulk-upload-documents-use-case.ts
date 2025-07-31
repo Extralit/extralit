@@ -29,12 +29,16 @@ export class BulkUploadDocumentsUseCase {
     confirmedDocuments: Record<string, DocumentMetadata>,
     files: File[]
   ): Promise<DocumentsBulkResponse> {
+    console.log('BulkUploadDocumentsUseCase.execute called with:');
+    console.log('- confirmedDocuments:', Object.keys(confirmedDocuments).length, 'documents');
+    console.log('- files:', files.length, 'files');
+    
     // Create file mapping for quick lookup
     const fileMapping = new Map<string, File>();
     files.forEach(file => {
       fileMapping.set(file.name, file);
     });
-    console.log('fileMapping', fileMapping);
+    console.log('- fileMapping created with', fileMapping.size, 'files');
     // Convert confirmed documents to bulk upload format
     const bulkDocuments: BulkDocumentInfo[] = [];
 
