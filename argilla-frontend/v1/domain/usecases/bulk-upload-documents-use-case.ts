@@ -29,16 +29,11 @@ export class BulkUploadDocumentsUseCase {
     confirmedDocuments: Record<string, DocumentMetadata>,
     files: File[]
   ): Promise<DocumentsBulkResponse> {
-    console.log('BulkUploadDocumentsUseCase.execute called with:');
-    console.log('- confirmedDocuments:', Object.keys(confirmedDocuments).length, 'documents');
-    console.log('- files:', files.length, 'files');
-    
     // Create file mapping for quick lookup
     const fileMapping = new Map<string, File>();
     files.forEach(file => {
       fileMapping.set(file.name, file);
     });
-    console.log('- fileMapping created with', fileMapping.size, 'files');
     // Convert confirmed documents to bulk upload format
     const bulkDocuments: BulkDocumentInfo[] = [];
 
@@ -51,11 +46,10 @@ export class BulkUploadDocumentsUseCase {
           } else if (f && typeof f === 'object' && f.filename) {
             return f.filename;
           } else {
-            console.warn(`Invalid file info for reference ${reference}:`, f);
             return null;
           }
         })
-        .filter(filename => filename !== null) as string[];
+        .filter(filename => filename !== null && !filename.includes('/')) as string[]; // Filter out path prefixes
 
       bulkDocuments.push({
         reference,
@@ -88,22 +82,17 @@ export class BulkUploadDocumentsUseCase {
     const missingFiles: string[] = [];
 
     for (const doc of bulkDocuments) {
-      console.log(`Processing document: ${doc.reference} with ${doc.associated_files.length} files:`, doc.associated_files);
       for (const filename of doc.associated_files) {
         if (!addedFiles.has(filename)) {
           const file = fileMapping.get(filename);
           if (file) {
-            console.log(`Adding file: ${filename} (${file.size} bytes)`);
             // Match Python structure: ("files", (filename, file_obj, "application/pdf"))
             // In FormData, we use the same field name "files" for all files
             formData.append("files", file, filename);
             addedFiles.add(filename);
           } else {
-            console.log(`File not found in mapping: ${filename}. Available files:`, Array.from(fileMapping.keys()));
             missingFiles.push(filename);
           }
-        } else {
-          console.warn(`File already added: ${filename}`);
         }
       }
     }
@@ -121,7 +110,6 @@ export class BulkUploadDocumentsUseCase {
 
     try {
       // Send bulk upload request
-      console.log('Sending bulk upload request with', addedFiles.size, 'files and', bulkDocuments.length, 'documents');
       const response = await this.axios.post<DocumentsBulkResponse>(
         "/v1/documents/bulk",
         formData,

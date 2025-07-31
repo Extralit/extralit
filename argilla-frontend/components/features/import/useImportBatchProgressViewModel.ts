@@ -5,7 +5,7 @@
 
 import { useResolve } from "ts-injecty";
 import type { DocumentMetadata } from "~/v1/domain/entities/import/ImportAnalysis";
-import type { ImportUploadData, ImportSummaryData } from "./types";
+import type { ImportSummaryData } from "./types";
 import { BulkUploadDocumentsUseCase } from "~/v1/domain/usecases/bulk-upload-documents-use-case";
 import { GetJobStatusUseCase, type JobStatus } from "~/v1/domain/usecases/get-job-status-use-case";
 import { CreateImportHistoryUseCase } from "~/v1/domain/usecases/create-import-history-use-case";
@@ -38,7 +38,7 @@ export function useImportBatchProgressViewModel(props: any) {
     createBatches(confirmedDocuments: Record<string, DocumentMetadata>, batchSize: number = 15): BatchInfo[] {
       const references = Object.keys(confirmedDocuments);
       const batches: BatchInfo[] = [];
-      
+
       for (let i = 0; i < references.length; i += batchSize) {
         const batchReferences = references.slice(i, i + batchSize);
         batches.push({
@@ -49,7 +49,7 @@ export function useImportBatchProgressViewModel(props: any) {
           failed: false,
         });
       }
-      
+
       return batches;
     },
 
@@ -58,10 +58,6 @@ export function useImportBatchProgressViewModel(props: any) {
       confirmedDocuments: Record<string, DocumentMetadata>,
       pdfFiles: File[]
     ) {
-      console.log('uploadBatch called with:');
-      console.log('- batch references:', batch.references);
-      console.log('- pdfFiles:', pdfFiles.length, 'files');
-      
       // Prepare documents for this batch
       const batchDocuments: Record<string, DocumentMetadata> = {};
       const batchFiles: File[] = [];
@@ -71,7 +67,6 @@ export function useImportBatchProgressViewModel(props: any) {
         const docMetadata = confirmedDocuments[reference];
         if (docMetadata) {
           batchDocuments[reference] = docMetadata;
-          console.log(`- Processing reference ${reference} with ${docMetadata.associated_files.length} associated files`);
 
           // Find and add associated files
           for (const fileInfo of docMetadata.associated_files) {
@@ -82,7 +77,11 @@ export function useImportBatchProgressViewModel(props: any) {
             } else if (fileInfo && typeof fileInfo === 'object' && fileInfo.filename) {
               filename = fileInfo.filename;
             } else {
-              console.warn(`  - Invalid file info:`, fileInfo);
+              continue; // Skip invalid file info
+            }
+
+            // Skip files with path prefixes (duplicates) - only use base filenames
+            if (filename.includes('/')) {
               continue;
             }
 
@@ -92,20 +91,10 @@ export function useImportBatchProgressViewModel(props: any) {
               if (file) {
                 batchFiles.push(file);
                 addedFiles.add(filename);
-                console.log(`  - Found file: ${filename}`);
-              } else {
-                console.warn(`  - File not found: ${filename}`);
               }
             }
           }
         }
-      }
-
-      console.log(`- Batch prepared: ${Object.keys(batchDocuments).length} documents, ${batchFiles.length} files`);
-
-      // Log warning if no files are found for this batch
-      if (batchFiles.length === 0) {
-        console.warn(`No files found for batch ${batch.batchIndex + 1}. Uploading documents without associated files.`);
       }
 
       // Send bulk upload request for this batch
@@ -124,7 +113,7 @@ export function useImportBatchProgressViewModel(props: any) {
 
       const statusMap = await jobStatusUseCase.executeMultiple(jobIds);
       const jobStatuses: Record<string, JobStatus> = {};
-      
+
       Object.values(statusMap).forEach((jobResponse: any) => {
         jobStatuses[jobResponse.id] = jobResponse.status;
       });
@@ -138,7 +127,7 @@ export function useImportBatchProgressViewModel(props: any) {
       pollingIntervalMs: number = 2000
     ): Promise<void> {
       const jobIds = Object.values(batch.jobIds);
-      
+
       return new Promise<void>((resolve) => {
         const checkCompletion = () => {
           const allCompleted = jobIds.every(jobId => {
