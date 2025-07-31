@@ -1,3 +1,5 @@
+import { type NuxtAxiosInstance } from "@nuxtjs/axios";
+
 import {
   ImportAnalysisRequest,
   ImportAnalysisResponse,
@@ -12,8 +14,8 @@ const IMPORT_ANALYSIS_API_ERRORS = {
 
 export class GetImportAnalysisUseCase {
   constructor(
-    private readonly axios: any,
-  ) { }
+    private readonly axios: NuxtAxiosInstance,
+  ) {}
 
   async analyzeImport(
     workspaceId: string,
@@ -24,7 +26,7 @@ export class GetImportAnalysisUseCase {
       const request = this.createAnalysisRequest(workspaceId, dataframeData, matchedFiles);
 
       const { data } = await this.axios.post<ImportAnalysisResponse>(
-        `/api/v1/imports/analyze`,
+        `/v1/imports/analyze`,
         request
       );
 
@@ -113,19 +115,9 @@ export class GetImportAnalysisUseCase {
       documents[reference] = {
         document_create: {
           reference,
-          title: row.title,
-          authors: Array.isArray(row.authors) ? row.authors : (row.authors ? [row.authors] : undefined),
-          year: row.year ? String(row.year) : undefined,
-          journal: row.journal,
-          volume: row.volume,
-          pages: row.pages,
           doi: row.doi,
-          url: row.url,
-          abstract: row.abstract,
-          keywords: Array.isArray(row.keywords) ? row.keywords : (row.keywords ? [row.keywords] : undefined),
           pmid: row.pmid,
           workspace_id: workspaceId,
-          metadata: this.extractMetadata(row)
         },
         associated_files: associatedFiles
       };

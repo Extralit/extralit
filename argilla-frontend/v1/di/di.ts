@@ -136,6 +136,10 @@ export const loadDependencyContainer = (context: Context) => {
       .withDependency(useAxios)
       .build(),
 
+    register(GetImportAnalysisUseCase)
+      .withDependency(useAxios)
+      .build(),
+
     register(GetRecordsByCriteriaUseCase)
       .withDependencies(
         RecordRepository,
@@ -256,8 +260,6 @@ export const loadDependencyContainer = (context: Context) => {
       .build(),
 
     register(GetFirstRecordFromHub).withDependency(HubRepository).build(),
-
-    register(GetImportAnalysisUseCase).withDependency(useAxios).build(),
 
     register(ExportDatasetToHubUseCase)
       .withDependencies(DatasetRepository, useLocalStorage)
