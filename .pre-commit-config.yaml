@@ -131,10 +131,10 @@ repos:
     hooks:
       - id: frontend-lint
         name: "Lint and fix argilla-frontend files"
-        entry: bash -c 'cd argilla-frontend && npm run lint -- --fix'
+        entry: bash -c 'cd argilla-frontend && npm run lint -- --fix "$@"'
         language: system
         files: '^argilla-frontend/.*\.(js|ts|vue)$'
-        pass_filenames: false
+        pass_filenames: true
 
   ##############################################################################
   # Helm lint hook
