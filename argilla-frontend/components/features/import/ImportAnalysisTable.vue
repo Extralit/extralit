@@ -259,6 +259,7 @@ export default {
       if (this.analysisResult) {
         // Count from analysis result
         Object.entries(this.analysisResult.documents).forEach(([ref, docInfo]) => {
+          // @ts-ignore
           const finalAction = documentActions[ref] || docInfo.status;
           if (finalAction === "add" || finalAction === "update") {
             count++;
@@ -285,7 +286,7 @@ export default {
 
   watch: {
     analysisResult: {
-      handler(newData) {
+      handler(newData: ImportAnalysisResponse) {
         if (newData) {
           // Reset local document actions when new analysis data arrives
           this.localDocumentActions = {};
