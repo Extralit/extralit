@@ -39,7 +39,7 @@ export default {
     tabulatorOptions() {
       const defaultOptions = {
         data: this.data,
-        layout: "fitDataTable",
+        layout: "fitDataFill",
         maxHeight: "100%",
         renderHorizontal: "virtual",
         resizableColumns: true,
@@ -55,9 +55,9 @@ export default {
         tooltipsHeader: true,
         tooltips: true,
         columnDefaults: {
-          headerSort: true,
+          // headerSort: true,
           resizable: true,
-          tooltip: true,
+          // tooltip: true,
         },
       };
 

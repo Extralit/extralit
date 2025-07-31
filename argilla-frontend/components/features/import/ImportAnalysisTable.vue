@@ -68,6 +68,7 @@ import type {
 import type {
   AnalysisTableRow,
   TableColumn,
+  CellComponent,
 } from './types';
 import { useImportAnalysisViewModel } from './useImportAnalysisViewModel';
 import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
@@ -190,36 +191,18 @@ export default {
         },
       ];
 
-      // Add dynamic columns from dataframe schema
-      if (this.dataframeData?.schema?.fields) {
-        const excludedFields = ['reference', 'title', 'authors', 'author', 'year', 'filePaths', 'type'];
-        
-        this.dataframeData.schema.fields.forEach(field => {
-          if (!excludedFields.includes(field.name)) {
-            columns.push({
-              field: field.name,
-              title: this.formatColumnTitle(field.name),
-              width: 150,
-              formatter: this.genericFormatter,
-            });
-          }
-        });
-      }
-
       // Add files and status columns at the end
       columns.push(
         {
           field: "files",
           title: "Files",
           width: 150,
-          frozen: true,
           formatter: this.filesFormatter,
         },
         {
           field: "status",
           title: "Import Status",
           width: 150,
-          frozen: true,
           formatter: this.statusFormatter,
           cellClick: this.handleStatusClick,
           headerFilter: "select",
@@ -235,6 +218,21 @@ export default {
           },
         }
       );
+
+      // Add dynamic columns from dataframe schema
+      if (this.dataframeData?.schema?.fields) {
+        const excludedFields = ['reference', 'title', 'authors', 'author', 'year', 'filePaths', 'type'];
+        
+        this.dataframeData.schema.fields.forEach(field => {
+          if (!excludedFields.includes(field.name)) {
+            columns.push({
+              field: field.name,
+              title: this.formatColumnTitle(field.name),
+              width: 150,
+            });
+          }
+        });
+      }
 
       return columns;
     },
@@ -302,24 +300,22 @@ export default {
 
   methods: {
     // Formatters for table cells
-    referenceFormatter(cell: any) {
+    referenceFormatter(cell: CellComponent) {
       const value = cell.getValue();
       return `<span class="reference-cell" title="${value}">${value}</span>`;
     },
 
-    titleFormatter(cell: any) {
+    titleFormatter(cell: CellComponent) {
       const value = cell.getValue();
-      const truncated = value.length > 50 ? value.substring(0, 50) + "..." : value;
-      return `<span class="title-cell" title="${value}">${truncated}</span>`;
+      return `<span class="title-cell" title="${value}">${value}</span>`;
     },
 
-    authorsFormatter(cell: any) {
+    authorsFormatter(cell: CellComponent) {
       const value = cell.getValue();
-      const truncated = value.length > 30 ? value.substring(0, 30) + "..." : value;
-      return `<span class="authors-cell" title="${value}">${truncated}</span>`;
+      return `<span class="authors-cell" title="${value}">${value}</span>`;
     },
 
-    filesFormatter(cell: any) {
+    filesFormatter(cell: CellComponent) {
       const files = cell.getValue();
       if (files === "No files") {
         return `<span class="files-cell no-files">${files}</span>`;
@@ -328,7 +324,7 @@ export default {
       return `<span class="files-cell" title="${files}">${fileCount} file${fileCount !== 1 ? 's' : ''}</span>`;
     },
 
-    statusFormatter(cell: any) {
+    statusFormatter(cell: CellComponent) {
       const status = cell.getValue();
       const row = cell.getRow().getData();
       const canToggle = row.canToggle;
@@ -388,7 +384,7 @@ export default {
     },
 
     // Event handlers
-    handleStatusClick(_e: any, cell: any) {
+    handleStatusClick(_e: any, cell: CellComponent) {
       const row = cell.getRow().getData();
       const currentStatus = row.status;
       const originalStatus = row.originalStatus;
@@ -410,7 +406,6 @@ export default {
     },
 
 
-
     formatColumnTitle(fieldName: string) {
       // Convert field names to readable titles
       return fieldName
@@ -419,14 +414,6 @@ export default {
         .trim();
     },
 
-    genericFormatter(cell: any) {
-      const value = cell.getValue();
-      if (value === null || value === undefined) return '';
-      if (typeof value === 'string' && value.length > 50) {
-        return `<span title="${value}">${value.substring(0, 50)}...</span>`;
-      }
-      return String(value);
-    },
 
     retryAnalysis() {
       if (this.workspace && this.dataframeData && this.pdfData?.matchedFiles) {

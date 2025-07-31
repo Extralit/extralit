@@ -3,6 +3,7 @@
  * Backend API types are imported from ~/v1/domain/entities/import/ImportAnalysis.ts
  */
 
+
 import type {
   ImportStatus,
   DocumentMetadata,
@@ -25,6 +26,7 @@ export type {
   ImportAnalysisResponse,
   ImportHistoryCreate,
 } from '~/v1/domain/entities/import/ImportAnalysis';
+export type { CellComponent } from "tabulator-tables";
 
 
 export interface PdfFileInfo {
