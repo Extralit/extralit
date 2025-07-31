@@ -1,57 +1,354 @@
 <template>
   <div class="import-summary">
-    <div class="placeholder-message">
-      <h3>ImportSummary Component</h3>
-      <p>This component will be implemented in task 9.1</p>
-      <p>Features will include:</p>
-      <ul>
-        <li>Import metadata summary with statistics</li>
-        <li>Detailed breakdown of results with error information</li>
-        <li>Failed imports table with retry options</li>
-        <li>"View Import Log" button to access detailed history</li>
-        <li>"Return to Library" button for navigation</li>
-      </ul>
-      <div class="mock-data" v-if="summaryData.totalProcessed">
-        <p><strong>Import Summary:</strong></p>
-        <ul>
-          <li>Total Processed: {{ summaryData.totalProcessed }}</li>
-          <li>Successfully Added: {{ summaryData.successfullyAdded }}</li>
-          <li>Updated: {{ summaryData.updated }}</li>
-          <li>Skipped: {{ summaryData.skipped }}</li>
-          <li>Failed: {{ summaryData.failed }}</li>
-        </ul>
-        <div v-if="summaryData.importId" class="import-id">
-          <p><strong>Import ID:</strong> {{ summaryData.importId }}</p>
+    <!-- Summary Header -->
+    <div class="summary-header">
+      <BaseIcon name="check" class="summary-icon" />
+      <h3>Import Complete</h3>
+      <p class="summary-subtitle">
+        Your document import has been processed successfully
+      </p>
+    </div>
+
+    <!-- Import Statistics -->
+    <div class="import-statistics">
+      <div class="stats-grid">
+        <div class="stat-card stat-total">
+          <div class="stat-value">{{ summaryData.totalProcessed }}</div>
+          <div class="stat-label">Total Processed</div>
+        </div>
+        
+        <div class="stat-card stat-added">
+          <div class="stat-value">{{ summaryData.successfullyAdded }}</div>
+          <div class="stat-label">Successfully Added</div>
+        </div>
+        
+        <div class="stat-card stat-updated">
+          <div class="stat-value">{{ summaryData.updated }}</div>
+          <div class="stat-label">Updated</div>
+        </div>
+        
+        <div class="stat-card stat-skipped">
+          <div class="stat-value">{{ summaryData.skipped }}</div>
+          <div class="stat-label">Skipped</div>
+        </div>
+        
+        <div v-if="summaryData.failed > 0" class="stat-card stat-failed">
+          <div class="stat-value">{{ summaryData.failed }}</div>
+          <div class="stat-label">Failed</div>
         </div>
       </div>
+    </div>
+
+    <!-- Detailed Results Breakdown -->
+    <div class="results-breakdown">
+      <h4>Import Results</h4>
+      
+      <!-- Success Summary -->
+      <div v-if="hasSuccessfulImports" class="result-section success-section">
+        <div class="section-header">
+          <BaseIcon name="check" class="section-icon success-icon" />
+          <span class="section-title">Successfully Imported</span>
+          <span class="section-count">{{ successfulCount }}</span>
+        </div>
+        <p class="section-description">
+          Documents have been added to your workspace and are ready for extraction workflows.
+        </p>
+      </div>
+
+      <!-- Skipped Summary -->
+      <div v-if="summaryData.skipped > 0" class="result-section skipped-section">
+        <div class="section-header">
+          <BaseIcon name="info" class="section-icon skipped-icon" />
+          <span class="section-title">Skipped Documents</span>
+          <span class="section-count">{{ summaryData.skipped }}</span>
+        </div>
+        <p class="section-description">
+          Documents were skipped because they already exist in your workspace with no changes needed.
+        </p>
+      </div>
+
+      <!-- Failed Summary -->
+      <div v-if="summaryData.failed > 0" class="result-section failed-section">
+        <div class="section-header">
+          <BaseIcon name="danger" class="section-icon failed-icon" />
+          <span class="section-title">Failed Imports</span>
+          <span class="section-count">{{ summaryData.failed }}</span>
+        </div>
+        <p class="section-description">
+          Some documents could not be imported due to errors. Review the details below.
+        </p>
+      </div>
+    </div>
+
+    <!-- Failed Imports Table -->
+    <div v-if="hasFailedImports" class="failed-imports">
+      <h4>Failed Import Details</h4>
+      <div class="failed-table-container">
+        <BaseSimpleTable
+          :data="failedImportsTableData"
+          :columns="failedImportsColumns"
+          :options="failedTableOptions"
+          class="failed-imports-table"
+        />
+      </div>
+      
+      <!-- Retry Options -->
+      <div class="retry-section">
+        <p class="retry-description">
+          You can retry failed imports by fixing the issues and running the import process again.
+        </p>
+        <BaseButton
+          variant="outline"
+          @click="retryFailedImports"
+          :disabled="isRetrying"
+        >
+          {{ isRetrying ? 'Retrying...' : 'Retry Failed Imports' }}
+        </BaseButton>
+      </div>
+    </div>
+
+    <!-- Import Metadata -->
+    <div class="import-metadata">
+      <h4>Import Information</h4>
+      <div class="metadata-grid">
+        <div class="metadata-item">
+          <span class="metadata-label">Import ID:</span>
+          <span class="metadata-value">{{ summaryData.importId || 'N/A' }}</span>
+        </div>
+        <div class="metadata-item">
+          <span class="metadata-label">Source File:</span>
+          <span class="metadata-value">{{ bibFileName || 'Unknown' }}</span>
+        </div>
+        <div class="metadata-item">
+          <span class="metadata-label">Workspace:</span>
+          <span class="metadata-value">{{ workspace?.name || 'Unknown' }}</span>
+        </div>
+        <div class="metadata-item">
+          <span class="metadata-label">Import Date:</span>
+          <span class="metadata-value">{{ formatDate(new Date()) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="summary-actions">
+      <BaseButton
+        variant="outline"
+        @click="viewImportLog"
+        class="action-button"
+      >
+        <BaseIcon name="document" />
+        View Import Log
+      </BaseButton>
+      
+      <BaseButton
+        variant="primary"
+        @click="returnToLibrary"
+        class="action-button primary-action"
+      >
+        <BaseIcon name="external-link" />
+        Return to Library
+      </BaseButton>
     </div>
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import "assets/icons/check";
+import "assets/icons/info";
+import "assets/icons/danger";
+import "assets/icons/document";
+import "assets/icons/external-link";
+
+import type { ImportSummaryData, TableColumn } from "./types";
+
+interface FailedImportRow {
+  reference: string;
+  title: string;
+  authors: string;
+  error: string;
+  actions: string;
+}
+
 export default {
   name: "ImportSummary",
 
   props: {
     summaryData: {
+      type: Object as () => ImportSummaryData,
+      required: true,
+    },
+    workspace: {
       type: Object,
-      default: () => ({
-        totalProcessed: 0,
-        successfullyAdded: 0,
-        updated: 0,
-        skipped: 0,
-        failed: 0,
-        errors: [],
-        importId: null,
-      }),
+      default: null,
+    },
+    bibFileName: {
+      type: String,
+      default: "",
+    },
+    failedDocuments: {
+      type: Array as () => any[],
+      default: () => [],
     },
   },
 
-  emits: ["return-to-library", "view-import-history"],
+  emits: ["retry-failed", "view-log", "return-to-library"],
+
+  data() {
+    return {
+      isRetrying: false,
+    };
+  },
+
+  computed: {
+    hasSuccessfulImports(): boolean {
+      return this.successfulCount > 0;
+    },
+
+    hasFailedImports(): boolean {
+      return this.summaryData.failed > 0 && this.failedDocuments.length > 0;
+    },
+
+    successfulCount(): number {
+      return this.summaryData.successfullyAdded + this.summaryData.updated;
+    },
+
+    failedImportsTableData(): FailedImportRow[] {
+      return this.failedDocuments.map((doc: any) => ({
+        reference: doc.reference || 'Unknown',
+        title: doc.title || 'Unknown Title',
+        authors: this.formatAuthors(doc.authors),
+        error: this.getErrorMessage(doc),
+        actions: 'retry', // Placeholder for action buttons
+      }));
+    },
+
+    failedImportsColumns(): TableColumn[] {
+      return [
+        {
+          field: "reference",
+          title: "Reference",
+          width: 120,
+          frozen: true,
+          sortable: true,
+        },
+        {
+          field: "title",
+          title: "Title",
+          minWidth: 200,
+          sortable: true,
+        },
+        {
+          field: "authors",
+          title: "Authors",
+          width: 180,
+          sortable: true,
+        },
+        {
+          field: "error",
+          title: "Error Message",
+          minWidth: 250,
+          sortable: true,
+          formatter: (cell: any) => {
+            const value = cell.getValue();
+            return `<span class="error-message" title="${value}">${value}</span>`;
+          },
+        },
+        {
+          field: "actions",
+          title: "Actions",
+          width: 100,
+          frozen: true,
+          sortable: false,
+          formatter: () => {
+            return '<button class="retry-button">Retry</button>';
+          },
+          cellClick: (e: Event, cell: any) => {
+            e.preventDefault();
+            const rowData = cell.getRow().getData();
+            this.retryIndividualImport(rowData);
+          },
+        },
+      ];
+    },
+
+    failedTableOptions() {
+      return {
+        height: "300px",
+        pagination: "local",
+        paginationSize: 10,
+        paginationSizeSelector: [5, 10, 20],
+        movableColumns: false,
+        resizableRows: false,
+        selectable: false,
+        tooltips: true,
+        layout: "fitColumns",
+      };
+    },
+  },
 
   methods: {
-    reset() {
-      // Placeholder method
+    formatAuthors(authors: string | string[] | undefined): string {
+      if (!authors) return 'Unknown Authors';
+      if (Array.isArray(authors)) {
+        return authors.slice(0, 3).join(', ') + (authors.length > 3 ? ' et al.' : '');
+      }
+      return String(authors);
+    },
+
+    getErrorMessage(doc: any): string {
+      if (doc.validation_errors && doc.validation_errors.length > 0) {
+        return doc.validation_errors[0];
+      }
+      if (doc.error) {
+        return doc.error;
+      }
+      return 'Unknown error occurred during import';
+    },
+
+    formatDate(date: Date): string {
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    },
+
+    async retryFailedImports() {
+      if (this.isRetrying) return;
+
+      this.isRetrying = true;
+      try {
+        this.$emit("retry-failed", this.failedDocuments);
+      } finally {
+        setTimeout(() => {
+          this.isRetrying = false;
+        }, 1000);
+      }
+    },
+
+    async retryIndividualImport(rowData: FailedImportRow) {
+      const failedDoc = this.failedDocuments.find(
+        (doc: any) => doc.reference === rowData.reference
+      );
+      if (failedDoc) {
+        this.$emit("retry-failed", [failedDoc]);
+      }
+    },
+
+    viewImportLog() {
+      this.$emit("view-log", {
+        importId: this.summaryData.importId,
+        workspace: this.workspace,
+      });
+    },
+
+    returnToLibrary() {
+      this.$emit("return-to-library", {
+        workspace: this.workspace,
+      });
     },
   },
 };
@@ -60,75 +357,316 @@ export default {
 <style lang="scss" scoped>
 .import-summary {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  gap: $base-space * 3;
+  padding: $base-space * 3;
   height: 100%;
-  min-height: 300px;
+  overflow-y: auto;
 }
 
-.placeholder-message {
+// Summary header
+.summary-header {
   text-align: center;
-  padding: $base-space * 4;
-  border: 2px dashed var(--border-color);
-  border-radius: $border-radius;
-  background: var(--bg-secondary);
+  padding: $base-space * 2;
+
+  .summary-icon {
+    font-size: 3rem;
+    color: var(--color-success);
+    margin-bottom: $base-space * 2;
+  }
 
   h3 {
-    @include font-size(20px);
-    @include line-height(30px);
+    margin: 0 0 $base-space 0;
     color: var(--fg-primary);
-    margin-bottom: $base-space * 2;
+    font-size: 1.8rem;
+    font-weight: 600;
   }
 
-  p {
-    @include font-size(14px);
-    @include line-height(18px);
+  .summary-subtitle {
+    margin: 0;
     color: var(--fg-secondary);
+    font-size: 1rem;
+  }
+}
+
+// Import statistics
+.import-statistics {
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: $base-space * 2;
     margin-bottom: $base-space * 2;
-  }
 
-  ul {
-    @include font-size(13px);
-    @include line-height(18px);
-    text-align: left;
-    color: var(--fg-secondary);
-    max-width: 400px;
-    margin: 0 auto;
-  }
+    .stat-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: $base-space * 2;
+      background: var(--bg-solid-grey-2);
+      border-radius: $border-radius;
+      border: 1px solid var(--border-field);
+      text-align: center;
 
-  .mock-data {
-    margin-top: $base-space * 3;
-    padding: $base-space * 2;
-    background: var(--bg-tertiary);
-    border-radius: $border-radius-s;
+      .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: $base-space;
+        color: var(--fg-primary);
+      }
 
-    p {
-      @include font-size(14px);
-      @include line-height(18px);
-      margin: 0 0 $base-space 0;
-      color: var(--fg-primary);
-      font-weight: 600;
+      .stat-label {
+        font-size: 0.9rem;
+        color: var(--fg-secondary);
+        font-weight: 500;
+      }
+
+      &.stat-total .stat-value {
+        color: var(--fg-primary);
+      }
+
+      &.stat-added .stat-value {
+        color: var(--color-success);
+      }
+
+      &.stat-updated .stat-value {
+        color: var(--bg-action);
+      }
+
+      &.stat-skipped .stat-value {
+        color: var(--fg-secondary);
+      }
+
+      &.stat-failed .stat-value {
+        color: var(--color-danger);
+      }
     }
+  }
+}
 
-    ul {
-      margin: 0 0 $base-space * 2 0;
-      text-align: left;
+// Results breakdown
+.results-breakdown {
+  h4 {
+    margin: 0 0 $base-space * 2 0;
+    color: var(--fg-primary);
+    font-size: 1.3rem;
+    font-weight: 600;
+  }
 
-      li {
+  .result-section {
+    padding: $base-space * 2;
+    border-radius: $border-radius;
+    border: 1px solid var(--border-field);
+    margin-bottom: $base-space * 2;
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: $base-space;
+      margin-bottom: $base-space;
+
+      .section-icon {
+        font-size: 1.2rem;
+      }
+
+      .section-title {
+        font-weight: 600;
+        color: var(--fg-primary);
+        flex: 1;
+      }
+
+      .section-count {
+        font-weight: 700;
+        font-size: 1.1rem;
+        padding: $base-space / 2 $base-space;
+        border-radius: $border-radius;
+        background: var(--bg-solid-grey-3);
         color: var(--fg-primary);
       }
     }
 
-    .import-id {
-      padding-top: $base-space;
-      border-top: 1px solid var(--border-color);
+    .section-description {
+      margin: 0;
+      color: var(--fg-secondary);
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
 
-      p {
-        @include font-size(13px);
-        @include line-height(18px);
-        margin: 0;
+    &.success-section {
+      background: var(--bg-banner-success);
+      border-color: var(--color-success);
+
+      .success-icon {
+        color: var(--color-success);
+      }
+
+      .section-count {
+        background: var(--color-success);
+        color: white;
+      }
+    }
+
+    &.skipped-section {
+      background: var(--bg-solid-grey-2);
+      border-color: var(--fg-secondary);
+
+      .skipped-icon {
         color: var(--fg-secondary);
       }
+    }
+
+    &.failed-section {
+      background: var(--bg-banner-error);
+      border-color: var(--color-danger);
+
+      .failed-icon {
+        color: var(--color-danger);
+      }
+
+      .section-count {
+        background: var(--color-danger);
+        color: white;
+      }
+    }
+  }
+}
+
+// Failed imports table
+.failed-imports {
+  h4 {
+    margin: 0 0 $base-space * 2 0;
+    color: var(--fg-primary);
+    font-size: 1.3rem;
+    font-weight: 600;
+  }
+
+  .failed-table-container {
+    margin-bottom: $base-space * 2;
+    border: 1px solid var(--border-field);
+    border-radius: $border-radius;
+    overflow: hidden;
+
+    :deep(.failed-imports-table) {
+      .error-message {
+        display: block;
+        max-width: 250px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .retry-button {
+        padding: $base-space / 2 $base-space;
+        background: var(--bg-action);
+        color: white;
+        border: none;
+        border-radius: $border-radius;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+
+        &:hover {
+          background: var(--bg-action-hover);
+        }
+      }
+    }
+  }
+
+  .retry-section {
+    padding: $base-space * 2;
+    background: var(--bg-solid-grey-2);
+    border-radius: $border-radius;
+    border: 1px solid var(--border-field);
+
+    .retry-description {
+      margin: 0 0 $base-space * 2 0;
+      color: var(--fg-secondary);
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+  }
+}
+
+// Import metadata
+.import-metadata {
+  h4 {
+    margin: 0 0 $base-space * 2 0;
+    color: var(--fg-primary);
+    font-size: 1.3rem;
+    font-weight: 600;
+  }
+
+  .metadata-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: $base-space * 2;
+    padding: $base-space * 2;
+    background: var(--bg-solid-grey-2);
+    border-radius: $border-radius;
+    border: 1px solid var(--border-field);
+
+    .metadata-item {
+      display: flex;
+      flex-direction: column;
+      gap: $base-space / 2;
+
+      .metadata-label {
+        font-size: 0.9rem;
+        color: var(--fg-secondary);
+        font-weight: 500;
+      }
+
+      .metadata-value {
+        font-size: 1rem;
+        color: var(--fg-primary);
+        font-weight: 600;
+        word-break: break-word;
+      }
+    }
+  }
+}
+
+// Action buttons
+.summary-actions {
+  display: flex;
+  gap: $base-space * 2;
+  justify-content: center;
+  padding-top: $base-space * 2;
+  margin-top: auto;
+
+  .action-button {
+    display: flex;
+    align-items: center;
+    gap: $base-space;
+    padding: $base-space * 1.5 $base-space * 2;
+    font-size: 1rem;
+    font-weight: 500;
+
+    &.primary-action {
+      min-width: 180px;
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .import-summary {
+    padding: $base-space * 2;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+
+  .metadata-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-actions {
+    flex-direction: column;
+    align-items: stretch;
+
+    .action-button {
+      justify-content: center;
     }
   }
 }

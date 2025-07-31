@@ -173,8 +173,8 @@
   - After all batches complete, send generic dataframe data to POST /import/history endpoint
   - _Requirements: 3.2, 3.3, 3.7_
 
-- [ ] 9. Create import summary and history components
-- [ ] 9.1 Implement ImportSummary.vue component (Step 5)
+- [x] 9. Create import summary and history components
+- [x] 9.1 Implement ImportSummary.vue component (Step 5)
   - Display import metadata summary with statistics (total processed, successfully added, updated, skipped, failed)
   - Show detailed breakdown of results with error information
   - Create failed imports table with retry options
@@ -182,14 +182,14 @@
   - Add "Return to Library" button for navigation back to workspace
   - _Requirements: 3.5, 4.3_
 
-- [ ] 9.2 Create ImportHistoryList.vue component
+- [x] 9.2 Create ImportHistoryList.vue component
   - Display list of all import operations with metadata table
   - Add columns: Import ID, Uploaded By, Date & Time, Source File Name, Total Papers, Success/Updated/Skipped/Failed counts
   - Implement "View Details" action for each import to display detailed data table
   - Add pagination and filtering for large import history
   - _Requirements: 3.5, 4.3_
 
-- [ ] 9.3 Create ImportHistoryDetails.vue component
+- [x] 9.3 Create ImportHistoryDetails.vue component
   - Implement detailed data table showing individual reference results
   - Add columns: Reference, Title, Authors, Year, Error Message, Actions
   - Add filter and search functionality
