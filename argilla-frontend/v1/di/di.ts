@@ -3,7 +3,6 @@ import Container, { register } from "ts-injecty";
 
 import { useEventDispatcher } from "@codescouts/events";
 
-import { use } from "vue/types/umd";
 import { useTeamProgress } from "../infrastructure/storage/TeamProgressStorage";
 import {
   UpdateMetricsEventHandler,

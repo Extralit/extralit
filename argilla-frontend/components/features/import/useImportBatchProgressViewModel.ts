@@ -23,7 +23,7 @@ interface UploadError {
   message: string;
 }
 
-export function useImportBatchProgressViewModel(props: any) {
+export function useImportBatchProgressViewModel() {
   const bulkUploadUseCase = useResolve(BulkUploadDocumentsUseCase);
   const jobStatusUseCase = useResolve(GetJobStatusUseCase);
   const importHistoryUseCase = useResolve(CreateImportHistoryUseCase);

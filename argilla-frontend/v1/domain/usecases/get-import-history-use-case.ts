@@ -2,7 +2,7 @@
  * Use case for fetching import history records
  */
 
-import { NuxtAxiosInstance } from "@nuxtjs/axios";
+import { type NuxtAxiosInstance } from "@nuxtjs/axios";
 
 export interface ImportHistoryListItem {
   id: string;

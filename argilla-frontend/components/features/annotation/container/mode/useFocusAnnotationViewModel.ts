@@ -30,7 +30,7 @@ export const useFocusAnnotationViewModel = (
     const selections = document?.getSegmentSelections();
 
     props.record?.questions?.forEach((question: Question) => {
-      if (selections && question.name == 'context-relevant'){
+      if (selections && question.name === 'context-relevant'){
         question.addDynamicSelectionToLabelQuestion(selections)
 
         if (props.record.isPending && !!question.suggestion) {

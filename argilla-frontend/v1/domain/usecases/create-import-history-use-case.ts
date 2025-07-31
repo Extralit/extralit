@@ -2,7 +2,7 @@
  * Use case for creating import history records
  */
 
-import { NuxtAxiosInstance } from "@nuxtjs/axios";
+import { type NuxtAxiosInstance } from "@nuxtjs/axios";
 import type { ImportHistoryCreate } from "~/v1/domain/entities/import/ImportAnalysis";
 
 export interface ImportHistoryResponse {
