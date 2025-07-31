@@ -1,4 +1,5 @@
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, watch } from 'vue';
+import { useResolve } from "ts-injecty";
 import { GetImportAnalysisUseCase } from '~/v1/domain/usecases/get-import-analysis-use-case';
 import type {
   ImportAnalysisResponse,
@@ -14,7 +15,7 @@ export function useImportAnalysisViewModel(props: any) {
   const analysisResult = ref<ImportAnalysisResponse | null>(null);
   const documentActions = ref<Record<string, ImportStatus>>({});
 
-  const importAnalysisUseCase = new GetImportAnalysisUseCase(props.$axios || window.$nuxt.$axios);
+  const importAnalysisUseCase = useResolve(GetImportAnalysisUseCase);
 
   const reset = () => {
     isAnalyzing.value = false;

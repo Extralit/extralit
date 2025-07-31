@@ -43,3 +43,6 @@ class SchemaStructure(BaseModel):
     singleton_schema: Optional[pa.DataFrameSchema] = Field(
         None, repr=True, description="A singleton schema that exists in `schemas` list."
     )
+
+    class Config:
+        arbitrary_types_allowed = True

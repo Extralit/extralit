@@ -147,7 +147,13 @@
   - Fix workspaceId reference in useImportAnalysisViewModel.ts to properly access workspace from parent component
   - _Requirements: 2.1, 2.2, 2.7_
 
-- [ ] 7.3 
+- [x] 7.3 Fix ImportModal step navigation and data persistence
+  - Update ImportFileUpload.vue to accept initialBibData and initialPdfData props
+  - Add initializeWithExistingData() method to restore component state when navigating back
+  - Update ImportModal.vue to pass existing data to ImportFileUpload component
+  - Ensure proper data persistence across step navigation without losing uploaded files
+  - Fix component lifecycle management to show uploaded files when returning to step 0
+  - _Requirements: 2.1, 2.2, 4.3_
 - [ ] 8. Implement batch upload execution and progress tracking
 - [ ] 8.1 Create sequential batch upload logic
   - Implement batch processing where next batch starts only when all jobs in previous batch have success or failed status

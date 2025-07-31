@@ -17,25 +17,14 @@
             </p>
           </div>
 
-          <div
-            class="import-file-upload__dropzone"
-            :class="{
-              'import-file-upload__dropzone--dragover': bibDragOver,
-              'import-file-upload__dropzone--error': bibHasError,
-              'import-file-upload__dropzone--success': bibUploaded,
-            }"
-            @drop="handleBibDrop"
-            @dragover="handleBibDragOver"
-            @dragleave="handleBibDragLeave"
-            @click="triggerBibFileInput"
-          >
-            <input
-              ref="bibFileInput"
-              type="file"
-              accept=".bib,.bibtex"
-              style="display: none"
-              @change="handleBibFileSelect"
-            />
+          <div class="import-file-upload__dropzone" :class="{
+            'import-file-upload__dropzone--dragover': bibDragOver,
+            'import-file-upload__dropzone--error': bibHasError,
+            'import-file-upload__dropzone--success': bibUploaded,
+          }" @drop="handleBibDrop" @dragover="handleBibDragOver" @dragleave="handleBibDragLeave"
+            @click="triggerBibFileInput">
+            <input ref="bibFileInput" type="file" accept=".bib,.bibtex" style="display: none"
+              @change="handleBibFileSelect" />
 
             <div class="import-file-upload__dropzone-content">
               <BaseIcon :icon-name="getBibDropzoneIcon" class="import-file-upload__dropzone-icon" />
@@ -74,27 +63,14 @@
             </p>
           </div>
 
-          <div
-            class="import-file-upload__dropzone"
-            :class="{
-              'import-file-upload__dropzone--dragover': pdfDragOver,
-              'import-file-upload__dropzone--error': pdfHasError,
-              'import-file-upload__dropzone--success': pdfUploaded,
-            }"
-            @drop="handlePdfDrop"
-            @dragover="handlePdfDragOver"
-            @dragleave="handlePdfDragLeave"
-            @click="triggerPdfFolderInput"
-          >
-            <input
-              ref="pdfFolderInput"
-              type="file"
-              accept=".pdf"
-              multiple
-              webkitdirectory
-              style="display: none"
-              @change="handlePdfFolderSelect"
-            />
+          <div class="import-file-upload__dropzone" :class="{
+            'import-file-upload__dropzone--dragover': pdfDragOver,
+            'import-file-upload__dropzone--error': pdfHasError,
+            'import-file-upload__dropzone--success': pdfUploaded,
+          }" @drop="handlePdfDrop" @dragover="handlePdfDragOver" @dragleave="handlePdfDragLeave"
+            @click="triggerPdfFolderInput">
+            <input ref="pdfFolderInput" type="file" accept=".pdf" multiple webkitdirectory style="display: none"
+              @change="handlePdfFolderSelect" />
 
             <div class="import-file-upload__dropzone-content">
               <BaseIcon :icon-name="getPdfDropzoneIcon" class="import-file-upload__dropzone-icon" />
@@ -119,7 +95,12 @@
           <!-- PDF Success Display -->
           <div v-if="pdfUploaded && !pdfHasError && !pdfProcessing" class="import-file-upload__upload-success">
             <BaseIcon icon-name="check" class="import-file-upload__upload-success-icon" />
-            <span class="import-file-upload__upload-success-text"> {{ pdfData.totalFiles }} PDF files uploaded </span>
+            <span class="import-file-upload__upload-success-text">
+              {{ pdfData.totalFiles }} PDF files uploaded
+              <span v-if="pdfData.matchedFiles.length > 0" class="import-file-upload__match-info">
+                ({{ pdfData.matchedFiles.length }} matched)
+              </span>
+            </span>
           </div>
 
           <!-- PDF Error Display -->
@@ -134,42 +115,31 @@
       </div>
 
       <!-- Summary Sidebar -->
-      <div
-        class="import-file-upload__sidebar"
-        :style="{ visibility: bibUploaded || pdfUploaded ? 'visible' : 'hidden' }"
-      >
+      <div class="import-file-upload__sidebar"
+        :style="{ visibility: bibUploaded || pdfUploaded ? 'visible' : 'hidden' }">
         <h4 class="import-file-upload__sidebar-title">Summary status:</h4>
 
         <div class="import-file-upload__sidebar-stats">
           <!-- Bibliography Status -->
           <div v-if="bibUploaded && !bibHasError" class="import-file-upload__sidebar-stat">
-            <BaseIcon
-              icon-name="document"
-              class="import-file-upload__sidebar-stat-icon import-file-upload__sidebar-stat-icon--bib"
-            />
-            <span class="import-file-upload__sidebar-stat-text"
-              >{{ bibData.parsedEntries.length }} references found</span
-            >
+            <BaseIcon icon-name="document"
+              class="import-file-upload__sidebar-stat-icon import-file-upload__sidebar-stat-icon--bib" />
+            <span class="import-file-upload__sidebar-stat-text">{{ bibData.parsedEntries.length }} references
+              found</span>
           </div>
 
           <!-- PDF Status -->
           <div v-if="pdfUploaded && !pdfHasError && !pdfProcessing" class="import-file-upload__sidebar-stat">
-            <BaseIcon
-              icon-name="import"
-              class="import-file-upload__sidebar-stat-icon import-file-upload__sidebar-stat-icon--pdf"
-            />
+            <BaseIcon icon-name="import"
+              class="import-file-upload__sidebar-stat-icon import-file-upload__sidebar-stat-icon--pdf" />
             <span class="import-file-upload__sidebar-stat-text">{{ pdfData.totalFiles }} PDF files uploaded</span>
           </div>
 
           <!-- Matching Status -->
-          <div
-            v-if="pdfUploaded && !pdfHasError && !pdfProcessing && pdfData.matchedFiles.length > 0"
-            class="import-file-upload__sidebar-stat"
-          >
-            <BaseIcon
-              icon-name="check"
-              class="import-file-upload__sidebar-stat-icon import-file-upload__sidebar-stat-icon--match"
-            />
+          <div v-if="pdfUploaded && !pdfHasError && !pdfProcessing && pdfData.matchedFiles.length > 0"
+            class="import-file-upload__sidebar-stat">
+            <BaseIcon icon-name="check"
+              class="import-file-upload__sidebar-stat-icon import-file-upload__sidebar-stat-icon--match" />
             <span class="import-file-upload__sidebar-stat-text">
               {{ pdfData.matchedFiles.length }} matched, {{ pdfData.unmatchedFiles.length }} mismatch{{
                 pdfData.unmatchedFiles.length === 1 ? "" : "es"
@@ -194,6 +164,27 @@ import "assets/icons/unavailable";
 
 export default {
   name: "ImportFileUpload",
+
+  props: {
+    // Props to receive existing data when navigating back to this step
+    initialBibData: {
+      type: Object,
+      default: () => ({
+        fileName: "",
+        parsedEntries: [],
+        dataframeData: null,
+        rawContent: "",
+      }),
+    },
+    initialPdfData: {
+      type: Object,
+      default: () => ({
+        matchedFiles: [],
+        unmatchedFiles: [],
+        totalFiles: 0,
+      }),
+    },
+  },
 
   data() {
     return {
@@ -223,6 +214,33 @@ export default {
         totalFiles: 0,
       },
     };
+  },
+
+  mounted() {
+    // Initialize with existing data if provided
+    this.initializeWithExistingData();
+  },
+
+  watch: {
+    // Watch for changes in initial data props (when navigating back)
+    initialBibData: {
+      handler(newData) {
+        if (newData && (newData.fileName || newData.parsedEntries.length > 0)) {
+          this.initializeWithExistingData();
+        }
+      },
+      deep: true,
+      immediate: true,
+    },
+    initialPdfData: {
+      handler(newData) {
+        if (newData && (newData.matchedFiles.length > 0 || newData.unmatchedFiles.length > 0)) {
+          this.initializeWithExistingData();
+        }
+      },
+      deep: true,
+      immediate: true,
+    },
   },
 
   computed: {
@@ -590,14 +608,16 @@ export default {
     },
 
     async processPdfFiles(files: File[]) {
-      // Reset PDF state
+      // Reset PDF error state but preserve existing files for additive upload
       this.pdfHasError = false;
       this.pdfErrorMessage = "";
-      this.pdfData = {
-        matchedFiles: [],
-        unmatchedFiles: [],
-        totalFiles: 0,
-      };
+
+      // Get existing files to merge with new ones
+      const existingFiles = [
+        ...this.pdfData.matchedFiles.map(mf => mf.file),
+        ...this.pdfData.unmatchedFiles
+      ];
+
       this.pdfProcessedFiles = 0;
 
       // Filter for PDF files only
@@ -614,14 +634,21 @@ export default {
       try {
         const validFiles: File[] = [];
         for (const file of pdfFiles) {
-          await this.processPdfFile(file);
-          validFiles.push(file);
+          // Skip files that are already uploaded (by name)
+          const isDuplicate = existingFiles.some(existingFile => existingFile.name === file.name);
+          if (!isDuplicate) {
+            await this.processPdfFile(file);
+            validFiles.push(file);
+          }
           this.pdfProcessedFiles++;
         }
 
-        this.pdfData.totalFiles = validFiles.length;
+        // Combine existing files with new valid files
+        const allFiles = [...existingFiles, ...validFiles];
+        this.pdfData.totalFiles = allFiles.length;
 
-        this.performFileMatching(validFiles);
+        // Re-run file matching with all files (existing + new)
+        this.performFileMatching(allFiles);
 
         this.pdfProcessing = false;
         this.pdfUploaded = true;
@@ -1012,6 +1039,41 @@ export default {
       });
     },
 
+    // Initialize component with existing data when navigating back
+    initializeWithExistingData() {
+      // Initialize bibliography data
+      if (this.initialBibData && (this.initialBibData.fileName || this.initialBibData.parsedEntries.length > 0)) {
+        this.bibData = {
+          fileName: this.initialBibData.fileName || "",
+          parsedEntries: this.initialBibData.parsedEntries || [],
+          dataframeData: this.initialBibData.dataframeData || null,
+          rawContent: this.initialBibData.rawContent || "",
+        };
+        this.bibUploaded = this.bibData.parsedEntries.length > 0;
+        this.bibHasError = false;
+        this.bibErrorMessage = "";
+      }
+
+      // Initialize PDF data
+      if (this.initialPdfData && (this.initialPdfData.matchedFiles.length > 0 || this.initialPdfData.unmatchedFiles.length > 0 || this.initialPdfData.totalFiles > 0)) {
+        this.pdfData = {
+          matchedFiles: this.initialPdfData.matchedFiles || [],
+          unmatchedFiles: this.initialPdfData.unmatchedFiles || [],
+          totalFiles: this.initialPdfData.totalFiles || 0,
+        };
+        this.pdfUploaded = this.pdfData.totalFiles > 0;
+        this.pdfHasError = false;
+        this.pdfErrorMessage = "";
+        this.pdfProcessing = false;
+      }
+
+      // Emit updates to parent to ensure consistency
+      this.$nextTick(() => {
+        this.emitBibUpdate();
+        this.emitPdfUpdate();
+      });
+    },
+
     // Public methods for parent components
     reset() {
       // Reset bibliography state
@@ -1299,6 +1361,11 @@ export default {
     color: var(--fg-primary);
     font-size: 0.9rem;
     font-weight: 500;
+  }
+
+  &__match-info {
+    color: var(--color-success);
+    font-weight: 600;
   }
 
   &__sidebar-title {

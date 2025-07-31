@@ -58,6 +58,8 @@ argilla-frontend/
 - **Stores**: Pinia stores in `v1/store/`
 - **Domain Logic**: Dependency injection in `v1/di/`
 - **Styling**: SCSS in `assets/scss/` with component-scoped styles
+- **Dependency Injection**: Use `useResolve` from `ts-injecty` for dependency resolution in use cases
+- **Base Components**: BaseSimpleTable.vue already exists for tabular data display
 
 ## Client SDK Structure (extralit/)
 ```

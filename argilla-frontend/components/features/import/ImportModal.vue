@@ -22,6 +22,8 @@
       <ImportFileUpload
         v-if="stepIndex === 0"
         ref="fileUploadComponent"
+        :initial-bib-data="bibData"
+        :initial-pdf-data="pdfData"
         @bib-update="handleBibUpdate"
         @pdf-update="handlePdfUpdate"
       />
@@ -155,7 +157,7 @@ export default {
 
   computed: {
     canGoBack() {
-      // Can't go back after step 1 (ImportAnalysisTable)
+      // Allow going back from step 1 to step 0, but not from later steps
       return this.currentStep > 0 && this.currentStep <= 1 && !this.isProcessing;
     },
 
@@ -203,6 +205,14 @@ export default {
     handleStepChange(newStep) {
       this.currentStep = newStep;
       this.clearError();
+      
+      // Ensure component refs are updated after step change
+      this.$nextTick(() => {
+        // If going back to step 0, ensure the file upload component is properly initialized
+        if (newStep === 0 && this.$refs.fileUploadComponent) {
+          // The component will auto-initialize with the provided props
+        }
+      });
     },
 
     handleValidateStep({ step, callback }) {
