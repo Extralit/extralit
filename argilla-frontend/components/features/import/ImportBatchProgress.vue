@@ -172,10 +172,8 @@ import "assets/icons/close";
 import "assets/icons/danger";
 import type { DocumentMetadata } from "~/v1/domain/entities/import/ImportAnalysis";
 import type { ImportUploadData, ImportSummaryData } from "./types";
-import { BulkUploadDocumentsUseCase } from "~/v1/domain/usecases/bulk-upload-documents-use-case";
-import { GetJobStatusUseCase, type JobStatus } from "~/v1/domain/usecases/get-job-status-use-case";
-import { CreateImportHistoryUseCase } from "~/v1/domain/usecases/create-import-history-use-case";
-import { useResolve } from "ts-injecty";
+import type { JobStatus } from "~/v1/domain/usecases/get-job-status-use-case";
+import { useImportBatchProgressViewModel } from "./useImportBatchProgressViewModel";
 
 interface BatchInfo {
   batchIndex: number;
@@ -252,11 +250,6 @@ export default {
       // Polling
       statusPollingInterval: null as NodeJS.Timeout | null,
       pollingIntervalMs: 2000, // Poll every 2 seconds
-
-      // Use cases
-      bulkUploadUseCase: new BulkUploadDocumentsUseCase(),
-      jobStatusUseCase: new GetJobStatusUseCase(),
-      importHistoryUseCase: useResolve(CreateImportHistoryUseCase),
     };
   },
 
@@ -288,29 +281,27 @@ export default {
     },
 
     overallProgressPercentage() {
-      if (this.totalReferences === 0) return 0;
-      return Math.round((this.completedReferences / this.totalReferences) * 100);
+      return this.viewModel.calculateOverallProgress(this.completedReferences, this.totalReferences);
     },
 
     batchProgressPercentage() {
-      if (this.currentBatchSize === 0) return 0;
-      return Math.round((this.completedInCurrentBatch / this.currentBatchSize) * 100);
+      return this.viewModel.calculateBatchProgress(this.completedInCurrentBatch, this.currentBatchSize);
     },
 
     completedJobs() {
-      return Object.values(this.jobStatuses).filter(status => status === 'finished').length;
+      return this.viewModel.countJobsByStatus(this.jobStatuses).completed;
     },
 
     failedJobs() {
-      return Object.values(this.jobStatuses).filter(status => status === 'failed').length;
+      return this.viewModel.countJobsByStatus(this.jobStatuses).failed;
     },
 
     processingJobs() {
-      return Object.values(this.jobStatuses).filter(status => status === 'started').length;
+      return this.viewModel.countJobsByStatus(this.jobStatuses).processing;
     },
 
     queuedJobs() {
-      return Object.values(this.jobStatuses).filter(status => status === 'queued' || status === 'deferred').length;
+      return this.viewModel.countJobsByStatus(this.jobStatuses).queued;
     },
   },
 
@@ -359,21 +350,8 @@ export default {
     },
 
     createBatches() {
-      const references = Object.keys(this.uploadData.confirmedDocuments);
-      this.totalReferences = references.length;
-      
-      // Create batches of references
-      this.batches = [];
-      for (let i = 0; i < references.length; i += this.batchSize) {
-        const batchReferences = references.slice(i, i + this.batchSize);
-        this.batches.push({
-          batchIndex: Math.floor(i / this.batchSize),
-          references: batchReferences,
-          jobIds: {},
-          completed: false,
-          failed: false,
-        });
-      }
+      this.totalReferences = Object.keys(this.uploadData.confirmedDocuments).length;
+      this.batches = this.viewModel.createBatches(this.uploadData.confirmedDocuments, this.batchSize);
     },
 
     async startBatchUpload() {
@@ -420,30 +398,13 @@ export default {
     },
 
     async uploadBatch(batch: BatchInfo) {
-      // Prepare documents for this batch
-      const batchDocuments: Record<string, DocumentMetadata> = {};
-      const batchFiles: File[] = [];
+      const response = await this.viewModel.uploadBatch(
+        batch,
+        this.uploadData.confirmedDocuments,
+        this.pdfFiles
+      );
 
-      for (const reference of batch.references) {
-        const docMetadata = this.uploadData.confirmedDocuments[reference];
-        if (docMetadata) {
-          batchDocuments[reference] = docMetadata;
-
-          // Find and add associated files
-          for (const fileInfo of docMetadata.associated_files) {
-            const file = this.pdfFiles.find(f => f.name === fileInfo.filename);
-            if (file) {
-              batchFiles.push(file);
-            }
-          }
-        }
-      }
-
-      // Send bulk upload request for this batch
-      const response = await this.bulkUploadUseCase.execute(batchDocuments, batchFiles);
-
-      // Store job IDs for this batch
-      batch.jobIds = response.job_ids;
+      // Store job IDs globally
       Object.assign(this.allJobIds, response.job_ids);
 
       // Initialize job statuses
@@ -453,12 +414,8 @@ export default {
 
       // Handle validation failures
       if (response.failed_validations.length > 0) {
-        response.failed_validations.forEach(error => {
-          this.errors.push({
-            reference: 'validation',
-            message: error,
-          });
-        });
+        const validationErrors = this.viewModel.handleValidationErrors(response.failed_validations);
+        this.errors.push(...validationErrors);
       }
 
       // Start polling for this batch
@@ -466,25 +423,11 @@ export default {
     },
 
     async waitForBatchCompletion(batch: BatchInfo) {
-      const jobIds = Object.values(batch.jobIds);
-      
-      return new Promise<void>((resolve) => {
-        const checkCompletion = () => {
-          const allCompleted = jobIds.every(jobId => {
-            const status = this.jobStatuses[jobId];
-            return status === 'finished' || status === 'failed';
-          });
-
-          if (allCompleted) {
-            resolve();
-          } else {
-            // Continue polling
-            setTimeout(checkCompletion, this.pollingIntervalMs);
-          }
-        };
-
-        checkCompletion();
-      });
+      return await this.viewModel.waitForBatchCompletion(
+        batch,
+        this.jobStatuses,
+        this.pollingIntervalMs
+      );
     },
 
     startStatusPolling() {
@@ -511,12 +454,10 @@ export default {
 
       try {
         const jobIds = Object.values(this.allJobIds);
-        const statusMap = await this.jobStatusUseCase.executeMultiple(jobIds);
+        const newJobStatuses = await this.viewModel.pollJobStatuses(jobIds);
 
         // Update job statuses
-        Object.values(statusMap).forEach((jobResponse: any) => {
-          this.jobStatuses[jobResponse.id] = jobResponse.status;
-        });
+        Object.assign(this.jobStatuses, newJobStatuses);
 
         // Update completed references count
         this.completedReferences = Object.values(this.jobStatuses).filter(
@@ -545,24 +486,19 @@ export default {
 
       try {
         // Create import history record
-        if (this.dataframeData && this.workspace) {
-          await this.importHistoryUseCase.execute({
-            workspace_id: this.workspace.id,
-            filename: this.bibFileName || "import.bib",
-            data: this.dataframeData,
-          });
-        }
+        await this.viewModel.createImportHistory(
+          this.workspace,
+          this.bibFileName,
+          this.dataframeData
+        );
 
-        // Emit completion event with summary
-        const summaryData: ImportSummaryData = {
-          totalProcessed: this.totalReferences,
-          successfullyAdded: this.completedJobs,
-          updated: 0, // TODO: Track updates vs adds
-          skipped: 0,
-          failed: this.failedJobs,
-          errors: this.errors.map(e => `${e.reference}: ${e.message}`),
-          importId: `import_${Date.now()}`,
-        };
+        // Create and emit summary data
+        const summaryData = this.viewModel.createSummaryData(
+          this.totalReferences,
+          this.completedJobs,
+          this.failedJobs,
+          this.errors
+        );
 
         this.$emit("completed", summaryData);
 
@@ -604,17 +540,20 @@ export default {
     },
 
     handleBatchError(batch: BatchInfo, error: any) {
-      batch.references.forEach(reference => {
-        this.errors.push({
-          reference,
-          message: error.message || "Batch upload failed",
-        });
-      });
+      const batchErrors = this.viewModel.handleBatchError(batch, error);
+      this.errors.push(...batchErrors);
     },
 
     reset() {
       this.resetState();
     },
+  },
+
+  setup(props) {
+    const viewModel = useImportBatchProgressViewModel(props);
+    return {
+      viewModel,
+    };
   },
 };
 </script>

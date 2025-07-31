@@ -2,8 +2,7 @@
  * Use case for polling job status
  */
 
-import { useResolve } from "ts-injecty";
-import type { AxiosInstance } from "axios";
+import { type NuxtAxiosInstance } from "@nuxtjs/axios";
 
 // Job status from backend (maps to RQ JobStatus)
 export type JobStatus = 'queued' | 'started' | 'finished' | 'failed' | 'deferred' | 'canceled';
@@ -14,7 +13,7 @@ export interface JobResponse {
 }
 
 export class GetJobStatusUseCase {
-  constructor(private readonly axios: AxiosInstance = useResolve("axios")) {}
+  constructor(private readonly axios: NuxtAxiosInstance) {}
 
   async execute(jobId: string): Promise<JobResponse> {
     const response = await this.axios.get<JobResponse>(`/api/v1/jobs/${jobId}`);

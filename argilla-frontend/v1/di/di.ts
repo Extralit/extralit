@@ -76,6 +76,8 @@ import { GetDatasetQuestionsGroupedUseCase } from "@/v1/domain/usecases/get-data
 import { GetDatasetFieldsGroupedUseCase } from "@/v1/domain/usecases/get-dataset-fields-grouped-use-case";
 import { GetImportAnalysisUseCase } from "@/v1/domain/usecases/get-import-analysis-use-case";
 import { CreateImportHistoryUseCase } from "@/v1/domain/usecases/create-import-history-use-case";
+import { BulkUploadDocumentsUseCase } from "@/v1/domain/usecases/bulk-upload-documents-use-case";
+import { GetJobStatusUseCase } from "@/v1/domain/usecases/get-job-status-use-case";
 import { LoadUserUseCase } from "@/v1/domain/usecases/load-user-use-case";
 import { CreateDatasetUseCase } from "@/v1/domain/usecases/create-dataset-use-case";
 import { GetFirstRecordFromHub } from "@/v1/domain/usecases/get-first-record-from-hub";
@@ -142,6 +144,14 @@ export const loadDependencyContainer = (context: Context) => {
       .build(),
 
     register(CreateImportHistoryUseCase)
+      .withDependency(useAxios)
+      .build(),
+
+    register(BulkUploadDocumentsUseCase)
+      .withDependency(useAxios)
+      .build(),
+
+    register(GetJobStatusUseCase)
       .withDependency(useAxios)
       .build(),
 
