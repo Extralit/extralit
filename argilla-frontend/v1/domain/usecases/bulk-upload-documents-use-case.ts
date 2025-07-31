@@ -56,6 +56,8 @@ export class BulkUploadDocumentsUseCase {
 
     // Add all referenced files to form data
     const addedFiles = new Set<string>();
+    const missingFiles: string[] = [];
+
     for (const doc of bulkDocuments) {
       for (const filename of doc.associated_files) {
         if (!addedFiles.has(filename)) {
@@ -63,23 +65,50 @@ export class BulkUploadDocumentsUseCase {
           if (file) {
             formData.append("files", file);
             addedFiles.add(filename);
+          } else {
+            missingFiles.push(filename);
           }
         }
       }
     }
 
-    // Send bulk upload request
-    const response = await this.axios.post<DocumentsBulkResponse>(
-      "/v1/documents/bulk",
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        timeout: 300000, // 5 minute timeout for large uploads
-      }
-    );
+    // Log warning if no files are being uploaded
+    if (addedFiles.size === 0) {
+      console.warn("No files found for upload. Uploading documents without associated files.");
+    }
 
-    return response.data;
+    // Report missing files as validation errors
+    const failed_validations: string[] = [];
+    if (missingFiles.length > 0) {
+      failed_validations.push(`Missing files: ${missingFiles.join(", ")}`);
+    }
+
+    try {
+      // Send bulk upload request
+      const response = await this.axios.post<DocumentsBulkResponse>(
+      "/v1/documents/bulk",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          timeout: 300000, // 5 minute timeout for large uploads
+        }
+      );
+
+      // Merge any pre-upload validation errors with backend response
+      const result = response.data;
+      if (failed_validations.length > 0) {
+        result.failed_validations = [...result.failed_validations, ...failed_validations];
+      }
+
+      return result;
+    } catch (error: any) {
+      // If we have validation errors and the request fails, include them in the error
+      if (failed_validations.length > 0) {
+        throw new Error(`Upload failed with validation errors: ${failed_validations.join(", ")}. ${error.message || error}`);
+      }
+      throw error;
+    }
   }
 }

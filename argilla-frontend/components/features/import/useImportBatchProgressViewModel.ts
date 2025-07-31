@@ -77,6 +77,11 @@ export function useImportBatchProgressViewModel(props: any) {
         }
       }
 
+      // Log warning if no files are found for this batch
+      if (batchFiles.length === 0) {
+        console.warn(`No files found for batch ${batch.batchIndex + 1}. Uploading documents without associated files.`);
+      }
+
       // Send bulk upload request for this batch
       const response = await bulkUploadUseCase.execute(batchDocuments, batchFiles);
 

@@ -406,7 +406,7 @@ async def process_bulk_upload(
     from argilla_server.jobs import DEFAULT_QUEUE
 
     # Create a mapping of filenames to file objects for quick lookup
-    file_mapping = {file.filename: file for file in files}
+    file_mapping = {file.filename: file for file in files} if files else {}
 
     # Validate that all referenced files are included in the upload
     missing_files = []
