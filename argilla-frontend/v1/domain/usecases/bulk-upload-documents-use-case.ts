@@ -34,7 +34,7 @@ export class BulkUploadDocumentsUseCase {
     files.forEach(file => {
       fileMapping.set(file.name, file);
     });
-
+    console.log('fileMapping', fileMapping);
     // Convert confirmed documents to bulk upload format
     const bulkDocuments: BulkDocumentInfo[] = [];
 
@@ -59,26 +59,32 @@ export class BulkUploadDocumentsUseCase {
       documents: bulkDocuments,
     };
 
-    // Create files array to match Python implementation
-    const filesToUpload: [string, any][] = [];
+    // Create FormData
+    const formData = new FormData();
     
-    // Add metadata as first element (matching Python: files_to_upload.insert(0, ("documents_metadata", ...)))
-    filesToUpload.push(["documents_metadata", JSON.stringify(bulkCreate)]);
+    // Add metadata as first field (matching Python: files_to_upload.insert(0, ("documents_metadata", (None, json.dumps(...)))))
+    formData.append("documents_metadata", JSON.stringify(bulkCreate));
 
-    // Add all referenced files (matching Python: files_to_upload.append(("files", ...)))
+    // Add all referenced files (matching Python: files_to_upload.append(("files", (filename, file_obj, "application/pdf"))))
     const addedFiles = new Set<string>();
     const missingFiles: string[] = [];
 
     for (const doc of bulkDocuments) {
+      console.log(`Processing document: ${doc.reference}`, doc.associated_files);
       for (const filename of doc.associated_files) {
         if (!addedFiles.has(filename)) {
           const file = fileMapping.get(filename);
           if (file) {
-            filesToUpload.push(["files", file]);
+            console.log(`Adding file: ${filename} (${file.size} bytes)`);
+            // Match Python structure: ("files", (filename, file_obj, "application/pdf"))
+            // In FormData, we use the same field name "files" for all files
+            formData.append("files", file, filename);
             addedFiles.add(filename);
           } else {
             missingFiles.push(filename);
           }
+        } else {
+          console.warn(`File already added: ${filename}`);
         }
       }
     }
@@ -95,13 +101,12 @@ export class BulkUploadDocumentsUseCase {
     }
 
     try {
+      // Send bulk upload request
+      console.log('formData:', JSON.stringify(formData));
       const response = await this.axios.post<DocumentsBulkResponse>(
         "/v1/documents/bulk",
-        filesToUpload,
+        formData,
         {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
           timeout: 300000, // 5 minute timeout for large uploads
         }
       );
