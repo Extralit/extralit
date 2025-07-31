@@ -70,7 +70,7 @@ export class BulkUploadDocumentsUseCase {
 
     // Send bulk upload request
     const response = await this.axios.post<DocumentsBulkResponse>(
-      "/api/v1/documents/bulk",
+      "/v1/documents/bulk",
       formData,
       {
         headers: {

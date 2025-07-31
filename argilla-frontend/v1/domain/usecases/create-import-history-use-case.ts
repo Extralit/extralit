@@ -20,7 +20,7 @@ export class CreateImportHistoryUseCase {
 
   async execute(importHistoryData: ImportHistoryCreate): Promise<ImportHistoryResponse> {
     const response = await this.axios.post<ImportHistoryResponse>(
-      "/api/v1/imports/history",
+      "/v1/imports/history",
       importHistoryData
     );
 
