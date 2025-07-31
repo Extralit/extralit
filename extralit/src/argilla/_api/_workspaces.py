@@ -20,15 +20,15 @@ from uuid import UUID
 
 import httpx
 
+from argilla._constants import _DEFAULT_SCHEMA_S3_PATH
 from argilla._api._base import ResourceAPI
 from argilla._exceptions._api import api_error_handler, ArgillaAPIError
 from argilla._models._workspace import WorkspaceModel
 from argilla._models._files import ListObjectsResponse, ObjectMetadata, FileObjectResponse
 
-from extralit.constants import DEFAULT_SCHEMA_S3_PATH
 
 if TYPE_CHECKING:
-    from extralit.extraction.models.schema import SchemaStructure
+    from argilla._models._schema import SchemaStructure
     from argilla._models._documents import Document
 
 
@@ -423,7 +423,7 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
 
     @api_error_handler
     def list_schemas(
-        self, workspace_name: str, prefix: str = DEFAULT_SCHEMA_S3_PATH, exclude: Optional[List[str]] = None
+        self, workspace_name: str, prefix: str = _DEFAULT_SCHEMA_S3_PATH, exclude: Optional[List[str]] = None
     ) -> "SchemaStructure":
         """Get schemas from a workspace.
 
@@ -442,7 +442,7 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
         """
         try:
             import pandera as pa
-            from extralit.extraction.models import SchemaStructure
+            from argilla._models._schema import SchemaStructure
         except ImportError:
             logger.error("Required packages missing for schema operations")
             raise ImportError(
@@ -519,7 +519,7 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
             raise ArgillaAPIError(f"Failed to load schemas: {str(e)}") from e
 
     @api_error_handler
-    def add_schema(self, workspace_name: str, schema: Any, prefix: str = DEFAULT_SCHEMA_S3_PATH) -> None:
+    def add_schema(self, workspace_name: str, schema: Any, prefix: str = _DEFAULT_SCHEMA_S3_PATH) -> None:
         """Add a schema to a workspace.
 
         Args:
@@ -547,7 +547,7 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
 
     @api_error_handler
     def update_schemas(
-        self, workspace_name: str, schemas: Any, assert_exists: bool = True, prefix: str = DEFAULT_SCHEMA_S3_PATH
+        self, workspace_name: str, schemas: Any, assert_exists: bool = True, prefix: str = _DEFAULT_SCHEMA_S3_PATH
     ) -> "ListObjectsResponse":
         """Update schemas in a workspace.
 

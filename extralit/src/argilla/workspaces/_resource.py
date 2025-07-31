@@ -16,7 +16,8 @@ from pathlib import Path
 from typing import List, TYPE_CHECKING, Optional, overload, Union, Sequence, Any
 from urllib.parse import unquote, urlparse
 
-from argilla._api._workspaces import WorkspacesAPI, DEFAULT_SCHEMA_S3_PATH
+from argilla._constants import _DEFAULT_SCHEMA_S3_PATH
+from argilla._api._workspaces import WorkspacesAPI
 from argilla._helpers import GenericIterator
 from argilla._helpers import LoggingMixin
 from argilla._models import WorkspaceModel
@@ -30,7 +31,7 @@ if TYPE_CHECKING:
     from argilla.documents._resource import Document
     from argilla._models._files import ListObjectsResponse, ObjectMetadata, FileObjectResponse
     from argilla._models._documents import DocumentModel
-    from extralit.extraction.models.schema import SchemaStructure
+    from argilla._models._schema import SchemaStructure
 
 
 class Workspace(Resource):
@@ -219,7 +220,7 @@ class Workspace(Resource):
     ####################
 
     def list_schemas(
-        self, prefix: str = DEFAULT_SCHEMA_S3_PATH, exclude: Optional[List[str]] = None
+        self, prefix: str = _DEFAULT_SCHEMA_S3_PATH, exclude: Optional[List[str]] = None
     ) -> "SchemaStructure":
         """Get schemas from the workspace.
 
@@ -232,7 +233,7 @@ class Workspace(Resource):
         """
         return self._api.list_schemas(self.name, prefix, exclude)
 
-    def add_schema(self, schema: Any, prefix: str = DEFAULT_SCHEMA_S3_PATH) -> None:
+    def add_schema(self, schema: Any, prefix: str = _DEFAULT_SCHEMA_S3_PATH) -> None:
         """Add a schema to the workspace.
 
         Args:
@@ -242,7 +243,7 @@ class Workspace(Resource):
         return self._api.add_schema(self.name, schema, prefix)
 
     def update_schemas(
-        self, schemas: Any, check_existing: bool = True, prefix: str = DEFAULT_SCHEMA_S3_PATH
+        self, schemas: Any, check_existing: bool = True, prefix: str = _DEFAULT_SCHEMA_S3_PATH
     ) -> "ListObjectsResponse":
         """Update schemas in the workspace.
 

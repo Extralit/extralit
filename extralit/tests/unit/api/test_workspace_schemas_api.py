@@ -21,7 +21,7 @@ from argilla._models._files import ListObjectsResponse, ObjectMetadata, FileObje
 
 try:
     import pandera as pa
-    from extralit.extraction.models import SchemaStructure
+    from argilla._models._schema import SchemaStructure
 
     PANDERA_AVAILABLE = True
 except ImportError:

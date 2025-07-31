@@ -106,4 +106,3 @@ jobs:
       - name: Verify critical dependencies
         run: |
           cd argilla-server && pdm run python -c "import pandera; print('✓ Pandera available')" || echo "⚠ Pandera not available"
-          cd argilla-server && pdm run python -c "from extralit.extraction.models.schema import SchemaStructure; print('✓ Extralit schemas available')" || echo "⚠ Extralit schemas not available"
