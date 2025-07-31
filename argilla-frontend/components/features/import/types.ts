@@ -76,6 +76,8 @@ export interface AnalysisTableRow {
   originalStatus: ImportStatus;
   validationErrors: string[];
   canToggle: boolean;
+  // Dynamic fields from dataframe
+  [key: string]: any;
 }
 
 // Column configuration for BaseSimpleTable

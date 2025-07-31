@@ -12,7 +12,7 @@
       <div class="error-content">
         <h4>Analysis Failed</h4>
         <p>{{ errorMessage }}</p>
-        <BaseButton variant="outline" @click="reset(); $emit('retry')">
+        <BaseButton variant="outline" @click="retryAnalysis">
           Retry Analysis
         </BaseButton>
       </div>
@@ -26,23 +26,23 @@
         <div class="summary-stats">
           <div class="stat-item">
             <span class="stat-label">Total:</span>
-            <span class="stat-value">{{ (analysisResult || analysisData).summary.total_documents }}</span>
+            <span class="stat-value">{{ summaryData.total_documents }}</span>
           </div>
           <div class="stat-item stat-add">
             <span class="stat-label">Add:</span>
-            <span class="stat-value">{{ (analysisResult || analysisData).summary.add_count }}</span>
+            <span class="stat-value">{{ summaryData.add_count }}</span>
           </div>
           <div class="stat-item stat-update">
             <span class="stat-label">Update:</span>
-            <span class="stat-value">{{ (analysisResult || analysisData).summary.update_count }}</span>
+            <span class="stat-value">{{ summaryData.update_count }}</span>
           </div>
           <div class="stat-item stat-skip">
             <span class="stat-label">Skip:</span>
-            <span class="stat-value">{{ (analysisResult || analysisData).summary.skip_count }}</span>
+            <span class="stat-value">{{ summaryData.skip_count }}</span>
           </div>
           <div class="stat-item stat-failed">
             <span class="stat-label">Failed:</span>
-            <span class="stat-value">{{ (analysisResult || analysisData).summary.failed_count }}</span>
+            <span class="stat-value">{{ summaryData.failed_count }}</span>
           </div>
         </div>
       </div>
@@ -51,7 +51,6 @@
       <div class="table-container">
         <BaseSimpleTable :data="tableData" :columns="tableColumns" :options="tableOptions" />
       </div>
-
     </div>
   </div>
 </template>
@@ -64,7 +63,6 @@ import type {
   ImportAnalysisResponse,
   ImportStatus,
   DataframeData,
-  ImportAnalysisRequest,
   DocumentImportAnalysis,
 } from '~/v1/domain/entities/import/ImportAnalysis';
 import type {
@@ -78,22 +76,13 @@ export default {
   name: "ImportAnalysisTable",
 
   props: {
-    analysisData: {
-      type: Object as () => ImportAnalysisResponse,
-      default: (): ImportAnalysisResponse => ({
-        documents: {},
-        summary: {
-          total_documents: 0,
-          add_count: 0,
-          update_count: 0,
-          skip_count: 0,
-          failed_count: 0,
-        },
-      }),
-    },
     dataframeData: {
       type: Object as () => DataframeData | null,
       default: null,
+    },
+    pdfData: {
+      type: Object,
+      default: () => ({ matchedFiles: [] }),
     },
     workspace: {
       type: Workspace,
@@ -105,7 +94,7 @@ export default {
     },
   },
 
-  emits: ["update", "retry", "analysis-complete"],
+  emits: ["update", "analysis-complete"],
 
   data() {
     return {
@@ -114,64 +103,67 @@ export default {
   },
 
   computed: {
+    summaryData() {
+      if (this.analysisResult) {
+        return this.analysisResult.summary;
+      }
+      
+      // Default summary when no analysis result
+      return {
+        total_documents: this.dataframeData?.data?.length || 0,
+        add_count: this.dataframeData?.data?.length || 0,
+        update_count: 0,
+        skip_count: 0,
+        failed_count: 0,
+      };
+    },
+
     tableData(): AnalysisTableRow[] {
-      // Use analysis result from view model if available
-      const analysisData = this.analysisResult || this.analysisData;
+      if (!this.dataframeData || !this.dataframeData.data.length) {
+        return [];
+      }
+
       const documentActions = { ...this.documentActions, ...this.localDocumentActions };
 
-      // If we have analysis result, use it
-      if (analysisData && analysisData.documents && Object.keys(analysisData.documents).length > 0) {
-        const data: AnalysisTableRow[] = [];
+      return this.dataframeData.data.map((row: Record<string, any>) => {
+        const reference = row.reference || row.key || `row_${Math.random()}`;
+        
+        // Get analysis info if available
+        const analysisInfo = this.analysisResult?.documents?.[reference];
+        const currentStatus = documentActions[reference] || analysisInfo?.status || 'add';
+        const originalStatus = analysisInfo?.status || 'add';
+        const validationErrors = analysisInfo?.validation_errors || [];
 
-        Object.entries(analysisData.documents).forEach(([reference, docInfo]: [string, ImportAnalysisRequest]) => {
-          // Get current action (user-modified or original)
-          const currentAction = documentActions[reference];
+        // Use pre-processed file paths from ImportFileUpload.vue
+        const filePaths = row.filePaths || [];
 
-          data.push({
-            reference,
-            title: docInfo.document_create?.title || "N/A",
-            authors: this.formatAuthors(docInfo.document_create?.authors),
-            year: String(docInfo.document_create?.year || "N/A"),
-            files: this.formatFiles(docInfo.associated_files),
-            filePaths: docInfo.associated_files || [], // Include file paths array
-            status: currentAction,
-            originalStatus: docInfo.status,
-            validationErrors: docInfo.validation_errors || [],
-            canToggle: this.canToggleStatus(docInfo.status),
-          });
+        // Create base row data
+        const rowData: AnalysisTableRow = {
+          reference,
+          title: row.title || "N/A",
+          authors: this.formatAuthors(row.authors || row.author),
+          year: String(row.year || "N/A"),
+          files: filePaths.length > 0 ? this.formatFiles(filePaths) : "No files",
+          filePaths,
+          status: currentStatus,
+          originalStatus,
+          validationErrors,
+          canToggle: this.canToggleStatus(originalStatus) && !this.isAnalyzing,
+        };
+
+        // Add all other dataframe fields dynamically
+        Object.keys(row).forEach(key => {
+          if (!['reference', 'title', 'authors', 'author', 'year', 'filePaths'].includes(key)) {
+            rowData[key] = row[key];
+          }
         });
 
-        return data;
-      }
-
-      if (this.dataframeData && this.dataframeData.data.length > 0) {
-        return this.dataframeData.data.map((row: Record<string, any>) => {
-          const reference = row.reference || row.key || `row_${Math.random()}`;
-          const currentAction = documentActions[reference] || 'add'; // Default while analyzing
-
-          // Use pre-processed file paths from ImportFileUpload.vue
-          const filePaths = row.filePaths || [];
-
-          return {
-            reference,
-            title: row.title || "N/A",
-            authors: this.formatAuthors(row.authors || row.author),
-            year: String(row.year || "N/A"),
-            files: filePaths.length > 0 ? this.formatFiles(filePaths) : "No files",
-            filePaths, // Include file paths array
-            status: currentAction,
-            originalStatus: 'add', // Default for new entries
-            validationErrors: [],
-            canToggle: !this.isAnalyzing, // Disable toggle while analyzing
-          };
-        });
-      }
-
-      return [];
+        return rowData;
+      });
     },
 
     tableColumns(): TableColumn[] {
-      return [
+      const columns: TableColumn[] = [
         {
           field: "reference",
           title: "Reference",
@@ -196,12 +188,31 @@ export default {
           title: "Year",
           width: 80,
         },
+      ];
+
+      // Add dynamic columns from dataframe schema
+      if (this.dataframeData?.schema?.fields) {
+        const excludedFields = ['reference', 'title', 'authors', 'author', 'year', 'filePaths', 'type'];
+        
+        this.dataframeData.schema.fields.forEach(field => {
+          if (!excludedFields.includes(field.name)) {
+            columns.push({
+              field: field.name,
+              title: this.formatColumnTitle(field.name),
+              width: 150,
+              formatter: this.genericFormatter,
+            });
+          }
+        });
+      }
+
+      // Add files and status columns at the end
+      columns.push(
         {
           field: "files",
           title: "Files",
           width: 150,
           formatter: this.filesFormatter,
-          // visible: !this.dataframeData, // Hide files column for dataframe-only display
         },
         {
           field: "status",
@@ -221,9 +232,10 @@ export default {
               "failed": "Failed"
             }
           },
-          // visible: !this.dataframeData, // Hide status column for dataframe-only display
-        },
-      ];
+        }
+      );
+
+      return columns;
     },
 
     tableOptions() {
@@ -241,15 +253,29 @@ export default {
     },
 
     confirmedCount() {
-      const analysisData = this.analysisResult || this.analysisData;
       const documentActions = { ...this.documentActions, ...this.localDocumentActions };
+      let count = 0;
 
-      return Object.values(documentActions).filter(action =>
-        action === "add" || action === "update"
-      ).length +
-        Object.entries(analysisData.documents || {}).filter(([ref, docInfo]: [string, any]) =>
-          !documentActions[ref] && (docInfo.status === "add" || docInfo.status === "update")
-        ).length;
+      if (this.analysisResult) {
+        // Count from analysis result
+        Object.entries(this.analysisResult.documents).forEach(([ref, docInfo]) => {
+          const finalAction = documentActions[ref] || docInfo.status;
+          if (finalAction === "add" || finalAction === "update") {
+            count++;
+          }
+        });
+      } else if (this.dataframeData) {
+        // Count from dataframe data (default to add)
+        this.dataframeData.data.forEach((row: Record<string, any>) => {
+          const reference = row.reference || row.key;
+          const finalAction = documentActions[reference] || 'add';
+          if (finalAction === "add" || finalAction === "update") {
+            count++;
+          }
+        });
+      }
+
+      return count;
     },
 
     canConfirmImport() {
@@ -265,6 +291,8 @@ export default {
           this.localDocumentActions = {};
           // Emit the analysis complete event
           this.$emit('analysis-complete', newData);
+          // Emit initial update
+          this.emitUpdate();
         }
       },
       deep: true,

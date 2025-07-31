@@ -1,12 +1,10 @@
-import { type NuxtAxiosInstance } from "@nuxtjs/axios";
-
 import {
   ImportAnalysisRequest,
   ImportAnalysisResponse,
   DocumentMetadata,
-  FileInfo
+  FileInfo,
+  DataframeData
 } from "~/v1/domain/entities/import/ImportAnalysis";
-import { DataframeData } from "~/v1/domain/entities/import/ImportAnalysis";
 
 const IMPORT_ANALYSIS_API_ERRORS = {
   ERROR_FETCHING_IMPORT_ANALYSIS: "ERROR_FETCHING_IMPORT_ANALYSIS",
@@ -14,38 +12,34 @@ const IMPORT_ANALYSIS_API_ERRORS = {
 
 export class GetImportAnalysisUseCase {
   constructor(
-    private readonly axios: NuxtAxiosInstance,
-  ) {}
+    private readonly axios: any,
+  ) { }
 
   async analyzeImport(
     workspaceId: string,
     dataframeData: DataframeData,
-    pdfFiles?: File[]
+    matchedFiles: any[]
   ): Promise<ImportAnalysisResponse> {
     try {
-      const request = this.createAnalysisRequest(workspaceId, dataframeData, pdfFiles);
-
-      console.log('request:', request)
+      const request = this.createAnalysisRequest(workspaceId, dataframeData, matchedFiles);
 
       const { data } = await this.axios.post<ImportAnalysisResponse>(
-        `/v1/imports/analyze`,
+        `/api/v1/imports/analyze`,
         request
       );
 
       return data;
 
     } catch (error) {
-      console.log('Import analysis error:', error);
-      let errorMessage = error.message;
+      console.error('Import analysis error:', error);
+      let errorMessage = error.message || 'Unknown error occurred';
 
       if (error.response?.data?.detail) {
         errorMessage = error.response.data.detail;
       } else if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
-      } else if (error.response?.data) {
-        errorMessage = error.response.data;
-      } else if (error.response) {
-        errorMessage = error.response;
+      } else if (error.response?.status) {
+        errorMessage = `HTTP ${error.response.status}: ${error.response.statusText || 'Request failed'}`;
       }
 
       throw {
@@ -58,14 +52,22 @@ export class GetImportAnalysisUseCase {
   private createAnalysisRequest(
     workspaceId: string,
     dataframeData: DataframeData,
-    pdfFiles?: File[]
+    matchedFiles: any[]
   ): ImportAnalysisRequest {
     const documents: Record<string, DocumentMetadata> = {};
 
-    const fileNameMap: Record<string, File> = {};
-    if (pdfFiles && pdfFiles.length > 0) {
-      pdfFiles.forEach(file => {
-        fileNameMap[file.name] = file;
+    // Create a map of filename to file info for quick lookup
+    const fileInfoMap: Record<string, { file: File; reference: string }> = {};
+    if (matchedFiles && matchedFiles.length > 0) {
+      matchedFiles.forEach(matchedFile => {
+        const filename = matchedFile.file.name;
+        const reference = matchedFile.bibEntry?.reference;
+        if (filename && reference) {
+          fileInfoMap[filename] = {
+            file: matchedFile.file,
+            reference: reference
+          };
+        }
       });
     }
 
@@ -74,22 +76,56 @@ export class GetImportAnalysisUseCase {
       const reference = row.reference || row.key;
       if (!reference) return;
 
-      // Extract file information for this reference
+      // Extract file information for this reference from matched files
       const filePaths = row.filePaths || [];
-      const associatedFiles: FileInfo[] = filePaths.map((filename: string) => {
-        const fileObj = fileNameMap[filename];
-        return {
-          filename,
-          size: fileObj?.size,
-        };
+      const associatedFiles: FileInfo[] = [];
+
+      // Find files that match this reference
+      Object.entries(fileInfoMap).forEach(([filename, fileInfo]) => {
+        if (fileInfo.reference === reference || filePaths.includes(filename)) {
+          associatedFiles.push({
+            filename,
+            size: fileInfo.file.size || 0
+          });
+        }
+      });
+
+      // Also check for files directly in filePaths that might not be in matched files
+      filePaths.forEach((filename: string) => {
+        if (!associatedFiles.find(f => f.filename === filename)) {
+          // Try to find the file in matched files by filename
+          const matchedFile = matchedFiles.find(mf => mf.file.name === filename);
+          if (matchedFile) {
+            associatedFiles.push({
+              filename,
+              size: matchedFile.file.size || 0
+            });
+          } else {
+            // Add with unknown size if we can't find the file
+            associatedFiles.push({
+              filename,
+              size: 0
+            });
+          }
+        }
       });
 
       documents[reference] = {
         document_create: {
           reference,
+          title: row.title,
+          authors: Array.isArray(row.authors) ? row.authors : (row.authors ? [row.authors] : undefined),
+          year: row.year ? String(row.year) : undefined,
+          journal: row.journal,
+          volume: row.volume,
+          pages: row.pages,
           doi: row.doi,
+          url: row.url,
+          abstract: row.abstract,
+          keywords: Array.isArray(row.keywords) ? row.keywords : (row.keywords ? [row.keywords] : undefined),
           pmid: row.pmid,
           workspace_id: workspaceId,
+          metadata: this.extractMetadata(row)
         },
         associated_files: associatedFiles
       };
@@ -101,11 +137,11 @@ export class GetImportAnalysisUseCase {
     };
   }
 
-  private extractMetadata(row: Record<string, any>): Record<string, any> {
+  private extractMetadata(row: Record<string, any>): Record<string, any> | undefined {
     // Extract additional metadata fields not covered by DocumentCreate
     const excludedFields = [
       'reference', 'title', 'authors', 'year', 'journal', 'volume',
-      'pages', 'doi', 'url', 'abstract', 'keywords', 'pmid', 'filePaths'
+      'pages', 'doi', 'url', 'abstract', 'keywords', 'pmid', 'filePaths', 'type'
     ];
 
     const metadata: Record<string, any> = {};

@@ -1,45 +1,36 @@
-import { ref, computed, watch } from '@nuxtjs/composition-api';
-import { useResolve } from "ts-injecty";
+import { ref, computed, watch, onMounted } from 'vue';
+import { GetImportAnalysisUseCase } from '~/v1/domain/usecases/get-import-analysis-use-case';
 import type {
   ImportAnalysisResponse,
   ImportStatus,
-  DataframeData,
-  DocumentImportAnalysis,
+  DataframeData
 } from '~/v1/domain/entities/import/ImportAnalysis';
-import { Workspace } from '~/v1/domain/entities/workspace/Workspace';
-import { GetImportAnalysisUseCase } from '~/v1/domain/usecases/get-import-analysis-use-case';
+import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
 
-export function useImportAnalysisViewModel(props: {
-  analysisData: ImportAnalysisResponse;
-  dataframeData: DataframeData | null;
-  workspace: Workspace;
-  loading: boolean;
-}) {
-  const getImportAnalysisUseCase = useResolve(GetImportAnalysisUseCase);
-
-  // Reactive state
+export function useImportAnalysisViewModel(props: any) {
   const isAnalyzing = ref(false);
   const hasError = ref(false);
   const errorMessage = ref('');
   const analysisResult = ref<ImportAnalysisResponse | null>(null);
   const documentActions = ref<Record<string, ImportStatus>>({});
-  const originalStatuses = ref<Record<string, ImportStatus>>({});
 
-  const workspaceId = computed(() => props.workspace.id);
+  const importAnalysisUseCase = new GetImportAnalysisUseCase(props.$axios || window.$nuxt.$axios);
 
-  const shouldAnalyze = computed(() => {
-    return props.dataframeData &&
-           props.dataframeData.data.length > 0 &&
-           !analysisResult.value &&
-           !isAnalyzing.value &&
-           workspaceId.value;
-  });
+  const reset = () => {
+    isAnalyzing.value = false;
+    hasError.value = false;
+    errorMessage.value = '';
+    analysisResult.value = null;
+    documentActions.value = {};
+  };
 
-  // Methods
-  const performAnalysis = async (pdfFiles?: File[]) => {
-    if (!props.dataframeData || !workspaceId.value) {
-      showError('No data available for analysis or missing workspace ID');
-      return null;
+  const analyzeImport = async (
+    workspace: Workspace,
+    dataframeData: DataframeData,
+    matchedFiles: any[]
+  ) => {
+    if (!workspace || !dataframeData || dataframeData.data.length === 0) {
+      return;
     }
 
     isAnalyzing.value = true;
@@ -47,81 +38,48 @@ export function useImportAnalysisViewModel(props: {
     errorMessage.value = '';
 
     try {
-      const result = await getImportAnalysisUseCase.analyzeImport(
-        workspaceId.value,
-        props.dataframeData,
-        pdfFiles
+      const result = await importAnalysisUseCase.analyzeImport(
+        workspace.id,
+        dataframeData,
+        matchedFiles
       );
 
       analysisResult.value = result;
-
-      // Reset document actions for new analysis
-      documentActions.value = {};
-      originalStatuses.value = {};
-
-      // Store original statuses
-      Object.entries(result.documents || {}).forEach(([reference, docInfo]: [string, DocumentImportAnalysis]) => {
-        originalStatuses.value[reference] = docInfo.status;
+      
+      // Initialize document actions from analysis result
+      const actions: Record<string, ImportStatus> = {};
+      Object.entries(result.documents).forEach(([reference, docInfo]) => {
+        actions[reference] = docInfo.status;
       });
-
-      return result;
+      documentActions.value = actions;
 
     } catch (error) {
-      console.error('Analysis failed:', error);
-      showError(error.message || 'Failed to analyze import data');
-      return null;
+      hasError.value = true;
+      errorMessage.value = error.message || 'Failed to analyze import';
+      console.error('Import analysis failed:', error);
     } finally {
       isAnalyzing.value = false;
     }
   };
 
-  const showError = (message: string) => {
-    hasError.value = true;
-    errorMessage.value = message;
-  };
-
-  const reset = () => {
-    hasError.value = false;
-    errorMessage.value = '';
-    analysisResult.value = null;
-    documentActions.value = {};
-    originalStatuses.value = {};
-    isAnalyzing.value = false;
-  };
-
+  // Auto-trigger analysis when props change
   watch(
-    () => props.dataframeData,
-    async (newData) => {
-      if (newData && newData.data.length > 0 && workspaceId.value) {
-        // Reset previous analysis
-        analysisResult.value = null;
-        documentActions.value = {};
-        originalStatuses.value = {};
-
-        // Perform new analysis
-        await performAnalysis();
+    () => [props.workspace, props.dataframeData, props.pdfData],
+    ([workspace, dataframeData, pdfData]) => {
+      if (workspace && dataframeData && pdfData?.matchedFiles) {
+        analyzeImport(workspace, dataframeData, pdfData.matchedFiles);
       }
     },
-    { immediate: true }
+    { deep: true, immediate: true }
   );
 
   return {
-    // State
-    getImportAnalysisUseCase,
     isAnalyzing,
     hasError,
     errorMessage,
     analysisResult,
     documentActions,
-    originalStatuses,
-
-    // Computed
-    workspaceId,
-    shouldAnalyze,
-
-    // Methods
-    performAnalysis,
-    showError,
     reset,
+    analyzeImport
   };
 }

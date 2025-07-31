@@ -30,15 +30,15 @@ export type ImportStatus = 'add' | 'update' | 'skip' | 'ignore' | 'failed';
 // Document creation data for import (maps to DocumentCreate in backend)
 export interface DocumentCreate {
   title?: string;
-  authors?: string[];
-  year?: string;
+  authors?: string[] | string;
+  year?: string | number;
   journal?: string;
   volume?: string;
   pages?: string;
   doi?: string;
   url?: string;
   abstract?: string;
-  keywords?: string[];
+  keywords?: string[] | string;
   reference?: string;
   pmid?: string;
   file_name?: string;
