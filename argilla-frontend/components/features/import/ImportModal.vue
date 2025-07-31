@@ -419,13 +419,6 @@ export default {
       });
     },
 
-    createAnalysisRequest() {
-      return {
-        workspace_id: this.workspace.id, // Use workspace ID from props
-        documents: {}, // Will be populated from parsed data
-      };
-    },
-
 
     initializeUploadData() {
       // Initialize upload tracking data

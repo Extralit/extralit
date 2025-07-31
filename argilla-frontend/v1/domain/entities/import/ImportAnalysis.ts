@@ -87,12 +87,6 @@ export interface ImportAnalysisResponse {
   summary: ImportSummary;
 }
 
-// Action to take for a document during import execution (maps to DocumentImportAction in backend)
-export interface DocumentImportAction {
-  action: ImportStatus;
-  associated_files: string[];
-}
-
 // Import history creation request (maps to ImportHistoryCreate in backend)
 export interface ImportHistoryCreate {
   workspace_id: string;

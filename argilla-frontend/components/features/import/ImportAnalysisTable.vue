@@ -64,13 +64,12 @@ import type {
   ImportAnalysisResponse,
   ImportStatus,
   DataframeData,
+  ImportAnalysisRequest,
   DocumentImportAnalysis,
-  DocumentImportAction,
 } from '~/v1/domain/entities/import/ImportAnalysis';
 import type {
   AnalysisTableRow,
   TableColumn,
-  ImportConfirmationData,
 } from './types';
 import { useImportAnalysisViewModel } from './useImportAnalysisViewModel';
 import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
@@ -124,9 +123,9 @@ export default {
       if (analysisData && analysisData.documents && Object.keys(analysisData.documents).length > 0) {
         const data: AnalysisTableRow[] = [];
 
-        Object.entries(analysisData.documents).forEach(([reference, docInfo]: [string, DocumentImportAnalysis]) => {
+        Object.entries(analysisData.documents).forEach(([reference, docInfo]: [string, ImportAnalysisRequest]) => {
           // Get current action (user-modified or original)
-          const currentAction = documentActions[reference] || docInfo.status;
+          const currentAction = documentActions[reference];
 
           data.push({
             reference,
@@ -384,26 +383,23 @@ export default {
 
 
     emitUpdate() {
-      // Create confirmed documents object mapping to DocumentImportAction schema
-      const confirmedDocuments: Record<string, DocumentImportAction> = {};
+      const confirmedDocuments: Record<string, ImportAnalysisRequest> = {};
       const analysisData = this.analysisResult || this.analysisData;
       const documentActions = { ...this.documentActions, ...this.localDocumentActions };
 
       // Handle analysis data case (preferred)
       if (analysisData && analysisData.documents && Object.keys(analysisData.documents).length > 0) {
-        Object.entries(analysisData.documents).forEach(([reference, docInfo]: [string, DocumentImportAnalysis]) => {
+        Object.entries(analysisData.documents).forEach(([reference, docInfo]: [string, ImportAnalysisRequest]) => {
           const finalAction = documentActions[reference] || docInfo.status;
 
           // Only include documents that will be processed (add or update)
           if (finalAction === "add" || finalAction === "update") {
             confirmedDocuments[reference] = {
-              action: finalAction,
-              associated_files: docInfo.associated_files, // Already in correct format
+              associated_files: docInfo.documents[reference].associated_files, // Already in correct format
             };
           }
         });
       } else if (this.dataframeData && this.dataframeData.data.length > 0) {
-        // Fallback to dataframe data case
         this.dataframeData.data.forEach((row: Record<string, any>) => {
           const reference = row.reference || row.key || `row_${Math.random()}`;
           const finalAction = documentActions[reference] || 'add';
@@ -412,7 +408,6 @@ export default {
           // Only include documents that will be processed (add or update)
           if (finalAction === "add" || finalAction === "update") {
             confirmedDocuments[reference] = {
-              action: finalAction,
               associated_files: filePaths, // Map filePaths to associated_files
             };
           }
@@ -431,10 +426,6 @@ export default {
       this.reset(); // Call view model reset
     },
 
-    // Public method to trigger analysis (called by parent component)
-    async analyzeImportData(pdfFiles?: File[]) {
-      return await this.performAnalysis(pdfFiles);
-    },
 
     // Helper method to prepare data for ImportHistoryCreate payload
     getImportHistoryData() {

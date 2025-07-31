@@ -421,20 +421,6 @@ class DocumentsBulkResponse(BaseModel):
     failed_validations: List[str] = Field(default_factory=list, description="Files that failed validation")
 ```
 
-#### Import Execute Request
-```python
-class DocumentImportAction(BaseModel):
-    """Action to take for a document during import execution."""
-    action: ImportStatus = Field(..., description="Action to take (add, update, skip)")
-    associated_files: List[str] = Field(default_factory=list, description="Files to import for this document")
-
-class DocumentImportExecuteRequest(BaseModel):
-    """Request schema for import execution."""
-    workspace_id: UUID = Field(..., description="Target workspace ID")
-    document_actions: Dict[str, DocumentImportAction] = Field(..., description="Reference to action mapping")
-```
-
-Note: The user may use the DocumentImportExecuteRequest to switch between add or update to skip status before final execution.
 
 #### Import History Request/Response
 ```python

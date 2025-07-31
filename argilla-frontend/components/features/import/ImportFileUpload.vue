@@ -255,10 +255,6 @@ export default {
       return Math.round((this.pdfProcessedFiles / this.pdfTotalFiles) * 100);
     },
 
-    previewMatches() {
-      return this.pdfData.matchedFiles.slice(0, 3);
-    },
-
     isValid() {
       return (
         this.bibUploaded &&
@@ -675,7 +671,7 @@ export default {
     },
 
     performFileMatching(uploadedFiles: File[] | null = null) {
-      const filesToMatch =
+      const filesToMatch: File[] =
         uploadedFiles || this.pdfData.matchedFiles.concat(this.pdfData.unmatchedFiles).map((item) => item.file || item);
 
       if (!this.bibData.parsedEntries || this.bibData.parsedEntries.length === 0 || filesToMatch.length === 0) {
@@ -686,7 +682,7 @@ export default {
       this.pdfData.unmatchedFiles = [];
 
       for (const file of filesToMatch) {
-        const match = this.findBestMatch(file);
+        const match: { entry: File; type: string; confidence: number } = this.findBestMatch(file);
 
         if (match) {
           this.pdfData.matchedFiles.push({
@@ -704,14 +700,25 @@ export default {
       this.pdfData.matchedFiles.sort((a, b) => b.confidence - a.confidence);
     },
 
-    findBestMatch(file: File) {
-      const fileName = file.name.toLowerCase().replace(/\.pdf$/, "");
-      const filePath = file.webkitRelativePath || file.name;
-      let bestMatch = null;
-      let bestConfidence = 0;
+    /**
+     * Attempts to find the best matching BibTeX entry for a given PDF file.
+     * @param {File} file - The PDF file to match.
+     * @returns {{
+     *   entry: any,
+     *   type: string,
+     *   confidence: number
+     * } | null}
+     */
+    findBestMatch(
+      file: File
+    ): { entry: File; type: string; confidence: number } {
+      const fileName: string = file.name.toLowerCase().replace(/\.pdf$/, "");
+      const filePath: string = (file as any).webkitRelativePath || file.name;
+      let bestMatch: { entry: any; type: string; confidence: number } | null = null;
+      let bestConfidence: number = 0;
 
-      for (const entry of this.bibData.parsedEntries) {
-        const matches = [
+      for (const entry of this.bibData.parsedEntries as any[]) {
+        const matches: Array<{ type: string; confidence: number }> = [
           // 1. WebkitRelativePath match (highest priority for folder uploads)
           this.checkWebkitPathMatch(filePath, entry.filePaths),
           // 2. File field path match (Zotero exports)
@@ -722,11 +729,11 @@ export default {
           this.checkPartialMatch(fileName, entry.reference),
           // 5. Fuzzy title match (lowest priority)
           this.checkTitleMatch(fileName, entry.title),
-        ].filter(Boolean);
+        ].filter(Boolean) as Array<{ type: string; confidence: number }>;
 
         if (matches.length > 0) {
-          const bestFileMatch = matches.reduce((best, current) =>
-            current.confidence > best.confidence ? current : best
+          const bestFileMatch = matches.reduce(
+            (best, current) => (current.confidence > best.confidence ? current : best)
           );
 
           if (bestFileMatch.confidence > bestConfidence) {
@@ -739,8 +746,6 @@ export default {
           }
         }
       }
-
-      // Only return matches with reasonable confidence
       return bestConfidence >= 0.6 ? bestMatch : null;
     },
 

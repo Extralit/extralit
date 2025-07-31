@@ -142,12 +142,9 @@
   - Create toggle functionality for Add/Update/Skip selection
   - Send ImportAnalysisRequest to backend and display results using GetImportAnalysisUseCase
   - Import backend API types from ~/v1/domain/entities/import/ImportAnalysis.ts
-  - Import UI component types from ./types.ts for table configuration
   - Use useImportAnalysisViewModel for reactive state management and API integration
   - Accept workspace ID as prop and pass it to the analysis use case
-  - Automatically trigger analysis when dataframe data is available and workspace ID is provided
   - Fix workspaceId reference in useImportAnalysisViewModel.ts to properly access workspace from parent component
-  - Add public analyzeImportData() method for parent component integration
   - _Requirements: 2.1, 2.2, 2.7_
 
 - [ ] 7.3 

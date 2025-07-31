@@ -5,7 +5,7 @@
 
 import type {
   ImportStatus,
-  DocumentImportAction,
+  DocumentMetadata,
   ImportAnalysisResponse,
 } from '~/v1/domain/entities/import/ImportAnalysis';
 
@@ -23,7 +23,6 @@ export type {
   DocumentImportAnalysis,
   ImportSummary,
   ImportAnalysisResponse,
-  DocumentImportAction,
   ImportHistoryCreate,
 } from '~/v1/domain/entities/import/ImportAnalysis';
 
@@ -44,16 +43,9 @@ export interface PdfUploadData {
   totalFiles: number;
 }
 
-// Confirmed documents for import (Step 3 output)
-export interface ImportConfirmationData {
-  confirmedDocuments: Record<string, DocumentImportAction>;
-  totalConfirmed: number;
-  documentActions: Record<string, ImportStatus>;
-}
-
 // Upload progress tracking (Step 4)
 export interface ImportUploadData {
-  confirmedDocuments: Record<string, DocumentImportAction>;
+  confirmedDocuments: Record<string, DocumentMetadata>;
   totalBatches: number;
   currentBatch: number;
   jobIds: Record<string, string>;
