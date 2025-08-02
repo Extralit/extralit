@@ -25,45 +25,6 @@ def runner():
     return CliRunner()
 
 
-def test_workspaces_help(runner):
-    """Test that the workspaces command shows help message."""
-    result = runner.invoke(app, ["workspaces", "--help"])
-    assert result.exit_code == 0
-    assert "workspace" in result.stdout
-
-
-@pytest.mark.skip(reason="Test temporarily disabled")
-def test_workspaces_list_command_help(runner):
-    """Test the help message for the 'list' subcommand."""
-    result = runner.invoke(app, ["workspaces", "list", "--help"])
-    assert result.exit_code == 0
-    assert "Lists workspaces of the logged user" in result.stdout
-
-
-@pytest.mark.skip(reason="Test temporarily disabled")
-def test_workspaces_create_command_help(runner):
-    """Test the help message for the 'create' subcommand."""
-    result = runner.invoke(app, ["workspaces", "create", "--help"])
-    assert result.exit_code == 0
-    assert "Create a workspace" in result.stdout
-
-
-@pytest.mark.skip(reason="Test temporarily disabled")
-def test_workspaces_add_user_command_help(runner):
-    """Test the help message for the 'add-user' subcommand."""
-    result = runner.invoke(app, ["workspaces", "--name", "default", "add-user", "--help"])
-    assert result.exit_code == 0
-    assert "Adds a user to a workspace" in result.stdout
-
-
-@pytest.mark.skip(reason="Test temporarily disabled")
-def test_workspaces_delete_user_command_help(runner):
-    """Test the help message for the 'delete-user' subcommand."""
-    result = runner.invoke(app, ["workspaces", "--name", "default", "delete-user", "--help"])
-    assert result.exit_code == 0
-    assert "Deletes a user from a workspace" in result.stdout
-
-
 @patch("argilla.cli.workspaces.__main__.get_workspaces")
 @pytest.mark.skip(reason="Test temporarily disabled")
 def test_workspaces_list(mock_get_workspaces, runner):

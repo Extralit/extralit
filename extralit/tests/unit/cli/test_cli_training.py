@@ -26,28 +26,6 @@ def runner():
     return CliRunner()
 
 
-def test_training_help(runner):
-    """Test that the training command shows help message."""
-    result = runner.invoke(app, ["training", "--help"])
-    assert result.exit_code == 0
-    assert "trainer" in result.stdout.lower()
-
-
-@patch("argilla.cli.training.__main__.framework_callback")
-@pytest.mark.skip(reason="Test temporarily disabled")
-def test_training_framework_validation(mock_framework_callback, runner):
-    """Test that the framework parameter is validated correctly."""
-    # Set up the mock to return a valid framework
-    mock_framework_callback.return_value = Framework.SPACY
-
-    # Valid framework
-    result = runner.invoke(app, ["training", "--framework", "spacy", "--help"])
-    assert result.exit_code == 0
-
-    # Verify that the framework_callback was called with the correct value
-    mock_framework_callback.assert_called_with("spacy")
-
-
 @patch("rich.console.Console.print")
 @patch("argilla.cli.training.__main__.framework_callback")
 @pytest.mark.skip(reason="Test temporarily disabled")

@@ -87,9 +87,13 @@ class TestImportAnalysis:
         """Test analysis of existing documents that should be skipped."""
         workspace = await WorkspaceFactory.create()
 
-        # Create existing document
+        # Create existing document with same file name as the new import
         existing_doc = await DocumentFactory.create(
-            workspace=workspace, reference="existing_ref", doi="10.1234/existing.doi", pmid="67890"
+            workspace=workspace,
+            reference="existing_ref",
+            doi="10.1234/existing.doi",
+            pmid="67890",
+            file_name="existing_document.pdf",  # Same file name as the new import
         )
 
         # Create request with same document
@@ -107,7 +111,9 @@ class TestImportAnalysis:
             authors=["Existing Author"],
             year=2023,
             venue="Existing Journal",
-            associated_files=[FileInfo(filename="existing_document.pdf", size=1024)],  # Add file to avoid validation failure
+            associated_files=[
+                FileInfo(filename="existing_document.pdf", size=1024)
+            ],  # Add file to avoid validation failure
         )
 
         request = ImportAnalysisRequest(workspace_id=workspace.id, documents={"existing_ref": file_metadata})
@@ -200,8 +206,13 @@ class TestImportAnalysis:
         """Test analysis of mixed document types (add, update, skip, failed)."""
         workspace = await WorkspaceFactory.create()
 
-        # Create existing document for skip test
-        existing_skip = await DocumentFactory.create(workspace=workspace, reference="skip_ref", doi="10.1234/skip.doi")
+        # Create existing document for skip test - with same file name
+        existing_skip = await DocumentFactory.create(
+            workspace=workspace,
+            reference="skip_ref",
+            doi="10.1234/skip.doi",
+            file_name="skip.pdf",  # Same file name as the new import
+        )
 
         # Create existing document for update test
         existing_update = await DocumentFactory.create(
@@ -224,7 +235,7 @@ class TestImportAnalysis:
                 authors=["Skip Author"],
                 year=2023,
                 venue="Skip Journal",
-                associated_files=[FileInfo(filename="skip.pdf", size=1024)],  # Add file to avoid validation failure
+                associated_files=[FileInfo(filename="skip.pdf", size=1024)],  # Same file name as existing
             ),
             "update_ref": DocumentMetadata(
                 document_create=DocumentCreate(
@@ -318,9 +329,9 @@ class TestValidateDocumentMetadata:
             workspace_id=uuid4(), reference="valid_ref", doi="10.1234/valid.doi", pmid="12345", file_name="valid.pdf"
         )
         file_metadata = DocumentMetadata(
-            document_create=document_create, 
+            document_create=document_create,
             title="Valid Doc",
-            associated_files=[FileInfo(filename="valid.pdf", size=1024)]
+            associated_files=[FileInfo(filename="valid.pdf", size=1024)],
         )
         errors = validate_document_metadata(file_metadata)
         assert len(errors) == 0

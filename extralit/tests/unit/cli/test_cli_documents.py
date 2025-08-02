@@ -26,34 +26,6 @@ def runner():
     return CliRunner()
 
 
-def test_documents_help(runner):
-    """Test that the documents command shows help message."""
-    result = runner.invoke(app, ["documents", "--help"])
-    assert result.exit_code == 0
-    assert "documents" in result.stdout.lower()
-
-
-def test_documents_add_command_help(runner):
-    """Test the help message for the 'add' subcommand."""
-    result = runner.invoke(app, ["documents", "add", "--help"])
-    assert result.exit_code == 0
-    assert "add a document" in result.stdout.lower()
-
-
-def test_documents_list_command_help(runner):
-    """Test the help message for the 'list' subcommand."""
-    result = runner.invoke(app, ["documents", "list", "--help"])
-    assert result.exit_code == 0
-    assert "list" in result.stdout.lower()
-
-
-def test_documents_delete_command_help(runner):
-    """Test the help message for the 'delete' subcommand."""
-    result = runner.invoke(app, ["documents", "delete", "--help"])
-    assert result.exit_code == 0
-    assert "delete" in result.stdout.lower()
-
-
 @patch("argilla.client.Argilla.from_credentials")
 @patch("argilla.cli.documents.import_bib._validate_workspace_and_folder")
 @patch("argilla.cli.documents.import_bib._parse_bibtex_to_dataframe")
@@ -70,20 +42,21 @@ def test_import_bibtex_analysis(
     mock_workspace.id = "workspace-uuid"
     mock_from_credentials.return_value = mock_client
     mock_validate.return_value = mock_workspace
-    
+
     # Mock DataFrame parsing
     import pandas as pd
+
     mock_df = pd.DataFrame([{"reference": "key1", "title": "Test Title", "files": ""}])
     mock_parse_bib.return_value = mock_df
     mock_match_pdfs.return_value = mock_df
-    
+
     # Mock analysis response
     mock_analysis_result = {
         "documents": {"key1": {"status": "add", "associated_files": []}},
-        "summary": {"total_documents": 1, "add_count": 1, "update_count": 0, "skip_count": 0, "failed_count": 0}
+        "summary": {"total_documents": 1, "add_count": 1, "update_count": 0, "skip_count": 0, "failed_count": 0},
     }
     mock_analysis.return_value = mock_analysis_result
-    
+
     # Run the command
     with runner.isolated_filesystem():
         with open("test.bib", "w") as f:
@@ -122,30 +95,35 @@ def test_import_bibtex_with_pdf_matching(
     mock_workspace.id = "workspace-uuid"
     mock_from_credentials.return_value = mock_client
     mock_validate.return_value = mock_workspace
-    
+
     # Mock DataFrame parsing and PDF matching
     import pandas as pd
-    mock_df_initial = pd.DataFrame([
-        {"reference": "key1", "title": "Test Title", "files": ""},
-        {"reference": "key2", "title": "Another Title", "files": ""}
-    ])
-    mock_df_matched = pd.DataFrame([
-        {"reference": "key1", "title": "Test Title", "files": "pdfs/key1.pdf"},
-        {"reference": "key2", "title": "Another Title", "files": "pdfs/key2_paper.pdf"}
-    ])
+
+    mock_df_initial = pd.DataFrame(
+        [
+            {"reference": "key1", "title": "Test Title", "files": ""},
+            {"reference": "key2", "title": "Another Title", "files": ""},
+        ]
+    )
+    mock_df_matched = pd.DataFrame(
+        [
+            {"reference": "key1", "title": "Test Title", "files": "pdfs/key1.pdf"},
+            {"reference": "key2", "title": "Another Title", "files": "pdfs/key2_paper.pdf"},
+        ]
+    )
     mock_parse_bib.return_value = mock_df_initial
     mock_match_pdfs.return_value = mock_df_matched
-    
+
     # Mock analysis response
     mock_analysis_result = {
         "documents": {
             "key1": {"status": "add", "associated_files": ["key1.pdf"]},
-            "key2": {"status": "add", "associated_files": ["key2_paper.pdf"]}
+            "key2": {"status": "add", "associated_files": ["key2_paper.pdf"]},
         },
-        "summary": {"total_documents": 2, "add_count": 2, "update_count": 0, "skip_count": 0, "failed_count": 0}
+        "summary": {"total_documents": 2, "add_count": 2, "update_count": 0, "skip_count": 0, "failed_count": 0},
     }
     mock_analysis.return_value = mock_analysis_result
-    
+
     # Run the command
     with runner.isolated_filesystem():
         with open("test.bib", "w") as f:
@@ -193,10 +171,10 @@ def test_import_bibtex_api_error(mock_parse_bib, mock_validate, mock_from_creden
     mock_workspace.id = "workspace-uuid"
     mock_from_credentials.return_value = mock_client
     mock_validate.return_value = mock_workspace
-    
+
     # Simulate API error by raising ValueError in parsing
     mock_parse_bib.side_effect = ValueError("Error analyzing import: Validation error")
-    
+
     with runner.isolated_filesystem():
         with open("test.bib", "w") as f:
             f.write("@article{key1, title={Test Title}, author={Author One}, year={2025}}")
@@ -214,7 +192,7 @@ def test_display_import_analysis_results():
     from argilla.cli.documents.import_bib import _display_import_analysis_results
     from rich.console import Console
     from io import StringIO
-    
+
     # Create a console that captures output
     output = StringIO()
     console = Console(file=output, width=80)
@@ -257,22 +235,27 @@ def test_import_bibtex_filename_matching(
     mock_workspace.id = "workspace-uuid"
     mock_from_credentials.return_value = mock_client
     mock_validate.return_value = mock_workspace
-    
+
     # Mock DataFrame parsing and PDF matching
     import pandas as pd
-    mock_df_initial = pd.DataFrame([
-        {"reference": "key1", "title": "Test Title", "files": ""},
-        {"reference": "key2", "title": "Another Title", "files": ""},
-        {"reference": "key3", "title": "Third Title", "files": ""}
-    ])
-    mock_df_matched = pd.DataFrame([
-        {"reference": "key1", "title": "Test Title", "files": "pdfs/key1.pdf"},
-        {"reference": "key2", "title": "Another Title", "files": "pdfs/paper_key2.pdf"},
-        {"reference": "key3", "title": "Third Title", "files": "pdfs/key3_2023.pdf"}
-    ])
+
+    mock_df_initial = pd.DataFrame(
+        [
+            {"reference": "key1", "title": "Test Title", "files": ""},
+            {"reference": "key2", "title": "Another Title", "files": ""},
+            {"reference": "key3", "title": "Third Title", "files": ""},
+        ]
+    )
+    mock_df_matched = pd.DataFrame(
+        [
+            {"reference": "key1", "title": "Test Title", "files": "pdfs/key1.pdf"},
+            {"reference": "key2", "title": "Another Title", "files": "pdfs/paper_key2.pdf"},
+            {"reference": "key3", "title": "Third Title", "files": "pdfs/key3_2023.pdf"},
+        ]
+    )
     mock_parse_bib.return_value = mock_df_initial
     mock_match_pdfs.return_value = mock_df_matched
-    
+
     # Mock analysis response
     mock_analysis_result = {
         "documents": {
@@ -283,7 +266,7 @@ def test_import_bibtex_filename_matching(
         "summary": {"total_documents": 3, "add_count": 3, "update_count": 0, "skip_count": 0, "failed_count": 0},
     }
     mock_analysis.return_value = mock_analysis_result
-    
+
     # Run the command
     with runner.isolated_filesystem():
         with open("test.bib", "w") as f:

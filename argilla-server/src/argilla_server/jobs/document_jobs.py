@@ -129,7 +129,7 @@ async def upload_reference_documents_job(
                         continue
 
                     # Upload file to S3
-                    object_path = files.get_pdf_s3_object_path(file_document_create.id)
+                    object_path = files.get_pdf_s3_object_path(file_document_create.id)  # type: ignore
 
                     # Check if file already exists with same hash
                     existing_files = files.list_objects(
@@ -194,6 +194,7 @@ async def upload_reference_documents_job(
                     file_result["error"] = error_msg
                     results["failed_files"] += 1
 
+                # Always add file_result to results["files"] at the end of each file processing
                 results["files"][filename] = file_result
 
             # Update overall success status

@@ -58,7 +58,9 @@ class TestImportsAPI:
         request = ImportAnalysisRequest(workspace_id=workspace.id, documents={})
 
         # Make request
-        response = await async_client.post("/api/v1/imports/analyze", headers=owner_auth_header, json=request.model_dump(mode="json"))
+        response = await async_client.post(
+            "/api/v1/imports/analyze", headers=owner_auth_header, json=request.model_dump(mode="json")
+        )
 
         # Verify response
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -83,7 +85,9 @@ class TestImportsAPI:
         )
 
         # Make request
-        response = await async_client.post("/api/v1/imports/analyze", headers=owner_auth_header, json=request.model_dump(mode="json"))
+        response = await async_client.post(
+            "/api/v1/imports/analyze", headers=owner_auth_header, json=request.model_dump(mode="json")
+        )
 
         # Verify response
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -119,7 +123,9 @@ class TestImportsAPI:
         )
 
         # Make request
-        response = await async_client.post("/api/v1/imports/analyze", headers=owner_auth_header, json=request.model_dump(mode="json"))
+        response = await async_client.post(
+            "/api/v1/imports/analyze", headers=owner_auth_header, json=request.model_dump(mode="json")
+        )
 
         # Verify response
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -154,7 +160,9 @@ class TestImportsAPI:
         )
 
         # Make request
-        response = await async_client.post("/api/v1/imports/analyze", headers=owner_auth_header, json=request.model_dump(mode="json"))
+        response = await async_client.post(
+            "/api/v1/imports/analyze", headers=owner_auth_header, json=request.model_dump(mode="json")
+        )
 
         # Verify response - should succeed but mark document as failed
         assert response.status_code == status.HTTP_200_OK
@@ -193,7 +201,9 @@ class TestImportsAPI:
         )
 
         # Make request
-        response = await async_client.post("/api/v1/imports/analyze", headers=owner_auth_header, json=request.model_dump(mode="json"))
+        response = await async_client.post(
+            "/api/v1/imports/analyze", headers=owner_auth_header, json=request.model_dump(mode="json")
+        )
 
         # Verify response
         assert response.status_code == status.HTTP_200_OK
@@ -234,23 +244,27 @@ class TestImportsAPI:
                     authors=["Existing Author"],
                     year=2023,
                     venue="Existing Journal",
-                    associated_files=[FileInfo(filename="existing.pdf", size=1024)],  # Add file to avoid validation failure
+                    associated_files=[
+                        FileInfo(filename="existing.pdf", size=1024)
+                    ],  # Add file to avoid validation failure
                 )
             },
         )
 
         # Make request
-        response = await async_client.post("/api/v1/imports/analyze", headers=owner_auth_header, json=request.model_dump(mode="json"))
+        response = await async_client.post(
+            "/api/v1/imports/analyze", headers=owner_auth_header, json=request.model_dump(mode="json")
+        )
 
         # Verify response
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert "documents" in data
         assert "existing_ref" in data["documents"]
-        assert data["documents"]["existing_ref"]["status"] == ImportStatus.SKIP
+        assert data["documents"]["existing_ref"]["status"] == ImportStatus.UPDATE
         assert data["summary"]["add_count"] == 0
-        assert data["summary"]["update_count"] == 0
-        assert data["summary"]["skip_count"] == 1
+        assert data["summary"]["update_count"] == 1
+        assert data["summary"]["skip_count"] == 0
         assert data["summary"]["failed_count"] == 0
 
     async def test_analyze_import_update_documents(self, async_client: AsyncClient, owner_auth_header: dict):
@@ -287,7 +301,9 @@ class TestImportsAPI:
         )
 
         # Make request
-        response = await async_client.post("/api/v1/imports/analyze", headers=owner_auth_header, json=request.model_dump(mode="json"))
+        response = await async_client.post(
+            "/api/v1/imports/analyze", headers=owner_auth_header, json=request.model_dump(mode="json")
+        )
 
         # Verify response
         assert response.status_code == status.HTTP_200_OK
@@ -380,7 +396,9 @@ class TestImportsAPI:
         )
 
         # Make request
-        response = await async_client.post("/api/v1/imports/analyze", headers=owner_auth_header, json=request.model_dump(mode="json"))
+        response = await async_client.post(
+            "/api/v1/imports/analyze", headers=owner_auth_header, json=request.model_dump(mode="json")
+        )
 
         # Verify response - should succeed with mixed statuses
         assert response.status_code == status.HTTP_200_OK
@@ -388,14 +406,14 @@ class TestImportsAPI:
 
         # Check document statuses
         assert data["documents"]["new_ref"]["status"] == ImportStatus.ADD
-        assert data["documents"]["skip_ref"]["status"] == ImportStatus.SKIP
+        assert data["documents"]["skip_ref"]["status"] == ImportStatus.UPDATE
         assert data["documents"]["update_ref"]["status"] == ImportStatus.UPDATE
         assert data["documents"]["failed_ref"]["status"] == ImportStatus.FAILED
 
         # Check summary counts
         assert data["summary"]["add_count"] == 1
-        assert data["summary"]["update_count"] == 1
-        assert data["summary"]["skip_count"] == 1
+        assert data["summary"]["update_count"] == 2
+        assert data["summary"]["skip_count"] == 0
         assert data["summary"]["failed_count"] == 1
 
     async def test_create_import_history_unauthorized(self, async_client: AsyncClient):
@@ -423,7 +441,9 @@ class TestImportsAPI:
         )
 
         # Make request
-        response = await async_client.post("/api/v1/imports/history", headers=owner_auth_header, json=request.model_dump(mode="json"))
+        response = await async_client.post(
+            "/api/v1/imports/history", headers=owner_auth_header, json=request.model_dump(mode="json")
+        )
 
         # Verify response
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -444,7 +464,9 @@ class TestImportsAPI:
         )
 
         # Make request
-        response = await async_client.post("/api/v1/imports/history", headers=owner_auth_header, json=request.model_dump(mode="json"))
+        response = await async_client.post(
+            "/api/v1/imports/history", headers=owner_auth_header, json=request.model_dump(mode="json")
+        )
 
         # Verify response
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -466,7 +488,9 @@ class TestImportsAPI:
         )
 
         # Make request
-        response = await async_client.post("/api/v1/imports/history", headers=owner_auth_header, json=request.model_dump(mode="json"))
+        response = await async_client.post(
+            "/api/v1/imports/history", headers=owner_auth_header, json=request.model_dump(mode="json")
+        )
 
         # Verify response
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -494,7 +518,9 @@ class TestImportsAPI:
         )
 
         # Make request
-        response = await async_client.post("/api/v1/imports/history", headers=owner_auth_header, json=request.model_dump(mode="json"))
+        response = await async_client.post(
+            "/api/v1/imports/history", headers=owner_auth_header, json=request.model_dump(mode="json")
+        )
 
         # Verify response
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -555,7 +581,9 @@ class TestImportsAPI:
         )
 
         # Make request
-        response = await async_client.post("/api/v1/imports/history", headers=owner_auth_header, json=request.model_dump(mode="json"))
+        response = await async_client.post(
+            "/api/v1/imports/history", headers=owner_auth_header, json=request.model_dump(mode="json")
+        )
 
         # Verify response
         assert response.status_code == status.HTTP_201_CREATED
@@ -632,7 +660,9 @@ class TestImportsAPI:
         )
 
         # Make request
-        response = await async_client.post("/api/v1/imports/history", json=request.model_dump(mode="json"))
+        response = await async_client.post(
+            "/api/v1/imports/history", headers=owner_auth_header, json=request.model_dump(mode="json")
+        )
 
         # Verify response
         assert response.status_code == status.HTTP_201_CREATED

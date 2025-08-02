@@ -84,13 +84,13 @@ class TestImportHistory:
             workspace=workspace,
             user=user,
             filename="test-library.bib",
-            data=data,
+            data=metadata,
         )
 
         assert import_history.workspace_id == workspace.id
         assert import_history.user_id == user.id
         assert import_history.filename == "test-library.bib"
-        assert import_history.data == data
+        assert import_history.data == metadata
         assert import_history.inserted_at is not None
 
     async def test_import_history_relationships(self):
