@@ -12,7 +12,7 @@ on:
   # schedule:
   #   - cron: '15 16 * * 3'
   pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
+    types: [opened, edited, synchronize, reopened, ready_for_review]
     paths:
       - "extralit/**"
       - "argilla-server/**"
