@@ -20,21 +20,20 @@ from argilla_server.jobs.document_jobs import upload_reference_documents_job
 from tests.factories import WorkspaceFactory, UserFactory
 
 
-
-
 @pytest.mark.asyncio
 class TestDocumentJobs:
     """Test suite for document job functions."""
 
     @patch("argilla_server.jobs.document_jobs.files")
     @patch("argilla_server.jobs.document_jobs.datasets")
-    async def test_upload_reference_documents_job_success(self, mock_datasets, mock_files):
+    @patch("argilla_server.jobs.document_jobs.imports")
+    async def test_upload_reference_documents_job_success(self, mock_imports, mock_datasets, mock_files):
         """Test successful reference documents upload job."""
         # Create test data
         workspace = await WorkspaceFactory.create()
         user = await UserFactory.create()
         reference = "test_ref"
-        
+
         # Create document data
         document_data = {
             "workspace_id": str(workspace.id),
@@ -55,6 +54,9 @@ class TestDocumentJobs:
         mock_files.get_pdf_s3_object_path.return_value = "documents/test-id/test.pdf"
         mock_files.put_object.return_value = MagicMock(bucket_name=workspace.name, object_name="test.pdf")
         mock_files.get_s3_object_url.return_value = f"s3://{workspace.name}/test.pdf"
+
+        # Mock imports.check_existing_document to return None (no existing document)
+        mock_imports.check_existing_document.return_value = None
 
         # Mock document creation
         mock_document = MagicMock()
@@ -81,7 +83,7 @@ class TestDocumentJobs:
         workspace_id = uuid4()
         user = await UserFactory.create()
         reference = "test_ref"
-        
+
         # Create document data
         document_data = {
             "workspace_id": str(workspace_id),
@@ -105,13 +107,14 @@ class TestDocumentJobs:
 
     @patch("argilla_server.jobs.document_jobs.files")
     @patch("argilla_server.jobs.document_jobs.datasets")
-    async def test_upload_reference_documents_job_partial_failure(self, mock_datasets, mock_files):
+    @patch("argilla_server.jobs.document_jobs.imports")
+    async def test_upload_reference_documents_job_partial_failure(self, mock_imports, mock_datasets, mock_files):
         """Test reference documents upload job with partial failure."""
         # Create test data
         workspace = await WorkspaceFactory.create()
         user = await UserFactory.create()
         reference = "test_ref"
-        
+
         # Create document data
         document_data = {
             "workspace_id": str(workspace.id),
@@ -130,13 +133,16 @@ class TestDocumentJobs:
         mock_files.get_minio_client.return_value = MagicMock()
         mock_files.list_objects.return_value = MagicMock(objects=[])
         mock_files.get_pdf_s3_object_path.return_value = "documents/test-id/test.pdf"
-        
+
         # First call succeeds, second fails
         mock_files.put_object.side_effect = [
             MagicMock(bucket_name=workspace.name, object_name="test1.pdf"),
-            Exception("S3 upload failed")
+            Exception("S3 upload failed"),
         ]
         mock_files.get_s3_object_url.return_value = f"s3://{workspace.name}/test1.pdf"
+
+        # Mock imports.check_existing_document to return None (no existing document)
+        mock_imports.check_existing_document.return_value = None
 
         # Mock document creation - only called once for successful file
         mock_document = MagicMock()
