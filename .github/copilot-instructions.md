@@ -3,21 +3,6 @@
 This guide provides an overview of the Extralit codebase (https://github.com/Extralit/extralit) architecture to help new contributors understand how the project is organized. Extralit is a monorepo containing multiple interconnected components that work together to provide document extraction, processing, and annotation capabilities.
 
 ## Development Workflow
-
-- For backend development:
-  1. Make sure elasticsearch, redis, and minio services are running locally
-  2. Navigate to the `argilla-server/` directory
-  3. Install dependencies with `pdm install --dev` if not already done
-  4. Run `pdm run server-dev`, which loads env vars from `argilla-server/.env.dev`.
-- For frontend development:
-  1. Navigate to the `argilla-frontend/` directory
-  2. Install dependencies with `npm install`  if not already done
-  3. Start the development server with `npm run dev`
-- For Python SDK development:
-  1. Navigate to the `extralit/` directory
-  2. Install dependencies with `pdm install --dev` if not already done
-  3. Run tests with `pdm run test`
-
 When contributing to Extralit, consider these guidelines:
 
 1. **Understand the context**: Identify which domain context your change belongs to
@@ -53,9 +38,30 @@ Key directories:
   - `base/`: Reusable UI components (buttons, inputs, modals, etc.)
   - `features/`: Feature-specific components (annotation, dataset creation, etc.)
 - `pages/`: Application routes and page components
-- `v1/domain/`: Core domain entities and business logic
+- `v1/`: Version 1 application logic
+  - `v1/domain/`: Core domain entities and business logic, organized into
+    - `entities/`: Domain entities
+    - `events/`: Domain events (Event suffix)
+    - `services/`: Domain service interfaces (I prefix)
+    - `usecases/`: Use case implementations (kebab-case, use-case suffix)
+  - `v1/infrastructure/`: Infrastructure implementations
+    - `events/`: Event handlers (EventHandler suffix)
+    - `repositories/`: API repository implementations (Repository suffix)
+    - `services/`: UI hooks and utilities (use* pattern)
+    - `storage/`: Storage clients (Storage suffix)
+    - `types/`: Infrastructure types and API models
 - `plugins/`: Vue.js plugins and extensions
 - `assets/`: Static assets like styles, fonts, and images
+
+### Key Frontend Patterns
+- **Components**: Base components in `components/base/`, feature components in `components/features/`
+- **Pages**: Nuxt.js file-based routing in `pages/`
+- **Stores**: Pinia stores in `v1/store/`
+- **Domain Logic**: Dependency injection in `v1/di/`
+- **Axios**: @nuxt/axios with `{proxy: true, browserBaseURL: "api"}`
+- **Styling**: SCSS in `assets/scss/`, component-scoped
+- **View Models**: `setup(props) { return useViewModelName(props); }` pattern
+- **BaseSimpleTable**: Use existing `BaseSimpleTable.vue` for tabular display
 
 ### Backend Server (`argilla-server/src/argilla_server`)
 

@@ -47,7 +47,18 @@ argilla-frontend/
 ├── plugins/                # Vue plugins and extensions
 ├── assets/                 # Static assets (SCSS, icons)
 ├── translation/            # i18n language files
-├── v1/                     # Domain logic (DI, stores)
+├── v1/                     # Domain and Infrastructure layers
+│   ├── domain/             # Domain logic (entities, events, services, usecases)
+│   │   ├── entities/
+│   │   ├── events/
+│   │   ├── services/
+│   │   └── usecases/
+│   └── infrastructure/     # Infrastructure implementations (events, repositories, services, storage, types)
+│       ├── events/
+│       ├── repositories/
+│       ├── services/
+│       ├── storage/
+│       └── types/
 ├── e2e/                    # Playwright e2e tests
 └── package.json            # npm configuration
 ```
