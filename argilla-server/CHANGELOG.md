@@ -14,6 +14,25 @@ These are the section headers that we use:
 * "Security" in case of vulnerabilities.
 -->
 
+## [Extralit] [0.6.0](https://github.com/extralit/extralit/compare/v0.5.0...v0.6.0)
+
+### Added
+- Papers Library Importer: New import analysis and bulk upload endpoints with associated Pydantic schemas and handlers
+- CLI import command enhancements for BibTeX parsing and bulk upload testing
+- ImportHistory model and Alembic migration for storing import operation history
+- Document upload job system for multi-file reference uploads with retry and progress tracking
+
+### Changed
+- Import analysis workflow integration into home page and modal components
+- Updated workspace selection UI for single workspace mode
+- Sequential batch upload logic with paginated bulk requests
+
+### Fixed
+- Component state persistence across import modal steps
+- PDF-to-reference matching algorithm improvements
+- Cleanup of temporary files after job completion
+
+
 ## [Extralit] [0.5.0](https://github.com/extralit/extralit/compare/v0.4.0...v0.5.0)
 
 ### Added

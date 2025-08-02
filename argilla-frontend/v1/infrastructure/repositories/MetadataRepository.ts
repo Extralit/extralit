@@ -63,21 +63,15 @@ export class MetadataRepository {
     }
   }
 
-  async create(
-    datasetId: DatasetId,
-    metadata: MetadataCreation
-  ): Promise<BackendMetadata> {
+  async create(datasetId: DatasetId, metadata: MetadataCreation): Promise<BackendMetadata> {
     try {
-      const { data } = await this.axios.post<BackendMetadata>(
-        `/v1/datasets/${datasetId}/metadata-properties`,
-        {
-          name: metadata.name,
-          title: metadata.title,
-          settings: {
-            type: metadata.adapteType,
-          },
-        }
-      );
+      const { data } = await this.axios.post<BackendMetadata>(`/v1/datasets/${datasetId}/metadata-properties`, {
+        name: metadata.name,
+        title: metadata.title,
+        settings: {
+          type: metadata.adapteType,
+        },
+      });
 
       revalidateCache(`/v1/datasets/${datasetId}/metadata-properties`);
 
@@ -89,19 +83,14 @@ export class MetadataRepository {
     }
   }
 
-  private createRequest({
-    title,
-    visibleForAnnotators,
-  }: Metadata): Partial<BackendMetadata> {
+  private createRequest({ title, visibleForAnnotators }: Metadata): Partial<BackendMetadata> {
     return {
       title,
       visible_for_annotators: visibleForAnnotators,
     };
   }
 
-  private async completeEmptyMetadataFilters(
-    metadataFilters?: BackendMetadata[]
-  ): Promise<BackendMetadata[]> {
+  private async completeEmptyMetadataFilters(metadataFilters?: BackendMetadata[]): Promise<BackendMetadata[]> {
     if (!metadataFilters) return [];
 
     const metadataWithNoValues = metadataFilters.filter((m) => {
@@ -113,9 +102,7 @@ export class MetadataRepository {
     });
 
     const metrics = await Promise.allSettled(
-      metadataWithNoValues.map((m) =>
-        this.metadataMetricsRepository.getMetric(m.id)
-      )
+      metadataWithNoValues.map((m) => this.metadataMetricsRepository.getMetric(m.id))
     );
 
     metrics.forEach((response) => {

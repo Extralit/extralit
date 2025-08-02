@@ -65,9 +65,12 @@ services:
     environment:
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
+    # networks:
+    #   - argilla
     ports:
       - "9000:9000"
       - "9090:9090"
+    network_mode: "host"
     deploy:
       resources:
         limits:
@@ -91,6 +94,7 @@ services:
       - argilla
     ports:
       - "9200:9200"
+      - "9300:9300"
     volumes:
       - elasticdata:/usr/share/elasticsearch/data/
 

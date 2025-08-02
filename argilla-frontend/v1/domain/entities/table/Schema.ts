@@ -1,4 +1,3 @@
-
 export interface DataFrameField {
   name: string;
   type: string;
@@ -23,8 +22,8 @@ export class DataFrameSchema {
   is_latest?: boolean;
 
   constructor(
-    fields: DataFrameField[] = [], 
-    primaryKey: string[] = [], 
+    fields: DataFrameField[] = [],
+    primaryKey: string[] = [],
     metadata?: FileMetadata,
     schemaName?: string,
     version_id?: string,
@@ -39,27 +38,27 @@ export class DataFrameSchema {
   }
 
   get fieldNames(): string[] {
-    return this.fields.map(f => f.name);
+    return this.fields.map((f) => f.name);
   }
 
   addField(field: DataFrameField) {
-    if (!this.fields.find(f => f.name === field.name)) {
+    if (!this.fields.find((f) => f.name === field.name)) {
       this.fields.push(field);
     }
   }
 
   removeField(fieldName: string) {
-    this.fields = this.fields.filter(f => f.name !== fieldName);
+    this.fields = this.fields.filter((f) => f.name !== fieldName);
   }
 
   renameField(oldName: string, newName: string) {
-    const field = this.fields.find(f => f.name === oldName);
+    const field = this.fields.find((f) => f.name === oldName);
     if (field) {
       field.name = newName;
     }
-    
+
     if (this.primaryKey.includes(oldName)) {
-      this.primaryKey = this.primaryKey.map(k => k === oldName ? newName : k);
+      this.primaryKey = this.primaryKey.map((k) => (k === oldName ? newName : k));
     }
   }
 }

@@ -12,7 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Add a document to a workspace."""
+"""
+Document import CLI with multi-file support per reference.
+
+This module implements the CLI interface for the papers library importer feature,
+supporting the new multi-file schema where:
+
+- Each reference may have multiple associated files (DocumentImportAnalysis.associated_files)
+- Jobs are created per reference (not per file) to process multiple files together
+- BulkDocumentInfo supports one file per entry, but multiple entries per reference
+- DocumentsBulkResponse returns job_ids indexed by reference key
+- Import analysis tracks files at both reference and individual file levels
+
+The CLI mirrors the frontend UI workflow:
+1. Parse BibTeX and match PDF files (frontend processing)
+2. Send analysis request with file metadata (ImportAnalysisRequest)
+3. Display preview with multi-file information (ImportAnalysisResponse)
+4. Execute bulk upload with job tracking (DocumentsBulkResponse)
+"""
 
 from pathlib import Path
 from typing import Optional

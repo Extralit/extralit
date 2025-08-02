@@ -2,11 +2,11 @@
   <div class="dataset-list__wrapper">
     <div class="dataset-list__header">
       <h1 class="dataset-list__title" v-text="$t('home.argillaDatasets')" />
-      <div class="dataset-list__filters" v-if="datasets.length">
+      <div class="dataset-list__filters">
         <WorkspacesFilter
           :workspaces="formattedWorkspaces"
-          v-model="selectedWorkspaces"
-          @on-change-workspaces-filter="onChangeWorkspaceFilter"
+          v-model="selectedWorkspace"
+          @on-change-workspace-filter="onChangeWorkspaceFilter"
         />
         <DatasetsSort
           @on-change-direction="onChangeDirection"
@@ -15,18 +15,11 @@
           :sorted-order="sortedOrder"
           :sort-options="sortOptions"
         />
-        <BaseSearchBar
-          @input="onSearch"
-          :querySearch="querySearch"
-          :placeholder="$t('searchDatasets')"
-        />
+        <BaseSearchBar @input="onSearch" :querySearch="querySearch" :placeholder="$t('searchDatasets')" />
       </div>
     </div>
     <div class="dataset-list__content">
-      <DatasetListCards
-        v-if="datasets.length"
-        :datasets="filteredDatasetsByWorkspaces"
-      />
+      <DatasetListCards v-if="datasets.length" :datasets="filteredDatasetsByWorkspaces" />
       <DatasetsEmpty v-else @on-click-card="cardAction" />
     </div>
   </div>
@@ -54,7 +47,7 @@ export default {
         { value: "lastActivityAt", label: this.$t("home.updatedAt") },
         { value: "createdAt", label: this.$t("home.createdAt") },
       ],
-      selectedWorkspaces: [],
+      selectedWorkspace: null,
     };
   },
   computed: {
@@ -64,27 +57,22 @@ export default {
       );
     },
     filteredDatasetsByWorkspaces() {
-      return this.selectedWorkspaces.length
-        ? this.filteredDatasets.filter((dataset) =>
-            this.selectedWorkspaces.includes(dataset.workspaceName)
-          )
+      return this.selectedWorkspace
+        ? this.filteredDatasets.filter((dataset) => dataset.workspaceName === this.selectedWorkspace)
         : this.filteredDatasets;
     },
     sortedDatasets() {
       const compare = (a, b) => {
         const fieldA = a[this.sortedByField];
         const fieldB = b[this.sortedByField];
-        return this.sortedOrder === "asc"
-          ? fieldA.localeCompare(fieldB)
-          : fieldB.localeCompare(fieldA);
+        return this.sortedOrder === "asc" ? fieldA.localeCompare(fieldB) : fieldB.localeCompare(fieldA);
       };
       return this.datasets.sort(compare);
     },
     formattedWorkspaces() {
       return this.workspaces.map(({ name }) => ({
         name,
-        numberOfDatasets: this.datasets.filter((d) => d.workspaceName === name)
-          .length,
+        numberOfDatasets: this.datasets.filter((d) => d.workspaceName === name).length,
       }));
     },
   },
@@ -98,17 +86,24 @@ export default {
     onChangeField(field) {
       this.sortedByField = field;
     },
-    onChangeWorkspaceFilter(workspaces) {
-      this.selectedWorkspaces = workspaces;
+    onChangeWorkspaceFilter(workspace) {
+      this.selectedWorkspace = workspace;
+      // Emit workspace ID for import modal
+      const selectedWorkspaceObj = this.workspaces.find((w) => w.name === workspace);
+      if (selectedWorkspaceObj) {
+        this.$emit("workspace-selected", selectedWorkspaceObj);
+      } else {
+        this.$emit("workspace-selected", null);
+      }
     },
     cardAction(action) {
       this.$emit("on-click-card", action);
     },
   },
   mounted() {
-    this.currentWorkspace = this.$route.query.workspaces;
+    this.currentWorkspace = this.$route.query.workspace;
     if (this.currentWorkspace) {
-      this.onChangeWorkspaceFilter(this.currentWorkspace.split(","));
+      this.onChangeWorkspaceFilter(this.currentWorkspace);
     }
   },
 };

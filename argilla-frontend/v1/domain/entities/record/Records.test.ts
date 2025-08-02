@@ -47,20 +47,7 @@ describe("Records", () => {
   describe("hasRecordsToAnnotate", () => {
     test("should return true when the records has records to annotate", () => {
       const records = new Records([
-        new Record(
-          "1",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          1,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-02")
-        ),
+        new Record("1", "1", [], [], null, [], 1, 1, {}, "pending", new Date("2021-01-01"), new Date("2021-01-02")),
       ]);
 
       const hasRecordsToAnnotate = records.hasRecordsToAnnotate;
@@ -86,20 +73,7 @@ describe("Records", () => {
       };
 
       const records = new Records([
-        new Record(
-          "1",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          1,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-02")
-        ),
+        new Record("1", "1", [], [], null, [], 1, 1, {}, "pending", new Date("2021-01-01"), new Date("2021-01-02")),
       ]);
 
       const exists = records.existsRecordOn(page);
@@ -115,20 +89,7 @@ describe("Records", () => {
       };
 
       const records = new Records([
-        new Record(
-          "1",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          2,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-02")
-        ),
+        new Record("1", "1", [], [], null, [], 1, 2, {}, "pending", new Date("2021-01-01"), new Date("2021-01-02")),
       ]);
 
       const exists = records.existsRecordOn(page);
@@ -146,20 +107,7 @@ describe("Records", () => {
       };
 
       const records = new Records([
-        new Record(
-          "1",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          1,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-02")
-        ),
+        new Record("1", "1", [], [], null, [], 1, 1, {}, "pending", new Date("2021-01-01"), new Date("2021-01-02")),
       ]);
 
       const record = records.getRecordOn(page);
@@ -179,7 +127,7 @@ describe("Records", () => {
         new Date("2021-01-01T00:00:00.000Z"),
         new Date("2021-01-01T00:00:00.000Z")
       );
-      
+
       // Compare everything except the updatedAt field which might be NaN
       expect(record.id).toEqual(expectedRecord.id);
       expect(record.datasetId).toEqual(expectedRecord.datasetId);
@@ -201,20 +149,7 @@ describe("Records", () => {
       };
 
       const records = new Records([
-        new Record(
-          "1",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          2,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-02")
-        ),
+        new Record("1", "1", [], [], null, [], 1, 2, {}, "pending", new Date("2021-01-01"), new Date("2021-01-02")),
       ]);
 
       const record = records.getRecordOn(page);
@@ -257,17 +192,7 @@ describe("Records", () => {
 
   describe("synchronizePagination", () => {
     test("the current page should be from 1 to 10 when no have records", () => {
-      const criteria = new RecordCriteria(
-        "1",
-        "1",
-        "pending",
-        "",
-        "",
-        "",
-        "",
-        "",
-        null
-      );
+      const criteria = new RecordCriteria("1", "1", "pending", "", "", "", "", "", null);
       const records = new Records([]);
 
       records.synchronizeQueuePagination(criteria);
@@ -276,158 +201,18 @@ describe("Records", () => {
     });
 
     test("the page should be from 10 and many 10 when the user submit one record in current queue and going to forward", () => {
-      const criteria = new RecordCriteria(
-        "1",
-        "10",
-        "pending",
-        "",
-        "",
-        "",
-        "",
-        "",
-        null
-      );
+      const criteria = new RecordCriteria("1", "10", "pending", "", "", "", "", "", null);
       const records = new Records([
-        new Record(
-          "1",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          1,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-02")
-        ),
-        new Record(
-          "2",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          2,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-02")
-        ),
-        new Record(
-          "3",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          3,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-02")
-        ),
-        new Record(
-          "4",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          4,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-02")
-        ),
-        new Record(
-          "5",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          5,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-02")
-        ),
-        new Record(
-          "6",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          6,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-02")
-        ),
-        new Record(
-          "7",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          7,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-02")
-        ),
-        new Record(
-          "8",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          8,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-02")
-        ),
-        new Record(
-          "9",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          9,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-02")
-        ),
-        new Record(
-          "10",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          10,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-02")
-        ),
+        new Record("1", "1", [], [], null, [], 1, 1, {}, "pending", new Date("2021-01-01"), new Date("2021-01-02")),
+        new Record("2", "1", [], [], null, [], 1, 2, {}, "pending", new Date("2021-01-01"), new Date("2021-01-02")),
+        new Record("3", "1", [], [], null, [], 1, 3, {}, "pending", new Date("2021-01-01"), new Date("2021-01-02")),
+        new Record("4", "1", [], [], null, [], 1, 4, {}, "pending", new Date("2021-01-01"), new Date("2021-01-02")),
+        new Record("5", "1", [], [], null, [], 1, 5, {}, "pending", new Date("2021-01-01"), new Date("2021-01-02")),
+        new Record("6", "1", [], [], null, [], 1, 6, {}, "pending", new Date("2021-01-01"), new Date("2021-01-02")),
+        new Record("7", "1", [], [], null, [], 1, 7, {}, "pending", new Date("2021-01-01"), new Date("2021-01-02")),
+        new Record("8", "1", [], [], null, [], 1, 8, {}, "pending", new Date("2021-01-01"), new Date("2021-01-02")),
+        new Record("9", "1", [], [], null, [], 1, 9, {}, "pending", new Date("2021-01-01"), new Date("2021-01-02")),
+        new Record("10", "1", [], [], null, [], 1, 10, {}, "pending", new Date("2021-01-01"), new Date("2021-01-02")),
       ]);
       records.records[0].submit({
         id: "1",
@@ -444,158 +229,18 @@ describe("Records", () => {
     });
 
     test("the page should be from 9 and many 10 when the user submit two record in current queue and going to forward", () => {
-      const criteria = new RecordCriteria(
-        "1",
-        "10",
-        "pending",
-        "",
-        "",
-        "",
-        "",
-        "",
-        null
-      );
+      const criteria = new RecordCriteria("1", "10", "pending", "", "", "", "", "", null);
       const records = new Records([
-        new Record(
-          "1",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          1,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-02")
-        ),
-        new Record(
-          "2",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          2,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-02")
-        ),
-        new Record(
-          "3",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          3,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-02")
-        ),
-        new Record(
-          "4",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          4,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-02")
-        ),
-        new Record(
-          "5",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          5,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-02")
-        ),
-        new Record(
-          "6",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          6,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-02")
-        ),
-        new Record(
-          "7",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          7,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-02")
-        ),
-        new Record(
-          "8",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          8,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-02")
-        ),
-        new Record(
-          "9",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          9,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-02")
-        ),
-        new Record(
-          "10",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          10,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-02")
-        ),
+        new Record("1", "1", [], [], null, [], 1, 1, {}, "pending", new Date("2021-01-01"), new Date("2021-01-02")),
+        new Record("2", "1", [], [], null, [], 1, 2, {}, "pending", new Date("2021-01-01"), new Date("2021-01-02")),
+        new Record("3", "1", [], [], null, [], 1, 3, {}, "pending", new Date("2021-01-01"), new Date("2021-01-02")),
+        new Record("4", "1", [], [], null, [], 1, 4, {}, "pending", new Date("2021-01-01"), new Date("2021-01-02")),
+        new Record("5", "1", [], [], null, [], 1, 5, {}, "pending", new Date("2021-01-01"), new Date("2021-01-02")),
+        new Record("6", "1", [], [], null, [], 1, 6, {}, "pending", new Date("2021-01-01"), new Date("2021-01-02")),
+        new Record("7", "1", [], [], null, [], 1, 7, {}, "pending", new Date("2021-01-01"), new Date("2021-01-02")),
+        new Record("8", "1", [], [], null, [], 1, 8, {}, "pending", new Date("2021-01-01"), new Date("2021-01-02")),
+        new Record("9", "1", [], [], null, [], 1, 9, {}, "pending", new Date("2021-01-01"), new Date("2021-01-02")),
+        new Record("10", "1", [], [], null, [], 1, 10, {}, "pending", new Date("2021-01-01"), new Date("2021-01-02")),
       ]);
       records.records[0].submit({
         id: "1",
@@ -618,46 +263,10 @@ describe("Records", () => {
     });
 
     test("the page should be from 2 and many 1 when the user start with page 3 and go to backward", () => {
-      const criteria = new RecordCriteria(
-        "1",
-        "3",
-        "pending",
-        "",
-        "",
-        "",
-        "",
-        "",
-        null
-      );
+      const criteria = new RecordCriteria("1", "3", "pending", "", "", "", "", "", null);
       const records = new Records([
-        new Record(
-          "1",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          3,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-02")
-        ),
-        new Record(
-          "2",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          4,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-02")
-        ),
+        new Record("1", "1", [], [], null, [], 1, 3, {}, "pending", new Date("2021-01-01"), new Date("2021-01-02")),
+        new Record("2", "1", [], [], null, [], 1, 4, {}, "pending", new Date("2021-01-01"), new Date("2021-01-02")),
       ]);
       criteria.previousPage();
 
@@ -698,34 +307,8 @@ describe("Records", () => {
         "record.1.vector.2.limit.50.order.most"
       );
       const records = new Records([
-        new Record(
-          "1",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          3,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-02")
-        ),
-        new Record(
-          "2",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          4,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-02")
-        ),
+        new Record("1", "1", [], [], null, [], 1, 3, {}, "pending", new Date("2021-01-01"), new Date("2021-01-02")),
+        new Record("2", "1", [], [], null, [], 1, 4, {}, "pending", new Date("2021-01-01"), new Date("2021-01-02")),
       ]);
       criteria.previousPage();
 
@@ -735,17 +318,7 @@ describe("Records", () => {
     });
 
     test("the current page should be from 1 and many 10 when the user is paginating forward from page 8 and the queue has 8 records in draft but status is pending", () => {
-      const criteria = new RecordCriteria(
-        "1",
-        "9",
-        "pending",
-        "",
-        "",
-        "",
-        "",
-        "",
-        ""
-      );
+      const criteria = new RecordCriteria("1", "9", "pending", "", "", "", "", "", "");
       const records = new Records([
         new Record(
           "1",
@@ -867,32 +440,9 @@ describe("Records", () => {
     });
 
     test("when the user is in bulk mode but was in focus mode the page should be from 1 and many 10", () => {
-      const criteria = new RecordCriteria(
-        "1",
-        "5",
-        "pending",
-        "",
-        "",
-        "",
-        "",
-        "",
-        ""
-      );
+      const criteria = new RecordCriteria("1", "5", "pending", "", "", "", "", "", "");
       const records = new Records([
-        new Record(
-          "1",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          5,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-02")
-        ),
+        new Record("1", "1", [], [], null, [], 1, 5, {}, "pending", new Date("2021-01-01"), new Date("2021-01-02")),
       ]);
 
       criteria.page.bulkMode();
@@ -903,32 +453,9 @@ describe("Records", () => {
     });
 
     test("when the user was in bulk mode but is in focus mode the page should be from 1 and many 10", () => {
-      const criteria = new RecordCriteria(
-        "1",
-        "55",
-        "pending",
-        "",
-        "",
-        "",
-        "",
-        "",
-        ""
-      );
+      const criteria = new RecordCriteria("1", "55", "pending", "", "", "", "", "", "");
       const records = new Records([
-        new Record(
-          "1",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          55,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-02")
-        ),
+        new Record("1", "1", [], [], null, [], 1, 55, {}, "pending", new Date("2021-01-01"), new Date("2021-01-02")),
       ]);
 
       criteria.page.bulkMode();
@@ -942,32 +469,9 @@ describe("Records", () => {
     });
 
     test("when the user was in bulk mode but is in focus mode the page should be from 1 and many 200 if the user is searching by similarity", () => {
-      const criteria = new RecordCriteria(
-        "1",
-        "55",
-        "pending",
-        "",
-        "",
-        "",
-        "",
-        "",
-        ""
-      );
+      const criteria = new RecordCriteria("1", "55", "pending", "", "", "", "", "", "");
       const records = new Records([
-        new Record(
-          "1",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          55,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-02")
-        ),
+        new Record("1", "1", [], [], null, [], 1, 55, {}, "pending", new Date("2021-01-01"), new Date("2021-01-02")),
       ]);
 
       const similarityCriteria = new SimilarityCriteria();
@@ -985,32 +489,9 @@ describe("Records", () => {
     });
 
     test("when te user is in bulk mode and is paginating backward the page should be from 1 and many 10 when the user is in page 11", () => {
-      const criteria = new RecordCriteria(
-        "1",
-        "11",
-        "pending",
-        "",
-        "",
-        "",
-        "",
-        "",
-        ""
-      );
+      const criteria = new RecordCriteria("1", "11", "pending", "", "", "", "", "", "");
       const records = new Records([
-        new Record(
-          "1",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          11,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-02")
-        ),
+        new Record("1", "1", [], [], null, [], 1, 11, {}, "pending", new Date("2021-01-01"), new Date("2021-01-02")),
       ]);
 
       criteria.page.bulkMode();
@@ -1026,43 +507,17 @@ describe("Records", () => {
   describe("append", () => {
     test("should append the new records to the current records when not exists", () => {
       const records = new Records([
-        new Record(
-          "2",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          4,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-02")
-        ),
+        new Record("2", "1", [], [], null, [], 1, 4, {}, "pending", new Date("2021-01-01"), new Date("2021-01-02")),
       ]);
       const newRecords = new Records([
-        new Record(
-          "1",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          3,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-02")
-        ),
+        new Record("1", "1", [], [], null, [], 1, 3, {}, "pending", new Date("2021-01-01"), new Date("2021-01-02")),
       ]);
 
       records.append(newRecords);
 
       // Verify key properties of each record without comparing dates directly
       expect(records.records.length).toEqual(2);
-      
+
       // First record
       expect(records.records[0].id).toEqual("1");
       expect(records.records[0].datasetId).toEqual("1");
@@ -1070,7 +525,7 @@ describe("Records", () => {
       expect(records.records[0].score.value).toEqual(1);
       expect(records.records[0].taskDistribution.isCompleted).toEqual(false);
       expect(records.records[0].insertedAt).toEqual(new Date("2021-01-01T00:00:00.000Z"));
-      
+
       // Second record
       expect(records.records[1].id).toEqual("2");
       expect(records.records[1].datasetId).toEqual("1");
@@ -1082,40 +537,12 @@ describe("Records", () => {
 
     test("should replace the new records to the current records when exists and never change the total", () => {
       const records = new Records(
-        [
-          new Record(
-            "2",
-            "1",
-            [],
-            [],
-            null,
-            [],
-            1,
-            4,
-            {},
-            "pending",
-            new Date("2021-01-01"),
-            new Date("2021-01-01")
-          ),
-        ],
+        [new Record("2", "1", [], [], null, [], 1, 4, {}, "pending", new Date("2021-01-01"), new Date("2021-01-01"))],
         200
       );
 
       const newRecords = new Records([
-        new Record(
-          "1",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          3,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-02")
-        ),
+        new Record("1", "1", [], [], null, [], 1, 3, {}, "pending", new Date("2021-01-01"), new Date("2021-01-02")),
         new Record(
           "2",
           "REPLACED",
@@ -1136,7 +563,7 @@ describe("Records", () => {
 
       // Verify key properties of each record without comparing dates directly
       expect(records.records.length).toEqual(2);
-      
+
       // First record
       expect(records.records[0].id).toEqual("1");
       expect(records.records[0].datasetId).toEqual("1");
@@ -1144,7 +571,7 @@ describe("Records", () => {
       expect(records.records[0].score.value).toEqual(1);
       expect(records.records[0].taskDistribution.isCompleted).toEqual(false);
       expect(records.records[0].insertedAt).toEqual(new Date("2021-01-01T00:00:00.000Z"));
-      
+
       // Second record - with REPLACED dataset ID
       expect(records.records[1].id).toEqual("2");
       expect(records.records[1].datasetId).toEqual("REPLACED");
@@ -1165,62 +592,10 @@ describe("Records", () => {
       };
 
       const records = new Records([
-        new Record(
-          "1",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          1,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-01")
-        ),
-        new Record(
-          "2",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          2,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-01")
-        ),
-        new Record(
-          "3",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          3,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-01")
-        ),
-        new Record(
-          "4",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          4,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-01")
-        ),
+        new Record("1", "1", [], [], null, [], 1, 1, {}, "pending", new Date("2021-01-01"), new Date("2021-01-01")),
+        new Record("2", "1", [], [], null, [], 1, 2, {}, "pending", new Date("2021-01-01"), new Date("2021-01-01")),
+        new Record("3", "1", [], [], null, [], 1, 3, {}, "pending", new Date("2021-01-01"), new Date("2021-01-01")),
+        new Record("4", "1", [], [], null, [], 1, 4, {}, "pending", new Date("2021-01-01"), new Date("2021-01-01")),
       ]);
 
       const shouldBuffering = records.shouldBuffering(pageCriteria);
@@ -1236,62 +611,10 @@ describe("Records", () => {
       };
 
       const records = new Records([
-        new Record(
-          "1",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          1,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-01")
-        ),
-        new Record(
-          "2",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          2,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-01")
-        ),
-        new Record(
-          "3",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          3,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-01")
-        ),
-        new Record(
-          "4",
-          "1",
-          [],
-          [],
-          null,
-          [],
-          1,
-          4,
-          {},
-          "pending",
-          new Date("2021-01-01"),
-          new Date("2021-01-01")
-        ),
+        new Record("1", "1", [], [], null, [], 1, 1, {}, "pending", new Date("2021-01-01"), new Date("2021-01-01")),
+        new Record("2", "1", [], [], null, [], 1, 2, {}, "pending", new Date("2021-01-01"), new Date("2021-01-01")),
+        new Record("3", "1", [], [], null, [], 1, 3, {}, "pending", new Date("2021-01-01"), new Date("2021-01-01")),
+        new Record("4", "1", [], [], null, [], 1, 4, {}, "pending", new Date("2021-01-01"), new Date("2021-01-01")),
       ]);
 
       const shouldBuffering = records.shouldBuffering(pageCriteria);
@@ -1307,22 +630,7 @@ describe("Records", () => {
       };
 
       const records = new Records(
-        [
-          new Record(
-            "4",
-            "1",
-            [],
-            [],
-            null,
-            [],
-            1,
-            100,
-            {},
-            "pending",
-            new Date("2021-01-01"),
-            new Date("2021-01-01")
-          ),
-        ],
+        [new Record("4", "1", [], [], null, [], 1, 100, {}, "pending", new Date("2021-01-01"), new Date("2021-01-01"))],
         100
       );
 

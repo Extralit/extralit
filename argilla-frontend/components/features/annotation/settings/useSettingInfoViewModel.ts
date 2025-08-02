@@ -5,10 +5,7 @@ import { Dataset } from "~/v1/domain/entities/dataset/Dataset";
 export const useSettingInfoViewModel = () => {
   const updateDatasetSettingUseCase = useResolve(UpdateDatasetSettingUseCase);
 
-  const update = async (
-    dataset: Dataset,
-    part: "guidelines" | "metadata" | "distribution"
-  ) => {
+  const update = async (dataset: Dataset, part: "guidelines" | "metadata" | "distribution") => {
     try {
       await updateDatasetSettingUseCase.execute(dataset, part);
     } catch (error) {

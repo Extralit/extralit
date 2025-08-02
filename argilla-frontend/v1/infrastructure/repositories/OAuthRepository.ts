@@ -3,11 +3,7 @@ import { Response } from "../types";
 import { useRunningEnvironment } from "../services/useRunningEnvironment";
 import { PublicNuxtAxiosInstance } from "../services/useAxiosExtension";
 import { largeCache } from "./AxiosCache";
-import {
-  OAuthParams,
-  OAuthProvider,
-  ProviderType,
-} from "~/v1/domain/entities/oauth/OAuthProvider";
+import { OAuthParams, OAuthProvider, ProviderType } from "~/v1/domain/entities/oauth/OAuthProvider";
 import { IOAuthRepository } from "~/v1/domain/services/IOAuthRepository";
 import { RouterService } from "~/v1/domain/services/RouterService";
 
@@ -22,10 +18,7 @@ interface BackendOAuthProvider {
 
 export class OAuthRepository implements IOAuthRepository {
   private readonly axios: NuxtAxiosInstance;
-  constructor(
-    axios: PublicNuxtAxiosInstance,
-    private readonly router: RouterService
-  ) {
+  constructor(axios: PublicNuxtAxiosInstance, private readonly router: RouterService) {
     this.axios = axios.makePublic();
   }
 
@@ -33,10 +26,7 @@ export class OAuthRepository implements IOAuthRepository {
     try {
       const url = "v1/oauth2/providers";
 
-      const { data } = await this.axios.get<Response<BackendOAuthProvider[]>>(
-        url,
-        largeCache()
-      );
+      const { data } = await this.axios.get<Response<BackendOAuthProvider[]>>(url, largeCache());
 
       return data.items.map((i) => new OAuthProvider(i.name));
     } catch {

@@ -14,12 +14,14 @@ on:
       - releases/**
     paths:
       - "extralit/**"
-      - ".github/workflows/argilla.*"
+      - ".github/workflows/extralit.*"
 
   pull_request:
+    types: [opened, edited, synchronize, reopened, ready_for_review]
     paths:
       - "extralit/**"
       - "argilla-server/**"
+      - ".github/workflows/extralit.yml"
 
 permissions:
   id-token: write
@@ -27,6 +29,7 @@ permissions:
 
 jobs:
   build:
+    if: github.event.pull_request.draft == false
     services:
       argilla-server:
         image: extralitdev/argilla-hf-spaces:develop

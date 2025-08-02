@@ -293,7 +293,7 @@ def track_server_startup() -> None:
 def _show_telemetry_warning():
     message = "\n"
     message += inspect.cleandoc(
-        "Argilla uses telemetry to report anonymous usage and error information. You\n"
+        "Extralit uses telemetry to report anonymous usage and error information. You\n"
         "can know more about what information is reported at:\n\n"
         "    https://docs.extralit.ai/latest/reference/argilla-server/telemetry/\n\n"
         "Telemetry is currently enabled. If you want to disable it, you can configure\n"

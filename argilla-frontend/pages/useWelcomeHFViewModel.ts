@@ -4,8 +4,7 @@ import { useRunningEnvironment } from "~/v1/infrastructure/services/useRunningEn
 
 export const useWelcomeHFViewModel = () => {
   const oauthLogin = useResolve(OAuthLoginUseCase);
-  const { hasHuggingFaceOAuthConfigured, getHuggingFaceSpace } =
-    useRunningEnvironment();
+  const { hasHuggingFaceOAuthConfigured, getHuggingFaceSpace } = useRunningEnvironment();
 
   const authorize = () => {
     oauthLogin.authorize("huggingface");

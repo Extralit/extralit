@@ -16,21 +16,9 @@
   -->
 
 <template>
-  <BaseInputContainer
-    class="search-area"
-    :class="[filter ? 'active' : null, isCollapsed ? '--collapsed' : null]"
-    ><BaseButton
-      class="search-area__button__search"
-      @click="toggleSearchBar"
-      aria-label="search"
-    >
-      <svgicon
-        name="search"
-        width="20"
-        height="20"
-        color="var(--fg-secondary)"
-        aria-hidden="true"
-      />
+  <BaseInputContainer class="search-area" :class="[filter ? 'active' : null, isCollapsed ? '--collapsed' : null]"
+    ><BaseButton class="search-area__button__search" @click="toggleSearchBar" aria-label="search">
+      <svgicon name="search" width="20" height="20" color="var(--fg-secondary)" aria-hidden="true" />
     </BaseButton>
     <BaseInput
       v-show="!isCollapsed"
@@ -40,11 +28,7 @@
       v-model="filter"
       :placeholder="placeholder"
     />
-    <BaseButton
-      v-show="!isCollapsed"
-      class="search-area__button__close"
-      @click="removeFilter"
-    >
+    <BaseButton v-show="!isCollapsed" class="search-area__button__close" @click="removeFilter">
       <svgicon
         v-if="filter || !isCollapsed"
         class="search-area__icon --close"

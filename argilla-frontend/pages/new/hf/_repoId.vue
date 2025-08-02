@@ -1,27 +1,18 @@
 <template>
   <div class="new-dataset">
-    <HeaderFeedbackTask
-      :breadcrumbs="[
-        { link: '/', name: $t('breadcrumbs.home') },
-        { name: repoIdWithoutOrg },
-      ]"
-    >
+    <HeaderFeedbackTask :breadcrumbs="[{ link: '/', name: $t('breadcrumbs.home') }, { name: repoIdWithoutOrg }]">
       <template slot="badge">
         <p class="new-dataset__header-badge">
           {{ $t("datasetCreation.preview") }}
         </p>
       </template>
     </HeaderFeedbackTask>
-    <DatasetConfiguration
-      v-if="datasetConfig"
-      :dataset="datasetConfig"
-      @change-subset="changeSubset($event)"
-    />
+    <DatasetConfiguration v-if="datasetConfig" :dataset="datasetConfig" @change-subset="changeSubset($event)" />
   </div>
 </template>
 
 <script>
-import { useNewDatasetViewModel } from "./useNewDatasetViewModel";
+import { useNewDatasetViewModel } from "@/pages/useNewDatasetViewModel";
 
 export default {
   middleware({ route, redirect }) {
@@ -30,7 +21,8 @@ export default {
     }
   },
   mounted() {
-    this.getNewDatasetByRepoIdFromUrl();
+    const repoId = this.$route.params.repoId;
+    this.getNewHfDatasetByRepoId(decodeURIComponent(repoId));
   },
   setup() {
     return useNewDatasetViewModel();

@@ -274,6 +274,17 @@ files = [
 ]
 
 [[package]]
+name = "bibtexparser"
+version = "1.4.3"
+summary = ""
+dependencies = [
+    "pyparsing",
+]
+files = [
+    {file = "bibtexparser-1.4.3.tar.gz", hash = "sha256:a9c7ded64bc137720e4df0b1b7f12734edc1361185f1c9097048ff7c35af2b8f"},
+]
+
+[[package]]
 name = "black"
 version = "25.1.0"
 summary = ""

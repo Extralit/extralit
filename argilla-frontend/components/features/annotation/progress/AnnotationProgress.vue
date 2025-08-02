@@ -18,10 +18,7 @@
 <template>
   <div class="my-progress__container">
     <TeamProgress :datasetId="datasetId" />
-    <StatusCounterSkeleton
-      v-if="!metrics.hasMetrics"
-      class="my-progress__status--skeleton"
-    />
+    <StatusCounterSkeleton v-if="!metrics.hasMetrics" class="my-progress__status--skeleton" />
     <div v-else class="my-progress__share">
       <Share v-if="canSeeShare" />
       <StatusCounter

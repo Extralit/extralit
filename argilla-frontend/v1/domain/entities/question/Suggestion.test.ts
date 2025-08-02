@@ -16,9 +16,7 @@ describe("Suggestion", () => {
       expect(isSuggested).toBe(true);
 
       const suggested = suggestion.getSuggestion("suggestedAnswer");
-      expect(suggested).toEqual(
-        new SuggestionValue("suggestedAnswer", 0.4544, "agent")
-      );
+      expect(suggested).toEqual(new SuggestionValue("suggestedAnswer", 0.4544, "agent"));
     });
 
     test("return false if the answer is not suggested", () => {
@@ -50,20 +48,11 @@ describe("Suggestion", () => {
       expect(isSuggested).toBe(true);
 
       const suggested = suggestion.getSuggestion("Suggested text");
-      expect(suggested).toEqual(
-        new SuggestionValue("Suggested text", 0.122, "agent")
-      );
+      expect(suggested).toEqual(new SuggestionValue("Suggested text", 0.122, "agent"));
     });
 
     test("return false if the answer is not suggested", () => {
-      const suggestion = new Suggestion(
-        "id",
-        "questionId",
-        QuestionType.from("text"),
-        "suggestedAnswer",
-        1,
-        "agent"
-      );
+      const suggestion = new Suggestion("id", "questionId", QuestionType.from("text"), "suggestedAnswer", 1, "agent");
 
       const isSuggested = suggestion.isSuggested("notSuggestedAnswer");
       expect(isSuggested).toBe(false);
@@ -91,9 +80,7 @@ describe("Suggestion", () => {
       expect(isSuggestedTwo).toBe(true);
 
       const suggestedTwo = suggestion.getSuggestion("Two");
-      expect(suggestedTwo).toEqual(
-        new SuggestionValue("Two", 0.32323, "agent")
-      );
+      expect(suggestedTwo).toEqual(new SuggestionValue("Two", 0.32323, "agent"));
     });
 
     test("return false if the answer is not suggested", () => {
@@ -134,14 +121,7 @@ describe("Suggestion", () => {
 
   describe("rating type", () => {
     test("return true if the answer is suggested", () => {
-      const suggestion = new Suggestion(
-        "id",
-        "questionId",
-        QuestionType.from("rating"),
-        5,
-        0.9432,
-        "agent"
-      );
+      const suggestion = new Suggestion("id", "questionId", QuestionType.from("rating"), 5, 0.9432, "agent");
 
       const isSuggested = suggestion.isSuggested(5);
       expect(isSuggested).toBe(true);
@@ -151,14 +131,7 @@ describe("Suggestion", () => {
     });
 
     test("return false if the answer is not suggested", () => {
-      const suggestion = new Suggestion(
-        "id",
-        "questionId",
-        QuestionType.from("rating"),
-        5,
-        1,
-        "agent"
-      );
+      const suggestion = new Suggestion("id", "questionId", QuestionType.from("rating"), 5, 1, "agent");
 
       const isSuggested = suggestion.isSuggested(3);
       expect(isSuggested).toBe(false);

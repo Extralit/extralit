@@ -1,8 +1,4 @@
-import {
-  OAuthParams,
-  OAuthProvider,
-  ProviderType,
-} from "../entities/oauth/OAuthProvider";
+import { OAuthParams, OAuthProvider, ProviderType } from "../entities/oauth/OAuthProvider";
 import { IAuthService } from "../services/IAuthService";
 import { IOAuthRepository } from "../services/IOAuthRepository";
 import { LoadUserUseCase } from "./load-user-use-case";

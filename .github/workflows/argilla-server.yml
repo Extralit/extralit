@@ -17,8 +17,10 @@ on:
       - ".github/workflows/argilla-server.*"
 
   pull_request:
+    types: [opened, edited, synchronize, reopened, ready_for_review]
     paths:
       - "argilla-server/**"
+      - ".github/workflows/argilla-server.*"
 
 permissions:
   id-token: write
@@ -26,6 +28,7 @@ permissions:
 jobs:
   build:
     name: Build `argilla-server` package
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
 
     defaults:

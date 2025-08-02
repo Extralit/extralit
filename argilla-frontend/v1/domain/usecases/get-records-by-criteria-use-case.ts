@@ -4,17 +4,10 @@ import { Suggestion } from "../entities/question/Suggestion";
 import { RecordAnswer } from "../entities/record/RecordAnswer";
 import { RecordCriteria } from "../entities/record/RecordCriteria";
 import { IRecordStorage } from "../services/IRecordStorage";
-import {
-  EmptyQueueRecords,
-  Records,
-  RecordsWithReference,
-} from "../entities/record/Records";
+import { EmptyQueueRecords, Records, RecordsWithReference } from "../entities/record/Records";
 import { Record } from "../entities/record/Record";
 import { IQuestionRepository } from "../services/IQuestionRepository";
-import {
-  FieldRepository,
-  RecordRepository,
-} from "~/v1/infrastructure/repositories";
+import { FieldRepository, RecordRepository } from "~/v1/infrastructure/repositories";
 
 export class GetRecordsByCriteriaUseCase {
   constructor(
@@ -33,8 +26,11 @@ export class GetRecordsByCriteriaUseCase {
     const getQuestions = this.questionRepository.getQuestions(datasetId);
     const getFields = this.fieldRepository.getFields(datasetId);
 
-    const [recordsFromBackend, questionsFromBackend, fieldsFromBackend] =
-      await Promise.all([getRecords, getQuestions, getFields]);
+    const [recordsFromBackend, questionsFromBackend, fieldsFromBackend] = await Promise.all([
+      getRecords,
+      getQuestions,
+      getFields,
+    ]);
 
     if (recordsFromBackend.records.length === 0) {
       return new EmptyQueueRecords(
@@ -53,56 +49,43 @@ export class GetRecordsByCriteriaUseCase {
       );
     }
 
-    const recordsToAnnotate = recordsFromBackend.records.map(
-      (record, index) => {
-        const recordPage = index + queuePage;
+    const recordsToAnnotate = recordsFromBackend.records.map((record, index) => {
+      const recordPage = index + queuePage;
 
-        const fields = fieldsFromBackend
-          .filter((f) => record.fields[f.name])
-          .map((field) => {
-            return new Field(
-              field.id,
-              field.name,
-              field.title,
-              datasetId,
-              field.required,
-              field.settings,
-              record
-            );
-          });
-
-        const questions = questionsFromBackend.map((question) => {
-          return new Question(
-            question.id,
-            question.name,
-            question.description,
-            datasetId,
-            question.title,
-            question.required,
-            question.settings
-          );
+      const fields = fieldsFromBackend
+        .filter((f) => record.fields[f.name])
+        .map((field) => {
+          return new Field(field.id, field.name, field.title, datasetId, field.required, field.settings, record);
         });
 
-        const questionLookup = questions.reduce((lookup: any, question) => {
-          lookup[question.id] = question;
-          return lookup;
-        });
+      const questions = questionsFromBackend.map((question) => {
+        return new Question(
+          question.id,
+          question.name,
+          question.description,
+          datasetId,
+          question.title,
+          question.required,
+          question.settings
+        );
+      });
 
-        const userAnswer = record.responses[0];
-        const answer = userAnswer
-          ? new RecordAnswer(
-              userAnswer.id,
-              userAnswer.status,
-              userAnswer.values,
-              userAnswer.updated_at
-            )
-          : null;
+      const questionLookup = questions.reduce((lookup: any, question) => {
+        lookup[question.id] = question;
+        return lookup;
+      });
 
-        const suggestions = !criteria.page.isBulkMode
-          ? record.suggestions.map((suggestion) => {
+      const userAnswer = record.responses[0];
+      const answer = userAnswer
+        ? new RecordAnswer(userAnswer.id, userAnswer.status, userAnswer.values, userAnswer.updated_at)
+        : null;
+
+      const suggestions = !criteria.page.isBulkMode
+        ? record.suggestions
+            .map((suggestion) => {
               const question = questionLookup[suggestion.question_id];
               if (!question) return null;
-              
+
               return new Suggestion(
                 suggestion.id,
                 suggestion.question_id,
@@ -112,38 +95,33 @@ export class GetRecordsByCriteriaUseCase {
                 suggestion.agent,
                 suggestion.type,
                 new Date(suggestion.inserted_at),
-                new Date(suggestion.updated_at),
+                new Date(suggestion.updated_at)
               );
-            }).filter(suggestion => suggestion !== null)
-          : [];
+            })
+            .filter((suggestion) => suggestion !== null)
+        : [];
 
-        return new Record(
-          record.id,
-          datasetId,
-          questions,
-          fields,
-          answer,
-          suggestions,
-          record.query_score,
-          recordPage,
-          record.metadata,
-          record.status,
-          record.inserted_at,
-          record.updated_at
-        );
-      }
-    );
+      return new Record(
+        record.id,
+        datasetId,
+        questions,
+        fields,
+        answer,
+        suggestions,
+        record.query_score,
+        recordPage,
+        record.metadata,
+        record.status,
+        record.inserted_at,
+        record.updated_at
+      );
+    });
 
     if (criteria.isFilteringBySimilarity) {
-      let referenceRecord = savedRecords.getById(
-        criteria.similaritySearch.recordId
-      );
+      let referenceRecord = savedRecords.getById(criteria.similaritySearch.recordId);
 
       if (!referenceRecord) {
-        const referenceRecordFromBackend =
-          await this.recordRepository.getRecord(
-            criteria.similaritySearch.recordId
-          );
+        const referenceRecordFromBackend = await this.recordRepository.getRecord(criteria.similaritySearch.recordId);
 
         const fields = fieldsFromBackend
           .filter((f) => referenceRecordFromBackend.fields[f.name])
@@ -175,11 +153,7 @@ export class GetRecordsByCriteriaUseCase {
         );
       }
 
-      return new RecordsWithReference(
-        recordsToAnnotate,
-        recordsFromBackend.total,
-        referenceRecord
-      );
+      return new RecordsWithReference(recordsToAnnotate, recordsFromBackend.total, referenceRecord);
     }
 
     return new Records(recordsToAnnotate, recordsFromBackend.total);

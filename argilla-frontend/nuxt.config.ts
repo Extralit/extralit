@@ -50,9 +50,7 @@ const config: NuxtConfig = {
       { rel: "icon", sizes: "16x16", href: "favicon-16x16.png" },
       { rel: "manifest", href: "site.webmanifest" },
     ],
-    script: [
-      ...(process.env.NODE_ENV === 'development' ? [{ src: 'http://localhost:8098', defer: true }] : [])
-    ]
+    script: [...(process.env.NODE_ENV === "development" ? [{ src: "http://localhost:8098", defer: true }] : [])],
   },
 
   // Global CSS (https://go.nuxtjs.dev/config-css)
@@ -159,7 +157,7 @@ const config: NuxtConfig = {
   // Build Configuration (https://go.nuxtjs.dev/config-build)
   build: {
     cssSourceMap: false,
-    cache: true,
+    cache: process.env.NODE_ENV === "production",
     parallel: true,
     quiet: true,
     analyze: false,
@@ -175,14 +173,14 @@ const config: NuxtConfig = {
       config.module.rules.push({
         test: /\.mjs$/,
         include: /node_modules/,
-        type: 'javascript/auto',
+        type: "javascript/auto",
         use: {
-          loader: 'babel-loader',
+          loader: "babel-loader",
           options: {
-            presets: ['@babel/preset-env'],
+            presets: ["@babel/preset-env"],
             plugins: [
-              ['@babel/plugin-transform-private-methods', { loose: true }],
-              ['@babel/plugin-transform-class-properties', { loose: true }]
+              ["@babel/plugin-transform-private-methods", { loose: true }],
+              ["@babel/plugin-transform-class-properties", { loose: true }],
             ],
             compact: false,
           },
@@ -192,12 +190,12 @@ const config: NuxtConfig = {
         test: /\.js$/,
         include: /node_modules\/tabulator-tables/,
         use: {
-          loader: 'babel-loader',
+          loader: "babel-loader",
           options: {
-            presets: ['@babel/preset-env'],
+            presets: ["@babel/preset-env"],
             plugins: [
-              ['@babel/plugin-transform-private-methods', { loose: true }],
-              ['@babel/plugin-transform-class-properties', { loose: true }]
+              ["@babel/plugin-transform-private-methods", { loose: true }],
+              ["@babel/plugin-transform-class-properties", { loose: true }],
             ],
             compact: false,
           },
@@ -226,26 +224,24 @@ const config: NuxtConfig = {
     },
     babel: {
       plugins: [
-        ['@babel/plugin-transform-private-methods', { loose: true }],
-        ['@babel/plugin-transform-class-properties', { loose: true }],
-        ['@babel/plugin-proposal-class-properties', { loose: true }],
+        ["@babel/plugin-transform-private-methods", { loose: true }],
+        ["@babel/plugin-transform-class-properties", { loose: true }],
+        ["@babel/plugin-proposal-class-properties", { loose: true }],
         ["@babel/plugin-transform-private-property-in-object", { loose: true }],
       ],
-      presets: [
-        ['@babel/preset-env', { targets: { node: 'current' }, loose: true }],
-      ],
+      presets: [["@babel/preset-env", { targets: { node: "current" }, loose: true }]],
     },
-    transpile: ['pdfjs-dist'],
+    transpile: ["pdfjs-dist"],
     terser: {
       terserOptions: {
         keep_classnames: true,
         keep_fnames: true,
         compress: {
-          drop_console: process.env.NODE_ENV === 'production'
-        }
+          drop_console: process.env.NODE_ENV === "production",
+        },
       },
     },
-    extractCSS: true,
+    extractCSS: process.env.NODE_ENV === "production",
     splitChunks: {
       pages: false,
       commons: false,
@@ -264,13 +260,13 @@ const config: NuxtConfig = {
 
   webpack: {
     devMiddleware: {
-      stats: 'minimal'
+      stats: "minimal",
     },
     watchOptions: {
       aggregateTimeout: 300,
       poll: 1000,
-      ignored: /node_modules/
-    }
+      ignored: /node_modules/,
+    },
   },
 
   // https://github.com/nuxt-community/style-resources-module
@@ -302,8 +298,7 @@ const config: NuxtConfig = {
 
   publicRuntimeConfig: {
     clientVersion: pkg.version,
-    communityLink:
-      "https://join.slack.com/t/extralit/shared_invite/zt-32blg3602-0m0XewPBXF7776BQ3m7ZlA",
+    communityLink: "https://join.slack.com/t/extralit/shared_invite/zt-32blg3602-0m0XewPBXF7776BQ3m7ZlA",
     documentationSite: "https://docs.extralit.ai/",
     documentationPersistentStorage:
       "https://docs.extralit.ai/latest/getting_started/how-to-configure-argilla-on-huggingface/#persistent-storage",

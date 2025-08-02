@@ -1,7 +1,6 @@
 import { DataFrameField, DataFrameSchema } from "./Schema";
 import { ValidationSchema } from "./Validation";
 
-
 export type Data = Array<{ [field: string]: any }>;
 
 export type ReferenceValues = Record<string, Record<string, Data>>;
@@ -33,21 +32,21 @@ export class TableData {
 
   addColumn(field: DataFrameField, defaultValue: any = null) {
     this.schema.addField(field);
-    this.data.forEach(row => {
+    this.data.forEach((row) => {
       row[field.name] = defaultValue;
     });
   }
 
   deleteColumn(fieldName: string) {
     this.schema.removeField(fieldName);
-    this.data.forEach(row => {
+    this.data.forEach((row) => {
       delete row[fieldName];
     });
   }
 
   renameColumn(oldName: string, newName: string) {
     this.schema.renameField(oldName, newName);
-    this.data.forEach(row => {
+    this.data.forEach((row) => {
       row[newName] = row[oldName];
       delete row[oldName];
     });
@@ -60,11 +59,9 @@ export class TableData {
   getColumnUniqueCounts(): Record<string, number> {
     // tableJSON is an object of the form {data: [{column: value, ...}, ...]}
     // returns an object of the form {column: uniqueCount, ...}
-    let uniqueCounts: Record<string, number> = {};
-    for (let key of Object.keys(this.data[0])) {
-      let values = this.data
-        .map(row => row[key])
-        .filter(value => value != null && value !== 'NA');
+    const uniqueCounts: Record<string, number> = {};
+    for (const key of Object.keys(this.data[0])) {
+      const values = this.data.map((row) => row[key]).filter((value) => value != null && value !== "NA");
       uniqueCounts[key] = new Set(values).size;
     }
 
@@ -72,7 +69,7 @@ export class TableData {
   }
 
   getColumnMaxValue(columnName: string): any {
-    return this.data.reduce((max, row) => !max || row[columnName] > max ? row[columnName] : max, null);
+    return this.data.reduce((max, row) => (!max || row[columnName] > max ? row[columnName] : max), null);
   }
 
   toJSON() {
@@ -84,5 +81,3 @@ export class TableData {
     };
   }
 }
-
-

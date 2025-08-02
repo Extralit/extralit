@@ -43,8 +43,7 @@ export class Metadata {
 
   public get isModified(): boolean {
     return (
-      this.title.trim() !== this.original.title ||
-      this.visibleForAnnotators !== this.original.visibleForAnnotators
+      this.title.trim() !== this.original.title || this.visibleForAnnotators !== this.original.visibleForAnnotators
     );
   }
 
@@ -55,9 +54,7 @@ export class Metadata {
     };
 
     if (this.title?.length > this.MAX_TITLE_LENGTH)
-      validations.title.push(
-        `This must be less than ${this.MAX_TITLE_LENGTH}.`
-      );
+      validations.title.push(`This must be less than ${this.MAX_TITLE_LENGTH}.`);
 
     return validations;
   }

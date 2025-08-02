@@ -186,7 +186,7 @@ When making changes to the database schema, you need to create database revision
 
 ```bash
 cd argilla-server
-PYTHONPATH=. alembic revision --autogenerate -m "Brief description of the change"
+pdm run revision -m "description of change"
 ```
 
 3. Review the generated revision file in `argilla-server/migrations/versions/`
@@ -194,10 +194,10 @@ PYTHONPATH=. alembic revision --autogenerate -m "Brief description of the change
 
 ```bash
 # Apply the migration
-PYTHONPATH=. alembic upgrade head
+pdm run alembic upgrade head
 
 # Rollback if needed
-PYTHONPATH=. alembic downgrade -1
+pdm run alembic downgrade -1
 ```
 
 #### Applying Migrations
@@ -205,13 +205,13 @@ PYTHONPATH=. alembic downgrade -1
 To apply all pending migrations:
 
 ```bash
-PYTHONPATH=. alembic upgrade head
+pdm run alembic upgrade head
 ```
 
 To check the current database version:
 
 ```bash
-PYTHONPATH=. alembic current
+pdm run alembic current
 ```
 
 #### Guidelines for Database Changes

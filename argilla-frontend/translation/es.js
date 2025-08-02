@@ -45,14 +45,12 @@ export default {
   rows: "filas",
   datasetName: "Dataset name",
   noRecordsMessages: {
-    datasetEmptyForAnnotator:
-      "El dataset está vacío. Pide a un administrador que suba registros y vuelve pronto.",
+    datasetEmptyForAnnotator: "El dataset está vacío. Pide a un administrador que suba registros y vuelve pronto.",
     datasetEmptyForAdmin:
       "El dataset está vacío. Puedes agregar registros usando el SDK de Python, consulta la <a href='https://docs.extralit.ai/latest/admin_guide/record/'>documentación</a> sobre cómo agregar registros.",
     taskDistributionCompleted: "¡La tarea está completada!",
     noSubmittedRecords: "Aún no has enviado ningún registro",
-    noRecordsFound:
-      "No tienes registros {status} que coincidan con tu búsqueda",
+    noRecordsFound: "No tienes registros {status} que coincidan con tu búsqueda",
     noRecords: "No tienes registros {status}",
     noPendingRecordsToAnnotate: "No tienes registros pendientes para anotar",
     noDraftRecordsToReview: "No tienes ningún borrador para revisar",
@@ -73,8 +71,7 @@ export default {
     discarded: "descartado | descartados",
     submitted: "enviado | enviados",
     validated: "validado | validados",
-    completedTooltip:
-      "El registro está completo, tiene el número mínimo de respuestas",
+    completedTooltip: "El registro está completo, tiene el número mínimo de respuestas",
   },
   userSettings: {
     title: "Configuración de usuario",
@@ -85,8 +82,7 @@ export default {
       workspaces: "Espacios de trabajo",
     },
     apiKey: "Clave de API",
-    apiKeyDescription:
-      "Los tokens de clave API permiten administrar datasets utilizando el SDK de Python",
+    apiKeyDescription: "Los tokens de clave API permiten administrar datasets utilizando el SDK de Python",
     theme: "Tema",
     language: "Idioma",
     copyKey: "Copiar clave",
@@ -131,13 +127,11 @@ export default {
       datasetSettings: "Configuración del dataset",
     },
   },
-  to_submit_complete_required:
-    "Para enviar, completa las respuestas requeridas",
+  to_submit_complete_required: "Para enviar, completa las respuestas requeridas",
   some_records_failed_to_annotate: "Algunos registros no se pudieron anotar",
   changes_no_submit: "No has enviado tus cambios",
   bulkAnnotation: {
-    recordsSelected:
-      "1 registro seleccionado | {count} registros seleccionados",
+    recordsSelected: "1 registro seleccionado | {count} registros seleccionados",
     recordsViewSettings: "Configuración de vista de registros",
     fixedHeight: "Altura fija",
     defaultHeight: "Altura predeterminada",
@@ -147,8 +141,7 @@ export default {
     selectAllResults: "Seleccionar todos los registros coincidentes {total}",
     haveSelectedRecords: "Has seleccionado todos los registros {total}",
     actionConfirmation: "Confirmación de acción en bloque",
-    actionConfirmationText:
-      "Esta acción afectará a {total} registros, ¿Deseas continuar?",
+    actionConfirmationText: "Esta acción afectará a {total} registros, ¿Deseas continuar?",
     allRecordsAnnotated: "{total} registros han sido {action}",
     affectedAll: {
       submitted: "enviados",
@@ -219,8 +212,7 @@ export default {
     claim: "Trabaja en equipo con tus datos.</br>Perfecciona tus modelos.",
     hf: {
       title: "Bienvenido a {space}",
-      subtitle:
-        "Únete a <strong>{user}</strong> para construir mejores datasets para IA",
+      subtitle: "Únete a <strong>{user}</strong> para construir mejores datasets para IA",
     },
   },
   of: "de",
@@ -267,19 +259,18 @@ export default {
     argillaDatasets: "Tus datasets",
     none: "Ninguno",
     importTitle: "Importar un dataset desde Hugging Face Hub",
-    importText:
-      "Comienza con un conjunto de datos del Hub simplemente pegando el nombre del repositorio",
+    importText: "Comienza con un conjunto de datos del Hub simplemente pegando el nombre del repositorio",
     importButton: "Importar dataset",
     importFromHub: "Importar dataset desde Hugging Face",
     importFromPython: "Importar desde Python",
+    importDocuments: "Importar Documentos",
     importFromPythonHFWarning:
       "Si estás usando un Espacio privado, consulta la <a target='_blank' href='https://docs.extralit.ai/latest/getting_started/how-to-configure-argilla-on-huggingface/#how-to-use-private-spaces'>documentación</a>.",
     exampleDatasetsTitle: "¿No sabes por dónde empezar?",
     exampleDatasetsText: "Explora estos datasets de ejemplo",
     guidesTitle: "¿No conoces Extralit?",
     guidesText: "Echa un vistazo a estas guías:",
-    pasteRepoIdPlaceholder:
-      "Pega el ID del repositorio, por ejemplo, stanfordnlp/imdb",
+    pasteRepoIdPlaceholder: "Pega el ID del repositorio, por ejemplo, stanfordnlp/imdb",
     demoLink:
       "Ingresa a esta <a href='https://huggingface.co/spaces/extralit/public-demo' target='_blank'>demo</a> para probar Extralit",
     name: "Nombre del dataset",
@@ -324,54 +315,17 @@ export default {
     preview: "Vista previa",
     importData: "Importar datos",
     addRecords: "Agregar registros",
-    cantLoadRepository:
-      "No se pudo encontrar o acceder al dataset en Hugging Face",
+    cantLoadRepository: "No se pudo encontrar o acceder al dataset en Hugging Face",
     none: "Ninguno",
     noWorkspaces:
       "Por favor, sigue <a target='_blank' href='https://docs.extralit.ai/latest/admin_guide/workspace/#create-a-new-workspace'>esta guía</a> para crear un espacio de trabajo",
   },
   exportToHub: {
     dialogTitle: "Exportar dataset a Hugging Face",
-    ownerTooltip:
-      "Utiliza un nombre de usuario u organización de Hugging Face válidos",
+    ownerTooltip: "Utiliza un nombre de usuario u organización de Hugging Face válidos",
     tokenTooltip: `Utiliza un token de acceso existente o crear un <a href='https://huggingface.co/settings/tokens' target='_blank'>nuevo token</a> con "permiso de escritura"`,
     validations: {
-      orgOrUsernameIsRequired:
-        "El nombre de usuario u organización es requerido",
-      hfTokenIsRequired: "El token de Hugging Face es requerido",
-      hfTokenInvalid: "El token de Hugging Face es inválido",
-      datasetNameIsRequired: "El nombre del dataset es requerido",
-    },
-    exporting: "Exportando al hub de Hugging Face",
-    private: "Dataset privado",
-    public: "Dataset público",
-    exportingWarning: "Esto puede tardar unos segundos",
-  },
-  exportToHub: {
-    dialogTitle: "Exportar dataset a Hugging Face",
-    ownerTooltip:
-      "Utiliza un nombre de usuario u organización de Hugging Face válidos",
-    tokenTooltip: `Utiliza un token de acceso existente o crear un <a href='https://huggingface.co/settings/tokens' target='_blank'>nuevo token</a> con "permiso de escritura"`,
-    validations: {
-      orgOrUsernameIsRequired:
-        "El nombre de usuario u organización es requerido",
-      hfTokenIsRequired: "El token de Hugging Face es requerido",
-      hfTokenInvalid: "El token de Hugging Face es inválido",
-      datasetNameIsRequired: "El nombre del dataset es requerido",
-    },
-    exporting: "Exportando al hub de Hugging Face",
-    private: "Dataset privado",
-    public: "Dataset público",
-    exportingWarning: "Esto puede tardar unos segundos",
-  },
-  exportToHub: {
-    dialogTitle: "Exportar dataset a Hugging Face",
-    ownerTooltip:
-      "Utiliza un nombre de usuario u organización de Hugging Face válidos",
-    tokenTooltip: `Utiliza un token de acceso existente o crear un <a href='https://huggingface.co/settings/tokens' target='_blank'>nuevo token</a> con "permiso de escritura"`,
-    validations: {
-      orgOrUsernameIsRequired:
-        "El nombre de usuario u organización es requerido",
+      orgOrUsernameIsRequired: "El nombre de usuario u organización es requerido",
       hfTokenIsRequired: "El token de Hugging Face es requerido",
       hfTokenInvalid: "El token de Hugging Face es inválido",
       datasetNameIsRequired: "El nombre del dataset es requerido",

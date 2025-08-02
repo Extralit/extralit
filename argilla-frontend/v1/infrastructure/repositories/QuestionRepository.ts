@@ -14,20 +14,14 @@ export const enum QUESTION_API_ERRORS {
 export class QuestionRepository implements IQuestionRepository {
   constructor(private readonly axios: NuxtAxiosInstance) {}
 
-  async create(
-    datasetId: DatasetId,
-    question: QuestionCreation
-  ): Promise<BackendQuestion> {
+  async create(datasetId: DatasetId, question: QuestionCreation): Promise<BackendQuestion> {
     try {
-      const { data } = await this.axios.post<BackendQuestion>(
-        `/v1/datasets/${datasetId}/questions`,
-        {
-          name: question.name,
-          title: question.title,
-          required: question.required,
-          settings: question.settings,
-        }
-      );
+      const { data } = await this.axios.post<BackendQuestion>(`/v1/datasets/${datasetId}/questions`, {
+        name: question.name,
+        title: question.title,
+        required: question.required,
+        settings: question.settings,
+      });
 
       return data;
     } catch (err) {
@@ -69,22 +63,15 @@ export class QuestionRepository implements IQuestionRepository {
     }
   }
 
-  private createRequest({
-    description,
-    title,
-    settings,
-  }: Question): Partial<BackendQuestion> {
-    const newDescription =
-      description?.trim() !== "" ? description.trim() : null;
+  private createRequest({ description, title, settings }: Question): Partial<BackendQuestion> {
+    const newDescription = description?.trim() !== "" ? description.trim() : null;
 
     return {
       title,
       description: newDescription,
       settings: {
         ...(settings as any),
-        visible_options: settings.shouldShowVisibleOptions
-          ? settings.visible_options
-          : undefined,
+        visible_options: settings.shouldShowVisibleOptions ? settings.visible_options : undefined,
       },
     };
   }

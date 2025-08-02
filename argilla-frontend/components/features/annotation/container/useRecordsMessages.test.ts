@@ -29,17 +29,7 @@ class RecordCriteriaMocked extends RecordCriteria {
     suggestion: string,
     similaritySearch: string
   ) {
-    super(
-      datasetId,
-      datasetVersion,
-      status,
-      searchText,
-      metadata,
-      sortBy,
-      response,
-      suggestion,
-      similaritySearch
-    );
+    super(datasetId, datasetVersion, status, searchText, metadata, sortBy, response, suggestion, similaritySearch);
   }
 
   get isFilteringByAdvanceSearch() {
@@ -47,10 +37,7 @@ class RecordCriteriaMocked extends RecordCriteria {
   }
 }
 
-const createRecordCriteria = (
-  status: RecordStatus,
-  isFilteringByAdvanceSearch = false
-) => {
+const createRecordCriteria = (status: RecordStatus, isFilteringByAdvanceSearch = false) => {
   const criteria = new RecordCriteriaMocked(
     isFilteringByAdvanceSearch,
     "datasetId",
@@ -117,9 +104,7 @@ describe("useRecordsMessages", () => {
 
       const { getMessagesForLoading } = useRecordMessages(recordCriteria);
 
-      expect(getMessagesForLoading(records)).toBe(
-        "#noRecordsMessages.datasetEmptyForAdmin#"
-      );
+      expect(getMessagesForLoading(records)).toBe("#noRecordsMessages.datasetEmptyForAdmin#");
     });
 
     test("return `The dataset is empty message for annotator' when the dataset no have records and the logged in user is annotator", () => {
@@ -137,9 +122,7 @@ describe("useRecordsMessages", () => {
 
       const { getMessagesForLoading } = useRecordMessages(recordCriteria);
 
-      expect(getMessagesForLoading(records)).toBe(
-        "#noRecordsMessages.datasetEmptyForAnnotator#"
-      );
+      expect(getMessagesForLoading(records)).toBe("#noRecordsMessages.datasetEmptyForAnnotator#");
     });
 
     test("return 'The task is completed' when team progress mark as completed and does not have records to annotate", () => {
@@ -152,19 +135,14 @@ describe("useRecordsMessages", () => {
 
       const { getMessagesForLoading } = useRecordMessages(recordCriteria);
 
-      expect(getMessagesForLoading(records)).toBe(
-        "#noRecordsMessages.taskDistributionCompleted#"
-      );
+      expect(getMessagesForLoading(records)).toBe("#noRecordsMessages.taskDistributionCompleted#");
     });
 
     test.each(["pending", "draft", "submitted", "discarded"])(
       "return 'No have %s records matching with a query' when no have records",
       (status: RecordStatus) => {
         const isFilteringByAdvanceSearch = true;
-        const recordCriteria = createRecordCriteria(
-          status,
-          isFilteringByAdvanceSearch
-        );
+        const recordCriteria = createRecordCriteria(status, isFilteringByAdvanceSearch);
         const records = createRecordsMockWith(false);
 
         mockMetricsWith(METRICS.WITH_20_ANNOTATED());
@@ -173,9 +151,7 @@ describe("useRecordsMessages", () => {
 
         const { getMessagesForLoading } = useRecordMessages(recordCriteria);
 
-        expect(getMessagesForLoading(records)).toBe(
-          `#noRecordsMessages.noRecordsFound.#recordStatus.${status}.2##`
-        );
+        expect(getMessagesForLoading(records)).toBe(`#noRecordsMessages.noRecordsFound.#recordStatus.${status}.2##`);
       }
     );
 
@@ -189,9 +165,7 @@ describe("useRecordsMessages", () => {
 
       const { getMessagesForLoading } = useRecordMessages(recordCriteria);
 
-      expect(getMessagesForLoading(records)).toBe(
-        "#noRecordsMessages.noDraftRecordsToReview#"
-      );
+      expect(getMessagesForLoading(records)).toBe("#noRecordsMessages.noDraftRecordsToReview#");
     });
 
     test("return 'No have submitted records yet' when the submitted queue is empty", () => {
@@ -204,9 +178,7 @@ describe("useRecordsMessages", () => {
 
       const { getMessagesForLoading } = useRecordMessages(recordCriteria);
 
-      expect(getMessagesForLoading(records)).toBe(
-        "#noRecordsMessages.noSubmittedRecords#"
-      );
+      expect(getMessagesForLoading(records)).toBe("#noRecordsMessages.noSubmittedRecords#");
     });
 
     test.each(["pending", "discarded"])(
@@ -221,9 +193,7 @@ describe("useRecordsMessages", () => {
 
         const { getMessagesForLoading } = useRecordMessages(recordCriteria);
 
-        expect(getMessagesForLoading(records)).toBe(
-          `#noRecordsMessages.noRecords.#recordStatus.${status}.2##`
-        );
+        expect(getMessagesForLoading(records)).toBe(`#noRecordsMessages.noRecords.#recordStatus.${status}.2##`);
       }
     );
 
@@ -252,9 +222,7 @@ describe("useRecordsMessages", () => {
 
       const { getMessageForPagination } = useRecordMessages(recordCriteria);
 
-      expect(getMessageForPagination(hasRecordsOnNextPage)).toBe(
-        "#noRecordsMessages.taskDistributionCompleted#"
-      );
+      expect(getMessageForPagination(hasRecordsOnNextPage)).toBe("#noRecordsMessages.taskDistributionCompleted#");
     });
 
     test("return 'No have pending records' when pending queue is empty", () => {
@@ -267,9 +235,7 @@ describe("useRecordsMessages", () => {
 
       const { getMessageForPagination } = useRecordMessages(recordCriteria);
 
-      expect(getMessageForPagination(hasRecordsOnNextPage)).toBe(
-        "#noRecordsMessages.noPendingRecordsToAnnotate#"
-      );
+      expect(getMessageForPagination(hasRecordsOnNextPage)).toBe("#noRecordsMessages.noPendingRecordsToAnnotate#");
     });
 
     test("return 'No have draft records' when draft queue is empty", () => {
@@ -282,9 +248,7 @@ describe("useRecordsMessages", () => {
 
       const { getMessageForPagination } = useRecordMessages(recordCriteria);
 
-      expect(getMessageForPagination(hasRecordsOnNextPage)).toBe(
-        "#noRecordsMessages.noDraftRecordsToReview#"
-      );
+      expect(getMessageForPagination(hasRecordsOnNextPage)).toBe("#noRecordsMessages.noDraftRecordsToReview#");
     });
 
     test("return 'No have discarded records' when discarded queue is empty", () => {

@@ -47,7 +47,7 @@ def test_list_files(workspace_api: WorkspacesAPI):
             }
         ]
     }
-    workspace_api.http_client.get.return_value = mock_response
+    workspace_api.http_client.get.return_value = mock_response  # type: ignore
 
     result = workspace_api.list_files("test-workspace", "test-path")
 
@@ -56,7 +56,7 @@ def test_list_files(workspace_api: WorkspacesAPI):
     assert result.objects[0].bucket_name == "test-workspace"
     assert result.objects[0].object_name == "test-file.txt"
 
-    workspace_api.http_client.get.assert_called_once_with(
+    workspace_api.http_client.get.assert_called_once_with(  # type: ignore
         url="/api/v1/files/test-workspace/test-path", params={"recursive": True, "include_version": True}
     )
 
@@ -106,7 +106,7 @@ def test_put_file(workspace_api, tmp_path):
         "version_tag": "test-version-tag",
         "metadata": {},
     }
-    workspace_api.http_client.post.return_value = mock_response
+    workspace_api.http_client.post.return_value = mock_response  # type: ignore
 
     result = workspace_api.put_file("test-workspace", "test-file.txt", test_file)
 
@@ -124,13 +124,13 @@ def test_delete_file(workspace_api: WorkspacesAPI):
     """Test deleting a file from a workspace."""
     mock_response = MagicMock()
     mock_response.status_code = 200
-    workspace_api.http_client.delete.return_value = mock_response
+    workspace_api.http_client.delete.return_value = mock_response  # type: ignore
 
     # Call the method
     workspace_api.delete_file("test-workspace", "test-file.txt")
 
     # Verify the API call
-    workspace_api.http_client.delete.assert_called_once_with(url="/api/v1/file/test-workspace/test-file.txt", params={})
+    workspace_api.http_client.delete.assert_called_once_with(url="/api/v1/file/test-workspace/test-file.txt", params={})  # type: ignore
 
 
 def test_add_document(workspace_api: WorkspacesAPI):
@@ -138,7 +138,7 @@ def test_add_document(workspace_api: WorkspacesAPI):
     mock_response = MagicMock()
     mock_response.status_code = 201
     mock_response.json.return_value = "f6e99e43-0a96-4629-b1dd-32c38d829d9e"
-    workspace_api.http_client.post.return_value = mock_response
+    workspace_api.http_client.post.return_value = mock_response  # type: ignore
 
     # Create a test document
     document = Document(
@@ -147,6 +147,9 @@ def test_add_document(workspace_api: WorkspacesAPI):
         url="https://example.com",
         pmid="12345",
         doi="10.1234/test",
+        reference="test-ref",
+        file_name=None,
+        file_path=None,
     )
 
     result = workspace_api.add_document(document)
@@ -154,11 +157,11 @@ def test_add_document(workspace_api: WorkspacesAPI):
     assert isinstance(result, UUID)
     assert str(result) == "f6e99e43-0a96-4629-b1dd-32c38d829d9e"
 
-    workspace_api.http_client.post.assert_called_once_with(
+    workspace_api.http_client.post.assert_called_once_with(  # type: ignore
         url="/api/v1/documents",
         params={
             "file_name": None,
-            "reference": None,
+            "reference": "test-ref",
             "url": "https://example.com",
             "workspace_id": "123e4567-e89b-12d3-a456-426614174000",
             "pmid": "12345",
@@ -180,11 +183,12 @@ def test_get_documents(mock_uuid4, workspace_api):
             "url": "https://example.com",
             "pmid": "12345",
             "doi": "10.1234/test",
+            "reference": "test-ref",
             "inserted_at": "2023-01-01T00:00:00Z",
             "updated_at": "2023-01-01T00:00:00Z",
         }
     ]
-    workspace_api.http_client.get.return_value = mock_response
+    workspace_api.http_client.get.return_value = mock_response  # type: ignore
 
     result = workspace_api.get_documents(UUID("123e4567-e89b-12d3-a456-426614174000"))
 
@@ -195,6 +199,6 @@ def test_get_documents(mock_uuid4, workspace_api):
     assert result[0].pmid == "12345"
     assert result[0].doi == "10.1234/test"
 
-    workspace_api.http_client.get.assert_called_once_with(
+    workspace_api.http_client.get.assert_called_once_with(  # type: ignore
         url="/api/v1/documents/workspace/123e4567-e89b-12d3-a456-426614174000"
     )

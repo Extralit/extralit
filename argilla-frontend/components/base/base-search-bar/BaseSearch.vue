@@ -11,17 +11,8 @@
       @input="onInput($event)"
       @keydown.stop=""
     />
-    <BaseButton
-      v-if="value.length"
-      class="search-area__close-button"
-      @click="removeSearch"
-      title="Clear all"
-    >
-      <svgicon
-        class="search-area__close-button__icon"
-        name="close"
-        width="10"
-        height="10"
+    <BaseButton v-if="value.length" class="search-area__close-button" @click="removeSearch" title="Clear all">
+      <svgicon class="search-area__close-button__icon" name="close" width="10" height="10"
     /></BaseButton>
   </div>
 </template>

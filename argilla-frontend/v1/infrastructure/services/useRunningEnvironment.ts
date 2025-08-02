@@ -13,10 +13,7 @@ export const useRunningEnvironment = () => {
   };
 
   const isRunningOnHuggingFace = (): boolean => {
-    return (
-      url.host === HUGGING_FACE_EMBEBED_URL ||
-      url.host.endsWith(HUGGING_FACE_DIRECT_URL)
-    );
+    return url.host === HUGGING_FACE_EMBEBED_URL || url.host.endsWith(HUGGING_FACE_DIRECT_URL);
   };
 
   const getEnvironment = async () => {

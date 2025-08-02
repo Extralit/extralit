@@ -7,13 +7,8 @@ import { RecordCriteria } from "@/v1/domain/entities/record/RecordCriteria";
 import { GetDatasetVectorsUseCase } from "@/v1/domain/usecases/get-dataset-vectors-use-case";
 import { DatasetVector } from "~/v1/domain/entities/vector/DatasetVector";
 
-export const useRecordFeedbackTaskViewModel = ({
-  recordCriteria,
-}: {
-  recordCriteria: RecordCriteria;
-}) => {
-  const { getMessagesForLoading, getMessageForPagination } =
-    useRecordMessages(recordCriteria);
+export const useRecordFeedbackTaskViewModel = ({ recordCriteria }: { recordCriteria: RecordCriteria }) => {
+  const { getMessagesForLoading, getMessageForPagination } = useRecordMessages(recordCriteria);
 
   const recordsMessage = ref<string | null>(null);
 
@@ -44,9 +39,7 @@ export const useRecordFeedbackTaskViewModel = ({
   };
 
   const loadVectors = async () => {
-    datasetVectors.value = await getDatasetVectorsUseCase.execute(
-      recordCriteria.datasetId
-    );
+    datasetVectors.value = await getDatasetVectorsUseCase.execute(recordCriteria.datasetId);
   };
 
   onBeforeMount(() => {

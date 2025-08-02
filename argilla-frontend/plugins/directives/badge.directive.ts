@@ -23,13 +23,7 @@ Vue.directive("badge", {
   ) => {
     const { showBadge } = binding.value;
     if (showBadge) {
-      const {
-        verticalPosition,
-        horizontalPosition,
-        backgroundColor,
-        borderColor,
-        size,
-      } = binding.value;
+      const { verticalPosition, horizontalPosition, backgroundColor, borderColor, size } = binding.value;
 
       element.style.position = "relative";
       const badge = document.createElement("div");

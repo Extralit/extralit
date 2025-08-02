@@ -18,9 +18,11 @@ export class SuggestionCriteria extends Criteria {
     if (!urlParams) return;
 
     urlParams.split("~").forEach((suggestion) => {
-      const [questionName, configurationName, ...rest] = suggestion.split(
-        "."
-      ) as [string, ConfigurationSearch["name"], ...string[]];
+      const [questionName, configurationName, ...rest] = suggestion.split(".") as [
+        string,
+        ConfigurationSearch["name"],
+        ...string[]
+      ];
 
       if (configurationName === "score" || configurationName === "value") {
         const score = this.getRangeValue(suggestion);
@@ -102,16 +104,14 @@ export class SuggestionCriteria extends Criteria {
           const valuesOption = v.value as ValuesOption;
 
           if ("operator" in valuesOption && valuesOption) {
-            return `${suggestion.name}.${v.name}.operator.${
-              valuesOption.operator
-            }.values.${valuesOption.values.join(".")}`;
+            return `${suggestion.name}.${v.name}.operator.${valuesOption.operator}.values.${valuesOption.values.join(
+              "."
+            )}`;
           }
 
           // eslint-disable-next-line no-prototype-builtins
           if (valuesOption.hasOwnProperty("values") && valuesOption.values) {
-            return `${suggestion.name}.${
-              v.name
-            }.values.${valuesOption.values.join(".")}`;
+            return `${suggestion.name}.${v.name}.values.${valuesOption.values.join(".")}`;
           }
 
           const values = v.value as string[];
@@ -175,10 +175,7 @@ export class SuggestionCriteria extends Criteria {
     });
   }
 
-  private addConfiguration(
-    questionName: string,
-    configuration: ConfigurationSearch
-  ) {
+  private addConfiguration(questionName: string, configuration: ConfigurationSearch) {
     const question = this.value.find((v) => v.name === questionName);
 
     if (question) {

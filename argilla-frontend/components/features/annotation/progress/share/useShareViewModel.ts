@@ -34,9 +34,7 @@ export const useShareViewModel = () => {
 
     url.search = params.toString();
 
-    const textToCopy = `I've just contributed ${
-      metrics.submitted
-    } examples to this dataset:
+    const textToCopy = `I've just contributed ${metrics.submitted} examples to this dataset:
 
 ${url.toString()}`;
 

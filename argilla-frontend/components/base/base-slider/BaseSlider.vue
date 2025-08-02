@@ -17,19 +17,11 @@
 
 <template>
   <div class="slides-nav">
-    <a
-      :class="itemNumber <= 0 ? 'disabled' : null"
-      href="#"
-      @click.prevent="prev(itemNumber)"
-    >
+    <a :class="itemNumber <= 0 ? 'disabled' : null" href="#" @click.prevent="prev(itemNumber)">
       <svgicon name="chevron-left" width="8" height="8" color="#4C4EA3" />
     </a>
     {{ itemNumber + 1 }} of {{ slidesOrigin.length }} {{ slidesName }}
-    <a
-      :class="slidesOrigin.length <= itemNumber + 1 ? 'disabled' : null"
-      href="#"
-      @click.prevent="next(itemNumber)"
-    >
+    <a :class="slidesOrigin.length <= itemNumber + 1 ? 'disabled' : null" href="#" @click.prevent="next(itemNumber)">
       <svgicon name="chevron-right" width="8" height="8" />
     </a>
   </div>

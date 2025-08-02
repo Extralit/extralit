@@ -1,10 +1,6 @@
 <template>
   <div class="sort-selector-item">
-    <BaseDropdown
-      :visible="visibleDropdown"
-      @visibility="onToggleVisibility"
-      class="sort-selector-item__dropdown"
-    >
+    <BaseDropdown :visible="visibleDropdown" @visibility="onToggleVisibility" class="sort-selector-item__dropdown">
       <span slot="dropdown-header" class="sort-selector-item__dropdown__header">
         <div class="sort-selector-item__dropdown__header__item">
           <span
@@ -17,11 +13,9 @@
       </span>
       <ul slot="dropdown-content" class="sort-selector-item__list">
         <li v-for="option in filteredOptions" :key="option.value">
-          <BaseButton
-            class="sort-selector-item__list__item"
-            @click="changeField(option.value)"
-            >{{ option.label }}</BaseButton
-          >
+          <BaseButton class="sort-selector-item__list__item" @click="changeField(option.value)">{{
+            option.label
+          }}</BaseButton>
         </li>
       </ul>
     </BaseDropdown>
@@ -34,10 +28,7 @@
         width="16"
         height="16"
         :name="selectedDirection === 'asc' ? 'arrow-up' : 'arrow-down'"
-        :aria-label="
-          'Change sort direction to ' +
-          (selectedDirection === 'asc' ? 'up' : 'down')
-        "
+        :aria-label="'Change sort direction to ' + (selectedDirection === 'asc' ? 'up' : 'down')"
       />
     </BaseButton>
   </div>
@@ -72,8 +63,7 @@ export default {
       return this.options.filter((option) => option !== this.selectedOption);
     },
     selectedOptionLabel() {
-      return this.options.find((option) => option.value === this.selectedOption)
-        ?.label;
+      return this.options.find((option) => option.value === this.selectedOption)?.label;
     },
   },
   methods: {

@@ -1,9 +1,6 @@
 <template>
   <div class="sort-filter">
-    <BaseDropdown
-      :visible="visibleDropdown"
-      @visibility="onSortToggleVisibility"
-    >
+    <BaseDropdown :visible="visibleDropdown" @visibility="onSortToggleVisibility">
       <span slot="dropdown-header">
         <DatasetsSortButton :is-active="visibleDropdown" />
       </span>

@@ -10,8 +10,7 @@ export class UpdateMetadataSettingUseCase {
     }
 
     // eslint-disable-next-line camelcase
-    const { title, visible_for_annotators } =
-      await this.metadataRepository.update(metadata);
+    const { title, visible_for_annotators } = await this.metadataRepository.update(metadata);
 
     metadata.update(title, visible_for_annotators);
   }

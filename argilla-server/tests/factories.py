@@ -29,6 +29,7 @@ from argilla_server.models import (
     Dataset,
     Document,
     Field,
+    ImportHistory,
     MetadataProperty,
     Question,
     QuestionType,
@@ -175,6 +176,7 @@ class WorkspaceSyncFactory(BaseSyncFactory):
         except Exception as e:
             print(f"Error creating bucket for workspace {workspace.name}: {str(e)}")
         return workspace
+
 
 class WorkspaceFactory(BaseFactory):
     class Meta:
@@ -554,6 +556,37 @@ class DocumentFactory(BaseFactory):
     url = factory.Sequence(lambda n: f"https://example.com/documents/{n}.pdf")
     workspace = factory.SubFactory(WorkspaceFactory)
     workspace_id = factory.SelfAttribute("workspace.id")
+
+
+class ImportHistoryFactory(BaseFactory):
+    class Meta:
+        model = ImportHistory
+
+    id = factory.LazyFunction(uuid.uuid4)
+    workspace = factory.SubFactory(WorkspaceFactory)
+    user = factory.SubFactory(UserFactory)
+    filename = factory.Sequence(lambda n: f"library-{n}.bib")
+    metadata = {
+        "documents": {
+            "ref1": {
+                "document_create": {
+                    "reference": "ref1",
+                    "pmid": None,
+                    "doi": None,
+                    "file_name": "paper1.pdf",
+                    "url": None,
+                },
+                "title": "Test Paper 1",
+                "authors": ["Author A"],
+                "year": 2025,
+                "venue": "Test Journal",
+                "associated_files": ["paper1.pdf"],
+                "status": "add",
+                "validation_errors": [],
+            }
+        },
+        "summary": {"total_documents": 1, "add_count": 1, "update_count": 0, "skip_count": 0, "failed_count": 0},
+    }
 
 
 class MinioFileFactory(factory.Factory):

@@ -1,10 +1,5 @@
 /* eslint-disable quotes */
-import {
-  Configuration,
-  OverlappedSpan,
-  SpanSelection as SpanSelectionBase,
-  TextSelection,
-} from "./span-selection";
+import { Configuration, OverlappedSpan, SpanSelection as SpanSelectionBase, TextSelection } from "./span-selection";
 
 class SpanSelection extends SpanSelectionBase {
   config: Configuration = {
@@ -70,10 +65,7 @@ const node = {
   textContent: DUMMY_TEXT,
 } as HTMLElement;
 
-const createTextSelection = (
-  selection: TestSelection,
-  nodeSelecting: HTMLElement = node
-): TextSelection => {
+const createTextSelection = (selection: TestSelection, nodeSelecting: HTMLElement = node): TextSelection => {
   return {
     from: selection.from,
     to: selection.to,
@@ -376,18 +368,15 @@ describe("Span Selection", () => {
     });
 
     describe("should not create span for one character when character level is not allowed", () => {
-      test.each([{ from: 4, to: 5, text: " ", entity: "TOKEN" }])(
-        "%o %o",
-        (actual: TestSelection) => {
-          const spanSelection = new SpanSelection();
-          spanSelection.config.allowCharacter = false;
+      test.each([{ from: 4, to: 5, text: " ", entity: "TOKEN" }])("%o %o", (actual: TestSelection) => {
+        const spanSelection = new SpanSelection();
+        spanSelection.config.allowCharacter = false;
 
-          const textSelection = createTextSelection(actual);
-          spanSelection.addSpan(textSelection);
+        const textSelection = createTextSelection(actual);
+        spanSelection.addSpan(textSelection);
 
-          expect(spanSelection.spans).toEqual([]);
-        }
-      );
+        expect(spanSelection.spans).toEqual([]);
+      });
     });
 
     describe("should remove span created", () => {

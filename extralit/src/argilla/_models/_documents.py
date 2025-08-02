@@ -35,10 +35,10 @@ class DocumentModel(ResourceModel):
     """
 
     id: Optional[UUID] = None
-    workspace_id: UUID = Field(None, description="The workspace ID to which the document belongs to")
+    reference: str = Field(..., description="A reference to the document, e.g., an identifier.")
+    workspace_id: UUID = Field(..., description="The workspace ID to which the document belongs to")
     file_name: Optional[str] = Field(None)
     file_path: Optional[str] = Field(None, description="Local file path")
-    reference: Optional[str] = None
     doi: Optional[str] = None
     pmid: Optional[str] = None
     url: Optional[str] = None

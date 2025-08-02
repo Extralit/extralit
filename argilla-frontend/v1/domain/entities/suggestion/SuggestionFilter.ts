@@ -1,11 +1,4 @@
-import {
-  Filter,
-  FilterWithOption,
-  FilterWithScore,
-  OptionForFilter,
-  RangeValue,
-  ValuesOption,
-} from "../common/Filter";
+import { Filter, FilterWithOption, FilterWithScore, OptionForFilter, RangeValue, ValuesOption } from "../common/Filter";
 import { Question } from "../question/Question";
 import { Agent } from "./Agent";
 import { ConfigurationSearch, SuggestionSearch } from "./SuggestionCriteria";
@@ -33,9 +26,7 @@ class ConfigurationValues extends Filter {
       this.rangeValue = new FilterWithScore(
         this.name,
         this.question.settings.options[0].value,
-        this.question.settings.options[
-          this.question.settings.options.length - 1
-        ].value,
+        this.question.settings.options[this.question.settings.options.length - 1].value,
         true
       );
     }
@@ -181,9 +172,7 @@ export class SuggestionFilterList {
   private latestCommit: SuggestionSearch[] = [];
 
   constructor(questions: Question[]) {
-    this.questions = questions.map(
-      (question) => new SuggestionFilter(question)
-    );
+    this.questions = questions.map((question) => new SuggestionFilter(question));
   }
 
   get hasFilters() {
@@ -201,8 +190,7 @@ export class SuggestionFilterList {
   get hasChangesSinceLatestCommit() {
     if (this.filteredSuggestions.length !== this.filtered.length) return true;
 
-    if (this.filtered.some((f) => !this.filteredSuggestions.includes(f)))
-      return true;
+    if (this.filtered.some((f) => !this.filteredSuggestions.includes(f))) return true;
 
     return this.hasChangesSinceLatestCommitWith(this.createCommit());
   }
@@ -257,16 +245,12 @@ export class SuggestionFilterList {
   }
 
   private synchronizeFiltered() {
-    const newFiltered = this.filtered.filter(
-      (category) => !this.filteredSuggestions.includes(category)
-    );
+    const newFiltered = this.filtered.filter((category) => !this.filteredSuggestions.includes(category));
     newFiltered.forEach((f) => {
       this.filteredSuggestions.push(f);
     });
 
-    const removedFilters = this.filteredSuggestions.filter(
-      (category) => !this.filtered.includes(category)
-    );
+    const removedFilters = this.filteredSuggestions.filter((category) => !this.filtered.includes(category));
     removedFilters.forEach((f) => {
       const indexOf = this.filteredSuggestions.indexOf(f);
 

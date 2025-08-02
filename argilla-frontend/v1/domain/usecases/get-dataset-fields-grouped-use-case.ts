@@ -8,14 +8,7 @@ export class GetDatasetFieldsGroupedUseCase {
     const backendFields = await this.fieldRepository.getFields(datasetId);
 
     const fields = backendFields.map((field) => {
-      return new Field(
-        field.id,
-        field.name,
-        field.title,
-        datasetId,
-        field.required,
-        field.settings
-      );
+      return new Field(field.id, field.name, field.title, datasetId, field.required, field.settings);
     });
 
     return this.groupFieldsByType(fields);
@@ -24,8 +17,7 @@ export class GetDatasetFieldsGroupedUseCase {
   private groupFieldsByType(fields: Field[]): Field[] {
     const groupedFields: Field[] = [];
     for (const field of fields) {
-      if (groupedFields.some((f) => f.settings.type === field.settings.type))
-        continue;
+      if (groupedFields.some((f) => f.settings.type === field.settings.type)) continue;
 
       groupedFields.push(field);
     }

@@ -2,7 +2,6 @@ import { Document, Segment } from "@/v1/domain/entities/document/Document";
 import { IDocumentStorage } from "@/v1/domain/services/IDocumentStorage";
 import { useStoreFor } from "@/v1/store/create";
 
-
 const useStoreForDocument = useStoreFor<Document, IDocumentStorage>(Document);
 
 export const useDocument = () => {
@@ -19,7 +18,7 @@ export const useDocument = () => {
       }
     }
     state.save(document);
-  }
+  };
 
   const setSegments = (segments: Segment[], reference?: string): void => {
     const document = get();
@@ -28,15 +27,15 @@ export const useDocument = () => {
       document.reference = reference;
       set(document);
     }
-  }
+  };
 
   const get = (): Document | null => {
     return state.get();
-  }
+  };
 
   const clear = (): void => {
     state.save(new Document(null, null, null, null));
-  }
+  };
 
   return {
     ...state,
@@ -46,4 +45,3 @@ export const useDocument = () => {
     setSegments,
   };
 };
-

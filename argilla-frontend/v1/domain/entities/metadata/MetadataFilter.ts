@@ -49,16 +49,13 @@ class MetadataFilter {
   }
 
   filterByText(text: string) {
-    return this.options.filter((option) =>
-      option.value.toLowerCase().includes(text.toLowerCase())
-    );
+    return this.options.filter((option) => option.value.toLowerCase().includes(text.toLowerCase()));
   }
 
   get isAnswered(): boolean {
     return this.isTerms
       ? this.selectedOptions.length > 0
-      : this.rangeValue.ge !== this.settings.min ||
-          this.rangeValue.le !== this.settings.max;
+      : this.rangeValue.ge !== this.settings.min || this.rangeValue.le !== this.settings.max;
   }
 
   get selectedOptions(): OptionForFilter[] {
@@ -119,8 +116,7 @@ export class MetadataFilterList {
   get hasChangesSinceLatestCommit() {
     if (this.filteredMetadata.length !== this.filtered.length) return true;
 
-    if (this.filtered.some((f) => !this.filteredMetadata.includes(f)))
-      return true;
+    if (this.filtered.some((f) => !this.filteredMetadata.includes(f))) return true;
 
     return this.hasChangesSinceLatestCommitWith(this.createCommit());
   }
@@ -178,16 +174,12 @@ export class MetadataFilterList {
   }
 
   private synchronizeFiltered() {
-    const newFiltered = this.filtered.filter(
-      (category) => !this.filteredMetadata.includes(category)
-    );
+    const newFiltered = this.filtered.filter((category) => !this.filteredMetadata.includes(category));
     newFiltered.forEach((f) => {
       this.filteredMetadata.push(f);
     });
 
-    const removedFilters = this.filteredMetadata.filter(
-      (category) => !this.filtered.includes(category)
-    );
+    const removedFilters = this.filteredMetadata.filter((category) => !this.filtered.includes(category));
     removedFilters.forEach((f) => {
       const indexOf = this.filteredMetadata.indexOf(f);
 

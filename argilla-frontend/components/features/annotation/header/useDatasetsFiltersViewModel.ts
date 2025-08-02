@@ -8,11 +8,7 @@ import { GetDatasetQuestionsFilterUseCase } from "~/v1/domain/usecases/get-datas
 import { GetFieldsUseCase } from "~/v1/domain/usecases/get-fields-use-case";
 import { GetMetadataUseCase } from "~/v1/domain/usecases/get-metadata-use-case";
 
-export const useDatasetsFiltersViewModel = ({
-  recordCriteria,
-}: {
-  recordCriteria: RecordCriteria;
-}) => {
+export const useDatasetsFiltersViewModel = ({ recordCriteria }: { recordCriteria: RecordCriteria }) => {
   const datasetMetadataIsLoaded = ref(false);
   const datasetQuestionIsLoaded = ref(false);
   const datasetMetadata = ref<Metadata[]>([]);
@@ -24,9 +20,7 @@ export const useDatasetsFiltersViewModel = ({
 
   const loadMetadata = async () => {
     try {
-      datasetMetadata.value = await getMetadataUseCase.execute(
-        recordCriteria.datasetId
-      );
+      datasetMetadata.value = await getMetadataUseCase.execute(recordCriteria.datasetId);
     } finally {
       datasetMetadataIsLoaded.value = true;
     }
@@ -34,9 +28,7 @@ export const useDatasetsFiltersViewModel = ({
 
   const loadQuestions = async () => {
     try {
-      datasetQuestions.value = await getQuestionsUseCase.execute(
-        recordCriteria.datasetId
-      );
+      datasetQuestions.value = await getQuestionsUseCase.execute(recordCriteria.datasetId);
     } finally {
       datasetQuestionIsLoaded.value = true;
     }
@@ -44,9 +36,7 @@ export const useDatasetsFiltersViewModel = ({
 
   const loadFields = async () => {
     try {
-      datasetFields.value = await getFieldsUseCase.execute(
-        recordCriteria.datasetId
-      );
+      datasetFields.value = await getFieldsUseCase.execute(recordCriteria.datasetId);
     } catch {}
   };
 

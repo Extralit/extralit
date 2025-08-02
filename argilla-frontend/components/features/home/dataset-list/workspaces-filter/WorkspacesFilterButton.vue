@@ -1,9 +1,5 @@
 <template>
-  <FilterButton
-    :button-name="$t('Workspaces')"
-    icon-name="filter"
-    :is-button-active="isButtonActive"
-  />
+  <FilterButton :button-name="buttonDisplayName" icon-name="filter" :is-button-active="isButtonActive" />
 </template>
 
 <script>
@@ -14,10 +10,17 @@ export default {
       type: Boolean,
       default: false,
     },
+    selectedWorkspace: {
+      type: String,
+      default: null,
+    },
   },
   computed: {
     isButtonActive() {
       return this.isActive;
+    },
+    buttonDisplayName() {
+      return this.selectedWorkspace || this.$t("Workspaces");
     },
   },
 };

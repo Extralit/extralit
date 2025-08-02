@@ -174,16 +174,18 @@ line-length = 120
 [tool.pdm.scripts]
 _.env_file = ".env.dev"
 cli = { cmd = "python -m argilla_server.cli" }
-server = { cmd = "uvicorn argilla_server:app --port 6900 --reload" }
+server = { cmd = "uvicorn argilla_server:app --host 0.0.0.0 --port 6900 --reload" }
 migrate = { cmd = "alembic upgrade head" }
+alembic = { cmd = "alembic -c src/argilla_server/alembic.ini" }
+revision = { cmd = "alembic -c src/argilla_server/alembic.ini revision --autogenerate" }
 worker = { cmd = "python -m argilla_server worker" }
 server-dev.composite = [
     "migrate",
     "cli database users create_default",
     "server",
 ]
-test = { cmd = "pytest --verbosity=1", env_file = ".env.test" }
-test-cov = { cmd = "pytest tests --cov=argilla_server --cov-report=term --cov-report=xml --verbosity=0", env_file = ".env.test" }
+test = { cmd = "pytest --verbosity=1 --disable-warnings", env_file = ".env.test" }
+test-cov = { cmd = "pytest tests --cov=argilla_server --cov-report=term --cov-report=xml --verbosity=0 --disable-warnings", env_file = ".env.test" }
 
 docker-build-argilla-server = { shell = "pdm build && cp -R dist docker/server && docker build -t extralit/argilla-server:local docker/server" }
 docker-build-argilla-hf-spaces = { shell = "pdm run docker-build-argilla-server && docker build --build-arg ARGILLA_VERSION=local -t extralit/argilla-hf-spaces:local docker/argilla-hf-spaces" }

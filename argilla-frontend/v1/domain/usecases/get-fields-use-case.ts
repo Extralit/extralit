@@ -8,14 +8,7 @@ export class GetFieldsUseCase {
     const fields = await this.fieldRepository.getFields(datasetId);
 
     return fields.map((field) => {
-      return new Field(
-        field.id,
-        field.name,
-        field.title,
-        datasetId,
-        field.required,
-        field.settings
-      );
+      return new Field(field.id, field.name, field.title, datasetId, field.required, field.settings);
     });
   }
 }

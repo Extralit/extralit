@@ -10,9 +10,7 @@ export class SubmitRecordUseCase {
   ) {}
 
   async execute(record: Record, duration?: number) {
-    const response = await this.recordRepository.submitRecordResponse(
-      record, duration
-    );
+    const response = await this.recordRepository.submitRecordResponse(record, duration);
 
     record.submit(response);
 

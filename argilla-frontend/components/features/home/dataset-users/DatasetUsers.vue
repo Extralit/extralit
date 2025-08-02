@@ -1,35 +1,17 @@
 <template>
   <div class="dataset-users__wrapper" @mouseleave="expanded = false">
     <div class="dataset-users" v-if="!expanded">
-      <BaseTooltip
-        v-for="{ username } in users.slice(0, visibleBadges)"
-        :key="username"
-        :text="username"
-      >
+      <BaseTooltip v-for="{ username } in users.slice(0, visibleBadges)" :key="username" :text="username">
         <UserBadge class="dataset-users__item" :name="username" />
       </BaseTooltip>
     </div>
-    <div
-      class="dataset-users__rest__wrapper"
-      v-if="users.length > visibleBadges"
-    >
-      <p v-if="users.length > maxVisibleBadges" class="dataset-users__text">
-        +{{ users.length - visibleBadges }}
-      </p>
-      <BaseButton
-        v-else
-        @mouseenter.native="expanded = true"
-        @click.prevent
-        class="dataset-users__button"
+    <div class="dataset-users__rest__wrapper" v-if="users.length > visibleBadges">
+      <p v-if="users.length > maxVisibleBadges" class="dataset-users__text">+{{ users.length - visibleBadges }}</p>
+      <BaseButton v-else @mouseenter.native="expanded = true" @click.prevent class="dataset-users__button"
         >+{{ users.length - visibleBadges }}</BaseButton
       >
       <div v-if="expanded" class="dataset-users__rest">
-        <BaseTooltip
-          @click.stop
-          v-for="{ username } in users"
-          :key="username"
-          :text="username"
-        >
+        <BaseTooltip @click.stop v-for="{ username } in users" :key="username" :text="username">
           <UserBadge class="dataset-users__item" :name="username" />
         </BaseTooltip>
       </div>

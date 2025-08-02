@@ -21,8 +21,7 @@ export const useDatasetViewModel = () => {
         message = `Can't get workspace info for dataset_id: ${datasetId}`;
         break;
       default:
-        message =
-          "There was an error on fetching dataset info and workspace info. Please try again";
+        message = "There was an error on fetching dataset info and workspace info. Please try again";
     }
 
     notification.notify({

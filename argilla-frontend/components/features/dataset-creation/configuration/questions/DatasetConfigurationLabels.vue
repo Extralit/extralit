@@ -1,9 +1,6 @@
 <template>
   <div>
-    <div
-      :class="{ '--error': errors.options?.length }"
-      class="dataset-config-label__input-container"
-    >
+    <div :class="{ '--error': errors.options?.length }" class="dataset-config-label__input-container">
       <input
         type="text"
         :value="optionsJoinedByCommas"
@@ -18,9 +15,7 @@
     <label
       v-else
       class="dataset-config-label__label"
-      v-text="
-        $t('datasetCreation.questions.labelSelection.optionsSeparatedByComma')
-      "
+      v-text="$t('datasetCreation.questions.labelSelection.optionsSeparatedByComma')"
     />
   </div>
 </template>

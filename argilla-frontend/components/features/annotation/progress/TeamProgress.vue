@@ -1,9 +1,6 @@
 <template>
   <div class="team-progress">
-    <BaseLinearProgressSkeleton
-      v-if="!progress.hasMetrics"
-      class="team-progress__bar"
-    />
+    <BaseLinearProgressSkeleton v-if="!progress.hasMetrics" class="team-progress__bar" />
     <template v-else>
       <BaseLinearProgress
         class="team-progress__bar"
@@ -17,9 +14,7 @@
         aria-label="Team Annotation-Progress"
         aria-labelledby="team-progress-percent"
       />
-      <span id="team-progress-percent" class="team-progress__percent"
-        >{{ progress.percentage.completed }}%</span
-      >
+      <span id="team-progress-percent" class="team-progress__percent">{{ progress.percentage.completed }}%</span>
       <span v-if="visibleProgressValues" class="team-progress__info">
         {{ progress.completed }} {{ $t("of") }} {{ progress.total }}
       </span>
@@ -50,8 +45,7 @@ export default {
         {
           id: "completed",
           name: this.$t("datasets.completed"),
-          color:
-            "linear-gradient(90deg, var(--fg-tertiary) 0%, var(--fg-primary) 100%)",
+          color: "linear-gradient(90deg, var(--fg-tertiary) 0%, var(--fg-primary) 100%)",
           value: this.progress.completed,
           tooltip: `${this.progress.completed}`,
         },

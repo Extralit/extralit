@@ -2,12 +2,7 @@ import { FieldType } from "../field/FieldType";
 
 export const noMapping = FieldType.from("no mapping");
 
-export const availableFieldTypes = [
-  noMapping,
-  FieldType.from("text"),
-  FieldType.from("image"),
-  FieldType.from("chat"),
-];
+export const availableFieldTypes = [noMapping, FieldType.from("text"), FieldType.from("image"), FieldType.from("chat")];
 
 export type FieldCreationTypes = "no mapping" | "text" | "image" | "chat";
 
@@ -18,11 +13,7 @@ export class FieldCreation {
 
   public readonly originalType: FieldType;
 
-  private constructor(
-    public readonly name: string,
-    type: string,
-    public readonly primitiveType: string
-  ) {
+  private constructor(public readonly name: string, type: string, public readonly primitiveType: string) {
     this.title = this.name;
 
     this.settings = {
@@ -56,11 +47,7 @@ export class FieldCreation {
     return this.type.isCustomType;
   }
 
-  public static from(
-    name: string,
-    type: FieldCreationTypes,
-    primitiveType: string
-  ): FieldCreation | null {
+  public static from(name: string, type: FieldCreationTypes, primitiveType: string): FieldCreation | null {
     if (availableFieldTypes.map((t) => t.value).includes(type)) {
       return new FieldCreation(name, type, primitiveType);
     }

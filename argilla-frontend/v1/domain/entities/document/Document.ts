@@ -30,6 +30,9 @@ export class Document {
 		public readonly page_number?: number | string,
 		public reference?: string,
 		public segments?: Segment[],
+		public readonly metadata?: Record<string, any>,
+		public readonly inserted_at?: string,
+		public readonly updated_at?: string,
 	) {
 		this.segments = segments || [];
 	}
@@ -46,13 +49,13 @@ export class Document {
 				return [...unique, segment];
 			}, [])
 			.map((segment) => {
-				return { 
-					value: segment.header, 
-					text: segment.header, 
+				return {
+					value: segment.header,
+					text: segment.header,
 					description: Segment.getDescription(segment),
 				}
 			});
-		
+
 		return selections;
 	}
 }

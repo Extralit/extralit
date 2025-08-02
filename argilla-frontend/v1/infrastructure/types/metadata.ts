@@ -18,10 +18,7 @@ export interface BackendMetadata {
   id: string;
   name: string;
   title: string;
-  settings:
-    | MetadataTermsSettings
-    | MetadataIntegerSettings
-    | MetadataFloatSettings;
+  settings: MetadataTermsSettings | MetadataIntegerSettings | MetadataFloatSettings;
   visible_for_annotators: boolean;
   dataset_id: string;
 }

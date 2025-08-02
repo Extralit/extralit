@@ -152,9 +152,7 @@ describe("Metadata", () => {
       test("return 'This must be less than 500.' error if metadata title has more 500 characters", () => {
         const metadata = createVectorMock("1");
         metadata.title = invalidLargeTitle;
-        expect(metadata.validate().title).toStrictEqual([
-          "This must be less than 500.",
-        ]);
+        expect(metadata.validate().title).toStrictEqual(["This must be less than 500."]);
       });
       test("don't return error if metadata has a valid title", () => {
         const metadata = createVectorMock("1");

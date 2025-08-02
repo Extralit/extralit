@@ -10,13 +10,7 @@ describe("Metrics", () => {
       expect(result).toBeTruthy();
     });
     it("should return false when there are no records", () => {
-      const metrics = new Metrics(
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined
-      );
+      const metrics = new Metrics(undefined, undefined, undefined, undefined, undefined);
 
       const result = metrics.hasMetrics;
 

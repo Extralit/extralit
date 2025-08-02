@@ -6,43 +6,52 @@ const DOCUMENT_API_ERRORS = {
 };
 
 export class DocumentRepository {
-  constructor(
-    private readonly axios: NuxtAxiosInstance,
-  ) {}
+  constructor(private readonly axios: NuxtAxiosInstance) {}
 
-  async getDocumentByPubmedID(pmid: string): Promise<Document>  {
+  async getDocumentByPubmedID(pmid: string): Promise<Document> {
     try {
       const { data } = await this.axios.get<Document>(`/v1/documents/by-pmid/${pmid}`);
       return data;
     } catch (error) {
       throw {
         response: DOCUMENT_API_ERRORS.ERROR_FETCHING_DOCUMENT,
-      }
+      };
     }
   }
 
   async getDocumentById(id: string): Promise<Document> {
     try {
       const { data } = await this.axios.get<Document>(`/v1/documents/by-id/${id}`);
-      return data;   
+      return data;
     } catch (error) {
       throw {
         response: DOCUMENT_API_ERRORS.ERROR_FETCHING_DOCUMENT,
-      }
+      };
     }
   }
 
   async getDocumentSegments(workspace: string, reference: string): Promise<Segment[]> {
     try {
-      const { data } = await this.axios.get<Segments>('/v1/models/segments/', {
-        params: { workspace, reference }
+      const { data } = await this.axios.get<Segments>("/v1/models/segments/", {
+        params: { workspace, reference },
       });
 
       return data.items;
     } catch (error) {
       throw {
         response: DOCUMENT_API_ERRORS.ERROR_FETCHING_DOCUMENT,
-      }
+      };
+    }
+  }
+
+  async getDocumentsByWorkspace(workspaceId: string): Promise<Document[]> {
+    try {
+      const { data } = await this.axios.get<Document[]>(`/v1/documents/workspace/${workspaceId}`);
+      return data;
+    } catch (error) {
+      throw {
+        response: DOCUMENT_API_ERRORS.ERROR_FETCHING_DOCUMENT,
+      };
     }
   }
 }

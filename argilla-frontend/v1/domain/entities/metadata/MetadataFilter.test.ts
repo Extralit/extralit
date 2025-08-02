@@ -1,7 +1,4 @@
-import {
-  createMetadataMock,
-  createMetadataWithNoValuesMock,
-} from "../__mocks__/metadata/mock";
+import { createMetadataMock, createMetadataWithNoValuesMock } from "../__mocks__/metadata/mock";
 import { MetadataFilterList } from "./MetadataFilter";
 
 const find = (metadataFilter: MetadataFilterList, category: string) => {
@@ -14,13 +11,7 @@ describe("MetadataFilter ", () => {
       const metadataFilter = new MetadataFilterList(createMetadataMock());
       const categories = metadataFilter.categories;
 
-      expect(categories.map((n) => n.name)).toEqual([
-        "split",
-        "loss",
-        "float",
-        "split_2",
-        "split_3",
-      ]);
+      expect(categories.map((n) => n.name)).toEqual(["split", "loss", "float", "split_2", "split_3"]);
     });
     test("should return empty array if there is no metadata", () => {
       const metadataFilter = new MetadataFilterList([]);
@@ -53,9 +44,7 @@ describe("MetadataFilter ", () => {
 
       metadataFilter.commit();
 
-      expect(metadataFilter.filteredCategories.map((f) => f.name)).toEqual([
-        "split",
-      ]);
+      expect(metadataFilter.filteredCategories.map((f) => f.name)).toEqual(["split"]);
     });
   });
 
@@ -83,9 +72,7 @@ describe("MetadataFilter ", () => {
 
       const committedFilters = metadataFilter.commit();
 
-      expect(committedFilters).toEqual([
-        { name: "split", value: ["test", "train"] },
-      ]);
+      expect(committedFilters).toEqual([{ name: "split", value: ["test", "train"] }]);
     });
 
     test("should return the router params for answered filters for numbers", () => {
@@ -94,9 +81,7 @@ describe("MetadataFilter ", () => {
 
       const committedFilters = metadataFilter.commit();
 
-      expect(committedFilters).toEqual([
-        { name: "loss", value: { ge: 10, le: 20 } },
-      ]);
+      expect(committedFilters).toEqual([{ name: "loss", value: { ge: 10, le: 20 } }]);
     });
 
     test("should return the router params for answered filters", () => {
@@ -132,11 +117,7 @@ describe("MetadataFilter ", () => {
         },
       ]);
 
-      expect(
-        find(metadataFilter, "split").selectedOptions.map(
-          (option) => option.value
-        )
-      ).toEqual(["test", "train"]);
+      expect(find(metadataFilter, "split").selectedOptions.map((option) => option.value)).toEqual(["test", "train"]);
 
       expect(find(metadataFilter, "loss").rangeValue).toEqual({
         ge: 10,
@@ -154,9 +135,7 @@ describe("MetadataFilter ", () => {
 
       metadataFilter.complete([{ name: "split", value: ["test", "train"] }]);
 
-      expect(metadataFilter.filteredCategories.map((f) => f.name)).toEqual([
-        "split",
-      ]);
+      expect(metadataFilter.filteredCategories.map((f) => f.name)).toEqual(["split"]);
     });
 
     test("the user can see the filtered categories in the same order that he/she selected", () => {
@@ -167,22 +146,14 @@ describe("MetadataFilter ", () => {
         { name: "float", value: { ge: 0.5, le: 0.6 } },
       ]);
 
-      expect(metadataFilter.filteredCategories.map((f) => f.name)).toEqual([
-        "split",
-        "loss",
-        "float",
-      ]);
+      expect(metadataFilter.filteredCategories.map((f) => f.name)).toEqual(["split", "loss", "float"]);
     });
 
     test("no modify anything when the param does not contain the option", () => {
       const metadataFilter = new MetadataFilterList(createMetadataMock());
       metadataFilter.complete([]);
 
-      expect(
-        find(metadataFilter, "split").selectedOptions.map(
-          (option) => option.value
-        )
-      ).toEqual([]);
+      expect(find(metadataFilter, "split").selectedOptions.map((option) => option.value)).toEqual([]);
     });
 
     test("no modify anything when the meta does not exist", () => {
@@ -224,10 +195,7 @@ describe("MetadataFilter ", () => {
 
       metadata.completeMetadata(["test", "train"]);
 
-      expect(metadata.selectedOptions.map((option) => option.value)).toEqual([
-        "test",
-        "train",
-      ]);
+      expect(metadata.selectedOptions.map((option) => option.value)).toEqual(["test", "train"]);
     });
     test("should complete the metadata when is integer", () => {
       const metadataFilter = new MetadataFilterList(createMetadataMock());
@@ -246,9 +214,7 @@ describe("MetadataFilter ", () => {
 
       metadata.clear();
 
-      expect(metadata.selectedOptions.map((option) => option.value)).toEqual(
-        []
-      );
+      expect(metadata.selectedOptions.map((option) => option.value)).toEqual([]);
     });
 
     test("should clear the metadata when is integer set the settings max and min values", () => {
@@ -271,27 +237,21 @@ describe("MetadataFilter ", () => {
     });
 
     test("should return false if terms metadata has no values", () => {
-      const metadataFilter = new MetadataFilterList(
-        createMetadataWithNoValuesMock()
-      );
+      const metadataFilter = new MetadataFilterList(createMetadataWithNoValuesMock());
       const metadata = find(metadataFilter, "split");
 
       expect(metadata.canFilter).toBeFalsy();
     });
 
     test("should return false if integer metadata has no values", () => {
-      const metadataFilter = new MetadataFilterList(
-        createMetadataWithNoValuesMock()
-      );
+      const metadataFilter = new MetadataFilterList(createMetadataWithNoValuesMock());
       const metadata = find(metadataFilter, "loss");
 
       expect(metadata.canFilter).toBeFalsy();
     });
 
     test("should return false if float metadata has no values", () => {
-      const metadataFilter = new MetadataFilterList(
-        createMetadataWithNoValuesMock()
-      );
+      const metadataFilter = new MetadataFilterList(createMetadataWithNoValuesMock());
       const metadata = find(metadataFilter, "float");
 
       expect(metadata.canFilter).toBeFalsy();

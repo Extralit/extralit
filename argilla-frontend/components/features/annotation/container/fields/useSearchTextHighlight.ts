@@ -29,10 +29,7 @@ export const useSearchTextHighlight = (fieldId: string) => {
       .filter(Boolean);
   };
 
-  const createRangesToHighlight = (
-    fieldComponent: HTMLElement,
-    searchText: string
-  ) => {
+  const createRangesToHighlight = (fieldComponent: HTMLElement, searchText: string) => {
     CSS.highlights.delete(HIGHLIGHT_CLASS);
 
     const ranges = [];
@@ -56,11 +53,7 @@ export const useSearchTextHighlight = (fieldId: string) => {
 
         let index;
 
-        while (
-          (index = textNode.nodeValue
-            .toLowerCase()
-            .indexOf(word.toLowerCase(), startIndex)) > -1
-        ) {
+        while ((index = textNode.nodeValue.toLowerCase().indexOf(word.toLowerCase(), startIndex)) > -1) {
           const newCoincidence = {
             start: index,
             end: index + word.length,

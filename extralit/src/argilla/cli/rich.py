@@ -214,9 +214,10 @@ def print_rich_table(
             },
         },
         "Document": {
-            "columns": ["URL", "File Name", "PMID", "DOI", "Created", "Updated"],
+            "columns": ["Reference", "URL", "File Name", "PMID", "DOI", "Created", "Updated"],
             "getters": {
                 "ID": lambda r: str(r.id),
+                "Reference": lambda r: r.reference,
                 "URL": lambda r: r.url,
                 "File Name": lambda r: r.file_name or "",
                 "PMID": lambda r: r.pmid,
@@ -226,6 +227,7 @@ def print_rich_table(
             },
             "styles": {
                 "ID": "cyan",
+                "Reference": "green",
                 "URL": "green",
                 "PMID": "yellow",
                 "DOI": "magenta",

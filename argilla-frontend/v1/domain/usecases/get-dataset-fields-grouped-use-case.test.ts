@@ -17,18 +17,12 @@ const createBackendField = (type: string) => {
 describe("GetDatasetFieldsGroupedUseCase should", () => {
   test("return a list of fields grouped by type", async () => {
     const datasetId = "datasetId";
-    const backendFields = [
-      createBackendField("chat"),
-      createBackendField("chat"),
-      createBackendField("text"),
-    ];
+    const backendFields = [createBackendField("chat"), createBackendField("chat"), createBackendField("text")];
 
     const fieldRepository = mock<IFieldRepository>();
     fieldRepository.getFields.mockResolvedValue(backendFields);
 
-    const getDatasetFieldsGroupedUseCase = new GetDatasetFieldsGroupedUseCase(
-      fieldRepository
-    );
+    const getDatasetFieldsGroupedUseCase = new GetDatasetFieldsGroupedUseCase(fieldRepository);
 
     const result = await getDatasetFieldsGroupedUseCase.execute(datasetId);
 
@@ -42,9 +36,7 @@ describe("GetDatasetFieldsGroupedUseCase should", () => {
     const fieldRepository = mock<IFieldRepository>();
     fieldRepository.getFields.mockResolvedValue(backendFields);
 
-    const getDatasetFieldsGroupedUseCase = new GetDatasetFieldsGroupedUseCase(
-      fieldRepository
-    );
+    const getDatasetFieldsGroupedUseCase = new GetDatasetFieldsGroupedUseCase(fieldRepository);
 
     const result = await getDatasetFieldsGroupedUseCase.execute(datasetId);
 

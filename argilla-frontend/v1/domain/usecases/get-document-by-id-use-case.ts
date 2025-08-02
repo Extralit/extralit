@@ -22,11 +22,11 @@ export class GetDocumentByIdUseCase {
 
   async setSegments(workspace: string, reference: string): Promise<Segment[]> {
     const segments = await this.documentRepository.getDocumentSegments(workspace, reference);
-    this.documentStorage.setSegments(segments, reference)
-    return segments
+    this.documentStorage.setSegments(segments, reference);
+    return segments;
   }
 
   get() {
-    return this.documentStorage.get()
+    return this.documentStorage.get();
   }
 }

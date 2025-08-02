@@ -22,10 +22,7 @@ export interface SortSearch {
 abstract class Sort {
   public sort: SortOrderOptions = SORT_ASC;
 
-  constructor(
-    public readonly key: SortOptions,
-    public readonly property?: SortProperty
-  ) {}
+  constructor(public readonly key: SortOptions, public readonly property?: SortProperty) {}
 
   toggleSort() {
     this.sort = this.sort === SORT_ASC ? SORT_DESC : SORT_ASC;
@@ -36,9 +33,7 @@ abstract class Sort {
   abstract get title(): string;
 
   get id(): SortId {
-    return this.property
-      ? `${this.key}.${this.name}.${this.property}`
-      : `${this.key}.${this.name}`;
+    return this.property ? `${this.key}.${this.name}.${this.property}` : `${this.key}.${this.name}`;
   }
 
   get group(): string {
@@ -142,21 +137,13 @@ export class SortList {
     this.categoriesSorts.push(new RecordSort("inserted_at"));
     this.categoriesSorts.push(new RecordSort("updated_at"));
 
-    questions?.forEach((q) =>
-      this.categoriesSorts.push(new SuggestionScoreSort(q))
-    );
+    questions?.forEach((q) => this.categoriesSorts.push(new SuggestionScoreSort(q)));
 
-    questions
-      ?.filter((q) => q.isRatingType)
-      .forEach((q) => this.categoriesSorts.push(new SuggestionValueSort(q)));
+    questions?.filter((q) => q.isRatingType).forEach((q) => this.categoriesSorts.push(new SuggestionValueSort(q)));
 
-    questions
-      ?.filter((q) => q.isRatingType)
-      .forEach((q) => this.categoriesSorts.push(new ResponseValueSort(q)));
+    questions?.filter((q) => q.isRatingType).forEach((q) => this.categoriesSorts.push(new ResponseValueSort(q)));
 
-    metadata?.forEach((metadata) =>
-      this.categoriesSorts.push(new MetadataSort(metadata))
-    );
+    metadata?.forEach((metadata) => this.categoriesSorts.push(new MetadataSort(metadata)));
   }
 
   get selected() {
@@ -164,9 +151,7 @@ export class SortList {
   }
 
   get noSelected() {
-    return this.categoriesSorts.filter(
-      (metadata) => !this.selectedCategories.includes(metadata)
-    );
+    return this.categoriesSorts.filter((metadata) => !this.selectedCategories.includes(metadata));
   }
 
   select(sort: SortIdentifier) {
@@ -220,23 +205,21 @@ export class SortList {
   }
 
   private createSortCriteria(): SortSearch[] {
-    return this.selectedCategories.map(
-      ({ key: entity, property, name, sort: order }) => {
-        if (property)
-          return {
-            entity,
-            name,
-            property,
-            order,
-          };
-
+    return this.selectedCategories.map(({ key: entity, property, name, sort: order }) => {
+      if (property)
         return {
           entity,
           name,
+          property,
           order,
         };
-      }
-    );
+
+      return {
+        entity,
+        name,
+        order,
+      };
+    });
   }
 
   complete(sort: SortSearch[]) {

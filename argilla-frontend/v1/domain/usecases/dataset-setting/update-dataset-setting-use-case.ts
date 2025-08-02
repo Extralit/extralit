@@ -4,10 +4,7 @@ import { IDatasetRepository } from "../../services/IDatasetRepository";
 export class UpdateDatasetSettingUseCase {
   constructor(private readonly datasetRepository: IDatasetRepository) {}
 
-  async execute(
-    dataset: Dataset,
-    part: "guidelines" | "metadata" | "distribution"
-  ) {
+  async execute(dataset: Dataset, part: "guidelines" | "metadata" | "distribution") {
     try {
       const response = await this.update(dataset, part);
 
@@ -17,10 +14,7 @@ export class UpdateDatasetSettingUseCase {
     }
   }
 
-  private update(
-    dataset: Dataset,
-    part: "guidelines" | "metadata" | "distribution"
-  ) {
+  private update(dataset: Dataset, part: "guidelines" | "metadata" | "distribution") {
     if (part === "guidelines")
       return this.datasetRepository.update({
         id: dataset.id,

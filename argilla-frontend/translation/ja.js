@@ -40,10 +40,8 @@ export default {
   guidelines: "ガイドライン",
   taskDistribution: "タスク分配",
   minimumSubmittedResponses: "必要な最低回答数",
-  taskDistributionTooltip:
-    "タスクはすべてのレコードで最低回答数分\nの回答が提出されたときに完了となります",
-  noAnnotationGuidelines:
-    "このデータセットにはアノテーションガイドラインがありません",
+  taskDistributionTooltip: "タスクはすべてのレコードで最低回答数分\nの回答が提出されたときに完了となります",
+  noAnnotationGuidelines: "このデータセットにはアノテーションガイドラインがありません",
   required: "必須",
   optional: "任意",
   template: "テンプレート",
@@ -53,8 +51,7 @@ export default {
   rows: "行",
   datasetName: "データセット名",
   noRecordsMessages: {
-    datasetEmptyForAnnotator:
-      "データセットは空です。管理者にレコードのアップロードを依頼してください。",
+    datasetEmptyForAnnotator: "データセットは空です。管理者にレコードのアップロードを依頼してください。",
     datasetEmptyForAdmin:
       "データセットは空です。Python SDKを使用してレコードを追加できます。詳細は<a href='https://docs.argilla.io/latest/admin_guide/record/'>ドキュメント</a>を参照してください。",
     taskDistributionCompleted: "🎉 タスクは完了しています！",
@@ -81,8 +78,7 @@ export default {
     discarded: "回答放棄",
     submitted: "提出済み",
     validated: "検証済み",
-    completedTooltip:
-      "このレコードは完了しています。\n最小回答数が提出されました",
+    completedTooltip: "このレコードは完了しています。\n最小回答数が提出されました",
   },
   userSettings: {
     title: "設定",
@@ -93,8 +89,7 @@ export default {
       workspaces: "ワークスペース",
     },
     apiKey: "APIキー",
-    apiKeyDescription:
-      "APIキーを使うとPython SDKでデータセットを管理できます。",
+    apiKeyDescription: "APIキーを使うとPython SDKでデータセットを管理できます。",
     theme: "テーマ",
     language: "言語",
     copyKey: "コピー",
@@ -144,8 +139,7 @@ export default {
   some_records_failed_to_annotate: "アノテーションに失敗したレコードがあります",
   changes_no_submit: "変更が提出されていません",
   bulkAnnotation: {
-    recordsSelected:
-      "1レコードが選択されています | {count}レコードが選択されています",
+    recordsSelected: "1レコードが選択されています | {count}レコードが選択されています",
     recordsViewSettings: "レコードサイズ",
     fixedHeight: "レコードを折りたたむ",
     defaultHeight: "レコードを展開",
@@ -155,8 +149,7 @@ export default {
     selectAllResults: "マッチした全{total}レコードを選択",
     haveSelectedRecords: "全{total}レコードが選択されました",
     actionConfirmation: "一括アクション確認",
-    actionConfirmationText:
-      "このアクションは{total}レコードに影響します。続行しますか？",
+    actionConfirmationText: "このアクションは{total}レコードに影響します。続行しますか？",
     allRecordsAnnotated: "{total}レコードが{action}されました",
     affectedAll: {
       submitted: "提出済み",
@@ -226,12 +219,10 @@ export default {
     hide: "非表示",
     passwordDescription: "パスワードを入力",
     claim: "データは協働で。</br>モデルはさらなる高みへ。",
-    error:
-      "ユーザー名またはパスワードが間違っています。もう一度お試しください。",
+    error: "ユーザー名またはパスワードが間違っています。もう一度お試しください。",
     hf: {
       title: "{space}へようこそ",
-      subtitle:
-        "<strong>{user}</strong>さんと一緒にAI向けのデータセットを作成しましょう",
+      subtitle: "<strong>{user}</strong>さんと一緒にAI向けのデータセットを作成しましょう",
     },
   },
   of: "of",
@@ -273,11 +264,11 @@ export default {
     argillaDatasets: "データセット一覧",
     none: "データセットはありません",
     importTitle: "Hugging Face Hubからデータセットをインポート",
-    importText:
-      "リポジトリ名を貼り付けるだけで、Hubからデータセットをインポートできます",
+    importText: "リポジトリ名を貼り付けるだけで、Hubからデータセットをインポートできます",
     importButton: "データセットをインポート",
     importFromHub: "Hugging Faceからデータセットをインポート",
     importFromPython: "Pythonからインポート",
+    importDocuments: "ドキュメントをインポート",
     importFromPythonHFWarning:
       "プライベートスペースを使用している場合は<a target='_blank' href='https://docs.argilla.io/latest/getting_started/how-to-configure-argilla-on-huggingface/#how-to-use-private-spaces'>ドキュメント</a>を参照してください。",
     exampleDatasetsTitle: "どこから始めればいいかわかりませんか？",
@@ -313,8 +304,7 @@ export default {
     name: "名前",
     assignWorkspace: "割り当てるワークスペース",
     selectSplit: "Splitを選択",
-    recordWarning:
-      "作成されたデータセットには最初の10K行が含まれます。以降のレコードはPython SDKで取得できます。",
+    recordWarning: "作成されたデータセットには最初の10K行が含まれます。以降のレコードはPython SDKで取得できます。",
     button: "データセットを作成",
     fields: "フィールド一覧",
     questionsTitle: "質問一覧",
@@ -377,8 +367,7 @@ export default {
   persistentStorage: {
     adminOrOwner:
       "永続ストレージが有効になっていません。このスペースが再起動されるとすべてのデータが失われます。スペース設定で有効にしてください。",
-    annotator:
-      "永続ストレージが有効になっていません。このスペースが再起動されるとすべてのデータが失われます。",
+    annotator: "永続ストレージが有効になっていません。このスペースが再起動されるとすべてのデータが失われます。",
   },
   colorSchema: {
     system: "システム",

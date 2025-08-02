@@ -1,7 +1,4 @@
-import {
-  createMetadataMock,
-  createMetadataWithNoValuesMock,
-} from "../__mocks__/metadata/mock";
+import { createMetadataMock, createMetadataWithNoValuesMock } from "../__mocks__/metadata/mock";
 import { SortList } from "./SortList";
 
 describe("SortList ", () => {
@@ -11,12 +8,8 @@ describe("SortList ", () => {
 
       categoriesSort.select({ key: "metadata", name: "split" });
 
-      expect(
-        categoriesSort.selected.map((m) => m.name).includes("split")
-      ).toBeTruthy();
-      expect(
-        categoriesSort.noSelected.map((m) => m.name).includes("split")
-      ).toBeFalsy();
+      expect(categoriesSort.selected.map((m) => m.name).includes("split")).toBeTruthy();
+      expect(categoriesSort.noSelected.map((m) => m.name).includes("split")).toBeFalsy();
     });
   });
 
@@ -28,9 +21,7 @@ describe("SortList ", () => {
       categoriesSort.unselect({ key: "metadata", name: "split" });
 
       expect(categoriesSort.selected).toHaveLength(0);
-      expect(
-        categoriesSort.noSelected.map((m) => m.name).includes("split")
-      ).toBeTruthy();
+      expect(categoriesSort.noSelected.map((m) => m.name).includes("split")).toBeTruthy();
     });
   });
 
@@ -40,17 +31,10 @@ describe("SortList ", () => {
       categoriesSort.select({ key: "metadata", name: "loss" });
       expect(categoriesSort.selected[0].name).toEqual("loss");
 
-      categoriesSort.replace(
-        { key: "metadata", name: "loss" },
-        { key: "metadata", name: "split" }
-      );
+      categoriesSort.replace({ key: "metadata", name: "loss" }, { key: "metadata", name: "split" });
 
-      expect(
-        categoriesSort.noSelected.map((m) => m.name).includes("loss")
-      ).toBeTruthy();
-      expect(
-        categoriesSort.selected.map((m) => m.name).includes("split")
-      ).toBeTruthy();
+      expect(categoriesSort.noSelected.map((m) => m.name).includes("loss")).toBeTruthy();
+      expect(categoriesSort.selected.map((m) => m.name).includes("split")).toBeTruthy();
     });
   });
 
@@ -58,19 +42,13 @@ describe("SortList ", () => {
     test("should be able to clear all selected categories", () => {
       const categoriesSort = new SortList(createMetadataMock(), []);
       categoriesSort.select({ key: "metadata", name: "loss" });
-      expect(
-        categoriesSort.selected.map((m) => m.name).includes("loss")
-      ).toBeTruthy();
-      expect(
-        categoriesSort.noSelected.map((m) => m.name).includes("loss")
-      ).toBeFalsy();
+      expect(categoriesSort.selected.map((m) => m.name).includes("loss")).toBeTruthy();
+      expect(categoriesSort.noSelected.map((m) => m.name).includes("loss")).toBeFalsy();
 
       categoriesSort.clear();
 
       expect(categoriesSort.selected).toHaveLength(0);
-      expect(
-        categoriesSort.noSelected.map((m) => m.name).includes("loss")
-      ).toBeTruthy();
+      expect(categoriesSort.noSelected.map((m) => m.name).includes("loss")).toBeTruthy();
     });
   });
 
@@ -136,9 +114,7 @@ describe("SortList ", () => {
       const categoriesSort = new SortList(metadataForSortingWithoutValues, []);
 
       categoriesSort.noSelected
-        .filter((n) =>
-          metadataForSortingWithoutValues.some((m) => m.name === n.name)
-        )
+        .filter((n) => metadataForSortingWithoutValues.some((m) => m.name === n.name))
         .forEach((metadata) => {
           expect(metadata.canSort).toBeFalsy();
         });

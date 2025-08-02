@@ -30,6 +30,7 @@ class DocumentCreate(BaseModel):
     reference: Optional[str] = Field(None, description="Extraction reference for the document")
     pmid: Optional[str] = Field(None, description="The PubMed ID of the document.")
     doi: Optional[str] = Field(None, description="The DOI of the document.")
+    metadata: Optional[dict] = Field(None, description="Additional metadata for the document")
 
 
 class DocumentDelete(BaseModel):
@@ -46,6 +47,7 @@ class DocumentUpdate(BaseModel):
     pmid: Optional[str] = Field(None, description="The PubMed ID of the document.")
     doi: Optional[str] = Field(None, description="The DOI of the document.")
     file_name: Optional[str] = Field(None, description="The name of the file.")
+    metadata: Optional[dict] = Field(None, description="Additional metadata for the document")
 
 
 class DocumentListItem(BaseModel):
@@ -56,7 +58,8 @@ class DocumentListItem(BaseModel):
     reference: Optional[str]
     pmid: Optional[str]
     doi: Optional[str]
+    metadata: Optional[dict] = Field(alias="metadata_")
     inserted_at: datetime
     updated_at: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)

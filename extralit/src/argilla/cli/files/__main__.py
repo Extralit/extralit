@@ -14,7 +14,6 @@
 
 from argilla.cli.typer_ext import ArgillaTyper
 
-# Import all files CLI commands
 from argilla.cli.files.list import list_files
 from argilla.cli.files.upload import upload_file
 from argilla.cli.files.download import download_file

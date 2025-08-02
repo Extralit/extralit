@@ -8,11 +8,7 @@ import { IDatasetRepository } from "../../services/IDatasetRepository";
 import { IDatasetSettingStorage } from "../../services/IDatasetSettingStorage";
 import { IQuestionRepository } from "../../services/IQuestionRepository";
 import { RoleService } from "../../services/RoleService";
-import {
-  FieldRepository,
-  MetadataRepository,
-  VectorRepository,
-} from "~/v1/infrastructure/repositories";
+import { FieldRepository, MetadataRepository, VectorRepository } from "~/v1/infrastructure/repositories";
 
 export class GetDatasetSettingsUseCase {
   constructor(
@@ -37,31 +33,20 @@ export class GetDatasetSettingsUseCase {
     return datasetSetting;
   }
 
-  private async createDatasetSettingsForAnnotator(
-    datasetId: string
-  ): Promise<DatasetSetting> {
+  private async createDatasetSettingsForAnnotator(datasetId: string): Promise<DatasetSetting> {
     const dataset = await this.datasetRepository.getById(datasetId);
 
     return new DatasetSetting(dataset);
   }
 
-  private async createDatasetSettingsForAdminOrOwner(
-    datasetId: string
-  ): Promise<DatasetSetting> {
+  private async createDatasetSettingsForAdminOrOwner(datasetId: string): Promise<DatasetSetting> {
     const getDataset = this.datasetRepository.getById(datasetId);
     const getQuestions = this.questionRepository.getQuestions(datasetId);
     const getFields = this.fieldRepository.getFields(datasetId);
     const getVectors = this.vectorRepository.getVectors(datasetId);
-    const getMetadataProperties =
-      this.metadataRepository.getMetadataFilters(datasetId);
+    const getMetadataProperties = this.metadataRepository.getMetadataFilters(datasetId);
 
-    const [
-      dataset,
-      backendQuestions,
-      backendFields,
-      backendVectors,
-      backendMetadataProperties,
-    ] = await Promise.all([
+    const [dataset, backendQuestions, backendFields, backendVectors, backendMetadataProperties] = await Promise.all([
       getDataset,
       getQuestions,
       getFields,
@@ -84,24 +69,11 @@ export class GetDatasetSettingsUseCase {
     this.setUpFakeSuggestion(questions);
 
     const fields = backendFields.map((field) => {
-      return new Field(
-        field.id,
-        field.name,
-        field.title,
-        datasetId,
-        field.required,
-        field.settings
-      );
+      return new Field(field.id, field.name, field.title, datasetId, field.required, field.settings);
     });
 
     const vectors = backendVectors.map((vector) => {
-      return new Vector(
-        vector.id,
-        vector.name,
-        vector.title,
-        vector.dimensions,
-        vector.dataset_id
-      );
+      return new Vector(vector.id, vector.name, vector.title, vector.dimensions, vector.dataset_id);
     });
 
     const metadataProperties = backendMetadataProperties.map((metadata) => {
@@ -115,13 +87,7 @@ export class GetDatasetSettingsUseCase {
       );
     });
 
-    return new DatasetSetting(
-      dataset,
-      questions,
-      fields,
-      vectors,
-      metadataProperties
-    );
+    return new DatasetSetting(dataset, questions, fields, vectors, metadataProperties);
   }
 
   private setUpFakeSuggestion(questions: Question[]) {

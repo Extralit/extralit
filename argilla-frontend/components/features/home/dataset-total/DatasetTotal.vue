@@ -1,13 +1,7 @@
 <template>
   <div class="dataset-total">
     <template v-if="!!total">
-      <svgicon
-        name="records"
-        height="12"
-        width="12"
-        color="var(--fg-tertiary)"
-        aria-hidden="true"
-      />
+      <svgicon name="records" height="12" width="12" color="var(--fg-tertiary)" aria-hidden="true" />
       <span>{{ total | formatNumberToK(2) }} {{ $t("rows") }}</span>
     </template>
   </div>

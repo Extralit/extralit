@@ -5,16 +5,10 @@
       <HeaderFeedbackTask :datasetId="datasetId" :breadcrumbs="breadcrumbs" />
     </template>
     <template v-slot:page-header>
-      <TopDatasetSettingsFeedbackTask
-        :separator="!isAdminOrOwnerRole"
-        @goToDataset="goToDataset"
-      />
+      <TopDatasetSettingsFeedbackTask :separator="!isAdminOrOwnerRole" @goToDataset="goToDataset" />
     </template>
     <template v-slot:page-content>
-      <SettingsInfoReadOnly
-        v-if="!isAdminOrOwnerRole"
-        :settings="datasetSetting"
-      />
+      <SettingsInfoReadOnly v-if="!isAdminOrOwnerRole" :settings="datasetSetting" />
       <BaseTabsAndContent
         v-else
         :tabs="tabs"
@@ -24,11 +18,7 @@
         @onLoaded="onTabLoaded"
       >
         <template v-slot="{ currentComponent }">
-          <component
-            :is="currentComponent"
-            :key="currentComponent"
-            :settings="datasetSetting"
-          />
+          <component :is="currentComponent" :key="currentComponent" :settings="datasetSetting" />
         </template>
       </BaseTabsAndContent>
     </template>

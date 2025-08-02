@@ -1,14 +1,6 @@
 <template>
-  <FilterButton
-    :button-name="$t('sorting.label')"
-    icon-name="sort"
-    :is-button-active="isButtonActive"
-  >
-    <span
-      class="sort-button__text"
-      v-if="activeSortItemsCounter"
-      v-text="`(${activeSortItemsCounter})`"
-    />
+  <FilterButton :button-name="$t('sorting.label')" icon-name="sort" :is-button-active="isButtonActive">
+    <span class="sort-button__text" v-if="activeSortItemsCounter" v-text="`(${activeSortItemsCounter})`" />
   </FilterButton>
 </template>
 

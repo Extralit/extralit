@@ -8,12 +8,7 @@ import { SaveDraftUseCase } from "~/v1/domain/usecases/save-draft-use-case";
 import { useDebounce } from "~/v1/infrastructure/services/useDebounce";
 import { useDocument } from "~/v1/infrastructure/storage/DocumentStorage";
 
-export const useFocusAnnotationViewModel = (
-  props: { 
-    datasetId: string,
-    record: Record,
-  },
-) => {
+export const useFocusAnnotationViewModel = (props: { datasetId: string; record: Record }) => {
   const debounceForSubmit = useDebounce(300);
   const debounceForSaveDraft = useDebounce(1000);
   const isDraftSaving = ref(false);
@@ -25,23 +20,27 @@ export const useFocusAnnotationViewModel = (
 
   const { state: document } = useDocument();
 
-  watch([() => document.segments, () => props.record], () => {
-    if (!document || !props.record) return;
-    const selections = document?.getSegmentSelections();
+  watch(
+    [() => document.segments, () => props.record],
+    () => {
+      if (!document || !props.record) return;
+      const selections = document?.getSegmentSelections();
 
-    props.record?.questions?.forEach((question: Question) => {
-      if (selections && question.name == 'context-relevant'){
-        question.addDynamicSelectionToLabelQuestion(selections)
+      props.record?.questions?.forEach((question: Question) => {
+        if (selections && question.name === "context-relevant") {
+          question.addDynamicSelectionToLabelQuestion(selections);
 
-        if (props.record.isPending && !!question.suggestion) {
-          question.response(question.suggestion);
-        } else {
-          const answer = props.record.answer?.value[question.name];
-          question.response(answer);
+          if (props.record.isPending && !!question.suggestion) {
+            question.response(question.suggestion);
+          } else {
+            const answer = props.record.answer?.value[question.name];
+            question.response(answer);
+          }
         }
-      }
-    });
-  }, { deep: false, immediate: true });
+      });
+    },
+    { deep: false, immediate: true }
+  );
 
   const discard = async (record: Record) => {
     isDiscarding.value = true;
@@ -65,7 +64,7 @@ export const useFocusAnnotationViewModel = (
 
   const submit = async (record: Record, durationWrapper?: { value: number }) => {
     isSubmitting.value = true;
-    let duration = incrementDuration(record, durationWrapper);
+    const duration = incrementDuration(record, durationWrapper);
 
     await submitUseCase.execute(record, duration);
     await debounceForSubmit.wait();
@@ -75,7 +74,7 @@ export const useFocusAnnotationViewModel = (
 
   const saveAsDraft = async (record: Record, durationWrapper?: { value: number }) => {
     isDraftSaving.value = true;
-    let duration = incrementDuration(record, durationWrapper);
+    const duration = incrementDuration(record, durationWrapper);
 
     await debounceForSaveDraft.wait();
     await saveDraftUseCase.execute(record, duration);

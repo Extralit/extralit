@@ -11,7 +11,6 @@ export interface BackendExtractionRequest {
   prompt?: string;
 }
 
-
 export interface BackendExtractionResponse {
   schema: DataFrameSchema;
   data: Data;

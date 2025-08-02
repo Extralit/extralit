@@ -1,8 +1,6 @@
 export const useLanguageDirection = () => {
   const isRTL = (text: string) => {
-    const rtlCount = (
-      text?.match(/[\u0591-\u07FF\uFB1D-\uFDFD\uFE70-\uFEFC]/g) || []
-    ).length;
+    const rtlCount = (text?.match(/[\u0591-\u07FF\uFB1D-\uFDFD\uFE70-\uFEFC]/g) || []).length;
 
     const ltrCount = (
       text?.match(

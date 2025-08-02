@@ -14,7 +14,29 @@ These are the section headers that we use:
 * "Security" in case of vulnerabilities.
 -->
 
-## [Extralit] [0.5.0](https://github.com/extralit/extralit/compare/v0.4.1...v0.5.0)
+## [Extralit] [0.6.0](https://github.com/extralit/extralit/compare/v0.4.1...v0.6.0)
+
+### Added
+- Papers Library Importer: Added full import workflow for bulk document ingestion via BibTeX and PDF upload.
+- Added ImportModal full-page workflow with multi-step navigation for document import.
+- Implemented BibTeX parsing and file-to-reference matching in ImportBibUpload and ImportPdfUpload components.
+- Added ImportAnalysisTable for backend import status preview and selection (Add/Update/Skip).
+- Implemented sequential batch upload with ImportBatchProgress and live progress tracking.
+- Added ImportSummary and ImportHistory components for import results and log viewing.
+- Created BaseSimpleTable for generic tabular data display.
+- Enhanced workspace selection and integration with import features.
+
+### Changed
+- Updated route new dataset view from `/{dataset.repoId}` to `/new/hf/{dataset.repoId}` to prevent url conflicts.
+- Improved import modal navigation and state persistence across steps.
+- Updated workspace selection UI for single workspace mode.
+- Enhanced error handling and validation for BibTeX and PDF uploads.
+
+### Fixed
+- Fixed PDF-to-reference matching and error reporting in import workflow.
+- Fixed UI state restoration when navigating between import steps.
+
+## Changed
 
 
 ## [Argilla] [2.8.0](https://github.com/argilla-io/argilla/compare/v2.7.1...v2.8.0)

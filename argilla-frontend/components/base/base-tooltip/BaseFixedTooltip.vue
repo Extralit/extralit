@@ -8,10 +8,7 @@
   >
     <div class="fixed-tooltip__content" :class="isSmallTooltip">
       <span v-html="content" />
-      <BaseButton
-        @click.native.stop="closeTooltip"
-        class="fixed-tooltip__button"
-      >
+      <BaseButton @click.native.stop="closeTooltip" class="fixed-tooltip__button">
         <svgicon name="close" width="12" />
       </BaseButton>
     </div>
@@ -66,15 +63,11 @@ export default {
     },
     scrollInParent() {
       const { top: parentOffsetTop = 0, bottom: parentOffsetBottom = 0 } =
-        this.getScrollableParent(this.triggerElement).getBoundingClientRect() ||
-        {};
+        this.getScrollableParent(this.triggerElement).getBoundingClientRect() || {};
       const { top: elementOffsetTop = 0, bottom: elementOffsetBottom = 0 } =
         this.triggerElement.getBoundingClientRect() || {};
       if (this.$refs.tooltip) {
-        if (
-          elementOffsetTop < parentOffsetTop ||
-          elementOffsetBottom > parentOffsetBottom
-        ) {
+        if (elementOffsetTop < parentOffsetTop || elementOffsetBottom > parentOffsetBottom) {
           this.$refs.tooltip.style.visibility = "hidden";
         } else {
           this.$refs.tooltip.style.visibility = "visible";
@@ -89,10 +82,8 @@ export default {
           return;
         }
         const rect = this.triggerElement.getBoundingClientRect();
-        this.top =
-          rect.top + window.scrollY + this.triggerElement.offsetHeight + 10;
-        this.left =
-          rect.left + window.scrollX - tooltipWidth / 2 + rect.width / 2;
+        this.top = rect.top + window.scrollY + this.triggerElement.offsetHeight + 10;
+        this.left = rect.left + window.scrollX - tooltipWidth / 2 + rect.width / 2;
       });
     },
     toggleTooltip() {
@@ -108,20 +99,14 @@ export default {
   mounted() {
     this.isVisible = this.open;
     this.$nextTick(() => {
-      this.getScrollableParent(this.triggerElement).addEventListener(
-        "scroll",
-        this.scrollInParent
-      );
+      this.getScrollableParent(this.triggerElement).addEventListener("scroll", this.scrollInParent);
       window.addEventListener("resize", this.updatePosition);
       this.triggerElement.addEventListener("click", this.toggleTooltip);
       this.updatePosition();
     });
   },
   beforeDestroy() {
-    this.getScrollableParent(this.triggerElement).removeEventListener(
-      "scroll",
-      this.scrollInParent
-    );
+    this.getScrollableParent(this.triggerElement).removeEventListener("scroll", this.scrollInParent);
     window.removeEventListener("resize", this.updatePosition);
     this.triggerElement.removeEventListener("click", this.toggleTooltip);
   },
@@ -178,12 +163,7 @@ $tooltip-small-max-width: 100px;
     left: calc(50% - $tooltip-triangle-size);
     transform: translateY(-50%);
     bottom: calc(100% - $tooltip-triangle-size / 2);
-    @include triangle(
-      top,
-      $tooltip-triangle-size,
-      $tooltip-triangle-size,
-      $tooltip-bg
-    );
+    @include triangle(top, $tooltip-triangle-size, $tooltip-triangle-size, $tooltip-bg);
   }
 }
 </style>

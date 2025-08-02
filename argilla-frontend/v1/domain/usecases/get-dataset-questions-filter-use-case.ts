@@ -5,9 +5,7 @@ export class GetDatasetQuestionsFilterUseCase {
   constructor(private readonly questionRepository: IQuestionRepository) {}
 
   async execute(datasetId: string): Promise<Question[]> {
-    const backendQuestions = await this.questionRepository.getQuestions(
-      datasetId
-    );
+    const backendQuestions = await this.questionRepository.getQuestions(datasetId);
 
     const questions = backendQuestions.map((question) => {
       return new Question(
@@ -25,10 +23,6 @@ export class GetDatasetQuestionsFilterUseCase {
   }
 
   private visibleTypeOfQuestions(question: Question): boolean {
-    return (
-      question.isMultiLabelType ||
-      question.isSingleLabelType ||
-      question.isRatingType
-    );
+    return question.isMultiLabelType || question.isSingleLabelType || question.isRatingType;
   }
 }

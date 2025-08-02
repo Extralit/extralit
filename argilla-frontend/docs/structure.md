@@ -25,10 +25,16 @@
 ├── static -> Static resources
 ├── translations -> Argilla translation resources
 ├── v1 -> New architecture
-│ ├── di
-│ ├── domain
-│ ├── infrastructure
-│ └── store
+│ ├── di -> Dependency injection configuration
+│ ├── domain -> Domain layer with entities and use cases
+│ │ ├── entities -> Data structures and types
+│ │ │ └── import -> Import-related entities (ImportAnalysis.ts)
+│ │ └── usecases -> Business logic use cases
+│ │   └── get-import-analysis-use-case.ts -> Import analysis API communication
+│ ├── infrastructure -> Infrastructure layer
+│ │ ├── services -> External services and utilities
+│ │ └── storage -> Data storage and state management
+│ └── store -> Pinia stores for state management
 │...
 ├── package.json
 ├── package-lock.json

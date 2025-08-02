@@ -80,9 +80,7 @@ export class ResponseCriteria extends Criteria {
         const valuesOption = response.value as ValuesOption;
 
         if ("operator" in valuesOption && valuesOption) {
-          return `${response.name}.operator.${
-            valuesOption.operator
-          }.values.${valuesOption.values.join(".")}`;
+          return `${response.name}.operator.${valuesOption.operator}.values.${valuesOption.values.join(".")}`;
         }
 
         const values = response.value as string[];

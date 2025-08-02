@@ -141,23 +141,14 @@ export class Subset {
 
   private tryToCreateFields(structure: Structure) {
     const getFieldType = (structure: Structure) => {
-      if (structure.kindObject === "Value" && structure.type === "string")
-        return "text";
+      if (structure.kindObject === "Value" && structure.type === "string") return "text";
 
       if (structure.kindObject === "Image") return "image";
-      if (
-        structure.structure?.length > 0 &&
-        structure.structure[0].content &&
-        structure.structure[0].role
-      )
+      if (structure.structure?.length > 0 && structure.structure[0].content && structure.structure[0].role)
         return "chat";
     };
 
-    const field = FieldCreation.from(
-      structure.name,
-      getFieldType(structure),
-      structure.type
-    );
+    const field = FieldCreation.from(structure.name, getFieldType(structure), structure.type);
 
     if (field) {
       this.fields.push(field);
@@ -181,13 +172,7 @@ export class Subset {
   }
 
   private createNoMappedFields(structure: Structure) {
-    this.fields.push(
-      FieldCreation.from(
-        structure.name,
-        "no mapping",
-        structure.type ?? structure.kindObject
-      )
-    );
+    this.fields.push(FieldCreation.from(structure.name, "no mapping", structure.type ?? structure.kindObject));
   }
 
   private isASingleLabel(structure: Structure) {
@@ -195,10 +180,7 @@ export class Subset {
   }
 
   private isAMultiLabel(structure: Structure) {
-    return (
-      structure.kindObject === "Sequence" &&
-      structure.feature._type === "ClassLabel"
-    );
+    return structure.kindObject === "Sequence" && structure.feature._type === "ClassLabel";
   }
 
   public removeQuestion(name: string) {
@@ -208,11 +190,7 @@ export class Subset {
     }
   }
 
-  public addQuestion(
-    name: string,
-    settings: QuestionPrototype,
-    position?: number
-  ) {
+  public addQuestion(name: string, settings: QuestionPrototype, position?: number) {
     const { type } = settings;
     if (type === "label_selection") {
       settings.options = [
@@ -279,10 +257,6 @@ export class Subset {
       return;
     }
 
-    this.questions.splice(
-      position ?? this.questions.length,
-      0,
-      new QuestionCreation(this, name, settings)
-    );
+    this.questions.splice(position ?? this.questions.length, 0, new QuestionCreation(this, name, settings));
   }
 }

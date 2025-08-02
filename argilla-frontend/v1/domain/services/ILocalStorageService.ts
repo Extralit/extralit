@@ -1,10 +1,4 @@
-export type Options =
-  | "showShortcutsHelper"
-  | "layout"
-  | "redirectTo"
-  | "language"
-  | "theme"
-  | "datasetExportJobIds";
+export type Options = "showShortcutsHelper" | "layout" | "redirectTo" | "language" | "theme" | "datasetExportJobIds";
 
 export interface ILocalStorageService {
   get<T>(key: Options): T;

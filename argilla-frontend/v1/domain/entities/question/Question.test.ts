@@ -1,7 +1,4 @@
-import {
-  createLabelQuestionMocked,
-  createTextQuestionMocked,
-} from "../__mocks__/question/mock";
+import { createLabelQuestionMocked, createTextQuestionMocked } from "../__mocks__/question/mock";
 
 describe("Question", () => {
   describe("initialize should", () => {
@@ -10,9 +7,7 @@ describe("Question", () => {
         visible_options: null,
       });
 
-      expect(question.settings.visible_options).toBe(
-        question.settings.options.length
-      );
+      expect(question.settings.visible_options).toBe(question.settings.options.length);
     });
 
     test("no modify visible options prop if is already defined", () => {
@@ -150,23 +145,17 @@ describe("Question", () => {
       test("return 'This field is required.' error if question title is empty", () => {
         const question = createTextQuestionMocked();
         question.title = "";
-        expect(question.validate().title).toStrictEqual([
-          "This field is required.",
-        ]);
+        expect(question.validate().title).toStrictEqual(["This field is required."]);
       });
       test("return 'This must be less than 200.' error if question title has more 200 characters", () => {
         const question = createTextQuestionMocked();
         question.title = invalidLargeTitle;
-        expect(question.validate().title).toStrictEqual([
-          "This must be less than 200.",
-        ]);
+        expect(question.validate().title).toStrictEqual(["This must be less than 200."]);
       });
       test("return 'This must be less than 500.' error if question description has more 200 characters", () => {
         const question = createTextQuestionMocked();
         question.description = invalidLargeDescription;
-        expect(question.validate().description).toStrictEqual([
-          "This must be less than 500.",
-        ]);
+        expect(question.validate().description).toStrictEqual(["This must be less than 500."]);
       });
       test("don't return error if question has title", () => {
         const question = createTextQuestionMocked();

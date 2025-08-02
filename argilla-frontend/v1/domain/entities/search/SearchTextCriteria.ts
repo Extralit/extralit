@@ -30,19 +30,14 @@ export class SearchTextCriteria extends Criteria {
     this.setValue(
       text
         .split("")
-        .map((char, i) =>
-          this.itWasConvertedToUnderscore(text, char, i) ? " " : char
-        )
+        .map((char, i) => (this.itWasConvertedToUnderscore(text, char, i) ? " " : char))
         .join(""),
       field
     );
   }
 
   withValue(searchTextCriteria: SearchTextCriteria) {
-    this.setValue(
-      searchTextCriteria.value.text,
-      searchTextCriteria.value.field
-    );
+    this.setValue(searchTextCriteria.value.text, searchTextCriteria.value.field);
   }
 
   reset() {
@@ -75,12 +70,6 @@ export class SearchTextCriteria extends Criteria {
   }
 
   private itWasConvertedToUnderscore(text: string, char: string, i: number) {
-    return (
-      char === "_" &&
-      !!text[i + 1] &&
-      text[i + 1] !== "_" &&
-      !!text[i - 1] &&
-      text[i - 1] !== "_"
-    );
+    return char === "_" && !!text[i + 1] && text[i + 1] !== "_" && !!text[i - 1] && text[i - 1] !== "_";
   }
 }

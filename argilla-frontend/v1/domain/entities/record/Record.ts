@@ -11,16 +11,16 @@ const DEFAULT_STATUS = "pending";
 
 /**
  * Returns the changes in `object` that's different from `base`.
- * 
+ *
  * @param object - The object to compare.
  * @param base - The base object to compare against.
  * @returns An object containing the differences between the two objects.
  */
 export function difference(object: any, base: any) {
   function changes(object: any, base: any) {
-    return transform(object, function(result: any, value: any, key: any) {
+    return transform(object, (result: any, value: any, key: any) => {
       if (!isEqual(value, base[key])) {
-        result[key] = (isObject(value) && isObject(base[key])) ? changes(value, base[key]) : value;
+        result[key] = isObject(value) && isObject(base[key]) ? changes(value, base[key]) : value;
       }
     });
   }
@@ -81,7 +81,7 @@ export class Record {
   getModified() {
     const { original, ...rest } = this;
 
-    return !!original ? difference(rest, original) : {};
+    return original ? difference(rest, original) : {};
   }
 
   discard(answer: RecordAnswer) {
@@ -110,9 +110,7 @@ export class Record {
     this.questions
       .filter((q) => !q.isSpanType)
       .forEach((question) => {
-        const questionReference = recordReference.questions.find(
-          (q) => q.id === question.id
-        );
+        const questionReference = recordReference.questions.find((q) => q.id === question.id);
 
         if (!questionReference) return;
 
@@ -130,9 +128,7 @@ export class Record {
   }
 
   get hasAnyQuestionAnswered() {
-    return this.questions.some(
-      (question) => question.answer.isValid || question.answer.isPartiallyValid
-    );
+    return this.questions.some((question) => question.answer.isValid || question.answer.isPartiallyValid);
   }
 
   questionAreCompletedCorrectly() {
@@ -148,10 +144,7 @@ export class Record {
         return input.hasValidValues;
       });
 
-    return (
-      requiredQuestionsAreCompletedCorrectly &&
-      optionalQuestionsCompletedAreCorrectlyEntered
-    );
+    return requiredQuestionsAreCompletedCorrectly && optionalQuestionsCompletedAreCorrectlyEntered;
   }
 
   private completeQuestion() {
@@ -164,9 +157,9 @@ export class Record {
           }
         }
       });
-      
+
       if (
-        this.isPending && 
+        this.isPending &&
         !!question.suggestion &&
         // @ts-ignore
         !question.settings?.settings?.use_table

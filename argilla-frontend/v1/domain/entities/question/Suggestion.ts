@@ -1,10 +1,4 @@
-import {
-  Answer,
-  AnswerCombinations,
-  RankingAnswer,
-  SpanAnswer,
-  TableAnswer,
-} from "../IAnswer";
+import { Answer, AnswerCombinations, RankingAnswer, SpanAnswer, TableAnswer } from "../IAnswer";
 import { QuestionType } from "./QuestionType";
 
 type AnswerValue = string | number | RankingAnswer | SpanAnswer | TableAnswer;
@@ -29,7 +23,7 @@ export class SuggestionValue {
     public readonly value: AnswerValue,
     score: number,
     public readonly agent: string,
-    public readonly updatedAt?: Date,
+    public readonly updatedAt?: Date
   ) {
     this.score = score ? SuggestionScore.from(score) : undefined;
   }
@@ -45,7 +39,7 @@ export class Suggestion implements Answer {
     private readonly agent: string,
     public readonly type?: string,
     public readonly insertedAt?: Date,
-    public readonly updatedAt?: Date,
+    public readonly updatedAt?: Date
   ) {}
 
   get value() {
@@ -64,7 +58,7 @@ export class Suggestion implements Answer {
       this.questionType.isTableType
     ) {
       if (this.value === answer) {
-        return new SuggestionValue(answer, this.score as number, this.agent, this.updatedAt,);
+        return new SuggestionValue(answer, this.score as number, this.agent, this.updatedAt);
       }
     }
 
@@ -75,12 +69,7 @@ export class Suggestion implements Answer {
       if (multiLabel.includes(answerValue)) {
         const indexOf = multiLabel.indexOf(answerValue);
 
-        return new SuggestionValue(
-          answerValue,
-          this.score?.[indexOf],
-          this.agent,
-          this.updatedAt,
-        );
+        return new SuggestionValue(answerValue, this.score?.[indexOf], this.agent, this.updatedAt);
       }
     }
 
@@ -89,19 +78,13 @@ export class Suggestion implements Answer {
       const suggestions = this.value as SpanAnswer[];
 
       const spanSuggested = suggestions.find(
-        (s) =>
-          s.label === span.label && s.start === span.start && s.end === span.end
+        (s) => s.label === span.label && s.start === span.start && s.end === span.end
       );
 
       if (spanSuggested) {
         const indexOf = suggestions.indexOf(spanSuggested);
 
-        return new SuggestionValue(
-          spanSuggested,
-          this.score?.[indexOf],
-          this.agent,
-          this.updatedAt,
-        );
+        return new SuggestionValue(spanSuggested, this.score?.[indexOf], this.agent, this.updatedAt);
       }
     }
 
@@ -109,9 +92,7 @@ export class Suggestion implements Answer {
       const suggestedRanking = this.value as RankingAnswer[];
       const ranking = answer as RankingAnswer;
 
-      const rankingSuggested = suggestedRanking.find(
-        (s) => s.value === ranking.value
-      );
+      const rankingSuggested = suggestedRanking.find((s) => s.value === ranking.value);
 
       if (rankingSuggested) {
         const indexOf = suggestedRanking.indexOf(rankingSuggested);
@@ -120,7 +101,7 @@ export class Suggestion implements Answer {
           rankingSuggested,
           this.score?.[indexOf],
           this.agent,
-          this.updatedAt || this.insertedAt,
+          this.updatedAt || this.insertedAt
         );
       }
     }

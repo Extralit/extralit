@@ -22,9 +22,7 @@ export class Records {
   }
 
   shouldBuffering(criteria: PageCriteria) {
-    const bufferedRecords = this.records.filter(
-      (record) => record.page > criteria.client.page
-    );
+    const bufferedRecords = this.records.filter((record) => record.page > criteria.client.page);
 
     if (this.total === this.lastRecord.page) return false;
 
@@ -32,9 +30,7 @@ export class Records {
   }
 
   getRecordsOn(criteria: PageCriteria): Record[] {
-    return this.records
-      .filter((record) => record.page >= criteria.client.page)
-      .splice(0, criteria.client.many);
+    return this.records.filter((record) => record.page >= criteria.client.page).splice(0, criteria.client.many);
   }
 
   getById(recordId: string): Record {
@@ -42,13 +38,7 @@ export class Records {
   }
 
   synchronizeQueuePagination(criteria: RecordCriteria): void {
-    const {
-      page,
-      status,
-      isFilteringBySimilarity,
-      similaritySearch,
-      committed,
-    } = criteria;
+    const { page, status, isFilteringBySimilarity, similaritySearch, committed } = criteria;
 
     if (isFilteringBySimilarity) {
       return page.synchronizePagination({
@@ -96,9 +86,7 @@ export class Records {
 
   append(newRecords: Records) {
     newRecords.records.forEach((newRecord) => {
-      const recordIndex = this.records.findIndex(
-        (record) => record.id === newRecord.id
-      );
+      const recordIndex = this.records.findIndex((record) => record.id === newRecord.id);
 
       if (recordIndex === -1) {
         this.records.push(newRecord);

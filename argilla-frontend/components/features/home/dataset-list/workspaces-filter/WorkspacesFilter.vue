@@ -3,13 +3,14 @@
     <BaseDropdown :visible="visibleDropdown" @visibility="onToggleVisibility">
       <span slot="dropdown-header"
         ><WorkspacesFilterButton
-          :is-active="visibleDropdown || !!selectedWorkspaces.length"
-      /></span>
+          :is-active="visibleDropdown || !!localSelectedWorkspace"
+          :selected-workspace="localSelectedWorkspace"
+        /></span>
       <span slot="dropdown-content" class="datasets-filter__container">
         <div class="datasets-filter__content">
           <WorkspaceSelector
             :workspaces="workspaces"
-            :selected-workspaces="selectedWorkspaces"
+            v-model="localSelectedWorkspace"
           />
         </div>
       </span>
@@ -17,7 +18,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import "assets/icons/chevron-left";
 
 export default {
@@ -26,24 +27,37 @@ export default {
       type: Array,
       required: true,
     },
-    selectedWorkspaces: {
-      type: Array,
-      required: true,
+    selectedWorkspace: {
+      type: String,
+      default: null,
     },
   },
   model: {
-    prop: "selectedWorkspaces",
-    event: "on-change-workspaces-filter",
+    prop: "selectedWorkspace",
+    event: "on-change-workspace-filter",
   },
   data() {
     return {
       visibleDropdown: false,
+      localSelectedWorkspace: this.selectedWorkspace,
     };
   },
   watch: {
-    selectedWorkspaces() {
-      this.$emit("on-change-workspaces-filter", this.selectedWorkspaces);
+    selectedWorkspace(newValue: string) {
+      this.localSelectedWorkspace = newValue;
     },
+    localSelectedWorkspace(newValue: string) {
+      this.$emit("on-change-workspace-filter", newValue);
+    },
+    workspaces: {
+      immediate: true,
+      handler(newWorkspaces) {
+        // Auto-assign the first workspace if none is selected and workspaces exist
+        if (!this.localSelectedWorkspace && newWorkspaces && newWorkspaces.length > 0) {
+          this.localSelectedWorkspace = newWorkspaces[0].name;
+        }
+      }
+    }
   },
   methods: {
     onToggleVisibility(value) {

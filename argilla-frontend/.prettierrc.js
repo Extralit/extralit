@@ -4,5 +4,4 @@ module.exports = {
     "tabWidth": 2,
     "semi": true,
     "singleQuote": false,
-    "align": "parameters",
 };

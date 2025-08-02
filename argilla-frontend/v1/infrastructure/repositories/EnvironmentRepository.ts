@@ -17,10 +17,7 @@ export class EnvironmentRepository implements IEnvironmentRepository {
 
   async getEnvironment(): Promise<Environment> {
     try {
-      const { data } = await this.axios.get<BackendEnvironment>(
-        "v1/settings",
-        largeCache()
-      );
+      const { data } = await this.axios.get<BackendEnvironment>("v1/settings", largeCache());
 
       const {
         argilla = {
@@ -40,8 +37,7 @@ export class EnvironmentRepository implements IEnvironmentRepository {
 
       return new Environment(
         {
-          showHuggingfaceSpacePersistentStorageWarning:
-            argilla.show_huggingface_space_persistent_storage_warning,
+          showHuggingfaceSpacePersistentStorageWarning: argilla.show_huggingface_space_persistent_storage_warning,
           shareYourProgressEnabled: argilla.share_your_progress_enabled,
         },
         {
@@ -51,8 +47,7 @@ export class EnvironmentRepository implements IEnvironmentRepository {
           spaceHost: huggingface.space_host,
           spaceRepoName: huggingface.space_repo_name,
           spaceAuthorName: huggingface.space_author_name,
-          spacePersistentStorageEnabled:
-            huggingface.space_persistent_storage_enabled,
+          spacePersistentStorageEnabled: huggingface.space_persistent_storage_enabled,
         }
       );
     } catch (err) {

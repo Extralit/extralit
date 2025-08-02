@@ -9,11 +9,7 @@ import {
 } from "../types/dataset";
 import { Response } from "../types";
 import { largeCache, revalidateCache } from "./AxiosCache";
-import {
-  DatasetId,
-  IDatasetRepository,
-  JobId,
-} from "@/v1/domain/services/IDatasetRepository";
+import { DatasetId, IDatasetRepository, JobId } from "@/v1/domain/services/IDatasetRepository";
 import { Dataset } from "~/v1/domain/entities/dataset/Dataset";
 import { Progress } from "~/v1/domain/entities/dataset/Progress";
 import { DatasetCreation } from "~/v1/domain/entities/hub/DatasetCreation";
@@ -61,9 +57,7 @@ export class DatasetRepository implements IDatasetRepository {
 
   async publish(datasetId: string): Promise<boolean> {
     try {
-      const { data } = await this.axios.put(
-        `/v1/datasets/${datasetId}/publish`
-      );
+      const { data } = await this.axios.put(`/v1/datasets/${datasetId}/publish`);
 
       revalidateCache(`/v1/datasets/${datasetId}`);
 
@@ -75,20 +69,14 @@ export class DatasetRepository implements IDatasetRepository {
     }
   }
 
-  async import(
-    datasetId: DatasetId,
-    creation: DatasetCreation
-  ): Promise<JobId> {
+  async import(datasetId: DatasetId, creation: DatasetCreation): Promise<JobId> {
     try {
-      const { data } = await this.axios.post<BackendJob>(
-        `/v1/datasets/${datasetId}/import`,
-        {
-          name: creation.repoId,
-          subset: creation.selectedSubset.name,
-          split: creation.selectedSubset.selectedSplit.name,
-          mapping: creation.mappings,
-        }
-      );
+      const { data } = await this.axios.post<BackendJob>(`/v1/datasets/${datasetId}/import`, {
+        name: creation.repoId,
+        subset: creation.selectedSubset.name,
+        split: creation.selectedSubset.selectedSplit.name,
+        mapping: creation.mappings,
+      });
 
       return data.id;
     } catch (err) {
@@ -98,24 +86,18 @@ export class DatasetRepository implements IDatasetRepository {
     }
   }
 
-  async export(
-    dataset: Dataset,
-    exportSettings: DatasetExportSettings
-  ): Promise<JobId> {
+  async export(dataset: Dataset, exportSettings: DatasetExportSettings): Promise<JobId> {
     try {
       const { id } = dataset;
       const { name, subset, split, isPrivate, hfToken } = exportSettings;
 
-      const { data } = await this.axios.post<BackendJob>(
-        `/v1/datasets/${id}/export`,
-        {
-          name,
-          subset,
-          split,
-          private: isPrivate,
-          token: hfToken,
-        }
-      );
+      const { data } = await this.axios.post<BackendJob>(`/v1/datasets/${id}/export`, {
+        name,
+        subset,
+        split,
+        private: isPrivate,
+        token: hfToken,
+      });
 
       return data.id;
     } catch (err) {
@@ -151,27 +133,25 @@ export class DatasetRepository implements IDatasetRepository {
   async getAll(): Promise<Dataset[]> {
     const response = await this.getDatasets();
 
-    const feedbackDatasets = response.feedbackDatasetsWithWorkspaces.map(
-      (datasetFromBackend) => {
-        return new Dataset(
-          datasetFromBackend.id,
-          datasetFromBackend.name,
-          datasetFromBackend.guidelines,
-          datasetFromBackend.status,
-          datasetFromBackend.workspace_id,
-          datasetFromBackend.workspace_name,
-          datasetFromBackend.allow_extra_metadata,
-          {
-            strategy: datasetFromBackend.distribution.strategy,
-            minSubmitted: datasetFromBackend.distribution.min_submitted,
-          },
-          datasetFromBackend.metadata,
-          datasetFromBackend.inserted_at,
-          datasetFromBackend.updated_at,
-          datasetFromBackend.last_activity_at
-        );
-      }
-    );
+    const feedbackDatasets = response.feedbackDatasetsWithWorkspaces.map((datasetFromBackend) => {
+      return new Dataset(
+        datasetFromBackend.id,
+        datasetFromBackend.name,
+        datasetFromBackend.guidelines,
+        datasetFromBackend.status,
+        datasetFromBackend.workspace_id,
+        datasetFromBackend.workspace_name,
+        datasetFromBackend.allow_extra_metadata,
+        {
+          strategy: datasetFromBackend.distribution.strategy,
+          minSubmitted: datasetFromBackend.distribution.min_submitted,
+        },
+        datasetFromBackend.metadata,
+        datasetFromBackend.inserted_at,
+        datasetFromBackend.updated_at,
+        datasetFromBackend.last_activity_at
+      );
+    });
 
     return [...feedbackDatasets];
   }
@@ -195,11 +175,7 @@ export class DatasetRepository implements IDatasetRepository {
     }
 
     try {
-      const { data } =
-        await this.axios.patch<BackendDatasetFeedbackTaskResponse>(
-          `/v1/datasets/${id}`,
-          request
-        );
+      const { data } = await this.axios.patch<BackendDatasetFeedbackTaskResponse>(`/v1/datasets/${id}`, request);
 
       revalidateCache(`/v1/datasets/${id}`);
       revalidateCache(`/v1/datasets/${id}/progress`);
@@ -228,10 +204,7 @@ export class DatasetRepository implements IDatasetRepository {
 
   async getProgress(datasetId: string): Promise<Progress> {
     try {
-      const { data } = await this.axios.get<BackendProgress>(
-        `/v1/datasets/${datasetId}/progress`,
-        largeCache()
-      );
+      const { data } = await this.axios.get<BackendProgress>(`/v1/datasets/${datasetId}/progress`, largeCache());
 
       return new Progress(data.total, data.completed, data.pending, data.users);
     } catch (err) {
@@ -243,10 +216,7 @@ export class DatasetRepository implements IDatasetRepository {
 
   private async getDatasetById(datasetId: string) {
     try {
-      const { data } = await this.axios.get<BackendDataset>(
-        `/v1/datasets/${datasetId}`,
-        largeCache()
-      );
+      const { data } = await this.axios.get<BackendDataset>(`/v1/datasets/${datasetId}`, largeCache());
 
       return data;
     } catch (err) {
@@ -258,10 +228,7 @@ export class DatasetRepository implements IDatasetRepository {
 
   private async getWorkspaceById(workspaceId: string) {
     try {
-      const { data: responseWorkspace } = await this.axios.get(
-        `/v1/workspaces/${workspaceId}`,
-        largeCache()
-      );
+      const { data: responseWorkspace } = await this.axios.get(`/v1/workspaces/${workspaceId}`, largeCache());
 
       const { name } = responseWorkspace || { name: null };
 
@@ -275,9 +242,7 @@ export class DatasetRepository implements IDatasetRepository {
 
   private fetchFeedbackDatasets = async () => {
     try {
-      const { data } = await this.axios.get<Response<BackendDataset[]>>(
-        "/v1/me/datasets"
-      );
+      const { data } = await this.axios.get<Response<BackendDataset[]>>("/v1/me/datasets");
 
       return data;
     } catch (err) {
@@ -306,28 +271,21 @@ export class DatasetRepository implements IDatasetRepository {
     const newFeedbackDatasets = feedbackDatasets.map((feedbackDataset) => {
       return {
         ...feedbackDataset,
-        workspace_name:
-          workspaces.find(
-            (workspace) => workspace.id === feedbackDataset.workspace_id
-          )?.name || "",
+        workspace_name: workspaces.find((workspace) => workspace.id === feedbackDataset.workspace_id)?.name || "",
       };
     });
     return newFeedbackDatasets;
   };
 
   private getDatasets = async () => {
-    const [newDatasets, workspaces] = await Promise.all([
-      this.fetchFeedbackDatasets(),
-      this.fetchWorkspaces(),
-    ]);
+    const [newDatasets, workspaces] = await Promise.all([this.fetchFeedbackDatasets(), this.fetchWorkspaces()]);
 
     const { items: feedbackTaskDatasets } = newDatasets;
 
-    const feedbackDatasetsWithWorkspaces =
-      this.factoryFeedbackDatasetsWithCorrespondingWorkspaceName(
-        feedbackTaskDatasets,
-        workspaces
-      );
+    const feedbackDatasetsWithWorkspaces = this.factoryFeedbackDatasetsWithCorrespondingWorkspaceName(
+      feedbackTaskDatasets,
+      workspaces
+    );
 
     return { feedbackDatasetsWithWorkspaces };
   };
