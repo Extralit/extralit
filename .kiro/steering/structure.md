@@ -59,6 +59,7 @@ argilla-frontend/
 - **Domain Logic**: Dependency injection in `v1/di/`
 - **Axios**: @nuxt/axios makes API calls with `{proxy: true, browserBaseURL: "api"}`
 - **Dependency Injection**: Use `useResolve` from `ts-injecty` for dependency resolution in use cases
+- **View Models**: Use `setup(props) { return useViewModelName(props); }` pattern for business logic separation
 - **Styling**: SCSS in `assets/scss/` with component-scoped styles
 - **Base Components**: BaseSimpleTable.vue already exists for tabular data display
 

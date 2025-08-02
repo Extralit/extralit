@@ -199,8 +199,8 @@ import type {
   ImportHistoryDetailItem,
   ImportHistoryDetailsResponse,
   ImportHistoryDetailsFilters,
-  GetImportHistoryDetailsUseCase,
 } from "~/v1/domain/usecases/get-import-history-details-use-case";
+import { useImportHistoryDetailsViewModel } from "./useImportHistoryDetailsViewModel";
 
 interface DetailsTableRow {
   reference: string;
@@ -233,6 +233,10 @@ export default {
   },
 
   emits: ["close", "retry-item"],
+
+  setup(props) {
+    return useImportHistoryDetailsViewModel(props);
+  },
 
   data() {
     return {
@@ -267,27 +271,11 @@ export default {
 
   computed: {
     hasActiveFilters(): boolean {
-      return !!(
-        this.filters.reference ||
-        this.filters.title ||
-        this.filters.authors ||
-        this.filters.status ||
-        this.filters.error_message
-      );
+      return this.hasActiveFiltersData(this.filters);
     },
 
     tableData(): DetailsTableRow[] {
-      return this.detailItems.map((item: ImportHistoryDetailItem) => ({
-        reference: item.reference,
-        title: item.title,
-        authors: item.authors,
-        year: item.year,
-        journal: item.journal || 'N/A',
-        status: item.status,
-        associated_files: item.associated_files.join(', ') || 'None',
-        error_message: item.error_message || 'None',
-        actions: 'actions',
-      }));
+      return this.transformToTableDataData(this.detailItems);
     },
 
     tableColumns(): TableColumn[] {
@@ -417,34 +405,15 @@ export default {
     },
 
     startItem(): number {
-      return (this.currentPage - 1) * this.pageSize + 1;
+      return this.calculateStartItemData(this.currentPage, this.pageSize);
     },
 
     endItem(): number {
-      return Math.min(this.currentPage * this.pageSize, this.totalItems);
+      return this.calculateEndItemData(this.currentPage, this.pageSize, this.totalItems);
     },
 
     visiblePages(): number[] {
-      const current = this.currentPage;
-      const total = this.totalPages;
-      const delta = 2;
-
-      let start = Math.max(1, current - delta);
-      let end = Math.min(total, current + delta);
-
-      if (end - start < 2 * delta) {
-        if (start === 1) {
-          end = Math.min(total, start + 2 * delta);
-        } else if (end === total) {
-          start = Math.max(1, end - 2 * delta);
-        }
-      }
-
-      const pages = [];
-      for (let i = start; i <= end; i++) {
-        pages.push(i);
-      }
-      return pages;
+      return this.calculateVisiblePagesData(this.currentPage, this.totalPages);
     },
   },
 
@@ -464,8 +433,6 @@ export default {
       this.error = null;
 
       try {
-        const useCase = this.$nuxt.$di.get<GetImportHistoryDetailsUseCase>('GetImportHistoryDetailsUseCase');
-
         const params = {
           page: this.currentPage,
           size: this.pageSize,
@@ -474,7 +441,7 @@ export default {
           filters: this.filters,
         };
 
-        const result = await useCase.execute(this.importId, params);
+        const result = await this.loadDetailsData(this.importId, params);
 
         this.importDetails = result.details;
         this.detailItems = result.items;
@@ -504,13 +471,7 @@ export default {
     },
 
     async clearFilters() {
-      this.filters = {
-        reference: "",
-        title: "",
-        authors: "",
-        status: "",
-        error_message: "",
-      };
+      this.filters = this.clearFiltersData();
       this.currentPage = 1;
       await this.loadDetails();
     },
@@ -527,23 +488,10 @@ export default {
 
       this.isExporting = true;
       try {
-        // Create CSV content
-        const csvContent = this.createCSVContent();
-
-        // Create and download file
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-
-        link.setAttribute('href', url);
-        link.setAttribute('download', `import-details-${this.importId}.csv`);
-        link.style.visibility = 'hidden';
-
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-        URL.revokeObjectURL(url);
+        const csvContent = this.createCSVContentData(this.detailItems);
+        const filename = `import-details-${this.importId}.csv`;
+        
+        this.downloadCSVData(csvContent, filename);
       } catch (error) {
         console.error('Error exporting results:', error);
         // Could show a toast notification here
@@ -554,36 +502,6 @@ export default {
       }
     },
 
-    createCSVContent(): string {
-      const headers = [
-        'Reference',
-        'Title',
-        'Authors',
-        'Year',
-        'Journal',
-        'Status',
-        'Associated Files',
-        'Error Message'
-      ];
-
-      const rows = this.detailItems.map(item => [
-        item.reference,
-        item.title,
-        item.authors,
-        item.year,
-        item.journal || '',
-        item.status,
-        item.associated_files.join('; '),
-        item.error_message || ''
-      ]);
-
-      const csvRows = [headers, ...rows];
-
-      return csvRows.map(row =>
-        row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(',')
-      ).join('\n');
-    },
-
     retryItem(rowData: DetailsTableRow) {
       const item = this.detailItems.find(item => item.reference === rowData.reference);
       if (item) {
@@ -592,30 +510,15 @@ export default {
     },
 
     formatDate(dateString: string | undefined): string {
-      if (!dateString) return 'Unknown Date';
-      const date = new Date(dateString);
-      return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
+      return this.formatDateData(dateString);
     },
 
     formatStatus(status: string): string {
-      const statusMap: Record<string, string> = {
-        add: 'Added',
-        update: 'Updated',
-        skip: 'Skipped',
-        failed: 'Failed',
-      };
-      return statusMap[status] || status;
+      return this.formatStatusData(status);
     },
 
     truncateText(text: string, maxLength: number): string {
-      if (text.length <= maxLength) return text;
-      return text.substring(0, maxLength) + '...';
+      return this.truncateTextData(text, maxLength);
     },
 
     close() {

@@ -541,9 +541,10 @@ export default {
 
       // Create metadata for each reference with status and associated files
       Object.entries(this.uploadData.confirmedDocuments).forEach(([reference, docMetadata]) => {
+        const typedDocMetadata = docMetadata as DocumentMetadata;
         metadata[reference] = {
           status: 'add', // Default status for uploaded documents
-          associated_files: docMetadata.associated_files.map(fileInfo =>
+          associated_files: typedDocMetadata.associated_files.map(fileInfo =>
             typeof fileInfo === 'string' ? fileInfo : fileInfo.filename
           ),
         };

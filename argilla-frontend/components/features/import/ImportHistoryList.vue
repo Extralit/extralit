@@ -144,8 +144,8 @@ import type {
   ImportHistoryListItem,
   ImportHistoryListResponse,
   ImportHistoryFilters,
-  GetImportHistoryUseCase,
 } from "~/v1/domain/usecases/get-import-history-use-case";
+import { useImportHistoryListViewModel } from "./useImportHistoryListViewModel";
 
 interface HistoryTableRow {
   id: string;
@@ -171,6 +171,10 @@ export default {
   },
 
   emits: ["view-details", "close"],
+
+  setup(props) {
+    return useImportHistoryListViewModel(props);
+  },
 
   data() {
     return {
@@ -205,26 +209,11 @@ export default {
 
   computed: {
     hasActiveFilters(): boolean {
-      return !!(
-        this.filters.filename ||
-        this.filters.date_from ||
-        this.filters.date_to
-      );
+      return this.hasActiveFiltersData(this.filters);
     },
 
     tableData(): HistoryTableRow[] {
-      return this.historyData.items.map((item: ImportHistoryListItem) => ({
-        id: item.id,
-        filename: item.filename,
-        uploaded_by: item.uploaded_by || 'Unknown User',
-        created_at: this.formatDate(item.created_at),
-        total_papers: item.total_papers,
-        success_count: item.success_count,
-        updated_count: item.updated_count,
-        skipped_count: item.skipped_count,
-        failed_count: item.failed_count,
-        actions: 'view-details',
-      }));
+      return this.transformToTableDataData(this.historyData.items);
     },
 
     tableColumns(): TableColumn[] {
@@ -339,35 +328,15 @@ export default {
     },
 
     startItem(): number {
-      return (this.currentPage - 1) * this.pageSize + 1;
+      return this.calculateStartItemData(this.currentPage, this.pageSize);
     },
 
     endItem(): number {
-      return Math.min(this.currentPage * this.pageSize, this.historyData.total);
+      return this.calculateEndItemData(this.currentPage, this.pageSize, this.historyData.total);
     },
 
     visiblePages(): number[] {
-      const totalPages = this.historyData.pages;
-      const current = this.currentPage;
-      const delta = 2; // Show 2 pages before and after current page
-
-      let start = Math.max(1, current - delta);
-      let end = Math.min(totalPages, current + delta);
-
-      // Adjust if we're near the beginning or end
-      if (end - start < 2 * delta) {
-        if (start === 1) {
-          end = Math.min(totalPages, start + 2 * delta);
-        } else if (end === totalPages) {
-          start = Math.max(1, end - 2 * delta);
-        }
-      }
-
-      const pages = [];
-      for (let i = start; i <= end; i++) {
-        pages.push(i);
-      }
-      return pages;
+      return this.calculateVisiblePagesData(this.currentPage, this.historyData.pages);
     },
   },
 
@@ -387,8 +356,6 @@ export default {
       this.error = null;
 
       try {
-        const useCase = this.$nuxt.$di.get<GetImportHistoryUseCase>('GetImportHistoryUseCase');
-
         const params = {
           page: this.currentPage,
           size: this.pageSize,
@@ -400,7 +367,7 @@ export default {
           },
         };
 
-        this.historyData = await useCase.execute(params);
+        this.historyData = await this.loadHistoryData(params);
       } catch (error: any) {
         console.error('Error loading import history:', error);
         this.error = error.message || 'Failed to load import history';
@@ -425,11 +392,7 @@ export default {
     },
 
     async clearFilters() {
-      this.filters = {
-        filename: "",
-        date_from: "",
-        date_to: "",
-      };
+      this.filters = this.clearFiltersData();
       this.currentPage = 1;
       await this.loadHistory();
     },
@@ -447,22 +410,11 @@ export default {
     },
 
     viewDetails(rowData: HistoryTableRow) {
-      this.$emit("view-details", {
-        importId: rowData.id,
-        filename: rowData.filename,
-        workspace: this.workspace,
-      });
+      this.handleRowClickData(rowData, this.$emit, this.workspace);
     },
 
     formatDate(dateString: string): string {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
+      return this.formatDateData(dateString);
     },
 
     close() {
