@@ -293,6 +293,8 @@ export default {
     name: "Dataset name",
     updatedAt: "Updated",
     createdAt: "Created",
+    datasets: "Datasets",
+    documents: "Documents",
   },
   import: {
     title: "Import Documents to {workspaceName} Workspace",

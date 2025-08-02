@@ -29,7 +29,6 @@ from argilla_server.contexts import datasets, files, imports
 _LOGGER = logging.getLogger(__name__)
 
 
-
 @job(DEFAULT_QUEUE, timeout=JOB_TIMEOUT_DISABLED, retry=Retry(max=3, interval=[10, 30, 60]))
 async def upload_reference_documents_job(
     reference: str,
@@ -99,6 +98,14 @@ async def upload_reference_documents_job(
 
                 try:
                     # Create a unique document for each file
+                    # Add collection and source metadata for imported documents
+                    import_metadata = {
+                        "source": "bib_import",
+                        "collections": document_create.metadata.get("collections", [])
+                        if document_create.metadata
+                        else [],
+                    }
+
                     file_document_create = DocumentCreate(
                         id=uuid4(),
                         reference=document_create.reference,
@@ -107,6 +114,7 @@ async def upload_reference_documents_job(
                         url=None,  # Will be set after S3 upload
                         file_name=filename,
                         workspace_id=document_create.workspace_id,
+                        metadata=import_metadata,
                     )
 
                     # Check if this specific file already exists

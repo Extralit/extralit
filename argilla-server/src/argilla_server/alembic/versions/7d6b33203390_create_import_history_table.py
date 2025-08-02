@@ -49,6 +49,7 @@ def upgrade() -> None:
     op.create_index(op.f("ix_import_history_user_id"), "import_history", ["user_id"], unique=False)
     op.create_index(op.f("ix_import_history_workspace_id"), "import_history", ["workspace_id"], unique=False)
     op.create_index(op.f("ix_documents_doi"), "documents", ["doi"], unique=False)
+    op.add_column("documents", sa.Column("metadata", sa.JSON(), nullable=True))
 
 
 def downgrade() -> None:
@@ -56,3 +57,4 @@ def downgrade() -> None:
     op.drop_index(op.f("ix_import_history_workspace_id"), table_name="import_history")
     op.drop_index(op.f("ix_import_history_user_id"), table_name="import_history")
     op.drop_table("import_history")
+    op.drop_column("documents", "metadata")

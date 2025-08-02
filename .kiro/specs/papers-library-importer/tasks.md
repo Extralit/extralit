@@ -197,7 +197,7 @@
   - _Requirements: 3.5, 4.3_
 
 - [ ] 10. Integrate imported documents with workspace features
-- [ ] 10.1 Integrate imported documents with workspace features for multi-file references
+- [x] 10.1 Integrate imported documents with workspace features for multi-file references
   - Ensure imported documents appear in workspace documents list with proper reference grouping
   - Verify document metadata is properly stored and displayed for multiple files per reference
   - Test compatibility with existing document processing features

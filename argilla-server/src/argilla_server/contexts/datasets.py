@@ -699,6 +699,7 @@ async def create_document(db: "AsyncSession", dataset_create: DocumentCreate) ->
         pmid=dataset_create.pmid,
         doi=dataset_create.doi,
         workspace_id=dataset_create.workspace_id,
+        metadata_=dataset_create.metadata,
     )
 
     return DocumentListItem.from_orm(document)

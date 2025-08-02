@@ -27,13 +27,32 @@
         <PersistentStorageBanner class="home__banner" />
       </template>
       <template v-slot:page-content>
-        <BaseLoading v-if="isLoadingDatasets" />
-        <DatasetList
-          :workspaces="workspaces"
-          :datasets="datasets.datasets"
-          @on-click-card="cardAction"
-          @workspace-selected="onWorkspaceSelected"
-        />
+        <div class="home__tabs">
+          <BaseTabs v-model="activeTab" :tabs="tabs" />
+        </div>
+
+        <div class="home__tab-content">
+          <template v-if="activeTab === 'datasets'">
+            <BaseLoading v-if="isLoadingDatasets" />
+            <DatasetList
+              :workspaces="workspaces"
+              :datasets="datasets.datasets"
+              @on-click-card="cardAction"
+              @workspace-selected="onWorkspaceSelected"
+            />
+          </template>
+
+          <template v-if="activeTab === 'documents'">
+            <div v-if="!selectedWorkspace" class="home__no-workspace">
+              <p>Please select a workspace to view documents.</p>
+            </div>
+            <DocumentsList
+              v-else
+              :workspace-id="selectedWorkspace.id"
+              :key="selectedWorkspace.id"
+            />
+          </template>
+        </div>
       </template>
       <template v-slot:page-sidebar>
         <template v-if="true || isAdminOrOwnerRole">
@@ -103,6 +122,11 @@ export default {
     return {
       showImportDatasetInput: false,
       selectedWorkspace: null,
+      activeTab: 'datasets',
+      tabs: [
+        { id: 'datasets', name: this.$t('home.datasets') },
+        { id: 'documents', name: this.$t('home.documents') },
+      ],
     };
   },
   methods: {
@@ -198,6 +222,25 @@ export default {
     &__separator {
       max-width: 75%;
     }
+  }
+
+  &__tabs {
+    padding: 0 $base-space * 2;
+    margin-bottom: $base-space * 2;
+  }
+
+  &__tab-content {
+    height: 100%;
+    overflow: auto;
+  }
+
+  &__no-workspace {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 50vh;
+    color: var(--fg-tertiary);
+    font-size: 16px;
   }
 }
 </style>

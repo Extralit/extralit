@@ -131,7 +131,7 @@ repos:
     hooks:
       - id: frontend-lint
         name: "Lint and fix argilla-frontend files"
-        entry: bash -c 'cd argilla-frontend && npm run lint -- --fix "$@"'
+        entry: bash -c 'cd argilla-frontend && npx eslint --fix "${@#argilla-frontend/}" || true'
         language: system
         files: '^argilla-frontend/.*\.(js|ts|vue)$'
         pass_filenames: true

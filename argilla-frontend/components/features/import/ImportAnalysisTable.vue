@@ -432,8 +432,18 @@ export default {
 
           // Only include documents that will be processed (add or update)
           if (finalAction === "add" || finalAction === "update") {
+            // Ensure metadata is included in document_create
+            const documentCreate = {
+              ...docInfo.document_create,
+              metadata: {
+                source: "bib_import",
+                collections: [this.workspace?.name || "default"],
+                ...docInfo.document_create.metadata,
+              },
+            };
+
             confirmedDocuments[reference] = {
-              document_create: docInfo.document_create,
+              document_create: documentCreate,
               associated_files: docInfo.associated_files || [],
             };
           }
@@ -461,6 +471,10 @@ export default {
                 keywords: Array.isArray(row.keywords) ? row.keywords : (row.keywords ? [row.keywords] : undefined),
                 pmid: row.pmid,
                 workspace_id: this.workspace?.id,
+                metadata: {
+                  source: "bib_import",
+                  collections: [this.workspace?.name || "default"],
+                },
               },
               associated_files: filePaths.map((filename: string) => ({
                 filename,

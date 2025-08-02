@@ -643,6 +643,7 @@ class Document(DatabaseModel):
     pmid: Mapped[str] = mapped_column(String, index=True, nullable=True)
     doi: Mapped[str] = mapped_column(String, index=True, nullable=True)
     workspace_id: Mapped[UUID] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
+    metadata_: Mapped[Optional[dict]] = mapped_column("metadata", MutableDict.as_mutable(JSON()), nullable=True)
 
     workspace: Mapped["Workspace"] = relationship("Workspace", back_populates="documents")
 

@@ -4,10 +4,7 @@ import Container, { register } from "ts-injecty";
 import { useEventDispatcher } from "@codescouts/events";
 
 import { useTeamProgress } from "../infrastructure/storage/TeamProgressStorage";
-import {
-  UpdateMetricsEventHandler,
-  UpdateTeamProgressEventHandler,
-} from "../infrastructure/events";
+import { UpdateMetricsEventHandler, UpdateTeamProgressEventHandler } from "../infrastructure/events";
 
 import { useAxiosExtension } from "@/v1/infrastructure/services/useAxiosExtension";
 
@@ -30,11 +27,7 @@ import {
   JobRepository,
 } from "@/v1/infrastructure/repositories";
 
-import {
-  useLocalStorage,
-  useRole,
-  useRoutes,
-} from "@/v1/infrastructure/services";
+import { useLocalStorage, useRole, useRoutes } from "@/v1/infrastructure/services";
 import { useDataset } from "@/v1/infrastructure/storage/DatasetStorage";
 import { useDocument } from "@/v1/infrastructure/storage/DocumentStorage";
 import { useRecords } from "@/v1/infrastructure/storage/RecordsStorage";
@@ -46,6 +39,7 @@ import { GetDatasetCreationUseCase } from "@/v1/domain/usecases/get-dataset-crea
 import { GetDatasetsUseCase } from "@/v1/domain/usecases/get-datasets-use-case";
 import { GetDatasetByIdUseCase } from "@/v1/domain/usecases/get-dataset-by-id-use-case";
 import { GetDocumentByIdUseCase } from "@/v1/domain/usecases/get-document-by-id-use-case";
+import { GetDocumentsByWorkspaceUseCase } from "@/v1/domain/usecases/get-documents-by-workspace-use-case";
 import { GetLLMExtractionUseCase } from "@/v1/domain/usecases/get-extraction-completion-use-case";
 import { GetExtractionSchemaUseCase } from "@/v1/domain/usecases/get-extraction-schema-use-case";
 import { GetDatasetProgressUseCase } from "@/v1/domain/usecases/get-dataset-progress-use-case";
@@ -116,97 +110,52 @@ export const loadDependencyContainer = (context: Context) => {
 
     register(GetWorkspacesUseCase).withDependency(WorkspaceRepository).build(),
 
-    register(GetDatasetsUseCase)
-      .withDependencies(DatasetRepository, useDatasets)
-      .build(),
+    register(GetDatasetsUseCase).withDependencies(DatasetRepository, useDatasets).build(),
 
-    register(GetDocumentByIdUseCase)
-      .withDependencies(DocumentRepository, useDocument)
-      .build(),
+    register(GetDocumentByIdUseCase).withDependencies(DocumentRepository, useDocument).build(),
 
-    register(GetDatasetByIdUseCase)
-      .withDependencies(DatasetRepository, useDataset)
-      .build(),
+    register(GetDocumentsByWorkspaceUseCase).withDependency(DocumentRepository).build(),
 
-    register(GetDatasetProgressUseCase)
-      .withDependencies(DatasetRepository, useTeamProgress)
-      .build(),
+    register(GetDatasetByIdUseCase).withDependencies(DatasetRepository, useDataset).build(),
 
-    register(GetLLMExtractionUseCase)
-      .withDependency(useAxios)
-      .build(),
+    register(GetDatasetProgressUseCase).withDependencies(DatasetRepository, useTeamProgress).build(),
 
-    register(GetExtractionSchemaUseCase)
-      .withDependency(useAxios)
-      .build(),
+    register(GetLLMExtractionUseCase).withDependency(useAxios).build(),
 
-    register(GetImportAnalysisUseCase)
-      .withDependency(useAxios)
-      .build(),
+    register(GetExtractionSchemaUseCase).withDependency(useAxios).build(),
 
-    register(CreateImportHistoryUseCase)
-      .withDependency(useAxios)
-      .build(),
+    register(GetImportAnalysisUseCase).withDependency(useAxios).build(),
 
-    register(BulkUploadDocumentsUseCase)
-      .withDependency(useAxios)
-      .build(),
+    register(CreateImportHistoryUseCase).withDependency(useAxios).build(),
 
-    register(GetImportHistoryUseCase)
-      .withDependency(useAxios)
-      .build(),
-      
-    register(GetImportHistoryDetailsUseCase)
-      .withDependency(useAxios)
-      .build(),
+    register(BulkUploadDocumentsUseCase).withDependency(useAxios).build(),
 
-    register(GetJobStatusUseCase)
-      .withDependency(useAxios)
-      .build(),
+    register(GetImportHistoryUseCase).withDependency(useAxios).build(),
+
+    register(GetImportHistoryDetailsUseCase).withDependency(useAxios).build(),
+
+    register(GetJobStatusUseCase).withDependency(useAxios).build(),
 
     register(GetRecordsByCriteriaUseCase)
-      .withDependencies(
-        RecordRepository,
-        QuestionRepository,
-        FieldRepository,
-        useRecords
-      )
+      .withDependencies(RecordRepository, QuestionRepository, FieldRepository, useRecords)
       .build(),
 
-    register(GetUserMetricsUseCase)
-      .withDependencies(MetricsRepository, useMetrics)
-      .build(),
+    register(GetUserMetricsUseCase).withDependencies(MetricsRepository, useMetrics).build(),
 
     register(LoadRecordsToAnnotateUseCase)
-      .withDependencies(
-        GetRecordsByCriteriaUseCase,
-        GetDatasetProgressUseCase,
-        GetUserMetricsUseCase,
-        useRecords
-      )
+      .withDependencies(GetRecordsByCriteriaUseCase, GetDatasetProgressUseCase, GetUserMetricsUseCase, useRecords)
       .build(),
 
     register(GetFieldsUseCase).withDependency(FieldRepository).build(),
 
-    register(DiscardRecordUseCase)
-      .withDependencies(RecordRepository, useEventDispatcher)
-      .build(),
+    register(DiscardRecordUseCase).withDependencies(RecordRepository, useEventDispatcher).build(),
 
-    register(SubmitRecordUseCase)
-      .withDependencies(RecordRepository, useEventDispatcher)
-      .build(),
+    register(SubmitRecordUseCase).withDependencies(RecordRepository, useEventDispatcher).build(),
 
-    register(SaveDraftUseCase)
-      .withDependencies(RecordRepository, useEventDispatcher)
-      .build(),
+    register(SaveDraftUseCase).withDependencies(RecordRepository, useEventDispatcher).build(),
 
     register(BulkAnnotationUseCase)
-      .withDependencies(
-        GetRecordsByCriteriaUseCase,
-        LoadRecordsToAnnotateUseCase,
-        RecordRepository,
-        useEventDispatcher
-      )
+      .withDependencies(GetRecordsByCriteriaUseCase, LoadRecordsToAnnotateUseCase, RecordRepository, useEventDispatcher)
       .build(),
 
     register(GetDatasetSettingsUseCase)
@@ -221,73 +170,43 @@ export const loadDependencyContainer = (context: Context) => {
       )
       .build(),
 
-    register(UpdateQuestionSettingUseCase)
-      .withDependency(QuestionRepository)
-      .build(),
+    register(UpdateQuestionSettingUseCase).withDependency(QuestionRepository).build(),
 
     register(UpdateFieldSettingUseCase).withDependency(FieldRepository).build(),
 
-    register(UpdateDatasetSettingUseCase)
-      .withDependency(DatasetRepository)
-      .build(),
+    register(UpdateDatasetSettingUseCase).withDependency(DatasetRepository).build(),
 
-    register(UpdateVectorSettingUseCase)
-      .withDependency(VectorRepository)
-      .build(),
+    register(UpdateVectorSettingUseCase).withDependency(VectorRepository).build(),
 
-    register(UpdateMetadataSettingUseCase)
-      .withDependency(MetadataRepository)
-      .build(),
+    register(UpdateMetadataSettingUseCase).withDependency(MetadataRepository).build(),
 
     register(GetMetadataUseCase).withDependency(MetadataRepository).build(),
 
     register(GetDatasetVectorsUseCase).withDependency(VectorRepository).build(),
 
-    register(GetDatasetQuestionsFilterUseCase)
-      .withDependency(QuestionRepository)
-      .build(),
+    register(GetDatasetQuestionsFilterUseCase).withDependency(QuestionRepository).build(),
 
-    register(GetDatasetQuestionsGroupedUseCase)
-      .withDependency(QuestionRepository)
-      .build(),
+    register(GetDatasetQuestionsGroupedUseCase).withDependency(QuestionRepository).build(),
 
-    register(GetDatasetFieldsGroupedUseCase)
-      .withDependency(FieldRepository)
-      .build(),
+    register(GetDatasetFieldsGroupedUseCase).withDependency(FieldRepository).build(),
 
-    register(GetDatasetSuggestionsAgentsUseCase)
-      .withDependency(AgentRepository)
-      .build(),
+    register(GetDatasetSuggestionsAgentsUseCase).withDependency(AgentRepository).build(),
 
-    register(GetEnvironmentUseCase)
-      .withDependency(EnvironmentRepository)
-      .build(),
+    register(GetEnvironmentUseCase).withDependency(EnvironmentRepository).build(),
 
     register(LoadUserUseCase).withDependencies(useAuth, UserRepository).build(),
 
-    register(OAuthLoginUseCase)
-      .withDependencies(useAuth, OAuthRepository, LoadUserUseCase)
-      .build(),
+    register(OAuthLoginUseCase).withDependencies(useAuth, OAuthRepository, LoadUserUseCase).build(),
 
-    register(AuthLoginUseCase)
-      .withDependencies(useAuth, AuthRepository, LoadUserUseCase)
-      .build(),
+    register(AuthLoginUseCase).withDependencies(useAuth, AuthRepository, LoadUserUseCase).build(),
 
     register(CreateDatasetUseCase)
-      .withDependencies(
-        DatasetRepository,
-        WorkspaceRepository,
-        QuestionRepository,
-        FieldRepository,
-        MetadataRepository
-      )
+      .withDependencies(DatasetRepository, WorkspaceRepository, QuestionRepository, FieldRepository, MetadataRepository)
       .build(),
 
     register(GetFirstRecordFromHub).withDependency(HubRepository).build(),
 
-    register(ExportDatasetToHubUseCase)
-      .withDependencies(DatasetRepository, useLocalStorage)
-      .build(),
+    register(ExportDatasetToHubUseCase).withDependencies(DatasetRepository, useLocalStorage).build(),
   ];
 
   Container.register(dependencies);
