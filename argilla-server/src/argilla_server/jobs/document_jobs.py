@@ -116,8 +116,8 @@ async def upload_reference_documents_job(
                         file_result.update(
                             {"success": True, "document_id": str(existing_document.id), "status": "existing"}
                         )
-                        results["files"][filename] = file_result
                         results["successful_files"] += 1
+                        results["files"][filename] = file_result
                         continue
 
                     # Upload file to S3
@@ -164,8 +164,8 @@ async def upload_reference_documents_job(
                             error_msg = f"Error uploading file {filename} to S3: {str(e)}"
                             _LOGGER.error(error_msg)
                             file_result["error"] = error_msg
-                            results["files"][filename] = file_result
                             results["failed_files"] += 1
+                            results["files"][filename] = file_result
                             continue
 
                     # Create document in database

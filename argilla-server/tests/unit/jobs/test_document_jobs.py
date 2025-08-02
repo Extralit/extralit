@@ -75,8 +75,7 @@ class TestDocumentJobs:
         assert mock_files.put_object.call_count == 2
         assert mock_datasets.create_document.call_count == 2
 
-    @patch("argilla_server.jobs.document_jobs.Workspace")
-    async def test_upload_reference_documents_job_workspace_not_found(self, mock_workspace_class):
+    async def test_upload_reference_documents_job_workspace_not_found(self):
         """Test reference documents upload job with non-existent workspace."""
         # Create test data
         workspace_id = uuid4()
@@ -94,8 +93,7 @@ class TestDocumentJobs:
         # Create file data list
         file_data_list = [("test.pdf", b"%PDF-1.5 test pdf content")]
 
-        # Mock workspace not found
-        mock_workspace_class.get.return_value = None
+        # Use non-existent workspace ID - the job will handle the lookup internally
 
         # Execute job
         result = await upload_reference_documents_job(reference, document_data, file_data_list, user.id)

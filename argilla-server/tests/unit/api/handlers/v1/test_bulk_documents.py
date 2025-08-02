@@ -50,7 +50,7 @@ class TestBulkDocumentsAPI:
 
         # Make request without authentication
         response = await async_client.post(
-            "/documents/bulk",
+            "/api/v1/documents/bulk",
             files={
                 "documents_metadata": (None, json.dumps(documents_metadata)),
                 "files": ("test.pdf", test_pdf, "application/pdf"),
@@ -60,7 +60,7 @@ class TestBulkDocumentsAPI:
         # Verify response
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
-    async def test_bulk_upload_documents_invalid_metadata(self, async_client: AsyncClient):
+    async def test_bulk_upload_documents_invalid_metadata(self, async_client: AsyncClient, owner_auth_header: dict):
         """Test bulk upload with invalid metadata."""
         # Create owner user and workspace
         owner = await UserFactory.create(role=UserRole.owner)
@@ -73,7 +73,8 @@ class TestBulkDocumentsAPI:
 
         # Make request
         response = await async_client.post(
-            "/documents/bulk",
+            "/api/v1/documents/bulk",
+            headers=owner_auth_header,
             files={
                 "documents_metadata": (None, documents_metadata),
                 "files": ("test.pdf", test_pdf, "application/pdf"),
@@ -84,7 +85,7 @@ class TestBulkDocumentsAPI:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         assert "Invalid JSON" in response.json()["detail"]
 
-    async def test_bulk_upload_documents_missing_files(self, async_client: AsyncClient):
+    async def test_bulk_upload_documents_missing_files(self, async_client: AsyncClient, owner_auth_header: dict):
         """Test bulk upload with missing files."""
         # Create owner user and workspace
         owner = await UserFactory.create(role=UserRole.owner)
@@ -109,7 +110,8 @@ class TestBulkDocumentsAPI:
 
         # Make request
         response = await async_client.post(
-            "/documents/bulk",
+            "/api/v1/documents/bulk",
+            headers=owner_auth_header,
             files={
                 "documents_metadata": (None, json.dumps(documents_metadata)),
                 "files": ("test.pdf", test_pdf, "application/pdf"),
@@ -120,7 +122,7 @@ class TestBulkDocumentsAPI:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         assert "Referenced files not found" in response.json()["detail"]
 
-    async def test_bulk_upload_documents_invalid_workspace(self, async_client: AsyncClient):
+    async def test_bulk_upload_documents_invalid_workspace(self, async_client: AsyncClient, owner_auth_header: dict):
         """Test bulk upload with invalid workspace ID."""
         # Create owner user
         owner = await UserFactory.create(role=UserRole.owner)
@@ -144,7 +146,8 @@ class TestBulkDocumentsAPI:
 
         # Make request
         response = await async_client.post(
-            "/documents/bulk",
+            "/api/v1/documents/bulk",
+            headers=owner_auth_header,
             files={
                 "documents_metadata": (None, json.dumps(documents_metadata)),
                 "files": ("test.pdf", test_pdf, "application/pdf"),
@@ -156,7 +159,7 @@ class TestBulkDocumentsAPI:
         assert "not found" in response.json()["detail"]
 
     @patch("argilla_server.contexts.imports.process_bulk_upload")
-    async def test_bulk_upload_documents_success(self, mock_process_bulk, async_client: AsyncClient):
+    async def test_bulk_upload_documents_success(self, mock_process_bulk, async_client: AsyncClient, owner_auth_header: dict):
         """Test successful bulk upload."""
         # Mock the process_bulk_upload function
         mock_process_bulk.return_value = DocumentsBulkResponse(
@@ -188,7 +191,8 @@ class TestBulkDocumentsAPI:
 
         # Make request
         response = await async_client.post(
-            "/documents/bulk",
+            "/api/v1/documents/bulk",
+            headers=owner_auth_header,
             files={
                 "documents_metadata": (None, json.dumps(documents_metadata)),
                 "files": ("test.pdf", test_pdf, "application/pdf"),
@@ -208,7 +212,7 @@ class TestBulkDocumentsAPI:
         mock_process_bulk.assert_called_once()
 
     @patch("argilla_server.contexts.imports.process_bulk_upload")
-    async def test_bulk_upload_documents_multiple_files(self, mock_process_bulk, async_client: AsyncClient):
+    async def test_bulk_upload_documents_multiple_files(self, mock_process_bulk, async_client: AsyncClient, owner_auth_header: dict):
         """Test bulk upload with multiple files."""
         # Mock the process_bulk_upload function
         mock_process_bulk.return_value = DocumentsBulkResponse(
@@ -249,7 +253,8 @@ class TestBulkDocumentsAPI:
 
         # Make request
         response = await async_client.post(
-            "/documents/bulk",
+            "/api/v1/documents/bulk",
+            headers=owner_auth_header,
             files=[
                 ("documents_metadata", (None, json.dumps(documents_metadata))),
                 ("files", ("test1.pdf", test_pdf1, "application/pdf")),
@@ -269,7 +274,7 @@ class TestBulkDocumentsAPI:
         mock_process_bulk.assert_called_once()
 
     @patch("argilla_server.contexts.imports.process_bulk_upload")
-    async def test_bulk_upload_documents_partial_failure(self, mock_process_bulk, async_client: AsyncClient):
+    async def test_bulk_upload_documents_partial_failure(self, mock_process_bulk, async_client: AsyncClient, owner_auth_header: dict):
         """Test bulk upload with some files failing validation."""
         # Mock the process_bulk_upload function with partial failure
         mock_process_bulk.return_value = DocumentsBulkResponse(
@@ -310,7 +315,8 @@ class TestBulkDocumentsAPI:
 
         # Make request
         response = await async_client.post(
-            "/documents/bulk",
+            "/api/v1/documents/bulk",
+            headers=owner_auth_header,
             files=[
                 ("documents_metadata", (None, json.dumps(documents_metadata))),
                 ("files", ("valid.pdf", valid_pdf, "application/pdf")),

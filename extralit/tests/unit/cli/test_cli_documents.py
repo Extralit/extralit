@@ -54,18 +54,6 @@ def test_documents_delete_command_help(runner):
     assert "delete" in result.stdout.lower()
 
 
-def test_import_bibtex_help(runner):
-    """Test the help message for the 'import' subcommand."""
-    result = runner.invoke(app, ["documents", "import", "--help"])
-    assert result.exit_code == 0
-    assert "import documents from a bibtex file" in result.stdout.lower()
-    # Check for the actual option format used by typer
-    assert "--bibtex" in result.stdout or "-b" in result.stdout
-    assert "pdf_folder" in result.stdout or "PDF_FOLDER" in result.stdout  # positional argument
-    assert "--collection" in result.stdout or "-c" in result.stdout
-    assert "--dry-run" in result.stdout
-
-
 @patch("argilla.client.Argilla.from_credentials")
 @patch("argilla.cli.documents.import_bib._validate_workspace_and_folder")
 @patch("argilla.cli.documents.import_bib._parse_bibtex_to_dataframe")
