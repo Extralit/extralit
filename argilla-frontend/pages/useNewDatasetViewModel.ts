@@ -9,9 +9,7 @@ export const useNewDatasetViewModel = () => {
 
   const getNewDatasetByRepoId = async (repositoryId: string) => {
     try {
-      datasetConfig.value = await getDatasetCreationUseCase.execute(
-        repositoryId
-      );
+      datasetConfig.value = await getDatasetCreationUseCase.execute(repositoryId);
     } catch (e) {
       error({ statusCode: 404, message: "Cannot fetch the dataset" });
     }

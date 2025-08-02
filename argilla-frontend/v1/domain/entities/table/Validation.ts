@@ -10,15 +10,17 @@ export type ColumnsConsistencyCheck = {
 export type MultiselectCheck = {
   delimiter?: string;
   isin?: string[];
-}
-
-
-export type SuggestionCheck = string[] | {
-  [columnName: string]: {} | {
-    [otherColumnName: string]: [otherColumnValue: string];
-  };
 };
 
+export type SuggestionCheck =
+  | string[]
+  | {
+      [columnName: string]:
+        | {}
+        | {
+            [otherColumnName: string]: [otherColumnValue: string];
+          };
+    };
 
 export type Checks = {
   check_less_than?: ColumnsConsistencyCheck;
@@ -57,7 +59,8 @@ export interface ValidationSchema {
   checks?: Checks;
 }
 
-
-export type Validator = string | CallableFunction | { type: (cell: any, value: string, parameters: any) => boolean; parameters?: any };
+export type Validator =
+  | string
+  | CallableFunction
+  | { type: (cell: any, value: string, parameters: any) => boolean; parameters?: any };
 export type Validators = Record<string, Validator[]>;
-

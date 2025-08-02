@@ -24,11 +24,7 @@ const setQuestionSetting = (id: string, value: boolean) => {
   window.questionSettings[id].isExpandedLabelQuestions = value;
 };
 
-export const useLabelSelectionViewModel = ({
-  componentId,
-}: {
-  componentId: string;
-}) => {
+export const useLabelSelectionViewModel = ({ componentId }: { componentId: string }) => {
   const isExpanded = ref(getQuestionSetting(componentId));
 
   watch(isExpanded, (value) => {

@@ -1,10 +1,6 @@
 export type BackendRankingAnswer = { value: string; rank: number };
 
-export type BackendAnswerCombinations =
-  | string
-  | string[]
-  | number
-  | BackendRankingAnswer[];
+export type BackendAnswerCombinations = string | string[] | number | BackendRankingAnswer[];
 
 interface BackendSuggestion {
   id: string;

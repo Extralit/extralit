@@ -93,15 +93,9 @@ export class RecordRepository {
     try {
       const request = this.createRequestForBulk(status, records);
 
-      const { data } = await this.axios.post<BackendResponseBulkResponse>(
-        "/v1/me/responses/bulk",
-        request
-      );
+      const { data } = await this.axios.post<BackendResponseBulkResponse>("/v1/me/responses/bulk", request);
 
-      const datasetId =
-        Array.isArray(records) && records.length > 0
-          ? records[0].datasetId
-          : null;
+      const datasetId = Array.isArray(records) && records.length > 0 ? records[0].datasetId : null;
 
       if (datasetId) {
         revalidateCache(`/v1/datasets/${datasetId}/progress`);
@@ -113,12 +107,7 @@ export class RecordRepository {
           return {
             success: true,
             recordId: item.record_id,
-            response: new RecordAnswer(
-              item.id,
-              item.status,
-              item.values,
-              item.updated_at
-            ),
+            response: new RecordAnswer(item.id, item.status, item.values, item.updated_at),
           };
         }
 
@@ -134,18 +123,11 @@ export class RecordRepository {
     }
   }
 
-  private async updateRecordResponse(
-    record: Record,
-    status: BackendRecordStatus,
-    duration?: number
-  ) {
+  private async updateRecordResponse(record: Record, status: BackendRecordStatus, duration?: number) {
     try {
       const request = this.createRequest(status, record.questions, duration);
 
-      const { data } = await this.axios.put<BackendResponseResponse>(
-        `/v1/responses/${record.answer.id}`,
-        request
-      );
+      const { data } = await this.axios.put<BackendResponseResponse>(`/v1/responses/${record.answer.id}`, request);
 
       revalidateCache(`/v1/datasets/${record.datasetId}/progress`);
       revalidateCache(`/v1/me/datasets/${record.datasetId}/metrics`);
@@ -158,28 +140,16 @@ export class RecordRepository {
     }
   }
 
-  private async createRecordResponse(
-    record: Record,
-    status: BackendRecordStatus,
-    duration?: number
-  ) {
+  private async createRecordResponse(record: Record, status: BackendRecordStatus, duration?: number) {
     try {
       const request = this.createRequest(status, record.questions, duration);
 
-      const { data } = await this.axios.post<BackendResponseResponse>(
-        `/v1/records/${record.id}/responses`,
-        request
-      );
+      const { data } = await this.axios.post<BackendResponseResponse>(`/v1/records/${record.id}/responses`, request);
 
       revalidateCache(`/v1/datasets/${record.datasetId}/progress`);
       revalidateCache(`/v1/me/datasets/${record.datasetId}/metrics`);
 
-      return new RecordAnswer(
-        data.id,
-        data.status,
-        data.values,
-        data.updated_at
-      );
+      return new RecordAnswer(data.id, data.status, data.values, data.updated_at);
     } catch (error) {
       throw {
         response: RECORD_API_ERRORS.ERROR_CREATING_RECORD_RESPONSE,
@@ -187,9 +157,7 @@ export class RecordRepository {
     }
   }
 
-  private async getRecordsByAdvanceSearch(
-    criteria: RecordCriteria
-  ): Promise<BackendRecords> {
+  private async getRecordsByAdvanceSearch(criteria: RecordCriteria): Promise<BackendRecords> {
     const {
       datasetId,
       page,
@@ -251,9 +219,7 @@ export class RecordRepository {
       if (isFilteringByText) {
         body.query.text = {
           q: searchText.value.text,
-          field: searchText.isFilteringByField
-            ? searchText.value.field
-            : undefined,
+          field: searchText.isFilteringByField ? searchText.value.field : undefined,
         };
       }
 
@@ -358,8 +324,7 @@ export class RecordRepository {
               return;
             }
 
-            const valuesOptions = suggestion.configuration
-              .value as ValuesOption;
+            const valuesOptions = suggestion.configuration.value as ValuesOption;
 
             body.filters.and.push({
               type: "terms",
@@ -428,9 +393,7 @@ export class RecordRepository {
 
       const params = this.createParams(from, many);
 
-      const { data } = await this.axios.post<
-        ResponseWithTotal<BackendSearchRecords[]>
-      >(url, body, { params });
+      const { data } = await this.axios.post<ResponseWithTotal<BackendSearchRecords[]>>(url, body, { params });
 
       const { items, total } = data;
 
@@ -452,10 +415,7 @@ export class RecordRepository {
     }
   }
 
-  private createRequestForBulk(
-    status: BackendRecordStatus,
-    records: Record[]
-  ): BackendResponseBulkRequest {
+  private createRequestForBulk(status: BackendRecordStatus, records: Record[]): BackendResponseBulkRequest {
     const request: BackendResponseBulkRequest = {
       items: [],
     };
@@ -470,18 +430,11 @@ export class RecordRepository {
     return request;
   }
 
-  private createRequest(
-    status: BackendRecordStatus,
-    questions: Question[],
-    duration?: number
-  ): BackendResponseRequest {
+  private createRequest(status: BackendRecordStatus, questions: Question[], duration?: number): BackendResponseRequest {
     const values = {} as BackendAnswerCombinations;
 
     questions
-      .filter(
-        (question) =>
-          question.answer.isValid || question.answer.isPartiallyValid
-      )
+      .filter((question) => question.answer.isValid || question.answer.isPartiallyValid)
       .forEach((question) => {
         values[question.name] = { value: question.answer.valuesAnswered };
       });
@@ -508,9 +461,9 @@ export class RecordRepository {
     params.append("limit", howMany.toString());
 
     if (status === "valid") {
-      params.append("response_status", 'pending');
-      params.append("response_status", 'submitted');
-      params.append("response_status", 'draft');
+      params.append("response_status", "pending");
+      params.append("response_status", "submitted");
+      params.append("response_status", "draft");
     } else {
       params.append("response_status", status);
     }

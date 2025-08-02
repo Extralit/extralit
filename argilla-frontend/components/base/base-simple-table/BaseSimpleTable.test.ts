@@ -1,8 +1,8 @@
-import { mount } from '@vue/test-utils';
-import BaseSimpleTable from './BaseSimpleTable.vue';
+import { mount } from "@vue/test-utils";
+import BaseSimpleTable from "./BaseSimpleTable.vue";
 
 // Mock Tabulator
-jest.mock('tabulator-tables', () => ({
+jest.mock("tabulator-tables", () => ({
   TabulatorFull: jest.fn().mockImplementation(() => ({
     destroy: jest.fn(),
     setData: jest.fn(),
@@ -34,33 +34,33 @@ jest.mock('tabulator-tables', () => ({
   })),
 }));
 
-describe('BaseSimpleTable', () => {
+describe("BaseSimpleTable", () => {
   const mockColumns = [
     {
-      field: 'name',
-      title: 'Name',
+      field: "name",
+      title: "Name",
       sortable: true,
       filterable: true,
     },
     {
-      field: 'age',
-      title: 'Age',
+      field: "age",
+      title: "Age",
       sortable: true,
       width: 100,
     },
     {
-      field: 'email',
-      title: 'Email',
+      field: "email",
+      title: "Email",
       filterable: true,
     },
   ];
 
   const mockData = [
-    { name: 'John Doe', age: 30, email: 'john@example.com' },
-    { name: 'Jane Smith', age: 25, email: 'jane@example.com' },
+    { name: "John Doe", age: 30, email: "john@example.com" },
+    { name: "Jane Smith", age: 25, email: "jane@example.com" },
   ];
 
-  it('renders without crashing', () => {
+  it("renders without crashing", () => {
     const wrapper = mount(BaseSimpleTable, {
       propsData: {
         columns: mockColumns,
@@ -69,11 +69,11 @@ describe('BaseSimpleTable', () => {
     });
 
     expect(wrapper.exists()).toBe(true);
-    expect(wrapper.find('.base-simple-table').exists()).toBe(true);
-    expect(wrapper.find('.tabulator-container').exists()).toBe(true);
+    expect(wrapper.find(".base-simple-table").exists()).toBe(true);
+    expect(wrapper.find(".tabulator-container").exists()).toBe(true);
   });
 
-  it('accepts columns and data props', () => {
+  it("accepts columns and data props", () => {
     const wrapper = mount(BaseSimpleTable, {
       propsData: {
         columns: mockColumns,
@@ -81,11 +81,11 @@ describe('BaseSimpleTable', () => {
       },
     });
 
-    expect(wrapper.props('columns')).toEqual(mockColumns);
-    expect(wrapper.props('data')).toEqual(mockData);
+    expect(wrapper.props("columns")).toEqual(mockColumns);
+    expect(wrapper.props("data")).toEqual(mockData);
   });
 
-  it('accepts options prop', () => {
+  it("accepts options prop", () => {
     const options = {
       height: 400,
       pagination: true,
@@ -100,10 +100,10 @@ describe('BaseSimpleTable', () => {
       },
     });
 
-    expect(wrapper.props('options')).toEqual(options);
+    expect(wrapper.props("options")).toEqual(options);
   });
 
-  it('accepts loading prop', () => {
+  it("accepts loading prop", () => {
     const wrapper = mount(BaseSimpleTable, {
       propsData: {
         columns: mockColumns,
@@ -112,10 +112,10 @@ describe('BaseSimpleTable', () => {
       },
     });
 
-    expect(wrapper.props('loading')).toBe(true);
+    expect(wrapper.props("loading")).toBe(true);
   });
 
-  it('processes columns correctly', () => {
+  it("processes columns correctly", () => {
     const wrapper = mount(BaseSimpleTable, {
       propsData: {
         columns: mockColumns,
@@ -127,25 +127,25 @@ describe('BaseSimpleTable', () => {
 
     expect(processedColumns).toHaveLength(3);
     expect(processedColumns[0]).toMatchObject({
-      field: 'name',
-      title: 'Name',
+      field: "name",
+      title: "Name",
       headerSort: true,
-      headerFilter: 'input',
+      headerFilter: "input",
     });
     expect(processedColumns[1]).toMatchObject({
-      field: 'age',
-      title: 'Age',
+      field: "age",
+      title: "Age",
       width: 100,
       headerSort: true,
     });
     expect(processedColumns[2]).toMatchObject({
-      field: 'email',
-      title: 'Email',
-      headerFilter: 'input',
+      field: "email",
+      title: "Email",
+      headerFilter: "input",
     });
   });
 
-  it('provides public API methods', () => {
+  it("provides public API methods", () => {
     const wrapper = mount(BaseSimpleTable, {
       propsData: {
         columns: mockColumns,
@@ -156,32 +156,32 @@ describe('BaseSimpleTable', () => {
     const vm = wrapper.vm as any;
 
     // Test that all public methods exist
-    expect(typeof vm.getData).toBe('function');
-    expect(typeof vm.getSelectedData).toBe('function');
-    expect(typeof vm.getSelectedRows).toBe('function');
-    expect(typeof vm.selectRow).toBe('function');
-    expect(typeof vm.deselectRow).toBe('function');
-    expect(typeof vm.addRow).toBe('function');
-    expect(typeof vm.updateRow).toBe('function');
-    expect(typeof vm.deleteRow).toBe('function');
-    expect(typeof vm.clearData).toBe('function');
-    expect(typeof vm.setData).toBe('function');
-    expect(typeof vm.setFilter).toBe('function');
-    expect(typeof vm.clearFilter).toBe('function');
-    expect(typeof vm.setSort).toBe('function');
-    expect(typeof vm.clearSort).toBe('function');
-    expect(typeof vm.redraw).toBe('function');
-    expect(typeof vm.scrollToRow).toBe('function');
-    expect(typeof vm.scrollToColumn).toBe('function');
-    expect(typeof vm.download).toBe('function');
-    expect(typeof vm.getRowCount).toBe('function');
-    expect(typeof vm.getColumns).toBe('function');
-    expect(typeof vm.hideColumn).toBe('function');
-    expect(typeof vm.showColumn).toBe('function');
-    expect(typeof vm.toggleColumn).toBe('function');
+    expect(typeof vm.getData).toBe("function");
+    expect(typeof vm.getSelectedData).toBe("function");
+    expect(typeof vm.getSelectedRows).toBe("function");
+    expect(typeof vm.selectRow).toBe("function");
+    expect(typeof vm.deselectRow).toBe("function");
+    expect(typeof vm.addRow).toBe("function");
+    expect(typeof vm.updateRow).toBe("function");
+    expect(typeof vm.deleteRow).toBe("function");
+    expect(typeof vm.clearData).toBe("function");
+    expect(typeof vm.setData).toBe("function");
+    expect(typeof vm.setFilter).toBe("function");
+    expect(typeof vm.clearFilter).toBe("function");
+    expect(typeof vm.setSort).toBe("function");
+    expect(typeof vm.clearSort).toBe("function");
+    expect(typeof vm.redraw).toBe("function");
+    expect(typeof vm.scrollToRow).toBe("function");
+    expect(typeof vm.scrollToColumn).toBe("function");
+    expect(typeof vm.download).toBe("function");
+    expect(typeof vm.getRowCount).toBe("function");
+    expect(typeof vm.getColumns).toBe("function");
+    expect(typeof vm.hideColumn).toBe("function");
+    expect(typeof vm.showColumn).toBe("function");
+    expect(typeof vm.toggleColumn).toBe("function");
   });
 
-  it('emits events correctly', async () => {
+  it("emits events correctly", async () => {
     const wrapper = mount(BaseSimpleTable, {
       propsData: {
         columns: mockColumns,
@@ -194,14 +194,14 @@ describe('BaseSimpleTable', () => {
     vm.isInitialized = true;
 
     // Test that events can be emitted
-    wrapper.vm.$emit('table-built');
-    wrapper.vm.$emit('data-loaded', mockData);
-    wrapper.vm.$emit('data-changed', mockData);
+    wrapper.vm.$emit("table-built");
+    wrapper.vm.$emit("data-loaded", mockData);
+    wrapper.vm.$emit("data-changed", mockData);
 
     await wrapper.vm.$nextTick();
 
-    expect(wrapper.emitted('table-built')).toBeTruthy();
-    expect(wrapper.emitted('data-loaded')).toBeTruthy();
-    expect(wrapper.emitted('data-changed')).toBeTruthy();
+    expect(wrapper.emitted("table-built")).toBeTruthy();
+    expect(wrapper.emitted("data-loaded")).toBeTruthy();
+    expect(wrapper.emitted("data-changed")).toBeTruthy();
   });
 });

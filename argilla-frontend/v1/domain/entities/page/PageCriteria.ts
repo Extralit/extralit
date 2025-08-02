@@ -38,8 +38,7 @@ export class PageCriteria extends Criteria {
   }
 
   get previous(): number {
-    if (this.isBulkMode)
-      return Math.max(this.client.page - this.client.many, 1);
+    if (this.isBulkMode) return Math.max(this.client.page - this.client.many, 1);
 
     return this.client.page - 1;
   }
@@ -74,9 +73,7 @@ export class PageCriteria extends Criteria {
   }
 
   complete(urlParams = "") {
-    const pageParams = urlParams
-      .split("~")
-      .filter((param) => !isNaN(Number(param)) && param !== "");
+    const pageParams = urlParams.split("~").filter((param) => !isNaN(Number(param)) && param !== "");
 
     if (pageParams.length === 0) return;
 

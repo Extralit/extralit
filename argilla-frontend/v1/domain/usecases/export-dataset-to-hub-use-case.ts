@@ -12,8 +12,7 @@ export class ExportDatasetToHubUseCase {
   async execute(dataset: Dataset, exportSettings: DatasetExportSettings) {
     const jobId = await this.datasetRepository.export(dataset, exportSettings);
 
-    const datasetExportJobIds: Record<string, string> =
-      this.localStorage.get("datasetExportJobIds") ?? {};
+    const datasetExportJobIds: Record<string, string> = this.localStorage.get("datasetExportJobIds") ?? {};
 
     this.localStorage.set("datasetExportJobIds", {
       ...datasetExportJobIds,

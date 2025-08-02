@@ -53,11 +53,7 @@ export function useImportBatchProgressViewModel(props: any) {
       return batches;
     },
 
-    async uploadBatch(
-      batch: BatchInfo,
-      confirmedDocuments: Record<string, DocumentMetadata>,
-      pdfFiles: File[]
-    ) {
+    async uploadBatch(batch: BatchInfo, confirmedDocuments: Record<string, DocumentMetadata>, pdfFiles: File[]) {
       // Prepare documents for this batch
       const batchDocuments: Record<string, DocumentMetadata> = {};
       const batchFiles: File[] = [];
@@ -72,22 +68,22 @@ export function useImportBatchProgressViewModel(props: any) {
           for (const fileInfo of docMetadata.associated_files) {
             // Handle both FileInfo objects and string filenames
             let filename: string;
-            if (typeof fileInfo === 'string') {
+            if (typeof fileInfo === "string") {
               filename = fileInfo;
-            } else if (fileInfo && typeof fileInfo === 'object' && fileInfo.filename) {
+            } else if (fileInfo && typeof fileInfo === "object" && fileInfo.filename) {
               filename = fileInfo.filename;
             } else {
               continue; // Skip invalid file info
             }
 
             // Skip files with path prefixes (duplicates) - only use base filenames
-            if (filename.includes('/')) {
+            if (filename.includes("/")) {
               continue;
             }
 
             // Only add each file once to avoid duplicates
             if (!addedFiles.has(filename)) {
-              const file = pdfFiles.find(f => f.name === filename);
+              const file = pdfFiles.find((f) => f.name === filename);
               if (file) {
                 batchFiles.push(file);
                 addedFiles.add(filename);
@@ -130,9 +126,9 @@ export function useImportBatchProgressViewModel(props: any) {
 
       return new Promise<void>((resolve) => {
         const checkCompletion = () => {
-          const allCompleted = jobIds.every(jobId => {
+          const allCompleted = jobIds.every((jobId) => {
             const status = jobStatuses[jobId];
-            return status === 'finished' || status === 'failed';
+            return status === "finished" || status === "failed";
           });
 
           if (allCompleted) {
@@ -147,12 +143,7 @@ export function useImportBatchProgressViewModel(props: any) {
       });
     },
 
-    async createImportHistory(
-      workspace: any,
-      bibFileName: string,
-      dataframeData: any,
-      metadata?: Record<string, any>
-    ) {
+    async createImportHistory(workspace: any, bibFileName: string, dataframeData: any, metadata?: Record<string, any>) {
       if (!dataframeData || !workspace) {
         return null;
       }
@@ -177,7 +168,7 @@ export function useImportBatchProgressViewModel(props: any) {
         updated: 0, // TODO: Track updates vs adds
         skipped: 0,
         failed: failedJobs,
-        errors: errors.map(e => `${e.reference}: ${e.message}`),
+        errors: errors.map((e) => `${e.reference}: ${e.message}`),
         importId: `import_${Date.now()}`,
       };
     },
@@ -202,19 +193,19 @@ export function useImportBatchProgressViewModel(props: any) {
         queued: 0,
       };
 
-      Object.values(jobStatuses).forEach(status => {
+      Object.values(jobStatuses).forEach((status) => {
         switch (status) {
-          case 'finished':
+          case "finished":
             statusCounts.completed++;
             break;
-          case 'failed':
+          case "failed":
             statusCounts.failed++;
             break;
-          case 'started':
+          case "started":
             statusCounts.processing++;
             break;
-          case 'queued':
-          case 'deferred':
+          case "queued":
+          case "deferred":
             statusCounts.queued++;
             break;
         }
@@ -225,15 +216,15 @@ export function useImportBatchProgressViewModel(props: any) {
 
     // Error handling helpers
     handleBatchError(batch: BatchInfo, error: any): UploadError[] {
-      return batch.references.map(reference => ({
+      return batch.references.map((reference) => ({
         reference,
         message: error.message || "Batch upload failed",
       }));
     },
 
     handleValidationErrors(validationErrors: string[]): UploadError[] {
-      return validationErrors.map(error => ({
-        reference: 'validation',
+      return validationErrors.map((error) => ({
+        reference: "validation",
         message: error,
       }));
     },

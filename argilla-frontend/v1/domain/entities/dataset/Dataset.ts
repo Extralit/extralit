@@ -50,11 +50,7 @@ export class Dataset {
   }
 
   get isModified(): boolean {
-    return (
-      this.isModifiedGuidelines ||
-      this.isModifiedExtraMetadata ||
-      this.isModifiedTaskDistribution
-    );
+    return this.isModifiedGuidelines || this.isModifiedExtraMetadata || this.isModifiedTaskDistribution;
   }
 
   get isModifiedGuidelines(): boolean {
@@ -66,10 +62,7 @@ export class Dataset {
   }
 
   get isModifiedTaskDistribution(): boolean {
-    return (
-      JSON.stringify(this.distribution) !==
-      JSON.stringify(this.original.distribution)
-    );
+    return JSON.stringify(this.distribution) !== JSON.stringify(this.original.distribution);
   }
 
   restore(part: "guidelines" | "metadata" | "distribution") {
@@ -168,9 +161,7 @@ export class Dataset {
 
   ds = load_dataset("${repoId}", name="${subset}", split="${split}")
 
-  dataset = client.datasets(name="${this.name}", workspace="${
-      this.workspaceName
-    }")
+  dataset = client.datasets(name="${this.name}", workspace="${this.workspaceName}")
 
   dataset.records.log(ds, mapping=${JSON.stringify(mappingArg)})
   \`\`\``;

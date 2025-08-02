@@ -16,10 +16,7 @@ export class Environment {
   ) {}
 
   get shouldShowHuggingfaceSpacePersistentStorageWarning(): boolean {
-    return (
-      this.argilla.showHuggingfaceSpacePersistentStorageWarning &&
-      !this.huggingface.spacePersistentStorageEnabled
-    );
+    return this.argilla.showHuggingfaceSpacePersistentStorageWarning && !this.huggingface.spacePersistentStorageEnabled;
   }
 
   get shareYourProgressEnabled() {

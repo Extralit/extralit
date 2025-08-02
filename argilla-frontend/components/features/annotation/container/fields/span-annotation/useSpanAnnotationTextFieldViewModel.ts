@@ -45,9 +45,7 @@ export const useSpanAnnotationTextFieldViewModel = (props: {
       label: entity?.value,
     });
 
-    const spanInRange = highlighting.value.spans.filter(
-      (entity) => entity.from === span.from && entity.to === span.to
-    );
+    const spanInRange = highlighting.value.spans.filter((entity) => entity.from === span.from && entity.to === span.to);
 
     const instance = new EntityComponentReference({
       propsData: {
@@ -115,9 +113,7 @@ export const useSpanAnnotationTextFieldViewModel = (props: {
       .filter(Boolean);
   };
 
-  const highlighting = ref<Highlighting>(
-    new Highlighting(id, entityComponentFactory, initialConfiguration)
-  );
+  const highlighting = ref<Highlighting>(new Highlighting(id, entityComponentFactory, initialConfiguration));
 
   watch(
     () => answer.options,

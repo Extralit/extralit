@@ -17,9 +17,7 @@ export class HubRepository {
   async getDatasetCreation(repoId: string): Promise<any> {
     try {
       const { data } = await this.axios.get(
-        `https://datasets-server.huggingface.co/info?dataset=${encodeURIComponent(
-          repoId
-        )}`
+        `https://datasets-server.huggingface.co/info?dataset=${encodeURIComponent(repoId)}`
       );
 
       return data.dataset_info;
@@ -30,22 +28,15 @@ export class HubRepository {
     }
   }
 
-  async getColumnsDistributions(
-    repoId: string,
-    subset: string,
-    split: string
-  ): Promise<any> {
+  async getColumnsDistributions(repoId: string, subset: string, split: string): Promise<any> {
     // Example call https://datasets-server.huggingface.co/statistics?dataset=derek-thomas/ScienceQA&config=default&split=train
-    const { data } = await this.axios.get(
-      "https://datasets-server.huggingface.co/statistics",
-      {
-        params: {
-          dataset: encodeURIComponent(repoId),
-          config: subset,
-          split,
-        },
-      }
-    );
+    const { data } = await this.axios.get("https://datasets-server.huggingface.co/statistics", {
+      params: {
+        dataset: encodeURIComponent(repoId),
+        config: subset,
+        split,
+      },
+    });
 
     const distributions = [];
     for (const columnStats of data.statistics) {
@@ -83,11 +74,9 @@ export class HubRepository {
     try {
       const { repoId, selectedSubset } = dataset;
       const { data } = await this.axios.get(
-        `https://datasets-server.huggingface.co/first-rows?dataset=${encodeURIComponent(
-          repoId
-        )}&split=${selectedSubset.selectedSplit.name}&config=${
-          selectedSubset.name
-        }`
+        `https://datasets-server.huggingface.co/first-rows?dataset=${encodeURIComponent(repoId)}&split=${
+          selectedSubset.selectedSplit.name
+        }&config=${selectedSubset.name}`
       );
 
       return data.rows[0].row;

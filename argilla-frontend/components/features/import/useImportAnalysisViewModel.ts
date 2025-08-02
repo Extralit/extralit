@@ -1,17 +1,13 @@
-import { ref, watch } from 'vue';
+import { ref, watch } from "vue";
 import { useResolve } from "ts-injecty";
-import { GetImportAnalysisUseCase } from '~/v1/domain/usecases/get-import-analysis-use-case';
-import type {
-  ImportAnalysisResponse,
-  ImportStatus,
-  DataframeData
-} from '~/v1/domain/entities/import/ImportAnalysis';
+import { GetImportAnalysisUseCase } from "~/v1/domain/usecases/get-import-analysis-use-case";
+import type { ImportAnalysisResponse, ImportStatus, DataframeData } from "~/v1/domain/entities/import/ImportAnalysis";
 import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
 
 export function useImportAnalysisViewModel(props: any) {
   const isAnalyzing = ref(false);
   const hasError = ref(false);
-  const errorMessage = ref('');
+  const errorMessage = ref("");
   const analysisResult = ref<ImportAnalysisResponse | null>(null);
   const documentActions = ref<Record<string, ImportStatus>>({});
 
@@ -20,44 +16,34 @@ export function useImportAnalysisViewModel(props: any) {
   const reset = () => {
     isAnalyzing.value = false;
     hasError.value = false;
-    errorMessage.value = '';
+    errorMessage.value = "";
     analysisResult.value = null;
     documentActions.value = {};
   };
 
-  const analyzeImport = async (
-    workspace: Workspace,
-    dataframeData: DataframeData,
-    matchedFiles: any[]
-  ) => {
+  const analyzeImport = async (workspace: Workspace, dataframeData: DataframeData, matchedFiles: any[]) => {
     if (!workspace || !dataframeData || dataframeData.data.length === 0) {
       return;
     }
 
     isAnalyzing.value = true;
     hasError.value = false;
-    errorMessage.value = '';
+    errorMessage.value = "";
 
     try {
-      const result = await importAnalysisUseCase.analyzeImport(
-        workspace.id,
-        dataframeData,
-        matchedFiles
-      );
+      const result = await importAnalysisUseCase.analyzeImport(workspace.id, dataframeData, matchedFiles);
 
       analysisResult.value = result;
-      
+
       // Initialize document actions from analysis result
       const actions: Record<string, ImportStatus> = {};
       Object.entries(result.documents).forEach(([reference, docInfo]) => {
         actions[reference] = docInfo.status;
       });
       documentActions.value = actions;
-
     } catch (error) {
       hasError.value = true;
-      errorMessage.value = error.message || 'Failed to analyze import';
-      console.error('Import analysis failed:', error);
+      errorMessage.value = error.message || "Failed to analyze import";
     } finally {
       isAnalyzing.value = false;
     }
@@ -81,6 +67,6 @@ export function useImportAnalysisViewModel(props: any) {
     analysisResult,
     documentActions,
     reset,
-    analyzeImport
+    analyzeImport,
   };
 }

@@ -8,11 +8,7 @@ export class DatasetCreation {
   public readonly firstRecord: {};
   public workspace: Workspace;
 
-  constructor(
-    public readonly repoId: string,
-    public name: string,
-    private readonly subset: Subset[]
-  ) {
+  constructor(public readonly repoId: string, public name: string, private readonly subset: Subset[]) {
     this.selectedSubset = subset[0];
   }
 
@@ -33,9 +29,7 @@ export class DatasetCreation {
   }
 
   get mappedFields() {
-    return this.fields.filter(
-      (f) => f.type.value !== "no mapping" && f.name !== "id"
-    );
+    return this.fields.filter((f) => f.type.value !== "no mapping" && f.name !== "id");
   }
 
   get questions() {
@@ -84,17 +78,9 @@ export class DatasetCreation {
 
   createFields(firstRawRecord: unknown): Field[] {
     return this.mappedFields.map((field) => {
-      return new Field(
-        field.name,
-        field.name,
-        field.title,
-        this.name,
-        field.required,
-        field.settings,
-        {
-          fields: firstRawRecord,
-        }
-      );
+      return new Field(field.name, field.name, field.title, this.name, field.required, field.settings, {
+        fields: firstRawRecord,
+      });
     });
   }
 

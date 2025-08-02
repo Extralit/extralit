@@ -137,10 +137,7 @@ describe("DatasetCreation", () => {
         },
       };
 
-      const builder = new DatasetCreationBuilder(
-        "FAKE",
-        datasetInfoWithOneQuestion
-      );
+      const builder = new DatasetCreationBuilder("FAKE", datasetInfoWithOneQuestion);
 
       const datasetCreation = builder.build();
 
@@ -187,10 +184,7 @@ describe("DatasetCreation", () => {
 
       const datasetCreation = builder.build();
 
-      expect(
-        datasetCreation.fields.filter((f) => f.type.value === "no mapping")
-          .length
-      ).toBe(1);
+      expect(datasetCreation.fields.filter((f) => f.type.value === "no mapping").length).toBe(1);
     });
 
     it("get no mapped feature", () => {
@@ -208,10 +202,7 @@ describe("DatasetCreation", () => {
 
       const datasetCreation = builder.build();
 
-      expect(
-        datasetCreation.fields.filter((f) => f.type.value === "no mapping")
-          .length
-      ).toBe(1);
+      expect(datasetCreation.fields.filter((f) => f.type.value === "no mapping").length).toBe(1);
     });
 
     it("create metadata", () => {
@@ -234,10 +225,7 @@ describe("DatasetCreation", () => {
           features: {},
         },
       };
-      const builder = new DatasetCreationBuilder(
-        "FAKE",
-        datasetInfoWithNoQuestions
-      );
+      const builder = new DatasetCreationBuilder("FAKE", datasetInfoWithNoQuestions);
 
       const datasetCreation = builder.build();
 
@@ -274,10 +262,7 @@ describe("DatasetCreation", () => {
           features: {},
         },
       };
-      const builder = new DatasetCreationBuilder(
-        "FAKE",
-        datasetInfoWithNoQuestions
-      );
+      const builder = new DatasetCreationBuilder("FAKE", datasetInfoWithNoQuestions);
 
       const datasetCreation = builder.build();
 

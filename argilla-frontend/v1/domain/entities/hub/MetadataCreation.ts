@@ -40,19 +40,12 @@ export type MetadataTypes =
 
 export class MetadataCreation {
   public readonly type: MetadataType;
-  private constructor(
-    public readonly name: string,
-    type: string,
-    public title?: string
-  ) {
+  private constructor(public readonly name: string, type: string, public title?: string) {
     this.title ??= this.name;
     this.type = MetadataType.from(type);
   }
 
-  public static from(
-    name: string,
-    type: MetadataTypes | string
-  ): MetadataCreation | null {
+  public static from(name: string, type: MetadataTypes | string): MetadataCreation | null {
     if (availableMetadataTypes.map((t) => t.value).includes(type)) {
       return new MetadataCreation(name, type);
     }

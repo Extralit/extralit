@@ -19,9 +19,7 @@ export class Progress {
 
     this.percentage = {
       pending: isNaN(percentagePending) ? "0.00" : percentagePending.toFixed(2),
-      completed: isNaN(percentageCompleted)
-        ? "0.00"
-        : percentageCompleted.toFixed(2),
+      completed: isNaN(percentageCompleted) ? "0.00" : percentageCompleted.toFixed(2),
     };
   }
 

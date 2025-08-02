@@ -2,10 +2,7 @@ import { IAuthService } from "../services/IAuthService";
 import { IUserRepository } from "../services/IUserRepository";
 
 export class LoadUserUseCase {
-  constructor(
-    private readonly auth: IAuthService,
-    private readonly userRepository: IUserRepository
-  ) {}
+  constructor(private readonly auth: IAuthService, private readonly userRepository: IUserRepository) {}
 
   async execute() {
     if (!this.auth.loggedIn) return;

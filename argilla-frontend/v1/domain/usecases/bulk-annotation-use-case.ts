@@ -41,20 +41,13 @@ export class BulkAnnotationUseCase {
       records.push(...allRecords.records);
     }
 
-    const allSuccessful = await this.save(
-      status,
-      recordReference,
-      records,
-      progress
-    );
+    const allSuccessful = await this.save(status, recordReference, records, progress);
 
     if (affectAllRecords) {
       await this.loadRecords.load(criteria);
     }
 
-    this.eventDispatcher.dispatch(
-      new RecordResponseUpdatedEvent(recordReference)
-    );
+    this.eventDispatcher.dispatch(new RecordResponseUpdatedEvent(recordReference));
 
     return allSuccessful;
   }
@@ -72,10 +65,7 @@ export class BulkAnnotationUseCase {
     for (const records of chunkOfRecords) {
       records.forEach((r) => r.answerWith(recordReference));
 
-      const responses = await this.recordRepository.annotateBulkRecords(
-        records,
-        status
-      );
+      const responses = await this.recordRepository.annotateBulkRecords(records, status);
 
       responses
         .filter((r) => r.success)

@@ -69,9 +69,7 @@ describe("Field", () => {
       test("return 'This must be less than 500.' error if field title has more 500 characters", () => {
         const field = createTextFieldMock("1");
         field.title = invalidLargeTitle;
-        expect(field.validate().title).toStrictEqual([
-          "This must be less than 500.",
-        ]);
+        expect(field.validate().title).toStrictEqual(["This must be less than 500."]);
       });
       test("don't return error if field has a valid title", () => {
         const field = createTextFieldMock("1");

@@ -14,15 +14,12 @@ export class FieldRepository {
 
   async create(datasetId: string, field: FieldCreation): Promise<BackendField> {
     try {
-      const { data } = await this.axios.post<BackendField>(
-        `/v1/datasets/${datasetId}/fields`,
-        {
-          name: field.name,
-          title: field.title,
-          required: field.required,
-          settings: field.settings,
-        }
-      );
+      const { data } = await this.axios.post<BackendField>(`/v1/datasets/${datasetId}/fields`, {
+        name: field.name,
+        title: field.title,
+        required: field.required,
+        settings: field.settings,
+      });
 
       return data;
     } catch (err) {
@@ -49,10 +46,7 @@ export class FieldRepository {
 
   async update(field: Field): Promise<BackendField> {
     try {
-      const { data } = await this.axios.patch<BackendField>(
-        `/v1/fields/${field.id}`,
-        this.createRequest(field)
-      );
+      const { data } = await this.axios.patch<BackendField>(`/v1/fields/${field.id}`, this.createRequest(field));
 
       revalidateCache(`/v1/datasets/${field.datasetId}/fields`);
 
@@ -64,11 +58,7 @@ export class FieldRepository {
     }
   }
 
-  private createRequest({
-    name,
-    title,
-    settings,
-  }: Field): Partial<BackendField> {
+  private createRequest({ name, title, settings }: Field): Partial<BackendField> {
     return {
       title: !title || title === "" ? name : title,
       settings,

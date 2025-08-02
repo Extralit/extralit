@@ -4,7 +4,7 @@
  */
 
 // Basic field types supported in dataframes
-export type FieldType = 'string' | 'integer' | 'float' | 'boolean';
+export type FieldType = "string" | "integer" | "float" | "boolean";
 
 // Dataframe field definition
 export interface DataframeField {
@@ -25,7 +25,7 @@ export interface DataframeData {
 }
 
 // Import analysis status for individual documents (maps to ImportStatus enum in backend)
-export type ImportStatus = 'add' | 'update' | 'skip' | 'ignore' | 'failed';
+export type ImportStatus = "add" | "update" | "skip" | "ignore" | "failed";
 
 // Document creation data for import (maps to DocumentCreate in backend)
 export interface DocumentCreate {

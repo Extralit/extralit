@@ -18,9 +18,9 @@ const DEFAULT_STATUS = "pending";
  */
 export function difference(object: any, base: any) {
   function changes(object: any, base: any) {
-    return transform(object, function(result: any, value: any, key: any) {
+    return transform(object, (result: any, value: any, key: any) => {
       if (!isEqual(value, base[key])) {
-        result[key] = (isObject(value) && isObject(base[key])) ? changes(value, base[key]) : value;
+        result[key] = isObject(value) && isObject(base[key]) ? changes(value, base[key]) : value;
       }
     });
   }
@@ -110,9 +110,7 @@ export class Record {
     this.questions
       .filter((q) => !q.isSpanType)
       .forEach((question) => {
-        const questionReference = recordReference.questions.find(
-          (q) => q.id === question.id
-        );
+        const questionReference = recordReference.questions.find((q) => q.id === question.id);
 
         if (!questionReference) return;
 
@@ -130,9 +128,7 @@ export class Record {
   }
 
   get hasAnyQuestionAnswered() {
-    return this.questions.some(
-      (question) => question.answer.isValid || question.answer.isPartiallyValid
-    );
+    return this.questions.some((question) => question.answer.isValid || question.answer.isPartiallyValid);
   }
 
   questionAreCompletedCorrectly() {
@@ -148,10 +144,7 @@ export class Record {
         return input.hasValidValues;
       });
 
-    return (
-      requiredQuestionsAreCompletedCorrectly &&
-      optionalQuestionsCompletedAreCorrectlyEntered
-    );
+    return requiredQuestionsAreCompletedCorrectly && optionalQuestionsCompletedAreCorrectlyEntered;
   }
 
   private completeQuestion() {

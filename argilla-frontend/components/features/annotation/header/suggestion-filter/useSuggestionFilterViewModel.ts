@@ -15,9 +15,7 @@ export const useSuggestionFilterViewModel = ({
   const debounce = useDebounce(500);
   const getAgentsUseCase = useResolve(GetDatasetSuggestionsAgentsUseCase);
 
-  const suggestionFilters = ref<SuggestionFilterList>(
-    new SuggestionFilterList(datasetQuestions)
-  );
+  const suggestionFilters = ref<SuggestionFilterList>(new SuggestionFilterList(datasetQuestions));
 
   const loadFilterInformation = () => {
     getAgentsUseCase.execute(datasetId).then((agents) => {

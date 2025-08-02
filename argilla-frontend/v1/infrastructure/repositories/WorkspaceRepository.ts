@@ -16,10 +16,7 @@ export class WorkspaceRepository {
   constructor(private readonly axios: NuxtAxiosInstance) {}
   async getWorkspaces(): Promise<BackendWorkspace[]> {
     try {
-      const { data } = await this.axios.get<Response<BackendWorkspace[]>>(
-        "/v1/me/workspaces",
-        mediumCache()
-      );
+      const { data } = await this.axios.get<Response<BackendWorkspace[]>>("/v1/me/workspaces", mediumCache());
 
       return data.items;
     } catch (err) {
@@ -31,12 +28,9 @@ export class WorkspaceRepository {
 
   async create(name: string): Promise<BackendWorkspace> {
     try {
-      const { data } = await this.axios.post<BackendWorkspace>(
-        "/v1/workspaces",
-        {
-          name,
-        }
-      );
+      const { data } = await this.axios.post<BackendWorkspace>("/v1/workspaces", {
+        name,
+      });
 
       revalidateCache("/v1/me/workspaces");
 

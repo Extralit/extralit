@@ -5,8 +5,7 @@ import { defineConfig, devices } from "@playwright/test";
  */
 export default defineConfig({
   testDir: "./e2e",
-  snapshotPathTemplate:
-    "{testDir}/{testFileDir}/__screenshots__/{projectName}/{arg}{ext}",
+  snapshotPathTemplate: "{testDir}/{testFileDir}/__screenshots__/{projectName}/{arg}{ext}",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: 3,
@@ -41,9 +40,7 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: process.env.API_BASE_URL
-      ? `API_BASE_URL=${process.env.API_BASE_URL} npm run dev`
-      : "npm run dev",
+    command: process.env.API_BASE_URL ? `API_BASE_URL=${process.env.API_BASE_URL} npm run dev` : "npm run dev",
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
   },

@@ -3,18 +3,11 @@ import { ref } from "vue-demi";
 import { Record } from "~/v1/domain/entities/record/Record";
 import { RecordCriteria } from "~/v1/domain/entities/record/RecordCriteria";
 import { Records } from "~/v1/domain/entities/record/Records";
-import {
-  AvailableStatus,
-  BulkAnnotationUseCase,
-} from "~/v1/domain/usecases/bulk-annotation-use-case";
+import { AvailableStatus, BulkAnnotationUseCase } from "~/v1/domain/usecases/bulk-annotation-use-case";
 import { useNotifications } from "~/v1/infrastructure/services/useNotifications";
 import { useTranslate } from "~/v1/infrastructure/services/useTranslate";
 
-export const useBulkAnnotationViewModel = ({
-  records,
-}: {
-  records: Records;
-}) => {
+export const useBulkAnnotationViewModel = ({ records }: { records: Records }) => {
   const notification = useNotifications();
 
   const affectAllRecords = ref(false);
@@ -81,57 +74,30 @@ export const useBulkAnnotationViewModel = ({
     return allSuccessful;
   };
 
-  const discard = async (
-    criteria: RecordCriteria,
-    recordReference: Record,
-    records: Record[]
-  ) => {
+  const discard = async (criteria: RecordCriteria, recordReference: Record, records: Record[]) => {
     isDiscarding.value = true;
 
-    const allSuccessful = await annotateBulk(
-      "discarded",
-      criteria,
-      recordReference,
-      records
-    );
+    const allSuccessful = await annotateBulk("discarded", criteria, recordReference, records);
 
     isDiscarding.value = false;
 
     return allSuccessful;
   };
 
-  const submit = async (
-    criteria: RecordCriteria,
-    recordReference: Record,
-    records: Record[]
-  ) => {
+  const submit = async (criteria: RecordCriteria, recordReference: Record, records: Record[]) => {
     isSubmitting.value = true;
 
-    const allSuccessful = await annotateBulk(
-      "submitted",
-      criteria,
-      recordReference,
-      records
-    );
+    const allSuccessful = await annotateBulk("submitted", criteria, recordReference, records);
 
     isSubmitting.value = false;
 
     return allSuccessful;
   };
 
-  const saveAsDraft = async (
-    criteria: RecordCriteria,
-    recordReference: Record,
-    records: Record[]
-  ) => {
+  const saveAsDraft = async (criteria: RecordCriteria, recordReference: Record, records: Record[]) => {
     isDraftSaving.value = true;
 
-    const allSuccessful = await annotateBulk(
-      "draft",
-      criteria,
-      recordReference,
-      records
-    );
+    const allSuccessful = await annotateBulk("draft", criteria, recordReference, records);
 
     isDraftSaving.value = false;
 

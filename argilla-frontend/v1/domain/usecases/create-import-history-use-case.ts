@@ -14,15 +14,10 @@ export interface ImportHistoryResponse {
 }
 
 export class CreateImportHistoryUseCase {
-  constructor(
-    private readonly axios: NuxtAxiosInstance
-  ) {}
+  constructor(private readonly axios: NuxtAxiosInstance) {}
 
   async execute(importHistoryData: ImportHistoryCreate): Promise<ImportHistoryResponse> {
-    const response = await this.axios.post<ImportHistoryResponse>(
-      "/v1/imports/history",
-      importHistoryData
-    );
+    const response = await this.axios.post<ImportHistoryResponse>("/v1/imports/history", importHistoryData);
 
     return response.data;
   }

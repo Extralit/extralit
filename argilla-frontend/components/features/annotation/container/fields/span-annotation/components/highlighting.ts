@@ -109,9 +109,7 @@ export class Highlighting {
 
   mount(selections: LoadedSpan[] = []) {
     if (!CSS.highlights) {
-      throw new Error(
-        "The CSS Custom Highlight API is not supported in this browser!"
-      );
+      throw new Error("The CSS Custom Highlight API is not supported in this browser!");
     }
 
     const node = document.getElementById(this.nodeId)!;
@@ -149,9 +147,7 @@ export class Highlighting {
 
   private loadHighlights(selections: LoadedSpan[]) {
     if (!this.node) {
-      throw new Error(
-        "Node not attached, use `attachNode` method with HTMLElement that contains the text to select"
-      );
+      throw new Error("Node not attached, use `attachNode` method with HTMLElement that contains the text to select");
     }
 
     const loaded: Omit<Span, "overlap">[] = selections.map((s) => ({
@@ -169,15 +165,11 @@ export class Highlighting {
   }
 
   private updateLineHeight() {
-    const maxOverlappedLevels = this.nodeSpans.reduce(
-      (max, span) => Math.max(max, span.overlap.level),
-      0
-    );
+    const maxOverlappedLevels = this.nodeSpans.reduce((max, span) => Math.max(max, span.overlap.level), 0);
 
     const lineHeight =
       maxOverlappedLevels > 2
-        ? this.styles.lineHeight +
-          this.styles.entitiesGap * Math.max(0, maxOverlappedLevels - 2)
+        ? this.styles.lineHeight + this.styles.entitiesGap * Math.max(0, maxOverlappedLevels - 2)
         : this.styles.lineHeight;
 
     this.config.lineHeight = lineHeight;
@@ -260,10 +252,7 @@ export class Highlighting {
 
     if (!firstRange || !lastRange) return;
 
-    CSS.highlights.set(
-      tokenizedClassName,
-      new Highlight(firstRange, lastRange)
-    );
+    CSS.highlights.set(tokenizedClassName, new Highlight(firstRange, lastRange));
   }
 
   private applyStylesOnScroll() {
@@ -299,8 +288,7 @@ export class Highlighting {
   }
 
   private applyHighlightStyle(
-    getClassName: (span: Span) => string = (span) =>
-      `${this.styles.entityCssKey}-${span.entity.id}`
+    getClassName: (span: Span) => string = (span) => `${this.styles.entityCssKey}-${span.entity.id}`
   ) {
     const highlights: Dictionary<Range[]> = {};
 

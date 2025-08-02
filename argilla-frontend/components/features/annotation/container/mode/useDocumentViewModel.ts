@@ -1,4 +1,4 @@
-import { ref, watch, computed } from 'vue-demi';
+import { ref, watch, computed } from "vue-demi";
 import { useResolve } from "ts-injecty";
 import { GetDocumentByIdUseCase } from "@/v1/domain/usecases/get-document-by-id-use-case";
 import { useDocument } from "@/v1/infrastructure/storage/DocumentStorage";
@@ -7,11 +7,7 @@ import { useDataset } from "@/v1/infrastructure/storage/DatasetStorage";
 import { waitForAsyncValue } from "@/v1/infrastructure/services/useWait";
 import { useNotifications } from "~/v1/infrastructure/services/useNotifications";
 
-export const useDocumentViewModel = (
-  props: {
-    record: any;
-  },
-) => {
+export const useDocumentViewModel = (props: { record: any }) => {
   const notification = useNotifications();
   const getDocument = useResolve(GetDocumentByIdUseCase);
   const { state: dataset } = useDataset();
@@ -22,8 +18,10 @@ export const useDocumentViewModel = (
     return document.id !== null;
   });
   const hasDocument = computed(() => {
-    return props.record.metadata === null || props.record.metadata?.doc_id != null || props.record.metadata?.pmid != null;
-  })
+    return (
+      props.record.metadata === null || props.record.metadata?.doc_id != null || props.record.metadata?.pmid != null
+    );
+  });
 
   const fetchDocumentByID = async (id: string) => {
     try {
@@ -31,7 +29,7 @@ export const useDocumentViewModel = (
     } catch (e) {
       notification.notify({
         message: `Error fetching document with ID ${id}`,
-        type: 'danger',
+        type: "danger",
       });
       clearDocument();
     }
@@ -43,7 +41,7 @@ export const useDocumentViewModel = (
     } catch (e) {
       notification.notify({
         message: `Error fetching document with pmid "${pmid}"`,
-        type: 'danger',
+        type: "danger",
       });
       clearDocument();
     }
@@ -77,8 +75,8 @@ export const useDocumentViewModel = (
       return segments;
     } catch (e) {
       notification.notify({
-        message: `Error fetching document segments`,
-        type: 'danger',
+        message: "Error fetching document segments",
+        type: "danger",
       });
     }
   };
@@ -86,13 +84,13 @@ export const useDocumentViewModel = (
   watch(
     () => props.record?.metadata,
     (newMetadata, oldMetadata) => {
-      if ((newMetadata !== oldMetadata || !document)) {
+      if (newMetadata !== oldMetadata || !document) {
         isLoading.value = true;
 
         try {
           updateDocument(newMetadata);
         } catch (error) {
-          console.log(error)
+          console.log(error);
         } finally {
           isLoading.value = false;
           if (!hasDocumentLoaded.value) {
@@ -104,7 +102,7 @@ export const useDocumentViewModel = (
         fetchDocumentSegments(newMetadata.reference);
       }
     },
-    { immediate: true },
+    { immediate: true }
   );
 
   return {

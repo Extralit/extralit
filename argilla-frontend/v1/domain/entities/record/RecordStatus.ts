@@ -15,9 +15,7 @@ export class RecordStatus extends String {
   private constructor(public readonly name: Status, color: string) {
     super(name);
 
-    const resolvedColor = color.startsWith("var(")
-      ? this.resolveCssVariable(color.slice(4, -1).trim())
-      : color;
+    const resolvedColor = color.startsWith("var(") ? this.resolveCssVariable(color.slice(4, -1).trim()) : color;
     this.color = Color.from(resolvedColor);
   }
 

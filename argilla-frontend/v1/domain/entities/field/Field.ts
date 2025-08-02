@@ -89,9 +89,7 @@ export class Field {
     };
 
     if (this.title?.length > this.MAX_TITLE_LENGTH)
-      validations.title.push(
-        `This must be less than ${this.MAX_TITLE_LENGTH}.`
-      );
+      validations.title.push(`This must be less than ${this.MAX_TITLE_LENGTH}.`);
 
     return validations;
   }

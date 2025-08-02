@@ -52,9 +52,7 @@ describe("Vector", () => {
       test("return 'This must be less than 500.' error if vector title has more 500 characters", () => {
         const vector = createVectorMock("1");
         vector.title = invalidLargeTitle;
-        expect(vector.validate().title).toStrictEqual([
-          "This must be less than 500.",
-        ]);
+        expect(vector.validate().title).toStrictEqual(["This must be less than 500."]);
       });
       test("don't return error if vector has a valid title", () => {
         const vector = createVectorMock("1");

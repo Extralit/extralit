@@ -21,9 +21,7 @@ export class CreateDatasetUseCase {
 
   async execute(dataset: DatasetCreation): Promise<DatasetId | null> {
     if (!dataset.workspace.id) {
-      const workspace = await this.workspaceRepository.create(
-        dataset.workspace.name
-      );
+      const workspace = await this.workspaceRepository.create(dataset.workspace.name);
 
       dataset.workspace = new Workspace(workspace.id, workspace.name);
     }
@@ -55,9 +53,7 @@ export class CreateDatasetUseCase {
       while (retries < 10) {
         revalidateCache(`/v1/datasets/${datasetCreated}/progress`);
 
-        const progress = await this.datasetRepository.getProgress(
-          datasetCreated
-        );
+        const progress = await this.datasetRepository.getProgress(datasetCreated);
 
         if (progress.hasAtLeastTenRecord) {
           break;

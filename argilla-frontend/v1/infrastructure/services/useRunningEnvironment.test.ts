@@ -54,11 +54,7 @@ describe("useRunningEnvironment", () => {
           ),
       });
 
-      Container.register([
-        register(GetEnvironmentUseCase)
-          .withDependency(mockedGetEnvironmentUseCase)
-          .build(),
-      ]);
+      Container.register([register(GetEnvironmentUseCase).withDependency(mockedGetEnvironmentUseCase).build()]);
 
       const { getHuggingFaceSpace } = useRunningEnvironment();
       const space = await getHuggingFaceSpace();

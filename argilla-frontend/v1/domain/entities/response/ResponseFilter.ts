@@ -1,11 +1,4 @@
-import {
-  Filter,
-  FilterWithOption,
-  FilterWithScore,
-  OptionForFilter,
-  RangeValue,
-  ValuesOption,
-} from "../common/Filter";
+import { Filter, FilterWithOption, FilterWithScore, OptionForFilter, RangeValue, ValuesOption } from "../common/Filter";
 import { Question } from "../question/Question";
 
 export interface ResponseSearch {
@@ -155,8 +148,7 @@ export class ResponseFilterList {
   get hasChangesSinceLatestCommit() {
     if (this.filteredResponses.length !== this.filtered.length) return true;
 
-    if (this.filtered.some((f) => !this.filteredResponses.includes(f)))
-      return true;
+    if (this.filtered.some((f) => !this.filteredResponses.includes(f))) return true;
 
     return this.hasChangesSinceLatestCommitWith(this.createCommit());
   }
@@ -199,16 +191,12 @@ export class ResponseFilterList {
   }
 
   private synchronizeFiltered() {
-    const newFiltered = this.filtered.filter(
-      (category) => !this.filteredResponses.includes(category)
-    );
+    const newFiltered = this.filtered.filter((category) => !this.filteredResponses.includes(category));
     newFiltered.forEach((f) => {
       this.filteredResponses.push(f);
     });
 
-    const removedFilters = this.filteredResponses.filter(
-      (category) => !this.filtered.includes(category)
-    );
+    const removedFilters = this.filteredResponses.filter((category) => !this.filtered.includes(category));
     removedFilters.forEach((f) => {
       const indexOf = this.filteredResponses.indexOf(f);
 

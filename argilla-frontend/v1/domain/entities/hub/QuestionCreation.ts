@@ -9,10 +9,7 @@ import {
   SpanQuestionAnswer,
   TextQuestionAnswer,
 } from "../question/QuestionAnswer";
-import {
-  QuestionSetting,
-  QuestionPrototype,
-} from "../question/QuestionSetting";
+import { QuestionSetting, QuestionPrototype } from "../question/QuestionSetting";
 import { QuestionType } from "../question/QuestionType";
 import { Subset } from "./Subset";
 
@@ -111,35 +108,24 @@ export class QuestionCreation {
     };
 
     if (this.isSpanType) {
-      if (
-        !this.subset.textFields.some(
-          (field) => field.name === this.settings.field
-        ) ||
-        !this.settings.field
-      ) {
+      if (!this.subset.textFields.some((field) => field.name === this.settings.field) || !this.settings.field) {
         validation.field.push("datasetCreation.questions.span.fieldRelated");
       }
     }
 
     if (this.isMultiLabelType || this.isSingleLabelType || this.isSpanType) {
       if (this.options.length < 2) {
-        validation.options.push(
-          "datasetCreation.questions.labelSelection.atLeastTwoOptions"
-        );
+        validation.options.push("datasetCreation.questions.labelSelection.atLeastTwoOptions");
       }
 
       if (this.options.some((option) => !option.id)) {
-        validation.options.push(
-          "datasetCreation.questions.labelSelection.optionsWithoutLabel"
-        );
+        validation.options.push("datasetCreation.questions.labelSelection.optionsWithoutLabel");
       }
     }
 
     if (this.isRatingType) {
       if (this.options.length < 2) {
-        validation.options.push(
-          "datasetCreation.questions.rating.atLeastTwoOptions"
-        );
+        validation.options.push("datasetCreation.questions.rating.atLeastTwoOptions");
       }
     }
 
@@ -156,9 +142,7 @@ export class QuestionCreation {
       this.settings.options = this.settings.options.map((option) => {
         return {
           ...option,
-          color: option.color
-            ? Color.from(option.color)
-            : Color.generate(option.value),
+          color: option.color ? Color.from(option.color) : Color.generate(option.value),
         };
       });
     }
@@ -172,47 +156,25 @@ export class QuestionCreation {
     }
 
     if (this.isSpanType) {
-      return new SpanQuestionAnswer(
-        this.type,
-        this.name,
-        this.settings.options
-      );
+      return new SpanQuestionAnswer(this.type, this.name, this.settings.options);
     }
 
     if (this.isRatingType) {
-      return new RatingLabelQuestionAnswer(
-        this.type,
-        this.name,
-        this.settings.options
-      );
+      return new RatingLabelQuestionAnswer(this.type, this.name, this.settings.options);
     }
 
     if (this.isMultiLabelType) {
-      return new MultiLabelQuestionAnswer(
-        this.type,
-        this.name,
-        this.settings.options
-      );
+      return new MultiLabelQuestionAnswer(this.type, this.name, this.settings.options);
     }
 
     if (this.isSingleLabelType) {
-      return new SingleLabelQuestionAnswer(
-        this.type,
-        this.name,
-        this.settings.options
-      );
+      return new SingleLabelQuestionAnswer(this.type, this.name, this.settings.options);
     }
 
     if (this.isRankingType) {
-      return new RankingQuestionAnswer(
-        this.type,
-        this.name,
-        this.settings.options
-      );
+      return new RankingQuestionAnswer(this.type, this.name, this.settings.options);
     }
 
-    Guard.throw(
-      `Question answer for type ${this.type} is not implemented yet.`
-    );
+    Guard.throw(`Question answer for type ${this.type} is not implemented yet.`);
   }
 }

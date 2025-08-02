@@ -13,11 +13,7 @@ describe("OAuthLoginUseCase should", () => {
 
     oauthRepository.login.mockRejectedValue(new Error("FAKE"));
 
-    const useCase = new OAuthLoginUseCase(
-      auth,
-      oauthRepository,
-      loadUserUseCase
-    );
+    const useCase = new OAuthLoginUseCase(auth, oauthRepository, loadUserUseCase);
 
     try {
       await useCase.login("huggingface", null);
@@ -31,11 +27,7 @@ describe("OAuthLoginUseCase should", () => {
     const oauthRepository = mock<IOAuthRepository>();
     const loadUserUseCase = new LoadUserUseCase(auth, mock<IUserRepository>());
 
-    const useCase = new OAuthLoginUseCase(
-      auth,
-      oauthRepository,
-      loadUserUseCase
-    );
+    const useCase = new OAuthLoginUseCase(auth, oauthRepository, loadUserUseCase);
 
     await useCase.login("huggingface", null);
 
@@ -49,11 +41,7 @@ describe("OAuthLoginUseCase should", () => {
 
     oauthRepository.login.mockResolvedValue("FAKE_TOKEN");
 
-    const useCase = new OAuthLoginUseCase(
-      auth,
-      oauthRepository,
-      loadUserUseCase
-    );
+    const useCase = new OAuthLoginUseCase(auth, oauthRepository, loadUserUseCase);
 
     await useCase.login("huggingface", null);
 
@@ -67,11 +55,7 @@ describe("OAuthLoginUseCase should", () => {
 
     oauthRepository.login.mockResolvedValue("");
 
-    const useCase = new OAuthLoginUseCase(
-      auth,
-      oauthRepository,
-      loadUserUseCase
-    );
+    const useCase = new OAuthLoginUseCase(auth, oauthRepository, loadUserUseCase);
 
     await useCase.login("huggingface", null);
 

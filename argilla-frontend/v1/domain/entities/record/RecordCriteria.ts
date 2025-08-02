@@ -92,16 +92,7 @@ export class RecordCriteria implements IRecordCriteria {
     this.suggestion = new SuggestionCriteria();
     this.similaritySearch = new SimilarityCriteria();
 
-    this.complete(
-      page,
-      status,
-      searchText,
-      metadata,
-      sortBy,
-      response,
-      suggestion,
-      similaritySearch
-    );
+    this.complete(page, status, searchText, metadata, sortBy, response, suggestion, similaritySearch);
 
     this.commit();
   }
@@ -166,10 +157,7 @@ export class RecordCriteria implements IRecordCriteria {
   }
 
   get isComingToBulkMode(): boolean {
-    return (
-      (!this.previous || this.previous.page.isFocusMode) &&
-      this.committed.page.isBulkMode
-    );
+    return (!this.previous || this.previous.page.isFocusMode) && this.committed.page.isBulkMode;
   }
 
   get hasChanges(): boolean {
@@ -259,9 +247,7 @@ export class RecordCriteria implements IRecordCriteria {
   }
 
   get queuePage(): number {
-    return this.isFilteringBySimilarity
-      ? this.page.server.from
-      : this.page.client.page;
+    return this.isFilteringBySimilarity ? this.page.server.from : this.page.client.page;
   }
 
   nextPage() {
@@ -285,8 +271,7 @@ export class RecordCriteria implements IRecordCriteria {
     if (!previous.sortBy.isEqual(actual.sortBy)) return true;
     if (!previous.response.isEqual(actual.response)) return true;
     if (!previous.suggestion.isEqual(actual.suggestion)) return true;
-    if (!previous.similaritySearch.isEqual(actual.similaritySearch))
-      return true;
+    if (!previous.similaritySearch.isEqual(actual.similaritySearch)) return true;
 
     return false;
   }

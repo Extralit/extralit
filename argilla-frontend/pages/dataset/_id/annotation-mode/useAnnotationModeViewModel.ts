@@ -1,9 +1,4 @@
-import {
-  computed,
-  onBeforeMount,
-  ref,
-  useRouter,
-} from "@nuxtjs/composition-api";
+import { computed, onBeforeMount, ref, useRouter } from "@nuxtjs/composition-api";
 import { useResolve } from "ts-injecty";
 import { useDatasetViewModel } from "../useDatasetViewModel";
 import { GetDatasetByIdUseCase } from "@/v1/domain/usecases/get-dataset-by-id-use-case";
@@ -20,8 +15,7 @@ export const useAnnotationModeViewModel = () => {
   const { state: dataset } = useDataset();
   const getDatasetUseCase = useResolve(GetDatasetByIdUseCase);
 
-  const { datasetId, isLoadingDataset, handleError, createRootBreadCrumbs } =
-    useDatasetViewModel();
+  const { datasetId, isLoadingDataset, handleError, createRootBreadCrumbs } = useDatasetViewModel();
 
   const breadcrumbs = computed(() => createRootBreadCrumbs(dataset));
 

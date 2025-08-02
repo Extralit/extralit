@@ -6,8 +6,7 @@ export const useUser = () => {
 
   const getUser = () => {
     // eslint-disable-next-line camelcase
-    const { id, username, first_name, last_name, role, api_key } =
-      $auth.user as any;
+    const { id, username, first_name, last_name, role, api_key } = $auth.user as any;
 
     return new User(id, username, first_name, last_name, role, api_key);
   };

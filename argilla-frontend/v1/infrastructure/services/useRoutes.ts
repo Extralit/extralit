@@ -21,8 +21,7 @@ type QueryParam = {
 export const ROUTES = {
   index: "/",
   signIn: "/sign-in",
-  annotationPage: (datasetId: string) =>
-    `/dataset/${datasetId}/annotation-mode`,
+  annotationPage: (datasetId: string) => `/dataset/${datasetId}/annotation-mode`,
   settings: (id: string) => `/dataset/${id}/settings`,
   importDatasetFromHub: (id: string) => `/new/hf/${encodeURIComponent(id)}`,
 };

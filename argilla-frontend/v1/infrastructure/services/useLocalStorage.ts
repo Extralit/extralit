@@ -1,7 +1,4 @@
-import {
-  ILocalStorageService,
-  Options,
-} from "~/v1/domain/services/ILocalStorageService";
+import { ILocalStorageService, Options } from "~/v1/domain/services/ILocalStorageService";
 
 const STORAGE_KEY = "argilla";
 

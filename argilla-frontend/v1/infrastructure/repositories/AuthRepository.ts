@@ -13,22 +13,16 @@ export class AuthRepository implements IAuthRepository {
 
     const request = this.encodedLoginData(username, password);
 
-    const { data } = await this.axios.post<{ access_token: string }>(
-      url,
-      request,
-      {
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-      }
-    );
+    const { data } = await this.axios.post<{ access_token: string }>(url, request, {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    });
 
     return data.access_token;
   }
 
   private encodedLoginData(username: string, password: string) {
-    return `username=${encodeURIComponent(
-      username
-    )}&password=${encodeURIComponent(password)}`;
+    return `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
   }
 }

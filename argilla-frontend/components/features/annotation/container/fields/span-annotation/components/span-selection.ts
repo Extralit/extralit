@@ -57,10 +57,7 @@ export class SpanSelection {
     return [...this.selections];
   }
 
-  crateSpan(
-    selection?: TextSelection,
-    config?: Configuration
-  ): Span | undefined {
+  crateSpan(selection?: TextSelection, config?: Configuration): Span | undefined {
     if (!selection) return;
     if (this.isOutOfRange(selection)) return;
 
@@ -95,9 +92,7 @@ export class SpanSelection {
 
     if (!span) return;
 
-    const filteredSelections = this.selections.filter(
-      (s) => s.node.id === span.node.id
-    );
+    const filteredSelections = this.selections.filter((s) => s.node.id === span.node.id);
 
     const overlaps = this.selections.filter((s) => {
       return (
@@ -134,8 +129,7 @@ export class SpanSelection {
         );
       });
 
-    const maxLevelInOverlaps =
-      overlaps.reduce((acc, curr) => Math.max(acc, curr.overlap.level), 0) + 1;
+    const maxLevelInOverlaps = overlaps.reduce((acc, curr) => Math.max(acc, curr.overlap.level), 0) + 1;
 
     const newVariable = {
       ...selected,
@@ -153,9 +147,7 @@ export class SpanSelection {
   }
 
   replaceEntity(span: Span, entity: Entity) {
-    const found = this.selections.find(
-      (s) => this.createId(s) === this.createId(span)
-    );
+    const found = this.selections.find((s) => this.createId(s) === this.createId(span));
 
     if (!found) return;
 
@@ -179,17 +171,12 @@ export class SpanSelection {
   }
 
   private remove(span: Span) {
-    this.selections = this.selections.filter(
-      (s) => this.createId(s) !== this.createId(span)
-    );
+    this.selections = this.selections.filter((s) => this.createId(s) !== this.createId(span));
   }
 
   private completeOutOfBoundaries(selected: Span) {
     selected.from = Math.max(0, selected.from);
-    selected.to = Math.min(
-      selected.node.element.textContent.length,
-      selected.to
-    );
+    selected.to = Math.min(selected.node.element.textContent.length, selected.to);
   }
 
   private isOutOfRange(selection: TextSelection) {
@@ -197,20 +184,14 @@ export class SpanSelection {
   }
 
   private exists(span: Span) {
-    return this.selections.some(
-      (s) => this.createId(s) === this.createId(span)
-    );
+    return this.selections.some((s) => this.createId(s) === this.createId(span));
   }
 
   private completeLeftSide(selection: TextSelection) {
     while (true) {
       const prevChar = selection.node.text.charAt(selection.from - 1);
 
-      if (
-        this.isEmpty(prevChar) ||
-        this.isSymbol(prevChar) ||
-        selection.to === 0
-      ) {
+      if (this.isEmpty(prevChar) || this.isSymbol(prevChar) || selection.to === 0) {
         break;
       }
 
@@ -231,11 +212,7 @@ export class SpanSelection {
     while (true) {
       const nextCharacter = selection.node.text.charAt(selection.to);
 
-      if (
-        this.isEmpty(nextCharacter) ||
-        this.isSymbol(nextCharacter) ||
-        selection.to === selection.node.text.length
-      ) {
+      if (this.isEmpty(nextCharacter) || this.isSymbol(nextCharacter) || selection.to === selection.node.text.length) {
         break;
       }
 
@@ -259,10 +236,7 @@ export class SpanSelection {
   private isSymbol(character: string) {
     const numbers = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
 
-    return (
-      !numbers.includes(character) &&
-      character.toLowerCase() === character.toUpperCase()
-    );
+    return !numbers.includes(character) && character.toLowerCase() === character.toUpperCase();
   }
 
   private createId(span: Span | TextSelection) {

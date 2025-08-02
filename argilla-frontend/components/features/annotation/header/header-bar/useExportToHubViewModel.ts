@@ -3,11 +3,7 @@ import { onBeforeMount, ref, computed, watch } from "vue";
 import { Dataset } from "~/v1/domain/entities/dataset/Dataset";
 import { ExportDatasetToHubUseCase } from "~/v1/domain/usecases/export-dataset-to-hub-use-case";
 import { JobRepository } from "~/v1/infrastructure/repositories";
-import {
-  useDebounce,
-  useLocalStorage,
-  useNotifications,
-} from "~/v1/infrastructure/services";
+import { useDebounce, useLocalStorage, useNotifications } from "~/v1/infrastructure/services";
 
 interface ExportToHubProps {
   dataset: Dataset;
@@ -44,14 +40,10 @@ export const useExportToHubViewModel = (props: ExportToHubProps) => {
       hfToken: [],
     };
     if (!exportToHubForm.value.orgOrUsername) {
-      validations.orgOrUsername.push(
-        "exportToHub.validations.orgOrUsernameIsRequired"
-      );
+      validations.orgOrUsername.push("exportToHub.validations.orgOrUsernameIsRequired");
     }
     if (!exportToHubForm.value.datasetName) {
-      validations.datasetName.push(
-        "exportToHub.validations.datasetNameIsRequired"
-      );
+      validations.datasetName.push("exportToHub.validations.datasetNameIsRequired");
     }
     if (!exportToHubForm.value.hfToken) {
       validations.hfToken.push("exportToHub.validations.hfTokenIsRequired");
@@ -68,9 +60,7 @@ export const useExportToHubViewModel = (props: ExportToHubProps) => {
   const isValid = computed(() => {
     const validations = validate();
     return (
-      validations.orgOrUsername.length === 0 &&
-      validations.datasetName.length === 0 &&
-      validations.hfToken.length === 0
+      validations.orgOrUsername.length === 0 && validations.datasetName.length === 0 && validations.hfToken.length === 0
     );
   });
 
@@ -112,10 +102,7 @@ export const useExportToHubViewModel = (props: ExportToHubProps) => {
         buttonText: job.isFinished ? "Go to Hub" : undefined,
         onClick: job.isFinished
           ? () => {
-              window.open(
-                `https://huggingface.co/datasets/${datasetName}`,
-                "_blank"
-              );
+              window.open(`https://huggingface.co/datasets/${datasetName}`, "_blank");
             }
           : undefined,
         permanent: true,
@@ -178,9 +165,7 @@ export const useExportToHubViewModel = (props: ExportToHubProps) => {
     }
   };
 
-  const isDialogVisible = computed(
-    () => isDialogOpen.value || isDialogHovered.value
-  );
+  const isDialogVisible = computed(() => isDialogOpen.value || isDialogHovered.value);
 
   watch(isExporting, (newValue) => {
     if (!newValue) {

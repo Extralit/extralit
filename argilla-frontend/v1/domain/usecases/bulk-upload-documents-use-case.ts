@@ -23,15 +23,12 @@ export interface DocumentsBulkResponse {
 }
 
 export class BulkUploadDocumentsUseCase {
-  constructor(private readonly axios: NuxtAxiosInstance) { }
+  constructor(private readonly axios: NuxtAxiosInstance) {}
 
-  async execute(
-    confirmedDocuments: Record<string, DocumentMetadata>,
-    files: File[]
-  ): Promise<DocumentsBulkResponse> {
+  async execute(confirmedDocuments: Record<string, DocumentMetadata>, files: File[]): Promise<DocumentsBulkResponse> {
     // Create file mapping for quick lookup
     const fileMapping = new Map<string, File>();
-    files.forEach(file => {
+    files.forEach((file) => {
       fileMapping.set(file.name, file);
     });
     // Convert confirmed documents to bulk upload format
@@ -40,16 +37,16 @@ export class BulkUploadDocumentsUseCase {
     for (const [reference, docMetadata] of Object.entries(confirmedDocuments)) {
       // Handle both FileInfo objects and string filenames in associated_files
       const associatedFiles = docMetadata.associated_files
-        .map(f => {
-          if (typeof f === 'string') {
+        .map((f) => {
+          if (typeof f === "string") {
             return f;
-          } else if (f && typeof f === 'object' && f.filename) {
+          } else if (f && typeof f === "object" && f.filename) {
             return f.filename;
           } else {
             return null;
           }
         })
-        .filter(filename => filename !== null && !filename.includes('/')) as string[]; // Filter out path prefixes
+        .filter((filename) => filename !== null && !filename.includes("/")) as string[]; // Filter out path prefixes
 
       bulkDocuments.push({
         reference,
@@ -63,7 +60,7 @@ export class BulkUploadDocumentsUseCase {
       return {
         job_ids: {},
         total_documents: 0,
-        failed_validations: ["No documents to upload"]
+        failed_validations: ["No documents to upload"],
       };
     }
 
@@ -73,7 +70,7 @@ export class BulkUploadDocumentsUseCase {
 
     // Create FormData
     const formData = new FormData();
-    
+
     // Add metadata as first field (matching Python: files_to_upload.insert(0, ("documents_metadata", (None, json.dumps(...)))))
     formData.append("documents_metadata", JSON.stringify(bulkCreate));
 
@@ -110,13 +107,9 @@ export class BulkUploadDocumentsUseCase {
 
     try {
       // Send bulk upload request
-      const response = await this.axios.post<DocumentsBulkResponse>(
-        "/v1/documents/bulk",
-        formData,
-        {
-          timeout: 300000, // 5 minute timeout for large uploads
-        }
-      );
+      const response = await this.axios.post<DocumentsBulkResponse>("/v1/documents/bulk", formData, {
+        timeout: 300000, // 5 minute timeout for large uploads
+      });
 
       // Merge any pre-upload validation errors with backend response
       const result = response.data;
@@ -128,7 +121,9 @@ export class BulkUploadDocumentsUseCase {
     } catch (error: any) {
       // If we have validation errors and the request fails, include them in the error
       if (failed_validations.length > 0) {
-        throw new Error(`Upload failed with validation errors: ${failed_validations.join(", ")}. ${error.message || error}`);
+        throw new Error(
+          `Upload failed with validation errors: ${failed_validations.join(", ")}. ${error.message || error}`
+        );
       }
       throw error;
     }

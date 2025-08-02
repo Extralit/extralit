@@ -49,7 +49,6 @@ export class DocumentRepository {
       const { data } = await this.axios.get<Document[]>(`/v1/documents/workspace/${workspaceId}`);
       return data;
     } catch (error) {
-      console.error("Error fetching documents by workspace:", error);
       throw {
         response: DOCUMENT_API_ERRORS.ERROR_FETCHING_DOCUMENT,
       };

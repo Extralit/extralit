@@ -10,10 +10,7 @@ export interface IDatasetRepository {
   create(dataset: DatasetCreation): Promise<DatasetId>;
   publish(datasetId: string): Promise<boolean>;
   import(datasetId: DatasetId, creation: DatasetCreation): Promise<JobId>;
-  export(
-    dataset: Dataset,
-    exportSettings: DatasetExportSettings
-  ): Promise<JobId>;
+  export(dataset: Dataset, exportSettings: DatasetExportSettings): Promise<JobId>;
   getById(id: string): Promise<Dataset>;
   getAll(): Promise<Dataset[]>;
   delete(datasetId: string);

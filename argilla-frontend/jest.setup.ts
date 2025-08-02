@@ -6,9 +6,7 @@ import nuxtConfig from "./nuxt.config";
 
 const translationMock = (key, ...params) =>
   params.length
-    ? `#${key}${params
-        .map((l) => (Object.values(l).length ? Object.values(l) : l))
-        .map((s) => `.${s}`)}#`
+    ? `#${key}${params.map((l) => (Object.values(l).length ? Object.values(l) : l)).map((s) => `.${s}`)}#`
     : `#${key}#`;
 
 jest.mock("~/v1/infrastructure/services/useTranslate", () => ({

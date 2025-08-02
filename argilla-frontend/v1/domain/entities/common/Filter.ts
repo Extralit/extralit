@@ -31,17 +31,12 @@ export abstract class Filter {
 }
 
 export class FilterWithOption extends Filter {
-  constructor(
-    public readonly name: string,
-    public readonly options: OptionForFilter[] = []
-  ) {
+  constructor(public readonly name: string, public readonly options: OptionForFilter[] = []) {
     super();
   }
 
   filterByText(text: string) {
-    return this.options.filter((option) =>
-      (option.text ?? option.value).toLowerCase().includes(text.toLowerCase())
-    );
+    return this.options.filter((option) => (option.text ?? option.value).toLowerCase().includes(text.toLowerCase()));
   }
 
   get selectedOptions(): OptionForFilter[] {

@@ -2,9 +2,7 @@ import { ref } from "vue";
 import { useLocalStorage } from "./useLocalStorage";
 export const useColorSchema = () => {
   const { get, set } = useLocalStorage();
-  const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
+  const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 
   const currentTheme = ref(get<string>("theme") || "system");
 

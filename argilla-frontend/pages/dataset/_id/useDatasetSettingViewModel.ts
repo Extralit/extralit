@@ -3,23 +3,12 @@ import { useResolve } from "ts-injecty";
 import { useDatasetViewModel } from "./useDatasetViewModel";
 import { GetDatasetSettingsUseCase } from "~/v1/domain/usecases/dataset-setting/get-dataset-settings-use-case";
 import { useDatasetSetting } from "~/v1/infrastructure/storage/DatasetSettingStorage";
-import {
-  useBeforeUnload,
-  useRole,
-  useRoutes,
-  useTranslate,
-} from "@/v1/infrastructure/services";
+import { useBeforeUnload, useRole, useRoutes, useTranslate } from "@/v1/infrastructure/services";
 import { DatasetSetting } from "~/v1/domain/entities/dataset/DatasetSetting";
 import { useNotifications } from "~/v1/infrastructure/services/useNotifications";
 
 interface Tab {
-  id:
-    | "general"
-    | "fields"
-    | "questions"
-    | "metadata"
-    | "vector"
-    | "danger-zone";
+  id: "general" | "fields" | "questions" | "metadata" | "vector" | "danger-zone";
   name: string;
   component: string;
 }
@@ -32,8 +21,7 @@ export const useDatasetSettingViewModel = () => {
 
   const { isAdminOrOwnerRole } = useRole();
   const { state: datasetSetting } = useDatasetSetting();
-  const { datasetId, isLoadingDataset, handleError, createRootBreadCrumbs } =
-    useDatasetViewModel();
+  const { datasetId, isLoadingDataset, handleError, createRootBreadCrumbs } = useDatasetViewModel();
 
   const getDatasetSetting = useResolve(GetDatasetSettingsUseCase);
 

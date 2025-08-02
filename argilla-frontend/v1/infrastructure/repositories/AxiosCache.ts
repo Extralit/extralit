@@ -18,11 +18,9 @@ export const revalidateCache = (key: string) => {
 };
 
 const getCachedSeconds = (response: any) => {
-  const getSeconds = (secondsFromMaxAge: string) =>
-    secondsFromMaxAge.replace("max-age", "").replace("=", "");
+  const getSeconds = (secondsFromMaxAge: string) => secondsFromMaxAge.replace("max-age", "").replace("=", "");
 
-  if (response.config.headers[cacheRevalidateHeader])
-    return getSeconds(response.config.headers[cacheRevalidateHeader]);
+  if (response.config.headers[cacheRevalidateHeader]) return getSeconds(response.config.headers[cacheRevalidateHeader]);
 
   return getSeconds(response.config.headers[cacheControlHeader]);
 };
@@ -49,9 +47,7 @@ const cache: Cache = {
 
     this.items[key] = value;
 
-    const seconds = secondsDefined
-      ? parseInt(secondsDefined)
-      : threeSecondsOfCache;
+    const seconds = secondsDefined ? parseInt(secondsDefined) : threeSecondsOfCache;
 
     setTimeout(() => {
       this.delete(key);
@@ -83,8 +79,7 @@ export const loadCache = (axios) => {
               request,
             });
         } else {
-          request.headers[cacheRevalidateHeader] =
-            request.headers[cacheControlHeader];
+          request.headers[cacheRevalidateHeader] = request.headers[cacheControlHeader];
 
           request.headers[cacheControlHeader] = cacheRevalidateHeader;
         }
@@ -100,11 +95,7 @@ export const loadCache = (axios) => {
 
       const seconds = getCachedSeconds(response);
       const key = getCacheKey(response.config);
-      cache.set(
-        key,
-        { data: response.data, headers: response.headers },
-        seconds
-      );
+      cache.set(key, { data: response.data, headers: response.headers }, seconds);
     }
 
     return response;

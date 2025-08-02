@@ -38,46 +38,42 @@ export interface ImportHistoryListParams {
   page?: number;
   size?: number;
   sort_by?: string;
-  sort_order?: 'asc' | 'desc';
+  sort_order?: "asc" | "desc";
   filters?: ImportHistoryFilters;
 }
 
 export class GetImportHistoryUseCase {
-  constructor(
-    private readonly axios: NuxtAxiosInstance
-  ) {}
+  constructor(private readonly axios: NuxtAxiosInstance) {}
 
   async execute(params: ImportHistoryListParams = {}): Promise<ImportHistoryListResponse> {
     const queryParams = new URLSearchParams();
-    
+
     // Pagination
     if (params.page !== undefined) {
-      queryParams.append('page', params.page.toString());
+      queryParams.append("page", params.page.toString());
     }
     if (params.size !== undefined) {
-      queryParams.append('size', params.size.toString());
+      queryParams.append("size", params.size.toString());
     }
-    
+
     // Sorting
     if (params.sort_by) {
-      queryParams.append('sort_by', params.sort_by);
+      queryParams.append("sort_by", params.sort_by);
     }
     if (params.sort_order) {
-      queryParams.append('sort_order', params.sort_order);
+      queryParams.append("sort_order", params.sort_order);
     }
-    
+
     // Filters
     if (params.filters) {
       Object.entries(params.filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '') {
+        if (value !== undefined && value !== null && value !== "") {
           queryParams.append(key, value.toString());
         }
       });
     }
 
-    const response = await this.axios.get<ImportHistoryListResponse>(
-      `/v1/imports/history?${queryParams.toString()}`
-    );
+    const response = await this.axios.get<ImportHistoryListResponse>(`/v1/imports/history?${queryParams.toString()}`);
 
     return response.data;
   }

@@ -125,23 +125,16 @@ export class Question {
     if (!this.title) validations.title.push("This field is required.");
 
     if (this.title.length > this.MAX_TITLE_LENGTH)
-      validations.title.push(
-        `This must be less than ${this.MAX_TITLE_LENGTH}.`
-      );
+      validations.title.push(`This must be less than ${this.MAX_TITLE_LENGTH}.`);
 
     if (this.description.length > this.MAX_DESCRIPTION_LENGTH)
-      validations.description.push(
-        `This must be less than ${this.MAX_DESCRIPTION_LENGTH}.`
-      );
+      validations.description.push(`This must be less than ${this.MAX_DESCRIPTION_LENGTH}.`);
 
     return validations;
   }
 
   public get isQuestionValid(): boolean {
-    return (
-      this.validate().title.length === 0 &&
-      this.validate().description.length === 0
-    );
+    return this.validate().title.length === 0 && this.validate().description.length === 0;
   }
 
   clearAnswer() {
@@ -189,31 +182,23 @@ export class Question {
   }
 
   public addDynamicSelectionToLabelQuestion(suggestedOptions: LabelAnswer[]) {
-    if (!Array.isArray(suggestedOptions) || !suggestedOptions?.length) return
+    if (!Array.isArray(suggestedOptions) || !suggestedOptions?.length) return;
 
     const existingOptionsValues = new Set(this.settings.options.map((option: LabelAnswer) => option.value));
     const selections = [
       ...this.settings.options,
       ...suggestedOptions
-        .filter((option: LabelAnswer) => !existingOptionsValues.has(option.value ))
+        .filter((option: LabelAnswer) => !existingOptionsValues.has(option.value))
         .map((option: LabelAnswer) => {
-          if (typeof option === 'string') return { text: option, value: option, description: null }
+          if (typeof option === "string") return { text: option, value: option, description: null };
           else return option;
         }),
-    ]
+    ];
 
     if (this.isMultiLabelType) {
-      this.answer = new MultiLabelQuestionAnswer(
-        this.type,
-        this.name,
-        selections
-      );
+      this.answer = new MultiLabelQuestionAnswer(this.type, this.name, selections);
     } else if (this.isSingleLabelType) {
-      this.answer = new SingleLabelQuestionAnswer(
-        this.type,
-        this.name,
-        selections
-      );
+      this.answer = new SingleLabelQuestionAnswer(this.type, this.name, selections);
     }
   }
 
@@ -223,54 +208,30 @@ export class Question {
     }
 
     if (this.isSpanType) {
-      return new SpanQuestionAnswer(
-        this.type,
-        this.name,
-        this.settings.options
-      );
+      return new SpanQuestionAnswer(this.type, this.name, this.settings.options);
     }
 
     if (this.isTableType) {
-      return new TableQuestionAnswer(
-        this.type,
-      );
+      return new TableQuestionAnswer(this.type);
     }
 
     if (this.isRatingType) {
-      return new RatingLabelQuestionAnswer(
-        this.type,
-        this.name,
-        this.settings.options
-      );
+      return new RatingLabelQuestionAnswer(this.type, this.name, this.settings.options);
     }
 
     if (this.isMultiLabelType) {
-      return new MultiLabelQuestionAnswer(
-        this.type,
-        this.name,
-        this.settings.options
-      );
+      return new MultiLabelQuestionAnswer(this.type, this.name, this.settings.options);
     }
 
     if (this.isSingleLabelType) {
-      return new SingleLabelQuestionAnswer(
-        this.type,
-        this.name,
-        this.settings.options
-      );
+      return new SingleLabelQuestionAnswer(this.type, this.name, this.settings.options);
     }
 
     if (this.isRankingType) {
-      return new RankingQuestionAnswer(
-        this.type,
-        this.name,
-        this.settings.options
-      );
+      return new RankingQuestionAnswer(this.type, this.name, this.settings.options);
     }
 
-    Guard.throw(
-      `Question answer for type ${this.type} is not implemented yet.`
-    );
+    Guard.throw(`Question answer for type ${this.type} is not implemented yet.`);
   }
 
   private initialize() {
@@ -282,9 +243,7 @@ export class Question {
       this.settings.options = this.settings.options.map((option) => {
         return {
           ...option,
-          color: option.color
-            ? Color.from(option.color)
-            : Color.generate(option.value),
+          color: option.color ? Color.from(option.color) : Color.generate(option.value),
         };
       });
     }
