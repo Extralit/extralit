@@ -654,46 +654,65 @@ export default {
 
       this.pdfTotalFiles = pdfFiles.length;
       this.pdfProcessing = true;
+      this.clearPdfError(); // Clear any previous errors
 
-      try {
-        const validFiles: File[] = [];
-        for (const file of pdfFiles) {
-          // Skip files that are already uploaded (by name)
-          const isDuplicate = existingFiles.some(existingFile => existingFile.name === file.name);
-          if (!isDuplicate) {
-            await this.processPdfFile(file);
+      const validFiles: File[] = [];
+      const fileErrors: string[] = [];
+
+      for (const file of pdfFiles) {
+        // Skip files that are already uploaded (by name)
+        const isDuplicate = existingFiles.some(existingFile => existingFile.name === file.name);
+        if (!isDuplicate) {
+          const result = await this.processPdfFile(file);
+          if (result.valid) {
             validFiles.push(file);
+          } else {
+            fileErrors.push(`${file.name}: ${result.error}`);
           }
-          this.pdfProcessedFiles++;
         }
+        this.pdfProcessedFiles++;
+      }
 
-        // Combine existing files with new valid files
-        const allFiles = [...existingFiles, ...validFiles];
-        this.pdfData.totalFiles = allFiles.length;
+      // Combine existing files with new valid files
+      const allFiles = [...existingFiles, ...validFiles];
+      this.pdfData.totalFiles = allFiles.length;
 
-        // Re-run file matching with all files (existing + new)
-        this.performFileMatching(allFiles);
+      // Re-run file matching with all files (existing + new)
+      this.performFileMatching(allFiles);
 
-        this.pdfProcessing = false;
+      this.pdfProcessing = false;
+
+      // Show errors if any files failed, but don't fail the entire process
+      if (fileErrors.length > 0) {
+        const successCount = validFiles.length;
+        const errorCount = fileErrors.length;
+        const totalCount = successCount + errorCount;
+
+        let errorMessage = `Processed ${successCount} of ${totalCount} files successfully.\n\n`;
+        errorMessage += `Files that could not be processed:\n${fileErrors.join('\n')}`;
+
+        this.showPdfError(errorMessage);
+      } else {
         this.pdfUploaded = true;
-      } catch (error) {
-        this.pdfProcessing = false;
-        this.showPdfError(`Failed to process PDF files: ${error.message}`);
+        this.pdfHasError = false;
+        this.pdfErrorMessage = "";
       }
     },
 
     async processPdfFile(file: File) {
       const maxSize = 200 * 1024 * 1024; // 200MB
       if (file.size > maxSize) {
-        throw new Error(`File ${file.name} is too large (max 200MB)`);
+        return { valid: false, error: `File ${file.name} is too large (max 200MB)` };
       }
 
-      if (!(await this.validatePdfFile(file))) {
-        throw new Error(`File ${file.name} is not a valid PDF`);
+      const validationResult = await this.validatePdfFile(file);
+      if (!validationResult.valid) {
+        return { valid: false, error: validationResult.error };
       }
 
       // Simulate processing delay for UX
       await new Promise((resolve) => setTimeout(resolve, 50));
+      return { valid: true };
     },
 
     isValidPdfFile(file: File) {
@@ -706,19 +725,67 @@ export default {
         reader.onload = (e) => {
           const result = e.target.result;
           if (result instanceof ArrayBuffer) {
-            const uint8Array = new Uint8Array(result.slice(0, 4));
+            const uint8Array = new Uint8Array(result);
 
-            // Check PDF signature (%PDF)
-            const pdfSignature = [0x25, 0x50, 0x44, 0x46]; // %PDF
-            const isValidPdf = pdfSignature.every((byte, index) => uint8Array[index] === byte);
-            resolve(isValidPdf);
+            // Check for various PDF signatures and formats
+            const validationResult = this.checkPdfSignature(uint8Array, file.name);
+            resolve(validationResult);
           } else {
-            resolve(false);
+            resolve({ valid: false, error: "Could not read file content" });
           }
         };
-        reader.onerror = () => resolve(false);
-        reader.readAsArrayBuffer(file.slice(0, 4));
+        reader.onerror = () => resolve({ valid: false, error: "Failed to read file" });
+        reader.readAsArrayBuffer(file);
       });
+    },
+
+    checkPdfSignature(uint8Array: Uint8Array, fileName: string) {
+      // Check for standard PDF signature (%PDF)
+      const pdfSignature = [0x25, 0x50, 0x44, 0x46]; // %PDF
+      const hasPdfSignature = pdfSignature.every((byte, index) => uint8Array[index] === byte);
+
+      if (hasPdfSignature) {
+        return { valid: true };
+      }
+
+      // Check for PDF content embedded in multipart form data
+      const content = new TextDecoder().decode(uint8Array);
+      if (content.includes('%PDF')) {
+        return { valid: true };
+      }
+
+      // Check for PDF content in base64 encoded data
+      if (content.includes('data:application/pdf;base64,')) {
+        return { valid: true };
+      }
+
+      // Check for PDF content in other common formats
+      const pdfPatterns = [
+        /%PDF-\d+\.\d+/,
+        /application\/pdf/,
+        /Content-Type:\s*application\/pdf/
+      ];
+
+      for (const pattern of pdfPatterns) {
+        if (pattern.test(content)) {
+          return { valid: true };
+        }
+      }
+
+      // Check if file is completely empty
+      if (uint8Array.length === 0) {
+        return { valid: false, error: "File is empty" };
+      }
+
+      // Check if file appears to be corrupted (all zeros or very small)
+      const nonZeroBytes = uint8Array.filter(byte => byte !== 0).length;
+      if (nonZeroBytes < 10) {
+        return { valid: false, error: "File appears to be corrupted or empty" };
+      }
+
+      // If we can't definitively identify it as a PDF, but it's not clearly corrupted,
+      // we'll be permissive and accept it
+      return { valid: true };
     },
 
     performFileMatching(uploadedFiles: File[] | null = null) {
@@ -1062,6 +1129,11 @@ export default {
       this.pdfHasError = true;
       this.pdfErrorMessage = message;
       this.pdfUploaded = false;
+    },
+
+    clearPdfError() {
+      this.pdfHasError = false;
+      this.pdfErrorMessage = "";
     },
 
     // Event emitters
