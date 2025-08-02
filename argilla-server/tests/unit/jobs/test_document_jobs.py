@@ -27,7 +27,10 @@ class TestDocumentJobs:
     @patch("argilla_server.jobs.document_jobs.files")
     @patch("argilla_server.jobs.document_jobs.datasets")
     @patch("argilla_server.jobs.document_jobs.imports")
-    async def test_upload_reference_documents_job_success(self, mock_imports, mock_datasets, mock_files):
+    @patch("argilla_server.jobs.document_jobs.AsyncSessionLocal")
+    async def test_upload_reference_documents_job_success(
+        self, mock_session_local, mock_imports, mock_datasets, mock_files
+    ):
         """Test successful reference documents upload job."""
         # Create test data
         workspace = await WorkspaceFactory.create()
@@ -48,44 +51,54 @@ class TestDocumentJobs:
             ("test2.pdf", b"%PDF-1.5 test pdf content 2"),
         ]
 
-        # Mock file operations
-        mock_files.get_minio_client.return_value = MagicMock()
-        mock_files.list_objects.return_value = MagicMock(objects=[])
-        mock_files.get_pdf_s3_object_path.return_value = "documents/test-id/test.pdf"
-        mock_files.put_object.return_value = MagicMock(bucket_name=workspace.name, object_name="test.pdf")
-        mock_files.get_s3_object_url.return_value = f"s3://{workspace.name}/test.pdf"
-        mock_files.compute_hash.return_value = "test_hash"
+        # Mock database session
+        mock_db = MagicMock()
+        mock_session_local.return_value.__aenter__.return_value = mock_db
 
-        # Mock imports.check_existing_document to return None (no existing document)
-        mock_imports.check_existing_document.return_value = None
+        # Mock workspace lookup
+        mock_workspace = MagicMock()
+        mock_workspace.name = workspace.name
 
-        # Mock document creation
-        mock_document = MagicMock()
-        mock_document.id = uuid4()
-        mock_datasets.create_document.return_value = mock_document
+        # Mock the Workspace.get method
+        with patch("argilla_server.models.Workspace.get") as mock_workspace_get:
+            mock_workspace_get.return_value = mock_workspace
 
-        # Mock the model_dump method for DocumentCreate objects
-        with patch("argilla_server.api.schemas.v1.documents.DocumentCreate.model_dump") as mock_model_dump:
-            mock_model_dump.return_value = {"file_name": "test.pdf", "pmid": None, "doi": "10.1234/test.doi"}
+            # Mock file operations
+            mock_files.get_minio_client.return_value = MagicMock()
+            mock_files.list_objects.return_value = MagicMock(objects=[])
+            mock_files.get_pdf_s3_object_path.return_value = "documents/test-id/test.pdf"
+            mock_files.put_object.return_value = MagicMock(bucket_name=workspace.name, object_name="test.pdf")
+            mock_files.get_s3_object_url.return_value = f"s3://{workspace.name}/test.pdf"
+            mock_files.compute_hash.return_value = "test_hash"
 
-            # Execute job
-            result = await upload_reference_documents_job(reference, document_data, file_data_list, user.id)
+            # Mock imports.check_existing_document to return None (no existing document)
+            mock_imports.check_existing_document.return_value = None
 
-            # Debug: print the actual result
-            print(f"DEBUG: result = {result}")
+            # Mock document creation
+            mock_document = MagicMock()
+            mock_document.id = uuid4()
+            mock_datasets.create_document.return_value = mock_document
 
-            # Verify result
-            assert result["success"] is True
-            assert result["reference"] == reference
-            assert result["total_files"] == 2
-            assert result["successful_files"] == 2
-            assert result["failed_files"] == 0
+            # Mock the model_dump method for DocumentCreate objects
+            with patch("argilla_server.api.schemas.v1.documents.DocumentCreate.model_dump") as mock_model_dump:
+                mock_model_dump.return_value = {"file_name": "test.pdf", "pmid": None, "doi": "10.1234/test.doi"}
 
-            # Verify file operations were called for each file
-            assert mock_files.put_object.call_count == 2
-            assert mock_datasets.create_document.call_count == 2
+                # Execute job
+                result = await upload_reference_documents_job(reference, document_data, file_data_list, user.id)
 
-    async def test_upload_reference_documents_job_workspace_not_found(self):
+                # Verify result
+                assert result["success"] is True
+                assert result["reference"] == reference
+                assert result["total_files"] == 2
+                assert result["successful_files"] == 2
+                assert result["failed_files"] == 0
+
+                # Verify file operations were called for each file
+                assert mock_files.put_object.call_count == 2
+                assert mock_datasets.create_document.call_count == 2
+
+    @patch("argilla_server.jobs.document_jobs.AsyncSessionLocal")
+    async def test_upload_reference_documents_job_workspace_not_found(self, mock_session_local):
         """Test reference documents upload job with non-existent workspace."""
         # Create test data
         workspace_id = uuid4()
@@ -103,20 +116,29 @@ class TestDocumentJobs:
         # Create file data list
         file_data_list = [("test.pdf", b"%PDF-1.5 test pdf content")]
 
-        # Use non-existent workspace ID - the job will handle the lookup internally
+        # Mock database session
+        mock_db = MagicMock()
+        mock_session_local.return_value.__aenter__.return_value = mock_db
 
-        # Execute job
-        result = await upload_reference_documents_job(reference, document_data, file_data_list, user.id)
+        # Mock workspace lookup to return None (workspace not found)
+        with patch("argilla_server.models.Workspace.get") as mock_workspace_get:
+            mock_workspace_get.return_value = None
 
-        # Verify result
-        assert result["success"] is False
-        assert result["reference"] == reference
-        assert "not found" in result["errors"][0]
+            # Execute job
+            result = await upload_reference_documents_job(reference, document_data, file_data_list, user.id)
+
+            # Verify result
+            assert result["success"] is False
+            assert result["reference"] == reference
+            assert "not found" in result["errors"][0]
 
     @patch("argilla_server.jobs.document_jobs.files")
     @patch("argilla_server.jobs.document_jobs.datasets")
     @patch("argilla_server.jobs.document_jobs.imports")
-    async def test_upload_reference_documents_job_partial_failure(self, mock_imports, mock_datasets, mock_files):
+    @patch("argilla_server.jobs.document_jobs.AsyncSessionLocal")
+    async def test_upload_reference_documents_job_partial_failure(
+        self, mock_session_local, mock_imports, mock_datasets, mock_files
+    ):
         """Test reference documents upload job with partial failure."""
         # Create test data
         workspace = await WorkspaceFactory.create()
@@ -137,44 +159,53 @@ class TestDocumentJobs:
             ("test2.pdf", b"%PDF-1.5 test pdf content 2"),
         ]
 
-        # Mock file operations - first succeeds, second fails
-        mock_files.get_minio_client.return_value = MagicMock()
-        mock_files.list_objects.return_value = MagicMock(objects=[])
-        mock_files.get_pdf_s3_object_path.return_value = "documents/test-id/test.pdf"
+        # Mock database session
+        mock_db = MagicMock()
+        mock_session_local.return_value.__aenter__.return_value = mock_db
 
-        # First call succeeds, second fails
-        mock_files.put_object.side_effect = [
-            MagicMock(bucket_name=workspace.name, object_name="test1.pdf"),
-            Exception("S3 upload failed"),
-        ]
-        mock_files.get_s3_object_url.return_value = f"s3://{workspace.name}/test1.pdf"
-        mock_files.compute_hash.return_value = "test_hash"
+        # Mock workspace lookup
+        mock_workspace = MagicMock()
+        mock_workspace.name = workspace.name
 
-        # Mock imports.check_existing_document to return None (no existing document)
-        mock_imports.check_existing_document.return_value = None
+        # Mock the Workspace.get method
+        with patch("argilla_server.models.Workspace.get") as mock_workspace_get:
+            mock_workspace_get.return_value = mock_workspace
 
-        # Mock document creation - only called once for successful file
-        mock_document = MagicMock()
-        mock_document.id = uuid4()
-        mock_datasets.create_document.return_value = mock_document
+            # Mock file operations - first succeeds, second fails
+            mock_files.get_minio_client.return_value = MagicMock()
+            mock_files.list_objects.return_value = MagicMock(objects=[])
+            mock_files.get_pdf_s3_object_path.return_value = "documents/test-id/test.pdf"
 
-        # Mock the model_dump method for DocumentCreate objects
-        with patch("argilla_server.api.schemas.v1.documents.DocumentCreate.model_dump") as mock_model_dump:
-            mock_model_dump.return_value = {"file_name": "test.pdf", "pmid": None, "doi": "10.1234/test.doi"}
+            # First call succeeds, second fails
+            mock_files.put_object.side_effect = [
+                MagicMock(bucket_name=workspace.name, object_name="test1.pdf"),
+                Exception("S3 upload failed"),
+            ]
+            mock_files.get_s3_object_url.return_value = f"s3://{workspace.name}/test1.pdf"
+            mock_files.compute_hash.return_value = "test_hash"
 
-            # Execute job
-            result = await upload_reference_documents_job(reference, document_data, file_data_list, user.id)
+            # Mock imports.check_existing_document to return None (no existing document)
+            mock_imports.check_existing_document.return_value = None
 
-            # Debug: print the actual result
-            print(f"DEBUG: result = {result}")
+            # Mock document creation - only called once for successful file
+            mock_document = MagicMock()
+            mock_document.id = uuid4()
+            mock_datasets.create_document.return_value = mock_document
 
-            # Verify result
-            assert result["success"] is False  # Overall failure due to partial failure
-            assert result["reference"] == reference
-            assert result["total_files"] == 2
-            assert result["successful_files"] == 1
-            assert result["failed_files"] == 1
+            # Mock the model_dump method for DocumentCreate objects
+            with patch("argilla_server.api.schemas.v1.documents.DocumentCreate.model_dump") as mock_model_dump:
+                mock_model_dump.return_value = {"file_name": "test.pdf", "pmid": None, "doi": "10.1234/test.doi"}
 
-            # Verify operations were attempted for both files
-            assert mock_files.put_object.call_count == 2
-            assert mock_datasets.create_document.call_count == 1  # Only for successful file
+                # Execute job
+                result = await upload_reference_documents_job(reference, document_data, file_data_list, user.id)
+
+                # Verify result
+                assert result["success"] is False  # Overall failure due to partial failure
+                assert result["reference"] == reference
+                assert result["total_files"] == 2
+                assert result["successful_files"] == 1
+                assert result["failed_files"] == 1
+
+                # Verify operations were attempted for both files
+                assert mock_files.put_object.call_count == 2
+                assert mock_datasets.create_document.call_count == 1  # Only for successful file
