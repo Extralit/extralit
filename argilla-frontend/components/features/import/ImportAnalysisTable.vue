@@ -302,17 +302,17 @@ export default {
     // Formatters for table cells
     referenceFormatter(cell: CellComponent) {
       const value = cell.getValue();
-      return `<span class="reference-cell" title="${value}">${value}</span>`;
+      return `<span class="reference-cell">${value}</span>`;
     },
 
     titleFormatter(cell: CellComponent) {
       const value = cell.getValue();
-      return `<span class="title-cell" title="${value}">${value}</span>`;
+      return `<span class="title-cell">${value}</span>`;
     },
 
     authorsFormatter(cell: CellComponent) {
       const value = cell.getValue();
-      return `<span class="authors-cell" title="${value}">${value}</span>`;
+      return `<span class="authors-cell">${value}</span>`;
     },
 
     filesFormatter(cell: CellComponent) {

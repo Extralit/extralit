@@ -537,10 +537,9 @@ export default {
     cleanBibTexField(field: string | null): string | null {
       if (!field) return null;
 
-      // Remove BibTeX formatting (braces, quotes)
       let cleaned = field
         .toString()
-        .replace(/^\{+|\}+$/g, "") // Remove outer braces
+        .replace(/[\{\}]/g, "") // Remove all braces anywhere in the string
         .replace(/^"+|"+$/g, "") // Remove outer quotes
         .trim();
 

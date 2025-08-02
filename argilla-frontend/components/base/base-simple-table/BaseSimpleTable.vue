@@ -55,9 +55,8 @@ export default {
         tooltipsHeader: true,
         tooltips: true,
         columnDefaults: {
-          // headerSort: true,
           resizable: true,
-          // tooltip: true,
+          tooltip: true,
         },
       };
 
