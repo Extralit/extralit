@@ -7,6 +7,15 @@ concurrency:
 on:
   workflow_call:
 
+  push:
+    branches:
+      - main
+      - develop
+      - releases/**
+    paths:
+      - "argilla-frontend/**"
+      - ".github/workflows/argilla-frontend.*"
+
   pull_request:
     types: [opened, edited, synchronize, reopened, ready_for_review]
     paths:

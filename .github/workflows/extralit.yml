@@ -14,13 +14,14 @@ on:
       - releases/**
     paths:
       - "extralit/**"
-      - ".github/workflows/argilla.*"
+      - ".github/workflows/extralit.*"
 
   pull_request:
     types: [opened, edited, synchronize, reopened, ready_for_review]
     paths:
       - "extralit/**"
       - "argilla-server/**"
+      - ".github/workflows/extralit.*"
 
 permissions:
   id-token: write
