@@ -31,7 +31,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @job(DEFAULT_QUEUE, timeout=JOB_TIMEOUT_DISABLED, retry=Retry(max=3, interval=[10, 30, 60]))
-async def upload_document_job(document_data: Dict[str, Any], file_data: bytes) -> Dict[str, Any]:
+async def upload_document_job(document_data: Dict[str, Any], file_data: bytes, user_id: str) -> Dict[str, Any]:
     """
     Asynchronous job to upload a document with its associated file.
 

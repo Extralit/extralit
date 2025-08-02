@@ -246,7 +246,7 @@ async def delete_documents_by_workspace_id(
     "/documents/workspace/{workspace_id}", status_code=status.HTTP_200_OK, response_model=List[DocumentListItem]
 )
 async def list_documents(
-    *,
+    *, 
     db: AsyncSession = Depends(get_async_db),
     workspace_id: UUID = Path(..., title="The UUID of the workspace whose documents will be retrieved"),
     current_user: User = Security(auth.get_current_user),
