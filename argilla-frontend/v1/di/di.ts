@@ -35,7 +35,7 @@ import { useDatasets } from "@/v1/infrastructure/storage/DatasetsStorage";
 import { useMetrics } from "@/v1/infrastructure/storage/MetricsStorage";
 import { useDatasetSetting } from "@/v1/infrastructure/storage/DatasetSettingStorage";
 
-import { GetDatasetCreationUseCase } from "@/v1/domain/usecases/get-dataset-creation-use-case";
+import { GetHfDatasetCreationUseCase } from "~/v1/domain/usecases/get-hf-dataset-creation-use-case";
 import { GetDatasetsUseCase } from "@/v1/domain/usecases/get-datasets-use-case";
 import { GetDatasetByIdUseCase } from "@/v1/domain/usecases/get-dataset-by-id-use-case";
 import { GetDocumentByIdUseCase } from "@/v1/domain/usecases/get-document-by-id-use-case";
@@ -104,7 +104,7 @@ export const loadDependencyContainer = (context: Context) => {
     register(AuthRepository).withDependency(useAxios).build(),
     register(UserRepository).withDependency(useAxios).build(),
 
-    register(GetDatasetCreationUseCase).withDependency(HubRepository).build(),
+    register(GetHfDatasetCreationUseCase).withDependency(HubRepository).build(),
 
     register(DeleteDatasetUseCase).withDependency(DatasetRepository).build(),
 

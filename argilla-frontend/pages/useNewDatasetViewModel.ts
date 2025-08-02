@@ -1,13 +1,13 @@
 import { useResolve } from "ts-injecty";
 import { ref, useRoute, useContext } from "@nuxtjs/composition-api";
-import { GetDatasetCreationUseCase } from "~/v1/domain/usecases/get-dataset-creation-use-case";
+import { GetHfDatasetCreationUseCase } from "~/v1/domain/usecases/get-hf-dataset-creation-use-case";
 
 export const useNewDatasetViewModel = () => {
   const { error } = useContext();
   const datasetConfig = ref();
-  const getDatasetCreationUseCase = useResolve(GetDatasetCreationUseCase);
+  const getDatasetCreationUseCase = useResolve(GetHfDatasetCreationUseCase);
 
-  const getNewDatasetByRepoId = async (repositoryId: string) => {
+  const getNewHfDatasetByRepoId = async (repositoryId: string) => {
     try {
       datasetConfig.value = await getDatasetCreationUseCase.execute(repositoryId);
     } catch (e) {
@@ -15,9 +15,9 @@ export const useNewDatasetViewModel = () => {
     }
   };
 
-  const getNewDatasetByRepoIdFromUrl = async () => {
+  const getNewHfDatasetByRepoIdFromUrl = async () => {
     const repositoryId = useRoute().value.params.id;
-    await getNewDatasetByRepoId(decodeURI(repositoryId));
+    await getNewHfDatasetByRepoId(decodeURI(repositoryId));
   };
 
   const changeSubset = (name: string) => {
@@ -25,8 +25,8 @@ export const useNewDatasetViewModel = () => {
   };
 
   return {
-    getNewDatasetByRepoId,
-    getNewDatasetByRepoIdFromUrl,
+    getNewHfDatasetByRepoId,
+    getNewHfDatasetByRepoIdFromUrl,
     changeSubset,
     datasetConfig,
   };

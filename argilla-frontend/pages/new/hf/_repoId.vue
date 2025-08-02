@@ -22,7 +22,7 @@ export default {
   },
   mounted() {
     const repoId = this.$route.params.repoId;
-    this.getNewDatasetByRepoId(decodeURIComponent(repoId));
+    this.getNewHfDatasetByRepoId(decodeURIComponent(repoId));
   },
   setup() {
     return useNewDatasetViewModel();

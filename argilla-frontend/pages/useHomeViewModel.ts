@@ -1,7 +1,7 @@
 import { useResolve } from "ts-injecty";
 import { ref, useFetch, computed } from "@nuxtjs/composition-api";
 import { useRoutes, useFocusTab } from "~/v1/infrastructure/services";
-import { GetDatasetCreationUseCase } from "~/v1/domain/usecases/get-dataset-creation-use-case";
+import { GetHfDatasetCreationUseCase } from "~/v1/domain/usecases/get-hf-dataset-creation-use-case";
 import { GetDatasetsUseCase } from "@/v1/domain/usecases/get-datasets-use-case";
 import { GetWorkspacesUseCase } from "~/v1/domain/usecases/get-workspaces-use-case";
 import { useDatasets } from "~/v1/infrastructure/storage/DatasetsStorage";
@@ -15,7 +15,7 @@ export const useHomeViewModel = () => {
   const { goToImportDatasetFromHub } = useRoutes();
   const { state: datasets } = useDatasets();
   const getDatasetsUseCase = useResolve(GetDatasetsUseCase);
-  const getDatasetCreationUseCase = useResolve(GetDatasetCreationUseCase);
+  const getDatasetCreationUseCase = useResolve(GetHfDatasetCreationUseCase);
   const error = ref("");
   const showImportModal = ref(false);
 
@@ -28,7 +28,7 @@ export const useHomeViewModel = () => {
     workspaces.value = await getWorkspacesUseCase.execute();
   });
 
-  const getNewDatasetByRepoId = async (repositoryId: string) => {
+  const getNewHfDatasetByRepoId = async (repositoryId: string) => {
     try {
       await getDatasetCreationUseCase.execute(repositoryId);
       goToImportDatasetFromHub(repositoryId);
@@ -95,7 +95,7 @@ export const useHomeViewModel = () => {
     datasets,
     workspaces,
     isLoadingDatasets,
-    getNewDatasetByRepoId,
+    getNewHfDatasetByRepoId,
     isAdminOrOwnerRole,
     exampleDatasets,
     error,

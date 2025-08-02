@@ -554,11 +554,11 @@ export default {
 
       // Handle different author separators
       const authors = cleaned
-        .split(/\s+and\s+|\s*,\s*(?=[A-Z])/i)
+        .split(/\s+and\s+/i)
         .map((author) => author.trim())
         .filter((author) => author.length > 0);
 
-      return authors.length > 0 ? authors.join(", ") : null;
+      return authors.length > 0 ? authors.join(";") : null;
     },
 
     extractYear(yearField) {

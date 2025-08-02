@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import logging
+from os.path import basename
 from typing import Dict, List, Optional
 
 from fastapi import HTTPException, status, UploadFile
@@ -94,26 +95,36 @@ async def analyze_import_status(db: AsyncSession, analysis_request: ImportAnalys
     documents_info: Dict[str, DocumentImportAnalysis] = {}
     add_count = update_count = skip_count = failed_count = 0
 
+    print("analysis_request", analysis_request)
+
     for reference, file_metadata in analysis_request.documents.items():
         try:
             existing_documents = await _check_existing_documents(db, file_metadata.document_create)
 
             validation_errors = validate_document_metadata(file_metadata)
+            print(f"Reference: {reference}")
+            print(f"  Validation errors: {validation_errors}")
+            print(f"  Existing documents: {existing_documents}")
+
             if validation_errors:
                 status = ImportStatus.FAILED
                 failed_count += 1
-
+                print(f"  Status set to FAILED")
             elif not existing_documents:
                 status = ImportStatus.ADD
                 add_count += 1
+                print(f"  Status set to ADD")
             else:
                 has_new_files = await _has_new_files(db, existing_documents, file_metadata.associated_files)
+                print(f"  Has new files: {has_new_files}")
                 if has_new_files:
                     status = ImportStatus.UPDATE
                     update_count += 1
+                    print(f"  Status set to UPDATE")
                 else:
                     status = ImportStatus.SKIP
                     skip_count += 1
+                    print(f"  Status set to SKIP")
 
             documents_info[reference] = DocumentImportAnalysis(
                 document_create=file_metadata.document_create,
@@ -174,11 +185,11 @@ async def _has_new_files(db: AsyncSession, existing_documents: List[Document], n
     existing_filenames = set()
     for doc in existing_documents:
         if doc.file_name:
-            existing_filenames.add(doc.file_name)
+            existing_filenames.add(basename(doc.file_name))
 
     # Check if any of the new files have names that don't exist in the existing files
     for file_info in new_files:
-        if file_info.filename not in existing_filenames:
+        if basename(file_info.filename) not in existing_filenames:
             return True
 
     # No new files found
@@ -459,9 +470,7 @@ async def process_bulk_upload(
 
                 # Store job ID mapped to reference key for frontend tracking
                 job_ids[reference] = job.id
-                _LOGGER.info(
-                    f"Created reference-based job {job.id} for reference {reference} with no files"
-                )
+                _LOGGER.info(f"Created reference-based job {job.id} for reference {reference} with no files")
                 continue
 
             for filename in doc.associated_files:

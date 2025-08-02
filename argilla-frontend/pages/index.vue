@@ -62,10 +62,9 @@
               :is-expanded="showImportDatasetInput"
               @on-expand="showImportDatasetInput = true"
               @on-close="showImportDatasetInput = false"
-              @on-import-dataset="importDataset"
+              @on-import-dataset="importHfDataset"
               :error="error"
             />
-            <ImportFromPython v-if="!showImportDatasetInput" />
           </div>
           <BaseSeparator class="home__sidebar__separator" />
           <div class="home__sidebar__content">
@@ -76,7 +75,7 @@
                 v-for="dataset in exampleDatasets"
                 :key="dataset.repoId"
                 :dataset="dataset"
-                @on-import-dataset="importDataset"
+                @on-import-dataset="importHfDataset"
               />
             </div>
           </div>
@@ -140,8 +139,8 @@ export default {
         this.showImportDatasetInput = true;
       }
     },
-    importDataset(repoId: string) {
-      this.getNewDatasetByRepoId(repoId);
+    importHfDataset(repoId: string) {
+      this.getNewHfDatasetByRepoId(repoId);
     },
     onWorkspaceSelected(workspace: Workspace) {
       this.selectedWorkspace = workspace;
