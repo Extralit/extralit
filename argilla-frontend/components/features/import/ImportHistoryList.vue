@@ -625,7 +625,7 @@ export default {
     }
 
     .view-details-btn {
-      padding: $base-space / 2 $base-space;
+      padding: calc($base-space/2) $base-space;
       background: var(--bg-action);
       color: white;
       border: none;
@@ -666,7 +666,7 @@ export default {
     gap: $base-space;
 
     .pagination-btn {
-      padding: $base-space / 2 $base-space;
+      padding: calc($base-space/2) $base-space;
       font-size: 0.9rem;
     }
 
@@ -675,7 +675,7 @@ export default {
       gap: $base-space / 2;
 
       .page-btn {
-        padding: $base-space / 2 $base-space;
+        padding: calc($base-space/2) $base-space;
         font-size: 0.9rem;
         min-width: 36px;
         text-align: center;

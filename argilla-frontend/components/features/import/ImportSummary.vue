@@ -477,7 +477,7 @@ export default {
       .section-count {
         font-weight: 700;
         font-size: 1.1rem;
-        padding: $base-space / 2 $base-space;
+        padding: calc($base-space/2) $base-space;
         border-radius: $border-radius;
         background: var(--bg-solid-grey-3);
         color: var(--fg-primary);
@@ -555,7 +555,7 @@ export default {
       }
 
       .retry-button {
-        padding: $base-space / 2 $base-space;
+        padding: calc($base-space/2) $base-space;
         background: var(--bg-action);
         color: white;
         border: none;

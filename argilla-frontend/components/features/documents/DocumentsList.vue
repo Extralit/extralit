@@ -311,7 +311,7 @@ export default {
 
 .document-action {
     &.button {
-        padding: $base-space / 2;
+        padding: calc($base-space/2);
         color: var(--fg-tertiary);
 
         &:hover {

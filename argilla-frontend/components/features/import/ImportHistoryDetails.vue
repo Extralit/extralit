@@ -490,7 +490,7 @@ export default {
       try {
         const csvContent = this.createCSVContentData(this.detailItems);
         const filename = `import-details-${this.importId}.csv`;
-        
+
         this.downloadCSVData(csvContent, filename);
       } catch (error) {
         console.error('Error exporting results:', error);
@@ -815,7 +815,7 @@ export default {
     }
 
     .retry-btn {
-      padding: $base-space / 2 $base-space;
+      padding: calc($base-space/2) $base-space;
       background: var(--bg-action);
       color: white;
       border: none;
@@ -856,7 +856,7 @@ export default {
     gap: $base-space;
 
     .pagination-btn {
-      padding: $base-space / 2 $base-space;
+      padding: calc($base-space/2) $base-space;
       font-size: 0.9rem;
     }
 
@@ -865,7 +865,7 @@ export default {
       gap: $base-space / 2;
 
       .page-btn {
-        padding: $base-space / 2 $base-space;
+        padding: calc($base-space/2) $base-space;
         font-size: 0.9rem;
         min-width: 36px;
         text-align: center;
