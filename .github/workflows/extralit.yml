@@ -17,15 +17,10 @@ on:
       - ".github/workflows/argilla.*"
 
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
     paths:
       - "extralit/**"
       - "argilla-server/**"
-    types:
-      - opened
-      - edited
-      - reopened
-      - synchronize
-      - ready_for_review
 
 permissions:
   id-token: write
@@ -33,6 +28,7 @@ permissions:
 
 jobs:
   build:
+    if: github.event.pull_request.draft == false
     services:
       argilla-server:
         image: extralitdev/argilla-hf-spaces:develop
