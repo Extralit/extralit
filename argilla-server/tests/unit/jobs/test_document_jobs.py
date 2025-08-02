@@ -54,6 +54,7 @@ class TestDocumentJobs:
         mock_files.get_pdf_s3_object_path.return_value = "documents/test-id/test.pdf"
         mock_files.put_object.return_value = MagicMock(bucket_name=workspace.name, object_name="test.pdf")
         mock_files.get_s3_object_url.return_value = f"s3://{workspace.name}/test.pdf"
+        mock_files.compute_hash.return_value = "test_hash"
 
         # Mock imports.check_existing_document to return None (no existing document)
         mock_imports.check_existing_document.return_value = None
@@ -63,19 +64,26 @@ class TestDocumentJobs:
         mock_document.id = uuid4()
         mock_datasets.create_document.return_value = mock_document
 
-        # Execute job
-        result = await upload_reference_documents_job(reference, document_data, file_data_list, user.id)
+        # Mock the model_dump method for DocumentCreate objects
+        with patch("argilla_server.api.schemas.v1.documents.DocumentCreate.model_dump") as mock_model_dump:
+            mock_model_dump.return_value = {"file_name": "test.pdf", "pmid": None, "doi": "10.1234/test.doi"}
 
-        # Verify result
-        assert result["success"] is True
-        assert result["reference"] == reference
-        assert result["total_files"] == 2
-        assert result["successful_files"] == 2
-        assert result["failed_files"] == 0
+            # Execute job
+            result = await upload_reference_documents_job(reference, document_data, file_data_list, user.id)
 
-        # Verify file operations were called for each file
-        assert mock_files.put_object.call_count == 2
-        assert mock_datasets.create_document.call_count == 2
+            # Debug: print the actual result
+            print(f"DEBUG: result = {result}")
+
+            # Verify result
+            assert result["success"] is True
+            assert result["reference"] == reference
+            assert result["total_files"] == 2
+            assert result["successful_files"] == 2
+            assert result["failed_files"] == 0
+
+            # Verify file operations were called for each file
+            assert mock_files.put_object.call_count == 2
+            assert mock_datasets.create_document.call_count == 2
 
     async def test_upload_reference_documents_job_workspace_not_found(self):
         """Test reference documents upload job with non-existent workspace."""
@@ -140,6 +148,7 @@ class TestDocumentJobs:
             Exception("S3 upload failed"),
         ]
         mock_files.get_s3_object_url.return_value = f"s3://{workspace.name}/test1.pdf"
+        mock_files.compute_hash.return_value = "test_hash"
 
         # Mock imports.check_existing_document to return None (no existing document)
         mock_imports.check_existing_document.return_value = None
@@ -149,16 +158,23 @@ class TestDocumentJobs:
         mock_document.id = uuid4()
         mock_datasets.create_document.return_value = mock_document
 
-        # Execute job
-        result = await upload_reference_documents_job(reference, document_data, file_data_list, user.id)
+        # Mock the model_dump method for DocumentCreate objects
+        with patch("argilla_server.api.schemas.v1.documents.DocumentCreate.model_dump") as mock_model_dump:
+            mock_model_dump.return_value = {"file_name": "test.pdf", "pmid": None, "doi": "10.1234/test.doi"}
 
-        # Verify result
-        assert result["success"] is False  # Overall failure due to partial failure
-        assert result["reference"] == reference
-        assert result["total_files"] == 2
-        assert result["successful_files"] == 1
-        assert result["failed_files"] == 1
+            # Execute job
+            result = await upload_reference_documents_job(reference, document_data, file_data_list, user.id)
 
-        # Verify operations were attempted for both files
-        assert mock_files.put_object.call_count == 2
-        assert mock_datasets.create_document.call_count == 1  # Only for successful file
+            # Debug: print the actual result
+            print(f"DEBUG: result = {result}")
+
+            # Verify result
+            assert result["success"] is False  # Overall failure due to partial failure
+            assert result["reference"] == reference
+            assert result["total_files"] == 2
+            assert result["successful_files"] == 1
+            assert result["failed_files"] == 1
+
+            # Verify operations were attempted for both files
+            assert mock_files.put_object.call_count == 2
+            assert mock_datasets.create_document.call_count == 1  # Only for successful file

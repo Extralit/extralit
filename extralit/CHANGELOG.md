@@ -14,6 +14,24 @@ These are the section headers that we use:
 * "Security" in case of vulnerabilities.
 -->
 
+## [Extralit] [0.6.0](https://github.com/extralit/extralit/compare/v0.5.0...v0.6.0)
+
+### Added
+- Papers Library Importer: Added CLI import command for BibTeX parsing, PDF matching, and bulk upload testing.
+- Added backend integration for import analysis and bulk document upload endpoints.
+- Implemented dataframe conversion and metadata extraction for BibTeX entries.
+- Added support for generic dataframe import history storage.
+
+### Changed
+- Improved CLI import workflow for batch processing and error reporting.
+- Enhanced PDF-to-reference matching logic for multi-file references.
+
+### Fixed
+- Improved error handling for malformed BibTeX and PDF processing in CLI import.
+- Fixed cleanup of temporary files after bulk upload completion.
+
+
+
 ## [Extralit] [0.5.0](https://github.com/extralit/extralit/compare/v0.4.0...v0.5.0)
 
 ### Changed
