@@ -571,7 +571,7 @@ export default {
       .close-btn {
         display: flex;
         align-items: center;
-        gap: $base-space / 2;
+        gap: calc($base-space / 2);
         white-space: nowrap;
       }
     }
@@ -600,7 +600,7 @@ export default {
       .stat-value {
         font-size: 1.5rem;
         font-weight: 700;
-        margin-bottom: $base-space / 2;
+        margin-bottom: calc($base-space / 2);
         color: var(--fg-primary);
       }
 
@@ -647,7 +647,7 @@ export default {
     .filter-group {
       display: flex;
       flex-direction: column;
-      gap: $base-space / 2;
+      gap: calc($base-space / 2);
       min-width: 180px;
 
       .filter-label {
@@ -770,7 +770,7 @@ export default {
     }
 
     .status-badge {
-      padding: $base-space / 4 $base-space / 2;
+      padding: calc($base-space/4) calc($base-space / 2);
       border-radius: $border-radius;
       font-size: 0.8rem;
       font-weight: 600;
@@ -862,7 +862,7 @@ export default {
 
     .page-numbers {
       display: flex;
-      gap: $base-space / 2;
+      gap: calc($base-space / 2);
 
       .page-btn {
         padding: calc($base-space/2) $base-space;

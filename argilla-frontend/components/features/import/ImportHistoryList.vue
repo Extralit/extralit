@@ -467,7 +467,7 @@ export default {
     .filter-group {
       display: flex;
       flex-direction: column;
-      gap: $base-space / 2;
+      gap: calc($base-space / 2);
       min-width: 200px;
 
       .filter-label {
@@ -672,7 +672,7 @@ export default {
 
     .page-numbers {
       display: flex;
-      gap: $base-space / 2;
+      gap: calc($base-space / 2);
 
       .page-btn {
         padding: calc($base-space/2) $base-space;

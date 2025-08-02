@@ -702,7 +702,7 @@ async def create_document(db: "AsyncSession", dataset_create: DocumentCreate) ->
         metadata_=dataset_create.metadata,
     )
 
-    return DocumentListItem.from_orm(document)
+    return DocumentListItem.model_validate(document)
 
 
 async def update_document(db: "AsyncSession", document: Document) -> Document:
@@ -726,13 +726,13 @@ async def delete_documents(
         documents = await Document.delete_many(db=db, conditions=params, autocommit=False)
 
     await db.commit()
-    documents = [DocumentListItem.from_orm(doc) for doc in documents]
+    documents = [DocumentListItem.model_validate(doc) for doc in documents]
     return documents
 
 
 async def list_documents(db: "AsyncSession", workspace_id: UUID) -> List[DocumentListItem]:
     result = await db.execute(select(Document).filter_by(workspace_id=workspace_id))
     documents: List[Document] = result.scalars().all()
-    documents = [DocumentListItem.from_orm(doc) for doc in documents]
+    documents = [DocumentListItem.model_validate(doc) for doc in documents]
 
     return documents

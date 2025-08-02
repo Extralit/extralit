@@ -58,8 +58,8 @@ class DocumentListItem(BaseModel):
     reference: Optional[str]
     pmid: Optional[str]
     doi: Optional[str]
-    metadata: Optional[dict]
+    metadata: Optional[dict] = Field(alias="metadata_")
     inserted_at: datetime
     updated_at: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)

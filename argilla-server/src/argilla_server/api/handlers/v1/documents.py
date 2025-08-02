@@ -110,6 +110,7 @@ async def add_document(
         url=document_create.url,
         file_name=document_create.file_name,
         workspace_id=document_create.workspace_id,
+        metadata=document_create.metadata,
     )
 
     document = await datasets.create_document(db, new_document)
@@ -255,7 +256,7 @@ async def list_documents(
 
     documents = await datasets.list_documents(db, workspace_id)
 
-    return [DocumentListItem.model_validate(doc) for doc in documents]
+    return documents
 
 
 @router.post("/documents/bulk", status_code=status.HTTP_201_CREATED, response_model=DocumentsBulkResponse)

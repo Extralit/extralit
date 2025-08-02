@@ -28,11 +28,11 @@
       </template>
       <template v-slot:page-content>
         <div class="home__tabs">
-          <BaseTabs v-model="activeTab" :tabs="tabs" />
+          <BaseTabs :active-tab="activeTab" :tabs="tabs" @change-tab="onTabChange" />
         </div>
 
         <div class="home__tab-content">
-          <template v-if="activeTab === 'datasets'">
+          <template v-if="activeTab.id === 'datasets'">
             <BaseLoading v-if="isLoadingDatasets" />
             <DatasetList
               :workspaces="workspaces"
@@ -42,7 +42,7 @@
             />
           </template>
 
-          <template v-if="activeTab === 'documents'">
+          <template v-if="activeTab.id === 'documents'">
             <div v-if="!selectedWorkspace" class="home__no-workspace">
               <p>Please select a workspace to view documents.</p>
             </div>
@@ -122,7 +122,7 @@ export default {
     return {
       showImportDatasetInput: false,
       selectedWorkspace: null,
-      activeTab: 'datasets',
+      activeTab: { id: 'datasets', name: this.$t('home.datasets') },
       tabs: [
         { id: 'datasets', name: this.$t('home.datasets') },
         { id: 'documents', name: this.$t('home.documents') },
@@ -145,6 +145,12 @@ export default {
     },
     onWorkspaceSelected(workspace: Workspace) {
       this.selectedWorkspace = workspace;
+    },
+    onTabChange(tabId) {
+      const selectedTab = this.tabs.find(tab => tab.id === tabId);
+      if (selectedTab) {
+        this.activeTab = selectedTab;
+      }
     },
   },
   components: {

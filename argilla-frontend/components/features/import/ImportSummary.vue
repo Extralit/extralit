@@ -607,7 +607,7 @@ export default {
     .metadata-item {
       display: flex;
       flex-direction: column;
-      gap: $base-space / 2;
+      gap: calc($base-space / 2);
 
       .metadata-label {
         font-size: 0.9rem;
