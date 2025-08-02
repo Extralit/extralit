@@ -69,7 +69,7 @@ class TestDocumentJobs:
 
         # Verify result
         assert result["success"] is True
-        assert result["document_id"] == str(document_id)
+        assert result["id"] == str(document_id)
         assert result["status"] == "created"
 
         # Verify file operations
@@ -80,7 +80,7 @@ class TestDocumentJobs:
         # Verify document creation
         mock_datasets.create_document.assert_called_once()
 
-    @patch("argilla_server.jobs.document_jobs.check_existing_document")
+    @patch("argilla_server.contexts.imports.check_existing_document")
     async def test_upload_document_job_existing_document(self, mock_check_existing):
         """Test document upload job with existing document."""
         # Create test data
@@ -112,7 +112,7 @@ class TestDocumentJobs:
 
         # Verify result
         assert result["success"] is True
-        assert result["document_id"] == str(document_id)
+        assert result["id"] == str(document_id)
         assert result["status"] == "existing"
 
         # Verify check_existing_document was called

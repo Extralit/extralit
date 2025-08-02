@@ -28,7 +28,7 @@ class ImportHistoryFactory(BaseFactory):
     workspace = factory.SubFactory(WorkspaceFactory)
     user = factory.SubFactory(UserFactory)
     filename = factory.Sequence(lambda n: f"library-{n}.bib")
-    metadata = {
+    data = {
         "documents": {
             "ref1": {
                 "document_create": {
@@ -84,13 +84,13 @@ class TestImportHistory:
             workspace=workspace,
             user=user,
             filename="test-library.bib",
-            metadata=metadata,
+            data=data,
         )
 
         assert import_history.workspace_id == workspace.id
         assert import_history.user_id == user.id
         assert import_history.filename == "test-library.bib"
-        assert import_history.metadata == metadata
+        assert import_history.data == data
         assert import_history.inserted_at is not None
 
     async def test_import_history_relationships(self):
@@ -105,9 +105,9 @@ class TestImportHistory:
         assert import_history.user.id == user.id
         assert import_history.user.username == user.username
 
-    async def test_import_history_metadata_field(self):
-        """Test that the metadata field in ImportHistory can store ImportAnalysisResponse data structures."""
-        metadata = {
+    async def test_import_history_data_field(self):
+        """Test that the data field in ImportHistory can store ImportAnalysisResponse data structures."""
+        data = {
             "documents": {
                 "ref1": {
                     "document_create": {
@@ -161,10 +161,10 @@ class TestImportHistory:
             "summary": {"total_documents": 3, "add_count": 1, "update_count": 1, "skip_count": 1, "failed_count": 0},
         }
 
-        import_history = await ImportHistoryFactory.create(metadata=metadata)
+        import_history = await ImportHistoryFactory.create(data=data)
 
-        assert import_history.metadata == metadata
-        assert import_history.metadata["documents"]["ref1"]["title"] == "Paper 1"
-        assert import_history.metadata["documents"]["ref2"]["status"] == "update"
-        assert import_history.metadata["summary"]["total_documents"] == 3
-        assert import_history.metadata["summary"]["add_count"] == 1
+        assert import_history.data == data
+        assert import_history.data["documents"]["ref1"]["title"] == "Paper 1"
+        assert import_history.data["documents"]["ref2"]["status"] == "update"
+        assert import_history.data["summary"]["total_documents"] == 3
+        assert import_history.data["summary"]["add_count"] == 1

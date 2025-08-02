@@ -21,6 +21,7 @@ from fastapi import status
 from httpx import AsyncClient
 
 from argilla_server.models import UserRole
+from argilla_server.api.schemas.v1.imports import DocumentsBulkResponse
 from tests.factories import WorkspaceFactory, UserFactory
 
 
@@ -28,8 +29,7 @@ from tests.factories import WorkspaceFactory, UserFactory
 class TestBulkDocumentsAPI:
     """Test suite for bulk documents API endpoints."""
 
-    @patch("argilla_server.api.handlers.v1.documents.create_documents_bulk")
-    async def test_bulk_upload_documents_unauthorized(self, mock_job, async_client: AsyncClient):
+    async def test_bulk_upload_documents_unauthorized(self, async_client: AsyncClient):
         """Test that unauthorized users cannot access the bulk upload endpoint."""
         # Create a simple request
         documents_metadata = {
@@ -59,10 +59,8 @@ class TestBulkDocumentsAPI:
 
         # Verify response
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
-        mock_job.delay.assert_not_called()
 
-    @patch("argilla_server.api.handlers.v1.documents.create_documents_bulk")
-    async def test_bulk_upload_documents_invalid_metadata(self, mock_job, async_client: AsyncClient):
+    async def test_bulk_upload_documents_invalid_metadata(self, async_client: AsyncClient):
         """Test bulk upload with invalid metadata."""
         # Create owner user and workspace
         owner = await UserFactory.create(role=UserRole.owner)
@@ -85,10 +83,8 @@ class TestBulkDocumentsAPI:
         # Verify response
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         assert "Invalid JSON" in response.json()["detail"]
-        mock_job.delay.assert_not_called()
 
-    @patch("argilla_server.api.handlers.v1.documents.create_documents_bulk")
-    async def test_bulk_upload_documents_missing_files(self, mock_job, async_client: AsyncClient):
+    async def test_bulk_upload_documents_missing_files(self, async_client: AsyncClient):
         """Test bulk upload with missing files."""
         # Create owner user and workspace
         owner = await UserFactory.create(role=UserRole.owner)
@@ -123,10 +119,8 @@ class TestBulkDocumentsAPI:
         # Verify response
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         assert "Referenced files not found" in response.json()["detail"]
-        mock_job.delay.assert_not_called()
 
-    @patch("argilla_server.api.handlers.v1.documents.create_documents_bulk")
-    async def test_bulk_upload_documents_invalid_workspace(self, mock_job, async_client: AsyncClient):
+    async def test_bulk_upload_documents_invalid_workspace(self, async_client: AsyncClient):
         """Test bulk upload with invalid workspace ID."""
         # Create owner user
         owner = await UserFactory.create(role=UserRole.owner)
@@ -160,15 +154,16 @@ class TestBulkDocumentsAPI:
         # Verify response
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         assert "not found" in response.json()["detail"]
-        mock_job.delay.assert_not_called()
 
-    @patch("argilla_server.api.handlers.v1.documents.create_documents_bulk")
-    async def test_bulk_upload_documents_success(self, mock_job, async_client: AsyncClient):
+    @patch("argilla_server.contexts.imports.process_bulk_upload")
+    async def test_bulk_upload_documents_success(self, mock_process_bulk, async_client: AsyncClient):
         """Test successful bulk upload."""
-        # Mock job
-        mock_job_instance = MagicMock()
-        mock_job_instance.id = "test_job_id"
-        mock_job.delay.return_value = mock_job_instance
+        # Mock the process_bulk_upload function
+        mock_process_bulk.return_value = DocumentsBulkResponse(
+            job_ids={"test_ref": "test_job_id"},
+            total_documents=1,
+            failed_validations=[]
+        )
 
         # Create owner user and workspace
         owner = await UserFactory.create(role=UserRole.owner)
@@ -201,7 +196,7 @@ class TestBulkDocumentsAPI:
         )
 
         # Verify response
-        assert response.status_code == status.HTTP_202_ACCEPTED
+        assert response.status_code == status.HTTP_201_CREATED
         response_data = response.json()
         assert "job_ids" in response_data
         assert "test_ref" in response_data["job_ids"]
@@ -209,16 +204,18 @@ class TestBulkDocumentsAPI:
         assert response_data["total_documents"] == 1
         assert len(response_data["failed_validations"]) == 0
 
-        # Verify job was created
-        mock_job.delay.assert_called_once()
+        # Verify process_bulk_upload was called
+        mock_process_bulk.assert_called_once()
 
-    @patch("argilla_server.api.handlers.v1.documents.create_documents_bulk")
-    async def test_bulk_upload_documents_multiple_files(self, mock_job, async_client: AsyncClient):
+    @patch("argilla_server.contexts.imports.process_bulk_upload")
+    async def test_bulk_upload_documents_multiple_files(self, mock_process_bulk, async_client: AsyncClient):
         """Test bulk upload with multiple files."""
-        # Mock job
-        mock_job_instance = MagicMock()
-        mock_job_instance.id = "test_job_id"
-        mock_job.delay.return_value = mock_job_instance
+        # Mock the process_bulk_upload function
+        mock_process_bulk.return_value = DocumentsBulkResponse(
+            job_ids={"ref1": "job_id_1", "ref2": "job_id_2"},
+            total_documents=2,
+            failed_validations=[]
+        )
 
         # Create owner user and workspace
         owner = await UserFactory.create(role=UserRole.owner)
@@ -261,23 +258,25 @@ class TestBulkDocumentsAPI:
         )
 
         # Verify response
-        assert response.status_code == status.HTTP_202_ACCEPTED
+        assert response.status_code == status.HTTP_201_CREATED
         response_data = response.json()
         assert "job_ids" in response_data
         assert "ref1" in response_data["job_ids"]
         assert "ref2" in response_data["job_ids"]
         assert response_data["total_documents"] == 2
 
-        # Verify jobs were created
-        assert mock_job.delay.call_count == 2
+        # Verify process_bulk_upload was called
+        mock_process_bulk.assert_called_once()
 
-    @patch("argilla_server.api.handlers.v1.documents.create_documents_bulk")
-    async def test_bulk_upload_documents_partial_failure(self, mock_job, async_client: AsyncClient):
+    @patch("argilla_server.contexts.imports.process_bulk_upload")
+    async def test_bulk_upload_documents_partial_failure(self, mock_process_bulk, async_client: AsyncClient):
         """Test bulk upload with some files failing validation."""
-        # Mock job
-        mock_job_instance = MagicMock()
-        mock_job_instance.id = "test_job_id"
-        mock_job.delay.return_value = mock_job_instance
+        # Mock the process_bulk_upload function with partial failure
+        mock_process_bulk.return_value = DocumentsBulkResponse(
+            job_ids={"valid_ref": "test_job_id"},
+            total_documents=2,
+            failed_validations=["invalid_ref: Not a PDF file"]
+        )
 
         # Create owner user and workspace
         owner = await UserFactory.create(role=UserRole.owner)
@@ -320,7 +319,7 @@ class TestBulkDocumentsAPI:
         )
 
         # Verify response
-        assert response.status_code == status.HTTP_202_ACCEPTED
+        assert response.status_code == status.HTTP_201_CREATED
         response_data = response.json()
         assert "job_ids" in response_data
         assert "valid_ref" in response_data["job_ids"]
@@ -329,5 +328,5 @@ class TestBulkDocumentsAPI:
         assert len(response_data["failed_validations"]) == 1
         assert "Not a PDF file" in response_data["failed_validations"][0]
 
-        # Verify only one job was created
-        mock_job.delay.assert_called_once()
+        # Verify process_bulk_upload was called
+        mock_process_bulk.assert_called_once()
