@@ -19,6 +19,12 @@ on:
   pull_request:
     paths:
       - "argilla-server/**"
+    types:
+      - opened
+      - edited
+      - reopened
+      - synchronize
+      - ready_for_review
 
 permissions:
   id-token: write
