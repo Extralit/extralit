@@ -191,34 +191,6 @@ export default {
         },
       ];
 
-      // Add files and status columns at the end
-      columns.push(
-        {
-          field: "files",
-          title: "Files",
-          width: 150,
-          formatter: this.filesFormatter,
-        },
-        {
-          field: "status",
-          title: "Import Status",
-          width: 150,
-          formatter: this.statusFormatter,
-          cellClick: this.handleStatusClick,
-          headerFilter: "select",
-          headerFilterParams: {
-            values: {
-              "": "All",
-              "add": "Add",
-              "update": "Update",
-              "skip": "Skip",
-              "ignore": "Ignore",
-              "failed": "Failed"
-            }
-          },
-        }
-      );
-
       // Add dynamic columns from dataframe schema
       if (this.dataframeData?.schema?.fields) {
         const excludedFields = ['reference', 'title', 'authors', 'author', 'year', 'filePaths', 'type'];
@@ -234,18 +206,46 @@ export default {
         });
       }
 
+      // Add files and status columns at the end
+      columns.push(
+        {
+          field: "files",
+          title: "Files",
+          width: 150,
+          formatter: this.filesFormatter,
+          frozen: true,
+        },
+        {
+          field: "status",
+          title: "Import Status",
+          width: 150,
+          formatter: this.statusFormatter,
+          frozen: true,
+          cellClick: this.handleStatusClick,
+          headerFilter: "select",
+          headerFilterParams: {
+            values: {
+              "": "All",
+              "add": "Add",
+              "update": "Update",
+              "skip": "Skip",
+              "ignore": "Ignore",
+              "failed": "Failed"
+            }
+          },
+        }
+      );
       return columns;
     },
 
     tableOptions() {
       return {
-        layout: "fitDataFill",
+        layout: "fitData",
         pagination: true,
         paginationSize: 20,
         paginationSizeSelector: [10, 20, 50],
         sortMode: "local",
         filterMode: "local",
-        responsiveLayout: "hide",
         placeholder: "No documents to analyze",
       };
     },
@@ -690,6 +690,7 @@ export default {
 .table-container {
   min-height: 300px;
   border-radius: $border-radius;
+  overflow: auto;
 }
 
 // Table cell styles (applied globally to override Tabulator)

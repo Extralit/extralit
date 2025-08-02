@@ -366,11 +366,11 @@ export default {
   display: flex;
   flex-flow: column;
   position: relative;
-  max-width: 100%;
   max-height: 80vh;
   border: 1px solid var(--border-field);
   border-radius: $border-radius;
   background: var(--bg-accent-grey-1);
+  overflow: auto;
 
   .__table {
     white-space: normal;

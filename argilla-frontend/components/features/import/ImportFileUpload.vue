@@ -644,7 +644,6 @@ export default {
 
       this.pdfProcessedFiles = 0;
 
-      // Filter for PDF files only
       const pdfFiles = files.filter((file) => this.isValidPdfFile(file));
 
       if (pdfFiles.length === 0) {
@@ -663,7 +662,7 @@ export default {
         // Skip files that are already uploaded (by name)
         const isDuplicate = existingFiles.some(existingFile => existingFile.name === file.name);
         if (!isDuplicate) {
-          const result = await this.processPdfFile(file);
+          const result = await this.validatePdfFile(file);
           if (result.valid) {
             validFiles.push(file);
           } else {
@@ -699,19 +698,14 @@ export default {
       }
     },
 
-    async processPdfFile(file: File) {
+    async validatePdfFile(file: File) {
       const maxSize = 200 * 1024 * 1024; // 200MB
       if (file.size > maxSize) {
         return { valid: false, error: `File ${file.name} is too large (max 200MB)` };
+      } else if (file.size === 0) {
+        return { valid: false, error: `File ${file.name} is empty` };
       }
 
-      const validationResult = await this.validatePdfFile(file);
-      if (!validationResult.valid) {
-        return { valid: false, error: validationResult.error };
-      }
-
-      // Simulate processing delay for UX
-      await new Promise((resolve) => setTimeout(resolve, 50));
       return { valid: true };
     },
 
@@ -719,74 +713,6 @@ export default {
       return file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
     },
 
-    async validatePdfFile(file: File) {
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const result = e.target.result;
-          if (result instanceof ArrayBuffer) {
-            const uint8Array = new Uint8Array(result);
-
-            // Check for various PDF signatures and formats
-            const validationResult = this.checkPdfSignature(uint8Array, file.name);
-            resolve(validationResult);
-          } else {
-            resolve({ valid: false, error: "Could not read file content" });
-          }
-        };
-        reader.onerror = () => resolve({ valid: false, error: "Failed to read file" });
-        reader.readAsArrayBuffer(file);
-      });
-    },
-
-    checkPdfSignature(uint8Array: Uint8Array, fileName: string) {
-      // Check for standard PDF signature (%PDF)
-      const pdfSignature = [0x25, 0x50, 0x44, 0x46]; // %PDF
-      const hasPdfSignature = pdfSignature.every((byte, index) => uint8Array[index] === byte);
-
-      if (hasPdfSignature) {
-        return { valid: true };
-      }
-
-      // Check for PDF content embedded in multipart form data
-      const content = new TextDecoder().decode(uint8Array);
-      if (content.includes('%PDF')) {
-        return { valid: true };
-      }
-
-      // Check for PDF content in base64 encoded data
-      if (content.includes('data:application/pdf;base64,')) {
-        return { valid: true };
-      }
-
-      // Check for PDF content in other common formats
-      const pdfPatterns = [
-        /%PDF-\d+\.\d+/,
-        /application\/pdf/,
-        /Content-Type:\s*application\/pdf/
-      ];
-
-      for (const pattern of pdfPatterns) {
-        if (pattern.test(content)) {
-          return { valid: true };
-        }
-      }
-
-      // Check if file is completely empty
-      if (uint8Array.length === 0) {
-        return { valid: false, error: "File is empty" };
-      }
-
-      // Check if file appears to be corrupted (all zeros or very small)
-      const nonZeroBytes = uint8Array.filter(byte => byte !== 0).length;
-      if (nonZeroBytes < 10) {
-        return { valid: false, error: "File appears to be corrupted or empty" };
-      }
-
-      // If we can't definitively identify it as a PDF, but it's not clearly corrupted,
-      // we'll be permissive and accept it
-      return { valid: true };
-    },
 
     performFileMatching(uploadedFiles: File[] | null = null) {
       const filesToMatch: File[] =
