@@ -117,20 +117,27 @@ async def upload_reference_documents_job(
                         metadata=import_metadata,
                     )
 
-                    # Check if this specific file already exists
-                    existing_document = await imports.check_existing_document(db, file_document_create)
-                    if existing_document is not None:
-                        _LOGGER.info(f"Document already exists for file {filename} with ID {existing_document.id}")
+                    existing_documents = await imports.find_existing_documents(
+                        db=db,
+                        workspace_id=file_document_create.workspace_id,
+                        document_id=file_document_create.id,
+                        reference=file_document_create.reference,
+                        pmid=file_document_create.pmid,
+                        doi=file_document_create.doi,
+                        url=file_document_create.url,
+                    )
+                    if existing_documents:
+                        existing_document_id = existing_documents[0].id
+                        _LOGGER.info(f"Document already exists for file {filename} with ID {existing_document_id}")
                         file_result.update(
-                            {"success": True, "document_id": str(existing_document.id), "status": "existing"}
+                            {"success": True, "document_id": str(existing_document_id), "status": "existing"}
                         )
                         results["successful_files"] += 1
                         results["files"][filename] = file_result
                         continue
 
-                    # Upload file using the reusable function
                     try:
-                        file_url = files.upload_document_file(
+                        file_url = files.put_document_file(
                             client=client,
                             workspace_name=workspace.name,
                             document_id=file_document_create.id,  # type: ignore

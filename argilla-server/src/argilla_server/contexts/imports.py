@@ -94,77 +94,54 @@ async def list_documents(db: "AsyncSession", workspace_id: UUID) -> List[Documen
     return documents
 
 
-async def _check_existing_documents(db: AsyncSession, document_create: DocumentCreate) -> List[Document]:
+async def find_existing_documents(
+    db: AsyncSession,
+    workspace_id: UUID,
+    document_id: Optional[UUID] = None,
+    reference: Optional[str] = None,
+    pmid: Optional[str] = None,
+    doi: Optional[str] = None,
+    url: Optional[str] = None,
+) -> List[DocumentListItem]:
     """
-    Check if documents already exist based on reference, DOI, PMID, or ID.
-    Reuses the logic from the existing document handler but returns all matching documents.
+    Find existing documents based on provided criteria.
+
+    This unified function replaces both check_existing_document and _check_existing_documents
+    by taking separate arguments for each condition and returning a list of DocumentListItem.
 
     Args:
         db: Database session
-        document_create: Document creation data
+        workspace_id: UUID of the workspace to search in
+        document_id: Optional document ID to match
+        reference: Optional reference to match
+        pmid: Optional PMID to match
+        doi: Optional DOI to match
+        url: Optional URL to match
 
     Returns:
-        List of existing documents if found, empty list otherwise
+        List of existing documents matching the criteria (empty if none found)
     """
     conditions = []
 
-    if document_create.pmid:
-        conditions.append(Document.pmid == document_create.pmid)
-    if document_create.url:
-        conditions.append(Document.url == document_create.url)
-    if document_create.doi:
-        conditions.append(Document.doi == document_create.doi)
-    if document_create.id:
-        conditions.append(Document.id == document_create.id)
-    if document_create.reference:
-        conditions.append(Document.reference == document_create.reference)
+    if document_id:
+        conditions.append(Document.id == document_id)
+    if reference:
+        conditions.append(Document.reference == reference)
+    if pmid:
+        conditions.append(Document.pmid == pmid)
+    if doi:
+        conditions.append(Document.doi == doi)
+    if url:
+        conditions.append(Document.url == url)
 
     if not conditions:
         return []
 
-    # Check if documents with the same pmid, url, doi, id, or reference already exist
-    result = await db.execute(
-        select(Document).where(and_(Document.workspace_id == document_create.workspace_id, or_(*conditions)))
-    )
+    # Find documents matching any of the conditions within the workspace
+    result = await db.execute(select(Document).where(and_(Document.workspace_id == workspace_id, or_(*conditions))))
     existing_documents = result.scalars().all()
 
-    return list(existing_documents)
-
-
-async def check_existing_document(db: AsyncSession, document_create: DocumentCreate) -> Optional[Document]:
-    """
-    Check if a document already exists based on reference, DOI, PMID, or ID.
-
-    Args:
-        db: Database session
-        document_create: Document creation data
-
-    Returns:
-        Existing document if found, None otherwise
-    """
-    # Add conditions for non-empty attributes
-    conditions = []
-    if document_create.id:
-        conditions.append(Document.id == document_create.id)
-    if document_create.reference:
-        conditions.append(Document.reference == document_create.reference)
-    if document_create.pmid:
-        conditions.append(Document.pmid == document_create.pmid)
-    if document_create.url:
-        conditions.append(Document.url == document_create.url)
-    if document_create.doi:
-        conditions.append(Document.doi == document_create.doi)
-
-    if not conditions:
-        return None
-
-    # Check if a document with the same pmid, url, or doi already exists
-    existing_document = await db.execute(
-        select(Document).where(and_(Document.workspace_id == document_create.workspace_id, or_(*conditions)))
-    )
-    existing_document = existing_document.scalars().first()
-
-    return existing_document
+    return [DocumentListItem.model_validate(doc) for doc in existing_documents]
 
 
 async def analyze_import_status(db: AsyncSession, analysis_request: ImportAnalysisRequest) -> ImportAnalysisResponse:
@@ -184,7 +161,24 @@ async def analyze_import_status(db: AsyncSession, analysis_request: ImportAnalys
 
     for reference, file_metadata in analysis_request.documents.items():
         try:
-            existing_documents = await _check_existing_documents(db, file_metadata.document_create)
+            existing_documents_list = await find_existing_documents(
+                db=db,
+                workspace_id=file_metadata.document_create.workspace_id,
+                document_id=file_metadata.document_create.id,
+                reference=file_metadata.document_create.reference,
+                pmid=file_metadata.document_create.pmid,
+                doi=file_metadata.document_create.doi,
+                url=file_metadata.document_create.url,
+            )
+
+            # Convert DocumentListItem back to Document objects for _has_new_files compatibility
+            existing_documents = []
+            if existing_documents_list:
+                for doc_item in existing_documents_list:
+                    result = await db.execute(select(Document).where(Document.id == doc_item.id))
+                    doc = result.scalars().first()
+                    if doc:
+                        existing_documents.append(doc)
 
             validation_errors = validate_document_metadata(file_metadata)
 
@@ -195,7 +189,7 @@ async def analyze_import_status(db: AsyncSession, analysis_request: ImportAnalys
                 status = ImportStatus.ADD
                 add_count += 1
             else:
-                has_new_files = await _has_new_files(db, existing_documents, file_metadata.associated_files)
+                has_new_files = await _has_new_files(existing_documents, file_metadata.associated_files)
                 if has_new_files:
                     status = ImportStatus.UPDATE
                     update_count += 1
@@ -234,7 +228,7 @@ async def analyze_import_status(db: AsyncSession, analysis_request: ImportAnalys
     return ImportAnalysisResponse(documents=documents_info, summary=summary, data=dataframe_data)
 
 
-async def _has_new_files(db: AsyncSession, existing_documents: List[Document], new_files: List[FileInfo]) -> bool:
+async def _has_new_files(existing_documents: List[Document], new_files: List[FileInfo]) -> bool:
     """
     Check if there are new files to add to existing documents.
 
@@ -374,7 +368,6 @@ def _build_dataframe_from_documents(documents: Dict[str, DocumentImportAnalysis]
         Future enhancement: Extend DocumentMetadata to include parsed BibTeX metadata
         so the dataframe can contain the full bibliographic information.
     """
-    # Define the schema for BibTeX-style imports with support for future CSV and other formats
     schema = DataframeSchema(
         fields=[
             DataframeField(name="reference", type="string"),

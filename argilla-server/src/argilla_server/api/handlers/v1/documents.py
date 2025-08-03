@@ -68,7 +68,7 @@ async def add_document(
             document_create.file_name = file_data.filename
 
         # Upload file using the reusable function
-        file_url = files.upload_document_file(
+        file_url = files.put_document_file(
             client=client,
             workspace_name=workspace.name,
             document_id=document_create.id,
@@ -80,9 +80,17 @@ async def add_document(
         if file_url:
             document_create.url = file_url
 
-    existing_document = await imports.check_existing_document(db, document_create)
-    if existing_document is not None:
-        return existing_document.id
+    existing_documents = await imports.find_existing_documents(
+        db=db,
+        workspace_id=document_create.workspace_id,
+        document_id=document_create.id,
+        reference=document_create.reference,
+        pmid=document_create.pmid,
+        doi=document_create.doi,
+        url=document_create.url,
+    )
+    if existing_documents:
+        return existing_documents[0].id
 
     new_document = DocumentCreate(
         id=document_create.id,

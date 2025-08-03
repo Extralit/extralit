@@ -439,7 +439,7 @@ def create_bucket(
         raise e
 
 
-def upload_document_file(
+def put_document_file(
     client: Union[Minio, LocalFileStorage],
     workspace_name: str,
     document_id: UUID,
