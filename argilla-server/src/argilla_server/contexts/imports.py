@@ -253,13 +253,13 @@ async def _has_new_files(existing_documents: List[Document], new_files: List[Fil
     for file_info in new_files:
         if basename(file_info.filename) not in existing_filenames:
             return True
-        else:
-            # Compare file size
-            for doc in existing_documents:
-                if doc.file_name and basename(doc.file_name) == basename(file_info.filename):
-                    if file_info.size and file_info.size != doc.size:
-                        return True
-                    break
+        # else:
+        #     # Compare file size
+        #     for doc in existing_documents:
+        #         if doc.file_name and basename(doc.file_name) == basename(file_info.filename):
+        #             if file_info.size and file_info.size != doc.size: # TODO get doc.size
+        #                 return True
+        #             break
     return False
 
 
