@@ -56,20 +56,12 @@
     - _Requirements: 1.5, 5.1, 5.2_
 
 - [ ] 5. Create ImportHistory Data Preview Component
-  - [-] 5.1 Create ImportHistoryDataPreview component
+  - [x] 5.1 Create ImportHistoryDataPreview component
     - Write component in `argilla-frontend/components/features/import/ImportHistoryDataPreview.vue`
     - Implement tabular display of ImportHistory data using BaseSimpleTable
     - Add pagination, search, and filtering capabilities for large datasets
     - Create responsive design for preview pane integration
     - _Requirements: 3.2, 3.3, 3.7_
-
-  - [ ] 5.2 Create ImportHistoryDataPreview view model
-    - Write view model for data preview component
-    - Implement data transformation and filtering logic
-    - Add table configuration and column management
-    - Handle large dataset performance optimization
-    - _Requirements: 3.2, 3.3, 5.5_
-
 - [ ] 6. Create Import Configuration Page
   - [ ] 6.1 Create import configuration page route
     - Create page file `argilla-frontend/pages/new/import/_id.vue`
