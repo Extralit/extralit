@@ -97,7 +97,6 @@ async def bulk_upload_documents(
 
 **Core Services:**
 - `analyze_import_status()` - Uses existing `check_existing_document()` function from documents handler to determine add/update/skip status
-- `compare_file_sizes()` - Compare existing file sizes with new files to determine if updates are needed
 - `validate_document_metadata()` - Validate DocumentMetadata objects (not just DocumentCreate) from frontend
 
 #### 4. Document Upload Job (`argilla-server/src/argilla_server/jobs/document_jobs.py`)

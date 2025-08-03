@@ -26,7 +26,6 @@ from argilla_server.api.schemas.v1.imports import (
 )
 from argilla_server.contexts.imports import (
     analyze_import_status,
-    compare_file_sizes,
     validate_document_metadata,
 )
 
@@ -279,45 +278,6 @@ class TestImportAnalysis:
         assert response.summary.update_count == 1
         assert response.summary.skip_count == 1
         assert response.summary.failed_count == 1
-
-
-class TestCompareFileSizes:
-    """Test suite for file size comparison logic."""
-
-    def test_compare_file_sizes_no_existing_file(self):
-        """Test comparison when no existing file exists."""
-        new_files = [FileInfo(filename="new.pdf", size=1024)]
-        result = compare_file_sizes(None, new_files)
-        assert result is True
-
-    def test_compare_file_sizes_no_new_files(self):
-        """Test comparison when no new files are provided."""
-        result = compare_file_sizes(1024, [])
-        assert result is False
-
-    def test_compare_file_sizes_same_size(self):
-        """Test comparison when file sizes are the same."""
-        new_files = [FileInfo(filename="same.pdf", size=1024)]
-        result = compare_file_sizes(1024, new_files)
-        assert result is False
-
-    def test_compare_file_sizes_different_size(self):
-        """Test comparison when file sizes are different."""
-        new_files = [FileInfo(filename="different.pdf", size=2048)]
-        result = compare_file_sizes(1024, new_files)
-        assert result is True
-
-    def test_compare_file_sizes_multiple_files_same(self):
-        """Test comparison with multiple files of same size."""
-        new_files = [FileInfo(filename="file1.pdf", size=1024), FileInfo(filename="file2.pdf", size=1024)]
-        result = compare_file_sizes(1024, new_files)
-        assert result is False
-
-    def test_compare_file_sizes_multiple_files_different(self):
-        """Test comparison with multiple files where one is different."""
-        new_files = [FileInfo(filename="file1.pdf", size=1024), FileInfo(filename="file2.pdf", size=2048)]
-        result = compare_file_sizes(1024, new_files)
-        assert result is True
 
 
 class TestValidateDocumentMetadata:

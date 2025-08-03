@@ -96,9 +96,6 @@ class ImportAnalysisResponse(BaseModel):
 
     documents: Dict[str, DocumentImportAnalysis] = Field(..., description="Reference key to document info mapping")
     summary: ImportSummary = Field(..., description="Import analysis summary")
-    data: DataframeData = Field(
-        ..., description="Tabular dataframe representation of imported data for BibTeX or CSV generalized import"
-    )
 
 
 class BulkDocumentInfo(BaseModel):
