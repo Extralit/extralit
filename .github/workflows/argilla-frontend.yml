@@ -99,18 +99,18 @@ jobs:
           name: argilla-frontend
           path: argilla-frontend/dist
 
-  build_dev_docker_image:
-    name: Build development argilla-frontend docker image
-    needs: build
-    uses: ./.github/workflows/argilla-frontend.build-push-dev-frontend-docker.yml
-    if: |
-      !cancelled() &&
-      github.event_name == 'pull_request' && github.event.pull_request.draft == false
-    with:
-      image-name: extralit/argilla-frontend-for-dev
-      dockerfile: argilla-frontend/dev.frontend.Dockerfile
-      platforms: linux/amd64
-    secrets: inherit
+  # build_dev_docker_image:
+  #   name: Build development argilla-frontend docker image
+  #   needs: build
+  #   uses: ./.github/workflows/argilla-frontend.build-push-dev-frontend-docker.yml
+  #   if: |
+  #     !cancelled() &&
+  #     github.event_name == 'pull_request' && github.event.pull_request.draft == false
+  #   with:
+  #     image-name: extralit/argilla-frontend-for-dev
+  #     dockerfile: argilla-frontend/dev.frontend.Dockerfile
+  #     platforms: linux/amd64
+  #   secrets: inherit
 
   # deploy:
   #   name: Deploy pr environment
