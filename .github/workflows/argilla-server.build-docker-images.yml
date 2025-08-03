@@ -136,9 +136,9 @@ jobs:
       #     push: true
 
       - name: Trigger HF-Space build
-        uses: peter-evans/repository-dispatch@v2
+        uses: peter-evans/repository-dispatch@v3
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GH_ACTIONS_REPOSITORY_DISPATCH }}
           repository: extralit/extralit-hf-space
           event-type: build-hf-space
           client-payload: '{"tag":"${{ env.IMAGE_TAG }}","is_release":${{ inputs.is_release }}}'
