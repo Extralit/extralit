@@ -108,65 +108,11 @@ export default {
         this.documents = await this.loadDocuments(this.workspaceId);
       } catch (error) {
         console.error('Error loading documents:', error);
-        // For development/testing, create some mock data to show the UI
-        if (process.env.NODE_ENV === 'development') {
-          this.documents = this.createMockDocuments();
-        } else {
-          this.$notification.error('Failed to load documents');
-        }
+        this.$notification.error('Failed to load documents');
       } finally {
         this.isLoading = false;
       }
     },
-
-    createMockDocuments() {
-      return [
-        {
-          id: '1',
-          file_name: 'paper1.pdf',
-          reference: 'Smith2023',
-          pmid: '12345678',
-          doi: '10.1000/example.doi.1',
-          url: 'https://example.com/paper1.pdf',
-          metadata: {
-            source: 'bib_import',
-            collections: ['Research Collection']
-          },
-          inserted_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-        {
-          id: '2',
-          file_name: 'paper1_supplement.pdf',
-          reference: 'Smith2023',
-          pmid: '12345678',
-          doi: '10.1000/example.doi.1',
-          url: 'https://example.com/paper1_supplement.pdf',
-          metadata: {
-            source: 'bib_import',
-            collections: ['Research Collection']
-          },
-          inserted_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-        {
-          id: '3',
-          file_name: 'paper2.pdf',
-          reference: 'Johnson2024',
-          pmid: '87654321',
-          doi: '10.1000/example.doi.2',
-          url: 'https://example.com/paper2.pdf',
-          metadata: {
-            source: 'bib_import',
-            collections: ['ML Papers']
-          },
-          inserted_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-      ];
-    },
-
-
   },
 };
 </script>
