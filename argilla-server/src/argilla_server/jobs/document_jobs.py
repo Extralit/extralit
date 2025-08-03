@@ -20,9 +20,10 @@ from typing import Dict, Any, List, Tuple
 from uuid import UUID, uuid4
 
 from rq import Retry
+from rq.decorators import job
 
 from argilla_server.database import AsyncSessionLocal
-from argilla_server.jobs import job, DEFAULT_QUEUE, JOB_TIMEOUT_DISABLED
+from argilla_server.jobs import DEFAULT_QUEUE, JOB_TIMEOUT_DISABLED
 from argilla_server.api.schemas.v1.documents import DocumentCreate
 from argilla_server.contexts import files, imports
 
