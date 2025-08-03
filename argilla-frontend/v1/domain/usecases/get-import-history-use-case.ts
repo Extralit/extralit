@@ -77,4 +77,21 @@ export class GetImportHistoryUseCase {
 
     return response.data;
   }
+
+  /**
+   * Fetch recent imports for sidebar display
+   * @param workspaceId - The workspace ID to filter imports
+   * @param limit - Maximum number of recent imports to fetch (default: 5)
+   * @returns Promise<ImportHistoryListResponse> - Recent imports sorted by creation date
+   */
+  async getRecent(workspaceId: string, limit = 5): Promise<ImportHistoryListResponse> {
+    const params: ImportHistoryListParams = {
+      size: limit,
+      sort_by: "created_at",
+      sort_order: "desc",
+      filters: { workspace_id: workspaceId },
+    };
+
+    return await this.execute(params);
+  }
 }

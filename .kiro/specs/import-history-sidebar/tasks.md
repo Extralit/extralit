@@ -7,34 +7,34 @@
   - _Requirements: 1.2, 1.3_
 
 - [ ] 2. Create ImportHistory Details Use Case
-  - [ ] 2.1 Create GetImportHistoryDetailsUseCase class
+  - [x] 2.1 Create GetImportHistoryDetailsUseCase class
     - Write use case class in `argilla-frontend/v1/domain/usecases/get-import-history-details-use-case.ts`
     - Implement execute method to fetch detailed ImportHistory data
     - Add proper TypeScript interfaces for ImportHistoryResponse with data field
     - _Requirements: 2.3, 3.1_
 
-  - [ ] 2.2 Enhance existing GetImportHistoryUseCase for Recent Imports
+  - [x] 2.2 Enhance existing GetImportHistoryUseCase for Recent Imports
     - Add getRecent method to existing GetImportHistoryUseCase class
     - Implement method to fetch limited recent imports for sidebar
     - Reuse existing execute method with appropriate parameters
     - _Requirements: 1.2, 1.3_
 
 - [ ] 3. Create ImportHistory Dataset Builder
-  - [ ] 3.1 Create ImportHistoryDatasetBuilder class
+  - [x] 3.1 Create ImportHistoryDatasetBuilder class
     - Write builder class in `argilla-frontend/v1/domain/entities/import/ImportHistoryDatasetBuilder.ts`
     - Implement conversion from ImportHistory data structure to DatasetCreation format
     - Add field mapping capabilities similar to HuggingFace datasets
     - Handle data type inference and validation for ImportHistory fields
     - _Requirements: 3.4, 4.1, 4.7_
 
-  - [ ] 3.2 Create ImportHistory entity types
+  - [x] 3.2 Create ImportHistory entity types
     - Define ImportHistoryDetailsResponse interface in `argilla-frontend/v1/domain/entities/import/ImportHistoryDetails.ts`
     - Add proper TypeScript types for ImportHistory data structure
     - Ensure compatibility with existing ImportHistoryResponse from backend
     - _Requirements: 3.1, 3.3_
 
 - [ ] 4. Create Recent Imports Sidebar Components
-  - [ ] 4.1 Create RecentImports component
+  - [-] 4.1 Create RecentImports component
     - Write component in `argilla-frontend/components/features/import/RecentImports.vue`
     - Implement loading, empty, and error states for recent imports
     - Add integration with GetImportHistoryUseCase for fetching recent imports
