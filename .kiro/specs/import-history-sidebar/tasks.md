@@ -34,14 +34,14 @@
     - _Requirements: 3.1, 3.3_
 
 - [ ] 4. Create Recent Imports Sidebar Components
-  - [-] 4.1 Create RecentImports component
+  - [x] 4.1 Create RecentImports component
     - Write component in `argilla-frontend/components/features/import/RecentImports.vue`
     - Implement loading, empty, and error states for recent imports
     - Add integration with GetImportHistoryUseCase for fetching recent imports
     - Include "View All Imports" and "Import Documents" buttons
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.6, 6.1, 6.3_
 
-  - [ ] 4.2 Create RecentImportCard component
+  - [-] 4.2 Create RecentImportCard component
     - Write component in `argilla-frontend/components/features/import/RecentImportCard.vue`
     - Implement compact card display for individual ImportHistory records
     - Show filename, date, and summary statistics with proper styling
