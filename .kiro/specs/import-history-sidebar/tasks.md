@@ -1,6 +1,6 @@
 # Implementation Plan
 
-- [ ] 1. Enhance backend ImportHistory API for Recent Imports
+- [x] 1. Enhance backend ImportHistory API for Recent Imports
   - Add `limit` parameter support to existing `GET /api/v1/imports/history` endpoint
   - Modify query logic to support limit parameter for Recent Imports sidebar
   - Test endpoint with limit parameter to ensure proper functionality

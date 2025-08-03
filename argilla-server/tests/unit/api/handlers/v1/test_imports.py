@@ -671,3 +671,126 @@ class TestImportsAPI:
         assert data["workspace_id"] == str(workspace.id)
         assert data["filename"] == "zotero_export.bib"
         assert "created_at" in data
+
+    async def test_list_import_histories_unauthorized(self, async_client: AsyncClient):
+        """Test that unauthorized users cannot access the list import histories endpoint."""
+        # Make request without authentication
+        response = await async_client.get(f"/api/v1/imports/history?workspace_id={uuid4()}")
+
+        # Verify response
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    async def test_list_import_histories_invalid_workspace(self, async_client: AsyncClient, owner_auth_header: dict):
+        """Test list import histories endpoint with invalid workspace ID."""
+        # Make request with non-existent workspace ID
+        response = await async_client.get(f"/api/v1/imports/history?workspace_id={uuid4()}", headers=owner_auth_header)
+
+        # Verify response
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert "not found" in response.json()["detail"]
+
+    async def test_list_import_histories_empty(self, async_client: AsyncClient, owner_auth_header: dict):
+        """Test list import histories endpoint with no import histories."""
+        # Create owner user and workspace
+        owner = await UserFactory.create(role=UserRole.owner)
+        workspaces = await WorkspaceFactory.create_batch(1)
+        workspace = workspaces[0]
+
+        # Make request
+        response = await async_client.get(
+            f"/api/v1/imports/history?workspace_id={workspace.id}", headers=owner_auth_header
+        )
+
+        # Verify response
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        assert isinstance(data, list)
+        assert len(data) == 0
+
+    async def test_list_import_histories_with_limit(self, async_client: AsyncClient, owner_auth_header: dict):
+        """Test list import histories endpoint with limit parameter for Recent Imports sidebar."""
+        # Create owner user and workspace
+        owner = await UserFactory.create(role=UserRole.owner)
+        workspaces = await WorkspaceFactory.create_batch(1)
+        workspace = workspaces[0]
+
+        # Create multiple import history records
+        import_requests = []
+        for i in range(10):
+            dataframe_data = {
+                "schema": {
+                    "fields": [
+                        {"name": "reference", "type": "string"},
+                        {"name": "title", "type": "string"},
+                    ],
+                    "primaryKey": ["reference"],
+                },
+                "data": [
+                    {
+                        "reference": f"ref{i}",
+                        "title": f"Test Paper {i}",
+                    }
+                ],
+            }
+
+            request = ImportHistoryCreate(
+                workspace_id=workspace.id,
+                filename=f"test_import_{i}.bib",
+                data=dataframe_data,
+                metadata={f"ref{i}": {"status": "add", "associated_files": [f"test{i}.pdf"]}},
+            )
+            import_requests.append(request)
+
+        # Create all import history records
+        for request in import_requests:
+            response = await async_client.post(
+                "/api/v1/imports/history", headers=owner_auth_header, json=request.model_dump(mode="json")
+            )
+            assert response.status_code == status.HTTP_201_CREATED
+
+        # Test without limit - should return all records
+        response = await async_client.get(
+            f"/api/v1/imports/history?workspace_id={workspace.id}", headers=owner_auth_header
+        )
+        assert response.status_code == status.HTTP_200_OK
+        all_data = response.json()
+        assert len(all_data) == 10
+
+        # Test with limit=5 - should return only 5 most recent records
+        response = await async_client.get(
+            f"/api/v1/imports/history?workspace_id={workspace.id}&limit=5", headers=owner_auth_header
+        )
+        assert response.status_code == status.HTTP_200_OK
+        limited_data = response.json()
+        assert len(limited_data) == 5
+
+        # Verify that the returned records are the most recent ones (ordered by created_at desc)
+        # The most recent should be test_import_9.bib, test_import_8.bib, etc.
+        filenames = [record["filename"] for record in limited_data]
+        expected_filenames = [f"test_import_{i}.bib" for i in range(9, 4, -1)]  # 9, 8, 7, 6, 5
+        assert filenames == expected_filenames
+
+        # Test with limit=3 - should return only 3 most recent records
+        response = await async_client.get(
+            f"/api/v1/imports/history?workspace_id={workspace.id}&limit=3", headers=owner_auth_header
+        )
+        assert response.status_code == status.HTTP_200_OK
+        limited_data = response.json()
+        assert len(limited_data) == 3
+
+        # Test with limit=0 - should return empty list
+        response = await async_client.get(
+            f"/api/v1/imports/history?workspace_id={workspace.id}&limit=0", headers=owner_auth_header
+        )
+        assert response.status_code == status.HTTP_200_OK
+        limited_data = response.json()
+        assert len(limited_data) == 0
+
+        # Verify that list view doesn't include data field (only metadata)
+        for record in all_data:
+            assert "id" in record
+            assert "workspace_id" in record
+            assert "filename" in record
+            assert "created_at" in record
+            assert "metadata" in record
+            assert "data" not in record  # Data should not be included in list view

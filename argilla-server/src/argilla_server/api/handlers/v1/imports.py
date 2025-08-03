@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import logging
-from typing import List
+from typing import List, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Security, status
@@ -282,6 +282,7 @@ def _validate_import_history_request(import_history_create: ImportHistoryCreate)
 async def list_import_histories(
     *,
     workspace_id: UUID,
+    limit: Optional[int] = None,
     db: AsyncSession = Depends(get_async_db),
     current_user: User = Security(auth.get_current_user),
 ) -> List[ImportHistoryResponse]:
@@ -290,6 +291,7 @@ async def list_import_histories(
 
     Args:
         workspace_id: Workspace ID to filter import histories
+        limit: Optional limit on number of records to return (for Recent Imports sidebar)
         db: Database session
         current_user: Authenticated user
 
@@ -309,11 +311,16 @@ async def list_import_histories(
         )
 
     try:
-        result = await db.execute(
+        query = (
             select(ImportHistory)
             .where(ImportHistory.workspace_id == workspace_id)
             .order_by(ImportHistory.inserted_at.desc())
         )
+
+        if limit is not None:
+            query = query.limit(limit)
+
+        result = await db.execute(query)
         import_histories = result.scalars().all()
 
         # Convert to response format (include metadata but not data for list view)
