@@ -41,14 +41,14 @@
     - Include "View All Imports" and "Import Documents" buttons
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.6, 6.1, 6.3_
 
-  - [-] 4.2 Create RecentImportCard component
+  - [x] 4.2 Create RecentImportCard component
     - Write component in `argilla-frontend/components/features/import/RecentImportCard.vue`
     - Implement compact card display for individual ImportHistory records
     - Show filename, date, and summary statistics with proper styling
     - Add hover states and click interactions
     - _Requirements: 1.3, 5.3_
 
-  - [ ] 4.3 Create RecentImports view model
+  - [-] 4.3 Create RecentImports view model
     - Write view model in `argilla-frontend/components/features/import/useRecentImportsViewModel.ts`
     - Implement reactive state management for recent imports data
     - Add error handling and loading state management

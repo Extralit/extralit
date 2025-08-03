@@ -16,30 +16,30 @@
   -->
 
 <template>
-  <BaseButton class="import-card" @click="$emit('click')">
-    <div class="import-card__content">
-      <div class="import-card__header">
-        <h4 class="import-card__filename">{{ importRecord.filename }}</h4>
-        <span class="import-card__date">
-          <BaseIcon icon-name="time" class="import-card__date-icon" />
+  <BaseButton class="recent-import-card" @click="$emit('click')">
+    <div class="recent-import-card__content">
+      <div class="recent-import-card__header">
+        <h4 class="recent-import-card__filename">{{ importRecord.filename }}</h4>
+        <span class="recent-import-card__date">
+          <BaseIcon icon-name="time" class="recent-import-card__date-icon" />
           {{ formatDate(importRecord.created_at) }}
         </span>
       </div>
-      <div class="import-card__stats">
-        <div class="import-card__stat">
-          <span class="import-card__stat-count">{{ importRecord.total_papers }}</span>
-          <span class="import-card__stat-label">papers</span>
+      <div class="recent-import-card__stats">
+        <div class="recent-import-card__stat">
+          <span class="recent-import-card__stat-count">{{ totalPapers }}</span>
+          <span class="recent-import-card__stat-label">papers</span>
         </div>
-        <div class="import-card__stat import-card__stat--success">
-          <span class="import-card__stat-count">{{ importRecord.success_count }}</span>
-          <span class="import-card__stat-label">success</span>
+        <div class="recent-import-card__stat recent-import-card__stat--success">
+          <span class="recent-import-card__stat-count">{{ importRecord.success_count }}</span>
+          <span class="recent-import-card__stat-label">success</span>
         </div>
         <div
           v-if="importRecord.failed_count > 0"
-          class="import-card__stat import-card__stat--failed"
+          class="recent-import-card__stat recent-import-card__stat--failed"
         >
-          <span class="import-card__stat-count">{{ importRecord.failed_count }}</span>
-          <span class="import-card__stat-label">failed</span>
+          <span class="recent-import-card__stat-count">{{ importRecord.failed_count }}</span>
+          <span class="recent-import-card__stat-label">failed</span>
         </div>
       </div>
     </div>
@@ -62,22 +62,36 @@ export default {
 
   emits: ["click"],
 
+  computed: {
+    totalPapers(): number {
+      return this.importRecord.total_papers || 0;
+    },
+  },
+
   methods: {
     formatDate(dateString: string): string {
-      const date = new Date(dateString);
-      const now = new Date();
-      const diffTime = Math.abs(now.getTime() - date.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      try {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
 
-      if (diffDays === 1) {
-        return "Yesterday";
-      } else if (diffDays < 7) {
-        return `${diffDays} days ago`;
-      } else {
-        return date.toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-        });
+        if (diffInHours < 1) {
+          return "Just now";
+        } else if (diffInHours < 24) {
+          return `${diffInHours}h ago`;
+        } else if (diffInHours < 48) {
+          return "Yesterday";
+        } else {
+          const diffInDays = Math.floor(diffInHours / 24);
+          if (diffInDays < 7) {
+            return `${diffInDays}d ago`;
+          } else {
+            return date.toLocaleDateString();
+          }
+        }
+      } catch (error) {
+        console.error("Error formatting date:", error);
+        return "Unknown";
       }
     },
   },
@@ -85,7 +99,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.import-card {
+.recent-import-card {
   &.button {
     width: 100%;
     max-width: 75%;
@@ -95,6 +109,7 @@ export default {
     background: var(--bg-accent-grey-2);
     color: var(--fg-primary);
     text-align: left;
+    transition: all 0.2s ease;
 
     @include media("<desktop") {
       max-width: 100%;
@@ -103,6 +118,13 @@ export default {
     &:hover {
       border-color: var(--bg-opacity-10);
       background: var(--bg-accent-grey-3);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    &:active {
+      transform: translateY(0);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
     }
   }
 
@@ -121,14 +143,14 @@ export default {
   &__filename {
     margin: 0;
     color: var(--fg-primary);
-    font-weight: 500;
     font-size: 0.95rem;
-    @include line-height(18px);
-
-    // Truncate long filenames
+    font-weight: 500;
+    line-height: 1.3;
+    word-break: break-word;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
   }
 
   &__date {
@@ -136,12 +158,14 @@ export default {
     align-items: center;
     gap: calc($base-space / 2);
     color: var(--fg-tertiary);
-    @include font-size(12px);
+    font-size: 0.8rem;
+    font-weight: 400;
 
     &-icon {
       flex-shrink: 0;
       width: 12px;
       height: 12px;
+      opacity: 0.7;
     }
   }
 
@@ -156,27 +180,29 @@ export default {
     flex-direction: column;
     align-items: center;
     gap: calc($base-space / 4);
+    min-width: 0;
 
     &-count {
-      font-weight: 600;
       font-size: 0.9rem;
+      font-weight: 600;
       color: var(--fg-primary);
     }
 
     &-label {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
+      font-weight: 400;
       color: var(--fg-secondary);
       text-transform: lowercase;
     }
 
     &--success {
-      .import-card__stat-count {
+      .recent-import-card__stat-count {
         color: var(--color-success);
       }
     }
 
     &--failed {
-      .import-card__stat-count {
+      .recent-import-card__stat-count {
         color: var(--color-danger);
       }
     }
@@ -185,13 +211,17 @@ export default {
 
 // Responsive design
 @media (max-width: 768px) {
-  .import-card {
+  .recent-import-card {
+    &.button {
+      padding: $base-space * 1.5;
+    }
+
     &__filename {
       font-size: 0.9rem;
     }
 
-    &__stats {
-      gap: calc($base-space / 2);
+    &__date {
+      font-size: 0.75rem;
     }
 
     &__stat {
@@ -200,7 +230,7 @@ export default {
       }
 
       &-label {
-        font-size: 0.7rem;
+        font-size: 0.65rem;
       }
     }
   }
