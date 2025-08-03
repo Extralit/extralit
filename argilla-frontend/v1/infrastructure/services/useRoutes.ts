@@ -24,6 +24,7 @@ export const ROUTES = {
   annotationPage: (datasetId: string) => `/dataset/${datasetId}/annotation-mode`,
   settings: (id: string) => `/dataset/${id}/settings`,
   importDatasetFromHub: (id: string) => `/new/hf/${encodeURIComponent(id)}`,
+  importConfiguration: (importId: string) => `/new/import/${importId}`,
 };
 
 export const useRoutes = () => {
@@ -58,6 +59,10 @@ export const useRoutes = () => {
 
   const goToImportDatasetFromHub = (id: string) => {
     router.push(ROUTES.importDatasetFromHub(id));
+  };
+
+  const goToImportConfiguration = (importId: string) => {
+    router.push(ROUTES.importConfiguration(importId));
   };
 
   const goToHome = () => {
@@ -151,6 +156,7 @@ export const useRoutes = () => {
     goToSignIn,
     getQuery,
     goToImportDatasetFromHub,
+    goToImportConfiguration,
     goToFeedbackTaskAnnotationPage,
     goToHome,
     goToSetting,

@@ -62,15 +62,15 @@
     - Add pagination, search, and filtering capabilities for large datasets
     - Create responsive design for preview pane integration
     - _Requirements: 3.2, 3.3, 3.7_
-- [ ] 6. Create Import Configuration Page
-  - [ ] 6.1 Create import configuration page route
+- [x] 6. Create Import Configuration Page
+  - [x] 6.1 Create import configuration page route
     - Create page file `argilla-frontend/pages/new/import/_id.vue`
     - Implement route parameter validation and ImportHistory data fetching
     - Add loading, error, and navigation states
     - Create breadcrumb navigation with proper routing
     - _Requirements: 2.1, 2.2, 2.3, 7.1, 7.2, 7.4, 7.5_
 
-  - [ ] 6.2 Create import configuration view model
+  - [x] 6.2 Create import configuration view model
     - Write view model for import configuration page
     - Integrate GetImportHistoryDetailsUseCase for data fetching
     - Implement error handling and retry logic
@@ -78,7 +78,7 @@
     - _Requirements: 2.3, 2.4, 7.3, 7.6_
 
 - [ ] 7. Enhance DatasetConfiguration Component for ImportHistory
-  - [ ] 7.1 Modify DatasetConfiguration component props
+  - [-] 7.1 Modify DatasetConfiguration component props
     - Update component to accept dataSource prop ('hub' | 'import')
     - Add importData prop for ImportHistory data
     - Modify preview section to conditionally render ImportHistory or HuggingFace data

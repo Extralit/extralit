@@ -299,6 +299,15 @@ export default {
   import: {
     title: "Import Documents to {workspaceName} Workspace",
   },
+  importConfiguration: {
+    title: "Import Configuration",
+    loading: "Loading import configuration...",
+    errorTitle: "Failed to Load Import",
+    retry: "Retry",
+    retrying: "Retrying...",
+    returnHome: "Return Home",
+    retryAttempt: "Retry attempt {current} of {max}",
+  },
   datasetCreation: {
     questions: {
       labelSelection: {
