@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import logging
+from uuid import UUID
 from os.path import basename
 from typing import Dict, List, Optional
 
@@ -21,7 +22,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import and_, or_, select
 
 from argilla_server.models.database import Document, ImportHistory
-from argilla_server.api.schemas.v1.documents import DocumentCreate
+from argilla_server.models import Document
+from argilla_server.api.schemas.v1.documents import DocumentCreate, DocumentListItem
 from argilla_server.api.schemas.v1.imports import (
     FileInfo,
     DocumentMetadata,
@@ -41,6 +43,55 @@ from argilla_server.api.schemas.v1.imports import (
 from argilla_server.jobs.document_jobs import upload_reference_documents_job
 
 _LOGGER = logging.getLogger(__name__)
+
+
+async def create_document(db: "AsyncSession", dataset_create: DocumentCreate) -> DocumentListItem:
+    document = await Document.create(
+        db,
+        id=dataset_create.id,
+        reference=dataset_create.reference,
+        url=dataset_create.url,
+        file_name=dataset_create.file_name,
+        pmid=dataset_create.pmid,
+        doi=dataset_create.doi,
+        workspace_id=dataset_create.workspace_id,
+        metadata_=dataset_create.metadata,
+    )
+
+    return DocumentListItem.model_validate(document)
+
+
+async def update_document(db: "AsyncSession", document: Document) -> Document:
+    """Update an existing document in the database."""
+    await document.save(db, autocommit=True)
+    return document
+
+
+async def delete_documents(
+    db: "AsyncSession",
+    workspace_id: UUID,
+    id: Optional[UUID] = None,
+    reference: Optional[str] = None,
+) -> List[DocumentListItem]:
+    async with db.begin_nested():
+        params = [Document.workspace_id == workspace_id]
+        if id is not None and id != "":
+            params.append(Document.id == id)
+        if reference:
+            params.append(Document.reference == reference)
+        documents = await Document.delete_many(db=db, conditions=params, autocommit=False)
+
+    await db.commit()
+    documents = [DocumentListItem.model_validate(doc) for doc in documents]
+    return documents
+
+
+async def list_documents(db: "AsyncSession", workspace_id: UUID) -> List[DocumentListItem]:
+    result = await db.execute(select(Document).filter_by(workspace_id=workspace_id))
+    documents: List[Document] = result.scalars().all()
+    documents = [DocumentListItem.model_validate(doc) for doc in documents]
+
+    return documents
 
 
 async def _check_existing_documents(db: AsyncSession, document_create: DocumentCreate) -> List[Document]:
@@ -78,6 +129,42 @@ async def _check_existing_documents(db: AsyncSession, document_create: DocumentC
     existing_documents = result.scalars().all()
 
     return list(existing_documents)
+
+
+async def check_existing_document(db: AsyncSession, document_create: DocumentCreate) -> Optional[Document]:
+    """
+    Check if a document already exists based on reference, DOI, PMID, or ID.
+
+    Args:
+        db: Database session
+        document_create: Document creation data
+
+    Returns:
+        Existing document if found, None otherwise
+    """
+    # Add conditions for non-empty attributes
+    conditions = []
+    if document_create.id:
+        conditions.append(Document.id == document_create.id)
+    if document_create.reference:
+        conditions.append(Document.reference == document_create.reference)
+    if document_create.pmid:
+        conditions.append(Document.pmid == document_create.pmid)
+    if document_create.url:
+        conditions.append(Document.url == document_create.url)
+    if document_create.doi:
+        conditions.append(Document.doi == document_create.doi)
+
+    if not conditions:
+        return None
+
+    # Check if a document with the same pmid, url, or doi already exists
+    existing_document = await db.execute(
+        select(Document).where(and_(Document.workspace_id == document_create.workspace_id, or_(*conditions)))
+    )
+    existing_document = existing_document.scalars().first()
+
+    return existing_document
 
 
 async def analyze_import_status(db: AsyncSession, analysis_request: ImportAnalysisRequest) -> ImportAnalysisResponse:
@@ -346,42 +433,6 @@ def _build_dataframe_from_documents(documents: Dict[str, DocumentImportAnalysis]
         data_rows.append(row)
 
     return DataframeData(schema=schema, data=data_rows)
-
-
-async def check_existing_document(db: AsyncSession, document_create: DocumentCreate) -> Optional[Document]:
-    """
-    Check if a document already exists based on reference, DOI, PMID, or ID.
-
-    Args:
-        db: Database session
-        document_create: Document creation data
-
-    Returns:
-        Existing document if found, None otherwise
-    """
-    # Add conditions for non-empty attributes
-    conditions = []
-    if document_create.pmid:
-        conditions.append(Document.pmid == document_create.pmid)
-    if document_create.url:
-        conditions.append(Document.url == document_create.url)
-    if document_create.doi:
-        conditions.append(Document.doi == document_create.doi)
-    if document_create.id:
-        conditions.append(Document.id == document_create.id)
-    if document_create.reference:
-        conditions.append(Document.reference == document_create.reference)
-
-    if not conditions:
-        return None
-
-    # Check if a document with the same pmid, url, or doi already exists
-    existing_document = await db.execute(
-        select(Document).where(and_(Document.workspace_id == document_create.workspace_id, or_(*conditions)))
-    )
-    existing_document = existing_document.scalars().first()
-
-    return existing_document
 
 
 async def process_bulk_upload(

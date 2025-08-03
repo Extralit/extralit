@@ -439,6 +439,61 @@ def create_bucket(
         raise e
 
 
+def upload_document_file(
+    client: Union[Minio, LocalFileStorage],
+    workspace_name: str,
+    document_id: UUID,
+    file_data: bytes,
+    filename: str,
+    metadata: Optional[Dict[str, Any]] = None,
+) -> Optional[str]:
+    """
+    Upload a document file to S3/local storage with deduplication.
+
+    Args:
+        client: Minio or LocalFileStorage client
+        workspace_name: Name of the workspace bucket
+        document_id: UUID of the document
+        file_data: File data as bytes
+        filename: Original filename
+        metadata: Optional metadata to store with the file
+
+    Returns:
+        S3 object URL if file was uploaded, None if file already exists with same hash
+    """
+    object_path = get_pdf_s3_object_path(document_id)
+
+    # Check if file already exists with same hash
+    existing_files = list_objects(client, workspace_name, prefix=object_path, include_version=False, recursive=False)
+
+    put_object = False
+
+    if existing_files.objects:
+        new_file_hash = compute_hash(file_data)
+        existing_hashes = [
+            existing_file.etag.strip('"') for existing_file in existing_files.objects if existing_file.etag is not None
+        ]
+
+        if new_file_hash not in existing_hashes:
+            put_object = True
+    else:
+        put_object = True
+
+    if put_object:
+        response = client.put_object(
+            workspace_name,
+            object_path,
+            io.BytesIO(file_data),
+            length=len(file_data),
+            content_type="application/pdf",
+            metadata=metadata or {},
+        )
+
+        return get_s3_object_url(response.bucket_name, response.object_name)
+
+    return None
+
+
 def delete_bucket(client: Union[Minio, LocalFileStorage], workspace_name: str):
     if isinstance(client, LocalFileStorage):
         try:

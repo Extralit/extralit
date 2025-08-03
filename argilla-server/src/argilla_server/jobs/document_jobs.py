@@ -24,7 +24,7 @@ from rq import Retry
 from argilla_server.database import AsyncSessionLocal
 from argilla_server.jobs import job, DEFAULT_QUEUE, JOB_TIMEOUT_DISABLED
 from argilla_server.api.schemas.v1.documents import DocumentCreate
-from argilla_server.contexts import datasets, files, imports
+from argilla_server.contexts import files, imports
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -128,57 +128,32 @@ async def upload_reference_documents_job(
                         results["files"][filename] = file_result
                         continue
 
-                    # Upload file to S3
-                    object_path = files.get_pdf_s3_object_path(file_document_create.id)  # type: ignore
+                    # Upload file using the reusable function
+                    try:
+                        file_url = files.upload_document_file(
+                            client=client,
+                            workspace_name=workspace.name,
+                            document_id=file_document_create.id,  # type: ignore
+                            file_data=file_data,
+                            filename=filename,
+                            metadata=file_document_create.model_dump(
+                                include={"file_name": True, "pmid": True, "doi": True}
+                            ),
+                        )
 
-                    # Check if file already exists with same hash
-                    existing_files = files.list_objects(
-                        client, workspace.name, prefix=object_path, include_version=False, recursive=False
-                    )
-
-                    put_object = False
-
-                    if existing_files.objects:
-                        new_file_hash = files.compute_hash(file_data)
-                        existing_hashes = [
-                            existing_file.etag.strip('"')
-                            for existing_file in existing_files.objects
-                            if existing_file.etag is not None
-                        ]
-
-                        if new_file_hash not in existing_hashes:
-                            put_object = True
-                    else:
-                        put_object = True
-
-                    if put_object:
-                        try:
-                            response = files.put_object(
-                                client,
-                                bucket=workspace.name,
-                                object=object_path,
-                                data=file_data,
-                                size=len(file_data),
-                                content_type="application/pdf",
-                                metadata=file_document_create.model_dump(
-                                    include={"file_name": True, "pmid": True, "doi": True}
-                                ),
-                            )
-
-                            file_document_create.url = files.get_s3_object_url(
-                                response.bucket_name, response.object_name
-                            )
-                        except Exception as e:
-                            error_msg = f"Error uploading file {filename} to S3: {str(e)}"
-                            _LOGGER.error(error_msg)
-                            file_result["error"] = error_msg
-                            results["failed_files"] += 1
-                            results["files"][filename] = file_result
-                            continue
+                        if file_url:
+                            file_document_create.url = file_url
+                    except Exception as e:
+                        error_msg = f"Error uploading file {filename} to S3: {str(e)}"
+                        _LOGGER.error(error_msg)
+                        file_result["error"] = error_msg
+                        results["failed_files"] += 1
+                        results["files"][filename] = file_result
+                        continue
 
                     # Create document in database
                     try:
-                        document = await datasets.create_document(db, file_document_create)
+                        document = await imports.create_document(db, file_document_create)
                         _LOGGER.info(f"Document created successfully for file {filename} with ID {document.id}")
                         file_result.update({"success": True, "document_id": str(document.id), "status": "created"})
                         results["successful_files"] += 1
@@ -207,7 +182,6 @@ async def upload_reference_documents_job(
         results["errors"].append(str(e))
 
     finally:
-        # Cleanup temporary files
         for temp_file in temp_files:
             try:
                 if os.path.exists(temp_file):

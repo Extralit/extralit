@@ -26,7 +26,7 @@ from argilla_server.database import get_async_db
 from argilla_server.models.database import Document
 from argilla_server.security import auth
 from argilla_server.models import User, Workspace
-from argilla_server.contexts import datasets, files, imports
+from argilla_server.contexts import files, imports
 from argilla_server.api.policies.v1 import DocumentPolicy, authorize
 from argilla_server.api.schemas.v1.documents import DocumentCreate, DocumentDelete, DocumentListItem, DocumentUpdate
 from argilla_server.api.schemas.v1.imports import DocumentsBulkResponse, DocumentsBulkCreate
@@ -61,42 +61,24 @@ async def add_document(
         document_create.id = uuid4()
 
     if file_data is not None:
-        object_path = files.get_pdf_s3_object_path(document_create.id)
-        existing_files = files.list_objects(
-            client, workspace.name, prefix=object_path, include_version=False, recursive=False
-        )
-        # file_data_bytes = base64.b64decode(file_data)
         file_data_bytes = await file_data.read()
 
-        put_object = False
+        # Set filename if not provided
+        if file_data.filename and not document_create.file_name:
+            document_create.file_name = file_data.filename
 
-        if existing_files.objects:
-            new_file_hash = files.compute_hash(file_data_bytes)
-            existing_hashes = [
-                existing_file.etag.strip('"')
-                for existing_file in existing_files.objects
-                if existing_file.etag is not None
-            ]
+        # Upload file using the reusable function
+        file_url = files.upload_document_file(
+            client=client,
+            workspace_name=workspace.name,
+            document_id=document_create.id,
+            file_data=file_data_bytes,
+            filename=file_data.filename or "",
+            metadata=document_create.dict(include={"file_name": True, "pmid": True, "doi": True}),
+        )
 
-            if new_file_hash not in existing_hashes:
-                put_object = True
-        else:
-            put_object = True
-
-        if put_object:
-            response = files.put_object(
-                client,
-                bucket=workspace.name,
-                object=object_path,
-                data=file_data_bytes,
-                size=len(file_data_bytes),
-                content_type="application/pdf",
-                metadata=document_create.dict(include={"file_name": True, "pmid": True, "doi": True}),
-            )
-
-            document_create.url = files.get_s3_object_url(response.bucket_name, response.object_name)
-            if file_data.filename and not document_create.file_name:
-                document_create.file_name = file_data.filename
+        if file_url:
+            document_create.url = file_url
 
     existing_document = await imports.check_existing_document(db, document_create)
     if existing_document is not None:
@@ -113,7 +95,7 @@ async def add_document(
         metadata=document_create.metadata,
     )
 
-    document = await datasets.create_document(db, new_document)
+    document = await imports.create_document(db, new_document)
 
     return document.id
 
@@ -198,7 +180,7 @@ async def update_document(
             setattr(document, field, value)
 
     # Save the changes
-    await datasets.update_document(db, document)
+    await imports.update_document(db, document)
 
     return DocumentListItem.model_validate(document)
 
@@ -229,7 +211,7 @@ async def delete_documents_by_workspace_id(
             detail=f"Workspace with id `{workspace_id}` not found",
         )
 
-    documents = await datasets.delete_documents(
+    documents = await imports.delete_documents(
         db,
         workspace_id,
         id=document_delete.id,
@@ -247,14 +229,14 @@ async def delete_documents_by_workspace_id(
     "/documents/workspace/{workspace_id}", status_code=status.HTTP_200_OK, response_model=List[DocumentListItem]
 )
 async def list_documents(
-    *, 
+    *,
     db: AsyncSession = Depends(get_async_db),
     workspace_id: UUID = Path(..., title="The UUID of the workspace whose documents will be retrieved"),
     current_user: User = Security(auth.get_current_user),
 ) -> List[DocumentListItem]:
     await authorize(current_user, DocumentPolicy.list(workspace_id))
 
-    documents = await datasets.list_documents(db, workspace_id)
+    documents = await imports.list_documents(db, workspace_id)
 
     return documents
 
