@@ -78,7 +78,7 @@
     - _Requirements: 2.3, 2.4, 7.3, 7.6_
 
 - [ ] 7. Enhance DatasetConfiguration Component for ImportHistory
-  - [-] 7.1 Modify DatasetConfiguration component props
+  - [ ] 7.1 Modify DatasetConfiguration component props
     - Update component to accept dataSource prop ('hub' | 'import')
     - Add importData prop for ImportHistory data
     - Modify preview section to conditionally render ImportHistory or HuggingFace data
