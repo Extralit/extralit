@@ -48,7 +48,7 @@
     - Add hover states and click interactions
     - _Requirements: 1.3, 5.3_
 
-  - [-] 4.3 Create RecentImports view model
+  - [x] 4.3 Create RecentImports view model
     - Write view model in `argilla-frontend/components/features/import/useRecentImportsViewModel.ts`
     - Implement reactive state management for recent imports data
     - Add error handling and loading state management
@@ -56,7 +56,7 @@
     - _Requirements: 1.5, 5.1, 5.2_
 
 - [ ] 5. Create ImportHistory Data Preview Component
-  - [ ] 5.1 Create ImportHistoryDataPreview component
+  - [-] 5.1 Create ImportHistoryDataPreview component
     - Write component in `argilla-frontend/components/features/import/ImportHistoryDataPreview.vue`
     - Implement tabular display of ImportHistory data using BaseSimpleTable
     - Add pagination, search, and filtering capabilities for large datasets
