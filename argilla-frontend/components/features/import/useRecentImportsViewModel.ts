@@ -53,16 +53,19 @@ export function useRecentImportsViewModel(props: RecentImportsProps) {
   watch(
     () => props.workspace?.id,
     async (newWorkspaceId, oldWorkspaceId) => {
-      if (newWorkspaceId !== oldWorkspaceId) {
+      // Load data when workspace changes, including from null to a value
+      if (newWorkspaceId && newWorkspaceId !== oldWorkspaceId) {
         await loadRecentImports();
       }
     },
     { immediate: false }
   );
 
-  // Load data on component mount
+  // Load data on component mount only if workspace is available
   onMounted(async () => {
-    await loadRecentImports();
+    if (hasWorkspace.value) {
+      await loadRecentImports();
+    }
   });
 
   // Retry mechanism for error recovery

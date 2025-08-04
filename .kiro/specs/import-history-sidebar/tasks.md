@@ -99,7 +99,7 @@
     - _Requirements: 3.4, 4.1, 4.2, 4.7_
 
 - [ ] 8. Integrate Recent Imports into Home Page
-  - [-] 8.1 Modify home page sidebar
+  - [x] 8.1 Modify home page sidebar
     - Update `argilla-frontend/pages/index.vue` to replace example datasets with RecentImports component
     - Add event handlers for import selection and modal opening
     - Integrate with existing workspace selection functionality

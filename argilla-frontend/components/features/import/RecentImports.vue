@@ -36,6 +36,13 @@
       <BaseButton variant="outline" @click="loadRecentImports"> Retry </BaseButton>
     </div>
 
+    <!-- No Workspace Selected -->
+    <div v-else-if="!hasWorkspace" class="recent-imports__no-workspace">
+      <BaseIcon icon-name="document" class="recent-imports__empty-icon" />
+      <h4>Select a Workspace</h4>
+      <p>Please select a workspace to view recent imports.</p>
+    </div>
+
     <!-- Empty State -->
     <div v-else-if="!recentImports.length" class="recent-imports__empty">
       <BaseIcon icon-name="document" class="recent-imports__empty-icon" />
@@ -153,6 +160,37 @@ export default {
     p {
       margin: 0;
       color: var(--fg-primary);
+      font-size: 0.9rem;
+      max-width: 300px;
+      line-height: 1.4;
+    }
+  }
+
+  // No workspace state
+  &__no-workspace {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: $base-space * 4;
+    gap: $base-space * 2;
+    text-align: center;
+
+    .recent-imports__empty-icon {
+      font-size: 2rem;
+      color: var(--fg-secondary);
+    }
+
+    h4 {
+      margin: 0;
+      color: var(--fg-primary);
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    p {
+      margin: 0;
+      color: var(--fg-secondary);
       font-size: 0.9rem;
       max-width: 300px;
       line-height: 1.4;
