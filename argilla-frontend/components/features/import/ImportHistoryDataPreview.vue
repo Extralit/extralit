@@ -47,15 +47,17 @@
       <!-- Search and filters -->
       <div class="preview-controls">
         <div class="search-section">
-          <BaseInput
-            v-model="searchQuery"
-            placeholder="Search records..."
-            class="search-input"
-          >
-            <template #prepend>
-              <BaseIcon icon-name="search" />
-            </template>
-          </BaseInput>
+          <BaseInputContainer>
+            <BaseInput
+              v-model="searchQuery"
+              placeholder="Search records..."
+              class="search-input"
+            >
+              <template #prepend>
+                <BaseIcon icon-name="search" />
+              </template>
+            </BaseInput>
+          </BaseInputContainer>
         </div>
         <div class="filter-section">
           <select v-model="statusFilter" class="status-filter">

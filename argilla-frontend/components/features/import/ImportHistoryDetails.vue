@@ -63,22 +63,26 @@
       <div class="filter-row">
         <div class="filter-group">
           <label class="filter-label">Search reference:</label>
-          <BaseInput
-            v-model="filters.reference"
-            placeholder="Enter reference..."
-            class="filter-input"
-            @input="debouncedSearch"
-          />
+          <BaseInputContainer>
+            <BaseInput
+              v-model="filters.reference"
+              placeholder="Enter reference..."
+              class="filter-input"
+              @input="debouncedSearch"
+            />
+          </BaseInputContainer>
         </div>
 
         <div class="filter-group">
           <label class="filter-label">Search title:</label>
-          <BaseInput
-            v-model="filters.title"
-            placeholder="Enter title..."
-            class="filter-input"
-            @input="debouncedSearch"
-          />
+          <BaseInputContainer>
+            <BaseInput
+              v-model="filters.title"
+              placeholder="Enter title..."
+              class="filter-input"
+              @input="debouncedSearch"
+            />
+          </BaseInputContainer>
         </div>
 
         <div class="filter-group">

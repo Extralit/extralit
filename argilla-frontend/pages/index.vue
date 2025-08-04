@@ -68,12 +68,12 @@
           </div>
           <BaseSeparator class="home__sidebar__separator" />
           <div class="home__sidebar__content">
-            <RecentImports
+            <!-- <RecentImports
               :workspace="selectedWorkspace"
               @import-selected="handleImportSelected"
               @view-all-imports="openImportHistoryModal"
               @import-documents="openImportModal"
-            />
+            /> -->
           </div>
         </template>
         <template v-else>

@@ -13,32 +13,38 @@
       <div class="filter-row">
         <div class="filter-group">
           <label class="filter-label">Search by filename:</label>
-          <BaseInput
-            v-model="filters.filename"
-            placeholder="Enter filename..."
-            class="filter-input"
-            @input="debouncedSearch"
-          />
+          <BaseInputContainer>
+            <BaseInput
+              v-model="filters.filename"
+              placeholder="Enter filename..."
+              class="filter-input"
+              @input="debouncedSearch"
+            />
+          </BaseInputContainer>
         </div>
 
         <div class="filter-group">
           <label class="filter-label">Date range:</label>
           <div class="date-range">
-            <BaseInput
-              v-model="filters.date_from"
-              type="date"
-              placeholder="From date"
-              class="filter-input date-input"
-              @input="applyFilters"
-            />
+            <BaseInputContainer>
+              <BaseInput
+                v-model="filters.date_from"
+                type="date"
+                placeholder="From date"
+                class="filter-input date-input"
+                @input="applyFilters"
+              />
+            </BaseInputContainer>
             <span class="date-separator">to</span>
-            <BaseInput
-              v-model="filters.date_to"
-              type="date"
-              placeholder="To date"
-              class="filter-input date-input"
-              @input="applyFilters"
-            />
+            <BaseInputContainer>
+              <BaseInput
+                v-model="filters.date_to"
+                type="date"
+                placeholder="To date"
+                class="filter-input date-input"
+                @input="applyFilters"
+              />
+            </BaseInputContainer>
           </div>
         </div>
 
