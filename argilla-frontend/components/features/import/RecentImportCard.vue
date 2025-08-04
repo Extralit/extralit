@@ -34,10 +34,7 @@
           <span class="recent-import-card__stat-count">{{ importRecord.success_count }}</span>
           <span class="recent-import-card__stat-label">success</span>
         </div>
-        <div
-          v-if="importRecord.failed_count > 0"
-          class="recent-import-card__stat recent-import-card__stat--failed"
-        >
+        <div v-if="importRecord.failed_count > 0" class="recent-import-card__stat recent-import-card__stat--failed">
           <span class="recent-import-card__stat-count">{{ importRecord.failed_count }}</span>
           <span class="recent-import-card__stat-label">failed</span>
         </div>

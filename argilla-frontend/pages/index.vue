@@ -184,6 +184,18 @@ export default {
     },
   },
 
+  watch: {
+    workspaces: {
+      immediate: true,
+      handler(newWorkspaces) {
+        // Auto-assign the first workspace if none is selected and workspaces exist
+        if (!this.selectedWorkspace && newWorkspaces && newWorkspaces.length > 0) {
+          this.selectedWorkspace = newWorkspaces[0];
+        }
+      }
+    }
+  },
+
   setup() {
     return useHomeViewModel();
   },
