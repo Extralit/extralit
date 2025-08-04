@@ -38,14 +38,12 @@
 
     <!-- No Workspace Selected -->
     <div v-else-if="!hasWorkspace" class="recent-imports__no-workspace">
-      <BaseIcon icon-name="document" class="recent-imports__empty-icon" />
       <h4>Select a Workspace</h4>
       <p>Please select a workspace to view recent imports.</p>
     </div>
 
     <!-- Empty State -->
     <div v-else-if="!recentImports || !recentImports.length" class="recent-imports__empty">
-      <BaseIcon icon-name="document" class="recent-imports__empty-icon" />
       <h4>No Recent Imports Found</h4>
       <p>You haven't imported any documents yet. Start by importing your first bibliography file.</p>
     </div>
