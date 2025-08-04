@@ -67,6 +67,7 @@
                 :error="importDataError"
                 @retry="$emit('retry-import-data')"
                 @row-selected="handleImportRowSelected"
+                @field-selected="handleImportFieldSelected"
               />
 
               <!-- Fallback for missing data -->
@@ -100,8 +101,8 @@ export default {
     },
     dataSource: {
       type: String,
-      default: 'hub',
-      validator: (value) => ['hub', 'import'].includes(value),
+      default: "hub",
+      validator: (value) => ["hub", "import"].includes(value),
     },
     importData: {
       type: ImportHistoryDetails,
@@ -116,7 +117,7 @@ export default {
       default: null,
     },
   },
-  emits: ['change-subset', 'retry-import-data', 'import-row-selected'],
+  emits: ["change-subset", "retry-import-data", "import-row-selected", "import-field-selected"],
   mounted() {
     this.getFirstRecord(this.dataset, this.dataSource, this.importData);
   },
@@ -129,16 +130,24 @@ export default {
     },
     importData: {
       handler(newImportData) {
-        if (this.dataSource === 'import' && newImportData) {
+        if (this.dataSource === "import" && newImportData) {
           this.getFirstRecord(this.dataset, this.dataSource, newImportData);
         }
       },
       deep: true,
     },
+    dataSource: {
+      handler(newDataSource) {
+        this.getFirstRecord(this.dataset, newDataSource, this.importData);
+      },
+    },
   },
   methods: {
     handleImportRowSelected(rowData) {
-      this.$emit('import-row-selected', rowData);
+      this.$emit("import-row-selected", rowData);
+    },
+    handleImportFieldSelected(fieldData) {
+      this.$emit("import-field-selected", fieldData);
     },
   },
   setup() {

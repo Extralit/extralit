@@ -75,10 +75,12 @@ export default {
 
       if (this.importHistoryData?.filename) {
         breadcrumbs.push({
+          link: "",
           name: `${this.$t("importConfiguration.title")}: ${this.importHistoryData.filename}`,
         });
       } else {
         breadcrumbs.push({
+          link: "",
           name: this.$t("importConfiguration.title"),
         });
       }

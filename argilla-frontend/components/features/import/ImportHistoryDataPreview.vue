@@ -243,7 +243,7 @@ export default {
       });
 
       // Add dynamic columns from schema
-      this.importHistoryDetails.schema.fields.forEach((field) => {
+      this.importHistoryDetails.schema.fields.forEach((field: any) => {
         if (field.name === "reference") return; // Skip reference as it's already added
 
         const column: TableColumn = {
@@ -316,8 +316,9 @@ export default {
   },
 
   methods: {
-    formatDate(date: Date): string {
-      return date.toLocaleDateString("en-US", {
+    formatDate(date: Date | string): string {
+      const dateObj = typeof date === 'string' ? new Date(date) : date;
+      return dateObj.toLocaleDateString("en-US", {
         year: "numeric",
         month: "short",
         day: "numeric",
@@ -430,7 +431,7 @@ export default {
       return statusMap[status] || status;
     },
 
-    handleRowClick(event: any, row: any): void {
+    handleRowClick(_event: any, row: any): void {
       const rowData = row.getData();
       this.$emit("row-selected", rowData);
     },

@@ -78,20 +78,20 @@
     - _Requirements: 2.3, 2.4, 7.3, 7.6_
 
 - [ ] 7. Enhance DatasetConfiguration Component for ImportHistory
-  - [ ] 7.1 Modify DatasetConfiguration component props
+  - [x] 7.1 Modify DatasetConfiguration component props
     - Update component to accept dataSource prop ('hub' | 'import')
     - Add importData prop for ImportHistory data
     - Modify preview section to conditionally render ImportHistory or HuggingFace data
     - Ensure backward compatibility with existing HuggingFace functionality
     - _Requirements: 3.1, 3.4, 3.8, 4.1_
 
-  - [ ] 7.2 Integrate ImportHistoryDataPreview in DatasetConfiguration
+  - [x] 7.2 Integrate ImportHistoryDataPreview in DatasetConfiguration
     - Replace HuggingFace iframe with ImportHistoryDataPreview when dataSource is 'import'
     - Pass ImportHistory data and field mapping to preview component
     - Maintain existing layout and styling consistency
     - _Requirements: 3.1, 3.7, 3.8_
 
-  - [ ] 7.3 Update DatasetConfiguration view model
+  - [x] 7.3 Update DatasetConfiguration view model
     - Modify useDatasetConfiguration to handle ImportHistory data
     - Integrate ImportHistoryDatasetBuilder for data conversion
     - Add support for ImportHistory field mapping and configuration
@@ -99,7 +99,7 @@
     - _Requirements: 3.4, 4.1, 4.2, 4.7_
 
 - [ ] 8. Integrate Recent Imports into Home Page
-  - [ ] 8.1 Modify home page sidebar
+  - [-] 8.1 Modify home page sidebar
     - Update `argilla-frontend/pages/index.vue` to replace example datasets with RecentImports component
     - Add event handlers for import selection and modal opening
     - Integrate with existing workspace selection functionality
