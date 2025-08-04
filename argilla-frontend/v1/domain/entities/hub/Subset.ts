@@ -11,7 +11,7 @@ type Structure = {
   content?: string;
   structure?: Structure[];
   kindObject?: "Value" | "Image" | "ClassLabel" | "Sequence";
-  type?: "string" | MetadataTypes;
+  type?: "string" | "boolean" | "float32" | MetadataTypes;
   feature?: Feature;
 };
 

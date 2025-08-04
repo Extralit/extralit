@@ -6,7 +6,7 @@
 import { DatasetCreation } from "../hub/DatasetCreation";
 import { Subset } from "../hub/Subset";
 import { FieldCreationTypes } from "../hub/FieldCreation";
-import { MetadataTypes } from "../hub/MetadataCreation";
+import { MetadataTypes, MetadataCreation } from "../hub/MetadataCreation";
 import { ImportHistoryDetailsResponse } from "../../usecases/get-import-history-details-use-case";
 
 export interface ImportHistoryFeature {
@@ -122,7 +122,43 @@ export class ImportHistoryDatasetBuilder {
       },
     };
 
-    return new Subset("default", mockDatasetInfo.default);
+    const subset = new Subset("default", mockDatasetInfo.default);
+
+    // Override the metadata creation to use proper metadata types
+    this.enhanceSubsetForImportHistory(subset);
+
+    return subset;
+  }
+
+  /**
+   * Enhance the Subset to properly handle ImportHistory metadata creation
+   */
+  private enhanceSubsetForImportHistory(subset: Subset): void {
+    // Clear existing metadata that might have been created with invalid types
+    (subset as any).metadata.length = 0;
+
+    // Create metadata with proper types based on our schema analysis
+    this.importHistoryData.data.schema.fields.forEach((field) => {
+      const metadataType = this.inferMetadataType(field.name);
+      if (metadataType) {
+        const metadata = MetadataCreation.from(field.name, metadataType);
+        if (metadata) {
+          (subset as any).metadata.push(metadata);
+        }
+      }
+    });
+
+    // Ensure reference field metadata is included if it exists
+    if (this.hasReferenceField()) {
+      const hasReferenceMetadata = (subset as any).metadata.some((m: any) => m.name === "reference");
+      if (!hasReferenceMetadata) {
+        const referenceSource = this.availableFields.includes("reference") ? "reference" : "id";
+        const referenceMetadata = MetadataCreation.from(referenceSource, "terms");
+        if (referenceMetadata) {
+          (subset as any).metadata.push(referenceMetadata);
+        }
+      }
+    }
   }
 
   /**
@@ -151,7 +187,7 @@ export class ImportHistoryDatasetBuilder {
   }
 
   private mapDataTypeToFeatureType(dataType: string): "string" | "int32" | "int64" | "float32" | "boolean" {
-    // Map Table Schema data types to feature types
+    // Map Table Schema data types to standard feature types
     switch (dataType.toLowerCase()) {
       case "string":
       case "text":
@@ -174,11 +210,10 @@ export class ImportHistoryDatasetBuilder {
         return "boolean";
       case "datetime":
       case "duration":
-        return "string"; // Treat dates as strings for now
+        return "string";
       case "any":
-        return "string"; // Default any type to string
+        return "string";
       default:
-        // Default to string for unknown types
         return "string";
     }
   }
@@ -203,7 +238,7 @@ export class ImportHistoryDatasetBuilder {
       ...record,
       metadata: {
         ...record.metadata,
-        reference: record.reference || record.id || `record_${Math.random().toString(36).substr(2, 9)}`,
+        reference: record.reference || record.id || `record_${Math.random().toString(36).substring(2, 11)}`,
       },
     }));
   }
