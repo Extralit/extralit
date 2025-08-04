@@ -1,13 +1,12 @@
 <template>
-  <div class="import-config-page">
-    <div class="import-config-page__header">
-      <BaseBreadcrumbs :breadcrumbs="breadcrumbs" @breadcrumb-action="handleBreadcrumbAction" />
-      <div class="import-config-page__badge">
-        <p class="badge-text">
+  <div class="new-dataset">
+    <HeaderFeedbackTask :breadcrumbs="breadcrumbs" @breadcrumb-action="handleBreadcrumbAction">
+      <template slot="badge">
+        <p class="new-dataset__header-badge">
           {{ $t("datasetCreation.preview") }}
         </p>
-      </div>
-    </div>
+      </template>
+    </HeaderFeedbackTask>
 
     <div v-if="isLoading" class="loading-container">
       <BaseSpinner />
@@ -92,32 +91,21 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.import-config-page {
+.new-dataset {
   height: 100vh;
   display: flex;
   flex-direction: column;
 
-  &__header {
-    display: flex;
-    align-items: center;
-    padding: $base-space * 2;
-    border-bottom: 1px solid var(--bg-opacity-6);
-    background: var(--bg-primary);
-  }
-
-  &__badge {
-    margin-left: auto;
-
-    .badge-text {
-      background-color: hsl(from var(--color-brand-secondary) h s l);
-      color: var(--color-dark-grey);
-      padding: calc($base-space / 2) $base-space;
-      border-radius: $border-radius;
-      margin: 0;
-      font-weight: 500;
-      @include font-size(12px);
-      @include line-height(16px);
-    }
+  &__header-badge {
+    background-color: hsl(from var(--color-brand-secondary) h s l);
+    color: var(--color-dark-grey);
+    padding: calc($base-space / 2) $base-space;
+    border-radius: $border-radius;
+    margin: 0;
+    font-weight: 500;
+    margin-left: $base-space * 2;
+    @include font-size(12px);
+    @include line-height(16px);
   }
 
   .loading-container {

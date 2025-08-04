@@ -24,51 +24,11 @@
       <div class="preview-header">
         <div class="header-info">
           <h3>{{ importHistoryDetails.filename }}</h3>
-          <p class="subtitle">
-            {{ totalRecords }} records imported on {{ formatDate(importHistoryDetails.createdAt) }}
-          </p>
+          <span class="subtitle">
+            {{ totalRecords }} references imported on {{ formatDate(importHistoryDetails.createdAt) }}
+          </span>
         </div>
-        <!-- <div class="summary-stats">
-          <div class="stat-item stat-total">
-            <span class="stat-label">Total:</span>
-            <span class="stat-value">{{ summary.total_documents }}</span>
-          </div>
-          <div class="stat-item stat-success">
-            <span class="stat-label">Success:</span>
-            <span class="stat-value">{{ summary.add_count + summary.update_count }}</span>
-          </div>
-          <div v-if="summary.failed_count > 0" class="stat-item stat-failed">
-            <span class="stat-label">Failed:</span>
-            <span class="stat-value">{{ summary.failed_count }}</span>
-          </div>
-        </div> -->
       </div>
-
-      <!-- Search and filters -->
-      <!-- <div class="preview-controls">
-        <div class="search-section">
-          <BaseInputContainer>
-            <BaseInput
-              v-model="searchQuery"
-              placeholder="Search records..."
-              class="search-input"
-            >
-              <template #prepend>
-                <BaseIcon icon-name="search" />
-              </template>
-            </BaseInput>
-          </BaseInputContainer>
-        </div>
-        <div class="filter-section">
-          <select v-model="statusFilter" class="status-filter">
-            <option value="">All Status</option>
-            <option value="add">Add</option>
-            <option value="update">Update</option>
-            <option value="skip">Skip</option>
-            <option value="failed">Failed</option>
-          </select>
-        </div>
-      </div> -->
 
       <!-- Data table -->
       <div class="table-container">
@@ -100,7 +60,7 @@ import "assets/icons/check";
 import "assets/icons/close";
 import { ImportHistoryDetails } from "~/v1/domain/entities/import/ImportHistoryDetails";
 
-interface TableColumn {
+interface ColumnComponent {
   field: string;
   title: string;
   width?: number;
@@ -215,12 +175,12 @@ export default {
       return data;
     },
 
-    tableColumns(): TableColumn[] {
+    tableColumns(): ColumnComponent[] {
       if (!this.importHistoryDetails?.schema?.fields) {
         return [];
       }
 
-      const columns: TableColumn[] = [];
+      const columns: ColumnComponent[] = [];
 
       // Add reference column first (frozen)
       columns.push({
@@ -229,36 +189,18 @@ export default {
         width: 150,
         frozen: true,
         formatter: this.referenceFormatter,
-        filterable: true,
-        headerFilter: "input",
       });
 
       // Add dynamic columns from schema
       this.importHistoryDetails.schema.fields.forEach((field: any) => {
         if (field.name === "reference") return; // Skip reference as it's already added
 
-        const column: TableColumn = {
+        const column: ColumnComponent = {
           field: field.name,
           title: this.formatColumnTitle(field.name),
           width: this.getColumnWidth(field.name, field.type),
           formatter: this.getColumnFormatter(field.name, field.type),
-          filterable: true,
-          headerFilter: field.type === "string" ? "input" : undefined,
         };
-
-        // Special handling for common fields
-        if (field.name === "title") {
-          column.width = 300;
-          column.formatter = this.titleFormatter;
-        } else if (field.name === "authors" || field.name === "author") {
-          column.width = 200;
-          column.formatter = this.authorsFormatter;
-        } else if (field.name === "year") {
-          column.width = 80;
-        } else if (field.name === "doi") {
-          column.width = 120;
-          column.formatter = this.doiFormatter;
-        }
 
         columns.push(column);
       });
@@ -275,6 +217,7 @@ export default {
         paginationSizeSelector: [10, 20, 50, 100],
         sortMode: "local",
         placeholder: "No records found",
+        renderVerticalBuffer: 300,
         renderHorizontal: "virtual",
         resizableColumns: true,
         movableColumns: false,
@@ -324,7 +267,6 @@ export default {
     formatColumnTitle(fieldName: string): string {
       return fieldName
         .replace(/([A-Z])/g, " $1")
-        .replace(/^./, (str) => str.toUpperCase())
         .trim();
     },
 
@@ -348,81 +290,6 @@ export default {
     referenceFormatter(cell: any): string {
       const value = cell.getValue();
       return `<span class="reference-cell">${value}</span>`;
-    },
-
-    titleFormatter(cell: any): string {
-      const value = cell.getValue() || "Untitled";
-      const truncated = value.length > 60 ? value.substring(0, 60) + "..." : value;
-      return `<span class="title-cell">${truncated}</span>`;
-    },
-
-    authorsFormatter(cell: any): string {
-      const value = cell.getValue();
-      if (!value) return '<span class="authors-cell">Unknown Authors</span>';
-
-      let authors = value;
-      if (Array.isArray(value)) {
-        authors = value.slice(0, 3).join(", ");
-        if (value.length > 3) authors += " et al.";
-      } else if (typeof value === "string" && value.includes(",")) {
-        const authorList = value.split(",").map(a => a.trim());
-        authors = authorList.slice(0, 3).join(", ");
-        if (authorList.length > 3) authors += " et al.";
-      }
-
-      return `<span class="authors-cell">${authors}</span>`;
-    },
-
-    doiFormatter(cell: any): string {
-      const value = cell.getValue();
-      if (!value) return "";
-
-      const doiUrl = value.startsWith("http") ? value : `https://doi.org/${value}`;
-      return `<a href="${doiUrl}" target="_blank" class="doi-link" title="Open DOI">${value}</a>`;
-    },
-
-    statusFormatter(cell: any): string {
-      const status = cell.getValue();
-      const statusClass = `status-${status}`;
-      const statusText = this.getStatusText(status);
-
-      return `
-        <div class="status-cell ${statusClass}">
-          <span class="status-indicator"></span>
-          <span class="status-text">${statusText}</span>
-        </div>
-      `;
-    },
-
-    booleanFormatter(cell: any): string {
-      const value = cell.getValue();
-      const icon = value ? "check" : "close";
-      const className = value ? "boolean-true" : "boolean-false";
-      return `<span class="boolean-cell ${className}"><BaseIcon icon-name="${icon}" /></span>`;
-    },
-
-    numberFormatter(cell: any): string {
-      const value = cell.getValue();
-      if (value == null) return "";
-      return `<span class="number-cell">${Number(value).toLocaleString()}</span>`;
-    },
-
-    urlFormatter(cell: any): string {
-      const value = cell.getValue();
-      if (!value) return "";
-
-      const displayText = value.length > 30 ? value.substring(0, 30) + "..." : value;
-      return `<a href="${value}" target="_blank" class="url-link">${displayText}</a>`;
-    },
-
-    getStatusText(status: string): string {
-      const statusMap: Record<string, string> = {
-        add: "Add",
-        update: "Update",
-        skip: "Skip",
-        failed: "Failed",
-      };
-      return statusMap[status] || status;
     },
 
     handleRowClick(_event: any, row: any): void {
@@ -533,7 +400,7 @@ export default {
   display: flex;
   flex-direction: column;
   height: 100%;
-  gap: $base-space * 2;
+  gap: $base-space;
   flex: 1;
 }
 
@@ -553,8 +420,13 @@ export default {
   }
 
   .header-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+
     h3 {
-      margin: 0 0 $base-space 0;
+      margin: 0;
       color: var(--fg-primary);
       font-size: 1.2rem;
       font-weight: 600;
