@@ -68,12 +68,12 @@
           </div>
           <BaseSeparator class="home__sidebar__separator" />
           <div class="home__sidebar__content">
-            <!-- <RecentImports
+            <RecentImports
               :workspace="selectedWorkspace"
               @import-selected="handleImportSelected"
               @view-all-imports="openImportHistoryModal"
               @import-documents="openImportModal"
-            /> -->
+            />
           </div>
         </template>
         <template v-else>
@@ -105,10 +105,10 @@
     />
 
     <BaseModal
-      :visible="isImportHistoryModalVisible"
-      @close="closeImportHistoryModal"
-      :title="$t('import.historyTitle')"
-      size="large"
+      :modal-visible="isImportHistoryModalVisible"
+      @close-modal="closeImportHistoryModal"
+      :modal-title="$t('import.historyTitle')"
+      modal-class="modal-auto"
     >
       <ImportHistoryList
         :workspace="selectedWorkspace"

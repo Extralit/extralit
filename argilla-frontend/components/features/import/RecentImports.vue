@@ -44,7 +44,7 @@
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="!recentImports.length" class="recent-imports__empty">
+    <div v-else-if="!recentImports || !recentImports.length" class="recent-imports__empty">
       <BaseIcon icon-name="document" class="recent-imports__empty-icon" />
       <h4>No Recent Imports Found</h4>
       <p>You haven't imported any documents yet. Start by importing your first bibliography file.</p>
@@ -53,7 +53,7 @@
     <!-- Recent Imports List -->
     <div v-else class="recent-imports__list">
       <RecentImportCard
-        v-for="importRecord in recentImports"
+        v-for="importRecord in (recentImports || [])"
         :key="importRecord.id"
         :import-record="importRecord"
         @click="$emit('import-selected', importRecord)"
@@ -65,10 +65,6 @@
       <BaseButton variant="outline" class="recent-imports__view-all-btn" @click="$emit('view-all-imports')">
         View All Imports
       </BaseButton>
-      <BaseButton variant="primary" class="recent-imports__import-btn" @click="$emit('import-documents')">
-        <BaseIcon icon-name="import" class="recent-imports__import-icon" />
-        Import Documents
-      </BaseButton>
     </div>
   </div>
 </template>
@@ -78,13 +74,14 @@ import "assets/icons/danger";
 import "assets/icons/document";
 import "assets/icons/import";
 import { useRecentImportsViewModel } from "./useRecentImportsViewModel";
+import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
 
 export default {
   name: "RecentImports",
 
   props: {
     workspace: {
-      type: Object,
+      type: Workspace,
       default: null,
     },
   },
