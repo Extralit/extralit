@@ -28,6 +28,9 @@ export class ImportHistoryDatasetBuilder {
     const subset = this.createSubsetFromImportHistory();
     const dataset = new DatasetCreation(this.importHistoryData.id, this.datasetName, [subset]);
 
+    // Set the importHistoryId for backend import routing
+    dataset.importHistoryId = this.importHistoryData.id;
+
     // Enhance the dataset to ensure proper reference field handling
     this.enhanceDatasetForImportHistory(dataset);
 
