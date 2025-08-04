@@ -106,7 +106,7 @@
     - Maintain existing ImportModal and ImportHistoryList modal functionality
     - _Requirements: 1.1, 1.5, 2.1, 6.2, 6.4_
 
-  - [ ] 8.2 Update home page view model
+  - [x] 8.2 Update home page view model
     - Modify useHomeViewModel to handle Recent Imports integration
     - Add navigation methods for import configuration routing
     - Integrate modal opening logic for ImportHistoryList and ImportModal
