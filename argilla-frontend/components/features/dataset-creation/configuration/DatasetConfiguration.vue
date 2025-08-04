@@ -105,7 +105,7 @@ export default {
       validator: (value) => ["hub", "import"].includes(value),
     },
     importData: {
-      type: ImportHistoryDetails,
+      type: [ImportHistoryDetails, Object],
       default: null,
     },
     isLoadingImportData: {
@@ -166,18 +166,23 @@ export default {
     },
     configureImportHistoryDataset() {
       if (this.dataSource === "import" && this.importData) {
-        // Get suggested field mappings for ImportHistory data
-        const suggestedMappings = this.getSuggestedFieldMappings(this.importData);
+        try {
+          // Get suggested field mappings for ImportHistory data
+          const suggestedMappings = this.getSuggestedFieldMappings(this.importData);
 
-        // Configure the dataset with ImportHistory-specific settings
-        this.configureImportHistoryFields(this.dataset, this.importData, suggestedMappings);
+          // Configure the dataset with ImportHistory-specific settings
+          this.configureImportHistoryFields(this.dataset, this.importData, suggestedMappings);
 
-        // Emit event to notify parent of configuration changes
-        this.$emit("import-dataset-configured", {
-          dataset: this.dataset,
-          suggestedMappings,
-          suggestedQuestions: this.getSuggestedQuestions(this.importData),
-        });
+          // Emit event to notify parent of configuration changes
+          this.$emit("import-dataset-configured", {
+            dataset: this.dataset,
+            suggestedMappings,
+            suggestedQuestions: this.getSuggestedQuestions(this.importData),
+          });
+        } catch (error) {
+          console.error("Error configuring ImportHistory dataset:", error);
+          // Don't throw the error, just log it to avoid breaking the UI
+        }
       }
     },
   },

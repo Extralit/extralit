@@ -1,7 +1,11 @@
 import { useResolve } from "ts-injecty";
 import { ref, useContext, useRoute } from "@nuxtjs/composition-api";
-import { GetImportHistoryDetailsUseCase, ImportHistoryDetailsResponse } from "~/v1/domain/usecases/get-import-history-details-use-case";
+import {
+  GetImportHistoryDetailsUseCase,
+  ImportHistoryDetailsResponse,
+} from "~/v1/domain/usecases/get-import-history-details-use-case";
 import { ImportHistoryDatasetBuilder } from "~/v1/domain/entities/import/ImportHistoryDatasetBuilder";
+import { ImportHistoryDetails } from "~/v1/domain/entities/import/ImportHistoryDetails";
 import { useRoutes } from "~/v1/infrastructure/services/useRoutes";
 
 export const useImportConfigurationViewModel = () => {
@@ -10,7 +14,7 @@ export const useImportConfigurationViewModel = () => {
 
   const isLoading = ref(false);
   const error = ref<string | null>(null);
-  const importHistoryData = ref<ImportHistoryDetailsResponse | null>(null);
+  const importHistoryData = ref<ImportHistoryDetails | null>(null);
   const datasetConfig = ref(null);
   const retryCount = ref(0);
   const maxRetries = 3;
@@ -18,7 +22,7 @@ export const useImportConfigurationViewModel = () => {
   const getImportHistoryDetailsUseCase = useResolve(GetImportHistoryDetailsUseCase);
 
   const loadImportConfiguration = async (importId: string) => {
-    if (!importId || importId.trim() === '') {
+    if (!importId || importId.trim() === "") {
       error.value = "Invalid import ID provided.";
       return;
     }
@@ -39,7 +43,9 @@ export const useImportConfigurationViewModel = () => {
         throw new Error("No import details received");
       }
 
-      importHistoryData.value = result.details;
+      // Convert raw data to ImportHistoryDetails instance
+      const importHistoryDetails = new ImportHistoryDetails(result.details);
+      importHistoryData.value = importHistoryDetails;
 
       // Validate that we have data to work with
       if (!result.details.data || !result.details.data.data || result.details.data.data.length === 0) {
@@ -53,7 +59,6 @@ export const useImportConfigurationViewModel = () => {
 
       // Reset retry count on success
       retryCount.value = 0;
-
     } catch (e) {
       console.error("Failed to load import configuration:", e);
 
@@ -61,7 +66,8 @@ export const useImportConfigurationViewModel = () => {
       if (e.response?.status === 404) {
         error.value = "Import record not found. It may have been deleted or you don't have access to it.";
       } else if (e.response?.status === 403) {
-        error.value = "You don't have permission to access this import record. Please check with your workspace administrator.";
+        error.value =
+          "You don't have permission to access this import record. Please check with your workspace administrator.";
       } else if (e.response?.status === 401) {
         error.value = "Your session has expired. Please sign in again.";
         // Could redirect to login here
@@ -100,7 +106,7 @@ export const useImportConfigurationViewModel = () => {
     if (importId) {
       // Add exponential backoff delay
       const delay = Math.pow(2, retryCount.value - 1) * 1000; // 1s, 2s, 4s
-      await new Promise(resolve => setTimeout(resolve, delay));
+      await new Promise((resolve) => setTimeout(resolve, delay));
 
       await loadImportConfiguration(importId);
     } else {
@@ -109,7 +115,7 @@ export const useImportConfigurationViewModel = () => {
   };
 
   const handleSubsetChange = (subsetName: string) => {
-    if (datasetConfig.value && typeof datasetConfig.value.changeSubset === 'function') {
+    if (datasetConfig.value && typeof datasetConfig.value.changeSubset === "function") {
       try {
         datasetConfig.value.changeSubset(subsetName);
       } catch (e) {

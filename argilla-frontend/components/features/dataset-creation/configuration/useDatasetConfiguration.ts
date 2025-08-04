@@ -13,12 +13,24 @@ export const useDatasetConfiguration = () => {
   const getFirstRecord = async (
     dataset: any,
     dataSource: "hub" | "import" = "hub",
-    importData?: ImportHistoryDetails
+    importData?: ImportHistoryDetails | any
   ) => {
     try {
       if (dataSource === "import" && importData) {
-        // For ImportHistory data, use the first record from the import data
-        const sampleRecord = importData.getSampleRecord();
+        // Handle both ImportHistoryDetails instance and raw data
+        let sampleRecord;
+
+        if (importData.getSampleRecord && typeof importData.getSampleRecord === 'function') {
+          // It's an ImportHistoryDetails instance
+          sampleRecord = importData.getSampleRecord();
+        } else if (importData.data && importData.data.data && importData.data.data.length > 0) {
+          // It's raw ImportHistoryDetailsResponse data
+          sampleRecord = importData.data.data[0];
+        } else {
+          // Fallback - try to find data in various possible structures
+          sampleRecord = null;
+        }
+
         firstRecord.value = sampleRecord;
       } else if (dataSource === "hub") {
         // For HuggingFace Hub data, use the existing use case
@@ -37,8 +49,22 @@ export const useDatasetConfiguration = () => {
    * Create a DatasetCreation instance from ImportHistory data
    * This integrates ImportHistoryDatasetBuilder for data conversion
    */
-  const createDatasetFromImportHistory = (importData: ImportHistoryDetails): DatasetCreation => {
-    const builder = new ImportHistoryDatasetBuilder(importData.getRawData());
+  const createDatasetFromImportHistory = (importData: ImportHistoryDetails | any): DatasetCreation => {
+    // Handle both ImportHistoryDetails instance and raw data
+    let rawData;
+    let fieldNames: string[] = [];
+
+    if (importData.getRawData && typeof importData.getRawData === 'function') {
+      // It's an ImportHistoryDetails instance
+      rawData = importData.getRawData();
+      fieldNames = importData.fieldNames || [];
+    } else {
+      // It's raw ImportHistoryDetailsResponse data
+      rawData = importData;
+      fieldNames = importData.data?.schema?.fields?.map((f: any) => f.name) || [];
+    }
+
+    const builder = new ImportHistoryDatasetBuilder(rawData);
     const dataset = builder.build();
 
     // Enhance the dataset with ImportHistory-specific metadata handling
@@ -51,7 +77,7 @@ export const useDatasetConfiguration = () => {
         // Ensure we have a reference field in metadata mapping
         // This will populate record.metadata.reference from ImportHistory data
         const hasReferenceMapping = mappings.metadata.some(m => m.target === 'reference');
-        if (!hasReferenceMapping && importData.fieldNames.includes('reference')) {
+        if (!hasReferenceMapping && fieldNames.includes('reference')) {
           mappings.metadata.push({
             source: 'reference',
             target: 'reference'
@@ -72,10 +98,24 @@ export const useDatasetConfiguration = () => {
    */
   const configureImportHistoryFields = (
     dataset: DatasetCreation,
-    importData: ImportHistoryDetails,
+    importData: ImportHistoryDetails | any,
     fieldMappings: Array<{ source: string; target: string; type: string }>
   ) => {
-    const builder = new ImportHistoryDatasetBuilder(importData.getRawData());
+    // Handle both ImportHistoryDetails instance and raw data
+    let rawData;
+    let fieldNames: string[] = [];
+
+    if (importData.getRawData && typeof importData.getRawData === 'function') {
+      // It's an ImportHistoryDetails instance
+      rawData = importData.getRawData();
+      fieldNames = importData.fieldNames || [];
+    } else {
+      // It's raw ImportHistoryDetailsResponse data
+      rawData = importData;
+      fieldNames = importData.data?.schema?.fields?.map((f: any) => f.name) || [];
+    }
+
+    const builder = new ImportHistoryDatasetBuilder(rawData);
 
     // Apply field mappings to the dataset
     fieldMappings.forEach(mapping => {
@@ -92,7 +132,7 @@ export const useDatasetConfiguration = () => {
 
     // Ensure metadata mappings include reference field
     const metadataField = dataset.metadata.find(m => m.name === 'reference');
-    if (!metadataField && importData.fieldNames.includes('reference')) {
+    if (!metadataField && fieldNames.includes('reference')) {
       const referenceMetadata = MetadataCreation.from('reference', 'terms');
       if (referenceMetadata) {
         (dataset.selectedSubset as any).metadata.push(referenceMetadata);
@@ -103,10 +143,24 @@ export const useDatasetConfiguration = () => {
   /**
    * Get suggested field mappings from ImportHistory data
    */
-  const getSuggestedFieldMappings = (importData: ImportHistoryDetails) => {
-    const builder = new ImportHistoryDatasetBuilder(importData.getRawData());
+  const getSuggestedFieldMappings = (importData: ImportHistoryDetails | any) => {
+    // Handle both ImportHistoryDetails instance and raw data
+    let rawData;
+    let fieldNames: string[] = [];
 
-    return importData.fieldNames.map(fieldName => ({
+    if (importData.getRawData && typeof importData.getRawData === 'function') {
+      // It's an ImportHistoryDetails instance
+      rawData = importData.getRawData();
+      fieldNames = importData.fieldNames || [];
+    } else {
+      // It's raw ImportHistoryDetailsResponse data
+      rawData = importData;
+      fieldNames = importData.data?.schema?.fields?.map((f: any) => f.name) || [];
+    }
+
+    const builder = new ImportHistoryDatasetBuilder(rawData);
+
+    return fieldNames.map(fieldName => ({
       source: fieldName,
       target: fieldName,
       type: builder.inferFieldType(fieldName),
@@ -117,8 +171,19 @@ export const useDatasetConfiguration = () => {
   /**
    * Get suggested questions from ImportHistory data
    */
-  const getSuggestedQuestions = (importData: ImportHistoryDetails) => {
-    const builder = new ImportHistoryDatasetBuilder(importData.getRawData());
+  const getSuggestedQuestions = (importData: ImportHistoryDetails | any) => {
+    // Handle both ImportHistoryDetails instance and raw data
+    let rawData;
+
+    if (importData.getRawData && typeof importData.getRawData === 'function') {
+      // It's an ImportHistoryDetails instance
+      rawData = importData.getRawData();
+    } else {
+      // It's raw ImportHistoryDetailsResponse data
+      rawData = importData;
+    }
+
+    const builder = new ImportHistoryDatasetBuilder(rawData);
     return builder.getSuggestedQuestions();
   };
 

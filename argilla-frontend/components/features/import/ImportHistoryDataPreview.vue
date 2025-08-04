@@ -319,14 +319,29 @@ export default {
 
   methods: {
     formatDate(date: Date | string): string {
-      const dateObj = typeof date === 'string' ? new Date(date) : date;
-      return dateObj.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
+      if (!date) {
+        return "Unknown date";
+      }
+
+      try {
+        const dateObj = typeof date === 'string' ? new Date(date) : date;
+
+        // Check if the date is valid
+        if (isNaN(dateObj.getTime())) {
+          return "Invalid date";
+        }
+
+        return dateObj.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      } catch (error) {
+        console.error("Error formatting date:", error);
+        return "Date formatting error";
+      }
     },
 
     formatColumnTitle(fieldName: string): string {

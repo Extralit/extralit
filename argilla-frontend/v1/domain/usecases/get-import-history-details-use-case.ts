@@ -64,7 +64,7 @@ export interface ImportHistoryDetailsParams {
 }
 
 export class GetImportHistoryDetailsUseCase {
-  constructor(private readonly axios: NuxtAxiosInstance) {}
+  constructor(private readonly axios: NuxtAxiosInstance) { }
 
   async execute(
     importId: string,
