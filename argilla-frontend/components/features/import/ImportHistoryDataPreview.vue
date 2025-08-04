@@ -28,7 +28,7 @@
             {{ totalRecords }} records imported on {{ formatDate(importHistoryDetails.createdAt) }}
           </p>
         </div>
-        <div class="summary-stats">
+        <!-- <div class="summary-stats">
           <div class="stat-item stat-total">
             <span class="stat-label">Total:</span>
             <span class="stat-value">{{ summary.total_documents }}</span>
@@ -41,11 +41,11 @@
             <span class="stat-label">Failed:</span>
             <span class="stat-value">{{ summary.failed_count }}</span>
           </div>
-        </div>
+        </div> -->
       </div>
 
       <!-- Search and filters -->
-      <div class="preview-controls">
+      <!-- <div class="preview-controls">
         <div class="search-section">
           <BaseInputContainer>
             <BaseInput
@@ -68,7 +68,7 @@
             <option value="failed">Failed</option>
           </select>
         </div>
-      </div>
+      </div> -->
 
       <!-- Data table -->
       <div class="table-container">
@@ -81,13 +81,6 @@
         />
       </div>
 
-      <!-- Pagination info -->
-      <div v-if="showPaginationInfo" class="pagination-info">
-        <p>
-          Showing {{ Math.min(currentPage * pageSize, filteredData.length) }} of {{ filteredData.length }} records
-          <span v-if="searchQuery || statusFilter">(filtered from {{ totalRecords }} total)</span>
-        </p>
-      </div>
     </div>
 
     <!-- Empty state -->
@@ -141,10 +134,6 @@ export default {
     error: {
       type: String,
       default: null,
-    },
-    maxHeight: {
-      type: String,
-      default: "500px",
     },
     showPaginationInfo: {
       type: Boolean,
@@ -274,29 +263,17 @@ export default {
         columns.push(column);
       });
 
-      // Add status column at the end (frozen)
-      columns.push({
-        field: "status",
-        title: "Status",
-        width: 120,
-        frozen: true,
-        formatter: this.statusFormatter,
-        filterable: true,
-        headerFilter: "select",
-      });
-
       return columns;
     },
 
     tableOptions() {
       return {
-        layout: "fitData",
-        maxHeight: this.maxHeight,
+        layout: "fitDataFill",
+        maxHeight: "100%",
         pagination: true,
         paginationSize: this.pageSize,
         paginationSizeSelector: [10, 20, 50, 100],
         sortMode: "local",
-        filterMode: "local",
         placeholder: "No records found",
         renderHorizontal: "virtual",
         resizableColumns: true,
@@ -376,7 +353,7 @@ export default {
     titleFormatter(cell: any): string {
       const value = cell.getValue() || "Untitled";
       const truncated = value.length > 60 ? value.substring(0, 60) + "..." : value;
-      return `<span class="title-cell" title="${value}">${truncated}</span>`;
+      return `<span class="title-cell">${truncated}</span>`;
     },
 
     authorsFormatter(cell: any): string {
@@ -393,7 +370,7 @@ export default {
         if (authorList.length > 3) authors += " et al.";
       }
 
-      return `<span class="authors-cell" title="${value}">${authors}</span>`;
+      return `<span class="authors-cell">${authors}</span>`;
     },
 
     doiFormatter(cell: any): string {
@@ -435,7 +412,7 @@ export default {
       if (!value) return "";
 
       const displayText = value.length > 30 ? value.substring(0, 30) + "..." : value;
-      return `<a href="${value}" target="_blank" class="url-link" title="${value}">${displayText}</a>`;
+      return `<a href="${value}" target="_blank" class="url-link">${displayText}</a>`;
     },
 
     getStatusText(status: string): string {
@@ -476,7 +453,7 @@ export default {
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-height: 400px;
+  min-height: 500px;
 }
 
 // Loading state
@@ -557,6 +534,7 @@ export default {
   flex-direction: column;
   height: 100%;
   gap: $base-space * 2;
+  flex: 1;
 }
 
 // Header
@@ -589,105 +567,19 @@ export default {
     }
   }
 
-  .summary-stats {
-    display: flex;
-    gap: $base-space * 2;
-    flex-wrap: wrap;
-
-    @include media("<tablet") {
-      justify-content: flex-start;
-    }
-
-    .stat-item {
-      display: flex;
-      align-items: center;
-      gap: $base-space;
-
-      .stat-label {
-        color: var(--fg-secondary);
-        font-size: 0.9rem;
-      }
-
-      .stat-value {
-        font-weight: 600;
-        font-size: 1rem;
-        color: var(--fg-primary);
-      }
-
-      &.stat-total .stat-value {
-        color: var(--fg-primary);
-      }
-
-      &.stat-success .stat-value {
-        color: var(--color-success);
-      }
-
-      &.stat-failed .stat-value {
-        color: var(--color-danger);
-      }
-    }
-  }
 }
 
 // Controls
-.preview-controls {
-  display: flex;
-  gap: $base-space * 2;
-  align-items: center;
-  padding: 0 $base-space;
-
-  @include media("<tablet") {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .search-section {
-    flex: 1;
-    max-width: 300px;
-
-    @include media("<tablet") {
-      max-width: none;
-    }
-
-    .search-input {
-      width: 100%;
-    }
-  }
-
-  .filter-section {
-    .status-filter {
-      padding: $base-space;
-      border: 1px solid var(--border-field);
-      border-radius: $border-radius-s;
-      background: var(--bg-accent-grey-1);
-      color: var(--fg-primary);
-      font-size: 0.9rem;
-      min-width: 120px;
-
-      &:focus {
-        border-color: var(--bg-action);
-        outline: none;
-      }
-    }
-  }
-}
 
 // Table container
 .table-container {
   flex: 1;
   min-height: 300px;
   border-radius: $border-radius;
-  overflow: hidden;
+  overflow: auto;
+  width: 100%;
 }
 
-// Pagination info
-.pagination-info {
-  padding: $base-space;
-  text-align: center;
-  color: var(--fg-secondary);
-  font-size: 0.9rem;
-  border-top: 1px solid var(--border-field);
-}
 
 // Table cell styles (applied globally to override Tabulator)
 :deep(.tabulator) {

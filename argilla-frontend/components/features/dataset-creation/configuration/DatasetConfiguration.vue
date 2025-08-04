@@ -222,7 +222,7 @@ export default {
     align-items: flex-start;
     justify-items: center;
     padding: $base-space * 2;
-    width: 40vw;
+    width: 100%;
     height: 100%;
     overflow: auto;
     @include media("<tablet") {
