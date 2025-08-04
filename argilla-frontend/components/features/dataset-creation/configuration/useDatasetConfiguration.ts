@@ -5,6 +5,7 @@ import { ImportHistoryDetails } from "~/v1/domain/entities/import/ImportHistoryD
 import { ImportHistoryDatasetBuilder } from "~/v1/domain/entities/import/ImportHistoryDatasetBuilder";
 import { DatasetCreation } from "~/v1/domain/entities/hub/DatasetCreation";
 import { MetadataCreation } from "~/v1/domain/entities/hub/MetadataCreation";
+import { FieldType } from "~/v1/domain/entities/field/FieldType";
 
 export const useDatasetConfiguration = () => {
   const firstRecord = ref(null);
@@ -124,8 +125,8 @@ export const useDatasetConfiguration = () => {
         // Update field configuration based on ImportHistory data
         const fieldType = builder.inferFieldType(mapping.source);
         if (fieldType !== 'no mapping') {
-          // Create a new field type object since the original is read-only
-          (field as any).type = { value: fieldType };
+          // Set the field type as a FieldType instance
+          (field as any).type = FieldType.from(fieldType);
         }
       }
     });

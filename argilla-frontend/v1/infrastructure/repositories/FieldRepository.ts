@@ -18,7 +18,10 @@ export class FieldRepository {
         name: field.name,
         title: field.title,
         required: field.required,
-        settings: field.settings,
+        settings: {
+          ...field.settings,
+          type: field.settings.type.value, // Extract the string value from FieldType
+        },
       });
 
       return data;
@@ -61,7 +64,11 @@ export class FieldRepository {
   private createRequest({ name, title, settings }: Field): Partial<BackendField> {
     return {
       title: !title || title === "" ? name : title,
-      settings,
+      settings: {
+        ...settings,
+        // Ensure type is serialized as string value if it's a FieldType object
+        type: typeof settings.type === "object" && settings.type?.value ? settings.type.value : settings.type,
+      },
     };
   }
 }
