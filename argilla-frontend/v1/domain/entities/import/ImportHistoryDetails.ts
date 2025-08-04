@@ -95,7 +95,7 @@ export class ImportHistoryDetails {
     return {
       ...this.data.summary,
       success_rate:
-        this.data.summary.total_documents > 0
+        this.data?.summary?.total_documents > 0
           ? (this.data.summary.add_count + this.data.summary.update_count) / this.data.summary.total_documents
           : 0,
     };
