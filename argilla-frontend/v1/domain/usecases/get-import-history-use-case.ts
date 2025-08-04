@@ -43,7 +43,7 @@ export interface ImportHistoryListParams {
 }
 
 export class GetImportHistoryUseCase {
-  constructor(private readonly axios: NuxtAxiosInstance) {}
+  constructor(private readonly axios: NuxtAxiosInstance) { }
 
   async execute(params: ImportHistoryListParams = {}): Promise<ImportHistoryListResponse> {
     const queryParams = new URLSearchParams();
@@ -73,9 +73,18 @@ export class GetImportHistoryUseCase {
       });
     }
 
-    const response = await this.axios.get<ImportHistoryListResponse>(`/v1/imports/history?${queryParams.toString()}`);
+    const response = await this.axios.get<ImportHistoryListItem[]>(`/v1/imports/history?${queryParams.toString()}`);
 
-    return response.data;
+    // The API returns an array directly, not an object with items property
+    const items = Array.isArray(response.data) ? response.data : [];
+
+    return {
+      items,
+      total: items.length,
+      page: params.page || 1,
+      size: params.size || items.length,
+      pages: 1, // Since we're getting all items in one response
+    };
   }
 
   /**
