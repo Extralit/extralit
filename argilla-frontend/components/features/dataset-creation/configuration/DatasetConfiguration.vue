@@ -1,9 +1,9 @@
 <template>
   <div class="dataset-config">
     <HorizontalResizable
+      :id="`dataset-config-r-h-rz`"
       :min-height-percent="30"
       :top-percent-height="34"
-      :id="`dataset-config-r-h-rz`"
       class="wrapper"
     >
       <template #up>
@@ -47,7 +47,7 @@
         </VerticalResizable>
       </template>
       <template #down>
-        <VerticalResizable class="dataset-config__down" :id="`dataset-preview-t-v-rz`" :left-percent-width="36">
+        <VerticalResizable :id="`dataset-preview-t-v-rz`" class="dataset-config__down" :left-percent-width="36">
           <template #left>
             <div class="dataset-config__preview">
               <!-- HuggingFace Hub preview -->
@@ -117,9 +117,20 @@ export default {
       default: null,
     },
   },
-  emits: ["change-subset", "retry-import-data", "import-row-selected", "import-field-selected"],
+  emits: [
+    "change-subset",
+    "retry-import-data",
+    "import-row-selected",
+    "import-field-selected",
+    "import-dataset-configured",
+  ],
   mounted() {
     this.getFirstRecord(this.dataset, this.dataSource, this.importData);
+
+    // If this is ImportHistory data, configure the dataset appropriately
+    if (this.dataSource === "import" && this.importData) {
+      this.configureImportHistoryDataset();
+    }
   },
   watch: {
     dataset: {
@@ -132,6 +143,7 @@ export default {
       handler(newImportData) {
         if (this.dataSource === "import" && newImportData) {
           this.getFirstRecord(this.dataset, this.dataSource, newImportData);
+          this.configureImportHistoryDataset();
         }
       },
       deep: true,
@@ -139,6 +151,9 @@ export default {
     dataSource: {
       handler(newDataSource) {
         this.getFirstRecord(this.dataset, newDataSource, this.importData);
+        if (newDataSource === "import" && this.importData) {
+          this.configureImportHistoryDataset();
+        }
       },
     },
   },
@@ -148,6 +163,22 @@ export default {
     },
     handleImportFieldSelected(fieldData) {
       this.$emit("import-field-selected", fieldData);
+    },
+    configureImportHistoryDataset() {
+      if (this.dataSource === "import" && this.importData) {
+        // Get suggested field mappings for ImportHistory data
+        const suggestedMappings = this.getSuggestedFieldMappings(this.importData);
+
+        // Configure the dataset with ImportHistory-specific settings
+        this.configureImportHistoryFields(this.dataset, this.importData, suggestedMappings);
+
+        // Emit event to notify parent of configuration changes
+        this.$emit("import-dataset-configured", {
+          dataset: this.dataset,
+          suggestedMappings,
+          suggestedQuestions: this.getSuggestedQuestions(this.importData),
+        });
+      }
     },
   },
   setup() {

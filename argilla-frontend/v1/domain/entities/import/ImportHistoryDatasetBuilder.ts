@@ -26,11 +26,63 @@ export class ImportHistoryDatasetBuilder {
 
   build(): DatasetCreation {
     const subset = this.createSubsetFromImportHistory();
-    return new DatasetCreation(
-      this.importHistoryData.id,
-      this.datasetName,
-      [subset]
-    );
+    const dataset = new DatasetCreation(this.importHistoryData.id, this.datasetName, [subset]);
+
+    // Enhance the dataset to ensure proper reference field handling
+    this.enhanceDatasetForImportHistory(dataset);
+
+    return dataset;
+  }
+
+  /**
+   * Enhance DatasetCreation instance for ImportHistory-specific requirements
+   */
+  private enhanceDatasetForImportHistory(dataset: DatasetCreation): void {
+    // Override the mappings getter to ensure reference field is included in metadata
+    const originalMappings = dataset.mappings;
+
+    Object.defineProperty(dataset, "mappings", {
+      get: () => {
+        const mappings = {
+          fields: originalMappings.fields,
+          metadata: [...originalMappings.metadata],
+          suggestions: originalMappings.suggestions,
+          external_id: originalMappings.external_id,
+        };
+
+        // Ensure reference field is mapped to metadata if it exists
+        if (this.hasReferenceField()) {
+          const hasReferenceMapping = mappings.metadata.some((m) => m.target === "reference");
+          if (!hasReferenceMapping) {
+            // Add reference field to metadata mapping
+            const referenceSource = this.availableFields.includes("reference") ? "reference" :
+              ? "reference"
+              : this.availableFields.includes("id")
+              ? "id"
+              : null;
+
+            if (referenceSource) {
+              mappings.metadata.push({
+                source: referenceSource,
+                target: "reference",
+              });
+            }
+          }
+        }
+
+        return mappings;
+      },
+      configurable: true,
+      enumerable: true,
+    });
+
+    // Override createFields to ensure proper field creation with ImportHistory data
+    const originalCreateFields = dataset.createFields.bind(dataset);
+    dataset.createFields = (firstRawRecord: unknown) => {
+      // Use ImportHistory first record if no record provided
+      const recordToUse = firstRawRecord || this.firstRecord;
+      return originalCreateFields(recordToUse);
+    };
   }
 
   private generateDatasetName(): string {
@@ -46,6 +98,16 @@ export class ImportHistoryDatasetBuilder {
   private createSubsetFromImportHistory(): Subset {
     // Create a mock datasetInfo structure that mimics HuggingFace format
     const features = this.extractFeaturesFromSchema();
+
+    // Ensure reference field is included in features if it exists in the data
+    if (this.hasReferenceField() && !features.reference) {
+      features.reference = {
+        dtype: "string",
+        _type: "Value",
+        name: "reference",
+      };
+    }
+
     const mockDatasetInfo = {
       default: {
         dataset_name: this.datasetName,
@@ -55,23 +117,33 @@ export class ImportHistoryDatasetBuilder {
             name: "train",
             num_bytes: 0,
             num_examples: this.importHistoryData.data.data.length,
-          }
-        }
-      }
+          },
+        },
+      },
     };
 
     return new Subset("default", mockDatasetInfo.default);
+  }
+
+  /**
+   * Check if the ImportHistory data contains a reference field
+   */
+  private hasReferenceField(): boolean {
+    return (
+      this.importHistoryData.data.schema.fields.some((field) => field.name === "reference" || field.name === "id") ||
+      this.importHistoryData.data.data.some((record) => "reference" in record || "id" in record)
+    );
   }
 
   private extractFeaturesFromSchema(): Record<string, ImportHistoryFeature> {
     const features: Record<string, ImportHistoryFeature> = {};
 
     // Process each field from the ImportHistory schema
-    this.importHistoryData.data.schema.fields.forEach(field => {
+    this.importHistoryData.data.schema.fields.forEach((field) => {
       features[field.name] = {
         dtype: this.mapDataTypeToFeatureType(field.type),
         _type: "Value",
-        name: field.name
+        name: field.name,
       };
     });
 
@@ -116,6 +188,20 @@ export class ImportHistoryDatasetBuilder {
   }
 
   /**
+   * Get records with enhanced metadata including reference field
+   * Ensures record.metadata.reference is populated from ImportHistory data
+   */
+  getRecordsWithMetadata(): Array<Record<string, any> & { metadata: { reference?: string } }> {
+    return this.importHistoryData.data.data.map((record) => ({
+      ...record,
+      metadata: {
+        ...record.metadata,
+        reference: record.reference || record.id || `record_${Math.random().toString(36).substr(2, 9)}`,
+      },
+    }));
+  }
+
+  /**
    * Get all data records from ImportHistory
    * This is used for preview and dataset creation
    */
@@ -127,14 +213,14 @@ export class ImportHistoryDatasetBuilder {
    * Get field names available for mapping
    */
   get availableFields(): string[] {
-    return this.importHistoryData.data.schema.fields.map(field => field.name);
+    return this.importHistoryData.data.schema.fields.map((field) => field.name);
   }
 
   /**
    * Infer field type for DatasetConfiguration field mapping
    */
   inferFieldType(fieldName: string): FieldCreationTypes {
-    const field = this.importHistoryData.data.schema.fields.find(f => f.name === fieldName);
+    const field = this.importHistoryData.data.schema.fields.find((f) => f.name === fieldName);
     if (!field) return "no mapping";
 
     // Map data types to field creation types
@@ -155,7 +241,7 @@ export class ImportHistoryDatasetBuilder {
    * Infer metadata type for DatasetConfiguration metadata mapping
    */
   inferMetadataType(fieldName: string): MetadataTypes | "terms" | null {
-    const field = this.importHistoryData.data.schema.fields.find(f => f.name === fieldName);
+    const field = this.importHistoryData.data.schema.fields.find((f) => f.name === fieldName);
     if (!field) return null;
 
     // Map data types to metadata types
@@ -181,13 +267,18 @@ export class ImportHistoryDatasetBuilder {
    */
   private isTextAnnotationField(fieldName: string): boolean {
     const textFieldNames = [
-      "title", "abstract", "content", "text", "description",
-      "summary", "body", "article", "document"
+      "title",
+      "abstract",
+      "content",
+      "text",
+      "description",
+      "summary",
+      "body",
+      "article",
+      "document",
     ];
 
-    return textFieldNames.some(name =>
-      fieldName.toLowerCase().includes(name.toLowerCase())
-    );
+    return textFieldNames.some((name) => fieldName.toLowerCase().includes(name.toLowerCase()));
   }
 
   /**
@@ -207,7 +298,7 @@ export class ImportHistoryDatasetBuilder {
     }> = [];
 
     // Look for fields that might be good for questions
-    this.availableFields.forEach(fieldName => {
+    this.availableFields.forEach((fieldName) => {
       const lowerName = fieldName.toLowerCase();
 
       // Suggest text questions for abstract/title fields
@@ -215,7 +306,7 @@ export class ImportHistoryDatasetBuilder {
         suggestions.push({
           fieldName,
           questionName: `${fieldName}_quality`,
-          questionType: "rating"
+          questionType: "rating",
         });
       }
 
@@ -227,8 +318,8 @@ export class ImportHistoryDatasetBuilder {
           questionType: "label_selection",
           options: [
             { text: "Relevant", value: "relevant", id: "relevant" },
-            { text: "Not Relevant", value: "not_relevant", id: "not_relevant" }
-          ]
+            { text: "Not Relevant", value: "not_relevant", id: "not_relevant" },
+          ],
         });
       }
     });
