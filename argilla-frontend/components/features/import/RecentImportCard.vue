@@ -123,6 +123,15 @@ export default {
       transform: translateY(0);
       box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
     }
+
+    &:focus {
+      outline: 2px solid var(--bg-action);
+      outline-offset: 2px;
+    }
+
+    &:focus:not(:focus-visible) {
+      outline: none;
+    }
   }
 
   &__content {
@@ -140,13 +149,14 @@ export default {
   &__filename {
     margin: 0;
     color: var(--fg-primary);
-    font-size: 0.95rem;
+    @include font-size(15px);
     font-weight: 500;
-    line-height: 1.3;
+    @include line-height(18px);
     word-break: break-word;
     overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
   }
 
@@ -154,9 +164,9 @@ export default {
     display: flex;
     align-items: center;
     gap: calc($base-space / 2);
+    margin: 0;
     color: var(--fg-tertiary);
-    font-size: 0.8rem;
-    font-weight: 400;
+    @include font-size(12px);
 
     &-icon {
       flex-shrink: 0;
@@ -180,13 +190,13 @@ export default {
     min-width: 0;
 
     &-count {
-      font-size: 0.9rem;
+      @include font-size(14px);
       font-weight: 600;
       color: var(--fg-primary);
     }
 
     &-label {
-      font-size: 0.7rem;
+      @include font-size(10px);
       font-weight: 400;
       color: var(--fg-secondary);
       text-transform: lowercase;
@@ -207,27 +217,58 @@ export default {
 }
 
 // Responsive design
-@media (max-width: 768px) {
+@include media("<tablet") {
   .recent-import-card {
     &.button {
       padding: $base-space * 1.5;
     }
 
     &__filename {
-      font-size: 0.9rem;
+      @include font-size(14px);
     }
 
     &__date {
-      font-size: 0.75rem;
+      @include font-size(11px);
     }
 
     &__stat {
       &-count {
-        font-size: 0.85rem;
+        @include font-size(13px);
       }
 
       &-label {
-        font-size: 0.65rem;
+        @include font-size(9px);
+      }
+    }
+  }
+}
+
+@include media("<phone") {
+  .recent-import-card {
+    &.button {
+      padding: $base-space * 1.25;
+    }
+
+    &__filename {
+      @include font-size(13px);
+      @include line-height(16px);
+    }
+
+    &__date {
+      @include font-size(10px);
+    }
+
+    &__stats {
+      gap: calc($base-space / 2);
+    }
+
+    &__stat {
+      &-count {
+        @include font-size(12px);
+      }
+
+      &-label {
+        @include font-size(8px);
       }
     }
   }

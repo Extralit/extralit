@@ -98,7 +98,7 @@
     - Ensure record.metadata.reference is populated from ImportHistory data
     - _Requirements: 3.4, 4.1, 4.2, 4.7_
 
-- [ ] 8. Integrate Recent Imports into Home Page
+- [x] 8. Integrate Recent Imports into Home Page
   - [x] 8.1 Modify home page sidebar
     - Update `argilla-frontend/pages/index.vue` to replace example datasets with RecentImports component
     - Add event handlers for import selection and modal opening
@@ -112,21 +112,21 @@
     - Integrate modal opening logic for ImportHistoryList and ImportModal
     - _Requirements: 2.1, 6.2, 6.4, 6.5_
 
-- [ ] 9. Add Import Configuration Route
-  - [ ] 9.1 Update routes configuration
+- [x] 9. Add Import Configuration Route
+  - [x] 9.1 Update routes configuration
     - Add importConfiguration route to ROUTES object in `argilla-frontend/v1/infrastructure/services/useRoutes.ts`
     - Implement goToImportConfiguration navigation method
     - Ensure proper route parameter handling for import_id
     - _Requirements: 2.1, 2.2, 7.1_
 
-  - [ ] 9.2 Update routing integration
+  - [x] 9.2 Update routing integration
     - Integrate new route with existing navigation patterns
     - Add proper breadcrumb support for import configuration
     - Ensure browser back/forward navigation works correctly
     - _Requirements: 7.4, 7.5_
 
 - [ ] 10. Add Styling and Responsive Design
-  - [ ] 10.1 Style Recent Imports components
+  - [x] 10.1 Style Recent Imports components
     - Create SCSS styles for RecentImports and RecentImportCard components
     - Follow existing design system patterns and variables from ExampleDatasetCard styling
     - Implement responsive design for sidebar display

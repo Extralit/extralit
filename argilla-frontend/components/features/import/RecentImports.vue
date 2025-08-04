@@ -51,7 +51,7 @@
     <!-- Recent Imports List -->
     <div v-else class="recent-imports__list">
       <RecentImportCard
-        v-for="importRecord in (recentImports || [])"
+        v-for="importRecord in recentImports || []"
         :key="importRecord.id"
         :import-record="importRecord"
         @click="$emit('import-selected', importRecord)"
@@ -103,14 +103,15 @@ export default {
       margin: 0 0 $base-space 0;
       font-weight: 500;
       color: var(--fg-primary);
-      font-size: 1rem;
+      @include font-size(16px);
     }
 
     .recent-imports__subtitle {
       margin: 0;
       color: var(--fg-secondary);
-      font-size: 0.9rem;
+      @include font-size(14px);
       font-weight: 300;
+      @include line-height(18px);
     }
   }
 
@@ -126,7 +127,7 @@ export default {
     p {
       margin: 0;
       color: var(--fg-secondary);
-      font-size: 0.9rem;
+      @include font-size(14px);
     }
   }
 
@@ -141,23 +142,23 @@ export default {
     text-align: center;
 
     &-icon {
-      font-size: 2rem;
+      @include font-size(32px);
       color: var(--color-danger);
     }
 
     h4 {
       margin: 0;
       color: var(--color-danger);
-      font-size: 1rem;
+      @include font-size(16px);
       font-weight: 600;
     }
 
     p {
       margin: 0;
       color: var(--fg-primary);
-      font-size: 0.9rem;
+      @include font-size(14px);
       max-width: 300px;
-      line-height: 1.4;
+      @include line-height(20px);
     }
   }
 
@@ -172,23 +173,23 @@ export default {
     text-align: center;
 
     .recent-imports__empty-icon {
-      font-size: 2rem;
+      @include font-size(32px);
       color: var(--fg-secondary);
     }
 
     h4 {
       margin: 0;
       color: var(--fg-primary);
-      font-size: 1rem;
+      @include font-size(16px);
       font-weight: 600;
     }
 
     p {
       margin: 0;
       color: var(--fg-secondary);
-      font-size: 0.9rem;
+      @include font-size(14px);
       max-width: 300px;
-      line-height: 1.4;
+      @include line-height(20px);
     }
   }
 
@@ -203,23 +204,23 @@ export default {
     text-align: center;
 
     &-icon {
-      font-size: 2rem;
+      @include font-size(32px);
       color: var(--fg-secondary);
     }
 
     h4 {
       margin: 0;
       color: var(--fg-primary);
-      font-size: 1rem;
+      @include font-size(16px);
       font-weight: 600;
     }
 
     p {
       margin: 0;
       color: var(--fg-secondary);
-      font-size: 0.9rem;
+      @include font-size(14px);
       max-width: 300px;
-      line-height: 1.4;
+      @include line-height(20px);
     }
   }
 
@@ -238,14 +239,14 @@ export default {
     margin-top: $base-space;
 
     .recent-imports__view-all-btn {
-      font-size: 0.9rem;
+      @include font-size(14px);
     }
 
     .recent-imports__import-btn {
       display: flex;
       align-items: center;
       gap: calc($base-space / 2);
-      font-size: 0.9rem;
+      @include font-size(14px);
 
       .recent-imports__import-icon {
         flex-shrink: 0;
@@ -257,12 +258,22 @@ export default {
 }
 
 // Responsive design
-@media (max-width: 768px) {
+@include media("<tablet") {
   .recent-imports {
+    &__header {
+      .recent-imports__title {
+        @include font-size(15px);
+      }
+
+      .recent-imports__subtitle {
+        @include font-size(13px);
+      }
+    }
+
     &__actions {
       .recent-imports__view-all-btn,
       .recent-imports__import-btn {
-        font-size: 0.8rem;
+        @include font-size(13px);
       }
     }
   }
