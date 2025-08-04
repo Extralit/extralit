@@ -51,5 +51,29 @@ describe("useLanguageDirection", () => {
 
       expect(result).toBe(false);
     });
+
+    test("be false if the text is undefined", () => {
+      const result = isRTL(undefined);
+
+      expect(result).toBe(false);
+    });
+
+    test("be false if the text is null", () => {
+      const result = isRTL(null);
+
+      expect(result).toBe(false);
+    });
+
+    test("be false if the text is empty string", () => {
+      const result = isRTL("");
+
+      expect(result).toBe(false);
+    });
+
+    test("be false if the text is not a string", () => {
+      const result = isRTL(123 as any);
+
+      expect(result).toBe(false);
+    });
   });
 });
