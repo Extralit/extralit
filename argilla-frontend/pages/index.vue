@@ -68,16 +68,12 @@
           </div>
           <BaseSeparator class="home__sidebar__separator" />
           <div class="home__sidebar__content">
-            <p class="home__sidebar__title" v-text="$t('home.exampleDatasetsTitle')" />
-            <p class="home__sidebar__subtitle" v-text="$t('home.exampleDatasetsText')" />
-            <div class="home__sidebar__cards">
-              <ExampleDatasetCard
-                v-for="dataset in exampleDatasets"
-                :key="dataset.repoId"
-                :dataset="dataset"
-                @on-import-dataset="importHfDataset"
-              />
-            </div>
+            <RecentImports
+              :workspace="selectedWorkspace"
+              @import-selected="handleImportSelected"
+              @view-all-imports="openImportHistoryModal"
+              @import-documents="openImportModal"
+            />
           </div>
         </template>
         <template v-else>
@@ -107,6 +103,19 @@
       :workspace="selectedWorkspace"
       @close="showImportModal = false"
     />
+
+    <BaseModal
+      :visible="isImportHistoryModalVisible"
+      @close="closeImportHistoryModal"
+      :title="$t('import.historyTitle')"
+      size="large"
+    >
+      <ImportHistoryList
+        :workspace="selectedWorkspace"
+        @view-details="handleViewImportDetails"
+        @close="closeImportHistoryModal"
+      />
+    </BaseModal>
   </div>
 </template>
 
@@ -126,6 +135,7 @@ export default {
         { id: 'datasets', name: this.$t('home.datasets') },
         { id: 'documents', name: this.$t('home.documents') },
       ],
+      showImportHistoryModal: false,
     };
   },
   methods: {
@@ -151,10 +161,29 @@ export default {
         this.activeTab = selectedTab;
       }
     },
+    handleImportSelected(importRecord) {
+      this.goToImportConfiguration(importRecord.id);
+    },
+    openImportHistoryModal() {
+      this.showImportHistoryModal = true;
+    },
+    closeImportHistoryModal() {
+      this.showImportHistoryModal = false;
+    },
+    handleViewImportDetails(importRecord) {
+      this.closeImportHistoryModal();
+      this.goToImportConfiguration(importRecord.id);
+    },
   },
   components: {
     Home,
   },
+  computed: {
+    isImportHistoryModalVisible() {
+      return this.showImportHistoryModal;
+    },
+  },
+
   setup() {
     return useHomeViewModel();
   },

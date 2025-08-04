@@ -55,7 +55,7 @@ export class ImportHistoryDatasetBuilder {
           const hasReferenceMapping = mappings.metadata.some((m) => m.target === "reference");
           if (!hasReferenceMapping) {
             // Add reference field to metadata mapping
-            const referenceSource = this.availableFields.includes("reference") ? "reference" :
+            const referenceSource = this.availableFields.includes("reference")
               ? "reference"
               : this.availableFields.includes("id")
               ? "id"

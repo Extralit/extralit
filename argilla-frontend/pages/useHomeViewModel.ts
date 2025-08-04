@@ -12,7 +12,7 @@ export const useHomeViewModel = () => {
   const getWorkspacesUseCase = useResolve(GetWorkspacesUseCase);
   const { isAdminOrOwnerRole } = useRole();
   const isLoadingDatasets = ref(false);
-  const { goToImportDatasetFromHub } = useRoutes();
+  const { goToImportDatasetFromHub, goToImportConfiguration } = useRoutes();
   const { state: datasets } = useDatasets();
   const getDatasetsUseCase = useResolve(GetDatasetsUseCase);
   const getDatasetCreationUseCase = useResolve(GetHfDatasetCreationUseCase);
@@ -91,11 +91,19 @@ export const useHomeViewModel = () => {
     selectedWorkspaceId.value = workspaceId;
   };
 
+  // Import history modal state
+  const showImportHistoryModal = ref(false);
+
+  const isImportHistoryModalVisible = computed(() => {
+    return showImportHistoryModal.value;
+  });
+
   return {
     datasets,
     workspaces,
     isLoadingDatasets,
     getNewHfDatasetByRepoId,
+    goToImportConfiguration,
     isAdminOrOwnerRole,
     exampleDatasets,
     error,
@@ -104,5 +112,7 @@ export const useHomeViewModel = () => {
     openImportModal,
     selectedWorkspace: selectedWorkspaceId,
     setSelectedWorkspaceId,
+    showImportHistoryModal,
+    isImportHistoryModalVisible,
   };
 };
