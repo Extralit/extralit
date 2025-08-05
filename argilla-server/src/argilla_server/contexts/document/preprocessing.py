@@ -39,6 +39,8 @@ try:
 except ImportError:
     ANALYSIS_AVAILABLE = False
 
+_LOGGER = logging.getLogger(__name__)
+
 
 class PDFPreprocessingSettings(BaseSettings):
     """
@@ -46,6 +48,9 @@ class PDFPreprocessingSettings(BaseSettings):
 
     All settings have the PREPROCESSING_ prefix.
     """
+
+    class Config:
+        env_prefix = "PREPROCESSING_"
 
     enabled: bool = Field(
         default=True, description="Enable PDF preprocessing with OCRmyPDF. Set to False to disable all processing."
@@ -57,7 +62,7 @@ class PDFPreprocessingSettings(BaseSettings):
 
     rotate_pages: bool = Field(default=True, description="Auto-rotate pages with horizontal text")
 
-    deskew: bool = Field(default=True, description="Fix skewed text")
+    deskew: bool = Field(default=False, description="Fix skewed text")
 
     clean: bool = Field(default=True, description="Use `unpaper` to clean up artifacts")
 
@@ -69,19 +74,44 @@ class PDFPreprocessingSettings(BaseSettings):
 
     force_ocr: bool = Field(default=False, description="Force OCR on all pages, even if they already have text")
 
-    skip_text: bool = Field(default=False, description="Skip text-based operations (OCR only for images)")
+    tesseract_timeout: int = Field(
+        default=0, description="Timeout for Tesseract OCR processing in seconds (0 for no timeout)"
+    )
+
+    skip_text: bool = Field(default=True, description="Skip text-based operations (OCR only for images)")
 
     redo_ocr: bool = Field(default=False, description="Redo OCR on pages that already have OCR")
 
     progress_bar: bool = Field(default=False, description="Show progress bar during processing")
 
-    quiet: bool = Field(default=True, description="Suppress OCRmyPDF output messages")
-
-    # Analysis settings
     enable_analysis: bool = Field(default=True, description="Enable PDF layout analysis and margin detection")
 
-    class Config:
-        env_prefix = "PREPROCESSING_"
+    output_type: str = Field(
+        default="pdf",
+        description="Output type for OCRmyPDF. Set to 'pdf' to skip PDF/A conversion.",
+    )
+
+    def get_ocrmypdf_args(self) -> dict:
+        """
+        Get OCRmyPDF arguments as a dictionary for use with **kwargs.
+
+        Returns:
+            Dictionary of OCRmyPDF arguments excluding input/output parameters.
+        """
+        return {
+            "language": self.language,
+            "rotate_pages": self.rotate_pages,
+            "deskew": self.deskew,
+            "clean": self.clean,
+            "optimize": self.optimize,
+            "pdf_renderer": self.pdf_renderer,
+            "force_ocr": self.force_ocr,
+            "skip_text": self.skip_text,
+            "tesseract_timeout": self.tesseract_timeout,
+            "redo_ocr": self.redo_ocr,
+            "progress_bar": self.progress_bar,
+            "output_type": self.output_type,  # skip PDF/A conversion
+        }
 
 
 class PDFPreprocessor:
@@ -100,7 +130,6 @@ class PDFPreprocessor:
             settings: Optional PDFPreprocessingSettings instance. If None, loads from environment.
         """
         self.settings = settings or PDFPreprocessingSettings()
-        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
         # Initialize analyzer if available and enabled
         if self.settings.enable_analysis and ANALYSIS_AVAILABLE:
@@ -108,12 +137,12 @@ class PDFPreprocessor:
         else:
             self.analyzer = None
             if self.settings.enable_analysis and not ANALYSIS_AVAILABLE:
-                self.logger.warning("PDF analysis is enabled but dependencies are not available")
+                _LOGGER.warning("PDF analysis is enabled but dependencies are not available")
 
         if not self.settings.enabled:
-            self.logger.info("PDF preprocessing is disabled via configuration")
+            _LOGGER.info("PDF preprocessing is disabled via configuration")
         elif not OCRMYPDF_AVAILABLE:
-            self.logger.warning("OCRmyPDF not available, PDF preprocessing will be skipped")
+            _LOGGER.warning("OCRmyPDF not available, PDF preprocessing will be skipped")
 
     def preprocess(self, file_data: bytes, filename: str) -> PDFProcessingResult:
         """
@@ -126,31 +155,20 @@ class PDFPreprocessor:
         Returns:
             PDFProcessingResult containing processed data and layout analysis metadata
         """
-        # Initialize metadata
-        metadata = {
-            "preprocessing_enabled": self.settings.enabled,
-            "ocrmypdf_available": OCRMYPDF_AVAILABLE,
-            "original_filename": filename,
-            "processing_timestamp": time.time(),
-        }
+        metadata = {}
 
         # Handle non-PDF files or disabled preprocessing
         if not filename.lower().endswith(".pdf"):
-            metadata["skipped_reason"] = "not_pdf"
             return PDFProcessingResult(processed_data=file_data, metadata=metadata)
 
         if not self.settings.enabled:
-            self.logger.debug(f"PDF preprocessing disabled, skipping: {filename}")
-            metadata["skipped_reason"] = "preprocessing_disabled"
-            # Still run analysis on original data if enabled and available
             if self.analyzer:
                 layout_analysis = self.analyzer.analyze_pdf_layout(file_data, filename)
                 metadata.update(layout_analysis)
             return PDFProcessingResult(processed_data=file_data, metadata=metadata)
 
         if not OCRMYPDF_AVAILABLE:
-            self.logger.warning("OCRmyPDF not available, skipping preprocessing")
-            metadata["skipped_reason"] = "ocrmypdf_unavailable"
+            _LOGGER.warning("OCRmyPDF not available, skipping preprocessing")
             # Still run analysis on original data if enabled and available
             if self.analyzer:
                 layout_analysis = self.analyzer.analyze_pdf_layout(file_data, filename)
@@ -159,62 +177,36 @@ class PDFPreprocessor:
 
         try:
             start_time = time.time()
-            self.logger.info(f"Starting PDF preprocessing and analysis for: {filename}")
 
             # Step 1: Analyze original PDF layout (if enabled and available)
             if self.analyzer:
-                self.logger.debug("Analyzing PDF layout structure...")
                 layout_analysis = self.analyzer.analyze_pdf_layout(file_data, filename)
                 metadata.update(layout_analysis)
-            else:
-                metadata.update({"analysis_available": False, "analysis_skipped": "disabled_or_unavailable"})
 
             # Step 2: OCR preprocessing
-            self.logger.debug("Starting OCRmyPDF processing...")
             try:
                 input_buffer = BytesIO(file_data)
                 output_buffer = BytesIO()
 
-                ocrmypdf.ocr(
-                    input_buffer,
-                    output_buffer,
-                    language=self.settings.language,
-                    rotate_pages=self.settings.rotate_pages,
-                    deskew=self.settings.deskew,
-                    clean=self.settings.clean,
-                    optimize=self.settings.optimize,
-                    pdf_renderer=self.settings.pdf_renderer,
-                    force_ocr=self.settings.force_ocr,
-                    skip_text=self.settings.skip_text,
-                    redo_ocr=self.settings.redo_ocr,
-                    progress_bar=self.settings.progress_bar,
-                    quiet=self.settings.quiet,
-                )
+                ocrmypdf.ocr(input_buffer, output_buffer, **self.settings.get_ocrmypdf_args())
 
                 processed_data = output_buffer.getvalue()
                 output_buffer.close()
                 input_buffer.close()
 
-                metadata["ocr_method"] = "bytesio"
-
             except Exception as buffer_error:
-                self.logger.debug(f"BytesIO approach failed for {filename}, falling back to temp files: {buffer_error}")
+                _LOGGER.debug(f"BytesIO approach failed for {filename}, falling back to temp files: {buffer_error}")
                 processed_data = self._preprocess_with_temp_files(file_data, filename)
-                metadata["ocr_method"] = "temp_files"
-                metadata["ocr_fallback_reason"] = str(buffer_error)
 
             processing_time = time.time() - start_time
             metadata["processing_time_seconds"] = processing_time
-            metadata["processing_successful"] = True
-
-            self.logger.info(f"PDF preprocessing completed for {filename} in {processing_time:.2f} seconds")
+            print(metadata)
+            _LOGGER.info(f"PDF preprocessing completed for {filename} in {processing_time:.2f} seconds")
 
             return PDFProcessingResult(processed_data=processed_data, metadata=metadata)
 
         except Exception as e:
-            self.logger.error(f"PDF preprocessing failed for {filename}: {e}")
-            metadata["processing_successful"] = False
-            metadata["processing_error"] = str(e)
+            _LOGGER.error(f"PDF preprocessing failed for {filename}: {e}")
             return PDFProcessingResult(processed_data=file_data, metadata=metadata)
 
     def _preprocess_with_temp_files(self, file_data: bytes, filename: str) -> bytes:
@@ -240,21 +232,7 @@ class PDFPreprocessor:
             )
             output_temp_file.close()
 
-            ocrmypdf.ocr(
-                input_temp_file.name,
-                output_temp_file.name,
-                language=self.settings.language,
-                rotate_pages=self.settings.rotate_pages,
-                deskew=self.settings.deskew,
-                clean=self.settings.clean,
-                optimize=self.settings.optimize,
-                pdf_renderer=self.settings.pdf_renderer,
-                force_ocr=self.settings.force_ocr,
-                skip_text=self.settings.skip_text,
-                redo_ocr=self.settings.redo_ocr,
-                progress_bar=self.settings.progress_bar,
-                quiet=self.settings.quiet,
-            )
+            ocrmypdf.ocr(input_temp_file.name, output_temp_file.name, **self.settings.get_ocrmypdf_args())
 
             with open(output_temp_file.name, "rb") as f:
                 processed_data = f.read()
@@ -268,7 +246,7 @@ class PDFPreprocessor:
                         if hasattr(temp_file, "name"):
                             os.unlink(temp_file.name)
                     except OSError as e:
-                        self.logger.warning(f"Failed to clean up temp file: {e}")
+                        _LOGGER.warning(f"Failed to clean up temp file: {e}")
 
 
 # Global preprocessor instance (can be configured via environment variables)
