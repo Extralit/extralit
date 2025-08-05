@@ -20,7 +20,7 @@ export class ImportHistoryDatasetBuilder {
   private readonly datasetName: string;
 
   // Fields that should be treated as metadata rather than dataset fields
-  private static readonly METADATA_FIELDS = ['reference', 'doi', 'imdb'] as const;
+  private static readonly METADATA_FIELDS = ["reference", "doi", "imdb"] as const;
 
   constructor(importHistoryData: ImportHistoryDetailsResponse) {
     this.importHistoryData = importHistoryData;
@@ -33,6 +33,9 @@ export class ImportHistoryDatasetBuilder {
 
     // Set the importHistoryId for backend import routing
     dataset.importHistoryId = this.importHistoryData.id;
+
+    // Add available fields for metadata selection
+    (dataset as any).availableFields = this.availableFields;
 
     // Enhance the dataset to ensure proper reference field handling
     this.enhanceDatasetForImportHistory(dataset);
@@ -177,7 +180,7 @@ export class ImportHistoryDatasetBuilder {
         ImportHistoryDatasetBuilder.METADATA_FIELDS.includes(field.name as any)
       ) ||
       this.importHistoryData.data.data.some((record) =>
-        ImportHistoryDatasetBuilder.METADATA_FIELDS.some(field => field in record)
+        ImportHistoryDatasetBuilder.METADATA_FIELDS.some((field) => field in record)
       )
     );
   }
@@ -256,7 +259,7 @@ export class ImportHistoryDatasetBuilder {
       });
 
       // Ensure reference field has a value if it exists
-      if ('reference' in record || 'id' in record) {
+      if ("reference" in record || "id" in record) {
         metadata.reference = record.reference || record.id || `record_${Math.random().toString(36).substring(2, 11)}`;
       }
 

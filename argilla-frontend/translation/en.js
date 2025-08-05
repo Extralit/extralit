@@ -335,6 +335,8 @@ export default {
       "The created dataset will include the first 10K rows and further records can be logged via the python SDK.",
     button: "Create dataset",
     fields: "Fields",
+    metadata: "Metadata Fields",
+    metadataDescription: "Select fields to include as metadata for filtering and organization",
     questionsTitle: "Questions",
     yourQuestions: "Your questions",
     requiredField: "Required field",

@@ -2,10 +2,10 @@
   <section class="config-form">
     <div class="config-form__content">
       <div class="config-form__col-wrapper">
-        <div class="config-form__col" v-if="dataset.selectedSubset.fields.length">
+        <div v-if="dataset.selectedSubset.fields.length" class="config-form__col">
           <div class="config-form__col__header">
             {{ $t("datasetCreation.fields") }}
-            <div class="config-form__subset" v-if="dataset.subsets.length > 1">
+            <div v-if="dataset.subsets.length > 1" class="config-form__subset">
               {{ $t("datasetCreation.subset") }}:
               <DatasetConfigurationSelector
                 class="config-form__selector"
@@ -39,6 +39,15 @@
                 />
               </transition-group>
             </draggable>
+          </div>
+        </div>
+        <div v-if="dataset.importHistoryId" class="config-form__col config-form__col--metadata">
+          <div class="config-form__col__content config-form__col__content--metadata">
+            <DatasetConfigurationMetadataSelector
+              :available-fields="availableMetadataFields"
+              :selected-fields="selectedMetadataFields"
+              @onSelectionChange="updateMetadataSelection"
+            />
           </div>
         </div>
       </div>
@@ -94,6 +103,7 @@
 
 <script>
 import { useDatasetConfigurationForm } from "./useDatasetConfigurationForm";
+import { MetadataCreation } from "~/v1/domain/entities/hub/MetadataCreation";
 
 export default {
   props: {
@@ -106,6 +116,7 @@ export default {
     return {
       isFocused: false,
       visibleDatasetCreationDialog: false,
+      selectedMetadataFields: [],
     };
   },
   computed: {
@@ -116,6 +127,14 @@ export default {
           return parseInt(numberInName) || 0;
         })
       );
+    },
+    availableMetadataFields() {
+      // Get available fields from ImportHistory if available
+      if (this.dataset.importHistoryId && this.dataset.availableFields) {
+        return this.dataset.availableFields;
+      }
+      // Fallback to field names from the dataset
+      return this.dataset.selectedSubset.fields.map((f) => f.name);
     },
   },
   methods: {
@@ -145,6 +164,30 @@ export default {
         index !== -1 ? index : undefined
       );
     },
+    updateMetadataSelection(selectedFields) {
+      this.selectedMetadataFields = selectedFields;
+      this.updateDatasetMetadata(selectedFields);
+    },
+    updateDatasetMetadata(selectedFields) {
+      // Clear existing metadata
+      this.dataset.selectedSubset.metadata.length = 0;
+
+      // Add selected fields as metadata
+      selectedFields.forEach((fieldName) => {
+        const metadata = MetadataCreation.from(fieldName, "terms");
+        if (metadata) {
+          this.dataset.selectedSubset.metadata.push(metadata);
+        }
+      });
+    },
+  },
+  mounted() {
+    // Initialize metadata selection for ImportHistory datasets
+    if (this.dataset.importHistoryId) {
+      const defaultMetadataFields = ["reference", "doi", "imdb"];
+      const availableDefaults = this.availableMetadataFields.filter((field) => defaultMetadataFields.includes(field));
+      this.updateMetadataSelection(availableDefaults);
+    }
   },
   setup() {
     return useDatasetConfigurationForm();
@@ -159,15 +202,18 @@ export default {
   height: 100%;
   gap: $base-space;
   padding: $base-space * 2;
+
   &__content {
     display: flex;
     gap: $base-space * 2;
     min-height: 0;
     height: 100%;
+
     @include media("<tablet") {
       flex-direction: column;
     }
   }
+
   &__col-wrapper {
     display: flex;
     flex-direction: column;
@@ -176,6 +222,7 @@ export default {
     width: 100%;
     max-width: 440px;
   }
+
   &__col {
     display: flex;
     flex-direction: column;
@@ -184,6 +231,13 @@ export default {
     background: var(--bg-accent-grey-1);
     border: 1px solid var(--bg-opacity-6);
     border-radius: $border-radius-m;
+
+    // For metadata column, don't stretch to fill height
+    &--metadata {
+      height: auto;
+      flex-shrink: 0;
+    }
+
     &__header {
       display: flex;
       justify-content: space-between;
@@ -192,6 +246,7 @@ export default {
       padding: $base-space * 2 $base-space * 2 $base-space $base-space * 2;
       font-weight: 500;
     }
+
     &__content {
       display: flex;
       flex-direction: column;
@@ -199,21 +254,31 @@ export default {
       gap: $base-space;
       overflow: auto;
       height: 100%;
+
+      // For metadata selector, don't stretch to fill height
+      &--metadata {
+        height: auto;
+        flex-shrink: 0;
+      }
     }
   }
+
   &__draggable-area {
     display: flex;
     flex-direction: column;
     gap: $base-space;
   }
+
   &__draggable-area-wrapper {
     display: flex;
     flex-direction: column;
     gap: $base-space;
   }
+
   &__ghost {
     opacity: 0.5;
   }
+
   &__selector {
     &__intro {
       display: block;
@@ -223,14 +288,17 @@ export default {
       @include line-height(16px);
     }
   }
+
   &__subset {
     display: flex;
     gap: $base-space;
     align-items: center;
     font-weight: 400;
   }
+
   &__button-area {
     display: flex;
+
     .button {
       width: 100%;
       justify-content: center;
