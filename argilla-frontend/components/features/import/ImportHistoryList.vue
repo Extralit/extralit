@@ -386,7 +386,6 @@ export default {
       if (this.searchTimeout) {
         clearTimeout(this.searchTimeout);
       }
-
       this.searchTimeout = setTimeout(() => {
         this.applyFilters();
       }, 500);
@@ -405,7 +404,6 @@ export default {
 
     async goToPage(page: number) {
       if (page < 1 || page > this.historyData.pages) return;
-
       this.currentPage = page;
       await this.loadHistory();
     },
@@ -595,7 +593,7 @@ export default {
 .history-table-container {
   flex: 1;
   margin-bottom: $base-space * 2;
-  border: 1px solid var(--border-field);
+  // border: 1px solid var(--border-field);
   border-radius: $border-radius;
   overflow: hidden;
 

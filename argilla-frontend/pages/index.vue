@@ -135,7 +135,6 @@ export default {
         { id: 'datasets', name: this.$t('home.datasets') },
         { id: 'documents', name: this.$t('home.documents') },
       ],
-      showImportHistoryModal: false,
     };
   },
   methods: {
@@ -164,12 +163,6 @@ export default {
     handleImportSelected(importRecord) {
       this.goToImportConfiguration(importRecord.id);
     },
-    openImportHistoryModal() {
-      this.showImportHistoryModal = true;
-    },
-    closeImportHistoryModal() {
-      this.showImportHistoryModal = false;
-    },
     handleViewImportDetails(importRecord) {
       this.closeImportHistoryModal();
       this.goToImportConfiguration(importRecord.id);
@@ -179,9 +172,7 @@ export default {
     Home,
   },
   computed: {
-    isImportHistoryModalVisible() {
-      return this.showImportHistoryModal;
-    },
+    // Modal state is managed by useHomeViewModel
   },
 
   watch: {

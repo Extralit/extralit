@@ -56,6 +56,45 @@ export function useImportHistoryListViewModel(props: any) {
       return await getImportHistoryUseCase.execute(params);
     },
 
+    // Component methods that the template calls
+    async vmLoadHistory(params: LoadHistoryParams): Promise<ImportHistoryListResponse> {
+      return await this.loadHistoryData(params);
+    },
+
+    vmDebouncedSearch(searchTimeout: NodeJS.Timeout | null, callback: () => void, delay = 500): NodeJS.Timeout {
+      if (searchTimeout) {
+        clearTimeout(searchTimeout);
+      }
+      return setTimeout(callback, delay);
+    },
+
+    vmApplyFilters(): void {
+      // This method is called by the component to apply filters
+      // The actual implementation is in the component
+    },
+
+    vmClearFilters(): ImportHistoryFilters {
+      return this.clearFiltersData();
+    },
+
+    vmGoToPage(page: number, totalPages: number, callback: (page: number) => void): void {
+      if (page < 1 || page > totalPages) return;
+      callback(page);
+    },
+
+    vmHandleRowClick(e: Event, row: any, callback: (rowData: HistoryTableRow) => void): void {
+      const rowData = row.getData();
+      callback(rowData);
+    },
+
+    vmViewDetails(rowData: HistoryTableRow, emitFn: (event: string, data: any) => void, workspace: any): void {
+      this.handleRowClickData(rowData, emitFn, workspace);
+    },
+
+    vmClose(emitFn: (event: string) => void): void {
+      emitFn("close");
+    },
+
     // Filter helpers
     hasActiveFiltersData(filters: ImportHistoryFilters): boolean {
       return !!(filters.filename || filters.date_from || filters.date_to);

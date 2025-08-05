@@ -334,9 +334,9 @@ async def list_import_histories(
                     filename=history.filename,
                     created_at=history.inserted_at,
                     metadata=history.metadata_,  # Include metadata in list view
+                    data=None,
                 )
             )
-
         _LOGGER.info(f"Retrieved {len(response_list)} import histories for workspace {workspace_id}")
         return response_list
 
