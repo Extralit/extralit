@@ -85,7 +85,7 @@ class ImportHistoryDataset:
         await UpsertRecordsBulk(db, search_engine).upsert_records_bulk(
             dataset,
             RecordsBulkUpsertSchema(items=items),
-            raise_on_error=False,
+            raise_on_error=True,
         )
 
     def _row_to_record_schema(self, row: Dict[str, Any], dataset: Dataset) -> RecordUpsertSchema:
@@ -122,7 +122,7 @@ class ImportHistoryDataset:
 
     def _row_metadata(self, row: Dict[str, Any], dataset: Dataset) -> Dict[str, Any]:
         metadata = {}
-        for mapping_metadata in self.mapping.metadata:
+        for mapping_metadata in self.mapping.metadata or []:
             value = row.get(mapping_metadata.source)
             metadata_property = dataset.metadata_property_by_name(mapping_metadata.target)
             if value is None or not metadata_property:
@@ -134,7 +134,7 @@ class ImportHistoryDataset:
 
     def _row_suggestions(self, row: Dict[str, Any], dataset: Dataset) -> List[SuggestionCreate]:
         suggestions = []
-        for mapping_suggestion in self.mapping.suggestions:
+        for mapping_suggestion in self.mapping.suggestions or []:
             value = row.get(mapping_suggestion.source)
             question = dataset.question_by_name(mapping_suggestion.target)
             if value is None or not question:
@@ -150,7 +150,7 @@ class ImportHistoryDataset:
                     value = [str(value)]
 
             if question.is_rating:
-                value = int(value)
+                value = int(value)  # type: ignore
 
             suggestions.append(
                 SuggestionCreate(
@@ -170,20 +170,16 @@ async def import_dataset_from_import_history_job(history_id: UUID, dataset_id: U
     """
     Import dataset records from ImportHistory data.
 
-    This job loads data from an ImportHistory record and creates dataset records
-    using the same mappnary containing HubDaing and ping conroceration
-    ssing pipeline as the HuggingFace Hub import.
-    t dataset to irecords into
-      mapping: D
+    This job loads data from an ImportHistory data and creates dataset records
+    using the same mapping containing fields, metadata, and suggestions configured in DatasetConfiguration.
+
     Args:
         history_id: UUID of the ImportHistory record containing the data
-        dataset_id: UUID of the
+        dataset_id: UUID of the Dataset to import records into
     """
     async with AsyncSessionLocal() as db:
-        # Get the import history
         import_history = await ImportHistory.get_or_raise(db, history_id)
 
-        # Get the dataset with all necessary relationships
         dataset = await Dataset.get_or_raise(
             db,
             dataset_id,

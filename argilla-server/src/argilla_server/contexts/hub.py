@@ -231,7 +231,7 @@ class HubDatasetExporter:
         self.cache_version = uuid4()
 
     def export_to(self, name: str, subset: str, split: str, private: bool, token: str) -> None:
-        hf_dataset = HFDataset.from_generator(self._rows_generator, split=NamedSplit(split))
+        hf_dataset: HFDataset = HFDataset.from_generator(self._rows_generator, split=NamedSplit(split))  # type: ignore
         hf_dataset.push_to_hub(
             repo_id=name,
             config_name=subset,
