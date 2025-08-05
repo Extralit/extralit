@@ -316,13 +316,13 @@ export default {
     // Step 5: Summary handlers
     handleReturnToLibrary() {
       this.handleClose();
-      // Navigate to workspace documents (would be handled by parent)
+      // TODO: Navigate to workspace documents (would be handled by parent)
       this.$emit("navigate-to-library");
     },
 
     handleViewImportHistory() {
       this.handleClose();
-      // Navigate to import history (would be handled by parent)
+      // TODO: Navigate to import history (would be handled by parent)
       this.$emit("navigate-to-import-history");
     },
 
