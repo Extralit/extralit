@@ -59,7 +59,7 @@ class PDFPreprocessingSettings(BaseSettings):
 
     deskew: bool = Field(default=True, description="Fix skewed text")
 
-    clean: bool = Field(default=True, description="Clean up artifacts")
+    clean: bool = Field(default=True, description="Use `unpaper` to clean up artifacts")
 
     optimize: int = Field(
         default=1, description="Optimize output file size (0=none, 1=lossless, 2=lossy, 3=aggressive)"
