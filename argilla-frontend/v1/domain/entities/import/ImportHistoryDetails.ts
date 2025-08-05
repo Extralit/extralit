@@ -6,6 +6,9 @@
 import type {
   ImportHistoryResponse,
   DataframeData,
+  ImportStatus,
+  DocumentImportAnalysis,
+  ImportSummary,
 } from "~/v1/domain/entities/import/ImportAnalysis";
 
 // Additional entity types specific to ImportHistory details
@@ -22,16 +25,6 @@ export interface ImportHistoryDataSchema {
   totalRows: number;
 }
 
-export interface ImportHistoryMetadata {
-  [reference: string]: {
-    status: "add" | "update" | "skip" | "failed";
-    associated_files: string[];
-    error_message?: string;
-    validation_errors?: string[];
-    import_timestamp?: string;
-  };
-}
-
 export interface ImportHistorySummaryStats {
   total_documents: number;
   add_count: number;
@@ -45,7 +38,7 @@ export interface ImportHistorySummaryStats {
  * Enhanced ImportHistory details with computed properties
  */
 export class ImportHistoryDetails {
-  constructor(private readonly data: ImportHistoryResponse & { data: DataframeData }) { }
+  constructor(private readonly data: ImportHistoryResponse & { data: DataframeData }) {}
 
   get id(): string {
     return this.data.id;
@@ -78,8 +71,13 @@ export class ImportHistoryDetails {
     return this.data.data.data;
   }
 
-  get metadata(): ImportHistoryMetadata {
-    return this.data.metadata || {};
+  get metadata():
+    | {
+        documents: Record<string, DocumentImportAnalysis>;
+        summary: ImportSummary;
+      }
+    | undefined {
+    return this.data.metadata;
   }
 
   get summary(): ImportHistorySummaryStats {
@@ -115,11 +113,11 @@ export class ImportHistoryDetails {
   /**
    * Get records by status
    */
-  getRecordsByStatus(status: "add" | "update" | "skip" | "failed"): Record<string, any>[] {
+  getRecordsByStatus(status: ImportStatus): Record<string, any>[] {
     return this.records.filter((record) => {
       const reference = record.reference || record.id;
-      const recordMetadata = this.metadata[reference];
-      return recordMetadata?.status === status;
+      const documentAnalysis = this.metadata?.documents?.[reference];
+      return documentAnalysis?.status === status;
     });
   }
 
@@ -177,6 +175,12 @@ export class ImportHistoryDetails {
     skip_count: number;
     failed_count: number;
   } {
+    // If metadata already contains a summary, use it
+    if (this.data.metadata?.summary) {
+      return this.data.metadata.summary;
+    }
+
+    // Otherwise calculate from documents
     const summary = {
       total_documents: this.data.data.data.length,
       add_count: 0,
@@ -185,23 +189,24 @@ export class ImportHistoryDetails {
       failed_count: 0,
     };
 
-    if (this.data.metadata) {
-      Object.values(this.data.metadata).forEach((item: any) => {
-        if (item.status) {
-          switch (item.status) {
-            case "add":
-              summary.add_count++;
-              break;
-            case "update":
-              summary.update_count++;
-              break;
-            case "skip":
-              summary.skip_count++;
-              break;
-            case "failed":
-              summary.failed_count++;
-              break;
-          }
+    if (this.data.metadata?.documents) {
+      Object.values(this.data.metadata.documents).forEach((documentAnalysis: DocumentImportAnalysis) => {
+        switch (documentAnalysis.status) {
+          case "add":
+            summary.add_count++;
+            break;
+          case "update":
+            summary.update_count++;
+            break;
+          case "skip":
+            summary.skip_count++;
+            break;
+          case "failed":
+            summary.failed_count++;
+            break;
+          case "ignore":
+            // Ignore status doesn't count towards any category
+            break;
         }
       });
     }

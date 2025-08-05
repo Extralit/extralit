@@ -97,5 +97,8 @@ export interface ImportHistoryResponse {
   filename: string;
   created_at: string;
   data?: DataframeData; // Tabular dataframe data (only in detailed view)
-  metadata?: Record<string, any>; // Import metadata with status and files (in list and detailed view)
+  metadata?: {
+    documents: Record<string, DocumentImportAnalysis>; // Reference key to document info mapping
+    summary: ImportSummary; // Import analysis summary
+  };
 }

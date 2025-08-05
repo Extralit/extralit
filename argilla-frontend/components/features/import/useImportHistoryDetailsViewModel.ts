@@ -4,7 +4,7 @@
  */
 
 import { useResolve } from "ts-injecty";
-import type { ImportHistoryResponse, DataframeData } from "~/v1/domain/entities/import/ImportAnalysis";
+import type { ImportHistoryResponse, DataframeData, ImportSummary } from "~/v1/domain/entities/import/ImportAnalysis";
 import {
   GetImportHistoryDetailsUseCase,
   ImportHistoryDetailItem,
@@ -31,7 +31,7 @@ export function useImportHistoryDetailsViewModel(props: any) {
     processHistoryDetails(historyResponse: ImportHistoryResponse): {
       details: ImportHistoryDetailsResponse;
       items: ImportHistoryDetailItem[];
-      summary: ImportHistoryDetailsResponse["summary"];
+      summary: ImportSummary;
     } {
       // Ensure we have data for detailed view
       if (!historyResponse.data) {
@@ -41,15 +41,25 @@ export function useImportHistoryDetailsViewModel(props: any) {
       const details: ImportHistoryDetailsResponse = {
         ...historyResponse,
         data: historyResponse.data,
-        summary: this.calculateSummary(historyResponse.data, historyResponse.metadata),
+        metadata: (historyResponse.metadata as ImportHistoryDetailsResponse["metadata"]) || {
+          documents: {},
+          summary: {
+            total_documents: 0,
+            add_count: 0,
+            update_count: 0,
+            skip_count: 0,
+            failed_count: 0,
+          },
+        },
       };
 
       const items = this.processDetailItems(details);
+      const summary = this.calculateSummary(historyResponse.data, historyResponse.metadata);
 
       return {
         details,
         items,
-        summary: details.summary,
+        summary,
       };
     },
 
@@ -59,7 +69,7 @@ export function useImportHistoryDetailsViewModel(props: any) {
     },
 
     // Calculate summary from data and metadata
-    calculateSummary(data: DataframeData, metadata?: Record<string, any>): ImportHistoryDetailsResponse["summary"] {
+    calculateSummary(data: DataframeData, metadata?: ImportHistoryResponse["metadata"]): ImportSummary {
       return getImportHistoryDetailsUseCase.calculateSummary(data, metadata);
     },
 
