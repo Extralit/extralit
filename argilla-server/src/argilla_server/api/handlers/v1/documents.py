@@ -84,9 +84,7 @@ async def add_document(
         db=db,
         workspace_id=document_create.workspace_id,
         document_id=document_create.id,
-        reference=document_create.reference,
-        pmid=document_create.pmid,
-        doi=document_create.doi,
+        file_name=document_create.file_name,
         url=document_create.url,
     )
     if existing_documents:
