@@ -298,10 +298,11 @@ export default {
   },
   import: {
     title: "Import Documents to {workspaceName} Workspace",
+    historyTitle: "Import History",
   },
   importConfiguration: {
-    title: "Import Configuration",
-    loading: "Loading import configuration...",
+    title: "Import",
+    loading: "Loading import data...",
     errorTitle: "Failed to Load Import",
     retry: "Retry",
     retrying: "Retrying...",

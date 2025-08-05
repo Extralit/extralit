@@ -62,7 +62,7 @@ HUB_DATASET_CARD_TEMPLATE_PATH = os.path.join(Path(__file__).parent, "hub_templa
 
 class HubDataset:
     def __init__(self, name: str, subset: str, split: str, mapping: HubDatasetMapping):
-        self.dataset = load_dataset(path=name, name=subset, split=split, streaming=True)
+        self.dataset: HFDataset = load_dataset(path=name, name=subset, split=split, streaming=True)  # type: ignore
         self.split = split
         self.mapping = mapping
         self.mapping_feature_names = mapping.sources
