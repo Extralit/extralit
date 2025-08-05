@@ -108,7 +108,6 @@ export default {
       searchQuery: "",
       statusFilter: "",
       currentPage: 1,
-      pageSize: 20,
     };
   },
 
@@ -212,9 +211,7 @@ export default {
       return {
         layout: "fitDataFill",
         maxHeight: "100%",
-        pagination: true,
-        paginationSize: this.pageSize,
-        paginationSizeSelector: [10, 20, 50, 100],
+        pagination: this.filteredData.length > 20 ? true : false,
         sortMode: "local",
         placeholder: "No records found",
         renderVerticalBuffer: 300,

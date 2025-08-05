@@ -1,7 +1,3 @@
-/**
- * Use case for fetching import history records
- */
-
 import { type NuxtAxiosInstance } from "@nuxtjs/axios";
 
 export interface ImportHistoryListItem {
@@ -19,7 +15,7 @@ export interface ImportHistoryListItem {
 }
 
 export interface ImportHistoryListResponse {
-  items: ImportHistoryListItem[]
+  items: ImportHistoryListItem[];
   total: number;
   page: number;
   size: number;
@@ -50,17 +46,20 @@ interface ImportHistoryResponse {
   filename: string;
   created_at: string;
   data?: any;
-  metadata?: Record<string, {
-    status: "add" | "update" | "skip" | "failed";
-    associated_files: string[];
-    error_message?: string;
-    validation_errors?: string[];
-    import_timestamp?: string;
-  }>;
+  metadata?: Record<
+    string,
+    {
+      status: "add" | "update" | "skip" | "failed";
+      associated_files: string[];
+      error_message?: string;
+      validation_errors?: string[];
+      import_timestamp?: string;
+    }
+  >;
 }
 
 export class GetImportHistoryUseCase {
-  constructor(private readonly axios: NuxtAxiosInstance) { }
+  constructor(private readonly axios: NuxtAxiosInstance) {}
 
   async execute(params: ImportHistoryListRequest = {}): Promise<ImportHistoryListResponse> {
     const queryParams = new URLSearchParams();
@@ -96,7 +95,7 @@ export class GetImportHistoryUseCase {
     const rawItems = Array.isArray(response.data) ? response.data : [];
 
     // Transform backend response to frontend format with calculated fields
-    const items: ImportHistoryListItem[] = rawItems.map(item => {
+    const items: ImportHistoryListItem[] = rawItems.map((item) => {
       const counts = this.calculateCountsFromMetadata(item.metadata);
 
       return {
@@ -144,18 +143,18 @@ export class GetImportHistoryUseCase {
 
     // Count statuses from metadata
     Object.values(metadata).forEach((item: any) => {
-      if (item && typeof item === 'object' && item.status) {
+      if (item && typeof item === "object" && item.status) {
         switch (item.status) {
-          case 'add':
+          case "add":
             success++;
             break;
-          case 'update':
+          case "update":
             updated++;
             break;
-          case 'skip':
+          case "skip":
             skipped++;
             break;
-          case 'failed':
+          case "failed":
             failed++;
             break;
         }
@@ -175,7 +174,7 @@ export class GetImportHistoryUseCase {
    */
   async getRecent(workspaceId: string, limit = 5): Promise<ImportHistoryListResponse> {
     const params: ImportHistoryListRequest = {
-      limit: limit,
+      limit,
       sort_by: "created_at",
       sort_order: "desc",
       filters: { workspace_id: workspaceId },
