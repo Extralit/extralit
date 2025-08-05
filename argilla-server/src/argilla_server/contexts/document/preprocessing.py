@@ -62,6 +62,11 @@ class PDFPreprocessingSettings(BaseSettings):
 
     rotate_pages: bool = Field(default=True, description="Auto-rotate pages with horizontal text")
 
+    rotate_pages_threshold: float = Field(
+        default=2.0,
+        description="Threshold for auto-rotation",
+    )
+
     deskew: bool = Field(default=False, description="Fix skewed text")
 
     clean: bool = Field(default=True, description="Use `unpaper` to clean up artifacts")
@@ -75,7 +80,7 @@ class PDFPreprocessingSettings(BaseSettings):
     force_ocr: bool = Field(default=False, description="Force OCR on all pages, even if they already have text")
 
     tesseract_timeout: int = Field(
-        default=0, description="Timeout for Tesseract OCR processing in seconds (0 for no timeout)"
+        default=0, description="Timeout for Tesseract OCR processing in seconds (0 to skip Tesseract OCR)"
     )
 
     skip_text: bool = Field(default=True, description="Skip text-based operations (OCR only for images)")
@@ -101,6 +106,7 @@ class PDFPreprocessingSettings(BaseSettings):
         return {
             "language": self.language,
             "rotate_pages": self.rotate_pages,
+            "rotate_pages_threshold": self.rotate_pages_threshold,
             "deskew": self.deskew,
             "clean": self.clean,
             "optimize": self.optimize,
@@ -110,7 +116,7 @@ class PDFPreprocessingSettings(BaseSettings):
             "tesseract_timeout": self.tesseract_timeout,
             "redo_ocr": self.redo_ocr,
             "progress_bar": self.progress_bar,
-            "output_type": self.output_type,  # skip PDF/A conversion
+            "output_type": self.output_type,
         }
 
 
