@@ -25,9 +25,6 @@ export interface ImportHistoryListResponse {
 export interface ImportHistoryFilters {
   workspace_id?: string;
   user_id?: string;
-  filename?: string;
-  date_from?: string;
-  date_to?: string;
 }
 
 export interface ImportHistoryListRequest {
@@ -80,13 +77,14 @@ export class GetImportHistoryUseCase {
       queryParams.append("sort_order", params.sort_order);
     }
 
-    // Filters
+    // Filters - only workspace_id and user_id
     if (params.filters) {
-      Object.entries(params.filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== "") {
-          queryParams.append(key, value.toString());
-        }
-      });
+      if (params.filters.workspace_id) {
+        queryParams.append("workspace_id", params.filters.workspace_id);
+      }
+      if (params.filters.user_id) {
+        queryParams.append("user_id", params.filters.user_id);
+      }
     }
 
     const response = await this.axios.get<ImportHistoryResponse[]>(`/v1/imports/history?${queryParams.toString()}`);

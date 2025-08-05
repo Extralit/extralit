@@ -8,58 +8,6 @@
       </p>
     </div>
 
-    <!-- Filters -->
-    <div class="history-filters">
-      <div class="filter-row">
-        <div class="filter-group">
-          <label class="filter-label">Search by filename:</label>
-          <BaseInputContainer>
-            <BaseInput
-              v-model="filters.filename"
-              placeholder="Enter filename..."
-              class="filter-input"
-              @input="debouncedSearch"
-            />
-          </BaseInputContainer>
-        </div>
-
-        <div class="filter-group">
-          <label class="filter-label">Date range:</label>
-          <div class="date-range">
-            <BaseInputContainer>
-              <BaseInput
-                v-model="filters.date_from"
-                type="date"
-                placeholder="From date"
-                class="filter-input date-input"
-                @input="applyFilters"
-              />
-            </BaseInputContainer>
-            <span class="date-separator">to</span>
-            <BaseInputContainer>
-              <BaseInput
-                v-model="filters.date_to"
-                type="date"
-                placeholder="To date"
-                class="filter-input date-input"
-                @input="applyFilters"
-              />
-            </BaseInputContainer>
-          </div>
-        </div>
-
-        <div class="filter-actions">
-          <BaseButton
-            variant="outline"
-            @click="clearFilters"
-            class="clear-filters-btn"
-          >
-            Clear Filters
-          </BaseButton>
-        </div>
-      </div>
-    </div>
-
     <!-- Loading State -->
     <div v-if="isLoading" class="loading-container">
       <BaseSpinner />
@@ -68,7 +16,7 @@
 
     <!-- Error State -->
     <div v-else-if="error" class="error-container">
-                  <BaseIcon icon-name="danger" class="error-icon" />
+      <BaseIcon icon-name="danger" class="error-icon" />
       <h4>Failed to Load Import History</h4>
       <p>{{ error }}</p>
       <BaseButton variant="outline" @click="loadHistory">
@@ -78,12 +26,9 @@
 
     <!-- Empty State -->
     <div v-else-if="!historyData.items.length" class="empty-container">
-              <BaseIcon icon-name="document" class="empty-icon" />
+      <BaseIcon icon-name="document" class="empty-icon" />
       <h4>No Import History Found</h4>
-      <p v-if="hasActiveFilters">
-        No imports match your current filters. Try adjusting your search criteria.
-      </p>
-      <p v-else>
+      <p>
         You haven't imported any documents yet. Start by importing your first bibliography file.
       </p>
     </div>
@@ -149,7 +94,6 @@ import type { TableColumn } from "./types";
 import type {
   ImportHistoryListItem,
   ImportHistoryListResponse,
-  ImportHistoryFilters,
 } from "~/v1/domain/usecases/get-import-history-use-case";
 import { useImportHistoryListViewModel } from "./useImportHistoryListViewModel";
 
@@ -178,10 +122,6 @@ export default {
 
   emits: ["view-details", "close"],
 
-  setup(props) {
-    return useImportHistoryListViewModel(props);
-  },
-
   data() {
     return {
       // Data state
@@ -200,26 +140,12 @@ export default {
       // Pagination
       currentPage: 1,
       pageSize: 20,
-
-      // Filters
-      filters: {
-        filename: "",
-        date_from: "",
-        date_to: "",
-      } as ImportHistoryFilters,
-
-      // Search debouncing
-      searchTimeout: null as NodeJS.Timeout | null,
     };
   },
 
   computed: {
-    hasActiveFilters(): boolean {
-      return this.hasActiveFiltersData(this.filters);
-    },
-
     tableData(): HistoryTableRow[] {
-      return this.transformToTableDataData(this.historyData.items);
+      return this.transformToTableData(this.historyData.items);
     },
 
     tableColumns(): TableColumn[] {
@@ -334,26 +260,37 @@ export default {
     },
 
     startItem(): number {
-      return this.calculateStartItemData(this.currentPage, this.pageSize);
+      return (this.currentPage - 1) * this.pageSize + 1;
     },
 
     endItem(): number {
-      return this.calculateEndItemData(this.currentPage, this.pageSize, this.historyData.total);
+      return Math.min(this.currentPage * this.pageSize, this.historyData.total);
     },
 
     visiblePages(): number[] {
-      return this.calculateVisiblePagesData(this.currentPage, this.historyData.pages);
+      const delta = 2;
+      let start = Math.max(1, this.currentPage - delta);
+      let end = Math.min(this.historyData.pages, this.currentPage + delta);
+
+      // Adjust if we're near the beginning or end
+      if (end - start < 2 * delta) {
+        if (start === 1) {
+          end = Math.min(this.historyData.pages, start + 2 * delta);
+        } else if (end === this.historyData.pages) {
+          start = Math.max(1, end - 2 * delta);
+        }
+      }
+
+      const pages = [];
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+      return pages;
     },
   },
 
   async mounted() {
     await this.loadHistory();
-  },
-
-  beforeUnmount() {
-    if (this.searchTimeout) {
-      clearTimeout(this.searchTimeout);
-    }
   },
 
   methods: {
@@ -368,38 +305,17 @@ export default {
           sort_by: 'created_at',
           sort_order: 'desc' as const,
           filters: {
-            ...this.filters,
             workspace_id: this.workspace?.id,
           },
         };
 
-        this.historyData = await this.loadHistoryData(params);
+        this.historyData = await this.getImportHistoryUseCase.execute(params);
       } catch (error: any) {
         console.error('Error loading import history:', error);
         this.error = error.message || 'Failed to load import history';
       } finally {
         this.isLoading = false;
       }
-    },
-
-    debouncedSearch() {
-      if (this.searchTimeout) {
-        clearTimeout(this.searchTimeout);
-      }
-      this.searchTimeout = setTimeout(() => {
-        this.applyFilters();
-      }, 500);
-    },
-
-    async applyFilters() {
-      this.currentPage = 1; // Reset to first page when filtering
-      await this.loadHistory();
-    },
-
-    async clearFilters() {
-      this.filters = this.clearFiltersData();
-      this.currentPage = 1;
-      await this.loadHistory();
     },
 
     async goToPage(page: number) {
@@ -414,16 +330,46 @@ export default {
     },
 
     viewDetails(rowData: HistoryTableRow) {
-      this.handleRowClickData(rowData, this.$emit, this.workspace);
+      this.$emit("view-details", {
+        importId: rowData.id,
+        filename: rowData.filename,
+        workspace: this.workspace,
+      });
     },
 
     formatDate(dateString: string): string {
-      return this.formatDateData(dateString);
+      const date = new Date(dateString);
+      return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    },
+
+    transformToTableData(items: ImportHistoryListItem[]): HistoryTableRow[] {
+      return items.map((item: ImportHistoryListItem) => ({
+        id: item.id,
+        filename: item.filename,
+        uploaded_by: item.uploaded_by || "Unknown User",
+        created_at: this.formatDate(item.created_at),
+        total_papers: item.total_papers,
+        success_count: item.success_count,
+        updated_count: item.updated_count,
+        skipped_count: item.skipped_count,
+        failed_count: item.failed_count,
+        actions: "view-details",
+      }));
     },
 
     close() {
       this.$emit("close");
     },
+  },
+
+  setup(props) {
+    return useImportHistoryListViewModel(props);
   },
 };
 </script>
@@ -451,64 +397,6 @@ export default {
     margin: 0;
     color: var(--fg-secondary);
     font-size: 1rem;
-  }
-}
-
-// Filters
-.history-filters {
-  margin-bottom: $base-space * 3;
-  padding: $base-space * 2;
-  background: var(--bg-solid-grey-2);
-  border-radius: $border-radius;
-  border: 1px solid var(--border-field);
-
-  .filter-row {
-    display: flex;
-    gap: $base-space * 2;
-    align-items: end;
-    flex-wrap: wrap;
-
-    .filter-group {
-      display: flex;
-      flex-direction: column;
-      gap: calc($base-space / 2);
-      min-width: 200px;
-
-      .filter-label {
-        font-size: 0.9rem;
-        color: var(--fg-secondary);
-        font-weight: 500;
-      }
-
-      .filter-input {
-        min-width: 180px;
-
-        &.date-input {
-          min-width: 140px;
-        }
-      }
-
-      .date-range {
-        display: flex;
-        align-items: center;
-        gap: $base-space;
-
-        .date-separator {
-          color: var(--fg-secondary);
-          font-size: 0.9rem;
-        }
-      }
-    }
-
-    .filter-actions {
-      display: flex;
-      align-items: end;
-      margin-left: auto;
-
-      .clear-filters-btn {
-        white-space: nowrap;
-      }
-    }
   }
 }
 
@@ -593,7 +481,6 @@ export default {
 .history-table-container {
   flex: 1;
   margin-bottom: $base-space * 2;
-  // border: 1px solid var(--border-field);
   border-radius: $border-radius;
   overflow: hidden;
 
@@ -692,20 +579,6 @@ export default {
 @media (max-width: 768px) {
   .import-history-list {
     padding: $base-space * 2;
-  }
-
-  .filter-row {
-    flex-direction: column;
-    align-items: stretch;
-
-    .filter-group {
-      min-width: auto;
-    }
-
-    .filter-actions {
-      margin-left: 0;
-      margin-top: $base-space;
-    }
   }
 
   .pagination-container {

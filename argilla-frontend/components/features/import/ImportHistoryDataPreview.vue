@@ -289,6 +289,24 @@ export default {
       return `<span class="reference-cell">${value}</span>`;
     },
 
+    booleanFormatter(cell: any): string {
+      const value = cell.getValue();
+      const boolValue = Boolean(value);
+      return `<span class="boolean-cell boolean-${boolValue}">${boolValue ? '✓' : '✗'}</span>`;
+    },
+
+    numberFormatter(cell: any): string {
+      const value = cell.getValue();
+      if (value == null || value === '') return '-';
+      return `<span class="number-cell">${Number(value).toLocaleString()}</span>`;
+    },
+
+    urlFormatter(cell: any): string {
+      const value = cell.getValue();
+      if (!value || typeof value !== 'string') return '-';
+      return `<a href="${value}" target="_blank" class="url-link">${value}</a>`;
+    },
+
     handleRowClick(_event: any, row: any): void {
       const rowData = row.getData();
       this.$emit("row-selected", rowData);
