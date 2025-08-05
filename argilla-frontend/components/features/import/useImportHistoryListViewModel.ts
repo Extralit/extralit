@@ -68,11 +68,6 @@ export function useImportHistoryListViewModel(props: any) {
       return setTimeout(callback, delay);
     },
 
-    vmApplyFilters(): void {
-      // This method is called by the component to apply filters
-      // The actual implementation is in the component
-    },
-
     vmClearFilters(): ImportHistoryFilters {
       return this.clearFiltersData();
     },

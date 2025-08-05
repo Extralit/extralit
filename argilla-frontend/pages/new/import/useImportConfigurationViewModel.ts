@@ -22,11 +22,6 @@ export const useImportConfigurationViewModel = () => {
   const getImportHistoryDetailsUseCase = useResolve(GetImportHistoryDetailsUseCase);
 
   const loadImportConfiguration = async (importId: string) => {
-    if (!importId || importId.trim() === "") {
-      error.value = "Invalid import ID provided.";
-      return;
-    }
-
     isLoading.value = true;
     error.value = null;
 
@@ -39,22 +34,22 @@ export const useImportConfigurationViewModel = () => {
       // Fetch the import history details
       const result = await getImportHistoryDetailsUseCase.execute(importId);
 
-      if (!result.details) {
+      if (!result) {
         throw new Error("No import details received");
       }
 
       // Convert raw data to ImportHistoryDetails instance
-      const importHistoryDetails = new ImportHistoryDetails(result.details);
+      const importHistoryDetails = new ImportHistoryDetails(result);
       importHistoryData.value = importHistoryDetails;
 
       // Validate that we have data to work with
-      if (!result.details.data || !result.details.data.data || result.details.data.data.length === 0) {
+      if (!result.data || !result.data.data || result.data.data.length === 0) {
         error.value = "This import contains no data to configure. Please try importing documents first.";
         return;
       }
 
       // Build dataset configuration from import history data
-      const builder = new ImportHistoryDatasetBuilder(result.details);
+      const builder = new ImportHistoryDatasetBuilder(result);
       datasetConfig.value = builder.build();
 
       // Reset retry count on success

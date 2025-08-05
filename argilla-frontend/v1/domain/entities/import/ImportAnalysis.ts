@@ -28,21 +28,15 @@ export interface DataframeData {
 export type ImportStatus = "add" | "update" | "skip" | "ignore" | "failed";
 
 // Document creation data for import (maps to DocumentCreate in backend)
+// Only includes fields that are part of the backend DocumentCreate schema
+// BibTeX fields (title, authors, year, journal, etc.) are stored in import_history.data
 export interface DocumentCreate {
-  title?: string;
-  authors?: string[] | string;
-  year?: string | number;
-  journal?: string;
-  volume?: string;
-  pages?: string;
-  doi?: string;
+  workspace_id?: string;
   url?: string;
-  abstract?: string;
-  keywords?: string[] | string;
+  file_name?: string;
   reference?: string;
   pmid?: string;
-  file_name?: string;
-  workspace_id?: string;
+  doi?: string;
   metadata?: Record<string, any>;
 }
 
@@ -93,4 +87,15 @@ export interface ImportHistoryCreate {
   filename: string;
   data: Record<string, any>; // Tabular dataframe data converted from BibTeX file
   metadata?: Record<string, any>; // Import metadata including ImportStatus and associated files for each reference
+}
+
+// Import history response (maps to ImportHistoryResponse in backend)
+export interface ImportHistoryResponse {
+  id: string;
+  workspace_id: string;
+  user_id: string;
+  filename: string;
+  created_at: string;
+  data?: DataframeData; // Tabular dataframe data (only in detailed view)
+  metadata?: Record<string, any>; // Import metadata with status and files (in list and detailed view)
 }

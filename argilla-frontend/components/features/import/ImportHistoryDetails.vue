@@ -202,9 +202,8 @@ import type { TableColumn } from "./types";
 import type {
   ImportHistoryDetailItem,
   ImportHistoryDetailsResponse,
-  ImportHistoryDetailsFilters,
 } from "~/v1/domain/usecases/get-import-history-details-use-case";
-import { useImportHistoryDetailsViewModel } from "./useImportHistoryDetailsViewModel";
+import { ImportHistoryDetailsFilters, useImportHistoryDetailsViewModel } from "./useImportHistoryDetailsViewModel";
 
 interface DetailsTableRow {
   reference: string;
@@ -437,20 +436,20 @@ export default {
       this.error = null;
 
       try {
-        const params = {
-          page: this.currentPage,
-          size: this.pageSize,
-          sort_by: 'reference',
-          sort_order: 'asc' as const,
-          filters: this.filters,
-        };
+        // Use the simplified use case that returns data directly
+        const result = await this.getImportHistoryDetailsUseCase.execute(this.importId);
 
-        const result = await this.loadDetailsData(this.importId, params);
+        if (!result) {
+          throw new Error("No import details received");
+        }
 
-        this.importDetails = result.details;
-        this.detailItems = result.items;
-        this.totalItems = result.total;
-        this.totalPages = result.pages;
+        // Process the data using the view model methods
+        const processedData = this.processHistoryDetails(result);
+
+        this.importDetails = processedData.details;
+        this.detailItems = processedData.items;
+        this.totalItems = processedData.items.length;
+        this.totalPages = 1; // No pagination in simplified version
       } catch (error: any) {
         console.error('Error loading import details:', error);
         this.error = error.message || 'Failed to load import details';
@@ -470,6 +469,7 @@ export default {
     },
 
     async applyFilters() {
+      // In simplified version, filtering is done client-side on the loaded data
       this.currentPage = 1; // Reset to first page when filtering
       await this.loadDetails();
     },
@@ -481,10 +481,11 @@ export default {
     },
 
     async goToPage(page: number) {
+      // In simplified version, pagination is handled client-side
       if (page < 1 || page > this.totalPages) return;
 
       this.currentPage = page;
-      await this.loadDetails();
+      // No need to reload data, just update the current page
     },
 
     async exportResults() {

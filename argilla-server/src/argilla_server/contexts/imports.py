@@ -460,7 +460,7 @@ async def process_bulk_upload(
 
 
 async def create_import_history(
-    db: AsyncSession, import_history_create: ImportHistoryCreate, user_id: str
+    db: AsyncSession, import_history_create: ImportHistoryCreate, user_id: UUID | str
 ) -> ImportHistoryResponse:
     """
     Create an import history record to store tabular dataframe data and import metadata.
@@ -505,6 +505,8 @@ async def create_import_history(
             user_id=import_history.user_id,
             filename=import_history.filename,
             created_at=import_history.inserted_at,
+            metadata=import_history.metadata_,
+            data=None,
         )
 
     except Exception as e:

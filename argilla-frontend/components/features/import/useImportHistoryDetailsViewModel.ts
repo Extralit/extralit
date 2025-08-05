@@ -1,52 +1,78 @@
 /**
  * View model for ImportHistoryDetails component
- * Handles loading, filtering, and pagination of import history details
+ * Handles loading and processing of import history details
  */
 
 import { useResolve } from "ts-injecty";
-import type {
+import type { ImportHistoryResponse, DataframeData } from "~/v1/domain/entities/import/ImportAnalysis";
+import {
+  GetImportHistoryDetailsUseCase,
   ImportHistoryDetailItem,
   ImportHistoryDetailsResponse,
-  ImportHistoryDetailsFilters,
 } from "~/v1/domain/usecases/get-import-history-details-use-case";
-import { GetImportHistoryDetailsUseCase } from "~/v1/domain/usecases/get-import-history-details-use-case";
 
-interface LoadDetailsParams {
-  page: number;
-  size: number;
-  sort_by: string;
-  sort_order: "asc" | "desc";
-  filters: ImportHistoryDetailsFilters;
+// Legacy interface for backward compatibility
+export interface ImportHistoryDetailsFilters {
+  reference?: string;
+  title?: string;
+  authors?: string;
+  status?: string;
+  error_message?: string;
 }
 
 export function useImportHistoryDetailsViewModel(props: any) {
   const getImportHistoryDetailsUseCase = useResolve(GetImportHistoryDetailsUseCase);
 
   return {
-    // Use case
+    // Use case reference
     getImportHistoryDetailsUseCase,
 
-    // Main data loading method
-    async loadDetailsData(
-      importId: string,
-      params: LoadDetailsParams
-    ): Promise<{
+    // Main data processing method
+    processHistoryDetails(historyResponse: ImportHistoryResponse): {
       details: ImportHistoryDetailsResponse;
       items: ImportHistoryDetailItem[];
-      total: number;
-      pages: number;
-    }> {
-      const result = await getImportHistoryDetailsUseCase.execute(importId, params);
+      summary: ImportHistoryDetailsResponse["summary"];
+    } {
+      // Ensure we have data for detailed view
+      if (!historyResponse.data) {
+        throw new Error("Import history data not available for detailed view");
+      }
+
+      const details: ImportHistoryDetailsResponse = {
+        ...historyResponse,
+        data: historyResponse.data,
+        summary: this.calculateSummary(historyResponse.data, historyResponse.metadata),
+      };
+
+      const items = this.processDetailItems(details);
 
       return {
-        details: result.details,
-        items: result.items,
-        total: result.total,
-        pages: result.pages,
+        details,
+        items,
+        summary: details.summary,
       };
     },
 
-    // Filter helpers
+    // Process dataframe data into detail items
+    processDetailItems(details: ImportHistoryDetailsResponse): ImportHistoryDetailItem[] {
+      return getImportHistoryDetailsUseCase.processDetailItems(details);
+    },
+
+    // Calculate summary from data and metadata
+    calculateSummary(data: DataframeData, metadata?: Record<string, any>): ImportHistoryDetailsResponse["summary"] {
+      return getImportHistoryDetailsUseCase.calculateSummary(data, metadata);
+    },
+
+    // Format authors for display
+    formatAuthors(authors: string | string[] | undefined): string {
+      if (!authors) return "Unknown Authors";
+      if (Array.isArray(authors)) {
+        return authors.slice(0, 3).join(", ") + (authors.length > 3 ? " et al." : "");
+      }
+      return String(authors);
+    },
+
+    // Legacy methods for backward compatibility with Vue components
     hasActiveFiltersData(filters: ImportHistoryDetailsFilters): boolean {
       return !!(filters.reference || filters.title || filters.authors || filters.status || filters.error_message);
     },
@@ -61,57 +87,25 @@ export function useImportHistoryDetailsViewModel(props: any) {
       };
     },
 
-    // Pagination helpers
-    calculateStartItemData(currentPage: number, pageSize: number): number {
-      return (currentPage - 1) * pageSize + 1;
-    },
-
-    calculateEndItemData(currentPage: number, pageSize: number, totalItems: number): number {
-      return Math.min(currentPage * pageSize, totalItems);
-    },
-
-    calculateVisiblePagesData(currentPage: number, totalPages: number, delta = 2): number[] {
-      let start = Math.max(1, currentPage - delta);
-      let end = Math.min(totalPages, currentPage + delta);
-
-      if (end - start < 2 * delta) {
-        if (start === 1) {
-          end = Math.min(totalPages, start + 2 * delta);
-        } else if (end === totalPages) {
-          start = Math.max(1, end - 2 * delta);
-        }
-      }
-
-      const pages = [];
-      for (let i = start; i <= end; i++) {
-        pages.push(i);
-      }
-      return pages;
-    },
-
-    // Export helpers
+    // Export helpers (legacy names for backward compatibility)
     createCSVContentData(items: ImportHistoryDetailItem[]): string {
-      const headers = [
-        "Reference",
-        "Title",
-        "Authors",
-        "Year",
-        "Journal",
-        "Status",
-        "Associated Files",
-        "Error Message",
-      ];
+      if (items.length === 0) {
+        return "";
+      }
 
-      const rows = items.map((item) => [
-        item.reference,
-        item.title,
-        item.authors,
-        item.year,
-        item.journal || "",
-        item.status,
-        item.associated_files.join("; "),
-        item.error_message || "",
-      ]);
+      // Dynamically generate headers from the first item's fields
+      const firstItem = items[0];
+      const headers = Object.keys(firstItem).filter((key) => key !== "validation_errors" && key !== "associated_files");
+
+      const rows = items.map((item) => {
+        return headers.map((header) => {
+          const value = item[header];
+          if (header === "associated_files" && Array.isArray(value)) {
+            return value.join("; ");
+          }
+          return String(value || "");
+        });
+      });
 
       const csvRows = [headers, ...rows];
 
@@ -134,7 +128,7 @@ export function useImportHistoryDetailsViewModel(props: any) {
       URL.revokeObjectURL(url);
     },
 
-    // Formatting helpers
+    // Formatting helpers (legacy names for backward compatibility)
     formatDateData(dateString: string | undefined): string {
       if (!dateString) return "Unknown Date";
       const date = new Date(dateString);
@@ -162,19 +156,53 @@ export function useImportHistoryDetailsViewModel(props: any) {
       return text.substring(0, maxLength) + "...";
     },
 
-    // Table data transformation
+    // Table data transformation (legacy name for backward compatibility)
     transformToTableDataData(items: ImportHistoryDetailItem[]) {
-      return items.map((item: ImportHistoryDetailItem) => ({
-        reference: item.reference,
-        title: item.title,
-        authors: item.authors,
-        year: item.year,
-        journal: item.journal || "N/A",
-        status: item.status,
-        associated_files: item.associated_files.join(", ") || "None",
-        error_message: item.error_message || "None",
-        actions: "actions",
-      }));
+      return items.map((item: ImportHistoryDetailItem) => {
+        const transformed: Record<string, any> = {
+          reference: item.reference,
+          status: item.status,
+          associated_files: item.associated_files.join(", ") || "None",
+          error_message: item.error_message || "None",
+          actions: "actions",
+        };
+
+        // Add all other dynamic fields from the original data
+        Object.entries(item).forEach(([key, value]) => {
+          if (
+            !["reference", "status", "associated_files", "error_message", "validation_errors", "actions"].includes(key)
+          ) {
+            transformed[key] = value || "N/A";
+          }
+        });
+
+        return transformed;
+      });
+    },
+
+    // New simplified methods (preferred going forward)
+    createCSVContent(items: ImportHistoryDetailItem[]): string {
+      return this.createCSVContentData(items);
+    },
+
+    downloadCSV(csvContent: string, filename: string): void {
+      this.downloadCSVData(csvContent, filename);
+    },
+
+    formatDate(dateString: string | undefined): string {
+      return this.formatDateData(dateString);
+    },
+
+    formatStatus(status: string): string {
+      return this.formatStatusData(status);
+    },
+
+    truncateText(text: string, maxLength: number): string {
+      return this.truncateTextData(text, maxLength);
+    },
+
+    transformToTableData(items: ImportHistoryDetailItem[]) {
+      return this.transformToTableDataData(items);
     },
   };
 }

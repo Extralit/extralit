@@ -14,7 +14,7 @@
     </div>
 
     <div v-else-if="error" class="error-container">
-      <BaseIcon name="danger" />
+      <BaseIcon icon-name="danger" />
       <h3 class="error-title">{{ $t("importConfiguration.errorTitle") }}</h3>
       <p class="error-message">{{ error }}</p>
       <div v-if="retryCount < maxRetries" class="retry-info">

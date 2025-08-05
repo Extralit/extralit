@@ -3,15 +3,10 @@
  * Provides TypeScript interfaces for ImportHistory data structure
  */
 
-import { ImportHistoryDetailsResponse } from "../../usecases/get-import-history-details-use-case";
-
-// Re-export the interfaces from the use case for consistency
-export {
-  ImportHistoryDetailItem,
-  ImportHistoryDetailsResponse,
-  ImportHistoryDetailsFilters,
-  ImportHistoryDetailsParams,
-} from "../../usecases/get-import-history-details-use-case";
+import type {
+  ImportHistoryResponse,
+  DataframeData,
+} from "~/v1/domain/entities/import/ImportAnalysis";
 
 // Additional entity types specific to ImportHistory details
 export interface ImportHistoryDataField {
@@ -50,7 +45,7 @@ export interface ImportHistorySummaryStats {
  * Enhanced ImportHistory details with computed properties
  */
 export class ImportHistoryDetails {
-  constructor(private readonly data: ImportHistoryDetailsResponse) {}
+  constructor(private readonly data: ImportHistoryResponse & { data: DataframeData }) { }
 
   get id(): string {
     return this.data.id;
@@ -66,10 +61,6 @@ export class ImportHistoryDetails {
 
   get createdAt(): Date {
     return new Date(this.data.created_at);
-  }
-
-  get uploadedBy(): string | undefined {
-    return this.data.uploaded_by;
   }
 
   get schema(): ImportHistoryDataSchema {
@@ -92,11 +83,12 @@ export class ImportHistoryDetails {
   }
 
   get summary(): ImportHistorySummaryStats {
+    const baseSummary = this.calculateSummary();
     return {
-      ...this.data.summary,
+      ...baseSummary,
       success_rate:
-        this.data?.summary?.total_documents > 0
-          ? (this.data.summary.add_count + this.data.summary.update_count) / this.data.summary.total_documents
+        baseSummary.total_documents > 0
+          ? (baseSummary.add_count + baseSummary.update_count) / baseSummary.total_documents
           : 0,
     };
   }
@@ -171,7 +163,49 @@ export class ImportHistoryDetails {
   /**
    * Get raw data for export or further processing
    */
-  getRawData(): ImportHistoryDetailsResponse {
+  getRawData(): ImportHistoryResponse & { data: DataframeData } {
     return this.data;
+  }
+
+  /**
+   * Calculate summary from data and metadata
+   */
+  private calculateSummary(): {
+    total_documents: number;
+    add_count: number;
+    update_count: number;
+    skip_count: number;
+    failed_count: number;
+  } {
+    const summary = {
+      total_documents: this.data.data.data.length,
+      add_count: 0,
+      update_count: 0,
+      skip_count: 0,
+      failed_count: 0,
+    };
+
+    if (this.data.metadata) {
+      Object.values(this.data.metadata).forEach((item: any) => {
+        if (item.status) {
+          switch (item.status) {
+            case "add":
+              summary.add_count++;
+              break;
+            case "update":
+              summary.update_count++;
+              break;
+            case "skip":
+              summary.skip_count++;
+              break;
+            case "failed":
+              summary.failed_count++;
+              break;
+          }
+        }
+      });
+    }
+
+    return summary;
   }
 }
