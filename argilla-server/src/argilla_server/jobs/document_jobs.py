@@ -131,7 +131,7 @@ async def upload_reference_documents_job(
 
                     try:
                         # Preprocess PDF files with OCRmyPDF for rotation and OCR
-                        processed_file_data = preprocessing.preprocess_pdf_with_ocrmypdf(
+                        processed_file_data = preprocessing.pdf_preprocessor.preprocess(
                             file_data=file_data, filename=filename
                         )
 
@@ -141,9 +141,9 @@ async def upload_reference_documents_job(
                             document_id=file_document_create.id,  # type: ignore
                             file_data=processed_file_data,
                             filename=filename,
-                            # metadata=file_document_create.model_dump(
-                            #     include={"file_name": True, "pmid": True, "doi": True}
-                            # ),
+                            metadata=file_document_create.model_dump(
+                                include={"file_name": True, "pmid": True, "doi": True}
+                            ),
                         )
 
                         if file_url:
