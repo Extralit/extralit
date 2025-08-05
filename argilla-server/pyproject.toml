@@ -66,6 +66,8 @@ dependencies = [
     "Jinja2>=3.1.4",           # Used by huggingface-hub to render dataset card templates
     # For file storage
     "minio>=7.2.7",
+    # For document processing
+    "ocrmypdf>=16.10.4"
 ]
 
 [project.optional-dependencies]

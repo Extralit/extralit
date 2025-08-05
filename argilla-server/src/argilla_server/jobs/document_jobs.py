@@ -26,6 +26,7 @@ from argilla_server.database import AsyncSessionLocal
 from argilla_server.jobs import DEFAULT_QUEUE, JOB_TIMEOUT_DISABLED
 from argilla_server.api.schemas.v1.documents import DocumentCreate
 from argilla_server.contexts import files, imports
+from argilla_server.contexts.document import preprocessing
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -129,11 +130,16 @@ async def upload_reference_documents_job(
                         continue
 
                     try:
+                        # Preprocess PDF files with OCRmyPDF for rotation and OCR
+                        processed_file_data = preprocessing.preprocess_pdf_with_ocrmypdf(
+                            file_data=file_data, filename=filename
+                        )
+
                         file_url = files.put_document_file(
                             client=client,
                             workspace_name=workspace.name,
                             document_id=file_document_create.id,  # type: ignore
-                            file_data=file_data,
+                            file_data=processed_file_data,
                             filename=filename,
                             # metadata=file_document_create.model_dump(
                             #     include={"file_name": True, "pmid": True, "doi": True}
