@@ -68,7 +68,8 @@ dependencies = [
     "minio>=7.2.7",
     # For document processing
     "ocrmypdf>=16.10.4",
-    "pdf2image>=1.17.0"
+    "pdf2image>=1.17.0",
+    "opencv-python>=4.11.0.86"
 ]
 
 [project.optional-dependencies]

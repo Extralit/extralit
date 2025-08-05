@@ -130,10 +130,14 @@ async def upload_reference_documents_job(
                         continue
 
                     try:
-                        # Preprocess PDF files with OCRmyPDF for rotation and OCR
-                        processed_file_data = preprocessing.pdf_preprocessor.preprocess(
+                        # Preprocess PDF files with OCRmyPDF for rotation and OCR, plus layout analysis
+                        preprocessing_result = preprocessing.pdf_preprocessor.preprocess(
                             file_data=file_data, filename=filename
                         )
+                        processed_file_data = preprocessing_result.processed_data
+
+                        # Store preprocessing metadata in file metadata
+                        file_metadata.update({"preprocessing": preprocessing_result.metadata})
 
                         file_url = files.put_document_file(
                             client=client,
@@ -141,9 +145,7 @@ async def upload_reference_documents_job(
                             document_id=file_document_create.id,  # type: ignore
                             file_data=processed_file_data,
                             filename=filename,
-                            metadata=file_document_create.model_dump(
-                                include={"file_name": True, "pmid": True, "doi": True}
-                            ),
+                            metadata=file_metadata,
                         )
 
                         if file_url:
@@ -158,6 +160,7 @@ async def upload_reference_documents_job(
 
                     # Create document in database
                     try:
+                        file_document_create.metadata = file_metadata
                         document = await imports.create_document(db, file_document_create)
                         _LOGGER.info(f"Document created successfully for file {filename} with ID {document.id}")
                         file_result.update({"success": True, "document_id": str(document.id), "status": "created"})
