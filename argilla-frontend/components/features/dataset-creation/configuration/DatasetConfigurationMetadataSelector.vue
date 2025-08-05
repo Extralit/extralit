@@ -1,10 +1,9 @@
 <template>
   <div class="metadata-selector">
     <div class="metadata-selector__header">
-      <span class="metadata-selector__title">{{ $t("datasetCreation.metadata") }}</span>
       <span class="metadata-selector__subtitle">{{ $t("datasetCreation.metadataDescription") }}</span>
     </div>
-    <div class="metadata-selector__options" ref="optionsContainer">
+    <div ref="optionsContainer" class="metadata-selector__options">
       <div
         v-for="fieldName in availableFields"
         :key="fieldName"
@@ -33,7 +32,7 @@ export default {
     },
     defaultMetadataFields: {
       type: Array,
-      default: () => ["reference", "doi", "imdb"],
+      default: () => ["reference", "doi", "pmid"],
     },
   },
   model: {

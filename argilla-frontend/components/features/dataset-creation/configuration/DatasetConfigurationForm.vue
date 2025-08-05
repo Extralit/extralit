@@ -42,6 +42,9 @@
           </div>
         </div>
         <div v-if="dataset.importHistoryId" class="config-form__col config-form__col--metadata">
+          <div class="config-form__col__header">
+            {{ $t("datasetCreation.metadata") }}
+          </div>
           <div class="config-form__col__content config-form__col__content--metadata">
             <DatasetConfigurationMetadataSelector
               :available-fields="availableMetadataFields"
@@ -182,9 +185,8 @@ export default {
     },
   },
   mounted() {
-    // Initialize metadata selection for ImportHistory datasets
     if (this.dataset.importHistoryId) {
-      const defaultMetadataFields = ["reference", "doi", "imdb"];
+      const defaultMetadataFields = ["reference", "doi", "pmid"];
       const availableDefaults = this.availableMetadataFields.filter((field) => defaultMetadataFields.includes(field));
       this.updateMetadataSelection(availableDefaults);
     }

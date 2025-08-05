@@ -336,7 +336,7 @@ export default {
     button: "Create dataset",
     fields: "Fields",
     metadata: "Metadata Fields",
-    metadataDescription: "Select fields to include as metadata for filtering and organization",
+    metadataDescription: "Select fields to include as metadata for filtering and sorting",
     questionsTitle: "Questions",
     yourQuestions: "Your questions",
     requiredField: "Required field",
