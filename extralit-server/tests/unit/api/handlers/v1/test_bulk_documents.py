@@ -16,7 +16,7 @@ import json
 import pytest
 from io import BytesIO
 from uuid import uuid4
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from fastapi import status
 from httpx import AsyncClient
 
@@ -158,14 +158,14 @@ class TestBulkDocumentsAPI:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         assert "not found" in response.json()["detail"]
 
-    @patch("argilla_server.contexts.imports.process_bulk_upload")
-    async def test_bulk_upload_documents_success(self, mock_process_bulk, async_client: AsyncClient, owner_auth_header: dict):
+    @patch("extralit_server.contexts.imports.process_bulk_upload")
+    async def test_bulk_upload_documents_success(
+        self, mock_process_bulk, async_client: AsyncClient, owner_auth_header: dict
+    ):
         """Test successful bulk upload."""
         # Mock the process_bulk_upload function
         mock_process_bulk.return_value = DocumentsBulkResponse(
-            job_ids={"test_ref": "test_job_id"},
-            total_documents=1,
-            failed_validations=[]
+            job_ids={"test_ref": "test_job_id"}, total_documents=1, failed_validations=[]
         )
 
         # Create owner user and workspace
@@ -211,14 +211,14 @@ class TestBulkDocumentsAPI:
         # Verify process_bulk_upload was called
         mock_process_bulk.assert_called_once()
 
-    @patch("argilla_server.contexts.imports.process_bulk_upload")
-    async def test_bulk_upload_documents_multiple_files(self, mock_process_bulk, async_client: AsyncClient, owner_auth_header: dict):
+    @patch("extralit_server.contexts.imports.process_bulk_upload")
+    async def test_bulk_upload_documents_multiple_files(
+        self, mock_process_bulk, async_client: AsyncClient, owner_auth_header: dict
+    ):
         """Test bulk upload with multiple files."""
         # Mock the process_bulk_upload function
         mock_process_bulk.return_value = DocumentsBulkResponse(
-            job_ids={"ref1": "job_id_1", "ref2": "job_id_2"},
-            total_documents=2,
-            failed_validations=[]
+            job_ids={"ref1": "job_id_1", "ref2": "job_id_2"}, total_documents=2, failed_validations=[]
         )
 
         # Create owner user and workspace
@@ -273,14 +273,14 @@ class TestBulkDocumentsAPI:
         # Verify process_bulk_upload was called
         mock_process_bulk.assert_called_once()
 
-    @patch("argilla_server.contexts.imports.process_bulk_upload")
-    async def test_bulk_upload_documents_partial_failure(self, mock_process_bulk, async_client: AsyncClient, owner_auth_header: dict):
+    @patch("extralit_server.contexts.imports.process_bulk_upload")
+    async def test_bulk_upload_documents_partial_failure(
+        self, mock_process_bulk, async_client: AsyncClient, owner_auth_header: dict
+    ):
         """Test bulk upload with some files failing validation."""
         # Mock the process_bulk_upload function with partial failure
         mock_process_bulk.return_value = DocumentsBulkResponse(
-            job_ids={"valid_ref": "test_job_id"},
-            total_documents=2,
-            failed_validations=["invalid_ref: Not a PDF file"]
+            job_ids={"valid_ref": "test_job_id"}, total_documents=2, failed_validations=["invalid_ref: Not a PDF file"]
         )
 
         # Create owner user and workspace

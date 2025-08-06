@@ -110,7 +110,7 @@ python -m extralit_server db create-user
 
 # Start servers
 python -m extralit_server start
-python -m argilla_server start
+python -m extralit_server start
 
 # Run workers
 python -m extralit_server worker

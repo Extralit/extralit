@@ -47,7 +47,7 @@ The Extralit repository has a monorepo structure, which means that all the compo
 - [`argilla/src/extralit/`](https://github.com/extralit/extralit/tree/develop/argilla/src/extralit): The FastAPI server project for extraction
 - [`argilla/docs/`](https://github.com/extralit/extralit/tree/develop/argilla/docs): The documentation project
 - [`argilla/src/argilla/`](https://github.com/extralit/extralit/tree/develop/argilla): The argilla SDK project
-- [`extralit-server/src/argilla_server/`](https://github.com/extralit/extralit/tree/develop/argilla-server): The FastAPI server project for annotation
+- [`extralit-server/src/extralit_server/`](https://github.com/extralit/extralit/tree/develop/argilla-server): The FastAPI server project for annotation
 - [`argilla-frontend/`](https://github.com/extralit/extralit/tree/develop/argilla-frontend): The Vue.js UI project
 - [`examples`](https://github.com/extralit/extralit/tree/develop/examples): Example resources for deployments, scripts and notebooks
 

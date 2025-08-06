@@ -45,7 +45,7 @@ async def test_upload_document(async_client: AsyncClient, db: AsyncSession, owne
     )
 
     # Mock the put_object function
-    with patch("argilla_server.contexts.files.put_object") as mock_put_object:
+    with patch("extralit_server.contexts.files.put_object") as mock_put_object:
         mock_put_object.return_value = MagicMock()
 
         upload_response = await async_client.post(
@@ -85,8 +85,8 @@ async def test_upload_duplicate_document(async_client: AsyncClient, db: AsyncSes
 
     # Mock the put_object function
     with (
-        patch("argilla_server.contexts.files.put_object") as mock_put_object,
-        patch("argilla_server.contexts.files.get_object") as mock_get_object,
+        patch("extralit_server.contexts.files.put_object") as mock_put_object,
+        patch("extralit_server.contexts.files.get_object") as mock_get_object,
     ):
         mock_put_object.return_value = MagicMock()
         mock_get_response = MagicMock()
@@ -156,13 +156,13 @@ async def test_delete_documents_by_id(async_client: AsyncClient, db: AsyncSessio
 
     document = await DocumentFactory.create(workspace=workspace)
 
-    with patch("argilla_server.contexts.files.delete_object") as mock_delete_object:
+    with patch("extralit_server.contexts.files.delete_object") as mock_delete_object:
         mock_delete_object.return_value = None
 
         document_delete = DocumentDeleteRequest(id=document.id)
 
         # Use proper patching to avoid 500 error
-        with patch("argilla_server.contexts.files.delete_object") as mock_delete:
+        with patch("extralit_server.contexts.files.delete_object") as mock_delete:
             mock_delete.return_value = None
 
             response = await async_client.delete(

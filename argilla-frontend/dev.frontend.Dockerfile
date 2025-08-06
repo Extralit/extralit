@@ -1,6 +1,6 @@
-ARG ARGILLA_SERVER_TAG=develop
+ARG extralit_server_TAG=develop
 
-FROM extralitdev/argilla-hf-spaces:${ARGILLA_SERVER_TAG}
+FROM extralitdev/argilla-hf-spaces:${extralit_server_TAG}
 
 USER root
 

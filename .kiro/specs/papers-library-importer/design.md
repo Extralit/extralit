@@ -52,7 +52,7 @@ graph TD
 
 ### Backend Components
 
-#### 1. Import Analysis API Handler (`extralit-server/src/argilla_server/api/handlers/v1/imports.py`)
+#### 1. Import Analysis API Handler (`extralit-server/src/extralit_server/api/handlers/v1/imports.py`)
 
 **Endpoints:**
 - `POST /api/v1/imports/analyze` - Analyze file metadata to determine add/update/skip status
@@ -73,7 +73,7 @@ async def analyze_import(
 - Compares file sizes to determine if updates are needed
 - Returns status analysis for frontend preview without blocking on document validation errors
 
-#### 2. Bulk Document Upload Handler (`extralit-server/src/argilla_server/api/handlers/v1/documents.py`)
+#### 2. Bulk Document Upload Handler (`extralit-server/src/extralit_server/api/handlers/v1/documents.py`)
 
 **New Endpoint:**
 - `POST /documents/bulk` - Asynchronous bulk document upload with job queue
@@ -93,13 +93,13 @@ async def bulk_upload_documents(
 - Job handles multiple file uploads and creates separate document records for each file
 - All files for a reference share the same bibliographic metadata but have unique file paths
 
-#### 3. Import Context (`extralit-server/src/argilla_server/contexts/imports.py`)
+#### 3. Import Context (`extralit-server/src/extralit_server/contexts/imports.py`)
 
 **Core Services:**
 - `analyze_import_status()` - Uses existing `check_existing_document()` function from documents handler to determine add/update/skip status
 - `validate_document_metadata()` - Validate DocumentMetadata objects (not just DocumentCreate) from frontend
 
-#### 4. Document Upload Job (`extralit-server/src/argilla_server/jobs/document_jobs.py`)
+#### 4. Document Upload Job (`extralit-server/src/extralit_server/jobs/document_jobs.py`)
 
 **Async Job Functions:**
 ```python

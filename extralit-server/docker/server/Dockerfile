@@ -29,7 +29,7 @@ ENV ARGILLA_HOME_PATH=/var/lib/argilla
 ## Uvicorn defaults
 ENV UVICORN_PORT=6900
 ### Uvicorn app. Extended apps can override this variable
-ENV UVICORN_APP=argilla_server:app
+ENV UVICORN_APP=extralit_server:app
 
 RUN useradd -ms /bin/bash argilla
 
@@ -43,7 +43,7 @@ RUN mkdir -p "$ARGILLA_HOME_PATH" && \
     rm -rf /var/lib/apt/lists/* /packages
 VOLUME $ARGILLA_HOME_PATH
 
-COPY scripts/start_argilla_server.sh /home/argilla
+COPY scripts/start_extralit_server.sh /home/argilla
 # Destination folder must be the same as the builder one. Otherwise installed script won't work (since the installation fixes the path inside the script)
 COPY --chown=argilla:argilla --from=builder /opt/venv /opt/venv
 
@@ -52,11 +52,11 @@ ENV MAMBA_ROOT_PREFIX=/opt/venv
 ENV CONDA_PREFIX=/opt/venv
 
 WORKDIR /home/argilla
-RUN chmod +x start_argilla_server.sh
+RUN chmod +x start_extralit_server.sh
 
 USER argilla
 
 # Exposing ports
 EXPOSE 6900
 
-CMD ["/bin/bash", "start_argilla_server.sh"]
+CMD ["/bin/bash", "start_extralit_server.sh"]

@@ -16,7 +16,7 @@ extralit/
 ## Backend Structure (extralit-server/)
 ```
 extralit-server/
-├── src/argilla_server/
+├── src/extralit_server/
 │   ├── api/                # FastAPI routes and handlers
 │   │   ├── handlers/       # Request handlers by version
 │   │   └── schemas/        # Pydantic models for API
@@ -186,7 +186,7 @@ examples/
 - **K8s**: `Tiltfile` for Kubernetes development
 
 ## Development Workflow
-1. **Backend changes**: Work in `extralit-server/src/argilla_server/`
+1. **Backend changes**: Work in `extralit-server/src/extralit_server/`
 2. **Frontend changes**: Work in `argilla-frontend/components/` or `argilla-frontend/pages/`
 3. **SDK changes**: Work in `extralit/src/argilla/` or `extralit/src/extralit/`
 4. **Tests**: Each package has its own `tests/` directory

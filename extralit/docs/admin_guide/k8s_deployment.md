@@ -107,12 +107,12 @@ Set environment variables:
 
 ### User Account Setup
 
-Run the `start_argilla_server.sh` script for initial setup. Manage users with `argilla_server` CLI:
+Run the `start_extralit_server.sh` script for initial setup. Manage users with `extralit_server` CLI:
 
 ```bash
 ARGILLA_DATABASE_URL=postgresql+asyncpg://postgres:$POSTGRES_PASSWORD@$POSTGRES_HOST/postgres \
 ARGILLA_LOCAL_AUTH_USERS_DB_FILE=path/to/users.yaml \
-argilla_server database users migrate
+extralit_server database users migrate
 ```
 
 ### Frontend Development
@@ -126,7 +126,7 @@ Set up and run frontend:
 
 ### Backend Development
 
-Changes to `src/argilla_server/` or `src/extralit/` are automatically updated while running Tilt with `ENV=dev`. Manually rebuild if needed.
+Changes to `src/extralit_server/` or `src/extralit/` are automatically updated while running Tilt with `ENV=dev`. Manually rebuild if needed.
 
 ## Troubleshooting
 
@@ -144,7 +144,7 @@ Check the Tilt web interface for services that are not green in deployment statu
 - `main-db` Postgres: This service can fail to redeploy due to the `main-db-0` pod not being able to mount the original persistent volume when the helm chart is redeployed, because it generated a new random password that was different from the original password. Fix it by changing the `posgres-password` to original password in the `main-db` K8s secret.
 
 ### Data persistence
-- `elasticsearch`: Same issue described above causes the data index to be lost when the `elasticsearch-master-0` pod is recreated. The data index can be restored with persistent data in the `main-db` Postgres database by reindexing the data with the `argilla_server` CLI tool, see [check_search_engine.sh](https://github.com/extralit/extralit-server/blob/main/docker/server/scripts/check_search_engine.sh).
+- `elasticsearch`: Same issue described above causes the data index to be lost when the `elasticsearch-master-0` pod is recreated. The data index can be restored with persistent data in the `main-db` Postgres database by reindexing the data with the `extralit_server` CLI tool, see [check_search_engine.sh](https://github.com/extralit/extralit-server/blob/main/docker/server/scripts/check_search_engine.sh).
 - `minio`: As a standalone pod in the K8s cluster for file blob storage, the Minio service is not automatically backed up. The data in the Minio bucket can be lost if the pod is deleted or the cluster fails in anyway. The data can be restored by re-uploading the data to the Minio bucket.
 
 

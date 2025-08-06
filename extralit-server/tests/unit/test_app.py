@@ -1,34 +1,30 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 from typing import cast
 from unittest import mock
-from unittest.mock import MagicMock
 
 import pytest
-from pytest_mock import MockerFixture
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from extralit_server._app import (
     create_server_app,
-    configure_database,
     _create_oauth_allowed_workspaces,
     track_server_startup,
 )
 from extralit_server.models import Workspace
 from extralit_server.security.authentication.oauth2 import OAuth2Settings
-from extralit_server.security.authentication.oauth2.settings import AllowedWorkspace
 from extralit_server.settings import Settings, settings
 from starlette.routing import Mount
 from starlette.testclient import TestClient
@@ -77,7 +73,7 @@ class TestApp:
 
     async def test_create_allowed_workspaces(self, db: AsyncSession):
         with mock.patch(
-            "argilla_server.security.settings.Settings.oauth",
+            "extralit_server.security.settings.Settings.oauth",
             new_callable=lambda: OAuth2Settings(allowed_workspaces=[{"name": "ws1"}, {"name": "ws2"}]),
         ):
             await _create_oauth_allowed_workspaces(db)
@@ -87,7 +83,7 @@ class TestApp:
             assert set([ws.name for ws in workspaces]) == {"ws1", "ws2"}
 
     async def test_create_workspaces_with_empty_workspaces_list(self, db: AsyncSession):
-        with mock.patch("argilla_server.security.settings.Settings.oauth", new_callable=OAuth2Settings):
+        with mock.patch("extralit_server.security.settings.Settings.oauth", new_callable=OAuth2Settings):
             await _create_oauth_allowed_workspaces(db)
 
             workspaces = (await db.scalars(select(Workspace))).all()
@@ -97,7 +93,7 @@ class TestApp:
         ws = await WorkspaceFactory.create(name="test")
 
         with mock.patch(
-            "argilla_server.security.settings.Settings.oauth",
+            "extralit_server.security.settings.Settings.oauth",
             new_callable=lambda: OAuth2Settings(allowed_workspaces=[{"name": ws.name}]),
         ):
             await _create_oauth_allowed_workspaces(db)

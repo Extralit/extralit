@@ -101,7 +101,7 @@
             "python.condaPath": "/usr/local/bin/micromamba",
             "python.envFile": "${workspaceFolder}/extralit/.env.test",
             "search.exclude": {
-                "extralit-server/src/argilla_server/static/": true,
+                "extralit-server/src/extralit_server/static/": true,
                 "argilla-frontend/dist/": true,
                 "_nuxt/": true,
                 "node_modules/": true,
@@ -109,7 +109,7 @@
                 "**/*.png": true
             },
             "files.watcherExclude": {
-                "extralit-server/src/argilla_server/static/": true,
+                "extralit-server/src/extralit_server/static/": true,
                 "argilla-frontend/dist/": true,
                 "_nuxt/": true,
                 "node_modules/": true,

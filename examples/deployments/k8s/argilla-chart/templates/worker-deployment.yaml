@@ -31,7 +31,7 @@ spec:
             - name: ARGILLA_HOME_PATH
               value: {{ .Values.argilla.persistence.mountPath | quote }}
             {{- end }}
-          command: ["sh", "-c", "python -m argilla_server worker --num-workers ${BACKGROUND_NUM_WORKERS}"]
+          command: ["sh", "-c", "python -m extralit_server worker --num-workers ${BACKGROUND_NUM_WORKERS}"]
           {{- if .Values.argilla.persistence.enabled }}
           volumeMounts:
             - name: argilla-data

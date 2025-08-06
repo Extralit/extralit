@@ -22,7 +22,7 @@ from httpx import AsyncClient
 from opensearchpy import OpenSearch
 from sqlalchemy.engine.interfaces import IsolationLevel
 
-from extralit_server.contexts import distribution, datasets, records
+from extralit_server.contexts import distribution, datasets
 from extralit_server.api.routes import api_v1
 from extralit_server.constants import API_KEY_HEADER_NAME, DEFAULT_API_KEY
 from extralit_server.database import get_async_db
@@ -124,7 +124,7 @@ def test_telemetry(mocker: "MockerFixture") -> "TelemetryClient":
             setattr(real_telemetry, attr_name, wrapped)
 
     # Patch the _TELEMETRY_CLIENT to use the real_telemetry
-    mocker.patch("argilla_server.telemetry._client._TELEMETRY_CLIENT", new=real_telemetry)
+    mocker.patch("extralit_server.telemetry._client._TELEMETRY_CLIENT", new=real_telemetry)
 
     return real_telemetry
 

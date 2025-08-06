@@ -101,7 +101,7 @@ jobs:
           HOME: /home/runner
         run: |
           mkdir -p /home/runner/.extralit
-          pdm run alembic -c src/argilla_server/alembic.ini upgrade head
+          pdm run alembic -c src/extralit_server/alembic.ini upgrade head
 
       - name: Verify critical dependencies
         run: |

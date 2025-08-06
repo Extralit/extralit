@@ -35,7 +35,7 @@ if TYPE_CHECKING:
 @pytest.mark.asyncio
 async def test_get_file(async_client: "AsyncClient"):
     # Mock the Minio client and the response
-    with patch("argilla_server.contexts.files.get_object") as mock_get_object:
+    with patch("extralit_server.contexts.files.get_object") as mock_get_object:
         # Set up mock response
         mock_response = MagicMock()
         mock_response.data = b"test data"
@@ -59,7 +59,7 @@ async def test_put_file(async_client: "AsyncClient", owner_auth_header: dict):
     file_content = b"test file content"
 
     # Mock the Minio client and the response
-    with patch("argilla_server.contexts.files.put_object") as mock_put_object:
+    with patch("extralit_server.contexts.files.put_object") as mock_put_object:
         mock_response = ObjectMetadata(bucket_name=bucket_name, object_name=object_name, is_latest=True)
         mock_put_object.return_value = mock_response
 
@@ -97,7 +97,7 @@ async def test_list_objects(async_client: "AsyncClient", owner_auth_header: dict
     await WorkspaceUserFactory.create(workspace_id=workspace_a.id, user_id=user_a.id)
 
     # Mock the Minio client and the response
-    with patch("argilla_server.contexts.files.list_objects") as mock_list_objects:
+    with patch("extralit_server.contexts.files.list_objects") as mock_list_objects:
         mock_response = ListObjectsResponse(
             objects=[
                 ObjectMetadata(bucket_name=bucket_name, object_name=f"{prefix}/test1"),
@@ -122,9 +122,9 @@ async def test_list_objects_with_versions(async_client: "AsyncClient", owner_aut
 
     # Mock get_minio_client and bucket_exists
     with (
-        patch("argilla_server.contexts.files.get_minio_client") as mock_get_minio_client,
-        patch("argilla_server.contexts.files.delete_bucket") as mock_delete_bucket,
-        patch("argilla_server.contexts.files.list_objects") as mock_list_objects,
+        patch("extralit_server.contexts.files.get_minio_client") as mock_get_minio_client,
+        patch("extralit_server.contexts.files.delete_bucket") as mock_delete_bucket,
+        patch("extralit_server.contexts.files.list_objects") as mock_list_objects,
     ):
         # Setup mocks
         mock_client = MagicMock()
@@ -183,7 +183,7 @@ async def test_delete_file(async_client: "AsyncClient", owner_auth_header: dict)
     file = MinioFileFactory.build(object_name=object_name, bucket_name=bucket_name)
 
     # Mock delete_object function
-    with patch("argilla_server.contexts.files.delete_object") as mock_delete:
+    with patch("extralit_server.contexts.files.delete_object") as mock_delete:
         mock_delete.return_value = None
 
         response = await async_client.delete(

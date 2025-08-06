@@ -24,9 +24,9 @@ from tests.factories import WorkspaceFactory, UserFactory
 class TestDocumentJobs:
     """Test suite for document job functions."""
 
-    @patch("argilla_server.jobs.document_jobs.files")
-    @patch("argilla_server.jobs.document_jobs.datasets")
-    @patch("argilla_server.jobs.document_jobs.imports")
+    @patch("extralit_server.jobs.document_jobs.files")
+    @patch("extralit_server.jobs.document_jobs.datasets")
+    @patch("extralit_server.jobs.document_jobs.imports")
     @pytest.mark.skip("temporarily skipping")
     async def test_upload_reference_documents_job_success(self, mock_imports, mock_datasets, mock_files):
         """Test successful reference documents upload job."""
@@ -66,7 +66,7 @@ class TestDocumentJobs:
         mock_datasets.create_document.return_value = mock_document
 
         # Mock the model_dump method for DocumentCreate objects
-        with patch("argilla_server.api.schemas.v1.documents.DocumentCreate.model_dump") as mock_model_dump:
+        with patch("extralit_server.api.schemas.v1.documents.DocumentCreate.model_dump") as mock_model_dump:
             mock_model_dump.return_value = {"file_name": "test.pdf", "pmid": None, "doi": "10.1234/test.doi"}
 
             # Execute job
@@ -114,9 +114,9 @@ class TestDocumentJobs:
         assert result["reference"] == reference
         assert "not found" in result["errors"][0]
 
-    @patch("argilla_server.jobs.document_jobs.files")
-    @patch("argilla_server.jobs.document_jobs.datasets")
-    @patch("argilla_server.jobs.document_jobs.imports")
+    @patch("extralit_server.jobs.document_jobs.files")
+    @patch("extralit_server.jobs.document_jobs.datasets")
+    @patch("extralit_server.jobs.document_jobs.imports")
     @pytest.mark.skip("temporarily skipping")
     async def test_upload_reference_documents_job_partial_failure(self, mock_imports, mock_datasets, mock_files):
         """Test reference documents upload job with partial failure."""
@@ -161,7 +161,7 @@ class TestDocumentJobs:
         mock_datasets.create_document.return_value = mock_document
 
         # Mock the model_dump method for DocumentCreate objects
-        with patch("argilla_server.api.schemas.v1.documents.DocumentCreate.model_dump") as mock_model_dump:
+        with patch("extralit_server.api.schemas.v1.documents.DocumentCreate.model_dump") as mock_model_dump:
             mock_model_dump.return_value = {"file_name": "test.pdf", "pmid": None, "doi": "10.1234/test.doi"}
 
             # Execute job

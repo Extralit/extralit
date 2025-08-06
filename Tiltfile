@@ -53,8 +53,8 @@ k8s_resource(
 helm_repo('bitnami', 'https://charts.bitnami.com/bitnami', labels=['helm'], resource_name='bitnami-helm')
 if not ARGILLA_DATABASE_URL:
     helm_resource(
-        name='main-db', 
-        chart='bitnami/postgresql', 
+        name='main-db',
+        chart='bitnami/postgresql',
         flags=[
             '--version=13.2.0',
             '--values=examples/deployments/k8s/helm/postgres-helm.yaml'],
@@ -100,7 +100,7 @@ docker_build(
     ]
 )
 extralit_server_k8s_yaml = read_yaml_stream('examples/deployments/k8s/extralit-server-deployment.yaml')
-for o in argilla_server_k8s_yaml:
+for o in extralit_server_k8s_yaml:
     for container in o['spec']['template']['spec']['containers']:
         if container['name'] == 'argilla-server':
             container['image'] = "{DOCKER_REPO}/argilla-server".format(DOCKER_REPO=DOCKER_REPO)
@@ -118,8 +118,8 @@ for o in argilla_server_k8s_yaml:
                 ])
 
 k8s_yaml([
-    encode_yaml_stream(argilla_server_k8s_yaml), 
-    'examples/deployments/k8s/extralit-server-service.yaml', 
+    encode_yaml_stream(extralit_server_k8s_yaml),
+    'examples/deployments/k8s/extralit-server-service.yaml',
     'examples/deployments/k8s/extralit-server-ingress.yaml',
     # 'examples/deployments/k8s/argilla-loadbalancer-service.yaml'
     ])
@@ -143,7 +143,7 @@ k8s_resource(
 # MinIO S3 storage
 if not S3_ENDPOINT or not S3_ACCESS_KEY or not S3_SECRET_KEY:
     k8s_yaml([
-        'examples/deployments/k8s/minio-dev.yaml', 
+        'examples/deployments/k8s/minio-dev.yaml',
         'examples/deployments/k8s/minio-standalone-pvc.yaml'])
     k8s_resource(
       'minio',
@@ -154,8 +154,8 @@ if not S3_ENDPOINT or not S3_ACCESS_KEY or not S3_SECRET_KEY:
 # Weaviate vector database
 helm_repo('weaviate', 'https://weaviate.github.io/weaviate-helm', labels=['helm'], resource_name='weaviate-helm')
 helm_resource(
-    name='weaviate-server', 
-    chart='weaviate/weaviate', 
+    name='weaviate-server',
+    chart='weaviate/weaviate',
     flags=[
         '--version=16.8.8',
         '--values=examples/deployments/k8s/helm/weaviate-helm.yaml'],
@@ -201,7 +201,7 @@ for o in extralit_k8s_yaml:
                     ])
 
 k8s_yaml([
-    encode_yaml_stream(extralit_k8s_yaml), 
+    encode_yaml_stream(extralit_k8s_yaml),
     'examples/deployments/k8s/extralit-configs.yaml'
 ])
 k8s_resource(

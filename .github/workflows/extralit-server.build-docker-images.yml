@@ -118,7 +118,7 @@ jobs:
       #     tags: ${{ env.HF_SPACES_DOCKER_IMAGE }}:${{ env.IMAGE_TAG }}
       #     labels: ${{ steps.meta.outputs.labels }}
       #     build-args: |
-      #       ARGILLA_SERVER_IMAGE=${{ env.SERVER_DOCKER_IMAGE }}
+      #       extralit_server_IMAGE=${{ env.SERVER_DOCKER_IMAGE }}
       #       ARGILLA_VERSION=${{ env.IMAGE_TAG }}
       #     push: true
 
@@ -131,7 +131,7 @@ jobs:
       #     tags: ${{ env.HF_SPACES_DOCKER_IMAGE }}:latest
       #     labels: ${{ steps.meta.outputs.labels }}
       #     build-args: |
-      #       ARGILLA_SERVER_IMAGE=${{ env.SERVER_DOCKER_IMAGE }}
+      #       extralit_server_IMAGE=${{ env.SERVER_DOCKER_IMAGE }}
       #       ARGILLA_VERSION=${{ env.IMAGE_TAG }}
       #     push: true
 

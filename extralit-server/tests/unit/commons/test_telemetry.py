@@ -1,18 +1,17 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 import uuid
-from unittest.mock import MagicMock
 
 import pytest
 from fastapi import Request
@@ -31,7 +30,7 @@ mock_request = Request(scope={"type": "http", "headers": {}})
 class TestSuiteTelemetry:
     async def test_create_client_with_server_id(self, mocker: MockerFixture):
         mock_server_id = uuid.uuid4()
-        mocker.patch("argilla_server.telemetry._client.get_server_id", return_value=mock_server_id)
+        mocker.patch("extralit_server.telemetry._client.get_server_id", return_value=mock_server_id)
 
         test_telemetry = TelemetryClient()
 
@@ -57,7 +56,7 @@ class TestSuiteTelemetry:
     def test_track_data(self, mocker: MockerFixture):
         from extralit_server._version import __version__ as version
 
-        mock = mocker.patch("argilla_server.telemetry._client.send_telemetry")
+        mock = mocker.patch("extralit_server.telemetry._client.send_telemetry")
 
         telemetry = TelemetryClient()
         telemetry.track_data("test_topic", {"test": "test"})
@@ -71,7 +70,7 @@ class TestSuiteTelemetry:
 
     async def test_track_api_request(self, test_telemetry: TelemetryClient, mocker: MockerFixture):
         mocker.patch(
-            "argilla_server.telemetry._client.resolve_endpoint_path_for_request", return_value="/api/test/endpoint"
+            "extralit_server.telemetry._client.resolve_endpoint_path_for_request", return_value="/api/test/endpoint"
         )
 
         request = Request(
@@ -102,7 +101,7 @@ class TestSuiteTelemetry:
 
     async def test_track_api_request_call_with_error(self, test_telemetry: TelemetryClient, mocker: MockerFixture):
         mocker.patch(
-            "argilla_server.telemetry._client.resolve_endpoint_path_for_request", return_value="/api/test/endpoint"
+            "extralit_server.telemetry._client.resolve_endpoint_path_for_request", return_value="/api/test/endpoint"
         )
 
         request = Request(
@@ -131,7 +130,7 @@ class TestSuiteTelemetry:
         self, test_telemetry: TelemetryClient, mocker: MockerFixture
     ):
         mocker.patch(
-            "argilla_server.telemetry._client.resolve_endpoint_path_for_request", return_value="/api/test/endpoint"
+            "extralit_server.telemetry._client.resolve_endpoint_path_for_request", return_value="/api/test/endpoint"
         )
 
         request = Request(

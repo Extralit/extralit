@@ -105,7 +105,7 @@ Then, select from three different development environments through devcontainers
 
 ### 3. Development workflow*
 
-    - **Backend Development**: Changes to `extralit-server/src/argilla_server/` or `argilla/src/{argilla,extralit}/` are automatically updated if Tilt is running
+    - **Backend Development**: Changes to `extralit-server/src/extralit_server/` or `argilla/src/{argilla,extralit}/` are automatically updated if Tilt is running
     - **Python SDK packages**
       ```bash
       cd argilla
@@ -170,7 +170,7 @@ npm install
 npm run build
 
 # Copy built files to server static directory
-cp -r dist ../extralit-server/src/argilla_server/static
+cp -r dist ../extralit-server/src/extralit_server/static
 ```
 
 ### 4. Configure Environment Variables
@@ -178,7 +178,7 @@ cp -r dist ../extralit-server/src/argilla_server/static
 Create a `.env.dev` file in the `argilla-server` directory with the following content:
 
 ```
-ALEMBIC_CONFIG=src/argilla_server/alembic.ini
+ALEMBIC_CONFIG=src/extralit_server/alembic.ini
 ARGILLA_AUTH_SECRET_KEY=8VO7na5N/jQx+yP/N+HlE8q51vPdrxqlh6OzoebIyko=
 ARGILLA_DATABASE_URL=sqlite+aiosqlite:///${HOME}/.extralit/argilla-dev.db?check_same_thread=False
 # Search engine configuration
@@ -291,7 +291,7 @@ docker build -t argilla-server:latest -f docker/server/Dockerfile docker/server/
 To build the Argilla HF Spaces Docker image, which includes the Argilla Server, ElasticSearch, and Redis, use the following command:
 
 ```bash
-docker build --build-arg ARGILLA_SERVER_IMAGE=argilla-server --build-arg ARGILLA_VERSION=latest -t argilla-hf-spaces:latest -f docker/argilla-hf-spaces/Dockerfile docker/argilla-hf-spaces/
+docker build --build-arg extralit_server_IMAGE=argilla-server --build-arg ARGILLA_VERSION=latest -t argilla-hf-spaces:latest -f docker/argilla-hf-spaces/Dockerfile docker/argilla-hf-spaces/
 ```
 
 Start the Argilla Server and other dependencies using Docker:

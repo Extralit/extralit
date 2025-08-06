@@ -1,9 +1,9 @@
 # Multi-stage build to reduce image size
 ARG ARGILLA_VERSION=latest
-ARG ARGILLA_SERVER_IMAGE=extralitdev/argilla-server
+ARG extralit_server_IMAGE=extralitdev/argilla-server
 
 # Base stage with common dependencies
-FROM ${ARGILLA_SERVER_IMAGE}:${ARGILLA_VERSION} AS base
+FROM ${extralit_server_IMAGE}:${ARGILLA_VERSION} AS base
 USER root
 
 # Copy Argilla distribution files
@@ -37,7 +37,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends re
 # Install Python dependencies and additional utilities
 RUN pip install --no-cache-dir -r /packages/requirements.txt && \
     chmod +x /home/argilla/start.sh && \
-    chmod +x /home/argilla/start_argilla_server.sh && \
+    chmod +x /home/argilla/start_extralit_server.sh && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends curl jq pwgen && \
     apt-get remove -y wget gnupg && \
     apt-get clean && \

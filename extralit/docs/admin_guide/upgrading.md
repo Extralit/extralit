@@ -30,7 +30,7 @@ This guide covers the update process for Extralit across different deployment op
     Finally, build the wheel containing the built argilla-frontend/dist
 
     ```bash
-    cp -r argilla-frontend/dist extralit-server/src/argilla_server/static
+    cp -r argilla-frontend/dist extralit-server/src/extralit_server/static
     rm -rf extralit-server/dist && python -m build -s extralit-server/
     ```
 
@@ -71,11 +71,11 @@ This guide covers the update process for Extralit across different deployment op
 
 For database schema changes:
 
-- Run migrations using the `argilla_server` CLI:
+- Run migrations using the `extralit_server` CLI:
 
 ```bash
 kubectl exec -it deployment/argilla-server-deployment -n {NAMESPACE} -- \
-argilla_server database migrate
+extralit_server database migrate
 ```
 
 &nbsp;
@@ -122,7 +122,7 @@ argilla_server database migrate
 4. For database schema changes, run migrations:
 
    ```bash
-   docker compose exec argilla argilla_server database migrate
+   docker compose exec argilla extralit_server database migrate
    ```
 
 <SwmMeta version="3.0.0"><sup>Powered by [Swimm](https://app.swimm.io/)</sup></SwmMeta>

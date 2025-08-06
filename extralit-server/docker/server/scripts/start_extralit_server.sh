@@ -13,7 +13,7 @@ if [ -z "$ARGILLA_DATABASE_URL" ] && [ -n "$POSTGRES_PASSWORD" ] && [ -n "$POSTG
 fi
 
 # Run database migrations
-python -m argilla_server database migrate
+python -m extralit_server database migrate
 
 if [ -n "$USERNAME" ] && [ -n "$PASSWORD" ]; then
   echo "Creating owner user with username ${USERNAME}"
@@ -28,17 +28,17 @@ if [ -n "$USERNAME" ] && [ -n "$PASSWORD" ]; then
     cmd_args="$cmd_args --workspace $WORKSPACE"
   fi
 
-  python -m argilla_server database users create $cmd_args
+  python -m extralit_server database users create $cmd_args
 
 else
   echo "No username and password was provided. Skipping user creation"
 fi
 
 # Reindexing data into search engine
-index_count=$(python -m argilla_server search-engine list | wc -l)
+index_count=$(python -m extralit_server search-engine list | wc -l)
 if [ "$REINDEX_DATASETS" == "true" ] || [ "$REINDEX_DATASETS" == "1" ] || [ "$index_count" -le 1 ]; then
   echo "Reindexing existing datasets"
-  python -m argilla_server search-engine reindex
+  python -m extralit_server search-engine reindex
 fi
 
 if [ "$ENV" = "dev" ]; then
