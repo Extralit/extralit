@@ -40,8 +40,8 @@ describe("MarkdownRenderer", () => {
     });
     expect(wrapper.html()).toBe(
       `<div class="markdown-render --ltr">
-  <p><svg viewBox="0 0 100 100" width="100" height="100">
-      <circle fill="red" stroke-width="3" stroke="black" r="40" cy="50" cx="50"></circle>
+  <p><svg height="100" width="100" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="40" stroke="black" stroke-width="3" fill="red"></circle>
     </svg></p>
 </div>`
     );
@@ -56,8 +56,8 @@ describe("MarkdownRenderer", () => {
     });
     expect(wrapper.html()).toBe(
       `<div class="markdown-render --ltr">
-  <p><svg viewBox="0 0 100 100" width="100" height="100">
-      <circle fill="red" stroke-width="3" stroke="black" r="40" cy="50" cx="50"></circle>
+  <p><svg height="100" width="100" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="40" stroke="black" stroke-width="3" fill="red"></circle>
     </svg></p>
 </div>`
     );
@@ -72,7 +72,7 @@ describe("MarkdownRenderer", () => {
     });
     expect(wrapper.html()).toBe(
       `<div class="markdown-render --ltr">
-  <p><a target="_blank" href="https://example.com">example</a></p>
+  <p><a href="https://example.com" target="_blank">example</a></p>
 </div>`
     );
   });
@@ -86,7 +86,7 @@ describe("MarkdownRenderer", () => {
     });
     expect(wrapper.html()).toBe(
       `<div class="markdown-render --ltr">
-  <p><a target="_blank" href="https://example.com">example</a></p>
+  <p><a href="https://example.com" target="_blank">example</a></p>
 </div>`
     );
   });
