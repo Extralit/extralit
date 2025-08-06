@@ -3,158 +3,114 @@
  */
 
 import { type NuxtAxiosInstance } from "@nuxtjs/axios";
+import type {
+  ImportHistoryResponse,
+  DataframeData,
+  DocumentImportAnalysis,
+  ImportStatus,
+  ImportSummary,
+} from "~/v1/domain/entities/import/ImportAnalysis";
 
 export interface ImportHistoryDetailItem {
   reference: string;
-  title: string;
-  authors: string;
-  year: string;
-  journal?: string;
-  doi?: string;
-  pmid?: string;
-  status: "add" | "update" | "skip" | "failed";
+  status: ImportStatus;
   associated_files: string[];
   error_message?: string;
   validation_errors?: string[];
-  // Dynamic fields from original dataframe
+  // Dynamic fields from original dataframe (title, authors, year, journal, etc.)
   [key: string]: any;
 }
 
-export interface ImportHistoryDetailsResponse {
-  id: string;
-  workspace_id: string;
-  user_id: string;
-  filename: string;
-  created_at: string;
-  uploaded_by?: string;
-  data: {
-    schema: {
-      fields: Array<{
-        name: string;
-        type: string;
-      }>;
-      primaryKey: string[];
-    };
-    data: Record<string, any>[];
+export interface ImportHistoryDetailsResponse extends ImportHistoryResponse {
+  data: DataframeData; // Always present in detailed view
+  metadata: {
+    documents: Record<string, DocumentImportAnalysis>; // Reference key to document info mapping
+    summary: ImportSummary; // Import analysis summary
   };
-  metadata?: Record<string, any>; // Contains status and file info for each reference
-  summary: {
-    total_documents: number;
-    add_count: number;
-    update_count: number;
-    skip_count: number;
-    failed_count: number;
-  };
-}
-
-export interface ImportHistoryDetailsFilters {
-  reference?: string;
-  title?: string;
-  authors?: string;
-  status?: string;
-  error_message?: string;
-}
-
-export interface ImportHistoryDetailsParams {
-  page?: number;
-  size?: number;
-  sort_by?: string;
-  sort_order?: "asc" | "desc";
-  filters?: ImportHistoryDetailsFilters;
 }
 
 export class GetImportHistoryDetailsUseCase {
   constructor(private readonly axios: NuxtAxiosInstance) {}
 
-  async execute(
-    importId: string,
-    params: ImportHistoryDetailsParams = {}
-  ): Promise<{
-    details: ImportHistoryDetailsResponse;
-    items: ImportHistoryDetailItem[];
-    total: number;
-    page: number;
-    size: number;
-    pages: number;
-  }> {
-    const queryParams = new URLSearchParams();
+  async execute(importId: string): Promise<ImportHistoryDetailsResponse> {
+    const response = await this.axios.get<ImportHistoryDetailsResponse>(`/v1/imports/history/${importId}`);
 
-    // Pagination
-    if (params.page !== undefined) {
-      queryParams.append("page", params.page.toString());
-    }
-    if (params.size !== undefined) {
-      queryParams.append("size", params.size.toString());
-    }
-
-    // Sorting
-    if (params.sort_by) {
-      queryParams.append("sort_by", params.sort_by);
-    }
-    if (params.sort_order) {
-      queryParams.append("sort_order", params.sort_order);
-    }
-
-    // Filters
-    if (params.filters) {
-      Object.entries(params.filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== "") {
-          queryParams.append(key, value.toString());
-        }
-      });
-    }
-
-    const response = await this.axios.get<ImportHistoryDetailsResponse>(
-      `/v1/imports/history/${importId}?${queryParams.toString()}`
-    );
-
-    const details = response.data;
-
-    // Process the data to create detailed items
-    const items = this.processDetailItems(details);
-
-    // Apply client-side pagination and filtering if needed
-    const filteredItems = this.applyFilters(items, params.filters);
-    const paginatedItems = this.applyPagination(filteredItems, params.page || 1, params.size || 20);
-
-    return {
-      details,
-      items: paginatedItems.items,
-      total: filteredItems.length,
-      page: params.page || 1,
-      size: params.size || 20,
-      pages: Math.ceil(filteredItems.length / (params.size || 20)),
-    };
+    return response.data;
   }
 
-  private processDetailItems(details: ImportHistoryDetailsResponse): ImportHistoryDetailItem[] {
+  /**
+   * Process the import history response into detail items
+   */
+  processDetailItems(details: ImportHistoryDetailsResponse): ImportHistoryDetailItem[] {
     const items: ImportHistoryDetailItem[] = [];
 
     // Process each data row from the dataframe
     details.data.data.forEach((row: Record<string, any>) => {
       const reference = row.reference || row.id || "Unknown";
-      const metadata = details.metadata?.[reference] || {};
+      const documentAnalysis: DocumentImportAnalysis = details.metadata?.documents?.[reference] || {
+        document_create: {},
+        associated_files: [],
+        status: "unknown" as ImportStatus,
+        validation_errors: [],
+      };
 
       const item: ImportHistoryDetailItem = {
         reference,
-        title: row.title || "Unknown Title",
-        authors: this.formatAuthors(row.author || row.authors),
-        year: row.year?.toString() || "Unknown",
-        journal: row.journal || row.venue,
-        doi: row.doi,
-        pmid: row.pmid,
-        status: metadata.status || "unknown",
-        associated_files: metadata.associated_files || [],
-        error_message: metadata.error_message,
-        validation_errors: metadata.validation_errors,
-        // Include all other fields from the original data
-        ...row,
+        status: documentAnalysis.status,
+        associated_files: documentAnalysis.associated_files,
+        error_message: documentAnalysis.validation_errors?.join("; ") || undefined,
+        validation_errors: documentAnalysis.validation_errors,
+        // Include all fields from the original data with proper formatting
+        ...this.formatDataFields(row),
       };
 
       items.push(item);
     });
 
     return items;
+  }
+
+  /**
+   * Calculate summary from data and metadata
+   */
+  calculateSummary(data: DataframeData, metadata?: ImportHistoryResponse["metadata"]): ImportSummary {
+    // If metadata already contains a summary, use it
+    if (metadata?.summary) {
+      return metadata.summary;
+    }
+
+    // Otherwise calculate from documents
+    const summary = {
+      total_documents: data.data.length,
+      add_count: 0,
+      update_count: 0,
+      skip_count: 0,
+      failed_count: 0,
+    };
+
+    if (metadata?.documents) {
+      Object.values(metadata.documents).forEach((documentAnalysis: DocumentImportAnalysis) => {
+        switch (documentAnalysis.status) {
+          case "add":
+            summary.add_count++;
+            break;
+          case "update":
+            summary.update_count++;
+            break;
+          case "skip":
+            summary.skip_count++;
+            break;
+          case "failed":
+            summary.failed_count++;
+            break;
+          case "ignore":
+            // Ignore status doesn't count towards any category
+            break;
+        }
+      });
+    }
+
+    return summary;
   }
 
   private formatAuthors(authors: string | string[] | undefined): string {
@@ -165,46 +121,34 @@ export class GetImportHistoryDetailsUseCase {
     return String(authors);
   }
 
-  private applyFilters(
-    items: ImportHistoryDetailItem[],
-    filters?: ImportHistoryDetailsFilters
-  ): ImportHistoryDetailItem[] {
-    if (!filters) return items;
+  /**
+   * Format data fields from the original dataframe
+   */
+  private formatDataFields(row: Record<string, any>): Record<string, any> {
+    const formatted: Record<string, any> = {};
 
-    return items.filter((item) => {
-      if (filters.reference && !item.reference.toLowerCase().includes(filters.reference.toLowerCase())) {
-        return false;
+    // Process each field from the original data
+    Object.entries(row).forEach(([key, value]) => {
+      if (key === "reference" || key === "id") {
+        // Skip reference/id as it's handled separately
+        return;
       }
-      if (filters.title && !item.title.toLowerCase().includes(filters.title.toLowerCase())) {
-        return false;
+
+      // Format specific field types
+      if (key === "authors" || key === "author") {
+        formatted[key] = this.formatAuthors(value);
+      } else if (key === "year") {
+        formatted[key] = value?.toString() || "Unknown";
+      } else if (key === "journal" || key === "venue") {
+        formatted[key] = value || "Unknown";
+      } else if (key === "title") {
+        formatted[key] = value || "Unknown Title";
+      } else {
+        // For all other fields, use the original value
+        formatted[key] = value;
       }
-      if (filters.authors && !item.authors.toLowerCase().includes(filters.authors.toLowerCase())) {
-        return false;
-      }
-      if (filters.status && item.status !== filters.status) {
-        return false;
-      }
-      if (
-        filters.error_message &&
-        (!item.error_message || !item.error_message.toLowerCase().includes(filters.error_message.toLowerCase()))
-      ) {
-        return false;
-      }
-      return true;
     });
-  }
 
-  private applyPagination(
-    items: ImportHistoryDetailItem[],
-    page: number,
-    size: number
-  ): { items: ImportHistoryDetailItem[]; total: number } {
-    const startIndex = (page - 1) * size;
-    const endIndex = startIndex + size;
-
-    return {
-      items: items.slice(startIndex, endIndex),
-      total: items.length,
-    };
+    return formatted;
   }
 }

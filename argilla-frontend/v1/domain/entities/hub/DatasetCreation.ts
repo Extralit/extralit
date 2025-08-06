@@ -7,6 +7,7 @@ export class DatasetCreation {
 
   public readonly firstRecord: {};
   public workspace: Workspace;
+  public importHistoryId?: string;
 
   constructor(public readonly repoId: string, public name: string, private readonly subset: Subset[]) {
     this.selectedSubset = subset[0];

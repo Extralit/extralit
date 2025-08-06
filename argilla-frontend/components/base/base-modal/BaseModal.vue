@@ -19,12 +19,12 @@
   <transition v-if="modalVisible" name="modal" appear>
     <div class="modal-mask" :class="modalMaskClass">
       <div class="modal-wrapper" :class="modalPosition">
-        <div class="modal-container" :class="modalClass" v-click-outside="closeModal">
+        <div v-click-outside="closeModal" class="modal-container" :class="modalClass">
           <p v-if="modalTitle" class="modal__title">
             {{ modalTitle }}
           </p>
           <slot />
-          <BaseButton class="button-close-modal" @on-click="closeModal" v-if="allowClose">
+          <BaseButton v-if="allowClose" class="button-close-modal" @on-click="closeModal">
             <svgicon name="close" width="20" height="20" />
           </BaseButton>
         </div>
@@ -51,7 +51,7 @@ export default {
     },
     allowClose: {
       type: Boolean,
-      default: false,
+      default: true,
     },
     modalClass: {
       type: String,
@@ -93,25 +93,34 @@ export default {
 <style lang="scss" scoped>
 .modal-mask {
   position: fixed;
-  z-index: 9998;
+  z-index: 99999;
   top: 0;
   left: 0;
   width: 100%;
   height: 100vh;
-  display: table;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: opacity 0.3s ease;
   cursor: default;
   background: var(--bg-opacity-20);
+  pointer-events: all;
+
   &:not(.prevent-scroll) {
-    pointer-events: none;
+    // Keep pointer events enabled for click-outside functionality
   }
 }
 
 .modal-wrapper {
   display: flex;
   height: 100vh;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+
   &.modal-bottom-right {
     align-items: flex-end;
+    justify-content: flex-end;
     padding-bottom: 3.5em;
     .modal-container {
       margin-right: 1.5em;
@@ -119,6 +128,7 @@ export default {
   }
   &.modal-top-right {
     align-items: flex-start;
+    justify-content: flex-end;
     padding-top: 10em;
     .modal-container {
       margin-right: 6em;
@@ -127,10 +137,12 @@ export default {
 
   &.modal-top-center {
     align-items: flex-start;
+    justify-content: center;
     padding-top: 5em;
   }
   &.modal-center {
     align-items: center;
+    justify-content: center;
   }
 }
 
@@ -146,6 +158,7 @@ export default {
   transition: $swift-ease-in-out;
   text-align: left;
   pointer-events: all;
+  z-index: 100000;
 }
 .button-close-modal {
   position: absolute;

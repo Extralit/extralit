@@ -25,13 +25,14 @@ const ADAPTED_TYPES = {
   float16: "float",
   float32: "float",
   float64: "float",
+  terms: "terms",
 };
 
 export type MetadataTypes =
   | "uint8"
   | "uint16"
   | "uint32"
-  | "unit64"
+  | "uint64"
   | "int8"
   | "int32"
   | "int64"
@@ -53,7 +54,7 @@ export class MetadataCreation {
     return null;
   }
 
-  get adapteType() {
+  get adaptedType() {
     return ADAPTED_TYPES[this.type.value];
   }
 }

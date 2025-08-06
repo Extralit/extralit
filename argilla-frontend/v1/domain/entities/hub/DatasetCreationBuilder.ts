@@ -2,7 +2,7 @@ import { DatasetCreation } from "./DatasetCreation";
 import { Subset } from "./Subset";
 
 export interface Feature {
-  dtype: "string" | "int32" | "int64";
+  dtype: "string" | "int32" | "int64" | "float32" | "boolean";
   _type: "Value" | "Image" | "ClassLabel";
   names?: string[];
   feature?: Feature;

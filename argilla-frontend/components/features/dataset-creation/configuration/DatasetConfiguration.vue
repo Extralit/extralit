@@ -1,9 +1,9 @@
 <template>
   <div class="dataset-config">
     <HorizontalResizable
+      :id="`dataset-config-r-h-rz`"
       :min-height-percent="30"
       :top-percent-height="34"
-      :id="`dataset-config-r-h-rz`"
       class="wrapper"
     >
       <template #up>
@@ -47,16 +47,34 @@
         </VerticalResizable>
       </template>
       <template #down>
-        <VerticalResizable class="dataset-config__down" :id="`dataset-preview-t-v-rz`" :left-percent-width="36">
+        <VerticalResizable :id="`dataset-preview-t-v-rz`" class="dataset-config__down" :left-percent-width="36">
           <template #left>
             <div class="dataset-config__preview">
+              <!-- HuggingFace Hub preview -->
               <iframe
-                v-if="!!dataset.repoId"
+                v-if="dataSource === 'hub' && !!dataset.repoId"
                 :src="`https://huggingface.co/datasets/${dataset.repoId}/embed/viewer/ParaphraseRC/train`"
                 frameborder="0"
                 width="100%"
                 height="100%"
               ></iframe>
+
+              <!-- ImportHistory data preview -->
+              <ImportHistoryDataPreview
+                v-else-if="dataSource === 'import' && importData"
+                :import-history-details="importData"
+                :loading="isLoadingImportData"
+                :error="importDataError"
+                @retry="$emit('retry-import-data')"
+                @row-selected="handleImportRowSelected"
+                @field-selected="handleImportFieldSelected"
+              />
+
+              <!-- Fallback for missing data -->
+              <div v-else class="dataset-config__preview-placeholder">
+                <BaseIcon icon-name="document" />
+                <p>No preview data available</p>
+              </div>
             </div>
           </template>
           <template #right>
@@ -71,7 +89,9 @@
 </template>
 
 <script>
+import "assets/icons/document";
 import { useDatasetConfiguration } from "./useDatasetConfiguration";
+import { ImportHistoryDetails } from "~/v1/domain/entities/import/ImportHistoryDetails";
 
 export default {
   props: {
@@ -79,9 +99,92 @@ export default {
       type: Object,
       required: true,
     },
+    dataSource: {
+      type: String,
+      default: "hub",
+      validator: (value) => ["hub", "import"].includes(value),
+    },
+    importData: {
+      type: [ImportHistoryDetails, Object],
+      default: null,
+    },
+    isLoadingImportData: {
+      type: Boolean,
+      default: false,
+    },
+    importDataError: {
+      type: String,
+      default: null,
+    },
   },
+  emits: [
+    "change-subset",
+    "retry-import-data",
+    "import-row-selected",
+    "import-field-selected",
+    "import-dataset-configured",
+  ],
   mounted() {
-    this.getFirstRecord(this.dataset);
+    this.getFirstRecord(this.dataset, this.dataSource, this.importData);
+
+    // If this is ImportHistory data, configure the dataset appropriately
+    if (this.dataSource === "import" && this.importData) {
+      this.configureImportHistoryDataset();
+    }
+  },
+  watch: {
+    dataset: {
+      handler(newDataset) {
+        this.getFirstRecord(newDataset, this.dataSource, this.importData);
+      },
+      deep: true,
+    },
+    importData: {
+      handler(newImportData) {
+        if (this.dataSource === "import" && newImportData) {
+          this.getFirstRecord(this.dataset, this.dataSource, newImportData);
+          this.configureImportHistoryDataset();
+        }
+      },
+      deep: true,
+    },
+    dataSource: {
+      handler(newDataSource) {
+        this.getFirstRecord(this.dataset, newDataSource, this.importData);
+        if (newDataSource === "import" && this.importData) {
+          this.configureImportHistoryDataset();
+        }
+      },
+    },
+  },
+  methods: {
+    handleImportRowSelected(rowData) {
+      this.$emit("import-row-selected", rowData);
+    },
+    handleImportFieldSelected(fieldData) {
+      this.$emit("import-field-selected", fieldData);
+    },
+    configureImportHistoryDataset() {
+      if (this.dataSource === "import" && this.importData) {
+        try {
+          // Get suggested field mappings for ImportHistory data
+          const suggestedMappings = this.getSuggestedFieldMappings(this.importData);
+
+          // Configure the dataset with ImportHistory-specific settings
+          this.configureImportHistoryFields(this.dataset, this.importData, suggestedMappings);
+
+          // Emit event to notify parent of configuration changes
+          this.$emit("import-dataset-configured", {
+            dataset: this.dataset,
+            suggestedMappings,
+            suggestedQuestions: this.getSuggestedQuestions(this.importData),
+          });
+        } catch (error) {
+          console.error("Error configuring ImportHistory dataset:", error);
+          // Don't throw the error, just log it to avoid breaking the UI
+        }
+      }
+    },
   },
   setup() {
     return useDatasetConfiguration();
@@ -119,7 +222,7 @@ export default {
     align-items: flex-start;
     justify-items: center;
     padding: $base-space * 2;
-    width: 40vw;
+    width: 100%;
     height: 100%;
     overflow: auto;
     @include media("<tablet") {
@@ -162,6 +265,20 @@ export default {
   &__configuration {
     width: 100%;
     height: 100%;
+  }
+  &__preview-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--fg-secondary);
+    gap: $base-space * 2;
+
+    p {
+      margin: 0;
+      font-size: 0.9rem;
+    }
   }
 }
 </style>

@@ -72,7 +72,6 @@ jobs:
 
       - name: Run tests with coverage 🧪
         id: run-tests
-        continue-on-error: true
         run: |
           npm run test:coverage
 

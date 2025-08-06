@@ -71,14 +71,25 @@ export class DatasetRepository implements IDatasetRepository {
 
   async import(datasetId: DatasetId, creation: DatasetCreation): Promise<JobId> {
     try {
-      const { data } = await this.axios.post<BackendJob>(`/v1/datasets/${datasetId}/import`, {
-        name: creation.repoId,
-        subset: creation.selectedSubset.name,
-        split: creation.selectedSubset.selectedSplit.name,
-        mapping: creation.mappings,
-      });
+      // Check if this is an ImportHistory-based dataset
+      if (creation.importHistoryId) {
+        const { data } = await this.axios.post<BackendJob>(`/v1/datasets/${datasetId}/import-history`, {
+          history_id: creation.importHistoryId,
+          mapping: creation.mappings,
+        });
 
-      return data.id;
+        return data.id;
+      } else {
+        // Original HuggingFace Hub import
+        const { data } = await this.axios.post<BackendJob>(`/v1/datasets/${datasetId}/import`, {
+          name: creation.repoId,
+          subset: creation.selectedSubset.name,
+          split: creation.selectedSubset.selectedSplit.name,
+          mapping: creation.mappings,
+        });
+
+        return data.id;
+      }
     } catch (err) {
       throw {
         response: DATASET_API_ERRORS.ERROR_IMPORTING_DATASET,

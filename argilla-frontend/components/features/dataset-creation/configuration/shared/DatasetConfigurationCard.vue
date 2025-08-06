@@ -1,7 +1,7 @@
 <template>
   <div class="config-card__wrapper">
     <div class="config-card">
-      <div class="config-card__content" :class="item.type.replace(/ /g, '')">
+      <div class="config-card__content" :class="item?.type">
         <h3 class="config-card__title">
           <svgicon class="config-card__icon" width="6" name="draggable" color="var(--bg-opacity-20)" />{{ item.name }}
           <span v-if="item.primitiveType" class="config-card__primitive-type">{{ item.primitiveType }}</span>

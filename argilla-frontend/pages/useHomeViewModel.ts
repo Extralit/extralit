@@ -6,13 +6,14 @@ import { GetDatasetsUseCase } from "@/v1/domain/usecases/get-datasets-use-case";
 import { GetWorkspacesUseCase } from "~/v1/domain/usecases/get-workspaces-use-case";
 import { useDatasets } from "~/v1/infrastructure/storage/DatasetsStorage";
 import { useRole } from "~/v1/infrastructure/services/useRole";
+import { ImportHistoryListItem } from "~/v1/domain/usecases/get-import-history-use-case";
 
 export const useHomeViewModel = () => {
   const workspaces = ref<any[]>([]);
   const getWorkspacesUseCase = useResolve(GetWorkspacesUseCase);
   const { isAdminOrOwnerRole } = useRole();
   const isLoadingDatasets = ref(false);
-  const { goToImportDatasetFromHub } = useRoutes();
+  const { goToImportDatasetFromHub, goToImportConfiguration } = useRoutes();
   const { state: datasets } = useDatasets();
   const getDatasetsUseCase = useResolve(GetDatasetsUseCase);
   const getDatasetCreationUseCase = useResolve(GetHfDatasetCreationUseCase);
@@ -91,11 +92,37 @@ export const useHomeViewModel = () => {
     selectedWorkspaceId.value = workspaceId;
   };
 
+  // Import history modal state
+  const showImportHistoryModal = ref(false);
+
+  const isImportHistoryModalVisible = computed(() => {
+    return showImportHistoryModal.value;
+  });
+
+  const openImportHistoryModal = () => {
+    showImportHistoryModal.value = true;
+  };
+
+  const closeImportHistoryModal = () => {
+    showImportHistoryModal.value = false;
+  };
+
+  // Navigation methods for import configuration routing
+  const handleImportSelected = (importRecord: ImportHistoryListItem) => {
+    goToImportConfiguration(importRecord.id);
+  };
+
+  const handleViewImportDetails = (importRecord: ImportHistoryListItem) => {
+    closeImportHistoryModal();
+    goToImportConfiguration(importRecord.id);
+  };
+
   return {
     datasets,
     workspaces,
     isLoadingDatasets,
     getNewHfDatasetByRepoId,
+    goToImportConfiguration,
     isAdminOrOwnerRole,
     exampleDatasets,
     error,
@@ -104,5 +131,11 @@ export const useHomeViewModel = () => {
     openImportModal,
     selectedWorkspace: selectedWorkspaceId,
     setSelectedWorkspaceId,
+    showImportHistoryModal,
+    isImportHistoryModalVisible,
+    openImportHistoryModal,
+    closeImportHistoryModal,
+    handleImportSelected,
+    handleViewImportDetails,
   };
 };

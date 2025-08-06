@@ -298,6 +298,16 @@ export default {
   },
   import: {
     title: "Import Documents to {workspaceName} Workspace",
+    historyTitle: "Import History",
+  },
+  importConfiguration: {
+    title: "Import",
+    loading: "Loading import data...",
+    errorTitle: "Failed to Load Import",
+    retry: "Retry",
+    retrying: "Retrying...",
+    returnHome: "Return Home",
+    retryAttempt: "Retry attempt {current} of {max}",
   },
   datasetCreation: {
     questions: {
@@ -325,6 +335,8 @@ export default {
       "The created dataset will include the first 10K rows and further records can be logged via the python SDK.",
     button: "Create dataset",
     fields: "Fields",
+    metadata: "Metadata Fields",
+    metadataDescription: "Select fields to include as metadata for filtering and sorting",
     questionsTitle: "Questions",
     yourQuestions: "Your questions",
     requiredField: "Required field",

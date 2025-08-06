@@ -192,7 +192,7 @@ export default {
     },
   },
 
-  emits: ["retry-failed", "view-log", "return-to-library"],
+  emits: ["retry-failed", "view-import-history", "return-to-library"],
 
   data() {
     return {
@@ -339,7 +339,7 @@ export default {
     },
 
     viewImportLog() {
-      this.$emit("view-log", {
+      this.$emit("view-import-history", {
         importId: this.summaryData.importId,
         workspace: this.workspace,
       });

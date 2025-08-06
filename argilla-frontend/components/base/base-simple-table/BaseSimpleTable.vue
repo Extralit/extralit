@@ -67,7 +67,7 @@ export default {
       };
     },
 
-    processedColumns() {
+    processedColumns(): ColumnDefinition[] {
       return this.columns.map((col) => {
         const column: any = {
           field: col.field,
@@ -360,7 +360,25 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
+.tabulator-container {
+  display: flex;
+  flex-flow: column;
+  position: relative;
+  max-height: 80vh;
+  border: 1px solid var(--border-field);
+  border-radius: $border-radius;
+  background: var(--bg-accent-grey-1);
+  overflow: auto;
+
+  .__table {
+    white-space: normal;
+    position: relative;
+    resize: vertical;
+    overflow: auto;
+  }
+}
+
 .tabulator-container {
   display: flex;
   flex-flow: column;
