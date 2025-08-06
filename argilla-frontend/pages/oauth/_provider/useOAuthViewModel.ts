@@ -32,7 +32,7 @@ export const useOAuthViewModel = () => {
       redirect();
     } catch {
       notification.notify({
-        message: t("argilla.api.errors::UnauthorizedError"),
+        message: t("extralit.api.errors::UnauthorizedError"),
         type: "danger",
       });
       router.go("/");

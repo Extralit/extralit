@@ -1625,7 +1625,7 @@ class TestSuiteDatasets:
         assert response.status_code == 422, response.json()
         assert response.json() == {
             "detail": {
-                "code": "argilla.api.errors::ValidationError",
+                "code": "extralit.api.errors::ValidationError",
                 "params": {
                     "errors": [
                         {
@@ -1735,7 +1735,7 @@ class TestSuiteDatasets:
         assert response.status_code == 422
         assert response.json() == {
             "detail": {
-                "code": "argilla.api.errors::ValidationError",
+                "code": "extralit.api.errors::ValidationError",
                 "params": {
                     "errors": [
                         {
@@ -1845,7 +1845,7 @@ class TestSuiteDatasets:
         assert response.status_code == 422
         assert response.json() == {
             "detail": {
-                "code": "argilla.api.errors::ValidationError",
+                "code": "extralit.api.errors::ValidationError",
                 "params": {
                     "errors": [
                         {

@@ -548,7 +548,7 @@ class TestCreateDatasetRecordsBulk:
         assert response.status_code == 422
         assert response.json() == {
             "detail": {
-                "code": "argilla.api.errors::ValidationError",
+                "code": "extralit.api.errors::ValidationError",
                 "params": {
                     "errors": [
                         {
@@ -659,7 +659,7 @@ class TestCreateDatasetRecordsBulk:
         assert response.status_code == 422
         assert response.json() == {
             "detail": {
-                "code": "argilla.api.errors::ValidationError",
+                "code": "extralit.api.errors::ValidationError",
                 "params": {
                     "errors": [
                         {
@@ -744,7 +744,7 @@ class TestCreateDatasetRecordsBulk:
                 1,
                 {
                     "detail": {
-                        "code": "argilla.api.errors::ValidationError",
+                        "code": "extralit.api.errors::ValidationError",
                         "params": {
                             "errors": [
                                 {
@@ -771,7 +771,7 @@ class TestCreateDatasetRecordsBulk:
                 1.0,
                 {
                     "detail": {
-                        "code": "argilla.api.errors::ValidationError",
+                        "code": "extralit.api.errors::ValidationError",
                         "params": {
                             "errors": [
                                 {
@@ -798,7 +798,7 @@ class TestCreateDatasetRecordsBulk:
                 True,
                 {
                     "detail": {
-                        "code": "argilla.api.errors::ValidationError",
+                        "code": "extralit.api.errors::ValidationError",
                         "params": {
                             "errors": [
                                 {
@@ -825,7 +825,7 @@ class TestCreateDatasetRecordsBulk:
                 ["wrong", "value"],
                 {
                     "detail": {
-                        "code": "argilla.api.errors::ValidationError",
+                        "code": "extralit.api.errors::ValidationError",
                         "params": {
                             "errors": [
                                 {

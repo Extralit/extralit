@@ -20,10 +20,6 @@ flags:
     paths:
       - extralit/src/extralit/
     carryforward: true
-  argilla_v1:
-    paths:
-      - argilla-v1/src/argilla_v1/
-    carryforward: true
   extralit_server:
     paths:
       - extralit-server/

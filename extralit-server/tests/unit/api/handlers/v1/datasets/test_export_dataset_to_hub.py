@@ -140,7 +140,7 @@ class TestExportDatasetToHub:
         assert response.status_code == 403
         assert response.json() == {
             "detail": {
-                "code": "argilla.api.errors::ForbiddenOperationError",
+                "code": "extralit.api.errors::ForbiddenOperationError",
                 "params": {"detail": "Operation not allowed"},
             },
         }
@@ -166,7 +166,7 @@ class TestExportDatasetToHub:
         assert response.status_code == 403
         assert response.json() == {
             "detail": {
-                "code": "argilla.api.errors::ForbiddenOperationError",
+                "code": "extralit.api.errors::ForbiddenOperationError",
                 "params": {"detail": "Operation not allowed"},
             },
         }
@@ -190,7 +190,7 @@ class TestExportDatasetToHub:
         assert response.status_code == 401
         assert response.json() == {
             "detail": {
-                "code": "argilla.api.errors::UnauthorizedError",
+                "code": "extralit.api.errors::UnauthorizedError",
                 "params": {
                     "detail": "Could not validate credentials",
                 },
@@ -241,7 +241,7 @@ class TestExportDatasetToHub:
         assert response.status_code == 422
         assert response.json() == {
             "detail": {
-                "code": "argilla.api.errors::ValidationError",
+                "code": "extralit.api.errors::ValidationError",
                 "params": {
                     "errors": [
                         {
@@ -275,7 +275,7 @@ class TestExportDatasetToHub:
         assert response.status_code == 422
         assert response.json() == {
             "detail": {
-                "code": "argilla.api.errors::ValidationError",
+                "code": "extralit.api.errors::ValidationError",
                 "params": {
                     "errors": [
                         {
@@ -309,7 +309,7 @@ class TestExportDatasetToHub:
         assert response.status_code == 422
         assert response.json() == {
             "detail": {
-                "code": "argilla.api.errors::ValidationError",
+                "code": "extralit.api.errors::ValidationError",
                 "params": {
                     "errors": [
                         {
@@ -342,7 +342,7 @@ class TestExportDatasetToHub:
         assert response.status_code == 422
         assert response.json() == {
             "detail": {
-                "code": "argilla.api.errors::ValidationError",
+                "code": "extralit.api.errors::ValidationError",
                 "params": {
                     "errors": [
                         {

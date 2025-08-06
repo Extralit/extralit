@@ -154,7 +154,7 @@ class TestSuiteTelemetry:
                 "request.user-agent": None,
                 "request.accept-language": None,
                 "response.status": "500",
-                "response.error_code": "argilla.api.errors::ServerError",
+                "response.error_code": "extralit.api.errors::ServerError",
             },
         )
 

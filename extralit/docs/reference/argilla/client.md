@@ -54,7 +54,7 @@ for dataset in my_workspace.datasets:
 
 ---
 
-::: src.argilla.client.core.Argilla
+::: src.argilla.client.core.Extralit
 ::: src.argilla.client.resources.Users
 ::: src.argilla.client.resources.Workspaces
 ::: src.argilla.client.resources.Datasets

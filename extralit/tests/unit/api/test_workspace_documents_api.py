@@ -165,7 +165,7 @@ class TestDocumentResourceCRUD:
         documents_api.get.return_value = retrieved_model
 
         # Call get
-        with patch("extralit.documents._resource.Argilla._get_default", return_value=client):
+        with patch("extralit.documents._resource.Extralit._get_default", return_value=client):
             doc = Document.get(id=sample_document_id)
 
         # Verify API was called
@@ -223,7 +223,7 @@ class TestDocumentResourceCRUD:
         """Test Document factory methods."""
         client, documents_api = mock_client
 
-        with patch("extralit.documents._resource.Argilla._get_default", return_value=client):
+        with patch("extralit.documents._resource.Extralit._get_default", return_value=client):
             # Test from_pmid
             doc_pmid = Document.from_pmid(pmid="12345678", workspace_id=sample_workspace_id)
             assert doc_pmid.pmid == "12345678"
@@ -244,7 +244,7 @@ class TestDocumentResourceCRUD:
             tmp_file_path = tmp_file.name
 
         try:
-            with patch("extralit.documents._resource.Argilla._get_default", return_value=client):
+            with patch("extralit.documents._resource.Extralit._get_default", return_value=client):
                 # Test from_file with local path
                 doc = Document.from_file(
                     file_path_or_url=tmp_file_path, reference="LocalFile2023", workspace_id=sample_workspace_id
@@ -262,7 +262,7 @@ class TestDocumentResourceCRUD:
         """Test Document.from_file() with URL."""
         client, documents_api = mock_client
 
-        with patch("extralit.documents._resource.Argilla._get_default", return_value=client):
+        with patch("extralit.documents._resource.Extralit._get_default", return_value=client):
             # Test from_file with URL
             doc = Document.from_file(
                 file_path_or_url="https://example.com/paper.pdf",
