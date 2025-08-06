@@ -125,6 +125,34 @@ describe("ImportAnalysisTable", () => {
     ],
   };
 
+  // Common mount options with stubs
+  const createMountOptions = (propsData = {}) => ({
+    propsData: {
+      dataframeData: mockDataframeData,
+      pdfData: mockPdfData,
+      workspace: mockWorkspace,
+      loading: false,
+      ...propsData,
+    },
+    stubs: {
+      BaseSimpleTable: {
+        template: '<div class="mock-base-simple-table"></div>',
+        props: ["data", "columns", "options"],
+      },
+      BaseSpinner: {
+        template: '<div class="mock-base-spinner"></div>',
+      },
+      BaseIcon: {
+        template: '<div class="mock-base-icon"></div>',
+        props: ["iconName"],
+      },
+      BaseButton: {
+        template: '<button class="mock-base-button"><slot></slot></button>',
+        props: ["variant", "disabled"],
+      },
+    },
+  });
+
   beforeEach(() => {
     // Reset mock state before each test
     mockViewModel.isAnalyzing = false;
@@ -138,28 +166,14 @@ describe("ImportAnalysisTable", () => {
   });
 
   it("renders without crashing", () => {
-    const wrapper = mount(ImportAnalysisTable, {
-      propsData: {
-        dataframeData: mockDataframeData,
-        pdfData: mockPdfData,
-        workspace: mockWorkspace,
-        loading: false,
-      },
-    });
+    const wrapper = mount(ImportAnalysisTable, createMountOptions());
 
     expect(wrapper.exists()).toBe(true);
     expect(wrapper.find(".import-analysis-table").exists()).toBe(true);
   });
 
   it("renders with dataframe data", () => {
-    const wrapper = mount(ImportAnalysisTable, {
-      propsData: {
-        dataframeData: mockDataframeData,
-        pdfData: mockPdfData,
-        workspace: mockWorkspace,
-        loading: false,
-      },
-    });
+    const wrapper = mount(ImportAnalysisTable, createMountOptions());
 
     expect(wrapper.exists()).toBe(true);
     expect(wrapper.find(".import-analysis-table").exists()).toBe(true);
@@ -172,14 +186,7 @@ describe("ImportAnalysisTable", () => {
   });
 
   it("shows loading state when loading prop is true", () => {
-    const wrapper = mount(ImportAnalysisTable, {
-      propsData: {
-        dataframeData: mockDataframeData,
-        pdfData: mockPdfData,
-        workspace: mockWorkspace,
-        loading: true,
-      },
-    });
+    const wrapper = mount(ImportAnalysisTable, createMountOptions({ loading: true }));
 
     expect(wrapper.find(".loading-state").exists()).toBe(true);
     expect(wrapper.text()).toContain("Loading...");
@@ -188,14 +195,7 @@ describe("ImportAnalysisTable", () => {
   it("shows analyzing state when isAnalyzing is true", async () => {
     mockViewModel.isAnalyzing = true;
 
-    const wrapper = mount(ImportAnalysisTable, {
-      propsData: {
-        dataframeData: mockDataframeData,
-        pdfData: mockPdfData,
-        workspace: mockWorkspace,
-        loading: false,
-      },
-    });
+    const wrapper = mount(ImportAnalysisTable, createMountOptions());
 
     await wrapper.vm.$nextTick();
 
@@ -207,14 +207,7 @@ describe("ImportAnalysisTable", () => {
     mockViewModel.hasError = true;
     mockViewModel.errorMessage = "Test error message";
 
-    const wrapper = mount(ImportAnalysisTable, {
-      propsData: {
-        dataframeData: mockDataframeData,
-        pdfData: mockPdfData,
-        workspace: mockWorkspace,
-        loading: false,
-      },
-    });
+    const wrapper = mount(ImportAnalysisTable, createMountOptions());
 
     await wrapper.vm.$nextTick();
 
@@ -226,14 +219,7 @@ describe("ImportAnalysisTable", () => {
   it("displays analysis summary correctly when analysis result is available", async () => {
     mockViewModel.analysisResult = mockAnalysisResult;
 
-    const wrapper = mount(ImportAnalysisTable, {
-      propsData: {
-        dataframeData: mockDataframeData,
-        pdfData: mockPdfData,
-        workspace: mockWorkspace,
-        loading: false,
-      },
-    });
+    const wrapper = mount(ImportAnalysisTable, createMountOptions());
 
     await wrapper.vm.$nextTick();
 
@@ -248,14 +234,7 @@ describe("ImportAnalysisTable", () => {
   });
 
   it("displays default summary when no analysis result", () => {
-    const wrapper = mount(ImportAnalysisTable, {
-      propsData: {
-        dataframeData: mockDataframeData,
-        pdfData: mockPdfData,
-        workspace: mockWorkspace,
-        loading: false,
-      },
-    });
+    const wrapper = mount(ImportAnalysisTable, createMountOptions());
 
     const summaryData = wrapper.vm.summaryData;
     expect(summaryData.total_documents).toBe(2);
@@ -266,14 +245,7 @@ describe("ImportAnalysisTable", () => {
   });
 
   it("generates table data correctly from dataframe", () => {
-    const wrapper = mount(ImportAnalysisTable, {
-      propsData: {
-        dataframeData: mockDataframeData,
-        pdfData: mockPdfData,
-        workspace: mockWorkspace,
-        loading: false,
-      },
-    });
+    const wrapper = mount(ImportAnalysisTable, createMountOptions());
 
     const tableData = wrapper.vm.tableData;
     expect(tableData).toHaveLength(2);
@@ -304,14 +276,7 @@ describe("ImportAnalysisTable", () => {
   it("generates table data correctly from analysis result", async () => {
     mockViewModel.analysisResult = mockAnalysisResult;
 
-    const wrapper = mount(ImportAnalysisTable, {
-      propsData: {
-        dataframeData: mockDataframeData,
-        pdfData: mockPdfData,
-        workspace: mockWorkspace,
-        loading: false,
-      },
-    });
+    const wrapper = mount(ImportAnalysisTable, createMountOptions());
 
     await wrapper.vm.$nextTick();
 
@@ -324,14 +289,7 @@ describe("ImportAnalysisTable", () => {
   });
 
   it("generates table columns correctly", () => {
-    const wrapper = mount(ImportAnalysisTable, {
-      propsData: {
-        dataframeData: mockDataframeData,
-        pdfData: mockPdfData,
-        workspace: mockWorkspace,
-        loading: false,
-      },
-    });
+    const wrapper = mount(ImportAnalysisTable, createMountOptions());
 
     const columns = wrapper.vm.tableColumns;
     expect(columns.length).toBeGreaterThan(4); // At least reference, title, authors, year, files, status
@@ -354,14 +312,7 @@ describe("ImportAnalysisTable", () => {
   });
 
   it("calculates confirmed count correctly", async () => {
-    const wrapper = mount(ImportAnalysisTable, {
-      propsData: {
-        dataframeData: mockDataframeData,
-        pdfData: mockPdfData,
-        workspace: mockWorkspace,
-        loading: false,
-      },
-    });
+    const wrapper = mount(ImportAnalysisTable, createMountOptions());
 
     // Initially should count all documents as add
     expect(wrapper.vm.confirmedCount).toBe(2);
@@ -372,14 +323,7 @@ describe("ImportAnalysisTable", () => {
   });
 
   it("handles status toggle correctly", () => {
-    const wrapper = mount(ImportAnalysisTable, {
-      propsData: {
-        dataframeData: mockDataframeData,
-        pdfData: mockPdfData,
-        workspace: mockWorkspace,
-        loading: false,
-      },
-    });
+    const wrapper = mount(ImportAnalysisTable, createMountOptions());
 
     // Mock cell object
     const mockUpdate = jest.fn();
@@ -404,14 +348,7 @@ describe("ImportAnalysisTable", () => {
   });
 
   it("emits update event when document actions change", () => {
-    const wrapper = mount(ImportAnalysisTable, {
-      propsData: {
-        dataframeData: mockDataframeData,
-        pdfData: mockPdfData,
-        workspace: mockWorkspace,
-        loading: false,
-      },
-    });
+    const wrapper = mount(ImportAnalysisTable, createMountOptions());
 
     wrapper.vm.emitUpdate();
 
@@ -424,14 +361,7 @@ describe("ImportAnalysisTable", () => {
   });
 
   it("formats authors correctly", () => {
-    const wrapper = mount(ImportAnalysisTable, {
-      propsData: {
-        dataframeData: mockDataframeData,
-        pdfData: mockPdfData,
-        workspace: mockWorkspace,
-        loading: false,
-      },
-    });
+    const wrapper = mount(ImportAnalysisTable, createMountOptions());
 
     expect(wrapper.vm.formatAuthors(["Author 1", "Author 2"])).toBe("Author 1, Author 2");
     expect(wrapper.vm.formatAuthors("Single Author")).toBe("Single Author");
@@ -440,14 +370,7 @@ describe("ImportAnalysisTable", () => {
   });
 
   it("formats files correctly", () => {
-    const wrapper = mount(ImportAnalysisTable, {
-      propsData: {
-        dataframeData: mockDataframeData,
-        pdfData: mockPdfData,
-        workspace: mockWorkspace,
-        loading: false,
-      },
-    });
+    const wrapper = mount(ImportAnalysisTable, createMountOptions());
 
     expect(wrapper.vm.formatFiles(["file1.pdf", "file2.pdf"])).toBe("file1.pdf, file2.pdf");
     expect(wrapper.vm.formatFiles([])).toBe("No files");
@@ -455,14 +378,7 @@ describe("ImportAnalysisTable", () => {
   });
 
   it("determines toggle capability correctly", () => {
-    const wrapper = mount(ImportAnalysisTable, {
-      propsData: {
-        dataframeData: mockDataframeData,
-        pdfData: mockPdfData,
-        workspace: mockWorkspace,
-        loading: false,
-      },
-    });
+    const wrapper = mount(ImportAnalysisTable, createMountOptions());
 
     expect(wrapper.vm.canToggleStatus("add")).toBe(true);
     expect(wrapper.vm.canToggleStatus("update")).toBe(true);
@@ -472,14 +388,7 @@ describe("ImportAnalysisTable", () => {
   });
 
   it("resets local state correctly", () => {
-    const wrapper = mount(ImportAnalysisTable, {
-      propsData: {
-        dataframeData: mockDataframeData,
-        pdfData: mockPdfData,
-        workspace: mockWorkspace,
-        loading: false,
-      },
-    });
+    const wrapper = mount(ImportAnalysisTable, createMountOptions());
 
     // Set some state
     wrapper.vm.localDocumentActions = { Smith2023: "ignore" };
@@ -491,14 +400,7 @@ describe("ImportAnalysisTable", () => {
   });
 
   it("handles retry analysis", () => {
-    const wrapper = mount(ImportAnalysisTable, {
-      propsData: {
-        dataframeData: mockDataframeData,
-        pdfData: mockPdfData,
-        workspace: mockWorkspace,
-        loading: false,
-      },
-    });
+    const wrapper = mount(ImportAnalysisTable, createMountOptions());
 
     wrapper.vm.retryAnalysis();
 
@@ -506,14 +408,7 @@ describe("ImportAnalysisTable", () => {
   });
 
   it("emits analysis-complete event when analysis result changes", async () => {
-    const wrapper = mount(ImportAnalysisTable, {
-      propsData: {
-        dataframeData: mockDataframeData,
-        pdfData: mockPdfData,
-        workspace: mockWorkspace,
-        loading: false,
-      },
-    });
+    const wrapper = mount(ImportAnalysisTable, createMountOptions());
 
     // Manually trigger the watch handler
     wrapper.vm.$options.watch.analysisResult.handler.call(wrapper.vm, mockAnalysisResult);
