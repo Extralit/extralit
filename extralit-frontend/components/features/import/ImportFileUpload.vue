@@ -154,7 +154,7 @@
 </template>
 
 <script lang="ts">
-import bibtexParse from "bibtex-parse-js";
+import bibtexParse from "@orcid/bibtex-parse-js";
 import "assets/icons/check";
 import "assets/icons/danger";
 import "assets/icons/document";
