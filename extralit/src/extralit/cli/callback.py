@@ -21,10 +21,10 @@ if TYPE_CHECKING:
 
 def echo_in_panel(text, title=None, title_align="center", success=True):
     """Echoes a message in a rich panel with Argilla theme."""
-    from extralit.cli.rich import get_argilla_themed_panel
+    from extralit.cli.rich import get_themed_panel
     from rich.console import Console
 
-    panel = get_argilla_themed_panel(
+    panel = get_themed_panel(
         renderable=text,
         title=title,
         title_align=title_align,

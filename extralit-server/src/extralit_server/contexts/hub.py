@@ -412,12 +412,12 @@ class HubDatasetExporter:
         hf_api = HfApi(token=token)
 
         with TemporaryDirectory() as temporary_directory:
-            argilla_directory = os.path.join(temporary_directory, ".extralit")
-            os.makedirs(argilla_directory)
+            extralit_directory = os.path.join(temporary_directory, ".extralit")
+            os.makedirs(extralit_directory)
 
-            self._create_version_file(argilla_directory)
-            self._create_dataset_file(argilla_directory)
-            self._create_settings_file(argilla_directory)
+            self._create_version_file(extralit_directory)
+            self._create_dataset_file(extralit_directory)
+            self._create_settings_file(extralit_directory)
             self._create_readme_file(temporary_directory, repo_id)
 
             hf_api.upload_folder(
@@ -428,7 +428,7 @@ class HubDatasetExporter:
 
     def _create_version_file(self, directory: str) -> None:
         with open(os.path.join(directory, "version.json"), "w") as file:
-            file.write(json.dumps({"argilla": info.argilla_version()}, indent=2))
+            file.write(json.dumps({"argilla": info.extralit_version()}, indent=2))
 
     def _create_dataset_file(self, directory: str) -> None:
         with open(os.path.join(directory, "dataset.json"), "w") as file:

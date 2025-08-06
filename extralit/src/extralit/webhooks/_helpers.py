@@ -91,10 +91,10 @@ def webhook_listener(
         webhook_url = _webhook_url_for_func(func)
 
         webhook = None
-        for argilla_webhook in client.webhooks:
-            if argilla_webhook.url == webhook_url and argilla_webhook.events == events:
-                warnings.warn(f"Found existing webhook with for URL {argilla_webhook.url}: {argilla_webhook}")
-                webhook = argilla_webhook
+        for extralit_webhook in client.webhooks:
+            if extralit_webhook.url == webhook_url and extralit_webhook.events == events:
+                warnings.warn(f"Found existing webhook with for URL {extralit_webhook.url}: {extralit_webhook}")
+                webhook = extralit_webhook
                 webhook.description = description or webhook.description
                 webhook.enabled = True
                 webhook.update()
@@ -108,7 +108,7 @@ def webhook_listener(
             ).create()
 
         request_handler = WebhookHandler(webhook).handle(func, raw_event)
-        server.post(f"/{func.__name__}", tags=["Argilla Webhooks"])(request_handler)
+        server.post(f"/{func.__name__}", tags=["Extralit Webhooks"])(request_handler)
 
         return request_handler
 

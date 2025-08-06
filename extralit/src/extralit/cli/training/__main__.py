@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,12 +17,13 @@ import json
 import typer
 
 from extralit.cli.callback import init_callback
-from extralit.cli.rich import get_argilla_themed_panel
+from extralit.cli.rich import get_themed_panel
 from rich.console import Console
 
 
 class Framework(str, Enum):
     """ML frameworks supported for training."""
+
     SPACY = "spacy"
     TRANSFORMERS = "transformers"
     SETFIT = "setfit"
@@ -37,9 +38,7 @@ def framework_callback(value: str):
     try:
         return Framework(value.lower())
     except ValueError:
-        raise typer.BadParameter(
-            f"Invalid framework {value}. Choose from {', '.join([f.value for f in Framework])}"
-        )
+        raise typer.BadParameter(f"Invalid framework {value}. Choose from {', '.join([f.value for f in Framework])}")
 
 
 # using callback to ensure it is used as sole command
@@ -47,9 +46,7 @@ def framework_callback(value: str):
 def train(
     name: str = typer.Option(default=None, help="The name of the dataset to be used for training."),
     framework: Framework = typer.Option(
-        default=None,
-        callback=framework_callback,
-        help="The framework to be used for training."
+        default=None, callback=framework_callback, help="The framework to be used for training."
     ),
     workspace: str = typer.Option(default=None, help="The workspace to be used for training."),
     limit: int = typer.Option(default=None, help="The number of record to be used."),
@@ -69,7 +66,7 @@ def train(
         try:
             config_kwargs = json.loads(update_config_kwargs)
         except json.JSONDecodeError:
-            panel = get_argilla_themed_panel(
+            panel = get_themed_panel(
                 "Invalid JSON format for update_config_kwargs.",
                 title="Invalid configuration",
                 title_align="left",
@@ -82,7 +79,7 @@ def train(
         client = init_callback()
 
         # Display training configuration
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"Starting model training with:\n"
             f"- Dataset: {name or 'Not specified'} (workspace: {workspace or 'default'})\n"
             f"- Framework: {framework.value if framework else 'Not specified'}\n"
@@ -117,12 +114,12 @@ def train(
                 seed=seed,
                 device=device,
                 output_dir=output_dir,
-                config_kwargs=config_kwargs
+                config_kwargs=config_kwargs,
             )
 
         # Display training results
         metrics_str = "\n".join([f"- {k}: {v}" for k, v in result.get("metrics", {}).items()])
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"Model trained successfully and saved to {result['model_path']}\n"
             f"Metrics:\n{metrics_str if metrics_str else '- No metrics available'}",
             title="Training Complete",
@@ -131,7 +128,7 @@ def train(
         Console().print(panel)
 
     except ValueError as e:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             str(e),
             title="Invalid parameters",
             title_align="left",
@@ -140,8 +137,8 @@ def train(
         Console().print(panel)
         raise typer.Exit(code=1)
 
-    except Exception as e:
-        panel = get_argilla_themed_panel(
+    except Exception:
+        panel = get_themed_panel(
             "An unexpected error occurred during training.",
             title="Training Failed",
             title_align="left",

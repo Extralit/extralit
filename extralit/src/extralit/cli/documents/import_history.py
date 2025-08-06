@@ -36,7 +36,7 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
 
 from extralit.client import Extralit
-from extralit.cli.rich import get_argilla_themed_panel
+from extralit.cli.rich import get_themed_panel
 
 
 def list_import_histories(
@@ -63,7 +63,7 @@ def list_import_histories(
         client = Extralit.from_credentials()
         workspace_obj = client.workspaces(name=workspace)
         if not workspace_obj:
-            panel = get_argilla_themed_panel(
+            panel = get_themed_panel(
                 f"Workspace '{workspace}' not found.",
                 title="Workspace not found",
                 title_align="left",
@@ -84,7 +84,7 @@ def list_import_histories(
         _list_import_histories_internal(client, workspace_obj, workspace, console, debug)
 
     except Exception as e:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"Error managing import histories: {str(e)}",
             title="Error",
             title_align="left",
@@ -122,7 +122,7 @@ def _list_import_histories_internal(
 
     # Display results
     if not histories:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"No import histories found for workspace '{workspace}'.",
             title="No Import Histories",
             title_align="left",
@@ -156,7 +156,7 @@ def _list_import_histories_internal(
 
     console.print(table)
 
-    panel = get_argilla_themed_panel(
+    panel = get_themed_panel(
         f"Found {len(histories)} import history records. Use 'history <history_id> --export' to download data.",
         title="Import Histories Listed",
         title_align="left",
@@ -184,7 +184,7 @@ def _export_import_history_internal(
 
         if response.status_code == 404:
             progress.update(task, completed=True, description="Import history not found")
-            panel = get_argilla_themed_panel(
+            panel = get_themed_panel(
                 f"Import history with ID '{history_id}' not found.",
                 title="Import History Not Found",
                 title_align="left",
@@ -211,7 +211,7 @@ def _export_import_history_internal(
     metadata_csv_path = output_dir / f"{base_filename}_metadata.csv"
     _export_metadata_to_csv(history["metadata"], metadata_csv_path, console)
 
-    panel = get_argilla_themed_panel(
+    panel = get_themed_panel(
         f"Export completed:\n• Data: {data_csv_path}\n• Metadata: {metadata_csv_path}",
         title="Export Successful",
         title_align="left",
@@ -236,7 +236,7 @@ def _show_import_history_internal(
 
         if response.status_code == 404:
             progress.update(task, completed=True, description="Import history not found")
-            panel = get_argilla_themed_panel(
+            panel = get_themed_panel(
                 f"Import history with ID '{history_id}' not found.",
                 title="Import History Not Found",
                 title_align="left",

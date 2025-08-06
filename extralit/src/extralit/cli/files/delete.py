@@ -18,7 +18,7 @@ import typer
 from rich.console import Console
 
 from extralit.client import Extralit
-from extralit.cli.rich import get_argilla_themed_panel
+from extralit.cli.rich import get_themed_panel
 
 
 def delete_file(
@@ -37,7 +37,7 @@ def delete_file(
         # Get the workspace
         workspace_obj = client.workspaces(name=workspace)
         if not workspace_obj:
-            panel = get_argilla_themed_panel(
+            panel = get_themed_panel(
                 f"Workspace '{workspace}' not found.",
                 title="Workspace not found",
                 title_align="left",
@@ -52,7 +52,7 @@ def delete_file(
                 f"Are you sure you want to delete file '{remote_path}' from workspace '{workspace}'?"
             )
             if not confirm:
-                panel = get_argilla_themed_panel(
+                panel = get_themed_panel(
                     "File deletion cancelled.",
                     title="Cancelled",
                     title_align="left",
@@ -65,7 +65,7 @@ def delete_file(
         workspace_obj.delete_file(remote_path, version_id=version_id)
 
         # Print a success message
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"File '{remote_path}' deleted from workspace '{workspace}'.",
             title="File deleted successfully",
             title_align="left",
@@ -74,7 +74,7 @@ def delete_file(
         console.print(panel)
 
     except Exception as e:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"Error deleting file: {str(e)}",
             title="Error",
             title_align="left",

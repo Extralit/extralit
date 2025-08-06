@@ -126,7 +126,7 @@ ci:
   autoupdate_schedule: weekly
   skip:
     - helmlint # Disabling helmlint on CI by now because helm dependency is not available
-    - frontend-eslint # Requires npm dependencies to be installed in argilla-frontend
-    - frontend-prettier # Requires npm dependencies to be installed in argilla-frontend
-    - frontend-lint # Requires npm dependencies to be installed in argilla-frontend
+    - frontend-eslint # Requires npm dependencies to be installed in extralit-frontend
+    - frontend-prettier # Requires npm dependencies to be installed in extralit-frontend
+    - frontend-lint # Requires npm dependencies to be installed in extralit-frontend
   submodules: false

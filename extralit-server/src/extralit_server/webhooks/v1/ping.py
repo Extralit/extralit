@@ -28,6 +28,6 @@ def notify_ping_event(webhook: Webhook) -> httpx.Response:
         timestamp=datetime.utcnow(),
         data={
             "agent": "extralit-server",
-            "version": info.argilla_version(),
+            "version": info.extralit_version(),
         },
     )

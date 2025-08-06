@@ -16,7 +16,7 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
-  argilla:
+  extralit:
     image: extralitdev/extralit-hf-space:latest
     environment:
       HF_HUB_DISABLE_TELEMETRY: 1
@@ -26,9 +26,9 @@ services:
       API_KEY: extralit.apikey
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.argilla.rule=PathPrefix(`/extralit/`)"
-      - "traefik.http.routers.argilla.entrypoints=web"
-      - "traefik.http.services.argilla.loadbalancer.server.port=6900"
-      - "traefik.http.middlewares.argilla-stripprefix.stripprefix.prefixes=/extralit"
-      - "traefik.http.middlewares.argilla-stripprefix.stripprefix.forceSlash=false"
-      - "traefik.http.routers.argilla.middlewares=argilla-stripprefix"
+      - "traefik.http.routers.extralit.rule=PathPrefix(`/extralit/`)"
+      - "traefik.http.routers.extralit.entrypoints=web"
+      - "traefik.http.services.extralit.loadbalancer.server.port=6900"
+      - "traefik.http.middlewares.extralit-stripprefix.stripprefix.prefixes=/extralit"
+      - "traefik.http.middlewares.extralit-stripprefix.stripprefix.forceSlash=false"
+      - "traefik.http.routers.extralit.middlewares=extralit-stripprefix"

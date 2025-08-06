@@ -17,7 +17,7 @@ from typing import Optional, TYPE_CHECKING
 import typer
 
 from extralit.cli.callback import init_callback
-from extralit.cli.rich import get_argilla_themed_panel
+from extralit.cli.rich import get_themed_panel
 from extralit.cli.rich import print_rich_table
 from rich.console import Console
 
@@ -41,7 +41,7 @@ def list_datasets(
 
         print_rich_table(resources=datasets, title="Datasets")
     except Exception as e:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             "An unexpected error occurred when trying to list datasets",
             title="Unexpected error",
             title_align="left",
@@ -66,14 +66,14 @@ def delete_dataset(
         dataset = client.datasets(name=name, workspace=workspace)
         dataset.delete()
 
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"Dataset with name={dataset.name} and workspace={dataset.workspace.name} deleted successfully",
             title="Dataset deleted",
             title_align="left",
         )
         Console().print(panel)
     except RuntimeError as re:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             "An unexpected error occurred when trying to delete the dataset",
             title="Unexpected error",
             title_align="left",
@@ -84,7 +84,7 @@ def delete_dataset(
         Console().print(panel)
         raise typer.Exit(code=1)
     except Exception as e:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             "An unexpected error occurred when fetching the dataset",
             title="Unexpected error",
             title_align="left",
@@ -112,7 +112,7 @@ def push_to_huggingface(
         try:
             dataset = client.datasets(name=name, workspace=workspace)
         except ValueError as e:
-            panel = get_argilla_themed_panel(
+            panel = get_themed_panel(
                 str(e),
                 title="Dataset not found",
                 title_align="left",
@@ -123,7 +123,7 @@ def push_to_huggingface(
             Console().print(panel)
             raise typer.Exit(1)
         except Exception as e:
-            panel = get_argilla_themed_panel(
+            panel = get_themed_panel(
                 "An unexpected error occurred when fetching the dataset",
                 title="Unexpected error",
                 title_align="left",
@@ -148,14 +148,14 @@ def push_to_huggingface(
                 name=dataset.name, repo_id=repo_id, private=private, token=token, workspace=dataset.workspace
             )
 
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"Dataset successfully pushed to the HuggingFace Hub at https://huggingface.co/{repo_id}",
             title="Dataset pushed",
             title_align="left",
         )
         Console().print(panel)
     except ValueError as ve:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             "The dataset has no records to push to the HuggingFace Hub. Make sure to add records before" " pushing it.",
             title="No records to push",
             title_align="left",
@@ -166,7 +166,7 @@ def push_to_huggingface(
         Console().print(panel)
         raise typer.Exit(1)
     except Exception as e:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             "An unexpected error occurred when trying to push the dataset to the HuggingFace Hub",
             title="Unexpected error",
             title_align="left",
@@ -220,14 +220,14 @@ def create_dataset(
         dataset = Dataset(name=name, workspace=workspace, settings=settings, client=client)
         dataset.create()
 
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"Dataset with name='{name}' successfully created in workspace='{workspace}'.",
             title="Dataset created",
             title_align="left",
         )
         Console().print(panel)
     except ValueError as ve:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             "Dataset creation failed",
             title="Dataset creation failed",
             title_align="left",
@@ -238,7 +238,7 @@ def create_dataset(
         Console().print(panel)
         raise typer.Exit(code=1)
     except RuntimeError as re:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             "An unexpected error occurred when trying to create the dataset",
             title="Unexpected error",
             title_align="left",
@@ -249,7 +249,7 @@ def create_dataset(
         Console().print(panel)
         raise typer.Exit(code=1)
     except Exception as e:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             "An unexpected error occurred when trying to create the dataset",
             title="Unexpected error",
             title_align="left",

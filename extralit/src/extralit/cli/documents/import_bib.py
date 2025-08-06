@@ -45,7 +45,7 @@ from rich.table import Table
 
 from extralit.workspaces._resource import Workspace
 from extralit.client import Extralit
-from extralit.cli.rich import get_argilla_themed_panel
+from extralit.cli.rich import get_themed_panel
 
 
 def _clean_bibtex_field(value: str) -> str:
@@ -305,7 +305,7 @@ def _execute_document_bulk_import(
 
         if not documents_to_import:
             progress.update(task, completed=True, description="No documents to import")
-            panel = get_argilla_themed_panel(
+            panel = get_themed_panel(
                 "No documents to add or update.",
                 title="Import Complete",
                 title_align="left",
@@ -415,7 +415,7 @@ def _execute_document_bulk_import(
                 # Calculate total files across all references
                 total_files = sum(len(doc.get("associated_files", [])) for doc in bulk_documents)
 
-                panel = get_argilla_themed_panel(
+                panel = get_themed_panel(
                     f"Import submitted successfully. {len(job_ids)} references queued for processing with {total_files} total files.",
                     title="Import Execution Complete",
                     title_align="left",
@@ -432,7 +432,7 @@ def _execute_document_bulk_import(
                 _handle_cli_exception(console, e)
         else:
             progress.update(task, completed=True, description="No files to upload")
-            panel = get_argilla_themed_panel(
+            panel = get_themed_panel(
                 "No files found to upload.",
                 title="Import Complete",
                 title_align="left",
@@ -542,7 +542,7 @@ def _store_import_history(
 
 def _handle_cli_exception(console: Console, e: Exception, debug: bool = False) -> None:
     """Handle CLI exceptions with consistent error formatting."""
-    panel = get_argilla_themed_panel(
+    panel = get_themed_panel(
         f"Error: {str(e)}",
         title="Error",
         title_align="left",
@@ -558,7 +558,7 @@ def _validate_workspace_and_folder(client: Extralit, workspace: str, pdf_folder:
     """Validate workspace exists and PDF folder is accessible."""
     workspace_obj = client.workspaces(name=workspace)
     if not workspace_obj:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"Workspace '{workspace}' not found.",
             title="Workspace not found",
             title_align="left",
@@ -568,7 +568,7 @@ def _validate_workspace_and_folder(client: Extralit, workspace: str, pdf_folder:
         raise typer.Exit(code=1)
 
     if not pdf_folder.exists() or not pdf_folder.is_dir():
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"PDF folder '{pdf_folder}' does not exist or is not a directory.",
             title="Invalid PDF Folder",
             title_align="left",
@@ -644,7 +644,7 @@ def import_bib(
 
         # Phase 5: Handle dry-run mode
         if dry_run:
-            panel = get_argilla_themed_panel(
+            panel = get_themed_panel(
                 "Import analysis completed. Use --dry-run=false to execute the import.",
                 title="Import Analysis Complete",
                 title_align="left",
@@ -656,7 +656,7 @@ def import_bib(
         # Phase 6: Get user confirmation (mirrors frontend confirmation dialog)
         proceed = _get_user_confirmation_for_import(console, analysis_result)
         if not proceed:
-            panel = get_argilla_themed_panel(
+            panel = get_themed_panel(
                 "Bulk upload cancelled by user.",
                 title="Cancelled",
                 title_align="left",

@@ -39,7 +39,7 @@ from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from extralit.client import Extralit
-from extralit.cli.rich import get_argilla_themed_panel
+from extralit.cli.rich import get_themed_panel
 from extralit.documents import Document
 
 
@@ -59,7 +59,7 @@ def add_document(
 
     # Check that at least one of file_path, url, pmid, or doi is provided
     if not any([file_path, url, pmid, doi]):
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             "At least one of --file, --url, --pmid, or --doi must be provided.",
             title="Missing document information",
             title_align="left",
@@ -75,7 +75,7 @@ def add_document(
         # Get the workspace
         workspace_obj = client.workspaces(name=workspace)
         if not workspace_obj:
-            panel = get_argilla_themed_panel(
+            panel = get_themed_panel(
                 f"Workspace '{workspace}' not found.",
                 title="Workspace not found",
                 title_align="left",
@@ -135,7 +135,7 @@ def add_document(
             progress.update(task, completed=True, description=f"Document added to workspace '{workspace}'")
 
         # Print a success message
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"Document added to workspace '{workspace}' with ID '{document_id}'.",
             title="Document added successfully",
             title_align="left",
@@ -144,7 +144,7 @@ def add_document(
         console.print(panel)
 
     except Exception as e:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"Error adding document: {str(e)}",
             title="Error",
             title_align="left",

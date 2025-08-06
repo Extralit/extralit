@@ -21,11 +21,11 @@ from rich.table import Table
 _EXTRALIT_BORDER_STYLE = "red"
 
 
-def get_argilla_themed_table(title: str, **kwargs: Any) -> Table:
+def get_themed_table(title: str, **kwargs: Any) -> Table:
     return Table(title=title, border_style=_EXTRALIT_BORDER_STYLE, **kwargs)
 
 
-def get_argilla_themed_panel(renderable: RenderableType, title: str, success: bool = True, **kwargs: Any) -> Panel:
+def get_themed_panel(renderable: RenderableType, title: str, success: bool = True, **kwargs: Any) -> Panel:
     if success:
         title = f"[green]{title}"
 
@@ -33,4 +33,4 @@ def get_argilla_themed_panel(renderable: RenderableType, title: str, success: bo
 
 
 def echo_in_panel(renderable: RenderableType, title: str, success: bool = True, **kwargs: Any) -> None:
-    Console().print(get_argilla_themed_panel(renderable, title, success, **kwargs))
+    Console().print(get_themed_panel(renderable, title, success, **kwargs))

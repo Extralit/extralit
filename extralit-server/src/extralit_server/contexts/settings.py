@@ -21,20 +21,20 @@ from extralit_server.settings import settings
 
 def get_settings() -> Settings:
     return Settings(
-        argilla=_get_argilla_settings(),
+        extralit=_get_extralit_settings(),
         huggingface=_get_huggingface_settings(),
     )
 
 
-def _get_argilla_settings() -> ExtralitSettings:
-    argilla_settings = ExtralitSettings(share_your_progress_enabled=settings.enable_share_your_progress)
+def _get_extralit_settings() -> ExtralitSettings:
+    extralit_settings = ExtralitSettings(share_your_progress_enabled=settings.enable_share_your_progress)
 
     if _get_huggingface_settings():
-        argilla_settings.show_huggingface_space_persistent_storage_warning = (
+        extralit_settings.show_huggingface_space_persistent_storage_warning = (
             settings.show_huggingface_space_persistent_storage_warning
         )
 
-    return argilla_settings
+    return extralit_settings
 
 
 def _get_huggingface_settings() -> Union[HuggingfaceSettings, None]:

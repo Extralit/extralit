@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -39,14 +39,14 @@ def get_current_user():
 @app.callback(help="Show information about the current user")
 def whoami() -> None:
     """Display information about the current user."""
-    from extralit.cli.rich import get_argilla_themed_panel
+    from extralit.cli.rich import get_themed_panel
     from rich.console import Console
 
     try:
         # Get current user (this will initialize the client)
         user = get_current_user()
 
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             Markdown(
                 f"- **Username**: {user.username}\n"
                 f"- **Role**: {user.role}\n"
@@ -58,7 +58,7 @@ def whoami() -> None:
         )
         Console().print(panel)
     except ValueError as e:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             str(e),
             title="Not logged in",
             title_align="left",

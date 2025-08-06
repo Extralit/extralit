@@ -33,7 +33,7 @@ if TYPE_CHECKING:
         pass
 
 
-def get_argilla_themed_panel(
+def get_themed_panel(
     renderable: RenderableType,
     title: Optional[Union[str, Text]] = None,
     title_align: str = "center",

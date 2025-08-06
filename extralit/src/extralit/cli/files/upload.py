@@ -20,7 +20,7 @@ from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from extralit.client import Extralit
-from extralit.cli.rich import get_argilla_themed_panel
+from extralit.cli.rich import get_themed_panel
 
 
 def upload_file(
@@ -38,7 +38,7 @@ def upload_file(
 
         workspace_obj = client.workspaces(name=workspace)
         if not workspace_obj:
-            panel = get_argilla_themed_panel(
+            panel = get_themed_panel(
                 f"Workspace '{workspace}' not found.",
                 title="Workspace not found",
                 title_align="left",
@@ -55,7 +55,7 @@ def upload_file(
                 files = workspace_obj.list_files(remote_path)
                 for file_obj in files.objects:
                     if file_obj.object_name == remote_path:
-                        panel = get_argilla_themed_panel(
+                        panel = get_themed_panel(
                             f"File '{remote_path}' already exists in workspace '{workspace}'. Use --overwrite to overwrite.",
                             title="File already exists",
                             title_align="left",
@@ -77,7 +77,7 @@ def upload_file(
 
             progress.update(task, completed=True, description=f"Uploaded {file_path.name} to {workspace}/{remote_path}")
 
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"File '{file_path.name}' uploaded to workspace '{workspace}' as '{remote_path}'.",
             title="File uploaded successfully",
             title_align="left",
@@ -86,7 +86,7 @@ def upload_file(
         console.print(panel)
 
     except Exception as e:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"Error uploading file: {str(e)}",
             title="Error",
             title_align="left",

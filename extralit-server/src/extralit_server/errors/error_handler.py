@@ -1,16 +1,16 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 import logging
 from typing import Any, Dict
 
@@ -74,10 +74,10 @@ class APIErrorHandler:
     @classmethod
     async def common_exception_handler(cls, request: Request, error: Exception):
         """Wraps errors as custom generic error"""
-        argilla_error = cls._exception_to_argilla_error(error)
-        set_request_error(request, argilla_error)
+        extralit_error = cls._exception_to_extralit_error(error)
+        set_request_error(request, extralit_error)
 
-        return await http_exception_handler(request, ServerHTTPException(argilla_error))
+        return await http_exception_handler(request, ServerHTTPException(extralit_error))
 
     @classmethod
     def configure_app(cls, app: FastAPI):
@@ -100,7 +100,7 @@ class APIErrorHandler:
             app.add_exception_handler(exception_type, APIErrorHandler.common_exception_handler)
 
     @classmethod
-    def _exception_to_argilla_error(cls, error: Exception) -> ServerError:
+    def _exception_to_extralit_error(cls, error: Exception) -> ServerError:
         if isinstance(error, ServerError):
             return error
 
@@ -115,4 +115,4 @@ class APIErrorHandler:
         return GenericServerError(error=error)
 
 
-_LOGGER = logging.getLogger("argilla")
+_LOGGER = logging.getLogger("extralit")

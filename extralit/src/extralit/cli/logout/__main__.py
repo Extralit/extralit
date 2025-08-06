@@ -34,14 +34,14 @@ def remove_credentials():
 def logout(force: bool = typer.Option(False, help="Force the logout even if the server cannot be reached")) -> None:
     """Logout from an Extralit Server by removing stored credentials."""
     from extralit.cli.callback import init_callback
-    from extralit.cli.rich import get_argilla_themed_panel
+    from extralit.cli.rich import get_themed_panel
     from rich.console import Console
 
     if not force:
         try:
             init_callback()
         except Exception:
-            panel = get_argilla_themed_panel(
+            panel = get_themed_panel(
                 "Could not connect to the Extralit Server. Use --force to logout anyway.",
                 title="Connection error",
                 title_align="left",
@@ -54,7 +54,7 @@ def logout(force: bool = typer.Option(False, help="Force the logout even if the 
     remove_credentials()
 
     # Show success message
-    panel = get_argilla_themed_panel(
+    panel = get_themed_panel(
         "Logged out successfully from Extralit server!",
         title="Logout",
         title_align="left",

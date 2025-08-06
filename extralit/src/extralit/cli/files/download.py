@@ -21,7 +21,7 @@ from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from extralit.client import Extralit
-from extralit.cli.rich import get_argilla_themed_panel
+from extralit.cli.rich import get_themed_panel
 
 
 def download_file(
@@ -43,7 +43,7 @@ def download_file(
         # Get the workspace
         workspace_obj = client.workspaces(name=workspace)
         if not workspace_obj:
-            panel = get_argilla_themed_panel(
+            panel = get_themed_panel(
                 f"Workspace '{workspace}' not found.",
                 title="Workspace not found",
                 title_align="left",
@@ -58,7 +58,7 @@ def download_file(
 
         # Check if the output file already exists
         if output_path.exists() and not overwrite:
-            panel = get_argilla_themed_panel(
+            panel = get_themed_panel(
                 f"Output file '{output_path}' already exists. Use --overwrite to overwrite.",
                 title="File already exists",
                 title_align="left",
@@ -85,7 +85,7 @@ def download_file(
             progress.update(task, completed=True, description=f"Downloaded {remote_path} from {workspace}")
 
         # Print a success message
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"File '{remote_path}' downloaded from workspace '{workspace}' to '{output_path}'.",
             title="File downloaded successfully",
             title_align="left",
@@ -94,7 +94,7 @@ def download_file(
         console.print(panel)
 
     except Exception as e:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"Error downloading file: {str(e)}",
             title="Error",
             title_align="left",

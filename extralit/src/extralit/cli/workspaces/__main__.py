@@ -18,7 +18,7 @@ from typing import Optional
 import typer
 
 from extralit.cli.callback import init_callback
-from extralit.cli.rich import get_argilla_themed_panel, print_rich_table
+from extralit.cli.rich import get_themed_panel, print_rich_table
 from extralit._models._user import Role
 
 from rich.console import Console
@@ -48,7 +48,7 @@ def callback(
         workspace = client.workspaces(name)
         ctx.obj = workspace
     except ValueError:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"Workspace with name={name} does not exist.",
             title="Workspace not found",
             title_align="left",
@@ -57,7 +57,7 @@ def callback(
         Console().print(panel)
         raise typer.Exit(code=1)
     except RuntimeError:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             "An unexpected error occurred when trying to get the workspace from the Extralit server",
             title="Unexpected error",
             title_align="left",
@@ -91,12 +91,12 @@ def create_workspace(
         client.workspaces.add(workspace)
 
         # Display success message
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"Workspace with the name={name} successfully created.", title="Workspace created", title_align="left"
         )
         Console().print(panel)
     except ValueError:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"Workspace with name={name} already exists.",
             title="Workspace already exists",
             title_align="left",
@@ -105,7 +105,7 @@ def create_workspace(
         Console().print(panel)
         raise typer.Exit(code=1)
     except RuntimeError:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             "An unexpected error occurred when trying to create the workspace.",
             title="Unexpected error",
             title_align="left",
@@ -124,7 +124,7 @@ def list_workspaces() -> None:
 
         print_rich_table(workspaces)
     except RuntimeError:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             "An unexpected error occurred when trying to list workspaces.",
             title="Unexpected error",
             title_align="left",
@@ -149,7 +149,7 @@ def add_user(
         user = client.users(username)
 
         if user.role == Role.owner:
-            panel = get_argilla_themed_panel(
+            panel = get_themed_panel(
                 f"User with name={username} is an owner. Users with owner role don't need specific permissions per"
                 " workspace, as those are super-users with privileges over everything under Extralit.",
                 title="User is owner",
@@ -172,14 +172,14 @@ def add_user(
         workspace_obj.add_user(user=user_obj, role=WorkspaceUserRole(role))
 
         # Display success message
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"User with username={username} has been added to workspace={workspace['name']}",
             title="User added",
             title_align="left",
         )
         Console().print(panel)
     except ValueError:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"User with username={username} doesn't exist.",
             title="User not found",
             title_align="left",
@@ -188,7 +188,7 @@ def add_user(
         Console().print(panel)
         raise typer.Exit(code=1)
     except RuntimeError:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             "An unexpected error occurred when trying to add user to the workspace.",
             title="Unexpected error",
             title_align="left",
@@ -212,7 +212,7 @@ def delete_user(
         user = client.users(username)
 
         if user.role == Role.owner:
-            panel = get_argilla_themed_panel(
+            panel = get_themed_panel(
                 f"User with name={username} is an owner. Users with owner role don't need specific permissions per"
                 " workspace, as those are super-users with privileges over everything under Extralit.",
                 title="User is owner",
@@ -232,14 +232,14 @@ def delete_user(
 
         workspace_obj.remove_user(user=user_obj)
 
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"User with username={username} has been removed from workspace={workspace['name']}",
             title="User removed",
             title_align="left",
         )
         Console().print(panel)
     except ValueError:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"User with username={username} doesn't exist.",
             title="User not found",
             title_align="left",
@@ -248,7 +248,7 @@ def delete_user(
         Console().print(panel)
         raise typer.Exit(code=1)
     except RuntimeError:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             "An unexpected error occurred when trying to remove user from the workspace.",
             title="Unexpected error",
             title_align="left",

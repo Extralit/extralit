@@ -19,7 +19,7 @@ set the required security dependencies if api security is enabled
 
 from fastapi import FastAPI
 
-from extralit_server._version import __version__ as argilla_version
+from extralit_server._version import __version__ as extralit_version
 from extralit_server.api.errors.v1.exception_handlers import add_exception_handlers as add_exception_handlers_v1
 from extralit_server.api.handlers.v1 import authentication as authentication_v1
 from extralit_server.api.handlers.v1 import (
@@ -83,7 +83,7 @@ def create_api_v1():
     api_v1 = FastAPI(
         title="Argilla v1",
         description="Argilla Server API v1",
-        version=str(argilla_version),
+        version=str(extralit_version),
         responses={error.HTTP_STATUS: error.api_documentation() for error in __ALL__},
     )
     # Now, we can control the error responses for the API v1.

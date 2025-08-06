@@ -40,10 +40,10 @@ app = ExtralitTyper(help="Extralit CLI", no_args_is_help=True)
 @app.error_handler(PermissionError)
 def handler_permission_error(e: PermissionError) -> None:
     import sys
-    from extralit.cli.rich import get_argilla_themed_panel
+    from extralit.cli.rich import get_themed_panel
     from rich.console import Console
 
-    panel = get_argilla_themed_panel(
+    panel = get_themed_panel(
         "Logged in user doesn't have enough permissions to execute this command",
         title="Not enough permissions",
         title_align="left",

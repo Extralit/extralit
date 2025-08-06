@@ -22,8 +22,8 @@ When contributing to Extralit, consider these guidelines:
 Extralit is organized as a monorepo with several main components:
 
 - **extralit/**: Python SDK and core extraction functionality
-- **extralit-server/** (formerly argilla-server): Backend server implementation
-- **extralit-frontend/** (formerly argilla-frontend): Frontend web application
+- **extralit-server/**: Backend server implementation
+- **extralit-frontend/**: Frontend web application
 - **examples/**: Sample implementations and deployment configurations
 
 ## Core Components
@@ -233,7 +233,7 @@ Extralit uses a normalized database approach for storing and presenting extracte
      - References connect to the publication record and other extraction records
 
 3. **Dataset Configuration** (`extralit/src/extralit/pipeline/export/dataset.py`)
-   - Defines structure of Argilla datasets to store normalized records
+   - Defines structure of Extralit datasets to store normalized records
    - `create_papers_dataset()` configures datasets for document-level records
    - `create_extraction_dataset()` configures datasets for schema-level records
 
@@ -295,9 +295,9 @@ This section describes how extracted data from documents is structured, stored, 
 - Holds multiple pandas DataFrames keyed by schema name
 - Contains `SchemaStructure` (`extralit/src/extralit/extraction/models/schema.py`) that defines organization of schemas
 
-### 2. Data Normalization into Argilla Records
+### 2. Data Normalization into Extralit Records
 
-Data from `PaperExtraction` is normalized into multiple `ex.Record` objects in Argilla datasets, separating document metadata from specific extractions:
+Data from `PaperExtraction` is normalized into multiple `ex.Record` objects in Extralit datasets, separating document metadata from specific extractions:
 
 - **Document-Level Record**: (`extralit/src/extralit/pipeline/export/record.py:create_publication_records()`)
   - Single "publication" record per document
@@ -313,12 +313,12 @@ Data from `PaperExtraction` is normalized into multiple `ex.Record` objects in A
 
 The frontend presents normalized data as a unified view for annotation:
 
-- **Table Display**: (`argilla-frontend/components/base/base-render-table/useSchemaTableViewModel.ts`)
+- **Table Display**: (`extralit-frontend/components/base/base-render-table/useSchemaTableViewModel.ts`)
   - Manages display and validation of individual tables
   - Identifies primary keys and reference columns
   - Configures table grouping based on references
 
-- **Reference Resolution**: (`argilla-frontend/components/base/base-render-table/useReferenceTablesViewModel.ts`)
+- **Reference Resolution**: (`extralit-frontend/components/base/base-render-table/useReferenceTablesViewModel.ts`)
   - Identifies reference columns (`_ref` or `_ID` suffix)
   - Dynamically fetches related records from other tables
   - Joins data to create a unified table view for the annotator

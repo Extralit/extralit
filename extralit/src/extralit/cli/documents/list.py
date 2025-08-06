@@ -18,7 +18,7 @@ import typer
 from rich.console import Console
 
 from extralit.client import Extralit
-from extralit.cli.rich import get_argilla_themed_panel, print_rich_table
+from extralit.cli.rich import get_themed_panel, print_rich_table
 
 
 def list_documents(
@@ -32,7 +32,7 @@ def list_documents(
 
         workspace_obj = client.workspaces(name=workspace)
         if not workspace_obj:
-            panel = get_argilla_themed_panel(
+            panel = get_themed_panel(
                 f"Workspace '{workspace}' not found.",
                 title="Workspace not found",
                 title_align="left",
@@ -44,7 +44,7 @@ def list_documents(
         documents = workspace_obj.documents
 
         if not documents:
-            panel = get_argilla_themed_panel(
+            panel = get_themed_panel(
                 f"No documents found in workspace '{workspace}'.",
                 title="No documents found",
                 title_align="left",
@@ -55,7 +55,7 @@ def list_documents(
 
         print_rich_table(documents, title=f"Documents in workspace '{workspace}'")
 
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"Found {len(documents)} documents in workspace '{workspace}'.",
             title="Documents listed successfully",
             title_align="left",
@@ -64,7 +64,7 @@ def list_documents(
         console.print(panel)
 
     except Exception as e:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"Error listing documents: {str(e)}",
             title="Error",
             title_align="left",

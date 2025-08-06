@@ -48,7 +48,7 @@ class SpacesDeploymentMixin(LoggingMixin):
 
         Args:
             api_key (str): The Argilla API key to be defined for the owner user and creator of the Space.
-            repo_name (Optional[str]): The ID of the repository where Argilla will be deployed. Defaults to "argilla".
+            repo_name (Optional[str]): The ID of the repository where Argilla will be deployed. Defaults to "extralit".
             org_name (Optional[str]): The name of the organization where Argilla will be deployed. Defaults to None.
             hf_token (Optional[Union[str, None]]): The Hugging Face authentication token. Defaults to None.
             space_storage (Optional[Union[str, SpaceStorage]]): The persistent storage size for the space. Defaults to None without persistent storage.
@@ -75,7 +75,7 @@ class SpacesDeploymentMixin(LoggingMixin):
         # Define the api_key for the space
         secrets = [
             {"key": "API_KEY", "value": api_key, "description": "The API key of the owner user."},
-            {"key": "WORKSPACE", "value": "argilla", "description": "The workspace of the space."},
+            {"key": "WORKSPACE", "value": "extralit", "description": "The workspace of the space."},
         ]
 
         # check API key length

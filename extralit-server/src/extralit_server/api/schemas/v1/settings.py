@@ -35,5 +35,5 @@ class ExtralitSettings(BaseModel):
 
 
 class Settings(BaseModel):
-    argilla: ExtralitSettings
+    extralit: ExtralitSettings
     huggingface: Optional[HuggingfaceSettings] = None

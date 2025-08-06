@@ -36,7 +36,7 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse, HTMLResponse
 
 from extralit_server import helpers
-from extralit_server._version import __version__ as argilla_version
+from extralit_server._version import __version__ as extralit_version
 from extralit_server.api.routes import api_v1
 from extralit_server.constants import DEFAULT_API_KEY, DEFAULT_PASSWORD, DEFAULT_USERNAME
 from extralit_server.contexts import accounts
@@ -49,7 +49,7 @@ from extralit_server.static_rewrite import RewriteStaticFiles
 from extralit_server.jobs.queues import REDIS_CONNECTION
 from extralit_server.telemetry import get_telemetry_client
 
-_LOGGER = logging.getLogger("argilla")
+_LOGGER = logging.getLogger("extralit")
 
 
 @contextlib.asynccontextmanager
@@ -148,7 +148,7 @@ I've just contributed <span weight="bold">{submitted}</span> examples to this da
 
 
 def create_server_app() -> FastAPI:
-    """Configure the argilla server"""
+    """Configure the extralit server"""
 
     app = FastAPI(
         title="Extralit",
@@ -156,7 +156,7 @@ def create_server_app() -> FastAPI:
         docs_url=None,
         redoc_url=None,
         redirect_slashes=False,
-        version=str(argilla_version),
+        version=str(extralit_version),
         lifespan=app_lifespan,
     )
 
@@ -249,7 +249,7 @@ def configure_app_statics(app: FastAPI):
 
         This function will replace the variable by the real runtime value found in settings.base_url
 
-        This allow us to deploy the argilla server under a custom base url, even when webapp does not
+        This allow us to deploy the extralit server under a custom base url, even when webapp does not
         support it.
 
         """
@@ -320,7 +320,7 @@ async def _show_default_user_warning(db: AsyncSession):
     if default_user and _user_has_default_credentials(default_user):
         _LOGGER.warning(
             f"User {DEFAULT_USERNAME!r} with default credentials has been found in the database. "
-            "If you are using argilla in a production environment this can be a serious security problem. "
+            "If you are using extralit in a production environment this can be a serious security problem. "
             f"We recommend that you create a new admin user and then delete the default {DEFAULT_USERNAME!r} one."
         )
 
@@ -355,7 +355,7 @@ async def configure_search_engine():
                     f"Your {settings.search_engine} is not available or not responding.\n"
                     f"Please make sure your {settings.search_engine} instance is launched and correctly running and\n"
                     "you have the necessary access permissions. Once you have verified this, restart "
-                    "the argilla server.\n"
+                    "the extralit server.\n"
                 )
 
     await ping_search_engine()
@@ -371,7 +371,7 @@ def configure_redis():
                 f"Your redis instance at {settings.redis_url} is not available or not responding.\n"
                 "Please make sure your redis instance is launched and correctly running and\n"
                 "you have the necessary access permissions. Once you have verified this, restart "
-                "the argilla server.\n"
+                "the extralit server.\n"
             )
 
     ping_redis()

@@ -21,7 +21,7 @@ import typer
 from rich.console import Console
 
 from extralit.client import Extralit
-from extralit.cli.rich import get_argilla_themed_panel
+from extralit.cli.rich import get_themed_panel
 
 
 def delete_document(
@@ -40,7 +40,7 @@ def delete_document(
         # Get the workspace
         workspace_obj = client.workspaces(name=workspace)
         if not workspace_obj:
-            panel = get_argilla_themed_panel(
+            panel = get_themed_panel(
                 f"Workspace '{workspace}' not found.",
                 title="Workspace not found",
                 title_align="left",
@@ -53,7 +53,7 @@ def delete_document(
 
         if all:
             if not documents:
-                panel = get_argilla_themed_panel(
+                panel = get_themed_panel(
                     f"No documents found in workspace '{workspace}'.",
                     title="No documents",
                     title_align="left",
@@ -67,7 +67,7 @@ def delete_document(
                     f"Are you sure you want to delete ALL ({len(documents)}) documents from workspace '{workspace}'?"
                 )
                 if not confirm:
-                    panel = get_argilla_themed_panel(
+                    panel = get_themed_panel(
                         "Bulk document deletion cancelled.",
                         title="Cancelled",
                         title_align="left",
@@ -92,7 +92,7 @@ def delete_document(
                 msg += f"\nFailed to delete {len(failed)} document(s):"
                 msg += "\n" + "\n".join(f"  - {name}: {err}" for name, err in failed)
 
-            panel = get_argilla_themed_panel(
+            panel = get_themed_panel(
                 msg,
                 title="Bulk document deletion",
                 title_align="left",
@@ -111,7 +111,7 @@ def delete_document(
             document = next((doc for doc in documents if doc.id == document_id), None)
 
         if not document:
-            panel = get_argilla_themed_panel(
+            panel = get_themed_panel(
                 f"Document with {'reference ' + reference if reference else 'ID ' + str(document_id)} not found in workspace '{workspace}'.",
                 title="Document not found",
                 title_align="left",
@@ -125,7 +125,7 @@ def delete_document(
                 f"Are you sure you want to delete document '{document.file_name}' from workspace '{workspace}'?"
             )
             if not confirm:
-                panel = get_argilla_themed_panel(
+                panel = get_themed_panel(
                     "Document deletion cancelled.",
                     title="Cancelled",
                     title_align="left",
@@ -136,7 +136,7 @@ def delete_document(
 
         document.delete()
 
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"Document '{document.file_name}' deleted successfully from workspace '{workspace}'.",
             title="Document deleted",
             title_align="left",
@@ -145,7 +145,7 @@ def delete_document(
         console.print(panel)
 
     except Exception as e:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"Error deleting document: {str(e)}",
             title="Error",
             title_align="left",

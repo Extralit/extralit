@@ -15,7 +15,7 @@
 import typer
 
 from extralit.cli.callback import init_callback
-from extralit.cli.rich import get_argilla_themed_panel
+from extralit.cli.rich import get_themed_panel
 from rich.console import Console
 from rich.markdown import Markdown
 
@@ -32,7 +32,7 @@ def info() -> None:
 
     client = init_callback()
 
-    panel = get_argilla_themed_panel(
+    panel = get_themed_panel(
         Markdown(f"Connected to {client.api_url}\n" f"- **Client version:** {version}\n"),
         title="Extralit Info",
         title_align="left",

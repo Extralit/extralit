@@ -40,7 +40,7 @@ The workflows use multiple caching strategies to improve build performance:
 
 1. **PDM cache**: Through the `setup-pdm` action
 2. **UV cache**: Through the `actions/cache` action
-   - Key format: `{os}-uv-{python-version}-{pdm_hash}` for argilla
+   - Key format: `{os}-uv-{python-version}-{pdm_hash}` for extralit
    - Key format: `{os}-uv-server-{pdm_hash}` for extralit-server
    - Paths cached: `~/.cache/uv`, `~/.cache/pip`
 

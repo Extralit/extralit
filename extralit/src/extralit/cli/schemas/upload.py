@@ -38,7 +38,7 @@ def upload_schemas(
         help="List of schema names to exclude from the update.",
     ),
 ) -> None:
-    from extralit.cli.rich import get_argilla_themed_panel, print_rich_table
+    from extralit.cli.rich import get_themed_panel, print_rich_table
     from rich.console import Console
     from rich.progress import Progress, SpinnerColumn, TextColumn
 
@@ -50,7 +50,7 @@ def upload_schemas(
         workspace = ctx.obj.get("workspace")
 
         if not client or not workspace:
-            panel = get_argilla_themed_panel(
+            panel = get_themed_panel(
                 "Client or workspace not found in context. Make sure to specify the workspace with --workspace.",
                 title="Missing Context",
                 title_align="left",
@@ -63,7 +63,7 @@ def upload_schemas(
         schema_files = glob.glob(os.path.join(path, "*.json"))
 
         if not schema_files:
-            panel = get_argilla_themed_panel(
+            panel = get_themed_panel(
                 f"No schema files found in directory '{path}'.",
                 title="No schemas found",
                 title_align="left",
@@ -77,7 +77,7 @@ def upload_schemas(
             schema_files = [f for f in schema_files if os.path.splitext(os.path.basename(f))[0] not in exclude]
 
         if not schema_files:
-            panel = get_argilla_themed_panel(
+            panel = get_themed_panel(
                 f"All schema files in directory '{path}' were excluded.",
                 title="No schemas to upload",
                 title_align="left",
@@ -153,7 +153,7 @@ def upload_schemas(
                 console.print(f"  - [red]{name}[/red]: {reason}")
 
         if not uploaded_schemas:
-            panel = get_argilla_themed_panel(
+            panel = get_themed_panel(
                 f"No schemas were uploaded to workspace '{workspace.name}'.",
                 title="No schemas uploaded",
                 title_align="left",
@@ -163,7 +163,7 @@ def upload_schemas(
             return
 
         # Show success message
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"Successfully uploaded {len(uploaded_schemas)} schema(s) to workspace '{workspace.name}'.",
             title="Schemas uploaded",
             title_align="left",
@@ -176,7 +176,7 @@ def upload_schemas(
         )
 
     except Exception as e:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"Unable to update schemas in workspace: {str(e)}",
             title="Unexpected error",
             title_align="left",

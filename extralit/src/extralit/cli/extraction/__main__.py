@@ -18,7 +18,7 @@ from typing import Optional
 import typer
 
 from extralit.cli.callback import init_callback
-from extralit.cli.rich import get_argilla_themed_panel
+from extralit.cli.rich import get_themed_panel
 from rich.console import Console
 from rich.spinner import Spinner
 from rich.live import Live
@@ -62,7 +62,7 @@ def callback(
             try:
                 workspace_data = client.workspaces(workspace)
             except ValueError:
-                panel = get_argilla_themed_panel(
+                panel = get_themed_panel(
                     f"Workspace with name={workspace} does not exist.",
                     title="Workspace not found",
                     title_align="left",
@@ -79,14 +79,14 @@ def callback(
 
                 load_dotenv(env_file)
 
-                panel = get_argilla_themed_panel(
+                panel = get_themed_panel(
                     f"Loaded environment variables from {env_file}",
                     title="Environment Loaded",
                     title_align="left",
                 )
                 Console().print(panel)
             except Exception as e:
-                panel = get_argilla_themed_panel(
+                panel = get_themed_panel(
                     f"Failed to load environment variables from {env_file}: {str(e)}",
                     title="Environment Load Failed",
                     title_align="left",
@@ -102,7 +102,7 @@ def callback(
         }
 
     except ValueError:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"Workspace with name={workspace} does not exist.",
             title="Workspace not found",
             title_align="left",
@@ -112,7 +112,7 @@ def callback(
         raise typer.Exit(code=1)
 
     except Exception:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             "An unexpected error occurred when trying to initialize extraction.",
             title="Unexpected error",
             title_align="left",
@@ -145,7 +145,7 @@ def export(
         workspace = ctx.obj["workspace"]
 
         # Display export information
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"Starting export of extraction data for workspace '{workspace['name']}'",
             title="Export Started",
             title_align="left",
@@ -163,7 +163,7 @@ def export(
             client.export_extraction_data(workspace=workspace["name"], output_path=output_path)
 
         # Show completion message
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"Extraction data successfully exported to {output_path}\n" f"• Workspace: {workspace['name']}\n",
             title="Export Complete",
             title_align="left",
@@ -171,7 +171,7 @@ def export(
         Console().print(panel)
 
     except Exception as e:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"An unexpected error occurred during data export: {str(e)}",
             title="Export Failed",
             title_align="left",
@@ -233,7 +233,7 @@ def check_status(
         Console().print(table)
 
     except Exception as e:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"An unexpected error occurred when checking extraction status: {str(e)}",
             title="Status Check Failed",
             title_align="left",

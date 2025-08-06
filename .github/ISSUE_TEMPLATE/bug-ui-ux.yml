@@ -94,7 +94,7 @@ body:
     attributes:
       label: Docker Image (optional)
       description: Which Docker image are you using?
-      placeholder: e.g. argilla:v1.0.0
+      placeholder: e.g. extralit:v1.0.0
 
   - type: textarea
     id: additional

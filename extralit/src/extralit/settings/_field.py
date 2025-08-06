@@ -98,7 +98,7 @@ class FieldBase(ABC, SettingsPropertyBase):
 
 
 class TextField(FieldBase):
-    """Text field for use in Argilla `Dataset` `Settings`"""
+    """Text field for use in Extralit `Dataset` `Settings`"""
 
     def __init__(
         self,
@@ -110,7 +110,7 @@ class TextField(FieldBase):
         description: Optional[str] = None,
         client: Optional[Extralit] = None,
     ) -> None:
-        """Text field for use in Argilla `Dataset` `Settings`
+        """Text field for use in Extralit `Dataset` `Settings`
         Parameters:
             name (str): The name of the field
             title (Optional[str], optional): The title of the field. Defaults to None.
@@ -147,7 +147,7 @@ class TextField(FieldBase):
 
 
 class ImageField(FieldBase):
-    """Image field for use in Argilla `Dataset` `Settings`"""
+    """Image field for use in Extralit `Dataset` `Settings`"""
 
     def __init__(
         self,
@@ -158,7 +158,7 @@ class ImageField(FieldBase):
         _client: Optional[Extralit] = None,
     ) -> None:
         """
-        Text field for use in Argilla `Dataset` `Settings`
+        Text field for use in Extralit `Dataset` `Settings`
 
         Parameters:
             name (str): The name of the field
@@ -178,7 +178,7 @@ class ImageField(FieldBase):
 
 
 class ChatField(FieldBase):
-    """Chat field for use in Argilla `Dataset` `Settings`"""
+    """Chat field for use in Extralit `Dataset` `Settings`"""
 
     def __init__(
         self,
@@ -190,7 +190,7 @@ class ChatField(FieldBase):
         _client: Optional[Extralit] = None,
     ) -> None:
         """
-        Chat field for use in Argilla `Dataset` `Settings`
+        Chat field for use in Extralit `Dataset` `Settings`
 
         Parameters:
             name (str): The name of the field
@@ -219,7 +219,7 @@ class ChatField(FieldBase):
 
 
 class CustomField(FieldBase):
-    """Custom field for use in Argilla `Dataset` `Settings`"""
+    """Custom field for use in Extralit `Dataset` `Settings`"""
 
     def __init__(
         self,
@@ -232,8 +232,8 @@ class CustomField(FieldBase):
         _client: Optional[Extralit] = None,
     ) -> None:
         """
-        Custom field for use in Argilla `Dataset` `Settings` for working with custom HTML and CSS templates.
-        By default argilla will use a brackets syntax engine for the templates, which converts
+        Custom field for use in Extralit `Dataset` `Settings` for working with custom HTML and CSS templates.
+        By default extralit will use a brackets syntax engine for the templates, which converts
         `{{ field.key }}` to the values of record's field's object.
 
         Parameters:
@@ -291,7 +291,7 @@ class CustomField(FieldBase):
 
 
 class TableField(FieldBase):
-    """Table field for use in Argilla `Dataset` `Settings`"""
+    """Table field for use in Extralit `Dataset` `Settings`"""
 
     def __init__(
         self,
@@ -302,7 +302,7 @@ class TableField(FieldBase):
         _client: Optional["Extralit"] = None,
     ) -> None:
         """
-        Table field for use in Argilla `Dataset` `Settings`
+        Table field for use in Extralit `Dataset` `Settings`
 
         Parameters:
             name (str): The name of the field

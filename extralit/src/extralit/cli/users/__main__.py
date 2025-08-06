@@ -45,7 +45,7 @@ def create_user(
     ),
 ) -> None:
     """Creates a new user in the system."""
-    from extralit.cli.rich import get_argilla_themed_panel
+    from extralit.cli.rich import get_themed_panel
     from extralit.users._resource import User
     from rich.console import Console
 
@@ -69,7 +69,7 @@ def create_user(
             title="User created",
         )
     except KeyError:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"User with name={username} already exists.",
             title="User already exists",
             title_align="left",
@@ -78,13 +78,13 @@ def create_user(
         Console().print(panel)
         raise typer.Exit(code=1)
     except ValueError as e:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"Provided parameters are not valid:\n\n{e}", title="Invalid parameters", title_align="left", success=False
         )
         Console().print(panel)
         raise typer.Exit(code=1)
     except RuntimeError:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             "An unexpected error occurred when trying to create the user.",
             title="Unexpected error",
             title_align="left",
@@ -104,7 +104,7 @@ def list_users(
     """List all users in the system with optional filtering."""
     from rich.console import Console
 
-    from extralit.cli.rich import get_argilla_themed_panel
+    from extralit.cli.rich import get_themed_panel
 
     try:
         client = init_callback()
@@ -114,7 +114,7 @@ def list_users(
             workspace_obj = client.workspaces(name=workspace)
 
             if workspace_obj is None:
-                panel = get_argilla_themed_panel(
+                panel = get_themed_panel(
                     f"Workspace with name={workspace} doesn't exist.",
                     title="Workspace not found",
                     title_align="left",
@@ -139,7 +139,7 @@ def list_users(
             title="Users",
         )
     except RuntimeError:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             "An unexpected error occurred when trying to list users.",
             title="Unexpected error",
             title_align="left",
@@ -154,7 +154,7 @@ def delete_user(
     username: str = typer.Option(..., help="Username of the user to be deleted"),
 ) -> None:
     """Delete a user from the system."""
-    from extralit.cli.rich import get_argilla_themed_panel
+    from extralit.cli.rich import get_themed_panel
     from rich.console import Console
 
     try:
@@ -163,18 +163,18 @@ def delete_user(
 
         user = client.users(username=username)
         user.delete()
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"User with username={username} has been removed.", title="User removed", title_align="left"
         )
         Console().print(panel)
     except ValueError:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"User with username={username} doesn't exist.", title="User not found", title_align="left", success=False
         )
         Console().print(panel)
         raise typer.Exit(code=1)
     except RuntimeError:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             "An unexpected error occurred when trying to remove the user.",
             title="Unexpected error",
             title_align="left",

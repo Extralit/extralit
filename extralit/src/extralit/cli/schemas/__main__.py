@@ -18,7 +18,7 @@ from pathlib import Path
 import typer
 
 from extralit.cli.callback import init_callback
-from extralit.cli.rich import get_argilla_themed_panel
+from extralit.cli.rich import get_themed_panel
 from rich.console import Console
 
 if TYPE_CHECKING:
@@ -33,7 +33,7 @@ def get_workspace_client(workspace_name: str):
         workspace_data = client.workspaces(workspace_name)
         return client, workspace_data
     except ValueError:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"Workspace with name={workspace_name} does not exist.",
             title="Workspace not found",
             title_align="left",
@@ -42,7 +42,7 @@ def get_workspace_client(workspace_name: str):
         Console().print(panel)
         raise typer.Exit(code=1)
     except Exception:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             "An unexpected error occurred when trying to get the workspace.",
             title="Unexpected error",
             title_align="left",
@@ -111,7 +111,7 @@ def list_schemas(
     ),
 ) -> None:
     """List available schemas with optional filtering."""
-    from extralit.cli.rich import get_argilla_themed_panel, print_rich_table, console_table_to_pandas_df
+    from extralit.cli.rich import get_themed_panel, print_rich_table, console_table_to_pandas_df
     from rich.console import Console
 
     client, workspace_data = get_workspace_client(workspace)
@@ -123,7 +123,7 @@ def list_schemas(
     console = Console()
 
     if not workspace_data:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"Workspace '{workspace}' not found.",
             title="Workspace not found",
             title_align="left",
@@ -138,7 +138,7 @@ def list_schemas(
         if not workspace_schemas.schemas:
             message = f"No schemas found in workspace '{workspace_data.name}'"
 
-            panel = get_argilla_themed_panel(
+            panel = get_themed_panel(
                 message,
                 title="No schemas found",
                 title_align="left",
@@ -150,7 +150,7 @@ def list_schemas(
 
         if not filtered_schemas:
             message = f"No schemas found in workspace '{workspace_data.name}'"
-            panel = get_argilla_themed_panel(
+            panel = get_themed_panel(
                 message,
                 title="No schemas found",
                 title_align="left",
@@ -171,7 +171,7 @@ def list_schemas(
             print_rich_table(filtered_schemas, title=table_title)
 
     except Exception as e:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             "An unexpected error occurred when listing schemas",
             title="List Failed",
             title_align="left",
@@ -196,7 +196,7 @@ def delete_schema(
         try:
             schema = client.get_schema(workspace=workspace_data.name, schema_id=schema_id)
         except ValueError:
-            panel = get_argilla_themed_panel(
+            panel = get_themed_panel(
                 f"Schema with ID '{schema_id}' not found in workspace '{workspace_data.name}'",
                 title="Schema not found",
                 title_align="left",
@@ -206,7 +206,7 @@ def delete_schema(
             raise typer.Exit(code=1)
 
         if not typer.confirm(f"Are you sure you want to delete schema '{schema.name}' ({schema_id})?"):
-            panel = get_argilla_themed_panel(
+            panel = get_themed_panel(
                 "Schema deletion cancelled",
                 title="Operation Cancelled",
                 title_align="left",
@@ -216,7 +216,7 @@ def delete_schema(
 
         client.delete_schema(workspace=workspace_data.name, schema_id=schema_id)
 
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"Schema '{schema.name}' (ID: {schema_id}) successfully deleted from workspace '{workspace_data.name}'",
             title="Schema Deleted",
             title_align="left",
@@ -224,7 +224,7 @@ def delete_schema(
         Console().print(panel)
 
     except Exception:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             "An unexpected error occurred when deleting the schema.",
             title="Delete Failed",
             title_align="left",

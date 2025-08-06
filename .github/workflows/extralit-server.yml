@@ -146,7 +146,7 @@ jobs:
           node-version: 20
 
       - name: Install frontend dependencies
-        working-directory: argilla-frontend
+        working-directory: extralit-frontend
         env:
           BASE_URL: "@@baseUrl@@"
           DIST_FOLDER: ./dist
@@ -156,7 +156,7 @@ jobs:
       # End of frontend build section
       - name: Build package
         run: |
-          cp -r ../argilla-frontend/dist src/extralit_server/static
+          cp -r ../extralit-frontend/dist src/extralit_server/static
           pdm build
 
       - name: Upload artifact

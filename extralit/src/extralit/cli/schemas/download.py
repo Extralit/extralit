@@ -21,7 +21,7 @@ import typer
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
-from extralit.cli.rich import get_argilla_themed_panel, print_rich_table
+from extralit.cli.rich import get_themed_panel, print_rich_table
 
 
 def download_schemas(
@@ -61,7 +61,7 @@ def download_schemas(
         workspace = ctx.obj.get("workspace")
 
         if not client or not workspace:
-            panel = get_argilla_themed_panel(
+            panel = get_themed_panel(
                 "Client or workspace not found in context. Make sure to specify the workspace with --workspace.",
                 title="Missing Context",
                 title_align="left",
@@ -87,7 +87,7 @@ def download_schemas(
             progress.update(task, completed=True, description=f"Fetched schemas from workspace '{workspace.name}'")
 
         if not schema_structure.schemas:
-            panel = get_argilla_themed_panel(
+            panel = get_themed_panel(
                 f"No schemas found in workspace '{workspace.name}'.",
                 title="No schemas found",
                 title_align="left",
@@ -107,7 +107,7 @@ def download_schemas(
             schemas = [schema for schema in schemas if schema.name not in exclude]
 
         if not schemas:
-            panel = get_argilla_themed_panel(
+            panel = get_themed_panel(
                 f"No schemas found in workspace '{workspace.name}' after applying filters.",
                 title="No schemas found",
                 title_align="left",
@@ -160,7 +160,7 @@ def download_schemas(
                 console.print(f"  - [red]{name}[/red]: {reason}")
 
         if not downloaded_schemas:
-            panel = get_argilla_themed_panel(
+            panel = get_themed_panel(
                 f"No schemas were downloaded from workspace '{workspace.name}'.",
                 title="No schemas downloaded",
                 title_align="left",
@@ -170,7 +170,7 @@ def download_schemas(
             return
 
         # Show success message
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"Successfully downloaded {len(downloaded_schemas)} schema(s) from workspace '{workspace.name}' to '{output_dir}'.",
             title="Schemas downloaded",
             title_align="left",
@@ -184,7 +184,7 @@ def download_schemas(
         )
 
     except Exception as e:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"Error downloading schemas: {str(e)}",
             title="Error",
             title_align="left",

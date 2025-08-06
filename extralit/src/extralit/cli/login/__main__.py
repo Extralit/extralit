@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ def login(
     """Login to an Extralit Server by providing API URL and API key credentials."""
     import json
 
-    from extralit.cli.rich import get_argilla_themed_panel
+    from extralit.cli.rich import get_themed_panel
     from rich.console import Console
 
     try:
@@ -59,7 +59,7 @@ def login(
         login_impl(api_url=api_url, api_key=api_key, workspace=workspace, extra_headers=headers)
 
     except json.JSONDecodeError:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             "The provided extra headers are not a valid JSON string.",
             title="Extra headers error",
             title_align="left",
@@ -68,7 +68,7 @@ def login(
         Console().print(panel)
         raise typer.Exit(code=1)
     except ValueError as e:
-        panel = get_argilla_themed_panel(
+        panel = get_themed_panel(
             f"Could not login to the '{api_url}' Extralit server. Please check the provided credentials and try again.",
             title="Login error",
             title_align="left",
@@ -77,10 +77,8 @@ def login(
         Console().print(panel)
         raise typer.Exit(code=1) from e
 
-    panel = get_argilla_themed_panel(
-        f"Logged in successfully to '{api_url}' Extralit server!",
-        title="Logged in",
-        title_align="left"
+    panel = get_themed_panel(
+        f"Logged in successfully to '{api_url}' Extralit server!", title="Logged in", title_align="left"
     )
     Console().print(panel)
 

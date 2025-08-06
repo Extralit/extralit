@@ -62,7 +62,7 @@ class TestSuiteTelemetry:
         telemetry.track_data("test_topic", {"test": "test"})
 
         mock.assert_called_once_with(
-            topic="argilla/server/test_topic",
+            topic="extralit/server/test_topic",
             library_name="extralit-server",
             library_version=version,
             user_agent={"test": "test", **telemetry._system_info},

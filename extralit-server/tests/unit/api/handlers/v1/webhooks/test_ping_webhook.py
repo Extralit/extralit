@@ -52,7 +52,7 @@ class TestPingWebhook:
             "timestamp": timestamp,
             "data": {
                 "agent": "extralit-server",
-                "version": info.argilla_version(),
+                "version": info.extralit_version(),
             },
         }
 

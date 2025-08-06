@@ -79,7 +79,7 @@ class Settings(BaseSettings):
     home_path: Optional[str] = Field(
         None,
         validate_default=True,
-        description="The home path where argilla related files will be stored",
+        description="The home path where extralit related files will be stored",
     )
     base_url: Optional[str] = Field(
         None,
@@ -90,7 +90,7 @@ class Settings(BaseSettings):
     database_url: Optional[str] = Field(
         None,
         validate_default=True,
-        description="The database url that argilla will use as data store",
+        description="The database url that extralit will use as data store",
     )
     # https://docs.sqlalchemy.org/en/20/core/engines.html#sqlalchemy.create_engine.params.pool_size
     database_postgresql_pool_size: Optional[int] = Field(

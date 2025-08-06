@@ -58,7 +58,7 @@ class TelemetryClient:
 
     def track_data(self, topic: str, data: Optional[dict] = None):
         library_name = "extralit-server"
-        topic = f"argilla/server/{topic}"
+        topic = f"extralit/server/{topic}"
 
         user_agent = {**(data or {}), **self._system_info}
         send_telemetry(topic=topic, library_name=library_name, library_version=__version__, user_agent=user_agent)
@@ -96,8 +96,8 @@ class TelemetryClient:
             data["user.role"] = user.role
 
         if response.status_code >= 400:
-            if argilla_error := get_request_error(request=request):
-                data["response.error_code"] = argilla_error.code  # noqa
+            if extralit_error := get_request_error(request=request):
+                data["response.error_code"] = extralit_error.code  # noqa
 
         self.track_data(topic="endpoints", data=data)
 
