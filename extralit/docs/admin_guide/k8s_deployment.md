@@ -4,7 +4,7 @@
 
 The Extralit system consists of multiple microservices:
 
-- argilla-server: Web server for data annotation, dataset management, and extraction services
+- extralit-server: Web server for data annotation, dataset management, and extraction services
 - extralit-server: API server for data extraction, PDF parsing, and schema generation
 - Postgres database: Main database for extracted data and user accounts
 - Elasticsearch: Search engine for data records

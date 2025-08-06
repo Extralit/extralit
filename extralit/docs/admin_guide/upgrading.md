@@ -50,21 +50,21 @@ This guide covers the update process for Extralit across different deployment op
    - Push the updated Docker image to your repository:
 
    ```bash
-   docker push {DOCKER_REPO}/argilla-server:tag
+   docker push {DOCKER_REPO}/extralit-server:tag
    docker push {DOCKER_REPO}/extralit-server:tag
    ```
 
    - Apply the updated Kubernetes configuration:
 
    ```bash
-   kubectl apply -f examples/deployments/k8s/argilla-server-deployment.yaml -n {NAMESPACE}
+   kubectl apply -f examples/deployments/k8s/extralit-server-deployment.yaml -n {NAMESPACE}
    kubectl apply -f examples/deployments/k8s/extralit-deployment.yaml -n {NAMESPACE}
    ```
 
 6. Monitor the rollout:
 
    ```bash
-   kubectl rollout status deployment/argilla-server-deployment -n {NAMESPACE}
+   kubectl rollout status deployment/extralit-server-deployment -n {NAMESPACE}
    ```
 
    &nbsp;
@@ -74,7 +74,7 @@ For database schema changes:
 - Run migrations using the `extralit_server` CLI:
 
 ```bash
-kubectl exec -it deployment/argilla-server-deployment -n {NAMESPACE} -- \
+kubectl exec -it deployment/extralit-server-deployment -n {NAMESPACE} -- \
 extralit_server database migrate
 ```
 

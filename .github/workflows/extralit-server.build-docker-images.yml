@@ -143,7 +143,7 @@ jobs:
           event-type: build-hf-space
           client-payload: '{"tag":"${{ env.IMAGE_TAG }}","is_release":${{ inputs.is_release }}}'
       # TODO: uncomment this once the step works again
-      # - name: Docker Hub Description for `argilla-server`
+      # - name: Docker Hub Description for `extralit-server`
       #   uses: peter-evans/dockerhub-description@v4
       #   if: ${{ env.PUBLISH_LATEST == 'true' }}
       #   with:

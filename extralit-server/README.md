@@ -120,7 +120,7 @@ See full CLI documentation in our [developer docs](https://docs.extralit.ai/late
 
 ## Running Tests
 
-The pytest suite is primarily designed to run in the CI environment using GitHub Actions as defined in `.github/workflows/argilla-server.yml`. This workflow sets up the necessary dependencies including Elasticsearch, PostgreSQL, Redis, and Minio.
+The pytest suite is primarily designed to run in the CI environment using GitHub Actions as defined in `.github/workflows/extralit-server.yml`. This workflow sets up the necessary dependencies including Elasticsearch, PostgreSQL, Redis, and Minio.
 
 Note that some tests are specifically skipped when running locally due to differences between the CI environment and local development environments. These tests may involve:
 
@@ -133,7 +133,7 @@ To run tests in CI, create a pull request to trigger the test workflow.
 If you need to run a specific test locally for debugging purposes, you can use:
 
 ```bash
-cd argilla-server
+cd extralit-server
 python -m pytest [test_path] -v
 ```
 

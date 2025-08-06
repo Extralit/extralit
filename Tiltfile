@@ -75,7 +75,7 @@ helm_resource(
         '--set=master.persistence.size=1Gi'
     ],
     port_forwards=['6379'],
-    labels=['argilla-server'],
+    labels=['extralit-server'],
     resource_deps=['redis-helm', 'bitnami-helm']
 )
 
@@ -102,8 +102,8 @@ docker_build(
 extralit_server_k8s_yaml = read_yaml_stream('examples/deployments/k8s/extralit-server-deployment.yaml')
 for o in extralit_server_k8s_yaml:
     for container in o['spec']['template']['spec']['containers']:
-        if container['name'] == 'argilla-server':
-            container['image'] = "{DOCKER_REPO}/argilla-server".format(DOCKER_REPO=DOCKER_REPO)
+        if container['name'] == 'extralit-server':
+            container['image'] = "{DOCKER_REPO}/extralit-server".format(DOCKER_REPO=DOCKER_REPO)
             if ARGILLA_DATABASE_URL:
                 container['env'].extend([
                     {'name': 'ARGILLA_DATABASE_URL', 'value': ARGILLA_DATABASE_URL},

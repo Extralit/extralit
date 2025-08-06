@@ -81,7 +81,7 @@ Then, select from three different development environments through devcontainers
     docker-compose up -d
 
     # Install server dependencies
-    cd argilla-server
+    cd extralit-server
     pdm install
 
     # Start the server in development mode
@@ -154,7 +154,7 @@ We recommend using PDM for package management:
 pip install pdm uv
 
 # Install server dependencies
-cd argilla-server
+cd extralit-server
 pdm install
 
 # Install client dependencies
@@ -175,7 +175,7 @@ cp -r dist ../extralit-server/src/extralit_server/static
 
 ### 4. Configure Environment Variables
 
-Create a `.env.dev` file in the `argilla-server` directory with the following content:
+Create a `.env.dev` file in the `extralit-server` directory with the following content:
 
 ```
 ALEMBIC_CONFIG=src/extralit_server/alembic.ini
@@ -213,7 +213,7 @@ docker compose up -d
 ### 6. Run Database Migrations and Start the Server
 
 ```bash
-cd argilla-server
+cd extralit-server
 pdm run migrate
 pdm run cli database users create_default
 pdm run server
@@ -275,23 +275,23 @@ ENV=dev DOCKER_REPO=localhost:5005 tilt up --namespace extralit-dev --context ki
 For a simpler setup using Docker without live development capabilities:
 
 
-### 0. Building the `argilla-server` and `argilla-hf-spaces` docker images
+### 0. Building the `extralit-server` and `argilla-hf-spaces` docker images
 
 To build and run the Argilla Server using Docker, follow these steps:
 
 ```bash
-cd argilla-server
+cd extralit-server
 pdm build && cp -r dist/ docker/server/
 ```
 
 ```bash
-docker build -t argilla-server:latest -f docker/server/Dockerfile docker/server/
+docker build -t extralit-server:latest -f docker/server/Dockerfile docker/server/
 ```
 
 To build the Argilla HF Spaces Docker image, which includes the Argilla Server, ElasticSearch, and Redis, use the following command:
 
 ```bash
-docker build --build-arg extralit_server_IMAGE=argilla-server --build-arg ARGILLA_VERSION=latest -t argilla-hf-spaces:latest -f docker/argilla-hf-spaces/Dockerfile docker/argilla-hf-spaces/
+docker build --build-arg extralit_server_IMAGE=extralit-server --build-arg ARGILLA_VERSION=latest -t argilla-hf-spaces:latest -f docker/argilla-hf-spaces/Dockerfile docker/argilla-hf-spaces/
 ```
 
 Start the Argilla Server and other dependencies using Docker:

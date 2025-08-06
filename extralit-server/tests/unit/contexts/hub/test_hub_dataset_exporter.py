@@ -67,7 +67,7 @@ def hf_api() -> HfApi:
 
 @pytest.fixture
 def hf_dataset_name(hf_api: HfApi) -> Generator[str, None, None]:
-    hf_dataset_name = f"{HF_ORGANIZATION}/argilla-server-dataset-test-{uuid4()}"
+    hf_dataset_name = f"{HF_ORGANIZATION}/extralit-server-dataset-test-{uuid4()}"
 
     yield hf_dataset_name
 

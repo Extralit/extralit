@@ -1,7 +1,7 @@
 argilla:
   replicaCount: 1
   image:
-    repository: extralit/argilla-server
+    repository: extralit/extralit-server
     tag: latest
   resources:
     requests:
@@ -55,7 +55,7 @@ elasticsearch:
     storage:
       size: 1Gi
       accessModes:
-      - ReadWriteOnce
+        - ReadWriteOnce
 
 externalElasticsearch:
   host: "argilla.local"

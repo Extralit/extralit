@@ -47,7 +47,7 @@ The Extralit repository has a monorepo structure, which means that all the compo
 - [`argilla/src/extralit/`](https://github.com/extralit/extralit/tree/develop/argilla/src/extralit): The FastAPI server project for extraction
 - [`argilla/docs/`](https://github.com/extralit/extralit/tree/develop/argilla/docs): The documentation project
 - [`argilla/src/argilla/`](https://github.com/extralit/extralit/tree/develop/argilla): The argilla SDK project
-- [`extralit-server/src/extralit_server/`](https://github.com/extralit/extralit/tree/develop/argilla-server): The FastAPI server project for annotation
+- [`extralit-server/src/extralit_server/`](https://github.com/extralit/extralit/tree/develop/extralit-server): The FastAPI server project for annotation
 - [`argilla-frontend/`](https://github.com/extralit/extralit/tree/develop/argilla-frontend): The Vue.js UI project
 - [`examples`](https://github.com/extralit/extralit/tree/develop/examples): Example resources for deployments, scripts and notebooks
 
@@ -58,7 +58,7 @@ The Extralit repository has a monorepo structure, which means that all the compo
     ![Argilla Repository Structure](../assets/images/community/developer/repo-visualizer-argilla.svg)
 
 ??? example "Argilla Server Directory Structure"
-    ![Argilla Server Repository Structure](../assets/images/community/developer/repo-visualizer-argilla-server.svg)
+    ![Argilla Server Repository Structure](../assets/images/community/developer/repo-visualizer-extralit-server.svg)
 
 ## Development workflow
 
@@ -185,7 +185,7 @@ When making changes to the database schema, you need to create database revision
 2. Generate a new revision file:
 
 ```bash
-cd argilla-server
+cd extralit-server
 pdm run revision -m "description of change"
 ```
 

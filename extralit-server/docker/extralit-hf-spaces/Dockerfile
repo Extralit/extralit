@@ -1,6 +1,6 @@
 # Multi-stage build to reduce image size
 ARG ARGILLA_VERSION=latest
-ARG extralit_server_IMAGE=extralitdev/argilla-server
+ARG extralit_server_IMAGE=extralitdev/extralit-server
 
 # Base stage with common dependencies
 FROM ${extralit_server_IMAGE}:${ARGILLA_VERSION} AS base

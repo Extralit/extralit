@@ -61,13 +61,13 @@ repos:
           # - --keep-version
 
   ##############################################################################
-  # argilla-server specific hooks
+  # extralit-server specific hooks
   ##############################################################################
   - repo: https://github.com/pycqa/autoflake
     rev: v2.2.1
     hooks:
       - id: autoflake
-        name: "Remove unused imports and variables in argilla-server"
+        name: "Remove unused imports and variables in extralit-server"
         files: '^extralit-server/.*\.py$'
         args:
           - "--remove-all-unused-imports"

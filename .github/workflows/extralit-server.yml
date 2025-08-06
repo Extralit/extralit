@@ -14,13 +14,13 @@ on:
       - releases/**
     paths:
       - "extralit-server/**"
-      - ".github/workflows/argilla-server.*"
+      - ".github/workflows/extralit-server.*"
 
   pull_request:
     types: [opened, edited, synchronize, reopened, ready_for_review]
     paths:
       - "extralit-server/**"
-      - ".github/workflows/argilla-server.*"
+      - ".github/workflows/extralit-server.*"
 
 permissions:
   id-token: write
@@ -34,7 +34,7 @@ jobs:
     defaults:
       run:
         shell: bash -l {0}
-        working-directory: argilla-server
+        working-directory: extralit-server
 
     services:
       elasticsearch:
@@ -124,7 +124,7 @@ jobs:
         uses: codecov/codecov-action@v5.4.3
         with:
           files: coverage.xml
-          flags: argilla-server
+          flags: extralit-server
           token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Check test status
@@ -135,7 +135,7 @@ jobs:
         if: ${{ !cancelled() }}
         uses: codecov/test-results-action@v1
         with:
-          flags: argilla-server
+          flags: extralit-server
           token: ${{ secrets.CODECOV_TOKEN }}
 
       # This section is used to build the frontend and copy the build files to the server.
@@ -162,7 +162,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: argilla-server
+          name: extralit-server
           path: extralit-server/dist
 
   build_docker_images:
@@ -194,7 +194,7 @@ jobs:
     defaults:
       run:
         shell: bash -l {0}
-        working-directory: argilla-server
+        working-directory: extralit-server
 
     permissions:
       # This permission is needed for private repositories.
@@ -225,7 +225,7 @@ jobs:
       - name: Download python package
         uses: actions/download-artifact@v4
         with:
-          name: argilla-server
+          name: extralit-server
           path: extralit-server/dist
 
       - name: Setup PDM

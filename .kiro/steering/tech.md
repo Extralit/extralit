@@ -52,7 +52,7 @@ Extralit is a multi-component system with 5 core components:
 
 ### Backend Development
 ```bash
-cd argilla-server
+cd extralit-server
 pdm install
 pdm run migrate          # Run database migrations
 pdm run server-dev       # Start dev server with auto-reload
@@ -81,7 +81,7 @@ extralit --help         # CLI usage
 ### Docker Development
 ```bash
 docker-compose up       # Start full stack
-pdm run docker-build-argilla-server  # Build server image
+pdm run docker-build-extralit-server  # Build server image
 ```
 
 ### Kubernetes Development (Tilt)

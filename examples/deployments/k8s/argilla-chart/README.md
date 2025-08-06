@@ -68,10 +68,10 @@ kubectl get pods -n elastic-system
 
 ## Installing the Chart
 
-After adding the repository, you can install the chart with the release name `my-argilla-server`:
+After adding the repository, you can install the chart with the release name `my-extralit-server`:
 
 ```bash
-helm install my-argilla-server examples/deployments/k8s/argilla-chart
+helm install my-extralit-server examples/deployments/k8s/argilla-chart
 ```
 
 Check the status of the pods:
@@ -85,7 +85,7 @@ All the pods should be in the `Running` state.
 
 In a different terminal window, run the following command to access Argilla:
 ```bash
-kubectl port-forward svc/my-argilla-server 6900
+kubectl port-forward svc/my-extralit-server 6900
 ```
 Argilla will be accessible at http://localhost:6900.
 
@@ -104,10 +104,10 @@ pytest tests/integration
 
 ## Uninstalling the Chart
 
-To uninstall/delete the `my-argilla-server` deployment:
+To uninstall/delete the `my-extralit-server` deployment:
 
 ```bash
-helm delete my-argilla-server
+helm delete my-extralit-server
 ```
 
 This command removes all the Kubernetes components associated with the chart and deletes the release.

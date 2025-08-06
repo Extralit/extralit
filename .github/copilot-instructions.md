@@ -22,7 +22,7 @@ When contributing to Extralit, consider these guidelines:
 Extralit is organized as a monorepo with several main components:
 
 - **extralit/**: Python SDK and core extraction functionality
-- **extralit-server/** (formerly argilla-server): Backend server implementation
+- **extralit-server/** (formerly extralit-server): Backend server implementation
 - **argilla-frontend/**: Frontend web application (will be renamed to extralit-frontend in future)
 - **examples/**: Sample implementations and deployment configurations
 

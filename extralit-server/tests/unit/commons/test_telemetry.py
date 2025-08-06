@@ -63,7 +63,7 @@ class TestSuiteTelemetry:
 
         mock.assert_called_once_with(
             topic="argilla/server/test_topic",
-            library_name="argilla-server",
+            library_name="extralit-server",
             library_version=version,
             user_agent={"test": "test", **telemetry._system_info},
         )

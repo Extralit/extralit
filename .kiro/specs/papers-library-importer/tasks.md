@@ -28,7 +28,7 @@
   - Add import() function to extralit/src/argilla/cli/documents/add.py
   - Parse BibTeX file and match PDF files from folder using Python bibtexparser
   - Perform filename matching to create the analysis_request
-  - Send ImportAnalysisRequest to argilla-server for testing import analysis functionality
+  - Send ImportAnalysisRequest to extralit-server for testing import analysis functionality
   - Display analysis results (add/update/skip status) in CLI output
   - Enable easy testing of backend import analysis before building frontend
   - _Requirements: 1.1, 2.1, 2.2_
