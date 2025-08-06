@@ -22,9 +22,8 @@ When contributing to Extralit, consider these guidelines:
 Extralit is organized as a monorepo with several main components:
 
 - **extralit/**: Python SDK and core extraction functionality
-- **argilla-server/**: Backend server implementation
-- **argilla-frontend/**: Frontend web application
-- **argilla-v1/**: Legacy compatibility layer
+- **extralit-server/** (formerly argilla-server): Backend server implementation
+- **argilla-frontend/**: Frontend web application (will be renamed to extralit-frontend in future)
 - **examples/**: Sample implementations and deployment configurations
 
 ## Core Components
@@ -63,7 +62,7 @@ Key directories:
 - **View Models**: `setup(props) { return useViewModelName(props); }` pattern
 - **BaseSimpleTable**: Use existing `BaseSimpleTable.vue` for tabular display
 
-### Backend Server (`argilla-server/src/argilla_server`)
+### Backend Server (`extralit-server/src/extralit_server`)
 
 The backend is a FastAPI application that handles API requests, database operations, and search functionality.
 
@@ -91,7 +90,7 @@ Key modules:
 - `webhooks/`: Webhook processing and event handling
 - `validators/`: Data validation logic
 
-### SDK and Core Extraction (`argilla/src/extralit`)
+### SDK and Core Extraction (`extralit/src/extralit`)
 
 The core extraction functionality and Python SDK for interacting with the Extralit system.
 
@@ -136,7 +135,7 @@ This approach keeps related functionality together and makes the codebase more m
 
 ### Models and Database
 
-The system uses SQLAlchemy for database operations with models defined in `argilla-server/src/argilla_server/models/database.py`. These models represent the core entities in the system:
+The system uses SQLAlchemy for database operations with models defined in `extralit-server/src/extralit_server/models/database.py`. These models represent the core entities in the system:
 - Users and workspaces
 - Datasets and records
 - Questions and responses
@@ -171,7 +170,7 @@ await authorize(current_user, WorkspacePolicy.get(workspace_id))
 
 Getting Storage Client:
 ```python
-from argilla_server.contexts import files
+from extralit_server.contexts import files
 
 # Get appropriate client (Minio or LocalFileStorage)
 client = files.get_minio_client()
@@ -208,9 +207,9 @@ Implementation:
 Schemas define the structure and format of data to be extracted, while references uniquely identify scientific papers in the system.
 
 Implementation:
-- Schema definitions are handled in `argilla/src/extralit/schema/`
+- Schema definitions are handled in `extralit/src/extralit/schema/`
 - The system uses Pandera for schema validation
-- References are managed through `argilla/src/extralit/schema/references/`
+- References are managed through `extralit/src/extralit/schema/references/`
 
 
 ### Data Aggregation and Normalization Architecture
@@ -242,7 +241,7 @@ Extralit uses a normalized database approach for storing and presenting extracte
 ## Common Development Tasks
 
 ### Environment Configuration
-- Development environment variables are in `argilla-server/.env.dev`
+- Development environment variables are in `extralit-server/.env.dev`
 - Test environment uses temporary databases
 - Database paths use `${HOME}/.extralit/` pattern in development
 
@@ -259,7 +258,7 @@ Extralit uses a normalized database approach for storing and presenting extracte
 1. Update the model in `models/database.py`
 2. Create a migration using Alembic:
    ```bash
-   cd argilla-server
+   cd extralit-server
    pdm run revision -m "description of change"
    ```
 3. Update related schemas and validators
@@ -267,9 +266,9 @@ Extralit uses a normalized database approach for storing and presenting extracte
 
 #### Database Migration Guidelines
 - Database migrations are automatically configured via environment variables:
-  - Dev: `${HOME}/.extralit/argilla-dev.db`
+  - Dev: `${HOME}/.extralit/extralit-dev.db`
   - Test: Uses temporary databases managed by pytest
-- Use `pdm run alembic -c src/argilla_server/alembic.ini check` to verify migration state
+- Use `pdm run alembic -c src/extralit_server/alembic.ini check` to verify migration state
 - Always test both upgrade and downgrade paths
 
 ### Adding frontend functionality

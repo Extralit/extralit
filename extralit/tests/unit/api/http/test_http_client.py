@@ -68,7 +68,7 @@ class TestHTTPClient:
 
     @pytest.mark.parametrize("retries", [0, 1, 5, 10])
     def test_create_client_with_various_retries(self, retries):
-        with patch("argilla._api._client.create_http_client") as mock_create_http_client:
+        with patch("extralit._api._client.create_http_client") as mock_create_http_client:
             mock_http_client = MagicMock()
             mock_create_http_client.return_value = mock_http_client
 

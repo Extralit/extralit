@@ -75,7 +75,7 @@ class TestWorkspacesAPIDocuments:
 
     def test_add_document_delegates_to_documents_api(self, workspace_api, sample_document_model):
         """Test that add_document delegates to DocumentsAPI.create()."""
-        with patch("argilla._api._documents.DocumentsAPI") as mock_documents_api_class:
+        with patch("extralit._api._documents.DocumentsAPI") as mock_documents_api_class:
             # Mock the DocumentsAPI instance and its create method
             mock_documents_api = MagicMock()
             mock_documents_api_class.return_value = mock_documents_api
@@ -95,7 +95,7 @@ class TestWorkspacesAPIDocuments:
 
     def test_get_documents_delegates_to_documents_api(self, workspace_api, sample_workspace_id, sample_document_model):
         """Test that get_documents delegates to DocumentsAPI.list()."""
-        with patch("argilla._api._documents.DocumentsAPI") as mock_documents_api_class:
+        with patch("extralit._api._documents.DocumentsAPI") as mock_documents_api_class:
             # Mock the DocumentsAPI instance and its list method
             mock_documents_api = MagicMock()
             mock_documents_api_class.return_value = mock_documents_api

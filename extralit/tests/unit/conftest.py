@@ -20,7 +20,7 @@ from extralit import Argilla
 
 @pytest.fixture(autouse=True)
 def mock_validate_connection():
-    with patch("argilla._api._client.APIClient._validate_connection") as mocked_validator:
+    with patch("extralit._api._client.APIClient._validate_connection") as mocked_validator:
         yield mocked_validator
 
 

@@ -101,7 +101,7 @@ use-venv = true
 
 [tool.pdm.version]
 source = "file"
-path = "src/argilla/_version.py"
+path = "src/extralit/_version.py"
 
 [tool.pdm.dev-dependencies]
 dev = [
