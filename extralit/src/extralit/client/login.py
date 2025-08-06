@@ -27,7 +27,7 @@ else:
 EXTRALIT_CREDENTIALS_FILE = EXTRALIT_CACHE_DIR / "credentials.json"
 
 
-class ArgillaCredentials:
+class ExtralitCredentials:
     def __init__(
         self,
         api_url: str,
@@ -65,7 +65,7 @@ class ArgillaCredentials:
             )
 
     @classmethod
-    def load(cls) -> "ArgillaCredentials":
+    def load(cls) -> "ExtralitCredentials":
         """Load credentials from file.
 
         Returns:
@@ -136,7 +136,7 @@ def login(
 
         # If we get here, the credentials are valid
         # Save credentials
-        ArgillaCredentials(api_url=api_url, api_key=api_key, workspace=workspace, extra_headers=extra_headers).save()
+        ExtralitCredentials(api_url=api_url, api_key=api_key, workspace=workspace, extra_headers=extra_headers).save()
     except Exception as e:
         # Authentication failed
         raise ValueError(f"Failed to authenticate with the provided credentials: {str(e)}")

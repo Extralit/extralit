@@ -25,10 +25,10 @@ if TYPE_CHECKING:
     from extralit.client.resources import Datasets, Users, Webhooks, Workspaces
     from extralit.users import User
 
-__all__ = ["Argilla"]
+__all__ = ["Extralit"]
 
 
-class Argilla(_api.APIClient, SpacesDeploymentMixin, NotebookHTMLReprMixin):
+class Extralit(_api.APIClient, SpacesDeploymentMixin, NotebookHTMLReprMixin):
     """Argilla API client. This is the main entry point to interact with the API.
 
     Attributes:
@@ -39,7 +39,7 @@ class Argilla(_api.APIClient, SpacesDeploymentMixin, NotebookHTMLReprMixin):
     """
 
     # Default instance of Argilla
-    _default_client: Optional["Argilla"] = None
+    _default_client: Optional["Extralit"] = None
 
     def __init__(
         self,
@@ -75,7 +75,7 @@ class Argilla(_api.APIClient, SpacesDeploymentMixin, NotebookHTMLReprMixin):
         workspace: Optional[str] = None,
         extra_headers: Optional[dict] = None,
         **kwargs,
-    ) -> "Argilla":
+    ) -> "Extralit":
         """Create client from stored credentials.
 
         If api_url and api_key are not provided, they will be loaded from environment variables
@@ -91,14 +91,14 @@ class Argilla(_api.APIClient, SpacesDeploymentMixin, NotebookHTMLReprMixin):
         Returns:
             Argilla: An initialized Argilla client.
         """
-        from extralit.client.login import ArgillaCredentials
+        from extralit.client.login import ExtralitCredentials
 
         api_url = api_url or os.environ.get("ARGILLA_API_URL")
         api_key = api_key or os.environ.get("ARGILLA_API_KEY")
         workspace = workspace or os.environ.get("EXTRALIT_WORKSPACE")
 
-        if (not api_url or not api_key) and ArgillaCredentials.exists():
-            credentials = ArgillaCredentials.load()
+        if (not api_url or not api_key) and ExtralitCredentials.exists():
+            credentials = ExtralitCredentials.load()
             api_url = api_url or credentials.api_url
             api_key = api_key or credentials.api_key
             workspace = workspace or credentials.workspace
@@ -151,13 +151,13 @@ class Argilla(_api.APIClient, SpacesDeploymentMixin, NotebookHTMLReprMixin):
     ############################
 
     @classmethod
-    def _set_default(cls, client: "Argilla") -> None:
+    def _set_default(cls, client: "Extralit") -> None:
         """Set the default instance of Argilla."""
         cls._default_client = client
 
     @classmethod
-    def _get_default(cls) -> "Argilla":
+    def _get_default(cls) -> "Extralit":
         """Get the default instance of Argilla. If it doesn't exist, create a new one."""
         if cls._default_client is None:
-            cls._default_client = Argilla()
+            cls._default_client = Extralit()
         return cls._default_client

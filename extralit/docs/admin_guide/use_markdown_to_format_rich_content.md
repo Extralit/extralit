@@ -50,7 +50,7 @@ A DataURL is a scheme that allows data to be encoded into a base64-encoded strin
 === "Image"
 
     ```python
-    from argilla.markdown import image_to_html
+    from extralit.markdown import image_to_html
 
     html = image_to_html(
         "local_image_file.png",
@@ -66,7 +66,7 @@ A DataURL is a scheme that allows data to be encoded into a base64-encoded strin
 === "Audio"
 
     ```python
-    from argilla.markdown import audio_to_html
+    from extralit.markdown import audio_to_html
 
     html = audio_to_html(
         "local_audio_file.mp3",
@@ -84,7 +84,7 @@ A DataURL is a scheme that allows data to be encoded into a base64-encoded strin
 === "Video"
 
     ```python
-    from argilla.markdown import video_to_thml
+    from extralit.markdown import video_to_thml
 
     html = video_to_html(
         "local_video_file.mp4",
@@ -102,7 +102,7 @@ A DataURL is a scheme that allows data to be encoded into a base64-encoded strin
 === "PDF"
 
     ```python
-    from argilla.markdown import pdf_to_html
+    from extralit.markdown import pdf_to_html
 
     html = pdf_to_html(
         "local_pdf_file.pdf",
@@ -185,7 +185,7 @@ When working with chat data from multi-turn interaction with a Large Language Mo
 
 
 ```python
-from argilla.markdown import chat_to_html
+from extralit.markdown import chat_to_html
 
 messages = [
     {"role": "user", "content": "Hello! How are you?"},

@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,6 +15,6 @@
 from extralit._exceptions._base import ArgillaError
 
 
-class ArgillaCredentialsError(ArgillaError):
+class ExtralitCredentialsError(ArgillaError):
     def __init__(self, message: str = "Credentials (api_key and/or api_url) are invalid") -> None:
         super().__init__(message)

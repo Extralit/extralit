@@ -252,8 +252,8 @@ The CLI uses [Typer](https://typer.tiangolo.com/) for creating the command-line 
 ```python
 # src/argilla/cli/mycommand/__main__.py
 import typer
-from argilla.cli.callback import init_callback
-from argilla.cli.rich import get_argilla_themed_panel
+from extralit.cli.callback import init_callback
+from extralit.cli.rich import get_argilla_themed_panel
 from rich.console import Console
 
 app = typer.Typer(help="My command description")
@@ -273,7 +273,7 @@ def my_subcommand(param: str = typer.Argument(..., help="Parameter description")
 2. Register your command in `app.py`:
 
 ```python
-from argilla.cli import mycommand
+from extralit.cli import mycommand
 app.add_typer(mycommand.app, name="mycommand")
 ```
 

@@ -19,7 +19,7 @@ import httpx
 
 from extralit._api._webhooks import WebhooksAPI
 from extralit._exceptions._api import UnauthorizedError
-from extralit._exceptions._client import ArgillaCredentialsError
+from extralit._exceptions._client import ExtralitCredentialsError
 
 from extralit._api import HTTPClientConfig, create_http_client
 from extralit._api._datasets import DatasetsAPI
@@ -44,7 +44,7 @@ ARGILLA_API_KEY = get_secret("ARGILLA_API_KEY") or ""
 DEFAULT_HTTP_CONFIG = HTTPClientConfig(api_url=ARGILLA_API_URL, api_key=ARGILLA_API_KEY)
 
 
-class ArgillaAPI:
+class ExtralitAPI:
     """Argilla API access object."""
 
     def __init__(self, http_client: httpx.Client):
@@ -146,12 +146,12 @@ class APIClient:
             **http_client_args,
         )
 
-        self.api = ArgillaAPI(self.http_client)
+        self.api = ExtralitAPI(self.http_client)
 
         try:
             self._validate_connection()
         except UnauthorizedError as e:
-            raise ArgillaCredentialsError() from e
+            raise ExtralitCredentialsError() from e
 
     ##############################
     # Utility methods

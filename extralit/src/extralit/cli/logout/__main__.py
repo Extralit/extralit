@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,10 +19,10 @@ app = typer.Typer(invoke_without_command=True)
 
 def remove_credentials():
     """Remove stored credentials."""
-    from extralit.client.login import ArgillaCredentials
+    from extralit.client.login import ExtralitCredentials
 
     try:
-        ArgillaCredentials.remove()
+        ExtralitCredentials.remove()
     except FileNotFoundError:
         # If credentials don't exist, that's fine
         pass
@@ -36,7 +36,6 @@ def logout(force: bool = typer.Option(False, help="Force the logout even if the 
     from extralit.cli.callback import init_callback
     from extralit.cli.rich import get_argilla_themed_panel
     from rich.console import Console
-    from extralit.client.login import ArgillaCredentials
 
     if not force:
         try:

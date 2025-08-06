@@ -14,7 +14,7 @@
 
 import warnings
 
-from extralit.cli.typer_ext import ArgillaTyper
+from extralit.cli.typer_ext import ExtralitTyper
 
 # Import all CLI modules that will be registered with the app
 from extralit.cli import (
@@ -34,7 +34,7 @@ from extralit.cli import (
 
 warnings.simplefilter("ignore", UserWarning)
 
-app = ArgillaTyper(help="Extralit CLI", no_args_is_help=True)
+app = ExtralitTyper(help="Extralit CLI", no_args_is_help=True)
 
 
 @app.error_handler(PermissionError)

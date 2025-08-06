@@ -154,7 +154,7 @@ Update schemas in a workspace.
 
 ```python
 import pandera as pa
-from argilla._models._schema import SchemaStructure
+from extralit._models._schema import SchemaStructure
 
 # Create schemas
 schema1 = pa.DataFrameSchema(

@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from extralit.cli.typer_ext import ArgillaTyper
+from extralit.cli.typer_ext import ExtralitTyper
 
 from extralit.cli.files.list import list_files
 from extralit.cli.files.upload import upload_file
 from extralit.cli.files.download import download_file
 from extralit.cli.files.delete import delete_file
 
-app = ArgillaTyper(help="Manage files in workspaces", no_args_is_help=True)
+app = ExtralitTyper(help="Manage files in workspaces", no_args_is_help=True)
 
 # Register all commands
 app.command(name="list")(list_files)

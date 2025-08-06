@@ -29,11 +29,11 @@ class HuggingfaceSettings(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class ArgillaSettings(BaseModel):
+class ExtralitSettings(BaseModel):
     show_huggingface_space_persistent_storage_warning: Optional[bool] = None
     share_your_progress_enabled: bool = False
 
 
 class Settings(BaseModel):
-    argilla: ArgillaSettings
+    argilla: ExtralitSettings
     huggingface: Optional[HuggingfaceSettings] = None

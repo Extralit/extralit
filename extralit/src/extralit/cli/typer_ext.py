@@ -44,7 +44,7 @@ R = TypeVar("R")
 HandleErrorFunc = Callable[[Exception], None]
 
 
-class ArgillaTyper(typer.Typer):
+class ExtralitTyper(typer.Typer):
     error_handlers: Dict[Type[Exception], HandleErrorFunc] = {}
 
     def command(
@@ -87,6 +87,6 @@ class ArgillaTyper(typer.Typer):
 
 
 def run(function: Callable[..., Coroutine[Any, Any, Any]]) -> None:
-    app = ArgillaTyper(add_completion=False)
+    app = ExtralitTyper(add_completion=False)
     app.command()(function)
     app()

@@ -35,9 +35,9 @@ def echo_in_panel(text, title=None, title_align="center", success=True):
 
 def init_callback() -> "Extralit":
     """Initialize Argilla client if user is logged in, otherwise exit."""
-    from extralit.client.login import ArgillaCredentials
+    from extralit.client.login import ExtralitCredentials
 
-    if not ArgillaCredentials.exists():
+    if not ExtralitCredentials.exists():
         echo_in_panel(
             "You are not logged in. Please run 'extralit login' to login to the Extralit server.",
             title="Not logged in",
@@ -53,7 +53,7 @@ def init_callback() -> "Extralit":
         return client
     except Exception as e:
         echo_in_panel(
-            f"The Extralit server ({ArgillaCredentials.load().api_url}) you are logged in is not available or not responding. Please make sure it's running and try again.\n{e}",
+            f"The Extralit server ({ExtralitCredentials.load().api_url}) you are logged in is not available or not responding. Please make sure it's running and try again.\n{e}",
             title="Server not available",
             title_align="left",
             success=False,

@@ -16,7 +16,7 @@ The python SDK provides a simple way to create a webhook in Argilla. It allows y
 import argilla as rg
 
 from datetime import datetime
-from argilla import webhook_listener
+from extralit import webhook_listener
 
 @webhook_listener(events="dataset.created")
 async def my_webhook_handler(dataset: rg.Dataset, type: str, timestamp: datetime):
@@ -38,7 +38,7 @@ To run the webhook, you need to define the webhook server in your code and start
 
 ```python
 # my_webhook.py file
-from argilla import get_webhook_server
+from extralit import get_webhook_server
 
 server = get_webhook_server()
 ```

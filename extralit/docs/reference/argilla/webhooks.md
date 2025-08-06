@@ -13,7 +13,7 @@ To listen for incoming webhooks, you can use the `webhook_listener` decorator fu
 when a webhook is received:
 
 ```python
-from argilla.webhooks import webhook_listener
+from extralit.webhooks import webhook_listener
 
 @webhook_listener(events="dataset.created")
 async def my_webhook_listener(dataset):
