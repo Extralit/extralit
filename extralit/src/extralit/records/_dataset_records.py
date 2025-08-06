@@ -255,7 +255,7 @@ class DatasetRecords(Iterable[Record], LoggingMixin):
         """Add or update records in a dataset on the server using the provided records.
         If the record includes a known `id` field, the record will be updated.
         If the record does not include a known `id` field, the record will be added as a new record.
-        See `rg.Record` for more information on the record definition.
+        See `ex.Record` for more information on the record definition.
 
         Parameters:
             records: A list of `Record` objects, a Hugging Face Dataset, or a list of dictionaries representing the records.

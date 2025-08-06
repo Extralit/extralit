@@ -23,7 +23,7 @@ async def my_webhook_listener(dataset):
 To manually create a new webhook, instantiate the `Webhook` object with the client and the name:
 
 ```python
-webhook = rg.Webhook(
+webhook = ex.Webhook(
     url="https://somehost.com/webhook",
     events=["dataset.created"],
     description="My webhook"

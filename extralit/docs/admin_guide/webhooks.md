@@ -19,7 +19,7 @@ from datetime import datetime
 from extralit import webhook_listener
 
 @webhook_listener(events="dataset.created")
-async def my_webhook_handler(dataset: rg.Dataset, type: str, timestamp: datetime):
+async def my_webhook_handler(dataset: ex.Dataset, type: str, timestamp: datetime):
     print(dataset, type, timestamp)
 ```
 
@@ -28,7 +28,7 @@ In the example above, we have created a webhook that listens to the `dataset.cre
 
 The python SDK will automatically create a webhook in Argilla and listen to the specified event. When the event is triggered,
 the `my_webhook_handler` function will be called with the event data. The SDK will also parse the incoming webhook event into
-a proper resource object (`rg.Dataset`, `rg.Record`, and `rg.Response`). The SDK will also take care of request authentication and error handling.
+a proper resource object (`ex.Dataset`, `ex.Record`, and `ex.Response`). The SDK will also take care of request authentication and error handling.
 
 ## Running the webhook server
 
@@ -71,9 +71,9 @@ To create a new webhook in Argilla, you can define it in the `Webhook` class and
 ```python
 import argilla as rg
 
-client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
-webhook = rg.Webhook(
+webhook = ex.Webhook(
     url="http://127.0.0.1:8000",
     events=["dataset.created"],
     description="My webhook"
@@ -90,7 +90,7 @@ You can list all the existing webhooks in Argilla by accessing the `webhooks` at
 ```python
 import argilla as rg
 
-client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
 for webhook in client.webhooks:
     print(webhook)
@@ -104,9 +104,9 @@ You can update a webhook using the `update` method.
 ```python
 import argilla as rg
 
-client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
-webhook = rg.Webhook(
+webhook = ex.Webhook(
     url="http://127.0.0.1:8000",
     events=["dataset.created"],
     description="My webhook"
@@ -125,7 +125,7 @@ You can delete a webhook using the `delete` method.
 ```python
 import argilla as rg
 
-client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
 for webhook in client.webhooks:
     webhook.delete()

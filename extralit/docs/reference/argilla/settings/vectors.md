@@ -10,12 +10,12 @@ Vector fields in Argilla are used to define the vector form of a record that wil
 To define a vector field, instantiate the `VectorField` class with a name and dimensions, then pass it to the `vectors` parameter of the `Settings` class.
 
 ```python
-settings = rg.Settings(
+settings = ex.Settings(
     fields=[
-        rg.TextField(name="text"),
+        ex.TextField(name="text"),
     ],
     vectors=[
-        rg.VectorField(
+        ex.VectorField(
             name="my_vector",
             dimension=768,
             title="Document Embedding",
@@ -24,7 +24,7 @@ settings = rg.Settings(
 )
 ```
 
-> To add records with vectors, refer to the [`rg.Vector`](../records/vectors.md) class documentation.
+> To add records with vectors, refer to the [`ex.Vector`](../records/vectors.md) class documentation.
 
 ---
 

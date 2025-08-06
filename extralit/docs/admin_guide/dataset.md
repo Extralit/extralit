@@ -15,10 +15,10 @@ A **dataset** is a collection of records that you can configure for labelers to 
     The users with the `admin` role can manage (create, retrieve, update and delete) the datasets in the workspaces they have access to.
 
 !!! info "Main Classes"
-    === "`rg.Dataset`"
+    === "`ex.Dataset`"
 
         ```python
-        rg.Dataset(
+        ex.Dataset(
             name="name",
             workspace="workspace",
             settings=settings,
@@ -27,22 +27,22 @@ A **dataset** is a collection of records that you can configure for labelers to 
         ```
         > Check the [Dataset - Python Reference](../reference/argilla/datasets/datasets.md) to see the attributes, arguments, and methods of the `Dataset` class in detail.
 
-    === "`rg.Settings`"
+    === "`ex.Settings`"
 
         ```python
-        rg.Settings(
-            fields=[rg.TextField(name="text")],
+        ex.Settings(
+            fields=[ex.TextField(name="text")],
             questions=[
-                rg.LabelQuestion(
+                ex.LabelQuestion(
                     name="label",
                     labels=["label_1", "label_2", "label_3"]
                 )
             ],
-            metadata=[rg.TermsMetadataProperty(name="metadata")],
-            vectors=[rg.VectorField(name="vector", dimensions=10)],
+            metadata=[ex.TermsMetadataProperty(name="metadata")],
+            vectors=[ex.VectorField(name="vector", dimensions=10)],
             guidelines="guidelines",
             allow_extra_metadata=True,
-            distribution=rg.TaskDistribution(min_submitted=2),
+            distribution=ex.TaskDistribution(min_submitted=2),
         )
         ```
 
@@ -58,24 +58,24 @@ To create a dataset, you can define it in the `Dataset` class and then call the 
 ```python
 import argilla as rg
 
-client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
-settings = rg.Settings(
+settings = ex.Settings(
     guidelines="These are some guidelines.",
     fields=[
-        rg.TextField(
+        ex.TextField(
             name="text",
         ),
     ],
     questions=[
-        rg.LabelQuestion(
+        ex.LabelQuestion(
             name="label",
             labels=["label_1", "label_2", "label_3"]
         ),
     ],
 )
 
-dataset = rg.Dataset(
+dataset = ex.Dataset(
     name="my_dataset",
     workspace="my_workspace",
     settings=settings,
@@ -95,19 +95,19 @@ To create multiple datasets with the same settings, define the settings once and
 ```python
 import argilla as rg
 
-client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
-settings = rg.Settings(
+settings = ex.Settings(
     guidelines="These are some guidelines.",
-    fields=[rg.TextField(name="text", use_markdown=True)],
+    fields=[ex.TextField(name="text", use_markdown=True)],
     questions=[
-        rg.LabelQuestion(name="label", labels=["label_1", "label_2", "label_3"])
+        ex.LabelQuestion(name="label", labels=["label_1", "label_2", "label_3"])
     ],
-    distribution=rg.TaskDistribution(min_submitted=3),
+    distribution=ex.TaskDistribution(min_submitted=3),
 )
 
-dataset1 = rg.Dataset(name="my_dataset_1", settings=settings)
-dataset2 = rg.Dataset(name="my_dataset_2", settings=settings)
+dataset1 = ex.Dataset(name="my_dataset_1", settings=settings)
+dataset2 = ex.Dataset(name="my_dataset_2", settings=settings)
 
 # Create the datasets on the server
 dataset1.create()
@@ -121,11 +121,11 @@ To create a new dataset from an existing dataset, get the settings from the exis
 ```python
 import argilla as rg
 
-client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
 existing_dataset = client.datasets("my_dataset")
 
-new_dataset = rg.Dataset(name="my_dataset_copy", settings=existing_dataset.settings)
+new_dataset = ex.Dataset(name="my_dataset_copy", settings=existing_dataset.settings)
 
 new_dataset.create()
 ```
@@ -155,7 +155,7 @@ The fields in a dataset consist of one or more data items requiring annotation. 
 === "Text"
 
     ```python
-    rg.TextField(
+    ex.TextField(
         name="text",
         title="Text",
         use_markdown=False,
@@ -168,7 +168,7 @@ The fields in a dataset consist of one or more data items requiring annotation. 
 === "Image"
 
     ```python
-    rg.ImageField(
+    ex.ImageField(
         name="image",
         title="Image",
         required=True,
@@ -180,7 +180,7 @@ The fields in a dataset consist of one or more data items requiring annotation. 
 === "Chat"
 
     ```python
-    rg.ChatField(
+    ex.ChatField(
         name="chat",
         title="Chat",
         use_markdown=True,
@@ -196,7 +196,7 @@ The fields in a dataset consist of one or more data items requiring annotation. 
     By default, `advanced_mode=False`, which will use a brackets syntax engine for the templates. This engine converts `{{record.fields.field.key}}` to the values of record's field's object. You can also use `advanced_mode=True`, which deactivates the above brackets syntax engine and allows you to add custom javascript to your template to render the field.
 
     ```python
-    rg.CustomField(
+    ex.CustomField(
         name="custom",
         title="Custom",
         template="<div>{{record.fields.custom.key}}</div>",
@@ -219,7 +219,7 @@ To collect feedback for your dataset, you need to formulate questions that annot
     A `LabelQuestion` asks annotators to choose a unique label from a list of options. This type is useful for text classification tasks. In the UI, they will have a rounded shape.
 
     ```python
-    rg.LabelQuestion(
+    ex.LabelQuestion(
         name="label",
         labels={"YES": "Yes", "NO": "No"}, # or ["YES", "NO"]
         title="Is the response relevant for the given prompt?",
@@ -234,7 +234,7 @@ To collect feedback for your dataset, you need to formulate questions that annot
     A `MultiLabelQuestion` asks annotators to choose all applicable labels from a list of options. This type is useful for multi-label text classification tasks. In the UI, they will have a squared shape.
 
     ```python
-    rg.MultiLabelQuestion(
+    ex.MultiLabelQuestion(
         name="multi_label",
         labels={
             "hate": "Hate Speech",
@@ -258,7 +258,7 @@ To collect feedback for your dataset, you need to formulate questions that annot
     A `RankingQuestion` asks annotators to order a list of options. It is useful to gather information on the preference or relevance of a set of options.
 
     ```python
-    rg.RankingQuestion(
+    ex.RankingQuestion(
         name="ranking",
         values={
             "reply-1": "Reply 1",
@@ -277,7 +277,7 @@ To collect feedback for your dataset, you need to formulate questions that annot
     A `RatingQuestion` asks annotators to select one option from a list of integer values. This type is useful for collecting numerical scores.
 
     ```python
-    rg.RatingQuestion(
+    ex.RatingQuestion(
         name="rating",
         values=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
         title="How satisfied are you with the response?",
@@ -292,7 +292,7 @@ To collect feedback for your dataset, you need to formulate questions that annot
     A `SpanQuestion` asks annotators to select a portion of the text of a specific field and apply a label to it. This type of question is useful for named entity recognition or information extraction tasks.
 
     ```python
-    rg.SpanQuestion(
+    ex.SpanQuestion(
         name="span",
         field="text",
         labels={
@@ -315,7 +315,7 @@ To collect feedback for your dataset, you need to formulate questions that annot
     A `TextQuestion` offers to annotators a free-text area where they can enter any text. This type is useful for collecting natural language data, such as corrections or explanations.
 
     ```python
-    rg.TextQuestion(
+    ex.TextQuestion(
         name="text",
         title="Please provide feedback on the response",
         description="Please provide feedback on the response",
@@ -336,7 +336,7 @@ Metadata properties allow you to configure the use of metadata information for t
     A `TermsMetadataProperty` allows to add a list of strings as metadata options.
 
     ```python
-    rg.TermsMetadataProperty(
+    ex.TermsMetadataProperty(
         name="terms",
         options=["group-a", "group-b", "group-c"],
         title="Annotation groups",
@@ -349,7 +349,7 @@ Metadata properties allow you to configure the use of metadata information for t
     An `IntegerMetadataProperty` allows to add integer values as metadata.
 
     ```python
-    rg.IntegerMetadataProperty(
+    ex.IntegerMetadataProperty(
         name="integer",
         title="length-input",
         min=42,
@@ -362,7 +362,7 @@ Metadata properties allow you to configure the use of metadata information for t
     A `FloatMetadataProperty` allows to add float values as metadata.
 
     ```python
-    rg.FloatMetadataProperty(
+    ex.FloatMetadataProperty(
         name="float",
         title="Reading ease",
         min=-92.29914,
@@ -381,7 +381,7 @@ To use the similarity search in the UI and the Python SDK, you will need to conf
 > Check the [Vector - Python Reference](../reference/argilla/settings/vectors.md) to see the `VectorField` class in detail.
 
 ```python
-rg.VectorField(
+ex.VectorField(
     name="my_vector",
     title="My Vector",
     dimensions=768
@@ -415,7 +415,7 @@ When working as a team, you may want to distribute the annotation task to ensure
 > Check the [Task Distribution - Python Reference](../reference/argilla/settings/task_distribution.md) to see the `TaskDistribution` class in detail.
 
 ```python
-rg.TaskDistribution(
+ex.TaskDistribution(
     min_submitted = 2
 )
 ```
@@ -430,7 +430,7 @@ You can list all the datasets available in a workspace using the `datasets` attr
 ```python
 import argilla as rg
 
-client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
 workspace = client.workspaces("my_workspace")
 
@@ -445,7 +445,7 @@ When you list datasets, dataset settings are not preloaded, since this can intro
 ```python
 import argilla as rg
 
-client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
 for dataset in client.datasets:
     dataset.settings.get() # this will get the dataset settings from the server
@@ -466,7 +466,7 @@ You can retrieve a dataset by calling the `datasets` method on the `Argilla` cla
     ```python
     import argilla as rg
 
-    client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+    client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
     # Retrieve the dataset from the first workspace
     retrieved_dataset = client.datasets(name="my_dataset")
@@ -480,7 +480,7 @@ You can retrieve a dataset by calling the `datasets` method on the `Argilla` cla
     ```python
     import argilla as rg
 
-    client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+    client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
     dataset = client.datasets(id="<uuid-or-uuid-string>")
     ```
@@ -492,7 +492,7 @@ You can check if a dataset exists. The `client.datasets` method will return `Non
 ```python
 import argilla as rg
 
-client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
 dataset = client.datasets(name="my_dataset")
 
@@ -505,58 +505,58 @@ if dataset is not None:
 Once a dataset is published, there are limited things you can update. Here is a summary of the attributes you can change for each setting:
 
 === "Fields"
-    | Attributes | From SDK | From UI |
-    | ---------- | -------- | ------- |
-    |Name        |❌        |❌        |
-    |Title       |✅        |✅        |
-    |Required    |❌        |❌        |
-    |Use markdown|✅        |✅        |
-    |Template    |✅        |❌        |
+    | Attributes   | From SDK | From UI |
+    | ------------ | -------- | ------- |
+    | Name         | ❌        | ❌       |
+    | Title        | ✅        | ✅       |
+    | Required     | ❌        | ❌       |
+    | Use markdown | ✅        | ✅       |
+    | Template     | ✅        | ❌       |
 
 === "Questions"
-    | Attributes      | From SDK | From UI |
-    | --------------- | -------- | ------- |
-    |Name             |❌        |❌        |
-    |Title            |❌        |✅        |
-    |Description      |❌        |✅        |
-    |Required         |❌        |❌        |
-    |Labels           |❌        |❌        |
-    |Values           |❌        |❌        |
-    |Label order      |❌        |✅        |
-    |Suggestions first|❌        |✅        |
-    |Visible labels   |❌        |✅        |
-    |Field            |❌        |❌        |
-    |Allow overlapping|❌        |❌        |
-    |Use markdown     |❌        |✅        |
+    | Attributes        | From SDK | From UI |
+    | ----------------- | -------- | ------- |
+    | Name              | ❌        | ❌       |
+    | Title             | ❌        | ✅       |
+    | Description       | ❌        | ✅       |
+    | Required          | ❌        | ❌       |
+    | Labels            | ❌        | ❌       |
+    | Values            | ❌        | ❌       |
+    | Label order       | ❌        | ✅       |
+    | Suggestions first | ❌        | ✅       |
+    | Visible labels    | ❌        | ✅       |
+    | Field             | ❌        | ❌       |
+    | Allow overlapping | ❌        | ❌       |
+    | Use markdown      | ❌        | ✅       |
 
 === "Metadata"
-    | Attributes           | From SDK | From UI |
-    | -------------------- | -------- | ------- |
-    |Name                  |❌        |❌        |
-    |Title                 |✅        |✅        |
-    |Options               |❌        |❌        |
-    |Minimum value         |❌        |❌        |
-    |Maximum value         |❌        |❌        |
-    |Visible for annotators|✅        |✅        |
-    |Allow extra metadata  |✅        |✅        |
+    | Attributes             | From SDK | From UI |
+    | ---------------------- | -------- | ------- |
+    | Name                   | ❌        | ❌       |
+    | Title                  | ✅        | ✅       |
+    | Options                | ❌        | ❌       |
+    | Minimum value          | ❌        | ❌       |
+    | Maximum value          | ❌        | ❌       |
+    | Visible for annotators | ✅        | ✅       |
+    | Allow extra metadata   | ✅        | ✅       |
 
 
 === "Vectors"
     | Attributes | From SDK | From UI |
     | ---------- | -------- | ------- |
-    |Name        |❌        |❌        |
-    |Title       |✅        |✅        |
-    |Dimensions  |❌        |❌        |
+    | Name       | ❌        | ❌       |
+    | Title      | ✅        | ✅       |
+    | Dimensions | ❌        | ❌       |
 
 === "Guidelines"
     | From SDK | From UI |
     | -------- | ------- |
-    |✅        |✅        |
+    | ✅        | ✅       |
 
 === "Distribution"
-    | Attributes      | From SDK | From UI |
-    | --------------- | -------- | ------- |
-    |Minimum submitted|✅        |✅        |
+    | Attributes        | From SDK | From UI |
+    | ----------------- | -------- | ------- |
+    | Minimum submitted | ✅        | ✅       |
 
 
 To modify these attributes, you can simply set the new value of the attributes you wish to change and call the `update` method on the `Dataset` object.
@@ -564,7 +564,7 @@ To modify these attributes, you can simply set the new value of the attributes y
 ```python
 import argilla as rg
 
-client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
 dataset = client.datasets("my_dataset")
 
@@ -581,13 +581,13 @@ You can also **add and delete metadata properties and vector fields** using the 
     ```python
     import argilla as rg
 
-    client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+    client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
     dataset = client.datasets("my_dataset")
 
-    dataset.settings.vectors.add(rg.VectorField(name="my_new_vector", dimensions=123))
+    dataset.settings.vectors.add(ex.VectorField(name="my_new_vector", dimensions=123))
     dataset.settings.metadata.add(
-        rg.TermsMetadataProperty(
+        ex.TermsMetadataProperty(
             name="my_new_metadata",
             options=["option_1", "option_2", "option_3"],
         ),
@@ -600,7 +600,7 @@ You can also **add and delete metadata properties and vector fields** using the 
     ```python
     import argilla as rg
 
-    client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+    client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
     dataset = client.datasets("my_dataset")
 
@@ -617,7 +617,7 @@ You can delete an existing dataset by calling the `delete` method on the `Datase
 ```python
 import argilla as rg
 
-client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
 dataset_to_delete = client.datasets(name="my_dataset")
 

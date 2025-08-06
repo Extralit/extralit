@@ -154,7 +154,7 @@ export class Dataset {
   import argilla as rg
   from datasets import load_dataset
 
-  client = rg.Argilla(
+  client = ex.Extralit(
     api_url="${window.location.origin}",
     api_key="${user.apiKey}"
   )

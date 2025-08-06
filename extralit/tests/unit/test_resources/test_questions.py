@@ -18,7 +18,7 @@ from datetime import datetime
 import httpx
 from pytest_httpx import HTTPXMock
 
-import extralit as rg
+import extralit as ex
 from extralit._models import QuestionModel
 
 
@@ -73,6 +73,6 @@ class TestQuestionsAPI:
                 },
             )
 
-            client = rg.Extralit(api_url="http://test_url")
+            client = ex.Extralit(api_url="http://test_url")
             created_question = client.api.questions.create(question=question)
             assert created_question.model_dump(exclude_unset=True) == mock_return_value

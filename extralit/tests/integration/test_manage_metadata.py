@@ -14,7 +14,7 @@
 
 import pytest
 
-import extralit as rg
+import extralit as ex
 from extralit import Extralit, Dataset, Settings, TextField, Workspace, LabelQuestion
 
 
@@ -24,7 +24,7 @@ def dataset_with_metadata(client: Extralit, workspace: Workspace, dataset_name: 
         fields=[TextField(name="text")],
         questions=[LabelQuestion(name="label", labels=["positive", "negative"])],
         metadata=[
-            rg.TermsMetadataProperty(name="category", options=["A", "B", "C"]),
+            ex.TermsMetadataProperty(name="category", options=["A", "B", "C"]),
         ],
     )
     dataset = Dataset(
@@ -43,7 +43,7 @@ def test_create_dataset_with_metadata(client: Extralit, workspace: Workspace, da
         fields=[TextField(name="text")],
         questions=[LabelQuestion(name="label", labels=["positive", "negative"])],
         metadata=[
-            rg.TermsMetadataProperty(name="category", options=["A", "B", "C"]),
+            ex.TermsMetadataProperty(name="category", options=["A", "B", "C"]),
         ],
     )
     dataset = Dataset(
@@ -61,10 +61,10 @@ def test_create_dataset_with_metadata(client: Extralit, workspace: Workspace, da
 @pytest.mark.parametrize(
     "min, max, type",
     [
-        (0, 1, rg.FloatMetadataProperty),
-        (None, None, rg.FloatMetadataProperty),
-        (0, 1, rg.IntegerMetadataProperty),
-        (None, None, rg.IntegerMetadataProperty),
+        (0, 1, ex.FloatMetadataProperty),
+        (None, None, ex.FloatMetadataProperty),
+        (0, 1, ex.IntegerMetadataProperty),
+        (None, None, ex.IntegerMetadataProperty),
     ],
 )
 def test_create_dataset_with_numerical_metadata(

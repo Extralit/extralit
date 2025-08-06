@@ -19,7 +19,7 @@ import httpx
 import pytest
 from pytest_httpx import HTTPXMock
 
-import extralit as rg
+import extralit as ex
 from extralit._exceptions import (
     BadRequestError,
     ConflictError,
@@ -31,9 +31,9 @@ from extralit._exceptions import (
 
 
 @pytest.fixture
-def dataset(httpx_mock: HTTPXMock) -> rg.Dataset:
+def dataset(httpx_mock: HTTPXMock) -> ex.Dataset:
     api_url = "http://test_url"
-    client = rg.Extralit(api_url)
+    client = ex.Extralit(api_url)
     workspace_id = uuid.uuid4()
     workspace_name = "workspace-01"
     mock_workspace = {
@@ -57,15 +57,15 @@ def dataset(httpx_mock: HTTPXMock) -> rg.Dataset:
     )
 
     with httpx.Client():
-        dataset = rg.Dataset(
+        dataset = ex.Dataset(
             client=client,
             name=f"dataset_{uuid.uuid4()}",
-            settings=rg.Settings(
+            settings=ex.Settings(
                 fields=[
-                    rg.TextField(name="text"),
+                    ex.TextField(name="text"),
                 ],
                 questions=[
-                    rg.TextQuestion(name="response"),
+                    ex.TextQuestion(name="response"),
                 ],
             ),
             workspace=workspace_name,
@@ -274,7 +274,7 @@ class TestDatasetsAPI:
             status_code=200,
         )
         with httpx.Client() as client:
-            client = rg.Extralit("http://test_url")
+            client = ex.Extralit("http://test_url")
             client.api.datasets.delete(mock_dataset_id)
             pytest.raises(httpx.HTTPError, client.api.datasets.get, mock_dataset_id)
 
@@ -302,7 +302,7 @@ class TestDatasetsAPI:
             status_code=200,
         )
         with httpx.Client() as client:
-            client = rg.Extralit("http://test_url")
+            client = ex.Extralit("http://test_url")
             client.api.datasets.publish(mock_dataset_id)
             dataset = client.api.datasets.get(mock_dataset_id)
             assert dataset.status == "ready"
@@ -329,7 +329,7 @@ class TestDatasetsAPI:
             json=mock_return_value, url=f"{api_url}/api/v1/me/datasets", method="GET", status_code=200
         )
         with httpx.Client():
-            client = rg.Extralit(api_url)
+            client = ex.Extralit(api_url)
             dataset = client.api.datasets.get_by_name_and_workspace_id("dataset-01", mock_workspace_id)
             assert mock_dataset_id.hex == mock_return_value["items"][0]["id"]
             assert dataset.name == mock_return_value["items"][0]["name"]

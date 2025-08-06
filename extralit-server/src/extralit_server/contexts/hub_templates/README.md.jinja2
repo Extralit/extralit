@@ -32,7 +32,7 @@ To load with Argilla, you'll just need to install Argilla as `pip install extral
 ```python
 import argilla as rg
 
-ds = rg.Dataset.from_hub("{{ repo_id }}", settings="auto")
+ds = ex.Dataset.from_hub("{{ repo_id }}", settings="auto")
 ```
 
 This will load the settings and records from the dataset repository and push them to you Argilla server for exploration and annotation.
@@ -53,7 +53,7 @@ This will only load the records of the dataset, but not the Argilla settings.
 
 This dataset repo contains:
 
-* Dataset records in a format compatible with HuggingFace `datasets`. These records will be loaded automatically when using `rg.Dataset.from_hub` and can be loaded independently using the `datasets` library via `load_dataset`.
+* Dataset records in a format compatible with HuggingFace `datasets`. These records will be loaded automatically when using `ex.Dataset.from_hub` and can be loaded independently using the `datasets` library via `load_dataset`.
 * The [annotation guidelines](#annotation-guidelines) that have been used for building and curating the dataset, if they've been defined in Argilla.
 * A dataset configuration folder conforming to the Argilla dataset format in `.argilla`.
 

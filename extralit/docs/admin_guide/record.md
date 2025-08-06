@@ -13,7 +13,7 @@ A **record** in Argilla is a data item that requires annotation, consisting of o
 !!! info "Main Class"
 
     ```python
-    rg.Record(
+    ex.Record(
         external_id="1234",
         fields={
             "question": "Do you need oxygen to breathe?",
@@ -26,10 +26,10 @@ A **record** in Argilla is a data item that requires annotation, consisting of o
             "my_vector": [0.1, 0.2, 0.3],
         },
         suggestions=[
-            rg.Suggestion("my_label", "positive", score=0.9, agent="model_name")
+            ex.Suggestion("my_label", "positive", score=0.9, agent="model_name")
         ],
         responses=[
-            rg.Response("label", "positive", user_id=user_id)
+            ex.Response("label", "positive", user_id=user_id)
         ],
     )
     ```
@@ -52,18 +52,18 @@ You can add records to a dataset in two different ways: either by using a dictio
     ```python
     import argilla as rg
 
-    client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+    client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
     dataset = client.datasets(name="my_dataset")
 
     records = [
-        rg.Record(
+        ex.Record(
             fields={
                 "question": "Do you need oxygen to breathe?",
                 "answer": "Yes"
             },
         ),
-        rg.Record(
+        ex.Record(
             fields={
                 "question": "What is the boiling point of water?",
                 "answer": "100 degrees Celsius"
@@ -87,7 +87,7 @@ You can add records to a dataset in two different ways: either by using a dictio
     ```python
     import argilla as rg
 
-    client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+    client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
     dataset = client.datasets(name="my_dataset")
 
@@ -131,7 +131,7 @@ You can add records to a dataset in two different ways: either by using a dictio
     import argilla as rg
     from datasets import load_dataset
 
-    client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+    client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
     dataset = client.datasets(name="my_dataset") # (1)
 
     hf_dataset = load_dataset("imdb", split="train[:100]") # (2)
@@ -161,7 +161,7 @@ Fields are the main pieces of information of the record. These are shown at firs
     Text fields expect input in the form of a `string`.
 
     ```python
-    record = rg.Record(
+    record = ex.Record(
         fields={"text": "Hello World, how are you?"}
     )
     ```
@@ -173,13 +173,13 @@ Fields are the main pieces of information of the record. These are shown at firs
 
     ```python
     records = [
-        rg.Record(
+        ex.Record(
             fields={"image": "https://example.com/image.jpg"}
         ),
-        rg.Record(
+        ex.Record(
             fields={"image": "path/to/image.jpg"}
         ),
-        rg.Record(
+        ex.Record(
             fields={"image": Image.open("path/to/image.jpg")}
         ),
     ]
@@ -189,7 +189,7 @@ Fields are the main pieces of information of the record. These are shown at firs
     Chat fields expect a list of dictionaries with the keys `role` and `content`, where the `role` identifies the interlocutor type (e.g., user, assistant, model, etc.), whereas the `content` contains the text of the message.
 
     ```python
-    record = rg.Record(
+    record = ex.Record(
         fields={
             "chat": [
                 {"role": "user", "content": "What is Argilla?"},
@@ -203,7 +203,7 @@ Fields are the main pieces of information of the record. These are shown at firs
     Custom fields expect a dictionary with the keys and values you define in the dataset settings. You need to ensure these are aligned with `CustomField.template` in order for them to be rendered in the UI.
 
     ```python
-    record = rg.Record(
+    record = ex.Record(
         fields={"custom": {"key": "value"}}
     )
     ```
@@ -224,14 +224,14 @@ Record metadata can include any information about the record that is not part of
     ```python
     # Add records to the dataset with the metadata 'category'
     records = [
-        rg.Record(
+        ex.Record(
             fields={
                 "question": "Do you need oxygen to breathe?",
                 "answer": "Yes"
             },
             metadata={"my_metadata": "option_1"},
         ),
-        rg.Record(
+        ex.Record(
             fields={
                 "question": "What is the boiling point of water?",
                 "answer": "100 degrees Celsius"
@@ -279,7 +279,7 @@ You can associate vectors, like text embeddings, to your records. They can be us
     ```python
     # Add records to the dataset with the vector 'my_vector' and dimension=3
     records = [
-        rg.Record(
+        ex.Record(
             fields={
                 "question": "Do you need oxygen to breathe?",
                 "answer": "Yes"
@@ -288,7 +288,7 @@ You can associate vectors, like text embeddings, to your records. They can be us
                 "my_vector": [0.1, 0.2, 0.3]
             },
         ),
-        rg.Record(
+        ex.Record(
             fields={
                 "question": "What is the boiling point of water?",
                 "answer": "100 degrees Celsius"
@@ -337,13 +337,13 @@ Suggestions refer to suggested responses (e.g. model predictions) that you can a
     ```python
     # Add records to the dataset with the label 'my_label'
     records = [
-        rg.Record(
+        ex.Record(
             fields={
                 "question": "Do you need oxygen to breathe?",
                 "answer": "Yes"
             },
             suggestions=[
-                rg.Suggestion(
+                ex.Suggestion(
                     "my_label",
                     "positive",
                     score=0.9,
@@ -351,13 +351,13 @@ Suggestions refer to suggested responses (e.g. model predictions) that you can a
                 )
             ],
         ),
-        rg.Record(
+        ex.Record(
             fields={
                 "question": "What is the boiling point of water?",
                 "answer": "100 degrees Celsius"
             },
             suggestions=[
-                rg.Suggestion(
+                ex.Suggestion(
                     "my_label",
                     "negative",
                     score=0.9,
@@ -418,22 +418,22 @@ If your dataset includes some annotations, you can add those to the records as y
     ```python
     # Add records to the dataset with the label 'my_label'
     records = [
-        rg.Record(
+        ex.Record(
             fields={
                 "question": "Do you need oxygen to breathe?",
                 "answer": "Yes"
             },
             responses=[
-                rg.Response("my_label", "positive", user_id=user.id)
+                ex.Response("my_label", "positive", user_id=user.id)
             ]
         ),
-        rg.Record(
+        ex.Record(
             fields={
                 "question": "What is the boiling point of water?",
                 "answer": "100 degrees Celsius"
             },
             responses=[
-                rg.Response("my_label", "negative", user_id=user.id)
+                ex.Response("my_label", "negative", user_id=user.id)
             ]
         ),
     ]
@@ -555,7 +555,7 @@ dataset.records.log(records=updated_data)
         # We can also add new suggestions with the `add` method:
         if not record.suggestions["label"]:
             record.suggestions.add(
-                rg.Suggestion("value", "label", score=0.9, agent="model_name")
+                ex.Suggestion("value", "label", score=0.9, agent="model_name")
             )
 
         updated_records.append(record)
@@ -581,7 +581,7 @@ dataset.records.log(records=updated_data)
                     response.user_id = "existing_user_id"
 
             else:
-                record.responses.add(rg.Response("label", "YES", user_id=user.id))
+                record.responses.add(ex.Response("label", "YES", user_id=user.id))
 
         updated_records.append(record)
 
@@ -603,8 +603,8 @@ dataset.records.delete(records=records_to_delete)
     > For more information about the query syntax, check this [how-to guide](query.md).
 
     ```python
-    status_filter = rg.Query(
-        filter = rg.Filter(("response.status", "==", "pending"))
+    status_filter = ex.Query(
+        filter = ex.Filter(("response.status", "==", "pending"))
     )
     records_to_delete = list(dataset.records(status_filter))
 

@@ -17,7 +17,7 @@ from string import ascii_lowercase
 
 import pytest
 
-import extralit as rg
+import extralit as ex
 from extralit import Extralit, Dataset, Settings, TextField, Workspace, LabelQuestion
 
 
@@ -83,24 +83,24 @@ def test_query_records_by_suggestion_value(client: Extralit, dataset: Dataset):
 
     dataset.records.log(data)
 
-    query = rg.Query(filter=rg.Filter([("label", "==", "positive")]))
+    query = ex.Query(filter=ex.Filter([("label", "==", "positive")]))
     records = list(dataset.records(query=query))
 
     assert len(records) == 2
     assert records[0].id == "1"
     assert records[1].id == "3"
 
-    query = rg.Query(filter=rg.Filter(("label", "==", "negative")))
+    query = ex.Query(filter=ex.Filter(("label", "==", "negative")))
     records = list(dataset.records(query=query))
 
     assert len(records) == 1
     assert records[0].id == "2"
 
-    query = rg.Query(filter=rg.Filter(("label", "in", ["positive", "negative"])))
+    query = ex.Query(filter=ex.Filter(("label", "in", ["positive", "negative"])))
     records = list(dataset.records(query=query))
     assert len(records) == 3
 
-    test_filter = rg.Filter([("label", "==", "positive"), ("label", "==", "negative")])
-    query = rg.Query(filter=test_filter)
+    test_filter = ex.Filter([("label", "==", "positive"), ("label", "==", "negative")])
+    query = ex.Query(filter=test_filter)
     records = list(dataset.records(query=query))
     assert len(records) == 0

@@ -8,7 +8,7 @@ title: Hugging Face Spaces Settings
 This section details how to configure and deploy Extralit on Hugging Face Spaces. It covers:
 
 - How to configure persistent storage and database services
-- How to configure Extralit 
+- How to configure Extralit
 - How to deploy Extralit under a Hugging Face Organization
 - How to configure and enable HF OAuth access
 - How to use Private Spaces
@@ -106,7 +106,7 @@ import argilla as rg
 
 HF_TOKEN = "..."
 
-client = rg.Argilla(
+client = ex.Extralit(
     api_url="<api_url>",
     api_key="<api_key>",
     headers={"Authorization": f"Bearer {HF_TOKEN}"}

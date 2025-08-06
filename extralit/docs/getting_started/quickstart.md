@@ -52,7 +52,7 @@ Extralit is a free, open-source, self-hosted tool. This means you need to deploy
     ```python
     import argilla as rg
 
-    authenticated_client = rg.Argilla.deploy_on_spaces(api_key="<api_key>")
+    authenticated_client = ex.Extralit.deploy_on_spaces(api_key="<api_key>")
     ```
 
     !!! warning "Persistent storage `SMALL`"
@@ -143,7 +143,7 @@ To start interacting with your Argilla server, you need to instantiate a client 
 ```python
 import argilla as rg
 
-client = rg.client(
+client = ex.client(
     api_url="<api_url>",
     api_key="<api_key>"
 )

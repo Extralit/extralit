@@ -61,7 +61,7 @@ If `USERNAME` and `PASSWORD` are provided, the owner user will be created with t
 
 #### Database
 
-- `ARGILLA_DATABASE_URL`: A URL string that contains the necessary information to connect to a database. Argilla uses SQLite by default, PostgreSQL is also officially supported (Default: `sqlite:///$ARGILLA_HOME_PATH/argilla.db?check_same_thread=False`).
+- `ARGILLA_DATABASE_URL`: A URL string that contains the necessary information to connect to a database. Argilla uses SQLite by default, PostgreSQL is also officially supported (Default: `sqlite:///$ARGILLA_HOME_PATH/extralit.db?check_same_thread=False`).
 
 ##### SQLite
 

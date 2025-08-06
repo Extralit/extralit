@@ -1,7 +1,7 @@
 ---
 hide: footer
 ---
-# `rg.Record`
+# `ex.Record`
 
 The `Record` object is used to represent a single record in Argilla. It contains fields, suggestions, responses, metadata, and vectors.
 
@@ -14,7 +14,7 @@ To create records, you can use the `Record` class and pass it to the `Dataset.re
 ```python
 dataset.records.log(
     records=[
-        rg.Record(
+        ex.Record(
             fields={"text": "Hello World, how are you?"},
         ),
     ]
@@ -23,12 +23,12 @@ dataset.records.log(
 
 1. The Argilla dataset contains a field named `text` matching the key here.
 
-To create records with image fields, pass the image to the record object as either a remote url, local path to an image file, or a PIL object. The field names must be defined as an `rg.ImageField`in the dataset's `Settings` object to be accepted. Images will be stored in the Argilla database and returned as rescaled PIL objects.
+To create records with image fields, pass the image to the record object as either a remote url, local path to an image file, or a PIL object. The field names must be defined as an `ex.ImageField`in the dataset's `Settings` object to be accepted. Images will be stored in the Argilla database and returned as rescaled PIL objects.
 
 ```python
 dataset.records.log(
     records=[
-        rg.Record(
+        ex.Record(
             fields={"image": "https://example.com/image.jpg"}, # (1)
         ),
     ]

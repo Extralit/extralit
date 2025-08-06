@@ -60,8 +60,8 @@ class SpacesDeploymentMixin(LoggingMixin):
 
         Example:
             ```Python
-            import extralit as rg
-            client = rg.Argilla.deploy_on_spaces(api_key="12345678")
+            import extralit as ex
+            client = ex.Extralit.deploy_on_spaces(api_key="12345678")
             ```
         """
         hf_token = cls._acquire_hf_token(ht_token=hf_token)

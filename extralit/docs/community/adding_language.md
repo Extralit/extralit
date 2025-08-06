@@ -43,10 +43,10 @@ export default {
 ```python
 import argilla as rg
 
-client_local = rg.Argilla(api_url="http://localhost:6900/", api_key="extralit.apikey")
+client_local = ex.Extralit(api_url="http://localhost:6900/", api_key="extralit.apikey")
 
 sample_questions = [
-    rg.SpanQuestion(
+    ex.SpanQuestion(
         name="question1",
         field="text",
         labels={
@@ -60,14 +60,14 @@ sample_questions = [
         required=True,
         allow_overlapping=False,
     ),
-    rg.LabelQuestion(
+    ex.LabelQuestion(
         name="question2",
         labels={"YES": "Yes", "NO": "No"},  # or ["YES", "NO"]
         title="Is the answer relevant to the given prompt?",
         description="Choose the option that applies.",
         required=True,
     ),
-    rg.MultiLabelQuestion(
+    ex.MultiLabelQuestion(
         name="question3",
         labels={
             "hate": "Hate speech",
@@ -84,7 +84,7 @@ sample_questions = [
         visible_labels=3,
         labels_order="natural"
     ),
-    rg.RankingQuestion(
+    ex.RankingQuestion(
         name="question4",
         values={
             "reply-1": "Answer 1",
@@ -95,14 +95,14 @@ sample_questions = [
         description="1 = best, 3 = worst. Equal ratings are allowed.",
         required=True,
     ),
-    rg.RatingQuestion(
+    ex.RatingQuestion(
         name="question5",
         values=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
         title="How satisfied are you with the answer?",
         description="1 = very dissatisfied, 10 = very satisfied",
         required=True,
     ),
-    rg.TextQuestion(
+    ex.TextQuestion(
         name="question6",
         title="Please provide your feedback on the answer",
         description="Please provide your feedback on the answer",
@@ -112,21 +112,21 @@ sample_questions = [
 ]
 
 sample_fields = [
-    rg.ChatField(
+    ex.ChatField(
         name="chat",
         title="Previous conversation with the customer",
         use_markdown=True,
         required=True,
         description="Dialog between AI & customer up to the last question",
     ),
-    rg.TextField(
+    ex.TextField(
         name="text",
         title="Customer's question",
         use_markdown=False,
         required=True,
         description="This is a question from the customer",
     ),
-    rg.ImageField(
+    ex.ImageField(
         name="image",
         title="Image related to the question",
         required=True,
@@ -135,11 +135,11 @@ sample_fields = [
 ]
 
 # Create a new dataset with the same settings as the original
-settings = rg.Settings(
+settings = ex.Settings(
     fields=sample_fields,
     questions=sample_questions,
 )
-new_dataset = rg.Dataset(
+new_dataset = ex.Dataset(
     name="demo_dataset",
     workspace="default",
     settings=settings,
@@ -148,7 +148,7 @@ new_dataset = rg.Dataset(
 new_dataset.create()
 
 def fix_record():
-    return rg.Record(
+    return ex.Record(
         fields={
             "chat": [
                 {"role": "user", "content": "What is Argilla?"},

@@ -18,7 +18,7 @@ dataset = Dataset(
         fields=[TextField(name="text")],
         questions=[LabelQuestion(name="label", labels=["positive", "negative"])],
         metadata=[
-            rg.TermsMetadataProperty(name="category", options=["A", "B", "C"]),
+            ex.TermsMetadataProperty(name="category", options=["A", "B", "C"]),
         ],
     ),
 )
@@ -43,14 +43,14 @@ Depending on the `MetadataProperty` type, metadata might need to be formatted in
 === "For `TermsMetadataProperty`"
 
     ```python
-    rg.Records(
+    ex.Records(
         fields={"text": "example"},
         metadata={"category": "A"}
     )
 
     # with multiple terms
 
-    rg.Records(
+    ex.Records(
         fields={"text": "example"},
         metadata={"category": ["A", "B"]}
     )
@@ -59,7 +59,7 @@ Depending on the `MetadataProperty` type, metadata might need to be formatted in
 === "For `FloatMetadataProperty`"
 
     ```python
-    rg.Records(
+    ex.Records(
         fields={"text": "example"},
         metadata={"category": 2.1}
     )
@@ -68,7 +68,7 @@ Depending on the `MetadataProperty` type, metadata might need to be formatted in
 === "For `IntegerMetadataProperty`"
 
     ```python
-    rg.Records(
+    ex.Records(
         fields={"text": "example"},
         metadata={"category": 42}
     )

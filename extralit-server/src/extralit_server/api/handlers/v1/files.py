@@ -103,7 +103,7 @@ async def list_objects(
         if se.code == "NoSuchBucket":
             raise HTTPException(
                 status_code=404,
-                detail=f"Bucket '{bucket}' not found, please run `rg.Workspace.create('{bucket}')` to create the S3 bucket.",
+                detail=f"Bucket '{bucket}' not found, please run `ex.Workspace.create('{bucket}')` to create the S3 bucket.",
             ) from se
         else:
             raise HTTPException(

@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -144,7 +144,7 @@ def _map_attribute_type(attribute_type):
 
 
 def _is_chat_feature(sub_features):
-    """Check if the sub_features correspond to an rg.ChatField."""
+    """Check if the sub_features correspond to an ex.ChatField."""
     return (
         "content" in sub_features
         and "role" in sub_features
@@ -176,16 +176,16 @@ def _render_code_snippet(repo_id: str, subset: Optional[str] = None):
     """
     code_block = f"""
     # 1. Create new questions, fields, vectors, or metadata properties in the settings
-    settings = rg.Settings.from_hub({from_hub_args})
-    settings.questions.add(rg.TextQuestion(name="new_question", required=True))
-    dataset = rg.Dataset.from_hub({from_hub_args}, settings=settings)
+    settings = ex.Settings.from_hub({from_hub_args})
+    settings.questions.add(ex.TextQuestion(name="new_question", required=True))
+    dataset = ex.Dataset.from_hub({from_hub_args}, settings=settings)
 
     # 2. Map the dataset's columns to question, field, or metadata
-    settings = rg.Settings.from_hub(
+    settings = ex.Settings.from_hub(
         {from_hub_args},
         feature_mapping={{"<column_name>": "question"}},
     )
-    dataset = rg.Dataset.from_hub({from_hub_args}, settings=settings)
+    dataset = ex.Dataset.from_hub({from_hub_args}, settings=settings)
     """
 
     console = Console()
@@ -209,7 +209,7 @@ def _define_settings_from_features(
         features (Dict[str, Dict[str, Any]): The features of the dataset.
 
     Returns:
-        rg.Settings: The settings defined from the features.
+        ex.Settings: The settings defined from the features.
     """
 
     from extralit import Settings

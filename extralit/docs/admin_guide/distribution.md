@@ -20,7 +20,7 @@ When a record has met the minimum number of submissions, the status of the recor
 !!! info "Main Class"
 
     ```python
-    rg.TaskDistribution(
+    ex.TaskDistribution(
         min_submitted = 2
     )
     ```
@@ -36,20 +36,20 @@ By default, Argilla will set the required minimum submitted responses to 1. This
 If you wish to set a different number, you can do so through the `distribution` setting in your dataset settings:
 
 ```python
-settings = rg.Settings(
+settings = ex.Settings(
     guidelines="These are some guidelines.",
     fields=[
-        rg.TextField(
+        ex.TextField(
             name="text",
         ),
     ],
     questions=[
-        rg.LabelQuestion(
+        ex.LabelQuestion(
             name="label",
             labels=["label_1", "label_2", "label_3"]
         ),
     ],
-    distribution=rg.TaskDistribution(min_submitted=3)
+    distribution=ex.TaskDistribution(min_submitted=3)
 )
 ```
 
@@ -70,7 +70,7 @@ Admins and owners can change this value from the dataset settings page in the UI
 ```python
 import argilla as rg
 
-client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
 dataset = client.datasets("my_dataset")
 
@@ -88,7 +88,7 @@ total number of records in the dataset.
 ```python
 import argilla as rg
 
-client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
 dataset = client.datasets("my_dataset")
 
@@ -109,7 +109,7 @@ as well as the number of completed submissions per user. You can visit the [Anno
 ```python
 import argilla as rg
 
-client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
 dataset = client.datasets("my_dataset")
 

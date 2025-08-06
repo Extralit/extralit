@@ -15,7 +15,7 @@
 import uuid
 from datetime import datetime
 
-import extralit as rg
+import extralit as ex
 import pytest
 from extralit import Extralit, Workspace
 from extralit._exceptions._responses import RecordResponsesError
@@ -44,16 +44,16 @@ def test_add_records(client):
             "id": uuid.uuid4(),
         },
     ]
-    settings = rg.Settings(
+    settings = ex.Settings(
         fields=[
-            rg.TextField(name="text"),
-            rg.ImageField(name="image", required=True),
+            ex.TextField(name="text"),
+            ex.ImageField(name="image", required=True),
         ],
         questions=[
-            rg.TextQuestion(name="comment", use_markdown=False),
+            ex.TextQuestion(name="comment", use_markdown=False),
         ],
     )
-    dataset = rg.Dataset(
+    dataset = ex.Dataset(
         name=mock_dataset_name,
         settings=settings,
         client=client,
@@ -80,10 +80,10 @@ def test_add_dict_records(client: Extralit, dataset_name: str):
     if ds is not None:
         ds.delete()
 
-    ds = rg.Dataset(name=dataset_name, workspace=ws)
-    ds.settings = rg.Settings(
-        fields=[rg.TextField(name="text")],
-        questions=[rg.TextQuestion(name="label")],
+    ds = ex.Dataset(name=dataset_name, workspace=ws)
+    ds.settings = ex.Settings(
+        fields=[ex.TextField(name="text")],
+        questions=[ex.TextQuestion(name="label")],
     )
 
     ds.create()
@@ -143,16 +143,16 @@ def test_add_records_with_suggestions(client) -> None:
             "topics.score": [0.9, 0.8, 0.7],
         },
     ]
-    settings = rg.Settings(
+    settings = ex.Settings(
         fields=[
-            rg.TextField(name="text"),
+            ex.TextField(name="text"),
         ],
         questions=[
-            rg.TextQuestion(name="comment", use_markdown=False),
-            rg.MultiLabelQuestion(name="topics", labels=["topic1", "topic2", "topic3"], labels_order="suggestion"),
+            ex.TextQuestion(name="comment", use_markdown=False),
+            ex.MultiLabelQuestion(name="topics", labels=["topic1", "topic2", "topic3"], labels_order="suggestion"),
         ],
     )
-    dataset = rg.Dataset(
+    dataset = ex.Dataset(
         name=mock_dataset_name,
         settings=settings,
         client=client,
@@ -193,19 +193,19 @@ def test_add_records_with_suggestions_non_existent_question(client) -> None:
         f"test_add_record_with_suggestions_non_existent_question {datetime.now().strftime('%Y%m%d%H%M%S')}"
     )
     mock_data = [
-        rg.Record(
-            fields={"text": "value"}, suggestions=[rg.Suggestion(question_name="non_existent_question", value="mock")]
+        ex.Record(
+            fields={"text": "value"}, suggestions=[ex.Suggestion(question_name="non_existent_question", value="mock")]
         )
     ]
-    settings = rg.Settings(
+    settings = ex.Settings(
         fields=[
-            rg.TextField(name="text"),
+            ex.TextField(name="text"),
         ],
         questions=[
-            rg.TextQuestion(name="comment", use_markdown=False),
+            ex.TextQuestion(name="comment", use_markdown=False),
         ],
     )
-    dataset = rg.Dataset(
+    dataset = ex.Dataset(
         name=mock_dataset_name,
         settings=settings,
         client=client,
@@ -234,20 +234,20 @@ def test_add_records_with_responses(client, username: str) -> None:
             "id": uuid.uuid4(),
         },
     ]
-    settings = rg.Settings(
+    settings = ex.Settings(
         fields=[
-            rg.TextField(name="text"),
+            ex.TextField(name="text"),
         ],
         questions=[
-            rg.LabelQuestion(name="label", labels=["positive", "negative"]),
+            ex.LabelQuestion(name="label", labels=["positive", "negative"]),
         ],
     )
-    dataset = rg.Dataset(
+    dataset = ex.Dataset(
         name=mock_dataset_name,
         settings=settings,
         client=client,
     )
-    user = rg.User(
+    user = ex.User(
         username=username,
         first_name="test",
         password="testtesttest",
@@ -278,21 +278,21 @@ def test_add_records_with_responses_non_existent_question(client, username: str)
         f"test_add_record_with_responses_non_existent_question {datetime.now().strftime('%Y%m%d%H%M%S')}"
     )
 
-    settings = rg.Settings(
+    settings = ex.Settings(
         fields=[
-            rg.TextField(name="text"),
+            ex.TextField(name="text"),
         ],
         questions=[
-            rg.TextQuestion(name="comment", use_markdown=False),
+            ex.TextQuestion(name="comment", use_markdown=False),
         ],
     )
-    dataset = rg.Dataset(
+    dataset = ex.Dataset(
         name=mock_dataset_name,
         settings=settings,
         client=client,
     )
     dataset.create()
-    user = rg.User(
+    user = ex.User(
         username=username,
         first_name="test",
         password="testtesttest",
@@ -300,9 +300,9 @@ def test_add_records_with_responses_non_existent_question(client, username: str)
     )
     user.create()
     mock_data = [
-        rg.Record(
+        ex.Record(
             fields={"text": "value"},
-            responses=[rg.Response(question_name="non_existent_question", value="mock", user_id=user.id)],
+            responses=[ex.Response(question_name="non_existent_question", value="mock", user_id=user.id)],
         )
     ]
     with pytest.raises(RecordResponsesError, match="Argilla SDK error: RecordResponsesError: Record response"):
@@ -331,18 +331,18 @@ def test_add_records_with_responses_and_suggestions(client, username: str) -> No
             "id": uuid.uuid4(),
         },
     ]
-    settings = rg.Settings(
-        fields=[rg.TextField(name="text")],
+    settings = ex.Settings(
+        fields=[ex.TextField(name="text")],
         questions=[
-            rg.LabelQuestion(name="label", labels=["positive", "negative"]),
+            ex.LabelQuestion(name="label", labels=["positive", "negative"]),
         ],
     )
-    dataset = rg.Dataset(
+    dataset = ex.Dataset(
         name=mock_dataset_name,
         settings=settings,
         client=client,
     )
-    user = rg.User(
+    user = ex.User(
         username=username,
         first_name="test",
         password="testtesttest",
@@ -394,20 +394,20 @@ def test_add_records_with_fields_mapped(client, username: str) -> None:
             "score": 0.5,
         },
     ]
-    settings = rg.Settings(
+    settings = ex.Settings(
         fields=[
-            rg.TextField(name="text"),
+            ex.TextField(name="text"),
         ],
         questions=[
-            rg.LabelQuestion(name="label", labels=["positive", "negative"]),
+            ex.LabelQuestion(name="label", labels=["positive", "negative"]),
         ],
     )
-    dataset = rg.Dataset(
+    dataset = ex.Dataset(
         name=mock_dataset_name,
         settings=settings,
         client=client,
     )
-    user = rg.User(
+    user = ex.User(
         username=username,
         first_name="test",
         password="testtesttest",
@@ -460,20 +460,20 @@ def test_add_records_with_id_mapped(client, username: str) -> None:
             "uuid": uuid.uuid4(),
         },
     ]
-    settings = rg.Settings(
+    settings = ex.Settings(
         fields=[
-            rg.TextField(name="text"),
+            ex.TextField(name="text"),
         ],
         questions=[
-            rg.LabelQuestion(name="label", labels=["positive", "negative"]),
+            ex.LabelQuestion(name="label", labels=["positive", "negative"]),
         ],
     )
-    dataset = rg.Dataset(
+    dataset = ex.Dataset(
         name=mock_dataset_name,
         settings=settings,
         client=client,
     )
-    user = rg.User(
+    user = ex.User(
         username=username,
         first_name="test",
         password="testtesttest",
@@ -501,44 +501,44 @@ def test_add_record_resources(client):
     user_id = client.users[0].id
     mock_dataset_name = f"test_add_records{datetime.now().strftime('%Y%m%d%H%M%S')}"
     mock_resources = [
-        rg.Record(
+        ex.Record(
             fields={"text": "Hello World, how are you?"},
             suggestions=[
-                rg.Suggestion("label", "positive", score=0.9),
-                rg.Suggestion("topics", ["topic1", "topic2"], score=[0.9, 0.8]),
+                ex.Suggestion("label", "positive", score=0.9),
+                ex.Suggestion("topics", ["topic1", "topic2"], score=[0.9, 0.8]),
             ],
-            responses=[rg.Response("label", "positive", user_id=user_id)],
+            responses=[ex.Response("label", "positive", user_id=user_id)],
             id=str(uuid.uuid4()),
         ),
-        rg.Record(
+        ex.Record(
             fields={"text": "Hello World, how are you?"},
             suggestions=[
-                rg.Suggestion("label", "positive", score=0.9),
-                rg.Suggestion("topics", ["topic1", "topic2"], score=[0.9, 0.8]),
+                ex.Suggestion("label", "positive", score=0.9),
+                ex.Suggestion("topics", ["topic1", "topic2"], score=[0.9, 0.8]),
             ],
-            responses=[rg.Response("label", "positive", user_id=user_id)],
+            responses=[ex.Response("label", "positive", user_id=user_id)],
             id=str(uuid.uuid4()),
         ),
-        rg.Record(
+        ex.Record(
             fields={"text": "Hello World, how are you?"},
             suggestions=[
-                rg.Suggestion("label", "positive", score=0.9),
-                rg.Suggestion("topics", ["topic1", "topic2"], score=[0.9, 0.8]),
+                ex.Suggestion("label", "positive", score=0.9),
+                ex.Suggestion("topics", ["topic1", "topic2"], score=[0.9, 0.8]),
             ],
-            responses=[rg.Response("label", "positive", user_id=user_id)],
+            responses=[ex.Response("label", "positive", user_id=user_id)],
             id=str(uuid.uuid4()),
         ),
     ]
-    settings = rg.Settings(
+    settings = ex.Settings(
         fields=[
-            rg.TextField(name="text"),
+            ex.TextField(name="text"),
         ],
         questions=[
-            rg.LabelQuestion(name="label", labels=["positive", "negative"]),
-            rg.MultiLabelQuestion(name="topics", labels=["topic1", "topic2", "topic3"]),
+            ex.LabelQuestion(name="label", labels=["positive", "negative"]),
+            ex.MultiLabelQuestion(name="topics", labels=["topic1", "topic2", "topic3"]),
         ],
     )
-    dataset = rg.Dataset(
+    dataset = ex.Dataset(
         name=mock_dataset_name,
         settings=settings,
         client=client,
@@ -569,9 +569,9 @@ def test_add_record_resources(client):
     assert dataset_records[2].suggestions["topics"].score == [0.9, 0.8]
 
 
-def test_add_record_with_chat_field(client: rg.Extralit, dataset_name: str):
+def test_add_record_with_chat_field(client: ex.Extralit, dataset_name: str):
     mock_resources = [
-        rg.Record(
+        ex.Record(
             fields={
                 "chat": [
                     {
@@ -585,7 +585,7 @@ def test_add_record_with_chat_field(client: rg.Extralit, dataset_name: str):
                 ]
             },
         ),
-        rg.Record(
+        ex.Record(
             fields={
                 "chat": [
                     {
@@ -600,15 +600,15 @@ def test_add_record_with_chat_field(client: rg.Extralit, dataset_name: str):
             },
         ),
     ]
-    settings = rg.Settings(
+    settings = ex.Settings(
         fields=[
-            rg.ChatField(name="chat", required=False),
+            ex.ChatField(name="chat", required=False),
         ],
         questions=[
-            rg.TextQuestion(name="comment", use_markdown=False),
+            ex.TextQuestion(name="comment", use_markdown=False),
         ],
     )
-    dataset = rg.Dataset(
+    dataset = ex.Dataset(
         name=dataset_name,
         settings=settings,
         client=client,
@@ -620,30 +620,30 @@ def test_add_record_with_chat_field(client: rg.Extralit, dataset_name: str):
     assert dataset.name == dataset_name
 
 
-def test_add_records_with_optional_chat_field(client: rg.Extralit, dataset_name: str):
+def test_add_records_with_optional_chat_field(client: ex.Extralit, dataset_name: str):
     mock_resources = [
-        rg.Record(
+        ex.Record(
             fields={
                 "text": "This a text",
                 "chat": None,
             },
         ),
-        rg.Record(
+        ex.Record(
             fields={
                 "text": "This a text",
             },
         ),
     ]
-    settings = rg.Settings(
+    settings = ex.Settings(
         fields=[
-            rg.TextField(name="text", required=True),
-            rg.ChatField(name="chat", required=False),
+            ex.TextField(name="text", required=True),
+            ex.ChatField(name="chat", required=False),
         ],
         questions=[
-            rg.TextQuestion(name="comment", use_markdown=False),
+            ex.TextQuestion(name="comment", use_markdown=False),
         ],
     )
-    dataset = rg.Dataset(
+    dataset = ex.Dataset(
         name=dataset_name,
         settings=settings,
         client=client,
@@ -671,20 +671,20 @@ def test_add_records_with_responses_and_same_schema_name(client: Extralit, usern
             "label": "negative",
         },
     ]
-    settings = rg.Settings(
+    settings = ex.Settings(
         fields=[
-            rg.TextField(name="text"),
+            ex.TextField(name="text"),
         ],
         questions=[
-            rg.LabelQuestion(name="label", labels=["positive", "negative"]),
+            ex.LabelQuestion(name="label", labels=["positive", "negative"]),
         ],
     )
-    dataset = rg.Dataset(
+    dataset = ex.Dataset(
         name=mock_dataset_name,
         settings=settings,
         client=client,
     )
-    user = rg.User(
+    user = ex.User(
         username=username,
         first_name="test",
         password="testtesttest",
@@ -709,21 +709,21 @@ def test_add_records_with_responses_and_same_schema_name(client: Extralit, usern
 def test_add_records_objects_with_responses(client: Extralit, username: str):
     mock_dataset_name = f"test_modify_record_responses_locally {uuid.uuid4()}"
 
-    settings = rg.Settings(
+    settings = ex.Settings(
         fields=[
-            rg.TextField(name="text"),
+            ex.TextField(name="text"),
         ],
         questions=[
-            rg.LabelQuestion(name="label", labels=["positive", "negative"]),
-            rg.TextQuestion(name="comment", use_markdown=False, required=False),
+            ex.LabelQuestion(name="label", labels=["positive", "negative"]),
+            ex.TextQuestion(name="comment", use_markdown=False, required=False),
         ],
     )
-    dataset = rg.Dataset(
+    dataset = ex.Dataset(
         name=mock_dataset_name,
         settings=settings,
         client=client,
     )
-    user = rg.User(
+    user = ex.User(
         username=username,
         first_name="test",
         password="testtesttest",
@@ -733,24 +733,24 @@ def test_add_records_objects_with_responses(client: Extralit, username: str):
     dataset.create()
 
     records = [
-        rg.Record(
+        ex.Record(
             fields={"text": "Hello World, how are you?"},
-            responses=[rg.Response("label", "negative", user_id=user.id, status="submitted")],
+            responses=[ex.Response("label", "negative", user_id=user.id, status="submitted")],
             id=str(uuid.uuid4()),
         ),
-        rg.Record(
+        ex.Record(
             fields={"text": "Hello World, how are you?"},
-            responses=[rg.Response("label", "positive", user_id=user.id, status="discarded")],
+            responses=[ex.Response("label", "positive", user_id=user.id, status="discarded")],
             id=str(uuid.uuid4()),
         ),
-        rg.Record(
+        ex.Record(
             fields={"text": "Hello World, how are you?"},
-            responses=[rg.Response("comment", "The comment", user_id=user.id, status="draft")],
+            responses=[ex.Response("comment", "The comment", user_id=user.id, status="draft")],
             id=str(uuid.uuid4()),
         ),
-        rg.Record(
+        ex.Record(
             fields={"text": "Hello World, how are you?"},
-            responses=[rg.Response("comment", "The comment", user_id=user.id)],
+            responses=[ex.Response("comment", "The comment", user_id=user.id)],
             id=str(uuid.uuid4()),
         ),
     ]
@@ -778,12 +778,12 @@ def test_add_records_objects_with_responses(client: Extralit, username: str):
 
 
 def test_add_records_with_boolean_metadata(client: Extralit, dataset_name: str):
-    settings = rg.Settings(
-        fields=[rg.TextField(name="text")],
-        metadata=[rg.TermsMetadataProperty(name="boolean", options=[True, False])],
-        questions=[rg.TextQuestion(name="comment", use_markdown=False)],
+    settings = ex.Settings(
+        fields=[ex.TextField(name="text")],
+        metadata=[ex.TermsMetadataProperty(name="boolean", options=[True, False])],
+        questions=[ex.TextQuestion(name="comment", use_markdown=False)],
     )
-    dataset = rg.Dataset(
+    dataset = ex.Dataset(
         name=dataset_name,
         settings=settings,
         client=client,

@@ -198,7 +198,7 @@ class Settings(BaseSettings):
     def set_database_url(cls, database_url: str, info: ValidationInfo) -> str:
         if not database_url:
             home_path = info.data.get("home_path")
-            sqlite_file = os.path.join(home_path, "argilla.db")
+            sqlite_file = os.path.join(home_path, "extralit.db")
             return f"sqlite+aiosqlite:///{sqlite_file}?check_same_thread=False"
 
         if "sqlite" in database_url:

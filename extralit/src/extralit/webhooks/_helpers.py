@@ -17,7 +17,7 @@ import warnings
 from threading import Thread
 from typing import TYPE_CHECKING, Optional, Callable, Union, List
 
-import extralit as rg
+import extralit as ex
 from extralit import Extralit
 from extralit.webhooks._handler import WebhookHandler
 from extralit.webhooks._resource import Webhook
@@ -81,7 +81,7 @@ def webhook_listener(
 
     """
 
-    client = client or rg.Extralit._get_default()
+    client = client or ex.Extralit._get_default()
     server = server or get_webhook_server()
 
     if isinstance(events, str):

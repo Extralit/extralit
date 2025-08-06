@@ -75,7 +75,7 @@ Initialize the client:
 ```python
 import argilla as rg
 
-client = rg.Argilla(
+client = ex.Extralit(
     api_url="https://your-deployment-url",
     api_key="your-api-key"
 )

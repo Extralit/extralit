@@ -60,7 +60,7 @@ For the new users, the username and password are set during the creation process
 !!! info "Main Class"
 
     ```python
-    rg.User(
+    ex.User(
         username="username",
         first_name="first_name",
         last_name="last_name",
@@ -78,7 +78,7 @@ To ensure you're using the correct credentials for managing users, you can get t
 ```python
 import argilla as rg
 
-client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
 current_user = client.me
 ```
@@ -90,9 +90,9 @@ To create a new user in Argilla, you can define it in the `User` class and then 
 ```python
 import argilla as rg
 
-client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
-user_to_create = rg.User(
+user_to_create = ex.User(
     username="my_username",
     password="12345678",
 )
@@ -109,7 +109,7 @@ You can list all the existing users in Argilla by accessing the `users` attribut
 ```python
 import argilla as rg
 
-client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
 users = client.users
 
@@ -128,7 +128,7 @@ You can retrieve an existing user from Argilla by accessing the `users` attribut
     ```python
     import argilla as rg
 
-    client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+    client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
     retrieved_user = client.users("my_username")
     ```
@@ -138,7 +138,7 @@ You can retrieve an existing user from Argilla by accessing the `users` attribut
     ```python
     import argilla as rg
 
-    client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+    client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
     retrieved_user = client.users(id="<uuid-or-uuid-string>")
     ```
@@ -150,7 +150,7 @@ You can check if a user exists. The `client.users` method will return `None` if 
 ```python
 import argilla as rg
 
-client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
 user = client.users("my_username")
 
@@ -167,7 +167,7 @@ You can list all the users in a workspace by accessing the `users` attribute on 
 ```python
 import argilla as rg
 
-client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
 workspace = client.workspaces('my_workspace')
 
@@ -184,7 +184,7 @@ You can add an existing user to a workspace in Argilla by calling the `add_to_wo
 ```python
 import argilla as rg
 
-client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
 user = client.users('my_username')
 workspace = client.workspaces('my_workspace')
@@ -201,7 +201,7 @@ You can remove an existing user from a workspace in Argilla by calling the `remo
 ```python
 import argilla as rg
 
-client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
 user = client.users('my_username')
 workspace = client.workspaces('my_workspace')
@@ -216,7 +216,7 @@ You can update an existing user in Argilla by calling the `update` method on the
 ```python
 import argilla as rg
 
-client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
 user_to_update = client.users('my_username')
 
@@ -235,7 +235,7 @@ You can delete an existing user from Argilla by calling the `delete` method on t
 ```python
 import argilla as rg
 
-client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
 user_to_delete = client.users('my_username')
 

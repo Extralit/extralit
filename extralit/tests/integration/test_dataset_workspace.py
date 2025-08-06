@@ -15,21 +15,21 @@
 
 import pytest
 
-import extralit as rg
+import extralit as ex
 from extralit._exceptions import NotFoundError
 
 
 @pytest.fixture
-def dataset(client: rg.Extralit, dataset_name: str):
+def dataset(client: ex.Extralit, dataset_name: str):
     ws = client.workspaces[0]
-    dataset = rg.Dataset(
+    dataset = ex.Dataset(
         name=dataset_name,
-        settings=rg.Settings(
+        settings=ex.Settings(
             fields=[
-                rg.TextField(name="text"),
+                ex.TextField(name="text"),
             ],
             questions=[
-                rg.TextQuestion(name="response"),
+                ex.TextQuestion(name="response"),
             ],
         ),
         workspace=ws,
@@ -40,59 +40,59 @@ def dataset(client: rg.Extralit, dataset_name: str):
     dataset.delete()
 
 
-def test_dataset_with_workspace(client: rg.Extralit, dataset_name: str):
+def test_dataset_with_workspace(client: ex.Extralit, dataset_name: str):
     ws = client.workspaces[0]
-    dataset = rg.Dataset(
+    dataset = ex.Dataset(
         name=dataset_name,
-        settings=rg.Settings(
+        settings=ex.Settings(
             fields=[
-                rg.TextField(name="text"),
+                ex.TextField(name="text"),
             ],
             questions=[
-                rg.TextQuestion(name="response"),
+                ex.TextQuestion(name="response"),
             ],
         ),
         workspace=ws,
         client=client,
     )
     dataset.create()
-    assert isinstance(dataset, rg.Dataset)
+    assert isinstance(dataset, ex.Dataset)
     assert client.api.datasets.exists(dataset.id)
     assert dataset.workspace == ws
 
 
-def test_dataset_with_workspace_name(client: rg.Extralit, dataset_name: str):
+def test_dataset_with_workspace_name(client: ex.Extralit, dataset_name: str):
     ws = client.workspaces[0]
-    dataset = rg.Dataset(
+    dataset = ex.Dataset(
         name=dataset_name,
-        settings=rg.Settings(
+        settings=ex.Settings(
             fields=[
-                rg.TextField(name="text"),
+                ex.TextField(name="text"),
             ],
             questions=[
-                rg.TextQuestion(name="response"),
+                ex.TextQuestion(name="response"),
             ],
         ),
         workspace=ws.name,
         client=client,
     )
     dataset.create()
-    assert isinstance(dataset, rg.Dataset)
+    assert isinstance(dataset, ex.Dataset)
     assert dataset.id is not None
     assert client.api.datasets.exists(dataset.id)
     assert dataset.workspace == ws
 
 
-def test_dataset_with_incorrect_workspace_name(client: rg.Extralit, dataset_name: str):
+def test_dataset_with_incorrect_workspace_name(client: ex.Extralit, dataset_name: str):
     with pytest.raises(expected_exception=NotFoundError):
-        rg.Dataset(
+        ex.Dataset(
             name=dataset_name,
-            settings=rg.Settings(
+            settings=ex.Settings(
                 fields=[
-                    rg.TextField(name="text"),
+                    ex.TextField(name="text"),
                 ],
                 questions=[
-                    rg.TextQuestion(name="response"),
+                    ex.TextQuestion(name="response"),
                 ],
             ),
             workspace=f"non_existing_workspace",
@@ -100,40 +100,40 @@ def test_dataset_with_incorrect_workspace_name(client: rg.Extralit, dataset_name
         ).create()
 
 
-def test_dataset_with_default_workspace(client: rg.Extralit, dataset_name: str):
-    dataset = rg.Dataset(
+def test_dataset_with_default_workspace(client: ex.Extralit, dataset_name: str):
+    dataset = ex.Dataset(
         name=dataset_name,
-        settings=rg.Settings(
+        settings=ex.Settings(
             fields=[
-                rg.TextField(name="text"),
+                ex.TextField(name="text"),
             ],
             questions=[
-                rg.TextQuestion(name="response"),
+                ex.TextQuestion(name="response"),
             ],
         ),
         client=client,
     )
     dataset.create()
-    assert isinstance(dataset, rg.Dataset)
+    assert isinstance(dataset, ex.Dataset)
     assert client.api.datasets.exists(dataset.id)
     assert dataset.workspace == client.workspaces[0]
 
 
-def test_retrieving_dataset(client: rg.Extralit, dataset: rg.Dataset):
+def test_retrieving_dataset(client: ex.Extralit, dataset: ex.Dataset):
     ws = client.workspaces[0]
     dataset = client.datasets(dataset.name, workspace=ws)
-    assert isinstance(dataset, rg.Dataset)
+    assert isinstance(dataset, ex.Dataset)
     assert client.api.datasets.exists(dataset.id)
 
 
-def test_retrieving_dataset_on_name(client: rg.Extralit, dataset: rg.Dataset):
+def test_retrieving_dataset_on_name(client: ex.Extralit, dataset: ex.Dataset):
     ws = client.workspaces[0]
     dataset = client.datasets(dataset.name, workspace=ws.name)
-    assert isinstance(dataset, rg.Dataset)
+    assert isinstance(dataset, ex.Dataset)
     assert client.api.datasets.exists(dataset.id)
 
 
-def test_retrieving_dataset_on_default(client: rg.Extralit, dataset: rg.Dataset):
+def test_retrieving_dataset_on_default(client: ex.Extralit, dataset: ex.Dataset):
     dataset = client.datasets(dataset.name)
-    assert isinstance(dataset, rg.Dataset)
+    assert isinstance(dataset, ex.Dataset)
     assert client.api.datasets.exists(dataset.id)

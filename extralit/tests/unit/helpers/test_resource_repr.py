@@ -14,16 +14,16 @@
 
 import uuid
 
-import extralit as rg
+import extralit as ex
 from extralit._helpers._resource_repr import ResourceHTMLReprMixin
 
 
 class TestResourceHTMLReprMixin:
     def test_represent_workspaces_as_html(self):
-        client = rg.Extralit()
+        client = ex.Extralit()
         workspaces = [
-            rg.Workspace(name="workspace1", id=uuid.uuid4()),
-            rg.Workspace(name="workspace2", id=uuid.uuid4()),
+            ex.Workspace(name="workspace1", id=uuid.uuid4()),
+            ex.Workspace(name="workspace2", id=uuid.uuid4()),
         ]
 
         assert (
@@ -36,10 +36,10 @@ class TestResourceHTMLReprMixin:
             ""
         )
 
-        workspace = rg.Workspace(name="workspace1", id=uuid.uuid4())
+        workspace = ex.Workspace(name="workspace1", id=uuid.uuid4())
         datasets = [
-            rg.Dataset(name="dataset1", workspace=workspace, client=client),
-            rg.Dataset(name="dataset2", workspace=workspace, client=client),
+            ex.Dataset(name="dataset1", workspace=workspace, client=client),
+            ex.Dataset(name="dataset2", workspace=workspace, client=client),
         ]
 
         for dataset in datasets:

@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,42 +16,42 @@ from uuid import uuid4
 
 from datasets import Value, Sequence, load_dataset
 
-import extralit as rg
+import extralit as ex
 from extralit.records._io import HFDatasetsIO
 from extralit.records._mapping import IngestedRecordMapper
 
 
 class TestHFDatasetsIO:
     def test_to_datasets_with_partial_values_in_records(self):
-        mock_dataset = rg.Dataset(
+        mock_dataset = ex.Dataset(
             name="test",
-            settings=rg.Settings(
+            settings=ex.Settings(
                 fields=[
-                    rg.TextField(name="field"),
+                    ex.TextField(name="field"),
                 ],
                 questions=[
-                    rg.TextQuestion(name="question"),
+                    ex.TextQuestion(name="question"),
                 ],
             ),
         )
         records = [
-            rg.Record(fields={"field": "The field"}, metadata={"a": "a"}),
-            rg.Record(fields={"field": "Other field", "other": "Field"}, metadata={"b": "b"}),
-            rg.Record(fields={"field": "Again"}, suggestions=[rg.Suggestion("question", value="value")]),
-            rg.Record(
-                fields={"field": "Field"}, responses=[rg.Response("other_question", value="value", user_id=uuid4())]
+            ex.Record(fields={"field": "The field"}, metadata={"a": "a"}),
+            ex.Record(fields={"field": "Other field", "other": "Field"}, metadata={"b": "b"}),
+            ex.Record(fields={"field": "Again"}, suggestions=[ex.Suggestion("question", value="value")]),
+            ex.Record(
+                fields={"field": "Field"}, responses=[ex.Response("other_question", value="value", user_id=uuid4())]
             ),
-            rg.Record(
+            ex.Record(
                 fields={"field": "The record field including more type of responses"},
                 suggestions=[
-                    rg.Suggestion("rating", value=1),
-                    rg.Suggestion("ranking", value=["value1", "value2"]),
-                    rg.Suggestion("spans", value=[{"start": 0, "end": 10, "label": "test"}]),
+                    ex.Suggestion("rating", value=1),
+                    ex.Suggestion("ranking", value=["value1", "value2"]),
+                    ex.Suggestion("spans", value=[{"start": 0, "end": 10, "label": "test"}]),
                 ],
                 responses=[
-                    rg.Response("rating", value=1, user_id=uuid4()),
-                    rg.Response("ranking", value=["value1", "value2"], user_id=uuid4()),
-                    rg.Response("spans", value=[{"start": 0, "end": 10, "label": "test"}], user_id=uuid4()),
+                    ex.Response("rating", value=1, user_id=uuid4()),
+                    ex.Response("ranking", value=["value1", "value2"], user_id=uuid4()),
+                    ex.Response("spans", value=[{"start": 0, "end": 10, "label": "test"}], user_id=uuid4()),
                 ],
             ),
         ]
@@ -108,7 +108,7 @@ class TestHFDatasetsIO:
         }
 
     def test_to_argilla_with_sequence_of_class_labels(self):
-        dataset = rg.Dataset(name="test", settings=rg.Settings(fields=[rg.TextField(name="text")]))
+        dataset = ex.Dataset(name="test", settings=ex.Settings(fields=[ex.TextField(name="text")]))
         mapper = IngestedRecordMapper(dataset, uuid4())
 
         hf_ds = load_dataset("google-research-datasets/go_emotions", name="simplified", split="train[:5]")

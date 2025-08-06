@@ -180,7 +180,7 @@ Create a `.env.dev` file in the `extralit-server` directory with the following c
 ```
 ALEMBIC_CONFIG=src/extralit_server/alembic.ini
 ARGILLA_AUTH_SECRET_KEY=8VO7na5N/jQx+yP/N+HlE8q51vPdrxqlh6OzoebIyko=
-ARGILLA_DATABASE_URL=sqlite+aiosqlite:///${HOME}/.extralit/argilla-dev.db?check_same_thread=False
+ARGILLA_DATABASE_URL=sqlite+aiosqlite:///${HOME}/.extralit/extralit-dev.db?check_same_thread=False
 # Search engine configuration
 ARGILLA_SEARCH_ENGINE=elasticsearch
 ARGILLA_ELASTICSEARCH=http://localhost:9200
@@ -377,7 +377,7 @@ If database migrations fail:
 
 ```bash
 # Reset the database
-rm -rf ~/.extralit/argilla-dev.db
+rm -rf ~/.extralit/extralit-dev.db
 pdm run migrate
 ```
 

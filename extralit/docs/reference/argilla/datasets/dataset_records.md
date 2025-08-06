@@ -1,7 +1,7 @@
 ---
 hide: footer
 ---
-# `rg.Dataset.records`
+# `ex.Dataset.records`
 
 ## Usage Examples
 
@@ -27,13 +27,13 @@ To add records to a dataset, use the `log` method. Records can be added as dicti
     ```python
 
     records = [
-        rg.Record(
+        ex.Record(
             fields={
                 "question": "Do you need oxygen to breathe?",
                 "answer": "Yes"
             },
         ),
-        rg.Record(
+        ex.Record(
             fields={
                 "question": "What is the boiling point of water?",
                 "answer": "100 degrees Celsius"
@@ -127,7 +127,7 @@ Records can also be updated using the `log` method with records that contain an 
     ```python
 
     records = [
-        rg.Record(
+        ex.Record(
             metadata={"department": "toys"},
             id="2" # (1)
         ),
@@ -196,7 +196,7 @@ Records can also be updated using the `log` method with records that contain an 
 
 ### Adding and updating records with images
 
-Argilla datasets can contain image fields. You can add images to a dataset by passing the image to the record object as either a remote URL, a local path to an image file, or a PIL object. The field names must be defined as an `rg.ImageField` in the dataset's `Settings` object to be accepted. Images will be stored in the Argilla database and returned using the data URI schema.
+Argilla datasets can contain image fields. You can add images to a dataset by passing the image to the record object as either a remote URL, a local path to an image file, or a PIL object. The field names must be defined as an `ex.ImageField` in the dataset's `Settings` object to be accepted. Images will be stored in the Argilla database and returned using the data URI schema.
 
 !!! note "As PIL objects"
     To retrieve the images as rescaled PIL objects, you can use the `to_datasets` method when exporting the records, as shown in this [how-to guide](../../../admin_guide/import_export.md).
@@ -280,7 +280,7 @@ for record in dataset.records(query="capital", with_vectors=True):
     print(record.vectors)
 ```
 
-Check out the [`rg.Record`](../records/records.md) class reference for more information on the properties and methods available on a record and the [`rg.Query`](../search.md) class reference for more information on the query syntax.
+Check out the [`ex.Record`](../records/records.md) class reference for more information on the properties and methods available on a record and the [`ex.Query`](../search.md) class reference for more information on the query syntax.
 
 ---
 

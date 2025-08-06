@@ -97,7 +97,7 @@ class Response:
         Examples:
 
         ```python
-        response = rg.Response("label", "negative", user_id=user.id)
+        response = ex.Response("label", "negative", user_id=user.id)
         response.serialize()
         ```
         """

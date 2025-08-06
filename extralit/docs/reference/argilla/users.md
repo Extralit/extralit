@@ -1,7 +1,7 @@
 ---
 hide: footer
 ---
-# `rg.User`
+# `ex.User`
 
 A user in Argilla is a profile that uses the SDK or UI. Their profile can be used to track their feedback activity and to manage their access to the Argilla server.
 
@@ -10,7 +10,7 @@ A user in Argilla is a profile that uses the SDK or UI. Their profile can be use
 To create a new user, instantiate the `User` object with the client and the username:
 
 ```python
-user = rg.User(username="my_username", password="my_password")
+user = ex.User(username="my_username", password="my_password")
 user.create()
 ```
 
@@ -20,7 +20,7 @@ Existing users can be retrieved by their username:
 user = client.users("my_username")
 ```
 
-The current user of the `rg.Argilla` client can be accessed using the `me` attribute:
+The current user of the `ex.Extralit` client can be accessed using the `me` attribute:
 
 ```python
 client.me

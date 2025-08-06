@@ -24,7 +24,7 @@ Depending on [your Argilla deployment](../getting_started/quickstart.md), the in
 !!! info "Main Class"
 
     ```python
-    rg.Workspace(
+    ex.Workspace(
         name = "name",
         client=client
     )
@@ -40,9 +40,9 @@ To create a new workspace in Argilla, you can define it in the `Workspace` class
 ```python
 import argilla as rg
 
-client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
-workspace_to_create = rg.Workspace(name="my_workspace")
+workspace_to_create = ex.Workspace(name="my_workspace")
 
 created_workspace = workspace_to_create.create()
 ```
@@ -56,7 +56,7 @@ You can list all the existing workspaces in Argilla by calling the `workspaces` 
 ```python
 import argilla as rg
 
-client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
 workspaces = client.workspaces
 
@@ -75,7 +75,7 @@ You can retrieve a workspace by accessing the `workspaces` method on the `Argill
     ```python
     import argilla as rg
 
-    client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+    client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
     retrieved_workspace = client.workspaces("my_workspace")
     ```
@@ -85,7 +85,7 @@ You can retrieve a workspace by accessing the `workspaces` method on the `Argill
     ```python
     import argilla as rg
 
-    client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+    client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
     retrieved_workspace = client.workspaces(id="<uuid-or-uuid-string>")
     ```
@@ -97,7 +97,7 @@ You can check if a workspace exists. The `client.workspaces` method will return 
 ```python
 import argilla as rg
 
-client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
 workspace = client.workspaces("my_workspace")
 
@@ -114,7 +114,7 @@ You can list all the users in a workspace by accessing the `users` attribute on 
 ```python
 import argilla as rg
 
-client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
 workspace = client.workspaces('my_workspace')
 
@@ -131,7 +131,7 @@ You can also add a user to a workspace by calling the `add_user` method on the `
 ```python
 import argilla as rg
 
-client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
 workspace = client.workspaces("my_workspace")
 
@@ -147,7 +147,7 @@ You can also remove a user from a workspace by calling the `remove_user` method 
 ```python
 import argilla as rg
 
-client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
 workspace = client.workspaces("my_workspace")
 
@@ -163,7 +163,7 @@ To delete a workspace, **no dataset can be associated with it**. If the workspac
 ```python
 import argilla as rg
 
-client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
 workspace_to_delete = client.workspaces("my_workspace")
 

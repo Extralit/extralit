@@ -10,20 +10,20 @@ You can search for records in your dataset by **querying** or **filtering**. The
 
 !!! info "Main Classes"
 
-    === "`rg.Query`"
+    === "`ex.Query`"
 
         ```python
-        rg.Query(
+        ex.Query(
             query="query",
             filter=filter
         )
         ```
         > Check the [Query - Python Reference](../reference/argilla/search.md) to see the attributes, arguments, and methods of the `Query` class in detail.
 
-    === "`rg.Filter`"
+    === "`ex.Filter`"
 
         ```python
-        rg.Filter(
+        ex.Filter(
             [
                 ("field", "==", "value"),
             ]
@@ -31,10 +31,10 @@ You can search for records in your dataset by **querying** or **filtering**. The
         ```
         > Check the [Filter - Python Reference](../reference/argilla/search.md) to see the attributes, arguments, and methods of the `Filter` class in detail.
 
-    === "`rg.Similar`"
+    === "`ex.Similar`"
 
         ```python
-        rg.Similar(
+        ex.Similar(
             name="vector",
             value=[0.1, 0.2, 0.3],
         )
@@ -50,11 +50,11 @@ To search for records with terms, you can use the `Dataset.records` attribute wi
     ```python
     import argilla as rg
 
-    client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+    client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
     dataset = client.datasets(name="my_dataset", workspace="my_workspace")
 
-    query = rg.Query(query="my_term")
+    query = ex.Query(query="my_term")
 
     queried_records = dataset.records(query=query).to_list(flatten=True)
     ```
@@ -64,11 +64,11 @@ To search for records with terms, you can use the `Dataset.records` attribute wi
     ```python
     import argilla as rg
 
-    client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+    client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
     dataset = client.datasets(name="my_dataset", workspace="my_workspace")
 
-    query = rg.Query(query="my_term1 my_term2")
+    query = ex.Query(query="my_term1 my_term2")
 
     queried_records = dataset.records(query=query).to_list(flatten=True)
     ```
@@ -77,15 +77,15 @@ To search for records with terms, you can use the `Dataset.records` attribute wi
 
 If you need more complex searches, you can use [Elasticsearch's simple query string syntax](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-simple-query-string-query.html#simple-query-string-syntax). Here is a summary of the different available operators:
 
-| operator     | description                 | example                                                               |
-| ------------ | --------------------------- | --------------------------------------------------------------------- |
-|`+` or `space`| **AND**: search both terms  | `argilla + distilabel` or `argilla distilabel`</br> return records that include the terms "argilla" and "distilabel"|
-|`|`           | **OR**: search either term  | `argilla | distilabel` </br> returns records that include the term "argilla" or "distilabel"|
-|`-`           | **Negation**: exclude a term| `argilla -distilabel` </br> returns records that contain the term "argilla" and don't have the term "distilabel"|
-|`*`           | **Prefix**: search a prefix | `arg*`</br> returns records with any words starting with "arg-"|
-|`"`           | **Phrase**: search a phrase | `"argilla and distilabel"` </br> returns records that contain the phrase "argilla and distilabel"|
-|`(` and `)`   | **Precedence**: group terms | `(argilla | distilabel) rules` </br> returns records that contain either "argilla" or "distilabel" and "rules"|
-|`~N`          | **Edit distance**: search a term or phrase with an edit distance| `argilla~1` </br> returns records that contain the term "argilla" with an edit distance of 1, e.g. "argila"|
+| operator       | description                                                      | example                                                                                                              |
+| -------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `+` or `space` | **AND**: search both terms                                       | `argilla + distilabel` or `argilla distilabel`</br> return records that include the terms "argilla" and "distilabel" |
+| `              | `                                                                | **OR**: search either term                                                                                           | `argilla                                                                                           | distilabel` </br> returns records that include the term "argilla" or "distilabel" |
+| `-`            | **Negation**: exclude a term                                     | `argilla -distilabel` </br> returns records that contain the term "argilla" and don't have the term "distilabel"     |
+| `*`            | **Prefix**: search a prefix                                      | `arg*`</br> returns records with any words starting with "arg-"                                                      |
+| `"`            | **Phrase**: search a phrase                                      | `"argilla and distilabel"` </br> returns records that contain the phrase "argilla and distilabel"                    |
+| `(` and `)`    | **Precedence**: group terms                                      | `(argilla                                                                                                            | distilabel) rules` </br> returns records that contain either "argilla" or "distilabel" and "rules" |
+| `~N`           | **Edit distance**: search a term or phrase with an edit distance | `argilla~1` </br> returns records that contain the term "argilla" with an edit distance of 1, e.g. "argila"          |
 
 !!! tip
     To use one of these characters literally, escape it with a preceding backslash `\`, e.g. `"1 \+ 2"` would match records where the phrase "1 + 2" is found.
@@ -99,20 +99,20 @@ You can use the `Filter` class to define the conditions and pass them to the `Da
 | `==`     | The `field` value is equal to the `value`                 |
 | `>=`     | The `field` value is greater than or equal to the `value` |
 | `<=`     | The `field` value is less than or equal to the `value`    |
-| `in`     | The `field` value is included in a list of values        |
+| `in`     | The `field` value is included in a list of values         |
 
 === "Single condition"
 
     ```python
     import argilla as rg
 
-    client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+    client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
     dataset = client.datasets(name="my_dataset", workspace="my_workspace")
 
-    filter_label = rg.Filter(("label", "==", "positive"))
+    filter_label = ex.Filter(("label", "==", "positive"))
 
-    filtered_records = dataset.records(query=rg.Query(filter=filter_label)).to_list(
+    filtered_records = dataset.records(query=ex.Query(filter=filter_label)).to_list(
         flatten=True
     )
     ```
@@ -122,11 +122,11 @@ You can use the `Filter` class to define the conditions and pass them to the `Da
     ```python
     import argilla as rg
 
-    client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+    client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
     dataset = client.datasets(name="my_dataset", workspace="my_workspace")
 
-    filters = rg.Filter(
+    filters = ex.Filter(
         [
             ("label.suggestion", "==", "positive"),
             ("metadata.count", ">=", 10),
@@ -136,7 +136,7 @@ You can use the `Filter` class to define the conditions and pass them to the `Da
     )
 
     filtered_records = dataset.records(
-        query=rg.Query(filter=filters), with_suggestions=True
+        query=ex.Query(filter=filters), with_suggestions=True
     ).to_list(flatten=True)
     ```
 
@@ -146,7 +146,7 @@ You can filter records based on the following fields:
 
 
 | field                   | description                                                                    | example                                                        |
-|-------------------------|--------------------------------------------------------------------------------|----------------------------------------------------------------|
+| ----------------------- | ------------------------------------------------------------------------------ | -------------------------------------------------------------- |
 | `id`                    | The record id                                                                  | `("id", "in", ["1","2","3"])`                                  |
 | `_server_id`            | The internal record id. This value must be a valida UUID                       | `("_server_id", "==", "ba69a996-85c2-4af0-a473-23138929641b")` |
 | `inserted_at`           | The date and time the record was inserted. You can pass a datetime or a string | `("inserted_at" ">=", "2024-10-10")`                           |
@@ -167,12 +167,12 @@ You can filter records based on record or response status. Record status can be 
 ```python
 import argilla as rg
 
-client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
 dataset = client.datasets(name="my_dataset", workspace="my_workspace")
 
-status_filter = rg.Query(
-    filter=rg.Filter(
+status_filter = ex.Query(
+    filter=ex.Filter(
         [
             ("status", "==", "completed"),
             ("response.status", "==", "discarded")
@@ -191,13 +191,13 @@ You can search for records that are similar to a given vector. You can use the `
 
 import argilla as rg
 
-client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
 dataset = client.datasets(name="my_dataset", workspace="my_workspace")
 
 
-similar_filter = rg.Query(
-    similar=rg.Similar(
+similar_filter = ex.Query(
+    similar=ex.Similar(
         name="vector", value=[0.1, 0.2, 0.3],
     )
 )
@@ -216,13 +216,13 @@ As mentioned, you can use a query with a search term and a filter or various fil
 ```python
 import argilla as rg
 
-client = rg.Argilla(api_url="<api_url>", api_key="<api_key>")
+client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
 dataset = client.datasets(name="my_dataset", workspace="my_workspace")
 
-query_filter = rg.Query(
+query_filter = ex.Query(
     query="my_term",
-    filter=rg.Filter(
+    filter=ex.Filter(
         [
             ("label.suggestion", "==", "positive"),
             ("metadata.count", ">=", 10),

@@ -15,23 +15,23 @@ import uuid
 
 import pytest
 
-import extralit as rg
+import extralit as ex
 from extralit import Extralit, Workspace
 
 
 @pytest.fixture(scope="session")
-def client() -> rg.Extralit:
-    client = rg.Extralit()
+def client() -> ex.Extralit:
+    client = ex.Extralit()
 
     if len(list(client.workspaces)) == 0:
-        client.workspaces.add(rg.Workspace(name=f"test_{uuid.uuid4()}"))
+        client.workspaces.add(ex.Workspace(name=f"test_{uuid.uuid4()}"))
 
     yield client
 
     _cleanup(client)
 
 
-def _cleanup(client: rg.Extralit):
+def _cleanup(client: ex.Extralit):
     for dataset in client.datasets:
         if dataset.name.startswith("test_"):
             dataset.delete()

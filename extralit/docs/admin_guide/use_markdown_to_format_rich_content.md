@@ -29,7 +29,7 @@ The `TextField` and `TextQuestion` provide the option to enable Markdown and the
         ```python
         chat_to_html([{"role": "user", "content": "hello"}])
         ```
-    > Check the [Markdown - Python Reference](../reference/argilla/markdown.md) to see the arguments of the `rg.markdown` methods in detail.
+    > Check the [Markdown - Python Reference](../reference/argilla/markdown.md) to see the arguments of the `ex.markdown` methods in detail.
 
 !!! tip
     You can get pretty creative with HTML. For example, think about visualizing graphs and tables. You can use some interesting Python packages methods like `pandas.DataFrame.to_html` and `plotly.io.to_html`.
@@ -58,7 +58,7 @@ A DataURL is a scheme that allows data to be encoded into a base64-encoded strin
         height="300px"
     )
 
-    rg.Record(
+    ex.Record(
         fields={"markdown_enabled_field": html}
     )
     ```
@@ -76,7 +76,7 @@ A DataURL is a scheme that allows data to be encoded into a base64-encoded strin
         loop=True
     )
 
-    rg.Record(
+    ex.Record(
         fields={"markdown_enabled_field": html}
     )
     ```
@@ -94,7 +94,7 @@ A DataURL is a scheme that allows data to be encoded into a base64-encoded strin
         loop=True
     )
 
-    rg.Record(
+    ex.Record(
         fields={"markdown_enabled_field": html}
     )
     ```
@@ -110,7 +110,7 @@ A DataURL is a scheme that allows data to be encoded into a base64-encoded strin
         height="300px"
     )
 
-    rg.Record(
+    ex.Record(
         fields={"markdown_enabled_field": html}
     )
     ```
@@ -127,7 +127,7 @@ Instead of uploading local files through DataURLs, we can also visualize URLs di
     ```python
     html = "<img src='https://example.com/public-image-file.jpg'>"
 
-    rg.Record(
+    ex.Record(
         fields={"markdown_enabled_field": html}
     )
     ```
@@ -141,7 +141,7 @@ Instead of uploading local files through DataURLs, we can also visualize URLs di
     </audio>
     """"
 
-    rg.Record(
+    ex.Record(
         fields={"markdown_enabled_field": html}
     )
     ```
@@ -155,7 +155,7 @@ Instead of uploading local files through DataURLs, we can also visualize URLs di
     </video>
     """"
 
-    rg.Record(
+    ex.Record(
         fields={"markdown_enabled_field": html}
     )
     ```
@@ -171,7 +171,7 @@ Instead of uploading local files through DataURLs, we can also visualize URLs di
     </iframe>
     """"
 
-    rg.Record(
+    ex.Record(
         fields={"markdown_enabled_field": html}
     )
     ```
@@ -194,7 +194,7 @@ messages = [
 
 html = chat_to_html(messages)
 
-rg.Record(
+ex.Record(
     fields={"markdown_enabled_field": html}
 )
 ```

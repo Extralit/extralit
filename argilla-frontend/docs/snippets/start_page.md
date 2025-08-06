@@ -27,7 +27,7 @@ pip install extralit
 ```python
 import argilla as rg
 
-client = rg.Argilla(
+client = ex.Extralit(
     [local_]api_url="[LOCAL_HOST]",
     [hf_]api_url="https://[HF_HOST]",
     api_key="[USER_API_KEY]"
@@ -41,24 +41,24 @@ Specify a workspace where the dataset will be created. Check your workspaces in 
 Here, we are defining a creating a dataset with a text field and a label question ("positive" and "negative"), check the docs to [create a fully custom dataset](https://docs.extralit.ai/latest/admin_guide/dataset/). Don't forget to replace "<your-workspace>".
 
 ```python
-settings = rg.Settings(
+settings = ex.Settings(
     guidelines="Classify the reviews as positive or negative.",
     fields=[
-        rg.TextField(
+        ex.TextField(
             name="review",
             title="Text from the review",
             use_markdown=False,
         ),
     ],
     questions=[
-        rg.LabelQuestion(
+        ex.LabelQuestion(
             name="my_label",
             title="In which category does this article fit?",
             labels=["positive", "negative"],
         )
     ],
 )
-dataset = rg.Dataset(
+dataset = ex.Dataset(
     name=f"my_first_dataset",
     workspace="default", # change this to your workspace
     settings=settings,
@@ -75,12 +75,12 @@ You can also use `pandas` or `datasets.load_dataset` to [read an existing datase
 
 ```python
 records = [
-    rg.Record(
+    ex.Record(
         fields={
             "review": "This is a great product.",
         },
     ),
-    rg.Record(
+    ex.Record(
         fields={
             "review": "This is a bad product.",
         },

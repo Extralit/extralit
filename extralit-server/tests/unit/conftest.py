@@ -48,7 +48,7 @@ def opensearch(elasticsearch_config: dict) -> Generator[OpenSearch, None, None]:
     client = OpenSearch(**elasticsearch_config)
     yield client
 
-    for index_info in client.cat.indices(index="ar.*,rg.*", format="json"):
+    for index_info in client.cat.indices(index="ar.*,ex.*", format="json"):
         client.indices.delete(index=index_info["index"])
 
 

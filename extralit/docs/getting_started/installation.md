@@ -34,7 +34,7 @@ Get your `<api_key>` in `My Settings` in the Argilla UI (by default owner.apikey
 ```python
 import argilla as rg
 
-client = rg.init(
+client = ex.init(
     api_url="<api_url>",
     api_key="<api_key>",
     # headers={"Authorization": f"Bearer {HF_TOKEN}"}

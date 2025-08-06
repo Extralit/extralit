@@ -18,7 +18,7 @@ import uuid
 from tempfile import TemporaryDirectory
 from typing import Any, List
 
-import extralit as rg
+import extralit as ex
 import pytest
 from extralit._exceptions import SettingsError
 from datasets import load_dataset
@@ -29,18 +29,18 @@ _RETRIES = 5
 
 
 @pytest.fixture
-def dataset(client, dataset_name: str) -> rg.Dataset:
-    settings = rg.Settings(
+def dataset(client, dataset_name: str) -> ex.Dataset:
+    settings = ex.Settings(
         fields=[
-            rg.TextField(name="text"),
-            rg.ImageField(name="image"),
-            rg.ChatField(name="chat"),
+            ex.TextField(name="text"),
+            ex.ImageField(name="image"),
+            ex.ChatField(name="chat"),
         ],
         questions=[
-            rg.LabelQuestion(name="label", labels=["positive", "negative"]),
+            ex.LabelQuestion(name="label", labels=["positive", "negative"]),
         ],
     )
-    dataset = rg.Dataset(
+    dataset = ex.Dataset(
         name=dataset_name,
         settings=settings,
         client=client,
@@ -101,14 +101,14 @@ def token():
 @pytest.mark.parametrize("with_records_export", [True, False])
 class TestDiskImportExportMixin:
     def test_export_dataset_to_disk(
-        self, dataset: rg.Dataset, mock_data: List[dict[str, Any]], with_records_export: bool
+        self, dataset: ex.Dataset, mock_data: List[dict[str, Any]], with_records_export: bool
     ):
         dataset.records.log(records=mock_data)
 
         with TemporaryDirectory() as temp_dir:
             output_dir = dataset.to_disk(path=temp_dir, with_records=with_records_export)
 
-            records_path = os.path.join(output_dir, rg.Dataset._DEFAULT_RECORDS_PATH)
+            records_path = os.path.join(output_dir, ex.Dataset._DEFAULT_RECORDS_PATH)
             if with_records_export:
                 assert os.path.exists(records_path)
                 with open(records_path, "r") as f:
@@ -120,12 +120,12 @@ class TestDiskImportExportMixin:
             else:
                 assert not os.path.exists(records_path)
 
-            settings_path = os.path.join(output_dir, rg.Dataset._DEFAULT_SETTINGS_PATH)
+            settings_path = os.path.join(output_dir, ex.Dataset._DEFAULT_SETTINGS_PATH)
             assert os.path.exists(settings_path)
             with open(settings_path, "r") as f:
                 exported_settings = json.load(f)
 
-            dataset_path = os.path.join(output_dir, rg.Dataset._DEFAULT_DATASET_PATH)
+            dataset_path = os.path.join(output_dir, ex.Dataset._DEFAULT_DATASET_PATH)
             assert os.path.exists(dataset_path)
             with open(dataset_path, "r") as f:
                 exported_dataset = json.load(f)
@@ -139,7 +139,7 @@ class TestDiskImportExportMixin:
     @pytest.mark.parametrize("with_records_import", [True, False])
     def test_import_dataset_from_disk(
         self,
-        dataset: rg.Dataset,
+        dataset: ex.Dataset,
         client,
         mock_data: List[dict[str, Any]],
         with_records_export: bool,
@@ -149,7 +149,7 @@ class TestDiskImportExportMixin:
 
         with TemporaryDirectory() as temp_dir:
             output_dir = dataset.to_disk(path=temp_dir, with_records=with_records_export)
-            new_dataset = rg.Dataset.from_disk(
+            new_dataset = ex.Dataset.from_disk(
                 output_dir, client=client, with_records=with_records_import, name=f"test_{uuid.uuid4()}"
             )
 
@@ -186,7 +186,7 @@ class TestDiskImportExportMixin:
 @pytest.mark.parametrize("with_records_export", [True, False])
 class TestHubImportExportMixin:
     def test_export_dataset_to_hub(
-        self, token: str, dataset: rg.Dataset, mock_data: List[dict[str, Any]], with_records_export: bool
+        self, token: str, dataset: ex.Dataset, mock_data: List[dict[str, Any]], with_records_export: bool
     ):
         repo_id = f"extralit-dev/test_export_dataset_to_hub_with_records_{with_records_export}"
         dataset.records.log(records=mock_data)
@@ -199,7 +199,7 @@ class TestHubImportExportMixin:
     def test_import_dataset_from_hub(
         self,
         token: str,
-        dataset: rg.Dataset,
+        dataset: ex.Dataset,
         client,
         mock_data: List[dict[str, Any]],
         with_records_export: bool,
@@ -219,7 +219,7 @@ class TestHubImportExportMixin:
                 match="Trying to load a dataset `with_records=True` but dataset does not contain any records.",
             ):
                 try:
-                    new_dataset = rg.Dataset.from_hub(
+                    new_dataset = ex.Dataset.from_hub(
                         repo_id=repo_id,
                         client=client,
                         with_records=with_records_import,
@@ -231,7 +231,7 @@ class TestHubImportExportMixin:
                     pytest.skip(f"Skipping test due to Hugging Face Hub connection error: {e}")
         else:
             try:
-                new_dataset = rg.Dataset.from_hub(
+                new_dataset = ex.Dataset.from_hub(
                     repo_id=repo_id,
                     client=client,
                     with_records=with_records_import,
@@ -258,8 +258,8 @@ class TestHubImportExportMixin:
     def test_import_dataset_from_hub_using_settings(
         self,
         token: str,
-        dataset: rg.Dataset,
-        client: rg.Extralit,
+        dataset: ex.Dataset,
+        client: ex.Extralit,
         mock_data: List[dict[str, Any]],
         with_records_export: bool,
         with_records_import: bool,
@@ -272,13 +272,13 @@ class TestHubImportExportMixin:
             dataset.to_hub(repo_id=repo_id, with_records=with_records_export, token=token)
         except (HfHubHTTPError, ReadTimeout, ConnectTimeout, HTTPError, RequestException) as e:
             pytest.skip(f"Skipping test due to Hugging Face Hub connection error: {e}")
-        settings = rg.Settings(
+        settings = ex.Settings(
             fields=[
-                rg.TextField(name="text"),
+                ex.TextField(name="text"),
             ],
             questions=[
-                rg.LabelQuestion(name="label", labels=["positive", "negative"]),
-                rg.LabelQuestion(name="extra_label", labels=["extra_positive", "extra_negative"]),
+                ex.LabelQuestion(name="label", labels=["positive", "negative"]),
+                ex.LabelQuestion(name="extra_label", labels=["extra_positive", "extra_negative"]),
             ],
         )
         if with_records_import and not with_records_export:
@@ -287,7 +287,7 @@ class TestHubImportExportMixin:
                 match="Trying to load a dataset `with_records=True` but dataset does not contain any records.",
             ):
                 try:
-                    new_dataset = rg.Dataset.from_hub(
+                    new_dataset = ex.Dataset.from_hub(
                         repo_id=repo_id,
                         client=client,
                         with_records=with_records_import,
@@ -299,7 +299,7 @@ class TestHubImportExportMixin:
                     pytest.skip(f"Skipping test due to Hugging Face Hub connection error: {e}")
         else:
             try:
-                new_dataset = rg.Dataset.from_hub(
+                new_dataset = ex.Dataset.from_hub(
                     repo_id=repo_id,
                     client=client,
                     with_records=with_records_import,
@@ -328,8 +328,8 @@ class TestHubImportExportMixin:
     def test_import_dataset_from_hub_using_wrong_settings(
         self,
         token: str,
-        dataset: rg.Dataset,
-        client: rg.Extralit,
+        dataset: ex.Dataset,
+        client: ex.Extralit,
         mock_data: List[dict[str, Any]],
         with_records_export: bool,
     ):
@@ -340,32 +340,32 @@ class TestHubImportExportMixin:
             dataset.to_hub(repo_id=repo_id, with_records=with_records_export, token=token)
         except (HfHubHTTPError, ReadTimeout, ConnectTimeout, HTTPError, RequestException) as e:
             pytest.skip(f"Skipping test due to Hugging Face Hub connection error: {e}")
-        settings = rg.Settings(
+        settings = ex.Settings(
             fields=[
-                rg.TextField(name="text"),
+                ex.TextField(name="text"),
             ],
             questions=[
-                rg.RatingQuestion(name="label", values=[1, 2, 3, 4, 5]),
+                ex.RatingQuestion(name="label", values=[1, 2, 3, 4, 5]),
             ],
         )
         if with_records_export:
             with pytest.raises(SettingsError):
                 try:
-                    rg.Dataset.from_hub(
+                    ex.Dataset.from_hub(
                         repo_id=repo_id, client=client, token=token, settings=settings, name=mock_dataset_name
                     )
                 except (HfHubHTTPError, ReadTimeout, ConnectTimeout, HTTPError, RequestException) as e:
                     pytest.skip(f"Skipping test due to Hugging Face Hub connection error: {e}")
         else:
             try:
-                rg.Dataset.from_hub(
+                ex.Dataset.from_hub(
                     repo_id=repo_id, client=client, token=token, settings=settings, name=mock_dataset_name
                 )
             except (HfHubHTTPError, ReadTimeout, ConnectTimeout, HTTPError, RequestException) as e:
                 pytest.skip(f"Skipping test due to Hugging Face Hub connection error: {e}")
 
     def test_import_dataset_from_hub_with_automatic_settings(
-        self, token: str, dataset: rg.Dataset, client, mock_data: List[dict[str, Any]], with_records_export: bool
+        self, token: str, dataset: ex.Dataset, client, mock_data: List[dict[str, Any]], with_records_export: bool
     ):
         repo_id = f"extralit-dev/test_import_dataset_from_hub_with_automatic_settings_{with_records_export}"
         mock_dataset_name = f"test_import_dataset_from_hub_with_automatic_settings_{uuid.uuid4()}"
@@ -373,7 +373,7 @@ class TestHubImportExportMixin:
         try:
             mocked_external_dataset = load_dataset(path=repo_id, split="train")
 
-            rg_dataset = rg.Dataset.from_hub(
+            rg_dataset = ex.Dataset.from_hub(
                 repo_id=repo_id,
                 client=client,
                 token=token,

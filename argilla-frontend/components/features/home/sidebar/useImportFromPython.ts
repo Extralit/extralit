@@ -14,27 +14,27 @@ export const useImportFromPython = () => {
 
 import argilla as rg
 
-client = rg.Argilla(
+client = ex.Extralit(
     api_url="${window.location.origin}",
     api_key="${user.apiKey}",
 )
 
-settings = rg.Settings(
+settings = ex.Settings(
     guidelines="These are some guidelines.",
     fields=[
-        rg.TextField(
+        ex.TextField(
             name="text",
         ),
     ],
     questions=[
-        rg.LabelQuestion(
+        ex.LabelQuestion(
             name="label",
             labels=["yes", "no"]
         ),
     ],
 )
 
-dataset = rg.Dataset(
+dataset = ex.Dataset(
     name="my_dataset",
     settings=settings,
 )

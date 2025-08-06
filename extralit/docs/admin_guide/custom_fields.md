@@ -9,7 +9,7 @@ This guide demonstrates how to create custom fields in Argilla using HTML, CSS, 
 !!! info "Main Class"
 
     ```python
-    rg.CustomField(
+    ex.CustomField(
         name="custom",
         title="Custom",
         template="<div>{{record.fields.custom.key}}</div>",
@@ -68,23 +68,23 @@ We can now pass these templates to the `CustomField` class.
 ```python
 import argilla as rg
 
-custom_field = rg.CustomField(
+custom_field = ex.CustomField(
     name="image",
     template=css_template + html_template,
 )
 
-settings = rg.Settings(
+settings = ex.Settings(
     fields=[custom_field],
-    questions=[rg.TextQuestion(name="response")],
+    questions=[ex.TextQuestion(name="response")],
 )
 
-dataset = rg.Dataset(
+dataset = ex.Dataset(
     name="custom_field_dataset",
     settings=settings,
 ).create()
 
 dataset.records.log([
-    rg.Record(
+    ex.Record(
         fields={
             "image": {
                 "original": "https://argilla.io/brand-assets/argilla/argilla-logo-color-black.png",
@@ -140,7 +140,7 @@ The result will be the following:
         {{/each}}
     </div>
     """
-    record = rg.Record(
+    record = ex.Record(
         fields={"text": "hello"},
         metadata={
             "name": "John Doe",
@@ -157,7 +157,7 @@ The result will be the following:
     ```python
     template = "{{ json record.fields.user_profile }}"
 
-    record = rg.Record(
+    record = ex.Record(
         fields={
             "user_profile": {
                 "name": "John Doe",
@@ -222,7 +222,7 @@ We can now pass these templates to the `CustomField` class, ensuring that the `a
 ```python
 import argilla as rg
 
-custom_field = rg.CustomField(
+custom_field = ex.CustomField(
     name="image",
     template=template + script,
     advanced_mode=True
@@ -316,7 +316,7 @@ Besides the new `CustomField` code above, reusing the same approach as in the [U
     Next, we will create a record with two URLs to 3D objects from [the 3d-arena dataset](https://huggingface.co/datasets/dylanebert/3d-arena).
 
     ```python
-    record = rg.Record(
+    record = ex.Record(
         fields={
             "object": {
                 "option_a": "https://huggingface.co/datasets/dylanebert/3d-arena/resolve/main/outputs/Strawb3rry/a_bookshelf_with_ten_books_stacked_vertically.glb",

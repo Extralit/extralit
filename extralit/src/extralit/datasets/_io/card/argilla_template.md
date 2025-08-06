@@ -32,7 +32,7 @@ To load with Argilla, you'll just need to install Argilla as `pip install extral
 ```python
 import argilla as rg
 
-ds = rg.Dataset.from_hub("{{ repo_id }}", settings="auto")
+ds = ex.Dataset.from_hub("{{ repo_id }}", settings="auto")
 ```
 
 This will load the settings and records from the dataset repository and push them to you Argilla server for exploration and annotation.
@@ -53,7 +53,7 @@ This will only load the records of the dataset, but not the Argilla settings.
 
 This dataset repo contains:
 
-* Dataset records in a format compatible with HuggingFace `datasets`. These records will be loaded automatically when using `rg.Dataset.from_hub` and can be loaded independently using the `datasets` library via `load_dataset`.
+* Dataset records in a format compatible with HuggingFace `datasets`. These records will be loaded automatically when using `ex.Dataset.from_hub` and can be loaded independently using the `datasets` library via `load_dataset`.
 * The [annotation guidelines](#annotation-guidelines) that have been used for building and curating the dataset, if they've been defined in Argilla.
 * A dataset configuration folder conforming to the Argilla dataset format in `.argilla`.
 
@@ -63,18 +63,18 @@ The dataset is created in Argilla with: **fields**, **questions**, **suggestions
 
 The **fields** are the features or text of a dataset's records. For example, the 'text' column of a text classification dataset of the 'prompt' column of an instruction following dataset.
 
-| Field Name | Title | Type | Required | Markdown |
-| ---------- | ----- | ---- | -------- | -------- |
-{% for field in argilla_fields %}| {{ field.name }} | {{ field.title }} | {{ field.type }} | {{ field.required }} | {{ field.use_markdown }} |
+| Field Name                        | Title            | Type              | Required         | Markdown             |
+| --------------------------------- | ---------------- | ----------------- | ---------------- | -------------------- |
+| {% for field in argilla_fields %} | {{ field.name }} | {{ field.title }} | {{ field.type }} | {{ field.required }} | {{ field.use_markdown }} |
 {% endfor %}
 
 ### Questions
 
 The **questions** are the questions that will be asked to the annotators. They can be of different types, such as rating, text, label_selection, multi_label_selection, or ranking.
 
-| Question Name | Title | Type | Required | Description | Values/Labels |
-| ------------- | ----- | ---- | -------- | ----------- | ------------- |
-{% for question in argilla_questions %}| {{ question.name }} | {{ question.title }} | {{ question.type }} | {{ question.required }} | {{ question.description | default("N/A", true) }} | {% if question.type in ["rating", "label_selection", "multi_label_selection", "ranking"] %}{% if question.type in ["rating", "ranking"] %}{{ question.values | list }}{% else %}{{ question.labels | list }}{% endif %}{% else %}N/A{% endif %} |
+| Question Name                           | Title               | Type                 | Required            | Description             | Values/Labels           |
+| --------------------------------------- | ------------------- | -------------------- | ------------------- | ----------------------- | ----------------------- |
+| {% for question in argilla_questions %} | {{ question.name }} | {{ question.title }} | {{ question.type }} | {{ question.required }} | {{ question.description | default("N/A", true) }} | {% if question.type in ["rating", "label_selection", "multi_label_selection", "ranking"] %}{% if question.type in ["rating", "ranking"] %}{{ question.values | list }}{% else %}{{ question.labels | list }}{% endif %}{% else %}N/A{% endif %} |
 {% endfor %}
 
 <!-- check length of metadata properties -->
@@ -82,9 +82,9 @@ The **questions** are the questions that will be asked to the annotators. They c
 ### Metadata
 
 The **metadata** is a dictionary that can be used to provide additional information about the dataset record.
-| Metadata Name | Title | Type | Values | Visible for Annotators |
-| ------------- | ----- | ---- | ------ | ---------------------- |
-{% for metadata in argilla_metadata_properties %} | {{ metadata.name }} | {{ metadata.title }} | {{ metadata.type }} | {% if metadata.values %}{{ metadata.values }}{% else %}{{ metadata.min }} - {{ metadata.max }}{% endif %} | {{ metadata.visible_for_annotators }} |
+| Metadata Name                                     | Title               | Type                 | Values              | Visible for Annotators                                                                                    |
+| ------------------------------------------------- | ------------------- | -------------------- | ------------------- | --------------------------------------------------------------------------------------------------------- |
+| {% for metadata in argilla_metadata_properties %} | {{ metadata.name }} | {{ metadata.title }} | {{ metadata.type }} | {% if metadata.values %}{{ metadata.values }}{% else %}{{ metadata.min }} - {{ metadata.max }}{% endif %} | {{ metadata.visible_for_annotators }} |
 {% endfor %}
 {% endif %}
 
@@ -92,9 +92,9 @@ The **metadata** is a dictionary that can be used to provide additional informat
 ### Vectors
 The **vectors** contain a vector representation of the record that can be used in  search.
 
-| Vector Name | Title | Dimensions |
-|-------------|-------|------------|
-{% for vector in argilla_vectors_settings %}| {{ vector.name }} | {{ vector.title }} | [1, {{ vector.dimensions }}] |
+| Vector Name                                  | Title             | Dimensions         |
+| -------------------------------------------- | ----------------- | ------------------ |
+| {% for vector in argilla_vectors_settings %} | {{ vector.name }} | {{ vector.title }} | [1, {{ vector.dimensions }}] |
 {% endfor %}
 {% endif %}
 

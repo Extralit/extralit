@@ -15,34 +15,34 @@ We define metadata properties via type specific classes. The following example d
 `TermsMetadataProperty` is used to define a metadata field with a list of options. For example, a color field with options red, blue, and green. `FloatMetadataProperty` and `IntegerMetadataProperty` is used to define a metadata field with a float value. For example, a price field with a minimum value of 0.0 and a maximum value of 100.0.
 
 ```python
-metadata_field = rg.TermsMetadataProperty(
+metadata_field = ex.TermsMetadataProperty(
     name="color",
     options=["red", "blue", "green"],
     title="Color",
 )
 
-float_metadata_field = rg.FloatMetadataProperty(
+float_metadata_field = ex.FloatMetadataProperty(
     name="price",
     min=0.0,
     max=100.0,
     title="Price",
 )
 
-int_metadata_field = rg.IntegerMetadataProperty(
+int_metadata_field = ex.IntegerMetadataProperty(
     name="quantity",
     min=0,
     max=100,
     title="Quantity",
 )
 
-dataset = rg.Dataset(
+dataset = ex.Dataset(
     name="my_dataset",
-    settings=rg.Settings(
+    settings=ex.Settings(
         fields=[
-            rg.TextField(name="text"),
+            ex.TextField(name="text"),
         ],
         questions=[
-            rg.TextQuestion(name="response"),
+            ex.TextQuestion(name="response"),
         ],
         metadata=[
             metadata_field,
@@ -52,13 +52,13 @@ dataset = rg.Dataset(
     ),
 )
 
-dataset = rg.Dataset(
+dataset = ex.Dataset(
     name="my_dataset",
     settings=settings,
 )
 ```
 
-> To add records with metadata, refer to the [`rg.Metadata`](../records/metadata.md) class documentation.
+> To add records with metadata, refer to the [`ex.Metadata`](../records/metadata.md) class documentation.
 
 ---
 

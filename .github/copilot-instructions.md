@@ -297,7 +297,7 @@ This section describes how extracted data from documents is structured, stored, 
 
 ### 2. Data Normalization into Argilla Records
 
-Data from `PaperExtraction` is normalized into multiple `rg.Record` objects in Argilla datasets, separating document metadata from specific extractions:
+Data from `PaperExtraction` is normalized into multiple `ex.Record` objects in Argilla datasets, separating document metadata from specific extractions:
 
 - **Document-Level Record**: (`extralit/src/extralit/pipeline/export/record.py:create_publication_records()`)
   - Single "publication" record per document

@@ -18,7 +18,7 @@ from datetime import datetime
 import httpx
 from pytest_httpx import HTTPXMock
 
-import extralit as rg
+import extralit as ex
 from extralit._models import FieldModel
 from extralit._models._settings._fields import ImageFieldSettings, ChatFieldSettings
 from extralit.settings._field import ImageField, ChatField, CustomField
@@ -116,5 +116,5 @@ class TestFieldsAPI:
             status_code=200,
         )
         with httpx.Client() as client:
-            client = rg.Extralit(api_url="http://test_url")
+            client = ex.Extralit(api_url="http://test_url")
             client.api.fields.create(mock_field)

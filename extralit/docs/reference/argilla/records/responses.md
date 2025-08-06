@@ -1,7 +1,7 @@
 ---
 hide: footer
 ---
-# `rg.Response`
+# `ex.Response`
 
 Class for interacting with Argilla Responses of records. Responses are answers to questions by a user. Therefore, a question can have multiple responses, one for each user that has answered the question. A `Response` is typically created by a user in the UI or consumed from a data source as a label, unlike a `Suggestion` which is typically created by a model prediction.
 
@@ -14,9 +14,9 @@ Instantiate the `Record` and related `Response` objects:
 ```python
 dataset.records.log(
     [
-        rg.Record(
+        ex.Record(
             fields={"text": "Hello World, how are you?"},
-            responses=[rg.Response("label", "negative", user_id=user.id)],
+            responses=[ex.Response("label", "negative", user_id=user.id)],
             external_id=str(uuid.uuid4()),
         )
     ]
@@ -57,7 +57,7 @@ for record in dataset.records:
             print(response.user_id)
     else:
         record.responses.add(
-            rg.Response("label", "positive", user_id=user.id)
+            ex.Response("label", "positive", user_id=user.id)
         ) # (2)
 
 ```
@@ -71,7 +71,7 @@ Depending on the `Question` type, responses might need to be formatted in a slig
 === "For `LabelQuestion`"
 
     ```python
-    rg.Response(
+    ex.Response(
         question_name="label",
         value="positive",
         user_id=user.id,
@@ -82,7 +82,7 @@ Depending on the `Question` type, responses might need to be formatted in a slig
 === "For `MultiLabelQuestion`"
 
     ```python
-    rg.Response(
+    ex.Response(
         question_name="multi-label",
         value=["positive", "negative"],
         user_id=user.id,
@@ -93,7 +93,7 @@ Depending on the `Question` type, responses might need to be formatted in a slig
 === "For `RankingQuestion`"
 
     ```python
-    rg.Response(
+    ex.Response(
         question_name="rank",
         value=["1", "3", "2"],
         user_id=user.id,
@@ -104,7 +104,7 @@ Depending on the `Question` type, responses might need to be formatted in a slig
 === "For `RatingQuestion`"
 
     ```python
-    rg.Response(
+    ex.Response(
         question_name="rating",
         value=4,
         user_id=user.id,
@@ -115,7 +115,7 @@ Depending on the `Question` type, responses might need to be formatted in a slig
 === "For `SpanQuestion`"
 
     ```python
-    rg.Response(
+    ex.Response(
         question_name="span",
         value=[{"start": 0, "end": 9, "label": "MISC"}],
         user_id=user.id,
@@ -126,7 +126,7 @@ Depending on the `Question` type, responses might need to be formatted in a slig
 === "For `TextQuestion`"
 
     ```python
-    rg.Response(
+    ex.Response(
         question_name="text",
         value="value",
         user_id=user.id,

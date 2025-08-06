@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import extralit as rg
+import extralit as ex
 
 
 class TestSpanQuestions:
     def test_create_question(self):
-        question = rg.SpanQuestion(
+        question = ex.SpanQuestion(
             name="span_question", field="field", allow_overlapping=True, labels=["label1", "label2", "label3"]
         )
         assert question.name == "span_question"
@@ -27,21 +27,21 @@ class TestSpanQuestions:
         assert question.visible_labels == 3
 
     def test_change_field_value(self):
-        question = rg.SpanQuestion(
+        question = ex.SpanQuestion(
             name="span_question", field="field", allow_overlapping=True, labels=["label1", "label2"]
         )
         question.field = "new_field"
         assert question.field == "new_field"
 
     def test_change_allow_overlapping_value(self):
-        question = rg.SpanQuestion(
+        question = ex.SpanQuestion(
             name="span_question", field="field", allow_overlapping=True, labels=["label1", "label2"]
         )
         question.allow_overlapping = False
         assert question.allow_overlapping is False
 
     def test_change_labels_value(self):
-        question = rg.SpanQuestion(
+        question = ex.SpanQuestion(
             name="span_question", field="field", allow_overlapping=True, labels=["label1", "label2", "label3"]
         )
         question.labels = ["label1", "label2"]

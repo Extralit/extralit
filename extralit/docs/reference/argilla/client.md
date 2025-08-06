@@ -1,7 +1,7 @@
 ---
 hide: footer
 ---
-# `rg.Argilla`
+# `ex.Extralit`
 
 To interact with the Argilla server from Python you can use the `Argilla` class. The `Argilla` client is used to create, get, update, and delete all Argilla resources, such as workspaces, users, datasets, and records.
 
@@ -14,7 +14,7 @@ To deploy Argilla on Hugging Face Spaces, use the `deploy_on_spaces` method.
 ```python
 import argilla as rg
 
-client = rg.Argilla.deploy_on_spaces(api_key="12345678")
+client = ex.Extralit.deploy_on_spaces(api_key="12345678")
 ```
 
 ### Connecting to an Argilla server
@@ -24,7 +24,7 @@ To connect to an Argilla server, instantiate the `Argilla` class and pass the `a
 ```python
 import argilla as rg
 
-client = rg.Argilla(
+client = ex.Extralit(
     api_url="https://argilla.example.com",
     api_key="my_api_key",
 )

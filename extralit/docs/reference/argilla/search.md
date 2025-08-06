@@ -1,7 +1,7 @@
 ---
 hide: footer
 ---
-# `rg.Query`
+# `ex.Query`
 
 To collect records based on searching criteria, you can use the `Query` and `Filter` classes. The `Query` class is used to define the search criteria, while the `Filter` class is used to filter the search results. `Filter` is passed to a `Query` object so you can combine multiple filters to create complex search queries. A `Query` object can also be passed to `Dataset.records` to fetch records based on the search criteria.
 
@@ -24,7 +24,7 @@ Argilla allows you to filter records based on conditions. You can use the `Filte
 ```python
 
 # create a range from 10 to 20
-range_filter = rg.Filter(
+range_filter = ex.Filter(
     [
         ("metadata.count", ">=", 10),
         ("metadata.count", "<=", 20)
@@ -32,7 +32,7 @@ range_filter = rg.Filter(
 )
 
 # query records with metadata count greater than 10 and less than 20
-query = rg.Query(filters=range_filter, query="paris")
+query = ex.Query(filters=range_filter, query="paris")
 
 # iterate over the results
 for record in dataset.records(query=query):

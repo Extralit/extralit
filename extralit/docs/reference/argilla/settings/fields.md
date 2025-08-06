@@ -11,32 +11,32 @@ Fields in Argilla define the content of a record that will be reviewed by a user
 To define a field, instantiate the different field classes and pass it to the `fields` parameter of the `Settings` class.
 
 ```python
-text_field = rg.TextField(name="text")
-markdown_field = rg.TextField(name="text", use_markdown=True)
-image_field = rg.ImageField(name="image")
+text_field = ex.TextField(name="text")
+markdown_field = ex.TextField(name="text", use_markdown=True)
+image_field = ex.ImageField(name="image")
 ```
 
 The `fields` parameter of the `Settings` class can accept a list of fields, like this:
 
 ```python
-settings = rg.Settings(
+settings = ex.Settings(
     fields=[
         text_field,
         markdown_field,
         image_field,
     ],
     questions=[
-        rg.TextQuestion(name="response"),
+        ex.TextQuestion(name="response"),
     ],
 )
 
-data = rg.Dataset(
+data = ex.Dataset(
     name="my_dataset",
     settings=settings,
 )
 ```
 
-> To add records with values for fields, refer to the [`rg.Dataset.records`](../records/records.md) documentation.
+> To add records with values for fields, refer to the [`ex.Dataset.records`](../records/records.md) documentation.
 
 ---
 
