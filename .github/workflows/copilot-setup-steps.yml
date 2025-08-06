@@ -103,6 +103,6 @@ jobs:
           mkdir -p /home/runner/.extralit
           pdm run alembic -c src/extralit_server/alembic.ini upgrade head
 
-      - name: Verify critical dependencies
-        run: |
-          cd extralit-server && pdm run python -c "import pandera; print('✓ Pandera available')" || echo "⚠ Pandera not available"
+    #   - name: Verify critical dependencies
+    #     run: |
+    #       cd extralit-server && pdm run python -c "import pandera; print('✓ Pandera available')" || echo "⚠ Pandera not available"
