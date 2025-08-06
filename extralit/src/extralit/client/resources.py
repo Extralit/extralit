@@ -28,7 +28,7 @@ from extralit._models import DatasetModel, ResourceModel, UserModel, WorkspaceMo
 
 if TYPE_CHECKING:
     from extralit import Dataset, User, Workspace, Webhook
-    from extralit.client.core import Argilla
+    from extralit.client.core import Extralit
 
 __all__ = ["Users", "Workspaces", "Datasets", "Webhooks"]
 
@@ -39,7 +39,7 @@ class Users(Sequence["User"], ResourceHTMLReprMixin):
     class _Iterator(GenericIterator["User"]):
         pass
 
-    def __init__(self, client: "Argilla") -> None:
+    def __init__(self, client: "Extralit") -> None:
         self._client = client
         self._api = client.api.users
 
@@ -135,7 +135,7 @@ class Workspaces(Sequence["Workspace"], ResourceHTMLReprMixin):
     class _Iterator(GenericIterator["Workspace"]):
         pass
 
-    def __init__(self, client: "Argilla") -> None:
+    def __init__(self, client: "Extralit") -> None:
         self._client = client
         self._api = client.api.workspaces
 
@@ -232,7 +232,7 @@ class Datasets(Sequence["Dataset"], ResourceHTMLReprMixin):
             dataset = super().__next__()
             return dataset.get()
 
-    def __init__(self, client: "Argilla") -> None:
+    def __init__(self, client: "Extralit") -> None:
         self._client = client
         self._api = client.api.datasets
 
@@ -350,7 +350,7 @@ class Webhooks(Sequence["Webhook"], ResourceHTMLReprMixin):
     class _Iterator(GenericIterator["Webhook"]):
         pass
 
-    def __init__(self, client: "Argilla") -> None:
+    def __init__(self, client: "Extralit") -> None:
         self._client = client
         self._api = client.api.webhooks
 

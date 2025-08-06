@@ -35,7 +35,7 @@ from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
 
-from extralit.client import Argilla
+from extralit.client import Extralit
 from extralit.cli.rich import get_argilla_themed_panel
 
 
@@ -60,7 +60,7 @@ def list_import_histories(
 
     try:
         # Initialize client and get workspace
-        client = Argilla.from_credentials()
+        client = Extralit.from_credentials()
         workspace_obj = client.workspaces(name=workspace)
         if not workspace_obj:
             panel = get_argilla_themed_panel(
@@ -97,7 +97,7 @@ def list_import_histories(
 
 
 def _list_import_histories_internal(
-    client: Argilla, workspace_obj, workspace: str, console: Console, debug: bool
+    client: Extralit, workspace_obj, workspace: str, console: Console, debug: bool
 ) -> None:
     """Internal function to list import histories."""
     # Fetch import histories
@@ -166,7 +166,7 @@ def _list_import_histories_internal(
 
 
 def _export_import_history_internal(
-    client: Argilla, workspace_obj, history_id: str, output_dir: Path, console: Console, debug: bool
+    client: Extralit, workspace_obj, history_id: str, output_dir: Path, console: Console, debug: bool
 ) -> None:
     """Internal function to export import history."""
     # Ensure output directory exists
@@ -221,7 +221,7 @@ def _export_import_history_internal(
 
 
 def _show_import_history_internal(
-    client: Argilla, workspace_obj, history_id: str, console: Console, debug: bool
+    client: Extralit, workspace_obj, history_id: str, console: Console, debug: bool
 ) -> None:
     """Internal function to show import history details."""
     # Fetch detailed import history

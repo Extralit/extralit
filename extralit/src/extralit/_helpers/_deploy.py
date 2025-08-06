@@ -25,7 +25,7 @@ from extralit._helpers._log import LoggingMixin
 if TYPE_CHECKING:
     from huggingface_hub.hf_api import RepoUrl, SpaceHardware, SpaceStorage  # noqa
 
-    from extralit.client import Argilla
+    from extralit.client import Extralit
 
 _SLEEP_TIME = 10
 _ARGILLA_SPACE_TEMPLATE_REPO = "argilla/argilla-template-space"
@@ -42,7 +42,7 @@ class SpacesDeploymentMixin(LoggingMixin):
         space_storage: Optional[Union[str, "SpaceStorage", Literal["small", "medium", "large"]]] = None,
         space_hardware: Optional[Union[str, "SpaceHardware", Literal["cpu-basic", "cpu-upgrade"]]] = "cpu-basic",
         private: Optional[Union[bool, None]] = False,
-    ) -> "Argilla":
+    ) -> "Extralit":
         """
         Deploys Argilla on Hugging Face Spaces.
 

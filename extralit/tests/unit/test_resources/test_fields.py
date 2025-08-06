@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -116,5 +116,5 @@ class TestFieldsAPI:
             status_code=200,
         )
         with httpx.Client() as client:
-            client = rg.Argilla(api_url="http://test_url")
+            client = rg.Extralit(api_url="http://test_url")
             client.api.fields.create(mock_field)

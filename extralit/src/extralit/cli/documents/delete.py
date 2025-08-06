@@ -20,7 +20,7 @@ from uuid import UUID
 import typer
 from rich.console import Console
 
-from extralit.client import Argilla
+from extralit.client import Extralit
 from extralit.cli.rich import get_argilla_themed_panel
 
 
@@ -35,7 +35,7 @@ def delete_document(
     console = Console()
 
     try:
-        client = Argilla.from_credentials()
+        client = Extralit.from_credentials()
 
         # Get the workspace
         workspace_obj = client.workspaces(name=workspace)

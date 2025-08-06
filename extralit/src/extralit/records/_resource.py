@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ from extralit.vectors import Vector
 
 if TYPE_CHECKING:
     from extralit.datasets import Dataset
-    from extralit import Argilla
+    from extralit import Extralit
     from extralit._api import RecordsAPI
 
 
@@ -279,7 +279,7 @@ class Record(Resource):
         return instance
 
     @property
-    def _client(self) -> Optional["Argilla"]:
+    def _client(self) -> Optional["Extralit"]:
         if self._dataset:
             return self.dataset._client
 

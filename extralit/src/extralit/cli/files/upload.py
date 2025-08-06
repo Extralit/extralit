@@ -19,7 +19,7 @@ import typer
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
-from extralit.client import Argilla
+from extralit.client import Extralit
 from extralit.cli.rich import get_argilla_themed_panel
 
 
@@ -34,7 +34,7 @@ def upload_file(
     console = Console()
 
     try:
-        client = Argilla.from_credentials()
+        client = Extralit.from_credentials()
 
         workspace_obj = client.workspaces(name=workspace)
         if not workspace_obj:

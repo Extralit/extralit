@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ from extralit._exceptions import (
 @pytest.fixture
 def dataset(httpx_mock: HTTPXMock) -> rg.Dataset:
     api_url = "http://test_url"
-    client = rg.Argilla(api_url)
+    client = rg.Extralit(api_url)
     workspace_id = uuid.uuid4()
     workspace_name = "workspace-01"
     mock_workspace = {
@@ -274,7 +274,7 @@ class TestDatasetsAPI:
             status_code=200,
         )
         with httpx.Client() as client:
-            client = rg.Argilla("http://test_url")
+            client = rg.Extralit("http://test_url")
             client.api.datasets.delete(mock_dataset_id)
             pytest.raises(httpx.HTTPError, client.api.datasets.get, mock_dataset_id)
 
@@ -302,7 +302,7 @@ class TestDatasetsAPI:
             status_code=200,
         )
         with httpx.Client() as client:
-            client = rg.Argilla("http://test_url")
+            client = rg.Extralit("http://test_url")
             client.api.datasets.publish(mock_dataset_id)
             dataset = client.api.datasets.get(mock_dataset_id)
             assert dataset.status == "ready"
@@ -329,7 +329,7 @@ class TestDatasetsAPI:
             json=mock_return_value, url=f"{api_url}/api/v1/me/datasets", method="GET", status_code=200
         )
         with httpx.Client():
-            client = rg.Argilla(api_url)
+            client = rg.Extralit(api_url)
             dataset = client.api.datasets.get_by_name_and_workspace_id("dataset-01", mock_workspace_id)
             assert mock_dataset_id.hex == mock_return_value["items"][0]["id"]
             assert dataset.name == mock_return_value["items"][0]["name"]

@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import random
-import uuid
 
 import pytest
 
@@ -22,7 +20,7 @@ from extralit._exceptions import NotFoundError
 
 
 @pytest.fixture
-def dataset(client: rg.Argilla, dataset_name: str):
+def dataset(client: rg.Extralit, dataset_name: str):
     ws = client.workspaces[0]
     dataset = rg.Dataset(
         name=dataset_name,
@@ -42,7 +40,7 @@ def dataset(client: rg.Argilla, dataset_name: str):
     dataset.delete()
 
 
-def test_dataset_with_workspace(client: rg.Argilla, dataset_name: str):
+def test_dataset_with_workspace(client: rg.Extralit, dataset_name: str):
     ws = client.workspaces[0]
     dataset = rg.Dataset(
         name=dataset_name,
@@ -63,7 +61,7 @@ def test_dataset_with_workspace(client: rg.Argilla, dataset_name: str):
     assert dataset.workspace == ws
 
 
-def test_dataset_with_workspace_name(client: rg.Argilla, dataset_name: str):
+def test_dataset_with_workspace_name(client: rg.Extralit, dataset_name: str):
     ws = client.workspaces[0]
     dataset = rg.Dataset(
         name=dataset_name,
@@ -85,7 +83,7 @@ def test_dataset_with_workspace_name(client: rg.Argilla, dataset_name: str):
     assert dataset.workspace == ws
 
 
-def test_dataset_with_incorrect_workspace_name(client: rg.Argilla, dataset_name: str):
+def test_dataset_with_incorrect_workspace_name(client: rg.Extralit, dataset_name: str):
     with pytest.raises(expected_exception=NotFoundError):
         rg.Dataset(
             name=dataset_name,
@@ -102,7 +100,7 @@ def test_dataset_with_incorrect_workspace_name(client: rg.Argilla, dataset_name:
         ).create()
 
 
-def test_dataset_with_default_workspace(client: rg.Argilla, dataset_name: str):
+def test_dataset_with_default_workspace(client: rg.Extralit, dataset_name: str):
     dataset = rg.Dataset(
         name=dataset_name,
         settings=rg.Settings(
@@ -121,21 +119,21 @@ def test_dataset_with_default_workspace(client: rg.Argilla, dataset_name: str):
     assert dataset.workspace == client.workspaces[0]
 
 
-def test_retrieving_dataset(client: rg.Argilla, dataset: rg.Dataset):
+def test_retrieving_dataset(client: rg.Extralit, dataset: rg.Dataset):
     ws = client.workspaces[0]
     dataset = client.datasets(dataset.name, workspace=ws)
     assert isinstance(dataset, rg.Dataset)
     assert client.api.datasets.exists(dataset.id)
 
 
-def test_retrieving_dataset_on_name(client: rg.Argilla, dataset: rg.Dataset):
+def test_retrieving_dataset_on_name(client: rg.Extralit, dataset: rg.Dataset):
     ws = client.workspaces[0]
     dataset = client.datasets(dataset.name, workspace=ws.name)
     assert isinstance(dataset, rg.Dataset)
     assert client.api.datasets.exists(dataset.id)
 
 
-def test_retrieving_dataset_on_default(client: rg.Argilla, dataset: rg.Dataset):
+def test_retrieving_dataset_on_default(client: rg.Extralit, dataset: rg.Dataset):
     dataset = client.datasets(dataset.name)
     assert isinstance(dataset, rg.Dataset)
     assert client.api.datasets.exists(dataset.id)

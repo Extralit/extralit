@@ -26,7 +26,7 @@ except ImportError:
 from extralit._api._documents import DocumentsAPI
 from extralit._models._documents import DocumentModel
 from extralit._resource import Resource
-from extralit.client import Argilla
+from extralit.client import Extralit
 
 if TYPE_CHECKING:
     pass
@@ -59,7 +59,7 @@ class Document(Resource):
         pmid: Optional[str] = None,
         doi: Optional[str] = None,
         id: Optional[UUID] = None,
-        client: Optional["Argilla"] = None,
+        client: Optional["Extralit"] = None,
     ) -> None:
         """Initializes a Document object.
 
@@ -77,7 +77,7 @@ class Document(Resource):
         Returns:
             Document: The initialized document object.
         """
-        client = client or Argilla._get_default()
+        client = client or Extralit._get_default()
         super().__init__(client=client, api=client.api.documents)
 
         self._model: DocumentModel = DocumentModel(
@@ -103,7 +103,7 @@ class Document(Resource):
         workspace_id: Optional[UUID] = None,
         pmid: Optional[str] = None,
         doi: Optional[str] = None,
-        client: Optional["Argilla"] = None,
+        client: Optional["Extralit"] = None,
     ) -> "Document":
         """Create a Document from a file path or URL.
 
@@ -157,7 +157,7 @@ class Document(Resource):
         *,
         reference: Optional[str] = None,
         workspace_id: Optional[UUID] = None,
-        client: Optional["Argilla"] = None,
+        client: Optional["Extralit"] = None,
     ) -> "Document":
         """Create a Document from a PubMed ID.
 
@@ -184,7 +184,7 @@ class Document(Resource):
         *,
         reference: Optional[str] = None,
         workspace_id: Optional[UUID] = None,
-        client: Optional["Argilla"] = None,
+        client: Optional["Extralit"] = None,
     ) -> "Document":
         """Create a Document from a DOI.
 
@@ -205,7 +205,7 @@ class Document(Resource):
         )
 
     @classmethod
-    def from_model(cls, model: DocumentModel, client: "Argilla") -> "Document":
+    def from_model(cls, model: DocumentModel, client: "Extralit") -> "Document":
         """Create a Document from a DocumentModel.
 
         Args:
@@ -234,7 +234,7 @@ class Document(Resource):
         cls,
         id: Optional[UUID] = None,
         pmid: Optional[str] = None,
-        client: Optional["Argilla"] = None,
+        client: Optional["Extralit"] = None,
     ) -> "Document":
         """Get a document by ID or PMID.
 
@@ -249,7 +249,7 @@ class Document(Resource):
         Raises:
             ValueError: If neither id nor pmid is provided.
         """
-        client = client or Argilla._get_default()
+        client = client or Extralit._get_default()
 
         if id:
             model = client.api.documents.get(id)
@@ -339,5 +339,5 @@ class Document(Resource):
         self._update_last_api_call()
         self._log_message(f"Document deleted: {self}")
 
-    def _with_client(self, client: "Argilla") -> "Self":
+    def _with_client(self, client: "Extralit") -> "Self":
         return Document.from_model(self._model, client)

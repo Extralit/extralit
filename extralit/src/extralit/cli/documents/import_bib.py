@@ -44,7 +44,7 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
 
 from extralit.workspaces._resource import Workspace
-from extralit.client import Argilla
+from extralit.client import Extralit
 from extralit.cli.rich import get_argilla_themed_panel
 
 
@@ -265,7 +265,7 @@ def _build_documents_payload(df: pd.DataFrame, workspace_obj: Workspace, collect
     return documents
 
 
-def _send_import_analysis_request(client: Argilla, workspace_obj: Workspace, documents, console: Console):
+def _send_import_analysis_request(client: Extralit, workspace_obj: Workspace, documents, console: Console):
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
@@ -286,7 +286,7 @@ def _send_import_analysis_request(client: Argilla, workspace_obj: Workspace, doc
 
 
 def _execute_document_bulk_import(
-    client: Argilla, analysis_result: Dict, df: pd.DataFrame, df_data: Dict, bibtex_file: Path, console: Console
+    client: Extralit, analysis_result: Dict, df: pd.DataFrame, df_data: Dict, bibtex_file: Path, console: Console
 ) -> None:
     """Execute bulk document import with multi-file support per reference."""
     with Progress(
@@ -442,7 +442,7 @@ def _execute_document_bulk_import(
 
 
 def _store_import_history(
-    client: Argilla, analysis_result: Dict, df_data: Dict, bibtex_file: Path, console: Console
+    client: Extralit, analysis_result: Dict, df_data: Dict, bibtex_file: Path, console: Console
 ) -> None:
     """
     Store import history record with dataframe data and metadata.
@@ -554,7 +554,7 @@ def _handle_cli_exception(console: Console, e: Exception, debug: bool = False) -
     raise typer.Exit(code=1)
 
 
-def _validate_workspace_and_folder(client: Argilla, workspace: str, pdf_folder: Path, console: Console) -> Workspace:
+def _validate_workspace_and_folder(client: Extralit, workspace: str, pdf_folder: Path, console: Console) -> Workspace:
     """Validate workspace exists and PDF folder is accessible."""
     workspace_obj = client.workspaces(name=workspace)
     if not workspace_obj:
@@ -626,7 +626,7 @@ def import_bib(
     console = Console()
     try:
         # Initialize client and validate inputs
-        client = Argilla.from_credentials()
+        client = Extralit.from_credentials()
         workspace_obj = _validate_workspace_and_folder(client, workspace, pdf_folder, console)
 
         # Phase 1: Parse BibTeX to DataFrame and match PDF files

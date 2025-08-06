@@ -43,7 +43,7 @@ export default {
 ```python
 import argilla as rg
 
-client_local = rg.Argilla(api_url="http://localhost:6900/", api_key="argilla.apikey")
+client_local = rg.Argilla(api_url="http://localhost:6900/", api_key="extralit.apikey")
 
 sample_questions = [
     rg.SpanQuestion(

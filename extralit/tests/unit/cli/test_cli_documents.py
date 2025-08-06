@@ -26,12 +26,12 @@ def runner():
     return CliRunner()
 
 
-@patch("argilla.client.Argilla.from_credentials")
-@patch("argilla.cli.documents.import_bib._validate_workspace_and_folder")
-@patch("argilla.cli.documents.import_bib._parse_bibtex_to_dataframe")
-@patch("argilla.cli.documents.import_bib._match_pdfs_to_dataframe")
-@patch("argilla.cli.documents.import_bib._send_import_analysis_request")
-@patch("argilla.cli.documents.import_bib._display_import_analysis_results")
+@patch("extralit.client.Extralit.from_credentials")
+@patch("extralit.cli.documents.import_bib._validate_workspace_and_folder")
+@patch("extralit.cli.documents.import_bib._parse_bibtex_to_dataframe")
+@patch("extralit.cli.documents.import_bib._match_pdfs_to_dataframe")
+@patch("extralit.cli.documents.import_bib._send_import_analysis_request")
+@patch("extralit.cli.documents.import_bib._display_import_analysis_results")
 def test_import_bibtex_analysis(
     mock_display, mock_analysis, mock_match_pdfs, mock_parse_bib, mock_validate, mock_from_credentials, runner
 ):
@@ -79,12 +79,12 @@ def test_import_bibtex_analysis(
     assert "import analysis complete" in result.stdout.lower()
 
 
-@patch("argilla.client.Argilla.from_credentials")
-@patch("argilla.cli.documents.import_bib._validate_workspace_and_folder")
-@patch("argilla.cli.documents.import_bib._parse_bibtex_to_dataframe")
-@patch("argilla.cli.documents.import_bib._match_pdfs_to_dataframe")
-@patch("argilla.cli.documents.import_bib._send_import_analysis_request")
-@patch("argilla.cli.documents.import_bib._display_import_analysis_results")
+@patch("extralit.client.Extralit.from_credentials")
+@patch("extralit.cli.documents.import_bib._validate_workspace_and_folder")
+@patch("extralit.cli.documents.import_bib._parse_bibtex_to_dataframe")
+@patch("extralit.cli.documents.import_bib._match_pdfs_to_dataframe")
+@patch("extralit.cli.documents.import_bib._send_import_analysis_request")
+@patch("extralit.cli.documents.import_bib._display_import_analysis_results")
 def test_import_bibtex_with_pdf_matching(
     mock_display, mock_analysis, mock_match_pdfs, mock_parse_bib, mock_validate, mock_from_credentials, runner
 ):
@@ -160,9 +160,9 @@ def test_import_bibtex_file_error(runner):
     assert "nonexistent.bib" in result.output or "does not exist" in result.output
 
 
-@patch("argilla.client.Argilla.from_credentials")
-@patch("argilla.cli.documents.import_bib._validate_workspace_and_folder")
-@patch("argilla.cli.documents.import_bib._parse_bibtex_to_dataframe")
+@patch("extralit.client.Extralit.from_credentials")
+@patch("extralit.cli.documents.import_bib._validate_workspace_and_folder")
+@patch("extralit.cli.documents.import_bib._parse_bibtex_to_dataframe")
 def test_import_bibtex_api_error(mock_parse_bib, mock_validate, mock_from_credentials, runner):
     """Test the 'import' command with an API error."""
     # Mock client and workspace
@@ -219,12 +219,12 @@ def test_display_import_analysis_results():
     assert "Document Import Status" in output_str
 
 
-@patch("argilla.client.Argilla.from_credentials")
-@patch("argilla.cli.documents.import_bib._validate_workspace_and_folder")
-@patch("argilla.cli.documents.import_bib._parse_bibtex_to_dataframe")
-@patch("argilla.cli.documents.import_bib._match_pdfs_to_dataframe")
-@patch("argilla.cli.documents.import_bib._send_import_analysis_request")
-@patch("argilla.cli.documents.import_bib._display_import_analysis_results")
+@patch("extralit.client.Extralit.from_credentials")
+@patch("extralit.cli.documents.import_bib._validate_workspace_and_folder")
+@patch("extralit.cli.documents.import_bib._parse_bibtex_to_dataframe")
+@patch("extralit.cli.documents.import_bib._match_pdfs_to_dataframe")
+@patch("extralit.cli.documents.import_bib._send_import_analysis_request")
+@patch("extralit.cli.documents.import_bib._display_import_analysis_results")
 def test_import_bibtex_filename_matching(
     mock_display, mock_analysis, mock_match_pdfs, mock_parse_bib, mock_validate, mock_from_credentials, runner
 ):

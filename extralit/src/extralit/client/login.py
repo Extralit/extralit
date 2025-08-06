@@ -125,11 +125,11 @@ def login(
         ValueError: If the login fails.
     """
     # Validate credentials by creating a client and making a test API call
-    from extralit.client import Argilla
+    from extralit.client import Extralit
 
     try:
         # Create client with the provided credentials
-        client = Argilla(api_url=api_url, api_key=api_key)
+        client = Extralit(api_url=api_url, api_key=api_key)
 
         # Try to get user info - this will raise an exception if authentication fails
         client.me

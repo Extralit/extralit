@@ -167,7 +167,17 @@ class TestDiskImportExportMixin:
 
 
 @pytest.mark.flaky(
-    retries=_RETRIES, only_on=[BadRequestError, FileMetadataError, HfHubHTTPError, OSError, FileNotFoundError, ReadTimeout, ConnectTimeout, HTTPError]
+    retries=_RETRIES,
+    only_on=[
+        BadRequestError,
+        FileMetadataError,
+        HfHubHTTPError,
+        OSError,
+        FileNotFoundError,
+        ReadTimeout,
+        ConnectTimeout,
+        HTTPError,
+    ],
 )  # Hub consistency CICD pipline
 @pytest.mark.skipif(
     not os.getenv("HF_TOKEN_ARGILLA_INTERNAL_TESTING"),
@@ -249,7 +259,7 @@ class TestHubImportExportMixin:
         self,
         token: str,
         dataset: rg.Dataset,
-        client: rg.Argilla,
+        client: rg.Extralit,
         mock_data: List[dict[str, Any]],
         with_records_export: bool,
         with_records_import: bool,
@@ -319,7 +329,7 @@ class TestHubImportExportMixin:
         self,
         token: str,
         dataset: rg.Dataset,
-        client: rg.Argilla,
+        client: rg.Extralit,
         mock_data: List[dict[str, Any]],
         with_records_export: bool,
     ):

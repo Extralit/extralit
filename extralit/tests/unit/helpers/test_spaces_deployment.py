@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,17 +17,17 @@ from unittest.mock import Mock, patch
 import pytest
 from huggingface_hub import SpaceStage
 
-from extralit.client import Argilla
+from extralit.client import Extralit
 
 
 class TestSpacesDeploymentMixin:
     @pytest.fixture
     def argilla_client_class(self):
-        return Argilla
+        return Extralit
 
-    @patch("argilla._helpers._deploy.HfApi")
-    @patch("argilla._helpers._deploy.get_token")
-    @patch("argilla.client.Argilla.__init__", return_value=None)
+    @patch("extralit._helpers._deploy.HfApi")
+    @patch("extralit._helpers._deploy.get_token")
+    @patch("extralit.client.Extralit.__init__", return_value=None)
     def test_deploy_on_spaces(self, mock_argilla_init, mock_get_token, mock_hf_api, argilla_client_class):
         mock_get_token.return_value = "fake_token"
         mock_api = Mock()
@@ -38,7 +38,7 @@ class TestSpacesDeploymentMixin:
 
         result = argilla_client_class.deploy_on_spaces(api_key="12345678")
 
-        assert isinstance(result, Argilla)
+        assert isinstance(result, Extralit)
         mock_api.duplicate_space.assert_called_once()
         mock_api.create_repo.assert_called_once()
         mock_argilla_init.assert_called_once()
@@ -50,8 +50,8 @@ class TestSpacesDeploymentMixin:
         assert kwargs["api_url"].endswith(".hf.space/")
         assert "headers" in kwargs
 
-    @patch("argilla._helpers._deploy.get_token")
-    @patch("argilla._helpers._deploy.login")
+    @patch("extralit._helpers._deploy.get_token")
+    @patch("extralit._helpers._deploy.login")
     def test_acquire_hf_token(self, mock_login, mock_get_token, argilla_client_class):
         mock_get_token.side_effect = [None, "fake_token"]
         token = argilla_client_class._acquire_hf_token(None)

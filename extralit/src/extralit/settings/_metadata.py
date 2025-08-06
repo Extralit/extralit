@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ from extralit._models import (
     MetadataFieldModel,
 )
 from extralit._resource import Resource
-from extralit.client import Argilla
+from extralit.client import Extralit
 
 try:
     from typing import Self
@@ -47,8 +47,8 @@ class MetadataPropertyBase(Resource):
 
     _dataset: Optional["Dataset"]
 
-    def __init__(self, client: Optional[Argilla] = None) -> None:
-        client = client or Argilla._get_default()
+    def __init__(self, client: Optional[Extralit] = None) -> None:
+        client = client or Extralit._get_default()
         super().__init__(client=client, api=client.api.metadata)
 
         self._dataset = None
@@ -90,7 +90,7 @@ class MetadataPropertyBase(Resource):
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(name={self.name}, title={self.title}, visible_for_annotators={self.visible_for_annotators})"
 
-    def _with_client(self, client: "Argilla") -> "Self":
+    def _with_client(self, client: "Extralit") -> "Self":
         # TODO: Review and simplify. Maybe only one of them is required
         self._client = client
         self._api = self._client.api.metadata
@@ -105,7 +105,7 @@ class TermsMetadataProperty(MetadataPropertyBase):
         options: Optional[List[Any]] = None,
         title: Optional[str] = None,
         visible_for_annotators: Optional[bool] = True,
-        client: Optional[Argilla] = None,
+        client: Optional[Extralit] = None,
     ) -> None:
         """Create a metadata field with terms settings.
 
@@ -156,7 +156,7 @@ class FloatMetadataProperty(MetadataPropertyBase):
         max: Optional[float] = None,
         title: Optional[str] = None,
         visible_for_annotators: Optional[bool] = True,
-        client: Optional[Argilla] = None,
+        client: Optional[Extralit] = None,
     ) -> None:
         """Create a metadata field with float settings.
 
@@ -217,7 +217,7 @@ class IntegerMetadataProperty(MetadataPropertyBase):
         max: Optional[int] = None,
         title: Optional[str] = None,
         visible_for_annotators: Optional[bool] = True,
-        client: Optional[Argilla] = None,
+        client: Optional[Extralit] = None,
     ) -> None:
         """Create a metadata field with integer settings.
 

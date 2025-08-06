@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ from threading import Thread
 from typing import TYPE_CHECKING, Optional, Callable, Union, List
 
 import extralit as rg
-from extralit import Argilla
+from extralit import Extralit
 from extralit.webhooks._handler import WebhookHandler
 from extralit.webhooks._resource import Webhook
 
@@ -62,7 +62,7 @@ def _webhook_url_for_func(func: Callable) -> str:
 def webhook_listener(
     events: Union[str, List[str]],
     description: Optional[str] = None,
-    client: Optional["Argilla"] = None,
+    client: Optional["Extralit"] = None,
     server: Optional["FastAPI"] = None,
     raw_event: bool = False,
 ) -> Callable:
@@ -81,7 +81,7 @@ def webhook_listener(
 
     """
 
-    client = client or rg.Argilla._get_default()
+    client = client or rg.Extralit._get_default()
     server = server or get_webhook_server()
 
     if isinstance(events, str):

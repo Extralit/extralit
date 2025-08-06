@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ def settings():
 @pytest.fixture
 def dataset(httpx_mock: HTTPXMock, settings) -> rg.Dataset:
     api_url = "http://test_url"
-    client = rg.Argilla(api_url)
+    client = rg.Extralit(api_url)
     workspace_id = uuid.uuid4()
     workspace_name = "workspace-01"
     mock_workspace = {

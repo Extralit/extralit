@@ -94,7 +94,7 @@ Argilla will be accessible at http://localhost:6900.
 Set the following environment variables:
 ```bash
 export ARGILLA_API_URL=http://localhost:6900
-export ARGILLA_API_KEY=argilla.apikey
+export ARGILLA_API_KEY=extralit.apikey
 ```
 
 Run the following command to execute the integration tests:

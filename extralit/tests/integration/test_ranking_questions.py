@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import random
 
 import pytest
 
@@ -20,7 +19,7 @@ import extralit as rg
 
 
 @pytest.fixture
-def dataset(client: rg.Argilla, dataset_name: str):
+def dataset(client: rg.Extralit, dataset_name: str):
     ws = client.workspaces.default
     settings = rg.Settings(
         guidelines=f"The dataset guidelines",

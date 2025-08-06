@@ -22,7 +22,7 @@ from extralit._helpers import GenericIterator
 from extralit._helpers import LoggingMixin
 from extralit._models import WorkspaceModel
 from extralit._resource import Resource
-from extralit.client import Argilla
+from extralit.client import Extralit
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -52,7 +52,7 @@ class Workspace(Resource):
         self,
         name: Optional[str] = None,
         id: Optional["UUID"] = None,
-        client: Optional["Argilla"] = None,
+        client: Optional["Extralit"] = None,
     ) -> None:
         """Initializes a Workspace object with a client and a name or id
 
@@ -64,7 +64,7 @@ class Workspace(Resource):
         Returns:
             Workspace: The initialized workspace object
         """
-        client = client or Argilla._get_default()
+        client = client or Extralit._get_default()
         super().__init__(client=client, api=client.api.workspaces)
 
         self._model = WorkspaceModel(name=name, id=id)
@@ -258,7 +258,7 @@ class Workspace(Resource):
         return self._api.update_schemas(self.name, schemas, check_existing, prefix)
 
     @classmethod
-    def from_model(cls, model: WorkspaceModel, client: Argilla) -> "Workspace":
+    def from_model(cls, model: WorkspaceModel, client: Extralit) -> "Workspace":
         instance = cls(name=model.name, id=model.id, client=client)
         instance._model = model
 

@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from extralit import Argilla, Dataset, Settings, TextField, TextQuestion, Workspace, TaskDistribution
+from extralit import Extralit, Dataset, Settings, TextField, TextQuestion, Workspace, TaskDistribution
 
 
 class TestDatasetsList:
-    def test_list_datasets(self, client: Argilla):
+    def test_list_datasets(self, client: Extralit):
         workspace = Workspace(name="test_workspace", client=client)
         workspace.create()
 
@@ -34,7 +34,7 @@ class TestDatasetsList:
             if ds.name == "test_dataset":
                 assert ds == dataset, "The dataset was not loaded properly"
 
-    def test_list_dataset_with_custom_task_distribution(self, client: Argilla, workspace: Workspace):
+    def test_list_dataset_with_custom_task_distribution(self, client: Extralit, workspace: Workspace):
         dataset = Dataset(
             name="test_dataset",
             workspace=workspace.name,

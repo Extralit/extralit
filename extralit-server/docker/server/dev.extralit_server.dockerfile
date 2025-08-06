@@ -33,7 +33,7 @@ ENV ENV=$ENV
 
 ENV USERNAME="argilla"
 ENV PASSWORD="12345678"
-ENV API_KEY="argilla.apikey"
+ENV API_KEY="extralit.apikey"
 
 ## Argilla home path
 ENV ARGILLA_HOME_PATH=/var/lib/argilla

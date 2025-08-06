@@ -23,7 +23,7 @@ from typing import TYPE_CHECKING, Optional, Tuple, Type, Union
 
 from extralit._exceptions import RecordsIngestionError, ArgillaError, ImportDatasetError
 from extralit._models import DatasetModel
-from extralit.client import Argilla
+from extralit.client import Extralit
 from extralit.settings import Settings
 from extralit.workspaces._resource import Workspace
 
@@ -67,7 +67,7 @@ class DiskImportExportMixin(ABC):
         *,
         name: Optional[str] = None,
         workspace: Optional[Union["Workspace", str]] = None,
-        client: Optional["Argilla"] = None,
+        client: Optional["Extralit"] = None,
         with_records: bool = True,
     ) -> "Dataset":
         """Imports a dataset from disk as a directory containing the dataset model, settings and records.
@@ -81,7 +81,7 @@ class DiskImportExportMixin(ABC):
             with_records: whether to load the records from the Hugging Face dataset. Defaults to `True`.
         """
 
-        client = client or Argilla._get_default()
+        client = client or Extralit._get_default()
 
         try:
             dataset_path, settings_path, records_path = cls._define_child_paths(path=path)

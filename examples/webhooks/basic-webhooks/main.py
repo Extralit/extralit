@@ -4,11 +4,11 @@ from datetime import datetime
 import extralit as rg
 
 # Environment variables with defaults
-API_KEY = os.environ.get("ARGILLA_API_KEY", "argilla.apikey")
+API_KEY = os.environ.get("ARGILLA_API_KEY", "extralit.apikey")
 API_URL = os.environ.get("ARGILLA_API_URL", "http://localhost:6900")
 
 # Initialize Argilla client
-client = rg.Argilla(api_key=API_KEY, api_url=API_URL)
+client = rg.Extralit(api_key=API_KEY, api_url=API_URL)
 
 # Show the existing webhooks in the argilla server
 for webhook in client.webhooks:

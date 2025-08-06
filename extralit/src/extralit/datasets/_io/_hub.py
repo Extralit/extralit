@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ from extralit.responses import Response
 if TYPE_CHECKING:
     from datasets import Dataset as HFDataset
 
-    from extralit import Argilla, Dataset, Settings, Workspace
+    from extralit import Extralit, Dataset, Settings, Workspace
 
 
 class HubImportExportMixin(DiskImportExportMixin):
@@ -117,7 +117,7 @@ class HubImportExportMixin(DiskImportExportMixin):
         *,
         name: Optional[str] = None,
         workspace: Optional[Union["Workspace", str]] = None,
-        client: Optional["Argilla"] = None,
+        client: Optional["Extralit"] = None,
         with_records: bool = True,
         settings: Union["Settings", Literal["auto", "ui"]] = "ui",
         split: Optional[str] = None,
@@ -333,13 +333,13 @@ class HubImportExportMixin(DiskImportExportMixin):
             return sample_huggingface_record
 
     @classmethod
-    def _run_settings_ui(cls, repo_id: str, subset: str, split: str, client: Optional["Argilla"] = None) -> str:
+    def _run_settings_ui(cls, repo_id: str, subset: str, split: str, client: Optional["Extralit"] = None) -> str:
         from urllib.parse import quote_plus, urlencode
-        from extralit.client import Argilla
+        from extralit.client import Extralit
 
         import webbrowser
 
-        client = client or Argilla._get_default()
+        client = client or Extralit._get_default()
 
         params = {
             "subset": subset,

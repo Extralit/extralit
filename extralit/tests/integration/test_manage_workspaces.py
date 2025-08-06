@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,25 +13,25 @@
 # limitations under the License.
 import uuid
 
-from extralit import Argilla, Workspace, User
+from extralit import Extralit, Workspace, User
 
 
 class TestWorkspacesManagement:
-    def test_create_workspace(self, client: Argilla):
+    def test_create_workspace(self, client: Extralit):
         workspace = Workspace(name=f"test_workspace{uuid.uuid4()}")
         client.workspaces.add(workspace)
 
         assert workspace in client.workspaces
         assert client.api.workspaces.exists(workspace.id)
 
-    def test_create_workspace_with_id(self, client: Argilla):
+    def test_create_workspace_with_id(self, client: Extralit):
         workspace_id = uuid.uuid4()
         workspace = Workspace(id=workspace_id, name=f"test_workspace{uuid.uuid4()}")
         client.workspaces.add(workspace)
         assert workspace in client.workspaces
         assert client.workspaces(workspace.name).id == workspace_id
 
-    def test_create_and_delete_workspace(self, client: Argilla):
+    def test_create_and_delete_workspace(self, client: Extralit):
         workspace = client.workspaces(name="test_workspace")
         if workspace:
             for dataset in workspace.datasets:
@@ -44,7 +44,7 @@ class TestWorkspacesManagement:
         workspace.delete()
         assert not client.api.workspaces.exists(workspace.id)
 
-    def test_add_and_remove_users_to_workspace(self, client: Argilla, workspace: Workspace):
+    def test_add_and_remove_users_to_workspace(self, client: Extralit, workspace: Workspace):
         ws_name = "test_workspace"
         username = "test_user"
 

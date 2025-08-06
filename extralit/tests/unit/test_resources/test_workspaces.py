@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -73,7 +73,7 @@ class TestWorkspaces:
         api_url = "http://test_url"
         httpx_mock.add_response(json=mock_return_value, url=f"{api_url}/api/v1/workspaces", status_code=status_code)
         with httpx.Client():
-            client = rg.Argilla(api_url=api_url, api_key="admin.apikey")
+            client = rg.Extralit(api_url=api_url, api_key="admin.apikey")
             if expected_exception:
                 with pytest.raises(expected_exception, match=expected_message):
                     ws = rg.Workspace(name="test-workspace", id=uuid.uuid4(), client=client)
@@ -111,7 +111,7 @@ class TestWorkspaces:
             json=mock_return_value, url=f"{api_url}/api/v1/workspaces/{workspace_id}", status_code=status_code
         )
         with httpx.Client():
-            client = rg.Argilla(api_url="http://test_url", api_key="admin.apikey")
+            client = rg.Extralit(api_url="http://test_url", api_key="admin.apikey")
 
             if expected_exception:
                 with pytest.raises(expected_exception, match=expected_message):
@@ -143,7 +143,7 @@ class TestWorkspaces:
         api_url = "http://test_url"
         httpx_mock.add_response(json=mock_return_value, url=f"{api_url}/api/v1/me/workspaces")
         with httpx.Client():
-            client = rg.Argilla(api_url="http://test_url", api_key="admin.apikey")
+            client = rg.Extralit(api_url="http://test_url", api_key="admin.apikey")
             workspaces = client.workspaces
         assert len(workspaces) == 2
         for i in range(len(workspaces)):
@@ -174,7 +174,7 @@ class TestWorkspacesAPI:
         api_url = "http://test_url"
         httpx_mock.add_response(json=mock_return_value, url=f"{api_url}/api/v1/me/workspaces")
         with httpx.Client():
-            client = rg.Argilla(api_url=api_url, api_key="admin.apikey")
+            client = rg.Extralit(api_url=api_url, api_key="admin.apikey")
             ws = client.api.workspaces.get_by_name("test-workspace")
             assert ws is not None
             assert ws.name == "test-workspace"
@@ -200,8 +200,8 @@ class TestWorkspacesAPI:
             json=mock_return,
         )
         with httpx.Client():
-            local_client = rg.Argilla(api_url="http://localhost:6900", api_key="admin.apikey")
-            remote_client = rg.Argilla(api_url="http://argilla.production.net", api_key="admin.apikey")
+            local_client = rg.Extralit(api_url="http://localhost:6900", api_key="admin.apikey")
+            remote_client = rg.Extralit(api_url="http://argilla.production.net", api_key="admin.apikey")
             assert local_client.api_url == "http://localhost:6900"
             assert remote_client.api_url == "http://argilla.production.net"
             local_workspace = rg.Workspace(name="local-test-workspace", client=local_client)
@@ -214,7 +214,7 @@ class TestWorkspacesAPI:
         api_url = "http://test_url"
         httpx_mock.add_response(url=f"{api_url}/api/v1/workspaces/{workspace_id}", status_code=204)
         with httpx.Client():
-            client = rg.Argilla(api_url=api_url, api_key="admin.apikey")
+            client = rg.Extralit(api_url=api_url, api_key="admin.apikey")
             client.api.workspaces.delete(workspace_id)
 
     def test_list_workspace_datasets(self, httpx_mock: HTTPXMock):
@@ -246,7 +246,7 @@ class TestWorkspacesAPI:
         api_url = "http://test_url"
         httpx_mock.add_response(json=mock_return_value, url=f"{api_url}/api/v1/me/datasets")
         with httpx.Client():
-            client = rg.Argilla(api_url=api_url, api_key="admin.apikey")
+            client = rg.Extralit(api_url=api_url, api_key="admin.apikey")
             datasets = client.api.datasets.list(workspace_id)
             assert len(datasets) == 2
             for i in range(len(datasets)):

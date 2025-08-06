@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ from extralit._api import DatasetsAPI
 from extralit._exceptions import NotFoundError, SettingsError, ForbiddenError
 from extralit._models import DatasetModel
 from extralit._resource import Resource
-from extralit.client import Argilla
+from extralit.client import Extralit
 from extralit.datasets._io import DiskImportExportMixin, HubImportExportMixin
 from extralit.records import DatasetRecords
 from extralit.settings import Settings
@@ -58,7 +58,7 @@ class Dataset(Resource, HubImportExportMixin, DiskImportExportMixin):
         name: Optional[str] = None,
         workspace: Optional[Union["Workspace", str, UUID]] = None,
         settings: Optional[Settings] = None,
-        client: Optional["Argilla"] = None,
+        client: Optional["Extralit"] = None,
     ) -> None:
         """Initializes a new Argilla Dataset object with the given parameters.
 
@@ -68,7 +68,7 @@ class Dataset(Resource, HubImportExportMixin, DiskImportExportMixin):
             settings (Settings): Settings class to be used to configure the dataset.
             client (Argilla): Instance of Argilla to connect with the server. Default is the default client.
         """
-        client = client or Argilla._get_default()
+        client = client or Extralit._get_default()
         super().__init__(client=client, api=client.api.datasets)
         if name is None:
             name = f"dataset_{uuid4()}"
@@ -236,7 +236,7 @@ class Dataset(Resource, HubImportExportMixin, DiskImportExportMixin):
         return progress
 
     @classmethod
-    def from_model(cls, model: DatasetModel, client: "Argilla") -> "Dataset":
+    def from_model(cls, model: DatasetModel, client: "Extralit") -> "Dataset":
         instance = cls(client=client, workspace=model.workspace_id, name=model.name)
         instance._model = model
 
@@ -284,5 +284,5 @@ class Dataset(Resource, HubImportExportMixin, DiskImportExportMixin):
     def _is_published(self) -> bool:
         return self._model.status == "ready"
 
-    def _with_client(self, client: Argilla) -> "Self":
+    def _with_client(self, client: Extralit) -> "Self":
         return super()._with_client(client=client)

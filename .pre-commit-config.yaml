@@ -94,37 +94,6 @@ repos:
           - --fuzzy-match-generates-todo
 
   ##############################################################################
-  # argilla-v1 SDK specific hooks
-  ##############################################################################
-  - repo: https://github.com/pycqa/autoflake
-    rev: v2.2.1
-    hooks:
-      - id: autoflake
-        name: "Remove unused imports and variables"
-        files: '^argilla-v1/.*\.py$'
-        args:
-          - "--remove-all-unused-imports"
-          - "--remove-unused-variables"
-          - "--in-place"
-  - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.4.8
-    hooks:
-      - id: ruff
-        files: 'argilla-v1/src/.*\.py$'
-        args:
-          - --fix
-  - repo: https://github.com/Lucas-C/pre-commit-hooks
-    rev: v1.5.5
-    hooks:
-      - id: insert-license
-        name: "Insert license header in Python source files"
-        files: '^argilla-v1/.*\.py$'
-        args:
-          - --license-filepath
-          - extralit/LICENSE_HEADER
-          - --fuzzy-match-generates-todo
-
-  ##############################################################################
   # argilla-frontend specific hooks
   ##############################################################################
   - repo: local

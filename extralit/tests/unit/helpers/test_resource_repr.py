@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,12 +16,11 @@ import uuid
 
 import extralit as rg
 from extralit._helpers._resource_repr import ResourceHTMLReprMixin
-from extralit._models import DatasetModel
 
 
 class TestResourceHTMLReprMixin:
     def test_represent_workspaces_as_html(self):
-        client = rg.Argilla()
+        client = rg.Extralit()
         workspaces = [
             rg.Workspace(name="workspace1", id=uuid.uuid4()),
             rg.Workspace(name="workspace2", id=uuid.uuid4()),

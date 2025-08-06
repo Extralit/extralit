@@ -83,7 +83,6 @@ pdf = [
     "pymupdf==1.26.0",
     "pdf2image ~= 1.16.0",
 ]
-legacy = ["argilla-v1[listeners]"]
 
 [build-system]
 requires = ["pdm-backend>=2.0.0", "setuptools>=68.0.0"]

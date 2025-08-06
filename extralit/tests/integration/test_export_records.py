@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,10 +13,8 @@
 # limitations under the License.
 
 import json
-import random
 import uuid
 from pathlib import Path
-from string import ascii_lowercase
 from tempfile import TemporaryDirectory
 
 import pytest
@@ -24,7 +22,7 @@ from PIL import Image
 from datasets import Dataset as HFDataset
 
 import extralit as rg
-from extralit import Argilla
+from extralit import Extralit
 
 
 @pytest.fixture
@@ -91,7 +89,7 @@ def mock_data():
     ]
 
 
-def test_export_records_dict_flattened(client: Argilla, dataset: rg.Dataset, mock_data):
+def test_export_records_dict_flattened(client: Extralit, dataset: rg.Dataset, mock_data):
     dataset.records.log(records=mock_data)
     exported_records = dataset.records.to_dict(flatten=True)
     assert isinstance(exported_records, dict)
@@ -101,7 +99,7 @@ def test_export_records_dict_flattened(client: Argilla, dataset: rg.Dataset, moc
     assert exported_records["text"] == ["Hello World, how are you?"] * 3
 
 
-def test_export_records_list_flattened(client: Argilla, dataset: rg.Dataset, mock_data):
+def test_export_records_list_flattened(client: Extralit, dataset: rg.Dataset, mock_data):
     dataset.records.log(records=mock_data)
     exported_records = dataset.records.to_list(flatten=True)
     assert len(exported_records) == len(mock_data)
@@ -115,7 +113,7 @@ def test_export_records_list_flattened(client: Argilla, dataset: rg.Dataset, moc
     assert exported_records[0]["label.suggestion.score"] is None
 
 
-def test_export_record_list_with_filtered_records(client: Argilla, dataset: rg.Dataset, mock_data):
+def test_export_record_list_with_filtered_records(client: Extralit, dataset: rg.Dataset, mock_data):
     dataset.records.log(records=mock_data)
     exported_records = dataset.records(query=rg.Query(query="hello")).to_list(flatten=True)
     assert len(exported_records) == len(mock_data)
@@ -129,7 +127,7 @@ def test_export_record_list_with_filtered_records(client: Argilla, dataset: rg.D
     assert exported_records[0]["label.suggestion.score"] is None
 
 
-def test_export_records_list_nested(client: Argilla, dataset: rg.Dataset, mock_data):
+def test_export_records_list_nested(client: Extralit, dataset: rg.Dataset, mock_data):
     dataset.records.log(records=mock_data)
     exported_records = dataset.records.to_list(flatten=False)
     assert len(exported_records) == len(mock_data)
@@ -138,7 +136,7 @@ def test_export_records_list_nested(client: Argilla, dataset: rg.Dataset, mock_d
     assert exported_records[0]["suggestions"]["label"]["score"] is None
 
 
-def test_export_records_dict_nested(client: Argilla, dataset: rg.Dataset, mock_data):
+def test_export_records_dict_nested(client: Extralit, dataset: rg.Dataset, mock_data):
     dataset.records.log(records=mock_data)
     exported_records = dataset.records.to_dict(flatten=False)
     assert isinstance(exported_records, dict)
@@ -146,7 +144,7 @@ def test_export_records_dict_nested(client: Argilla, dataset: rg.Dataset, mock_d
     assert exported_records["suggestions"][0]["label"]["value"] == "positive"
 
 
-def test_export_records_dict_nested_orient_index(client: Argilla, dataset: rg.Dataset, mock_data):
+def test_export_records_dict_nested_orient_index(client: Extralit, dataset: rg.Dataset, mock_data):
     dataset.records.log(records=mock_data)
     exported_records = dataset.records.to_dict(flatten=False, orient="index")
     assert isinstance(exported_records, dict)

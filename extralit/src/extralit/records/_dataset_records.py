@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ from extralit._api import RecordsAPI
 from extralit._helpers import LoggingMixin
 from extralit._models import RecordModel
 from extralit._exceptions import RecordsIngestionError
-from extralit.client import Argilla
+from extralit.client import Extralit
 from extralit.records._io import GenericIO, HFDataset, HFDatasetsIO, JsonIO
 from extralit.records._mapping import IngestedRecordMapper
 from extralit.records._resource import Record
@@ -45,7 +45,7 @@ class DatasetRecordsIterator:
     def __init__(
         self,
         dataset: "Dataset",
-        client: "Argilla",
+        client: "Extralit",
         query: Optional[Query] = None,
         start_offset: int = 0,
         batch_size: Optional[int] = None,
@@ -177,7 +177,7 @@ class DatasetRecords(Iterable[Record], LoggingMixin):
     DEFAULT_DELETE_BATCH_SIZE = 64
 
     def __init__(
-        self, client: "Argilla", dataset: "Dataset", mapping: Optional[Dict[str, Union[str, Sequence[str]]]] = None
+        self, client: "Extralit", dataset: "Dataset", mapping: Optional[Dict[str, Union[str, Sequence[str]]]] = None
     ):
         """Initializes a DatasetRecords object with a client and a dataset.
         Args:

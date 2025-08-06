@@ -20,7 +20,7 @@ from extralit._models import UserModel, Role
 from extralit._resource import Resource
 
 if TYPE_CHECKING:
-    from extralit.client.core import Argilla
+    from extralit.client.core import Extralit
     from extralit.workspaces._resource import Workspace
 
 
@@ -48,7 +48,7 @@ class User(Resource):
         role: Optional[str] = None,
         password: Optional[str] = None,
         id: Optional[UUID] = None,
-        client: Optional["Argilla"] = None,
+        client: Optional["Extralit"] = None,
         _model: Optional[UserModel] = None,
     ) -> None:
         """Initializes a User object with a client and a username
@@ -65,9 +65,9 @@ class User(Resource):
         Returns:
             User: The initialized user object
         """
-        from extralit.client.core import Argilla
+        from extralit.client.core import Extralit
 
-        client = client or Argilla._get_default()
+        client = client or Extralit._get_default()
         super().__init__(client=client, api=client.api.users)
 
         if _model is None:

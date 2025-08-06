@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -102,7 +102,7 @@ class TestUsers:
             json=mock_return_value, url=f"{api_url}/api/v1/users", method="POST", status_code=status_code
         )
         with httpx.Client():
-            client = rg.Argilla(api_url=api_url, api_key="admin.apikey")
+            client = rg.Extralit(api_url=api_url, api_key="admin.apikey")
             user = rg.User(
                 username="test-user",
                 client=client,
@@ -150,7 +150,7 @@ class TestUsers:
             json=mock_return_value, url=f"{api_url}/api/v1/users", method="POST", status_code=status_code
         )
         with httpx.Client():
-            client = rg.Argilla(api_url=api_url, api_key="admin.apikey")
+            client = rg.Extralit(api_url=api_url, api_key="admin.apikey")
             user = rg.User(
                 username="test-user",
                 client=client,
@@ -194,7 +194,7 @@ class TestUsers:
         api_url = "http://test_url"
         httpx_mock.add_response(json=mock_return_value, url=f"{api_url}/api/v1/users")
         with httpx.Client():
-            client = rg.Argilla(api_url="http://test_url", api_key="admin.apikey")
+            client = rg.Extralit(api_url="http://test_url", api_key="admin.apikey")
             users = client.users
             assert len(users) == 2
             for i in range(len(users)):
@@ -222,7 +222,7 @@ class TestUsersAPI:
         api_url = "http://test_url"
         httpx_mock.add_response(json=mock_return_value, url=f"{api_url}/api/v1/me")
         with httpx.Client():
-            client = rg.Argilla(api_url=api_url, api_key="admin.apikey")
+            client = rg.Extralit(api_url=api_url, api_key="admin.apikey")
             user = client.api.users.get_me()
             assert user.username == mock_return_value["username"]
             assert user.id == uuid.UUID(mock_return_value["id"])
@@ -250,14 +250,14 @@ class TestUsersAPI:
             json=mock_return_value,
         )
         with httpx.Client():
-            client = rg.Argilla(api_url="http://test_url", api_key="admin.apikey")
+            client = rg.Extralit(api_url="http://test_url", api_key="admin.apikey")
             client.api.users.delete_from_workspace(workspace_id, user_id)
 
     def test_delete_user(self, httpx_mock: HTTPXMock):
         user_id = uuid.uuid4()
         httpx_mock.add_response(url=f"http://test_url/api/v1/users/{user_id}", method="DELETE")
         with httpx.Client():
-            client = rg.Argilla(api_url="http://test_url", api_key="admin.apikey")
+            client = rg.Extralit(api_url="http://test_url", api_key="admin.apikey")
             client.api.users.delete(user_id)
 
     def test_list_workspace_users(self, httpx_mock: HTTPXMock):
@@ -288,7 +288,7 @@ class TestUsersAPI:
         api_url = "http://test_url"
         httpx_mock.add_response(json=mock_return_value, url=f"{api_url}/api/v1/workspaces/{workspace_id}/users")
         with httpx.Client():
-            client = rg.Argilla(api_url=api_url, api_key="admin.apikey")
+            client = rg.Extralit(api_url=api_url, api_key="admin.apikey")
             users = client.api.users.list_by_workspace_id(workspace_id)
             assert len(users) == 2
             for i in range(len(users)):
@@ -316,7 +316,7 @@ class TestUsersAPI:
 
         httpx_mock.add_response(json=mock_return_value, url=f"{api_url}/api/v1/users", method="POST", status_code=200)
         with httpx.Client():
-            client = rg.Argilla(api_url=api_url, api_key="admin.apikey")
+            client = rg.Extralit(api_url=api_url, api_key="admin.apikey")
             user_create = UserModel(username="test-user", password="test-password")
             user = client.api.users.create(user_create)
             assert user.id == user_id

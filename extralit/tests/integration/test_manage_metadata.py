@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,11 +15,11 @@
 import pytest
 
 import extralit as rg
-from extralit import Argilla, Dataset, Settings, TextField, Workspace, LabelQuestion
+from extralit import Extralit, Dataset, Settings, TextField, Workspace, LabelQuestion
 
 
 @pytest.fixture
-def dataset_with_metadata(client: Argilla, workspace: Workspace, dataset_name: str) -> Dataset:
+def dataset_with_metadata(client: Extralit, workspace: Workspace, dataset_name: str) -> Dataset:
     settings = Settings(
         fields=[TextField(name="text")],
         questions=[LabelQuestion(name="label", labels=["positive", "negative"])],
@@ -38,7 +38,7 @@ def dataset_with_metadata(client: Argilla, workspace: Workspace, dataset_name: s
     return dataset
 
 
-def test_create_dataset_with_metadata(client: Argilla, workspace: Workspace, dataset_name: str) -> None:
+def test_create_dataset_with_metadata(client: Extralit, workspace: Workspace, dataset_name: str) -> None:
     settings = Settings(
         fields=[TextField(name="text")],
         questions=[LabelQuestion(name="label", labels=["positive", "negative"])],
@@ -68,7 +68,7 @@ def test_create_dataset_with_metadata(client: Argilla, workspace: Workspace, dat
     ],
 )
 def test_create_dataset_with_numerical_metadata(
-    client: Argilla, workspace: Workspace, dataset_name: str, min, max, type
+    client: Extralit, workspace: Workspace, dataset_name: str, min, max, type
 ) -> None:
     settings = Settings(
         fields=[TextField(name="text")],

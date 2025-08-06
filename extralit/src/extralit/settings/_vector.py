@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ from typing import Optional, TYPE_CHECKING
 from extralit._api._vectors import VectorsAPI
 from extralit._models import VectorFieldModel
 from extralit._resource import Resource
-from extralit.client import Argilla
+from extralit.client import Extralit
 
 if TYPE_CHECKING:
     from extralit import Dataset
@@ -37,7 +37,7 @@ class VectorField(Resource):
         name: str,
         dimensions: int,
         title: Optional[str] = None,
-        _client: Optional["Argilla"] = None,
+        _client: Optional["Extralit"] = None,
     ) -> None:
         """Vector field for use in Argilla `Dataset` `Settings`
 
@@ -46,7 +46,7 @@ class VectorField(Resource):
             dimensions (int): The number of dimensions in the vector
             title (Optional[str]): The title of the vector to be shown in the UI.
         """
-        client = _client or Argilla._get_default()
+        client = _client or Extralit._get_default()
         super().__init__(api=client.api.vectors, client=client)
         self._model = VectorFieldModel(name=name, title=title, dimensions=dimensions)
         self._dataset = None
@@ -100,7 +100,7 @@ class VectorField(Resource):
         model = VectorFieldModel(**data)
         return cls.from_model(model=model)
 
-    def _with_client(self, client: "Argilla") -> "VectorField":
+    def _with_client(self, client: "Extralit") -> "VectorField":
         # TODO: Review and simplify. Maybe only one of them is required
         self._client = client
         self._api = self._client.api.vectors

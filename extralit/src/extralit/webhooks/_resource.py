@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
 # limitations under the License.
 from typing import List, Optional
 
-from extralit import Argilla
+from extralit import Extralit
 from extralit._api._webhooks import WebhookModel, WebhooksAPI
 from extralit._models import EventType
 from extralit._resource import Resource
@@ -34,8 +34,8 @@ class Webhook(Resource):
     _model: WebhookModel
     _api: WebhooksAPI
 
-    def __init__(self, url: str, events: List[EventType], description: Optional[str] = None, _client: Argilla = None):
-        client = _client or Argilla._get_default()
+    def __init__(self, url: str, events: List[EventType], description: Optional[str] = None, _client: Extralit = None):
+        client = _client or Extralit._get_default()
         api = client.api.webhooks
         events = events or []
 
@@ -85,13 +85,13 @@ class Webhook(Resource):
         return self._model.secret
 
     @classmethod
-    def from_model(cls, model: WebhookModel, client: Optional["Argilla"] = None) -> "Webhook":
+    def from_model(cls, model: WebhookModel, client: Optional["Extralit"] = None) -> "Webhook":
         instance = cls(url=model.url, events=model.events, _client=client)
         instance._model = model
 
         return instance
 
-    def _with_client(self, client: "Argilla") -> "Webhook":
+    def _with_client(self, client: "Extralit") -> "Webhook":
         self._client = client
         self._api = client.api.webhooks
 

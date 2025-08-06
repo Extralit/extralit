@@ -38,7 +38,7 @@ import typer
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
-from extralit.client import Argilla
+from extralit.client import Extralit
 from extralit.cli.rich import get_argilla_themed_panel
 from extralit.documents import Document
 
@@ -70,7 +70,7 @@ def add_document(
 
     try:
         # Get the client
-        client = Argilla.from_credentials()
+        client = Extralit.from_credentials()
 
         # Get the workspace
         workspace_obj = client.workspaces(name=workspace)

@@ -126,7 +126,7 @@ Then, select from three different development environments through devcontainers
 - Log in with the default credentials:
   - Username: `argilla`
   - Password: `12345678`
-  - API Key: `argilla.apikey`
+  - API Key: `extralit.apikey`
 
 
 ## Option 2: Local Development Setup
@@ -297,7 +297,7 @@ docker build --build-arg extralit_server_IMAGE=extralit-server --build-arg ARGIL
 Start the Argilla Server and other dependencies using Docker:
 
 ```bash
-docker run --rm -p 6900:6900 -e ARGILLA_ENABLE_TELEMETRY=0 -e USERNAME=argilla -e PASSWORD=12345678 -e API_KEY=argilla.apikey --name argilla-hf-spaces argilla-hf-spaces:latest
+docker run --rm -p 6900:6900 -e ARGILLA_ENABLE_TELEMETRY=0 -e USERNAME=argilla -e PASSWORD=12345678 -e API_KEY=extralit.apikey --name argilla-hf-spaces argilla-hf-spaces:latest
 ```
 
 

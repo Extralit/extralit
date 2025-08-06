@@ -110,7 +110,7 @@ class TestImportFeaturesFromHub:
         assert exported_dataset.features["label.suggestion"].names == ["positive", "negative"]
         assert exported_dataset["label.suggestion"] == [0, 1, 0]
 
-    def test_import_from_hub_with_upper_case_columns(self, client: rg.Argilla, token: str, dataset_name: str):
+    def test_import_from_hub_with_upper_case_columns(self, client: rg.Extralit, token: str, dataset_name: str):
         created_dataset = None
         try:
             created_dataset = rg.Dataset.from_hub(
@@ -131,7 +131,7 @@ class TestImportFeaturesFromHub:
             assert created_dataset.settings.fields[0].name == "Text"
             assert list(created_dataset.records)[0].fields["Text"] == "Hello World, how are you?"
 
-    def test_import_from_hub_with_unlabelled_classes(self, client: rg.Argilla, token: str, dataset_name: str):
+    def test_import_from_hub_with_unlabelled_classes(self, client: rg.Extralit, token: str, dataset_name: str):
         created_dataset = None
         try:
             created_dataset = rg.Dataset.from_hub(
@@ -151,7 +151,7 @@ class TestImportFeaturesFromHub:
             assert created_dataset.settings.fields[0].name == "Text"
             assert list(created_dataset.records)[0].fields["Text"] == "Hello World, how are you?"
 
-    def test_import_with_row_id_as_record_id(self, client: rg.Argilla, token: str, dataset_name: str):
+    def test_import_with_row_id_as_record_id(self, client: rg.Extralit, token: str, dataset_name: str):
         created_dataset = None
         try:
             created_dataset = rg.Dataset.from_hub(

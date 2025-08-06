@@ -8,7 +8,6 @@ extralit/
 ├── extralit-server/          # FastAPI backend server
 ├── argilla-frontend/        # Nuxt.js web UI
 ├── extralit/               # Python SDK and CLI
-├── argilla-v1/             # Legacy v1 compatibility layer
 ├── examples/               # Usage examples and deployments
 └── .kiro/                  # Kiro AI assistant configuration
 ```

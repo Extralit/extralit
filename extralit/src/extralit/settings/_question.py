@@ -14,7 +14,7 @@
 
 from typing import Dict, List, Literal, Optional, Union, TYPE_CHECKING
 
-from extralit import Argilla
+from extralit import Extralit
 from extralit._api import QuestionsAPI
 from extralit._models._settings._questions import (
     QuestionModel,
@@ -61,9 +61,9 @@ class QuestionBase(SettingsPropertyBase):
         title: Optional[str] = None,
         required: Optional[bool] = True,
         description: Optional[str] = None,
-        _client: Optional[Argilla] = None,
+        _client: Optional[Extralit] = None,
     ):
-        client = _client or Argilla._get_default()
+        client = _client or Extralit._get_default()
 
         super().__init__(api=client.api.questions, client=client)
 
@@ -98,7 +98,7 @@ class QuestionBase(SettingsPropertyBase):
         self._model.dataset_id = self._dataset.id
         self._with_client(self._dataset._client)
 
-    def _with_client(self, client: "Argilla") -> "Self":
+    def _with_client(self, client: "Extralit") -> "Self":
         # TODO: Review and simplify. Maybe only one of them is required
         self._client = client
         self._api = self._client.api.questions
@@ -146,7 +146,7 @@ class LabelQuestion(QuestionBase):
         required: bool = True,
         dynamic: bool = False,
         visible_labels: Optional[int] = None,
-        client: Optional[Argilla] = None,
+        client: Optional[Extralit] = None,
     ) -> None:
         """ Define a new label question for `Settings` of a `Dataset`. A label \
             question is a question where the user can select one label from \
@@ -213,7 +213,7 @@ class MultiLabelQuestion(LabelQuestion):
         title: Optional[str] = None,
         description: Optional[str] = None,
         required: bool = True,
-        client: Optional[Argilla] = None,
+        client: Optional[Extralit] = None,
     ) -> None:
         """Create a new multi-label question for `Settings` of a `Dataset`. A \
             multi-label question is a question where the user can select multiple \
@@ -263,7 +263,7 @@ class TextQuestion(QuestionBase):
         required: bool = True,
         use_markdown: bool = False,
         use_table: bool = False,
-        client: Optional[Argilla] = None,
+        client: Optional[Extralit] = None,
     ) -> None:
         """Create a new text question for `Settings` of a `Dataset`. A text question \
             is a question where the user can input text.
@@ -302,7 +302,7 @@ class RatingQuestion(QuestionBase):
         title: Optional[str] = None,
         description: Optional[str] = None,
         required: bool = True,
-        client: Optional[Argilla] = None,
+        client: Optional[Extralit] = None,
     ) -> None:
         """Create a new rating question for `Settings` of a `Dataset`. A rating question \
             is a question where the user can select a value from a sequential list of options.
@@ -348,7 +348,7 @@ class RankingQuestion(QuestionBase):
         title: Optional[str] = None,
         description: Optional[str] = None,
         required: bool = True,
-        client: Optional[Argilla] = None,
+        client: Optional[Extralit] = None,
     ) -> None:
         """Create a new ranking question for `Settings` of a `Dataset`. A ranking question \
             is a question where the user can rank a list of options.
@@ -397,7 +397,7 @@ class SpanQuestion(QuestionBase):
         title: Optional[str] = None,
         description: Optional[str] = None,
         required: bool = True,
-        client: Optional[Argilla] = None,
+        client: Optional[Extralit] = None,
     ):
         """ Create a new span question for `Settings` of a `Dataset`. A span question \
             is a question where the user can select a section of text within a text field \
@@ -480,7 +480,7 @@ class TableQuestion(QuestionBase):
         title: Optional[str] = None,
         description: Optional[str] = None,
         required: bool = True,
-        client: Optional[Argilla] = None,
+        client: Optional[Extralit] = None,
     ):
         """ Create a new table question for `Settings` of a `Dataset`. A table question \
             is a question where the user can input data in a tabular format.

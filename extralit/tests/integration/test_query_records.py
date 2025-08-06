@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,11 +18,11 @@ from string import ascii_lowercase
 import pytest
 
 import extralit as rg
-from extralit import Argilla, Dataset, Settings, TextField, Workspace, LabelQuestion
+from extralit import Extralit, Dataset, Settings, TextField, Workspace, LabelQuestion
 
 
 @pytest.fixture
-def dataset(client: Argilla, workspace: Workspace) -> Dataset:
+def dataset(client: Extralit, workspace: Workspace) -> Dataset:
     name = "".join(random.choices(ascii_lowercase, k=16))
     settings = Settings(
         fields=[TextField(name="text")],
@@ -39,7 +39,7 @@ def dataset(client: Argilla, workspace: Workspace) -> Dataset:
     dataset.delete()
 
 
-def test_query_records_by_text(client: Argilla, dataset: Dataset):
+def test_query_records_by_text(client: Extralit, dataset: Dataset):
     dataset.records.log(
         [
             {"text": "First record", "id": 1},
@@ -62,7 +62,7 @@ def test_query_records_by_text(client: Argilla, dataset: Dataset):
     assert len(records) == 2
 
 
-def test_query_records_by_suggestion_value(client: Argilla, dataset: Dataset):
+def test_query_records_by_suggestion_value(client: Extralit, dataset: Dataset):
     data = [
         {
             "text": "Hello World, how are you?",

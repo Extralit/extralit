@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ from datetime import datetime
 
 import extralit as rg
 import pytest
-from extralit import Argilla, Workspace
+from extralit import Extralit, Workspace
 from extralit._exceptions._responses import RecordResponsesError
 from extralit._exceptions._suggestions import RecordSuggestionsError
 
@@ -72,7 +72,7 @@ def test_add_records(client):
     assert dataset_records[2].fields["text"] == mock_data[2]["text"]
 
 
-def test_add_dict_records(client: Argilla, dataset_name: str):
+def test_add_dict_records(client: Extralit, dataset_name: str):
     ws_name = "new_ws"
     ws = client.workspaces(ws_name) or Workspace(name=ws_name).create()
 
@@ -569,7 +569,7 @@ def test_add_record_resources(client):
     assert dataset_records[2].suggestions["topics"].score == [0.9, 0.8]
 
 
-def test_add_record_with_chat_field(client: rg.Argilla, dataset_name: str):
+def test_add_record_with_chat_field(client: rg.Extralit, dataset_name: str):
     mock_resources = [
         rg.Record(
             fields={
@@ -620,7 +620,7 @@ def test_add_record_with_chat_field(client: rg.Argilla, dataset_name: str):
     assert dataset.name == dataset_name
 
 
-def test_add_records_with_optional_chat_field(client: rg.Argilla, dataset_name: str):
+def test_add_records_with_optional_chat_field(client: rg.Extralit, dataset_name: str):
     mock_resources = [
         rg.Record(
             fields={
@@ -655,7 +655,7 @@ def test_add_records_with_optional_chat_field(client: rg.Argilla, dataset_name: 
     assert dataset.name == dataset_name
 
 
-def test_add_records_with_responses_and_same_schema_name(client: Argilla, username: str):
+def test_add_records_with_responses_and_same_schema_name(client: Extralit, username: str):
     mock_dataset_name = f"test_modify_record_responses_locally {uuid.uuid4()}"
     mock_data = [
         {
@@ -706,7 +706,7 @@ def test_add_records_with_responses_and_same_schema_name(client: Argilla, userna
     assert dataset_records[1].responses["label"][0].user_id == user.id
 
 
-def test_add_records_objects_with_responses(client: Argilla, username: str):
+def test_add_records_objects_with_responses(client: Extralit, username: str):
     mock_dataset_name = f"test_modify_record_responses_locally {uuid.uuid4()}"
 
     settings = rg.Settings(
@@ -777,7 +777,7 @@ def test_add_records_objects_with_responses(client: Argilla, username: str):
     assert dataset_records[3].responses["comment"][0].status == "draft"
 
 
-def test_add_records_with_boolean_metadata(client: Argilla, dataset_name: str):
+def test_add_records_with_boolean_metadata(client: Extralit, dataset_name: str):
     settings = rg.Settings(
         fields=[rg.TextField(name="text")],
         metadata=[rg.TermsMetadataProperty(name="boolean", options=[True, False])],

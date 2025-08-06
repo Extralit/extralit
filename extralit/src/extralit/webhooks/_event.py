@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ from extralit._exceptions import ArgillaAPIError
 from extralit._models import RecordModel, UserResponseModel, WorkspaceModel, EventType
 
 if TYPE_CHECKING:
-    from extralit import Argilla
+    from extralit import Extralit
 
 __all__ = ["RecordEvent", "DatasetEvent", "UserResponseEvent", "WebhookEvent"]
 
@@ -93,7 +93,7 @@ class WebhookEvent(BaseModel):
     timestamp: datetime
     data: dict
 
-    def parsed(self, client: "Argilla") -> Union[RecordEvent, DatasetEvent, UserResponseEvent, "WebhookEvent"]:
+    def parsed(self, client: "Extralit") -> Union[RecordEvent, DatasetEvent, UserResponseEvent, "WebhookEvent"]:
         """
         Parse the webhook event.
 
@@ -134,7 +134,7 @@ class WebhookEvent(BaseModel):
         return self
 
     @classmethod
-    def _parse_dataset_from_webhook_data(cls, data: dict, client: "Argilla") -> Dataset:
+    def _parse_dataset_from_webhook_data(cls, data: dict, client: "Extralit") -> Dataset:
         workspace = Workspace.from_model(WorkspaceModel.model_validate(data["workspace"]), client=client)
         # TODO: Parse settings from the data
         # settings = Settings._from_dict(data)
@@ -144,27 +144,27 @@ class WebhookEvent(BaseModel):
 
         try:
             dataset.get()
-        except ArgillaAPIError as _:
+        except ArgillaAPIError:
             # TODO: Show notification
             pass
         finally:
             return dataset
 
     @classmethod
-    def _parse_record_from_webhook_data(cls, data: dict, client: "Argilla") -> Record:
+    def _parse_record_from_webhook_data(cls, data: dict, client: "Extralit") -> Record:
         dataset = cls._parse_dataset_from_webhook_data(data["dataset"], client)
 
         record = Record.from_model(RecordModel.model_validate(data), dataset=dataset)
         try:
             record.get()
-        except ArgillaAPIError as _:
+        except ArgillaAPIError:
             # TODO: Show notification
             pass
         finally:
             return record
 
     @classmethod
-    def _parse_response_from_webhook_data(cls, data: dict, client: "Argilla") -> UserResponse:
+    def _parse_response_from_webhook_data(cls, data: dict, client: "Extralit") -> UserResponse:
         record = cls._parse_record_from_webhook_data(data["record"], client)
 
         # TODO: Link the user resource to the response

@@ -17,7 +17,7 @@ services:
 
       USERNAME: argilla
       PASSWORD: 12345678
-      API_KEY: argilla.apikey
+      API_KEY: extralit.apikey
     ports:
       - "6900:6900"
 

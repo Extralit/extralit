@@ -18,7 +18,7 @@ from random import random
 import pytest
 
 from extralit import (
-    Argilla,
+    Extralit,
     Workspace,
     Dataset,
     Settings,
@@ -34,7 +34,7 @@ from extralit import (
 
 
 @pytest.fixture
-def dataset(client: Argilla, workspace: Workspace, dataset_name: str) -> Dataset:
+def dataset(client: Extralit, workspace: Workspace, dataset_name: str) -> Dataset:
     settings = Settings(
         fields=[TextField(name="text")],
         vectors=[VectorField(name="vector", dimensions=10)],
@@ -57,7 +57,7 @@ def dataset(client: Argilla, workspace: Workspace, dataset_name: str) -> Dataset
 
 
 class TestSearchRecords:
-    def test_search_records_by_id(self, client: Argilla, dataset: Dataset):
+    def test_search_records_by_id(self, client: Extralit, dataset: Dataset):
         dataset.records.log(
             [
                 {"text": "The record text field", "id": 1},
@@ -69,7 +69,7 @@ class TestSearchRecords:
         assert len(records) == 1
         assert records[0].id == "1"
 
-    def test_search_records_by_server_id(self, client: Argilla, dataset: Dataset):
+    def test_search_records_by_server_id(self, client: Extralit, dataset: Dataset):
         dataset.records.log(
             [
                 {"text": "The record text field", "id": 1},
@@ -85,7 +85,7 @@ class TestSearchRecords:
         assert len(records) == 1
         assert records[0]._server_id == server_id
 
-    def test_search_records_by_inserted_at(self, client: Argilla, dataset: Dataset):
+    def test_search_records_by_inserted_at(self, client: Extralit, dataset: Dataset):
         dataset.records.log(
             [
                 {"text": "The record text field", "id": 1},
@@ -98,7 +98,7 @@ class TestSearchRecords:
         assert records[0].id == "1"
         assert records[1].id == "2"
 
-    def test_search_records_by_updated_at(self, client: Argilla, dataset: Dataset):
+    def test_search_records_by_updated_at(self, client: Extralit, dataset: Dataset):
         dataset.records.log(
             [
                 {"text": "The record text field", "id": 1},
@@ -111,7 +111,7 @@ class TestSearchRecords:
         assert records[0].id == "1"
         assert records[1].id == "2"
 
-    def test_search_records_by_suggestion_agent(self, client: Argilla, dataset: Dataset):
+    def test_search_records_by_suggestion_agent(self, client: Extralit, dataset: Dataset):
         dataset.records.log(
             [
                 Record(
@@ -132,7 +132,7 @@ class TestSearchRecords:
         assert len(records) == 1
         assert records[0].id == "1"
 
-    def test_search_records_by_suggestion_type(self, client: Argilla, dataset: Dataset):
+    def test_search_records_by_suggestion_type(self, client: Extralit, dataset: Dataset):
         dataset.records.log(
             [
                 Record(
@@ -153,7 +153,7 @@ class TestSearchRecords:
         assert len(records) == 1
         assert records[0].id == "1"
 
-    def test_search_records_by_similar_value(self, client: Argilla, dataset: Dataset):
+    def test_search_records_by_similar_value(self, client: Extralit, dataset: Dataset):
         data = [
             {
                 "id": i,
@@ -175,7 +175,7 @@ class TestSearchRecords:
         assert len(records) == 1000
         assert records[0][0].id == str(data[3]["id"])
 
-    def test_search_records_by_least_similar_value(self, client: Argilla, dataset: Dataset):
+    def test_search_records_by_least_similar_value(self, client: Extralit, dataset: Dataset):
         data = [
             {
                 "id": i,
@@ -200,7 +200,7 @@ class TestSearchRecords:
 
         assert records[0][0].id != str(data[3]["id"])
 
-    def test_search_records_by_similar_record(self, client: Argilla, dataset: Dataset):
+    def test_search_records_by_similar_record(self, client: Extralit, dataset: Dataset):
         data = [
             {
                 "id": i,
@@ -224,7 +224,7 @@ class TestSearchRecords:
         assert len(records) == 1000
         assert records[0][0].id != str(record.id)
 
-    def test_search_records_by_least_similar_record(self, client: Argilla, dataset: Dataset):
+    def test_search_records_by_least_similar_record(self, client: Extralit, dataset: Dataset):
         data = [
             {
                 "id": i,

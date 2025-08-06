@@ -9,14 +9,14 @@ This guide provides an overview of user roles and credentials, explaining how to
 A **user** in Argilla is an authorized person who, depending on their role, can use the Python SDK and access the UI in a running Argilla instance. We differentiate between three types of users depending on their role, permissions and needs: `owner`, `admin` and `annotator`.
 
 === "Overview"
-    |                    | Owner      | Admin                     | Annotator |
-        |-------------------------------|------------|---------------------------|-----------|
-        | **Number**                    | Unlimited  | Unlimited                 | Unlimited |
-        | **Create and delete workspaces** | Yes      | No                        | No        |
-        | **Assign users to workspaces** | Yes        | No                        | No        |
-        | **Create, configure, update, and delete datasets** | Yes | Only within assigned workspaces | No |
-        | **Create, update, and delete users** | Yes  | No                        | No        |
-        | **Provide feedback with Argila UI** | Yes   | Yes   | Yes       |
+    |                                                    | Owner     | Admin                           | Annotator |
+    | -------------------------------------------------- | --------- | ------------------------------- | --------- |
+    | **Number**                                         | Unlimited | Unlimited                       | Unlimited |
+    | **Create and delete workspaces**                   | Yes       | No                              | No        |
+    | **Assign users to workspaces**                     | Yes       | No                              | No        |
+    | **Create, configure, update, and delete datasets** | Yes       | Only within assigned workspaces | No        |
+    | **Create, update, and delete users**               | Yes       | No                              | No        |
+    | **Provide feedback with Argila UI**                | Yes       | Yes                             | Yes       |
 
 
 === "Owner"
@@ -53,7 +53,7 @@ A **user** in Argilla is an authorized person who, depending on their role, can 
 Depending on [your Argilla deployment](../getting_started/quickstart.md), the initial user with the `owner` role will vary.
 
 * If you deploy on the Hugging Face Hub, the initial user will correspond to the Space owner (your personal account). The API key is automatically generated and can be copied from the "Settings" section of the UI.
-* If you deploy with Docker, the default values for the environment variables are: USERNAME: argilla, PASSWORD: 12345678, API_KEY: argilla.apikey.
+* If you deploy with Docker, the default values for the environment variables are: USERNAME: argilla, PASSWORD: 12345678, API_KEY: extralit.apikey.
 
 For the new users, the username and password are set during the creation process. The API key can be copied from the "Settings" section of the UI.
 

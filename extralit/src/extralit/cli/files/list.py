@@ -14,7 +14,7 @@
 
 import typer
 
-from extralit.client import Argilla
+from extralit.client import Extralit
 from extralit.cli.rich import get_argilla_themed_panel, print_rich_table
 
 
@@ -29,7 +29,7 @@ def list_files(
     console = Console()
 
     try:
-        client = Argilla.from_credentials()
+        client = Extralit.from_credentials()
 
         workspace_obj = client.workspaces(name=workspace)
 

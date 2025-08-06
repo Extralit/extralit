@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,19 +27,19 @@ from extralit._helpers import LoggingMixin
 if TYPE_CHECKING:
     from extralit._api._base import ResourceAPI
     from extralit._models import ResourceModel
-    from extralit.client import Argilla
+    from extralit.client import Extralit
 
 
 class Resource(LoggingMixin):
     """Base class for all resources (Dataset, Workspace, User, etc.)"""
 
     _model: "ResourceModel"
-    _client: "Argilla"
+    _client: "Extralit"
     _api: "ResourceAPI"
 
     _MAX_OUTDATED_RETENTION = 30
 
-    def __init__(self, api: Optional["ResourceAPI"] = None, client: Optional["Argilla"] = None) -> None:
+    def __init__(self, api: Optional["ResourceAPI"] = None, client: Optional["Extralit"] = None) -> None:
         self._client = client
         self._api = api
 
@@ -140,5 +140,5 @@ class Resource(LoggingMixin):
             return (datetime.utcnow() - self._last_api_call).total_seconds()
 
     @abstractmethod
-    def _with_client(self, client: "Argilla") -> "Self":
+    def _with_client(self, client: "Extralit") -> "Self":
         pass

@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import inspect
 from dataclasses import dataclass
 
@@ -35,7 +36,7 @@ def create_http_client(api_url: str, api_key: str, timeout: int, retries: int, *
     # This piece of code is needed to make old sdk works in combination with new one
 
     headers = client_args.pop("headers", {})
-    headers["X-Argilla-Api-Key"] = api_key
+    headers["X-Extralit-Api-Key"] = api_key
 
     http_transport = httpx.HTTPTransport(
         retries=retries,

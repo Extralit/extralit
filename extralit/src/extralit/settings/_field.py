@@ -18,7 +18,7 @@ from typing import Optional, Union, TYPE_CHECKING
 
 import requests
 
-from extralit import Argilla
+from extralit import Extralit
 from extralit._api import FieldsAPI
 from extralit._exceptions import ArgillaError, SettingsError
 from extralit._models import (
@@ -58,9 +58,9 @@ class FieldBase(ABC, SettingsPropertyBase):
         title: Optional[str] = None,
         required: Optional[bool] = True,
         description: Optional[str] = None,
-        _client: Optional[Argilla] = None,
+        _client: Optional[Extralit] = None,
     ):
-        client = _client or Argilla._get_default()
+        client = _client or Extralit._get_default()
 
         super().__init__(api=client.api.fields, client=client)
 
@@ -89,7 +89,7 @@ class FieldBase(ABC, SettingsPropertyBase):
         self._model.dataset_id = self._dataset.id
         self._with_client(self._dataset._client)
 
-    def _with_client(self, client: "Argilla") -> "Self":
+    def _with_client(self, client: "Extralit") -> "Self":
         # TODO: Review and simplify. Maybe only one of them is required
         self._client = client
         self._api = self._client.api.fields
@@ -108,7 +108,7 @@ class TextField(FieldBase):
         use_table: Optional[bool] = False,
         required: bool = True,
         description: Optional[str] = None,
-        client: Optional[Argilla] = None,
+        client: Optional[Extralit] = None,
     ) -> None:
         """Text field for use in Argilla `Dataset` `Settings`
         Parameters:
@@ -155,7 +155,7 @@ class ImageField(FieldBase):
         title: Optional[str] = None,
         required: Optional[bool] = True,
         description: Optional[str] = None,
-        _client: Optional[Argilla] = None,
+        _client: Optional[Extralit] = None,
     ) -> None:
         """
         Text field for use in Argilla `Dataset` `Settings`
@@ -187,7 +187,7 @@ class ChatField(FieldBase):
         use_markdown: Optional[bool] = True,
         required: bool = True,
         description: Optional[str] = None,
-        _client: Optional[Argilla] = None,
+        _client: Optional[Extralit] = None,
     ) -> None:
         """
         Chat field for use in Argilla `Dataset` `Settings`
@@ -229,7 +229,7 @@ class CustomField(FieldBase):
         advanced_mode: Optional[bool] = False,
         required: bool = True,
         description: Optional[str] = None,
-        _client: Optional[Argilla] = None,
+        _client: Optional[Extralit] = None,
     ) -> None:
         """
         Custom field for use in Argilla `Dataset` `Settings` for working with custom HTML and CSS templates.
@@ -299,7 +299,7 @@ class TableField(FieldBase):
         title: Optional[str] = None,
         required: bool = True,
         description: Optional[str] = None,
-        _client: Optional["Argilla"] = None,
+        _client: Optional["Extralit"] = None,
     ) -> None:
         """
         Table field for use in Argilla `Dataset` `Settings`

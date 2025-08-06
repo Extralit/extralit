@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ from extralit._resource import Resource
 from extralit.settings import RankingQuestion
 
 if TYPE_CHECKING:
-    from extralit import Argilla, Record
+    from extralit import Extralit, Record
 
 __all__ = ["Response", "UserResponse", "ResponseStatus"]
 
@@ -134,7 +134,7 @@ class UserResponse(Resource):
     def __init__(
         self,
         responses: List[Response],
-        client: Optional["Argilla"] = None,
+        client: Optional["Extralit"] = None,
         _record: Optional["Record"] = None,
     ) -> None:
         """Initializes a UserResponse with a user and a set of question answers"""

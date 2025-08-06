@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ from extralit import (
     TextField,
     ChatField,
     LabelQuestion,
-    Argilla,
+    Extralit,
     VectorField,
     FloatMetadataProperty,
     TermsMetadataProperty,
@@ -42,7 +42,7 @@ def dataset(dataset_name: str):
 
 
 class TestUpdateDatasetSettings:
-    def test_update_settings(self, client: Argilla, dataset: Dataset):
+    def test_update_settings(self, client: Extralit, dataset: Dataset):
         settings = dataset.settings
 
         settings.fields["text"].use_markdown = True
@@ -64,7 +64,7 @@ class TestUpdateDatasetSettings:
         dataset = client.datasets(dataset.name)
         assert dataset.settings.vectors["vector"].title == "A new title for vector"
 
-    def test_update_question_title(self, client: Argilla, dataset: Dataset):
+    def test_update_question_title(self, client: Extralit, dataset: Dataset):
         question = dataset.settings.questions["label"]
         question.title = "A new title for label question"
         dataset.settings.update()
@@ -73,14 +73,14 @@ class TestUpdateDatasetSettings:
         question = dataset.settings.questions["label"]
         assert question.title == "A new title for label question"
 
-    def test_update_distribution_settings(self, client: Argilla, dataset: Dataset):
+    def test_update_distribution_settings(self, client: Extralit, dataset: Dataset):
         dataset.settings.distribution.min_submitted = 100
         dataset.update()
 
         dataset = client.datasets(dataset.name)
         assert dataset.settings.distribution.min_submitted == 100
 
-    def test_remove_settings_property(self, client: Argilla, dataset: Dataset):
+    def test_remove_settings_property(self, client: Extralit, dataset: Dataset):
         dataset.settings.metadata.add(TermsMetadataProperty(name="metadata"))
         dataset.settings.vectors.add(VectorField(name="vector", dimensions=10))
         dataset.update()

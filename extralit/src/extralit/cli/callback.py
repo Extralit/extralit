@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING, List
 import typer
 
 if TYPE_CHECKING:
-    from extralit.client.core import Argilla
+    from extralit.client.core import Extralit
 
 
 def echo_in_panel(text, title=None, title_align="center", success=True):
@@ -33,7 +33,7 @@ def echo_in_panel(text, title=None, title_align="center", success=True):
     Console().print(panel)
 
 
-def init_callback() -> "Argilla":
+def init_callback() -> "Extralit":
     """Initialize Argilla client if user is logged in, otherwise exit."""
     from extralit.client.login import ArgillaCredentials
 
@@ -47,9 +47,9 @@ def init_callback() -> "Argilla":
         raise typer.Exit(code=1)
 
     try:
-        from extralit.client import Argilla
+        from extralit.client import Extralit
 
-        client = Argilla.from_credentials()
+        client = Extralit.from_credentials()
         return client
     except Exception as e:
         echo_in_panel(

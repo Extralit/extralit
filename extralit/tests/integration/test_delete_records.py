@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import extralit as rg
 
 
 @pytest.fixture
-def dataset(client: rg.Argilla) -> rg.Dataset:
+def dataset(client: rg.Extralit) -> rg.Dataset:
     workspace = client.workspaces[0]
     mock_dataset_name = f"test_delete_records_{uuid.uuid1()}"
     settings = rg.Settings(
@@ -42,7 +42,7 @@ def dataset(client: rg.Argilla) -> rg.Dataset:
     return dataset
 
 
-def test_delete_records(client: rg.Argilla, dataset: rg.Dataset):
+def test_delete_records(client: rg.Extralit, dataset: rg.Dataset):
     mock_data = [
         {
             "text": "Hello World, how are you?",
@@ -73,7 +73,7 @@ def test_delete_records(client: rg.Argilla, dataset: rg.Dataset):
         assert record.id not in [record.id for record in records_to_delete]
 
 
-def test_delete_single_record(client: rg.Argilla, dataset: rg.Dataset):
+def test_delete_single_record(client: rg.Extralit, dataset: rg.Dataset):
     mock_data = [
         {
             "text": "Hello World, how are you?",
@@ -103,7 +103,7 @@ def test_delete_single_record(client: rg.Argilla, dataset: rg.Dataset):
     assert mock_data[1]["id"] not in [record.id for record in dataset_records]
 
 
-def test_delete_records_with_batch_support(client: rg.Argilla, dataset: rg.Dataset):
+def test_delete_records_with_batch_support(client: rg.Extralit, dataset: rg.Dataset):
     records = [rg.Record(id=uuid.uuid4(), fields={"text": f"Field for record {i}"}) for i in range(0, 1000)]
 
     dataset.records.log(records)
