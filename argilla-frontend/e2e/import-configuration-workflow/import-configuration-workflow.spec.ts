@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginAndWaitFor } from '../common/login-and-wait-for';
+import { loginUserAndWaitFor } from '../common/login-and-wait-for';
 import { mockImportHistoryAPI, mockDatasetAPI } from '../common/import-api-mock';
 
 test.describe('Import Configuration Workflow', () => {
@@ -9,7 +9,7 @@ test.describe('Import Configuration Workflow', () => {
     await mockDatasetAPI(page);
 
     // Login and navigate to home page
-    await loginAndWaitFor(page, '/');
+    await loginUserAndWaitFor(page, '/');
   });
 
   test('should navigate from Recent Imports to configuration page', async ({ page }) => {

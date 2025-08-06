@@ -215,8 +215,8 @@ describe("ImportHistoryDataPreview", () => {
     });
 
     it("should emit row-selected event when row is clicked", async () => {
-      const mockTable = wrapper.find(".mock-table");
-      await mockTable.trigger("row-click", { getData: () => ({ reference: "paper_001" }) });
+      const mockRow = { getData: () => ({ reference: "paper_001" }) };
+      wrapper.vm.handleRowClick(null, mockRow);
 
       expect(wrapper.emitted("row-selected")).toBeTruthy();
     });

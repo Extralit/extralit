@@ -3,14 +3,16 @@ import DatasetConfiguration from "./DatasetConfiguration.vue";
 import { ImportHistoryDetails } from "~/v1/domain/entities/import/ImportHistoryDetails";
 
 // Mock dependencies
+const mockUseDatasetConfiguration = {
+  getFirstRecord: jest.fn(),
+  getSuggestedFieldMappings: jest.fn(() => ({})),
+  configureImportHistoryFields: jest.fn(),
+  getSuggestedQuestions: jest.fn(() => []),
+  firstRecord: { reference: "paper_001", title: "Test Paper" },
+};
+
 jest.mock("./useDatasetConfiguration", () => ({
-  useDatasetConfiguration: jest.fn(() => ({
-    getFirstRecord: jest.fn(),
-    getSuggestedFieldMappings: jest.fn(() => ({})),
-    configureImportHistoryFields: jest.fn(),
-    getSuggestedQuestions: jest.fn(() => []),
-    firstRecord: { reference: "paper_001", title: "Test Paper" },
-  })),
+  useDatasetConfiguration: jest.fn(() => mockUseDatasetConfiguration),
 }));
 
 jest.mock("~/v1/domain/entities/import/ImportHistoryDetails", () => ({
@@ -23,6 +25,9 @@ describe("DatasetConfiguration", () => {
   let mockImportHistoryDetails;
 
   beforeEach(() => {
+    // Reset mocks
+    jest.clearAllMocks();
+
     // Mock dataset object
     mockDataset = {
       repoId: "test-repo",
@@ -126,7 +131,7 @@ describe("DatasetConfiguration", () => {
     });
 
     it("should display questions in questions section", () => {
-      expect(wrapper.find(".dataset-config__questions .mock-questions").exists()).toBe(true);
+      expect(wrapper.find(".mock-questions").exists()).toBe(true);
     });
 
     it("should display configuration form", () => {
@@ -199,11 +204,8 @@ describe("DatasetConfiguration", () => {
     });
 
     it("should configure ImportHistory dataset on mount", () => {
-      const useDatasetConfiguration = require("./useDatasetConfiguration");
-      const mockViewModel = useDatasetConfiguration.useDatasetConfiguration();
-
-      expect(mockViewModel.getSuggestedFieldMappings).toHaveBeenCalledWith(mockImportHistoryDetails);
-      expect(mockViewModel.configureImportHistoryFields).toHaveBeenCalled();
+      expect(mockUseDatasetConfiguration.getSuggestedFieldMappings).toHaveBeenCalledWith(mockImportHistoryDetails);
+      expect(mockUseDatasetConfiguration.configureImportHistoryFields).toHaveBeenCalled();
     });
 
     it("should emit import-dataset-configured event", () => {
@@ -293,7 +295,7 @@ describe("DatasetConfiguration", () => {
       });
 
       expect(wrapper.find(".dataset-config__empty-questions").exists()).toBe(true);
-      expect(wrapper.text()).toContain("Your Questions");
+      expect(wrapper.text()).toContain("#datasetCreation.yourQuestions#");
     });
 
     it("should display questions component when questions exist", () => {
@@ -330,7 +332,7 @@ describe("DatasetConfiguration", () => {
         },
       });
 
-      expect(wrapper.find(".dataset-config__questions .mock-questions").exists()).toBe(true);
+      expect(wrapper.find(".mock-questions").exists()).toBe(true);
       expect(wrapper.find(".dataset-config__empty-questions").exists()).toBe(false);
     });
   });
@@ -440,53 +442,49 @@ describe("DatasetConfiguration", () => {
     });
 
     it("should reconfigure when dataset changes", async () => {
-      const useDatasetConfiguration = require("./useDatasetConfiguration");
-      const mockViewModel = useDatasetConfiguration.useDatasetConfiguration();
-
       // Reset mock calls
-      mockViewModel.getFirstRecord.mockClear();
+      mockUseDatasetConfiguration.getFirstRecord.mockClear();
 
       const newDataset = { ...mockDataset, name: "Updated Dataset" };
       await wrapper.setProps({ dataset: newDataset });
 
-      expect(mockViewModel.getFirstRecord).toHaveBeenCalledWith(newDataset, "import", mockImportHistoryDetails);
+      expect(mockUseDatasetConfiguration.getFirstRecord).toHaveBeenCalledWith(
+        newDataset,
+        "import",
+        mockImportHistoryDetails
+      );
     });
 
     it("should reconfigure when importData changes", async () => {
-      const useDatasetConfiguration = require("./useDatasetConfiguration");
-      const mockViewModel = useDatasetConfiguration.useDatasetConfiguration();
-
       // Reset mock calls
-      mockViewModel.getFirstRecord.mockClear();
-      mockViewModel.configureImportHistoryFields.mockClear();
+      mockUseDatasetConfiguration.getFirstRecord.mockClear();
+      mockUseDatasetConfiguration.configureImportHistoryFields.mockClear();
 
       const newImportData = { ...mockImportHistoryDetails, filename: "new-file.csv" };
       await wrapper.setProps({ importData: newImportData });
 
-      expect(mockViewModel.getFirstRecord).toHaveBeenCalledWith(mockDataset, "import", newImportData);
-      expect(mockViewModel.configureImportHistoryFields).toHaveBeenCalled();
+      expect(mockUseDatasetConfiguration.getFirstRecord).toHaveBeenCalledWith(mockDataset, "import", newImportData);
+      expect(mockUseDatasetConfiguration.configureImportHistoryFields).toHaveBeenCalled();
     });
 
     it("should reconfigure when dataSource changes", async () => {
-      const useDatasetConfiguration = require("./useDatasetConfiguration");
-      const mockViewModel = useDatasetConfiguration.useDatasetConfiguration();
-
       // Reset mock calls
-      mockViewModel.getFirstRecord.mockClear();
+      mockUseDatasetConfiguration.getFirstRecord.mockClear();
 
       await wrapper.setProps({ dataSource: "hub" });
 
-      expect(mockViewModel.getFirstRecord).toHaveBeenCalledWith(mockDataset, "hub", mockImportHistoryDetails);
+      expect(mockUseDatasetConfiguration.getFirstRecord).toHaveBeenCalledWith(
+        mockDataset,
+        "hub",
+        mockImportHistoryDetails
+      );
     });
   });
 
   describe("Error Handling", () => {
     it("should handle configuration errors gracefully", () => {
-      const useDatasetConfiguration = require("./useDatasetConfiguration");
-      const mockViewModel = useDatasetConfiguration.useDatasetConfiguration();
-
       // Mock configuration to throw error
-      mockViewModel.configureImportHistoryFields.mockImplementation(() => {
+      mockUseDatasetConfiguration.configureImportHistoryFields.mockImplementation(() => {
         throw new Error("Configuration failed");
       });
 

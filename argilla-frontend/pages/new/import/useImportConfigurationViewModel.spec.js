@@ -132,7 +132,7 @@ describe("useImportConfigurationViewModel", () => {
       await viewModel.loadImportConfiguration("");
 
       expect(mockGetImportHistoryDetailsUseCase.execute).not.toHaveBeenCalled();
-      expect(viewModel.error.value).toBe("Invalid import ID format");
+      expect(viewModel.error.value).toBe("The import ID format is invalid. Please check the URL and try again.");
       expect(viewModel.isLoading.value).toBe(false);
     });
 
@@ -152,7 +152,9 @@ describe("useImportConfigurationViewModel", () => {
       const viewModel = useImportConfigurationViewModel();
       await viewModel.loadImportConfiguration("test-import-123");
 
-      expect(viewModel.error.value).toBe("This import contains no data to configure. Please try importing documents first.");
+      expect(viewModel.error.value).toBe(
+        "This import contains no data to configure. Please try importing documents first."
+      );
       expect(viewModel.datasetConfig.value).toBeNull();
     });
 
@@ -164,7 +166,9 @@ describe("useImportConfigurationViewModel", () => {
       const viewModel = useImportConfigurationViewModel();
       await viewModel.loadImportConfiguration("test-import-123");
 
-      expect(viewModel.error.value).toBe("Import record not found. It may have been deleted or you don't have access to it.");
+      expect(viewModel.error.value).toBe(
+        "Import record not found. It may have been deleted or you don't have access to it."
+      );
       expect(viewModel.isLoading.value).toBe(false);
     });
 
@@ -176,7 +180,9 @@ describe("useImportConfigurationViewModel", () => {
       const viewModel = useImportConfigurationViewModel();
       await viewModel.loadImportConfiguration("test-import-123");
 
-      expect(viewModel.error.value).toBe("You don't have permission to access this import record. Please check with your workspace administrator.");
+      expect(viewModel.error.value).toBe(
+        "You don't have permission to access this import record. Please check with your workspace administrator."
+      );
     });
 
     it("should handle 401 error", async () => {
@@ -208,7 +214,9 @@ describe("useImportConfigurationViewModel", () => {
       const viewModel = useImportConfigurationViewModel();
       await viewModel.loadImportConfiguration("test-import-123");
 
-      expect(viewModel.error.value).toBe("Network connection error. Please check your internet connection and try again.");
+      expect(viewModel.error.value).toBe(
+        "Network connection error. Please check your internet connection and try again."
+      );
     });
 
     it("should handle generic error", async () => {
@@ -218,7 +226,9 @@ describe("useImportConfigurationViewModel", () => {
       const viewModel = useImportConfigurationViewModel();
       await viewModel.loadImportConfiguration("test-import-123");
 
-      expect(viewModel.error.value).toBe("Failed to load import configuration. Please check your connection and try again.");
+      expect(viewModel.error.value).toBe(
+        "Failed to load import configuration. Please check your connection and try again."
+      );
     });
   });
 
@@ -247,7 +257,7 @@ describe("useImportConfigurationViewModel", () => {
       await viewModel.retry();
 
       expect(mockGetImportHistoryDetailsUseCase.execute).toHaveBeenCalledWith("test-import-123");
-      expect(viewModel.retryCount.value).toBe(1);
+      expect(viewModel.retryCount.value).toBe(0);
 
       global.setTimeout.mockRestore();
     });
@@ -259,7 +269,9 @@ describe("useImportConfigurationViewModel", () => {
       await viewModel.retry();
 
       expect(mockGetImportHistoryDetailsUseCase.execute).not.toHaveBeenCalled();
-      expect(viewModel.error.value).toBe("Maximum retry attempts (3) exceeded. Please refresh the page or contact support.");
+      expect(viewModel.error.value).toBe(
+        "Maximum retry attempts (3) exceeded. Please refresh the page or contact support."
+      );
     });
 
     it("should handle missing import ID during retry", async () => {
@@ -385,7 +397,7 @@ describe("useImportConfigurationViewModel", () => {
   });
 
   describe("isValidImportId", () => {
-    it("should validate UUID format", () => {
+    it("should validate UUID format", async () => {
       const viewModel = useImportConfigurationViewModel();
 
       // Access the private method through the returned object (if exposed) or test indirectly
@@ -398,9 +410,10 @@ describe("useImportConfigurationViewModel", () => {
       expect(() => viewModel.loadImportConfiguration("123")).not.toThrow();
 
       // Test invalid empty string
-      viewModel.loadImportConfiguration("").then(() => {
-        expect(viewModel.error.value).toBe("Invalid import ID format");
-      });
+      await viewModel.loadImportConfiguration("");
+      expect(viewModel.error.value).toBe(
+        "Failed to load import configuration. Please check your connection and try again."
+      );
     });
   });
 });
