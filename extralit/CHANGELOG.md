@@ -23,6 +23,7 @@ These are the section headers that we use:
 - Added support for generic dataframe import history storage.
 
 ### Changed
+- Renamed `extralit/src/argilla/` → `extralit/src/extralit/`
 - Improved CLI import workflow for batch processing and error reporting.
 - Enhanced PDF-to-reference matching logic for multi-file references.
 
