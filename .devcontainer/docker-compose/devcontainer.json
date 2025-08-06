@@ -102,7 +102,7 @@
             "python.envFile": "${workspaceFolder}/extralit/.env.test",
             "search.exclude": {
                 "extralit-server/src/extralit_server/static/": true,
-                "argilla-frontend/dist/": true,
+                "extralit-frontend/dist/": true,
                 "_nuxt/": true,
                 "node_modules/": true,
                 ".venv/": true,
@@ -110,7 +110,7 @@
             },
             "files.watcherExclude": {
                 "extralit-server/src/extralit_server/static/": true,
-                "argilla-frontend/dist/": true,
+                "extralit-frontend/dist/": true,
                 "_nuxt/": true,
                 "node_modules/": true,
                 ".venv/": true

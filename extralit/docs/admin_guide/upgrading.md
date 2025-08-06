@@ -20,17 +20,17 @@ This guide covers the update process for Extralit across different deployment op
 
 2. Rebuild the  package, which contains the Argilla server and web interface
 
-    First, build the `argilla-frontend` code
+    First, build the `extralit-frontend` code
 
     ```bash
-    npm install --prefix argilla-frontend
-    npm run build --prefix argilla-frontend
+    npm install --prefix extralit-frontend
+    npm run build --prefix extralit-frontend
     ```
 
-    Finally, build the wheel containing the built argilla-frontend/dist
+    Finally, build the wheel containing the built extralit-frontend/dist
 
     ```bash
-    cp -r argilla-frontend/dist extralit-server/src/extralit_server/static
+    cp -r extralit-frontend/dist extralit-server/src/extralit_server/static
     rm -rf extralit-server/dist && python -m build -s extralit-server/
     ```
 

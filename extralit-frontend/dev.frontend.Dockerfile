@@ -7,17 +7,17 @@ USER root
 RUN apt-get update && \
     apt-get install -y nodejs npm
 
-USER argilla
+USER extralit
 
 WORKDIR /home/extralit/frontend
 
-COPY --chown=argilla:argilla dist ./dist
-COPY --chown=argilla:argilla .nuxt ./.nuxt
-COPY --chown=argilla:argilla package.json ./package.json
-COPY --chown=argilla:argilla package-lock.json ./package-lock.json
-COPY --chown=argilla:argilla nuxt.config.ts ./nuxt.config.ts
+COPY --chown=extralit:extralit dist ./dist
+COPY --chown=extralit:extralit .nuxt ./.nuxt
+COPY --chown=extralit:extralit package.json ./package.json
+COPY --chown=extralit:extralit package-lock.json ./package-lock.json
+COPY --chown=extralit:extralit nuxt.config.ts ./nuxt.config.ts
 
-# NOTE: Right now this Docker image is using dev.argilla.io as server.
+# NOTE: Right now this Docker image is using dev.extralit.io as server.
 # If we want to use a built-in server in the future to check all functionality we can modify the following Procfile
 # content adding ElasticSearch and extralit-server processes.
 RUN npm install && \

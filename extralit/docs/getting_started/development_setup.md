@@ -94,7 +94,7 @@ Then, select from three different development environments through devcontainers
     If
     ```bash
     # Navigate to the frontend directory
-    cd argilla-frontend
+    cd extralit-frontend
 
     # Install dependencies
     npm install
@@ -113,7 +113,7 @@ Then, select from three different development environments through devcontainers
       ```
     - **Frontend Development**: For frontend live-reloading:
       ```bash
-      cd argilla/argilla-frontend
+      cd argilla/extralit-frontend
       npm install
       npm run dev
       ```
@@ -165,7 +165,7 @@ pdm install
 ### 3. Build the Frontend
 
 ```bash
-cd argilla-frontend
+cd extralit-frontend
 npm install
 npm run build
 
@@ -387,7 +387,7 @@ If you encounter issues with the frontend build:
 
 ```bash
 # Clean and rebuild
-cd argilla-frontend
+cd extralit-frontend
 rm -rf node_modules
 npm install
 npm run build

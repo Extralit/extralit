@@ -23,7 +23,7 @@ Extralit is a multi-component system with 5 core components:
 - Uvicorn for ASGI server
 - Typer for CLI interface
 
-## Frontend (argilla-frontend/)
+## Frontend (extralit-frontend/)
 - **Framework**: Nuxt.js 2.17 (Vue.js 2.7)
 - **Component Import**: Nuxt automatically scans the ~/components directory and makes all .vue files
 - **Build System**: npm/yarn
@@ -62,7 +62,7 @@ pdm run worker          # Start background worker
 
 ### Frontend Development
 ```bash
-cd argilla-frontend
+cd extralit-frontend
 npm install
 npm run dev             # Start dev server
 npm run build           # Production build

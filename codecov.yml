@@ -10,7 +10,7 @@ coverage:
 flags:
   frontend:
     paths:
-      - argilla-frontend/
+      - extralit-frontend/
     carryforward: true
   extralit:
     paths:
@@ -45,6 +45,6 @@ component_management:
       paths:
         - extralit-server/**
 
-    - component_id: argilla-frontend
+    - component_id: extralit-frontend
       paths:
-        - argilla-frontend/**
+        - extralit-frontend/**

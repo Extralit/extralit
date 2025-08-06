@@ -2,7 +2,7 @@
 
 If you want to add a new language to Argilla you need to go to two places:
 
-1. Add a new translation specification in the folder: `argilla-frontend/translation` E.g. for Korean with Code `ko` add a `ko.js` file by coping the `en.js` file. The text values need to be translated:
+1. Add a new translation specification in the folder: `extralit-frontend/translation` E.g. for Korean with Code `ko` add a `ko.js` file by coping the `en.js` file. The text values need to be translated:
 ```javascript
 export default {
     multi_label_selection: "다중 라벨",
@@ -12,7 +12,7 @@ export default {
     text: "텍스트",
     ...
 ```
-2. Then update the i18n Nuxt: `argilla-frontend/nuxt.config.ts`
+2. Then update the i18n Nuxt: `extralit-frontend/nuxt.config.ts`
 
 ```javascript
   i18n: {
@@ -32,9 +32,9 @@ export default {
 ### How to test it
 
 1. Start a local instance of Argilla, easiest by just using the docker recipe [here](../getting_started/how-to-deploy-argilla-with-docker.md). It will give you a backend API for the frontend.
-2. Compile a new version of the frontend. Check [this guide](https://github.com/extralit/extralit/tree/develop/argilla-frontend). This is basically:
+2. Compile a new version of the frontend. Check [this guide](https://github.com/extralit/extralit/tree/develop/extralit-frontend). This is basically:
     - `git clone https://github.com/extralit/extralit`
-    - `cd argilla-frontend`
+    - `cd extralit-frontend`
     - Install the dependencies: `npm i`
     - Build the new frontend with the updates: `npm run build`
     - Serve the UI via `npm run start`. You can reach it under localhost:3000 by default.

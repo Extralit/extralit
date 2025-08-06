@@ -80,10 +80,10 @@ helm_resource(
 )
 
 # extralit-server is the web backend (FastAPI + SQL database)
-if not os.path.exists('argilla-frontend/dist'):
-    local('npm install && npm run build', dir='argilla-frontend', quiet=True)
+if not os.path.exists('extralit-frontend/dist'):
+    local('npm install && npm run build', dir='extralit-frontend', quiet=True)
 if not os.path.exists('extralit-server/src/extralit_server/static'):
-    local('cp -r argilla-frontend/dist extralit-server/src/extralit_server/static', quiet=True)
+    local('cp -r extralit-frontend/dist extralit-server/src/extralit_server/static', quiet=True)
 if not os.path.exists('extralit-server/dist/'):
     local('pdm build', dir='extralit-server')
 docker_build(
@@ -172,7 +172,7 @@ docker_build(
     "{DOCKER_REPO}/extralit-server".format(DOCKER_REPO=DOCKER_REPO),
     context='extralit/',
     dockerfile='extralit/docker/extralit.dockerfile',
-    ignore=['.*', 'argilla-frontend/', 'extralit-server/', '**/__pycache__', '*.pyc'],
+    ignore=['.*', 'extralit-frontend/', 'extralit-server/', '**/__pycache__', '*.pyc'],
     live_update=[
         sync('extralit/', '/home/extralit/'),
     ]

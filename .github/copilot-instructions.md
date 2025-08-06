@@ -22,13 +22,13 @@ When contributing to Extralit, consider these guidelines:
 Extralit is organized as a monorepo with several main components:
 
 - **extralit/**: Python SDK and core extraction functionality
-- **extralit-server/** (formerly extralit-server): Backend server implementation
-- **argilla-frontend/**: Frontend web application (will be renamed to extralit-frontend in future)
+- **extralit-server/** (formerly argilla-server): Backend server implementation
+- **extralit-frontend/** (formerly argilla-frontend): Frontend web application
 - **examples/**: Sample implementations and deployment configurations
 
 ## Core Components
 
-### Frontend (`argilla-frontend`)
+### Frontend (`extralit-frontend`)
 
 The frontend is built with Vue.js and Nuxt.js, providing a modern web interface for document management, extraction, and annotation.
 

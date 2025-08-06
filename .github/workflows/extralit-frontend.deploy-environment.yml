@@ -1,4 +1,4 @@
-name: Deploy Argilla environment
+name: Deploy Extralit environment
 
 on:
   workflow_dispatch:
@@ -6,7 +6,7 @@ on:
       image-name:
         description: The name of the Docker image to deploy.
         type: string
-        default: extralit/argilla-quickstart-for-dev
+        default: extralit/extralit-quickstart-for-dev
       image-version:
         description: The version of the Docker image to deploy. In the form pr-<PR_NUMBER>.
         type: string
@@ -22,7 +22,7 @@ on:
 
 jobs:
   deploy:
-    name: Deploy Argilla to Cloud Run
+    name: Deploy Extralit to Cloud Run
     runs-on: ubuntu-latest
 
     # Grant permissions to `GITHUB_TOKEN` for Google Cloud Workload Identity Provider
@@ -51,7 +51,7 @@ jobs:
         id: deploy
         uses: "google-github-actions/deploy-cloudrun@v1"
         with:
-          service: argilla-quickstart-${{ inputs.image-version }}
+          service: extralit-quickstart-${{ inputs.image-version }}
           image: europe-docker.pkg.dev/argilla-ci/${{ inputs.image-name}}:${{ inputs.image-version }}
           region: europe-southwest1
           flags: "--min-instances=1 --max-instances=1 --port=3000 --cpu=2000m --memory=4096Mi --no-cpu-throttling --allow-unauthenticated"
@@ -63,13 +63,13 @@ jobs:
             ANNOTATOR_PASSWORD=${{ steps.credentials.outputs.annotator }}
             ANNOTATOR_API_KEY=${{ steps.credentials.outputs.annotator }}
             HF_HUB_DISABLE_TELEMETRY=1
-            API_BASE_URL=https://dev.argilla.io/
+            API_BASE_URL=https://dev.extralit.io/
 
       - name: Post credentials in Slack
         uses: ./.github/actions/slack-post-credentials
         if: ${{ github.event_name != 'workflow_dispatch' }}
         with:
-          slack-channel-name: argilla-github
+          slack-channel-name: extralit-github
           url: ${{ steps.deploy.outputs.url }}
           owner: ${{ steps.credentials.outputs.owner }}
           admin: ${{ steps.credentials.outputs.admin }}

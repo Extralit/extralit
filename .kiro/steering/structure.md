@@ -6,7 +6,7 @@ This is a monorepo containing multiple related packages:
 ```
 extralit/
 ├── extralit-server/          # FastAPI backend server
-├── argilla-frontend/        # Nuxt.js web UI
+├── extralit-frontend/        # Nuxt.js web UI
 ├── extralit/               # Python SDK and CLI
 ├── examples/               # Usage examples and deployments
 └── .kiro/                  # Kiro AI assistant configuration
@@ -36,9 +36,9 @@ extralit-server/
 - **Background Jobs**: In `jobs/` - RQ job definitions
 - **Migrations**: Use Alembic in `alembic/versions/`
 
-## Frontend Structure (argilla-frontend/)
+## Frontend Structure (extralit-frontend/)
 ```
-argilla-frontend/
+extralit-frontend/
 ├── components/
 │   ├── base/               # Reusable UI components
 │   └── features/           # Feature-specific components
@@ -179,14 +179,14 @@ examples/
 
 ## Configuration Files
 - **Backend**: `extralit-server/pyproject.toml` (PDM), `.env.dev`, `.env.test`
-- **Frontend**: `argilla-frontend/package.json` (npm), `nuxt.config.ts`
+- **Frontend**: `extralit-frontend/package.json` (npm), `nuxt.config.ts`
 - **SDK**: `extralit/pyproject.toml` (PDM)
 - **Docker**: `docker-compose.yaml` for local development
 - **K8s**: `Tiltfile` for Kubernetes development
 
 ## Development Workflow
 1. **Backend changes**: Work in `extralit-server/src/extralit_server/`
-2. **Frontend changes**: Work in `argilla-frontend/components/` or `argilla-frontend/pages/`
+2. **Frontend changes**: Work in `extralit-frontend/components/` or `extralit-frontend/pages/`
 3. **SDK changes**: Work in `extralit/src/argilla/` or `extralit/src/extralit/`
 4. **Tests**: Each package has its own `tests/` directory
 5. **Documentation**: Use `extralit/docs/` for SDK docs

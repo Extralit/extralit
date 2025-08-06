@@ -119,7 +119,7 @@ extralit_server database users migrate
 
 Set up and run frontend:
    ```bash
-   cd argilla-frontend
+   cd extralit-frontend
    npm install
    API_BASE_URL=http://path.to.server npm run dev
    ```

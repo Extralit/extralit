@@ -86,10 +86,10 @@ jobs:
         with:
           node-version: 20
           cache: "npm"
-          cache-dependency-path: argilla-frontend/package-lock.json
+          cache-dependency-path: extralit-frontend/package-lock.json
 
-      - name: Setup argilla-frontend dependencies
-        working-directory: argilla-frontend
+      - name: Setup extralit-frontend dependencies
+        working-directory: extralit-frontend
         env:
           API_BASE_URL: http://localhost:3000
         run: |

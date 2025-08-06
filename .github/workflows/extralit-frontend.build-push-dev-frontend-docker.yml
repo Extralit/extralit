@@ -1,4 +1,4 @@
-name: Build Argilla Docker image
+name: Build Extralit Docker image
 
 on:
   workflow_call:
@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: argilla-frontend
+        working-directory: extralit-frontend
 
     # Grant permissions to `GITHUB_TOKEN` for Google Cloud Workload Identity Provider
     permissions:
@@ -107,7 +107,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
-          context: argilla-frontend
+          context: extralit-frontend
           file: ${{ inputs.dockerfile }}
           platforms: ${{ inputs.platforms }}
           tags: ${{ steps.generate-docker-tags.outputs.tags }}

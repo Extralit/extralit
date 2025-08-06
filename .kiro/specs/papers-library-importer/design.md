@@ -125,17 +125,17 @@ async def upload_reference_documents_job(
 ### Frontend Components
 
 **Architecture Pattern:**
-- **Backend API Types**: Located in `argilla-frontend/v1/domain/entities/import/ImportAnalysis.ts` - contains data structures that map directly to backend API schemas (ImportAnalysisRequest, ImportAnalysisResponse, DocumentImportAnalysis, etc.)
-- **Frontend Component Types**: Located in `argilla-frontend/components/features/import/types.ts` - contains UI-specific types (AnalysisTableRow, TableColumn, ImportConfirmationData, etc.) and re-exports backend types for convenience
-- **Use Cases**: Located in `argilla-frontend/v1/domain/usecases/get-import-analysis-use-case.ts` - handles API communication with ImportAnalysisUseCase class for POST /api/v1/imports/analyze requests
+- **Backend API Types**: Located in `extralit-frontend/v1/domain/entities/import/ImportAnalysis.ts` - contains data structures that map directly to backend API schemas (ImportAnalysisRequest, ImportAnalysisResponse, DocumentImportAnalysis, etc.)
+- **Frontend Component Types**: Located in `extralit-frontend/components/features/import/types.ts` - contains UI-specific types (AnalysisTableRow, TableColumn, ImportConfirmationData, etc.) and re-exports backend types for convenience
+- **Use Cases**: Located in `extralit-frontend/v1/domain/usecases/get-import-analysis-use-case.ts` - handles API communication with ImportAnalysisUseCase class for POST /api/v1/imports/analyze requests
 
-Note to reuse existing styles in argilla-frontend/assets/scss/base/base.scss, argilla-frontend/assets/scss/abstract/variables/_variables.scss and existing components in `components/base` where possible to keep similar the design system and code reuse and best practices.
+Note to reuse existing styles in extralit-frontend/assets/scss/base/base.scss, extralit-frontend/assets/scss/abstract/variables/_variables.scss and existing components in `components/base` where possible to keep similar the design system and code reuse and best practices.
 
-- `argilla-frontend/components/base`:
+- `extralit-frontend/components/base`:
     base-action-tooltip, base-badge, base-banner, base-brand-icon, base-breadcrumbs, base-button, base-card, base-checkbox, base-code, base-collpasable-panel, base-date, base-documentation-viewer, base-dropdown, base-feedback, base-icon, base-input, base-loading, base-modal, base-pdf-viewer, base-progress, base-radio-button, base-range, base-render-html, base-render-markdown, base-render-table, base-resizable, base-scroll, base-search-bar, base-separator, base-shapes, base-slider, base-spinner, base-switch, base-tabs, base-tag, base-toast, base-tooltip, base-topbar-brand
 
 
-#### 1. Home Page Integration (`argilla-frontend/pages/index.vue`)
+#### 1. Home Page Integration (`extralit-frontend/pages/index.vue`)
 
 **Import Documents Button:**
 - Add "Import Documents" button above existing ImportFromHub and ImportFromPython components
@@ -147,7 +147,7 @@ Note to reuse existing styles in argilla-frontend/assets/scss/base/base.scss, ar
 - Pass selected workspace ID to ImportModal component for import analysis
 - Ensure workspace context is maintained throughout the import workflow
 
-#### 2. FlowModal Base Component (`argilla-frontend/components/base/base-flow-modal/BaseFlowModal.vue`)
+#### 2. FlowModal Base Component (`extralit-frontend/components/base/base-flow-modal/BaseFlowModal.vue`)
 
 **New full-screen modal component designed for multi-step workflows:**
 
@@ -202,7 +202,7 @@ interface FlowModalProps {
 - Smooth transitions between steps
 - Loading states and disabled button styling
 
-#### 3. Import Modal Workflow (`argilla-frontend/components/features/import/ImportModal.vue`)
+#### 3. Import Modal Workflow (`extralit-frontend/components/features/import/ImportModal.vue`)
 
 **Full-page modal using new BaseFlowModal component with multi-step workflow:**
 - Step 1: Upload Bibliography File (.bib file upload)
@@ -218,13 +218,13 @@ interface FlowModalProps {
 
 #### 3. Upload Steps Components
 
-**Step 1: Bibliography Upload (`argilla-frontend/components/features/import/ImportBibUpload.vue`)**
+**Step 1: Bibliography Upload (`extralit-frontend/components/features/import/ImportBibUpload.vue`)**
 - Single .bib file upload with drag-and-drop or file picker
 - Support for ";"-separated values (especially the `file` attribute in zotero_export.bib)
 - Parsing preview of dataframe columns parsed from the .bib file,
 - Display upload status and reference count
 
-**Step 2: PDF Upload (`argilla-frontend/components/features/import/ImportPdfUpload.vue`)**
+**Step 2: PDF Upload (`extralit-frontend/components/features/import/ImportPdfUpload.vue`)**
 - Multiple PDF file upload with drag-and-drop or folder selection
 - File path matching preview with bibliography entries
 - Upload progress and file validation
@@ -297,7 +297,7 @@ Example BibTeX files:
 }
 ```
 
-#### 4. Import Analysis Table (`argilla-frontend/components/features/import/ImportAnalysisTable.vue`)
+#### 4. Import Analysis Table (`extralit-frontend/components/features/import/ImportAnalysisTable.vue`)
 
 **Features using new simple table component:**
 - Uses `GetImportAnalysisUseCase` from `~/v1/domain/usecases/get-import-analysis-use-case.ts` for backend communication
@@ -313,13 +313,13 @@ Example BibTeX files:
 - Receives workspace ID as prop and passes it to the analysis use case
 - Automatically triggers analysis when dataframe data is available and workspace ID is provided
 
-**Table Component (`argilla-frontend/components/base/base-simple-table/BaseSimpleTable.vue`)**
+**Table Component (`extralit-frontend/components/base/base-simple-table/BaseSimpleTable.vue`)**
 - New reusable table component built on Tabulator
 - Simpler than base-render-table, focused on basic tabular display using the `/dist/css/tabulator_semanticui.min.css` theme
 - Support for custom column renderers and actions
 - Built-in sorting, filtering, and pagination
 
-#### 5. Batch Upload Progress (`argilla-frontend/components/features/import/ImportBatchProgress.vue`)
+#### 5. Batch Upload Progress (`extralit-frontend/components/features/import/ImportBatchProgress.vue`)
 
 **Features:**
 - Files uploaded in batches with sequential batch processing
@@ -332,20 +332,20 @@ Example BibTeX files:
 
 #### 6. Import Summary & History Components
 
-**Import Summary (`argilla-frontend/components/features/import/ImportSummary.vue`)**
+**Import Summary (`extralit-frontend/components/features/import/ImportSummary.vue`)**
 - Import metadata summary with statistics (total processed, successfully added, updated, skipped, failed)
 - Detailed breakdown of results with error information
 - Failed imports table with retry options
 - "View Import Log" button to access detailed history
 - "Return to Library" button for navigation
 
-**Import History List (`argilla-frontend/components/features/import/ImportHistoryList.vue`)**
+**Import History List (`extralit-frontend/components/features/import/ImportHistoryList.vue`)**
 - Display list of all import operations with metadata
 - Columns: Import ID, Uploaded By, Date & Time, Source File Name, Total Papers, Success/Updated/Skipped/Failed counts
 - "View Details" action for each import to display detailed data table
 - Pagination and filtering for large import history
 
-**Import History Details (`argilla-frontend/components/features/import/ImportHistoryDetails.vue`)**
+**Import History Details (`extralit-frontend/components/features/import/ImportHistoryDetails.vue`)**
 - Detailed data table showing individual reference results
 - Columns: Reference, Title, Authors, Year, Error Message, Actions
 - Filter and search functionality
@@ -609,7 +609,7 @@ The import system processes tabular data (BibTeX, CSV, etc.) into a standardized
 
 ### File Organization
 ```
-argilla-frontend/
+extralit-frontend/
 ├── v1/domain/
 │   ├── entities/import/
 │   │   └── ImportAnalysis.ts          # Backend API data structures

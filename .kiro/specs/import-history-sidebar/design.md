@@ -64,7 +64,7 @@ graph TD
 
 ### Frontend Components
 
-#### 1. Home Page Integration (`argilla-frontend/pages/index.vue`)
+#### 1. Home Page Integration (`extralit-frontend/pages/index.vue`)
 
 **Recent Imports Sidebar Section:**
 - Replace example datasets section with Recent Imports component
@@ -93,7 +93,7 @@ graph TD
 </template>
 ```
 
-#### 2. Recent Imports Component (`argilla-frontend/components/features/import/RecentImports.vue`)
+#### 2. Recent Imports Component (`extralit-frontend/components/features/import/RecentImports.vue`)
 
 **Features:**
 - Displays 5 most recent ImportHistory records for the workspace
@@ -151,7 +151,7 @@ graph TD
 </template>
 ```
 
-#### 3. Recent Import Card Component (`argilla-frontend/components/features/import/RecentImportCard.vue`)
+#### 3. Recent Import Card Component (`extralit-frontend/components/features/import/RecentImportCard.vue`)
 
 **Features:**
 - Compact card display for individual ImportHistory records
@@ -185,7 +185,7 @@ graph TD
 </template>
 ```
 
-#### 4. Import Configuration Page (`argilla-frontend/pages/new/import/_id.vue`)
+#### 4. Import Configuration Page (`extralit-frontend/pages/new/import/_id.vue`)
 
 **Features:**
 - New page route for ImportHistory-based dataset configuration
@@ -225,7 +225,7 @@ graph TD
 </template>
 ```
 
-#### 5. ImportHistory Dataset Creation Builder (`argilla-frontend/v1/domain/entities/import/ImportHistoryDatasetBuilder.ts`)
+#### 5. ImportHistory Dataset Creation Builder (`extralit-frontend/v1/domain/entities/import/ImportHistoryDatasetBuilder.ts`)
 
 **Purpose:**
 - Adapts ImportHistory data structure to DatasetCreation format
@@ -266,7 +266,7 @@ export class ImportHistoryDatasetBuilder {
 
 #### 6. Enhanced ImportHistory Use Cases
 
-**New Get ImportHistory Details Use Case (`argilla-frontend/v1/domain/usecases/get-import-history-details-use-case.ts`)**
+**New Get ImportHistory Details Use Case (`extralit-frontend/v1/domain/usecases/get-import-history-details-use-case.ts`)**
 ```typescript
 export class GetImportHistoryDetailsUseCase {
   constructor(private readonly axios: NuxtAxiosInstance) {}
@@ -372,7 +372,7 @@ A new component that displays ImportHistory tabular data using BaseSimpleTable w
 
 ### File Organization
 ```
-argilla-frontend/
+extralit-frontend/
 ├── pages/new/import/
 │   └── _id.vue                        # Import configuration page
 ├── components/features/import/

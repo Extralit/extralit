@@ -32,7 +32,7 @@ jobs:
 
       - name: Remove PR environment if exists
         run: |
-          service_name="argilla-quickstart-pr-${{ github.event.pull_request.number }}"
+          service_name="extralit-quickstart-pr-${{ github.event.pull_request.number }}"
           services=$(gcloud run services list --project=argilla-ci --format="value(metadata.name)")
           if echo "$services" | grep -q "$service_name"; then
             echo "Service '$service_name' exists. Removing it..."

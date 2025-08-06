@@ -8,7 +8,7 @@
 
 - [ ] 2. Create ImportHistory Details Use Case
   - [x] 2.1 Create GetImportHistoryDetailsUseCase class
-    - Write use case class in `argilla-frontend/v1/domain/usecases/get-import-history-details-use-case.ts`
+    - Write use case class in `extralit-frontend/v1/domain/usecases/get-import-history-details-use-case.ts`
     - Implement execute method to fetch detailed ImportHistory data
     - Add proper TypeScript interfaces for ImportHistoryResponse with data field
     - _Requirements: 2.3, 3.1_
@@ -21,35 +21,35 @@
 
 - [ ] 3. Create ImportHistory Dataset Builder
   - [x] 3.1 Create ImportHistoryDatasetBuilder class
-    - Write builder class in `argilla-frontend/v1/domain/entities/import/ImportHistoryDatasetBuilder.ts`
+    - Write builder class in `extralit-frontend/v1/domain/entities/import/ImportHistoryDatasetBuilder.ts`
     - Implement conversion from ImportHistory data structure to DatasetCreation format
     - Add field mapping capabilities similar to HuggingFace datasets
     - Handle data type inference and validation for ImportHistory fields
     - _Requirements: 3.4, 4.1, 4.7_
 
   - [x] 3.2 Create ImportHistory entity types
-    - Define ImportHistoryDetailsResponse interface in `argilla-frontend/v1/domain/entities/import/ImportHistoryDetails.ts`
+    - Define ImportHistoryDetailsResponse interface in `extralit-frontend/v1/domain/entities/import/ImportHistoryDetails.ts`
     - Add proper TypeScript types for ImportHistory data structure
     - Ensure compatibility with existing ImportHistoryResponse from backend
     - _Requirements: 3.1, 3.3_
 
 - [ ] 4. Create Recent Imports Sidebar Components
   - [x] 4.1 Create RecentImports component
-    - Write component in `argilla-frontend/components/features/import/RecentImports.vue`
+    - Write component in `extralit-frontend/components/features/import/RecentImports.vue`
     - Implement loading, empty, and error states for recent imports
     - Add integration with GetImportHistoryUseCase for fetching recent imports
     - Include "View All Imports" and "Import Documents" buttons
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.6, 6.1, 6.3_
 
   - [x] 4.2 Create RecentImportCard component
-    - Write component in `argilla-frontend/components/features/import/RecentImportCard.vue`
+    - Write component in `extralit-frontend/components/features/import/RecentImportCard.vue`
     - Implement compact card display for individual ImportHistory records
     - Show filename, date, and summary statistics with proper styling
     - Add hover states and click interactions
     - _Requirements: 1.3, 5.3_
 
   - [x] 4.3 Create RecentImports view model
-    - Write view model in `argilla-frontend/components/features/import/useRecentImportsViewModel.ts`
+    - Write view model in `extralit-frontend/components/features/import/useRecentImportsViewModel.ts`
     - Implement reactive state management for recent imports data
     - Add error handling and loading state management
     - Integrate with GetImportHistoryUseCase for data fetching
@@ -57,14 +57,14 @@
 
 - [ ] 5. Create ImportHistory Data Preview Component
   - [x] 5.1 Create ImportHistoryDataPreview component
-    - Write component in `argilla-frontend/components/features/import/ImportHistoryDataPreview.vue`
+    - Write component in `extralit-frontend/components/features/import/ImportHistoryDataPreview.vue`
     - Implement tabular display of ImportHistory data using BaseSimpleTable
     - Add pagination, search, and filtering capabilities for large datasets
     - Create responsive design for preview pane integration
     - _Requirements: 3.2, 3.3, 3.7_
 - [x] 6. Create Import Configuration Page
   - [x] 6.1 Create import configuration page route
-    - Create page file `argilla-frontend/pages/new/import/_id.vue`
+    - Create page file `extralit-frontend/pages/new/import/_id.vue`
     - Implement route parameter validation and ImportHistory data fetching
     - Add loading, error, and navigation states
     - Create breadcrumb navigation with proper routing
@@ -100,7 +100,7 @@
 
 - [x] 8. Integrate Recent Imports into Home Page
   - [x] 8.1 Modify home page sidebar
-    - Update `argilla-frontend/pages/index.vue` to replace example datasets with RecentImports component
+    - Update `extralit-frontend/pages/index.vue` to replace example datasets with RecentImports component
     - Add event handlers for import selection and modal opening
     - Integrate with existing workspace selection functionality
     - Maintain existing ImportModal and ImportHistoryList modal functionality
@@ -114,7 +114,7 @@
 
 - [x] 9. Add Import Configuration Route
   - [x] 9.1 Update routes configuration
-    - Add importConfiguration route to ROUTES object in `argilla-frontend/v1/infrastructure/services/useRoutes.ts`
+    - Add importConfiguration route to ROUTES object in `extralit-frontend/v1/infrastructure/services/useRoutes.ts`
     - Implement goToImportConfiguration navigation method
     - Ensure proper route parameter handling for import_id
     - _Requirements: 2.1, 2.2, 7.1_
