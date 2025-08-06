@@ -1,6 +1,6 @@
 <template>
   <div>
-    <p v-if="legend" class="questions__title --body3 --light" v-text="legend" :aria-label="legend" />
+    <p v-if="legend" class="questions__title --body3 --light" :aria-label="legend" v-text="legend" />
     <div class="questions" role="list" aria-label="List of annotation questions">
       <div
         v-for="(question, index) in questions"

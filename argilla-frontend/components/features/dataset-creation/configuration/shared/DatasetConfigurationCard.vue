@@ -3,18 +3,34 @@
     <div class="config-card">
       <div class="config-card__content" :class="item?.type">
         <h3 class="config-card__title">
-          <svgicon class="config-card__icon" width="6" name="draggable" color="var(--bg-opacity-20)" />{{ item.name }}
+          <svgicon class="config-card__icon" width="6" name="draggable" color="var(--bg-opacity-20)" />
+          <input
+            v-if="isEditingName"
+            ref="nameInput"
+            v-model="editableName"
+            class="config-card__title-input"
+            @blur="finishEditing"
+            @keydown.enter="finishEditing"
+            @keydown.escape="cancelEditing"
+          />
+          <span
+            v-else
+            class="config-card__title-text"
+            :class="{ 'config-card__title-text--editable': configType === 'question' }"
+            @dblclick="configType === 'question' ? startEditing() : null"
+            >{{ item.name }}</span
+          >
           <span v-if="item.primitiveType" class="config-card__primitive-type">{{ item.primitiveType }}</span>
         </h3>
         <slot name="header" />
         <div class="config-card__row">
           <DatasetConfigurationChipsSelector
             :id="item.name"
+            v-model="item.type"
             :type="configType"
             class="config-card__type"
             :options="availableTypes"
             @onValueChange="$emit('change-type', $event)"
-            v-model="item.type"
           />
         </div>
         <slot></slot>
@@ -23,7 +39,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import "assets/icons/draggable";
 export default {
   props: {
@@ -44,6 +60,12 @@ export default {
       default: false,
     },
   },
+  data() {
+    return {
+      isEditingName: false,
+      editableName: "",
+    };
+  },
   computed: {
     hasNoMapping() {
       return this.item.type.value === "no mapping";
@@ -52,6 +74,27 @@ export default {
   model: {
     prop: "type",
     event: "change",
+  },
+  methods: {
+    startEditing() {
+      if (this.configType !== "question") return;
+      this.isEditingName = true;
+      this.editableName = this.item.name;
+      this.$nextTick(() => {
+        this.$refs.nameInput.focus();
+        this.$refs.nameInput.select();
+      });
+    },
+    finishEditing() {
+      if (this.editableName.trim() && this.editableName !== this.item.name) {
+        this.$emit("name-changed", this.editableName.trim());
+      }
+      this.isEditingName = false;
+    },
+    cancelEditing() {
+      this.isEditingName = false;
+      this.editableName = this.item.name;
+    },
   },
 };
 </script>
@@ -93,6 +136,35 @@ $no-mapping-color: hsl(0, 0%, 50%);
     margin: 0;
     font-weight: 500;
     @include font-size(14px);
+  }
+  &__title-text {
+    &--editable {
+      cursor: pointer;
+      &:hover {
+        background: var(--bg-opacity-4);
+        border-radius: 2px;
+        padding: 1px 2px;
+        margin: -1px -2px;
+      }
+    }
+  }
+  &__title-input {
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    color: inherit;
+    padding: 1px 2px;
+    margin: -1px -2px;
+    border-radius: 2px;
+    background: var(--bg-accent-grey-2);
+    min-width: 100px;
+    &:focus {
+      background: var(--bg-accent-grey-2);
+      box-shadow: 0 0 0 1px var(--bg-opacity-20);
+    }
   }
   &__icon {
     position: absolute;

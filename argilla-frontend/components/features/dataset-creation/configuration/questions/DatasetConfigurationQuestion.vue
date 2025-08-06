@@ -5,8 +5,9 @@
     :available-types="availableTypes"
     @is-focused="$emit('is-focused', $event)"
     @change-type="$emit('change-type', $event)"
+    @name-changed="updateQuestionName"
   >
-    <BaseButton class="config-card__remove" @click="remove" v-if="removeIsAllowed"><svgicon name="close" /></BaseButton>
+    <BaseButton v-if="removeIsAllowed" class="config-card__remove" @click="remove"><svgicon name="close" /></BaseButton>
 
     <template v-if="noMapping">
       <DatasetConfigurationLabels
@@ -34,9 +35,9 @@
     <span class="separator"></span>
     <DatasetConfigurationColumnSelector
       v-if="showColumnSelector"
+      v-model="question.column"
       class="config-card__type"
       :options="selectedSubset.columns"
-      v-model="question.column"
     />
     <BaseCheckbox
       class="config-card__required"
@@ -48,7 +49,7 @@
   </DatasetConfigurationCard>
 </template>
 
-<script>
+<script lang="ts">
 import "assets/icons/close";
 export default {
   props: {
@@ -84,6 +85,15 @@ export default {
   methods: {
     remove() {
       this.selectedSubset.removeQuestion(this.question.name);
+    },
+    updateQuestionName(newName: string) {
+      try {
+        // Rename the question in the subset - this will replace the question object
+        this.selectedSubset.renameQuestion(this.question.name, newName);
+      } catch (error) {
+        console.error('Failed to rename question:', error.message);
+        // You could show a user-friendly error message here
+      }
     },
   },
 };

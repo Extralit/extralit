@@ -8,7 +8,7 @@
   </DatasetConfigurationCard>
 </template>
 
-<script>
+<script lang="ts">
 export default {
   props: {
     field: {
@@ -29,5 +29,6 @@ export default {
     prop: "type",
     event: "change",
   },
+  methods: {},
 };
 </script>

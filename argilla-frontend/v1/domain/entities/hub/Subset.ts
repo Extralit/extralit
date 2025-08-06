@@ -190,6 +190,35 @@ export class Subset {
     }
   }
 
+  public renameQuestion(oldName: string, newName: string) {
+    const question = this.questions.find((q) => q.name === oldName);
+    if (!question || oldName === newName) {
+      return;
+    }
+
+    // Check if new name already exists
+    if (this.questions.some((q) => q.name === newName)) {
+      throw new Error(`Question with name "${newName}" already exists`);
+    }
+
+    // Get the current question's settings and position
+    const settings = question.settings.toPrototype();
+    const position = this.questions.indexOf(question);
+    const column = question.column;
+    const required = question.required;
+
+    // Remove the old question
+    this.removeQuestion(oldName);
+
+    // Add the new question with the new name
+    this.addQuestion(newName, settings, position);
+
+    // Restore the column mapping and required status
+    const newQuestion = this.questions[position];
+    newQuestion.column = column;
+    newQuestion.required = required;
+  }
+
   public addQuestion(name: string, settings: QuestionPrototype, position?: number) {
     const { type } = settings;
     if (type === "label_selection") {
