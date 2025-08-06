@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from extralit.datasets._io.card._dataset_card import ArgillaDatasetCard
+from extralit.datasets._io.card._dataset_card import ExtralitDatasetCard
 from extralit.datasets._io.card._parser import size_categories_parser
 
-__all__ = ["ArgillaDatasetCard", "size_categories_parser"]
+__all__ = ["ExtralitDatasetCard", "size_categories_parser"]

@@ -4,7 +4,7 @@ hide: footer
 
 # Questions
 
-Argilla uses questions to gather the feedback. The questions will be answered by users or models.
+Extralit uses questions to gather the feedback. The questions will be answered by users or models.
 
 ## Usage Examples
 

@@ -23,9 +23,9 @@ from logging import Logger, StreamHandler
 from typing import Type
 
 try:
-    from rich.logging import RichHandler as ArgillaHandler
+    from rich.logging import RichHandler as ExtralitHandler
 except ModuleNotFoundError:
-    ArgillaHandler = StreamHandler
+    ExtralitHandler = StreamHandler
 
 
 def full_qualified_class_name(_class: Type) -> str:
@@ -63,7 +63,7 @@ class LoggingMixin:
 
 def configure_logging():
     """Normalizes logging configuration for extralit and its dependencies"""
-    handler = ArgillaHandler()
+    handler = ExtralitHandler()
 
     # See the note here: https://docs.python.org/3/library/logging.html#logging.Logger.propagate
     # We only attach our handler to the root logger and let propagation take care of the rest

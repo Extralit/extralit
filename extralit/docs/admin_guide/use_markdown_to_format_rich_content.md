@@ -29,20 +29,20 @@ The `TextField` and `TextQuestion` provide the option to enable Markdown and the
         ```python
         chat_to_html([{"role": "user", "content": "hello"}])
         ```
-    > Check the [Markdown - Python Reference](../reference/argilla/markdown.md) to see the arguments of the `ex.markdown` methods in detail.
+    > Check the [Markdown - Python Reference](../reference/extralit/markdown.md) to see the arguments of the `ex.markdown` methods in detail.
 
 !!! tip
     You can get pretty creative with HTML. For example, think about visualizing graphs and tables. You can use some interesting Python packages methods like `pandas.DataFrame.to_html` and `plotly.io.to_html`.
 
 ## Multi-modal support: images, audio, video, PDFs and more
 
-Argilla has basic multi-modal support in different ways, each with pros and cons, but they both offer the same UI experience because they both rely on HTML.
+Extralit has basic multi-modal support in different ways, each with pros and cons, but they both offer the same UI experience because they both rely on HTML.
 
 ![media](../assets/images/how_to_guides/markdown/media.png)
 
 ### Local content through DataURLs
 
-A DataURL is a scheme that allows data to be encoded into a base64-encoded string and then embedded directly into HTML. To facilitate this, we offer some functions: `image_to_html`, `audio_to_html`, `video_to_thml`, and `pdf_to_html`. These functions accept either the file path or the file's byte data and return the corresponding HTMurl to render the media file within the Argilla user interface. Additionally, you can also set the `width` and `height` in pixel or percentage for video and image (defaults to the original dimensions) and the autoplay and loop attributes to True for audio and video (defaults to False).
+A DataURL is a scheme that allows data to be encoded into a base64-encoded string and then embedded directly into HTML. To facilitate this, we offer some functions: `image_to_html`, `audio_to_html`, `video_to_thml`, and `pdf_to_html`. These functions accept either the file path or the file's byte data and return the corresponding HTMurl to render the media file within the Extralit user interface. Additionally, you can also set the `width` and `height` in pixel or percentage for video and image (defaults to the original dimensions) and the autoplay and loop attributes to True for audio and video (defaults to False).
 
 !!! warning
     DataURLs increase the memory usage of the original filesize. Additionally, different browsers enforce different size limitations for rendering DataURLs which might block the visualization experience per user.
@@ -120,7 +120,7 @@ A DataURL is a scheme that allows data to be encoded into a base64-encoded strin
 Instead of uploading local files through DataURLs, we can also visualize URLs directly linking to media files such as images, audio, video, and PDFs hosted on a public or private server. In this case, you can use basic HTML to visualize content available on platforms like Google Drive or decide to configure a private media server.
 
 !!! warning
-    When trying to access content from a private media server you have to ensure that the Argilla server has network access to the private media server, which might be done through something like IP whitelisting.
+    When trying to access content from a private media server you have to ensure that the Extralit server has network access to the private media server, which might be done through something like IP whitelisting.
 
 === "Image"
 

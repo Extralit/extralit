@@ -1,16 +1,16 @@
 # Server configuration
 
-This section explains advanced operations and settings for running the Argilla Server and Argilla Python Client.
+This section explains advanced operations and settings for running the Extralit Server and Extralit Python Client.
 
-By default, the Argilla Server will look for your Elasticsearch (ES) endpoint at `http://localhost:9200`. You can customize this by setting the `EXTRALIT_ELASTICSEARCH` environment variable. Have a look at the list of available [environment variables](#environment-variables) to further configure the Argilla server.
+By default, the Extralit Server will look for your Elasticsearch (ES) endpoint at `http://localhost:9200`. You can customize this by setting the `EXTRALIT_ELASTICSEARCH` environment variable. Have a look at the list of available [environment variables](#environment-variables) to further configure the Extralit server.
 
-From the Argilla version `1.19.0`, you must set up the search engine manually to work with datasets. You should set the
+From the Extralit version `1.19.0`, you must set up the search engine manually to work with datasets. You should set the
 environment variable `EXTRALIT_SEARCH_ENGINE=opensearch` or `EXTRALIT_SEARCH_ENGINE=elasticsearch` depending on the backend you're using
 The default value for this variable is set to `elasticsearch`. The minimal version for Elasticsearch is `8.5.0`, and for Opensearch is `2.4.0`.
 Please, review your backend and upgrade it if necessary.
 
 !!! warning
-    For vector search in OpenSearch, the filtering applied is using a `post_filter` step, since there is a bug that makes queries fail using filtering + knn from Argilla.
+    For vector search in OpenSearch, the filtering applied is using a `post_filter` step, since there is a bug that makes queries fail using filtering + knn from Extralit.
     See https://github.com/opensearch-project/k-NN/issues/1286
 
     This may result in unexpected results when combining filtering with vector search with this engine.
@@ -19,13 +19,13 @@ Please, review your backend and upgrade it if necessary.
 
 ### Using a proxy
 
-If you run Argilla behind a proxy by adding some extra prefix to expose the service, you should set the `EXTRALIT_BASE_URL`
+If you run Extralit behind a proxy by adding some extra prefix to expose the service, you should set the `EXTRALIT_BASE_URL`
 environment variable to properly route requests to the server application.
 
-For example, if your proxy exposes Argilla in the URL `https://my-proxy/custom-path-for-argilla`, you should launch the
-Argilla server with `EXTRALIT_BASE_URL=/custom-path-for-argilla`.
+For example, if your proxy exposes Extralit in the URL `https://my-proxy/custom-path-for-argilla`, you should launch the
+Extralit server with `EXTRALIT_BASE_URL=/custom-path-for-argilla`.
 
-NGINX and Traefik have been tested and are known to work with Argilla:
+NGINX and Traefik have been tested and are known to work with Extralit:
 
 - [NGINX example](https://github.com/extralit/extralit/tree/main/examples/deployments/docker/nginx)
 - [Traefik example](https://github.com/extralit/extralit/tree/main/examples/deployments/docker/traefik)
@@ -38,9 +38,9 @@ You can set the following environment variables to further configure your server
 
 #### FastAPI
 
-- `EXTRALIT_HOME_PATH`: The directory where Argilla will store all the files needed to run. If the path doesn't exist it will be automatically created (Default: `~/.argilla`).
+- `EXTRALIT_HOME_PATH`: The directory where Extralit will store all the files needed to run. If the path doesn't exist it will be automatically created (Default: `~/.argilla`).
 
-- `EXTRALIT_BASE_URL`: If you want to launch the Argilla server in a specific base path other than /, you should set up this environment variable. This can be useful when running Argilla behind a proxy that adds a prefix path to route the service (Default: "/").
+- `EXTRALIT_BASE_URL`: If you want to launch the Extralit server in a specific base path other than /, you should set up this environment variable. This can be useful when running Extralit behind a proxy that adds a prefix path to route the service (Default: "/").
 
 - `EXTRALIT_CORS_ORIGINS`: List of host patterns for CORS origin access.
 
@@ -54,14 +54,14 @@ You can set the following environment variables to further configure your server
 
 - `USERNAME`: If provided, the owner username (Default: `None`).
 - `PASSWORD`: If provided, the owner password (Default: `None`).
-- `EXTRALIT_AUTH_SECRET_KEY`: The secret key used to sign the API token data. You can use `openssl rand -hex 32` to generate a 32 character string to use with this environment variable. By default a random value is generated, so if you are using more than one server worker (or more than one Argilla server) you will need to set the same value for all of them.
+- `EXTRALIT_AUTH_SECRET_KEY`: The secret key used to sign the API token data. You can use `openssl rand -hex 32` to generate a 32 character string to use with this environment variable. By default a random value is generated, so if you are using more than one server worker (or more than one Extralit server) you will need to set the same value for all of them.
 - `EXTRALIT_AUTH_OAUTH_CFG`: Path to the OAuth2 configuration file (Default: `$PWD/.oauth.yml`).
 
 If `USERNAME` and `PASSWORD` are provided, the owner user will be created with these credentials on the server startup.
 
 #### Database
 
-- `EXTRALIT_DATABASE_URL`: A URL string that contains the necessary information to connect to a database. Argilla uses SQLite by default, PostgreSQL is also officially supported (Default: `sqlite:///$EXTRALIT_HOME_PATH/extralit.db?check_same_thread=False`).
+- `EXTRALIT_DATABASE_URL`: A URL string that contains the necessary information to connect to a database. Extralit uses SQLite by default, PostgreSQL is also officially supported (Default: `sqlite:///$EXTRALIT_HOME_PATH/extralit.db?check_same_thread=False`).
 
 ##### SQLite
 
@@ -93,7 +93,7 @@ The following environment variables are useful only when PostgreSQL is used:
 
 ### Redis
 
-Redis is used by Argilla to store information about jobs to be processed on background. The following environment variables are useful to config how Argilla connects to Redis:
+Redis is used by Extralit to store information about jobs to be processed on background. The following environment variables are useful to config how Extralit connects to Redis:
 
 - `EXTRALIT_REDIS_URL`: A URL string that contains the necessary information to connect to a Redis instance (Default: `redis://localhost:6379/0`).
 - `EXTRALIT_REDIS_USE_CLUSTER`: If "True" tries the connection with the URL to a  Redis Cluster instead of a Redis Standalone instance.
@@ -114,7 +114,7 @@ Redis is used by Argilla to store information about jobs to be processed on back
 
 ### Hugging Face
 
-- `EXTRALIT_SHOW_HUGGINGFACE_SPACE_PERSISTENT_STORAGE_WARNING`: When Argilla is running on Hugging Face Spaces you can use this environment variable to disable the warning message showed when persistent storage is disabled for the space (Default: `true`).
+- `EXTRALIT_SHOW_HUGGINGFACE_SPACE_PERSISTENT_STORAGE_WARNING`: When Extralit is running on Hugging Face Spaces you can use this environment variable to disable the warning message showed when persistent storage is disabled for the space (Default: `true`).
 
 ### Docker images only
 

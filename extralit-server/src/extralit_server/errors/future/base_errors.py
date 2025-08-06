@@ -1,16 +1,16 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 __all__ = [
     "NotFoundError",
@@ -29,7 +29,7 @@ UPDATE_DISTRIBUTION_WITH_EXISTING_RESPONSES_ERROR_CODE = "update_distribution_wi
 
 
 class NotFoundError(Exception):
-    """Custom Argilla not found error. Use it for situations where an Argilla domain entity has not be found on the system."""
+    """Custom Extralit not found error. Use it for situations where an Extralit domain entity has not be found on the system."""
 
     def __init__(self, message, code=NOT_FOUND_ERROR):
         self.message = message
@@ -37,7 +37,7 @@ class NotFoundError(Exception):
 
 
 class NotUniqueError(Exception):
-    """Custom Argilla not unique error. Use it for situations where an Argilla domain entity already exists violating a constraint."""
+    """Custom Extralit not unique error. Use it for situations where an Extralit domain entity already exists violating a constraint."""
 
     def __init__(self, message, code=NOT_UNIQUE_ERROR):
         self.message = message
@@ -45,7 +45,7 @@ class NotUniqueError(Exception):
 
 
 class UnprocessableEntityError(Exception):
-    """Custom Argilla unprocessable entity error. Use it for situations where an Argilla domain entity can not be processed."""
+    """Custom Extralit unprocessable entity error. Use it for situations where an Extralit domain entity can not be processed."""
 
     def __init__(self, message, code=UNPROCESSABLE_ENTITY_ERROR_CODE):
         self.message = message
@@ -63,6 +63,4 @@ class UpdateDistributionWithExistingResponsesError(UnprocessableEntityError):
 
 
 class AuthenticationError(Exception):
-    """Custom Argilla unauthorized error. Use it for situations where an request is not authorized to perform an action."""
-
-    pass
+    """Custom Extralit unauthorized error. Use it for situations where an request is not authorized to perform an action."""

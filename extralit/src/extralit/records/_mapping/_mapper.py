@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ class IngestedRecordMapper:
 
     Attributes:
         dataset: The dataset the record will be added to.
-        mapping: A dictionary mapping from source data keys/ columns to Argilla fields, questions, ids, etc.
+        mapping: A dictionary mapping from source data keys/ columns to Extralit fields, questions, ids, etc.
         user_id: The user id to associate with the record responses.
     """
 
@@ -247,7 +247,7 @@ class IngestedRecordMapper:
 
         Parameters:
             data: A dictionary representing the vector.
-            mapping: A dictionary mapping from source data keys/ columns to Argilla fields, questions, ids, etc.
+            mapping: A dictionary mapping from source data keys/ columns to Extralit fields, questions, ids, etc.
 
         Returns:
              A list of Suggestion objects.
@@ -275,7 +275,7 @@ class IngestedRecordMapper:
 
         Parameters:
              data: A dictionary representing the vector.
-             mapping: A dictionary mapping from source data keys/ columns to Argilla fields, questions, ids, etc.
+             mapping: A dictionary mapping from source data keys/ columns to Extralit fields, questions, ids, etc.
              user_id: The user id to associate with the record responses.
 
         Returns:

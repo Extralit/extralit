@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
 
 def echo_in_panel(text, title=None, title_align="center", success=True):
-    """Echoes a message in a rich panel with Argilla theme."""
+    """Echoes a message in a rich panel with Extralit theme."""
     from extralit.cli.rich import get_themed_panel
     from rich.console import Console
 
@@ -34,7 +34,7 @@ def echo_in_panel(text, title=None, title_align="center", success=True):
 
 
 def init_callback() -> "Extralit":
-    """Initialize Argilla client if user is logged in, otherwise exit."""
+    """Initialize Extralit client if user is logged in, otherwise exit."""
     from extralit.client.login import ExtralitCredentials
 
     if not ExtralitCredentials.exists():

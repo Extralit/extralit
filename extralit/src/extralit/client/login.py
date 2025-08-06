@@ -69,7 +69,7 @@ class ExtralitCredentials:
         """Load credentials from file.
 
         Returns:
-            ArgillaCredentials: The loaded credentials.
+            ExtralitCredentials: The loaded credentials.
 
         Raises:
             FileNotFoundError: If credentials file doesn't exist.

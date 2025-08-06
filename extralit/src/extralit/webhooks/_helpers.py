@@ -72,7 +72,7 @@ def webhook_listener(
     Parameters:
         events (Union[str, List[str]]): The events to listen to.
         description (Optional[str]): The description of the webhook.
-        client (Optional[Argilla]): The Argilla client to use. Defaults to the default client.
+        client (Optional[Extralit]): The Extralit client to use. Defaults to the default client.
         server (Optional[FastAPI]): The FastAPI server to use. Defaults to the default server.
         raw_event (bool): Whether to pass the raw event to the function. Defaults to False.
 

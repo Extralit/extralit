@@ -121,7 +121,7 @@ class TestDocumentResourceCRUD:
 
     @pytest.fixture
     def mock_client(self):
-        """Mock Argilla client with documents API."""
+        """Mock Extralit client with documents API."""
         client = MagicMock()
         documents_api = MagicMock()
         client.api.documents = documents_api

@@ -1,14 +1,14 @@
 <h1 align="center">
-  <a href=""><img src="https://github.com/dvsrepo/imgs/raw/main/ex.svg" alt="Argilla" width="150"></a>
+  <a href=""><img src="https://github.com/dvsrepo/imgs/raw/main/ex.svg" alt="Extralit" width="150"></a>
   <br>
-  Argilla
+  Extralit
   <br>
 </h1>
 
 
-Argilla is a **collaboration tool for AI engineers and domain experts** that require **high-quality outputs, data ownership, and overall efficiency**.
+Extralit is a **collaboration tool for AI engineers and domain experts** that require **high-quality outputs, data ownership, and overall efficiency**.
 
-## Why use Argilla?
+## Why use Extralit?
 
 Whether you are working on monitoring and improving complex **generative tasks** involving LLM pipelines with RAG, or you are working on a **predictive task** for things like AB-testing of span- and text-classification models. Our versatile platform helps you ensure **your data work pays off**.
 

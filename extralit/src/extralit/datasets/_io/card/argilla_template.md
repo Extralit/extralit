@@ -22,20 +22,20 @@
 - **Point of Contact:** {{ point_of_contact }}
 {% endif %}
 
-This dataset has been created with [Argilla](https://github.com/argilla-io/argilla). As shown in the sections below, this dataset can be loaded into your Argilla server as explained in [Load with Argilla](#load-with-argilla), or used directly with the `datasets` library in [Load with `datasets`](#load-with-datasets).
+This dataset has been created with [Extralit](https://github.com/argilla-io/argilla). As shown in the sections below, this dataset can be loaded into your Extralit server as explained in [Load with Extralit](#load-with-argilla), or used directly with the `datasets` library in [Load with `datasets`](#load-with-datasets).
 
 
-## Using this dataset with Argilla
+## Using this dataset with Extralit
 
-To load with Argilla, you'll just need to install Argilla as `pip install extralit --upgrade` and then use the following code:
+To load with Extralit, you'll just need to install Extralit as `pip install extralit --upgrade` and then use the following code:
 
 ```python
-import argilla as rg
+import extralit as ex
 
 ds = ex.Dataset.from_hub("{{ repo_id }}", settings="auto")
 ```
 
-This will load the settings and records from the dataset repository and push them to you Argilla server for exploration and annotation.
+This will load the settings and records from the dataset repository and push them to you Extralit server for exploration and annotation.
 
 ## Using this dataset with `datasets`
 
@@ -47,17 +47,17 @@ from datasets import load_dataset
 ds = load_dataset("{{ repo_id }}")
 ```
 
-This will only load the records of the dataset, but not the Argilla settings.
+This will only load the records of the dataset, but not the Extralit settings.
 
 ## Dataset Structure
 
 This dataset repo contains:
 
 * Dataset records in a format compatible with HuggingFace `datasets`. These records will be loaded automatically when using `ex.Dataset.from_hub` and can be loaded independently using the `datasets` library via `load_dataset`.
-* The [annotation guidelines](#annotation-guidelines) that have been used for building and curating the dataset, if they've been defined in Argilla.
-* A dataset configuration folder conforming to the Argilla dataset format in `.argilla`.
+* The [annotation guidelines](#annotation-guidelines) that have been used for building and curating the dataset, if they've been defined in Extralit.
+* A dataset configuration folder conforming to the Extralit dataset format in `.argilla`.
 
-The dataset is created in Argilla with: **fields**, **questions**, **suggestions**, **metadata**, **vectors**, and **guidelines**.
+The dataset is created in Extralit with: **fields**, **questions**, **suggestions**, **metadata**, **vectors**, and **guidelines**.
 
 ### Fields
 
@@ -101,7 +101,7 @@ The **vectors** contain a vector representation of the record that can be used i
 
 ### Data Instances
 
-An example of a dataset instance in Argilla looks as follows:
+An example of a dataset instance in Extralit looks as follows:
 
 ```json
 {{ argilla_record | tojson(indent=4) }}

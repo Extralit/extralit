@@ -19,7 +19,7 @@ for record in dataset.records(query="paris"):
 
 ### Filtering records by conditions
 
-Argilla allows you to filter records based on conditions. You can use the `Filter` class to define the conditions and pass them to the `Dataset.records` attribute to fetch records based on the conditions. Conditions include "==", ">=", "<=", or "in". Conditions can be combined with dot notation to filter records based on metadata, suggestions, or responses.
+Extralit allows you to filter records based on conditions. You can use the `Filter` class to define the conditions and pass them to the `Dataset.records` attribute to fetch records based on the conditions. Conditions include "==", ">=", "<=", or "in". Conditions can be combined with dot notation to filter records based on metadata, suggestions, or responses.
 
 ```python
 

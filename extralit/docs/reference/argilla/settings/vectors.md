@@ -3,7 +3,7 @@ hide: footer
 ---
 # Vectors
 
-Vector fields in Argilla are used to define the vector form of a record that will be reviewed by a user.
+Vector fields in Extralit are used to define the vector form of a record that will be reviewed by a user.
 
 ## Usage Examples
 

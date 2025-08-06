@@ -17,7 +17,7 @@ from unittest import mock
 import extralit as ex
 
 
-class TestArgilla:
+class TestExtralit:
     def test_default_client(self):
         with mock.patch("extralit.Extralit") as mock_client:
             mock_client.return_value.api_url = "http://localhost:6900"

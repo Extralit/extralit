@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -102,7 +102,7 @@ class Similar:
 
     def __init__(self, name: str, value: Union[Iterable[float], "Record"], most_similar: bool = True):
         """
-        Create a similar object for use in Argilla search requests.
+        Create a similar object for use in Extralit search requests.
 
         Parameters:
             name: The name of the vector field
@@ -129,7 +129,7 @@ class Filter:
     """This class is used to map user filters to the internal filter models"""
 
     def __init__(self, conditions: Union[Conditions, None] = None):
-        """ Create a filter object for use in Argilla search requests.
+        """ Create a filter object for use in Extralit search requests.
 
         Parameters:
             conditions (Union[List[Tuple[str, str, Any]], Tuple[str, str, Any], None], optional): \
@@ -156,7 +156,7 @@ class Query:
         similar: Union[Similar, None] = None,
         filter: Union[Filter, Conditions, None] = None,
     ):
-        """Create a query object for use in Argilla search requests.add()
+        """Create a query object for use in Extralit search requests.add()
 
         Parameters:
             query (Union[str, None], optional): The query string that will be used to search.

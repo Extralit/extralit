@@ -6,12 +6,12 @@ description: In this section, we will provide a step-by-step guide to show how t
 
 This guide provides an overview of how to import and export your dataset or its records to Python, your local disk, or the Hugging Face Hub.
 
-In Argilla, you can import/export two main components of a dataset:
+In Extralit, you can import/export two main components of a dataset:
 
-- The dataset's complete configuration is defined in `ex.Settings`. This is useful if you want to share your feedback task or restore it later in Argilla.
-- The records stored in the dataset, including `Metadata`, `Vectors`, `Suggestions`, and `Responses`. This is useful if you want to use your dataset's records outside of Argilla.
+- The dataset's complete configuration is defined in `ex.Settings`. This is useful if you want to share your feedback task or restore it later in Extralit.
+- The records stored in the dataset, including `Metadata`, `Vectors`, `Suggestions`, and `Responses`. This is useful if you want to use your dataset's records outside of Extralit.
 
-Check the [Dataset - Python Reference](../reference/argilla/datasets/datasets.md) to see the attributes, arguments, and methods of the export `Dataset` class in detail.
+Check the [Dataset - Python Reference](../reference/extralit/datasets/datasets.md) to see the attributes, arguments, and methods of the export `Dataset` class in detail.
 
 !!! info "Main Classes"
     === "`ex.Dataset.to_hub`"
@@ -73,23 +73,23 @@ Check the [Dataset - Python Reference](../reference/argilla/datasets/datasets.md
         ex.Dataset.records.to_list()
         ```
 
-    > Check the [Dataset - Python Reference](../reference/argilla/datasets/datasets.md) to see the attributes, arguments, and methods of the export `Dataset` class in detail.
+    > Check the [Dataset - Python Reference](../reference/extralit/datasets/datasets.md) to see the attributes, arguments, and methods of the export `Dataset` class in detail.
 
-    > Check the [Record - Python Reference](../reference/argilla/records/records.md) to see the attributes, arguments, and methods of the `Record` class in detail.
+    > Check the [Record - Python Reference](../reference/extralit/records/records.md) to see the attributes, arguments, and methods of the `Record` class in detail.
 
 
 ## Importing and exporting datasets
 
-First, we will go through exporting a complete dataset from Argilla. This includes the dataset's settings and records. All of these methods use the `ex.Dataset.from_*` and `ex.Dataset.to_*` methods.
+First, we will go through exporting a complete dataset from Extralit. This includes the dataset's settings and records. All of these methods use the `ex.Dataset.from_*` and `ex.Dataset.to_*` methods.
 
 ### Hugging Face Hub
 
 #### Export to Hub
 
-You can push a dataset from Argilla to the Hugging Face Hub. This is useful if you want to share your dataset with the community or version control it. You can push the dataset to the Hugging Face Hub using the `ex.Dataset.to_hub` method.
+You can push a dataset from Extralit to the Hugging Face Hub. This is useful if you want to share your dataset with the community or version control it. You can push the dataset to the Hugging Face Hub using the `ex.Dataset.to_hub` method.
 
 ```python
-import argilla as rg
+import extralit as ex
 
 client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
@@ -107,24 +107,24 @@ dataset.to_hub(repo_id="<my_org>/<my_dataset>")
 
 #### Import from Hub
 
-You can pull a dataset from the Hugging Face Hub to Argilla. This is useful if you want to restore a dataset and its configuration. You can pull the dataset from the Hugging Face Hub using the `ex.Dataset.from_hub` method.
+You can pull a dataset from the Hugging Face Hub to Extralit. This is useful if you want to restore a dataset and its configuration. You can pull the dataset from the Hugging Face Hub using the `ex.Dataset.from_hub` method.
 
 ```python
 
-import argilla as rg
+import extralit as ex
 
 client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
 ex.Dataset.from_hub(repo_id="<my_org>/<my_dataset>")
 ```
 
-By default, the `Dataset.from_hub` method will return the URL of the dataset configuration page. This page will let you preview the dataset's configuration and records before creating it in Argilla.
+By default, the `Dataset.from_hub` method will return the URL of the dataset configuration page. This page will let you preview the dataset's configuration and records before creating it in Extralit.
 
 You can infer the settings of the dataset automatically by configuring the `settings` parameter to `"auto"`. This will infer the dataset's settings based on the dataset's features in `datasets.Features`.
 
 ```python
 
-import argilla as rg
+import extralit as ex
 
 client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
@@ -154,10 +154,10 @@ The `ex.Dataset.from_hub` method loads the configuration and records from the da
 
 #### Import settings from Hub
 
-When importing datasets from the hub, Argilla will load settings from the hub in three ways:
+When importing datasets from the hub, Extralit will load settings from the hub in three ways:
 
-1. If the dataset was pushed to hub by Argilla, then the settings will be loaded from the hub via the configuration file.
-2. If the dataset was loaded by another source, then Argilla will define the settings based on the dataset's features in `datasets.Features`. For example, creating a `TextField` for a text feature or a `LabelQuestion` for a label class.
+1. If the dataset was pushed to hub by Extralit, then the settings will be loaded from the hub via the configuration file.
+2. If the dataset was loaded by another source, then Extralit will define the settings based on the dataset's features in `datasets.Features`. For example, creating a `TextField` for a text feature or a `LabelQuestion` for a label class.
 3. You can pass a custom `ex.Settings` object to the `ex.Dataset.from_hub` method via the `settings` parameter. This will override the settings loaded from the hub.
 
 ```python
@@ -175,10 +175,10 @@ dataset = ex.Dataset.from_hub(repo_id="<my_org>/<my_dataset>", settings=settings
 
 #### Export to Disk
 
-You can save a dataset from Argilla to your local disk. This is useful if you want to back up your dataset. You can use the `ex.Dataset.to_disk` method. We recommend you to use an empty directory.
+You can save a dataset from Extralit to your local disk. This is useful if you want to back up your dataset. You can use the `ex.Dataset.to_disk` method. We recommend you to use an empty directory.
 
 ```python
-import argilla as rg
+import extralit as ex
 
 client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
@@ -195,10 +195,10 @@ dataset.to_disk(path="<path-empty-directory>", with_records=False)
 
 #### Import from Disk
 
-You can load a dataset from your local disk to Argilla. This is useful if you want to restore a dataset's configuration. You can use the `ex.Dataset.from_disk` method.
+You can load a dataset from your local disk to Extralit. This is useful if you want to restore a dataset's configuration. You can use the `ex.Dataset.from_disk` method.
 
 ```python
-import argilla as rg
+import extralit as ex
 
 dataset = ex.Dataset.from_disk(path="<path-dataset-directory>")
 ```
@@ -212,7 +212,7 @@ dataset = ex.Dataset.from_disk(path="<path-dataset-directory>")
 
 ## Importing and exporting records
 
-The records alone can be exported from a dataset in Argilla.  This is useful if you want to process the records in Python, export them to a different platform, or use them in model training. All of these methods use the `ex.Dataset.records` attribute.
+The records alone can be exported from a dataset in Extralit.  This is useful if you want to process the records in Python, export them to a different platform, or use them in model training. All of these methods use the `ex.Dataset.records` attribute.
 
 ### Export records
 
@@ -226,7 +226,7 @@ The records can be exported as a dictionary, a list of dictionaries, or a `Datas
     Records can be exported from `Dataset.records` as a dictionary. The `to_dict` method can be used to export records as a dictionary. You can specify the orientation of the dictionary output. You can also decide if to flatten or not the dictionary.
 
     ```python
-    import argilla as rg
+    import extralit as ex
 
     client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
     dataset = client.datasets(name="my_dataset")
@@ -249,7 +249,7 @@ The records can be exported as a dictionary, a list of dictionaries, or a `Datas
     Records can be exported from `Dataset.records` as a list of dictionaries. The `to_list` method can be used to export records as a list of dictionaries. You can decide if to flatten it or not.
 
     ```python
-    import argilla as rg
+    import extralit as ex
 
     client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
@@ -272,7 +272,7 @@ The records can be exported as a dictionary, a list of dictionaries, or a `Datas
     Records can be exported from `Dataset.records` to the `datasets` package. The `to_dataset` method can be used to export records to the `datasets` package. You can specify the name of the dataset and the split to export the records.
 
     ```python
-    import argilla as rg
+    import extralit as ex
 
     client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
     dataset = client.datasets(name="my_dataset")
@@ -283,4 +283,4 @@ The records can be exported as a dictionary, a list of dictionaries, or a `Datas
 
 ### Import records
 
-To import records to a dataset, use the `ex.Datasets.records.log` method. There is a guide on how to do this in [How-to guides - Record](./record.md), or you can check the [Record - Python Reference](../reference/argilla/records/records.md).
+To import records to a dataset, use the `ex.Datasets.records.log` method. There is a guide on how to do this in [How-to guides - Record](./record.md), or you can check the [Record - Python Reference](../reference/extralit/records/records.md).

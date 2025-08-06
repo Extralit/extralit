@@ -42,7 +42,7 @@ def get_themed_panel(
     debug: bool = False,
 ) -> Panel:
     """
-    Returns a rich panel with Argilla theme.
+    Returns a rich panel with Extralit theme.
 
     Args:
         renderable: The content to display
@@ -53,7 +53,7 @@ def get_themed_panel(
         debug: If True and exception is provided, include a minimal stack trace
 
     Returns:
-        A rich panel with Argilla theme
+        A rich panel with Extralit theme
     """
     content = renderable
 

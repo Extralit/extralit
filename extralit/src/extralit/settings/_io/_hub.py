@@ -265,7 +265,7 @@ def _define_settings_from_features(
     settings = Settings(fields=fields, questions=questions, metadata=metadata)
 
     if not settings.fields:
-        raise SettingsError("No fields found in the dataset features. Argilla datasets require at least one field.")
+        raise SettingsError("No fields found in the dataset features. Extralit datasets require at least one field.")
 
     return settings
 

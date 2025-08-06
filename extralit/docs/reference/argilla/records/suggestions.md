@@ -3,7 +3,7 @@ hide: footer
 ---
 # `ex.Suggestion`
 
-Class for interacting with Argilla Suggestions of records. Suggestions are typically created by a model prediction, unlike a `Response` which is typically created by a user in the UI or consumed from a data source as a label.
+Class for interacting with Extralit Suggestions of records. Suggestions are typically created by a model prediction, unlike a `Response` which is typically created by a user in the UI or consumed from a data source as a label.
 
 ## Usage Examples
 

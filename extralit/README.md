@@ -1,5 +1,5 @@
 <h1 align="center">
-  <a href=""><img src="https://github.com/extralit/extralit/raw/develop/argilla/docs/assets/logo.svg" alt="Extralit" width="150"></a>
+  <a href=""><img src="https://github.com/extralit/extralit/raw/develop/extralit/docs/assets/logo.svg" alt="Extralit" width="150"></a>
   <br>
   Extralit
   <br>
@@ -73,7 +73,7 @@ pip install extralit
 Initialize the client:
 
 ```python
-import argilla as rg
+import extralit as ex
 
 client = ex.Extralit(
     api_url="https://your-deployment-url",

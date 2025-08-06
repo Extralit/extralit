@@ -4,7 +4,7 @@ description: In this section, we will provide a step-by-step guide to show how t
 
 # Dataset management
 
-This guide provides an overview of datasets, explaining the basics of how to set them up and manage them in Argilla.
+This guide provides an overview of datasets, explaining the basics of how to set them up and manage them in Extralit.
 
 A **dataset** is a collection of records that you can configure for labelers to provide feedback using the UI. Depending on the specific requirements of your task, you may need various types of feedback. You can customize the dataset to include different kinds of questions, so the first step will be to define the aim of your project and the kind of data and feedback you will need. With this information, you can start configuring a dataset by defining fields, questions, metadata, vectors, and guidelines through settings.
 
@@ -25,7 +25,7 @@ A **dataset** is a collection of records that you can configure for labelers to 
             client=client
         )
         ```
-        > Check the [Dataset - Python Reference](../reference/argilla/datasets/datasets.md) to see the attributes, arguments, and methods of the `Dataset` class in detail.
+        > Check the [Dataset - Python Reference](../reference/extralit/datasets/datasets.md) to see the attributes, arguments, and methods of the `Dataset` class in detail.
 
     === "`ex.Settings`"
 
@@ -46,17 +46,17 @@ A **dataset** is a collection of records that you can configure for labelers to 
         )
         ```
 
-        > Check the [Settings - Python Reference](../reference/argilla/settings/settings.md) to see the attributes, arguments, and methods of the `Settings` class in detail.
+        > Check the [Settings - Python Reference](../reference/extralit/settings/settings.md) to see the attributes, arguments, and methods of the `Settings` class in detail.
 
 ## Create a dataset
 
 To create a dataset, you can define it in the `Dataset` class and then call the `create` method that will send the dataset to the server so that it can be visualized in the UI. If the dataset does not appear in the UI, you may need to click the refresh button to update the view. For further configuration of the dataset, you can refer to the [settings section](#define-dataset-settings).
 
 !!! info
-    If you have deployed Argilla with Hugging Face Spaces and HF Sign in, you can use `argilla` as a workspace name. Otherwise, you might need to create a workspace following [this guide](workspace.md#create-a-new-workspace).
+    If you have deployed Extralit with Hugging Face Spaces and HF Sign in, you can use `argilla` as a workspace name. Otherwise, you might need to create a workspace following [this guide](workspace.md#create-a-new-workspace).
 
 ```python
-import argilla as rg
+import extralit as ex
 
 client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
@@ -93,7 +93,7 @@ dataset.create()
 To create multiple datasets with the same settings, define the settings once and pass it to each dataset.
 
 ```python
-import argilla as rg
+import extralit as ex
 
 client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
@@ -119,7 +119,7 @@ dataset2.create()
 To create a new dataset from an existing dataset, get the settings from the existing dataset and pass them to the new dataset.
 
 ```python
-import argilla as rg
+import extralit as ex
 
 client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
@@ -141,16 +141,16 @@ new_dataset.create()
 ## Define dataset settings
 
 !!! tip
-    Instead of defining your own custom settings, you can use some of our pre-built templates for text classification, ranking and rating. Learn more [here](../reference/argilla/settings/settings.md#creating-settings-using-built-in-templates).
+    Instead of defining your own custom settings, you can use some of our pre-built templates for text classification, ranking and rating. Learn more [here](../reference/extralit/settings/settings.md#creating-settings-using-built-in-templates).
 
 ### Fields
 
-The fields in a dataset consist of one or more data items requiring annotation. Currently, Argilla supports plain text and markdown through the `TextField`, images through the `ImageField`, chat formatted data through the `ChatField` and full custom templates through our `CustomField`.
+The fields in a dataset consist of one or more data items requiring annotation. Currently, Extralit supports plain text and markdown through the `TextField`, images through the `ImageField`, chat formatted data through the `ChatField` and full custom templates through our `CustomField`.
 
 !!! note
     The order of the fields in the UI follows the order in which these are added to the fields attribute in the Python SDK.
 
-> Check the [Field - Python Reference](../reference/argilla/settings/fields.md) to see the field classes in detail.
+> Check the [Field - Python Reference](../reference/extralit/settings/fields.md) to see the field classes in detail.
 
 === "Text"
 
@@ -213,7 +213,7 @@ The fields in a dataset consist of one or more data items requiring annotation. 
 
 To collect feedback for your dataset, you need to formulate questions that annotators will be asked to answer.
 
-> Check the [Questions - Python Reference](../reference/argilla/settings/questions.md) to see the question classes in detail.
+> Check the [Questions - Python Reference](../reference/extralit/settings/questions.md) to see the question classes in detail.
 
 === "Label"
     A `LabelQuestion` asks annotators to choose a unique label from a list of options. This type is useful for text classification tasks. In the UI, they will have a rounded shape.
@@ -330,7 +330,7 @@ To collect feedback for your dataset, you need to formulate questions that annot
 
 Metadata properties allow you to configure the use of metadata information for the filtering and sorting features available in the UI and Python SDK.
 
-> Check the [Metadata - Python Reference](../reference/argilla/settings/metadata_property.md) to see the metadata classes in detail.
+> Check the [Metadata - Python Reference](../reference/extralit/settings/metadata_property.md) to see the metadata classes in detail.
 
 === "Terms"
     A `TermsMetadataProperty` allows to add a list of strings as metadata options.
@@ -378,7 +378,7 @@ Metadata properties allow you to configure the use of metadata information for t
 
 To use the similarity search in the UI and the Python SDK, you will need to configure vectors using the `VectorField` class.
 
-> Check the [Vector - Python Reference](../reference/argilla/settings/vectors.md) to see the `VectorField` class in detail.
+> Check the [Vector - Python Reference](../reference/extralit/settings/vectors.md) to see the `VectorField` class in detail.
 
 ```python
 ex.VectorField(
@@ -410,9 +410,9 @@ It is good practice to use at least the dataset guidelines if not both methods. 
 
 ### Distribution
 
-When working as a team, you may want to distribute the annotation task to ensure efficiency and quality. You can use the `TaskDistribution` settings to configure the number of minimum submitted responses expected for each record. Argilla will use this setting to automatically handle records in your team members' pending queues.
+When working as a team, you may want to distribute the annotation task to ensure efficiency and quality. You can use the `TaskDistribution` settings to configure the number of minimum submitted responses expected for each record. Extralit will use this setting to automatically handle records in your team members' pending queues.
 
-> Check the [Task Distribution - Python Reference](../reference/argilla/settings/task_distribution.md) to see the `TaskDistribution` class in detail.
+> Check the [Task Distribution - Python Reference](../reference/extralit/settings/task_distribution.md) to see the `TaskDistribution` class in detail.
 
 ```python
 ex.TaskDistribution(
@@ -428,7 +428,7 @@ ex.TaskDistribution(
 You can list all the datasets available in a workspace using the `datasets` attribute of the `Workspace` class. You can also use `len(workspace.datasets)` to get the number of datasets in a workspace.
 
 ```python
-import argilla as rg
+import extralit as ex
 
 client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
@@ -443,7 +443,7 @@ for dataset in datasets:
 When you list datasets, dataset settings are not preloaded, since this can introduce extra requests to the server. If you want to work with settings when listing datasets, you need to load them:
 
 ```python
-import argilla as rg
+import extralit as ex
 
 client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
@@ -457,14 +457,14 @@ for dataset in client.datasets:
 
 ## Retrieve a dataset
 
-You can retrieve a dataset by calling the `datasets` method on the `Argilla` class and passing the `name` or `id` of the dataset as an argument. If the dataset does not exist, a warning message will be raised and `None` will be returned.
+You can retrieve a dataset by calling the `datasets` method on the `Extralit` class and passing the `name` or `id` of the dataset as an argument. If the dataset does not exist, a warning message will be raised and `None` will be returned.
 
 === "By name"
 
     By default, this method attempts to retrieve the dataset from the first workspace. If the dataset is in a different workspace, you must specify either the workspace or workspace name as an argument.
 
     ```python
-    import argilla as rg
+    import extralit as ex
 
     client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
@@ -478,7 +478,7 @@ You can retrieve a dataset by calling the `datasets` method on the `Argilla` cla
 === "By id"
 
     ```python
-    import argilla as rg
+    import extralit as ex
 
     client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
@@ -490,7 +490,7 @@ You can retrieve a dataset by calling the `datasets` method on the `Argilla` cla
 You can check if a dataset exists. The `client.datasets` method will return `None` if the dataset was not found.
 
 ```python
-import argilla as rg
+import extralit as ex
 
 client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
@@ -562,7 +562,7 @@ Once a dataset is published, there are limited things you can update. Here is a 
 To modify these attributes, you can simply set the new value of the attributes you wish to change and call the `update` method on the `Dataset` object.
 
 ```python
-import argilla as rg
+import extralit as ex
 
 client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
@@ -579,7 +579,7 @@ You can also **add and delete metadata properties and vector fields** using the 
 === "Add"
 
     ```python
-    import argilla as rg
+    import extralit as ex
 
     client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
@@ -598,7 +598,7 @@ You can also **add and delete metadata properties and vector fields** using the 
 === "Delete"
 
     ```python
-    import argilla as rg
+    import extralit as ex
 
     client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
@@ -615,7 +615,7 @@ You can also **add and delete metadata properties and vector fields** using the 
 You can delete an existing dataset by calling the `delete` method on the `Dataset` class.
 
 ```python
-import argilla as rg
+import extralit as ex
 
 client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 

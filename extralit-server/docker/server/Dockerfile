@@ -24,7 +24,7 @@ FROM python:3.13-slim
 ENV USERNAME=""
 ENV PASSWORD=""
 ENV API_KEY=""
-## Argilla home path
+## Extralit home path
 ENV EXTRALIT_HOME_PATH=/var/lib/extralit
 ## Uvicorn defaults
 ENV UVICORN_PORT=6900

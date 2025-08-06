@@ -77,7 +77,7 @@ class DiskImportExportMixin(ABC):
             path (str): The path to the directory containing the dataset model, settings and records.
             name (str, optional): The name to assign to the new dataset. Defaults to None and the dataset's source name is used, unless it already exists, in which case a unique UUID is appended.
             workspace (Union[Workspace, str], optional): The workspace to import the dataset to. Defaults to None and default workspace is used.
-            client (Argilla, optional): The client to use for the import. Defaults to None and the default client is used.
+            client (Extralit, optional): The client to use for the import. Defaults to None and the default client is used.
             with_records: whether to load the records from the Hugging Face dataset. Defaults to `True`.
         """
 

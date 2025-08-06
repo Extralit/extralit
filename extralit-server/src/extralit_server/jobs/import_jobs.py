@@ -23,7 +23,7 @@ The jobs use the same HubDatasetMapping schema for consistency with existing Hub
 """
 
 """
-Import jobs for processing data from various sources into Argilla datasets.
+Import jobs for processing data from various sources into Extralit datasets.
 
 This module provides background jobs for importing data from ImportHistory records,
 reusing the same mapping and processing infrastructure as HuggingFace Hub imports.

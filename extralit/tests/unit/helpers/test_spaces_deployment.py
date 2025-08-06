@@ -43,7 +43,7 @@ class TestSpacesDeploymentMixin:
         mock_api.create_repo.assert_called_once()
         mock_argilla_init.assert_called_once()
 
-        # Check the arguments passed to Argilla.__init__
+        # Check the arguments passed to Extralit.__init__
         args, kwargs = mock_argilla_init.call_args
         assert kwargs["api_key"] == "12345678"
         assert kwargs["api_url"].startswith("https://")

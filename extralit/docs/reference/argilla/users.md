@@ -3,7 +3,7 @@ hide: footer
 ---
 # `ex.User`
 
-A user in Argilla is a profile that uses the SDK or UI. Their profile can be used to track their feedback activity and to manage their access to the Argilla server.
+A user in Extralit is a profile that uses the SDK or UI. Their profile can be used to track their feedback activity and to manage their access to the Extralit server.
 
 ## Usage Examples
 

@@ -64,7 +64,7 @@ To add records to a dataset, use the `log` method. Records can be added as dicti
     dataset.records.log(data)
     ```
 
-    1. The data structure's keys must match the fields or questions in the Argilla dataset. In this case, there are fields named `question` and `answer`.
+    1. The data structure's keys must match the fields or questions in the Extralit dataset. In this case, there are fields named `question` and `answer`.
 
 === "From a data structure with a mapping"
 
@@ -86,16 +86,16 @@ To add records to a dataset, use the `log` method. Records can be added as dicti
 
     ```
 
-    1. The data structure's keys must match the fields or questions in the Argilla dataset. In this case, there are fields named `question` and `answer`.
-    2. The data structure has keys `query` and `response` and the Argilla dataset has `question` and `answer`. You can use the `mapping` parameter to map the keys in the data structure to the fields in the Argilla dataset.
+    1. The data structure's keys must match the fields or questions in the Extralit dataset. In this case, there are fields named `question` and `answer`.
+    2. The data structure has keys `query` and `response` and the Extralit dataset has `question` and `answer`. You can use the `mapping` parameter to map the keys in the data structure to the fields in the Extralit dataset.
 
 === "From a Hugging Face dataset"
 
-    You can also add records to a dataset using a Hugging Face dataset. This is useful when you want to use a dataset from the Hugging Face Hub and add it to your Argilla dataset.
+    You can also add records to a dataset using a Hugging Face dataset. This is useful when you want to use a dataset from the Hugging Face Hub and add it to your Extralit dataset.
 
-    You can add the dataset where the column names correspond to the names of fields, questions, metadata or vectors in the Argilla dataset.
+    You can add the dataset where the column names correspond to the names of fields, questions, metadata or vectors in the Extralit dataset.
 
-    If the dataset's schema does not correspond to your Argilla dataset names, you can use a `mapping` to indicate which columns in the dataset correspond to the Argilla dataset fields.
+    If the dataset's schema does not correspond to your Extralit dataset names, you can use a `mapping` to indicate which columns in the dataset correspond to the Extralit dataset fields.
 
     ```python
     from datasets import load_dataset
@@ -105,15 +105,15 @@ To add records to a dataset, use the `log` method. Records can be added as dicti
     dataset.records.log(records=hf_dataset)
     ```
 
-    1. In this example, the Hugging Face dataset matches the Argilla dataset schema. If that is not the case, you could use the `.map` of the `datasets` library to prepare the data before adding it to the Argilla dataset.
+    1. In this example, the Hugging Face dataset matches the Extralit dataset schema. If that is not the case, you could use the `.map` of the `datasets` library to prepare the data before adding it to the Extralit dataset.
 
-    Here we use the `mapping` parameter to specify the relationship between the Hugging Face dataset and the Argilla dataset.
+    Here we use the `mapping` parameter to specify the relationship between the Hugging Face dataset and the Extralit dataset.
 
     ```python
     dataset.records.log(records=hf_dataset, mapping={"txt": "text", "y": "label"}) # (1)
     ```
 
-    1. In this case, the `txt` key in the Hugging Face dataset corresponds to the `text` field in the Argilla dataset, and the `y` key in the Hugging Face dataset corresponds to the `label` field in the Argilla dataset.
+    1. In this case, the `txt` key in the Hugging Face dataset corresponds to the `text` field in the Extralit dataset, and the `y` key in the Hugging Face dataset corresponds to the `label` field in the Extralit dataset.
 
 
 ### Updating records in a dataset
@@ -181,7 +181,7 @@ Records can also be updated using the `log` method with records that contain an 
 
 === "From a Hugging Face dataset"
 
-    You can also update records to an Argilla dataset using a Hugging Face dataset. To update records, the Hugging Face dataset must contain an `id` field to identify the records to be updated, or you can use a mapping to map the keys in the Hugging Face dataset to the fields in the Argilla dataset.
+    You can also update records to an Extralit dataset using a Hugging Face dataset. To update records, the Hugging Face dataset must contain an `id` field to identify the records to be updated, or you can use a mapping to map the keys in the Hugging Face dataset to the fields in the Extralit dataset.
 
     ```python
     from datasets import load_dataset
@@ -191,12 +191,12 @@ Records can also be updated using the `log` method with records that contain an 
     dataset.records.log(records=hf_dataset, mapping={"uuid": "id"}) # (2)
     ```
 
-    1. In this example, the Hugging Face dataset matches the Argilla dataset schema.
-    2. The `uuid` key in the Hugging Face dataset corresponds to the `id` field in the Argilla dataset.
+    1. In this example, the Hugging Face dataset matches the Extralit dataset schema.
+    2. The `uuid` key in the Hugging Face dataset corresponds to the `id` field in the Extralit dataset.
 
 ### Adding and updating records with images
 
-Argilla datasets can contain image fields. You can add images to a dataset by passing the image to the record object as either a remote URL, a local path to an image file, or a PIL object. The field names must be defined as an `ex.ImageField` in the dataset's `Settings` object to be accepted. Images will be stored in the Argilla database and returned using the data URI schema.
+Extralit datasets can contain image fields. You can add images to a dataset by passing the image to the record object as either a remote URL, a local path to an image file, or a PIL object. The field names must be defined as an `ex.ImageField` in the dataset's `Settings` object to be accepted. Images will be stored in the Extralit database and returned using the data URI schema.
 
 !!! note "As PIL objects"
     To retrieve the images as rescaled PIL objects, you can use the `to_datasets` method when exporting the records, as shown in this [how-to guide](../../../admin_guide/import_export.md).
@@ -249,7 +249,7 @@ Argilla datasets can contain image fields. You can add images to a dataset by pa
     dataset.records.log(records=hf_dataset)
     ```
 
-    If the image field is not defined as an `Image` in the dataset's features, you can cast the dataset to the correct schema before adding it to the Argilla dataset. This is only necessary if the image field is not defined as an `Image` in the dataset's features, and is not one of the supported image types by Argilla (URL, local path, or PIL object).
+    If the image field is not defined as an `Image` in the dataset's features, you can cast the dataset to the correct schema before adding it to the Extralit dataset. This is only necessary if the image field is not defined as an `Image` in the dataset's features, and is not one of the supported image types by Extralit (URL, local path, or PIL object).
 
     ```python
     hf_dataset = load_dataset("<my_custom_dataset>") # (1)
@@ -259,7 +259,7 @@ Argilla datasets can contain image fields. You can add images to a dataset by pa
     dataset.records.log(records=hf_dataset)
     ```
 
-    1. In this example, the Hugging Face dataset matches the Argilla dataset schema but the image field is not defined as an `Image` in the dataset's features.
+    1. In this example, the Hugging Face dataset matches the Extralit dataset schema but the image field is not defined as an `Image` in the dataset's features.
 
 
 ### Iterating over records in a dataset

@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -84,7 +84,7 @@ MetadataPropertySettings = Annotated[
 
 
 class MetadataFieldModel(ResourceModel):
-    """The schema definition of a metadata field in an Argilla dataset."""
+    """The schema definition of a metadata field in an Extralit dataset."""
 
     name: str
     settings: MetadataPropertySettings

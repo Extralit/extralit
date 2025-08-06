@@ -3,13 +3,13 @@ hide: footer
 ---
 # `ex.Dataset`
 
-`Dataset` is a class that represents a collection of records. It is used to store and manage records in Argilla.
+`Dataset` is a class that represents a collection of records. It is used to store and manage records in Extralit.
 
 ## Usage Examples
 
 ### Creating a Dataset
 
-To create a new dataset you need to define its name and settings. Optional parameters are `workspace` and `client`, if you want to create the dataset in a specific workspace or on a specific Argilla instance.
+To create a new dataset you need to define its name and settings. Optional parameters are `workspace` and `client`, if you want to create the dataset in a specific workspace or on a specific Extralit instance.
 
 ```python
 dataset = ex.Dataset(

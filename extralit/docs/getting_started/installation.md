@@ -26,13 +26,13 @@ Get your `<api_url>`:
 * If you are using HF Spaces, it should be constructed as follows: `https://[your-owner-name]-[your_space_name].hf.space`
 * If you are using Docker, it is the URL shown in your browser (by default `http://localhost:6900`)
 
-Get your `<api_key>` in `My Settings` in the Argilla UI (by default owner.apikey).
+Get your `<api_key>` in `My Settings` in the Extralit UI (by default owner.apikey).
 
 !!! note
     Make sure to replace `<api_url>` and `<api_key>` with your actual values. If you are using a private HF Space, you need to specify your `HF_TOKEN` which can be found [here](https://huggingface.co/settings/tokens).
 
 ```python
-import argilla as rg
+import extralit as ex
 
 client = ex.init(
     api_url="<api_url>",

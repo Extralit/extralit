@@ -6,7 +6,7 @@ ARG extralit_server_IMAGE=extralitdev/extralit-server
 FROM ${extralit_server_IMAGE}:${EXTRALIT_VERSION} AS base
 USER root
 
-# Copy Argilla distribution files
+# Copy Extralit distribution files
 COPY scripts/start.sh /home/extralit
 COPY Procfile /home/extralit
 COPY requirements.txt /packages/requirements.txt

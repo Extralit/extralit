@@ -25,8 +25,8 @@ if TYPE_CHECKING:
 
 
 class User(Resource):
-    """Class for interacting with Argilla users in the Argilla server. User profiles \
-        are used to manage access to the Argilla server and track responses to records.
+    """Class for interacting with Extralit users in the Extralit server. User profiles \
+        are used to manage access to the Extralit server and track responses to records.
 
     Attributes:
         username (str): The username of the user.
@@ -60,7 +60,7 @@ class User(Resource):
             role (str): The role of the user, either 'annotator', admin, or 'owner'
             password (str): The password of the user
             id (UUID): The ID of the user. If provided before a .create, the will be created with this ID
-            client (Argilla): The client used to interact with Argilla
+            client (Extralit): The client used to interact with Extralit
 
         Returns:
             User: The initialized user object
@@ -83,10 +83,10 @@ class User(Resource):
         self._model = _model
 
     def create(self) -> "User":
-        """Creates the user in Argilla. After creating a user, it will be able to log in to the Argilla server.
+        """Creates the user in Extralit. After creating a user, it will be able to log in to the Extralit server.
 
         Returns:
-            User: The user that was created in Argilla.
+            User: The user that was created in Extralit.
         """
         model_create = self.api_model()
         model = self._api.create(model_create)
@@ -96,7 +96,7 @@ class User(Resource):
         return self
 
     def delete(self) -> None:
-        """Deletes the user from Argilla. After deleting a user, it will no longer be able to log in to the Argilla server."""
+        """Deletes the user from Extralit. After deleting a user, it will no longer be able to log in to the Extralit server."""
         super().delete()
         # exists relies on the id, so we need to set it to None
         self._model = UserModel(username=self.username)

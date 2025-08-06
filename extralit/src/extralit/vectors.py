@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ __all__ = ["Vector"]
 
 
 class Vector(Resource):
-    """ Class for interacting with Argilla Vectors. Vectors are typically used to represent \
-        embeddings or features of records. The `Vector` class is used to deliver vectors to the Argilla server.
+    """ Class for interacting with Extralit Vectors. Vectors are typically used to represent \
+        embeddings or features of records. The `Vector` class is used to deliver vectors to the Extralit server.
 
     Attributes:
         name (str): The name of the vector.
@@ -36,7 +36,7 @@ class Vector(Resource):
         name: str,
         values: list[float],
     ) -> None:
-        """Initializes a Vector with a name and values that can be used to search in the Argilla ui.
+        """Initializes a Vector with a name and values that can be used to search in the Extralit ui.
 
         Parameters:
             name (str): Name of the vector

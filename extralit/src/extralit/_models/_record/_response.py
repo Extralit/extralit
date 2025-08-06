@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ class UserResponseModel(BaseModel):
         if not user_id:
             warnings.warn(
                 "`user_id` not provided, so it will be set to `None`. Which is not an"
-                " issue, unless you're planning to log the response in Argilla, as"
+                " issue, unless you're planning to log the response in Extralit, as"
                 " it will be automatically set to the active `user_id`.",
             )
         return user_id

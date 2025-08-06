@@ -172,7 +172,7 @@ class DatasetUpdate(UpdateSchema):
 
 class HubDatasetMappingItem(BaseModel):
     source: str = Field(..., description="The name of the column in the Hub Dataset")
-    target: str = Field(..., description="The name of the target resource in the Argilla Dataset")
+    target: str = Field(..., description="The name of the target resource in the Extralit Dataset")
 
 
 class HubDatasetMapping(BaseModel):

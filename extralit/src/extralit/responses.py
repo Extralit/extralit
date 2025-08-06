@@ -37,7 +37,7 @@ class ResponseStatus(str, Enum):
 
 
 class Response:
-    """Class for interacting with Argilla Responses of records. Responses are answers to questions by a user.
+    """Class for interacting with Extralit Responses of records. Responses are answers to questions by a user.
     Therefore, a record question can have multiple responses, one for each user that has answered the question.
     A `Response` is typically created by a user in the UI or consumed from a data source as a label,
     unlike a `Suggestion` which is typically created by a model prediction.
@@ -115,7 +115,7 @@ class Response:
 
 class UserResponse(Resource):
     """
-    Class for interacting with Argilla User Responses of records.  The UserResponse class is a collection
+    Class for interacting with Extralit User Responses of records.  The UserResponse class is a collection
     of responses to questions for a given user. UserResponses are typically created by a user in the UI and
     are defined by ingesting a list of responses from a third-party data source.
 

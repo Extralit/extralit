@@ -188,4 +188,3 @@ test = { cmd = "pytest --verbosity=1 --disable-warnings", env_file = ".env.test"
 test-cov = { cmd = "pytest tests --cov=extralit_server --cov-report=term --cov-report=xml --verbosity=0 --disable-warnings", env_file = ".env.test" }
 
 docker-build-extralit-server = { shell = "pdm build && cp -R dist docker/server && docker build -t extralit/extralit-server:local docker/server" }
-docker-build-argilla-hf-spaces = { shell = "pdm run docker-build-extralit-server && docker build --build-arg EXTRALIT_VERSION=local -t extralit/extralit-hf-space:local docker/argilla-hf-spaces" }

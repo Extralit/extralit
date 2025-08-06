@@ -9,7 +9,7 @@ hide:
 This guide provides a simplified, step-by-step process for creating a new release of Extralit. Follow these steps to ensure a smooth and consistent release process.
 
 **Tips:**
-- Always update the version in `src/argilla/_version.py` before tagging.
+- Always update the version in `src/extralit/_version.py` before tagging.
 - Use clear, descriptive release notes.
 - Coordinate with other maintainers if needed.
 

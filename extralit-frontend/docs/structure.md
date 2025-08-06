@@ -23,7 +23,7 @@
 ├── pages -> Nuxt global pages
 ├── plugins -> Nuxt plugins
 ├── static -> Static resources
-├── translations -> Argilla translation resources
+├── translations -> Extralit translation resources
 ├── v1 -> New architecture
 │ ├── di -> Dependency injection configuration
 │ ├── domain -> Domain layer with entities and use cases

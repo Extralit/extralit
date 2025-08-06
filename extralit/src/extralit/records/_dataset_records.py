@@ -167,7 +167,7 @@ class DatasetRecords(Iterable[Record], LoggingMixin):
     by adding, updating, fetching, querying, deleting, and exporting records.
 
     Attributes:
-        client (Argilla): The Argilla client object.
+        client (Extralit): The Extralit client object.
         dataset (Dataset): The dataset object.
     """
 
@@ -181,7 +181,7 @@ class DatasetRecords(Iterable[Record], LoggingMixin):
     ):
         """Initializes a DatasetRecords object with a client and a dataset.
         Args:
-            client: An Argilla client object.
+            client: An Extralit client object.
             dataset: A Dataset object.
         """
         self.__client = client
@@ -260,8 +260,8 @@ class DatasetRecords(Iterable[Record], LoggingMixin):
         Parameters:
             records: A list of `Record` objects, a Hugging Face Dataset, or a list of dictionaries representing the records.
                      If records are defined as a dictionaries or a dataset, the keys/ column names should correspond to the
-                     fields in the Argilla dataset's fields and questions. `id` should be provided to identify the records when updating.
-            mapping: A dictionary that maps the keys/ column names in the records to the fields or questions in the Argilla dataset.
+                     fields in the Extralit dataset's fields and questions. `id` should be provided to identify the records when updating.
+            mapping: A dictionary that maps the keys/ column names in the records to the fields or questions in the Extralit dataset.
                      To assign an incoming key or column to multiple fields or questions, provide a list or tuple of field or question names.
             user_id: The user id to be associated with the records' response. If not provided, the current user id is used.
             batch_size: The number of records to send in each batch. The default is 256.

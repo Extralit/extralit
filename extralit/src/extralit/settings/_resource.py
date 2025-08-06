@@ -20,7 +20,7 @@ from pathlib import Path
 from typing import List, Optional, TYPE_CHECKING, Dict, Union, Iterator, Sequence, Literal
 from uuid import UUID
 
-from extralit._exceptions import SettingsError, ExtralitAPIError, ArgillaSerializeError
+from extralit._exceptions import SettingsError, ExtralitAPIError, ExtralitSerializeError
 from extralit._models._dataset import DatasetModel
 from extralit._resource import Resource
 from extralit.settings._field import Field, _field_from_dict, _field_from_model, FieldBase
@@ -39,7 +39,7 @@ __all__ = ["Settings"]
 
 class Settings(DefaultSettingsMixin, Resource):
     """
-    Settings class for Argilla Datasets.
+    Settings class for Extralit Datasets.
 
     This class is used to define the representation of a Dataset within the UI.
     """
@@ -68,7 +68,7 @@ class Settings(DefaultSettingsMixin, Resource):
                 Dataset. Defaults to False.
             distribution (TaskDistribution): The annotation task distribution configuration.
                 Default to DEFAULT_TASK_DISTRIBUTION
-            mapping (Dict[str, Union[str, Sequence[str]]]): A dictionary that maps incoming data names to Argilla dataset attributes in DatasetRecords.
+            mapping (Dict[str, Union[str, Sequence[str]]]): A dictionary that maps incoming data names to Extralit dataset attributes in DatasetRecords.
         """
         super().__init__(client=_dataset._client if _dataset else None)
 
@@ -241,7 +241,7 @@ class Settings(DefaultSettingsMixin, Resource):
                 "mapping": self.mapping,
             }
         except Exception as e:
-            raise ArgillaSerializeError(f"Failed to serialize the settings. {e.__class__.__name__}") from e
+            raise ExtralitSerializeError(f"Failed to serialize the settings. {e.__class__.__name__}") from e
 
     def to_json(self, path: Union[Path, str]) -> None:
         """Save the settings to a file on disk
@@ -277,7 +277,7 @@ class Settings(DefaultSettingsMixin, Resource):
         Parameters:
             repo_id (str): The ID of the repository to load the settings from on the Hub.
             subset (Optional[str]): The subset of the repository to load the settings from.
-            feature_mapping (Dict[str, Literal["question", "field", "metadata"]]): A dictionary that maps incoming column names to Argilla attributes.
+            feature_mapping (Dict[str, Literal["question", "field", "metadata"]]): A dictionary that maps incoming column names to Extralit attributes.
         """
 
         settings = build_settings_from_repo_id(repo_id=repo_id, feature_mapping=feature_mapping, subset=subset)

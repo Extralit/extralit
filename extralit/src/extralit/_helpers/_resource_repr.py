@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -74,12 +74,12 @@ class ResourceHTMLReprMixin:
 
 class NotebookHTMLReprMixin:
     def __repr__(self) -> str:
-        """Display the Argilla space in a notebook or Google Colab."""
+        """Display the Extralit space in a notebook or Google Colab."""
 
         if is_notebook() or is_google_colab():
             from IPython.display import IFrame, display
 
             display(IFrame(src=self.api_url, frameborder=0, width=850, height=600))
-            return f"Argilla has been deployed at: {self.api_url}"
+            return f"Extralit has been deployed at: {self.api_url}"
         else:
             return super().__repr__()

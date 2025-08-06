@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -107,7 +107,7 @@ class RecordModel(ResourceModel):
                 raise ValueError("Chat field values must contain 'role' and 'content' keys.")
             if not all(key in ["role", "content"] for key in message.keys()):
                 warnings.warn(
-                    "Chat field values should only contain 'role' and 'content' keys. Other keys will be ignored by Argilla."
+                    "Chat field values should only contain 'role' and 'content' keys. Other keys will be ignored by Extralit."
                 )
                 message = {key: value for key, value in message.items() if key in ["role", "content"]}
             validated_chat_field_values.append(ChatFieldValue(**message))

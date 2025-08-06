@@ -54,11 +54,11 @@ The Extralit repository has a monorepo structure, which means that all the compo
 !!! note "How to contribute?"
     Before starting to develop, we recommend reading our [contribution guide](contributor.md) to understand the contribution process and the guidelines to follow. Once you have [cloned the Extralit repository](contributor.md#fork-the-extralit-repository) and [checked out to the correct branch](contributor.md#create-a-new-branch), you can start setting up your development environment.
 
-??? example "Argilla Directory Structure"
-    ![Argilla Repository Structure](../assets/images/community/developer/repo-visualizer-argilla.svg)
+??? example "Extralit Directory Structure"
+    ![Extralit Repository Structure](../assets/images/community/developer/repo-visualizer-argilla.svg)
 
-??? example "Argilla Server Directory Structure"
-    ![Argilla Server Repository Structure](../assets/images/community/developer/repo-visualizer-extralit-server.svg)
+??? example "Extralit Server Directory Structure"
+    ![Extralit Server Repository Structure](../assets/images/community/developer/repo-visualizer-extralit-server.svg)
 
 ## Development workflow
 

@@ -4,9 +4,9 @@ description: In this section, we will provide a step-by-step guide to show how t
 
 # Add, update, and delete records
 
-This guide provides an overview of records, explaining the basics of how to define and manage them in Argilla.
+This guide provides an overview of records, explaining the basics of how to define and manage them in Extralit.
 
-A **record** in Argilla is a data item that requires annotation, consisting of one or more fields. These are the pieces of information displayed to the user in the UI to facilitate the completion of the annotation task. Each record also includes questions that annotators are required to answer, with the option of adding suggestions and responses to assist them. Guidelines are also provided to help annotators effectively complete their tasks.
+A **record** in Extralit is a data item that requires annotation, consisting of one or more fields. These are the pieces of information displayed to the user in the UI to facilitate the completion of the annotation task. Each record also includes questions that annotators are required to answer, with the option of adding suggestions and responses to assist them. Guidelines are also provided to help annotators effectively complete their tasks.
 
 > A record is part of a dataset, so you will need to create a dataset before adding records. Check this guide to learn how to [create a dataset](dataset.md).
 
@@ -33,11 +33,11 @@ A **record** in Argilla is a data item that requires annotation, consisting of o
         ],
     )
     ```
-    > Check the [Record - Python Reference](../reference/argilla/records/records.md) to see the attributes, arguments, and methods of the `Record` class in detail.
+    > Check the [Record - Python Reference](../reference/extralit/records/records.md) to see the attributes, arguments, and methods of the `Record` class in detail.
 
 ## Add records
 
-You can add records to a dataset in two different ways: either by using a dictionary or by directly initializing a `Record` object. You should ensure that fields, metadata and vectors match those configured in the dataset settings. In both cases, are added via the `Dataset.records.log` method. As soon as you add the records, these will be available in the Argilla UI. If they do not appear in the UI, you may need to click the refresh button to update the view.
+You can add records to a dataset in two different ways: either by using a dictionary or by directly initializing a `Record` object. You should ensure that fields, metadata and vectors match those configured in the dataset settings. In both cases, are added via the `Dataset.records.log` method. As soon as you add the records, these will be available in the Extralit UI. If they do not appear in the UI, you may need to click the refresh button to update the view.
 
 !!! tip
     Take some time to inspect the data before adding it to the dataset in case this triggers changes in the `questions` or `fields`.
@@ -50,7 +50,7 @@ You can add records to a dataset in two different ways: either by using a dictio
     You can add records to a dataset by initializing a `Record` object directly. This is ideal if you need to apply logic to the data before defining the record. If the data is already structured, you should consider adding it directly as a dictionary or Hugging Face dataset.
 
     ```python
-    import argilla as rg
+    import extralit as ex
 
     client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
@@ -80,12 +80,12 @@ You can add records to a dataset in two different ways: either by using a dictio
 
     You can add the data directly as a dictionary like structure, where the keys correspond to the names of fields, questions, metadata or vectors in the dataset and the values are the data to be added.
 
-    If your data structure does not correspond to your Argilla dataset names, you can use a `mapping` to indicate which keys in the source data correspond to the dataset fields, metadata, vectors, suggestions, or responses. If you need to add the same data to multiple attributes, you can also use a list with the name of the attributes.
+    If your data structure does not correspond to your Extralit dataset names, you can use a `mapping` to indicate which keys in the source data correspond to the dataset fields, metadata, vectors, suggestions, or responses. If you need to add the same data to multiple attributes, you can also use a list with the name of the attributes.
 
     We illustrate this python dictionaries that represent your data, but we would not advise you to define dictionaries. Instead, use the `Record` object to instantiate records.
 
     ```python
-    import argilla as rg
+    import extralit as ex
 
     client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
@@ -118,17 +118,17 @@ You can add records to a dataset in two different ways: either by using a dictio
     dataset.records.log(data, mapping={"query": "question", "response": "answer"}) # (2)
     ```
 
-    1. The data structure's keys must match the fields or questions in the Argilla dataset. In this case, there are fields named `question` and `answer`.
-    2. The data structure has keys `query` and `response`, and the Argilla dataset has fields `question` and `answer`. You can use the `mapping` parameter to map the keys in the data structure to the fields in the Argilla dataset.
+    1. The data structure's keys must match the fields or questions in the Extralit dataset. In this case, there are fields named `question` and `answer`.
+    2. The data structure has keys `query` and `response`, and the Extralit dataset has fields `question` and `answer`. You can use the `mapping` parameter to map the keys in the data structure to the fields in the Extralit dataset.
 
 === "From a Hugging Face dataset"
 
-    You can also add records to a dataset using a Hugging Face dataset. This is useful when you want to use a dataset from the Hugging Face Hub and add it to your Argilla dataset.
+    You can also add records to a dataset using a Hugging Face dataset. This is useful when you want to use a dataset from the Hugging Face Hub and add it to your Extralit dataset.
 
-    You can add the dataset where the column names correspond to the names of fields, metadata or vectors in the Argilla dataset.
+    You can add the dataset where the column names correspond to the names of fields, metadata or vectors in the Extralit dataset.
 
     ```python
-    import argilla as rg
+    import extralit as ex
     from datasets import load_dataset
 
     client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
@@ -139,11 +139,11 @@ You can add records to a dataset in two different ways: either by using a dictio
     dataset.records.log(records=hf_dataset)
     ```
 
-    1. In this case, we are using the `my_dataset` dataset from the Argilla workspace. The dataset has a `text` field and a `label` question.
+    1. In this case, we are using the `my_dataset` dataset from the Extralit workspace. The dataset has a `text` field and a `label` question.
 
-    2. In this example, the Hugging Face dataset matches the Argilla dataset schema. If that is not the case, you could use the `.map` of the `datasets` library to prepare the data before adding it to the Argilla dataset.
+    2. In this example, the Hugging Face dataset matches the Extralit dataset schema. If that is not the case, you could use the `.map` of the `datasets` library to prepare the data before adding it to the Extralit dataset.
 
-    If the Hugging Face dataset's schema does not correspond to your Argilla dataset field names, you can use a `mapping` to specify the relationship. You should indicate as key the column name of the Hugging Face dataset and, as value, the field name of the Argilla dataset.
+    If the Hugging Face dataset's schema does not correspond to your Extralit dataset field names, you can use a `mapping` to specify the relationship. You should indicate as key the column name of the Hugging Face dataset and, as value, the field name of the Extralit dataset.
 
     ```python
     dataset.records.log(
@@ -151,7 +151,7 @@ You can add records to a dataset in two different ways: either by using a dictio
     ) # (1)
     ```
 
-    3. In this case, the `text` key in the Hugging Face dataset would correspond to the `review` field in the Argilla dataset, and the `label` key in the Hugging Face dataset would correspond to the `sentiment` field in the Argilla dataset.
+    3. In this case, the `text` key in the Hugging Face dataset would correspond to the `review` field in the Extralit dataset, and the `label` key in the Hugging Face dataset would correspond to the `sentiment` field in the Extralit dataset.
 
 ### Fields
 
@@ -169,7 +169,7 @@ Fields are the main pieces of information of the record. These are shown at firs
 === "Image"
     Image fields expect a remote URL or local path to an image file in the form of a `string`, or a PIL object.
 
-    > Check the [Dataset.records - Python Reference](../reference/argilla/datasets/dataset_records.md) to see how to add records with with images in detail.
+    > Check the [Dataset.records - Python Reference](../reference/extralit/datasets/dataset_records.md) to see how to add records with with images in detail.
 
     ```python
     records = [
@@ -192,8 +192,8 @@ Fields are the main pieces of information of the record. These are shown at firs
     record = ex.Record(
         fields={
             "chat": [
-                {"role": "user", "content": "What is Argilla?"},
-                {"role": "assistant", "content": "Argilla is a collaboration tool for AI engineers and domain experts to build high-quality datasets"},
+                {"role": "user", "content": "What is Extralit?"},
+                {"role": "assistant", "content": "Extralit is a collaboration tool for AI engineers and domain experts to build high-quality datasets"},
             ]
         }
     )
@@ -215,7 +215,7 @@ Record metadata can include any information about the record that is not part of
 !!! note
     Remember that to use metadata within a dataset, you must define a metadata property in the [dataset settings](dataset.md).
 
-> Check the [Metadata - Python Reference](../reference/argilla/records/metadata.md) to see the attributes, arguments, and methods for using metadata in detail.
+> Check the [Metadata - Python Reference](../reference/extralit/records/metadata.md) to see the attributes, arguments, and methods for using metadata in detail.
 
 === "As `Record` objects"
 
@@ -270,7 +270,7 @@ You can associate vectors, like text embeddings, to your records. They can be us
 !!! note
     Remember that to use vectors within a dataset, you must define them in the [dataset settings](dataset.md).
 
-> Check the [Vector - Python Reference](../reference/argilla/records/vectors.md) to see the attributes, arguments, and methods of the `Vector` class in detail.
+> Check the [Vector - Python Reference](../reference/extralit/records/vectors.md) to see the attributes, arguments, and methods of the `Vector` class in detail.
 
 === "As `Record` objects"
 
@@ -326,10 +326,10 @@ You can associate vectors, like text embeddings, to your records. They can be us
 
 Suggestions refer to suggested responses (e.g. model predictions) that you can add to your records to make the annotation process faster. These can be added during the creation of the record or at a later stage. Only one suggestion can be provided for each question, and suggestion values must be compliant with the pre-defined questions e.g. if we have a `RatingQuestion` between 1 and 5, the suggestion should have a valid value within that range.
 
-> Check the [Suggestions - Python Reference](../reference/argilla/records/suggestions.md) to see the attributes, arguments, and methods of the `Suggestion` class in detail.
+> Check the [Suggestions - Python Reference](../reference/extralit/records/suggestions.md) to see the attributes, arguments, and methods of the `Suggestion` class in detail.
 
 !!! tip
-    Check the [Suggestions - Python Reference](../reference/argilla/records/suggestions.md) for different formats per `Question` type.
+    Check the [Suggestions - Python Reference](../reference/extralit/records/suggestions.md) for different formats per `Question` type.
 
 === "As `Record` objects"
     You can also add suggestions to a record in an initialized `Record` object.
@@ -403,14 +403,14 @@ Suggestions refer to suggested responses (e.g. model predictions) that you can a
 
 ### Responses
 
-If your dataset includes some annotations, you can add those to the records as you create them. Make sure that the responses adhere to the same format as Argilla's output and meet the schema requirements for the specific type of question being answered. Make sure to include the `user_id` in case you're planning to add more than one response for the same question, if not responses will apply to all the annotators.
+If your dataset includes some annotations, you can add those to the records as you create them. Make sure that the responses adhere to the same format as Extralit's output and meet the schema requirements for the specific type of question being answered. Make sure to include the `user_id` in case you're planning to add more than one response for the same question, if not responses will apply to all the annotators.
 
-> Check the [Responses - Python Reference](../reference/argilla/records/responses.md) to see the attributes, arguments, and methods of the `Response` class in detail.
+> Check the [Responses - Python Reference](../reference/extralit/records/responses.md) to see the attributes, arguments, and methods of the `Response` class in detail.
 !!! note
     Keep in mind that records with responses will be displayed as "Draft" in the UI.
 
 !!! tip
-    Check the [Responses - Python Reference](../reference/argilla/records/responses.md) for different formats per `Question` type.
+    Check the [Responses - Python Reference](../reference/extralit/records/responses.md) for different formats per `Question` type.
 
 === "As `Record` objects"
     You can also add suggestions to a record in an initialized `Record` object.
@@ -505,7 +505,7 @@ dataset.records.log(records=updated_data)
     The `metadata` of the `Record` object is a python dictionary. To update it, you can iterate over the records and update the metadata by key. After that, you should update the records in the dataset.
 
     !!! tip
-        Check the [Metadata - Python Reference](../reference/argilla/records/metadata.md) for different formats per `MetadataProperty` type.
+        Check the [Metadata - Python Reference](../reference/extralit/records/metadata.md) for different formats per `MetadataProperty` type.
 
     ```python
     updated_records = []
@@ -540,7 +540,7 @@ dataset.records.log(records=updated_data)
     If some value for the existing record suggestions must be updated, you can iterate over the records and update the suggestions by key. You can also add a suggestion using the `add` method. After that, you should update the records in the dataset.
 
     !!! tip
-        Check the [Suggestions - Python Reference](../reference/argilla/records/suggestions.md) for different formats per `Question` type.
+        Check the [Suggestions - Python Reference](../reference/extralit/records/suggestions.md) for different formats per `Question` type.
 
     ```python
     updated_records = []
@@ -567,7 +567,7 @@ dataset.records.log(records=updated_data)
     If some value for the existing record responses must be updated, you can iterate over the records and update the responses by key. You can also add a response using the `add` method. After that, you should update the records in the dataset.
 
     !!! tip
-        Check the [Responses - Python Reference](../reference/argilla/records/responses.md) for different formats per `Question` type.
+        Check the [Responses - Python Reference](../reference/extralit/records/responses.md) for different formats per `Question` type.
 
     ```python
     updated_records = []

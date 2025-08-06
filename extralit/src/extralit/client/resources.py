@@ -90,7 +90,7 @@ class Users(Sequence["User"], ResourceHTMLReprMixin):
         return len(self._api.list())
 
     def add(self, user: "User") -> "User":
-        """Add a new user to Argilla.
+        """Add a new user to Extralit.
 
         Args:
             user: User object.
@@ -187,7 +187,7 @@ class Workspaces(Sequence["Workspace"], ResourceHTMLReprMixin):
         return len(self._api.list())
 
     def add(self, workspace: "Workspace") -> "Workspace":
-        """Add a new workspace to the Argilla platform.
+        """Add a new workspace to the Extralit platform.
         Args:
             workspace: Workspace object.
 
@@ -315,7 +315,7 @@ class Datasets(Sequence["Dataset"], ResourceHTMLReprMixin):
 
     def add(self, dataset: "Dataset") -> "Dataset":
         """
-        Add a new dataset to the Argilla platform
+        Add a new dataset to the Extralit platform
 
         Args:
             dataset: Dataset object.
@@ -381,7 +381,7 @@ class Webhooks(Sequence["Webhook"], ResourceHTMLReprMixin):
         return len(self._api.list())
 
     def add(self, webhook: "Webhook") -> "Webhook":
-        """Add a new webhook to the Argilla platform.
+        """Add a new webhook to the Extralit platform.
         Args:
             webhook: Webhook object.
 

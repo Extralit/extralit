@@ -35,7 +35,7 @@ __all__ = ["Dataset"]
 
 
 class Dataset(Resource, HubImportExportMixin, DiskImportExportMixin):
-    """Class for interacting with Argilla Datasets
+    """Class for interacting with Extralit Datasets
 
     Attributes:
         name: Name of the dataset.
@@ -60,13 +60,13 @@ class Dataset(Resource, HubImportExportMixin, DiskImportExportMixin):
         settings: Optional[Settings] = None,
         client: Optional["Extralit"] = None,
     ) -> None:
-        """Initializes a new Argilla Dataset object with the given parameters.
+        """Initializes a new Extralit Dataset object with the given parameters.
 
         Parameters:
             name (str): Name of the dataset. Replaced by random UUID if not assigned.
             workspace (UUID): Workspace of the dataset. Default is the first workspace found in the server.
             settings (Settings): Settings class to be used to configure the dataset.
-            client (Argilla): Instance of Argilla to connect with the server. Default is the default client.
+            client (Extralit): Instance of Extralit to connect with the server. Default is the default client.
         """
         client = client or Extralit._get_default()
         super().__init__(client=client, api=client.api.datasets)

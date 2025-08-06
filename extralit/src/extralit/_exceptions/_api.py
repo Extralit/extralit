@@ -22,7 +22,7 @@ class ExtralitAPIError(ExtralitError):
     message = "Server error"
 
     def __init__(self, message: Optional[str] = None, status_code: int = 500):
-        """Base class for all Argilla API exceptions
+        """Base class for all Extralit API exceptions
         Args:
             message (str): The message to display when the exception is raised
             status_code (int): The status code of the response that caused the exception

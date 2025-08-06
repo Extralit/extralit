@@ -14,7 +14,7 @@
 import logging
 
 import pytest
-from extralit_server.logging import ArgillaHandler, LoggingMixin
+from extralit_server.logging import ExtralitHandler, LoggingMixin
 
 
 class LoggingForTest(LoggingMixin):
@@ -48,8 +48,8 @@ def test_logging_mixin_without_breaking_constructors():
 
 
 def test_logging_handler(mocker):
-    mocker.patch.object(ArgillaHandler, "emit", autospec=True)
-    handler = ArgillaHandler()
+    mocker.patch.object(ExtralitHandler, "emit", autospec=True)
+    handler = ExtralitHandler()
 
     logger = logging.getLogger(__name__)
     logger.handlers = [handler]
@@ -60,7 +60,7 @@ def test_logging_handler(mocker):
 
 @pytest.mark.skip(reason="Failing temporally")
 def test_configure_logging_call():
-    # Ensure that the root logger uses the ArgillaHandler (RichHandler if rich is installed),
+    # Ensure that the root logger uses the ExtralitHandler (RichHandler if rich is installed),
     # whereas the other loggers do not have handlers
-    assert isinstance(logging.getLogger().handlers[0], ArgillaHandler)
+    assert isinstance(logging.getLogger().handlers[0], ExtralitHandler)
     assert len(logging.getLogger("extralit").handlers) == 0

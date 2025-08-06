@@ -4,7 +4,7 @@ description: In this section, we will provide a step-by-step guide to show how t
 
 # Query and filter records
 
-This guide provides an overview of how to query and filter a dataset in Argilla.
+This guide provides an overview of how to query and filter a dataset in Extralit.
 
 You can search for records in your dataset by **querying** or **filtering**. The query focuses on the content of the text field, while the filter is used to filter the records based on conditions. You can use them independently or combine multiple filters to create complex search queries. You can also export records from a dataset either as a single dictionary or a list of dictionaries.
 
@@ -18,7 +18,7 @@ You can search for records in your dataset by **querying** or **filtering**. The
             filter=filter
         )
         ```
-        > Check the [Query - Python Reference](../reference/argilla/search.md) to see the attributes, arguments, and methods of the `Query` class in detail.
+        > Check the [Query - Python Reference](../reference/extralit/search.md) to see the attributes, arguments, and methods of the `Query` class in detail.
 
     === "`ex.Filter`"
 
@@ -29,7 +29,7 @@ You can search for records in your dataset by **querying** or **filtering**. The
             ]
         )
         ```
-        > Check the [Filter - Python Reference](../reference/argilla/search.md) to see the attributes, arguments, and methods of the `Filter` class in detail.
+        > Check the [Filter - Python Reference](../reference/extralit/search.md) to see the attributes, arguments, and methods of the `Filter` class in detail.
 
     === "`ex.Similar`"
 
@@ -39,7 +39,7 @@ You can search for records in your dataset by **querying** or **filtering**. The
             value=[0.1, 0.2, 0.3],
         )
         ```
-        > Check the [Similar - Python Reference](../reference/argilla/search.md) to see the attributes, arguments, and methods of the `Similar` class in detail.
+        > Check the [Similar - Python Reference](../reference/extralit/search.md) to see the attributes, arguments, and methods of the `Similar` class in detail.
 
 ## Query with search terms
 
@@ -48,7 +48,7 @@ To search for records with terms, you can use the `Dataset.records` attribute wi
 === "Single term search"
 
     ```python
-    import argilla as rg
+    import extralit as ex
 
     client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
@@ -62,7 +62,7 @@ To search for records with terms, you can use the `Dataset.records` attribute wi
 === "Multiple terms search"
 
     ```python
-    import argilla as rg
+    import extralit as ex
 
     client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
@@ -104,7 +104,7 @@ You can use the `Filter` class to define the conditions and pass them to the `Da
 === "Single condition"
 
     ```python
-    import argilla as rg
+    import extralit as ex
 
     client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
@@ -120,7 +120,7 @@ You can use the `Filter` class to define the conditions and pass them to the `Da
 === "Multiple conditions"
 
     ```python
-    import argilla as rg
+    import extralit as ex
 
     client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
@@ -165,7 +165,7 @@ You can filter records based on the following fields:
 You can filter records based on record or response status. Record status can be `pending` or `completed`, and response status can be `draft`, `submitted`, or `discarded`.
 
 ```python
-import argilla as rg
+import extralit as ex
 
 client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
@@ -189,7 +189,7 @@ You can search for records that are similar to a given vector. You can use the `
 
 ```python
 
-import argilla as rg
+import extralit as ex
 
 client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
@@ -214,7 +214,7 @@ filtered_records = dataset.records(similar_filter).to_list(flatten=True)
 As mentioned, you can use a query with a search term and a filter or various filters to create complex search queries.
 
 ```python
-import argilla as rg
+import extralit as ex
 
 client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 

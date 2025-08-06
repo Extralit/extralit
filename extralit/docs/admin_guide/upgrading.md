@@ -18,7 +18,7 @@ This guide covers the update process for Extralit across different deployment op
     git fetch origin tag v0.2.2 && git checkout tags/v0.2.2
     ```
 
-2. Rebuild the  package, which contains the Argilla server and web interface
+2. Rebuild the  package, which contains the Extralit server and web interface
 
     First, build the `extralit-frontend` code
 

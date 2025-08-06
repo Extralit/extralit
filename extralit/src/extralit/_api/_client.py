@@ -45,7 +45,7 @@ DEFAULT_HTTP_CONFIG = HTTPClientConfig(api_url=EXTRALIT_API_URL, api_key=EXTRALI
 
 
 class ExtralitAPI:
-    """Argilla API access object."""
+    """Extralit API access object."""
 
     def __init__(self, http_client: httpx.Client):
         self.http_client = http_client
@@ -107,12 +107,12 @@ class ExtralitAPI:
 
 class APIClient:
     """Initialize the SDK with the given API URL and API key.
-    This class is used to create an instance of the Argilla API client.
+    This class is used to create an instance of the Extralit API client.
 
     Args:
-        api_url (str, optional): The URL of the Argilla API. Defaults to the value of
+        api_url (str, optional): The URL of the Extralit API. Defaults to the value of
             the `EXTRALIT_API_URL` environment variable.
-        api_key (str, optional): The API key to authenticate with the Argilla API. Defaults to
+        api_key (str, optional): The API key to authenticate with the Extralit API. Defaults to
             the value of the `EXTRALIT_API_KEY` environment variable.
         timeout (int, optional): The timeout in seconds for the HTTP requests. Defaults to 60.
         **http_client_args: Additional keyword arguments to pass to the httpx.Client instance.

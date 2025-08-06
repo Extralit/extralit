@@ -277,7 +277,7 @@ For a simpler setup using Docker without live development capabilities:
 
 ### 0. Building the `extralit-server` and `argilla-hf-spaces` docker images
 
-To build and run the Argilla Server using Docker, follow these steps:
+To build and run the Extralit Server using Docker, follow these steps:
 
 ```bash
 cd extralit-server
@@ -288,13 +288,13 @@ pdm build && cp -r dist/ docker/server/
 docker build -t extralit-server:latest -f docker/server/Dockerfile docker/server/
 ```
 
-To build the Argilla HF Spaces Docker image, which includes the Argilla Server, ElasticSearch, and Redis, use the following command:
+To build the Extralit HF Spaces Docker image, which includes the Extralit Server, ElasticSearch, and Redis, use the following command:
 
 ```bash
 docker build --build-arg extralit_server_IMAGE=extralit-server --build-arg EXTRALIT_VERSION=latest -t argilla-hf-spaces:latest -f docker/argilla-hf-spaces/Dockerfile docker/argilla-hf-spaces/
 ```
 
-Start the Argilla Server and other dependencies using Docker:
+Start the Extralit Server and other dependencies using Docker:
 
 ```bash
 docker run --rm -p 6900:6900 -e EXTRALIT_ENABLE_TELEMETRY=0 -e USERNAME=argilla -e PASSWORD=12345678 -e API_KEY=extralit.apikey --name argilla-hf-spaces argilla-hf-spaces:latest

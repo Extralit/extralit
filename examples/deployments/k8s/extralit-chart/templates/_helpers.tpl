@@ -56,7 +56,7 @@ Create chart name and version as used by the chart label.
 {{- end }}
 
 {{/*
-Argilla Worker labels
+Extralit Worker labels
 */}}
 {{- define "worker.labels" -}}
 helm.sh/chart: {{ include "extralit.chart" . }}
@@ -68,7 +68,7 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
 {{/*
-Argilla Worker Selector labels
+Extralit Worker Selector labels
 */}}
 {{- define "worker.selectorLabels" -}}
 app.kubernetes.io/component: worker

@@ -44,19 +44,19 @@ class SpacesDeploymentMixin(LoggingMixin):
         private: Optional[Union[bool, None]] = False,
     ) -> "Extralit":
         """
-        Deploys Argilla on Hugging Face Spaces.
+        Deploys Extralit on Hugging Face Spaces.
 
         Args:
-            api_key (str): The Argilla API key to be defined for the owner user and creator of the Space.
-            repo_name (Optional[str]): The ID of the repository where Argilla will be deployed. Defaults to "extralit".
-            org_name (Optional[str]): The name of the organization where Argilla will be deployed. Defaults to None.
+            api_key (str): The Extralit API key to be defined for the owner user and creator of the Space.
+            repo_name (Optional[str]): The ID of the repository where Extralit will be deployed. Defaults to "extralit".
+            org_name (Optional[str]): The name of the organization where Extralit will be deployed. Defaults to None.
             hf_token (Optional[Union[str, None]]): The Hugging Face authentication token. Defaults to None.
             space_storage (Optional[Union[str, SpaceStorage]]): The persistent storage size for the space. Defaults to None without persistent storage.
             space_hardware (Optional[Union[str, SpaceHardware]]): The hardware configuration for the space. Defaults to "cpu-basic" with downtime after 48 hours of inactivity.
             private (Optional[Union[bool, None]]): Whether the space should be private. Defaults to False.
 
         Returns:
-            Argilla: The Argilla client.
+            Extralit: The Extralit client.
 
         Example:
             ```Python
@@ -111,7 +111,7 @@ class SpacesDeploymentMixin(LoggingMixin):
         api_url: str = (
             f"https://{cls._sanitize_url_component(org_name)}-{cls._sanitize_url_component(repo_name)}.hf.space/"
         )
-        cls._log_message(cls, message=f"Argilla is being deployed at: {repo_url}")
+        cls._log_message(cls, message=f"Extralit is being deployed at: {repo_url}")
         while cls._is_building(hf_api.get_space_runtime(repo_id=repo_id).stage):
             time.sleep(_SLEEP_TIME)
             cls._log_message(cls, message=f"Deployment in progress. Waiting {_SLEEP_TIME} seconds.")

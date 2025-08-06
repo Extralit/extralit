@@ -1,19 +1,19 @@
 ---
-description: In this section, we will provide a step-by-step guide to create a webhook in Argilla.
+description: In this section, we will provide a step-by-step guide to create a webhook in Extralit.
 ---
 
-# Use Argilla webhooks
+# Use Extralit webhooks
 
-This guide provides an overview of how to create and use webhooks in Argilla.
+This guide provides an overview of how to create and use webhooks in Extralit.
 
 A **webhook** allows an application to submit real-time information to other applications whenever a specific event occurs. Unlike traditional APIs, you won’t need to poll for data very frequently in order to get it in real time. This makes webhooks much more efficient for both the provider and the consumer.
 
-## Creating a webhook listener in Argilla
+## Creating a webhook listener in Extralit
 
-The python SDK provides a simple way to create a webhook in Argilla. It allows you to focus on the use case of the webhook and not on the implementation details. You only need to create your event handler function with the `webhook_listener` decorator.
+The python SDK provides a simple way to create a webhook in Extralit. It allows you to focus on the use case of the webhook and not on the implementation details. You only need to create your event handler function with the `webhook_listener` decorator.
 
 ```python
-import argilla as rg
+import extralit as ex
 
 from datetime import datetime
 from extralit import webhook_listener
@@ -26,7 +26,7 @@ async def my_webhook_handler(dataset: ex.Dataset, type: str, timestamp: datetime
 In the example above, we have created a webhook that listens to the `dataset.created` event.
 > You can find the list of events in the [Events](#events) section.
 
-The python SDK will automatically create a webhook in Argilla and listen to the specified event. When the event is triggered,
+The python SDK will automatically create a webhook in Extralit and listen to the specified event. When the event is triggered,
 the `my_webhook_handler` function will be called with the event data. The SDK will also parse the incoming webhook event into
 a proper resource object (`ex.Dataset`, `ex.Record`, and `ex.Response`). The SDK will also take care of request authentication and error handling.
 
@@ -62,14 +62,14 @@ All incoming webhook events will be sent to the specified server URL.
 
 ## Webhooks management
 
-The Python SDK provides a simple way to manage webhooks in Argilla. You can create, list, update, and delete webhooks using the SDK.
+The Python SDK provides a simple way to manage webhooks in Extralit. You can create, list, update, and delete webhooks using the SDK.
 
 ### Create a webhook
 
-To create a new webhook in Argilla, you can define it in the `Webhook` class and then call the `create` method.
+To create a new webhook in Extralit, you can define it in the `Webhook` class and then call the `create` method.
 
 ```python
-import argilla as rg
+import extralit as ex
 
 client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
@@ -85,10 +85,10 @@ webhook.create()
 
 ### List webhooks
 
-You can list all the existing webhooks in Argilla by accessing the `webhooks` attribute on the Argilla class and iterating over them.
+You can list all the existing webhooks in Extralit by accessing the `webhooks` attribute on the Extralit class and iterating over them.
 
 ```python
-import argilla as rg
+import extralit as ex
 
 client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
@@ -102,7 +102,7 @@ for webhook in client.webhooks:
 You can update a webhook using the `update` method.
 
 ```python
-import argilla as rg
+import extralit as ex
 
 client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
@@ -123,7 +123,7 @@ webhook.update()
 You can delete a webhook using the `delete` method.
 
 ```python
-import argilla as rg
+import extralit as ex
 
 client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
 
@@ -139,7 +139,7 @@ You can deploy your webhook in a Hugging Face Space. You can visit this [link](h
 
 ## Events
 
-The following is a list of events that you can listen to in Argilla, grouped by resource type.
+The following is a list of events that you can listen to in Extralit, grouped by resource type.
 
 ### Dataset events
 

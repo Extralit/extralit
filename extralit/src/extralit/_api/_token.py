@@ -85,7 +85,7 @@ def _get_secret_from_google_colab(name: str) -> Optional[str]:
             # Something happen but we don't know what => recommend to open a GitHub issue
             warnings.warn(
                 f"\nError while fetching {name} secret value from your vault: '{str(e)}'."
-                "\nYou are not authenticated with the Argilla in this notebook."
+                "\nYou are not authenticated with the Extralit in this notebook."
                 "\nIf the error persists, please let us know by opening an issue on GitHub "
                 "(https://github.com/extralit/extralit/issues/new)."
             )

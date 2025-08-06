@@ -35,7 +35,7 @@ __all__ = ["Document"]
 
 
 class Document(Resource):
-    """Class for interacting with Argilla documents.
+    """Class for interacting with Extralit documents.
 
     Attributes:
         workspace_id (UUID): The ID of the workspace that contains this document.
@@ -72,7 +72,7 @@ class Document(Resource):
             pmid (str): The PubMed ID of the document.
             doi (str): The DOI of the document.
             id (UUID): The document ID. If provided, the document will be created with this ID.
-            client (Argilla): The client used to interact with Argilla.
+            client (Extralit): The client used to interact with Extralit.
 
         Returns:
             Document: The initialized document object.
@@ -114,7 +114,7 @@ class Document(Resource):
             id: The document ID. If provided, the document will be created with this ID.
             pmid: The PubMed ID of the document.
             doi: The DOI of the document.
-            client: The client used to interact with Argilla.
+            client: The client used to interact with Extralit.
 
         Returns:
             Document: The created document object.
@@ -165,7 +165,7 @@ class Document(Resource):
             pmid: The PubMed ID.
             reference: A reference identifier for the document.
             workspace_id: The workspace ID to which this document belongs.
-            client: The client used to interact with Argilla.
+            client: The client used to interact with Extralit.
 
         Returns:
             Document: The created document object.
@@ -192,7 +192,7 @@ class Document(Resource):
             doi: The DOI.
             reference: A reference identifier for the document.
             workspace_id: The workspace ID to which this document belongs.
-            client: The client used to interact with Argilla.
+            client: The client used to interact with Extralit.
 
         Returns:
             Document: The created document object.
@@ -210,7 +210,7 @@ class Document(Resource):
 
         Args:
             model: The document model.
-            client: The client used to interact with Argilla.
+            client: The client used to interact with Extralit.
 
         Returns:
             Document: The created document object.
@@ -241,7 +241,7 @@ class Document(Resource):
         Args:
             id: The document ID.
             pmid: The PubMed ID.
-            client: The client used to interact with Argilla.
+            client: The client used to interact with Extralit.
 
         Returns:
             Document: The document object.

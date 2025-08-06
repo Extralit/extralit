@@ -3,7 +3,7 @@ hide: footer
 ---
 # `ex.Settings`
 
-`ex.Settings` is used to define the settings of an Argilla `Dataset`. The settings can be used to configure the
+`ex.Settings` is used to define the settings of an Extralit `Dataset`. The settings can be used to configure the
 behavior of the dataset, such as the fields, questions, guidelines, metadata, and vectors. The `Settings` class is
 passed to the `Dataset` class and used to create the dataset on the server. Once created, the settings of a dataset
 cannot be changed.
@@ -15,7 +15,7 @@ cannot be changed.
 To create a new dataset with settings, instantiate the `Settings` class and pass it to the `Dataset` class.
 
 ```python
-import argilla as rg
+import extralit as ex
 
 settings = ex.Settings(
     guidelines="Select the sentiment of the prompt.",
@@ -38,7 +38,7 @@ The settings object can be modified before create the dataset by adding, replaci
 the method `settings.add` and `settings.<>.remove`
 
 ```python
-import argilla as rg
+import extralit as ex
 
 settings = ex.Settings(
     guidelines="Select the sentiment of the prompt.",
@@ -59,7 +59,7 @@ settings.questions.remove("response")
 
 ### Creating settings using built in templates
 
-Argilla provides built-in templates for creating settings for common dataset types. To use a template, use the class methods of the `Settings` class. There are three built-in templates available for classification, ranking, and rating tasks. Template settings also include default guidelines and mappings.
+Extralit provides built-in templates for creating settings for common dataset types. To use a template, use the class methods of the `Settings` class. There are three built-in templates available for classification, ranking, and rating tasks. Template settings also include default guidelines and mappings.
 
 #### Classification Task
 

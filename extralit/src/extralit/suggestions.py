@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ __all__ = ["Suggestion"]
 
 
 class Suggestion(Resource):
-    """Class for interacting with Argilla Suggestions. Suggestions are typically model predictions for records.
+    """Class for interacting with Extralit Suggestions. Suggestions are typically model predictions for records.
     Suggestions are rendered in the user interfaces as 'hints' or 'suggestions' for the user to review and accept or reject.
 
     Attributes:

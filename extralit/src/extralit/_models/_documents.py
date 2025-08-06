@@ -79,7 +79,7 @@ class DocumentModel(ResourceModel):
         )
 
     def to_server_payload(self) -> Dict[str, Any]:
-        """Method that will be used to create the payload that will be sent to Argilla
+        """Method that will be used to create the payload that will be sent to Extralit
         to create a field in the `FeedbackDataset`.
         """
         json = {

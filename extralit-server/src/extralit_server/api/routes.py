@@ -81,8 +81,8 @@ from extralit_server.errors.error_handler import APIErrorHandler
 
 def create_api_v1():
     api_v1 = FastAPI(
-        title="Argilla v1",
-        description="Argilla Server API v1",
+        title="Extralit v1",
+        description="Extralit Server API v1",
         version=str(extralit_version),
         responses={error.HTTP_STATUS: error.api_documentation() for error in __ALL__},
     )

@@ -35,7 +35,7 @@ if TYPE_CHECKING:
 
 
 class Workspace(Resource):
-    """Class for interacting with Argilla workspaces. Workspaces are used to organize datasets in the Argilla server.
+    """Class for interacting with Extralit workspaces. Workspaces are used to organize datasets in the Extralit server.
 
     Attributes:
         name (str): The name of the workspace.
@@ -59,7 +59,7 @@ class Workspace(Resource):
         Parameters:
             name (str): The name of the workspace
             id (UUID): The id of the workspace. If provided before a .create, the workspace will be created with this ID
-            client (Argilla): The client used to interact with Argilla
+            client (Extralit): The client used to interact with Extralit
 
         Returns:
             Workspace: The initialized workspace object

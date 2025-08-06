@@ -26,7 +26,7 @@ Anonymous telemetry information enables us to continuously improve the product a
 
 ## Sensitive data
 
-We do not collect any piece of information related to the source data you store in Argilla. We don't identify individual users. Your data does not leave your server at any time:
+We do not collect any piece of information related to the source data you store in Extralit. We don't identify individual users. Your data does not leave your server at any time:
 
 * No dataset record is collected.
 * No dataset names or metadata are collected.
@@ -40,7 +40,7 @@ The following usage and error information is reported:
 * Task name and number of records for bulk operations
 * An anonymous generated user uuid
 * An anonymous generated server uuid
-* The Argilla version running the server
+* The Extralit version running the server
 * The Python version, e.g. `3.8.13`
 * The system/OS name, such as `Linux`, `Darwin`, `Windows`
 * The system’s release version, e.g. `Darwin Kernel Version 21.5.0: Tue Apr 26 21:08:22 PDT 2022; root:xnu-8020`

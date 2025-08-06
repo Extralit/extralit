@@ -21,7 +21,7 @@ try:
 except ImportError:
     from typing_extensions import Self
 
-from extralit._exceptions import ArgillaSerializeError
+from extralit._exceptions import ExtralitSerializeError
 from extralit._helpers import LoggingMixin
 
 if TYPE_CHECKING:
@@ -124,13 +124,13 @@ class Resource(LoggingMixin):
         try:
             return self.api_model().model_dump()
         except Exception as e:
-            raise ArgillaSerializeError(f"Failed to serialize the resource. {e.__class__.__name__}") from e
+            raise ExtralitSerializeError(f"Failed to serialize the resource. {e.__class__.__name__}") from e
 
     def serialize_json(self) -> str:
         try:
             return self.api_model().model_dump_json()
         except Exception as e:
-            raise ArgillaSerializeError(f"Failed to serialize the resource. {e.__class__.__name__}") from e
+            raise ExtralitSerializeError(f"Failed to serialize the resource. {e.__class__.__name__}") from e
 
     def _update_last_api_call(self):
         self._last_api_call = datetime.utcnow()

@@ -2,9 +2,9 @@
 
 # Welcome to
 
-## Argilla is a collaboration tool for building high-quality AI datasets
+## Extralit is a collaboration tool for building high-quality AI datasets
 
-If you need support join the [Argilla Discord community](http://hf.co/join/discord)
+If you need support join the [Extralit Discord community](http://hf.co/join/discord)
 
 </div>
 
@@ -14,18 +14,18 @@ Get started by publishing your first dataset.
 
 ### 1. Install the SDK with pip
 
-To work with Argilla datasets, you need to use the Argilla SDK. You can install the SDK with pip as follows:
+To work with Extralit datasets, you need to use the Extralit SDK. You can install the SDK with pip as follows:
 
 ```sh
 pip install extralit
 ```
 
-### 2. Connect to your Argilla server
+### 2. Connect to your Extralit server
 
 [hf_] If you're using a private space, check the [HF docs](https://docs.extralit.ai/latest/getting_started/how-to-configure-argilla-on-huggingface/#how-to-use-private-spaces).
 
 ```python
-import argilla as rg
+import extralit as ex
 
 client = ex.Extralit(
     [local_]api_url="[LOCAL_HOST]",

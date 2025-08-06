@@ -4,7 +4,7 @@ hide: footer
 
 # Fields
 
-Fields in Argilla define the content of a record that will be reviewed by a user.
+Fields in Extralit define the content of a record that will be reviewed by a user.
 
 ## Usage Examples
 

@@ -61,7 +61,7 @@ See [https://docs.extralit.ai/latest/getting_started/quickstart/](https://docs.e
 Extralit is built on top of Argilla, extending its capabilities with enhanced data extraction, validation, and human-in-the-loop workflows, with these 5 core components:
 
 - **Python SDK**: A Python SDK which is installable with `pip install extralit` to interact with the web server and provides an API to manage the data extraction workflows.
-- **FastAPI Server**: The backbone of Argilla, handling users, storage, and API interactions. It manages application data using a relational database (PostgreSQL by default).
+- **FastAPI Server**: The backbone of Extralit, handling users, storage, and API interactions. It manages application data using a relational database (PostgreSQL by default).
 - **Web UI**: A web application to visualize and annotate your data, users and teams. It is built with *Vue.js* and *Nuxt.js* and is directly deployed alongside the FastAPI Server within our Docker image.
 - **Vector Database**: A vector database to store the records data and perform scalable vector similarity searches and basic document searches. We currently support *ElasticSearch* and *AWS OpenSearch* and they can be deployed as separate Docker images.
 

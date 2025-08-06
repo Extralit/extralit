@@ -26,7 +26,7 @@ __all__ = ["VectorField"]
 
 
 class VectorField(Resource):
-    """Vector field for use in Argilla `Dataset` `Settings`"""
+    """Vector field for use in Extralit `Dataset` `Settings`"""
 
     _model: VectorFieldModel
     _api: VectorsAPI
@@ -39,7 +39,7 @@ class VectorField(Resource):
         title: Optional[str] = None,
         _client: Optional["Extralit"] = None,
     ) -> None:
-        """Vector field for use in Argilla `Dataset` `Settings`
+        """Vector field for use in Extralit `Dataset` `Settings`
 
         Parameters:
             name (str): The name of the vector field

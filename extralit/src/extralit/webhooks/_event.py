@@ -98,7 +98,7 @@ class WebhookEvent(BaseModel):
         Parse the webhook event.
 
         Args:
-            client: The Argilla client.
+            client: The Extralit client.
 
         Returns:
             Event: The parsed event.

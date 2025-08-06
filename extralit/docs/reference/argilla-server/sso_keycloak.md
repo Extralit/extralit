@@ -9,7 +9,7 @@ docker run -p 8080:8080 -e KC_BOOTSTRAP_ADMIN_USERNAME=admin -e KC_BOOTSTRAP_ADM
 ```
 
 General steps:
-1. create a new realm and a new client to use with Argilla.
+1. create a new realm and a new client to use with Extralit.
 2. The client should expose the client audience via userinfo.
 3. After that add the users you want to have access to argilla.
 
@@ -38,7 +38,7 @@ keycloak_admin.create_realm(
     {
         "realm": EXTRALIT_REALM,
         "enabled": True,
-        "displayName": "Argilla",
+        "displayName": "Extralit",
         "userManagedAccessAllowed": True,
     }
 )
@@ -153,7 +153,7 @@ new_user = keycloak_admin.create_user(
 )
 ```
 
-## Set-up Argilla Server
+## Set-up Extralit Server
 
 After that you need to configure you endpoints in the `.oauth.yaml` same as this is done for the HuggingFace Oauth:
 

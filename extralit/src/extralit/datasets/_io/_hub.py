@@ -66,7 +66,7 @@ class HubImportExportMixin(DiskImportExportMixin):
         from huggingface_hub import DatasetCardData, HfApi
 
         from extralit.datasets._io.card import (
-            ArgillaDatasetCard,
+            ExtralitDatasetCard,
             size_categories_parser,
         )
 
@@ -88,7 +88,7 @@ class HubImportExportMixin(DiskImportExportMixin):
                 sample_argilla_record = next(iter(self.records(with_suggestions=True, with_responses=True)))
                 sample_huggingface_record = self._get_sample_hf_record(hfds) if with_records else None
                 dataset_size = len(hfds) if with_records else 0
-                card = ArgillaDatasetCard.from_template(
+                card = ExtralitDatasetCard.from_template(
                     card_data=DatasetCardData(
                         size_categories=size_categories_parser(dataset_size),
                         tags=["rlfh", "extralit", "human-feedback"],
@@ -230,7 +230,7 @@ class HubImportExportMixin(DiskImportExportMixin):
             elif col.endswith("status"):
                 response_questions[question_name]["status"] = hf_dataset[col]
 
-        # Check if all user ids are known to this Argilla client
+        # Check if all user ids are known to this Extralit client
         known_users_ids = [user.id for user in dataset._client.users]
         unknown_user_ids = set(user_ids.keys()) - set(known_users_ids)
         my_user = dataset._client.me
@@ -284,7 +284,7 @@ class HubImportExportMixin(DiskImportExportMixin):
             dataset.records.log(records=records)
         except (RecordsIngestionError, UnprocessableEntityError) as e:
             raise SettingsError(
-                message=f"Failed to load records from Hugging Face dataset. Defined settings do not match dataset schema. Hugging face dataset features: {hf_dataset.features}. Argilla dataset settings : {dataset.settings}"
+                message=f"Failed to load records from Hugging Face dataset. Defined settings do not match dataset schema. Hugging face dataset features: {hf_dataset.features}. Extralit dataset settings : {dataset.settings}"
             ) from e
 
     @staticmethod

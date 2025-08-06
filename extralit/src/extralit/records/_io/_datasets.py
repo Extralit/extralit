@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -231,7 +231,7 @@ class HFDatasetsIO:
 
     @staticmethod
     def _uncast_argilla_attributes_to_datasets(hf_dataset: "HFDataset", schema: Dict) -> "HFDataset":
-        """Get the names of the Argilla fields that contain image data.
+        """Get the names of the Extralit fields that contain image data.
 
         Parameters:
             hf_dataset (Dataset): The dataset to check.

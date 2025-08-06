@@ -15,5 +15,5 @@
 from extralit._exceptions._base import ExtralitError
 
 
-class ArgillaSerializeError(ExtralitError):
+class ExtralitSerializeError(ExtralitError):
     pass

@@ -109,7 +109,7 @@ I've just contributed <span weight="bold">{submitted}</span> examples to this da
                 <meta property="og:type" content="website" />
                 <meta property="og:url" content="{url}" />
                 <meta property="og:image" content="{share_image}" />
-                <meta property="og:site_name" content="Argilla" />
+                <meta property="og:site_name" content="Extralit" />
                 <meta property="og:locale" content="en_US" />
 
                 <!-- Twitter meta tags -->

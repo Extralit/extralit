@@ -1,6 +1,6 @@
-# Argilla Helm Chart
+# Extralit Helm Chart
 
-This Helm chart deploys Argilla Server on Kubernetes.
+This Helm chart deploys Extralit Server on Kubernetes.
 
 ## Prerequisites
 
@@ -29,7 +29,7 @@ For more detailed installation instructions, please refer to the [official Helm 
 
 ## Adding the Helm Repository
 
-To add the Argilla Helm repository to your Helm installation, run the following command:
+To add the Extralit Helm repository to your Helm installation, run the following command:
 
 ```bash
 helm repo add stable https://charts.helm.sh/stable
@@ -81,13 +81,13 @@ kubectl get pods -w
 ```
 All the pods should be in the `Running` state.
 
-## Accessing Argilla
+## Accessing Extralit
 
-In a different terminal window, run the following command to access Argilla:
+In a different terminal window, run the following command to access Extralit:
 ```bash
 kubectl port-forward svc/my-extralit-server 6900
 ```
-Argilla will be accessible at http://localhost:6900.
+Extralit will be accessible at http://localhost:6900.
 
 ## Execute integration tests
 

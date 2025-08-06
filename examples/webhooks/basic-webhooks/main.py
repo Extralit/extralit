@@ -7,7 +7,7 @@ import extralit as ex
 API_KEY = os.environ.get("EXTRALIT_API_KEY", "extralit.apikey")
 API_URL = os.environ.get("EXTRALIT_API_URL", "http://localhost:6900")
 
-# Initialize Argilla client
+# Initialize Extralit client
 client = ex.Extralit(api_key=API_KEY, api_url=API_URL)
 
 # Show the existing webhooks in the argilla server

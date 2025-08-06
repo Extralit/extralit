@@ -151,7 +151,7 @@ export class Dataset {
 
     const snippet = `
   \`\`\`python
-  import argilla as rg
+  import extralit as ex
   from datasets import load_dataset
 
   client = ex.Extralit(

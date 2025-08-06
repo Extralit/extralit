@@ -12,7 +12,7 @@ export const useImportFromPython = () => {
 # pip install extralit
 # to run this code snippet
 
-import argilla as rg
+import extralit as ex
 
 client = ex.Extralit(
     api_url="${window.location.origin}",

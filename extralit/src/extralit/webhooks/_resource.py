@@ -21,13 +21,13 @@ from extralit._resource import Resource
 
 class Webhook(Resource):
     """
-    The `Webhook` resource. It represents a webhook that can be used to receive events from the Argilla Server.
+    The `Webhook` resource. It represents a webhook that can be used to receive events from the Extralit Server.
 
     Args:
         url (str): The URL of the webhook endpoint.
         events (List[EventType]): The events that the webhook is subscribed to.
         description (Optional[str]): The description of the webhook.
-        _client (Argilla): The client used to interact with the Argilla Server.
+        _client (Extralit): The client used to interact with the Extralit Server.
 
     """
 

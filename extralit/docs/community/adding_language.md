@@ -1,6 +1,6 @@
-# Adding a new language to Argilla
+# Adding a new language to Extralit
 
-If you want to add a new language to Argilla you need to go to two places:
+If you want to add a new language to Extralit you need to go to two places:
 
 1. Add a new translation specification in the folder: `extralit-frontend/translation` E.g. for Korean with Code `ko` add a `ko.js` file by coping the `en.js` file. The text values need to be translated:
 ```javascript
@@ -31,7 +31,7 @@ export default {
 
 ### How to test it
 
-1. Start a local instance of Argilla, easiest by just using the docker recipe [here](../getting_started/how-to-deploy-argilla-with-docker.md). It will give you a backend API for the frontend.
+1. Start a local instance of Extralit, easiest by just using the docker recipe [here](../getting_started/how-to-deploy-argilla-with-docker.md). It will give you a backend API for the frontend.
 2. Compile a new version of the frontend. Check [this guide](https://github.com/extralit/extralit/tree/develop/extralit-frontend). This is basically:
     - `git clone https://github.com/extralit/extralit`
     - `cd extralit-frontend`
@@ -41,7 +41,7 @@ export default {
     - Check the translations.
 3. Deploy a small test dataset to test the translation on a dataset too:
 ```python
-import argilla as rg
+import extralit as ex
 
 client_local = ex.Extralit(api_url="http://localhost:6900/", api_key="extralit.apikey")
 
@@ -151,8 +151,8 @@ def fix_record():
     return ex.Record(
         fields={
             "chat": [
-                {"role": "user", "content": "What is Argilla?"},
-                {"role": "assistant", "content": "Argilla is a collaboration tool for AI engineers and domain experts to build high-quality datasets"},
+                {"role": "user", "content": "What is Extralit?"},
+                {"role": "assistant", "content": "Extralit is a collaboration tool for AI engineers and domain experts to build high-quality datasets"},
             ],
             "image": "https://images.unsplash.com/photo-1523567353-71ea31cb9f73?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGNvcmdpfGVufDB8fDB8fHww",
             "text": "Which town has a greater population as of the 2010 census, Minden, Nevada or Gardnerville, Nevada?",

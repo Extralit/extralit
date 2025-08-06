@@ -29,7 +29,7 @@ __all__ = ["Extralit"]
 
 
 class Extralit(_api.APIClient, SpacesDeploymentMixin, NotebookHTMLReprMixin):
-    """Argilla API client. This is the main entry point to interact with the API.
+    """Extralit API client. This is the main entry point to interact with the API.
 
     Attributes:
         workspaces: A collection of workspaces.
@@ -38,7 +38,7 @@ class Extralit(_api.APIClient, SpacesDeploymentMixin, NotebookHTMLReprMixin):
         me: The current user.
     """
 
-    # Default instance of Argilla
+    # Default instance of Extralit
     _default_client: Optional["Extralit"] = None
 
     def __init__(
@@ -49,18 +49,18 @@ class Extralit(_api.APIClient, SpacesDeploymentMixin, NotebookHTMLReprMixin):
         retries: int = DEFAULT_HTTP_CONFIG.retries,
         **http_client_args,
     ) -> None:
-        """Inits the `Argilla` client.
+        """Inits the `Extralit` client.
 
         Args:
-            api_url: the URL of the Argilla API. If not provided, then the value will try
+            api_url: the URL of the Extralit API. If not provided, then the value will try
                 to be set from `EXTRALIT_API_URL` environment variable. Defaults to
                 `"http://localhost:6900"`.
-            api_key: the key to be used to authenticate in the Argilla API. If not provided,
+            api_key: the key to be used to authenticate in the Extralit API. If not provided,
                 then the value will try to be set from `EXTRALIT_API_KEY` environment variable.
                 Defaults to `None`.
-            timeout: the maximum time in seconds to wait for a request to the Argilla API
+            timeout: the maximum time in seconds to wait for a request to the Extralit API
                 to be completed before raising an exception. Defaults to `60`.
-            retries: the number of times to retry the HTTP connection to the Argilla API
+            retries: the number of times to retry the HTTP connection to the Extralit API
                 before raising an exception. Defaults to `5`.
         """
         super().__init__(api_url=api_url, api_key=api_key, timeout=timeout, retries=retries, **http_client_args)
@@ -82,14 +82,14 @@ class Extralit(_api.APIClient, SpacesDeploymentMixin, NotebookHTMLReprMixin):
         or from the credentials file.
 
         Args:
-            api_url: The URL of the Argilla server.
+            api_url: The URL of the Extralit server.
             api_key: The API key for authentication.
             workspace: Optional default workspace.
             extra_headers: Optional extra headers for API requests.
             **kwargs: Additional keyword arguments to pass to the client.
 
         Returns:
-            Argilla: An initialized Argilla client.
+            Extralit: An initialized Extralit client.
         """
         from extralit.client.login import ExtralitCredentials
 
@@ -152,12 +152,12 @@ class Extralit(_api.APIClient, SpacesDeploymentMixin, NotebookHTMLReprMixin):
 
     @classmethod
     def _set_default(cls, client: "Extralit") -> None:
-        """Set the default instance of Argilla."""
+        """Set the default instance of Extralit."""
         cls._default_client = client
 
     @classmethod
     def _get_default(cls) -> "Extralit":
-        """Get the default instance of Argilla. If it doesn't exist, create a new one."""
+        """Get the default instance of Extralit. If it doesn't exist, create a new one."""
         if cls._default_client is None:
             cls._default_client = Extralit()
         return cls._default_client

@@ -205,7 +205,7 @@ class Settings(BaseSettings):
             regex = re.compile(r"sqlite(?!\+aiosqlite)")
             if regex.match(database_url):
                 warnings.warn(
-                    "From version 1.14.0, Argilla will use `aiosqlite` as default SQLite driver. The protocol in the"
+                    "From version 1.14.0, Extralit will use `aiosqlite` as default SQLite driver. The protocol in the"
                     " provided database URL has been automatically replaced from `sqlite` to `sqlite+aiosqlite`."
                     " Please, update your database URL to use `sqlite+aiosqlite` protocol."
                 )
@@ -215,7 +215,7 @@ class Settings(BaseSettings):
             parsed_url = urlparse(database_url)
             if parsed_url.scheme.__contains__("postgres"):
                 # warnings.warn(
-                #     "From version 1.14.0, Argilla will use `asyncpg` as default PostgreSQL driver. The protocol in the"
+                #     "From version 1.14.0, Extralit will use `asyncpg` as default PostgreSQL driver. The protocol in the"
                 #     " provided database URL has been automatically replaced from `postgresql` to `postgresql+asyncpg`."
                 #     " Please, update your database URL to use `postgresql+asyncpg` protocol."
                 # )
