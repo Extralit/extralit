@@ -19,7 +19,7 @@ This guide demonstrates how to create custom fields in Extralit using HTML, CSS,
     )
     ```
 
-    > Check the [CustomField - Python Reference](../reference/extralit/settings/fields.md#src.argilla.settings._field.CustomField) to see the attributes, arguments, and methods of the `CustomField` class in detail.
+    > Check the [CustomField - Python Reference](../reference/extralit/settings/fields.md#src.extralit.settings._field.CustomField) to see the attributes, arguments, and methods of the `CustomField` class in detail.
 
 ## Understanding the Record Object
 

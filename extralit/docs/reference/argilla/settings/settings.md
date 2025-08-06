@@ -137,4 +137,4 @@ settings = Settings(
 
 ---
 
-::: src.argilla.settings._resource.Settings
+::: src.extralit.settings._resource.Settings

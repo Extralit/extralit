@@ -28,4 +28,4 @@ client.me
 
 ---
 
-::: src.argilla.users._resource.User
+::: src.extralit.users._resource.User

@@ -69,4 +69,4 @@ For changes to take effect, the user must call the `update` method on the `Datas
 
 ---
 
-::: src.argilla.records._resource.Record
+::: src.extralit.records._resource.Record

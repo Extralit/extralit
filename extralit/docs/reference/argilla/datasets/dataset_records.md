@@ -284,4 +284,4 @@ Check out the [`ex.Record`](../records/records.md) class reference for more info
 
 ---
 
-::: src.argilla.records._dataset_records.DatasetRecords
+::: src.extralit.records._dataset_records.DatasetRecords

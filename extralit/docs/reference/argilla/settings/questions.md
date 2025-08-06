@@ -49,14 +49,14 @@ dataset = ex.Dataset(
 
 ---
 
-::: src.argilla.settings._question.LabelQuestion
+::: src.extralit.settings._question.LabelQuestion
 
-::: src.argilla.settings._question.MultiLabelQuestion
+::: src.extralit.settings._question.MultiLabelQuestion
 
-::: src.argilla.settings._question.RankingQuestion
+::: src.extralit.settings._question.RankingQuestion
 
-::: src.argilla.settings._question.TextQuestion
+::: src.extralit.settings._question.TextQuestion
 
-::: src.argilla.settings._question.RatingQuestion
+::: src.extralit.settings._question.RatingQuestion
 
-::: src.argilla.settings._question.SpanQuestion
+::: src.extralit.settings._question.SpanQuestion

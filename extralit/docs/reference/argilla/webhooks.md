@@ -40,22 +40,22 @@ for webhook in client.webhooks():
 
 ---
 
-::: src.argilla.webhooks._resource.Webhook
+::: src.extralit.webhooks._resource.Webhook
 
-::: src.argilla.webhooks._helpers.webhook_listener
+::: src.extralit.webhooks._helpers.webhook_listener
 
-::: src.argilla.webhooks._helpers.get_webhook_server
+::: src.extralit.webhooks._helpers.get_webhook_server
 
-::: src.argilla.webhooks._helpers.set_webhook_server
+::: src.extralit.webhooks._helpers.set_webhook_server
 
-::: src.argilla.webhooks._handler.WebhookHandler
+::: src.extralit.webhooks._handler.WebhookHandler
 
-::: src.argilla.webhooks._event.WebhookEvent
+::: src.extralit.webhooks._event.WebhookEvent
 
-::: src.argilla.webhooks._event.DatasetEvent
+::: src.extralit.webhooks._event.DatasetEvent
 
-::: src.argilla.webhooks._event.RecordEvent
+::: src.extralit.webhooks._event.RecordEvent
 
-::: src.argilla.webhooks._event.UserResponseEvent
+::: src.extralit.webhooks._event.UserResponseEvent
 
 

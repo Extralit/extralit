@@ -197,6 +197,6 @@ except Exception as e:
 
 ---
 
-::: src.argilla.workspaces._resource.Workspace
+::: src.extralit.workspaces._resource.Workspace
     options:
         heading_level: 4

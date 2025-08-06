@@ -136,4 +136,4 @@ Depending on the `Question` type, responses might need to be formatted in a slig
 
 ---
 
-::: src.argilla.responses.Response
+::: src.extralit.responses.Response

@@ -28,4 +28,4 @@ settings = ex.Settings(
 
 ---
 
-::: src.argilla.settings._vector.VectorField
+::: src.extralit.settings._vector.VectorField

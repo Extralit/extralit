@@ -6,6 +6,6 @@ hide: footer
 
 To support the usage of Markdown within Extralit, we've created some helper functions to easy the usage of DataURL conversions and chat message visualizations.
 
-::: src.argilla.markdown.media
+::: src.extralit.markdown.media
 
-::: src.argilla.markdown.chat
+::: src.extralit.markdown.chat

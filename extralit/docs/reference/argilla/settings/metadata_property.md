@@ -62,8 +62,8 @@ dataset = ex.Dataset(
 
 ---
 
-::: src.argilla.settings._metadata.FloatMetadataProperty
+::: src.extralit.settings._metadata.FloatMetadataProperty
 
-::: src.argilla.settings._metadata.IntegerMetadataProperty
+::: src.extralit.settings._metadata.IntegerMetadataProperty
 
-::: src.argilla.settings._metadata.TermsMetadataProperty
+::: src.extralit.settings._metadata.TermsMetadataProperty

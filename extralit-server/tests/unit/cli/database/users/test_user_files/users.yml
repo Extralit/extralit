@@ -10,7 +10,7 @@
   email: tanya@argilla.io
   api_key: 78a10b53-8db7-4ab5-9e9e-fbd4b7e76551
   hashed_password: $2y$05$aqNyXcXRXddNj5toZwT0HugHqKZypvqlBAkZviAGGbsAC8oTj/P5K
-  workspaces: [argilla, team]
+  workspaces: [extralit, team]
   disabled: True
 
 - username: daisy
@@ -18,7 +18,7 @@
   email: daisy@argilla.io
   api_key: a8168929-8668-494c-b7a5-98cd35740d9b
   hashed_password: $2y$05$l83IhUs4ZDaxsgZ/P12FO.RFTi2wKQ2AxMK2vYtLx//yKramuCcZG
-  workspaces: [argilla, team, latam]
+  workspaces: [extralit, team, latam]
   disabled: False
 
 - username: macleod

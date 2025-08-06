@@ -40,10 +40,10 @@ data = ex.Dataset(
 
 ---
 
-::: src.argilla.settings._field.TextField
+::: src.extralit.settings._field.TextField
 
-::: src.argilla.settings._field.ImageField
+::: src.extralit.settings._field.ImageField
 
-::: src.argilla.settings._field.ChatField
+::: src.extralit.settings._field.ChatField
 
-::: src.argilla.settings._field.CustomField
+::: src.extralit.settings._field.CustomField

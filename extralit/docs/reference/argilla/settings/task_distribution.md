@@ -34,4 +34,4 @@ dataset = ex.Dataset(
 
 ---
 
-::: src.argilla.settings._task_distribution.OverlapTaskDistribution
+::: src.extralit.settings._task_distribution.OverlapTaskDistribution

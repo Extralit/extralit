@@ -67,4 +67,4 @@ dataset.records.log(
 
 ---
 
-::: src.argilla.vectors.Vector
+::: src.extralit.vectors.Vector
