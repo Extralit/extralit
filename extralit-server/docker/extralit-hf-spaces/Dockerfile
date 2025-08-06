@@ -7,8 +7,8 @@ FROM ${extralit_server_IMAGE}:${EXTRALIT_VERSION} AS base
 USER root
 
 # Copy Argilla distribution files
-COPY scripts/start.sh /home/argilla
-COPY Procfile /home/argilla
+COPY scripts/start.sh /home/extralit
+COPY Procfile /home/extralit
 COPY requirements.txt /packages/requirements.txt
 
 # Install apt dependencies - breaking up large installations
@@ -36,8 +36,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends re
 
 # Install Python dependencies and additional utilities
 RUN pip install --no-cache-dir -r /packages/requirements.txt && \
-    chmod +x /home/argilla/start.sh && \
-    chmod +x /home/argilla/start_extralit_server.sh && \
+    chmod +x /home/extralit/start.sh && \
+    chmod +x /home/extralit/start_extralit_server.sh && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends curl jq pwgen && \
     apt-get remove -y wget gnupg && \
     apt-get clean && \
@@ -56,7 +56,7 @@ USER argilla
 ENV ELASTIC_CONTAINER=true
 ENV ES_JAVA_OPTS="-Xms1g -Xmx1g"
 
-ENV EXTRALIT_HOME_PATH=/data/argilla
+ENV EXTRALIT_HOME_PATH=/data/extralit
 ENV REINDEX_DATASETS=1
 
 CMD ["/bin/bash", "start.sh"]

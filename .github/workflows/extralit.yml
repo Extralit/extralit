@@ -32,7 +32,7 @@ jobs:
     if: github.event.pull_request.draft == false
     services:
       extralit-server:
-        image: extralitdev/argilla-hf-spaces:develop
+        image: extralitdev/extralit-hf-space:develop
         ports:
           - 6900:6900
         env:

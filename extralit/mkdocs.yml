@@ -82,7 +82,7 @@ theme:
         name: Switch to system preference
 
 watch:
-  - src/argilla
+  - src/extralit
 
 # Extensions
 markdown_extensions:
@@ -220,7 +220,7 @@ nav:
       - Image classification: tutorials/image_classification.ipynb
       - Image preference: tutorials/image_preference.ipynb
   - API Reference:
-      - Argilla Python SDK: reference/argilla/
+      - Argilla Python SDK: reference/extralit/
       - FastAPI Server:
           - Server configuration: reference/extralit-server/configuration.md
           - OAuth2 configuration: reference/extralit-server/oauth2_configuration.md

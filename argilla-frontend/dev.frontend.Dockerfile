@@ -1,6 +1,6 @@
 ARG extralit_server_TAG=develop
 
-FROM extralitdev/argilla-hf-spaces:${extralit_server_TAG}
+FROM extralitdev/extralit-hf-space:${extralit_server_TAG}
 
 USER root
 
@@ -9,7 +9,7 @@ RUN apt-get update && \
 
 USER argilla
 
-WORKDIR /home/argilla/frontend
+WORKDIR /home/extralit/frontend
 
 COPY --chown=argilla:argilla dist ./dist
 COPY --chown=argilla:argilla .nuxt ./.nuxt
@@ -21,9 +21,9 @@ COPY --chown=argilla:argilla nuxt.config.ts ./nuxt.config.ts
 # If we want to use a built-in server in the future to check all functionality we can modify the following Procfile
 # content adding ElasticSearch and extralit-server processes.
 RUN npm install && \
-    echo 'frontend: cd /home/argilla/frontend && HOST=0.0.0.0 PORT=3000 npm run start\n' > /home/argilla/Procfile.frontend
+    echo 'frontend: cd /home/extralit/frontend && HOST=0.0.0.0 PORT=3000 npm run start\n' > /home/extralit/Procfile.frontend
 
-WORKDIR /home/argilla/
+WORKDIR /home/extralit/
 
 EXPOSE 3000
 EXPOSE 6900
