@@ -76,6 +76,31 @@ argilla-frontend/
 
 ### Jest Testing Patterns
 - **Test Files**: Place `.spec.js` files next to the component they test
+- **Mock Setup**: Define mocks inline within `jest.mock()` calls to avoid hoisting issues:
+  ```javascript
+  // Mock dependencies inline to avoid hoisting issues
+  jest.mock("ts-injecty", () => ({
+    useResolve: jest.fn(() => mockUseCase),
+  }));
+
+  jest.mock("@nuxtjs/composition-api", () => ({
+    ref: jest.fn(),
+    computed: jest.fn(),
+    watch: jest.fn(),
+    onMounted: jest.fn(),
+  }));
+  ```
+- **Mock Configuration**: Set up mocks in `beforeEach` by getting them from required modules:
+  ```javascript
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    const compositionApi = require("@nuxtjs/composition-api");
+    mockRef = compositionApi.ref;
+    mockComputed = compositionApi.computed;
+    // Configure mock behavior...
+  });
+  ```
 - **Component Stubs**: Use stubs in the mount options for base components:
   ```javascript
   wrapper = mount(ComponentName, {
@@ -95,7 +120,6 @@ argilla-frontend/
   beforeEach(() => {
     // Mock window.confirm for modal dialogs
     global.confirm = jest.fn(() => true);
-
     // Mock other browser APIs as needed
     global.alert = jest.fn();
   });
@@ -104,23 +128,23 @@ argilla-frontend/
     jest.restoreAllMocks();
   });
   ```
-- **View Model Mocks**: Create shared mock objects for view models:
+- **View Model Testing**: Test the public interface rather than internal implementation:
   ```javascript
-  const mockViewModel = {
-    property1: false,
-    property2: "",
-    method1: jest.fn(),
-    method2: jest.fn(),
-  };
+  // Test computed properties return expected values
+  expect(computedFn()).toBe("expected-value");
 
-  jest.mock("./useViewModelName", () => ({
-    useViewModelName: jest.fn(() => mockViewModel),
-  }));
+  // Test methods exist and are callable
+  expect(typeof viewModel.methodName).toBe("function");
+  expect(viewModel.methodName).toBeDefined();
+
+  // Test reactive state objects are returned
+  expect(viewModel.property).toBe(mockRefObject);
   ```
 - **Test Structure**:
   - Use `beforeEach` to reset mock state between tests
   - Use `afterEach` to clean up mocks and destroy wrappers
   - Group related tests in `describe` blocks
+  - Test public interfaces, not internal implementation details
 - **Props Testing**: Test component behavior with different prop combinations
 - **Event Testing**: Verify component emits correct events with proper data
 - **State Testing**: Test computed properties and reactive state changes
