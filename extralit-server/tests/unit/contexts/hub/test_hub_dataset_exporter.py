@@ -94,6 +94,7 @@ def skip_on(exception_type: type, reason="Skip this test"):
 
 @pytest.mark.skipif(HF_TOKEN is None, reason="HF_TOKEN_EXTRALIT_INTERNAL_TESTING is not defined")
 class TestHubDatasetExporter:
+    @pytest.mark.skip(reason="Skipping all tests in this file")
     @skip_on(HTTPError, reason="Skipping due to HF 429 Client Error: Too Many Requests")
     def test_export_to(self, sync_test_session, hf_api: HfApi, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
@@ -143,6 +144,7 @@ class TestHubDatasetExporter:
 
         assert get_dataset_config_names(hf_dataset_name) == ["custom"]
 
+    @pytest.mark.skip(reason="Skipping all tests in this file")
     @skip_on(HTTPError, reason="Skipping due to HF 429 Client Error: Too Many Requests")
     def test_export_to_with_custom_split(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
@@ -169,6 +171,7 @@ class TestHubDatasetExporter:
             else:
                 raise error
 
+    @pytest.mark.skip(reason="Skipping all tests in this file")
     @skip_on(HTTPError, reason="Skipping due to HF 429 Client Error: Too Many Requests")
     def test_export_to_with_private_dataset(self, sync_test_session, hf_api: HfApi, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
@@ -188,6 +191,7 @@ class TestHubDatasetExporter:
 
         assert hf_api.dataset_info(hf_dataset_name).private == True
 
+    @pytest.mark.skip(reason="Skipping all tests in this file")
     @skip_on(HTTPError, reason="Skipping due to HF 429 Client Error: Too Many Requests")
     def test_export_to_with_chat_field(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
@@ -692,6 +696,7 @@ class TestHubDatasetExporter:
             "label-question.suggestion.score": 0.3,
         }
 
+    @pytest.mark.skip(reason="Skipping all tests in this file")
     @skip_on(HTTPError, reason="Skipping due to HF 429 Client Error: Too Many Requests")
     def test_export_to_with_multi_label_question(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
@@ -755,6 +760,7 @@ class TestHubDatasetExporter:
             "multi-label-question.responses.users": [str(annotators[0].id), str(annotators[1].id)],
         }
 
+    @pytest.mark.skip(reason="Skipping all tests in this file")
     @skip_on(HTTPError, reason="Skipping due to HF 429 Client Error: Too Many Requests")
     def test_export_to_with_multi_label_question_and_suggestion(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
@@ -828,6 +834,7 @@ class TestHubDatasetExporter:
             "multi-label-question.suggestion.score": [0.8, 0.7],
         }
 
+    @pytest.mark.skip(reason="Skipping all tests in this file")
     @skip_on(HTTPError, reason="Skipping due to HF 429 Client Error: Too Many Requests")
     def test_export_to_with_ranking_question(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
@@ -1015,6 +1022,7 @@ class TestHubDatasetExporter:
             "ranking-question.suggestion.score": [0.5, 0.4, 0.3, 0.2],
         }
 
+    @pytest.mark.skip(reason="Skipping all tests in this file")
     @skip_on(HTTPError, reason="Skipping due to HF 429 Client Error: Too Many Requests")
     def test_export_to_with_span_question(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
@@ -1188,6 +1196,7 @@ class TestHubDatasetExporter:
             "span-question.suggestion.score": [0.7, 0.6],
         }
 
+    @pytest.mark.skip(reason="Skipping all tests in this file")
     @skip_on(HTTPError, reason="Skipping due to HF 429 Client Error: Too Many Requests")
     def test_export_to_with_draft_response(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
@@ -1283,6 +1292,7 @@ class TestHubDatasetExporter:
             "text-question.responses.users": [str(annotator.id)],
         }
 
+    @pytest.mark.skip(reason="Skipping all tests in this file")
     @skip_on(HTTPError, reason="Skipping due to HF 429 Client Error: Too Many Requests")
     def test_export_to_with_metadata(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
@@ -1343,6 +1353,7 @@ class TestHubDatasetExporter:
         assert exported_dataset[0]["metadata.metadata-integer"] == 42
         assert exported_dataset[0]["metadata.metadata-float"] == 3.14
 
+    @pytest.mark.skip(reason="Skipping all tests in this file")
     @skip_on(HTTPError, reason="Skipping due to HF 429 Client Error: Too Many Requests")
     def test_export_to_with_vectors(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)

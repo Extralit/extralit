@@ -85,7 +85,7 @@ extralit_server database migrate
 1. Pull the latest Extralit image:
 
    ```bash
-   docker pull extralit/argilla-hf-spaces:latest
+   docker pull extralit/extralit-hf-space:latest
    ```
 
 2. Stop and remove the existing container:
@@ -100,7 +100,7 @@ extralit_server database migrate
    ```bash
    docker run -d --name extralit-quickstart -p 6900:6900 \
      -e EXTRALIT_AUTH_SECRET_KEY=$(openssl rand -hex 32) \
-     extralit/argilla-hf-spaces:latest
+     extralit/extralit-hf-space:latest
    ```
 
 ### Docker Deployment Update
