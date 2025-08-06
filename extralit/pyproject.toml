@@ -132,13 +132,13 @@ dev = [
 
 [tool.pdm.scripts]
 test = { cmd = "pytest tests --disable-warnings", env_file = ".env.test" }
-test-cov = { cmd = "pytest tests --disable-warnings --cov=argilla --cov-report=term --cov-report=xml", env_file = ".env.test" }
+test-cov = { cmd = "pytest tests --disable-warnings --cov=extralit --cov-report=term --cov-report=xml", env_file = ".env.test" }
 lint = "ruff check"
 format = "black ."
 all = { composite = ["format", "lint", "test"] }
 
 [project.scripts]
-extralit = "argilla.cli.app:app"
+extralit = "extralit.cli.app:app"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

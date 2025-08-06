@@ -92,7 +92,7 @@ excludes = [".env.dev", ".env.test"]
 
 [tool.pdm.version]
 source = "file"
-path = "src/argilla_server/_version.py"
+path = "src/extralit_server/_version.py"
 
 [tool.pdm.dev-dependencies]
 test = [
