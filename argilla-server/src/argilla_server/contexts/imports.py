@@ -96,15 +96,13 @@ async def find_existing_documents(
     workspace_id: UUID,
     document_id: Optional[UUID] = None,
     reference: Optional[str] = None,
+    file_name: Optional[str] = None,
     pmid: Optional[str] = None,
     doi: Optional[str] = None,
     url: Optional[str] = None,
 ) -> List[DocumentListItem]:
     """
-    Find existing documents based on provided criteria.
-
-    This unified function replaces both check_existing_document and _check_existing_documents
-    by taking separate arguments for each condition and returning a list of DocumentListItem.
+    Find existing documents that matches any of provided criteria.
 
     Args:
         db: Database session
@@ -124,6 +122,8 @@ async def find_existing_documents(
         conditions.append(Document.id == document_id)
     if reference:
         conditions.append(Document.reference == reference)
+    if file_name:
+        conditions.append(Document.file_name == file_name)
     if pmid:
         conditions.append(Document.pmid == pmid)
     if doi:
@@ -387,7 +387,7 @@ async def process_bulk_upload(
                 job = DEFAULT_QUEUE.enqueue(
                     upload_reference_documents_job,
                     reference=reference,
-                    document_data=doc.document_create.model_dump(),
+                    reference_data=doc.document_create.model_dump(),
                     file_data_list=[],
                     user_id=user_id,
                     job_timeout=None,  # No timeout for large uploads
@@ -438,7 +438,7 @@ async def process_bulk_upload(
             job = DEFAULT_QUEUE.enqueue(
                 upload_reference_documents_job,
                 reference=reference,
-                document_data=doc.document_create.model_dump(),
+                reference_data=doc.document_create.model_dump(),
                 file_data_list=file_data_list,
                 user_id=user_id,
                 job_timeout=None,  # No timeout for large uploads

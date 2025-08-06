@@ -33,7 +33,7 @@ _LOGGER = logging.getLogger(__name__)
 @job(DEFAULT_QUEUE, timeout=JOB_TIMEOUT_DISABLED, retry=Retry(max=3, interval=[10, 30, 60]))
 async def upload_reference_documents_job(
     reference: str,
-    document_data: Dict[str, Any],
+    reference_data: Dict[str, Any],
     file_data_list: List[Tuple[str, bytes]],  # List of (filename, file_data) tuples
     user_id: UUID,
 ) -> Dict[str, Any]:
@@ -54,7 +54,7 @@ async def upload_reference_documents_job(
     Returns:
         Dictionary with upload results including document_ids or errors for each file
     """
-    temp_files = []  # Track temporary files for cleanup
+    temp_files = []
     results = {
         "reference": reference,
         "success": True,
@@ -66,7 +66,7 @@ async def upload_reference_documents_job(
     }
 
     try:
-        document_create = DocumentCreate.model_validate(document_data)
+        document_create = DocumentCreate.model_validate(reference_data)
 
         async with AsyncSessionLocal() as db:
             from argilla_server.models import Workspace
@@ -99,13 +99,7 @@ async def upload_reference_documents_job(
 
                 try:
                     # Create a unique document for each file
-                    # Add collection and source metadata for imported documents
-                    import_metadata = {
-                        "source": "bib_import",
-                        "collections": document_create.metadata.get("collections", [])
-                        if document_create.metadata
-                        else [],
-                    }
+                    file_metadata = {"collections": (document_create.metadata or {}).get("collections", [])}
 
                     file_document_create = DocumentCreate(
                         id=uuid4(),
@@ -115,17 +109,14 @@ async def upload_reference_documents_job(
                         url=None,  # Will be set after S3 upload
                         file_name=filename,
                         workspace_id=document_create.workspace_id,
-                        metadata=import_metadata,
+                        metadata=file_metadata,
                     )
 
                     existing_documents = await imports.find_existing_documents(
                         db=db,
                         workspace_id=file_document_create.workspace_id,
                         document_id=file_document_create.id,
-                        reference=file_document_create.reference,
-                        pmid=file_document_create.pmid,
-                        doi=file_document_create.doi,
-                        url=file_document_create.url,
+                        file_name=file_document_create.file_name,
                     )
                     if existing_documents:
                         existing_document_id = existing_documents[0].id
@@ -144,9 +135,9 @@ async def upload_reference_documents_job(
                             document_id=file_document_create.id,  # type: ignore
                             file_data=file_data,
                             filename=filename,
-                            metadata=file_document_create.model_dump(
-                                include={"file_name": True, "pmid": True, "doi": True}
-                            ),
+                            # metadata=file_document_create.model_dump(
+                            #     include={"file_name": True, "pmid": True, "doi": True}
+                            # ),
                         )
 
                         if file_url:
@@ -177,10 +168,8 @@ async def upload_reference_documents_job(
                     file_result["error"] = error_msg
                     results["failed_files"] += 1
 
-                # Always add file_result to results["files"] at the end of each file processing
                 results["files"][filename] = file_result
 
-            # Update overall success status
             results["success"] = results["failed_files"] == 0
 
     except Exception as e:
@@ -194,7 +183,6 @@ async def upload_reference_documents_job(
             try:
                 if os.path.exists(temp_file):
                     os.unlink(temp_file)
-                    _LOGGER.debug(f"Cleaned up temporary file: {temp_file}")
             except Exception as e:
                 _LOGGER.warning(f"Failed to cleanup temporary file {temp_file}: {str(e)}")
 
