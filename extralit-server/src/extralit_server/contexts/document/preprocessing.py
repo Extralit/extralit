@@ -33,7 +33,7 @@ except ImportError:
     OCRMYPDF_AVAILABLE = False
 
 try:
-    from argilla_server.contexts.document.analysis import PDFAnalyzer, PDFProcessingResult
+    from extralit_server.contexts.document.analysis import PDFAnalyzer, PDFProcessingResult
 
     ANALYSIS_AVAILABLE = True
 except ImportError:
