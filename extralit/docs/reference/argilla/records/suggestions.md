@@ -1,9 +1,9 @@
 ---
 hide: footer
 ---
-# `rg.Suggestion`
+# `ex.Suggestion`
 
-Class for interacting with Argilla Suggestions of records. Suggestions are typically created by a model prediction, unlike a `Response` which is typically created by a user in the UI or consumed from a data source as a label.
+Class for interacting with Extralit Suggestions of records. Suggestions are typically created by a model prediction, unlike a `Response` which is typically created by a user in the UI or consumed from a data source as a label.
 
 ## Usage Examples
 
@@ -50,9 +50,9 @@ Or, instantiate the `Record` and related `Suggestions` objects directly, like th
 ```python
 dataset.records.log(
     [
-        rg.Record(
+        ex.Record(
             fields={"text": "Hello World, how are you?"},
-            suggestions=[rg.Suggestion("negative", "label", score=0.9, agent="model_name")],
+            suggestions=[ex.Suggestion("negative", "label", score=0.9, agent="model_name")],
         )
     ]
 )
@@ -73,7 +73,7 @@ We can also add suggestions to records as we iterate over them using the `add` m
 for record in dataset.records(with_suggestions=True):
     if not record.suggestions["label"]: # (1)
         record.suggestions.add(
-            rg.Suggestion("positive", "label", score=0.9, agent="model_name")
+            ex.Suggestion("positive", "label", score=0.9, agent="model_name")
         ) # (2)
 ```
 
@@ -87,7 +87,7 @@ Depending on the `Question` type, responses might need to be formatted in a slig
 === "For `LabelQuestion`"
 
     ```python
-    rg.Suggestion(
+    ex.Suggestion(
         question_name="label",
         value="positive",
         score=0.9,
@@ -98,7 +98,7 @@ Depending on the `Question` type, responses might need to be formatted in a slig
 === "For `MultiLabelQuestion`"
 
     ```python
-    rg.Suggestion(
+    ex.Suggestion(
         question_name="multi-label",
         value=["positive", "negative"],
         score=0.9,
@@ -109,7 +109,7 @@ Depending on the `Question` type, responses might need to be formatted in a slig
 === "For `RankingQuestion`"
 
     ```python
-    rg.Suggestion(
+    ex.Suggestion(
         question_name="rank",
         value=["1", "3", "2"],
         score=0.9,
@@ -120,7 +120,7 @@ Depending on the `Question` type, responses might need to be formatted in a slig
 === "For `RatingQuestion`"
 
     ```python
-    rg.Suggestion(
+    ex.Suggestion(
         question_name="rating",
         value=4,
         score=0.9,
@@ -131,7 +131,7 @@ Depending on the `Question` type, responses might need to be formatted in a slig
 === "For `SpanQuestion`"
 
     ```python
-    rg.Suggestion(
+    ex.Suggestion(
         question_name="span",
         value=[{"start": 0, "end": 9, "label": "MISC"}],
         score=0.9,
@@ -142,7 +142,7 @@ Depending on the `Question` type, responses might need to be formatted in a slig
 === "For `TextQuestion`"
 
     ```python
-    rg.Suggestion(
+    ex.Suggestion(
         question_name="text",
         value="value",
         score=0.9,
@@ -152,4 +152,4 @@ Depending on the `Question` type, responses might need to be formatted in a slig
 
 ---
 
-::: src.argilla.suggestions.Suggestion
+::: src.extralit.suggestions.Suggestion

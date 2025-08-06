@@ -17,7 +17,7 @@ from typer.testing import CliRunner
 from unittest.mock import patch
 from pathlib import Path
 
-from argilla.cli.app import app
+from extralit.cli.app import app
 
 
 @pytest.fixture
@@ -76,7 +76,7 @@ def test_schemas_list_with_csv_export(mock_print, runner):
         mock_print.assert_called_once()
 
 
-@patch("argilla.cli.schemas.upload.upload_schemas")
+@patch("extralit.cli.schemas.upload.upload_schemas")
 @pytest.mark.skip(reason="Test temporarily disabled")
 def test_schemas_upload(mock_upload_schemas, runner):
     """Test the 'upload schemas' command functionality."""

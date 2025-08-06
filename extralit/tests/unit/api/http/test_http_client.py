@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,69 +17,69 @@ from unittest.mock import MagicMock, patch
 import pytest
 from httpx import Timeout
 
-from argilla import Argilla
+from extralit import Extralit
 
 
 class TestHTTPClient:
     def test_create_default_client(self):
-        http_client = Argilla().http_client
+        http_client = Extralit().http_client
 
         assert http_client is not None
         assert http_client.base_url == "http://localhost:6900"
         assert http_client.timeout == Timeout(60)
-        assert http_client.headers["X-Argilla-Api-Key"] == "argilla.apikey"
+        assert http_client.headers["X-Extralit-Api-Key"] == "extralit.apikey"
 
     def test_create_client_with_custom_timeout(self):
-        http_client = Argilla(timeout=30).http_client
+        http_client = Extralit(timeout=30).http_client
 
         assert http_client is not None
         assert http_client.base_url == "http://localhost:6900"
         assert http_client.timeout == Timeout(30)
-        assert http_client.headers["X-Argilla-Api-Key"] == "argilla.apikey"
+        assert http_client.headers["X-Extralit-Api-Key"] == "extralit.apikey"
 
     def test_create_client_with_custom_api_url(self):
-        http_client = Argilla(api_url="http://localhost:8000").http_client
+        http_client = Extralit(api_url="http://localhost:8000").http_client
 
         assert http_client is not None
         assert http_client.base_url == "http://localhost:8000"
 
     def test_create_client_with_custom_api_key(self):
-        http_client = Argilla(api_key="custom.apikey").http_client
+        http_client = Extralit(api_key="custom.apikey").http_client
 
         assert http_client is not None
         assert http_client.base_url == "http://localhost:6900"
-        assert http_client.headers["X-Argilla-Api-Key"] == "custom.apikey"
+        assert http_client.headers["X-Extralit-Api-Key"] == "custom.apikey"
 
     def test_create_client_with_extra_headers(self):
-        http_client = Argilla(headers={"X-Custom-Header": "Custom value"}).http_client
+        http_client = Extralit(headers={"X-Custom-Header": "Custom value"}).http_client
 
         assert http_client is not None
         assert http_client.base_url == "http://localhost:6900"
-        assert http_client.headers["X-Argilla-Api-Key"] == "argilla.apikey"
+        assert http_client.headers["X-Extralit-Api-Key"] == "extralit.apikey"
         assert http_client.headers["X-Custom-Header"] == "Custom value"
 
     def test_create_client_with_extra_cookies(self):
-        http_client = Argilla(cookies={"session": "session_id"}).http_client
+        http_client = Extralit(cookies={"session": "session_id"}).http_client
 
         assert http_client is not None
         assert http_client.base_url == "http://localhost:6900"
-        assert http_client.headers["X-Argilla-Api-Key"] == "argilla.apikey"
+        assert http_client.headers["X-Extralit-Api-Key"] == "extralit.apikey"
         assert http_client.cookies["session"] == "session_id"
 
     @pytest.mark.parametrize("retries", [0, 1, 5, 10])
     def test_create_client_with_various_retries(self, retries):
-        with patch("argilla._api._client.create_http_client") as mock_create_http_client:
+        with patch("extralit._api._client.create_http_client") as mock_create_http_client:
             mock_http_client = MagicMock()
             mock_create_http_client.return_value = mock_http_client
 
-            Argilla(api_url="http://test.com", api_key="test_key", retries=retries)
+            Extralit(api_url="http://test.com", api_key="test_key", retries=retries)
 
             mock_create_http_client.assert_called_once_with(
                 api_url="http://test.com", api_key="test_key", timeout=60, retries=retries
             )
 
     def test_create_client_with_verify(self):
-        http_client = Argilla(
+        http_client = Extralit(
             api_url="http://test.com",
             api_key="test_key",
             verify=True,
@@ -88,7 +88,7 @@ class TestHTTPClient:
         # See https://docs.python.org/3/library/ssl.html#ssl.SSLContext.verify_mode
         assert http_client._transport._pool._ssl_context.verify_mode == ssl.CERT_REQUIRED
 
-        http_client = Argilla(
+        http_client = Extralit(
             api_url="http://test.com",
             api_key="test_key",
             verify=False,

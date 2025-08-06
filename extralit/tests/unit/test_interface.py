@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,23 +14,23 @@
 
 from unittest import mock
 
-import argilla as rg
+import extralit as ex
 
 
-class TestArgilla:
+class TestExtralit:
     def test_default_client(self):
-        with mock.patch("argilla.Argilla") as mock_client:
+        with mock.patch("extralit.Extralit") as mock_client:
             mock_client.return_value.api_url = "http://localhost:6900"
             mock_client.return_value.api_key = "admin.apikey"
-            mock_client.return_value.workspace = "argilla"
+            mock_client.return_value.workspace = "extralit"
 
-            client = rg.Argilla(api_url="http://localhost:6900", api_key="admin.apikey")
+            client = ex.Extralit(api_url="http://localhost:6900", api_key="admin.apikey")
             assert client.api_url == "http://localhost:6900"
             assert client.api_key == "admin.apikey"
 
     def test_multiple_clients(self):
-        local_client = rg.Argilla(api_url="http://localhost:6900", api_key="admin.apikey")
-        remote_client = rg.Argilla(api_url="http://argilla.production.net", api_key="admin.apikey")
+        local_client = ex.Extralit(api_url="http://localhost:6900", api_key="admin.apikey")
+        remote_client = ex.Extralit(api_url="http://argilla.production.net", api_key="admin.apikey")
 
         assert local_client.api_url == "http://localhost:6900"
         assert remote_client.api_url == "http://argilla.production.net"

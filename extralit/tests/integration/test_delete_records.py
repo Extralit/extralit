@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,23 +16,23 @@ import uuid
 
 import pytest
 
-import argilla as rg
+import extralit as ex
 
 
 @pytest.fixture
-def dataset(client: rg.Argilla) -> rg.Dataset:
+def dataset(client: ex.Extralit) -> ex.Dataset:
     workspace = client.workspaces[0]
     mock_dataset_name = f"test_delete_records_{uuid.uuid1()}"
-    settings = rg.Settings(
+    settings = ex.Settings(
         allow_extra_metadata=True,
         fields=[
-            rg.TextField(name="text"),
+            ex.TextField(name="text"),
         ],
         questions=[
-            rg.TextQuestion(name="label", use_markdown=False),
+            ex.TextQuestion(name="label", use_markdown=False),
         ],
     )
-    dataset = rg.Dataset(
+    dataset = ex.Dataset(
         name=mock_dataset_name,
         workspace=workspace.name,
         settings=settings,
@@ -42,7 +42,7 @@ def dataset(client: rg.Argilla) -> rg.Dataset:
     return dataset
 
 
-def test_delete_records(client: rg.Argilla, dataset: rg.Dataset):
+def test_delete_records(client: ex.Extralit, dataset: ex.Dataset):
     mock_data = [
         {
             "text": "Hello World, how are you?",
@@ -73,7 +73,7 @@ def test_delete_records(client: rg.Argilla, dataset: rg.Dataset):
         assert record.id not in [record.id for record in records_to_delete]
 
 
-def test_delete_single_record(client: rg.Argilla, dataset: rg.Dataset):
+def test_delete_single_record(client: ex.Extralit, dataset: ex.Dataset):
     mock_data = [
         {
             "text": "Hello World, how are you?",
@@ -103,8 +103,8 @@ def test_delete_single_record(client: rg.Argilla, dataset: rg.Dataset):
     assert mock_data[1]["id"] not in [record.id for record in dataset_records]
 
 
-def test_delete_records_with_batch_support(client: rg.Argilla, dataset: rg.Dataset):
-    records = [rg.Record(id=uuid.uuid4(), fields={"text": f"Field for record {i}"}) for i in range(0, 1000)]
+def test_delete_records_with_batch_support(client: ex.Extralit, dataset: ex.Dataset):
+    records = [ex.Record(id=uuid.uuid4(), fields={"text": f"Field for record {i}"}) for i in range(0, 1000)]
 
     dataset.records.log(records)
     all_records = list(dataset.records)

@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,8 +13,8 @@
 # limitations under the License.
 
 
-from argilla import (
-    Argilla,
+from extralit import (
+    Extralit,
     Settings,
     TextField,
     TextQuestion,
@@ -31,7 +31,7 @@ from argilla import (
 )
 
 
-def test_publish_dataset(client: "Argilla", dataset_name: str):
+def test_publish_dataset(client: "Extralit", dataset_name: str):
     ws_name = "new_ws"
 
     new_ws = client.workspaces(ws_name) or Workspace(name=ws_name).create()

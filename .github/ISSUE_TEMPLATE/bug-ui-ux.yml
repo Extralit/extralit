@@ -74,8 +74,8 @@ body:
   - type: input
     id: extralit-version
     attributes:
-      label: Extralit/Argilla Version
-      description: What version of Extralit/Argilla are you using?
+      label: Extralit Version
+      description: What version of Extralit are you using?
       placeholder: e.g. 1.0.0
     validations:
       required: true
@@ -94,7 +94,7 @@ body:
     attributes:
       label: Docker Image (optional)
       description: Which Docker image are you using?
-      placeholder: e.g. argilla:v1.0.0
+      placeholder: e.g. extralit:v1.0.0
 
   - type: textarea
     id: additional

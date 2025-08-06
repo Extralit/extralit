@@ -10,7 +10,7 @@ Metadata in argilla is a dictionary that can be attached to a record. It is used
 To use metadata within a dataset, you must define a metadata property in the dataset settings. The metadata property is a list of metadata properties that can be attached to a record. The following example demonstrates how to add metadata to a dataset and how to access metadata from a record object:
 
 ```python
-import argilla as rg
+import extralit as ex
 
 dataset = Dataset(
     name="dataset_with_metadata",
@@ -18,7 +18,7 @@ dataset = Dataset(
         fields=[TextField(name="text")],
         questions=[LabelQuestion(name="label", labels=["positive", "negative"])],
         metadata=[
-            rg.TermsMetadataProperty(name="category", options=["A", "B", "C"]),
+            ex.TermsMetadataProperty(name="category", options=["A", "B", "C"]),
         ],
     ),
 )
@@ -43,14 +43,14 @@ Depending on the `MetadataProperty` type, metadata might need to be formatted in
 === "For `TermsMetadataProperty`"
 
     ```python
-    rg.Records(
+    ex.Records(
         fields={"text": "example"},
         metadata={"category": "A"}
     )
 
     # with multiple terms
 
-    rg.Records(
+    ex.Records(
         fields={"text": "example"},
         metadata={"category": ["A", "B"]}
     )
@@ -59,7 +59,7 @@ Depending on the `MetadataProperty` type, metadata might need to be formatted in
 === "For `FloatMetadataProperty`"
 
     ```python
-    rg.Records(
+    ex.Records(
         fields={"text": "example"},
         metadata={"category": 2.1}
     )
@@ -68,7 +68,7 @@ Depending on the `MetadataProperty` type, metadata might need to be formatted in
 === "For `IntegerMetadataProperty`"
 
     ```python
-    rg.Records(
+    ex.Records(
         fields={"text": "example"},
         metadata={"category": 42}
     )

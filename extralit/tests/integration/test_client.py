@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,12 +16,12 @@ import uuid
 
 import pytest
 
-from argilla import Argilla, Dataset, TextField, TextQuestion, Settings, User, Workspace
-from argilla._exceptions import ArgillaError
+from extralit import Extralit, Dataset, TextField, TextQuestion, Settings, User, Workspace
+from extralit._exceptions import ExtralitError
 
 
 @pytest.fixture
-def dataset(client: Argilla) -> Dataset:
+def dataset(client: Extralit) -> Dataset:
     return Dataset(
         name=f"test_dataset{uuid.uuid4()}",
         settings=Settings(fields=[TextField(name="text")], questions=[TextQuestion(name="question")]),
@@ -30,7 +30,7 @@ def dataset(client: Argilla) -> Dataset:
 
 
 @pytest.fixture
-def user(client: Argilla) -> User:
+def user(client: Extralit) -> User:
     user = User(username="test_user", password="test password").create()
     user.password = None  # to align with GET user result
 
@@ -38,13 +38,13 @@ def user(client: Argilla) -> User:
 
 
 @pytest.fixture
-def workspace(client: Argilla) -> Workspace:
+def workspace(client: Extralit) -> Workspace:
     return Workspace(name=f"test_workspace{uuid.uuid4()}").create()
 
 
 # TODO: We can move this test suite to tests/unit once we have a mock client implementation
 class TestClient:
-    def test_get_resources(self, client: Argilla, workspace: Workspace, user: User, dataset: Dataset):
+    def test_get_resources(self, client: Extralit, workspace: Workspace, user: User, dataset: Dataset):
         assert client.workspaces(name=workspace.name) == workspace
         assert client.workspaces(id=workspace.id) == workspace
         assert client.workspaces(id=str(workspace.id)) == workspace
@@ -60,7 +60,7 @@ class TestClient:
         assert client.datasets(id=str(dataset.id)) == dataset
         assert client.datasets(id=str(dataset.id), name="skip this name") == dataset
 
-    def test_get_resources_warnings(self, client: Argilla):
+    def test_get_resources_warnings(self, client: Extralit):
         with pytest.warns(UserWarning, match="Workspace with id"):
             assert client.workspaces(id=uuid.uuid4()) is None
 
@@ -79,26 +79,26 @@ class TestClient:
         with pytest.warns(UserWarning, match="Dataset with name"):
             assert client.datasets(name="missing") is None
 
-    def test_get_resource_with_missing_args(self, client: Argilla):
-        with pytest.raises(ArgillaError):
+    def test_get_resource_with_missing_args(self, client: Extralit):
+        with pytest.raises(ExtralitError):
             client.workspaces()
 
-        with pytest.raises(ArgillaError):
+        with pytest.raises(ExtralitError):
             client.datasets()
 
-        with pytest.raises(ArgillaError):
+        with pytest.raises(ExtralitError):
             client.users()
 
     def test_init_with_missing_api_url(self):
-        with pytest.raises(ArgillaError):
-            Argilla(api_url=None)
+        with pytest.raises(ExtralitError):
+            Extralit(api_url=None)
 
-        with pytest.raises(ArgillaError):
-            Argilla(api_url="")
+        with pytest.raises(ExtralitError):
+            Extralit(api_url="")
 
     def test_init_with_missing_api_key(self):
-        with pytest.raises(ArgillaError):
-            Argilla(api_key=None)
+        with pytest.raises(ExtralitError):
+            Extralit(api_key=None)
 
-        with pytest.raises(ArgillaError):
-            Argilla(api_key="")
+        with pytest.raises(ExtralitError):
+            Extralit(api_key="")

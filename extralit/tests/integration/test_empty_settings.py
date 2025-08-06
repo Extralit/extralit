@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,11 +17,11 @@ from string import ascii_lowercase
 
 import pytest
 
-from argilla import Argilla, Dataset, Settings, Workspace, TextQuestion, TextField
-from argilla._exceptions import SettingsError
+from extralit import Extralit, Dataset, Settings, Workspace, TextQuestion, TextField
+from extralit._exceptions import SettingsError
 
 
-def test_dataset_empty_settings(client: Argilla, workspace: Workspace):
+def test_dataset_empty_settings(client: Extralit, workspace: Workspace):
     name = "".join(random.choices(ascii_lowercase, k=16))
     settings = Settings()
     dataset = Dataset(
@@ -34,7 +34,7 @@ def test_dataset_empty_settings(client: Argilla, workspace: Workspace):
         dataset.create()
 
 
-def test_dataset_no_fields(client: Argilla, workspace: Workspace) -> None:
+def test_dataset_no_fields(client: Extralit, workspace: Workspace) -> None:
     name = "".join(random.choices(ascii_lowercase, k=16))
     settings = Settings(
         questions=[
@@ -51,7 +51,7 @@ def test_dataset_no_fields(client: Argilla, workspace: Workspace) -> None:
         dataset.create()
 
 
-def test_dataset_no_questions(client: Argilla, workspace: Workspace) -> Dataset:
+def test_dataset_no_questions(client: Extralit, workspace: Workspace) -> Dataset:
     name = "".join(random.choices(ascii_lowercase, k=16))
     settings = Settings(
         fields=[

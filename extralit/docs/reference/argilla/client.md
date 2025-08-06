@@ -1,30 +1,30 @@
 ---
 hide: footer
 ---
-# `rg.Argilla`
+# `ex.Extralit`
 
-To interact with the Argilla server from Python you can use the `Argilla` class. The `Argilla` client is used to create, get, update, and delete all Argilla resources, such as workspaces, users, datasets, and records.
+To interact with the Extralit server from Python you can use the `Extralit` class. The `Extralit` client is used to create, get, update, and delete all Extralit resources, such as workspaces, users, datasets, and records.
 
 ## Usage Examples
 
-### Deploying Argilla Server on Hugging Face Spaces
+### Deploying Extralit Server on Hugging Face Spaces
 
-To deploy Argilla on Hugging Face Spaces, use the `deploy_on_spaces` method.
+To deploy Extralit on Hugging Face Spaces, use the `deploy_on_spaces` method.
 
 ```python
-import argilla as rg
+import extralit as ex
 
-client = rg.Argilla.deploy_on_spaces(api_key="12345678")
+client = ex.Extralit.deploy_on_spaces(api_key="12345678")
 ```
 
-### Connecting to an Argilla server
+### Connecting to an Extralit server
 
-To connect to an Argilla server, instantiate the `Argilla` class and pass the `api_url` of the server and the `api_key` to authenticate.
+To connect to an Extralit server, instantiate the `Extralit` class and pass the `api_url` of the server and the `api_key` to authenticate.
 
 ```python
-import argilla as rg
+import extralit as ex
 
-client = rg.Argilla(
+client = ex.Extralit(
     api_url="https://argilla.example.com",
     api_key="my_api_key",
 )
@@ -32,7 +32,7 @@ client = rg.Argilla(
 
 ### Accessing Dataset, Workspace, and User objects
 
-The `Argilla` clients provides access to the `Dataset`, `Workspace`, and `User` objects of the Argilla server.
+The `Extralit` clients provides access to the `Dataset`, `Workspace`, and `User` objects of the Extralit server.
 
 ```python
 
@@ -54,9 +54,9 @@ for dataset in my_workspace.datasets:
 
 ---
 
-::: src.argilla.client.core.Argilla
-::: src.argilla.client.resources.Users
-::: src.argilla.client.resources.Workspaces
-::: src.argilla.client.resources.Datasets
+::: src.extralit.client.core.Extralit
+::: src.extralit.client.resources.Users
+::: src.extralit.client.resources.Workspaces
+::: src.extralit.client.resources.Datasets
 
-::: src.argilla._helpers._deploy.SpacesDeploymentMixin
+::: src.extralit._helpers._deploy.SpacesDeploymentMixin

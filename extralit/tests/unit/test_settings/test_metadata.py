@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,14 +16,14 @@ import uuid
 
 import pytest
 
-import argilla as rg
-from argilla._models import MetadataFieldModel, TermsMetadataPropertySettings
+import extralit as ex
+from extralit._models import MetadataFieldModel, TermsMetadataPropertySettings
 
 
 class TestMetadata:
     @pytest.mark.parametrize("options", [["option1", "option2"], [1, 2, 3, 4], [True, False]])
     def test_create_metadata_terms(self, options: list):
-        property = rg.TermsMetadataProperty(title="A metadata property", name="metadata", options=options)
+        property = ex.TermsMetadataProperty(title="A metadata property", name="metadata", options=options)
 
         assert property._model.type == "terms"
         assert property.title == "A metadata property"
@@ -43,7 +43,7 @@ class TestMetadata:
         }
 
     def test_create_terms_metadata_without_options(self):
-        property = rg.TermsMetadataProperty(name="metadata")
+        property = ex.TermsMetadataProperty(name="metadata")
 
         assert property.title == "metadata"
         assert property.name == "metadata"
@@ -73,7 +73,7 @@ class TestMetadata:
             visible_for_annotators=True,
         )
 
-        property = rg.TermsMetadataProperty.from_model(model)
+        property = ex.TermsMetadataProperty.from_model(model)
 
         assert property.id == model.id
         assert property.title == "A metadata property"
@@ -82,13 +82,13 @@ class TestMetadata:
         assert property.options == ["option1", "option2"]
 
     def test_create_integer_metadata_with_visible_for_annotators(self):
-        metadata = rg.IntegerMetadataProperty(name="integer", min=10, visible_for_annotators=False)
+        metadata = ex.IntegerMetadataProperty(name="integer", min=10, visible_for_annotators=False)
         assert metadata.visible_for_annotators is False
 
     def test_create_float_metadata_with_visible_for_annotators(self):
-        metadata = rg.FloatMetadataProperty(name="integer", min=3.5, max=10.5, visible_for_annotators=False)
+        metadata = ex.FloatMetadataProperty(name="integer", min=3.5, max=10.5, visible_for_annotators=False)
         assert metadata.visible_for_annotators is False
 
     def test_create_terms_metadata_with_boolean_options(self):
-        metadata = rg.TermsMetadataProperty(name="metadata", options=[True, False])
+        metadata = ex.TermsMetadataProperty(name="metadata", options=[True, False])
         assert metadata.options == [True, False]

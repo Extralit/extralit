@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,26 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import random
 
 import pytest
 
-import argilla as rg
+import extralit as ex
 
 
 @pytest.fixture
-def dataset(client: rg.Argilla, dataset_name: str):
+def dataset(client: ex.Extralit, dataset_name: str):
     ws = client.workspaces.default
-    settings = rg.Settings(
+    settings = ex.Settings(
         guidelines=f"The dataset guidelines",
-        fields=[rg.TextField(name="text", required=True, title="Text")],
+        fields=[ex.TextField(name="text", required=True, title="Text")],
         questions=[
-            rg.LabelQuestion(name="label", title="Label", labels=["positive", "negative"]),
-            rg.RankingQuestion(name="ranking", title="Ranking", values=["1", "2", "3"]),
+            ex.LabelQuestion(name="label", title="Label", labels=["positive", "negative"]),
+            ex.RankingQuestion(name="ranking", title="Ranking", values=["1", "2", "3"]),
         ],
     )
 
-    ds = rg.Dataset(
+    ds = ex.Dataset(
         name=dataset_name,
         settings=settings,
         client=client,
@@ -42,7 +41,7 @@ def dataset(client: rg.Argilla, dataset_name: str):
     ds.delete()
 
 
-def test_ranking_question_with_suggestions(dataset: rg.Dataset):
+def test_ranking_question_with_suggestions(dataset: ex.Dataset):
     dataset.records.log(
         [
             {"text": "This is a test text", "label": "positive", "ranking": ["2", "1", "3"]},
@@ -51,7 +50,7 @@ def test_ranking_question_with_suggestions(dataset: rg.Dataset):
     assert next(iter(dataset.records(with_suggestions=True))).suggestions["ranking"].value == ["2", "1", "3"]
 
 
-def test_ranking_question_with_responses(dataset: rg.Dataset):
+def test_ranking_question_with_responses(dataset: ex.Dataset):
     dataset.records.log(
         [
             {"text": "This is a test text", "label": "positive", "ranking_": ["2"]},

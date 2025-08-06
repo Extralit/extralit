@@ -1,6 +1,6 @@
 name: Get Docker image tag from GITHUB_REF
 description: Gets a valid Docker image tag from the GITHUB_REF environment variable
-author: Argilla <contact@argilla.io>
+author: Extralit <contact@argilla.io>
 outputs:
   docker-image-tag:
     description: A valid Docker image tag created from GITHUB_REF environment variable

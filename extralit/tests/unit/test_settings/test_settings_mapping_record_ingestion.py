@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ from uuid import uuid4
 
 import pytest
 
-import argilla as rg
+import extralit as ex
 
 
 @pytest.fixture
@@ -29,18 +29,18 @@ def dataset():
         "model": "label.suggestion.agent",
         "my_prompt": ("prompt_field", "prompt_question"),
     }
-    settings = rg.Settings(
-        fields=[rg.TextField(name="prompt_field")],
+    settings = ex.Settings(
+        fields=[ex.TextField(name="prompt_field")],
         questions=[
-            rg.LabelQuestion(name="label", labels=["negative", "positive"]),
-            rg.TextQuestion(name="prompt_question"),
+            ex.LabelQuestion(name="label", labels=["negative", "positive"]),
+            ex.TextQuestion(name="prompt_question"),
         ],
-        metadata=[rg.FloatMetadataProperty(name="score")],
-        vectors=[rg.VectorField(name="vector", dimensions=3)],
+        metadata=[ex.FloatMetadataProperty(name="score")],
+        vectors=[ex.VectorField(name="vector", dimensions=3)],
         mapping=mock_mapping,
     )
-    workspace = rg.Workspace(name="workspace", id=uuid4())
-    dataset = rg.Dataset(
+    workspace = ex.Workspace(name="workspace", id=uuid4())
+    dataset = ex.Dataset(
         name="test_dataset",
         settings=settings,
         workspace=workspace,
@@ -82,7 +82,7 @@ def test_settings_with_record_mapping_export(dataset):
     with TemporaryDirectory() as temp_dir:
         path = f"{temp_dir}/test_dataset.json"
         dataset.settings.to_json(path)
-        loaded_settings = rg.Settings.from_json(path)
+        loaded_settings = ex.Settings.from_json(path)
 
     assert dataset.settings.mapping == loaded_settings.mapping
     assert dataset.settings == loaded_settings

@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@ import uuid
 
 import pytest
 
-from argilla import Response, User, Dataset, Settings, TextQuestion, TextField, Workspace
-from argilla.records._resource import RecordResponses, Record
+from extralit import Response, User, Dataset, Settings, TextQuestion, TextField, Workspace
+from extralit.records._resource import RecordResponses, Record
 
 
 @pytest.fixture

@@ -16,7 +16,7 @@ import os
 import uuid
 from typing import Any, List, Generator
 
-import argilla as rg
+import extralit as ex
 import pytest
 from datasets import Dataset as HFDataset, Value, Features, ClassLabel
 from huggingface_hub.errors import HfHubHTTPError
@@ -25,17 +25,17 @@ _RETRIES = 5
 
 
 @pytest.fixture
-def dataset(client, dataset_name: str) -> Generator[rg.Dataset, None, None]:
-    settings = rg.Settings(
+def dataset(client, dataset_name: str) -> Generator[ex.Dataset, None, None]:
+    settings = ex.Settings(
         fields=[
-            rg.TextField(name="text"),
-            rg.ImageField(name="image"),
+            ex.TextField(name="text"),
+            ex.ImageField(name="image"),
         ],
         questions=[
-            rg.LabelQuestion(name="label", labels=["positive", "negative"]),
+            ex.LabelQuestion(name="label", labels=["positive", "negative"]),
         ],
     )
-    dataset = rg.Dataset(
+    dataset = ex.Dataset(
         name=dataset_name,
         settings=settings,
         client=client,
@@ -71,13 +71,13 @@ def mock_data() -> List[dict[str, Any]]:
 
 @pytest.fixture
 def token():
-    return os.getenv("HF_TOKEN_ARGILLA_INTERNAL_TESTING")
+    return os.getenv("HF_TOKEN_EXTRALIT_INTERNAL_TESTING")
 
 
-@pytest.mark.skipif(not os.getenv("HF_TOKEN_ARGILLA_INTERNAL_TESTING"), reason="No HF token provided")
+@pytest.mark.skipif(not os.getenv("HF_TOKEN_EXTRALIT_INTERNAL_TESTING"), reason="No HF token provided")
 class TestImportFeaturesFromHub:
     def test_import_records_from_datasets_with_classlabel(
-        self, token: str, dataset: rg.Dataset, client, mock_data: List[dict[str, Any]]
+        self, token: str, dataset: ex.Dataset, client, mock_data: List[dict[str, Any]]
     ):
         repo_id = f"extralit-dev/test_import_dataset_from_hub_with_classlabel_{uuid.uuid4()}"
 
@@ -110,10 +110,10 @@ class TestImportFeaturesFromHub:
         assert exported_dataset.features["label.suggestion"].names == ["positive", "negative"]
         assert exported_dataset["label.suggestion"] == [0, 1, 0]
 
-    def test_import_from_hub_with_upper_case_columns(self, client: rg.Argilla, token: str, dataset_name: str):
+    def test_import_from_hub_with_upper_case_columns(self, client: ex.Extralit, token: str, dataset_name: str):
         created_dataset = None
         try:
-            created_dataset = rg.Dataset.from_hub(
+            created_dataset = ex.Dataset.from_hub(
                 "extralit-dev/test_import_from_hub_with_upper_case_columns",
                 token=token,
                 name=dataset_name,
@@ -131,10 +131,10 @@ class TestImportFeaturesFromHub:
             assert created_dataset.settings.fields[0].name == "Text"
             assert list(created_dataset.records)[0].fields["Text"] == "Hello World, how are you?"
 
-    def test_import_from_hub_with_unlabelled_classes(self, client: rg.Argilla, token: str, dataset_name: str):
+    def test_import_from_hub_with_unlabelled_classes(self, client: ex.Extralit, token: str, dataset_name: str):
         created_dataset = None
         try:
-            created_dataset = rg.Dataset.from_hub(
+            created_dataset = ex.Dataset.from_hub(
                 "extralit-dev/test_import_from_hub_with_unlabelled_classes",
                 token=token,
                 name=dataset_name,
@@ -151,10 +151,10 @@ class TestImportFeaturesFromHub:
             assert created_dataset.settings.fields[0].name == "Text"
             assert list(created_dataset.records)[0].fields["Text"] == "Hello World, how are you?"
 
-    def test_import_with_row_id_as_record_id(self, client: rg.Argilla, token: str, dataset_name: str):
+    def test_import_with_row_id_as_record_id(self, client: ex.Extralit, token: str, dataset_name: str):
         created_dataset = None
         try:
-            created_dataset = rg.Dataset.from_hub(
+            created_dataset = ex.Dataset.from_hub(
                 "extralit-dev/test_import_from_hub_with_unlabelled_classes",
                 token=token,
                 name=dataset_name,

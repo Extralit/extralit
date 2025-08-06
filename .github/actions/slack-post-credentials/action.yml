@@ -1,6 +1,6 @@
-name: Argilla Environment Post Credentials
+name: Extralit Environment Post Credentials
 description: Post the user credentials for the PR environment in Slack channel
-author: Argilla <contact@argilla.io>
+author: Extralit <contact@argilla.io>
 inputs:
   slack-channel-name:
     description: The name of the Slack channel where the credentials will be posted.

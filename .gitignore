@@ -153,5 +153,5 @@ src/**/server/static/
 .devcontainer/*/secrets
 
 # App generated files
-argilla-server/src/argilla_server/static
+extralit-server/src/extralit_server/static
 extralit/site

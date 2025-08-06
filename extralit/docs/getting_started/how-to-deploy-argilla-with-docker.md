@@ -1,8 +1,8 @@
 ---
-description: Deploy Argilla with Docker
+description: Deploy Extralit with Docker
 ---
 
-This guide describes how to deploy the Argilla Server with `docker compose`. This is useful if you want to deploy Argilla locally, and/or have full control over the configuration the server, database, and search engine (Elasticsearch).
+This guide describes how to deploy the Extralit Server with `docker compose`. This is useful if you want to deploy Extralit locally, and/or have full control over the configuration the server, database, and search engine (Elasticsearch).
 
 First, you need to install `docker` on your machine and make sure you can run `docker compose`.
 
@@ -29,7 +29,7 @@ Run to deploy the server on `http://localhost:6900`:
 docker compose up -d
 ```
 
-Once is completed, go to this URL with your browser: [http://localhost:6900](http://localhost:6900) and you should see the Argilla login page.
+Once is completed, go to this URL with your browser: [http://localhost:6900](http://localhost:6900) and you should see the Extralit login page.
 
 If it's not available, check the logs:
 
@@ -37,4 +37,4 @@ If it's not available, check the logs:
 docker compose logs -f
 ```
 
-Most of the deployment issues are related to ElasticSearch. [Join Hugging Face Discord's server](http://hf.co/join/discord) and ask for support on the Argilla channel.
+Most of the deployment issues are related to ElasticSearch. [Join Hugging Face Discord's server](http://hf.co/join/discord) and ask for support on the Extralit channel.

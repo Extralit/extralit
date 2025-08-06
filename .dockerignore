@@ -2,9 +2,8 @@
 !dist/*.whl
 
 # Scripts
-!docker/scripts/start_argilla_server.sh
+!docker/scripts/start_extralit_server.sh
 !docker/scripts/wait-for-it.sh
-!docker/scripts/start_quickstart_argilla.sh
 !docker/scripts/load_data.py
 
 # Package dependencies

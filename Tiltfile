@@ -11,9 +11,9 @@ ENV = str(local('echo $ENV')).strip() or 'dev'
 USERS_DB = str(local('echo $USERS_DB')).strip()
 DOCKER_REPO = str(local('echo $DOCKER_REPO')).strip() or 'localhost:5005'
 
-ARGILLA_DATABASE_URL = str(local('echo $ARGILLA_DATABASE_URL')).strip()
-if ARGILLA_DATABASE_URL:
-    print("Using external database with ARGILLA_DATABASE_URL envvar, skipping `main-db` deployment")
+EXTRALIT_DATABASE_URL = str(local('echo $EXTRALIT_DATABASE_URL')).strip()
+if EXTRALIT_DATABASE_URL:
+    print("Using external database with EXTRALIT_DATABASE_URL envvar, skipping `main-db` deployment")
 S3_ENDPOINT = str(local('echo $S3_ENDPOINT')).strip()
 S3_ACCESS_KEY = str(local('echo $S3_ACCESS_KEY')).strip()
 S3_SECRET_KEY = str(local('echo $S3_SECRET_KEY')).strip()
@@ -46,20 +46,20 @@ k8s_yaml([
 k8s_resource(
     'elasticsearch',
     port_forwards=['9200'],
-    labels=['argilla-server'],
+    labels=['extralit-server'],
 )
 
-# PostgreSQL is the database for argilla-server
+# PostgreSQL is the database for extralit-server
 helm_repo('bitnami', 'https://charts.bitnami.com/bitnami', labels=['helm'], resource_name='bitnami-helm')
-if not ARGILLA_DATABASE_URL:
+if not EXTRALIT_DATABASE_URL:
     helm_resource(
-        name='main-db', 
-        chart='bitnami/postgresql', 
+        name='main-db',
+        chart='bitnami/postgresql',
         flags=[
             '--version=13.2.0',
             '--values=examples/deployments/k8s/helm/postgres-helm.yaml'],
         port_forwards=['5432'],
-        labels=['argilla-server'],
+        labels=['extralit-server'],
         resource_deps=['bitnami-helm'],
     )
 
@@ -75,59 +75,59 @@ helm_resource(
         '--set=master.persistence.size=1Gi'
     ],
     port_forwards=['6379'],
-    labels=['argilla-server'],
+    labels=['extralit-server'],
     resource_deps=['redis-helm', 'bitnami-helm']
 )
 
-# argilla-server is the web backend (FastAPI + SQL database)
-if not os.path.exists('argilla-frontend/dist'):
-    local('npm install && npm run build', dir='argilla-frontend', quiet=True)
-if not os.path.exists('argilla-server/src/argilla_server/static'):
-    local('cp -r argilla-frontend/dist argilla-server/src/argilla_server/static', quiet=True)
-if not os.path.exists('argilla-server/dist/'):
-    local('pdm build', dir='argilla-server')
+# extralit-server is the web backend (FastAPI + SQL database)
+if not os.path.exists('extralit-frontend/dist'):
+    local('npm install && npm run build', dir='extralit-frontend', quiet=True)
+if not os.path.exists('extralit-server/src/extralit_server/static'):
+    local('cp -r extralit-frontend/dist extralit-server/src/extralit_server/static', quiet=True)
+if not os.path.exists('extralit-server/dist/'):
+    local('pdm build', dir='extralit-server')
 docker_build(
-    "{DOCKER_REPO}/argilla-server".format(DOCKER_REPO=DOCKER_REPO),
-    context='argilla-server/',
+    "{DOCKER_REPO}/extralit-server".format(DOCKER_REPO=DOCKER_REPO),
+    context='extralit-server/',
     build_args={'ENV': ENV, 'USERS_DB': USERS_DB},
-    dockerfile='argilla-server/docker/server/dev.argilla_server.dockerfile',
+    dockerfile='extralit-server/docker/server/dev.extralit_server.dockerfile',
     ignore=['examples/', 'extralit/', '.*', '**/__pycache__', '*.pyc', 'CHANGELOG.md'],
     live_update=[
         # Sync the source code to the container
-        sync('argilla-server/src/', '/home/argilla/src/'),
-        sync('argilla-server/docker/server/scripts/start_argilla_server.sh', '/home/argilla/'),
-        sync('argilla-server/pyproject.toml', '/home/argilla/pyproject.toml'),
+        sync('extralit-server/src/', '/home/extralit/src/'),
+        sync('extralit-server/docker/server/scripts/start_extralit_server.sh', '/home/extralit/'),
+        sync('extralit-server/pyproject.toml', '/home/extralit/pyproject.toml'),
     ]
 )
-argilla_server_k8s_yaml = read_yaml_stream('examples/deployments/k8s/argilla-server-deployment.yaml')
-for o in argilla_server_k8s_yaml:
+extralit_server_k8s_yaml = read_yaml_stream('examples/deployments/k8s/extralit-server-deployment.yaml')
+for o in extralit_server_k8s_yaml:
     for container in o['spec']['template']['spec']['containers']:
-        if container['name'] == 'argilla-server':
-            container['image'] = "{DOCKER_REPO}/argilla-server".format(DOCKER_REPO=DOCKER_REPO)
-            if ARGILLA_DATABASE_URL:
+        if container['name'] == 'extralit-server':
+            container['image'] = "{DOCKER_REPO}/extralit-server".format(DOCKER_REPO=DOCKER_REPO)
+            if EXTRALIT_DATABASE_URL:
                 container['env'].extend([
-                    {'name': 'ARGILLA_DATABASE_URL', 'value': ARGILLA_DATABASE_URL},
+                    {'name': 'EXTRALIT_DATABASE_URL', 'value': EXTRALIT_DATABASE_URL},
                     {'name': 'POSTGRES_HOST', 'value': ""},
                     {'name': 'POSTGRES_PASSWORD', 'value': ""},
                 ])
             if S3_ENDPOINT and S3_ACCESS_KEY and S3_SECRET_KEY:
                 container['env'].extend([
-                    {'name': 'ARGILLA_S3_ENDPOINT', 'value': S3_ENDPOINT},
-                    {'name': 'ARGILLA_S3_ACCESS_KEY', 'value': S3_ACCESS_KEY},
-                    {'name': 'ARGILLA_S3_SECRET_KEY', 'value': S3_SECRET_KEY}
+                    {'name': 'EXTRALIT_S3_ENDPOINT', 'value': S3_ENDPOINT},
+                    {'name': 'EXTRALIT_S3_ACCESS_KEY', 'value': S3_ACCESS_KEY},
+                    {'name': 'EXTRALIT_S3_SECRET_KEY', 'value': S3_SECRET_KEY}
                 ])
 
 k8s_yaml([
-    encode_yaml_stream(argilla_server_k8s_yaml), 
-    'examples/deployments/k8s/argilla-server-service.yaml', 
-    'examples/deployments/k8s/argilla-server-ingress.yaml',
+    encode_yaml_stream(extralit_server_k8s_yaml),
+    'examples/deployments/k8s/extralit-server-service.yaml',
+    'examples/deployments/k8s/extralit-server-ingress.yaml',
     # 'examples/deployments/k8s/argilla-loadbalancer-service.yaml'
     ])
 k8s_resource(
-    'argilla-server',
+    'extralit-server',
     port_forwards=['6900'],
-    labels=['argilla-server'],
-    resource_deps=['redis', 'main-db', 'elasticsearch'] if not ARGILLA_DATABASE_URL else ['redis', 'elasticsearch'],
+    labels=['extralit-server'],
+    resource_deps=['redis', 'main-db', 'elasticsearch'] if not EXTRALIT_DATABASE_URL else ['redis', 'elasticsearch'],
 )
 
 # Langfuse Observability server
@@ -137,13 +137,13 @@ k8s_resource(
     port_forwards=['4000'],
     labels=['extralit'],
     auto_init=False,
-    resource_deps=['main-db'] if not ARGILLA_DATABASE_URL else [],
+    resource_deps=['main-db'] if not EXTRALIT_DATABASE_URL else [],
 )
 
 # MinIO S3 storage
 if not S3_ENDPOINT or not S3_ACCESS_KEY or not S3_SECRET_KEY:
     k8s_yaml([
-        'examples/deployments/k8s/minio-dev.yaml', 
+        'examples/deployments/k8s/minio-dev.yaml',
         'examples/deployments/k8s/minio-standalone-pvc.yaml'])
     k8s_resource(
       'minio',
@@ -154,8 +154,8 @@ if not S3_ENDPOINT or not S3_ACCESS_KEY or not S3_SECRET_KEY:
 # Weaviate vector database
 helm_repo('weaviate', 'https://weaviate.github.io/weaviate-helm', labels=['helm'], resource_name='weaviate-helm')
 helm_resource(
-    name='weaviate-server', 
-    chart='weaviate/weaviate', 
+    name='weaviate-server',
+    chart='weaviate/weaviate',
     flags=[
         '--version=16.8.8',
         '--values=examples/deployments/k8s/helm/weaviate-helm.yaml'],
@@ -172,7 +172,7 @@ docker_build(
     "{DOCKER_REPO}/extralit-server".format(DOCKER_REPO=DOCKER_REPO),
     context='extralit/',
     dockerfile='extralit/docker/extralit.dockerfile',
-    ignore=['.*', 'argilla-frontend/', 'argilla-server/', '**/__pycache__', '*.pyc'],
+    ignore=['.*', 'extralit-frontend/', 'extralit-server/', '**/__pycache__', '*.pyc'],
     live_update=[
         sync('extralit/', '/home/extralit/'),
     ]
@@ -201,7 +201,7 @@ for o in extralit_k8s_yaml:
                     ])
 
 k8s_yaml([
-    encode_yaml_stream(extralit_k8s_yaml), 
+    encode_yaml_stream(extralit_k8s_yaml),
     'examples/deployments/k8s/extralit-configs.yaml'
 ])
 k8s_resource(

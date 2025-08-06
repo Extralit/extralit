@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,30 +20,30 @@ from tempfile import TemporaryDirectory
 import httpx
 from pytest_httpx import HTTPXMock
 
-import argilla as rg
+import extralit as ex
 
 
 @pytest.fixture
 def settings():
-    settings = rg.Settings(
+    settings = ex.Settings(
         fields=[
-            rg.TextField(name="text", title="text"),
+            ex.TextField(name="text", title="text"),
         ],
         metadata=[
-            rg.FloatMetadataProperty("source"),
+            ex.FloatMetadataProperty("source"),
         ],
         questions=[
-            rg.LabelQuestion(name="label", title="text", labels=["positive", "negative"]),
+            ex.LabelQuestion(name="label", title="text", labels=["positive", "negative"]),
         ],
-        vectors=[rg.VectorField(name="text_vector", dimensions=3)],
+        vectors=[ex.VectorField(name="text_vector", dimensions=3)],
     )
     return settings
 
 
 @pytest.fixture
-def dataset(httpx_mock: HTTPXMock, settings) -> rg.Dataset:
+def dataset(httpx_mock: HTTPXMock, settings) -> ex.Dataset:
     api_url = "http://test_url"
-    client = rg.Argilla(api_url)
+    client = ex.Extralit(api_url)
     workspace_id = uuid.uuid4()
     workspace_name = "workspace-01"
     mock_workspace = {
@@ -67,7 +67,7 @@ def dataset(httpx_mock: HTTPXMock, settings) -> rg.Dataset:
     )
 
     with httpx.Client():
-        dataset = rg.Dataset(
+        dataset = ex.Dataset(
             client=client,
             name=f"dataset_{uuid.uuid4()}",
             settings=settings,
@@ -88,7 +88,7 @@ def test_settings_to_json(settings):
             assert "metadata" in settings_json
             assert "vectors" in settings_json
 
-        loaded_settings = rg.Settings.from_json(temp_file_path)
+        loaded_settings = ex.Settings.from_json(temp_file_path)
         assert settings == loaded_settings
 
 
@@ -96,6 +96,6 @@ def test_export_settings_from_disk(settings):
     with TemporaryDirectory() as temp_dir:
         temp_file_path = f"{temp_dir}/settings.json"
         settings.to_json(temp_file_path)
-        loaded_settings = rg.Settings.from_json(temp_file_path)
+        loaded_settings = ex.Settings.from_json(temp_file_path)
 
     assert settings == loaded_settings

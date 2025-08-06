@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "extralit.fullname" . }}-test-connection"
+  labels:
+    {{- include "extralit.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['http://{{ .Values.extralit.ingress.host }}']
+  restartPolicy: Never

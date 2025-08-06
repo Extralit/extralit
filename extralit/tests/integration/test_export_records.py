@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,33 +13,31 @@
 # limitations under the License.
 
 import json
-import random
 import uuid
 from pathlib import Path
-from string import ascii_lowercase
 from tempfile import TemporaryDirectory
 
 import pytest
 from PIL import Image
 from datasets import Dataset as HFDataset
 
-import argilla as rg
-from argilla import Argilla
+import extralit as ex
+from extralit import Extralit
 
 
 @pytest.fixture
-def dataset(client, dataset_name: str) -> rg.Dataset:
-    settings = rg.Settings(
+def dataset(client, dataset_name: str) -> ex.Dataset:
+    settings = ex.Settings(
         fields=[
-            rg.TextField(name="text"),
-            rg.ChatField(name="chat"),
-            rg.ImageField(name="image"),
+            ex.TextField(name="text"),
+            ex.ChatField(name="chat"),
+            ex.ImageField(name="image"),
         ],
         questions=[
-            rg.TextQuestion(name="label", use_markdown=False),
+            ex.TextQuestion(name="label", use_markdown=False),
         ],
     )
-    dataset = rg.Dataset(
+    dataset = ex.Dataset(
         name=dataset_name,
         settings=settings,
         client=client,
@@ -91,7 +89,7 @@ def mock_data():
     ]
 
 
-def test_export_records_dict_flattened(client: Argilla, dataset: rg.Dataset, mock_data):
+def test_export_records_dict_flattened(client: Extralit, dataset: ex.Dataset, mock_data):
     dataset.records.log(records=mock_data)
     exported_records = dataset.records.to_dict(flatten=True)
     assert isinstance(exported_records, dict)
@@ -101,7 +99,7 @@ def test_export_records_dict_flattened(client: Argilla, dataset: rg.Dataset, moc
     assert exported_records["text"] == ["Hello World, how are you?"] * 3
 
 
-def test_export_records_list_flattened(client: Argilla, dataset: rg.Dataset, mock_data):
+def test_export_records_list_flattened(client: Extralit, dataset: ex.Dataset, mock_data):
     dataset.records.log(records=mock_data)
     exported_records = dataset.records.to_list(flatten=True)
     assert len(exported_records) == len(mock_data)
@@ -115,9 +113,9 @@ def test_export_records_list_flattened(client: Argilla, dataset: rg.Dataset, moc
     assert exported_records[0]["label.suggestion.score"] is None
 
 
-def test_export_record_list_with_filtered_records(client: Argilla, dataset: rg.Dataset, mock_data):
+def test_export_record_list_with_filtered_records(client: Extralit, dataset: ex.Dataset, mock_data):
     dataset.records.log(records=mock_data)
-    exported_records = dataset.records(query=rg.Query(query="hello")).to_list(flatten=True)
+    exported_records = dataset.records(query=ex.Query(query="hello")).to_list(flatten=True)
     assert len(exported_records) == len(mock_data)
     assert isinstance(exported_records, list)
     assert isinstance(exported_records[0], dict)
@@ -129,7 +127,7 @@ def test_export_record_list_with_filtered_records(client: Argilla, dataset: rg.D
     assert exported_records[0]["label.suggestion.score"] is None
 
 
-def test_export_records_list_nested(client: Argilla, dataset: rg.Dataset, mock_data):
+def test_export_records_list_nested(client: Extralit, dataset: ex.Dataset, mock_data):
     dataset.records.log(records=mock_data)
     exported_records = dataset.records.to_list(flatten=False)
     assert len(exported_records) == len(mock_data)
@@ -138,7 +136,7 @@ def test_export_records_list_nested(client: Argilla, dataset: rg.Dataset, mock_d
     assert exported_records[0]["suggestions"]["label"]["score"] is None
 
 
-def test_export_records_dict_nested(client: Argilla, dataset: rg.Dataset, mock_data):
+def test_export_records_dict_nested(client: Extralit, dataset: ex.Dataset, mock_data):
     dataset.records.log(records=mock_data)
     exported_records = dataset.records.to_dict(flatten=False)
     assert isinstance(exported_records, dict)
@@ -146,7 +144,7 @@ def test_export_records_dict_nested(client: Argilla, dataset: rg.Dataset, mock_d
     assert exported_records["suggestions"][0]["label"]["value"] == "positive"
 
 
-def test_export_records_dict_nested_orient_index(client: Argilla, dataset: rg.Dataset, mock_data):
+def test_export_records_dict_nested_orient_index(client: Extralit, dataset: ex.Dataset, mock_data):
     dataset.records.log(records=mock_data)
     exported_records = dataset.records.to_dict(flatten=False, orient="index")
     assert isinstance(exported_records, dict)
@@ -157,7 +155,7 @@ def test_export_records_dict_nested_orient_index(client: Argilla, dataset: rg.Da
         assert exported_record["id"] == str(mock_record["id"])
 
 
-def test_export_records_to_json(dataset: rg.Dataset, mock_data):
+def test_export_records_to_json(dataset: ex.Dataset, mock_data):
     dataset.records.log(records=mock_data)
 
     with TemporaryDirectory() as temp_dir:
@@ -170,7 +168,7 @@ def test_export_records_to_json(dataset: rg.Dataset, mock_data):
     assert exported_records[0]["suggestions"]["label"]["value"] == "positive"
 
 
-def test_export_records_from_json(dataset: rg.Dataset, mock_data):
+def test_export_records_from_json(dataset: ex.Dataset, mock_data):
     dataset.records.log(records=mock_data)
 
     with TemporaryDirectory() as temp_dir:
@@ -184,7 +182,7 @@ def test_export_records_from_json(dataset: rg.Dataset, mock_data):
         assert record.id == str(mock_data[i]["id"])
 
 
-def test_export_records_to_hf_datasets(dataset: rg.Dataset, mock_data):
+def test_export_records_to_hf_datasets(dataset: ex.Dataset, mock_data):
     dataset.records.log(records=mock_data)
     hf_dataset = dataset.records.to_datasets()
 
@@ -207,7 +205,7 @@ def test_export_records_to_hf_datasets(dataset: rg.Dataset, mock_data):
         assert chat[0]["content"] == "Hello World, how are you?"
 
 
-def test_import_records_from_hf_dataset(dataset: rg.Dataset, mock_data) -> None:
+def test_import_records_from_hf_dataset(dataset: ex.Dataset, mock_data) -> None:
     mock_hf_dataset = HFDataset.from_list(mock_data)
     dataset.records.log(records=mock_hf_dataset)
 
