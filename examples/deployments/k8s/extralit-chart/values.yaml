@@ -1,4 +1,4 @@
-argilla:
+extralit:
   replicaCount: 1
   image:
     repository: extralit/extralit-server
@@ -10,7 +10,7 @@ argilla:
       cpu: "1"
   authSecretKey: "CHANGE_ME"
   auth:
-    username: "argilla"
+    username: "extralit"
     password: "12345678"
     apiKey: "extralit.apikey"
   persistence:
@@ -21,7 +21,7 @@ argilla:
   ingress:
     enabled: true
     className: "nginx"
-    host: "argilla.local"
+    host: "extralit.local"
     annotations:
       kubernetes.io/ingress.class: nginx
       nginx.ingress.kubernetes.io/ssl-redirect: "false"
@@ -58,7 +58,7 @@ elasticsearch:
         - ReadWriteOnce
 
 externalElasticsearch:
-  host: "argilla.local"
+  host: "extralit.local"
   port: 9200
   path: "/es"
 

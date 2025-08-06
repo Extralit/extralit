@@ -1,6 +1,6 @@
 apiVersion: v2
-name: argilla
-description: A Helm chart for Argilla Server on Kubernetes
+name: extralit
+description: A Helm chart for Extralit Server on Kubernetes
 
 # A chart can be either an 'application' or a 'library' chart.
 #

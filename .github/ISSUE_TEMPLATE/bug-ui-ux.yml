@@ -74,8 +74,8 @@ body:
   - type: input
     id: extralit-version
     attributes:
-      label: Extralit/Argilla Version
-      description: What version of Extralit/Argilla are you using?
+      label: Extralit Version
+      description: What version of Extralit are you using?
       placeholder: e.g. 1.0.0
     validations:
       required: true

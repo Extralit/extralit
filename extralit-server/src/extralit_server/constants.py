@@ -21,7 +21,7 @@ DATABASE_POSTGRESQL = "postgresql"
 SEARCH_ENGINE_ELASTICSEARCH = "elasticsearch"
 SEARCH_ENGINE_OPENSEARCH = "opensearch"
 
-DEFAULT_USERNAME = "argilla"
+DEFAULT_USERNAME = "extralit"
 DEFAULT_PASSWORD = "1234"
 DEFAULT_API_KEY = "extralit.apikey"
 

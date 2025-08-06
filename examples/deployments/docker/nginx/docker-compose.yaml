@@ -15,7 +15,7 @@ services:
       HF_HUB_DISABLE_TELEMETRY: 1
       EXTRALIT_BASE_URL: /argilla
 
-      USERNAME: argilla
+      USERNAME: extralit
       PASSWORD: 12345678
       API_KEY: extralit.apikey
     ports:

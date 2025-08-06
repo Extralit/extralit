@@ -1,6 +1,6 @@
 import { ILocalStorageService, Options } from "~/v1/domain/services/ILocalStorageService";
 
-const STORAGE_KEY = "argilla";
+const STORAGE_KEY = "extralit";
 
 const EMPTY_OBJECT = "{}";
 
@@ -31,7 +31,7 @@ export const useLocalStorage = (): ILocalStorageService => {
           [key]: value,
         })
       );
-    } catch {}
+    } catch { }
   };
 
   const pop = <T>(key: Options) => {

@@ -1,11 +1,11 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "argilla.name" -}}
+{{- define "extralit.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
-{{- define "argilla.worker.name" -}}
+{{- define "extralit.worker.name" -}}
 {{- printf "%s-%s" .Release.Name "worker" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -15,7 +15,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "argilla.fullname" -}}
+{{- define "extralit.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -31,9 +31,9 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Common labels
 */}}
-{{- define "argilla.labels" -}}
-helm.sh/chart: {{ include "argilla.chart" . }}
-{{ include "argilla.selectorLabels" . }}
+{{- define "extralit.labels" -}}
+helm.sh/chart: {{ include "extralit.chart" . }}
+{{ include "extralit.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -43,15 +43,15 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "argilla.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "argilla.name" . }}
+{{- define "extralit.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "extralit.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "argilla.chart" -}}
+{{- define "extralit.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -59,7 +59,7 @@ Create chart name and version as used by the chart label.
 Argilla Worker labels
 */}}
 {{- define "worker.labels" -}}
-helm.sh/chart: {{ include "argilla.chart" . }}
+helm.sh/chart: {{ include "extralit.chart" . }}
 app.kubernetes.io/component: worker
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
@@ -72,6 +72,6 @@ Argilla Worker Selector labels
 */}}
 {{- define "worker.selectorLabels" -}}
 app.kubernetes.io/component: worker
-app.kubernetes.io/name: {{ include "argilla.worker.name" . }}
+app.kubernetes.io/name: {{ include "extralit.worker.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}-worker
 {{- end }}

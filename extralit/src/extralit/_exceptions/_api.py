@@ -18,7 +18,7 @@ from httpx import HTTPStatusError
 from extralit._exceptions._base import ExtralitError
 
 
-class ArgillaAPIError(ExtralitError):
+class ExtralitAPIError(ExtralitError):
     message = "Server error"
 
     def __init__(self, message: Optional[str] = None, status_code: int = 500):
@@ -31,31 +31,31 @@ class ArgillaAPIError(ExtralitError):
         self.status_code = status_code
 
 
-class BadRequestError(ArgillaAPIError):
+class BadRequestError(ExtralitAPIError):
     message = "Bad request to the server"
 
 
-class ForbiddenError(ArgillaAPIError):
+class ForbiddenError(ExtralitAPIError):
     message = "User role is forbidden from performing this action by server"
 
 
-class NotFoundError(ArgillaAPIError):
+class NotFoundError(ExtralitAPIError):
     message = "Resource or entity not found on the server"
 
 
-class ConflictError(ArgillaAPIError):
+class ConflictError(ExtralitAPIError):
     message = "Conflict with the server. Resource or entity already exists"
 
 
-class UnprocessableEntityError(ArgillaAPIError):
+class UnprocessableEntityError(ExtralitAPIError):
     message = "Unprocessable entity. The server cannot process the request"
 
 
-class InternalServerError(ArgillaAPIError):
+class InternalServerError(ExtralitAPIError):
     message = "Internal server error"
 
 
-class UnauthorizedError(ArgillaAPIError):
+class UnauthorizedError(ExtralitAPIError):
     message = "Unauthorized user request to the server"
 
 
@@ -83,7 +83,7 @@ def api_error_handler(func):
             422: UnprocessableEntityError,
             500: InternalServerError,
         }
-        exception_class = switch.get(status_code, ArgillaAPIError)
+        exception_class = switch.get(status_code, ExtralitAPIError)
         raise exception_class(f"{exception_class.message}. Details: {error_detail}", status_code=status_code)
 
     def _handler_wrapper(*args, **kwargs):

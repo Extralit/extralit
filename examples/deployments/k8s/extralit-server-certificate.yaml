@@ -11,7 +11,7 @@ metadata:
   name: extralit-server-certificate
 spec:
   dnsNames:
-  - argilla-hostname
+    - extralit-hostname
   secretName: extralit-server-tls
   issuerRef:
     name: selfsigned-issuer

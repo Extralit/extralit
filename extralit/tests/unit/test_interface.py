@@ -22,7 +22,7 @@ class TestArgilla:
         with mock.patch("extralit.Extralit") as mock_client:
             mock_client.return_value.api_url = "http://localhost:6900"
             mock_client.return_value.api_key = "admin.apikey"
-            mock_client.return_value.workspace = "argilla"
+            mock_client.return_value.workspace = "extralit"
 
             client = ex.Extralit(api_url="http://localhost:6900", api_key="admin.apikey")
             assert client.api_url == "http://localhost:6900"

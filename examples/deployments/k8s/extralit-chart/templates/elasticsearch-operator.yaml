@@ -2,7 +2,7 @@
 apiVersion: elasticsearch.k8s.elastic.co/v1
 kind: Elasticsearch
 metadata:
-  name: {{ include "argilla.fullname" . }}
+  name: {{ include "extralit.fullname" . }}
 spec:
 
   version: {{ .Values.elasticsearch.version }}
@@ -50,6 +50,6 @@ spec:
           {{- end }}
     {{- if .Values.elasticsearch.disableAuthentication }}
       secureSettings:
-      - secretName: {{ include "argilla.fullname" . }}-es-http-certs-internal
+      - secretName: {{ include "extralit.fullname" . }}-es-http-certs-internal
     {{- end }}
 {{- end }}

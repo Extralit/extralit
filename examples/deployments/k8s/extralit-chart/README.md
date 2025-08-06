@@ -71,7 +71,7 @@ kubectl get pods -n elastic-system
 After adding the repository, you can install the chart with the release name `my-extralit-server`:
 
 ```bash
-helm install my-extralit-server examples/deployments/k8s/argilla-chart
+helm install my-extralit-server examples/deployments/k8s/extralit-chart
 ```
 
 Check the status of the pods:
@@ -135,7 +135,7 @@ helm unittest --help
 To execute the unit tests for this chart, run the following command from the root of the chart directory:
 
 ```bash
-helm unittest examples/deployments/k8s/argilla-chart
+helm unittest examples/deployments/k8s/extralit-chart
 ```
 
 This will run all the test files located in the `tests/` directory of the chart.

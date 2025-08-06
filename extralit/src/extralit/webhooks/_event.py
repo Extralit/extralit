@@ -19,7 +19,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict
 
 from extralit import Dataset, Record, UserResponse, Workspace
-from extralit._exceptions import ArgillaAPIError
+from extralit._exceptions import ExtralitAPIError
 from extralit._models import RecordModel, UserResponseModel, WorkspaceModel, EventType
 
 if TYPE_CHECKING:
@@ -144,7 +144,7 @@ class WebhookEvent(BaseModel):
 
         try:
             dataset.get()
-        except ArgillaAPIError:
+        except ExtralitAPIError:
             # TODO: Show notification
             pass
         finally:
@@ -157,7 +157,7 @@ class WebhookEvent(BaseModel):
         record = Record.from_model(RecordModel.model_validate(data), dataset=dataset)
         try:
             record.get()
-        except ArgillaAPIError:
+        except ExtralitAPIError:
             # TODO: Show notification
             pass
         finally:

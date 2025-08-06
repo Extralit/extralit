@@ -6,17 +6,17 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   tls:
-  - hosts:
-    - argilla-hostname
-    secretName: extralit-server-tls
+    - hosts:
+        - extralit-hostname
+      secretName: extralit-server-tls
   rules:
-  - host: argilla-hostname
-    http:
-      paths:
-        - path: "/"
-          pathType: Prefix
-          backend:
-            service:
-              name: extralit-server
-              port:
-                number: 6900
+    - host: extralit-hostname
+      http:
+        paths:
+          - path: "/"
+            pathType: Prefix
+            backend:
+              service:
+                name: extralit-server
+                port:
+                  number: 6900

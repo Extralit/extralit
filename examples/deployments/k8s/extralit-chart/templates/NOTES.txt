@@ -10,20 +10,20 @@ To learn more about the release, try:
 
 Argilla:
 
-{{- if .Values.argilla.ingress.enabled }}
-  You can access the Argilla server at: http://{{ .Values.argilla.ingress.host }}
+{{- if .Values.extralit.ingress.enabled }}
+  You can access the Argilla server at: http://{{ .Values.extralit.ingress.host }}
 {{- else }}
   To access the Argilla server, run these commands:
-  $ export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "argilla.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
+  $ export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "extralit.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
   $ kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 6900:6900
 
 Then access the Argilla server at http://localhost:6900
 {{- end }}
-{{- if .Values.argilla.persistence.enabled }}
+{{- if .Values.extralit.persistence.enabled }}
   Persistence is enabled for Argilla.
-  Your Argilla data will be stored in a Persistent Volume Claim named: {{ .Release.Name }}-argilla-pvc
+  Your Argilla data will be stored in a Persistent Volume Claim named: {{ .Release.Name }}-extralit-pvc
   To find the actual storage location of your Argilla data, run the following command:
-  $ kubectl get pvc {{ .Release.Name }}-argilla-pvc -o jsonpath="{.spec.volumeName}"
+  $ kubectl get pvc {{ .Release.Name }}-extralit-pvc -o jsonpath="{.spec.volumeName}"
   $ kubectl get pv <volume-name> -o jsonpath="{.spec.hostPath.path}"
 {{- end }}
 
@@ -55,7 +55,7 @@ Redis:
   Using external Redis at: {{ .Values.externalRedis.host }}:{{ .Values.externalRedis.port }}
 {{- end }}
 
-{{- if and (not .Values.redis.master.persistence.enabled) (not .Values.elasticsearch.persistence.enabled) (not .Values.argilla.persistence.enabled)}}
+{{- if and (not .Values.redis.master.persistence.enabled) (not .Values.elasticsearch.persistence.enabled) (not .Values.extralit.persistence.enabled)}}
   Persistence is disabled. Your data will not be preserved across pod restarts.
 {{- end }}
 

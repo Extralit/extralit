@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ from pathlib import Path
 from typing import List, Optional, TYPE_CHECKING, Dict, Union, Iterator, Sequence, Literal
 from uuid import UUID
 
-from extralit._exceptions import SettingsError, ArgillaAPIError, ArgillaSerializeError
+from extralit._exceptions import SettingsError, ExtralitAPIError, ArgillaSerializeError
 from extralit._models._dataset import DatasetModel
 from extralit._resource import Resource
 from extralit.settings._field import Field, _field_from_dict, _field_from_model, FieldBase
@@ -533,7 +533,7 @@ class SettingsProperties(Sequence[Property]):
             try:
                 property.dataset = self._settings.dataset
                 property.create()
-            except ArgillaAPIError as e:
+            except ExtralitAPIError as e:
                 raise SettingsError(f"Failed to create property {property.name!r}: {e.message}") from e
 
     def _update(self):
@@ -541,7 +541,7 @@ class SettingsProperties(Sequence[Property]):
             try:
                 item.dataset = self._settings.dataset
                 item.update() if item.id else item.create()
-            except ArgillaAPIError as e:
+            except ExtralitAPIError as e:
                 raise SettingsError(f"Failed to update {item.name!r}: {e.message}") from e
 
         self._delete()
@@ -550,7 +550,7 @@ class SettingsProperties(Sequence[Property]):
         for item in self._removed_properties:
             try:
                 item.delete()
-            except ArgillaAPIError as e:
+            except ExtralitAPIError as e:
                 raise SettingsError(f"Failed to delete {item.name!r}: {e.message}") from e
 
     def serialize(self) -> List[dict]:

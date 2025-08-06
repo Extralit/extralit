@@ -12,9 +12,9 @@ flags:
     paths:
       - argilla-frontend/
     carryforward: true
-  argilla:
+  extralit:
     paths:
-      - extralit/src/argilla/
+      - extralit/src/extralit/
     carryforward: true
   extralit:
     paths:
@@ -36,10 +36,10 @@ component_management:
       paths:
         - extralit/src/extralit/**
 
-    - component_id: argilla
-      name: argilla
+    - component_id: extralit
+      name: extralit
       paths:
-        - extralit/src/argilla/**
+        - extralit/src/extralit/**
 
     - component_id: extralit-server
       paths:

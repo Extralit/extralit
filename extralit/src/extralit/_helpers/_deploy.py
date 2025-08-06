@@ -36,7 +36,7 @@ class SpacesDeploymentMixin(LoggingMixin):
     def deploy_on_spaces(
         cls,
         api_key: str,
-        repo_name: Optional[str] = "argilla",
+        repo_name: Optional[str] = "extralit",
         org_name: Optional[str] = None,
         hf_token: Optional[str] = None,
         space_storage: Optional[Union[str, "SpaceStorage", Literal["small", "medium", "large"]]] = None,

@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "argilla.fullname" . }}-worker
+  name: {{ include "extralit.fullname" . }}-worker
   labels:
     {{- include "worker.labels" . | nindent 4 }}
     app.kubernetes.io/component: worker
@@ -19,29 +19,29 @@ spec:
     spec:
       containers:
         - name: {{ .Chart.Name }}-worker
-          image: "{{ .Values.argilla.image.repository }}:{{ .Values.argilla.image.tag }}"
+          image: "{{ .Values.extralit.image.repository }}:{{ .Values.extralit.image.tag }}"
           env:
             - name: EXTRALIT_ELASTICSEARCH
-              value: {{if .Values.elasticsearch.useOperator}}"http://{{ include "argilla.fullname" . }}-es-http:9200"{{else}}"{{ .Values.externalElasticsearch.host }}:{{ .Values.externalElasticsearch.port }}"{{end}}
+              value: {{if .Values.elasticsearch.useOperator}}"http://{{ include "extralit.fullname" . }}-es-http:9200"{{else}}"{{ .Values.externalElasticsearch.host }}:{{ .Values.externalElasticsearch.port }}"{{end}}
             - name: EXTRALIT_REDIS_URL
               value: redis://{{ .Release.Name }}-redis-master:6379/0
             - name: BACKGROUND_NUM_WORKERS
               value: "{{ .Values.worker.numWorkers | default 2 }}"
-            {{- if .Values.argilla.persistence.enabled }}
+            {{- if .Values.extralit.persistence.enabled }}
             - name: EXTRALIT_HOME_PATH
-              value: {{ .Values.argilla.persistence.mountPath | quote }}
+              value: {{ .Values.extralit.persistence.mountPath | quote }}
             {{- end }}
           command: ["sh", "-c", "python -m extralit_server worker --num-workers ${BACKGROUND_NUM_WORKERS}"]
-          {{- if .Values.argilla.persistence.enabled }}
+          {{- if .Values.extralit.persistence.enabled }}
           volumeMounts:
-            - name: argilla-data
-              mountPath: {{ .Values.argilla.persistence.mountPath}}
+            - name: extralit-data
+              mountPath: {{ .Values.extralit.persistence.mountPath}}
           {{- end }}
           resources:
             {{- toYaml .Values.worker.resources | nindent 12 }}
-      {{- if .Values.argilla.persistence.enabled }}
+      {{- if .Values.extralit.persistence.enabled }}
       volumes:
-        - name: argilla-data
+        - name: extralit-data
           persistentVolumeClaim:
             claimName: {{ .Release.Name }}-pvc
       {{- end }}

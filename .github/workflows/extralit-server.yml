@@ -51,7 +51,7 @@ jobs:
           POSTGRES_HOST: localhost
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: argilla
+          POSTGRES_DB: extralit
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -114,7 +114,7 @@ jobs:
         env:
           HF_TOKEN_EXTRALIT_INTERNAL_TESTING: ${{ secrets.HF_TOKEN_EXTRALIT_INTERNAL_TESTING }}
         run: |
-          EXTRALIT_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/argilla
+          EXTRALIT_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/extralit
           EXTRALIT_ELASTICSEARCH=http://localhost:9200
           EXTRALIT_SEARCH_ENGINE=elasticsearch
           pdm test-cov tests/unit

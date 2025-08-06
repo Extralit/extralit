@@ -38,7 +38,7 @@ jobs:
         env:
           EXTRALIT_ENABLE_TELEMETRY: 0
           # Set credentials
-          USERNAME: argilla
+          USERNAME: extralit
           PASSWORD: 12345678
           API_KEY: extralit.apikey
           # Configure storage to use local files instead of MinIO
@@ -80,12 +80,12 @@ jobs:
 
           pdm install
           uv cache prune --ci
-      - name: Wait for argilla server to start
+      - name: Wait for extralit-server to start
         run: |
           while ! curl -XGET http://localhost:6900/api/_status; do sleep 5; done
           # Create a directory for local storage that the container can access
-          mkdir -p /tmp/argilla-files
-          chmod -R 777 /tmp/argilla-files
+          mkdir -p /tmp/extralit-files
+          chmod -R 777 /tmp/extralit-files
       - name: Set huggingface hub credentials
         run: |
           echo "HF_TOKEN_EXTRALIT_INTERNAL_TESTING=${{ secrets.HF_TOKEN_EXTRALIT_INTERNAL_TESTING }}" >> "$GITHUB_ENV"
@@ -114,7 +114,7 @@ jobs:
         uses: codecov/codecov-action@v5.4.3
         with:
           files: coverage.xml
-          flags: argilla
+          flags: extralit
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
 
@@ -133,7 +133,7 @@ jobs:
           name: extralit
           path: extralit/dist
 
-  # This job will publish argilla package into PyPI repository
+  # This job will publish extralit package into PyPI repository
   publish_release:
     name: Publish Release
     runs-on: ubuntu-latest

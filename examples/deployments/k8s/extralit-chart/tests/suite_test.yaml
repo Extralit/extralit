@@ -1,4 +1,4 @@
-suite: test argilla chart
+suite: test extralit chart
 templates:
   - templates/configmap.yaml
   - templates/deployment.yaml
@@ -13,7 +13,7 @@ tests:
     set:
       elasticsearch.useOperator: false
       configmap.minikubeIP: "192.168.49.2"
-      ingress.host: "argilla.local"
+      ingress.host: "extralit.local"
     templates:
       - templates/configmap.yaml
     asserts:
@@ -24,7 +24,7 @@ tests:
           value: custom-hosts
       - matchRegex:
           path: data.hosts
-          pattern: 192.168.49.2 argilla.local
+          pattern: 192.168.49.2 extralit.local
 
   - it: should not render configmap when elasticsearch.useOperator is true
     set:
@@ -37,12 +37,12 @@ tests:
 
   - it: should render deployment correctly
     set:
-      argilla.replicaCount: 2
-      argilla.image.repository: argilla/argilla
-      argilla.image.tag: latest
-      argilla.authSecretKey: testsecret
-      argilla.auth.username: argilla
-      argilla.auth.password: "12345678"
+      extralit.replicaCount: 2
+      extralit.image.repository: extralit/extralit
+      extralit.image.tag: latest
+      extralit.authSecretKey: testsecret
+      extralit.auth.username: extralit
+      extralit.auth.password: "12345678"
     templates:
       - templates/deployment.yaml
     asserts:
@@ -53,7 +53,7 @@ tests:
           value: 2
       - equal:
           path: spec.template.spec.containers[0].image
-          value: argilla/argilla:latest
+          value: extralit/extralit:latest
       - contains:
           path: spec.template.spec.containers[0].env
           content:
@@ -83,9 +83,9 @@ tests:
 
   - it: should render PVC when persistence is enabled
     set:
-      argilla.persistence.enabled: true
-      argilla.persistence.accessMode: ReadWriteOnce
-      argilla.persistence.size: 5Gi
+      extralit.persistence.enabled: true
+      extralit.persistence.accessMode: ReadWriteOnce
+      extralit.persistence.size: 5Gi
     templates:
       - templates/pvc.yaml
     asserts:
@@ -114,10 +114,10 @@ tests:
 
   - it: should render HPA when enabled
     set:
-      argilla.hpa.enabled: true
-      argilla.hpa.minReplicas: 2
-      argilla.hpa.maxReplicas: 5
-      argilla.hpa.targetCPUUtilizationPercentage: 80
+      extralit.hpa.enabled: true
+      extralit.hpa.minReplicas: 2
+      extralit.hpa.maxReplicas: 5
+      extralit.hpa.targetCPUUtilizationPercentage: 80
     templates:
       - templates/hpa.yaml
     asserts:
@@ -141,7 +141,7 @@ tests:
 
   - it: should not render HPA when disabled
     set:
-      argilla.hpa.enabled: false
+      extralit.hpa.enabled: false
     templates:
       - templates/hpa.yaml
     asserts:
@@ -150,10 +150,10 @@ tests:
 
   - it: should render Ingress when enabled
     set:
-      argilla.ingress.enabled: true
-      argilla.ingress.className: nginx
-      argilla.ingress.host: argilla.example.com
-      argilla.ingress.annotations:
+      extralit.ingress.enabled: true
+      extralit.ingress.className: nginx
+      extralit.ingress.host: extralit.example.com
+      extralit.ingress.annotations:
         kubernetes.io/ingress.class: nginx
     templates:
       - templates/ingress.yaml
@@ -165,7 +165,7 @@ tests:
           value: nginx
       - equal:
           path: spec.rules[0].host
-          value: argilla.example.com
+          value: extralit.example.com
       - equal:
           path: spec.rules[0].http.paths[0].path
           value: /
@@ -181,7 +181,7 @@ tests:
 
   - it: should not render Ingress when disabled
     set:
-      argilla.ingress.enabled: false
+      extralit.ingress.enabled: false
     templates:
       - templates/ingress.yaml
     asserts:

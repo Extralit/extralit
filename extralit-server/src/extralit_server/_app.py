@@ -151,8 +151,8 @@ def create_server_app() -> FastAPI:
     """Configure the argilla server"""
 
     app = FastAPI(
-        title="Argilla",
-        description="Argilla API",
+        title="Extralit",
+        description="Extralit API",
         docs_url=None,
         redoc_url=None,
         redirect_slashes=False,

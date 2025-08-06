@@ -22,7 +22,7 @@ import httpx
 
 from extralit._constants import _DEFAULT_SCHEMA_S3_PATH
 from extralit._api._base import ResourceAPI
-from extralit._exceptions._api import api_error_handler, ArgillaAPIError
+from extralit._exceptions._api import api_error_handler, ExtralitAPIError
 from extralit._models._workspace import WorkspaceModel
 from extralit._models._files import ListObjectsResponse, ObjectMetadata, FileObjectResponse
 
@@ -137,7 +137,7 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
             A list of files.
 
         Raises:
-            ArgillaAPIError: If the API request fails.
+            ExtralitAPIError: If the API request fails.
             ValueError: If the workspace name is invalid.
         """
         if not workspace_name:
@@ -177,7 +177,7 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
                 logger.info(f"No files found at path '{path}' in workspace '{workspace_name}'")
                 return ListObjectsResponse(objects=[])
             logger.error(f"Failed to list files in workspace '{workspace_name}': {str(e)}")
-            raise ArgillaAPIError(f"Failed to list files: {str(e)}") from e
+            raise ExtralitAPIError(f"Failed to list files: {str(e)}") from e
         except Exception as e:
             logger.error(f"Unexpected error listing files in workspace '{workspace_name}': {str(e)}")
             raise
@@ -195,7 +195,7 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
             The file content and metadata.
 
         Raises:
-            ArgillaAPIError: If the API request fails.
+            ExtralitAPIError: If the API request fails.
             ValueError: If the workspace name or path is invalid.
             FileNotFoundError: If the file does not exist.
         """
@@ -249,7 +249,7 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
                 logger.error(f"File '{path}' not found in workspace '{workspace_name}'")
                 raise FileNotFoundError(f"File '{path}' not found in workspace '{workspace_name}'") from e
             logger.error(f"Failed to get file '{path}' from workspace '{workspace_name}': {str(e)}")
-            raise ArgillaAPIError(f"Failed to get file: {str(e)}") from e
+            raise ExtralitAPIError(f"Failed to get file: {str(e)}") from e
 
         except Exception as e:
             logger.error(f"Unexpected error getting file '{path}' from workspace '{workspace_name}': {str(e)}")
@@ -268,7 +268,7 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
             The metadata of the uploaded file.
 
         Raises:
-            ArgillaAPIError: If the API request fails.
+            ExtralitAPIError: If the API request fails.
             ValueError: If the workspace name or path is invalid.
             FileNotFoundError: If the local file does not exist.
             PermissionError: If the local file cannot be read.
@@ -308,7 +308,7 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
             return metadata
         except httpx.HTTPStatusError as e:
             logger.error(f"Failed to upload file '{file_path}' to workspace '{workspace_name}': {str(e)}")
-            raise ArgillaAPIError(f"Failed to upload file: {str(e)}") from e
+            raise ExtralitAPIError(f"Failed to upload file: {str(e)}") from e
         except Exception as e:
             logger.error(f"Unexpected error uploading file '{file_path}' to workspace '{workspace_name}': {str(e)}")
             raise
@@ -323,7 +323,7 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
             version_id: The version ID of the file.
 
         Raises:
-            ArgillaAPIError: If the API request fails.
+            ExtralitAPIError: If the API request fails.
             ValueError: If the workspace name or path is invalid.
             FileNotFoundError: If the file does not exist.
         """
@@ -348,7 +348,7 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
                 logger.error(f"File '{path}' not found in workspace '{workspace_name}'")
                 raise FileNotFoundError(f"File '{path}' not found in workspace '{workspace_name}'") from e
             logger.error(f"Failed to delete file '{path}' from workspace '{workspace_name}': {str(e)}")
-            raise ArgillaAPIError(f"Failed to delete file: {str(e)}") from e
+            raise ExtralitAPIError(f"Failed to delete file: {str(e)}") from e
         except Exception as e:
             logger.error(f"Unexpected error deleting file '{path}' from workspace '{workspace_name}': {str(e)}")
             raise
@@ -437,7 +437,7 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
 
         Raises:
             ImportError: If required packages are missing.
-            ArgillaAPIError: If the API request fails.
+            ExtralitAPIError: If the API request fails.
             ValueError: If the workspace name is invalid.
         """
         try:
@@ -514,9 +514,9 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
 
         except Exception as e:
             logger.error(f"Unexpected error loading schemas from workspace '{workspace_name}': {str(e)}")
-            if isinstance(e, (ImportError, ArgillaAPIError, ValueError)):
+            if isinstance(e, (ImportError, ExtralitAPIError, ValueError)):
                 raise
-            raise ArgillaAPIError(f"Failed to load schemas: {str(e)}") from e
+            raise ExtralitAPIError(f"Failed to load schemas: {str(e)}") from e
 
     @api_error_handler
     def add_schema(self, workspace_name: str, schema: Any, prefix: str = _DEFAULT_SCHEMA_S3_PATH) -> None:
