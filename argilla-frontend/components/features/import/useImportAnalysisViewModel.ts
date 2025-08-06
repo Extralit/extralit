@@ -49,6 +49,12 @@ export function useImportAnalysisViewModel(props: any) {
     }
   };
 
+  const retryAnalysis = () => {
+    if (props.workspace && props.dataframeData && props.pdfData?.matchedFiles) {
+      analyzeImport(props.workspace, props.dataframeData, props.pdfData.matchedFiles);
+    }
+  };
+
   // Auto-trigger analysis when props change
   watch(
     () => [props.workspace, props.dataframeData, props.pdfData],
@@ -68,5 +74,6 @@ export function useImportAnalysisViewModel(props: any) {
     documentActions,
     reset,
     analyzeImport,
+    retryAnalysis,
   };
 }

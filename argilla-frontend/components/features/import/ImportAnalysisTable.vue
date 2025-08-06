@@ -415,11 +415,7 @@ export default {
     },
 
 
-    retryAnalysis() {
-      if (this.workspace && this.dataframeData && this.pdfData?.matchedFiles) {
-        this.analyzeImport(this.workspace, this.dataframeData, this.pdfData.matchedFiles);
-      }
-    },
+
 
     emitUpdate() {
       const confirmedDocuments: Record<string, any> = {};
@@ -503,11 +499,8 @@ export default {
       return 0;
     },
 
-    reset() {
+    resetLocalState() {
       this.localDocumentActions = {};
-      if (this.reset) { // Call view model reset if available
-        this.reset();
-      }
     },
 
 

@@ -74,6 +74,35 @@ argilla-frontend/
 - **Styling**: SCSS in `assets/scss/` with component-scoped styles
 - **Base Components**: BaseSimpleTable.vue already exists for tabular data display
 
+### Jest Testing Patterns
+- **Test Files**: Place `.spec.js` files next to the component they test
+- **Component Mocks**: Mock base components at the top of test files:
+  ```javascript
+  jest.mock("@/components/base/base-component/BaseComponent.vue", () => ({
+    name: "BaseComponent",
+    template: '<div class="mock-base-component"></div>',
+    props: ["prop1", "prop2"],
+  }));
+  ```
+- **View Model Mocks**: Create shared mock objects for view models:
+  ```javascript
+  const mockViewModel = {
+    property1: false,
+    property2: "",
+    method1: jest.fn(),
+    method2: jest.fn(),
+  };
+
+  jest.mock("./useViewModelName", () => ({
+    useViewModelName: jest.fn(() => mockViewModel),
+  }));
+  ```
+- **Test Structure**: Use `beforeEach` to reset mock state between tests
+- **Props Testing**: Test component behavior with different prop combinations
+- **Event Testing**: Verify component emits correct events with proper data
+- **State Testing**: Test computed properties and reactive state changes
+- **User Interaction**: Mock user actions and verify component responses
+
 ## Client SDK Structure (extralit/)
 ```
 extralit/
