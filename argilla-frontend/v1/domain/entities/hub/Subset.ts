@@ -201,9 +201,22 @@ export class Subset {
       throw new Error(`Question with name "${newName}" already exists`);
     }
 
-    // Simply update the title for display purposes
-    // The name remains readonly, but title can be changed
-    question.title = newName;
+    // Get the current question's settings and position
+    const settings = question.settings.toPrototype();
+    const position = this.questions.indexOf(question);
+    const column = question.column;
+    const required = question.required;
+
+    // Remove the old question
+    this.removeQuestion(oldName);
+
+    // Add the new question with the new name
+    this.addQuestion(newName, settings, position);
+
+    // Restore the column mapping and required status
+    const newQuestion = this.questions[position];
+    newQuestion.column = column;
+    newQuestion.required = required;
   }
 
   public addQuestion(name: string, settings: QuestionPrototype, position?: number) {

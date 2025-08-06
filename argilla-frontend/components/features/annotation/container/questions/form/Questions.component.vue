@@ -1,11 +1,11 @@
 <template>
   <div>
-    <p v-if="legend" class="questions__title --body3 --light" v-text="legend" :aria-label="legend" />
+    <p v-if="legend" class="questions__title --body3 --light" :aria-label="legend" v-text="legend" />
     <div class="questions" role="list" aria-label="List of annotation questions">
       <div
         v-for="(question, index) in questions"
         :key="question.id"
-        :aria-label="'Question: ' + (question.title || question.name)"
+        :aria-label="'Question: ' + question.name"
         @keydown.arrow-up.prevent="
           $event.ctrlKey || $event.metaKey ? updateQuestionAutofocus(autofocusPosition - 1) : null
         "

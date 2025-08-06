@@ -88,14 +88,9 @@ export default {
     },
     updateQuestionName(newName: string) {
       try {
-        // Update the title for immediate display
-        this.question.title = newName;
-
-        // Rename the question in the subset to update the name property and mappings
+        // Rename the question in the subset - this will replace the question object
         this.selectedSubset.renameQuestion(this.question.name, newName);
       } catch (error) {
-        // If renaming fails (e.g., duplicate name), revert the title
-        this.question.title = this.question.name;
         console.error('Failed to rename question:', error.message);
         // You could show a user-friendly error message here
       }

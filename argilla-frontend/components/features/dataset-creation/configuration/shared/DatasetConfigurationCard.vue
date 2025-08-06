@@ -18,7 +18,7 @@
             class="config-card__title-text"
             :class="{ 'config-card__title-text--editable': configType === 'question' }"
             @dblclick="configType === 'question' ? startEditing() : null"
-            >{{ item.title || item.name }}</span
+            >{{ item.name }}</span
           >
           <span v-if="item.primitiveType" class="config-card__primitive-type">{{ item.primitiveType }}</span>
         </h3>
@@ -79,22 +79,21 @@ export default {
     startEditing() {
       if (this.configType !== "question") return;
       this.isEditingName = true;
-      this.editableName = this.item.title || this.item.name;
+      this.editableName = this.item.name;
       this.$nextTick(() => {
         this.$refs.nameInput.focus();
         this.$refs.nameInput.select();
       });
     },
     finishEditing() {
-      const currentName = this.item.title || this.item.name;
-      if (this.editableName.trim() && this.editableName !== currentName) {
+      if (this.editableName.trim() && this.editableName !== this.item.name) {
         this.$emit("name-changed", this.editableName.trim());
       }
       this.isEditingName = false;
     },
     cancelEditing() {
       this.isEditingName = false;
-      this.editableName = this.item.title || this.item.name;
+      this.editableName = this.item.name;
     },
   },
 };
