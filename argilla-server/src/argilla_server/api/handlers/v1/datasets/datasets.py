@@ -31,6 +31,7 @@ from argilla_server.api.schemas.v1.datasets import (
     DatasetUpdate,
     HubDataset,
     HubDatasetExport,
+    ImportHistoryDataset,
     UsersProgress,
 )
 from argilla_server.api.schemas.v1.fields import Field, FieldCreate, Fields
@@ -45,7 +46,7 @@ from argilla_server.api.schemas.v1.jobs import Job as JobSchema
 from argilla_server.contexts import datasets
 from argilla_server.database import get_async_db
 from argilla_server.enums import DatasetStatus
-from argilla_server.jobs import hub_jobs
+from argilla_server.jobs import hub_jobs, import_jobs
 from argilla_server.models import Dataset, User
 from argilla_server.search_engine import (
     SearchEngine,
@@ -331,6 +332,27 @@ async def import_dataset_from_hub(
         split=hub_dataset.split,
         dataset_id=dataset.id,
         mapping=hub_dataset.mapping.model_dump(),
+    )
+
+    return JobSchema(id=job.id, status=job.get_status())
+
+
+@router.post("/datasets/{dataset_id}/import-history", status_code=status.HTTP_202_ACCEPTED, response_model=JobSchema)
+async def import_dataset_from_import_history(
+    *,
+    db: AsyncSession = Depends(get_async_db),
+    dataset_id: UUID,
+    import_history_dataset: ImportHistoryDataset,
+    current_user: User = Security(auth.get_current_user),
+):
+    dataset = await Dataset.get_or_raise(db, dataset_id)
+
+    await authorize(current_user, DatasetPolicy.import_from_hub(dataset))
+
+    job = import_jobs.import_dataset_from_import_history_job.delay(
+        history_id=import_history_dataset.history_id,
+        dataset_id=dataset.id,
+        mapping=import_history_dataset.mapping.model_dump(),
     )
 
     return JobSchema(id=job.id, status=job.get_status())

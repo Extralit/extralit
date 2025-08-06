@@ -7,6 +7,8 @@ import type {
   ImportStatus,
   DocumentMetadata,
   ImportAnalysisResponse,
+  ImportHistoryResponse,
+  DataframeData,
 } from "~/v1/domain/entities/import/ImportAnalysis";
 
 // Re-export commonly used backend types for convenience
@@ -24,6 +26,7 @@ export type {
   ImportSummary,
   ImportAnalysisResponse,
   ImportHistoryCreate,
+  ImportHistoryResponse,
 } from "~/v1/domain/entities/import/ImportAnalysis";
 export type { CellComponent } from "tabulator-tables";
 

@@ -206,14 +206,11 @@
 
 - [ ] 11. Add comprehensive error handling and validation
 - [ ] 11.1 Implement robust error handling
-  - Add specific error messages for BibTeX parsing failures
-  - Handle corrupted PDF files with detailed error reporting
   - Implement retry mechanisms for network and storage failures
   - Add workspace storage quota validation
   - _Requirements: 5.1, 5.2, 5.3, 5.5_
 
 - [ ] 11.2 Add security and performance optimizations
-  - Implement file type and size validation
   - Add rate limiting for bulk upload requests
   - Add cleanup of temporary files and partial uploads
   - _Requirements: 6.1, 6.2, 6.5, 6.6_

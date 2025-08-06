@@ -62,7 +62,7 @@ HUB_DATASET_CARD_TEMPLATE_PATH = os.path.join(Path(__file__).parent, "hub_templa
 
 class HubDataset:
     def __init__(self, name: str, subset: str, split: str, mapping: HubDatasetMapping):
-        self.dataset = load_dataset(path=name, name=subset, split=split, streaming=True)
+        self.dataset: HFDataset = load_dataset(path=name, name=subset, split=split, streaming=True)  # type: ignore
         self.split = split
         self.mapping = mapping
         self.mapping_feature_names = mapping.sources
@@ -231,7 +231,7 @@ class HubDatasetExporter:
         self.cache_version = uuid4()
 
     def export_to(self, name: str, subset: str, split: str, private: bool, token: str) -> None:
-        hf_dataset = HFDataset.from_generator(self._rows_generator, split=NamedSplit(split))
+        hf_dataset: HFDataset = HFDataset.from_generator(self._rows_generator, split=NamedSplit(split))  # type: ignore
         hf_dataset.push_to_hub(
             repo_id=name,
             config_name=subset,

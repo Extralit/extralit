@@ -68,16 +68,12 @@
           </div>
           <BaseSeparator class="home__sidebar__separator" />
           <div class="home__sidebar__content">
-            <p class="home__sidebar__title" v-text="$t('home.exampleDatasetsTitle')" />
-            <p class="home__sidebar__subtitle" v-text="$t('home.exampleDatasetsText')" />
-            <div class="home__sidebar__cards">
-              <ExampleDatasetCard
-                v-for="dataset in exampleDatasets"
-                :key="dataset.repoId"
-                :dataset="dataset"
-                @on-import-dataset="importHfDataset"
-              />
-            </div>
+            <RecentImports
+              :workspace="selectedWorkspace"
+              @import-selected="handleImportSelected"
+              @view-all-imports="openImportHistoryModal"
+              @import-documents="openImportModal"
+            />
           </div>
         </template>
         <template v-else>
@@ -107,6 +103,37 @@
       :workspace="selectedWorkspace"
       @close="showImportModal = false"
     />
+
+    <!-- Import History Modal -->
+    <BaseModal
+      :modal-visible="isImportHistoryModalVisible"
+      @close-modal="closeImportHistoryModal"
+      :modal-title="$t('import.historyTitle')"
+      modal-class="modal-auto"
+    >
+      <ImportHistoryList
+        :workspace="selectedWorkspace"
+        @view-details="handleViewImportDetails"
+        @close="closeImportHistoryModal"
+      />
+    </BaseModal>
+
+    <!-- Import History Details Modal -->
+    <BaseModal
+      :modal-visible="isImportDetailsModalVisible"
+      @close-modal="closeImportDetailsModal"
+      :modal-title="`Import Details - ${selectedImportDetails?.filename || 'Unknown'}`"
+      modal-class="modal-large"
+    >
+      <ImportHistoryDetailsModal
+        v-if="selectedImportDetails"
+        :import-id="selectedImportDetails.importId"
+        :filename="selectedImportDetails.filename"
+        :workspace="selectedImportDetails.workspace"
+        @close="closeImportDetailsModal"
+        @retry-item="handleRetryItem"
+      />
+    </BaseModal>
   </div>
 </template>
 
@@ -114,7 +141,7 @@
 import Home from "@/layouts/Home.vue";
 import { useHomeViewModel } from "./useHomeViewModel";
 import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
-
+import ImportHistoryDetailsModal from "~/components/features/import/ImportHistoryDetailsModal.vue";
 
 export default {
   data() {
@@ -126,6 +153,9 @@ export default {
         { id: 'datasets', name: this.$t('home.datasets') },
         { id: 'documents', name: this.$t('home.documents') },
       ],
+      // Import details modal state
+      isImportDetailsModalVisible: false,
+      selectedImportDetails: null,
     };
   },
   methods: {
@@ -151,10 +181,42 @@ export default {
         this.activeTab = selectedTab;
       }
     },
+    handleImportSelected(importRecord) {
+      this.goToImportConfiguration(importRecord.id);
+    },
+    handleViewImportDetails(importRecord) {
+      this.selectedImportDetails = importRecord;
+      this.isImportDetailsModalVisible = true;
+    },
+    closeImportDetailsModal() {
+      this.isImportDetailsModalVisible = false;
+      this.selectedImportDetails = null;
+    },
+    handleRetryItem(item) {
+      // Handle retry item functionality if needed
+      console.log('Retry item:', item);
+    },
   },
   components: {
     Home,
+    ImportHistoryDetailsModal,
   },
+  computed: {
+    // Modal state is managed by useHomeViewModel
+  },
+
+  watch: {
+    workspaces: {
+      immediate: true,
+      handler(newWorkspaces) {
+        // Auto-assign the first workspace if none is selected and workspaces exist
+        if (!this.selectedWorkspace && newWorkspaces && newWorkspaces.length > 0) {
+          this.selectedWorkspace = newWorkspaces[0];
+        }
+      }
+    }
+  },
+
   setup() {
     return useHomeViewModel();
   },
