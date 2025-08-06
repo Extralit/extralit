@@ -69,22 +69,34 @@ export default {
     formatDate(dateString: string): string {
       try {
         const date = new Date(dateString);
-        const now = new Date();
-        const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+        const now = Date.now();
+        const diffInMs = now - date.getTime();
+        const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+        const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
 
-        if (diffInHours < 1) {
+        // Check if date is invalid
+        if (isNaN(date.getTime())) {
+          return "Unknown";
+        }
+
+        if (diffInMs < 0) {
+          // Future date
+          return date.toLocaleDateString();
+        } else if (diffInMs < 60 * 60 * 1000) {
+          // Less than 1 hour
           return "Just now";
         } else if (diffInHours < 24) {
+          // Less than 24 hours
           return `${diffInHours}h ago`;
-        } else if (diffInHours < 48) {
+        } else if (diffInDays === 1) {
+          // Exactly 1 day ago
           return "Yesterday";
+        } else if (diffInDays < 7) {
+          // Less than 7 days
+          return `${diffInDays}d ago`;
         } else {
-          const diffInDays = Math.floor(diffInHours / 24);
-          if (diffInDays < 7) {
-            return `${diffInDays}d ago`;
-          } else {
-            return date.toLocaleDateString();
-          }
+          // More than 7 days
+          return date.toLocaleDateString();
         }
       } catch (error) {
         console.error("Error formatting date:", error);
