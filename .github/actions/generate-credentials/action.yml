@@ -1,6 +1,6 @@
 name: Generate credentials
 description: Generate credentials for the default users of the PR environment
-author: Argilla <contact@argilla.io>
+author: Extralit <contact@argilla.io>
 outputs:
   owner:
     description: The password and API Key for the 'owner' user

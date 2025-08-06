@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ from datetime import datetime
 import httpx
 from pytest_httpx import HTTPXMock
 
-import argilla as rg
-from argilla._models import QuestionModel
+import extralit as ex
+from extralit._models import QuestionModel
 
 
 class TestQuestionsAPI:
@@ -73,6 +73,6 @@ class TestQuestionsAPI:
                 },
             )
 
-            client = rg.Argilla(api_url="http://test_url")
+            client = ex.Extralit(api_url="http://test_url")
             created_question = client.api.questions.create(question=question)
             assert created_question.model_dump(exclude_unset=True) == mock_return_value

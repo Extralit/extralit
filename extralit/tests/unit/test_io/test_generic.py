@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,27 +14,27 @@
 
 from uuid import uuid4
 
-import argilla as rg
-from argilla import ResponseStatus
-from argilla.records._io import GenericIO
+import extralit as ex
+from extralit import ResponseStatus
+from extralit.records._io import GenericIO
 
 
 class TestGenericIO:
     def test_to_list_flatten(self):
         user_a, user_b, user_c = uuid4(), uuid4(), uuid4()
 
-        record = rg.Record(
+        record = ex.Record(
             fields={"field": "The field"},
             metadata={"key": "value"},
             responses=[
-                rg.Response(question_name="q1", value="value", user_id=user_a, status=ResponseStatus.submitted),
-                rg.Response(question_name="q2", value="value", user_id=user_a, status=ResponseStatus.submitted),
-                rg.Response(question_name="q2", value="value", user_id=user_b, status=ResponseStatus.draft),
-                rg.Response(question_name="q1", value="value", user_id=user_c),
+                ex.Response(question_name="q1", value="value", user_id=user_a, status=ResponseStatus.submitted),
+                ex.Response(question_name="q2", value="value", user_id=user_a, status=ResponseStatus.submitted),
+                ex.Response(question_name="q2", value="value", user_id=user_b, status=ResponseStatus.draft),
+                ex.Response(question_name="q1", value="value", user_id=user_c),
             ],
             suggestions=[
-                rg.Suggestion(question_name="q1", value="value", score=0.1, agent="test"),
-                rg.Suggestion(question_name="q2", value="value", score=0.9),
+                ex.Suggestion(question_name="q1", value="value", score=0.1, agent="test"),
+                ex.Suggestion(question_name="q2", value="value", score=0.9),
             ],
         )
 
@@ -62,7 +62,7 @@ class TestGenericIO:
         ]
 
     def test_records_tuple_to_list(self):
-        record = rg.Record(fields={"field": "The field"}, metadata={"key": "value"})
+        record = ex.Record(fields={"field": "The field"}, metadata={"key": "value"})
 
         records_list = GenericIO.to_list(
             [

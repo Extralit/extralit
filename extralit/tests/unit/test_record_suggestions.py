@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
 
 import pytest
 
-from argilla import Record, Suggestion
-from argilla.records._resource import RecordSuggestions
+from extralit import Record, Suggestion
+from extralit.records._resource import RecordSuggestions
 
 
 @pytest.fixture

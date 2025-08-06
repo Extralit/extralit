@@ -22,9 +22,9 @@ Python 3.13 support requires special handling due to some dependencies not yet b
 - The `spacy` dependency is specified with version conditions based on the Python version (v3.8.0+ for Python 3.13)
 - These conditional dependencies ensure the package can be built and tested on Python 3.13
 
-### `argilla-server.yml`
+### `extralit-server.yml`
 
-Builds and publishes the `argilla-server` package.
+Builds and publishes the `extralit-server` package.
 
 - **Trigger**: Push to main/develop/releases branches, pull requests, or manual dispatch
 - **Key steps**:
@@ -40,8 +40,8 @@ The workflows use multiple caching strategies to improve build performance:
 
 1. **PDM cache**: Through the `setup-pdm` action
 2. **UV cache**: Through the `actions/cache` action
-   - Key format: `{os}-uv-{python-version}-{pdm_hash}` for argilla
-   - Key format: `{os}-uv-server-{pdm_hash}` for argilla-server
+   - Key format: `{os}-uv-{python-version}-{pdm_hash}` for extralit
+   - Key format: `{os}-uv-server-{pdm_hash}` for extralit-server
    - Paths cached: `~/.cache/uv`, `~/.cache/pip`
 
 The UV cache uses the PDM lockfile hash to ensure the cache is invalidated when dependencies change. This approach provides more precise cache invalidation than date-based keys.
@@ -56,7 +56,7 @@ The workflows set various environment variables:
 - `PDM_IGNORE_ACTIVE_VENV`: Ignore active virtual environments
 
 Additional environment variables are set in specific workflows:
-- For `argilla-server.yml`: Database connection variables for Postgres, Elasticsearch, Redis, and MinIO
+- For `extralit-server.yml`: Database connection variables for Postgres, Elasticsearch, Redis, and MinIO
 - For `extralit.yml`: HuggingFace credentials for integration tests
 
 ## Common Issues & Solutions

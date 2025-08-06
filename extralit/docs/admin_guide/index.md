@@ -33,7 +33,7 @@ hide: toc
 
     Learn how to configure various deployment options and customize Extralit for your specific needs.
 
-    [:octicons-arrow-right-24: How-to guide](../reference/argilla-server/configuration.md)
+    [:octicons-arrow-right-24: How-to guide](../reference/extralit-server/configuration.md)
 
 -   __Upgrade Extralit__
 
@@ -54,7 +54,7 @@ hide: toc
 
     ---
 
-    Learn what they are and how to manage (create, read and delete) `Users` in Argilla.
+    Learn what they are and how to manage (create, read and delete) `Users` in Extralit.
 
     [:octicons-arrow-right-24: How-to guide](user.md)
 
@@ -62,7 +62,7 @@ hide: toc
 
     ---
 
-    Learn what they are and how to manage (create, read and delete) `Workspaces` in Argilla.
+    Learn what they are and how to manage (create, read and delete) `Workspaces` in Extralit.
 
     [:octicons-arrow-right-24: How-to guide](workspace.md)
 
@@ -86,7 +86,7 @@ hide: toc
 
     ---
 
-    Learn how to use Argilla's automatic `TaskDistribution` to annotate as a team efficiently.
+    Learn how to use Extralit's automatic `TaskDistribution` to annotate as a team efficiently.
 
     [:octicons-arrow-right-24: How-to guide](distribution.md)
 
@@ -94,7 +94,7 @@ hide: toc
 
     ---
 
-    Learn how to use the Argilla UI to navigate `Datasets` and submit `Responses`.
+    Learn how to use the Extralit UI to navigate `Datasets` and submit `Responses`.
 
     [:octicons-arrow-right-24: How-to guide](annotate.md)
 
@@ -133,7 +133,7 @@ hide: toc
 
     ---
 
-    Learn how to use Argilla webhooks to receive notifications about events in your Argilla Server.
+    Learn how to use Extralit webhooks to receive notifications about events in your Extralit Server.
 
     [:octicons-arrow-right-24: How-to guide](webhooks.md)
 
@@ -141,7 +141,7 @@ hide: toc
 
     ---
 
-    Learn how Argilla webhooks are implented under the hood and the structure of the different events.
+    Learn how Extralit webhooks are implented under the hood and the structure of the different events.
 
     [:octicons-arrow-right-24: How-to guide](webhooks_internals.md)
 
@@ -154,11 +154,11 @@ hide: toc
 
     [:octicons-arrow-right-24: How-to guide](use_markdown_to_format_rich_content.md)
 
--   __Migrate to Argilla V2__
+-   __Migrate to Extralit V2__
 
     ---
 
-    Learn how to migrate `Users`, `Workspaces` and `Datasets` from Argilla V1 to V2.
+    Learn how to migrate `Users`, `Workspaces` and `Datasets` from Extralit V1 to V2.
 
     [:octicons-arrow-right-24: How-to guide](migrate_from_legacy_datasets.md)
 

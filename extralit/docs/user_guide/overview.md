@@ -59,7 +59,7 @@ Use [8 - JT - LLM Extraction.ipynb](#) if the command line tool hasn't been impl
 
 ## Run the PDF Preprocessing Step
 
-The PDF preprocessing step is a computationally intensive step that uses AI OCR algorithms to detect and correct table structures within documents. The PDF preprocessing step is run on the PDF files in the workspace, and the text OCR outputs are stored in the `preprocessing/` directory and the table outputs are automatically pushed as records to the `PDF-Preprocessing` Argilla dataset for manual correction.
+The PDF preprocessing step is a computationally intensive step that uses AI OCR algorithms to detect and correct table structures within documents. The PDF preprocessing step is run on the PDF files in the workspace, and the text OCR outputs are stored in the `preprocessing/` directory and the table outputs are automatically pushed as records to the `PDF-Preprocessing` Extralit dataset for manual correction.
 
 ```bash
 pip install --upgrade "extralit-server[ocr,pdf]"
@@ -69,7 +69,7 @@ Use [5 - JT - PDF Preprocessing.ipynb](#) if the command line tool hasn't been i
 
 ## Run the Initial LLM Extraction Step
 
-After the manual corrections are made to the PDF preprocessing outputs, the LLM extraction step is run to extract the data fields defined in the schemas. The records are automatically pushed to the `2-Data-Extraction` Argilla dataset for manual correction.
+After the manual corrections are made to the PDF preprocessing outputs, the LLM extraction step is run to extract the data fields defined in the schemas. The records are automatically pushed to the `2-Data-Extraction` Extralit dataset for manual correction.
 
 ```bash
 pip install --upgrade "extralit-server[llm]"

@@ -16,8 +16,8 @@ import pytest
 from typer.testing import CliRunner
 from unittest.mock import patch
 
-from argilla.cli.app import app
-from argilla.cli.training.__main__ import Framework
+from extralit.cli.app import app
+from extralit.cli.training.__main__ import Framework
 
 
 @pytest.fixture
@@ -27,7 +27,7 @@ def runner():
 
 
 @patch("rich.console.Console.print")
-@patch("argilla.cli.training.__main__.framework_callback")
+@patch("extralit.cli.training.__main__.framework_callback")
 @pytest.mark.skip(reason="Test temporarily disabled")
 def test_training_basic(mock_framework_callback, mock_print, runner):
     """Test basic training command functionality."""
@@ -48,7 +48,7 @@ def test_training_basic(mock_framework_callback, mock_print, runner):
 
 
 @patch("rich.console.Console.print")
-@patch("argilla.cli.training.__main__.framework_callback")
+@patch("extralit.cli.training.__main__.framework_callback")
 @pytest.mark.skip(reason="Test temporarily disabled")
 def test_training_with_options(mock_framework_callback, mock_print, runner):
     """Test training command with additional options."""
@@ -88,7 +88,7 @@ def test_training_with_options(mock_framework_callback, mock_print, runner):
 
 
 @patch("rich.console.Console.print")
-@patch("argilla.cli.training.__main__.framework_callback")
+@patch("extralit.cli.training.__main__.framework_callback")
 @pytest.mark.skip(reason="Test temporarily disabled")
 def test_training_with_query(mock_framework_callback, mock_print, runner):
     """Test training command with query parameter."""
@@ -120,7 +120,7 @@ def test_training_with_query(mock_framework_callback, mock_print, runner):
 
 
 @patch("rich.console.Console.print")
-@patch("argilla.cli.training.__main__.framework_callback")
+@patch("extralit.cli.training.__main__.framework_callback")
 @patch("json.loads")
 @pytest.mark.skip(reason="Test temporarily disabled")
 def test_training_with_config_update(mock_json_loads, mock_framework_callback, mock_print, runner):

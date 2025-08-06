@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@ import uuid
 
 import pytest
 
-from argilla import UserResponse, Response, Dataset, Workspace, Record
-from argilla._models import UserResponseModel, ResponseStatus
+from extralit import UserResponse, Response, Dataset, Workspace, Record
+from extralit._models import UserResponseModel, ResponseStatus
 
 
 class TestResponses:

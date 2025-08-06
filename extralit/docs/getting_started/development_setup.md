@@ -51,7 +51,7 @@ Then, select from three different development environments through devcontainers
 
     ```bash
     # Use external database instead of deploying PostgreSQL
-    export ARGILLA_DATABASE_URL="postgresql://user:password@external-host:5432/dbname"
+    export EXTRALIT_DATABASE_URL="postgresql://user:password@external-host:5432/dbname"
 
     # Use external S3-compatible storage instead of deploying MinIO
     export S3_ENDPOINT="https://your-s3-endpoint"
@@ -81,7 +81,7 @@ Then, select from three different development environments through devcontainers
     docker-compose up -d
 
     # Install server dependencies
-    cd argilla-server
+    cd extralit-server
     pdm install
 
     # Start the server in development mode
@@ -94,7 +94,7 @@ Then, select from three different development environments through devcontainers
     If
     ```bash
     # Navigate to the frontend directory
-    cd argilla-frontend
+    cd extralit-frontend
 
     # Install dependencies
     npm install
@@ -105,7 +105,7 @@ Then, select from three different development environments through devcontainers
 
 ### 3. Development workflow*
 
-    - **Backend Development**: Changes to `argilla-server/src/argilla_server/` or `argilla/src/{argilla,extralit}/` are automatically updated if Tilt is running
+    - **Backend Development**: Changes to `extralit-server/src/extralit_server/` or `argilla/src/{argilla,extralit}/` are automatically updated if Tilt is running
     - **Python SDK packages**
       ```bash
       cd argilla
@@ -113,7 +113,7 @@ Then, select from three different development environments through devcontainers
       ```
     - **Frontend Development**: For frontend live-reloading:
       ```bash
-      cd argilla/argilla-frontend
+      cd argilla/extralit-frontend
       npm install
       npm run dev
       ```
@@ -126,7 +126,7 @@ Then, select from three different development environments through devcontainers
 - Log in with the default credentials:
   - Username: `argilla`
   - Password: `12345678`
-  - API Key: `argilla.apikey`
+  - API Key: `extralit.apikey`
 
 
 ## Option 2: Local Development Setup
@@ -154,7 +154,7 @@ We recommend using PDM for package management:
 pip install pdm uv
 
 # Install server dependencies
-cd argilla-server
+cd extralit-server
 pdm install
 
 # Install client dependencies
@@ -165,27 +165,27 @@ pdm install
 ### 3. Build the Frontend
 
 ```bash
-cd argilla-frontend
+cd extralit-frontend
 npm install
 npm run build
 
 # Copy built files to server static directory
-cp -r dist ../argilla-server/src/argilla_server/static
+cp -r dist ../extralit-server/src/extralit_server/static
 ```
 
 ### 4. Configure Environment Variables
 
-Create a `.env.dev` file in the `argilla-server` directory with the following content:
+Create a `.env.dev` file in the `extralit-server` directory with the following content:
 
 ```
-ALEMBIC_CONFIG=src/argilla_server/alembic.ini
-ARGILLA_AUTH_SECRET_KEY=8VO7na5N/jQx+yP/N+HlE8q51vPdrxqlh6OzoebIyko=
-ARGILLA_DATABASE_URL=sqlite+aiosqlite:///${HOME}/.extralit/argilla-dev.db?check_same_thread=False
+ALEMBIC_CONFIG=src/extralit_server/alembic.ini
+EXTRALIT_AUTH_SECRET_KEY=8VO7na5N/jQx+yP/N+HlE8q51vPdrxqlh6OzoebIyko=
+EXTRALIT_DATABASE_URL=sqlite+aiosqlite:///${HOME}/.extralit/extralit-dev.db?check_same_thread=False
 # Search engine configuration
-ARGILLA_SEARCH_ENGINE=elasticsearch
-ARGILLA_ELASTICSEARCH=http://localhost:9200
+EXTRALIT_SEARCH_ENGINE=elasticsearch
+EXTRALIT_ELASTICSEARCH=http://localhost:9200
 # Redis configuration
-ARGILLA_REDIS_URL=redis://localhost:6379/0
+EXTRALIT_REDIS_URL=redis://localhost:6379/0
 ```
 
 ### 5. Set Up the Databases
@@ -213,7 +213,7 @@ docker compose up -d
 ### 6. Run Database Migrations and Start the Server
 
 ```bash
-cd argilla-server
+cd extralit-server
 pdm run migrate
 pdm run cli database users create_default
 pdm run server
@@ -275,29 +275,29 @@ ENV=dev DOCKER_REPO=localhost:5005 tilt up --namespace extralit-dev --context ki
 For a simpler setup using Docker without live development capabilities:
 
 
-### 0. Building the `argilla-server` and `argilla-hf-spaces` docker images
+### 0. Building the `extralit-server` and `argilla-hf-spaces` docker images
 
-To build and run the Argilla Server using Docker, follow these steps:
+To build and run the Extralit Server using Docker, follow these steps:
 
 ```bash
-cd argilla-server
+cd extralit-server
 pdm build && cp -r dist/ docker/server/
 ```
 
 ```bash
-docker build -t argilla-server:latest -f docker/server/Dockerfile docker/server/
+docker build -t extralit-server:latest -f docker/server/Dockerfile docker/server/
 ```
 
-To build the Argilla HF Spaces Docker image, which includes the Argilla Server, ElasticSearch, and Redis, use the following command:
+To build the Extralit HF Spaces Docker image, which includes the Extralit Server, ElasticSearch, and Redis, use the following command:
 
 ```bash
-docker build --build-arg ARGILLA_SERVER_IMAGE=argilla-server --build-arg ARGILLA_VERSION=latest -t argilla-hf-spaces:latest -f docker/argilla-hf-spaces/Dockerfile docker/argilla-hf-spaces/
+docker build --build-arg extralit_server_IMAGE=extralit-server --build-arg EXTRALIT_VERSION=latest -t argilla-hf-spaces:latest -f docker/argilla-hf-spaces/Dockerfile docker/argilla-hf-spaces/
 ```
 
-Start the Argilla Server and other dependencies using Docker:
+Start the Extralit Server and other dependencies using Docker:
 
 ```bash
-docker run --rm -p 6900:6900 -e ARGILLA_ENABLE_TELEMETRY=0 -e USERNAME=argilla -e PASSWORD=12345678 -e API_KEY=argilla.apikey --name argilla-hf-spaces argilla-hf-spaces:latest
+docker run --rm -p 6900:6900 -e EXTRALIT_ENABLE_TELEMETRY=0 -e USERNAME=argilla -e PASSWORD=12345678 -e API_KEY=extralit.apikey --name argilla-hf-spaces argilla-hf-spaces:latest
 ```
 
 
@@ -377,7 +377,7 @@ If database migrations fail:
 
 ```bash
 # Reset the database
-rm -rf ~/.extralit/argilla-dev.db
+rm -rf ~/.extralit/extralit-dev.db
 pdm run migrate
 ```
 
@@ -387,7 +387,7 @@ If you encounter issues with the frontend build:
 
 ```bash
 # Clean and rebuild
-cd argilla-frontend
+cd extralit-frontend
 rm -rf node_modules
 npm install
 npm run build

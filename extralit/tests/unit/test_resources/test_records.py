@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,10 +16,10 @@ import uuid
 
 import pytest
 
-from argilla import Dataset, Record, Response, Settings, Suggestion, TextField, TextQuestion
-from argilla._exceptions import ArgillaError
-from argilla._models import RecordModel
-from argilla._models._record._metadata import MetadataModel
+from extralit import Dataset, Record, Response, Settings, Suggestion, TextField, TextQuestion
+from extralit._exceptions import ExtralitError
+from extralit._models import RecordModel
+from extralit._models._record._metadata import MetadataModel
 
 
 @pytest.fixture()
@@ -107,7 +107,7 @@ class TestRecords:
         response = Response(question_name="question", value="value", user_id=uuid.uuid4())
         record = Record(fields={"name": "John"}, responses=[response])
 
-        with pytest.raises(ArgillaError):
+        with pytest.raises(ExtralitError):
             record.responses.add(response)
 
     def test_record_from_model_with_none_vectors(self, dataset: Dataset):

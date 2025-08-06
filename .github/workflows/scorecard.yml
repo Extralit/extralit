@@ -15,7 +15,7 @@ on:
     types: [opened, edited, synchronize, reopened, ready_for_review]
     paths:
       - "extralit/**"
-      - "argilla-server/**"
+      - "extralit-server/**"
 
 # Declare default permissions as read only.
 permissions: read-all

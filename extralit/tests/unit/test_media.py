@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@ from tempfile import NamedTemporaryFile
 
 import pytest
 from PIL import Image
-from argilla._helpers._media import cast_image, pil_to_data_uri, uncast_image
+from extralit._helpers._media import cast_image, pil_to_data_uri, uncast_image
 
 
 @pytest.fixture

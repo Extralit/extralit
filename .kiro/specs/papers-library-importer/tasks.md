@@ -25,10 +25,10 @@
   - _Requirements: 2.1, 2.2_
 
 - [x] 2.3 Create CLI import analysis testing function
-  - Add import() function to extralit/src/argilla/cli/documents/add.py
+  - Add import() function to extralit/src/extralit/cli/documents/add.py
   - Parse BibTeX file and match PDF files from folder using Python bibtexparser
   - Perform filename matching to create the analysis_request
-  - Send ImportAnalysisRequest to argilla-server for testing import analysis functionality
+  - Send ImportAnalysisRequest to extralit-server for testing import analysis functionality
   - Display analysis results (add/update/skip status) in CLI output
   - Enable easy testing of backend import analysis before building frontend
   - _Requirements: 1.1, 2.1, 2.2_
@@ -46,11 +46,11 @@
   - Reuse existing document upload logic from POST /documents endpoint for each file
   - Implement job creation and queuing for reference-based document uploads (one job per reference)
   - Add retry logic and error handling for failed uploads with per-file error tracking
-  - Update CLI function `import` in `extralit/src/argilla/cli/documents/add.py` to test bulk upload
+  - Update CLI function `import` in `extralit/src/extralit/cli/documents/add.py` to test bulk upload
   - _Requirements: 3.1, 3.3, 3.4, 3.7_
 
 - [x] 3.3 Implement ImportHistory database model
-  - Create ImportHistory model in database.py with required fields, with the alembic upgrade path at `argilla-server/src/argilla_server/alembic/versions/7d6b33203390_create_import_history_table.py`
+  - Create ImportHistory model in database.py with required fields, with the alembic upgrade path at `extralit-server/src/extralit_server/alembic/versions/7d6b33203390_create_import_history_table.py`
   - Add relationships to Workspace and User models
   - Create migration script for the new table
   - _Requirements: 3.5, 4.1_

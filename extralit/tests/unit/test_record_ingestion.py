@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,21 +16,21 @@ from uuid import uuid4
 
 import pytest
 
-import argilla as rg
-from argilla._exceptions import RecordsIngestionError
-from argilla.records._dataset_records import RecordErrorHandling
+import extralit as ex
+from extralit._exceptions import RecordsIngestionError
+from extralit.records._dataset_records import RecordErrorHandling
 
 
 @pytest.fixture
 def dataset():
-    settings = rg.Settings(
-        fields=[rg.TextField(name="prompt")],
-        questions=[rg.LabelQuestion(name="label", labels=["negative", "positive"])],
-        metadata=[rg.FloatMetadataProperty(name="score")],
-        vectors=[rg.VectorField(name="vector", dimensions=3)],
+    settings = ex.Settings(
+        fields=[ex.TextField(name="prompt")],
+        questions=[ex.LabelQuestion(name="label", labels=["negative", "positive"])],
+        metadata=[ex.FloatMetadataProperty(name="score")],
+        vectors=[ex.VectorField(name="vector", dimensions=3)],
     )
-    workspace = rg.Workspace(name="workspace", id=uuid4())
-    return rg.Dataset(
+    workspace = ex.Workspace(name="workspace", id=uuid4())
+    return ex.Dataset(
         name="test_dataset",
         settings=settings,
         workspace=workspace,
@@ -178,15 +178,15 @@ def test_ingest_record_from_dict_with_mapped_metadata_vectors(dataset):
 
 
 def test_ingest_record_from_dict_with_mapping_multiple():
-    settings = rg.Settings(
-        fields=[rg.TextField(name="prompt_field")],
+    settings = ex.Settings(
+        fields=[ex.TextField(name="prompt_field")],
         questions=[
-            rg.LabelQuestion(name="label", labels=["negative", "positive"]),
-            rg.TextQuestion(name="prompt_question"),
+            ex.LabelQuestion(name="label", labels=["negative", "positive"]),
+            ex.TextQuestion(name="prompt_question"),
         ],
     )
-    workspace = rg.Workspace(name="workspace", id=uuid4())
-    dataset = rg.Dataset(
+    workspace = ex.Workspace(name="workspace", id=uuid4())
+    dataset = ex.Dataset(
         name="test_dataset",
         settings=settings,
         workspace=workspace,

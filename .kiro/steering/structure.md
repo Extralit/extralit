@@ -5,18 +5,17 @@ This is a monorepo containing multiple related packages:
 
 ```
 extralit/
-├── argilla-server/          # FastAPI backend server
-├── argilla-frontend/        # Nuxt.js web UI
+├── extralit-server/          # FastAPI backend server
+├── extralit-frontend/        # Nuxt.js web UI
 ├── extralit/               # Python SDK and CLI
-├── argilla-v1/             # Legacy v1 compatibility layer
 ├── examples/               # Usage examples and deployments
 └── .kiro/                  # Kiro AI assistant configuration
 ```
 
-## Backend Structure (argilla-server/)
+## Backend Structure (extralit-server/)
 ```
-argilla-server/
-├── src/argilla_server/
+extralit-server/
+├── src/extralit_server/
 │   ├── api/                # FastAPI routes and handlers
 │   │   ├── handlers/       # Request handlers by version
 │   │   └── schemas/        # Pydantic models for API
@@ -37,9 +36,9 @@ argilla-server/
 - **Background Jobs**: In `jobs/` - RQ job definitions
 - **Migrations**: Use Alembic in `alembic/versions/`
 
-## Frontend Structure (argilla-frontend/)
+## Frontend Structure (extralit-frontend/)
 ```
-argilla-frontend/
+extralit-frontend/
 ├── components/
 │   ├── base/               # Reusable UI components
 │   └── features/           # Feature-specific components
@@ -158,7 +157,7 @@ argilla-frontend/
 ```
 extralit/
 ├── src/
-│   ├── argilla/            # Main SDK package
+│   ├── extralit/            # Main SDK package
 │   │   ├── cli/            # CLI commands
 │   │   └── client/         # API client
 │   └── extralit/           # Extralit-specific extensions
@@ -179,16 +178,16 @@ examples/
 ```
 
 ## Configuration Files
-- **Backend**: `argilla-server/pyproject.toml` (PDM), `.env.dev`, `.env.test`
-- **Frontend**: `argilla-frontend/package.json` (npm), `nuxt.config.ts`
+- **Backend**: `extralit-server/pyproject.toml` (PDM), `.env.dev`, `.env.test`
+- **Frontend**: `extralit-frontend/package.json` (npm), `nuxt.config.ts`
 - **SDK**: `extralit/pyproject.toml` (PDM)
 - **Docker**: `docker-compose.yaml` for local development
 - **K8s**: `Tiltfile` for Kubernetes development
 
 ## Development Workflow
-1. **Backend changes**: Work in `argilla-server/src/argilla_server/`
-2. **Frontend changes**: Work in `argilla-frontend/components/` or `argilla-frontend/pages/`
-3. **SDK changes**: Work in `extralit/src/argilla/` or `extralit/src/extralit/`
+1. **Backend changes**: Work in `extralit-server/src/extralit_server/`
+2. **Frontend changes**: Work in `extralit-frontend/components/` or `extralit-frontend/pages/`
+3. **SDK changes**: Work in `extralit/src/extralit/`
 4. **Tests**: Each package has its own `tests/` directory
 5. **Documentation**: Use `extralit/docs/` for SDK docs
 

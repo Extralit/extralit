@@ -1,14 +1,14 @@
 import os
 from datetime import datetime
 
-import argilla as rg
+import extralit as ex
 
 # Environment variables with defaults
-API_KEY = os.environ.get("ARGILLA_API_KEY", "argilla.apikey")
-API_URL = os.environ.get("ARGILLA_API_URL", "http://localhost:6900")
+API_KEY = os.environ.get("EXTRALIT_API_KEY", "extralit.apikey")
+API_URL = os.environ.get("EXTRALIT_API_URL", "http://localhost:6900")
 
-# Initialize Argilla client
-client = rg.Argilla(api_key=API_KEY, api_url=API_URL)
+# Initialize Extralit client
+client = ex.Extralit(api_key=API_KEY, api_url=API_URL)
 
 # Show the existing webhooks in the argilla server
 for webhook in client.webhooks:
@@ -32,17 +32,17 @@ for webhook in client.webhooks:
 # Related resources will be passed as keyword arguments to the decorated function
 # (for example the dataset for a record-related event, or the record for a response-related event)
 # When a resource is deleted
-@rg.webhook_listener(events=["record.deleted", "record.completed"])
-async def records_listener(record: rg.Record, type: str, timestamp: datetime):
+@ex.webhook_listener(events=["record.deleted", "record.completed"])
+async def records_listener(record: ex.Record, type: str, timestamp: datetime):
     print(f"Received event of type {type} at {timestamp} for record {record}")
 
 
-@rg.webhook_listener(events=["response.created", "response.updated"])
-async def responses_listener(response: rg.UserResponse, type: str, timestamp: datetime):
+@ex.webhook_listener(events=["response.created", "response.updated"])
+async def responses_listener(response: ex.UserResponse, type: str, timestamp: datetime):
     print(f"Received event of type {type} at {timestamp} for response {response}")
 
 
-@rg.webhook_listener(
+@ex.webhook_listener(
     events=[
         "dataset.created",
         "dataset.updated",
@@ -50,7 +50,7 @@ async def responses_listener(response: rg.UserResponse, type: str, timestamp: da
         "dataset.deleted",
     ]
 )
-async def datasets_listener(type: str, timestamp: datetime, dataset: rg.Dataset):
+async def datasets_listener(type: str, timestamp: datetime, dataset: ex.Dataset):
     print(f"Received event of type {type} at {timestamp} for dataset {dataset}")
 
 
@@ -59,4 +59,4 @@ async def datasets_listener(type: str, timestamp: datetime, dataset: rg.Dataset)
 # uvicorn main:server --reload
 # ```
 
-server = rg.get_webhook_server()
+server = ex.get_webhook_server()

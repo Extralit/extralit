@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,17 +14,16 @@
 
 import uuid
 
-import argilla as rg
-from argilla._helpers._resource_repr import ResourceHTMLReprMixin
-from argilla._models import DatasetModel
+import extralit as ex
+from extralit._helpers._resource_repr import ResourceHTMLReprMixin
 
 
 class TestResourceHTMLReprMixin:
     def test_represent_workspaces_as_html(self):
-        client = rg.Argilla()
+        client = ex.Extralit()
         workspaces = [
-            rg.Workspace(name="workspace1", id=uuid.uuid4()),
-            rg.Workspace(name="workspace2", id=uuid.uuid4()),
+            ex.Workspace(name="workspace1", id=uuid.uuid4()),
+            ex.Workspace(name="workspace2", id=uuid.uuid4()),
         ]
 
         assert (
@@ -37,10 +36,10 @@ class TestResourceHTMLReprMixin:
             ""
         )
 
-        workspace = rg.Workspace(name="workspace1", id=uuid.uuid4())
+        workspace = ex.Workspace(name="workspace1", id=uuid.uuid4())
         datasets = [
-            rg.Dataset(name="dataset1", workspace=workspace, client=client),
-            rg.Dataset(name="dataset2", workspace=workspace, client=client),
+            ex.Dataset(name="dataset1", workspace=workspace, client=client),
+            ex.Dataset(name="dataset2", workspace=workspace, client=client),
         ]
 
         for dataset in datasets:

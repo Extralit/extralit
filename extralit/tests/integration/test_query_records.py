@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,12 +17,12 @@ from string import ascii_lowercase
 
 import pytest
 
-import argilla as rg
-from argilla import Argilla, Dataset, Settings, TextField, Workspace, LabelQuestion
+import extralit as ex
+from extralit import Extralit, Dataset, Settings, TextField, Workspace, LabelQuestion
 
 
 @pytest.fixture
-def dataset(client: Argilla, workspace: Workspace) -> Dataset:
+def dataset(client: Extralit, workspace: Workspace) -> Dataset:
     name = "".join(random.choices(ascii_lowercase, k=16))
     settings = Settings(
         fields=[TextField(name="text")],
@@ -39,7 +39,7 @@ def dataset(client: Argilla, workspace: Workspace) -> Dataset:
     dataset.delete()
 
 
-def test_query_records_by_text(client: Argilla, dataset: Dataset):
+def test_query_records_by_text(client: Extralit, dataset: Dataset):
     dataset.records.log(
         [
             {"text": "First record", "id": 1},
@@ -62,7 +62,7 @@ def test_query_records_by_text(client: Argilla, dataset: Dataset):
     assert len(records) == 2
 
 
-def test_query_records_by_suggestion_value(client: Argilla, dataset: Dataset):
+def test_query_records_by_suggestion_value(client: Extralit, dataset: Dataset):
     data = [
         {
             "text": "Hello World, how are you?",
@@ -83,24 +83,24 @@ def test_query_records_by_suggestion_value(client: Argilla, dataset: Dataset):
 
     dataset.records.log(data)
 
-    query = rg.Query(filter=rg.Filter([("label", "==", "positive")]))
+    query = ex.Query(filter=ex.Filter([("label", "==", "positive")]))
     records = list(dataset.records(query=query))
 
     assert len(records) == 2
     assert records[0].id == "1"
     assert records[1].id == "3"
 
-    query = rg.Query(filter=rg.Filter(("label", "==", "negative")))
+    query = ex.Query(filter=ex.Filter(("label", "==", "negative")))
     records = list(dataset.records(query=query))
 
     assert len(records) == 1
     assert records[0].id == "2"
 
-    query = rg.Query(filter=rg.Filter(("label", "in", ["positive", "negative"])))
+    query = ex.Query(filter=ex.Filter(("label", "in", ["positive", "negative"])))
     records = list(dataset.records(query=query))
     assert len(records) == 3
 
-    test_filter = rg.Filter([("label", "==", "positive"), ("label", "==", "negative")])
-    query = rg.Query(filter=test_filter)
+    test_filter = ex.Filter([("label", "==", "positive"), ("label", "==", "negative")])
+    query = ex.Query(filter=test_filter)
     records = list(dataset.records(query=query))
     assert len(records) == 0

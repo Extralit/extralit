@@ -27,7 +27,7 @@ esMajorVersion: ""
 
 # Allows you to add any config files in /usr/share/elasticsearch/config/
 # such as elasticsearch.yml and log4j2.properties
-esConfig: 
+esConfig:
   elasticsearch.yml: |
     ingest:
       geoip:
@@ -188,13 +188,13 @@ antiAffinity: "soft"
 # https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#node-affinity-beta-feature
 nodeAffinity:
   preferredDuringSchedulingIgnoredDuringExecution:
-  - weight: 1
-    preference:
-      matchExpressions:
-      - key: role
-        operator: In
-        values:
-        - argilla-server
+    - weight: 1
+      preference:
+        matchExpressions:
+          - key: role
+            operator: In
+            values:
+              - extralit-server
 
 # The default is to deploy all pods serially. By setting this to parallel all pods are started at
 # the same time when bootstrapping the cluster
@@ -235,8 +235,7 @@ maxUnavailable: 1
 podSecurityContext:
   fsGroup: 1000
   runAsUser: 1000
-  runAsGroup: 1000  # The primary group ID for the container process.
-  
+  runAsGroup: 1000 # The primary group ID for the container process.
 
 securityContext:
   capabilities:
@@ -374,4 +373,3 @@ networkPolicy:
 
 tests:
   enabled: true
-

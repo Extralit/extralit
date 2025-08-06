@@ -43,7 +43,7 @@ services:
       POSTGRES_HOST: localhost
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: argilla
+      POSTGRES_DB: extralit
     healthcheck:
       test: ["CMD-SHELL", "pg_isready"]
       interval: 10s
@@ -97,5 +97,5 @@ services:
     network_mode: host
 
 networks:
-  argilla:
+  extralit:
     driver: bridge

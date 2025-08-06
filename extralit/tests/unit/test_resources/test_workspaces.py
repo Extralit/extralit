@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ import httpx
 import pytest
 from pytest_httpx import HTTPXMock
 
-import argilla as rg
-from argilla._exceptions import (
+import extralit as ex
+from extralit._exceptions import (
     BadRequestError,
     ConflictError,
     ForbiddenError,
@@ -32,7 +32,7 @@ from argilla._exceptions import (
 
 class TestWorkspacesSerialization:
     def test_serialize(self):
-        ws = rg.Workspace(
+        ws = ex.Workspace(
             name="test-workspace",
             id=uuid.uuid4(),
         )
@@ -41,7 +41,7 @@ class TestWorkspacesSerialization:
 
     def test_json_serialize_raise_typeerror(self):
         with pytest.raises(TypeError):
-            rg.Workspace(
+            ex.Workspace(
                 name="test-workspace",
                 id=uuid.uuid4(),
                 inserted_at=datetime.utcnow(),
@@ -73,13 +73,13 @@ class TestWorkspaces:
         api_url = "http://test_url"
         httpx_mock.add_response(json=mock_return_value, url=f"{api_url}/api/v1/workspaces", status_code=status_code)
         with httpx.Client():
-            client = rg.Argilla(api_url=api_url, api_key="admin.apikey")
+            client = ex.Extralit(api_url=api_url, api_key="admin.apikey")
             if expected_exception:
                 with pytest.raises(expected_exception, match=expected_message):
-                    ws = rg.Workspace(name="test-workspace", id=uuid.uuid4(), client=client)
+                    ws = ex.Workspace(name="test-workspace", id=uuid.uuid4(), client=client)
                     ws.create()
             else:
-                ws = rg.Workspace(name="test-workspace", id=uuid.uuid4(), client=client)
+                ws = ex.Workspace(name="test-workspace", id=uuid.uuid4(), client=client)
                 created_workspace = ws.create()
                 assert created_workspace.name == mock_name
                 assert created_workspace.id == uuid.UUID(mock_return_value["id"])
@@ -111,14 +111,14 @@ class TestWorkspaces:
             json=mock_return_value, url=f"{api_url}/api/v1/workspaces/{workspace_id}", status_code=status_code
         )
         with httpx.Client():
-            client = rg.Argilla(api_url="http://test_url", api_key="admin.apikey")
+            client = ex.Extralit(api_url="http://test_url", api_key="admin.apikey")
 
             if expected_exception:
                 with pytest.raises(expected_exception, match=expected_message):
-                    workspace = rg.Workspace(name="test-workspace", id=workspace_id, client=client)
+                    workspace = ex.Workspace(name="test-workspace", id=workspace_id, client=client)
                     workspace = workspace.get()
             else:
-                workspace = rg.Workspace(name="test-workspace", id=workspace_id, client=client)
+                workspace = ex.Workspace(name="test-workspace", id=workspace_id, client=client)
                 workspace = workspace.get()
                 assert workspace.name == mock_return_value["name"]
                 assert workspace.id == workspace_id
@@ -143,7 +143,7 @@ class TestWorkspaces:
         api_url = "http://test_url"
         httpx_mock.add_response(json=mock_return_value, url=f"{api_url}/api/v1/me/workspaces")
         with httpx.Client():
-            client = rg.Argilla(api_url="http://test_url", api_key="admin.apikey")
+            client = ex.Extralit(api_url="http://test_url", api_key="admin.apikey")
             workspaces = client.workspaces
         assert len(workspaces) == 2
         for i in range(len(workspaces)):
@@ -174,7 +174,7 @@ class TestWorkspacesAPI:
         api_url = "http://test_url"
         httpx_mock.add_response(json=mock_return_value, url=f"{api_url}/api/v1/me/workspaces")
         with httpx.Client():
-            client = rg.Argilla(api_url=api_url, api_key="admin.apikey")
+            client = ex.Extralit(api_url=api_url, api_key="admin.apikey")
             ws = client.api.workspaces.get_by_name("test-workspace")
             assert ws is not None
             assert ws.name == "test-workspace"
@@ -200,13 +200,13 @@ class TestWorkspacesAPI:
             json=mock_return,
         )
         with httpx.Client():
-            local_client = rg.Argilla(api_url="http://localhost:6900", api_key="admin.apikey")
-            remote_client = rg.Argilla(api_url="http://argilla.production.net", api_key="admin.apikey")
+            local_client = ex.Extralit(api_url="http://localhost:6900", api_key="admin.apikey")
+            remote_client = ex.Extralit(api_url="http://argilla.production.net", api_key="admin.apikey")
             assert local_client.api_url == "http://localhost:6900"
             assert remote_client.api_url == "http://argilla.production.net"
-            local_workspace = rg.Workspace(name="local-test-workspace", client=local_client)
+            local_workspace = ex.Workspace(name="local-test-workspace", client=local_client)
             local_workspace = local_workspace.create()
-            remote_workspace = rg.Workspace(name="remote-test-workspace", client=remote_client)
+            remote_workspace = ex.Workspace(name="remote-test-workspace", client=remote_client)
             remote_workspace = remote_workspace.create()
 
     def test_delete_workspace(self, httpx_mock: HTTPXMock):
@@ -214,7 +214,7 @@ class TestWorkspacesAPI:
         api_url = "http://test_url"
         httpx_mock.add_response(url=f"{api_url}/api/v1/workspaces/{workspace_id}", status_code=204)
         with httpx.Client():
-            client = rg.Argilla(api_url=api_url, api_key="admin.apikey")
+            client = ex.Extralit(api_url=api_url, api_key="admin.apikey")
             client.api.workspaces.delete(workspace_id)
 
     def test_list_workspace_datasets(self, httpx_mock: HTTPXMock):
@@ -246,7 +246,7 @@ class TestWorkspacesAPI:
         api_url = "http://test_url"
         httpx_mock.add_response(json=mock_return_value, url=f"{api_url}/api/v1/me/datasets")
         with httpx.Client():
-            client = rg.Argilla(api_url=api_url, api_key="admin.apikey")
+            client = ex.Extralit(api_url=api_url, api_key="admin.apikey")
             datasets = client.api.datasets.list(workspace_id)
             assert len(datasets) == 2
             for i in range(len(datasets)):

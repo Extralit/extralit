@@ -18,20 +18,20 @@ This guide covers the update process for Extralit across different deployment op
     git fetch origin tag v0.2.2 && git checkout tags/v0.2.2
     ```
 
-2. Rebuild the  package, which contains the Argilla server and web interface
+2. Rebuild the  package, which contains the Extralit server and web interface
 
-    First, build the `argilla-frontend` code
+    First, build the `extralit-frontend` code
 
     ```bash
-    npm install --prefix argilla-frontend
-    npm run build --prefix argilla-frontend
+    npm install --prefix extralit-frontend
+    npm run build --prefix extralit-frontend
     ```
 
-    Finally, build the wheel containing the built argilla-frontend/dist
+    Finally, build the wheel containing the built extralit-frontend/dist
 
     ```bash
-    cp -r argilla-frontend/dist argilla-server/src/argilla_server/static
-    rm -rf argilla-server/dist && python -m build -s argilla-server/
+    cp -r extralit-frontend/dist extralit-server/src/extralit_server/static
+    rm -rf extralit-server/dist && python -m build -s extralit-server/
     ```
 
 3. Rebuild the `extralit` Python client package
@@ -50,32 +50,32 @@ This guide covers the update process for Extralit across different deployment op
    - Push the updated Docker image to your repository:
 
    ```bash
-   docker push {DOCKER_REPO}/argilla-server:tag
+   docker push {DOCKER_REPO}/extralit-server:tag
    docker push {DOCKER_REPO}/extralit-server:tag
    ```
 
    - Apply the updated Kubernetes configuration:
 
    ```bash
-   kubectl apply -f examples/deployments/k8s/argilla-server-deployment.yaml -n {NAMESPACE}
+   kubectl apply -f examples/deployments/k8s/extralit-server-deployment.yaml -n {NAMESPACE}
    kubectl apply -f examples/deployments/k8s/extralit-deployment.yaml -n {NAMESPACE}
    ```
 
 6. Monitor the rollout:
 
    ```bash
-   kubectl rollout status deployment/argilla-server-deployment -n {NAMESPACE}
+   kubectl rollout status deployment/extralit-server-deployment -n {NAMESPACE}
    ```
 
    &nbsp;
 
 For database schema changes:
 
-- Run migrations using the `argilla_server` CLI:
+- Run migrations using the `extralit_server` CLI:
 
 ```bash
-kubectl exec -it deployment/argilla-server-deployment -n {NAMESPACE} -- \
-argilla_server database migrate
+kubectl exec -it deployment/extralit-server-deployment -n {NAMESPACE} -- \
+extralit_server database migrate
 ```
 
 &nbsp;
@@ -85,7 +85,7 @@ argilla_server database migrate
 1. Pull the latest Extralit image:
 
    ```bash
-   docker pull extralit/argilla-hf-spaces:latest
+   docker pull extralit/extralit-hf-space:latest
    ```
 
 2. Stop and remove the existing container:
@@ -99,8 +99,8 @@ argilla_server database migrate
 
    ```bash
    docker run -d --name extralit-quickstart -p 6900:6900 \
-     -e ARGILLA_AUTH_SECRET_KEY=$(openssl rand -hex 32) \
-     extralit/argilla-hf-spaces:latest
+     -e EXTRALIT_AUTH_SECRET_KEY=$(openssl rand -hex 32) \
+     extralit/extralit-hf-space:latest
    ```
 
 ### Docker Deployment Update
@@ -122,7 +122,7 @@ argilla_server database migrate
 4. For database schema changes, run migrations:
 
    ```bash
-   docker compose exec argilla argilla_server database migrate
+   docker compose exec argilla extralit_server database migrate
    ```
 
 <SwmMeta version="3.0.0"><sup>Powered by [Swimm](https://app.swimm.io/)</sup></SwmMeta>

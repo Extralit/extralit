@@ -8,7 +8,7 @@ Extralit is a multi-component system with 5 core components:
 - **Vector Database**: ElasticSearch or AWS OpenSearch for scalable search
 - **Database**: PostgreSQL for application data storage
 
-## Backend (argilla-server/)
+## Backend (extralit-server/)
 - **Framework**: FastAPI ~0.115.0
 - **Database**: SQLAlchemy 2.0 with PostgreSQL (asyncpg) or SQLite (aiosqlite)
 - **Search**: ElasticSearch 8.x or OpenSearch 2.x
@@ -23,7 +23,7 @@ Extralit is a multi-component system with 5 core components:
 - Uvicorn for ASGI server
 - Typer for CLI interface
 
-## Frontend (argilla-frontend/)
+## Frontend (extralit-frontend/)
 - **Framework**: Nuxt.js 2.17 (Vue.js 2.7)
 - **Component Import**: Nuxt automatically scans the ~/components directory and makes all .vue files
 - **Build System**: npm/yarn
@@ -52,7 +52,7 @@ Extralit is a multi-component system with 5 core components:
 
 ### Backend Development
 ```bash
-cd argilla-server
+cd extralit-server
 pdm install
 pdm run migrate          # Run database migrations
 pdm run server-dev       # Start dev server with auto-reload
@@ -62,7 +62,7 @@ pdm run worker          # Start background worker
 
 ### Frontend Development
 ```bash
-cd argilla-frontend
+cd extralit-frontend
 npm install
 npm run dev             # Start dev server
 npm run build           # Production build
@@ -81,7 +81,7 @@ extralit --help         # CLI usage
 ### Docker Development
 ```bash
 docker-compose up       # Start full stack
-pdm run docker-build-argilla-server  # Build server image
+pdm run docker-build-extralit-server  # Build server image
 ```
 
 ### Kubernetes Development (Tilt)
@@ -91,9 +91,9 @@ tilt down               # Stop k8s environment
 ```
 
 ## Environment Variables
-- `ARGILLA_DATABASE_URL`: Database connection string
-- `ARGILLA_ELASTICSEARCH`: ElasticSearch URL
-- `ARGILLA_REDIS_URL`: Redis connection for background jobs
+- `EXTRALIT_DATABASE_URL`: Database connection string
+- `EXTRALIT_ELASTICSEARCH`: ElasticSearch URL
+- `EXTRALIT_REDIS_URL`: Redis connection for background jobs
 - `API_BASE_URL`: Backend API URL for frontend
 - `OPENAI_API_KEY`: For LLM integration
 - `S3_ENDPOINT`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`: Object storage

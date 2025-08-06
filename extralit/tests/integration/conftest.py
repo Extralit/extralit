@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,23 +15,23 @@ import uuid
 
 import pytest
 
-import argilla as rg
-from argilla import Argilla, Workspace
+import extralit as ex
+from extralit import Extralit, Workspace
 
 
 @pytest.fixture(scope="session")
-def client() -> rg.Argilla:
-    client = rg.Argilla()
+def client() -> ex.Extralit:
+    client = ex.Extralit()
 
     if len(list(client.workspaces)) == 0:
-        client.workspaces.add(rg.Workspace(name=f"test_{uuid.uuid4()}"))
+        client.workspaces.add(ex.Workspace(name=f"test_{uuid.uuid4()}"))
 
     yield client
 
     _cleanup(client)
 
 
-def _cleanup(client: rg.Argilla):
+def _cleanup(client: ex.Extralit):
     for dataset in client.datasets:
         if dataset.name.startswith("test_"):
             dataset.delete()
@@ -59,7 +59,7 @@ def username() -> str:
 
 
 @pytest.fixture
-def workspace(client: Argilla) -> Workspace:
+def workspace(client: Extralit) -> Workspace:
     ws_name = f"test-{uuid.uuid4()}"
 
     workspace = client.workspaces(ws_name)

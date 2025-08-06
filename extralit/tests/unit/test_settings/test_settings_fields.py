@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,14 +13,14 @@
 # limitations under the License.
 
 import pytest
-import argilla as rg
+import extralit as ex
 
 
 class TestTextField:
     def test_init_text_field(self):
         mock_name = "prompt"
         mock_use_markdown = True
-        text_field = rg.TextField(name=mock_name, use_markdown=mock_use_markdown)
+        text_field = ex.TextField(name=mock_name, use_markdown=mock_use_markdown)
         assert text_field.name == mock_name
         assert text_field.use_markdown == mock_use_markdown
         assert text_field.title == mock_name
@@ -30,7 +30,7 @@ class TestTextField:
         mock_name = "prompt"
         mock_use_markdown = True
         mock_title = "Prompt"
-        text_field = rg.TextField(name=mock_name, use_markdown=mock_use_markdown, title=mock_title)
+        text_field = ex.TextField(name=mock_name, use_markdown=mock_use_markdown, title=mock_title)
         assert text_field.name == mock_name
         assert text_field.use_markdown == mock_use_markdown
         assert text_field.title == mock_title
@@ -46,25 +46,25 @@ class TestTextField:
     )
     def test_title_validator(self, title, name, expected, mocker):
         mock_use_markdown = True
-        text_field = rg.TextField(name=name, use_markdown=mock_use_markdown, title=title)
+        text_field = ex.TextField(name=name, use_markdown=mock_use_markdown, title=title)
         assert text_field.title == expected
 
 
 class TestChatField:
     def test_create_chat_field(self):
-        field = rg.ChatField(name="chat")
+        field = ex.ChatField(name="chat")
 
         assert field.name == "chat"
         assert field.use_markdown is True
 
     def test_create_chat_field_with_use_markdown(self):
-        field = rg.ChatField(name="chat", use_markdown=False)
+        field = ex.ChatField(name="chat", use_markdown=False)
 
         assert field.name == "chat"
         assert field.use_markdown is False
 
     def test_update_chat_field_use_markdown(self):
-        field = rg.ChatField(name="chat", use_markdown=True)
+        field = ex.ChatField(name="chat", use_markdown=True)
         field.use_markdown = False
 
         assert field.use_markdown is False
@@ -72,14 +72,14 @@ class TestChatField:
 
 class TestCustomField:
     def test_create_custom_field(self):
-        field = rg.CustomField(name="custom", template="<p>{{ custom }}</p>")
+        field = ex.CustomField(name="custom", template="<p>{{ custom }}</p>")
 
         assert field.name == "custom"
         assert field.template == "<p>{{ custom }}</p>"
         assert field.advanced_mode is False
 
     def test_create_custom_field_with_advanced_mode(self):
-        field = rg.CustomField(name="custom", template="<p></p>", advanced_mode=True)
+        field = ex.CustomField(name="custom", template="<p></p>", advanced_mode=True)
 
         assert field.name == "custom"
         assert field.template == "<p></p>"
