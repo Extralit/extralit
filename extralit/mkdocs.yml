@@ -109,6 +109,7 @@ markdown_extensions:
       emoji_generator:
         !!python/name:material.extensions.emoji.to_svg # activating permalink: true makes the anchor link works in the notebooks
 
+
   - toc:
       permalink: true
 
@@ -205,13 +206,13 @@ nav:
           - Query and filter records: admin_guide/query.md
           - Import and export datasets: admin_guide/import_export.md
       - Advanced:
-        - Custom fields with layout templates: admin_guide/custom_fields.md
-        - Use webhooks to respond to server events:
-            - admin_guide/webhooks.md
-            - Webhooks internals: admin_guide/webhooks_internals.md
-        - Use Markdown to format rich content: admin_guide/use_markdown_to_format_rich_content.md
-        - Migrate users, workspaces and datasets to Argilla V2: admin_guide/migrate_from_legacy_datasets.md
-        - Custom fields with layout templates: admin_guide/custom_fields.md
+          - Custom fields with layout templates: admin_guide/custom_fields.md
+          - Use webhooks to respond to server events:
+              - admin_guide/webhooks.md
+              - Webhooks internals: admin_guide/webhooks_internals.md
+          - Use Markdown to format rich content: admin_guide/use_markdown_to_format_rich_content.md
+          - Migrate users, workspaces and datasets to Argilla V2: admin_guide/migrate_from_legacy_datasets.md
+          - Custom fields with layout templates: admin_guide/custom_fields.md
   - Tutorials:
       - tutorials/index.md
       - Text classification: tutorials/text_classification.ipynb
@@ -221,10 +222,10 @@ nav:
   - API Reference:
       - Argilla Python SDK: reference/argilla/
       - FastAPI Server:
-        - Server configuration: reference/argilla-server/configuration.md
-        - OAuth2 configuration: reference/argilla-server/oauth2_configuration.md
+          - Server configuration: reference/extralit-server/configuration.md
+          - OAuth2 configuration: reference/extralit-server/oauth2_configuration.md
       - Telemetry:
-          - Server Telemetry: reference/argilla-server/telemetry.md
+          - Server Telemetry: reference/extralit-server/telemetry.md
   - FAQ: getting_started/faq.md
   - Community:
       - community/index.md

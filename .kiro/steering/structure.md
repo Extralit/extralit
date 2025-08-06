@@ -5,7 +5,7 @@ This is a monorepo containing multiple related packages:
 
 ```
 extralit/
-├── argilla-server/          # FastAPI backend server
+├── extralit-server/          # FastAPI backend server
 ├── argilla-frontend/        # Nuxt.js web UI
 ├── extralit/               # Python SDK and CLI
 ├── argilla-v1/             # Legacy v1 compatibility layer
@@ -13,9 +13,9 @@ extralit/
 └── .kiro/                  # Kiro AI assistant configuration
 ```
 
-## Backend Structure (argilla-server/)
+## Backend Structure (extralit-server/)
 ```
-argilla-server/
+extralit-server/
 ├── src/argilla_server/
 │   ├── api/                # FastAPI routes and handlers
 │   │   ├── handlers/       # Request handlers by version
@@ -179,14 +179,14 @@ examples/
 ```
 
 ## Configuration Files
-- **Backend**: `argilla-server/pyproject.toml` (PDM), `.env.dev`, `.env.test`
+- **Backend**: `extralit-server/pyproject.toml` (PDM), `.env.dev`, `.env.test`
 - **Frontend**: `argilla-frontend/package.json` (npm), `nuxt.config.ts`
 - **SDK**: `extralit/pyproject.toml` (PDM)
 - **Docker**: `docker-compose.yaml` for local development
 - **K8s**: `Tiltfile` for Kubernetes development
 
 ## Development Workflow
-1. **Backend changes**: Work in `argilla-server/src/argilla_server/`
+1. **Backend changes**: Work in `extralit-server/src/argilla_server/`
 2. **Frontend changes**: Work in `argilla-frontend/components/` or `argilla-frontend/pages/`
 3. **SDK changes**: Work in `extralit/src/argilla/` or `extralit/src/extralit/`
 4. **Tests**: Each package has its own `tests/` directory

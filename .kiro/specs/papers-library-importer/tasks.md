@@ -50,7 +50,7 @@
   - _Requirements: 3.1, 3.3, 3.4, 3.7_
 
 - [x] 3.3 Implement ImportHistory database model
-  - Create ImportHistory model in database.py with required fields, with the alembic upgrade path at `argilla-server/src/argilla_server/alembic/versions/7d6b33203390_create_import_history_table.py`
+  - Create ImportHistory model in database.py with required fields, with the alembic upgrade path at `extralit-server/src/argilla_server/alembic/versions/7d6b33203390_create_import_history_table.py`
   - Add relationships to Workspace and User models
   - Create migration script for the new table
   - _Requirements: 3.5, 4.1_

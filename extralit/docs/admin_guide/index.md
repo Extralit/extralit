@@ -33,7 +33,7 @@ hide: toc
 
     Learn how to configure various deployment options and customize Extralit for your specific needs.
 
-    [:octicons-arrow-right-24: How-to guide](../reference/argilla-server/configuration.md)
+    [:octicons-arrow-right-24: How-to guide](../reference/extralit-server/configuration.md)
 
 -   __Upgrade Extralit__
 

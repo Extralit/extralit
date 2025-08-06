@@ -295,7 +295,7 @@ def _show_telemetry_warning():
     message += inspect.cleandoc(
         "Extralit uses telemetry to report anonymous usage and error information. You\n"
         "can know more about what information is reported at:\n\n"
-        "    https://docs.extralit.ai/latest/reference/argilla-server/telemetry/\n\n"
+        "    https://docs.extralit.ai/latest/reference/extralit-server/telemetry/\n\n"
         "Telemetry is currently enabled. If you want to disable it, you can configure\n"
         "the environment variable before relaunching the server:\n\n"
         f'{"#set HF_HUB_DISABLE_TELEMETRY=1" if os.name == "nt" else "$>export HF_HUB_DISABLE_TELEMETRY=1"}'

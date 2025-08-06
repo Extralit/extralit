@@ -105,7 +105,7 @@ Then, select from three different development environments through devcontainers
 
 ### 3. Development workflow*
 
-    - **Backend Development**: Changes to `argilla-server/src/argilla_server/` or `argilla/src/{argilla,extralit}/` are automatically updated if Tilt is running
+    - **Backend Development**: Changes to `extralit-server/src/argilla_server/` or `argilla/src/{argilla,extralit}/` are automatically updated if Tilt is running
     - **Python SDK packages**
       ```bash
       cd argilla
@@ -170,7 +170,7 @@ npm install
 npm run build
 
 # Copy built files to server static directory
-cp -r dist ../argilla-server/src/argilla_server/static
+cp -r dist ../extralit-server/src/argilla_server/static
 ```
 
 ### 4. Configure Environment Variables

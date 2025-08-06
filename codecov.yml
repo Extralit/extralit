@@ -26,7 +26,7 @@ flags:
     carryforward: true
   argilla_server:
     paths:
-      - argilla-server/
+      - extralit-server/
     carryforward: true
 
 component_management:
@@ -52,7 +52,7 @@ component_management:
 
     - component_id: argilla-server
       paths:
-        - argilla-server/**
+        - extralit-server/**
 
     - component_id: argilla-frontend
       paths:

@@ -68,7 +68,7 @@ repos:
     hooks:
       - id: autoflake
         name: "Remove unused imports and variables in argilla-server"
-        files: '^argilla-server/.*\.py$'
+        files: '^extralit-server/.*\.py$'
         args:
           - "--remove-all-unused-imports"
           - "--remove-unused-variables"
@@ -87,10 +87,10 @@ repos:
     hooks:
       - id: insert-license
         name: "Insert license header in Python source files"
-        files: '^argilla-server/.*\.py$'
+        files: '^extralit-server/.*\.py$'
         args:
           - --license-filepath
-          - argilla-server/LICENSE_HEADER
+          - extralit-server/LICENSE_HEADER
           - --fuzzy-match-generates-todo
 
   ##############################################################################

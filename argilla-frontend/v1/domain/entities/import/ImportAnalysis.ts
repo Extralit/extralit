@@ -1,6 +1,6 @@
 /**
  * Import analysis entities based on backend schemas
- * Maps to argilla-server/src/argilla_server/api/schemas/v1/imports.py
+ * Maps to extralit-server/src/argilla_server/api/schemas/v1/imports.py
  */
 
 // Basic field types supported in dataframes

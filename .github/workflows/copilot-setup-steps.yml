@@ -59,11 +59,11 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v5
         with:
-          pyproject-file: "argilla-server/pyproject.toml"
+          pyproject-file: "extralit-server/pyproject.toml"
           python-version: "3.11"
           enable-cache: true
           cache-local-path: ~/.cache/uv
-          cache-dependency-glob: "argilla-server/pdm.lock"
+          cache-dependency-glob: "extralit-server/pdm.lock"
 
       - name: Setup Python env and Install extralit-server editable package
         env:

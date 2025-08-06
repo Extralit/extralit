@@ -47,7 +47,7 @@ The Extralit repository has a monorepo structure, which means that all the compo
 - [`argilla/src/extralit/`](https://github.com/extralit/extralit/tree/develop/argilla/src/extralit): The FastAPI server project for extraction
 - [`argilla/docs/`](https://github.com/extralit/extralit/tree/develop/argilla/docs): The documentation project
 - [`argilla/src/argilla/`](https://github.com/extralit/extralit/tree/develop/argilla): The argilla SDK project
-- [`argilla-server/src/argilla_server/`](https://github.com/extralit/extralit/tree/develop/argilla-server): The FastAPI server project for annotation
+- [`extralit-server/src/argilla_server/`](https://github.com/extralit/extralit/tree/develop/argilla-server): The FastAPI server project for annotation
 - [`argilla-frontend/`](https://github.com/extralit/extralit/tree/develop/argilla-frontend): The Vue.js UI project
 - [`examples`](https://github.com/extralit/extralit/tree/develop/examples): Example resources for deployments, scripts and notebooks
 
@@ -94,7 +94,7 @@ To install specific sub-packages with editable mode, you can use the following c
 ```sh
 pip install -e argilla/
 # or
-pip install -e argilla-server/
+pip install -e extralit-server/
 ```
 
 
@@ -189,7 +189,7 @@ cd argilla-server
 pdm run revision -m "description of change"
 ```
 
-3. Review the generated revision file in `argilla-server/migrations/versions/`
+3. Review the generated revision file in `extralit-server/migrations/versions/`
 4. Test the migration:
 
 ```bash

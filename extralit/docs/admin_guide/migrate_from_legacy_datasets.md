@@ -41,7 +41,7 @@ Argilla v2 introduces several important changes to the API that affect how you m
 !!! note
     Legacy datasets include: `DatasetForTextClassification`, `DatasetForTokenClassification`, and `DatasetForText2Text`.
 
-    `FeedbackDataset`'s do not need to be migrated as they are already in the Argilla V2 format. Anyway, since the 2.x version includes changes to the search index structure, you should reindex the datasets by enabling the docker environment variable REINDEX_DATASET (This step is automatically executed if you're running Argilla in an HF Space). See the [server configuration docs](../reference/argilla-server/configuration.md#docker-images-only) section for more details.
+    `FeedbackDataset`'s do not need to be migrated as they are already in the Argilla V2 format. Anyway, since the 2.x version includes changes to the search index structure, you should reindex the datasets by enabling the docker environment variable REINDEX_DATASET (This step is automatically executed if you're running Argilla in an HF Space). See the [server configuration docs](../reference/extralit-server/configuration.md#docker-images-only) section for more details.
 
 
 To follow this guide, you will need to have the following prerequisites:

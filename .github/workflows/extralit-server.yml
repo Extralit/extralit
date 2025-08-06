@@ -13,13 +13,13 @@ on:
       - develop
       - releases/**
     paths:
-      - "argilla-server/**"
+      - "extralit-server/**"
       - ".github/workflows/argilla-server.*"
 
   pull_request:
     types: [opened, edited, synchronize, reopened, ready_for_review]
     paths:
-      - "argilla-server/**"
+      - "extralit-server/**"
       - ".github/workflows/argilla-server.*"
 
 permissions:
@@ -94,10 +94,10 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v5
         with:
-          pyproject-file: "argilla-server/pyproject.toml"
+          pyproject-file: "extralit-server/pyproject.toml"
           enable-cache: true
           cache-local-path: ~/.cache/uv
-          cache-dependency-glob: "argilla-server/pdm.lock"
+          cache-dependency-glob: "extralit-server/pdm.lock"
 
       - name: Install PDM
         run: uv tool install pdm
@@ -163,7 +163,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: argilla-server
-          path: argilla-server/dist
+          path: extralit-server/dist
 
   build_docker_images:
     name: Build docker images
@@ -226,7 +226,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: argilla-server
-          path: argilla-server/dist
+          path: extralit-server/dist
 
       - name: Setup PDM
         uses: pdm-project/setup-pdm@v4

@@ -8,7 +8,7 @@ Extralit is a multi-component system with 5 core components:
 - **Vector Database**: ElasticSearch or AWS OpenSearch for scalable search
 - **Database**: PostgreSQL for application data storage
 
-## Backend (argilla-server/)
+## Backend (extralit-server/)
 - **Framework**: FastAPI ~0.115.0
 - **Database**: SQLAlchemy 2.0 with PostgreSQL (asyncpg) or SQLite (aiosqlite)
 - **Search**: ElasticSearch 8.x or OpenSearch 2.x

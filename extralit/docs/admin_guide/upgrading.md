@@ -30,8 +30,8 @@ This guide covers the update process for Extralit across different deployment op
     Finally, build the wheel containing the built argilla-frontend/dist
 
     ```bash
-    cp -r argilla-frontend/dist argilla-server/src/argilla_server/static
-    rm -rf argilla-server/dist && python -m build -s argilla-server/
+    cp -r argilla-frontend/dist extralit-server/src/argilla_server/static
+    rm -rf extralit-server/dist && python -m build -s extralit-server/
     ```
 
 3. Rebuild the `extralit` Python client package

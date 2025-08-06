@@ -56,7 +56,7 @@ graph TD
 - Provides detailed tabular data for DatasetConfiguration component
 - List view includes metadata but excludes data for performance
 
-#### 2. ImportHistory Context Enhancement (`argilla-server/src/argilla_server/contexts/imports.py`)
+#### 2. ImportHistory Context Enhancement (`extralit-server/src/argilla_server/contexts/imports.py`)
 
 **New Services:**
 - `get_import_history_details()` - Retrieve complete ImportHistory record with data
@@ -393,7 +393,7 @@ argilla-frontend/
 
 ### Backend File Organization
 ```
-argilla-server/
+extralit-server/
 ├── src/argilla_server/api/
 │   ├── handlers/v1/
 │   │   └── imports.py                 # Enhanced with details endpoint
