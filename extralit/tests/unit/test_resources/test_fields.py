@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,10 +18,10 @@ from datetime import datetime
 import httpx
 from pytest_httpx import HTTPXMock
 
-import argilla as rg
-from argilla._models import FieldModel
-from argilla._models._settings._fields import ImageFieldSettings, ChatFieldSettings
-from argilla.settings._field import ImageField, ChatField, CustomField
+import extralit as ex
+from extralit._models import FieldModel
+from extralit._models._settings._fields import ImageFieldSettings, ChatFieldSettings
+from extralit.settings._field import ImageField, ChatField, CustomField
 
 
 class TestImageField:
@@ -116,5 +116,5 @@ class TestFieldsAPI:
             status_code=200,
         )
         with httpx.Client() as client:
-            client = rg.Argilla(api_url="http://test_url")
+            client = ex.Extralit(api_url="http://test_url")
             client.api.fields.create(mock_field)

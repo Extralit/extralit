@@ -1,0 +1,125 @@
+name: Build Extralit frontend package
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  workflow_call:
+
+  push:
+    branches:
+      - main
+      - develop
+      - releases/**
+    paths:
+      - "extralit-frontend/**"
+      - ".github/workflows/extralit-frontend.*"
+
+  pull_request:
+    types: [opened, edited, synchronize, reopened, ready_for_review]
+    paths:
+      - "extralit-frontend/**"
+
+
+permissions:
+  contents: read
+  id-token: write
+  pull-requests: write
+
+jobs:
+  build:
+    name: Build extralit-frontend
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: extralit-frontend
+
+    steps:
+      - name: Checkout Code 🛎
+        uses: actions/checkout@v4
+
+      - name: Update repo visualizer
+        uses: githubocto/repo-visualizer@0.7.1
+        with:
+          root_path: "extralit-frontend/"
+          excluded_paths: "dist,build,node_modules,docs,tests,.swm,assets,.github,package-lock.json,pdm.lock"
+          excluded_globs: "*.spec.js;**/*.{png,jpg,svg,md};**/!(*.module).ts,**/__pycache__/,**/__mocks__/,LICENSE*,**/.gitignore,**/*.egg-info/,**/.*/"
+          output_file: "repo-visualizer.svg"
+          should_push: false
+
+      - name: Upload repo visualizer diagram as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: repo-visualizer
+          path: repo-visualizer.svg
+          retention-days: 10
+
+      - name: Setup Node.js ⚙️
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies 📦
+        run: |
+          npm install
+
+      - name: Run lint 🧹
+        continue-on-error: true
+        run: |
+          npm run lint
+
+      - name: Run tests with coverage 🧪
+        id: run-tests
+        run: |
+          npm run test:coverage
+
+      - name: Upload frontend test coverage
+        if: always()
+        uses: codecov/codecov-action@v5.4.3
+        with:
+          files: ./coverage/lcov.info
+          flags: frontend
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+
+      - name: Build package 📦
+        env:
+          # BASE_URL is used in the server to support parameterizable base root path
+          BASE_URL: "@@baseUrl@@"
+          DIST_FOLDER: ./dist
+        run: |
+          npm run build
+
+      - name: Upload frontend statics as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: extralit-frontend
+          path: extralit-frontend/dist
+
+  # build_dev_docker_image:
+  #   name: Build development extralit-frontend docker image
+  #   needs: build
+  #   uses: ./.github/workflows/extralit-frontend.build-push-dev-frontend-docker.yml
+  #   if: |
+  #     !cancelled() &&
+  #     github.event_name == 'pull_request' && github.event.pull_request.draft == false
+  #   with:
+  #     image-name: extralit/extralit-frontend-for-dev
+  #     dockerfile: extralit-frontend/dev.frontend.Dockerfile
+  #     platforms: linux/amd64
+  #   secrets: inherit
+
+  # deploy:
+  #   name: Deploy pr environment
+  #   uses: ./.github/workflows/extralit-frontend.deploy-environment.yml
+  #   needs: build_dev_docker_image
+  #   if: |
+  #     !cancelled() &&
+  #     needs.build_dev_docker_image.result == 'success' &&
+  #     github.event_name == 'pull_request' && github.event.pull_request.draft == false
+  #   with:
+  #     image-name: extralit/extralit-frontend-for-dev
+  #     image-version: ${{ needs.build_dev_docker_image.outputs.version }}
+  #   secrets: inherit

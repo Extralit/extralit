@@ -13,85 +13,85 @@ spec:
         app: extralit
     spec:
       containers:
-      - name: extralit-server
-        image: extralit-server
-        ports:
-        - containerPort: 5555
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 5555
-          initialDelaySeconds: 15
-          periodSeconds: 10
-          timeoutSeconds: 10
-          failureThreshold: 3
-          successThreshold: 1
-        env:
-          - name: OPENAI_API_KEY
-            valueFrom:
-              secretKeyRef:
-                name: extralit-secrets
-                key: OPENAI_API_KEY
-          - name: ARGILLA_BASE_URL
-            value: "http://argilla-server:6900"
-          - name: ARGILLA_API_KEY
-            valueFrom:
-              secretKeyRef:
-                name: extralit-secrets
-                key: ARGILLA_API_KEY
-          - name: WCS_HTTP_URL
-            value: "http://weaviate:80"
-          - name: WCS_GRPC_URL
-            value: "http://weaviate-grpc:50051"
-          - name: WCS_API_KEY
-            valueFrom:
-              secretKeyRef:
-                name: weaviate-api-keys
-                key: AUTHENTICATION_APIKEY_ALLOWED_KEYS
-          - name: S3_ENDPOINT
-            valueFrom:
-              secretKeyRef:
-                name: extralit-secrets
-                key: S3_ENDPOINT
-          - name: S3_ACCESS_KEY
-            valueFrom:
-              secretKeyRef:
-                name: extralit-secrets
-                key: S3_ACCESS_KEY
-          - name: S3_SECRET_KEY
-            valueFrom:
-              secretKeyRef:
-                name: extralit-secrets
-                key: S3_SECRET_KEY
-          - name: LANGFUSE_HOST
-            value: "http://langfuse-server:4000"
-          - name: LANGFUSE_SECRET_KEY
-            valueFrom:
-              secretKeyRef:
-                name: extralit-secrets
-                key: LANGFUSE_SECRET_KEY
-          - name: LANGFUSE_PUBLIC_KEY
-            valueFrom:
-              secretKeyRef:
-                name: extralit-secrets
-                key: LANGFUSE_PUBLIC_KEY
-        # volumeMounts:
-        #   - name: extralit-storage
-        #     mountPath: /tmp/
+        - name: extralit-server
+          image: extralit-server
+          ports:
+            - containerPort: 5555
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5555
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 10
+            failureThreshold: 3
+            successThreshold: 1
+          env:
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: extralit-secrets
+                  key: OPENAI_API_KEY
+            - name: EXTRALIT_BASE_URL
+              value: "http://extralit-server:6900"
+            - name: EXTRALIT_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: extralit-secrets
+                  key: EXTRALIT_API_KEY
+            - name: WCS_HTTP_URL
+              value: "http://weaviate:80"
+            - name: WCS_GRPC_URL
+              value: "http://weaviate-grpc:50051"
+            - name: WCS_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: weaviate-api-keys
+                  key: AUTHENTICATION_APIKEY_ALLOWED_KEYS
+            - name: S3_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: extralit-secrets
+                  key: S3_ENDPOINT
+            - name: S3_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: extralit-secrets
+                  key: S3_ACCESS_KEY
+            - name: S3_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: extralit-secrets
+                  key: S3_SECRET_KEY
+            - name: LANGFUSE_HOST
+              value: "http://langfuse-server:4000"
+            - name: LANGFUSE_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: extralit-secrets
+                  key: LANGFUSE_SECRET_KEY
+            - name: LANGFUSE_PUBLIC_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: extralit-secrets
+                  key: LANGFUSE_PUBLIC_KEY
+          # volumeMounts:
+          #   - name: extralit-storage
+          #     mountPath: /tmp/
       # volumes:
       # - name: extralit-storage
       #   persistentVolumeClaim:
-      #     claimName: extralit-pvc 
+      #     claimName: extralit-pvc
       affinity:
         nodeAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 1
-            preference:
-              matchExpressions:
-              - key: role
-                operator: In
-                values:
-                - extralit
+            - weight: 1
+              preference:
+                matchExpressions:
+                  - key: role
+                    operator: In
+                    values:
+                      - extralit
 ---
 apiVersion: v1
 kind: Service

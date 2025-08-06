@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
-from unittest import mock
-from argilla.settings._templates import DefaultSettingsMixin
+from extralit.settings._templates import DefaultSettingsMixin
 
 
 class TestDefaultSettingsMixin:

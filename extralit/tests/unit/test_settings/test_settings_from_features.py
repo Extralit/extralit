@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,10 +13,10 @@
 # limitations under the License.
 
 import pytest
-import argilla as rg
+import extralit as ex
 
-from argilla._exceptions._settings import SettingsError
-from argilla.settings._io._hub import _define_settings_from_features
+from extralit._exceptions._settings import SettingsError
+from extralit.settings._io._hub import _define_settings_from_features
 
 
 def test_define_settings_from_features_text():
@@ -24,7 +24,7 @@ def test_define_settings_from_features_text():
     settings = _define_settings_from_features(features, feature_mapping={})
 
     assert len(settings.fields) == 1
-    assert isinstance(settings.fields[0], rg.TextField)
+    assert isinstance(settings.fields[0], ex.TextField)
     assert settings.fields[0].name == "text_column"
     assert len(settings.questions) == 0
 
@@ -34,7 +34,7 @@ def test_define_settings_from_features_image():
     settings = _define_settings_from_features(features, feature_mapping={})
 
     assert len(settings.fields) == 1
-    assert isinstance(settings.fields[0], rg.ImageField)
+    assert isinstance(settings.fields[0], ex.ImageField)
     assert settings.fields[0].name == "image_column"
 
 
@@ -43,7 +43,7 @@ def test_define_settings_from_bool_features():
     settings = _define_settings_from_features(features, feature_mapping={})
 
     assert len(settings.metadata) == 1
-    assert isinstance(settings.metadata[0], rg.TermsMetadataProperty)
+    assert isinstance(settings.metadata[0], ex.TermsMetadataProperty)
     assert settings.metadata[0].name == "bool_column"
 
 
@@ -56,12 +56,12 @@ def test_define_settings_from_features_multiple():
     settings = _define_settings_from_features(features, feature_mapping={})
 
     assert len(settings.fields) == 2
-    assert isinstance(settings.fields[0], rg.TextField)
+    assert isinstance(settings.fields[0], ex.TextField)
     assert settings.fields[0].name == "text_column"
-    assert isinstance(settings.fields[1], rg.ImageField)
+    assert isinstance(settings.fields[1], ex.ImageField)
     assert settings.fields[1].name == "image_column"
     assert len(settings.questions) == 1
-    assert isinstance(settings.questions[0], rg.LabelQuestion)
+    assert isinstance(settings.questions[0], ex.LabelQuestion)
     assert settings.questions[0].name == "label_column"
 
 
@@ -74,12 +74,12 @@ def test_mapped_question():
     settings = _define_settings_from_features(features, feature_mapping={"text_column": "question"})
 
     assert len(settings.fields) == 1
-    assert isinstance(settings.fields[0], rg.ImageField)
+    assert isinstance(settings.fields[0], ex.ImageField)
     assert settings.fields[0].name == "image_column"
     assert len(settings.questions) == 2
-    assert isinstance(settings.questions[0], rg.TextQuestion)
+    assert isinstance(settings.questions[0], ex.TextQuestion)
     assert settings.questions[0].name == "text_column"
-    assert isinstance(settings.questions[1], rg.LabelQuestion)
+    assert isinstance(settings.questions[1], ex.LabelQuestion)
     assert settings.questions[1].name == "label_column"
 
 
@@ -92,12 +92,12 @@ def test_mapped_fields():
     settings = _define_settings_from_features(features, feature_mapping={"text_column": "field"})
 
     assert len(settings.fields) == 2
-    assert isinstance(settings.fields[0], rg.TextField)
+    assert isinstance(settings.fields[0], ex.TextField)
     assert settings.fields[0].name == "text_column"
-    assert isinstance(settings.fields[1], rg.ImageField)
+    assert isinstance(settings.fields[1], ex.ImageField)
     assert settings.fields[1].name == "image_column"
     assert len(settings.questions) == 1
-    assert isinstance(settings.questions[0], rg.LabelQuestion)
+    assert isinstance(settings.questions[0], ex.LabelQuestion)
     assert settings.questions[0].name == "label_column"
 
 

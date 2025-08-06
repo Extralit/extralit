@@ -49,7 +49,6 @@ dependencies = [
     "fastparquet >= 2023.10.0; python_version < '3.13'",
     "fastparquet >= 2024.4.0; python_version >= '3.13'",
     "tiktoken ~= 0.9.0",
-    "pymupdf==1.26.0",
 
     # for llama-index
     "llama-index ~= 0.10.68",
@@ -62,6 +61,7 @@ dependencies = [
     # for weaviate vector db
     "weaviate-client >= 4",
     "llama-index-vector-stores-weaviate ~= 1.0.0",
+    "bibtexparser>=1.4.3",
 ]
 nlp = [
     "textdescriptives",
@@ -83,7 +83,6 @@ pdf = [
     "pymupdf==1.26.0",
     "pdf2image ~= 1.16.0",
 ]
-legacy = ["argilla-v1[listeners]"]
 
 [build-system]
 requires = ["pdm-backend>=2.0.0", "setuptools>=68.0.0"]
@@ -101,13 +100,14 @@ use-venv = true
 
 [tool.pdm.version]
 source = "file"
-path = "src/argilla/_version.py"
+path = "src/extralit/_version.py"
 
 [tool.pdm.dev-dependencies]
 dev = [
     "ipython>=8.12.3",
     "pytest>=7.4.4",
     "pytest-cov>=4.1.0",
+    "pytest-asyncio~=0.21.1",
     "flake8>=5.0.4",
     "ruff>=0.1.12",
     "pytest-mock>=3.12.0",
@@ -131,10 +131,14 @@ dev = [
 
 [tool.pdm.scripts]
 test = { cmd = "pytest tests --disable-warnings", env_file = ".env.test" }
-test-cov = { cmd = "pytest tests --disable-warnings --cov=argilla --cov-report=term --cov-report=xml", env_file = ".env.test" }
+test-cov = { cmd = "pytest tests --disable-warnings --cov=extralit --cov-report=term --cov-report=xml", env_file = ".env.test" }
 lint = "ruff check"
 format = "black ."
 all = { composite = ["format", "lint", "test"] }
 
 [project.scripts]
-extralit = "argilla.cli.app:app"
+extralit = "extralit.cli.app:app"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+env = ["HF_HUB_DISABLE_TELEMETRY=1"]

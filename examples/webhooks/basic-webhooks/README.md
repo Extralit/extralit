@@ -27,12 +27,12 @@ For more information on how to install the server, please refer to the [Extralit
 Once the argilla server is up and running, start the webhook server by running the following command:
 
 ```bash
-ARGILLA_API_KEY=argilla.apikey \
+EXTRALIT_API_KEY=extralit.apikey \
 WEBHOOK_SERVER_URL=http://host.docker.internal:8000 \
 uvicorn main:server
 ```
 
-The `ARGILLA_API_KEY` environment variable should be set to the API key of the argilla server.
+The `EXTRALIT_API_KEY` environment variable should be set to the API key of the argilla server.
 The `WEBHOOK_SERVER_URL` environment variable should be set to the URL where the webhook server is running.
 In this case, we are using `http://host.docker.internal:8000` because the webhook calls will be done inside a docker container.
 

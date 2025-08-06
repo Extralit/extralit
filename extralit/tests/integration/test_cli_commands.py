@@ -19,7 +19,7 @@ import subprocess
 
 import pytest
 
-from argilla import Argilla, Workspace
+from extralit import Extralit, Workspace
 
 
 @pytest.fixture
@@ -29,7 +29,7 @@ def test_workspace_name():
 
 
 @pytest.fixture
-def test_workspace(client: Argilla, test_workspace_name):
+def test_workspace(client: Extralit, test_workspace_name):
     workspace = Workspace(name=test_workspace_name).create()
 
     yield workspace
@@ -142,7 +142,9 @@ class TestCLICommands:
     def test_documents_add_and_list_command(self, test_workspace):
         """Test the 'documents add' and 'documents list' commands."""
         test_url = f"https://example.com/test_cli_{uuid.uuid4().hex[:8]}"
-        add_result = run_cli_command(f"extralit documents add --workspace {test_workspace.name} --url {test_url}")
+        add_result = run_cli_command(
+            f"extralit documents add --workspace {test_workspace.name} --reference test_url --url {test_url}"
+        )
 
         assert add_result.returncode == 0
         assert "Document added successfully" in add_result.stdout
@@ -153,7 +155,7 @@ class TestCLICommands:
         assert list_result.returncode == 0
         assert test_url[:10] in list_result.stdout
 
-    def test_schemas_list_command(self, test_workspace, client: Argilla):
+    def test_schemas_list_command(self, test_workspace, client: Extralit):
         """Test the 'schemas list' command."""
         # Ensure the CLI is logged in for schemas commands
         login_result = run_cli_command(f"extralit login --api-url {client.api_url} --api-key {client.api_key}")
@@ -164,7 +166,7 @@ class TestCLICommands:
         assert result.returncode == 0, f"\n--- CLI stdout ---\n{result.stdout}\n--- CLI stderr ---\n{result.stderr}\n"
         assert "No schemas found" in result.stdout
 
-    def test_schemas_download_command(self, test_workspace, client: Argilla):
+    def test_schemas_download_command(self, test_workspace, client: Extralit):
         """Test the 'schemas download' command."""
         with tempfile.TemporaryDirectory() as temp_dir:
             login_result = run_cli_command(f"extralit login --api-url {client.api_url} --api-key {client.api_key}")

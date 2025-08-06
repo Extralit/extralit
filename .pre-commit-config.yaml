@@ -61,14 +61,14 @@ repos:
           # - --keep-version
 
   ##############################################################################
-  # argilla-server specific hooks
+  # extralit-server specific hooks
   ##############################################################################
   - repo: https://github.com/pycqa/autoflake
     rev: v2.2.1
     hooks:
       - id: autoflake
-        name: "Remove unused imports and variables in argilla-server"
-        files: '^argilla-server/.*\.py$'
+        name: "Remove unused imports and variables in extralit-server"
+        files: '^extralit-server/.*\.py$'
         args:
           - "--remove-all-unused-imports"
           - "--remove-unused-variables"
@@ -87,42 +87,23 @@ repos:
     hooks:
       - id: insert-license
         name: "Insert license header in Python source files"
-        files: '^argilla-server/.*\.py$'
+        files: '^extralit-server/.*\.py$'
         args:
           - --license-filepath
-          - argilla-server/LICENSE_HEADER
+          - extralit-server/LICENSE_HEADER
           - --fuzzy-match-generates-todo
 
   ##############################################################################
-  # argilla-v1 SDK specific hooks
+  # extralit-frontend specific hooks
   ##############################################################################
-  - repo: https://github.com/pycqa/autoflake
-    rev: v2.2.1
+  - repo: local
     hooks:
-      - id: autoflake
-        name: "Remove unused imports and variables"
-        files: '^argilla-v1/.*\.py$'
-        args:
-          - "--remove-all-unused-imports"
-          - "--remove-unused-variables"
-          - "--in-place"
-  - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.4.8
-    hooks:
-      - id: ruff
-        files: 'argilla-v1/src/.*\.py$'
-        args:
-          - --fix
-  - repo: https://github.com/Lucas-C/pre-commit-hooks
-    rev: v1.5.5
-    hooks:
-      - id: insert-license
-        name: "Insert license header in Python source files"
-        files: '^argilla-v1/.*\.py$'
-        args:
-          - --license-filepath
-          - extralit/LICENSE_HEADER
-          - --fuzzy-match-generates-todo
+      - id: frontend-lint
+        name: "Lint and fix extralit-frontend files"
+        entry: bash -c 'cd extralit-frontend && npx eslint --fix "${@#extralit-frontend/}" || true'
+        language: system
+        files: '^extralit-frontend/.*\.(js|ts|vue)$'
+        pass_filenames: true
 
   ##############################################################################
   # Helm lint hook
@@ -145,4 +126,7 @@ ci:
   autoupdate_schedule: weekly
   skip:
     - helmlint # Disabling helmlint on CI by now because helm dependency is not available
+    - frontend-eslint # Requires npm dependencies to be installed in extralit-frontend
+    - frontend-prettier # Requires npm dependencies to be installed in extralit-frontend
+    - frontend-lint # Requires npm dependencies to be installed in extralit-frontend
   submodules: false

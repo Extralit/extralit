@@ -43,7 +43,7 @@ services:
       POSTGRES_HOST: localhost
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: argilla
+      POSTGRES_DB: extralit
     healthcheck:
       test: ["CMD-SHELL", "pg_isready"]
       interval: 10s
@@ -61,8 +61,9 @@ services:
   minio:
     image: quay.io/minio/minio:RELEASE.2024-08-29T01-40-52Z
     command: minio server /data --console-address :9090
-    env_file:
-      - .env.dev
+    environment:
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
     ports:
       - "9000:9000"
     network_mode: host
@@ -96,5 +97,5 @@ services:
     network_mode: host
 
 networks:
-  argilla:
+  extralit:
     driver: bridge

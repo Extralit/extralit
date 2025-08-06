@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,20 +17,20 @@ import uuid
 
 import pytest
 
-import argilla as rg
-from argilla.records._resource import Record
+import extralit as ex
+from extralit.records._resource import Record
 
 
 @pytest.fixture
 def record():
-    return rg.Record(
+    return ex.Record(
         id=uuid.uuid4(),
         fields={"text": "Hello World, how are you?"},
         suggestions=[
-            rg.Suggestion("label", "positive", score=0.9),
-            rg.Suggestion("topics", ["topic1", "topic2"], score=[0.9, 0.8]),
+            ex.Suggestion("label", "positive", score=0.9),
+            ex.Suggestion("topics", ["topic1", "topic2"], score=[0.9, 0.8]),
         ],
-        responses=[rg.Response("label", "positive", user_id=uuid.uuid4())],
+        responses=[ex.Response("label", "positive", user_id=uuid.uuid4())],
         metadata={"source": "twitter", "language": "en"},
         vectors={"text": [0, 0, 0]},
     )
@@ -38,7 +38,7 @@ def record():
 
 def test_export_record_to_from_dict(record):
     record_dict = record.to_dict()
-    imported_record = rg.Record.from_dict(record_dict)
+    imported_record = ex.Record.from_dict(record_dict)
 
     assert record.responses["label"][0].value == imported_record.responses["label"][0].value
     assert record.suggestions["topics"].value == imported_record.suggestions["topics"].value

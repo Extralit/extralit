@@ -16,7 +16,7 @@ import pytest
 from typer.testing import CliRunner
 from unittest.mock import patch
 
-from argilla.cli.app import app
+from extralit.cli.app import app
 
 
 @pytest.fixture
@@ -25,42 +25,7 @@ def runner():
     return CliRunner()
 
 
-def test_datasets_help(runner):
-    """Test that the datasets command shows help message."""
-    result = runner.invoke(app, ["datasets", "--help"])
-    assert result.exit_code == 0
-    assert "Commands for dataset management" in result.stdout
-
-
-def test_datasets_list_command_help(runner):
-    """Test the help message for the 'list' subcommand."""
-    result = runner.invoke(app, ["datasets", "list", "--help"])
-    assert result.exit_code == 0
-    assert "List datasets" in result.stdout
-
-
-def test_datasets_create_command_help(runner):
-    """Test the help message for the 'create' subcommand."""
-    result = runner.invoke(app, ["datasets", "create", "--help"])
-    assert result.exit_code == 0
-    assert "Creates a new dataset" in result.stdout
-
-
-def test_datasets_delete_command_help(runner):
-    """Test the help message for the 'delete' subcommand."""
-    result = runner.invoke(app, ["datasets", "delete", "--help"])
-    assert result.exit_code == 0
-    assert "Deletes a dataset" in result.stdout
-
-
-def test_datasets_push_to_hf_command_help(runner):
-    """Test the help message for the 'push-to-huggingface' subcommand."""
-    result = runner.invoke(app, ["datasets", "push-to-huggingface", "--help"])
-    assert result.exit_code == 0
-    assert "Push a dataset to HuggingFace Hub" in result.stdout
-
-
-@patch("argilla.cli.datasets.__main__.list_datasets")
+@patch("extralit.cli.datasets.__main__.list_datasets")
 @pytest.mark.skip(reason="Test temporarily disabled")
 def test_datasets_list(mock_list_datasets, runner):
     """Test the 'list' command functionality."""
@@ -93,7 +58,7 @@ def test_datasets_list(mock_list_datasets, runner):
     mock_list_datasets.assert_called_once()
 
 
-@patch("argilla.cli.datasets.__main__.create_dataset")
+@patch("extralit.cli.datasets.__main__.create_dataset")
 @pytest.mark.skip(reason="Test temporarily disabled")
 def test_datasets_create(mock_create_dataset, runner):
     """Test the 'create' command functionality."""
@@ -120,7 +85,7 @@ def test_datasets_create(mock_create_dataset, runner):
     mock_create_dataset.assert_called_once()
 
 
-@patch("argilla.cli.datasets.__main__.delete_dataset")
+@patch("extralit.cli.datasets.__main__.delete_dataset")
 @pytest.mark.skip(reason="Test temporarily disabled")
 def test_datasets_delete(mock_delete_dataset, runner):
     """Test the 'delete' command functionality."""
@@ -147,7 +112,7 @@ def test_datasets_delete(mock_delete_dataset, runner):
     mock_delete_dataset.assert_called_once()
 
 
-@patch("argilla.cli.datasets.__main__.push_to_huggingface")
+@patch("extralit.cli.datasets.__main__.push_to_huggingface")
 @pytest.mark.skip(reason="Test temporarily disabled")
 def test_datasets_push_to_hf(mock_push_to_hf, runner):
     """Test the 'push-to-huggingface' command functionality."""

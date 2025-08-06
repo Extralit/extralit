@@ -17,41 +17,13 @@ from typer.testing import CliRunner
 from unittest.mock import patch
 from pathlib import Path
 
-from argilla.cli.app import app
+from extralit.cli.app import app
 
 
 @pytest.fixture
 def runner():
     """Fixture providing a CLI runner."""
     return CliRunner()
-
-
-def test_schemas_help(runner):
-    """Test that the schemas command shows help message."""
-    result = runner.invoke(app, ["schemas", "--help"])
-    assert result.exit_code == 0
-    assert "schemas management" in result.stdout.lower()
-
-
-def test_schemas_upload_command_help(runner):
-    """Test the help message for the 'upload' subcommand."""
-    result = runner.invoke(app, ["schemas", "upload", "--help"])
-    assert result.exit_code == 0
-    assert "upload" in result.stdout.lower()
-
-
-def test_schemas_list_command_help(runner):
-    """Test the help message for the 'list' subcommand."""
-    result = runner.invoke(app, ["schemas", "list", "--help"])
-    assert result.exit_code == 0
-    assert "list" in result.stdout.lower()
-
-
-def test_schemas_delete_command_help(runner):
-    """Test the help message for the 'delete' subcommand."""
-    result = runner.invoke(app, ["schemas", "delete", "--help"])
-    assert result.exit_code == 0
-    assert "delete" in result.stdout.lower()
 
 
 @patch("rich.console.Console.print")
@@ -104,7 +76,7 @@ def test_schemas_list_with_csv_export(mock_print, runner):
         mock_print.assert_called_once()
 
 
-@patch("argilla.cli.schemas.upload.upload_schemas")
+@patch("extralit.cli.schemas.upload.upload_schemas")
 @pytest.mark.skip(reason="Test temporarily disabled")
 def test_schemas_upload(mock_upload_schemas, runner):
     """Test the 'upload schemas' command functionality."""

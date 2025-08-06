@@ -17,7 +17,7 @@ import uuid
 import tempfile
 
 
-from argilla import Workspace
+from extralit import Workspace
 
 
 class TestWorkspaceDocuments:
@@ -35,7 +35,7 @@ class TestWorkspaceDocuments:
         """Test adding a document to a workspace and listing it."""
         # Add a document with a URL
         test_url = f"https://example.com/test_{uuid.uuid4()}"
-        document_id = workspace.add_document(url=test_url)
+        document_id = workspace.add_document(url=test_url, reference="test-ref-url")
 
         # Verify the document ID
         assert document_id is not None
@@ -51,7 +51,9 @@ class TestWorkspaceDocuments:
         """Test adding a document with a PMID."""
         # Add a document with a PMID
         test_pmid = f"PMC{uuid.uuid4().hex[:8]}"
-        document_id = workspace.add_document(url=f"https://example.com/{test_pmid}.pdf", pmid=test_pmid)
+        document_id = workspace.add_document(
+            url=f"https://example.com/{test_pmid}.pdf", pmid=test_pmid, reference="test-ref-pmid"
+        )
 
         # Verify the document ID
         assert document_id is not None
@@ -67,7 +69,9 @@ class TestWorkspaceDocuments:
         """Test adding a document with a DOI."""
         # Add a document with a DOI
         test_doi = f"10.1234/{uuid.uuid4().hex[:8]}"
-        document_id = workspace.add_document(url=f"https://example.com/{test_doi}.pdf", doi=test_doi)
+        document_id = workspace.add_document(
+            url=f"https://example.com/{test_doi}.pdf", doi=test_doi, reference="test-ref-doi"
+        )
 
         # Verify the document ID
         assert document_id is not None
@@ -88,7 +92,7 @@ class TestWorkspaceDocuments:
 
         try:
             # Add a document with a file
-            document_id = workspace.add_document(file_path=temp_file_path)
+            document_id = workspace.add_document(file_path=temp_file_path, reference="test-ref-file")
 
             # Verify the document ID
             assert document_id is not None

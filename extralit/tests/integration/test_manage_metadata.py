@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,17 +14,17 @@
 
 import pytest
 
-import argilla as rg
-from argilla import Argilla, Dataset, Settings, TextField, Workspace, LabelQuestion
+import extralit as ex
+from extralit import Extralit, Dataset, Settings, TextField, Workspace, LabelQuestion
 
 
 @pytest.fixture
-def dataset_with_metadata(client: Argilla, workspace: Workspace, dataset_name: str) -> Dataset:
+def dataset_with_metadata(client: Extralit, workspace: Workspace, dataset_name: str) -> Dataset:
     settings = Settings(
         fields=[TextField(name="text")],
         questions=[LabelQuestion(name="label", labels=["positive", "negative"])],
         metadata=[
-            rg.TermsMetadataProperty(name="category", options=["A", "B", "C"]),
+            ex.TermsMetadataProperty(name="category", options=["A", "B", "C"]),
         ],
     )
     dataset = Dataset(
@@ -38,12 +38,12 @@ def dataset_with_metadata(client: Argilla, workspace: Workspace, dataset_name: s
     return dataset
 
 
-def test_create_dataset_with_metadata(client: Argilla, workspace: Workspace, dataset_name: str) -> None:
+def test_create_dataset_with_metadata(client: Extralit, workspace: Workspace, dataset_name: str) -> None:
     settings = Settings(
         fields=[TextField(name="text")],
         questions=[LabelQuestion(name="label", labels=["positive", "negative"])],
         metadata=[
-            rg.TermsMetadataProperty(name="category", options=["A", "B", "C"]),
+            ex.TermsMetadataProperty(name="category", options=["A", "B", "C"]),
         ],
     )
     dataset = Dataset(
@@ -61,14 +61,14 @@ def test_create_dataset_with_metadata(client: Argilla, workspace: Workspace, dat
 @pytest.mark.parametrize(
     "min, max, type",
     [
-        (0, 1, rg.FloatMetadataProperty),
-        (None, None, rg.FloatMetadataProperty),
-        (0, 1, rg.IntegerMetadataProperty),
-        (None, None, rg.IntegerMetadataProperty),
+        (0, 1, ex.FloatMetadataProperty),
+        (None, None, ex.FloatMetadataProperty),
+        (0, 1, ex.IntegerMetadataProperty),
+        (None, None, ex.IntegerMetadataProperty),
     ],
 )
 def test_create_dataset_with_numerical_metadata(
-    client: Argilla, workspace: Workspace, dataset_name: str, min, max, type
+    client: Extralit, workspace: Workspace, dataset_name: str, min, max, type
 ) -> None:
     settings = Settings(
         fields=[TextField(name="text")],

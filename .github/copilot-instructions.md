@@ -1,20 +1,34 @@
 # Extralit Codebase Organization Guide
 
-This guide provides an overview of the Extralit codebase architecture to help new contributors understand how the project is organized. Extralit is a monorepo containing multiple interconnected components that work together to provide document extraction, processing, and annotation capabilities.
+This guide provides an overview of the Extralit codebase (https://github.com/Extralit/extralit) architecture to help new contributors understand how the project is organized. Extralit is a monorepo containing multiple interconnected components that work together to provide document extraction, processing, and annotation capabilities.
+
+## Development Workflow
+When contributing to Extralit, consider these guidelines:
+
+1. **Understand the context**: Identify which domain context your change belongs to
+2. **Follow existing patterns**: Look at similar implementations for guidance
+3. **Maintain separation of concerns**:
+   - Keep API handlers thin, delegating to contexts for business logic
+   - Keep database models focused on structure, not behavior
+   - Use validators for input validation
+4. **Write tests**: Add tests for new functionality in the appropriate test directories
+   - **Avoid running full test suite** - Only run specific test files: `pdm run test tests/unit/services/test_schemas.py -v`
+   - **Most tests are better running in GH Actions** - focus on targeted testing during development
+5. **Update docs**: Reflect the new changes made to the data architecture or refactored modules to `.github/copilot-instructions.md`.
+
 
 ## Repository Structure
 
 Extralit is organized as a monorepo with several main components:
 
-- **argilla**: Python SDK and core extraction functionality
-- **argilla-server**: Backend server implementation
-- **argilla-frontend**: Frontend web application
-- **argilla-v1**: Legacy compatibility layer
-- **examples**: Sample implementations and deployment configurations
+- **extralit/**: Python SDK and core extraction functionality
+- **extralit-server/**: Backend server implementation
+- **extralit-frontend/**: Frontend web application
+- **examples/**: Sample implementations and deployment configurations
 
 ## Core Components
 
-### Frontend (`argilla-frontend`)
+### Frontend (`extralit-frontend`)
 
 The frontend is built with Vue.js and Nuxt.js, providing a modern web interface for document management, extraction, and annotation.
 
@@ -23,11 +37,32 @@ Key directories:
   - `base/`: Reusable UI components (buttons, inputs, modals, etc.)
   - `features/`: Feature-specific components (annotation, dataset creation, etc.)
 - `pages/`: Application routes and page components
-- `v1/domain/`: Core domain entities and business logic
+- `v1/`: Version 1 application logic
+  - `v1/domain/`: Core domain entities and business logic, organized into
+    - `entities/`: Domain entities
+    - `events/`: Domain events (Event suffix)
+    - `services/`: Domain service interfaces (I prefix)
+    - `usecases/`: Use case implementations (kebab-case, use-case suffix)
+  - `v1/infrastructure/`: Infrastructure implementations
+    - `events/`: Event handlers (EventHandler suffix)
+    - `repositories/`: API repository implementations (Repository suffix)
+    - `services/`: UI hooks and utilities (use* pattern)
+    - `storage/`: Storage clients (Storage suffix)
+    - `types/`: Infrastructure types and API models
 - `plugins/`: Vue.js plugins and extensions
 - `assets/`: Static assets like styles, fonts, and images
 
-### Backend Server (`argilla-server/src/argilla_server`)
+### Key Frontend Patterns
+- **Components**: Base components in `components/base/`, feature components in `components/features/`
+- **Pages**: Nuxt.js file-based routing in `pages/`
+- **Stores**: Pinia stores in `v1/store/`
+- **Domain Logic**: Dependency injection in `v1/di/`
+- **Axios**: @nuxt/axios with `{proxy: true, browserBaseURL: "api"}`
+- **Styling**: SCSS in `assets/scss/`, component-scoped
+- **View Models**: `setup(props) { return useViewModelName(props); }` pattern
+- **BaseSimpleTable**: Use existing `BaseSimpleTable.vue` for tabular display
+
+### Backend Server (`extralit-server/src/extralit_server`)
 
 The backend is a FastAPI application that handles API requests, database operations, and search functionality.
 
@@ -55,7 +90,7 @@ Key modules:
 - `webhooks/`: Webhook processing and event handling
 - `validators/`: Data validation logic
 
-### SDK and Core Extraction (`argilla/src/extralit`)
+### SDK and Core Extraction (`extralit/src/extralit`)
 
 The core extraction functionality and Python SDK for interacting with the Extralit system.
 
@@ -100,7 +135,7 @@ This approach keeps related functionality together and makes the codebase more m
 
 ### Models and Database
 
-The system uses SQLAlchemy for database operations with models defined in `argilla-server/src/argilla_server/models/database.py`. These models represent the core entities in the system:
+The system uses SQLAlchemy for database operations with models defined in `extralit-server/src/extralit_server/models/database.py`. These models represent the core entities in the system:
 - Users and workspaces
 - Datasets and records
 - Questions and responses
@@ -118,6 +153,44 @@ The API follows a RESTful design with endpoints organized by resource type. The 
 
 API handlers in `api/handlers/` implement the actual request processing logic, while schemas in `api/schemas/` define the request and response data structures.
 
+### Authorization Patterns
+
+Available Workspace Policies Examples:
+- `WorkspacePolicy.get(workspace_id)` - For read/update operations
+- `WorkspacePolicy.create(actor)` - For workspace creation
+- `WorkspacePolicy.delete(actor)` - For workspace deletion
+- `WorkspacePolicy.list_workspaces_me(actor)` - For listing user workspaces
+
+Pattern usage:
+```python
+await authorize(current_user, WorkspacePolicy.get(workspace_id))
+```
+
+### S3 and Files Context
+
+Getting Storage Client:
+```python
+from extralit_server.contexts import files
+
+# Get appropriate client (Minio or LocalFileStorage)
+client = files.get_minio_client()
+if client is None:
+    raise HTTPException(status_code=500, detail="Storage client not available")
+```
+
+File Operations:
+```python
+# List objects
+files.list_objects(client, bucket_name, prefix="schemas/", include_version=False)
+
+# Get object
+files.get_object(client, bucket_name, object_path, version_id=None)
+
+# Put object
+files.put_object(client, bucket_name, object_path, data, content_type="application/json")
+```
+
+
 ## Core Concepts Implementation
 
 ### Workspaces and Datasets
@@ -134,34 +207,43 @@ Implementation:
 Schemas define the structure and format of data to be extracted, while references uniquely identify scientific papers in the system.
 
 Implementation:
-- Schema definitions are handled in `argilla/src/extralit/schema/`
+- Schema definitions are handled in `extralit/src/extralit/schema/`
 - The system uses Pandera for schema validation
-- References are managed through `argilla/src/extralit/schema/references/`
+- References are managed through `extralit/src/extralit/schema/references/`
 
-### Data Extraction Workflow
 
-The extraction workflow involves document import, OCR, schema application, LLM-assisted extraction, review, and export.
+### Data Aggregation and Normalization Architecture
 
-Implementation:
-- Document import is handled in `contexts/files.py`
-- OCR and text extraction is implemented in `extralit/preprocessing/`
-- LLM-assisted extraction is in `extralit/extraction/`
-- Review functionality is provided through the frontend components
-- Export capabilities are in `extralit/pipeline/export/`
+Extralit uses a normalized database approach for storing and presenting extracted data. Each document's extractions are split into separate records (like database tables) with reference keys connecting them, similar to a relational database schema.
 
-## Development Workflow
+#### Document Data Extraction Flow
 
-When contributing to Extralit, consider these guidelines:
+1. **PaperExtraction Model** (`extralit/src/extralit/extraction/models/paper.py`)
+   - Central container for a document's extraction data
+   - Contains multiple pandas DataFrames organized by schema name
+   - Holds SchemaStructure defining data organization across schemas
 
-1. **Understand the context**: Identify which domain context your change belongs to
-2. **Follow existing patterns**: Look at similar implementations for guidance
-3. **Maintain separation of concerns**:
-   - Keep API handlers thin, delegating to contexts for business logic
-   - Keep database models focused on structure, not behavior
-   - Use validators for input validation
-4. **Write tests**: Add tests for new functionality in the appropriate test directories
+2. **Data Normalization Process** (`extralit/src/extralit/pipeline/export/record.py`)
+   - **Document-Level Record**: Creates a single "publication" record for document metadata
+     - Based on singleton schema in SchemaStructure
+     - Created by `create_publication_records()` function
+   - **Schema-Level Records**: Creates separate "extraction" records for each schema
+     - Each record contains one DataFrame of extracted data as serialized JSON
+     - Created by `create_extraction_records()` function
+     - References connect to the publication record and other extraction records
+
+3. **Dataset Configuration** (`extralit/src/extralit/pipeline/export/dataset.py`)
+   - Defines structure of Extralit datasets to store normalized records
+   - `create_papers_dataset()` configures datasets for document-level records
+   - `create_extraction_dataset()` configures datasets for schema-level records
+
 
 ## Common Development Tasks
+
+### Environment Configuration
+- Development environment variables are in `extralit-server/.env.dev`
+- Test environment uses temporary databases
+- Database paths use `${HOME}/.extralit/` pattern in development
 
 ### Adding a new API endpoint
 
@@ -174,9 +256,20 @@ When contributing to Extralit, consider these guidelines:
 ### Modifying database models
 
 1. Update the model in `models/database.py`
-2. Create a migration using Alembic
+2. Create a migration using Alembic:
+   ```bash
+   cd extralit-server
+   pdm run revision -m "description of change"
+   ```
 3. Update related schemas and validators
 4. Test the changes thoroughly
+
+#### Database Migration Guidelines
+- Database migrations are automatically configured via environment variables:
+  - Dev: `${HOME}/.extralit/extralit-dev.db`
+  - Test: Uses temporary databases managed by pytest
+- Use `pdm run alembic -c src/extralit_server/alembic.ini check` to verify migration state
+- Always test both upgrade and downgrade paths
 
 ### Adding frontend functionality
 
@@ -184,3 +277,59 @@ When contributing to Extralit, consider these guidelines:
 2. Create or update components in `components/features/`
 3. Connect to the backend using services in `v1/infrastructure/services/`
 4. Add tests for the new functionality
+
+### Working with Schema and Data Models
+
+1. Define schema in `extralit/src/extralit/extraction/models/schema.py`
+2. Implement extraction logic in `extralit/src/extralit/extraction/models/paper.py`
+3. Define dataset structure in `extralit/src/extralit/pipeline/export/dataset.py`
+4. Create records using functions in `extralit/src/extralit/pipeline/export/record.py`
+
+## Data Aggregation and Annotation Workflow
+
+This section describes how extracted data from documents is structured, stored, and presented to the user for annotation. Extralit uses a relational database approach where data is split into different tables and linked through reference keys.
+
+### 1. The `PaperExtraction` Model
+
+- Core container for document extractions (`extralit/src/extralit/extraction/models/paper.py`)
+- Holds multiple pandas DataFrames keyed by schema name
+- Contains `SchemaStructure` (`extralit/src/extralit/extraction/models/schema.py`) that defines organization of schemas
+
+### 2. Data Normalization into Extralit Records
+
+Data from `PaperExtraction` is normalized into multiple `ex.Record` objects in Extralit datasets, separating document metadata from specific extractions:
+
+- **Document-Level Record**: (`extralit/src/extralit/pipeline/export/record.py:create_publication_records()`)
+  - Single "publication" record per document
+  - Contains document metadata defined by "singleton" schema
+  - Serves as the primary reference point for all extraction records
+
+- **Schema-Level Records**: (`extralit/src/extralit/pipeline/export/record.py:create_extraction_records()`)
+  - Separate record for each schema (authors, methods, results, etc.)
+  - Each contains one DataFrame as serialized JSON
+  - Contains reference columns connecting to the publication record
+
+### 3. Frontend Annotation and Data Joining
+
+The frontend presents normalized data as a unified view for annotation:
+
+- **Table Display**: (`extralit-frontend/components/base/base-render-table/useSchemaTableViewModel.ts`)
+  - Manages display and validation of individual tables
+  - Identifies primary keys and reference columns
+  - Configures table grouping based on references
+
+- **Reference Resolution**: (`extralit-frontend/components/base/base-render-table/useReferenceTablesViewModel.ts`)
+  - Identifies reference columns (`_ref` or `_ID` suffix)
+  - Dynamically fetches related records from other tables
+  - Joins data to create a unified table view for the annotator
+  - Manages reference values and combinations for relationships
+
+### 4. Dataset Configuration
+
+- Dataset structure defined in `extralit/src/extralit/pipeline/export/dataset.py`
+- `create_papers_dataset()` configures document-level metadata datasets
+- `create_extraction_dataset()` configures schema-specific extraction datasets
+- Each dataset includes proper field definitions, questions, and metadata properties
+
+
+Keep the documentation synchronized with the actual implementation to ensure accurate guidance for future development and maintenance.

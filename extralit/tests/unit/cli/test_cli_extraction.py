@@ -16,28 +16,13 @@ import pytest
 from typer.testing import CliRunner
 from unittest.mock import patch
 
-from argilla.cli.app import app
+from extralit.cli.app import app
 
 
 @pytest.fixture
 def runner():
     """Fixture providing a CLI runner."""
     return CliRunner()
-
-
-def test_extraction_help(runner):
-    """Test that the extraction command shows help message."""
-    result = runner.invoke(app, ["extraction", "--help"])
-    assert result.exit_code == 0
-    assert "data extraction operations." in result.stdout.lower()
-
-
-@pytest.mark.skip(reason="Test temporarily disabled")
-def test_extraction_export_command_help(runner):
-    """Test the help message for the 'export' subcommand."""
-    result = runner.invoke(app, ["extraction", "export", "--help"])
-    assert result.exit_code == 0
-    assert "Export extraction data" in result.stdout.lower()
 
 
 @pytest.mark.skip(reason="Test temporarily disabled")

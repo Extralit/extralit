@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,16 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import random
-from string import ascii_lowercase
 
 import pytest
 
-from argilla import Argilla, Dataset, Settings, TextField, TextQuestion, Workspace, LabelQuestion
+from extralit import Extralit, Dataset, Settings, TextField, TextQuestion, Workspace, LabelQuestion
 
 
 @pytest.fixture
-def dataset(client: Argilla, workspace: Workspace, dataset_name: str) -> Dataset:
+def dataset(client: Extralit, workspace: Workspace, dataset_name: str) -> Dataset:
     settings = Settings(
         fields=[TextField(name="text")],
         questions=[
@@ -40,7 +38,7 @@ def dataset(client: Argilla, workspace: Workspace, dataset_name: str) -> Dataset
     dataset.delete()
 
 
-def test_list_records_with_start_offset(client: Argilla, dataset: Dataset):
+def test_list_records_with_start_offset(client: Extralit, dataset: Dataset):
     dataset.records.log(
         [
             {"text": "The record text field", "id": 1},
@@ -65,7 +63,7 @@ def test_list_records_with_start_offset(client: Argilla, dataset: Dataset):
     ]
 
 
-def test_list_records_with_limit(client: Argilla, dataset: Dataset):
+def test_list_records_with_limit(client: Extralit, dataset: Dataset):
     dataset.records.log(
         [
             {"text": "The record text field", "id": 1},
@@ -103,7 +101,7 @@ def test_list_records_with_limit(client: Argilla, dataset: Dataset):
     ]
 
 
-def test_list_records_with_limit_greater_than_batch_size(client: Argilla, dataset: Dataset):
+def test_list_records_with_limit_greater_than_batch_size(client: Extralit, dataset: Dataset):
     dataset.records.log(
         [
             {"text": "The record text field", "id": 1},
@@ -122,7 +120,7 @@ def test_list_records_with_limit_greater_than_batch_size(client: Argilla, datase
 
 
 @pytest.mark.parametrize("limit", [0, -1, -10])
-def test_list_records_with_invalid_limit(client: Argilla, dataset: Dataset, limit: int):
+def test_list_records_with_invalid_limit(client: Extralit, dataset: Dataset, limit: int):
     dataset.records.log(
         [
             {"text": "The record text field", "id": 1},
@@ -137,7 +135,7 @@ def test_list_records_with_invalid_limit(client: Argilla, dataset: Dataset, limi
         assert len(records) == 1
 
 
-def test_list_records_with_limit_greater_than_total(client: Argilla, dataset: Dataset):
+def test_list_records_with_limit_greater_than_total(client: Extralit, dataset: Dataset):
     dataset.records.log(
         [
             {"text": "The record text field", "id": 1},
@@ -152,7 +150,7 @@ def test_list_records_with_limit_greater_than_total(client: Argilla, dataset: Da
     assert len(records) == 5
 
 
-def test_get_record_by_id(client: Argilla, dataset: Dataset):
+def test_get_record_by_id(client: Extralit, dataset: Dataset):
     dataset.records.log(
         [
             {"text": "The record text field", "id": 1, "comment": "The comment", "sentiment": "positive"},
@@ -172,7 +170,7 @@ def test_get_record_by_id(client: Argilla, dataset: Dataset):
     assert record.responses["sentiment"][0].value == "positive"
 
 
-def test_list_records_with_responses(client: Argilla, dataset: Dataset):
+def test_list_records_with_responses(client: Extralit, dataset: Dataset):
     dataset.records.log(
         [
             {"text": "The record text field", "id": 1, "comment": "The comment", "sentiment": "positive"},
@@ -194,7 +192,7 @@ def test_list_records_with_responses(client: Argilla, dataset: Dataset):
     assert records[1].responses["sentiment"][0].value == "negative"
 
 
-def test_list_records_with_updated_at_and_inserted_at(client: Argilla, dataset: Dataset):
+def test_list_records_with_updated_at_and_inserted_at(client: Extralit, dataset: Dataset):
     dataset.records.log(
         [
             {"text": "The record text field", "id": 1},

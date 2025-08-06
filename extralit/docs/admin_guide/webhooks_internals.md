@@ -1,12 +1,12 @@
 # Webhooks internal
 
-Argilla Webhooks implements [Standard Webhooks](https://www.standardwebhooks.com) to facilitate the integration of Argilla with listeners written in any language and ensure consistency and security. If you need to do a custom integration with Argilla webhooks take a look to the [specs](https://github.com/standard-webhooks/standard-webhooks/blob/main/spec/standard-webhooks.md) to have a better understanding of how to implement such integration.
+Extralit Webhooks implements [Standard Webhooks](https://www.standardwebhooks.com) to facilitate the integration of Extralit with listeners written in any language and ensure consistency and security. If you need to do a custom integration with Extralit webhooks take a look to the [specs](https://github.com/standard-webhooks/standard-webhooks/blob/main/spec/standard-webhooks.md) to have a better understanding of how to implement such integration.
 
 ## Events payload
 
 The payload is the core part of every webhook. It is the actual data being sent as part of the webhook, and usually consists of important information about the event and related information.
 
-The payloads sent by Argilla webhooks will be a POST request with a JSON body with the following structure:
+The payloads sent by Extralit webhooks will be a POST request with a JSON body with the following structure:
 
 ```json
 {
@@ -19,7 +19,7 @@ The payloads sent by Argilla webhooks will be a POST request with a JSON body wi
 }
 ```
 
-Your listener must return any `2XX` status code value to indicate to Argilla that the webhook message has been successfully received. If a different status code is returned Argilla will retry up to 3 times. You have up to 20 seconds to give a response to an Argilla webhook request.
+Your listener must return any `2XX` status code value to indicate to Extralit that the webhook message has been successfully received. If a different status code is returned Extralit will retry up to 3 times. You have up to 20 seconds to give a response to an Extralit webhook request.
 
 The payload attributes are:
 
@@ -41,7 +41,7 @@ The payload attributes are:
 
 ## Events payload examples
 
-In this section we will show payload examples for all the events emitted by Argilla webhooks.
+In this section we will show payload examples for all the events emitted by Extralit webhooks.
 
 ### Dataset events
 
@@ -64,7 +64,7 @@ In this section we will show payload examples for all the events emitted by Argi
     },
     "workspace": {
       "id": "350bc020-2cd2-4a67-8b23-37a15c4d8139",
-      "name": "argilla",
+      "name": "extralit",
       "inserted_at": "2024-09-05T11:39:20.377192",
       "updated_at": "2024-09-05T11:39:20.377192"
     },
@@ -98,7 +98,7 @@ In this section we will show payload examples for all the events emitted by Argi
     },
     "workspace": {
       "id": "350bc020-2cd2-4a67-8b23-37a15c4d8139",
-      "name": "argilla",
+      "name": "extralit",
       "inserted_at": "2024-09-05T11:39:20.377192",
       "updated_at": "2024-09-05T11:39:20.377192"
     },
@@ -145,7 +145,7 @@ In this section we will show payload examples for all the events emitted by Argi
     },
     "workspace": {
       "id": "350bc020-2cd2-4a67-8b23-37a15c4d8139",
-      "name": "argilla",
+      "name": "extralit",
       "inserted_at": "2024-09-05T11:39:20.377192",
       "updated_at": "2024-09-05T11:39:20.377192"
     },
@@ -314,7 +314,7 @@ In this section we will show payload examples for all the events emitted by Argi
     },
     "workspace": {
       "id": "350bc020-2cd2-4a67-8b23-37a15c4d8139",
-      "name": "argilla",
+      "name": "extralit",
       "inserted_at": "2024-09-05T11:39:20.377192",
       "updated_at": "2024-09-05T11:39:20.377192"
     },
@@ -500,7 +500,7 @@ In this section we will show payload examples for all the events emitted by Argi
       },
       "workspace": {
         "id": "350bc020-2cd2-4a67-8b23-37a15c4d8139",
-        "name": "argilla",
+        "name": "extralit",
         "inserted_at": "2024-09-05T11:39:20.377192",
         "updated_at": "2024-09-05T11:39:20.377192"
       },
@@ -687,7 +687,7 @@ In this section we will show payload examples for all the events emitted by Argi
       },
       "workspace": {
         "id": "350bc020-2cd2-4a67-8b23-37a15c4d8139",
-        "name": "argilla",
+        "name": "extralit",
         "inserted_at": "2024-09-05T11:39:20.377192",
         "updated_at": "2024-09-05T11:39:20.377192"
       },
@@ -874,7 +874,7 @@ In this section we will show payload examples for all the events emitted by Argi
       },
       "workspace": {
         "id": "350bc020-2cd2-4a67-8b23-37a15c4d8139",
-        "name": "argilla",
+        "name": "extralit",
         "inserted_at": "2024-09-05T11:39:20.377192",
         "updated_at": "2024-09-05T11:39:20.377192"
       },
@@ -1061,7 +1061,7 @@ In this section we will show payload examples for all the events emitted by Argi
       },
       "workspace": {
         "id": "350bc020-2cd2-4a67-8b23-37a15c4d8139",
-        "name": "argilla",
+        "name": "extralit",
         "inserted_at": "2024-09-05T11:39:20.377192",
         "updated_at": "2024-09-05T11:39:20.377192"
       },
@@ -1258,7 +1258,7 @@ In this section we will show payload examples for all the events emitted by Argi
         },
         "workspace": {
           "id": "350bc020-2cd2-4a67-8b23-37a15c4d8139",
-          "name": "argilla",
+          "name": "extralit",
           "inserted_at": "2024-09-05T11:39:20.377192",
           "updated_at": "2024-09-05T11:39:20.377192"
         },
@@ -1412,7 +1412,7 @@ In this section we will show payload examples for all the events emitted by Argi
       "id": "df114042-958d-42c6-9f03-ab49bd451c6c",
       "first_name": "",
       "last_name": null,
-      "username": "argilla",
+      "username": "extralit",
       "role": "owner",
       "inserted_at": "2024-09-05T11:39:20.376463",
       "updated_at": "2024-09-05T11:39:20.376463"
@@ -1465,7 +1465,7 @@ In this section we will show payload examples for all the events emitted by Argi
         },
         "workspace": {
           "id": "350bc020-2cd2-4a67-8b23-37a15c4d8139",
-          "name": "argilla",
+          "name": "extralit",
           "inserted_at": "2024-09-05T11:39:20.377192",
           "updated_at": "2024-09-05T11:39:20.377192"
         },
@@ -1619,7 +1619,7 @@ In this section we will show payload examples for all the events emitted by Argi
       "id": "df114042-958d-42c6-9f03-ab49bd451c6c",
       "first_name": "",
       "last_name": null,
-      "username": "argilla",
+      "username": "extralit",
       "role": "owner",
       "inserted_at": "2024-09-05T11:39:20.376463",
       "updated_at": "2024-09-05T11:39:20.376463"
@@ -1672,7 +1672,7 @@ In this section we will show payload examples for all the events emitted by Argi
         },
         "workspace": {
           "id": "350bc020-2cd2-4a67-8b23-37a15c4d8139",
-          "name": "argilla",
+          "name": "extralit",
           "inserted_at": "2024-09-05T11:39:20.377192",
           "updated_at": "2024-09-05T11:39:20.377192"
         },
@@ -1826,7 +1826,7 @@ In this section we will show payload examples for all the events emitted by Argi
       "id": "df114042-958d-42c6-9f03-ab49bd451c6c",
       "first_name": "",
       "last_name": null,
-      "username": "argilla",
+      "username": "extralit",
       "role": "owner",
       "inserted_at": "2024-09-05T11:39:20.376463",
       "updated_at": "2024-09-05T11:39:20.376463"
@@ -1839,7 +1839,7 @@ In this section we will show payload examples for all the events emitted by Argi
 
 ## How to implement a listener
 
-Argilla webhooks implements [Standard Webhooks](https://www.standardwebhooks.com) so you can use one of their libraries to implement the verification of webhooks events coming from Argilla, available in many different languages.
+Extralit webhooks implements [Standard Webhooks](https://www.standardwebhooks.com) so you can use one of their libraries to implement the verification of webhooks events coming from Extralit, available in many different languages.
 
 The following example is a simple listener written in Ruby, using [sinatra](https://sinatrarb.com) and [standardwebhooks Ruby library](https://github.com/standard-webhooks/standard-webhooks/tree/main/libraries/ruby):
 

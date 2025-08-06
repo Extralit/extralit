@@ -6,7 +6,7 @@ description: In this section, we will provide a step-by-step guide to show how t
 !!! note ""
     To experience the UI features firsthand, you can take a look at the [Demo ↗](https://demo.argilla.io/sign-in?auth=ZGVtbzoxMjM0NTY3OA==).
 
-Argilla UI offers many functions to help you manage your annotation workflow, aiming to provide the most flexible approach to fit the wide variety of use cases handled by the community.
+Extralit UI offers many functions to help you manage your annotation workflow, aiming to provide the most flexible approach to fit the wide variety of use cases handled by the community.
 
 ## Annotation interface overview
 
@@ -39,7 +39,7 @@ The UI is responsive with two columns for larger devices and one column for smal
 
 ### Shortcuts
 
-The Argilla UI includes a range of shortcuts. For the main actions (submit, discard, save as draft and selecting labels) the keys are showed in the corresponding button.
+The Extralit UI includes a range of shortcuts. For the main actions (submit, discard, save as draft and selecting labels) the keys are showed in the corresponding button.
 
 To learn how to move from one question to another or between records using the keyboard, take a look at the table below.
 
@@ -47,21 +47,21 @@ Shortcuts provide a smoother annotation experience, especially with datasets usi
 
 ??? "Available shortcuts"
 
-    | Action | Keys |
-    | --- | --- |
-    | Activate form | ⇥ Tab |
-    | Move between questions | ↓ Down arrow or ↑ Up arrow |
-    | Select and unselect label | 1, 2, 3 |
-    | Move between labels or ranking options | ⇥ Tab or ⇧ Shift ⇥ Tab |
-    | Select rating and rank | 1, 2, 3 |
-    | Fit span to character selection | Hold ⇧ Shift |
-    | Activate text area | ⇧ Shift ↵ Enter |
-    | Exit text area | Esc |
-    | Discard | ⌫ Backspace |
-    | Save draft (Mac os) | ⌘ Cmd S |
-    | Save draft (Other) | Ctrl S |
-    | Submit | ↵ Enter |
-    | Move between pages | → Right arrow or ← Left arrow |
+    | Action                                 | Keys                          |
+    | -------------------------------------- | ----------------------------- |
+    | Activate form                          | ⇥ Tab                         |
+    | Move between questions                 | ↓ Down arrow or ↑ Up arrow    |
+    | Select and unselect label              | 1, 2, 3                       |
+    | Move between labels or ranking options | ⇥ Tab or ⇧ Shift ⇥ Tab        |
+    | Select rating and rank                 | 1, 2, 3                       |
+    | Fit span to character selection        | Hold ⇧ Shift                  |
+    | Activate text area                     | ⇧ Shift ↵ Enter               |
+    | Exit text area                         | Esc                           |
+    | Discard                                | ⌫ Backspace                   |
+    | Save draft (Mac os)                    | ⌘ Cmd S                       |
+    | Save draft (Other)                     | Ctrl S                        |
+    | Submit                                 | ↵ Enter                       |
+    | Move between pages                     | → Right arrow or ← Left arrow |
 
 ### View by status
 

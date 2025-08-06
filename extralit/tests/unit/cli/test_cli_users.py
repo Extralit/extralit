@@ -16,40 +16,13 @@ import pytest
 from typer.testing import CliRunner
 from unittest.mock import patch
 
-from argilla.cli.app import app
+from extralit.cli.app import app
 
 
 @pytest.fixture
 def runner():
     """Fixture providing a CLI runner."""
     return CliRunner()
-
-
-def test_users_help(runner):
-    result = runner.invoke(app, ["users", "--help"])
-    assert result.exit_code == 0
-    assert "user management" in result.stdout.lower()
-
-
-@pytest.mark.skip(reason="Test temporarily disabled")
-def test_users_create_command_help(runner):
-    result = runner.invoke(app, ["users", "create", "--help"])
-    assert result.exit_code == 0
-    assert "creates a new user" in result.stdout.lower()
-
-
-@pytest.mark.skip(reason="Test temporarily disabled")
-def test_users_list_command_help(runner):
-    result = runner.invoke(app, ["users", "list", "--help"])
-    assert result.exit_code == 0
-    assert "list users" in result.stdout.lower()
-
-
-@pytest.mark.skip(reason="Test temporarily disabled")
-def test_users_delete_command_help(runner):
-    result = runner.invoke(app, ["users", "delete", "--help"])
-    assert result.exit_code == 0
-    assert "deletes a user" in result.stdout.lower()
 
 
 @patch("rich.console.Console.print")

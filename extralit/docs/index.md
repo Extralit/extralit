@@ -33,7 +33,7 @@ Or, play with the Extralit UI by signing in with your Hugging Face account on th
 
 ## Why use Extralit?
 
-Extralit is designed to helps researchers and data scientists tackle the challenges of processing large volumes of academic papers, ensuring **high-quality data extraction for scientific analysis and meta-studies**. By combining LLMs and advanced ML models with intuitive workflows, Extralit is a powerful tool designed to transform unstructured scientific papers into structured, analyzable data. 
+Extralit is designed to helps researchers and data scientists tackle the challenges of processing large volumes of academic papers, ensuring **high-quality data extraction for scientific analysis and meta-studies**. By combining LLMs and advanced ML models with intuitive workflows, Extralit is a powerful tool designed to transform unstructured scientific papers into structured, analyzable data.
 
 <p style="font-size:20px">Accelerate scientific data extraction</p>
 
@@ -48,8 +48,8 @@ Scientific papers come in a variety of formats and layouts, often with complex t
 
 <p style="font-size:20px">Collaborate effectively on large-scale literature reviews</p>
 
-Literature review and meta-analysis projects often require team effort. Extralit builds upon Argilla's platform to facilitate **collaborative extraction**, allowing multiple researchers to work together efficiently, share insights, and maintain a consistent approach across large volumes of literature.
+Literature review and meta-analysis projects often require team effort. Extralit builds upon Extralit's platform to facilitate **collaborative extraction**, allowing multiple researchers to work together efficiently, share insights, and maintain a consistent approach across large volumes of literature.
 
 
-## Relationship to Argilla
-Extralit builds upon [Argilla's](https://argilla.io) foundation, adding specialized features for scientific data extraction.
+## Relationship to Extralit
+Extralit builds upon [Extralit's](https://argilla.io) foundation, adding specialized features for scientific data extraction.

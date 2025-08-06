@@ -44,21 +44,21 @@ Once you have your environment set up, you can return to this guide to learn mor
 
 The Extralit repository has a monorepo structure, which means that all the components are located in the same repository: [`extralit/extralit`](https://github.com/extralit/extralit). This repo is divided into the following folders:
 
-- [`argilla/src/extralit/`](https://github.com/extralit/extralit/tree/develop/argilla/src/extralit): The FastAPI server project for extraction
-- [`argilla/docs/`](https://github.com/extralit/extralit/tree/develop/argilla/docs): The documentation project
-- [`argilla/src/argilla/`](https://github.com/extralit/extralit/tree/develop/argilla): The argilla SDK project
-- [`argilla-server/src/argilla_server/`](https://github.com/extralit/extralit/tree/develop/argilla-server): The FastAPI server project for annotation
-- [`argilla-frontend/`](https://github.com/extralit/extralit/tree/develop/argilla-frontend): The Vue.js UI project
+- [`extralit/src/extralit/`](https://github.com/extralit/extralit/tree/develop/extralit/src/extralit): The FastAPI server project for extraction
+- [`extralit/docs/`](https://github.com/extralit/extralit/tree/develop/extralit/docs): The documentation project
+- [`extralit/src/extralit/`](https://github.com/extralit/extralit/tree/develop/argilla): The argilla SDK project
+- [`extralit-server/src/extralit_server/`](https://github.com/extralit/extralit/tree/develop/extralit-server): The FastAPI server project for annotation
+- [`extralit-frontend/`](https://github.com/extralit/extralit/tree/develop/extralit-frontend): The Vue.js UI project
 - [`examples`](https://github.com/extralit/extralit/tree/develop/examples): Example resources for deployments, scripts and notebooks
 
 !!! note "How to contribute?"
     Before starting to develop, we recommend reading our [contribution guide](contributor.md) to understand the contribution process and the guidelines to follow. Once you have [cloned the Extralit repository](contributor.md#fork-the-extralit-repository) and [checked out to the correct branch](contributor.md#create-a-new-branch), you can start setting up your development environment.
 
-??? example "Argilla Directory Structure"
-    ![Argilla Repository Structure](../assets/images/community/developer/repo-visualizer-argilla.svg)
+??? example "Extralit Directory Structure"
+    ![Extralit Repository Structure](../assets/images/community/developer/repo-visualizer-argilla.svg)
 
-??? example "Argilla Server Directory Structure"
-    ![Argilla Server Repository Structure](../assets/images/community/developer/repo-visualizer-argilla-server.svg)
+??? example "Extralit Server Directory Structure"
+    ![Extralit Server Repository Structure](../assets/images/community/developer/repo-visualizer-extralit-server.svg)
 
 ## Development workflow
 
@@ -92,9 +92,9 @@ pdm install --dev
 To install specific sub-packages with editable mode, you can use the following command:
 
 ```sh
-pip install -e argilla/
+pip install -e extralit/
 # or
-pip install -e argilla-server/
+pip install -e extralit-server/
 ```
 
 
@@ -132,7 +132,7 @@ This format helps document the code, keeps the commit history clean, and makes i
 Running tests at the end of every development cycle is indispensable to ensure no breaking changes. GH Actions Workflows automatically run the tests on every commit and PR, but you can also run them locally.
 
 ```sh
-cd argilla/
+cd extralit/
 pdm run test-cov tests/unit
 pdm run test-cov tests/integration
 ```
@@ -185,19 +185,19 @@ When making changes to the database schema, you need to create database revision
 2. Generate a new revision file:
 
 ```bash
-cd argilla-server
-PYTHONPATH=. alembic revision --autogenerate -m "Brief description of the change"
+cd extralit-server
+pdm run revision -m "description of change"
 ```
 
-3. Review the generated revision file in `argilla-server/migrations/versions/`
+3. Review the generated revision file in `extralit-server/migrations/versions/`
 4. Test the migration:
 
 ```bash
 # Apply the migration
-PYTHONPATH=. alembic upgrade head
+pdm run alembic upgrade head
 
 # Rollback if needed
-PYTHONPATH=. alembic downgrade -1
+pdm run alembic downgrade -1
 ```
 
 #### Applying Migrations
@@ -205,13 +205,13 @@ PYTHONPATH=. alembic downgrade -1
 To apply all pending migrations:
 
 ```bash
-PYTHONPATH=. alembic upgrade head
+pdm run alembic upgrade head
 ```
 
 To check the current database version:
 
 ```bash
-PYTHONPATH=. alembic current
+pdm run alembic current
 ```
 
 #### Guidelines for Database Changes
@@ -230,7 +230,7 @@ The Command Line Interface (CLI) is an important part of Extralit that enables u
 
 #### CLI Structure
 
-The CLI code is located in `argilla/src/argilla/cli` with this organization:
+The CLI code is located in `extralit/src/extralit/cli` with this organization:
 
 ```
 cli/
@@ -250,10 +250,10 @@ The CLI uses [Typer](https://typer.tiangolo.com/) for creating the command-line 
 1. Create a new module in the appropriate directory:
 
 ```python
-# src/argilla/cli/mycommand/__main__.py
+# src/extralit/cli/mycommand/__main__.py
 import typer
-from argilla.cli.callback import init_callback
-from argilla.cli.rich import get_argilla_themed_panel
+from extralit.cli.callback import init_callback
+from extralit.cli.rich import get_argilla_themed_panel
 from rich.console import Console
 
 app = typer.Typer(help="My command description")
@@ -273,7 +273,7 @@ def my_subcommand(param: str = typer.Argument(..., help="Parameter description")
 2. Register your command in `app.py`:
 
 ```python
-from argilla.cli import mycommand
+from extralit.cli import mycommand
 app.add_typer(mycommand.app, name="mycommand")
 ```
 
@@ -285,7 +285,7 @@ app.add_typer(mycommand.app, name="mycommand")
 
 - Create commands that fit into existing workflows
 - Follow consistent naming and structure patterns
-- Provide clear help text for all commands and options, e.g. use the [`print_rich_table`](https://github.com/extralit/extralit/blob/develop/argilla/src/argilla/cli/rich.py#L115) function to print tables in a rich format
+- Provide clear help text for all commands and options, e.g. use the [`print_rich_table`](https://github.com/extralit/extralit/blob/develop/extralit/src/extralit/cli/rich.py#L115) function to print tables in a rich format
 - Use sensible defaults to minimize required input
 - Follow the Unix philosophy: commands should do one thing well
 

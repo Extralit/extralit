@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,22 +14,21 @@
 
 import random
 import uuid
-from datetime import datetime
 
 import pytest
 
-import argilla as rg
+import extralit as ex
 
 
 @pytest.fixture
-def dataset(client: rg.Argilla, dataset_name: str) -> rg.Dataset:
+def dataset(client: ex.Extralit, dataset_name: str) -> ex.Dataset:
     workspace = client.workspaces[0]
-    settings = rg.Settings(
-        fields=[rg.TextField(name="text")],
-        questions=[rg.LabelQuestion(name="label", labels=["positive", "negative"])],
-        vectors=[rg.VectorField(name="vector", dimensions=10)],
+    settings = ex.Settings(
+        fields=[ex.TextField(name="text")],
+        questions=[ex.LabelQuestion(name="label", labels=["positive", "negative"])],
+        vectors=[ex.VectorField(name="vector", dimensions=10)],
     )
-    dataset = rg.Dataset(
+    dataset = ex.Dataset(
         name=dataset_name,
         workspace=workspace,
         settings=settings,
@@ -40,7 +39,7 @@ def dataset(client: rg.Argilla, dataset_name: str) -> rg.Dataset:
     dataset.delete()
 
 
-def test_vectors(client: rg.Argilla, dataset: rg.Dataset):
+def test_vectors(client: ex.Extralit, dataset: ex.Dataset):
     mock_data = [
         {
             "text": "Hello World, how are you?",
@@ -72,7 +71,7 @@ def test_vectors(client: rg.Argilla, dataset: rg.Dataset):
     assert dataset_records[2].vectors["vector"] == mock_data[2]["vector"]
 
 
-def test_vectors_return_with_bool(client: rg.Argilla, dataset: rg.Dataset):
+def test_vectors_return_with_bool(client: ex.Extralit, dataset: ex.Dataset):
     mock_data = [
         {
             "text": "Hello World, how are you?",
@@ -104,7 +103,7 @@ def test_vectors_return_with_bool(client: rg.Argilla, dataset: rg.Dataset):
     assert dataset_records[2].vectors["vector"] == mock_data[2]["vector"]
 
 
-def test_vectors_return_with_name(client: rg.Argilla, dataset: rg.Dataset):
+def test_vectors_return_with_name(client: ex.Extralit, dataset: ex.Dataset):
     mock_data = [
         {
             "text": "Hello World, how are you?",

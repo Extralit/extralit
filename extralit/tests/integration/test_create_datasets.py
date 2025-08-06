@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from argilla import (
-    Argilla,
+from extralit import (
+    Extralit,
     Dataset,
     ChatField,
     Settings,
@@ -26,11 +26,11 @@ from argilla import (
     Workspace,
     CustomField,
 )
-from argilla.settings._task_distribution import TaskDistribution
+from extralit.settings._task_distribution import TaskDistribution
 
 
 class TestCreateDatasets:
-    def test_create_dataset(self, client: Argilla, dataset_name: str):
+    def test_create_dataset(self, client: Extralit, dataset_name: str):
         dataset = Dataset(
             name=dataset_name,
             settings=Settings(
@@ -52,7 +52,7 @@ class TestCreateDatasets:
         assert created_dataset.settings == dataset.settings
         assert created_dataset.settings.distribution == TaskDistribution(min_submitted=1)
 
-    def test_create_dataset_with_optional_fields(self, client: Argilla, dataset_name: str):
+    def test_create_dataset_with_optional_fields(self, client: Extralit, dataset_name: str):
         dataset = Dataset(
             name=dataset_name,
             settings=Settings(
@@ -69,7 +69,7 @@ class TestCreateDatasets:
         created_dataset = client.datasets(name=dataset_name)
         assert created_dataset.settings.fields["optional"].required is False
 
-    def test_create_multiple_dataset_with_same_settings(self, client: Argilla, dataset_name: str):
+    def test_create_multiple_dataset_with_same_settings(self, client: Extralit, dataset_name: str):
         settings = Settings(
             fields=[TextField(name="text")],
             questions=[RatingQuestion(name="question", values=[1, 2, 3, 4, 5])],
@@ -92,7 +92,7 @@ class TestCreateDatasets:
             assert schema["question"].name == "question"
             assert schema["question"].values == [1, 2, 3, 4, 5]
 
-    def test_create_dataset_from_existing_dataset(self, client: Argilla, dataset_name: str):
+    def test_create_dataset_from_existing_dataset(self, client: Extralit, dataset_name: str):
         dataset = Dataset(
             name=dataset_name,
             settings=Settings(
@@ -114,7 +114,7 @@ class TestCreateDatasets:
         assert schema["question"].name == "question"
         assert schema["question"].values == [1, 2, 3, 4, 5]
 
-    def test_copy_datasets_from_different_clients(self, client: Argilla, dataset_name: str):
+    def test_copy_datasets_from_different_clients(self, client: Extralit, dataset_name: str):
         dataset = Dataset(
             name=dataset_name,
             settings=Settings(
@@ -124,7 +124,7 @@ class TestCreateDatasets:
             client=client,
         ).create()
 
-        new_client = Argilla()
+        new_client = Extralit()
         new_ws = Workspace("test_copy_workspace")
         new_client.workspaces.add(new_ws)
 
@@ -145,7 +145,7 @@ class TestCreateDatasets:
         for question in new_dataset.settings.questions:
             assert question.name == "question"
 
-    def test_create_a_dataset_copy(self, client: Argilla, dataset_name: str):
+    def test_create_a_dataset_copy(self, client: Extralit, dataset_name: str):
         dataset = Dataset(
             name=dataset_name,
             settings=Settings(
@@ -193,7 +193,7 @@ class TestCreateDatasets:
 
         assert dataset.distribution == new_dataset.distribution
 
-    def test_create_dataset_with_custom_task_distribution(self, client: Argilla, dataset_name: str):
+    def test_create_dataset_with_custom_task_distribution(self, client: Extralit, dataset_name: str):
         task_distribution = TaskDistribution(min_submitted=4)
 
         settings = Settings(
@@ -206,7 +206,7 @@ class TestCreateDatasets:
         assert client.api.datasets.exists(dataset.id)
         assert dataset.settings.distribution == task_distribution
 
-    def test_create_dataset_with_custom_field(self, client: Argilla, dataset_name: str):
+    def test_create_dataset_with_custom_field(self, client: Extralit, dataset_name: str):
         dataset = Dataset(
             name=dataset_name,
             settings=Settings(

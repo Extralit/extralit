@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,30 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import random
 import uuid
-from string import ascii_lowercase
 
 import pytest
 
-import argilla as rg
-from argilla import Record
-from argilla._models import RecordModel
+import extralit as ex
 
 
 @pytest.fixture
-def dataset(client: rg.Argilla, dataset_name: str) -> rg.Dataset:
+def dataset(client: ex.Extralit, dataset_name: str) -> ex.Dataset:
     workspace = client.workspaces[0]
-    settings = rg.Settings(
+    settings = ex.Settings(
         allow_extra_metadata=True,
         fields=[
-            rg.TextField(name="text"),
+            ex.TextField(name="text"),
         ],
         questions=[
-            rg.TextQuestion(name="label", use_markdown=False),
+            ex.TextQuestion(name="label", use_markdown=False),
         ],
     )
-    dataset = rg.Dataset(
+    dataset = ex.Dataset(
         name=dataset_name,
         workspace=workspace.name,
         settings=settings,
@@ -46,7 +42,7 @@ def dataset(client: rg.Argilla, dataset_name: str) -> rg.Dataset:
 
 
 class TestUpdateRecords:
-    def test_update_records_fields(self, client: rg.Argilla, dataset: rg.Dataset):
+    def test_update_records_fields(self, client: ex.Extralit, dataset: ex.Dataset):
         mock_data = [
             {
                 "text": "Hello World, how are you?",
@@ -76,7 +72,7 @@ class TestUpdateRecords:
 
 
 class TestUpdateSuggestions:
-    def test_update_records_suggestions_from_data(self, client: rg.Argilla, dataset: rg.Dataset):
+    def test_update_records_suggestions_from_data(self, client: ex.Extralit, dataset: ex.Dataset):
         mock_data = [
             {
                 "text": "Hello World, how are you?",
@@ -114,7 +110,7 @@ class TestUpdateSuggestions:
             assert record.suggestions["label"].value == "positive"
 
     @pytest.mark.skip(reason="This test is failing because the backend expects the fields to be present in the data.")
-    def test_update_records_without_fields(self, client: rg.Argilla, dataset: rg.Dataset):
+    def test_update_records_without_fields(self, client: ex.Extralit, dataset: ex.Dataset):
         mock_data = [
             {
                 "text": "Hello World, how are you?",
@@ -143,7 +139,7 @@ class TestUpdateSuggestions:
         for i, record in enumerate(dataset.records(with_suggestions=True)):
             assert record.suggestions["label"].value == updated_mock_data[i]["label"]
 
-    def test_update_records_add_suggestions(self, client: rg.Argilla, dataset: rg.Dataset):
+    def test_update_records_add_suggestions(self, client: ex.Extralit, dataset: ex.Dataset):
         mock_data = [
             {
                 "text": "Hello World, how are you?",
@@ -167,7 +163,7 @@ class TestUpdateSuggestions:
 
         for record in dataset.records(with_suggestions=True):
             record.suggestions.add(
-                rg.Suggestion(
+                ex.Suggestion(
                     question_name="label",
                     value="positive",
                 )
@@ -181,7 +177,7 @@ class TestUpdateSuggestions:
 
 
 class TestUpdateResponses:
-    def test_update_records_add_responses(self, client: rg.Argilla, dataset: rg.Dataset):
+    def test_update_records_add_responses(self, client: ex.Extralit, dataset: ex.Dataset):
         mock_data = [
             {
                 "text": "Hello World, how are you?",
@@ -205,7 +201,7 @@ class TestUpdateResponses:
 
         for record in dataset.records(with_suggestions=True):
             record.responses.add(
-                rg.Response(
+                ex.Response(
                     question_name="label",
                     value="positive",
                     user_id=client.users[0].id,

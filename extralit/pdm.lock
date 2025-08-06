@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = []
 lock_version = "4.5.0"
-content_hash = "sha256:fa0e558ea9f7357eec0c37f0c64f16be9613f090390b3560b3fd2f15b93260c2"
+content_hash = "sha256:70ce069646b7109d8dc4217449d7053c16b14700891f5b9902207ac35ba7943c"
 
 [[metadata.targets]]
 requires_python = ">=3.9.2,<3.14"
@@ -271,6 +271,17 @@ dependencies = [
 files = [
     {file = "beautifulsoup4-4.12.3-py3-none-any.whl", hash = "sha256:b80878c9f40111313e55da8ba20bdba06d8fa3969fc68304167741bbf9e082ed"},
     {file = "beautifulsoup4-4.12.3.tar.gz", hash = "sha256:74e3d1928edc070d21748185c46e3fb33490f22f52a3addee9aee0f4f7781051"},
+]
+
+[[package]]
+name = "bibtexparser"
+version = "1.4.3"
+summary = ""
+dependencies = [
+    "pyparsing",
+]
+files = [
+    {file = "bibtexparser-1.4.3.tar.gz", hash = "sha256:a9c7ded64bc137720e4df0b1b7f12734edc1361185f1c9097048ff7c35af2b8f"},
 ]
 
 [[package]]
@@ -1059,7 +1070,7 @@ summary = ""
 dependencies = [
     "dill",
     "filelock",
-    "fsspec",
+    "fsspec[http]",
     "huggingface-hub",
     "multiprocess",
     "numpy",
@@ -2219,7 +2230,7 @@ dependencies = [
     "pydantic",
     "pyyaml",
     "requests",
-    "sqlalchemy",
+    "sqlalchemy[asyncio]",
     "tenacity",
     "tiktoken",
     "tqdm",
@@ -2277,7 +2288,7 @@ dependencies = [
     "openai",
     "pandas",
     "requests",
-    "sqlalchemy",
+    "sqlalchemy[asyncio]",
     "tenacity",
     "tiktoken",
     "typing-extensions",
@@ -3094,7 +3105,7 @@ version = "7.16.6"
 summary = ""
 dependencies = [
     "beautifulsoup4",
-    "bleach",
+    "bleach[css]",
     "defusedxml",
     "importlib-metadata; python_full_version < \"3.10\"",
     "jinja2",
@@ -4003,21 +4014,6 @@ files = [
 ]
 
 [[package]]
-name = "pymupdf"
-version = "1.26.0"
-summary = ""
-files = [
-    {file = "pymupdf-1.26.0-cp39-abi3-macosx_10_9_x86_64.whl", hash = "sha256:86195673a5f2b3fbf0f75c73c40975a893fc42bf3d5c2a7cce9fb160704d9997"},
-    {file = "pymupdf-1.26.0-cp39-abi3-macosx_11_0_arm64.whl", hash = "sha256:26c5df128a0ed7c38b80a1e7ddd792dd4d8b264839b6b8b6b6b768b13c0bb60e"},
-    {file = "pymupdf-1.26.0-cp39-abi3-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:84a4dc96144a6bdf13f7d78c21500b3d1bef14d658156afd479acb3995f650c3"},
-    {file = "pymupdf-1.26.0-cp39-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:a3f6a45fcf8177763a2629a2ab2cad326e8950a0d120b174b56369365355a2a7"},
-    {file = "pymupdf-1.26.0-cp39-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:b5d4751696ba888ab1a91c6a0208c5d31724ee0bebe406f7a83067a08214f88b"},
-    {file = "pymupdf-1.26.0-cp39-abi3-win32.whl", hash = "sha256:eeb04a439355e2077f7675b8ad9377263d81990fc507748f2254a87d771d682b"},
-    {file = "pymupdf-1.26.0-cp39-abi3-win_amd64.whl", hash = "sha256:e39cc74ff030d773c4e76b9e5c5919cc4683895b73bd63bfd7a349a53ab5e8d7"},
-    {file = "pymupdf-1.26.0.tar.gz", hash = "sha256:ffe023f820379c84a0ddae38b0d07ea4016e1de84929491c34415520c629bcce"},
-]
-
-[[package]]
 name = "pypandoc"
 version = "1.15"
 summary = ""
@@ -4058,7 +4054,7 @@ files = [
 
 [[package]]
 name = "pytest"
-version = "8.4.0"
+version = "8.4.1"
 summary = ""
 dependencies = [
     "colorama; sys_platform == \"win32\"",
@@ -4070,8 +4066,20 @@ dependencies = [
     "tomli; python_full_version < \"3.11\"",
 ]
 files = [
-    {file = "pytest-8.4.0-py3-none-any.whl", hash = "sha256:f40f825768ad76c0977cbacdf1fd37c6f7a468e460ea6a0636078f8972d4517e"},
-    {file = "pytest-8.4.0.tar.gz", hash = "sha256:14d920b48472ea0dbf68e45b96cd1ffda4705f33307dcc86c676c1b5104838a6"},
+    {file = "pytest-8.4.1-py3-none-any.whl", hash = "sha256:539c70ba6fcead8e78eebbf1115e8b589e7565830d7d006a8723f19ac8a0afb7"},
+    {file = "pytest-8.4.1.tar.gz", hash = "sha256:7c67fd69174877359ed9371ec3af8a3d2b04741818c51e5e99cc1742251fa93c"},
+]
+
+[[package]]
+name = "pytest-asyncio"
+version = "0.21.2"
+summary = ""
+dependencies = [
+    "pytest",
+]
+files = [
+    {file = "pytest_asyncio-0.21.2-py3-none-any.whl", hash = "sha256:ab664c88bb7998f711d8039cacd4884da6430886ae8bbd4eded552ed2004f16b"},
+    {file = "pytest_asyncio-0.21.2.tar.gz", hash = "sha256:d67738fc232b94b326b9d060750beb16e0074210b98dd8b58a5239fa2a154f45"},
 ]
 
 [[package]]
@@ -4079,7 +4087,7 @@ name = "pytest-cov"
 version = "6.1.1"
 summary = ""
 dependencies = [
-    "coverage",
+    "coverage[toml]",
     "pytest",
 ]
 files = [

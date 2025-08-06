@@ -3,19 +3,19 @@ hide: footer
 ---
 # Vectors
 
-Vector fields in Argilla are used to define the vector form of a record that will be reviewed by a user.
+Vector fields in Extralit are used to define the vector form of a record that will be reviewed by a user.
 
 ## Usage Examples
 
 To define a vector field, instantiate the `VectorField` class with a name and dimensions, then pass it to the `vectors` parameter of the `Settings` class.
 
 ```python
-settings = rg.Settings(
+settings = ex.Settings(
     fields=[
-        rg.TextField(name="text"),
+        ex.TextField(name="text"),
     ],
     vectors=[
-        rg.VectorField(
+        ex.VectorField(
             name="my_vector",
             dimension=768,
             title="Document Embedding",
@@ -24,8 +24,8 @@ settings = rg.Settings(
 )
 ```
 
-> To add records with vectors, refer to the [`rg.Vector`](../records/vectors.md) class documentation.
+> To add records with vectors, refer to the [`ex.Vector`](../records/vectors.md) class documentation.
 
 ---
 
-::: src.argilla.settings._vector.VectorField
+::: src.extralit.settings._vector.VectorField

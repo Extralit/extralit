@@ -2,16 +2,16 @@
 hide: footer
 ---
 
-# `rg.Workspace`
+# `ex.Workspace`
 
-In Argilla, workspaces are used to organize datasets in to groups. For example, you might have a workspace for each project or team.
+In Extralit, workspaces are used to organize datasets in to groups. For example, you might have a workspace for each project or team.
 
 ## Usage Examples
 
 To create a new workspace, instantiate the `Workspace` object with the client and the name:
 
 ```python
-workspace = rg.Workspace(name="my_workspace")
+workspace = ex.Workspace(name="my_workspace")
 workspace.create()
 ```
 
@@ -154,7 +154,7 @@ Update schemas in a workspace.
 
 ```python
 import pandera as pa
-from extralit.extraction.models import SchemaStructure
+from extralit._models._schema import SchemaStructure
 
 # Create schemas
 schema1 = pa.DataFrameSchema(
@@ -197,6 +197,6 @@ except Exception as e:
 
 ---
 
-::: src.argilla.workspaces._resource.Workspace
+::: src.extralit.workspaces._resource.Workspace
     options:
         heading_level: 4

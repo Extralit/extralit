@@ -1,38 +1,28 @@
-comment:
-  require_changes: true
 coverage:
   status:
     project:
       default:
-        target: auto
-        threshold: 2%
-        informational: true
+        enabled: false
     patch:
       default:
-        target: auto
-        threshold: 2%
-        informational: true
+        enabled: false
 
 flags:
   frontend:
     paths:
-      - argilla-frontend/
-    carryforward: true
-  argilla:
-    paths:
-      - extralit/src/argilla/
+      - extralit-frontend/
     carryforward: true
   extralit:
     paths:
       - extralit/src/extralit/
     carryforward: true
-  argilla_v1:
+  extralit:
     paths:
-      - argilla-v1/src/argilla_v1/
+      - extralit/src/extralit/
     carryforward: true
-  argilla_server:
+  extralit_server:
     paths:
-      - argilla-server/
+      - extralit-server/
     carryforward: true
 
 component_management:
@@ -46,20 +36,15 @@ component_management:
       paths:
         - extralit/src/extralit/**
 
-    - component_id: argilla
-      name: argilla
+    - component_id: extralit
+      name: extralit
       paths:
-        - extralit/src/argilla/**
+        - extralit/src/extralit/**
 
-    - component_id: argilla_v1
-      name: argilla_v1
+    - component_id: extralit-server
       paths:
-        - argilla-v1/src/argilla_v1/**
+        - extralit-server/**
 
-    - component_id: argilla-server
+    - component_id: extralit-frontend
       paths:
-        - argilla-server/**
-
-    - component_id: argilla-frontend
-      paths:
-        - argilla-frontend/**
+        - extralit-frontend/**

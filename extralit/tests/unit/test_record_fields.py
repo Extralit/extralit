@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ from tempfile import NamedTemporaryFile
 
 from PIL import Image
 
-from argilla import Record, Settings, ImageField, Dataset, ChatField, TextField
+from extralit import Record, Settings, ImageField, Dataset, ChatField, TextField
 
 
 @pytest.fixture

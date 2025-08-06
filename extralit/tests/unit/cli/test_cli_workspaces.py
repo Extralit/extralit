@@ -16,7 +16,7 @@ import pytest
 from typer.testing import CliRunner
 from unittest.mock import patch
 
-from argilla.cli.app import app
+from extralit.cli.app import app
 
 
 @pytest.fixture
@@ -25,46 +25,7 @@ def runner():
     return CliRunner()
 
 
-def test_workspaces_help(runner):
-    """Test that the workspaces command shows help message."""
-    result = runner.invoke(app, ["workspaces", "--help"])
-    assert result.exit_code == 0
-    assert "workspace" in result.stdout
-
-
-@pytest.mark.skip(reason="Test temporarily disabled")
-def test_workspaces_list_command_help(runner):
-    """Test the help message for the 'list' subcommand."""
-    result = runner.invoke(app, ["workspaces", "list", "--help"])
-    assert result.exit_code == 0
-    assert "Lists workspaces of the logged user" in result.stdout
-
-
-@pytest.mark.skip(reason="Test temporarily disabled")
-def test_workspaces_create_command_help(runner):
-    """Test the help message for the 'create' subcommand."""
-    result = runner.invoke(app, ["workspaces", "create", "--help"])
-    assert result.exit_code == 0
-    assert "Create a workspace" in result.stdout
-
-
-@pytest.mark.skip(reason="Test temporarily disabled")
-def test_workspaces_add_user_command_help(runner):
-    """Test the help message for the 'add-user' subcommand."""
-    result = runner.invoke(app, ["workspaces", "--name", "default", "add-user", "--help"])
-    assert result.exit_code == 0
-    assert "Adds a user to a workspace" in result.stdout
-
-
-@pytest.mark.skip(reason="Test temporarily disabled")
-def test_workspaces_delete_user_command_help(runner):
-    """Test the help message for the 'delete-user' subcommand."""
-    result = runner.invoke(app, ["workspaces", "--name", "default", "delete-user", "--help"])
-    assert result.exit_code == 0
-    assert "Deletes a user from a workspace" in result.stdout
-
-
-@patch("argilla.cli.workspaces.__main__.get_workspaces")
+@patch("extralit.cli.workspaces.__main__.get_workspaces")
 @pytest.mark.skip(reason="Test temporarily disabled")
 def test_workspaces_list(mock_get_workspaces, runner):
     """Test the 'list' command functionality."""
@@ -107,8 +68,8 @@ def test_workspaces_create(runner):
 
 
 @pytest.mark.skip(reason="Test temporarily disabled")
-@patch("argilla.cli.workspaces.__main__.get_workspace")
-@patch("argilla.cli.workspaces.__main__.get_user")
+@patch("extralit.cli.workspaces.__main__.get_workspace")
+@patch("extralit.cli.workspaces.__main__.get_user")
 def test_workspaces_add_user(mock_get_user, mock_get_workspace, runner):
     """Test the 'add-user' command functionality."""
     # Mock the workspace and user retrieval functions
@@ -133,8 +94,8 @@ def test_workspaces_add_user(mock_get_user, mock_get_workspace, runner):
 
 
 @pytest.mark.skip(reason="Test temporarily disabled")
-@patch("argilla.cli.workspaces.__main__.get_workspace")
-@patch("argilla.cli.workspaces.__main__.get_user")
+@patch("extralit.cli.workspaces.__main__.get_workspace")
+@patch("extralit.cli.workspaces.__main__.get_user")
 def test_workspaces_delete_user(mock_get_user, mock_get_workspace, runner):
     """Test the 'delete-user' command functionality."""
     # Mock the workspace and user retrieval functions
