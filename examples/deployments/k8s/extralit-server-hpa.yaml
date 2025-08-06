@@ -1,12 +1,12 @@
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: argilla-server-hpa
+  name: extralit-server-hpa
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: argilla-server-deployment
+    name: extralit-server-deployment
   minReplicas: 1
   maxReplicas: 3
   metrics:

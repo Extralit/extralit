@@ -1,14 +1,14 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: argilla-server-ingress
+  name: extralit-server-ingress
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   tls:
   - hosts:
     - argilla-hostname
-    secretName: argilla-server-tls
+    secretName: extralit-server-tls
   rules:
   - host: argilla-hostname
     http:
@@ -17,6 +17,6 @@ spec:
           pathType: Prefix
           backend:
             service:
-              name: argilla-server
+              name: extralit-server
               port:
                 number: 6900

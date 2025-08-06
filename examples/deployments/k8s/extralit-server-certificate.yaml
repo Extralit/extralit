@@ -8,11 +8,11 @@ spec:
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: argilla-server-certificate
+  name: extralit-server-certificate
 spec:
   dnsNames:
   - argilla-hostname
-  secretName: argilla-server-tls
+  secretName: extralit-server-tls
   issuerRef:
     name: selfsigned-issuer
     kind: ClusterIssuer

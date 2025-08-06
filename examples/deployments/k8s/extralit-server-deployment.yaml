@@ -1,9 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: argilla-server
+  name: extralit-server
   labels:
-    app: argilla-server
+    app: extralit-server
 spec:
   replicas: 1
   strategy:
@@ -13,11 +13,11 @@ spec:
       maxSurge: 1
   selector:
     matchLabels:
-      app: argilla-server
+      app: extralit-server
   template:
     metadata:
       labels:
-        app: argilla-server
+        app: extralit-server
     spec:
       affinity:
         nodeAffinity:
@@ -28,7 +28,7 @@ spec:
               - key: role
                 operator: In
                 values:
-                - argilla-server
+                - extralit-server
       initContainers:
         - name: wait-for-elasticsearch
           image: alpine/curl:latest
@@ -37,8 +37,8 @@ spec:
           while [ $status_code -ne 200 ]; do sleep 5; status_code=$(curl -s -o /dev/null -w '%{http_code}' $ELASTICSEARCH_URL);
           echo Sleeping...; done; echo Elasticsearch Connected " ]
       containers:
-        - name: argilla-server
-          image: extralit/argilla-server:latest
+        - name: extralit-server
+          image: extralit/extralit-server:latest
           ports:
             - containerPort: 6900
           resources:

@@ -46,10 +46,10 @@ k8s_yaml([
 k8s_resource(
     'elasticsearch',
     port_forwards=['9200'],
-    labels=['argilla-server'],
+    labels=['extralit-server'],
 )
 
-# PostgreSQL is the database for argilla-server
+# PostgreSQL is the database for extralit-server
 helm_repo('bitnami', 'https://charts.bitnami.com/bitnami', labels=['helm'], resource_name='bitnami-helm')
 if not ARGILLA_DATABASE_URL:
     helm_resource(
@@ -59,7 +59,7 @@ if not ARGILLA_DATABASE_URL:
             '--version=13.2.0',
             '--values=examples/deployments/k8s/helm/postgres-helm.yaml'],
         port_forwards=['5432'],
-        labels=['argilla-server'],
+        labels=['extralit-server'],
         resource_deps=['bitnami-helm'],
     )
 
@@ -79,27 +79,27 @@ helm_resource(
     resource_deps=['redis-helm', 'bitnami-helm']
 )
 
-# argilla-server is the web backend (FastAPI + SQL database)
+# extralit-server is the web backend (FastAPI + SQL database)
 if not os.path.exists('argilla-frontend/dist'):
     local('npm install && npm run build', dir='argilla-frontend', quiet=True)
-if not os.path.exists('argilla-server/src/argilla_server/static'):
-    local('cp -r argilla-frontend/dist argilla-server/src/argilla_server/static', quiet=True)
-if not os.path.exists('argilla-server/dist/'):
-    local('pdm build', dir='argilla-server')
+if not os.path.exists('extralit-server/src/extralit_server/static'):
+    local('cp -r argilla-frontend/dist extralit-server/src/extralit_server/static', quiet=True)
+if not os.path.exists('extralit-server/dist/'):
+    local('pdm build', dir='extralit-server')
 docker_build(
-    "{DOCKER_REPO}/argilla-server".format(DOCKER_REPO=DOCKER_REPO),
-    context='argilla-server/',
+    "{DOCKER_REPO}/extralit-server".format(DOCKER_REPO=DOCKER_REPO),
+    context='extralit-server/',
     build_args={'ENV': ENV, 'USERS_DB': USERS_DB},
-    dockerfile='argilla-server/docker/server/dev.argilla_server.dockerfile',
+    dockerfile='extralit-server/docker/server/dev.extralit_server.dockerfile',
     ignore=['examples/', 'extralit/', '.*', '**/__pycache__', '*.pyc', 'CHANGELOG.md'],
     live_update=[
         # Sync the source code to the container
-        sync('argilla-server/src/', '/home/argilla/src/'),
-        sync('argilla-server/docker/server/scripts/start_argilla_server.sh', '/home/argilla/'),
-        sync('argilla-server/pyproject.toml', '/home/argilla/pyproject.toml'),
+        sync('extralit-server/src/', '/home/extralit/src/'),
+        sync('extralit-server/docker/server/scripts/start_extralit_server.sh', '/home/extralit/'),
+        sync('extralit-server/pyproject.toml', '/home/extralit/pyproject.toml'),
     ]
 )
-argilla_server_k8s_yaml = read_yaml_stream('examples/deployments/k8s/argilla-server-deployment.yaml')
+extralit_server_k8s_yaml = read_yaml_stream('examples/deployments/k8s/extralit-server-deployment.yaml')
 for o in argilla_server_k8s_yaml:
     for container in o['spec']['template']['spec']['containers']:
         if container['name'] == 'argilla-server':
@@ -119,14 +119,14 @@ for o in argilla_server_k8s_yaml:
 
 k8s_yaml([
     encode_yaml_stream(argilla_server_k8s_yaml), 
-    'examples/deployments/k8s/argilla-server-service.yaml', 
-    'examples/deployments/k8s/argilla-server-ingress.yaml',
+    'examples/deployments/k8s/extralit-server-service.yaml', 
+    'examples/deployments/k8s/extralit-server-ingress.yaml',
     # 'examples/deployments/k8s/argilla-loadbalancer-service.yaml'
     ])
 k8s_resource(
-    'argilla-server',
+    'extralit-server',
     port_forwards=['6900'],
-    labels=['argilla-server'],
+    labels=['extralit-server'],
     resource_deps=['redis', 'main-db', 'elasticsearch'] if not ARGILLA_DATABASE_URL else ['redis', 'elasticsearch'],
 )
 
@@ -172,7 +172,7 @@ docker_build(
     "{DOCKER_REPO}/extralit-server".format(DOCKER_REPO=DOCKER_REPO),
     context='extralit/',
     dockerfile='extralit/docker/extralit.dockerfile',
-    ignore=['.*', 'argilla-frontend/', 'argilla-server/', '**/__pycache__', '*.pyc'],
+    ignore=['.*', 'argilla-frontend/', 'extralit-server/', '**/__pycache__', '*.pyc'],
     live_update=[
         sync('extralit/', '/home/extralit/'),
     ]

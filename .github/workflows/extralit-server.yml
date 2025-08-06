@@ -1,4 +1,4 @@
-name: Build Argilla server package
+name: Build Extralit server package
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.sha }}
@@ -27,7 +27,7 @@ permissions:
 
 jobs:
   build:
-    name: Build `argilla-server` package
+    name: Build `extralit-server` package
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
 
@@ -156,7 +156,7 @@ jobs:
       # End of frontend build section
       - name: Build package
         run: |
-          cp -r ../argilla-frontend/dist src/argilla_server/static
+          cp -r ../argilla-frontend/dist src/extralit_server/static
           pdm build
 
       - name: Upload artifact
@@ -167,7 +167,7 @@ jobs:
 
   build_docker_images:
     name: Build docker images
-    uses: ./.github/workflows/argilla-server.build-docker-images.yml
+    uses: ./.github/workflows/extralit-server.build-docker-images.yml
     if: |
       github.ref == 'refs/heads/main'
       || github.ref == 'refs/heads/develop'
@@ -181,7 +181,7 @@ jobs:
       publish_latest: ${{ github.ref == 'refs/heads/main' }}
     secrets: inherit
 
-  # This job will publish argilla-server python package into PyPI repository
+  # This job will publish extralit-server python package into PyPI repository
   publish_release:
     name: Publish Release
     runs-on: ubuntu-latest
@@ -209,7 +209,7 @@ jobs:
       - name: Update repo visualizer
         uses: githubocto/repo-visualizer@0.7.1
         with:
-          root_path: "argilla-server/"
+          root_path: "extralit-server/"
           excluded_paths: "dist,build,node_modules,docs,tests,.swm,assets,.github,package-lock.json,pdm.lock"
           excluded_globs: "*.spec.js;**/*.{png,jpg,svg,md};**/!(*.module).ts,**/__pycache__/,**/__mocks__/,LICENSE*,**/.gitignore,**/*.egg-info/,**/.*/"
           output_file: "repo-visualizer.svg"
@@ -231,8 +231,8 @@ jobs:
       - name: Setup PDM
         uses: pdm-project/setup-pdm@v4
         with:
-          python-version-file: argilla-server/pyproject.toml
-          cache-dependency-path: argilla-server/pdm.lock
+          python-version-file: extralit-server/pyproject.toml
+          cache-dependency-path: extralit-server/pdm.lock
           cache: true
 
       - name: Read package info

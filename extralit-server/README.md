@@ -46,7 +46,7 @@ The server components are split into two main services:
 ```
 
 ```
-/argilla_server
+/extralit_server
   /api # Annotation UI API endpoints
     /handlers
     /schemas

@@ -20,7 +20,7 @@ on:
     types: [opened, edited, synchronize, reopened, ready_for_review]
     paths:
       - "extralit/**"
-      - "argilla-server/**"
+      - "extralit-server/**"
       - ".github/workflows/extralit.yml"
 
 permissions:
@@ -31,7 +31,7 @@ jobs:
   build:
     if: github.event.pull_request.draft == false
     services:
-      argilla-server:
+      extralit-server:
         image: extralitdev/argilla-hf-spaces:develop
         ports:
           - 6900:6900
