@@ -184,7 +184,7 @@ export default {
       // Add reference column first (frozen)
       columns.push({
         field: "reference",
-        title: "Reference",
+        title: "reference",
         width: 150,
         frozen: true,
         formatter: this.referenceFormatter,
