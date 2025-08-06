@@ -59,4 +59,18 @@ export class QuestionSetting {
       JSON.stringify(this.options) === JSON.stringify(setting.options)
     );
   }
+
+  toPrototype(): QuestionPrototype {
+    return {
+      type: this.type.value as QuestionTypes,
+      use_markdown: this.use_markdown,
+      use_table: this.use_table,
+      visible_options: this.visible_options,
+      options: this.options,
+      options_order: this.options_order,
+      allow_overlapping: this.allow_overlapping,
+      allow_character_annotation: this.allow_character_annotation,
+      field: this.field,
+    };
+  }
 }

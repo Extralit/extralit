@@ -49,7 +49,7 @@
   </DatasetConfigurationCard>
 </template>
 
-<script>
+<script lang="ts">
 import "assets/icons/close";
 export default {
   props: {
@@ -86,8 +86,19 @@ export default {
     remove() {
       this.selectedSubset.removeQuestion(this.question.name);
     },
-    updateQuestionName(newName) {
-      this.question.name = newName;
+    updateQuestionName(newName: string) {
+      try {
+        // Update the title for immediate display
+        this.question.title = newName;
+
+        // Rename the question in the subset to update the name property and mappings
+        this.selectedSubset.renameQuestion(this.question.name, newName);
+      } catch (error) {
+        // If renaming fails (e.g., duplicate name), revert the title
+        this.question.title = this.question.name;
+        console.error('Failed to rename question:', error.message);
+        // You could show a user-friendly error message here
+      }
     },
   },
 };

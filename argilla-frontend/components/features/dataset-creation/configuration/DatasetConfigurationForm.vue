@@ -104,7 +104,7 @@
   </section>
 </template>
 
-<script>
+<script lang="ts">
 import { useDatasetConfigurationForm } from "./useDatasetConfigurationForm";
 import { MetadataCreation } from "~/v1/domain/entities/hub/MetadataCreation";
 
@@ -125,7 +125,7 @@ export default {
   computed: {
     getMaxNumberInNames() {
       return Math.max(
-        ...this.dataset.selectedSubset.questions.map((question) => {
+        ...this.dataset.selectedSubset.questions.map((question: any) => {
           const numberInName = question.name.split("_").pop();
           return parseInt(numberInName) || 0;
         })
@@ -137,27 +137,27 @@ export default {
         return this.dataset.availableFields;
       }
       // Fallback to field names from the dataset
-      return this.dataset.selectedSubset.fields.map((f) => f.name);
+      return this.dataset.selectedSubset.fields.map((f: any) => f.name);
     },
   },
   methods: {
     createDataset() {
       this.create(this.dataset);
     },
-    generateName(type, number) {
+    generateName(type: string, number: string | number): string {
       const typeName = this.$t(`config.questionId.${type}`);
-      return `${typeName}_${parseInt(number) || 0}`;
+      return `${typeName}_${parseInt(number as string) || 0}`;
     },
-    addQuestion(type) {
+    addQuestion(type: string) {
       const questionName = this.generateName(type, this.getMaxNumberInNames + 1);
       this.dataset.selectedSubset.addQuestion(questionName, {
         type,
       });
     },
-    onTypeIsChanged(oldName, type) {
-      const numberInName = oldName.split("_").pop();
-      const index = this.dataset.selectedSubset.questions.findIndex((q) => q.name === oldName);
-      this.dataset.selectedSubset.removeQuestion(oldName);
+    onTypeIsChanged(questionName: string, type: any) {
+      const numberInName = questionName.split("_").pop();
+      const index = this.dataset.selectedSubset.questions.findIndex((q: any) => q.name === questionName);
+      this.dataset.selectedSubset.removeQuestion(questionName);
       const newQuestionName = this.generateName(type.value, numberInName);
       this.dataset.selectedSubset.addQuestion(
         newQuestionName,
@@ -167,16 +167,16 @@ export default {
         index !== -1 ? index : undefined
       );
     },
-    updateMetadataSelection(selectedFields) {
+    updateMetadataSelection(selectedFields: string[]) {
       this.selectedMetadataFields = selectedFields;
       this.updateDatasetMetadata(selectedFields);
     },
-    updateDatasetMetadata(selectedFields) {
+    updateDatasetMetadata(selectedFields: string[]) {
       // Clear existing metadata
       this.dataset.selectedSubset.metadata.length = 0;
 
       // Add selected fields as metadata
-      selectedFields.forEach((fieldName) => {
+      selectedFields.forEach((fieldName: string) => {
         const metadata = MetadataCreation.from(fieldName, "terms");
         if (metadata) {
           this.dataset.selectedSubset.metadata.push(metadata);
@@ -187,7 +187,7 @@ export default {
   mounted() {
     if (this.dataset.importHistoryId) {
       const defaultMetadataFields = ["reference", "doi", "pmid"];
-      const availableDefaults = this.availableMetadataFields.filter((field) => defaultMetadataFields.includes(field));
+      const availableDefaults = this.availableMetadataFields.filter((field: string) => defaultMetadataFields.includes(field));
       this.updateMetadataSelection(availableDefaults);
     }
   },

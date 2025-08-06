@@ -13,7 +13,13 @@
             @keydown.enter="finishEditing"
             @keydown.escape="cancelEditing"
           />
-          <span v-else class="config-card__title-text" @dblclick="startEditing">{{ item.name }}</span>
+          <span
+            v-else
+            class="config-card__title-text"
+            :class="{ 'config-card__title-text--editable': configType === 'question' }"
+            @dblclick="configType === 'question' ? startEditing() : null"
+            >{{ item.title || item.name }}</span
+          >
           <span v-if="item.primitiveType" class="config-card__primitive-type">{{ item.primitiveType }}</span>
         </h3>
         <slot name="header" />
@@ -33,7 +39,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import "assets/icons/draggable";
 export default {
   props: {
@@ -71,22 +77,24 @@ export default {
   },
   methods: {
     startEditing() {
+      if (this.configType !== "question") return;
       this.isEditingName = true;
-      this.editableName = this.item.name;
+      this.editableName = this.item.title || this.item.name;
       this.$nextTick(() => {
         this.$refs.nameInput.focus();
         this.$refs.nameInput.select();
       });
     },
     finishEditing() {
-      if (this.editableName.trim() && this.editableName !== this.item.name) {
+      const currentName = this.item.title || this.item.name;
+      if (this.editableName.trim() && this.editableName !== currentName) {
         this.$emit("name-changed", this.editableName.trim());
       }
       this.isEditingName = false;
     },
     cancelEditing() {
       this.isEditingName = false;
-      this.editableName = this.item.name;
+      this.editableName = this.item.title || this.item.name;
     },
   },
 };
@@ -131,12 +139,14 @@ $no-mapping-color: hsl(0, 0%, 50%);
     @include font-size(14px);
   }
   &__title-text {
-    cursor: pointer;
-    &:hover {
-      background: var(--bg-opacity-4);
-      border-radius: 2px;
-      padding: 1px 2px;
-      margin: -1px -2px;
+    &--editable {
+      cursor: pointer;
+      &:hover {
+        background: var(--bg-opacity-4);
+        border-radius: 2px;
+        padding: 1px 2px;
+        margin: -1px -2px;
+      }
     }
   }
   &__title-input {

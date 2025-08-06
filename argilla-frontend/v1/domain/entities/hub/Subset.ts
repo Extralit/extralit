@@ -190,6 +190,22 @@ export class Subset {
     }
   }
 
+  public renameQuestion(oldName: string, newName: string) {
+    const question = this.questions.find((q) => q.name === oldName);
+    if (!question || oldName === newName) {
+      return;
+    }
+
+    // Check if new name already exists
+    if (this.questions.some((q) => q.name === newName)) {
+      throw new Error(`Question with name "${newName}" already exists`);
+    }
+
+    // Simply update the title for display purposes
+    // The name remains readonly, but title can be changed
+    question.title = newName;
+  }
+
   public addQuestion(name: string, settings: QuestionPrototype, position?: number) {
     const { type } = settings;
     if (type === "label_selection") {

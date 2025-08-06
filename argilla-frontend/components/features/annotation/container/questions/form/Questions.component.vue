@@ -5,7 +5,7 @@
       <div
         v-for="(question, index) in questions"
         :key="question.id"
-        :aria-label="'Question: ' + question.name"
+        :aria-label="'Question: ' + (question.title || question.name)"
         @keydown.arrow-up.prevent="
           $event.ctrlKey || $event.metaKey ? updateQuestionAutofocus(autofocusPosition - 1) : null
         "
