@@ -100,7 +100,7 @@ import { useImportHistoryListViewModel } from "./useImportHistoryListViewModel";
 interface HistoryTableRow {
   id: string;
   filename: string;
-  uploaded_by: string;
+  username: string;
   created_at: string;
   total_papers: number;
   success_count: number;
@@ -162,7 +162,7 @@ export default {
           },
         },
         {
-          field: "uploaded_by",
+          field: "username",
           title: "Uploaded By",
           width: 150,
           sortable: true,
@@ -352,7 +352,7 @@ export default {
       return items.map((item: ImportHistoryListItem) => ({
         id: item.id,
         filename: item.filename,
-        uploaded_by: item.uploaded_by || "Unknown User",
+        username: item.username || "Unknown User",
         created_at: this.formatDate(item.created_at),
         total_papers: item.total_papers,
         success_count: item.success_count,

@@ -1,12 +1,12 @@
 import { type NuxtAxiosInstance } from "@nuxtjs/axios";
+import { ImportStatus } from "../entities/import/ImportAnalysis";
 
 export interface ImportHistoryListItem {
   id: string;
   workspace_id: string;
-  user_id: string;
+  username: string;
   filename: string;
   created_at: string;
-  uploaded_by?: string; // User name, populated from user relationship
   total_papers: number;
   success_count: number;
   updated_count: number;
@@ -24,7 +24,7 @@ export interface ImportHistoryListResponse {
 
 export interface ImportHistoryFilters {
   workspace_id?: string;
-  user_id?: string;
+  username?: string;
 }
 
 export interface ImportHistoryListRequest {
@@ -39,14 +39,14 @@ export interface ImportHistoryListRequest {
 interface ImportHistoryResponse {
   id: string;
   workspace_id: string;
-  user_id: string;
+  username: string;
   filename: string;
   created_at: string;
   data?: any;
   metadata?: Record<
     string,
     {
-      status: "add" | "update" | "skip" | "failed";
+      status: ImportStatus;
       associated_files: string[];
       error_message?: string;
       validation_errors?: string[];
@@ -77,13 +77,13 @@ export class GetImportHistoryUseCase {
       queryParams.append("sort_order", params.sort_order);
     }
 
-    // Filters - only workspace_id and user_id
+    // Filters - only workspace_id and username (not yet implemented in backend)
     if (params.filters) {
       if (params.filters.workspace_id) {
         queryParams.append("workspace_id", params.filters.workspace_id);
       }
-      if (params.filters.user_id) {
-        queryParams.append("user_id", params.filters.user_id);
+      if (params.filters.username) {
+        queryParams.append("username", params.filters.username);
       }
     }
 
@@ -99,10 +99,9 @@ export class GetImportHistoryUseCase {
       return {
         id: item.id,
         workspace_id: item.workspace_id,
-        user_id: item.user_id,
+        username: item.username,
         filename: item.filename,
         created_at: item.created_at,
-        uploaded_by: "Unknown User", // TODO: Get from user relationship when available
         total_papers: counts.total,
         success_count: counts.success,
         updated_count: counts.updated,

@@ -35,7 +35,7 @@ from argilla_server.api.schemas.v1.imports import (
     DocumentsBulkCreate,
     DocumentsBulkResponse,
     ImportHistoryCreate,
-    ImportHistoryResponse,
+    ImportHistoryCreateResponse,
 )
 from argilla_server.jobs.document_jobs import upload_reference_documents_job
 
@@ -461,7 +461,7 @@ async def process_bulk_upload(
 
 async def create_import_history(
     db: AsyncSession, import_history_create: ImportHistoryCreate, user_id: UUID | str
-) -> ImportHistoryResponse:
+) -> ImportHistoryCreateResponse:
     """
     Create an import history record to store tabular dataframe data and import metadata.
 
@@ -499,14 +499,11 @@ async def create_import_history(
             f"with filename {import_history.filename}"
         )
 
-        return ImportHistoryResponse(
+        return ImportHistoryCreateResponse(
             id=import_history.id,
             workspace_id=import_history.workspace_id,
-            user_id=import_history.user_id,
             filename=import_history.filename,
             created_at=import_history.inserted_at,
-            metadata=import_history.metadata_,
-            data=None,
         )
 
     except Exception as e:

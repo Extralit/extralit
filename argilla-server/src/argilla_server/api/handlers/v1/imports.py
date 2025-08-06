@@ -19,6 +19,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Security, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from pydantic import ValidationError
 
 from argilla_server.database import get_async_db
@@ -31,6 +32,7 @@ from argilla_server.api.schemas.v1.imports import (
     ImportAnalysisResponse,
     ImportHistoryCreate,
     ImportHistoryResponse,
+    ImportHistoryCreateResponse,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -138,13 +140,13 @@ def _validate_analysis_request(analysis_request: ImportAnalysisRequest) -> List[
     return errors
 
 
-@router.post("/imports/history", status_code=status.HTTP_201_CREATED, response_model=ImportHistoryResponse)
+@router.post("/imports/history", status_code=status.HTTP_201_CREATED, response_model=ImportHistoryCreateResponse)
 async def create_import_history_endpoint(
     *,
     import_history_create: ImportHistoryCreate,
     db: AsyncSession = Depends(get_async_db),
     current_user: User = Security(auth.get_current_user),
-) -> ImportHistoryResponse:
+) -> ImportHistoryCreateResponse:
     """
     Create import history record to store generic tabular dataframe data.
 
@@ -313,6 +315,7 @@ async def list_import_histories(
     try:
         query = (
             select(ImportHistory)
+            .options(selectinload(ImportHistory.user))
             .where(ImportHistory.workspace_id == workspace_id)
             .order_by(ImportHistory.inserted_at.desc())
         )
@@ -330,7 +333,7 @@ async def list_import_histories(
                 ImportHistoryResponse(
                     id=history.id,
                     workspace_id=history.workspace_id,
-                    user_id=history.user_id,
+                    username=history.user.username,
                     filename=history.filename,
                     created_at=history.inserted_at,
                     metadata=history.metadata_,  # Include metadata in list view
@@ -372,7 +375,10 @@ async def get_import_history(
     await authorize(current_user, DocumentPolicy.create())
 
     try:
-        history = await ImportHistory.get(db, history_id)
+        query = select(ImportHistory).options(selectinload(ImportHistory.user)).where(ImportHistory.id == history_id)
+        result = await db.execute(query)
+        history = result.scalar_one_or_none()
+
         if not history:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -390,7 +396,7 @@ async def get_import_history(
         response = ImportHistoryResponse(
             id=history.id,
             workspace_id=history.workspace_id,
-            user_id=history.user_id,
+            username=history.user.username,
             filename=history.filename,
             created_at=history.inserted_at,
             data=history.data,  # Include data in detailed view
