@@ -16,7 +16,7 @@ from collections import defaultdict
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Union
 from uuid import UUID
 
-from extralit._exceptions import ArgillaError
+from extralit._exceptions import ExtralitError
 from extralit._helpers._media import cast_image, uncast_image
 from extralit._models import (
     FieldValue,
@@ -419,7 +419,7 @@ class RecordResponses(Iterable[Response]):
         """Checks if a response for the same question name and user id already exists"""
         for existing_response in self.__responses_by_question_name[response.question_name]:
             if existing_response.user_id == response.user_id:
-                raise ArgillaError(
+                raise ExtralitError(
                     f"Response for question with name {response.question_name!r} and user id {response.user_id!r} "
                     f"already found. The responses for the same question name do not support more than one user"
                 )

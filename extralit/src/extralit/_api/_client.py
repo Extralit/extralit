@@ -31,7 +31,7 @@ from extralit._api._records import RecordsAPI
 from extralit._api._users import UsersAPI
 from extralit._api._vectors import VectorsAPI
 from extralit._api._workspaces import WorkspacesAPI
-from extralit._exceptions import ArgillaError
+from extralit._exceptions import ExtralitError
 from extralit._constants import _DEFAULT_API_URL
 from extralit._api._token import get_secret
 
@@ -128,10 +128,10 @@ class APIClient:
         **http_client_args,
     ):
         if not api_url:
-            raise ArgillaError("Missing api_url. You must provide a valid API url")
+            raise ExtralitError("Missing api_url. You must provide a valid API url")
 
         if not api_key:
-            raise ArgillaError("Missing api_key. You must provide a valid API key.")
+            raise ExtralitError("Missing api_key. You must provide a valid API key.")
 
         self.api_url = api_url
         self.api_key = api_key

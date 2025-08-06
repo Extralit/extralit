@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from extralit._exceptions._base import ArgillaError
+from extralit._exceptions._base import ExtralitError
 
 
-class ExtralitCredentialsError(ArgillaError):
+class ExtralitCredentialsError(ExtralitError):
     def __init__(self, message: str = "Credentials (api_key and/or api_url) are invalid") -> None:
         super().__init__(message)

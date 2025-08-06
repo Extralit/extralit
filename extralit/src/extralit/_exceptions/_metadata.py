@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from extralit._exceptions._base import ArgillaError
+from extralit._exceptions._base import ExtralitError
 
 
-class MetadataError(ArgillaError):
+class MetadataError(ExtralitError):
     message: str = "Error defining dataset metadata settings"

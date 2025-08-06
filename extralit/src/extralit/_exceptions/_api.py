@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,10 +15,10 @@ from typing import Optional
 
 from httpx import HTTPStatusError
 
-from extralit._exceptions._base import ArgillaError
+from extralit._exceptions._base import ExtralitError
 
 
-class ArgillaAPIError(ArgillaError):
+class ArgillaAPIError(ExtralitError):
     message = "Server error"
 
     def __init__(self, message: Optional[str] = None, status_code: int = 500):

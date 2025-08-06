@@ -21,7 +21,7 @@ from abc import ABC
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional, Tuple, Type, Union
 
-from extralit._exceptions import RecordsIngestionError, ArgillaError, ImportDatasetError
+from extralit._exceptions import RecordsIngestionError, ExtralitError, ImportDatasetError
 from extralit._models import DatasetModel
 from extralit.client import Extralit
 from extralit.settings import Settings
@@ -97,7 +97,7 @@ class DiskImportExportMixin(ABC):
         if isinstance(workspace, str):
             workspace = client.workspaces(workspace)
             if not workspace:
-                raise ArgillaError(f"Workspace {workspace} not found on the server.")
+                raise ExtralitError(f"Workspace {workspace} not found on the server.")
         else:
             warnings.warn("Workspace not provided. Using default workspace.")
             workspace = client.workspaces.default

@@ -20,7 +20,7 @@ import requests
 
 from extralit import Extralit
 from extralit._api import FieldsAPI
-from extralit._exceptions import ArgillaError, SettingsError
+from extralit._exceptions import ExtralitError, SettingsError
 from extralit._models import (
     FieldModel,
     TextFieldSettings,
@@ -285,7 +285,7 @@ class CustomField(FieldBase):
             return requests.get(template).text
         if isinstance(template, str):
             return template
-        raise ArgillaError(
+        raise ExtralitError(
             "Invalid template. Please provide 1: a valid path or URL to a HTML file. 2: a valid HTML string."
         )
 
@@ -335,7 +335,7 @@ def _field_from_model(model: FieldModel) -> Field:
     elif model.settings.type == "table":
         return TableField.from_model(model)
     else:
-        raise ArgillaError(f"Unsupported field type: {model.settings.type}")
+        raise ExtralitError(f"Unsupported field type: {model.settings.type}")
 
 
 def _field_from_dict(data: dict) -> Field:

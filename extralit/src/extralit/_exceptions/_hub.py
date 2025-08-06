@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from extralit._exceptions import ArgillaError
+from extralit._exceptions import ExtralitError
 
 __all__ = [
     "ImportDatasetError",
@@ -19,11 +19,11 @@ __all__ = [
 ]
 
 
-class ImportDatasetError(ArgillaError):
+class ImportDatasetError(ExtralitError):
     def __init__(self, message: str = "Error importing dataset") -> None:
         super().__init__(message)
 
 
-class DatasetsServerException(ArgillaError):
+class DatasetsServerException(ExtralitError):
     def __init__(self, message: str = "Error connecting to Hugging Face Hub datasets-server API") -> None:
         super().__init__(message)

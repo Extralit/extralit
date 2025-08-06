@@ -21,7 +21,7 @@ from uuid import UUID
 from extralit._api._base import ResourceAPI
 from extralit._api._client import DEFAULT_HTTP_CONFIG  # noqa: F401
 from extralit._api._webhooks import WebhookModel
-from extralit._exceptions import ArgillaError, NotFoundError
+from extralit._exceptions import ExtralitError, NotFoundError
 from extralit._helpers import GenericIterator
 from extralit._helpers._resource_repr import ResourceHTMLReprMixin
 from extralit._models import DatasetModel, ResourceModel, UserModel, WorkspaceModel
@@ -55,7 +55,7 @@ class Users(Sequence["User"], ResourceHTMLReprMixin):
 
     def __call__(self, username: str = None, id: Union[str, UUID] = None) -> Optional["User"]:
         if not (username or id):
-            raise ArgillaError("One of 'username' or 'id' must be provided")
+            raise ExtralitError("One of 'username' or 'id' must be provided")
         if username and id:
             warnings.warn("Only one of 'username' or 'id' must be provided. Using 'id'")
             username = None
@@ -151,7 +151,7 @@ class Workspaces(Sequence["Workspace"], ResourceHTMLReprMixin):
 
     def __call__(self, name: str = None, id: Union[UUID, str] = None) -> Optional["Workspace"]:
         if not (name or id):
-            raise ArgillaError("One of 'name' or 'id' must be provided")
+            raise ExtralitError("One of 'name' or 'id' must be provided")
 
         if name and id:
             warnings.warn("Only one of 'name' or 'id' must be provided. Using 'id'")
@@ -208,7 +208,7 @@ class Workspaces(Sequence["Workspace"], ResourceHTMLReprMixin):
     def default(self) -> "Workspace":
         """The default workspace."""
         if len(self) == 0:
-            raise ArgillaError("There are no workspaces created. Please create a new workspace first")
+            raise ExtralitError("There are no workspaces created. Please create a new workspace first")
         return self[0]
 
     ############################
@@ -270,7 +270,7 @@ class Datasets(Sequence["Dataset"], ResourceHTMLReprMixin):
                 workspace_obj = self._client.workspaces(workspace_obj)
 
             if workspace_obj is None:
-                raise ArgillaError("Workspace not found. Please provide a valid workspace name or id.")
+                raise ExtralitError("Workspace not found. Please provide a valid workspace name or id.")
 
             for dataset in workspace_obj.datasets:
                 if dataset.name == name:
@@ -293,7 +293,7 @@ class Datasets(Sequence["Dataset"], ResourceHTMLReprMixin):
             return None
 
         else:
-            raise ArgillaError("One of 'name', 'id', or 'workspace' must be provided")
+            raise ExtralitError("One of 'name', 'id', or 'workspace' must be provided")
 
     def __iter__(self):
         return self._Iterator([self._from_model(model) for model in self._api.list()])

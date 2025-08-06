@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,11 +14,11 @@
 from typing import Optional
 
 
-class ArgillaError(Exception):
-    message_stub = "Argilla SDK error"
+class ExtralitError(Exception):
+    message_stub = "Extralit SDK error"
 
     def __init__(self, message: Optional[str] = None):
-        """Base class for all Argilla exceptions
+        """Base class for all Extralit exceptions
         Args:
             message (str): The message to display when the exception is raised
         """

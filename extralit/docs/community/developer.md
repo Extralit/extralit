@@ -44,9 +44,9 @@ Once you have your environment set up, you can return to this guide to learn mor
 
 The Extralit repository has a monorepo structure, which means that all the components are located in the same repository: [`extralit/extralit`](https://github.com/extralit/extralit). This repo is divided into the following folders:
 
-- [`argilla/src/extralit/`](https://github.com/extralit/extralit/tree/develop/argilla/src/extralit): The FastAPI server project for extraction
-- [`argilla/docs/`](https://github.com/extralit/extralit/tree/develop/argilla/docs): The documentation project
-- [`argilla/src/argilla/`](https://github.com/extralit/extralit/tree/develop/argilla): The argilla SDK project
+- [`extralit/src/extralit/`](https://github.com/extralit/extralit/tree/develop/extralit/src/extralit): The FastAPI server project for extraction
+- [`extralit/docs/`](https://github.com/extralit/extralit/tree/develop/extralit/docs): The documentation project
+- [`extralit/src/extralit/`](https://github.com/extralit/extralit/tree/develop/argilla): The argilla SDK project
 - [`extralit-server/src/extralit_server/`](https://github.com/extralit/extralit/tree/develop/extralit-server): The FastAPI server project for annotation
 - [`argilla-frontend/`](https://github.com/extralit/extralit/tree/develop/argilla-frontend): The Vue.js UI project
 - [`examples`](https://github.com/extralit/extralit/tree/develop/examples): Example resources for deployments, scripts and notebooks
@@ -92,7 +92,7 @@ pdm install --dev
 To install specific sub-packages with editable mode, you can use the following command:
 
 ```sh
-pip install -e argilla/
+pip install -e extralit/
 # or
 pip install -e extralit-server/
 ```
@@ -132,7 +132,7 @@ This format helps document the code, keeps the commit history clean, and makes i
 Running tests at the end of every development cycle is indispensable to ensure no breaking changes. GH Actions Workflows automatically run the tests on every commit and PR, but you can also run them locally.
 
 ```sh
-cd argilla/
+cd extralit/
 pdm run test-cov tests/unit
 pdm run test-cov tests/integration
 ```
@@ -230,7 +230,7 @@ The Command Line Interface (CLI) is an important part of Extralit that enables u
 
 #### CLI Structure
 
-The CLI code is located in `argilla/src/argilla/cli` with this organization:
+The CLI code is located in `extralit/src/extralit/cli` with this organization:
 
 ```
 cli/
@@ -250,7 +250,7 @@ The CLI uses [Typer](https://typer.tiangolo.com/) for creating the command-line 
 1. Create a new module in the appropriate directory:
 
 ```python
-# src/argilla/cli/mycommand/__main__.py
+# src/extralit/cli/mycommand/__main__.py
 import typer
 from extralit.cli.callback import init_callback
 from extralit.cli.rich import get_argilla_themed_panel
@@ -285,7 +285,7 @@ app.add_typer(mycommand.app, name="mycommand")
 
 - Create commands that fit into existing workflows
 - Follow consistent naming and structure patterns
-- Provide clear help text for all commands and options, e.g. use the [`print_rich_table`](https://github.com/extralit/extralit/blob/develop/argilla/src/argilla/cli/rich.py#L115) function to print tables in a rich format
+- Provide clear help text for all commands and options, e.g. use the [`print_rich_table`](https://github.com/extralit/extralit/blob/develop/extralit/src/extralit/cli/rich.py#L115) function to print tables in a rich format
 - Use sensible defaults to minimize required input
 - Follow the Unix philosophy: commands should do one thing well
 

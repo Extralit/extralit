@@ -17,7 +17,7 @@ import uuid
 import pytest
 
 from extralit import Extralit, Dataset, TextField, TextQuestion, Settings, User, Workspace
-from extralit._exceptions import ArgillaError
+from extralit._exceptions import ExtralitError
 
 
 @pytest.fixture
@@ -80,25 +80,25 @@ class TestClient:
             assert client.datasets(name="missing") is None
 
     def test_get_resource_with_missing_args(self, client: Extralit):
-        with pytest.raises(ArgillaError):
+        with pytest.raises(ExtralitError):
             client.workspaces()
 
-        with pytest.raises(ArgillaError):
+        with pytest.raises(ExtralitError):
             client.datasets()
 
-        with pytest.raises(ArgillaError):
+        with pytest.raises(ExtralitError):
             client.users()
 
     def test_init_with_missing_api_url(self):
-        with pytest.raises(ArgillaError):
+        with pytest.raises(ExtralitError):
             Extralit(api_url=None)
 
-        with pytest.raises(ArgillaError):
+        with pytest.raises(ExtralitError):
             Extralit(api_url="")
 
     def test_init_with_missing_api_key(self):
-        with pytest.raises(ArgillaError):
+        with pytest.raises(ExtralitError):
             Extralit(api_key=None)
 
-        with pytest.raises(ArgillaError):
+        with pytest.raises(ExtralitError):
             Extralit(api_key="")

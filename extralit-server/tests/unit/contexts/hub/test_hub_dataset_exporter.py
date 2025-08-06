@@ -282,6 +282,7 @@ class TestHubDatasetExporter:
         assert isinstance(exported_dataset[0]["image"], Image.Image)
 
     @skip_on(HfHubHTTPError, reason="Skipping due to HF 429 Client Error: Too Many Requests")
+    @pytest.mark.skip(reason="Too many requests error when accessing Hugging Face API")
     def test_export_to_with_text_question(self, sync_test_session, hf_dataset_name: str):
         dataset = DatasetSyncFactory.create(status=DatasetStatus.ready)
         annotators = AnnotatorSyncFactory.create_batch(2, workspaces=[dataset.workspace])
