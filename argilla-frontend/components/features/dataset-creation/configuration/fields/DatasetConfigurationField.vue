@@ -4,6 +4,7 @@
     config-type="field"
     :available-types="availableTypes"
     @is-focused="$emit('is-focused', $event)"
+    @name-changed="updateFieldName"
   >
   </DatasetConfigurationCard>
 </template>
@@ -28,6 +29,11 @@ export default {
   model: {
     prop: "type",
     event: "change",
+  },
+  methods: {
+    updateFieldName(newName) {
+      this.field.name = newName;
+    },
   },
 };
 </script>
