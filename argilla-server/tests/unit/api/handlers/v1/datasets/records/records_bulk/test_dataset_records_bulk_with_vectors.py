@@ -14,8 +14,8 @@
 from uuid import UUID
 
 import pytest
-from argilla_server.enums import DatasetStatus
-from argilla_server.models import Dataset, Vector
+from extralit_server.enums import DatasetStatus
+from extralit_server.models import Dataset, Vector
 from httpx import AsyncClient
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession

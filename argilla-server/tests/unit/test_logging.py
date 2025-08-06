@@ -15,7 +15,7 @@
 import logging
 
 import pytest
-from argilla_server.logging import ArgillaHandler, LoggingMixin
+from extralit_server.logging import ArgillaHandler, LoggingMixin
 
 
 class LoggingForTest(LoggingMixin):

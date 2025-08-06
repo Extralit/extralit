@@ -17,7 +17,7 @@ from typer.testing import CliRunner
 from unittest.mock import patch, MagicMock
 from pathlib import Path
 
-from argilla.cli.app import app
+from extralit.cli.app import app
 
 
 @pytest.fixture
@@ -189,7 +189,7 @@ def test_import_bibtex_api_error(mock_parse_bib, mock_validate, mock_from_creden
 
 def test_display_import_analysis_results():
     """Test the _display_import_analysis_results function."""
-    from argilla.cli.documents.import_bib import _display_import_analysis_results
+    from extralit.cli.documents.import_bib import _display_import_analysis_results
     from rich.console import Console
     from io import StringIO
 

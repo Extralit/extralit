@@ -19,7 +19,7 @@ import subprocess
 
 import pytest
 
-from argilla import Argilla, Workspace
+from extralit import Argilla, Workspace
 
 
 @pytest.fixture

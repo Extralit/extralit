@@ -17,9 +17,9 @@ from typing import List, Optional, Tuple, Union
 import pytest
 from httpx import AsyncClient
 
-from argilla_server.constants import API_KEY_HEADER_NAME
-from argilla_server.enums import RecordInclude, ResponseStatus
-from argilla_server.models import Dataset, Question, Record, Response, Suggestion, User, Workspace
+from extralit_server.constants import API_KEY_HEADER_NAME
+from extralit_server.enums import RecordInclude, ResponseStatus
+from extralit_server.models import Dataset, Question, Record, Response, Suggestion, User, Workspace
 from tests.factories import (
     AdminFactory,
     AnnotatorFactory,

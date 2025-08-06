@@ -16,7 +16,7 @@ import pytest
 from uuid import uuid4
 import factory
 
-from argilla_server.models.database import ImportHistory
+from extralit_server.models.database import ImportHistory
 from tests.factories import UserFactory, WorkspaceFactory, BaseFactory
 
 

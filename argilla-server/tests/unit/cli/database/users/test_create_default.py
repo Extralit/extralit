@@ -13,9 +13,9 @@
 #  limitations under the License.
 from typing import TYPE_CHECKING
 
-from argilla_server.constants import DEFAULT_API_KEY, DEFAULT_PASSWORD, DEFAULT_USERNAME
-from argilla_server.contexts import accounts
-from argilla_server.models import User, UserRole, Workspace
+from extralit_server.constants import DEFAULT_API_KEY, DEFAULT_PASSWORD, DEFAULT_USERNAME
+from extralit_server.contexts import accounts
+from extralit_server.models import User, UserRole, Workspace
 from tests.factories import WorkspaceSyncFactory
 
 if TYPE_CHECKING:

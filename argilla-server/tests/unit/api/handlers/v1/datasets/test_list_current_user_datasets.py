@@ -16,8 +16,8 @@ import pytest
 from httpx import AsyncClient
 from datetime import timedelta
 
-from argilla_server.constants import API_KEY_HEADER_NAME
-from argilla_server.enums import DatasetStatus, UserRole
+from extralit_server.constants import API_KEY_HEADER_NAME
+from extralit_server.enums import DatasetStatus, UserRole
 from tests.factories import DatasetFactory, WorkspaceUserFactory, WorkspaceFactory, UserFactory
 
 

@@ -17,9 +17,9 @@ from uuid import UUID
 
 import pytest
 
-from argilla._api._workspaces import WorkspacesAPI
-from argilla._models._files import ListObjectsResponse, FileObjectResponse, ObjectMetadata
-from argilla._models._documents import Document
+from extralit._api._workspaces import WorkspacesAPI
+from extralit._models._files import ListObjectsResponse, FileObjectResponse, ObjectMetadata
+from extralit._models._documents import Document
 
 
 @pytest.fixture

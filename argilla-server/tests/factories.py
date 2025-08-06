@@ -22,10 +22,10 @@ from factory.alchemy import SESSION_PERSISTENCE_COMMIT, SESSION_PERSISTENCE_FLUS
 from factory.builder import BuildStep, StepBuilder, parse_declarations
 from sqlalchemy.ext.asyncio import async_object_session
 
-from argilla_server.contexts.files import ObjectMetadata, get_minio_client
-from argilla_server.enums import DatasetDistributionStrategy, FieldType, MetadataPropertyType, OptionsOrder
-from argilla_server.webhooks.v1.enums import WebhookEvent
-from argilla_server.models import (
+from extralit_server.contexts.files import ObjectMetadata, get_minio_client
+from extralit_server.enums import DatasetDistributionStrategy, FieldType, MetadataPropertyType, OptionsOrder
+from extralit_server.webhooks.v1.enums import WebhookEvent
+from extralit_server.models import (
     Dataset,
     Document,
     Field,
@@ -45,7 +45,7 @@ from argilla_server.models import (
     Webhook,
     DatasetUser,
 )
-from argilla_server.models.base import DatabaseModel
+from extralit_server.models.base import DatabaseModel
 
 from tests.database import SyncTestSession, TestSession
 
@@ -627,7 +627,7 @@ class MinioFileFactory(factory.Factory):
     @classmethod
     def create(cls, **kwargs):
         """Create a MinioFile and mock the put_object and get_object methods to return it."""
-        from argilla_server.contexts.files import get_minio_client
+        from extralit_server.contexts.files import get_minio_client
 
         file = cls.build(**kwargs)
 

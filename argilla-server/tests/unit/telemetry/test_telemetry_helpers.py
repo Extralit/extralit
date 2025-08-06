@@ -19,8 +19,8 @@ from uuid import UUID
 import pytest
 from pytest_mock import MockerFixture
 
-from argilla_server.settings import settings
-from argilla_server.telemetry import get_server_id
+from extralit_server.settings import settings
+from extralit_server.telemetry import get_server_id
 
 
 class TestTelemetryHelpers:

@@ -15,8 +15,8 @@ import uuid
 
 import pytest
 
-from argilla import User, Argilla, Workspace
-from argilla._exceptions import UnprocessableEntityError, ConflictError
+from extralit import User, Argilla, Workspace
+from extralit._exceptions import UnprocessableEntityError, ConflictError
 
 
 class TestManageUsers:

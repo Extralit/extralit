@@ -17,8 +17,8 @@ from typing import Any
 
 import pytest
 
-from argilla_server.api.schemas.v1.chat import ChatFieldValue
-from argilla_server.api.schemas.v1.records import RecordCreate
+from extralit_server.api.schemas.v1.chat import ChatFieldValue
+from extralit_server.api.schemas.v1.records import RecordCreate
 
 
 class TestRecordCreate:

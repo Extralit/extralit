@@ -23,9 +23,9 @@ from huggingface_hub import HfApi
 from huggingface_hub.errors import HfHubHTTPError
 from datasets import load_dataset, get_dataset_config_names, get_dataset_split_names
 
-from argilla_server.contexts import hub
-from argilla_server.contexts.hub import HubDatasetExporter
-from argilla_server.enums import DatasetStatus, FieldType, QuestionType, ResponseStatus, MetadataPropertyType
+from extralit_server.contexts import hub
+from extralit_server.contexts.hub import HubDatasetExporter
+from extralit_server.enums import DatasetStatus, FieldType, QuestionType, ResponseStatus, MetadataPropertyType
 
 from tests.database import SyncTestSession
 from tests.factories import (

@@ -15,7 +15,7 @@
 from typing import TYPE_CHECKING
 
 import pytest
-from argilla_server.models import User, UserRole
+from extralit_server.models import User, UserRole
 from click.testing import CliRunner
 from typer import Typer
 

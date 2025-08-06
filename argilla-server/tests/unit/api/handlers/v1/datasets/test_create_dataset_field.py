@@ -19,12 +19,12 @@ from uuid import UUID, uuid4
 import pytest
 from sqlalchemy import func, select
 
-from argilla_server.api.schemas.v1.fields import FIELD_CREATE_NAME_MAX_LENGTH, FIELD_CREATE_TITLE_MAX_LENGTH
-from argilla_server.constants import API_KEY_HEADER_NAME
-from argilla_server.enums import (
+from extralit_server.api.schemas.v1.fields import FIELD_CREATE_NAME_MAX_LENGTH, FIELD_CREATE_TITLE_MAX_LENGTH
+from extralit_server.constants import API_KEY_HEADER_NAME
+from extralit_server.enums import (
     DatasetStatus,
 )
-from argilla_server.models import (
+from extralit_server.models import (
     Field,
 )
 from tests.factories import (

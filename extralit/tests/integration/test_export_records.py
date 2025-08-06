@@ -23,8 +23,8 @@ import pytest
 from PIL import Image
 from datasets import Dataset as HFDataset
 
-import argilla as rg
-from argilla import Argilla
+import extralit as rg
+from extralit import Argilla
 
 
 @pytest.fixture

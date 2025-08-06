@@ -14,13 +14,13 @@
 
 from uuid import uuid4
 
-import argilla_server.errors.future as errors
+import extralit_server.errors.future as errors
 import pytest
-from argilla_server.api.schemas.v1.records import SearchRecordsQuery
-from argilla_server.contexts.search import SearchRecordsQueryValidator
+from extralit_server.api.schemas.v1.records import SearchRecordsQuery
+from extralit_server.contexts.search import SearchRecordsQueryValidator
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from argilla_server.models import Dataset
+from extralit_server.models import Dataset
 from tests.factories import (
     DatasetFactory,
     FloatMetadataPropertyFactory,

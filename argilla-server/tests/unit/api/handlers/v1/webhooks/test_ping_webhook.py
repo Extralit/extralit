@@ -20,8 +20,8 @@ from uuid import UUID, uuid4
 from httpx import AsyncClient, Response
 from standardwebhooks.webhooks import Webhook
 
-from argilla_server.contexts import info
-from argilla_server.constants import API_KEY_HEADER_NAME
+from extralit_server.contexts import info
+from extralit_server.constants import API_KEY_HEADER_NAME
 
 from tests.factories import AdminFactory, AnnotatorFactory, WebhookFactory
 

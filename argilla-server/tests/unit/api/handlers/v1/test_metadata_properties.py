@@ -18,11 +18,11 @@ from uuid import uuid4
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from argilla_server.api.schemas.v1.metadata_properties import METADATA_PROPERTY_CREATE_TITLE_MAX_LENGTH
-from argilla_server.constants import API_KEY_HEADER_NAME
-from argilla_server.enums import MetadataPropertyType, UserRole
-from argilla_server.models import MetadataProperty, UserRole
-from argilla_server.search_engine import FloatMetadataMetrics, IntegerMetadataMetrics, TermsMetrics
+from extralit_server.api.schemas.v1.metadata_properties import METADATA_PROPERTY_CREATE_TITLE_MAX_LENGTH
+from extralit_server.constants import API_KEY_HEADER_NAME
+from extralit_server.enums import MetadataPropertyType, UserRole
+from extralit_server.models import MetadataProperty, UserRole
+from extralit_server.search_engine import FloatMetadataMetrics, IntegerMetadataMetrics, TermsMetrics
 from sqlalchemy import func, select
 
 from tests.factories import (
@@ -37,7 +37,7 @@ from tests.factories import (
 )
 
 if TYPE_CHECKING:
-    from argilla_server.search_engine import MetadataMetrics, SearchEngine
+    from extralit_server.search_engine import MetadataMetrics, SearchEngine
     from httpx import AsyncClient
 
 

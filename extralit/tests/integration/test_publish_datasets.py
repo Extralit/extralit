@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-from argilla import (
+from extralit import (
     Argilla,
     Settings,
     TextField,

@@ -17,8 +17,8 @@ from uuid import uuid4
 from fastapi import status
 from httpx import AsyncClient
 
-from argilla_server.api.schemas.v1.documents import DocumentCreate
-from argilla_server.api.schemas.v1.imports import (
+from extralit_server.api.schemas.v1.documents import DocumentCreate
+from extralit_server.api.schemas.v1.imports import (
     FileInfo,
     DocumentMetadata,
     ImportAnalysisRequest,
@@ -26,7 +26,7 @@ from argilla_server.api.schemas.v1.imports import (
     ImportHistoryCreate,
 )
 
-from argilla_server.models import UserRole
+from extralit_server.models import UserRole
 from tests.factories import DocumentFactory, WorkspaceFactory, UserFactory
 
 

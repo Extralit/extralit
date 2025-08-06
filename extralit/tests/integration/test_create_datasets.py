@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from argilla import (
+from extralit import (
     Argilla,
     Dataset,
     ChatField,
@@ -26,7 +26,7 @@ from argilla import (
     Workspace,
     CustomField,
 )
-from argilla.settings._task_distribution import TaskDistribution
+from extralit.settings._task_distribution import TaskDistribution
 
 
 class TestCreateDatasets:

@@ -15,10 +15,10 @@
 from uuid import UUID, uuid4
 
 import pytest
-from argilla_server.api.handlers.v1.datasets.records import LIST_DATASET_RECORDS_LIMIT_LE
-from argilla_server.constants import API_KEY_HEADER_NAME
-from argilla_server.enums import RecordInclude, SortOrder, RecordStatus
-from argilla_server.search_engine import (
+from extralit_server.api.handlers.v1.datasets.records import LIST_DATASET_RECORDS_LIMIT_LE
+from extralit_server.constants import API_KEY_HEADER_NAME
+from extralit_server.enums import RecordInclude, SortOrder, RecordStatus
+from extralit_server.search_engine import (
     AndFilter,
     Order,
     RangeFilter,

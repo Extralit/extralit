@@ -19,9 +19,9 @@ import os
 
 import pytest
 
-from argilla._api._workspaces import WorkspacesAPI
-from argilla._models._documents import DocumentModel
-from argilla.documents import Document
+from extralit._api._workspaces import WorkspacesAPI
+from extralit._models._documents import DocumentModel
+from extralit.documents import Document
 
 
 @pytest.fixture
@@ -308,7 +308,7 @@ class TestWorkspaceDocumentIntegration:
     @pytest.fixture
     def mock_workspace(self, sample_workspace_id):
         """Mock workspace with client."""
-        from argilla.workspaces import Workspace
+        from extralit.workspaces import Workspace
         
         workspace = MagicMock(spec=Workspace)
         workspace.id = sample_workspace_id

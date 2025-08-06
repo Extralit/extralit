@@ -14,9 +14,9 @@
 
 from uuid import uuid4
 
-import argilla as rg
-from argilla import ResponseStatus
-from argilla.records._io import GenericIO
+import extralit as rg
+from extralit import ResponseStatus
+from extralit.records._io import GenericIO
 
 
 class TestGenericIO:

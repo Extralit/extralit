@@ -16,10 +16,10 @@ import uuid
 
 import pytest
 
-from argilla import Dataset, Record, Response, Settings, Suggestion, TextField, TextQuestion
-from argilla._exceptions import ArgillaError
-from argilla._models import RecordModel
-from argilla._models._record._metadata import MetadataModel
+from extralit import Dataset, Record, Response, Settings, Suggestion, TextField, TextQuestion
+from extralit._exceptions import ArgillaError
+from extralit._models import RecordModel
+from extralit._models._record._metadata import MetadataModel
 
 
 @pytest.fixture()

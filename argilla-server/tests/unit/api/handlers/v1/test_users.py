@@ -16,8 +16,8 @@ from typing import TYPE_CHECKING
 from uuid import uuid4
 
 import pytest
-from argilla_server.constants import API_KEY_HEADER_NAME
-from argilla_server.models import UserRole
+from extralit_server.constants import API_KEY_HEADER_NAME
+from extralit_server.models import UserRole
 
 from tests.factories import UserFactory, WorkspaceFactory
 

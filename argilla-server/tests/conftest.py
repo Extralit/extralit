@@ -22,10 +22,10 @@ from typing import TYPE_CHECKING, AsyncGenerator, Generator
 from sqlalchemy import NullPool, create_engine
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 
-from argilla_server.cli.database.migrate import migrate_db
-from argilla_server.database import database_url_sync
-from argilla_server.jobs.queues import REDIS_CONNECTION
-from argilla_server.settings import settings
+from extralit_server.cli.database.migrate import migrate_db
+from extralit_server.database import database_url_sync
+from extralit_server.jobs.queues import REDIS_CONNECTION
+from extralit_server.settings import settings
 
 from tests.database import SyncTestSession, TestSession, set_task
 

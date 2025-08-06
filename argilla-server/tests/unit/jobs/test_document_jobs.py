@@ -16,7 +16,7 @@ import pytest
 from unittest.mock import patch, MagicMock
 from uuid import uuid4
 
-from argilla_server.jobs.document_jobs import upload_reference_documents_job
+from extralit_server.jobs.document_jobs import upload_reference_documents_job
 from tests.factories import WorkspaceFactory, UserFactory
 
 

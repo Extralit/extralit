@@ -15,7 +15,7 @@ from tempfile import NamedTemporaryFile
 
 import pytest
 from PIL import Image
-from argilla._helpers._media import cast_image, pil_to_data_uri, uncast_image
+from extralit._helpers._media import cast_image, pil_to_data_uri, uncast_image
 
 
 @pytest.fixture

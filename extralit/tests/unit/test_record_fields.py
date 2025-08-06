@@ -18,7 +18,7 @@ from tempfile import NamedTemporaryFile
 
 from PIL import Image
 
-from argilla import Record, Settings, ImageField, Dataset, ChatField, TextField
+from extralit import Record, Settings, ImageField, Dataset, ChatField, TextField
 
 
 @pytest.fixture

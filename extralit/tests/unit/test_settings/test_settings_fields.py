@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import pytest
-import argilla as rg
+import extralit as rg
 
 
 class TestTextField:

@@ -18,8 +18,8 @@ from datetime import datetime
 import httpx
 from pytest_httpx import HTTPXMock
 
-import argilla as rg
-from argilla._models import QuestionModel
+import extralit as rg
+from extralit._models import QuestionModel
 
 
 class TestQuestionsAPI:

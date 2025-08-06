@@ -16,8 +16,8 @@ import uuid
 
 import pytest
 
-from argilla import Argilla, Dataset, TextField, TextQuestion, Settings, User, Workspace
-from argilla._exceptions import ArgillaError
+from extralit import Argilla, Dataset, TextField, TextQuestion, Settings, User, Workspace
+from extralit._exceptions import ArgillaError
 
 
 @pytest.fixture

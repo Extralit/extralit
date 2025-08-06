@@ -20,14 +20,14 @@ import pytest
 
 try:
     import pandera as pa
-    from argilla._models._schema import SchemaStructure
+    from extralit._models._schema import SchemaStructure
 
     PANDERA_AVAILABLE = True
 except ImportError:
     PANDERA_AVAILABLE = False
     pytest.skip("pandera and extralit are required for schema tests", allow_module_level=True)
 
-from argilla import Workspace
+from extralit import Workspace
 
 
 @pytest.fixture

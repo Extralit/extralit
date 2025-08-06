@@ -16,8 +16,8 @@ import os
 import pytest
 from pytest_mock import MockerFixture
 
-from argilla_server.enums import UserRole
-from argilla_server.security.authentication import UserInfo
+from extralit_server.enums import UserRole
+from extralit_server.security.authentication import UserInfo
 
 
 class TestUserInfo:

@@ -20,8 +20,8 @@ import httpx
 import pytest
 from pytest_httpx import HTTPXMock
 
-import argilla as rg
-from argilla._exceptions import (
+import extralit as rg
+from extralit._exceptions import (
     BadRequestError,
     ConflictError,
     ForbiddenError,
@@ -29,7 +29,7 @@ from argilla._exceptions import (
     NotFoundError,
     UnprocessableEntityError,
 )
-from argilla._models import UserModel
+from extralit._models import UserModel
 
 
 class TestUserSerialization:

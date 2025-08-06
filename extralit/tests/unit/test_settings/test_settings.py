@@ -18,11 +18,11 @@ from typing import Any
 import pytest
 from pytest_mock import MockerFixture
 
-import argilla as rg
-from argilla import Dataset
-from argilla._exceptions import SettingsError
-from argilla._models import DatasetModel
-from argilla.settings._task_distribution import TaskDistribution
+import extralit as rg
+from extralit import Dataset
+from extralit._exceptions import SettingsError
+from extralit._models import DatasetModel
+from extralit.settings._task_distribution import TaskDistribution
 
 
 class TestSettings:

@@ -14,7 +14,7 @@
 
 import pytest
 
-from argilla import (
+from extralit import (
     Dataset,
     Settings,
     TextField,

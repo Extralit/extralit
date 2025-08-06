@@ -19,10 +19,10 @@ from fastapi import Request
 from pytest_mock import MockerFixture
 from starlette.responses import JSONResponse
 
-from argilla_server.api.errors.v1.exception_handlers import set_request_error
-from argilla_server.errors import ServerError
-from argilla_server.integrations.huggingface.spaces import HUGGINGFACE_SETTINGS
-from argilla_server.telemetry import TelemetryClient
+from extralit_server.api.errors.v1.exception_handlers import set_request_error
+from extralit_server.errors import ServerError
+from extralit_server.integrations.huggingface.spaces import HUGGINGFACE_SETTINGS
+from extralit_server.telemetry import TelemetryClient
 
 mock_request = Request(scope={"type": "http", "headers": {}})
 
@@ -55,7 +55,7 @@ class TestSuiteTelemetry:
         assert test_telemetry._system_info["persistent_storage_enabled"] is False
 
     def test_track_data(self, mocker: MockerFixture):
-        from argilla_server._version import __version__ as version
+        from extralit_server._version import __version__ as version
 
         mock = mocker.patch("argilla_server.telemetry._client.send_telemetry")
 

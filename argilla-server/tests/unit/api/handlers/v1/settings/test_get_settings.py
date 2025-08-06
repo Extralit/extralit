@@ -16,10 +16,10 @@ import os
 from unittest import mock
 
 import pytest
-from argilla_server.contexts import settings as settings_context
-from argilla_server.contexts.settings import HUGGINGFACE_SETTINGS
-from argilla_server.integrations.huggingface.spaces import HuggingfaceSettings
-from argilla_server.settings import settings as argilla_server_settings, settings
+from extralit_server.contexts import settings as settings_context
+from extralit_server.contexts.settings import HUGGINGFACE_SETTINGS
+from extralit_server.integrations.huggingface.spaces import HuggingfaceSettings
+from extralit_server.settings import settings as argilla_server_settings, settings
 from httpx import AsyncClient
 
 

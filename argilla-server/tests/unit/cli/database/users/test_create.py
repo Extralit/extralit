@@ -18,8 +18,8 @@ import pytest
 from click.testing import CliRunner
 from typer import Typer
 
-from argilla_server.contexts import accounts
-from argilla_server.models import User, UserRole, Workspace
+from extralit_server.contexts import accounts
+from extralit_server.models import User, UserRole, Workspace
 from tests.factories import UserSyncFactory, WorkspaceSyncFactory
 
 if TYPE_CHECKING:

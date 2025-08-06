@@ -14,7 +14,7 @@
 
 import pytest
 
-from argilla_server.settings import Settings
+from extralit_server.settings import Settings
 
 
 def test_settings_index_replicas_with_shards_defined(monkeypatch):

@@ -21,12 +21,12 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.encoders import jsonable_encoder
 
-from argilla_server.models import Response, User
-from argilla_server.jobs.queues import HIGH_QUEUE
-from argilla_server.webhooks.v1.enums import RecordEvent, ResponseEvent
-from argilla_server.webhooks.v1.responses import build_response_event
-from argilla_server.webhooks.v1.records import build_record_event
-from argilla_server.enums import ResponseStatus, RecordStatus, DatasetDistributionStrategy
+from extralit_server.models import Response, User
+from extralit_server.jobs.queues import HIGH_QUEUE
+from extralit_server.webhooks.v1.enums import RecordEvent, ResponseEvent
+from extralit_server.webhooks.v1.responses import build_response_event
+from extralit_server.webhooks.v1.records import build_record_event
+from extralit_server.enums import ResponseStatus, RecordStatus, DatasetDistributionStrategy
 
 from tests.factories import DatasetFactory, RecordFactory, SpanQuestionFactory, TextQuestionFactory, WebhookFactory
 

@@ -14,8 +14,8 @@
 
 import pytest
 
-from argilla_server.models import Field
-from argilla_server.enums import FieldType
+from extralit_server.models import Field
+from extralit_server.enums import FieldType
 
 
 @pytest.mark.asyncio

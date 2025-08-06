@@ -17,8 +17,8 @@ import uuid
 
 import pytest
 
-import argilla as rg
-from argilla._exceptions import NotFoundError
+import extralit as rg
+from extralit._exceptions import NotFoundError
 
 
 @pytest.fixture

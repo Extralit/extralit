@@ -17,8 +17,8 @@ from typing import Union
 from uuid import UUID
 
 import pytest
-from argilla_server.enums import QuestionType
-from argilla_server.models import Question
+from extralit_server.enums import QuestionType
+from extralit_server.models import Question
 from httpx import AsyncClient
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession

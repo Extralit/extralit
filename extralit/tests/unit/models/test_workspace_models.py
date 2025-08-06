@@ -16,7 +16,7 @@ from datetime import datetime
 
 from dateutil import tz
 
-from argilla._models import WorkspaceModel
+from extralit._models import WorkspaceModel
 
 
 class TestWorkspaceModels:

@@ -17,7 +17,7 @@ from typer.testing import CliRunner
 from unittest.mock import patch
 from pathlib import Path
 
-from argilla.cli.app import app
+from extralit.cli.app import app
 
 
 @pytest.fixture

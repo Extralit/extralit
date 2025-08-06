@@ -17,8 +17,8 @@ from string import ascii_lowercase
 
 import pytest
 
-from argilla import Argilla, Dataset, Settings, Workspace, TextQuestion, TextField
-from argilla._exceptions import SettingsError
+from extralit import Argilla, Dataset, Settings, Workspace, TextQuestion, TextField
+from extralit._exceptions import SettingsError
 
 
 def test_dataset_empty_settings(client: Argilla, workspace: Workspace):

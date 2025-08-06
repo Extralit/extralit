@@ -15,8 +15,8 @@
 import base64
 
 import pytest
-from argilla.markdown import audio_to_html, chat_to_html, image_to_html, pdf_to_html, video_to_html
-from argilla.markdown.media import _get_file_data, _is_valid_dimension, _media_to_html, _validate_media_type
+from extralit.markdown import audio_to_html, chat_to_html, image_to_html, pdf_to_html, video_to_html
+from extralit.markdown.media import _get_file_data, _is_valid_dimension, _media_to_html, _validate_media_type
 
 
 def test_validate_media_type_valid():

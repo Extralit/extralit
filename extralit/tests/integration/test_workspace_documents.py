@@ -17,7 +17,7 @@ import uuid
 import tempfile
 
 
-from argilla import Workspace
+from extralit import Workspace
 
 
 class TestWorkspaceDocuments:

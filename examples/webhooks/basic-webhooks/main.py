@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 
-import argilla as rg
+import extralit as rg
 
 # Environment variables with defaults
 API_KEY = os.environ.get("ARGILLA_API_KEY", "argilla.apikey")

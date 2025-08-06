@@ -17,14 +17,14 @@ from uuid import uuid4
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from argilla_server.api.schemas.v1.documents import DocumentCreate
-from argilla_server.api.schemas.v1.imports import (
+from extralit_server.api.schemas.v1.documents import DocumentCreate
+from extralit_server.api.schemas.v1.imports import (
     FileInfo,
     DocumentMetadata,
     ImportAnalysisRequest,
     ImportStatus,
 )
-from argilla_server.contexts.imports import (
+from extralit_server.contexts.imports import (
     analyze_import_status,
     validate_document_metadata,
 )

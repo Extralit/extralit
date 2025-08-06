@@ -17,8 +17,8 @@ from uuid import UUID, uuid4
 import pytest
 from httpx import AsyncClient
 
-from argilla_server.constants import API_KEY_HEADER_NAME
-from argilla_server.enums import RecordStatus, UserRole, ResponseStatus
+from extralit_server.constants import API_KEY_HEADER_NAME
+from extralit_server.enums import RecordStatus, UserRole, ResponseStatus
 from tests.factories import DatasetFactory, RecordFactory, AnnotatorFactory, ResponseFactory, UserFactory
 
 

@@ -20,8 +20,8 @@ from unittest.mock import patch, MagicMock
 from fastapi import status
 from httpx import AsyncClient
 
-from argilla_server.models import UserRole
-from argilla_server.api.schemas.v1.imports import DocumentsBulkResponse
+from extralit_server.models import UserRole
+from extralit_server.api.schemas.v1.imports import DocumentsBulkResponse
 from tests.factories import WorkspaceFactory, UserFactory
 
 

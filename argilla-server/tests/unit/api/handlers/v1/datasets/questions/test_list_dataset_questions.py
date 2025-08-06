@@ -15,7 +15,7 @@
 from uuid import UUID
 
 import pytest
-from argilla_server.enums import OptionsOrder, QuestionType
+from extralit_server.enums import OptionsOrder, QuestionType
 from httpx import AsyncClient
 
 from tests.factories import QuestionFactory

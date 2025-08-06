@@ -12,7 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from argilla_server.errors import GenericServerError
+from extralit_server.errors import GenericServerError
 
 
 def test_generic_error():

@@ -19,8 +19,8 @@ import httpx
 import pytest
 from pytest_httpx import HTTPXMock
 
-import argilla as rg
-from argilla._exceptions import (
+import extralit as rg
+from extralit._exceptions import (
     BadRequestError,
     ConflictError,
     ForbiddenError,

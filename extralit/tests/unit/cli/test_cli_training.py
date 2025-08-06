@@ -16,8 +16,8 @@ import pytest
 from typer.testing import CliRunner
 from unittest.mock import patch
 
-from argilla.cli.app import app
-from argilla.cli.training.__main__ import Framework
+from extralit.cli.app import app
+from extralit.cli.training.__main__ import Framework
 
 
 @pytest.fixture

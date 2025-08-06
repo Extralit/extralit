@@ -20,8 +20,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from tests.factories import DocumentFactory, WorkspaceFactory, UserFactory, WorkspaceUserFactory
 
-from argilla_server.contexts.files import get_pdf_s3_object_path, get_s3_object_url
-from argilla_server.models.database import Document
+from extralit_server.contexts.files import get_pdf_s3_object_path, get_s3_object_url
+from extralit_server.models.database import Document
 from pydantic import BaseModel
 
 

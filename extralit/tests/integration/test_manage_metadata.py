@@ -14,8 +14,8 @@
 
 import pytest
 
-import argilla as rg
-from argilla import Argilla, Dataset, Settings, TextField, Workspace, LabelQuestion
+import extralit as rg
+from extralit import Argilla, Dataset, Settings, TextField, Workspace, LabelQuestion
 
 
 @pytest.fixture

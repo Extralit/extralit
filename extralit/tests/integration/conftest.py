@@ -15,8 +15,8 @@ import uuid
 
 import pytest
 
-import argilla as rg
-from argilla import Argilla, Workspace
+import extralit as rg
+from extralit import Argilla, Workspace
 
 
 @pytest.fixture(scope="session")

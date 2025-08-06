@@ -15,7 +15,7 @@
 from uuid import UUID
 
 import pytest
-from argilla_server.contexts.datasets import CREATE_DATASET_VECTOR_SETTINGS_MAX_COUNT
+from extralit_server.contexts.datasets import CREATE_DATASET_VECTOR_SETTINGS_MAX_COUNT
 from httpx import AsyncClient
 
 from tests.factories import DatasetFactory, VectorSettingsFactory

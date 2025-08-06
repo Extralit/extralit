@@ -14,7 +14,7 @@
 
 from unittest import mock
 
-import argilla as rg
+import extralit as rg
 
 
 class TestArgilla:
