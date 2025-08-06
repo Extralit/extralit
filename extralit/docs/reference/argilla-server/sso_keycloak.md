@@ -21,8 +21,8 @@ from keycloak import KeycloakAdmin
 from keycloak import KeycloakOpenIDConnection
 from keycloak import KeycloakOpenID
 
-ARGILLA_CLIENT_ID = "argilla-client"
-ARGILLA_REALM = "argilla"
+EXTRALIT_CLIENT_ID = "argilla-client"
+EXTRALIT_REALM = "argilla"
 
 keycloak_connection = KeycloakOpenIDConnection(
     server_url="http://localhost:8080/",
@@ -36,7 +36,7 @@ keycloak_admin = KeycloakAdmin(connection=keycloak_connection)
 
 keycloak_admin.create_realm(
     {
-        "realm": ARGILLA_REALM,
+        "realm": EXTRALIT_REALM,
         "enabled": True,
         "displayName": "Argilla",
         "userManagedAccessAllowed": True,
@@ -47,14 +47,14 @@ keycloak_connection = KeycloakOpenIDConnection(
     username="admin",
     password="admin",
     user_realm_name="master",
-    realm_name=ARGILLA_REALM,
+    realm_name=EXTRALIT_REALM,
 )
 
 keycloak_admin = KeycloakAdmin(connection=keycloak_connection)
 
 client = keycloak_admin.create_client(
     {
-        "clientId": ARGILLA_CLIENT_ID,  # The client ID (you can choose a name)
+        "clientId": EXTRALIT_CLIENT_ID,  # The client ID (you can choose a name)
         "enabled": True,
         "protocol": "openid-connect",  # Protocol (you can use other protocols like 'saml' if needed)
         "publicClient": False,  # Set to False if the client will use client secrets
@@ -70,8 +70,8 @@ client = keycloak_admin.create_client(
 )
 
 keycloak_openid = KeycloakOpenID(server_url="http://localhost:8080/",
-                                 client_id=ARGILLA_CLIENT_ID,
-                                 realm_name=ARGILLA_REALM)
+                                 client_id=EXTRALIT_CLIENT_ID,
+                                 realm_name=EXTRALIT_REALM)
 
 public_key = keycloak_openid.public_key()
 
@@ -90,7 +90,7 @@ audience_mapper = keycloak_admin.add_mapper_to_client_scope(
     "protocolMapper": "oidc-audience-mapper",
     "consentRequired": False,
     "config": {
-        "included.client.audience": ARGILLA_CLIENT_ID,
+        "included.client.audience": EXTRALIT_CLIENT_ID,
         "id.token.claim": "false",
         "access.token.claim": "true"
     }

@@ -91,9 +91,9 @@ tilt down               # Stop k8s environment
 ```
 
 ## Environment Variables
-- `ARGILLA_DATABASE_URL`: Database connection string
-- `ARGILLA_ELASTICSEARCH`: ElasticSearch URL
-- `ARGILLA_REDIS_URL`: Redis connection for background jobs
+- `EXTRALIT_DATABASE_URL`: Database connection string
+- `EXTRALIT_ELASTICSEARCH`: ElasticSearch URL
+- `EXTRALIT_REDIS_URL`: Redis connection for background jobs
 - `API_BASE_URL`: Backend API URL for frontend
 - `OPENAI_API_KEY`: For LLM integration
 - `S3_ENDPOINT`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`: Object storage

@@ -28,7 +28,7 @@ Extralit is a free, open-source, self-hosted tool. This means you need to deploy
 
     - You must fill out the following Space secrets fields:
       - `OAUTH2_HUGGINGFACE_CLIENT_ID` and `OAUTH2_HUGGINGFACE_CLIENT_SECRET`: The Oauth.
-      - `ARGILLA_DATABASE_URL`: The URL of the PostgreSQL database where the data will be stored. If you leave it blank, the data will be lost when the Space restarts.
+      - `EXTRALIT_DATABASE_URL`: The URL of the PostgreSQL database where the data will be stored. If you leave it blank, the data will be lost when the Space restarts.
       - `S3_ENDPOINT`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`: The name of the S3 bucket where papers and data extraction artifacts will be stored. If you leave it blank, the data will be lost when the Space restarts.
     - Click Duplicate Space to build an Extralit instance 🚀.
     - Once you see the UI, [go to the Sign in into the UI section](#sign-in-into-the-extralit-ui). If you see the `Building` message for longer than 2-3 min refresh the page.

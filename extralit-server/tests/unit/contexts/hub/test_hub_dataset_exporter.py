@@ -42,7 +42,7 @@ from tests.factories import (
 )
 
 HF_ORGANIZATION = "extralit-dev"
-HF_TOKEN = os.environ.get("HF_TOKEN_ARGILLA_INTERNAL_TESTING")
+HF_TOKEN = os.environ.get("HF_TOKEN_EXTRALIT_INTERNAL_TESTING")
 
 IMAGE_URL = "https://argilla.io/brand-assets/argilla/argilla-logo-color-black.png"
 IMAGE_DATA_URL = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
@@ -91,7 +91,7 @@ def skip_on(exception_type: type, reason="Skip this test"):
     return decorator_func
 
 
-@pytest.mark.skipif(HF_TOKEN is None, reason="HF_TOKEN_ARGILLA_INTERNAL_TESTING is not defined")
+@pytest.mark.skipif(HF_TOKEN is None, reason="HF_TOKEN_EXTRALIT_INTERNAL_TESTING is not defined")
 class TestHubDatasetExporter:
     @skip_on(HfHubHTTPError, reason="Skipping due to HF 429 Client Error: Too Many Requests")
     def test_export_to(self, sync_test_session, hf_api: HfApi, hf_dataset_name: str):

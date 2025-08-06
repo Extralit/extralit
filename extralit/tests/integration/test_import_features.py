@@ -71,10 +71,10 @@ def mock_data() -> List[dict[str, Any]]:
 
 @pytest.fixture
 def token():
-    return os.getenv("HF_TOKEN_ARGILLA_INTERNAL_TESTING")
+    return os.getenv("HF_TOKEN_EXTRALIT_INTERNAL_TESTING")
 
 
-@pytest.mark.skipif(not os.getenv("HF_TOKEN_ARGILLA_INTERNAL_TESTING"), reason="No HF token provided")
+@pytest.mark.skipif(not os.getenv("HF_TOKEN_EXTRALIT_INTERNAL_TESTING"), reason="No HF token provided")
 class TestImportFeaturesFromHub:
     def test_import_records_from_datasets_with_classlabel(
         self, token: str, dataset: ex.Dataset, client, mock_data: List[dict[str, Any]]

@@ -1,16 +1,16 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import os
 from typing import TYPE_CHECKING
@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 def test_migrate(monkeypatch, sync_db: "Session", cli_runner: CliRunner, cli: Typer):
     mock_users_file = os.path.join(os.path.dirname(__file__), "test_user_files", "users.yml")
 
-    with mock.patch.dict(os.environ, {"ARGILLA_LOCAL_AUTH_USERS_DB_FILE": mock_users_file}):
+    with mock.patch.dict(os.environ, {"EXTRALIT_LOCAL_AUTH_USERS_DB_FILE": mock_users_file}):
         result = cli_runner.invoke(cli, "database users migrate")
 
         assert result.exit_code == 0
@@ -79,7 +79,7 @@ def test_migrate(monkeypatch, sync_db: "Session", cli_runner: CliRunner, cli: Ty
 def test_migrate_with_one_user_file(monkeypatch, sync_db: "Session", cli_runner: CliRunner, cli: Typer):
     mock_users_file = os.path.join(os.path.dirname(__file__), "test_user_files", "users_one.yml")
 
-    with mock.patch.dict(os.environ, {"ARGILLA_LOCAL_AUTH_USERS_DB_FILE": mock_users_file}):
+    with mock.patch.dict(os.environ, {"EXTRALIT_LOCAL_AUTH_USERS_DB_FILE": mock_users_file}):
         result = cli_runner.invoke(cli, "database users migrate")
 
         assert result.exit_code == 0
@@ -97,7 +97,7 @@ def test_migrate_with_one_user_file(monkeypatch, sync_db: "Session", cli_runner:
 
 
 def test_migrate_with_nonexistent_file(monkeypatch, sync_db: "Session", cli_runner: CliRunner, cli: Typer):
-    with mock.patch.dict(os.environ, {"ARGILLA_LOCAL_AUTH_USERS_DB_FILE": "nonexistent.yml"}):
+    with mock.patch.dict(os.environ, {"EXTRALIT_LOCAL_AUTH_USERS_DB_FILE": "nonexistent.yml"}):
         result = cli_runner.invoke(cli, "database users migrate")
 
         assert result.exit_code == 1

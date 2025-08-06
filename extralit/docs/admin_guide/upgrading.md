@@ -99,7 +99,7 @@ extralit_server database migrate
 
    ```bash
    docker run -d --name extralit-quickstart -p 6900:6900 \
-     -e ARGILLA_AUTH_SECRET_KEY=$(openssl rand -hex 32) \
+     -e EXTRALIT_AUTH_SECRET_KEY=$(openssl rand -hex 32) \
      extralit/argilla-hf-spaces:latest
    ```
 

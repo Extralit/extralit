@@ -25,7 +25,7 @@ ENV USERNAME=""
 ENV PASSWORD=""
 ENV API_KEY=""
 ## Argilla home path
-ENV ARGILLA_HOME_PATH=/var/lib/argilla
+ENV EXTRALIT_HOME_PATH=/var/lib/argilla
 ## Uvicorn defaults
 ENV UVICORN_PORT=6900
 ### Uvicorn app. Extended apps can override this variable
@@ -34,14 +34,14 @@ ENV UVICORN_APP=extralit_server:app
 RUN useradd -ms /bin/bash argilla
 
 # Create argilla volume
-RUN mkdir -p "$ARGILLA_HOME_PATH" && \
-    chown argilla:argilla "$ARGILLA_HOME_PATH" && \
+RUN mkdir -p "$EXTRALIT_HOME_PATH" && \
+    chown argilla:argilla "$EXTRALIT_HOME_PATH" && \
     apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y --no-install-recommends libpq-dev && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /packages
-VOLUME $ARGILLA_HOME_PATH
+VOLUME $EXTRALIT_HOME_PATH
 
 COPY scripts/start_extralit_server.sh /home/argilla
 # Destination folder must be the same as the builder one. Otherwise installed script won't work (since the installation fixes the path inside the script)

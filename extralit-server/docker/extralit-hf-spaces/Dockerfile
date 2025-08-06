@@ -1,9 +1,9 @@
 # Multi-stage build to reduce image size
-ARG ARGILLA_VERSION=latest
+ARG EXTRALIT_VERSION=latest
 ARG extralit_server_IMAGE=extralitdev/extralit-server
 
 # Base stage with common dependencies
-FROM ${extralit_server_IMAGE}:${ARGILLA_VERSION} AS base
+FROM ${extralit_server_IMAGE}:${EXTRALIT_VERSION} AS base
 USER root
 
 # Copy Argilla distribution files
@@ -56,7 +56,7 @@ USER argilla
 ENV ELASTIC_CONTAINER=true
 ENV ES_JAVA_OPTS="-Xms1g -Xmx1g"
 
-ENV ARGILLA_HOME_PATH=/data/argilla
+ENV EXTRALIT_HOME_PATH=/data/argilla
 ENV REINDEX_DATASETS=1
 
 CMD ["/bin/bash", "start.sh"]

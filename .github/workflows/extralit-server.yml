@@ -112,11 +112,11 @@ jobs:
         id: run-tests
         continue-on-error: true
         env:
-          HF_TOKEN_ARGILLA_INTERNAL_TESTING: ${{ secrets.HF_TOKEN_ARGILLA_INTERNAL_TESTING }}
+          HF_TOKEN_EXTRALIT_INTERNAL_TESTING: ${{ secrets.HF_TOKEN_EXTRALIT_INTERNAL_TESTING }}
         run: |
-          ARGILLA_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/argilla
-          ARGILLA_ELASTICSEARCH=http://localhost:9200
-          ARGILLA_SEARCH_ENGINE=elasticsearch
+          EXTRALIT_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/argilla
+          EXTRALIT_ELASTICSEARCH=http://localhost:9200
+          EXTRALIT_SEARCH_ENGINE=elasticsearch
           pdm test-cov tests/unit
 
       - name: Upload test coverage

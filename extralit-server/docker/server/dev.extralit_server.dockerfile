@@ -36,8 +36,8 @@ ENV PASSWORD="12345678"
 ENV API_KEY="extralit.apikey"
 
 ## Argilla home path
-ENV ARGILLA_HOME_PATH=/var/lib/argilla
-ENV ARGILLA_LOCAL_AUTH_USERS_DB_FILE=$USERS_DB
+ENV EXTRALIT_HOME_PATH=/var/lib/argilla
+ENV EXTRALIT_LOCAL_AUTH_USERS_DB_FILE=$USERS_DB
 ## Uvicorn defaults
 ENV UVICORN_PORT=6900
 ### Uvicorn app. Extended apps can override this variable
@@ -46,7 +46,7 @@ ENV UVICORN_APP=extralit_server:app
 
 # Create a user and a volume for argilla
 RUN useradd -ms /bin/bash argilla
-RUN mkdir -p "$ARGILLA_HOME_PATH" && chown argilla:argilla "$ARGILLA_HOME_PATH"
+RUN mkdir -p "$EXTRALIT_HOME_PATH" && chown argilla:argilla "$EXTRALIT_HOME_PATH"
 
 # Copy the scripts and install uvicorn
 COPY docker/server/scripts/ /home/argilla/

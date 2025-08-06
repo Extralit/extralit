@@ -21,14 +21,14 @@ spec:
         - name: {{ .Chart.Name }}-worker
           image: "{{ .Values.argilla.image.repository }}:{{ .Values.argilla.image.tag }}"
           env:
-            - name: ARGILLA_ELASTICSEARCH
+            - name: EXTRALIT_ELASTICSEARCH
               value: {{if .Values.elasticsearch.useOperator}}"http://{{ include "argilla.fullname" . }}-es-http:9200"{{else}}"{{ .Values.externalElasticsearch.host }}:{{ .Values.externalElasticsearch.port }}"{{end}}
-            - name: ARGILLA_REDIS_URL
+            - name: EXTRALIT_REDIS_URL
               value: redis://{{ .Release.Name }}-redis-master:6379/0
             - name: BACKGROUND_NUM_WORKERS
               value: "{{ .Values.worker.numWorkers | default 2 }}"
             {{- if .Values.argilla.persistence.enabled }}
-            - name: ARGILLA_HOME_PATH
+            - name: EXTRALIT_HOME_PATH
               value: {{ .Values.argilla.persistence.mountPath | quote }}
             {{- end }}
           command: ["sh", "-c", "python -m extralit_server worker --num-workers ${BACKGROUND_NUM_WORKERS}"]

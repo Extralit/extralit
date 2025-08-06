@@ -32,13 +32,13 @@ spec:
                 secretKeyRef:
                   name: extralit-secrets
                   key: OPENAI_API_KEY
-            - name: ARGILLA_BASE_URL
+            - name: EXTRALIT_BASE_URL
               value: "http://extralit-server:6900"
-            - name: ARGILLA_API_KEY
+            - name: EXTRALIT_API_KEY
               valueFrom:
                 secretKeyRef:
                   name: extralit-secrets
-                  key: ARGILLA_API_KEY
+                  key: EXTRALIT_API_KEY
             - name: WCS_HTTP_URL
               value: "http://weaviate:80"
             - name: WCS_GRPC_URL

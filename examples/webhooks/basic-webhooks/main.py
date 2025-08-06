@@ -4,8 +4,8 @@ from datetime import datetime
 import extralit as ex
 
 # Environment variables with defaults
-API_KEY = os.environ.get("ARGILLA_API_KEY", "extralit.apikey")
-API_URL = os.environ.get("ARGILLA_API_URL", "http://localhost:6900")
+API_KEY = os.environ.get("EXTRALIT_API_KEY", "extralit.apikey")
+API_URL = os.environ.get("EXTRALIT_API_URL", "http://localhost:6900")
 
 # Initialize Argilla client
 client = ex.Extralit(api_key=API_KEY, api_url=API_URL)

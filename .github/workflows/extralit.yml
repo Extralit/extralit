@@ -36,15 +36,15 @@ jobs:
         ports:
           - 6900:6900
         env:
-          ARGILLA_ENABLE_TELEMETRY: 0
+          EXTRALIT_ENABLE_TELEMETRY: 0
           # Set credentials
           USERNAME: argilla
           PASSWORD: 12345678
           API_KEY: extralit.apikey
           # Configure storage to use local files instead of MinIO
-          ARGILLA_S3_ENDPOINT: ""
-          ARGILLA_S3_ACCESS_KEY: ""
-          ARGILLA_S3_SECRET_KEY: ""
+          EXTRALIT_S3_ENDPOINT: ""
+          EXTRALIT_S3_ACCESS_KEY: ""
+          EXTRALIT_S3_SECRET_KEY: ""
     runs-on: ubuntu-22.04
     defaults:
       run:
@@ -88,7 +88,7 @@ jobs:
           chmod -R 777 /tmp/argilla-files
       - name: Set huggingface hub credentials
         run: |
-          echo "HF_TOKEN_ARGILLA_INTERNAL_TESTING=${{ secrets.HF_TOKEN_ARGILLA_INTERNAL_TESTING }}" >> "$GITHUB_ENV"
+          echo "HF_TOKEN_EXTRALIT_INTERNAL_TESTING=${{ secrets.HF_TOKEN_EXTRALIT_INTERNAL_TESTING }}" >> "$GITHUB_ENV"
           echo "Enable HF access token"
       - name: Run unit tests
         id: tests-unit

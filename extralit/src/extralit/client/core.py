@@ -53,10 +53,10 @@ class Extralit(_api.APIClient, SpacesDeploymentMixin, NotebookHTMLReprMixin):
 
         Args:
             api_url: the URL of the Argilla API. If not provided, then the value will try
-                to be set from `ARGILLA_API_URL` environment variable. Defaults to
+                to be set from `EXTRALIT_API_URL` environment variable. Defaults to
                 `"http://localhost:6900"`.
             api_key: the key to be used to authenticate in the Argilla API. If not provided,
-                then the value will try to be set from `ARGILLA_API_KEY` environment variable.
+                then the value will try to be set from `EXTRALIT_API_KEY` environment variable.
                 Defaults to `None`.
             timeout: the maximum time in seconds to wait for a request to the Argilla API
                 to be completed before raising an exception. Defaults to `60`.
@@ -93,8 +93,8 @@ class Extralit(_api.APIClient, SpacesDeploymentMixin, NotebookHTMLReprMixin):
         """
         from extralit.client.login import ExtralitCredentials
 
-        api_url = api_url or os.environ.get("ARGILLA_API_URL")
-        api_key = api_key or os.environ.get("ARGILLA_API_KEY")
+        api_url = api_url or os.environ.get("EXTRALIT_API_URL")
+        api_key = api_key or os.environ.get("EXTRALIT_API_KEY")
         workspace = workspace or os.environ.get("EXTRALIT_WORKSPACE")
 
         if (not api_url or not api_key) and ExtralitCredentials.exists():

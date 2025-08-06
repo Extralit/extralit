@@ -42,8 +42,8 @@ extralit logout
 ### Environment Setup
 
 The CLI uses these environment variables:
-- `ARGILLA_API_URL`: Your Extralit server URL
-- `ARGILLA_API_KEY`: Your API key
+- `EXTRALIT_API_URL`: Your Extralit server URL
+- `EXTRALIT_API_KEY`: Your API key
 
 Configuration is stored in `~/.extralit/credentials.json`.
 

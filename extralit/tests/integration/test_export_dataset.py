@@ -94,7 +94,7 @@ def mock_data() -> List[dict[str, Any]]:
 
 @pytest.fixture
 def token():
-    return os.getenv("HF_TOKEN_ARGILLA_INTERNAL_TESTING")
+    return os.getenv("HF_TOKEN_EXTRALIT_INTERNAL_TESTING")
 
 
 @pytest.mark.flaky(retries=_RETRIES, only_on=[OSError])  # I/O consistency CICD pipline
@@ -180,7 +180,7 @@ class TestDiskImportExportMixin:
     ],
 )  # Hub consistency CICD pipline
 @pytest.mark.skipif(
-    not os.getenv("HF_TOKEN_ARGILLA_INTERNAL_TESTING"),
+    not os.getenv("HF_TOKEN_EXTRALIT_INTERNAL_TESTING"),
     reason="You are missing a token to write to `extralit-dev` org on the Hugging Face Hub",
 )
 @pytest.mark.parametrize("with_records_export", [True, False])

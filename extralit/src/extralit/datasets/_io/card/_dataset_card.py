@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ from pathlib import Path
 
 from huggingface_hub import DatasetCard
 
-TEMPLATE_ARGILLA_DATASET_CARD_PATH = Path(__file__).parent / "argilla_template.md"
+TEMPLATE_EXTRALIT_DATASET_CARD_PATH = Path(__file__).parent / "argilla_template.md"
 
 
 class ArgillaDatasetCard(DatasetCard):
@@ -25,4 +25,4 @@ class ArgillaDatasetCard(DatasetCard):
     `argilla/client/feedback/integrations/huggingface/card/argilla_template.md`.
     """
 
-    default_template_path = TEMPLATE_ARGILLA_DATASET_CARD_PATH
+    default_template_path = TEMPLATE_EXTRALIT_DATASET_CARD_PATH

@@ -11,9 +11,9 @@ ENV = str(local('echo $ENV')).strip() or 'dev'
 USERS_DB = str(local('echo $USERS_DB')).strip()
 DOCKER_REPO = str(local('echo $DOCKER_REPO')).strip() or 'localhost:5005'
 
-ARGILLA_DATABASE_URL = str(local('echo $ARGILLA_DATABASE_URL')).strip()
-if ARGILLA_DATABASE_URL:
-    print("Using external database with ARGILLA_DATABASE_URL envvar, skipping `main-db` deployment")
+EXTRALIT_DATABASE_URL = str(local('echo $EXTRALIT_DATABASE_URL')).strip()
+if EXTRALIT_DATABASE_URL:
+    print("Using external database with EXTRALIT_DATABASE_URL envvar, skipping `main-db` deployment")
 S3_ENDPOINT = str(local('echo $S3_ENDPOINT')).strip()
 S3_ACCESS_KEY = str(local('echo $S3_ACCESS_KEY')).strip()
 S3_SECRET_KEY = str(local('echo $S3_SECRET_KEY')).strip()
@@ -51,7 +51,7 @@ k8s_resource(
 
 # PostgreSQL is the database for extralit-server
 helm_repo('bitnami', 'https://charts.bitnami.com/bitnami', labels=['helm'], resource_name='bitnami-helm')
-if not ARGILLA_DATABASE_URL:
+if not EXTRALIT_DATABASE_URL:
     helm_resource(
         name='main-db',
         chart='bitnami/postgresql',
@@ -104,17 +104,17 @@ for o in extralit_server_k8s_yaml:
     for container in o['spec']['template']['spec']['containers']:
         if container['name'] == 'extralit-server':
             container['image'] = "{DOCKER_REPO}/extralit-server".format(DOCKER_REPO=DOCKER_REPO)
-            if ARGILLA_DATABASE_URL:
+            if EXTRALIT_DATABASE_URL:
                 container['env'].extend([
-                    {'name': 'ARGILLA_DATABASE_URL', 'value': ARGILLA_DATABASE_URL},
+                    {'name': 'EXTRALIT_DATABASE_URL', 'value': EXTRALIT_DATABASE_URL},
                     {'name': 'POSTGRES_HOST', 'value': ""},
                     {'name': 'POSTGRES_PASSWORD', 'value': ""},
                 ])
             if S3_ENDPOINT and S3_ACCESS_KEY and S3_SECRET_KEY:
                 container['env'].extend([
-                    {'name': 'ARGILLA_S3_ENDPOINT', 'value': S3_ENDPOINT},
-                    {'name': 'ARGILLA_S3_ACCESS_KEY', 'value': S3_ACCESS_KEY},
-                    {'name': 'ARGILLA_S3_SECRET_KEY', 'value': S3_SECRET_KEY}
+                    {'name': 'EXTRALIT_S3_ENDPOINT', 'value': S3_ENDPOINT},
+                    {'name': 'EXTRALIT_S3_ACCESS_KEY', 'value': S3_ACCESS_KEY},
+                    {'name': 'EXTRALIT_S3_SECRET_KEY', 'value': S3_SECRET_KEY}
                 ])
 
 k8s_yaml([
@@ -127,7 +127,7 @@ k8s_resource(
     'extralit-server',
     port_forwards=['6900'],
     labels=['extralit-server'],
-    resource_deps=['redis', 'main-db', 'elasticsearch'] if not ARGILLA_DATABASE_URL else ['redis', 'elasticsearch'],
+    resource_deps=['redis', 'main-db', 'elasticsearch'] if not EXTRALIT_DATABASE_URL else ['redis', 'elasticsearch'],
 )
 
 # Langfuse Observability server
@@ -137,7 +137,7 @@ k8s_resource(
     port_forwards=['4000'],
     labels=['extralit'],
     auto_init=False,
-    resource_deps=['main-db'] if not ARGILLA_DATABASE_URL else [],
+    resource_deps=['main-db'] if not EXTRALIT_DATABASE_URL else [],
 )
 
 # MinIO S3 storage

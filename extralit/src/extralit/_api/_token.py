@@ -1,4 +1,4 @@
-# Copyright 2024-present, Argilla, Inc.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -70,7 +70,7 @@ def _get_secret_from_google_colab(name: str) -> Optional[str]:
             secret_value = _clean_secret_value(userdata.get(name))
 
         except userdata.NotebookAccessError:
-            # Means the user has a secret call `ARGILLA_API_URL` and `ARGILLA_API_URL` and got a popup "please grand access to ARGILLA_API_URL" and refused it
+            # Means the user has a secret call `EXTRALIT_API_URL` and `EXTRALIT_API_URL` and got a popup "please grand access to EXTRALIT_API_URL" and refused it
             # => warn user but ignore error => do not re-request access to user
             if not _IS_GOOGLE_COLAB_CHECKED:
                 warnings.warn(

@@ -110,8 +110,8 @@ Set environment variables:
 Run the `start_extralit_server.sh` script for initial setup. Manage users with `extralit_server` CLI:
 
 ```bash
-ARGILLA_DATABASE_URL=postgresql+asyncpg://postgres:$POSTGRES_PASSWORD@$POSTGRES_HOST/postgres \
-ARGILLA_LOCAL_AUTH_USERS_DB_FILE=path/to/users.yaml \
+EXTRALIT_DATABASE_URL=postgresql+asyncpg://postgres:$POSTGRES_PASSWORD@$POSTGRES_HOST/postgres \
+EXTRALIT_LOCAL_AUTH_USERS_DB_FILE=path/to/users.yaml \
 extralit_server database users migrate
 ```
 

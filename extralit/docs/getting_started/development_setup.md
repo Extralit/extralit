@@ -51,7 +51,7 @@ Then, select from three different development environments through devcontainers
 
     ```bash
     # Use external database instead of deploying PostgreSQL
-    export ARGILLA_DATABASE_URL="postgresql://user:password@external-host:5432/dbname"
+    export EXTRALIT_DATABASE_URL="postgresql://user:password@external-host:5432/dbname"
 
     # Use external S3-compatible storage instead of deploying MinIO
     export S3_ENDPOINT="https://your-s3-endpoint"
@@ -179,13 +179,13 @@ Create a `.env.dev` file in the `extralit-server` directory with the following c
 
 ```
 ALEMBIC_CONFIG=src/extralit_server/alembic.ini
-ARGILLA_AUTH_SECRET_KEY=8VO7na5N/jQx+yP/N+HlE8q51vPdrxqlh6OzoebIyko=
-ARGILLA_DATABASE_URL=sqlite+aiosqlite:///${HOME}/.extralit/extralit-dev.db?check_same_thread=False
+EXTRALIT_AUTH_SECRET_KEY=8VO7na5N/jQx+yP/N+HlE8q51vPdrxqlh6OzoebIyko=
+EXTRALIT_DATABASE_URL=sqlite+aiosqlite:///${HOME}/.extralit/extralit-dev.db?check_same_thread=False
 # Search engine configuration
-ARGILLA_SEARCH_ENGINE=elasticsearch
-ARGILLA_ELASTICSEARCH=http://localhost:9200
+EXTRALIT_SEARCH_ENGINE=elasticsearch
+EXTRALIT_ELASTICSEARCH=http://localhost:9200
 # Redis configuration
-ARGILLA_REDIS_URL=redis://localhost:6379/0
+EXTRALIT_REDIS_URL=redis://localhost:6379/0
 ```
 
 ### 5. Set Up the Databases
@@ -291,13 +291,13 @@ docker build -t extralit-server:latest -f docker/server/Dockerfile docker/server
 To build the Argilla HF Spaces Docker image, which includes the Argilla Server, ElasticSearch, and Redis, use the following command:
 
 ```bash
-docker build --build-arg extralit_server_IMAGE=extralit-server --build-arg ARGILLA_VERSION=latest -t argilla-hf-spaces:latest -f docker/argilla-hf-spaces/Dockerfile docker/argilla-hf-spaces/
+docker build --build-arg extralit_server_IMAGE=extralit-server --build-arg EXTRALIT_VERSION=latest -t argilla-hf-spaces:latest -f docker/argilla-hf-spaces/Dockerfile docker/argilla-hf-spaces/
 ```
 
 Start the Argilla Server and other dependencies using Docker:
 
 ```bash
-docker run --rm -p 6900:6900 -e ARGILLA_ENABLE_TELEMETRY=0 -e USERNAME=argilla -e PASSWORD=12345678 -e API_KEY=extralit.apikey --name argilla-hf-spaces argilla-hf-spaces:latest
+docker run --rm -p 6900:6900 -e EXTRALIT_ENABLE_TELEMETRY=0 -e USERNAME=argilla -e PASSWORD=12345678 -e API_KEY=extralit.apikey --name argilla-hf-spaces argilla-hf-spaces:latest
 ```
 
 

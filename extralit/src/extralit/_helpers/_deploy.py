@@ -28,7 +28,7 @@ if TYPE_CHECKING:
     from extralit.client import Extralit
 
 _SLEEP_TIME = 10
-_ARGILLA_SPACE_TEMPLATE_REPO = "argilla/argilla-template-space"
+_EXTRALIT_SPACE_TEMPLATE_REPO = "argilla/argilla-template-space"
 
 
 class SpacesDeploymentMixin(LoggingMixin):
@@ -98,7 +98,7 @@ class SpacesDeploymentMixin(LoggingMixin):
                 cls._space_storage_warning()
 
             hf_api.duplicate_space(
-                from_id=_ARGILLA_SPACE_TEMPLATE_REPO,
+                from_id=_EXTRALIT_SPACE_TEMPLATE_REPO,
                 to_id=repo_id,
                 private=private,
                 exist_ok=True,

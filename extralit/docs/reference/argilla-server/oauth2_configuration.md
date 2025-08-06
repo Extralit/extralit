@@ -7,7 +7,7 @@ GitHub, or Hugging Face. Next sections will guide you through the configuration 
 
 The OAuth2 configuration file is a YAML file that contains the configuration for the OAuth2 providers that you want to
 enable. The default file name is `.oauth.yml` and it should be placed in the root directory of the Argilla server. You
-can also specify a different file name using the `ARGILLA_AUTH_OAUTH_CFG` environment variable.
+can also specify a different file name using the `EXTRALIT_AUTH_OAUTH_CFG` environment variable.
 
 The file should have the following structure:
 
@@ -42,10 +42,10 @@ following fields:
 We will see later how to add more providers not supported by default.
 - `client_id`: The client ID provided by the OAuth2 provider. You can get this value by creating an application in the
 provider's developer console. This is a required field, but you can also use the
-`ARGILLA_OAUTH2_<PROVIDER_NAME>_CLIENT_ID` environment variable to set the value.
+`EXTRALIT_OAUTH2_<PROVIDER_NAME>_CLIENT_ID` environment variable to set the value.
 - `client_secret`: The client secret provided by the OAuth2 provider. You can get this value by creating an application
 in the provider's developer console. This is a required field, but you can also use
-the `ARGILLA_OAUTH2_<PROVIDER_NAME>_CLIENT_SECRET` environment variable to set the value.
+the `EXTRALIT_OAUTH2_<PROVIDER_NAME>_CLIENT_SECRET` environment variable to set the value.
 - `scope`: The scope of the OAuth2 provider. This is an optional field, and normally you don't need to set it, but
 you can use it to request specific permissions from the user access.
 
@@ -90,8 +90,8 @@ fields in the `.oauth.yml` file:
 
 providers:
   - name: huggingface
-    client_id: "<client_id>" # You can use the ARGILLA_OAUTH2_HUGGINGFACE_CLIENT_ID environment variable
-    client_secret: "<client_secret>" # You can use the ARGILLA_OAUTH2_HUGGINGFACE_CLIENT_SECRET environment variable
+    client_id: "<client_id>" # You can use the EXTRALIT_OAUTH2_HUGGINGFACE_CLIENT_ID environment variable
+    client_secret: "<client_secret>" # You can use the EXTRALIT_OAUTH2_HUGGINGFACE_CLIENT_SECRET environment variable
     scope: "openid profile" # This field is optional. But this value must be aligned your OAuth2 application created in Hugging Face.
 
 ...
@@ -112,8 +112,8 @@ define the following fields in the `.oauth.yml` file:
 
 providers:
   - name: github
-    client_id: "<client_id>" # You can use the ARGILLA_OAUTH2_GITHUB_CLIENT_ID environment variable
-    client_secret: "<client_secret>" # You can use the ARGILLA_OAUTH2_GITHUB_CLIENT_SECRET environment variable
+    client_id: "<client_id>" # You can use the EXTRALIT_OAUTH2_GITHUB_CLIENT_ID environment variable
+    client_secret: "<client_secret>" # You can use the EXTRALIT_OAUTH2_GITHUB_CLIENT_SECRET environment variable
 
 ...
 ```
@@ -129,8 +129,8 @@ should define the following fields in the `.oauth.yml` file:
 
 providers:
   - name: google-oauth2
-    client_id: "<client_id>" # You can use the ARGILLA_OAUTH2_GOOGLE_OAUTH2_CLIENT_ID environment variable
-    client_secret: "<client_secret>" # You can use the ARGILLA_OAUTH2_GOOGLE_OAUTH2_CLIENT_SECRET environment variable
+    client_id: "<client_id>" # You can use the EXTRALIT_OAUTH2_GOOGLE_OAUTH2_CLIENT_ID environment variable
+    client_secret: "<client_secret>" # You can use the EXTRALIT_OAUTH2_GOOGLE_OAUTH2_CLIENT_SECRET environment variable
 
 ...
 ```
@@ -151,8 +151,8 @@ the `.oauth.yml` file:
 
 providers:
   - name: apple-id
-    client_id: "<client_id>" # You can use the ARGILLA_OAUTH2_APPLE_ID_CLIENT_ID environment variable
-    client_secret: "<client_secret>" # You can use the ARGILLA_OAUTH2_APPLE_ID_CLIENT_SECRET environment variable
+    client_id: "<client_id>" # You can use the EXTRALIT_OAUTH2_APPLE_ID_CLIENT_ID environment variable
+    client_secret: "<client_secret>" # You can use the EXTRALIT_OAUTH2_APPLE_ID_CLIENT_SECRET environment variable
 
 extra_backends:
     - social_core.backends.apple.AppleIdAuth # Register the Apple OAuth2 provider backend

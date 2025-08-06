@@ -38,10 +38,10 @@ from extralit._api._token import get_secret
 __all__ = ["APIClient"]
 
 
-ARGILLA_API_URL = get_secret("ARGILLA_API_URL") or _DEFAULT_API_URL
-ARGILLA_API_KEY = get_secret("ARGILLA_API_KEY") or ""
+EXTRALIT_API_URL = get_secret("EXTRALIT_API_URL") or _DEFAULT_API_URL
+EXTRALIT_API_KEY = get_secret("EXTRALIT_API_KEY") or ""
 
-DEFAULT_HTTP_CONFIG = HTTPClientConfig(api_url=ARGILLA_API_URL, api_key=ARGILLA_API_KEY)
+DEFAULT_HTTP_CONFIG = HTTPClientConfig(api_url=EXTRALIT_API_URL, api_key=EXTRALIT_API_KEY)
 
 
 class ExtralitAPI:
@@ -111,9 +111,9 @@ class APIClient:
 
     Args:
         api_url (str, optional): The URL of the Argilla API. Defaults to the value of
-            the `ARGILLA_API_URL` environment variable.
+            the `EXTRALIT_API_URL` environment variable.
         api_key (str, optional): The API key to authenticate with the Argilla API. Defaults to
-            the value of the `ARGILLA_API_KEY` environment variable.
+            the value of the `EXTRALIT_API_KEY` environment variable.
         timeout (int, optional): The timeout in seconds for the HTTP requests. Defaults to 60.
         **http_client_args: Additional keyword arguments to pass to the httpx.Client instance.
             See https://www.python-httpx.org/api/#client for more information.

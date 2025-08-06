@@ -167,10 +167,10 @@ class Settings(BaseSettings):
     def set_enable_telemetry(cls, enable_telemetry: bool) -> bool:
         if os.getenv("HF_HUB_DISABLE_TELEMETRY") == "1" or os.getenv("HF_HUB_OFFLINE") == "1":
             enable_telemetry = False
-        if os.getenv("ARGILLA_ENABLE_TELEMETRY") == "0":
+        if os.getenv("EXTRALIT_ENABLE_TELEMETRY") == "0":
             os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
             warnings.warn(
-                "environment vairbale ARGILLA_ENABLE_TELEMETRY is deprecated, use HF_HUB_DISABLE_TELEMETRY or HF_HUB_OFFLINE instead."
+                "environment vairbale EXTRALIT_ENABLE_TELEMETRY is deprecated, use HF_HUB_DISABLE_TELEMETRY or HF_HUB_OFFLINE instead."
             )
             enable_telemetry = False
 
@@ -276,7 +276,7 @@ class Settings(BaseSettings):
         return self.search_engine == SEARCH_ENGINE_OPENSEARCH
 
     class Config:
-        env_prefix = "ARGILLA_"
+        env_prefix = "EXTRALIT_"
 
 
 settings = Settings()
