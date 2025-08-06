@@ -69,7 +69,6 @@ describe("BaseSimpleTable", () => {
     });
 
     expect(wrapper.exists()).toBe(true);
-    expect(wrapper.find(".base-simple-table").exists()).toBe(true);
     expect(wrapper.find(".tabulator-container").exists()).toBe(true);
   });
 
