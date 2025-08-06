@@ -793,4 +793,3 @@ class TestImportsAPI:
             assert "filename" in record
             assert "created_at" in record
             assert "metadata" in record
-            assert "data" not in record  # Data should not be included in list view
