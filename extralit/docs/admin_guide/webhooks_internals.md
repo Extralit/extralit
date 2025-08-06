@@ -64,7 +64,7 @@ In this section we will show payload examples for all the events emitted by Argi
     },
     "workspace": {
       "id": "350bc020-2cd2-4a67-8b23-37a15c4d8139",
-      "name": "argilla",
+      "name": "extralit",
       "inserted_at": "2024-09-05T11:39:20.377192",
       "updated_at": "2024-09-05T11:39:20.377192"
     },
@@ -98,7 +98,7 @@ In this section we will show payload examples for all the events emitted by Argi
     },
     "workspace": {
       "id": "350bc020-2cd2-4a67-8b23-37a15c4d8139",
-      "name": "argilla",
+      "name": "extralit",
       "inserted_at": "2024-09-05T11:39:20.377192",
       "updated_at": "2024-09-05T11:39:20.377192"
     },
@@ -145,7 +145,7 @@ In this section we will show payload examples for all the events emitted by Argi
     },
     "workspace": {
       "id": "350bc020-2cd2-4a67-8b23-37a15c4d8139",
-      "name": "argilla",
+      "name": "extralit",
       "inserted_at": "2024-09-05T11:39:20.377192",
       "updated_at": "2024-09-05T11:39:20.377192"
     },
@@ -314,7 +314,7 @@ In this section we will show payload examples for all the events emitted by Argi
     },
     "workspace": {
       "id": "350bc020-2cd2-4a67-8b23-37a15c4d8139",
-      "name": "argilla",
+      "name": "extralit",
       "inserted_at": "2024-09-05T11:39:20.377192",
       "updated_at": "2024-09-05T11:39:20.377192"
     },
@@ -500,7 +500,7 @@ In this section we will show payload examples for all the events emitted by Argi
       },
       "workspace": {
         "id": "350bc020-2cd2-4a67-8b23-37a15c4d8139",
-        "name": "argilla",
+        "name": "extralit",
         "inserted_at": "2024-09-05T11:39:20.377192",
         "updated_at": "2024-09-05T11:39:20.377192"
       },
@@ -687,7 +687,7 @@ In this section we will show payload examples for all the events emitted by Argi
       },
       "workspace": {
         "id": "350bc020-2cd2-4a67-8b23-37a15c4d8139",
-        "name": "argilla",
+        "name": "extralit",
         "inserted_at": "2024-09-05T11:39:20.377192",
         "updated_at": "2024-09-05T11:39:20.377192"
       },
@@ -874,7 +874,7 @@ In this section we will show payload examples for all the events emitted by Argi
       },
       "workspace": {
         "id": "350bc020-2cd2-4a67-8b23-37a15c4d8139",
-        "name": "argilla",
+        "name": "extralit",
         "inserted_at": "2024-09-05T11:39:20.377192",
         "updated_at": "2024-09-05T11:39:20.377192"
       },
@@ -1061,7 +1061,7 @@ In this section we will show payload examples for all the events emitted by Argi
       },
       "workspace": {
         "id": "350bc020-2cd2-4a67-8b23-37a15c4d8139",
-        "name": "argilla",
+        "name": "extralit",
         "inserted_at": "2024-09-05T11:39:20.377192",
         "updated_at": "2024-09-05T11:39:20.377192"
       },
@@ -1258,7 +1258,7 @@ In this section we will show payload examples for all the events emitted by Argi
         },
         "workspace": {
           "id": "350bc020-2cd2-4a67-8b23-37a15c4d8139",
-          "name": "argilla",
+          "name": "extralit",
           "inserted_at": "2024-09-05T11:39:20.377192",
           "updated_at": "2024-09-05T11:39:20.377192"
         },
@@ -1412,7 +1412,7 @@ In this section we will show payload examples for all the events emitted by Argi
       "id": "df114042-958d-42c6-9f03-ab49bd451c6c",
       "first_name": "",
       "last_name": null,
-      "username": "argilla",
+      "username": "extralit",
       "role": "owner",
       "inserted_at": "2024-09-05T11:39:20.376463",
       "updated_at": "2024-09-05T11:39:20.376463"
@@ -1465,7 +1465,7 @@ In this section we will show payload examples for all the events emitted by Argi
         },
         "workspace": {
           "id": "350bc020-2cd2-4a67-8b23-37a15c4d8139",
-          "name": "argilla",
+          "name": "extralit",
           "inserted_at": "2024-09-05T11:39:20.377192",
           "updated_at": "2024-09-05T11:39:20.377192"
         },
@@ -1619,7 +1619,7 @@ In this section we will show payload examples for all the events emitted by Argi
       "id": "df114042-958d-42c6-9f03-ab49bd451c6c",
       "first_name": "",
       "last_name": null,
-      "username": "argilla",
+      "username": "extralit",
       "role": "owner",
       "inserted_at": "2024-09-05T11:39:20.376463",
       "updated_at": "2024-09-05T11:39:20.376463"
@@ -1672,7 +1672,7 @@ In this section we will show payload examples for all the events emitted by Argi
         },
         "workspace": {
           "id": "350bc020-2cd2-4a67-8b23-37a15c4d8139",
-          "name": "argilla",
+          "name": "extralit",
           "inserted_at": "2024-09-05T11:39:20.377192",
           "updated_at": "2024-09-05T11:39:20.377192"
         },
@@ -1826,7 +1826,7 @@ In this section we will show payload examples for all the events emitted by Argi
       "id": "df114042-958d-42c6-9f03-ab49bd451c6c",
       "first_name": "",
       "last_name": null,
-      "username": "argilla",
+      "username": "extralit",
       "role": "owner",
       "inserted_at": "2024-09-05T11:39:20.376463",
       "updated_at": "2024-09-05T11:39:20.376463"

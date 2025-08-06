@@ -22,7 +22,7 @@ from keycloak import KeycloakOpenIDConnection
 from keycloak import KeycloakOpenID
 
 EXTRALIT_CLIENT_ID = "argilla-client"
-EXTRALIT_REALM = "argilla"
+EXTRALIT_REALM = "extralit"
 
 keycloak_connection = KeycloakOpenIDConnection(
     server_url="http://localhost:8080/",

@@ -33,7 +33,7 @@ class TestGetSettings:
             response = await async_client.get(self.url())
 
             assert response.status_code == 200
-            assert response.json()["argilla"]["show_huggingface_space_persistent_storage_warning"] is True
+            assert response.json()["extralit"]["show_huggingface_space_persistent_storage_warning"] is True
 
     async def test_get_settings_for_argilla_settings_running_on_huggingface_with_disabled_storage_warning(
         self, async_client: AsyncClient
@@ -45,13 +45,13 @@ class TestGetSettings:
                 response = await async_client.get(self.url())
 
                 assert response.status_code == 200
-                assert response.json()["argilla"]["show_huggingface_space_persistent_storage_warning"] is False
+                assert response.json()["extralit"]["show_huggingface_space_persistent_storage_warning"] is False
 
     async def test_get_settings_for_argilla_settings_not_running_on_huggingface(self, async_client: AsyncClient):
         response = await async_client.get(self.url())
 
         assert response.status_code == 200
-        assert "show_huggingface_space_persistent_storage_warning" not in response.json()["argilla"]
+        assert "show_huggingface_space_persistent_storage_warning" not in response.json()["extralit"]
 
     async def test_get_settings_for_huggingface_settings_running_on_huggingface(self, async_client: AsyncClient):
         huggingface_os_environ = {
@@ -92,6 +92,6 @@ class TestGetSettings:
             response = await async_client.get(self.url())
 
             assert response.status_code == 200
-            assert response.json()["argilla"]["share_your_progress_enabled"] is True
+            assert response.json()["extralit"]["share_your_progress_enabled"] is True
         finally:
             settings.enable_share_your_progress = False

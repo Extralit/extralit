@@ -428,7 +428,7 @@ class HubDatasetExporter:
 
     def _create_version_file(self, directory: str) -> None:
         with open(os.path.join(directory, "version.json"), "w") as file:
-            file.write(json.dumps({"argilla": info.extralit_version()}, indent=2))
+            file.write(json.dumps({"extralit": info.extralit_version()}, indent=2))
 
     def _create_dataset_file(self, directory: str) -> None:
         with open(os.path.join(directory, "dataset.json"), "w") as file:
@@ -458,7 +458,7 @@ class HubDatasetExporter:
         card = DatasetCard.from_template(
             card_data=DatasetCardData(
                 # size_categories=size_categories_parser(dataset_size),
-                tags=["rlfh", "argilla", "human-feedback"],
+                tags=["rlfh", "extralit", "human-feedback"],
             ),
             template_path=HUB_DATASET_CARD_TEMPLATE_PATH,
             repo_id=repo_id,

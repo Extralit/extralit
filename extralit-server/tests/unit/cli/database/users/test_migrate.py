@@ -49,7 +49,7 @@ def test_migrate(monkeypatch, sync_db: "Session", cli_runner: CliRunner, cli: Ty
         assert user.role == UserRole.annotator
         assert user.api_key == "78a10b53-8db7-4ab5-9e9e-fbd4b7e76551"
         assert user.password_hash == "$2y$05$aqNyXcXRXddNj5toZwT0HugHqKZypvqlBAkZviAGGbsAC8oTj/P5K"
-        assert [ws.name for ws in user.workspaces] == ["tanya", "argilla", "team"]
+        assert [ws.name for ws in user.workspaces] == ["tanya", "extralit", "team"]
 
         user = sync_db.query(User).filter_by(username="daisy").first()
         assert user.first_name == "Daisy Gonzalez"
@@ -57,7 +57,7 @@ def test_migrate(monkeypatch, sync_db: "Session", cli_runner: CliRunner, cli: Ty
         assert user.role == UserRole.annotator
         assert user.api_key == "a8168929-8668-494c-b7a5-98cd35740d9b"
         assert user.password_hash == "$2y$05$l83IhUs4ZDaxsgZ/P12FO.RFTi2wKQ2AxMK2vYtLx//yKramuCcZG"
-        assert set([ws.name for ws in user.workspaces]) == {"daisy", "argilla", "team", "latam"}
+        assert set([ws.name for ws in user.workspaces]) == {"daisy", "extralit", "team", "latam"}
 
         user = sync_db.query(User).filter_by(username="macleod").first()
         assert user.first_name == ""
@@ -93,7 +93,7 @@ def test_migrate_with_one_user_file(monkeypatch, sync_db: "Session", cli_runner:
         assert user.role == UserRole.annotator
         assert user.api_key == "a14427ea-9197-11ec-b909-0242ac120002"
         assert user.password_hash == "$2y$05$xtl7iy3bpqchUwiQMjEHe.tY7OaIjDrg43W3TB4EHQ7izvdjvGtPS"
-        assert [ws.name for ws in user.workspaces] == ["john", "argilla", "team"]
+        assert [ws.name for ws in user.workspaces] == ["john", "extralit", "team"]
 
 
 def test_migrate_with_nonexistent_file(monkeypatch, sync_db: "Session", cli_runner: CliRunner, cli: Typer):

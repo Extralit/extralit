@@ -77,15 +77,15 @@ To search for records with terms, you can use the `Dataset.records` attribute wi
 
 If you need more complex searches, you can use [Elasticsearch's simple query string syntax](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-simple-query-string-query.html#simple-query-string-syntax). Here is a summary of the different available operators:
 
-| operator       | description                                                      | example                                                                                                              |
-| -------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `+` or `space` | **AND**: search both terms                                       | `argilla + distilabel` or `argilla distilabel`</br> return records that include the terms "argilla" and "distilabel" |
-| `              | `                                                                | **OR**: search either term                                                                                           | `argilla                                                                                           | distilabel` </br> returns records that include the term "argilla" or "distilabel" |
-| `-`            | **Negation**: exclude a term                                     | `argilla -distilabel` </br> returns records that contain the term "argilla" and don't have the term "distilabel"     |
-| `*`            | **Prefix**: search a prefix                                      | `arg*`</br> returns records with any words starting with "arg-"                                                      |
-| `"`            | **Phrase**: search a phrase                                      | `"argilla and distilabel"` </br> returns records that contain the phrase "argilla and distilabel"                    |
-| `(` and `)`    | **Precedence**: group terms                                      | `(argilla                                                                                                            | distilabel) rules` </br> returns records that contain either "argilla" or "distilabel" and "rules" |
-| `~N`           | **Edit distance**: search a term or phrase with an edit distance | `argilla~1` </br> returns records that contain the term "argilla" with an edit distance of 1, e.g. "argila"          |
+| operator       | description                                                      | example                                                                                                               |
+| -------------- | ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `+` or `space` | **AND**: search both terms                                       | `argilla + distilabel` or `argilla distilabel`</br> return records that include the terms "extralit" and "distilabel" |
+| `              | `                                                                | **OR**: search either term                                                                                            | `argilla                                                                                            | distilabel` </br> returns records that include the term "extralit" or "distilabel" |
+| `-`            | **Negation**: exclude a term                                     | `argilla -distilabel` </br> returns records that contain the term "extralit" and don't have the term "distilabel"     |
+| `*`            | **Prefix**: search a prefix                                      | `arg*`</br> returns records with any words starting with "arg-"                                                       |
+| `"`            | **Phrase**: search a phrase                                      | `"argilla and distilabel"` </br> returns records that contain the phrase "argilla and distilabel"                     |
+| `(` and `)`    | **Precedence**: group terms                                      | `(argilla                                                                                                             | distilabel) rules` </br> returns records that contain either "extralit" or "distilabel" and "rules" |
+| `~N`           | **Edit distance**: search a term or phrase with an edit distance | `argilla~1` </br> returns records that contain the term "extralit" with an edit distance of 1, e.g. "argila"          |
 
 !!! tip
     To use one of these characters literally, escape it with a preceding backslash `\`, e.g. `"1 \+ 2"` would match records where the phrase "1 + 2" is found.

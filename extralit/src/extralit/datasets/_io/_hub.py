@@ -91,7 +91,7 @@ class HubImportExportMixin(DiskImportExportMixin):
                 card = ArgillaDatasetCard.from_template(
                     card_data=DatasetCardData(
                         size_categories=size_categories_parser(dataset_size),
-                        tags=["rlfh", "argilla", "human-feedback"],
+                        tags=["rlfh", "extralit", "human-feedback"],
                     ),
                     repo_id=repo_id,
                     argilla_fields=self.settings.fields,

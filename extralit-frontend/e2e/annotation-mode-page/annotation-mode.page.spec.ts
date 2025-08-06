@@ -54,7 +54,7 @@ test.describe("Annotate page", () => {
   test("filter by workspaces from annotation page", async ({ page }) => {
     await goToAnnotationPage(page);
 
-    await page.getByRole("link", { name: "argilla" }).click();
+    await page.getByRole("link", { name: "extralit" }).click();
 
     await expect(page).toHaveScreenshot();
   });

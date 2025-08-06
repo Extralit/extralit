@@ -19,11 +19,11 @@ const oldDatasets = [
     metadata: {},
     name: "span_marker_conll_8_epochs_corr_annot",
     task: "TokenClassification",
-    workspace: "argilla",
+    workspace: "extralit",
     id: "argilla.span_marker_conll_8_epochs_corr_annot",
-    owner: "argilla",
+    owner: "extralit",
     created_at: fakeDateMonthAgo(3),
-    created_by: "argilla",
+    created_by: "extralit",
     last_updated: fakeDateMonthAgo(3),
   },
   {
@@ -94,7 +94,7 @@ export const newDatasetsMocked = [
 export const workspacesMocked = [
   {
     id: "4e70e21a-7533-41e9-8a25-11d6ee3091be",
-    name: "argilla",
+    name: "extralit",
     inserted_at: fakeDateMonthAgo(1),
     updated_at: fakeDateMonthAgo(1),
   },

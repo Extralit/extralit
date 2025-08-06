@@ -133,10 +133,10 @@ def test_telemetry(mocker: "MockerFixture") -> "TelemetryClient":
 async def argilla_user() -> Generator[User, None, None]:
     user = await UserFactory.create(
         first_name="Argilla",
-        username="argilla",
+        username="extralit",
         role=UserRole.admin,  # Force to use an admin user
         password_hash="$2y$05$eaw.j2Kaw8s8vpscVIZMfuqSIX3OLmxA21WjtWicDdn0losQ91Hw.",
         api_key=DEFAULT_API_KEY,
-        workspaces=[Workspace(name="argilla")],
+        workspaces=[Workspace(name="extralit")],
     )
     yield user
