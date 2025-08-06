@@ -211,7 +211,7 @@ def test_add_records_with_suggestions_non_existent_question(client) -> None:
         client=client,
     )
     dataset.create()
-    with pytest.raises(RecordSuggestionsError, match="Argilla SDK error: RecordSuggestionsError: Record suggestion"):
+    with pytest.raises(RecordSuggestionsError, match="Extralit SDK error: RecordSuggestionsError: Record suggestion"):
         dataset.records.log(mock_data)
 
 
@@ -305,7 +305,7 @@ def test_add_records_with_responses_non_existent_question(client, username: str)
             responses=[ex.Response(question_name="non_existent_question", value="mock", user_id=user.id)],
         )
     ]
-    with pytest.raises(RecordResponsesError, match="Argilla SDK error: RecordResponsesError: Record response"):
+    with pytest.raises(RecordResponsesError, match="Extralit SDK error: RecordResponsesError: Record response"):
         dataset.records.log(mock_data)
 
 

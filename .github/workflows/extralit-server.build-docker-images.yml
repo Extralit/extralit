@@ -1,4 +1,4 @@
-name: Build Argilla server docker images
+name: Build extralit-server docker images
 
 on:
   workflow_call:
@@ -142,21 +142,3 @@ jobs:
           repository: extralit/extralit-hf-space
           event-type: build-hf-space
           client-payload: '{"tag":"${{ env.IMAGE_TAG }}","is_release":${{ inputs.is_release }}}'
-      # TODO: uncomment this once the step works again
-      # - name: Docker Hub Description for `extralit-server`
-      #   uses: peter-evans/dockerhub-description@v4
-      #   if: ${{ env.PUBLISH_LATEST == 'true' }}
-      #   with:
-      #     username: ${{ env.DOCKER_USERNAME }}
-      #     password: ${{ env.DOCKER_PASSWORD }}
-      #     repository: $${{ env.SERVER_DOCKER_IMAGE }}
-      #     readme-filepath: extralit-server/docker/server/README.md
-      # TODO: uncomment this once the step works again
-      # - name: Docker Hub Description for `argilla-hf-spaces`
-      #   uses: peter-evans/dockerhub-description@v4
-      #   if: ${{ env.PUBLISH_LATEST == 'true' }}
-      #   with:
-      #     username: ${{ env.DOCKER_USERNAME }}
-      #     password: ${{ env.DOCKER_PASSWORD }}
-      #     repository: $${{ env.HF_SPACES_DOCKER_IMAGE }}
-      #     readme-filepath: extralit-server/docker/extralit-hf-space/README.md
