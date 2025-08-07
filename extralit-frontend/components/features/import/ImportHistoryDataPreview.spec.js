@@ -122,7 +122,7 @@ describe("ImportHistoryDataPreview", () => {
         stubs: {
           BaseIcon: true,
           BaseButton: {
-            template: '<button @click="$emit(\'click\')"><slot /></button>',
+            template: "<button @click=\"$emit('click')\"><slot /></button>",
             props: ["variant"],
           },
         },
@@ -199,7 +199,7 @@ describe("ImportHistoryDataPreview", () => {
       expect(columns[0].field).toBe("reference");
       expect(columns[0].frozen).toBe(true);
 
-      const titleColumn = columns.find(col => col.field === "title");
+      const titleColumn = columns.find((col) => col.field === "title");
       expect(titleColumn).toBeDefined();
       expect(titleColumn.title).toBe("title");
     });
@@ -293,15 +293,15 @@ describe("ImportHistoryDataPreview", () => {
       const mockCell = { getValue: () => true };
       const result = wrapper.vm.booleanFormatter(mockCell);
 
-      expect(result).toContain('boolean-true');
-      expect(result).toContain('✓');
+      expect(result).toContain("boolean-true");
+      expect(result).toContain("✓");
     });
 
     it("should format number cells correctly", () => {
       const mockCell = { getValue: () => 1234 };
       const result = wrapper.vm.numberFormatter(mockCell);
 
-      expect(result).toContain('1,234');
+      expect(result).toContain("1,234");
     });
 
     it("should format URL cells correctly", () => {
@@ -315,8 +315,8 @@ describe("ImportHistoryDataPreview", () => {
     it("should handle null values in formatters", () => {
       const mockCell = { getValue: () => null };
 
-      expect(wrapper.vm.numberFormatter(mockCell)).toBe('-');
-      expect(wrapper.vm.urlFormatter(mockCell)).toBe('-');
+      expect(wrapper.vm.numberFormatter(mockCell)).toBe("-");
+      expect(wrapper.vm.urlFormatter(mockCell)).toBe("-");
     });
   });
 
@@ -348,7 +348,7 @@ describe("ImportHistoryDataPreview", () => {
     it("should enable pagination for large datasets", async () => {
       // Add more records to trigger pagination
       const manyRecords = Array.from({ length: 25 }, (_, i) => ({
-        reference: `paper_${i.toString().padStart(3, '0')}`,
+        reference: `paper_${i.toString().padStart(3, "0")}`,
         title: `Paper Title ${i}`,
       }));
 
@@ -377,7 +377,7 @@ describe("ImportHistoryDataPreview", () => {
     it("should clear filters", () => {
       wrapper.setData({
         searchQuery: "test",
-        statusFilter: "add"
+        statusFilter: "add",
       });
 
       wrapper.vm.clearFilters();

@@ -1,43 +1,43 @@
 <template>
-  <div class="bibliography-upload">
-    <div class="bibliography-upload__section-header">
-      <h3 class="bibliography-upload__section-title">Step 1: Upload Your Bibliography File</h3>
-      <p class="bibliography-upload__section-description">
+  <div class="table-upload">
+    <div class="table-upload__section-header">
+      <h3 class="table-upload__section-title">Step 1: Upload Your Bibliography File</h3>
+      <p class="table-upload__section-description">
         Import your reference list to begin.<br />
         We support .bib files exported from reference managers like Zotero, EndNote, or Mendeley, and .csv files with tabular data.
       </p>
     </div>
 
-    <div class="bibliography-upload__dropzone" :class="{
-      'bibliography-upload__dropzone--dragover': dragOver,
-      'bibliography-upload__dropzone--error': hasError,
-      'bibliography-upload__dropzone--success': uploaded,
+    <div class="table-upload__dropzone" :class="{
+      'table-upload__dropzone--dragover': dragOver,
+      'table-upload__dropzone--error': hasError,
+      'table-upload__dropzone--success': uploaded,
     }" @drop="handleDrop" @dragover="handleDragOver" @dragleave="handleDragLeave"
       @click="triggerFileInput">
       <input ref="fileInput" type="file" accept=".bib,.bibtex,.csv" style="display: none"
         @change="handleFileSelect" />
 
-      <div class="bibliography-upload__dropzone-content">
-        <BaseIcon :icon-name="getDropzoneIcon" class="bibliography-upload__dropzone-icon" />
-        <p class="bibliography-upload__dropzone-text">
+      <div class="table-upload__dropzone-content">
+        <BaseIcon :icon-name="getDropzoneIcon" class="table-upload__dropzone-icon" />
+        <p class="table-upload__dropzone-text">
           {{ getDropzoneText }}
         </p>
-        <p class="bibliography-upload__dropzone-subtext">Supported formats: .bib, .bibtex, .csv</p>
+        <p class="table-upload__dropzone-subtext">Supported formats: .bib, .bibtex, .csv</p>
       </div>
     </div>
 
     <!-- Success Display -->
-    <div v-if="uploaded && !hasError" class="bibliography-upload__upload-success">
-      <BaseIcon icon-name="check" class="bibliography-upload__upload-success-icon" />
-      <span class="bibliography-upload__upload-success-text">
+    <div v-if="uploaded && !hasError" class="table-upload__upload-success">
+      <BaseIcon icon-name="check" class="table-upload__upload-success-icon" />
+      <span class="table-upload__upload-success-text">
         Successfully uploaded {{ data.fileName }} ({{ data.parsedEntries.length }} entries found)
       </span>
     </div>
 
     <!-- Error Display -->
-    <div v-if="hasError" class="bibliography-upload__error">
-      <BaseIcon icon-name="danger" class="bibliography-upload__error-icon" />
-      <div class="bibliography-upload__error-content">
+    <div v-if="hasError" class="table-upload__error">
+      <BaseIcon icon-name="danger" class="table-upload__error-icon" />
+      <div class="table-upload__error-content">
         <h4>Bibliography Parsing Error</h4>
         <p>{{ errorMessage }}</p>
       </div>
@@ -78,7 +78,7 @@ interface CsvData {
 }
 
 export default {
-  name: "BibliographyUpload",
+  name: "TableUpload",
 
   components: {
     CsvColumnSelection,
@@ -393,31 +393,31 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.bibliography-upload {
+.table-upload {
   display: flex;
   flex-direction: column;
   gap: $base-space * 2;
 }
 
-.bibliography-upload__section-header {
+.table-upload__section-header {
   margin-bottom: $base-space * 2;
 }
 
-.bibliography-upload__section-title {
+.table-upload__section-title {
   font-size: 1.2rem;
   font-weight: 600;
   margin-bottom: $base-space;
   color: var(--fg-primary);
 }
 
-.bibliography-upload__section-description {
+.table-upload__section-description {
   color: var(--fg-secondary);
   font-size: 0.9rem;
   margin-bottom: 0;
   line-height: 1.4;
 }
 
-.bibliography-upload__dropzone {
+.table-upload__dropzone {
   border: 2px dashed var(--border-field);
   border-radius: $border-radius-m;
   padding: $base-space * 4 $base-space * 3;
@@ -448,32 +448,32 @@ export default {
   }
 }
 
-.bibliography-upload__dropzone-content {
+.table-upload__dropzone-content {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: $base-space;
 }
 
-.bibliography-upload__dropzone-icon {
+.table-upload__dropzone-icon {
   font-size: 3rem;
   color: var(--fg-secondary);
 }
 
-.bibliography-upload__dropzone-text {
+.table-upload__dropzone-text {
   font-size: 1.1rem;
   font-weight: 500;
   color: var(--fg-primary);
   margin: 0;
 }
 
-.bibliography-upload__dropzone-subtext {
+.table-upload__dropzone-subtext {
   font-size: 0.9rem;
   color: var(--fg-secondary);
   margin: 0;
 }
 
-.bibliography-upload__upload-success {
+.table-upload__upload-success {
   display: flex;
   align-items: center;
   gap: $base-space;
@@ -484,19 +484,19 @@ export default {
   margin-top: $base-space;
 }
 
-.bibliography-upload__upload-success-icon {
+.table-upload__upload-success-icon {
   color: var(--color-success);
   font-size: 1rem;
   flex-shrink: 0;
 }
 
-.bibliography-upload__upload-success-text {
+.table-upload__upload-success-text {
   color: var(--fg-primary);
   font-size: 0.9rem;
   font-weight: 500;
 }
 
-.bibliography-upload__error {
+.table-upload__error {
   display: flex;
   align-items: flex-start;
   gap: $base-space;
@@ -506,19 +506,19 @@ export default {
   border-radius: $border-radius;
 }
 
-.bibliography-upload__error-icon {
+.table-upload__error-icon {
   color: var(--color-danger);
   font-size: 1.2rem;
   margin-top: 0.1rem;
 }
 
-.bibliography-upload__error-content h4 {
+.table-upload__error-content h4 {
   margin: 0 0 $base-space 0;
   color: var(--color-danger);
   font-size: 1rem;
 }
 
-.bibliography-upload__error-content p {
+.table-upload__error-content p {
   margin: 0;
   color: var(--fg-primary);
 }

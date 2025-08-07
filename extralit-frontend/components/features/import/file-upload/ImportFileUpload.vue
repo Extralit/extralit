@@ -8,7 +8,7 @@
     <div class="import-file-upload__content">
       <div class="import-file-upload__main">
         <!-- Bibliography Upload Section -->
-        <BibliographyUpload
+        <TableUpload
           :initial-data="bibData"
           @update="handleBibUpdate"
         />
@@ -31,7 +31,7 @@
 </template>
 
 <script lang="ts">
-import BibliographyUpload from "./BibliographyUpload.vue";
+import TableUpload from "./TableUpload.vue";
 import PdfUpload from "./PdfUpload.vue";
 import ImportSummarySidebar from "./ImportSummarySidebar.vue";
 
@@ -54,7 +54,7 @@ export default {
   name: "ImportFileUpload",
 
   components: {
-    BibliographyUpload,
+    TableUpload,
     PdfUpload,
     ImportSummarySidebar,
   } as any,

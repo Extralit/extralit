@@ -15,14 +15,14 @@ describe("PdfMatchingService Integration", () => {
           title: "Predicting RNA-seq coverage from DNA sequence as a unifying model of gene regulation",
           filePaths: [
             "files/4/Linder et al. - 2025 - Predicting RNA-seq coverage from DNA sequence as a unifying model of gene regulation.pdf",
-            "files/3/Linder et al. - 2025 - Predicting RNA-seq coverage from DNA sequence as a unifying model of gene regulation.pdf"
+            "files/3/Linder et al. - 2025 - Predicting RNA-seq coverage from DNA sequence as a unifying model of gene regulation.pdf",
           ],
         },
         {
           reference: "lal_decoding_2024",
           title: "Decoding sequence determinants of gene expression in diverse cellular and disease states",
           filePaths: [
-            "files/2/Lal et al. - 2024 - Decoding sequence determinants of gene expression in diverse cellular and disease states.pdf"
+            "files/2/Lal et al. - 2024 - Decoding sequence determinants of gene expression in diverse cellular and disease states.pdf",
           ],
         },
       ];
@@ -30,15 +30,18 @@ describe("PdfMatchingService Integration", () => {
       const files = [
         {
           name: "Linder et al. - 2025 - Predicting RNA-seq coverage from DNA sequence as a unifying model of gene regulation.pdf",
-          webkitRelativePath: "papers/files/4/Linder et al. - 2025 - Predicting RNA-seq coverage from DNA sequence as a unifying model of gene regulation.pdf",
+          webkitRelativePath:
+            "papers/files/4/Linder et al. - 2025 - Predicting RNA-seq coverage from DNA sequence as a unifying model of gene regulation.pdf",
         },
         {
           name: "Linder et al. - 2025 - Predicting RNA-seq coverage from DNA sequence as a unifying model of gene regulation.pdf",
-          webkitRelativePath: "papers/files/3/Linder et al. - 2025 - Predicting RNA-seq coverage from DNA sequence as a unifying model of gene regulation.pdf",
+          webkitRelativePath:
+            "papers/files/3/Linder et al. - 2025 - Predicting RNA-seq coverage from DNA sequence as a unifying model of gene regulation.pdf",
         },
         {
           name: "Lal et al. - 2024 - Decoding sequence determinants of gene expression in diverse cellular and disease states.pdf",
-          webkitRelativePath: "papers/files/2/Lal et al. - 2024 - Decoding sequence determinants of gene expression in diverse cellular and disease states.pdf",
+          webkitRelativePath:
+            "papers/files/2/Lal et al. - 2024 - Decoding sequence determinants of gene expression in diverse cellular and disease states.pdf",
         },
       ];
 
@@ -48,15 +51,15 @@ describe("PdfMatchingService Integration", () => {
       expect(result.unmatchedFiles).toHaveLength(0);
 
       // Check that both Linder files are matched to the same reference
-      const linderMatches = result.matchedFiles.filter(m => m.bibEntry.reference === "linder_predicting_2025");
+      const linderMatches = result.matchedFiles.filter((m) => m.bibEntry.reference === "linder_predicting_2025");
       expect(linderMatches).toHaveLength(2);
 
       // Check that Lal file is matched
-      const lalMatches = result.matchedFiles.filter(m => m.bibEntry.reference === "lal_decoding_2024");
+      const lalMatches = result.matchedFiles.filter((m) => m.bibEntry.reference === "lal_decoding_2024");
       expect(lalMatches).toHaveLength(1);
 
       // All matches should have high confidence due to maximum prefix matching
-      result.matchedFiles.forEach(match => {
+      result.matchedFiles.forEach((match) => {
         expect(match.confidence).toBeGreaterThan(0.8);
       });
     });
@@ -65,7 +68,8 @@ describe("PdfMatchingService Integration", () => {
       const entries = [
         {
           reference: "Hawley2003a",
-          title: "Community-wide effects of permethrin-treated bed nets on child mortality and malaria morbidity in western Kenya",
+          title:
+            "Community-wide effects of permethrin-treated bed nets on child mortality and malaria morbidity in western Kenya",
           filePaths: ["research/malaria/Hawley2003a_malaria_bed_nets.pdf"], // More realistic path
         },
         {
@@ -92,12 +96,12 @@ describe("PdfMatchingService Integration", () => {
       expect(result.unmatchedFiles).toHaveLength(0);
 
       // PMI2019 should match exactly
-      const pmiMatch = result.matchedFiles.find(m => m.bibEntry.reference === "PMI2019");
+      const pmiMatch = result.matchedFiles.find((m) => m.bibEntry.reference === "PMI2019");
       expect(pmiMatch).toBeDefined();
       expect(pmiMatch.confidence).toBeGreaterThan(0.9);
 
       // Hawley2003a should match by path
-      const hawleyMatch = result.matchedFiles.find(m => m.bibEntry.reference === "Hawley2003a");
+      const hawleyMatch = result.matchedFiles.find((m) => m.bibEntry.reference === "Hawley2003a");
       expect(hawleyMatch).toBeDefined();
       expect(hawleyMatch.confidence).toBeGreaterThan(0.7);
     });
@@ -133,13 +137,13 @@ describe("PdfMatchingService Integration", () => {
       expect(result.unmatchedFiles).toHaveLength(0);
 
       // Both files should match Smith2023
-      result.matchedFiles.forEach(match => {
+      result.matchedFiles.forEach((match) => {
         expect(match.bibEntry.reference).toBe("Smith2023");
       });
 
       // The path match should have higher confidence than exact reference match
-      const pathMatch = result.matchedFiles.find(m => m.file.name === "Smith2023_ML_Healthcare.pdf");
-      const exactMatch = result.matchedFiles.find(m => m.file.name === "Smith2023.pdf");
+      const pathMatch = result.matchedFiles.find((m) => m.file.name === "Smith2023_ML_Healthcare.pdf");
+      const exactMatch = result.matchedFiles.find((m) => m.file.name === "Smith2023.pdf");
 
       expect(pathMatch.confidence).toBeGreaterThan(0.8);
       expect(exactMatch.confidence).toBe(1.0); // Exact matches have confidence 1.0
@@ -153,7 +157,7 @@ describe("PdfMatchingService Integration", () => {
           filePaths: [
             "papers/dl/Johnson2022_part1.pdf",
             "papers/dl/Johnson2022_part2.pdf",
-            "papers/dl/Johnson2022_appendix.pdf"
+            "papers/dl/Johnson2022_appendix.pdf",
           ],
         },
       ];
@@ -183,7 +187,7 @@ describe("PdfMatchingService Integration", () => {
       expect(result.unmatchedFiles).toHaveLength(1);
 
       // All matched files should belong to Johnson2022
-      result.matchedFiles.forEach(match => {
+      result.matchedFiles.forEach((match) => {
         expect(match.bibEntry.reference).toBe("Johnson2022");
       });
 
@@ -219,7 +223,8 @@ describe("PdfMatchingService Integration", () => {
     });
 
     it("should handle very long file paths", () => {
-      const longPath = "very/long/path/with/many/nested/directories/and/subdirectories/that/goes/on/for/a/while/LongPath2023.pdf";
+      const longPath =
+        "very/long/path/with/many/nested/directories/and/subdirectories/that/goes/on/for/a/while/LongPath2023.pdf";
 
       const entries = [
         {
