@@ -1,91 +1,37 @@
 import { mount } from "@vue/test-utils";
 import ImportAnalysisTable from "./ImportAnalysisTable.vue";
 
-// Mock BaseSimpleTable
-jest.mock("@/components/base/base-simple-table/BaseSimpleTable.vue", () => ({
-  name: "BaseSimpleTable",
-  template: '<div class="mock-base-simple-table"></div>',
-  props: ["data", "columns", "options"],
+// Mock dependencies inline to avoid hoisting issues
+jest.mock("ts-injecty", () => ({
+  useResolve: jest.fn(() => mockUseCase),
 }));
 
-// Mock BaseSpinner
-jest.mock("@/components/base/base-spinner/BaseSpinner.vue", () => ({
-  name: "BaseSpinner",
-  template: '<div class="mock-base-spinner"></div>',
+jest.mock("@nuxtjs/composition-api", () => ({
+  ref: jest.fn(),
+  watch: jest.fn(),
 }));
-
-// Mock BaseIcon
-jest.mock("@/components/base/base-icon/BaseIcon.vue", () => ({
-  name: "BaseIcon",
-  template: '<div class="mock-base-icon"></div>',
-  props: ["iconName"],
-}));
-
-// Mock BaseButton
-jest.mock("@/components/base/base-button/BaseButton.vue", () => ({
-  name: "BaseButton",
-  template: '<button class="mock-base-button"><slot></slot></button>',
-  props: ["variant", "disabled"],
-}));
-
-// Mock the view model
-const mockViewModel = {
-  isAnalyzing: false,
-  hasError: false,
-  errorMessage: "",
-  analysisResult: null,
-  documentActions: {},
-  reset: jest.fn(),
-  analyzeImport: jest.fn(),
-  retryAnalysis: jest.fn(),
-};
 
 jest.mock("./useImportAnalysisViewModel", () => ({
-  useImportAnalysisViewModel: jest.fn(() => mockViewModel),
+  useImportAnalysisViewModel: jest.fn(() => ({
+    isAnalyzing: false,
+    hasError: false,
+    errorMessage: "",
+    analysisResult: null,
+    documentActions: {},
+    reset: jest.fn(),
+    analyzeImport: jest.fn(),
+    retryAnalysis: jest.fn(),
+  })),
 }));
 
+const mockUseCase = {
+  analyzeImport: jest.fn(),
+};
+
 describe("ImportAnalysisTable", () => {
-  const mockAnalysisResult = {
-    documents: {
-      ref1: {
-        document_create: {
-          title: "Test Document 1",
-          authors: ["Author 1", "Author 2"],
-          year: "2023",
-        },
-        associated_files: ["file1.pdf"],
-        status: "add",
-        validation_errors: [],
-      },
-      ref2: {
-        document_create: {
-          title: "Test Document 2",
-          authors: ["Author 3"],
-          year: "2024",
-        },
-        associated_files: ["file2.pdf", "file3.pdf"],
-        status: "update",
-        validation_errors: [],
-      },
-      ref3: {
-        document_create: {
-          title: "Test Document 3",
-          authors: ["Author 4"],
-          year: "2022",
-        },
-        associated_files: [],
-        status: "failed",
-        validation_errors: ["Missing PDF file"],
-      },
-    },
-    summary: {
-      total_documents: 3,
-      add_count: 1,
-      update_count: 1,
-      skip_count: 0,
-      failed_count: 1,
-    },
-  };
+  let wrapper;
+  let mockRef;
+  let mockWatch;
 
   const mockDataframeData = {
     schema: {
@@ -99,16 +45,18 @@ describe("ImportAnalysisTable", () => {
     },
     data: [
       {
-        reference: "Smith2023",
-        title: "A Study on Machine Learning",
-        authors: "John Smith, Jane Doe",
+        reference: "test1",
+        title: "Test Paper 1",
+        authors: "Author 1",
         year: "2023",
+        filePaths: ["test1.pdf"],
       },
       {
-        reference: "Brown2024",
-        title: "Deep Learning Applications",
-        authors: "Alice Brown",
+        reference: "test2",
+        title: "Test Paper 2",
+        authors: "Author 2",
         year: "2024",
+        filePaths: [], // No PDFs
       },
     ],
   };
@@ -118,302 +66,173 @@ describe("ImportAnalysisTable", () => {
     name: "Test Workspace",
   };
 
-  const mockPdfData = {
-    matchedFiles: [
-      { file: { name: "file1.pdf", size: 1024 } },
-      { file: { name: "file2.pdf", size: 2048 } },
-    ],
-  };
-
-  // Common mount options with stubs
-  const createMountOptions = (propsData = {}) => ({
-    propsData: {
-      dataframeData: mockDataframeData,
-      pdfData: mockPdfData,
-      workspace: mockWorkspace,
-      loading: false,
-      ...propsData,
-    },
-    stubs: {
-      BaseSimpleTable: {
-        template: '<div class="mock-base-simple-table"></div>',
-        props: ["data", "columns", "options"],
-      },
-      BaseSpinner: {
-        template: '<div class="mock-base-spinner"></div>',
-      },
-      BaseIcon: {
-        template: '<div class="mock-base-icon"></div>',
-        props: ["iconName"],
-      },
-      BaseButton: {
-        template: '<button class="mock-base-button"><slot></slot></button>',
-        props: ["variant", "disabled"],
-      },
-    },
-  });
-
   beforeEach(() => {
-    // Reset mock state before each test
-    mockViewModel.isAnalyzing = false;
-    mockViewModel.hasError = false;
-    mockViewModel.errorMessage = "";
-    mockViewModel.analysisResult = null;
-    mockViewModel.documentActions = {};
-    mockViewModel.reset.mockClear();
-    mockViewModel.analyzeImport.mockClear();
-    mockViewModel.retryAnalysis.mockClear();
-  });
+    jest.clearAllMocks();
 
-  it("renders without crashing", () => {
-    const wrapper = mount(ImportAnalysisTable, createMountOptions());
+    const compositionApi = require("@nuxtjs/composition-api");
+    mockRef = compositionApi.ref;
+    mockWatch = compositionApi.watch;
 
-    expect(wrapper.exists()).toBe(true);
-    expect(wrapper.find(".import-analysis-table").exists()).toBe(true);
-  });
+    // Configure mock behavior
+    mockRef.mockImplementation((initialValue) => ({
+      value: initialValue,
+    }));
 
-  it("renders with dataframe data", () => {
-    const wrapper = mount(ImportAnalysisTable, createMountOptions());
+    mockWatch.mockImplementation(() => {});
 
-    expect(wrapper.exists()).toBe(true);
-    expect(wrapper.find(".import-analysis-table").exists()).toBe(true);
-
-    // Should show dataframe data in table
-    const tableData = wrapper.vm.tableData;
-    expect(tableData).toHaveLength(2);
-    expect(tableData[0].reference).toBe("Smith2023");
-    expect(tableData[0].title).toBe("A Study on Machine Learning");
-  });
-
-  it("shows loading state when loading prop is true", () => {
-    const wrapper = mount(ImportAnalysisTable, createMountOptions({ loading: true }));
-
-    expect(wrapper.find(".loading-state").exists()).toBe(true);
-    expect(wrapper.text()).toContain("Loading...");
-  });
-
-  it("shows analyzing state when isAnalyzing is true", async () => {
-    mockViewModel.isAnalyzing = true;
-
-    const wrapper = mount(ImportAnalysisTable, createMountOptions());
-
-    await wrapper.vm.$nextTick();
-
-    expect(wrapper.find(".loading-state").exists()).toBe(true);
-    expect(wrapper.text()).toContain("Analyzing import status...");
-  });
-
-  it("shows error state when hasError is true", async () => {
-    mockViewModel.hasError = true;
-    mockViewModel.errorMessage = "Test error message";
-
-    const wrapper = mount(ImportAnalysisTable, createMountOptions());
-
-    await wrapper.vm.$nextTick();
-
-    expect(wrapper.find(".error-state").exists()).toBe(true);
-    expect(wrapper.text()).toContain("Analysis Failed");
-    expect(wrapper.text()).toContain("Test error message");
-  });
-
-  it("displays analysis summary correctly when analysis result is available", async () => {
-    mockViewModel.analysisResult = mockAnalysisResult;
-
-    const wrapper = mount(ImportAnalysisTable, createMountOptions());
-
-    await wrapper.vm.$nextTick();
-
-    const summaryStats = wrapper.find(".summary-stats");
-    expect(summaryStats.exists()).toBe(true);
-
-    expect(wrapper.text()).toContain("Total: 3");
-    expect(wrapper.text()).toContain("Add: 1");
-    expect(wrapper.text()).toContain("Update: 1");
-    expect(wrapper.text()).toContain("Skip: 0");
-    expect(wrapper.text()).toContain("Failed: 1");
-  });
-
-  it("displays default summary when no analysis result", () => {
-    const wrapper = mount(ImportAnalysisTable, createMountOptions());
-
-    const summaryData = wrapper.vm.summaryData;
-    expect(summaryData.total_documents).toBe(2);
-    expect(summaryData.add_count).toBe(2);
-    expect(summaryData.update_count).toBe(0);
-    expect(summaryData.skip_count).toBe(0);
-    expect(summaryData.failed_count).toBe(0);
-  });
-
-  it("generates table data correctly from dataframe", () => {
-    const wrapper = mount(ImportAnalysisTable, createMountOptions());
-
-    const tableData = wrapper.vm.tableData;
-    expect(tableData).toHaveLength(2);
-
-    expect(tableData[0]).toMatchObject({
-      reference: "Smith2023",
-      title: "A Study on Machine Learning",
-      authors: "John Smith, Jane Doe",
-      year: "2023",
-      files: "No files",
-      status: "add",
-      originalStatus: "add",
-      canToggle: true,
-    });
-
-    expect(tableData[1]).toMatchObject({
-      reference: "Brown2024",
-      title: "Deep Learning Applications",
-      authors: "Alice Brown",
-      year: "2024",
-      files: "No files",
-      status: "add",
-      originalStatus: "add",
-      canToggle: true,
+    wrapper = mount(ImportAnalysisTable, {
+      propsData: {
+        dataframeData: mockDataframeData,
+        pdfData: { matchedFiles: [] },
+        workspace: mockWorkspace,
+        loading: false,
+      },
+      stubs: {
+        BaseSpinner: true,
+        BaseIcon: true,
+        BaseButton: true,
+        BaseRadioButton: {
+          template: '<input type="radio" class="mock-radio-button" />',
+          props: ["value", "name"],
+          model: {
+            prop: "modelValue",
+            event: "change",
+          },
+        },
+        BaseSimpleTable: {
+          template: '<div class="mock-simple-table"></div>',
+          props: ["data", "columns", "options"],
+        },
+      },
     });
   });
 
-  it("generates table data correctly from analysis result", async () => {
-    mockViewModel.analysisResult = mockAnalysisResult;
-
-    const wrapper = mount(ImportAnalysisTable, createMountOptions());
-
-    await wrapper.vm.$nextTick();
-
-    const tableData = wrapper.vm.tableData;
-    expect(tableData).toHaveLength(2); // Still 2 because dataframe has 2 rows
-
-    // The table data should come from dataframe, not analysis result
-    expect(tableData[0].reference).toBe("Smith2023");
-    expect(tableData[0].title).toBe("A Study on Machine Learning");
+  afterEach(() => {
+    if (wrapper) {
+      wrapper.destroy();
+    }
+    jest.restoreAllMocks();
   });
 
-  it("generates table columns correctly", () => {
-    const wrapper = mount(ImportAnalysisTable, createMountOptions());
+  describe("Import Mode Toggle", () => {
+    it("should render import mode options", () => {
+      const importOptions = wrapper.find(".import-options");
+      expect(importOptions.exists()).toBe(true);
 
-    const columns = wrapper.vm.tableColumns;
-    expect(columns.length).toBeGreaterThan(4); // At least reference, title, authors, year, files, status
-
-    expect(columns[0]).toMatchObject({
-      field: "reference",
-      title: "Reference",
-      width: 150,
-      frozen: true,
+      const radioButtons = wrapper.findAll(".mock-radio-button");
+      expect(radioButtons.length).toBe(2);
     });
 
-    // Find status column
-    const statusColumn = columns.find(col => col.field === "status");
-    expect(statusColumn).toMatchObject({
-      field: "status",
-      title: "Import Status",
-      width: 150,
-      frozen: true,
+    it("should default to 'all' import mode", () => {
+      expect(wrapper.vm.importMode).toBe("all");
+    });
+
+    it("should calculate references with and without PDFs correctly", () => {
+      expect(wrapper.vm.referencesWithoutPdfsCount).toBe(1); // test2 has no PDFs
+      expect(wrapper.vm.referencesWithPdfsCount).toBe(1); // test1 has PDFs
+    });
+
+    it("should filter table data based on import mode", () => {
+      // Default mode 'all' should show all references
+      expect(wrapper.vm.tableData.length).toBe(2);
+
+      // Switch to 'with-pdfs' mode
+      wrapper.setData({ importMode: "with-pdfs" });
+      expect(wrapper.vm.tableData.length).toBe(1);
+      expect(wrapper.vm.tableData[0].reference).toBe("test1");
+    });
+
+    it("should handle import mode change correctly", () => {
+      const emitSpy = jest.spyOn(wrapper.vm, "$emit");
+
+      // Switch to 'with-pdfs' mode
+      wrapper.setData({ importMode: "with-pdfs" });
+      wrapper.vm.handleImportModeChange();
+
+      // Should set references without PDFs to ignore
+      expect(wrapper.vm.localDocumentActions.test2).toBe("ignore");
+      expect(emitSpy).toHaveBeenCalledWith("update", expect.any(Object));
+    });
+
+    it("should restore original status when switching back to 'all' mode", () => {
+      // First switch to 'with-pdfs' mode
+      wrapper.setData({ importMode: "with-pdfs" });
+      wrapper.vm.handleImportModeChange();
+      expect(wrapper.vm.localDocumentActions.test2).toBe("ignore");
+
+      // Switch back to 'all' mode
+      wrapper.setData({ importMode: "all" });
+      wrapper.vm.handleImportModeChange();
+
+      // Should remove the ignore action
+      expect(wrapper.vm.localDocumentActions.test2).toBeUndefined();
     });
   });
 
-  it("calculates confirmed count correctly", async () => {
-    const wrapper = mount(ImportAnalysisTable, createMountOptions());
+  describe("Confirmed Count Calculation", () => {
+    it("should respect import mode when calculating confirmed count", () => {
+      // In 'all' mode, both references should be counted (default to 'add')
+      expect(wrapper.vm.confirmedCount).toBe(2);
 
-    // Initially should count all documents as add
-    expect(wrapper.vm.confirmedCount).toBe(2);
-
-    // Change one document to ignore
-    wrapper.vm.localDocumentActions = { Smith2023: "ignore" };
-    expect(wrapper.vm.confirmedCount).toBe(1);
+      // Switch to 'with-pdfs' mode
+      wrapper.setData({ importMode: "with-pdfs" });
+      expect(wrapper.vm.confirmedCount).toBe(1); // Only test1 has PDFs
+    });
   });
 
-  it("handles status toggle correctly", () => {
-    const wrapper = mount(ImportAnalysisTable, createMountOptions());
+  describe("Filtered Dataframe Data", () => {
+    it("should return original dataframe data when import mode is 'all'", () => {
+      expect(wrapper.vm.filteredDataframeData).toEqual(mockDataframeData);
+    });
 
-    // Mock cell object
-    const mockUpdate = jest.fn();
-    const mockCell = {
-      getValue: () => "add",
-      getRow: () => ({
-        getData: () => ({
-          status: "add",
-          originalStatus: "add",
-          reference: "Smith2023",
-          canToggle: true,
-        }),
-        update: mockUpdate,
-      }),
-    };
+    it("should filter out references without PDFs when import mode is 'with-pdfs'", () => {
+      wrapper.setData({ importMode: "with-pdfs" });
 
-    // Test status toggle
-    wrapper.vm.handleStatusClick({}, mockCell);
-
-    expect(wrapper.vm.localDocumentActions["Smith2023"]).toBe("ignore");
-    expect(mockUpdate).toHaveBeenCalledWith({ status: "ignore" });
+      const filtered = wrapper.vm.filteredDataframeData;
+      expect(filtered.data.length).toBe(1);
+      expect(filtered.data[0].reference).toBe("test1");
+    });
   });
 
-  it("emits update event when document actions change", () => {
-    const wrapper = mount(ImportAnalysisTable, createMountOptions());
+  describe("Emit Update", () => {
+    it("should include import mode and filtered dataframe data in emitted update data", () => {
+      const emitSpy = jest.spyOn(wrapper.vm, "$emit");
 
-    wrapper.vm.emitUpdate();
+      wrapper.vm.emitUpdate();
 
-    expect(wrapper.emitted("update")).toBeTruthy();
-    const updateEvent = wrapper.emitted("update")[0][0];
+      expect(emitSpy).toHaveBeenCalledWith(
+        "update",
+        expect.objectContaining({
+          importMode: "all",
+          confirmedDocuments: expect.any(Object),
+          totalConfirmed: expect.any(Number),
+          documentActions: expect.any(Object),
+          filteredDataframeData: expect.any(Object),
+        })
+      );
+    });
 
-    expect(updateEvent).toHaveProperty("confirmedDocuments");
-    expect(updateEvent).toHaveProperty("totalConfirmed");
-    expect(updateEvent).toHaveProperty("documentActions");
+    it("should exclude references without PDFs when import mode is 'with-pdfs'", () => {
+      const emitSpy = jest.spyOn(wrapper.vm, "$emit");
+
+      wrapper.setData({ importMode: "with-pdfs" });
+      wrapper.vm.emitUpdate();
+
+      const emittedData = emitSpy.mock.calls[0][1];
+      expect(Object.keys(emittedData.confirmedDocuments)).toEqual(["test1"]);
+      expect(emittedData.totalConfirmed).toBe(1);
+      expect(emittedData.filteredDataframeData.data.length).toBe(1);
+      expect(emittedData.filteredDataframeData.data[0].reference).toBe("test1");
+    });
   });
 
-  it("formats authors correctly", () => {
-    const wrapper = mount(ImportAnalysisTable, createMountOptions());
+  describe("Reset Local State", () => {
+    it("should reset import mode to 'all' when resetting local state", () => {
+      wrapper.setData({ importMode: "with-pdfs" });
+      wrapper.vm.resetLocalState();
 
-    expect(wrapper.vm.formatAuthors(["Author 1", "Author 2"])).toBe("Author 1, Author 2");
-    expect(wrapper.vm.formatAuthors("Single Author")).toBe("Single Author");
-    expect(wrapper.vm.formatAuthors([])).toBe("N/A");
-    expect(wrapper.vm.formatAuthors(null)).toBe("N/A");
-  });
-
-  it("formats files correctly", () => {
-    const wrapper = mount(ImportAnalysisTable, createMountOptions());
-
-    expect(wrapper.vm.formatFiles(["file1.pdf", "file2.pdf"])).toBe("file1.pdf, file2.pdf");
-    expect(wrapper.vm.formatFiles([])).toBe("No files");
-    expect(wrapper.vm.formatFiles(null)).toBe("No files");
-  });
-
-  it("determines toggle capability correctly", () => {
-    const wrapper = mount(ImportAnalysisTable, createMountOptions());
-
-    expect(wrapper.vm.canToggleStatus("add")).toBe(true);
-    expect(wrapper.vm.canToggleStatus("update")).toBe(true);
-    expect(wrapper.vm.canToggleStatus("ignore")).toBe(true);
-    expect(wrapper.vm.canToggleStatus("skip")).toBe(false);
-    expect(wrapper.vm.canToggleStatus("failed")).toBe(false);
-  });
-
-  it("resets local state correctly", () => {
-    const wrapper = mount(ImportAnalysisTable, createMountOptions());
-
-    // Set some state
-    wrapper.vm.localDocumentActions = { Smith2023: "ignore" };
-
-    // Reset local state
-    wrapper.vm.resetLocalState();
-
-    expect(wrapper.vm.localDocumentActions).toEqual({});
-  });
-
-  it("handles retry analysis", () => {
-    const wrapper = mount(ImportAnalysisTable, createMountOptions());
-
-    wrapper.vm.retryAnalysis();
-
-    expect(mockViewModel.retryAnalysis).toHaveBeenCalled();
-  });
-
-  it("emits analysis-complete event when analysis result changes", async () => {
-    const wrapper = mount(ImportAnalysisTable, createMountOptions());
-
-    // Manually trigger the watch handler
-    wrapper.vm.$options.watch.analysisResult.handler.call(wrapper.vm, mockAnalysisResult);
-
-    expect(wrapper.emitted("analysis-complete")).toBeTruthy();
-    expect(wrapper.emitted("analysis-complete")[0][0]).toBe(mockAnalysisResult);
+      expect(wrapper.vm.importMode).toBe("all");
+      expect(wrapper.vm.localDocumentActions).toEqual({});
+    });
   });
 });

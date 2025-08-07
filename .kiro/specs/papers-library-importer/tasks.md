@@ -171,7 +171,7 @@
   - Fix workspaceId reference in useImportAnalysisViewModel.ts to properly access workspace from parent component
   - _Requirements: 2.1, 2.2, 2.7_
 
-- [ ] 7.2.1 Add option to import references without PDFs
+- [x] 7.2.1 Add option to import references without PDFs at the ImportAnalysis step
   - Add toggle option to import entire table including references without matched PDFs
   - Add toggle option to import only references with at least one matched PDF file
   - Update table filtering to show/hide references without PDFs based on user selection

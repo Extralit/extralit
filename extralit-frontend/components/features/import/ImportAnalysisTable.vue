@@ -47,6 +47,27 @@
         </div>
       </div>
 
+      <!-- Import options -->
+      <div class="import-options">
+        <h4>Import Options</h4>
+        <div class="option-group">
+          <BaseRadioButton v-model="importMode" value="all" name="import-mode" @change="handleImportModeChange">
+            Import all references (including those without PDFs)
+          </BaseRadioButton>
+          <BaseRadioButton v-model="importMode" value="with-pdfs" name="import-mode" @change="handleImportModeChange">
+            Import only references with at least one PDF file
+          </BaseRadioButton>
+        </div>
+        <div class="option-stats">
+          <span class="stat-info">
+            References without PDFs: {{ referencesWithoutPdfsCount }}
+          </span>
+          <span class="stat-info">
+            References with PDFs: {{ referencesWithPdfsCount }}
+          </span>
+        </div>
+      </div>
+
       <!-- Table -->
       <div class="table-container">
         <BaseSimpleTable :data="tableData" :columns="tableColumns" :options="tableOptions" />
@@ -69,6 +90,7 @@ import type {
   AnalysisTableRow,
   TableColumn,
   CellComponent,
+  ImportDataFrameMode,
 } from './types';
 import { useImportAnalysisViewModel } from './useImportAnalysisViewModel';
 import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
@@ -100,6 +122,7 @@ export default {
   data() {
     return {
       localDocumentActions: {} as Record<string, ImportStatus>,
+      importMode: 'all' as ImportDataFrameMode, // Default to import all references
     };
   },
 
@@ -119,7 +142,7 @@ export default {
       };
     },
 
-    tableData(): AnalysisTableRow[] {
+    allTableData(): AnalysisTableRow[] {
       if (!this.dataframeData || !this.dataframeData.data.length) {
         return [];
       }
@@ -161,6 +184,47 @@ export default {
 
         return rowData;
       });
+    },
+
+    tableData(): AnalysisTableRow[] {
+      const allData = this.allTableData;
+
+      // Filter based on import mode
+      if (this.importMode === 'with-pdfs') {
+        return allData.filter(row => row.filePaths && row.filePaths.length > 0);
+      }
+
+      return allData;
+    },
+
+    referencesWithoutPdfsCount(): number {
+      return this.allTableData.filter(row => !row.filePaths || row.filePaths.length === 0).length;
+    },
+
+    referencesWithPdfsCount(): number {
+      return this.allTableData.filter(row => row.filePaths && row.filePaths.length > 0).length;
+    },
+
+    filteredDataframeData(): DataframeData | null {
+      if (!this.dataframeData) {
+        return null;
+      }
+
+      // If mode is 'all', return original dataframe data
+      if (this.importMode === 'all') {
+        return this.dataframeData;
+      }
+
+      // If mode is 'with-pdfs', filter out references without PDFs
+      const filteredData = this.dataframeData.data.filter((row: Record<string, any>) => {
+        const filePaths = row.filePaths || [];
+        return filePaths.length > 0;
+      });
+
+      return {
+        ...this.dataframeData,
+        data: filteredData,
+      };
     },
 
     tableColumns(): TableColumn[] {
@@ -256,9 +320,15 @@ export default {
 
       if (this.analysisResult) {
         // Count from analysis result
-        Object.entries(this.analysisResult.documents).forEach(([ref, docInfo]) => {
-          // @ts-ignore
+        Object.entries(this.analysisResult.documents).forEach(([ref, docInfo]: [string, DocumentImportAnalysis]) => {
           const finalAction = documentActions[ref] || docInfo.status;
+          const hasFiles = docInfo.associated_files && docInfo.associated_files.length > 0;
+
+          // Respect import mode: skip references without PDFs if mode is 'with-pdfs'
+          if (this.importMode === 'with-pdfs' && !hasFiles) {
+            return;
+          }
+
           if (finalAction === "add" || finalAction === "update") {
             count++;
           }
@@ -268,6 +338,14 @@ export default {
         this.dataframeData.data.forEach((row: Record<string, any>) => {
           const reference = row.reference || row.key;
           const finalAction = documentActions[reference] || 'add';
+          const filePaths = row.filePaths || [];
+          const hasFiles = filePaths.length > 0;
+
+          // Respect import mode: skip references without PDFs if mode is 'with-pdfs'
+          if (this.importMode === 'with-pdfs' && !hasFiles) {
+            return;
+          }
+
           if (finalAction === "add" || finalAction === "update") {
             count++;
           }
@@ -405,6 +483,31 @@ export default {
       }
     },
 
+    handleImportModeChange() {
+      // When import mode changes, automatically set references without PDFs to ignore if mode is 'with-pdfs'
+      if (this.importMode === 'with-pdfs') {
+        this.allTableData.forEach(row => {
+          if (!row.filePaths || row.filePaths.length === 0) {
+            // Set references without PDFs to ignore
+            this.$set(this.localDocumentActions, row.reference, 'ignore');
+          }
+        });
+      } else if (this.importMode === 'all') {
+        // When switching back to 'all', restore original status for references without PDFs
+        this.allTableData.forEach(row => {
+          if (!row.filePaths || row.filePaths.length === 0) {
+            // Remove from local actions to restore original status
+            if (this.localDocumentActions[row.reference] === 'ignore') {
+              this.$delete(this.localDocumentActions, row.reference);
+            }
+          }
+        });
+      }
+
+      // Emit update to reflect the changes
+      this.emitUpdate();
+    },
+
 
     formatColumnTitle(fieldName: string) {
       // Convert field names to readable titles
@@ -423,8 +526,14 @@ export default {
 
       // Handle analysis data case (preferred)
       if (this.analysisResult && this.analysisResult.documents && Object.keys(this.analysisResult.documents).length > 0) {
-        Object.entries(this.analysisResult.documents).forEach(([reference, docInfo]: [string, any]) => {
+        Object.entries(this.analysisResult.documents).forEach(([reference, docInfo]: [string, DocumentImportAnalysis]) => {
           const finalAction = documentActions[reference] || docInfo.status;
+          const hasFiles = docInfo.associated_files && docInfo.associated_files.length > 0;
+
+          // Respect import mode: skip references without PDFs if mode is 'with-pdfs'
+          if (this.importMode === 'with-pdfs' && !hasFiles) {
+            return;
+          }
 
           // Only include documents that will be processed (add or update)
           if (finalAction === "add" || finalAction === "update") {
@@ -449,6 +558,12 @@ export default {
           const reference = row.reference || row.key || `row_${Math.random()}`;
           const finalAction = documentActions[reference] || 'add';
           const filePaths = row.filePaths || [];
+          const hasFiles = filePaths.length > 0;
+
+          // Respect import mode: skip references without PDFs if mode is 'with-pdfs'
+          if (this.importMode === 'with-pdfs' && !hasFiles) {
+            return;
+          }
 
           // Only include documents that will be processed (add or update)
           if (finalAction === "add" || finalAction === "update") {
@@ -485,6 +600,8 @@ export default {
         confirmedDocuments,
         totalConfirmed: Object.keys(confirmedDocuments).length,
         documentActions: documentActions,
+        importMode: this.importMode,
+        filteredDataframeData: this.filteredDataframeData,
       });
     },
 
@@ -501,6 +618,7 @@ export default {
 
     resetLocalState() {
       this.localDocumentActions = {};
+      this.importMode = 'all';
     },
 
 
@@ -674,6 +792,49 @@ export default {
 
       &.stat-failed .stat-value {
         color: var(--color-danger);
+      }
+    }
+  }
+}
+
+// Import options
+.import-options {
+  padding: $base-space * 2;
+  background: var(--bg-solid-grey-1);
+  border-radius: $border-radius;
+  border: 1px solid var(--border-field);
+
+  h4 {
+    margin: 0 0 $base-space * 2 0;
+    color: var(--fg-primary);
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .option-group {
+    display: flex;
+    flex-direction: column;
+    gap: $base-space;
+    margin-bottom: $base-space * 2;
+  }
+
+  .option-stats {
+    display: flex;
+    gap: $base-space * 3;
+    flex-wrap: wrap;
+    padding-top: $base-space;
+    border-top: 1px solid var(--border-field);
+
+    .stat-info {
+      color: var(--fg-secondary);
+      font-size: 0.9rem;
+
+      &:first-child {
+        color: var(--fg-tertiary);
+      }
+
+      &:last-child {
+        color: var(--color-success);
       }
     }
   }

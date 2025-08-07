@@ -258,6 +258,12 @@ export default {
 
     handleAnalysisUpdate(data) {
       this.uploadData.confirmedDocuments = data.confirmedDocuments || {};
+
+      // Update bibData with filtered dataframe data if provided
+      if (data.filteredDataframeData) {
+        this.bibData.dataframeData = data.filteredDataframeData;
+      }
+
       this.clearError();
     },
 
