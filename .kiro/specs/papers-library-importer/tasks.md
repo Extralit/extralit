@@ -33,7 +33,7 @@
   - Enable easy testing of backend import analysis before building frontend
   - _Requirements: 1.1, 2.1, 2.2_
 
-- [ ] 3. Create bulk document upload endpoint
+- [x] 3. Create bulk document upload endpoint
 - [x] 3.1 Implement bulk upload API handler
   - Create POST /documents/bulk endpoint in documents.py handler
   - Handle multipart form data with documents_metadata and files
@@ -63,7 +63,7 @@
   - Remove import history creation from bulk upload (moved to separate endpoint)
   - _Requirements: 3.2, 3.5, 4.1, 4.6_
 
-- [ ] 4. Create frontend domain architecture and implement BibTeX parsing
+- [x] 4. Create frontend domain architecture and implement BibTeX parsing
 - [x] 4.0 Create frontend domain entities and use cases
   - Create ImportAnalysis.ts in ~/v1/domain/entities/import/ with backend API data structures
   - Create get-import-analysis-use-case.ts in ~/v1/domain/usecases/ for API communication
