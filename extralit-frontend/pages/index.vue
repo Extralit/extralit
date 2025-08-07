@@ -166,7 +166,7 @@ export default {
     },
     cardAction(action) {
       if (action === "expand-import-dataset") {
-        this.showImportDatasetInput = true;
+        this.openImportModal();
       }
     },
     importHfDataset(repoId: string) {
