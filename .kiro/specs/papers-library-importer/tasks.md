@@ -80,7 +80,7 @@
   - Use DataframeData type from ~/v1/domain/entities/import/ImportAnalysis.ts
   - _Requirements: 1.1, 5.1_
 
-- [ ] 4.1.1 Add CSV parser component with column selection
+- [x] 4.1.1 Add CSV parser component with column selection
   - Add performant CSV parser library dependency (papaparse or similar)
   - Implement CSV file parsing in ImportFileUpload.vue component
   - Allow user to select reference column and files column for PDF matching

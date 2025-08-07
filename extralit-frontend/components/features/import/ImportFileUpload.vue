@@ -13,7 +13,7 @@
             <h3 class="import-file-upload__section-title">Step 1: Upload Your Bibliography File</h3>
             <p class="import-file-upload__section-description">
               Import your reference list to begin.<br />
-              We support .bib files exported from reference managers like Zotero, EndNote, or Mendeley.
+              We support .bib files exported from reference managers like Zotero, EndNote, or Mendeley, and .csv files with tabular data.
             </p>
           </div>
 
@@ -23,7 +23,7 @@
             'import-file-upload__dropzone--success': bibUploaded,
           }" @drop="handleBibDrop" @dragover="handleBibDragOver" @dragleave="handleBibDragLeave"
             @click="triggerBibFileInput">
-            <input ref="bibFileInput" type="file" accept=".bib,.bibtex" style="display: none"
+            <input ref="bibFileInput" type="file" accept=".bib,.bibtex,.csv" style="display: none"
               @change="handleBibFileSelect" />
 
             <div class="import-file-upload__dropzone-content">
@@ -31,7 +31,7 @@
               <p class="import-file-upload__dropzone-text">
                 {{ getBibDropzoneText }}
               </p>
-              <p class="import-file-upload__dropzone-subtext">Supported formats: .bib, .bibtex</p>
+              <p class="import-file-upload__dropzone-subtext">Supported formats: .bib, .bibtex, .csv</p>
             </div>
           </div>
 
@@ -49,6 +49,91 @@
             <div class="import-file-upload__error-content">
               <h4>Bibliography Parsing Error</h4>
               <p>{{ bibErrorMessage }}</p>
+            </div>
+          </div>
+
+          <!-- CSV Column Selection -->
+          <div v-if="showCsvColumnSelection" class="import-file-upload__csv-selection">
+            <div class="import-file-upload__csv-selection-header">
+              <h4 class="import-file-upload__csv-selection-title">Configure CSV Import</h4>
+              <p class="import-file-upload__csv-selection-description">
+                Select the columns that contain reference identifiers and file paths for PDF matching.
+              </p>
+            </div>
+
+            <div class="import-file-upload__csv-columns">
+              <div class="import-file-upload__csv-column-group">
+                <label class="import-file-upload__csv-column-label">
+                  Reference Column (Required)
+                  <select v-model="csvConfig.referenceColumn" class="import-file-upload__csv-column-select">
+                    <option value="">Select column...</option>
+                    <option v-for="column in csvColumns" :key="column" :value="column">
+                      {{ column }}
+                    </option>
+                  </select>
+                </label>
+                <p class="import-file-upload__csv-column-help">
+                  Column containing unique identifiers for each reference (e.g., citation key, ID)
+                </p>
+              </div>
+
+              <div class="import-file-upload__csv-column-group">
+                <label class="import-file-upload__csv-column-label">
+                  Files Column (Optional)
+                  <select v-model="csvConfig.filesColumn" class="import-file-upload__csv-column-select">
+                    <option value="">Select column...</option>
+                    <option v-for="column in csvColumns" :key="column" :value="column">
+                      {{ column }}
+                    </option>
+                  </select>
+                </label>
+                <p class="import-file-upload__csv-column-help">
+                  Column containing file paths or names for PDF matching (leave empty if not available)
+                </p>
+              </div>
+            </div>
+
+            <div class="import-file-upload__csv-preview">
+              <h5>Data Preview (first 3 rows):</h5>
+              <div class="import-file-upload__csv-preview-table">
+                <table class="import-file-upload__table">
+                  <thead>
+                    <tr>
+                      <th v-for="column in csvColumns" :key="column" :class="{
+                        'import-file-upload__csv-preview-header--selected':
+                          column === csvConfig.referenceColumn || column === csvConfig.filesColumn
+                      }">
+                        {{ column }}
+                        <span v-if="column === csvConfig.referenceColumn" class="import-file-upload__csv-preview-badge">REF</span>
+                        <span v-if="column === csvConfig.filesColumn" class="import-file-upload__csv-preview-badge">FILES</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(row, index) in csvPreviewData" :key="index">
+                      <td v-for="column in csvColumns" :key="column" :class="{
+                        'import-file-upload__csv-preview-cell--selected':
+                          column === csvConfig.referenceColumn || column === csvConfig.filesColumn
+                      }">
+                        {{ row[column] || '' }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="import-file-upload__csv-actions">
+              <BaseButton
+                variant="primary"
+                :disabled="!csvConfig.referenceColumn"
+                @click="processCsvWithConfig"
+              >
+                Process CSV Data
+              </BaseButton>
+              <BaseButton variant="secondary" @click="cancelCsvSelection">
+                Cancel
+              </BaseButton>
             </div>
           </div>
         </div>
@@ -154,7 +239,10 @@
 </template>
 
 <script lang="ts">
-import bibtexParse from "@orcid/bibtex-parse-js";
+import { useResolve } from "ts-injecty";
+import type { CSVConfig } from "~/v1/domain/services/IFileService";
+import { FileService } from "~/v1/domain/services/FileService";
+import { PdfMatchingService } from "~/v1/domain/services/PdfMatchingService";
 import "assets/icons/check";
 import "assets/icons/danger";
 import "assets/icons/document";
@@ -186,6 +274,16 @@ export default {
     },
   },
 
+  setup() {
+    const fileService = useResolve(FileService);
+    const pdfMatchingService = useResolve(PdfMatchingService);
+
+    return {
+      fileService,
+      pdfMatchingService,
+    };
+  },
+
   data() {
     return {
       // Internal flag to prevent recursive updates during initialization
@@ -201,6 +299,16 @@ export default {
         parsedEntries: [],
         dataframeData: null,
         rawContent: "",
+      },
+
+      // CSV parsing state
+      showCsvColumnSelection: false,
+      csvRawData: null,
+      csvColumns: [],
+      csvPreviewData: [],
+      csvConfig: {
+        referenceColumn: "",
+        filesColumn: "",
       },
 
       // PDF state
@@ -261,6 +369,7 @@ export default {
         !this.bibHasError &&
         !this.pdfHasError &&
         !this.pdfProcessing &&
+        !this.showCsvColumnSelection &&
         this.bibData.parsedEntries.length > 0 &&
         this.pdfData.matchedFiles.length > 0
       );
@@ -371,9 +480,19 @@ export default {
         rawContent: "",
       };
 
+      // Reset CSV state
+      this.showCsvColumnSelection = false;
+      this.csvRawData = null;
+      this.csvColumns = [];
+      this.csvPreviewData = [];
+      this.csvConfig = {
+        referenceColumn: "",
+        filesColumn: "",
+      };
+
       // Validate file type
-      if (!this.isValidBibFileType(file)) {
-        this.showBibError("Invalid file type. Please upload a .bib or .bibtex file.");
+      if (!this.fileService.isValidFileType(file, [".bib", ".bibtex", ".csv"])) {
+        this.showBibError("Invalid file type. Please upload a .bib, .bibtex, or .csv file.");
         return;
       }
 
@@ -381,221 +500,112 @@ export default {
 
       try {
         // Read file content
-        const content = await this.readFileContent(file);
+        const content = await this.fileService.readFileContent(file);
         this.bibData.rawContent = content;
 
-        // Parse BibTeX content
-        await this.parseBibTexContent(content);
+        if (this.isCsvFile(file)) {
+          // Handle CSV file
+          await this.parseCsvContent(content);
+        } else if (this.isBibTexFile(file)) {
+          // Handle BibTeX file
+          const result = await this.fileService.parseBibTeX(content);
+          this.bibData.parsedEntries = result.entries;
+          this.bibData.dataframeData = result.dataframeData;
 
-        if (this.bibData.parsedEntries.length > 0) {
-          this.bibUploaded = true;
-        } else {
-          this.showBibError("No valid BibTeX entries found in the file.");
+          if (this.bibData.parsedEntries.length > 0) {
+            this.bibUploaded = true;
+          } else {
+            this.showBibError("No valid BibTeX entries found in the file.");
+          }
         }
       } catch (error) {
         this.showBibError(`Failed to process file: ${error.message}`);
       }
     },
 
-    isValidBibFileType(file: File) {
-      const validExtensions = [".bib", ".bibtex"];
+    isCsvFile(file: File) {
+      return file.name.toLowerCase().endsWith(".csv");
+    },
+
+    isBibTexFile(file: File) {
       const fileName = file.name.toLowerCase();
-      return validExtensions.some((ext) => fileName.endsWith(ext));
+      return fileName.endsWith(".bib") || fileName.endsWith(".bibtex");
     },
 
-    readFileContent(file: File) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (e) => resolve(e.target.result);
-        reader.onerror = () => reject(new Error("Failed to read file"));
-        reader.readAsText(file, "utf-8");
-      });
-    },
-
-    async parseBibTexContent(content) {
+    async parseCsvContent(content) {
       try {
-        // Parse using bibtex-parse-js
-        const parsed = bibtexParse.toJSON(content);
+        const previewData = await this.fileService.parseCSVForPreview(content);
 
-        if (!Array.isArray(parsed) || parsed.length === 0) {
-          throw new Error("No valid BibTeX entries found");
-        }
+        // Store CSV data for column selection
+        this.csvRawData = previewData.rawData;
+        this.csvColumns = previewData.columns;
+        this.csvPreviewData = previewData.previewRows;
 
-        // Convert to our internal format
-        this.bibData.parsedEntries = [];
-        const dataframeEntries = [];
+        // Show column selection UI
+        this.showCsvColumnSelection = true;
 
-        parsed.forEach((entry, index) => {
-          try {
-            const processedEntry = this.processBibTexEntry(entry, index);
-            if (processedEntry) {
-              this.bibData.parsedEntries.push(processedEntry);
-              dataframeEntries.push(processedEntry);
-            }
-          } catch (error) {
-            console.warn(`Entry ${index + 1}: ${error.message}`);
-          }
-        });
-
-        // Create generic dataframe format
-        this.bibData.dataframeData = this.createGenericDataframe(dataframeEntries);
       } catch (error) {
-        throw new Error(`BibTeX parsing failed: ${error.message}`);
+        throw new Error(`CSV parsing failed: ${error.message}`);
       }
     },
 
-    processBibTexEntry(entry, index) {
-      // Validate required fields
-      if (!entry.citationKey) {
-        throw new Error("Missing citation key (reference)");
-      }
-
-      // Start with basic fields
-      const processedEntry = {
-        reference: entry.citationKey,
-        type: entry.entryType || "unknown",
-      };
-
-      // Process all entry tags
-      if (entry.entryTags) {
-        Object.keys(entry.entryTags).forEach((key) => {
-          const rawValue = entry.entryTags[key];
-          let processedValue = this.cleanBibTexField(rawValue);
-
-          // Special processing for specific fields
-          switch (key.toLowerCase()) {
-            case 'author':
-              processedEntry['authors'] = this.extractAuthors(rawValue);
-              break;
-            case 'year':
-              processedEntry['year'] = this.extractYear(rawValue);
-              break;
-            case 'date':
-              // Only process date if year doesn't exist
-              if (!processedEntry['year']) {
-                processedEntry['year'] = this.extractYear(rawValue);
-              }
-              // Don't add date field to avoid duplication
-              break;
-            case 'file':
-              processedEntry['filePaths'] = this.parseFilePaths(rawValue);
-              break;
-            default:
-              // Add all other fields as-is
-              processedEntry[key] = processedValue;
-              break;
-          }
-        });
-      }
-
-      return processedEntry;
-    },
-
-    createGenericDataframe(entries) {
-      if (entries.length === 0) {
-        return {
-          schema: { fields: [], primaryKey: ["reference"] },
-          data: [],
-        };
-      }
-
-      // Detect all unique fields across entries
-      const allFields = new Set(["reference", "type"]);
-      entries.forEach((entry) => {
-        Object.keys(entry).forEach((field) => allFields.add(field));
-      });
-
-      // Create schema with type inference
-      const fields = Array.from(allFields).map((fieldName) => ({
-        name: fieldName,
-        type: this.inferFieldType(entries, fieldName),
-      }));
-
-      return {
-        schema: {
-          fields,
-          primaryKey: ["reference"],
-        },
-        data: entries,
-      };
-    },
-
-    inferFieldType(entries, fieldName) {
-      // Simple type inference based on field content
-      const values = entries.map((entry) => entry[fieldName]).filter((value) => value != null && value !== "");
-
-      if (values.length === 0) return "string";
-
-      // Check if all values are numbers
-      if (values.every((value) => !isNaN(value) && !isNaN(parseFloat(value)))) {
-        return values.every((value) => Number.isInteger(parseFloat(value))) ? "integer" : "float";
-      }
-
-      return "string";
-    },
-
-    cleanBibTexField(field: string | null): string | null {
-      if (!field) return null;
-
-      let cleaned = field
-        .toString()
-        .replace(/[\{\}]/g, "") // Remove all braces anywhere in the string
-        .replace(/^"+|"+$/g, "") // Remove outer quotes
-        .trim();
-
-      return cleaned || null;
-    },
-
-    extractAuthors(authorField) {
-      if (!authorField) return null;
-
-      const cleaned = this.cleanBibTexField(authorField);
-      if (!cleaned) return null;
-
-      // Handle different author separators
-      const authors = cleaned
-        .split(/\s+and\s+/i)
-        .map((author) => author.trim())
-        .filter((author) => author.length > 0);
-
-      return authors.length > 0 ? authors.join(";") : null;
-    },
-
-    extractYear(yearField) {
-      if (!yearField) return null;
-
-      const cleaned = this.cleanBibTexField(yearField);
-      if (!cleaned) return null;
-
-      // Extract 4-digit year from various formats
-      const yearMatch = cleaned.match(/\b(19|20)\d{2}\b/);
-      return yearMatch ? yearMatch[0] : null;
-    },
-
-    parseFilePaths(fileField) {
-      if (!fileField) return [];
-
-      const cleaned = this.cleanBibTexField(fileField);
-      if (!cleaned) return [];
-
-      // Parse Zotero/Mendeley file field format: "PDF:files/2/filename.pdf:application/pdf"
-      // Can have multiple files separated by semicolons
-      const filePaths = [];
-      const fileEntries = cleaned.split(';').map(f => f.trim()).filter(f => f.length > 0);
-
-      for (const fileEntry of fileEntries) {
-        const parts = fileEntry.split(':');
-        if (parts.length >= 2) {
-          // Extract the file path (second part)
-          const filePath = parts[1].trim();
-          if (filePath && filePath !== '') {
-            filePaths.push(filePath);
-          }
+    async processCsvWithConfig() {
+      try {
+        if (!this.csvConfig.referenceColumn) {
+          this.showBibError("Please select a reference column to continue.");
+          return;
         }
-      }
 
-      return filePaths;
+        if (!this.csvRawData || this.csvRawData.length === 0) {
+          this.showBibError("No CSV data available. Please upload a file first.");
+          return;
+        }
+
+        const config: CSVConfig = {
+          referenceColumn: this.csvConfig.referenceColumn,
+          filesColumn: this.csvConfig.filesColumn || undefined,
+        };
+
+        const result = await this.fileService.parseCSVWithConfig(this.csvRawData, config);
+
+        this.bibData.parsedEntries = result.entries;
+        this.bibData.dataframeData = result.dataframeData;
+
+        // Hide column selection and mark as uploaded
+        this.showCsvColumnSelection = false;
+        this.bibUploaded = true;
+
+      } catch (error) {
+        this.showBibError(`Failed to process CSV data: ${error.message}`);
+      }
     },
+
+
+
+    cancelCsvSelection() {
+      // Reset CSV state and clear upload
+      this.showCsvColumnSelection = false;
+      this.csvRawData = null;
+      this.csvColumns = [];
+      this.csvPreviewData = [];
+      this.csvConfig = {
+        referenceColumn: "",
+        filesColumn: "",
+      };
+
+      // Reset bib data
+      this.bibData = {
+        fileName: "",
+        parsedEntries: [],
+        dataframeData: null,
+        rawContent: "",
+      };
+      this.bibUploaded = false;
+      this.bibHasError = false;
+      this.bibErrorMessage = "";
+    },
+
+
 
     showBibError(message) {
       this.bibHasError = true;
@@ -721,334 +731,13 @@ export default {
         return;
       }
 
-      this.pdfData.matchedFiles = [];
-      this.pdfData.unmatchedFiles = [];
+      const result = this.pdfMatchingService.matchFiles(filesToMatch, this.bibData.parsedEntries);
 
-      // Track which references have been matched to prevent duplicates
-      const matchedReferences = new Set();
-      const webkitMatchedFiles = new Set();
-
-      // Phase 1: Webkit path matching (highest priority)
-      for (const file of filesToMatch) {
-        const webkitMatch = this.findWebkitPathMatch(file);
-        if (webkitMatch && !matchedReferences.has(webkitMatch.entry.reference)) {
-          this.pdfData.matchedFiles.push({
-            file,
-            bibEntry: webkitMatch.entry,
-            matchType: webkitMatch.type,
-            confidence: webkitMatch.confidence,
-          });
-          matchedReferences.add(webkitMatch.entry.reference);
-          webkitMatchedFiles.add(file);
-        }
-      }
-
-      // Phase 2: Other matching methods for remaining files
-      const remainingFiles = filesToMatch.filter(file => !webkitMatchedFiles.has(file));
-
-      for (const file of remainingFiles) {
-        const match = this.findBestNonWebkitMatch(file, matchedReferences);
-        if (match) {
-          this.pdfData.matchedFiles.push({
-            file,
-            bibEntry: match.entry,
-            matchType: match.type,
-            confidence: match.confidence,
-          });
-          matchedReferences.add(match.entry.reference);
-        } else {
-          this.pdfData.unmatchedFiles.push(file);
-        }
-      }
-
-      // Sort matched files by confidence (highest first)
-      this.pdfData.matchedFiles.sort((a, b) => b.confidence - a.confidence);
-    },
-
-    /**
-     * Find webkit path matches (highest priority)
-     */
-    findWebkitPathMatch(file: File) {
-      const filePath: string = (file as any).webkitRelativePath || file.name;
-
-      for (const entry of this.bibData.parsedEntries as any[]) {
-        const webkitMatch = this.checkWebkitPathMatch(filePath, entry.filePaths);
-        if (webkitMatch) {
-          return {
-            entry,
-            type: webkitMatch.type,
-            confidence: webkitMatch.confidence,
-          };
-        }
-      }
-      return null;
-    },
-
-    /**
-     /**
-      * Find best match using non-webkit methods for remaining files
-      */
-     findBestNonWebkitMatch(file: File, matchedReferences: Set<any>) {
-       const fileName: string = file.name.toLowerCase().replace(/\.pdf$/, "");
-       let bestMatch: { entry: any; type: string; confidence: number } | null = null;
-       let bestConfidence: number = 0;
-
-      for (const entry of this.bibData.parsedEntries as any[]) {
-        // Skip if this reference is already matched
-        if (matchedReferences.has(entry.reference)) {
-          continue;
-        }
-
-        const matches: Array<{ type: string; confidence: number }> = [
-          // 1. File field path match (Zotero exports)
-          this.checkFileFieldMatch(fileName, entry.file, entry.filePaths),
-          // 2. Exact reference key match
-          this.checkExactMatch(fileName, entry.reference),
-          // 3. Fuzzy title match (lowest priority)
-          this.checkTitleMatch(fileName, entry.title),
-        ].filter(Boolean) as Array<{ type: string; confidence: number }>;
-
-        if (matches.length > 0) {
-          const bestFileMatch = matches.reduce(
-            (best, current) => (current.confidence > best.confidence ? current : best)
-          );
-
-          if (bestFileMatch.confidence > bestConfidence) {
-            bestMatch = {
-              entry,
-              type: bestFileMatch.type,
-              confidence: bestFileMatch.confidence,
-            };
-            bestConfidence = bestFileMatch.confidence;
-          }
-        }
-      }
-      return bestConfidence >= 0.6 ? bestMatch : null;
-    },
-
-    checkExactMatch(fileName, reference) {
-      if (!reference) return null;
-
-      const refKey = reference.toLowerCase();
-      if (fileName === refKey) {
-        return { type: "exact", confidence: 1.0 };
-      }
-      return null;
+      this.pdfData.matchedFiles = result.matchedFiles;
+      this.pdfData.unmatchedFiles = result.unmatchedFiles;
     },
 
 
-
-    checkWebkitPathMatch(filePath, parsedFilePaths) {
-      if (!parsedFilePaths || parsedFilePaths.length === 0) return null;
-
-      const normalizedFilePath = this.normalizePath(filePath);
-
-      for (const bibFilePath of parsedFilePaths) {
-        const normalizedBibPath = this.normalizePath(bibFilePath);
-
-        // Check for exact path match
-        if (normalizedFilePath === normalizedBibPath) {
-          return { type: "webkit_path_exact", confidence: 1.0 };
-        }
-
-        // Check for suffix path match (e.g., "files/14/paper.pdf" matches "some/folder/files/14/paper.pdf")
-        if (this.checkSuffixPathMatch(normalizedFilePath, normalizedBibPath)) {
-          return { type: "webkit_path_suffix", confidence: 0.95 };
-        }
-
-        // Check for filename match within path
-        const filePathName = this.extractFileNameFromPath(normalizedFilePath);
-        const bibPathName = this.extractFileNameFromPath(normalizedBibPath);
-
-        if (filePathName && bibPathName) {
-          const similarity = this.calculateStringSimilarity(filePathName, bibPathName);
-          if (similarity >= 0.9) {
-            return { type: "webkit_path_filename", confidence: similarity * 0.9 };
-          }
-        }
-      }
-
-      return null;
-    },
-
-    checkFileFieldMatch(fileName, fileField, parsedFilePaths) {
-      // First try the parsed file paths (more reliable)
-      if (parsedFilePaths && parsedFilePaths.length > 0) {
-        for (const filePath of parsedFilePaths) {
-          const pathFileName = this.extractFileNameFromPath(filePath);
-          if (pathFileName) {
-            const cleanPathFileName = pathFileName.toLowerCase().replace(/\.pdf$/, "");
-
-            if (fileName === cleanPathFileName) {
-              return { type: "file_field_parsed", confidence: 0.95 };
-            }
-
-            const similarity = this.calculateStringSimilarity(fileName, cleanPathFileName);
-            if (similarity >= 0.8) {
-              return { type: "file_field_parsed", confidence: similarity * 0.9 };
-            }
-          }
-        }
-      }
-
-      // Fallback to original file field parsing
-      if (!fileField) return null;
-
-      const filePaths = fileField.split(";").map((f) => f.trim());
-
-      for (const filePath of filePaths) {
-        const parts = filePath.split(":");
-        if (parts.length >= 2) {
-          const path = parts[1].toLowerCase();
-          const pathFileName = path
-            .split("/")
-            .pop()
-            .replace(/\.pdf$/, "");
-
-          if (fileName === pathFileName) {
-            return { type: "file_field", confidence: 0.9 };
-          }
-
-          const similarity = this.calculateStringSimilarity(fileName, pathFileName);
-          if (similarity >= 0.8) {
-            return { type: "file_field", confidence: similarity * 0.85 };
-          }
-        }
-      }
-      return null;
-    },
-
-    checkTitleMatch(fileName, title) {
-      if (!title) return null;
-
-      // Clean and normalize title for comparison
-      const cleanTitle = title
-        .toLowerCase()
-        .replace(/[^\w\s]/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-
-      const cleanFileName = fileName
-        .replace(/[^\w\s]/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-
-      // Check if filename contains significant words from title
-      const titleWords = cleanTitle.split(" ").filter((word) => word.length > 3);
-      const fileWords = cleanFileName.split(" ");
-
-      let matchedWords = 0;
-      for (const titleWord of titleWords) {
-        if (fileWords.some((fileWord) => fileWord.includes(titleWord) || titleWord.includes(fileWord))) {
-          matchedWords++;
-        }
-      }
-
-      if (titleWords.length > 0) {
-        const confidence = matchedWords / titleWords.length;
-        if (confidence >= 0.6) {
-          return { type: "title", confidence: confidence * 0.8 }; // Lower confidence for title matches
-        }
-      }
-
-      return null;
-    },
-
-    calculateStringSimilarity(str1, str2) {
-      // Simple Levenshtein distance-based similarity
-      const longer = str1.length > str2.length ? str1 : str2;
-      const shorter = str1.length > str2.length ? str2 : str1;
-
-      if (longer.length === 0) return 1.0;
-
-      const distance = this.levenshteinDistance(longer, shorter);
-      return (longer.length - distance) / longer.length;
-    },
-
-    levenshteinDistance(str1, str2) {
-      const matrix = [];
-
-      for (let i = 0; i <= str2.length; i++) {
-        matrix[i] = [i];
-      }
-
-      for (let j = 0; j <= str1.length; j++) {
-        matrix[0][j] = j;
-      }
-
-      for (let i = 1; i <= str2.length; i++) {
-        for (let j = 1; j <= str1.length; j++) {
-          if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
-            matrix[i][j] = matrix[i - 1][j - 1];
-          } else {
-            matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j] + 1);
-          }
-        }
-      }
-
-      return matrix[str2.length][str1.length];
-    },
-
-    normalizePath(path) {
-      if (!path) return "";
-
-      return path
-        .toLowerCase()
-        .replace(/\\/g, "/") // Convert Windows backslashes to forward slashes
-        .replace(/\/+/g, "/") // Remove duplicate slashes
-        .replace(/^\/*/, "") // Remove leading slashes
-        .replace(/\/*$/, "") // Remove trailing slashes
-        .trim();
-    },
-
-    extractFileNameFromPath(path) {
-      if (!path) return null;
-
-      const normalizedPath = this.normalizePath(path);
-      const parts = normalizedPath.split("/");
-      const fileName = parts[parts.length - 1];
-
-      return fileName ? fileName.replace(/\.pdf$/, "") : null;
-    },
-
-    checkSuffixPathMatch(filePath, bibPath) {
-      if (!filePath || !bibPath) return false;
-
-      // Check if one path is a suffix of the other
-      // This handles cases where the uploaded file has a longer path than the bib entry
-      const filePathParts = filePath.split("/");
-      const bibPathParts = bibPath.split("/");
-
-      // Try matching from the end of both paths
-      const minLength = Math.min(filePathParts.length, bibPathParts.length);
-
-      for (let i = 1; i <= minLength; i++) {
-        const filePathSuffix = filePathParts.slice(-i).join("/");
-        const bibPathSuffix = bibPathParts.slice(-i).join("/");
-
-        if (filePathSuffix === bibPathSuffix) {
-          // The more path components that match, the higher the confidence
-          const matchRatio = i / Math.max(filePathParts.length, bibPathParts.length);
-          return matchRatio >= 0.5; // At least half the path components should match
-        }
-      }
-
-      return false;
-    },
-
-    getMatchTypeLabel(matchType) {
-      const labels = {
-        webkit_path_exact: "Path Exact",
-        webkit_path_suffix: "Path Suffix",
-        webkit_path_filename: "Path Filename",
-        file_field_parsed: "File Field",
-        file_field: "File Field (Legacy)",
-        exact: "Exact",
-        partial: "Partial",
-        title: "Title",
-      };
-      return labels[matchType] || "Unknown";
-    },
 
     showPdfError(message) {
       this.pdfHasError = true;
@@ -1099,6 +788,9 @@ export default {
         this.bibUploaded = this.bibData.parsedEntries.length > 0;
         this.bibHasError = false;
         this.bibErrorMessage = "";
+
+        // Ensure CSV selection is hidden when initializing with existing data
+        this.showCsvColumnSelection = false;
       }
 
       // Initialize PDF data
@@ -1138,6 +830,16 @@ export default {
         parsedEntries: [],
         dataframeData: null,
         rawContent: "",
+      };
+
+      // Reset CSV state
+      this.showCsvColumnSelection = false;
+      this.csvRawData = null;
+      this.csvColumns = [];
+      this.csvPreviewData = [];
+      this.csvConfig = {
+        referenceColumn: "",
+        filesColumn: "",
       };
 
       // Reset PDF state
@@ -1659,6 +1361,133 @@ export default {
       font-size: 0.9rem;
       color: var(--fg-secondary);
       font-style: italic;
+    }
+  }
+
+  // CSV Column Selection Styles
+  &__csv-selection {
+    margin-top: $base-space * 2;
+    padding: $base-space * 2;
+    background: var(--bg-accent-grey-2);
+    border: 1px solid var(--border-field);
+    border-radius: $border-radius;
+  }
+
+  &__csv-selection-header {
+    margin-bottom: $base-space * 2;
+  }
+
+  &__csv-selection-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: $base-space;
+    color: var(--fg-primary);
+  }
+
+  &__csv-selection-description {
+    color: var(--fg-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 0;
+    line-height: 1.4;
+  }
+
+  &__csv-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: $base-space * 2;
+    margin-bottom: $base-space * 2;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__csv-column-group {
+    display: flex;
+    flex-direction: column;
+    gap: calc($base-space / 2);
+  }
+
+  &__csv-column-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--fg-primary);
+    display: flex;
+    flex-direction: column;
+    gap: calc($base-space / 2);
+  }
+
+  &__csv-column-select {
+    padding: calc($base-space / 2) $base-space;
+    border: 1px solid var(--border-field);
+    border-radius: $border-radius-s;
+    background: var(--bg-solid-grey-1);
+    color: var(--fg-primary);
+    font-size: 0.9rem;
+
+    &:focus {
+      outline: none;
+      border-color: var(--bg-action);
+      box-shadow: 0 0 0 2px var(--bg-action-alpha);
+    }
+  }
+
+  &__csv-column-help {
+    font-size: 0.8rem;
+    color: var(--fg-secondary);
+    margin: 0;
+    line-height: 1.3;
+  }
+
+  &__csv-preview {
+    margin-bottom: $base-space * 2;
+
+    h5 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: $base-space;
+      color: var(--fg-primary);
+    }
+  }
+
+  &__csv-preview-table {
+    overflow-x: auto;
+    border: 1px solid var(--border-field);
+    border-radius: $border-radius-s;
+    background: var(--bg-solid-grey-1);
+  }
+
+  &__csv-preview-header--selected {
+    background: var(--bg-action-alpha) !important;
+    color: var(--bg-action) !important;
+    font-weight: 600;
+    position: relative;
+  }
+
+  &__csv-preview-cell--selected {
+    background: var(--bg-action-alpha) !important;
+    font-weight: 500;
+  }
+
+  &__csv-preview-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    background: var(--bg-action);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 600;
+    border-radius: $border-radius-s;
+    margin-left: calc($base-space / 2);
+    text-transform: uppercase;
+  }
+
+  &__csv-actions {
+    display: flex;
+    gap: $base-space;
+    justify-content: flex-end;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
     }
   }
 }
