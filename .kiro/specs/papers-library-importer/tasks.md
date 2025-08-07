@@ -80,12 +80,29 @@
   - Use DataframeData type from ~/v1/domain/entities/import/ImportAnalysis.ts
   - _Requirements: 1.1, 5.1_
 
+- [ ] 4.1.1 Add CSV parser component with column selection
+  - Add performant CSV parser library dependency (papaparse or similar)
+  - Implement CSV file parsing in ImportFileUpload.vue component
+  - Allow user to select reference column and files column for PDF matching
+  - Convert CSV entries to generic dataframe format (preserve all columns)
+  - Add validation for required columns and data types
+  - Handle CSV parsing errors gracefully with user feedback
+  - _Requirements: 1.2, 5.2_
+
 - [x] 4.2 Implement file-to-reference matching logic
   - Create file matching algorithm based on filepath or filename patterns
   - Implement exact match, partial match, and fuzzy matching strategies
   - Allow manual file-to-reference association by user
   - Add validation for PDF file types and sizes
   - _Requirements: 1.3, 1.6_
+
+- [ ] 4.2.1 Enhance PDF matching with maximum prefix path matching
+  - Implement maximum prefix path matching algorithm for better file association
+  - Improve matching to handle multiple PDFs per reference correctly
+  - Add progressive file addition with proper deduplication
+  - Clean up redundant matching information and improve matching accuracy
+  - Ensure correct handling when reference matches multiple PDF files
+  - _Requirements: 1.4, 1.8_
 
 - [x] 5. Create home page integration and modal workflow
 - [x] 5.1 Add Import Documents button to home page and modify workspace selection
@@ -105,6 +122,14 @@
   - Accept workspace ID as prop from home page
   - Pass workspace ID to ImportAnalysisTable component
   - _Requirements: 2.1, 4.3_
+
+- [ ] 5.2.1 Improve modal flow control and closing behavior
+  - Update ImportModal.vue to disable confirm-close after successful completion
+  - Ensure confirm-close is only active during import process, not after completion
+  - Allow flexible upload order (bibliography first or PDFs first)
+  - Improve step navigation to preserve data when moving between steps
+  - Add event emission to refresh recent import list on home screen after modal closes
+  - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5_
 
 - [ ] 6. Implement upload step components
 - [x] 6.1 Create ImportBibUpload.vue component (Step 1)
@@ -145,6 +170,13 @@
   - Accept workspace ID as prop and pass it to the analysis use case
   - Fix workspaceId reference in useImportAnalysisViewModel.ts to properly access workspace from parent component
   - _Requirements: 2.1, 2.2, 2.7_
+
+- [ ] 7.2.1 Add option to import references without PDFs
+  - Add toggle option to import entire table including references without matched PDFs
+  - Add toggle option to import only references with at least one matched PDF file
+  - Update table filtering to show/hide references without PDFs based on user selection
+  - Modify import confirmation logic to respect user's choice about references without PDFs
+  - _Requirements: 2.6, 2.8, 2.9_
 
 - [x] 7.3 Fix ImportModal step navigation and data persistence
   - Update ImportFileUpload.vue to accept initialBibData and initialPdfData props

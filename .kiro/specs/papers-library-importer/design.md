@@ -2,9 +2,11 @@
 
 ## Overview
 
-The Papers Library Importer feature enables researchers to import their existing reference libraries from .bib files and PDF folders into Extralit workspaces. The system leverages the existing document upload endpoint (`POST /documents`) and job queue system to process bibliographic metadata from .bib files, match PDF files to references, and provide a user-friendly interface for reviewing and confirming imports before executing bulk operations.
+The Papers Library Importer feature enables researchers to import their existing reference libraries from bibliography files (.bib or .csv) and PDF folders into Extralit workspaces. The system leverages the existing document upload endpoint (`POST /documents`) and job queue system to process bibliographic metadata from various formats, match PDF files to references using advanced path matching algorithms, and provide a user-friendly interface for reviewing and confirming imports before executing bulk operations.
 
-**Generalized Tabular Import Support**: The import system is designed to handle tabular data beyond just BibTeX files. The core functionality supports CSV imports and other structured data formats by storing imported data as dataframes with schema information. This enables future expansion to support various research data import formats while maintaining consistent processing workflows.
+**Generalized Tabular Import Support**: The import system is designed to handle multiple tabular data formats including BibTeX (.bib) and CSV files. The core functionality supports flexible column mapping for CSV imports and stores imported data as dataframes with schema information. This enables consistent processing workflows across different research data import formats.
+
+**Enhanced PDF Matching**: The system uses sophisticated file matching algorithms including maximum prefix path matching, exact filename matching, and fuzzy string matching to associate PDF files with bibliography entries. Users can import references with or without associated PDF files.
 
 The design follows Extralit's existing patterns: context-based backend architecture, FastAPI endpoints with proper authorization, Vue.js frontend components, and the existing RQ-based asynchronous job processing system for bulk operations.
 
@@ -12,7 +14,7 @@ The design follows Extralit's existing patterns: context-based backend architect
 
 ### High-Level Flow
 
-1. **Frontend Processing Phase**: User uploads .bib file and PDFs to frontend, which parses BibTeX entries into generic dataframe format and matches files to references
+1. **Frontend Processing Phase**: User uploads bibliography file (.bib or .csv) and PDFs to frontend, which parses entries into generic dataframe format and matches files to references using advanced path matching
 2. **Analysis Phase**: Frontend sends file metadata (not file contents) to backend for add/update/skip status analysis
 3. **Preview Phase**: Frontend displays import preview with status for each document based on server analysis
 4. **Bulk Upload Phase**: User confirms import, frontend sends paginated requests to bulk upload endpoint with actual file contents
@@ -23,8 +25,8 @@ The design follows Extralit's existing patterns: context-based backend architect
 
 ```mermaid
 graph TD
-    A[Frontend Upload Component] --> B[Frontend BibTeX Parser]
-    A --> C[Frontend File Matcher]
+    A[Frontend Upload Component] --> B[Frontend Bibliography Parser (.bib/.csv)]
+    A --> C[Frontend Advanced File Matcher]
     B --> D[File Metadata Analysis Request]
     B --> E[Generic Dataframe Conversion]
     C --> D
@@ -434,7 +436,7 @@ class ImportHistoryResponse(BaseModel):
     """Response schema for import history creation and retrieval."""
     id: UUID = Field(..., description="Import history record ID")
     workspace_id: UUID = Field(..., description="Workspace ID")
-    user_id: UUID = Field(..., description="User ID who created the import")
+    username: str = Field(..., description="User who created the import")
     filename: str = Field(..., description="Import filename")
     created_at: datetime = Field(..., description="Creation timestamp")
     data: Optional[Dict] = Field(None, description="Tabular dataframe data (only in detailed view)")
