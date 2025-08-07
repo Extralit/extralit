@@ -317,7 +317,7 @@ Example BibTeX files:
 
 **Features using new simple table component:**
 - Uses `GetImportAnalysisUseCase` from `~/v1/domain/usecases/get-import-analysis-use-case.ts` for backend communication
-- Uses `useImportAnalysisViewModel` for reactive state management and API integration
+- Uses `useImportAnalysisTableViewModel` for reactive state management and API integration
 - Imports backend API types from `~/v1/domain/entities/import/ImportAnalysis.ts`
 - Imports UI component types from `./types.ts` for table configuration and component state
 - Tabular display with columns: Reference (first column freeze), and Files, Import Status (last column freeze), while the rest of the columns imported from are sorted Title, Authors, Year, to the rest of the table
@@ -645,7 +645,7 @@ extralit-frontend/
     ├── ImportFlow.vue                # Main workflow modal (receives workspace ID)
     ├── ImportFileUpload.vue           # Step 1 & 2: File uploads
     ├── ImportAnalysisTable.vue        # Step 3: Analysis & selection (uses workspace ID)
-    ├── useImportAnalysisViewModel.ts  # View model that calls get-import-analysis-use-case.ts
+    ├── useImportAnalysisTableViewModel.ts  # View model that calls get-import-analysis-use-case.ts
     └── ImportBatchProgress.vue        # Step 4: Upload progress
 ```
 

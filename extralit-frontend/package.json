@@ -19,7 +19,7 @@
         "e2e": "npx playwright test --ui",
         "e2e:report": "npx playwright show-report",
         "e2e:silent": "npx playwright test",
-        "test": "jest --colors --maxWorkers=50%",
+        "test": "jest --colors --maxWorkers=50% --silent=false --verbose=false --testLocationInResults --noStackTrace --testPathIgnorePatterns=node_modules",
         "test:coverage": "jest --colors --coverage --maxWorkers=50%",
         "test:watch": "jest --colors --watchAll --maxWorkers=50%"
     },

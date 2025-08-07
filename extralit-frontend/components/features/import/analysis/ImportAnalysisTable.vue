@@ -83,7 +83,7 @@ import {
   TableColumn,
   CellComponent,
 } from '../types';
-import { useImportAnalysisViewModel } from './useImportAnalysisTableViewModel';
+import { useImportAnalysisTableViewModel } from './useImportAnalysisTableViewModel';
 import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
 
 export default {
@@ -626,7 +626,7 @@ export default {
   },
 
   setup(props) {
-    const viewModel = useImportAnalysisViewModel(props);
+    const viewModel = useImportAnalysisTableViewModel(props);
     return {
       ...viewModel,
     };

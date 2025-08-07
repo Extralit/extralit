@@ -4,7 +4,7 @@ import { GetImportAnalysisUseCase } from "~/v1/domain/usecases/get-import-analys
 import type { ImportAnalysisResponse, ImportStatus, DataframeData } from "~/v1/domain/entities/import/ImportAnalysis";
 import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
 
-export function useImportAnalysisViewModel(props: any) {
+export function useImportAnalysisTableViewModel(props: any) {
   const isAnalyzing = ref(false);
   const hasError = ref(false);
   const errorMessage = ref("");

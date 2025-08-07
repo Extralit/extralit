@@ -78,7 +78,7 @@ describe("ImportAnalysisTable", () => {
       value: initialValue,
     }));
 
-    mockWatch.mockImplementation(() => {});
+    mockWatch.mockImplementation(() => { });
 
     wrapper = mount(ImportAnalysisTable, {
       propsData: {
@@ -91,14 +91,6 @@ describe("ImportAnalysisTable", () => {
         BaseSpinner: true,
         BaseIcon: true,
         BaseButton: true,
-        BaseRadioButton: {
-          template: '<input type="radio" class="mock-radio-button" />',
-          props: ["value", "name"],
-          model: {
-            prop: "modelValue",
-            event: "change",
-          },
-        },
         BaseSimpleTable: {
           template: '<div class="mock-simple-table"></div>',
           props: ["data", "columns", "options"],
@@ -114,88 +106,50 @@ describe("ImportAnalysisTable", () => {
     jest.restoreAllMocks();
   });
 
-  describe("Import Mode Toggle", () => {
-    it("should render import mode options", () => {
-      const importOptions = wrapper.find(".import-options");
-      expect(importOptions.exists()).toBe(true);
-
-      const radioButtons = wrapper.findAll(".mock-radio-button");
-      expect(radioButtons.length).toBe(2);
+  describe("Basic Rendering", () => {
+    it("should render the analysis table", () => {
+      expect(wrapper.find(".import-analysis-table").exists()).toBe(true);
     });
 
-    it("should default to 'all' import mode", () => {
-      expect(wrapper.vm.importMode).toBe("all");
+    it("should show summary statistics", () => {
+      const summaryStats = wrapper.find(".summary-stats");
+      expect(summaryStats.exists()).toBe(true);
     });
 
-    it("should calculate references with and without PDFs correctly", () => {
+    it("should show import information", () => {
+      const importInfo = wrapper.find(".import-info");
+      expect(importInfo.exists()).toBe(true);
+    });
+
+    it("should display references with and without PDFs count", () => {
       expect(wrapper.vm.referencesWithoutPdfsCount).toBe(1); // test2 has no PDFs
       expect(wrapper.vm.referencesWithPdfsCount).toBe(1); // test1 has PDFs
     });
+  });
 
-    it("should filter table data based on import mode", () => {
-      // Default mode 'all' should show all references
-      expect(wrapper.vm.tableData.length).toBe(2);
-
-      // Switch to 'with-pdfs' mode
-      wrapper.setData({ importMode: "with-pdfs" });
+  describe("Table Data Filtering", () => {
+    it("should only show references with PDFs in table data", () => {
+      // Only test1 has PDFs, so only it should be shown
       expect(wrapper.vm.tableData.length).toBe(1);
       expect(wrapper.vm.tableData[0].reference).toBe("test1");
     });
 
-    it("should handle import mode change correctly", () => {
-      const emitSpy = jest.spyOn(wrapper.vm, "$emit");
-
-      // Switch to 'with-pdfs' mode
-      wrapper.setData({ importMode: "with-pdfs" });
-      wrapper.vm.handleImportModeChange();
-
-      // Should set references without PDFs to ignore
-      expect(wrapper.vm.localDocumentActions.test2).toBe("ignore");
-      expect(emitSpy).toHaveBeenCalledWith("update", expect.any(Object));
-    });
-
-    it("should restore original status when switching back to 'all' mode", () => {
-      // First switch to 'with-pdfs' mode
-      wrapper.setData({ importMode: "with-pdfs" });
-      wrapper.vm.handleImportModeChange();
-      expect(wrapper.vm.localDocumentActions.test2).toBe("ignore");
-
-      // Switch back to 'all' mode
-      wrapper.setData({ importMode: "all" });
-      wrapper.vm.handleImportModeChange();
-
-      // Should remove the ignore action
-      expect(wrapper.vm.localDocumentActions.test2).toBeUndefined();
-    });
-  });
-
-  describe("Confirmed Count Calculation", () => {
-    it("should respect import mode when calculating confirmed count", () => {
-      // In 'all' mode, both references should be counted (default to 'add')
-      expect(wrapper.vm.confirmedCount).toBe(2);
-
-      // Switch to 'with-pdfs' mode
-      wrapper.setData({ importMode: "with-pdfs" });
-      expect(wrapper.vm.confirmedCount).toBe(1); // Only test1 has PDFs
-    });
-  });
-
-  describe("Filtered Dataframe Data", () => {
-    it("should return original dataframe data when import mode is 'all'", () => {
-      expect(wrapper.vm.filteredDataframeData).toEqual(mockDataframeData);
-    });
-
-    it("should filter out references without PDFs when import mode is 'with-pdfs'", () => {
-      wrapper.setData({ importMode: "with-pdfs" });
-
+    it("should filter dataframe data to only include references with PDFs", () => {
       const filtered = wrapper.vm.filteredDataframeData;
       expect(filtered.data.length).toBe(1);
       expect(filtered.data[0].reference).toBe("test1");
     });
   });
 
+  describe("Confirmed Count Calculation", () => {
+    it("should only count references with PDFs", () => {
+      // Only test1 has PDFs, so only it should be counted
+      expect(wrapper.vm.confirmedCount).toBe(1);
+    });
+  });
+
   describe("Emit Update", () => {
-    it("should include import mode and filtered dataframe data in emitted update data", () => {
+    it("should emit update with correct data structure", () => {
       const emitSpy = jest.spyOn(wrapper.vm, "$emit");
 
       wrapper.vm.emitUpdate();
@@ -203,7 +157,6 @@ describe("ImportAnalysisTable", () => {
       expect(emitSpy).toHaveBeenCalledWith(
         "update",
         expect.objectContaining({
-          importMode: "all",
           confirmedDocuments: expect.any(Object),
           totalConfirmed: expect.any(Number),
           documentActions: expect.any(Object),
@@ -212,10 +165,9 @@ describe("ImportAnalysisTable", () => {
       );
     });
 
-    it("should exclude references without PDFs when import mode is 'with-pdfs'", () => {
+    it("should only include references with PDFs in confirmed documents", () => {
       const emitSpy = jest.spyOn(wrapper.vm, "$emit");
 
-      wrapper.setData({ importMode: "with-pdfs" });
       wrapper.vm.emitUpdate();
 
       const emittedData = emitSpy.mock.calls[0][1];
@@ -227,12 +179,63 @@ describe("ImportAnalysisTable", () => {
   });
 
   describe("Reset Local State", () => {
-    it("should reset import mode to 'all' when resetting local state", () => {
-      wrapper.setData({ importMode: "with-pdfs" });
+    it("should reset local document actions when resetting local state", () => {
       wrapper.vm.resetLocalState();
 
-      expect(wrapper.vm.importMode).toBe("all");
       expect(wrapper.vm.localDocumentActions).toEqual({});
+    });
+  });
+
+  describe("Loading and Error States", () => {
+    it("should show loading state when loading prop is true", () => {
+      wrapper = mount(ImportAnalysisTable, {
+        propsData: {
+          dataframeData: mockDataframeData,
+          pdfData: { matchedFiles: [] },
+          workspace: mockWorkspace,
+          loading: true,
+        },
+        stubs: {
+          BaseSpinner: true,
+          BaseIcon: true,
+          BaseButton: true,
+          BaseSimpleTable: true,
+        },
+      });
+
+      expect(wrapper.find(".loading-state").exists()).toBe(true);
+    });
+
+    it("should show error state when hasError is true", () => {
+      const mockViewModel = require("./useImportAnalysisTableViewModel").useImportAnalysisTableViewModel;
+      mockViewModel.mockReturnValue({
+        isAnalyzing: false,
+        hasError: true,
+        errorMessage: "Test error",
+        analysisResult: null,
+        documentActions: {},
+        reset: jest.fn(),
+        analyzeImport: jest.fn(),
+        retryAnalysis: jest.fn(),
+      });
+
+      wrapper = mount(ImportAnalysisTable, {
+        propsData: {
+          dataframeData: mockDataframeData,
+          pdfData: { matchedFiles: [] },
+          workspace: mockWorkspace,
+          loading: false,
+        },
+        stubs: {
+          BaseSpinner: true,
+          BaseIcon: true,
+          BaseButton: true,
+          BaseSimpleTable: true,
+        },
+      });
+
+      expect(wrapper.find(".error-state").exists()).toBe(true);
+      expect(wrapper.text()).toContain("Test error");
     });
   });
 });
