@@ -7,6 +7,12 @@ interface MatchCandidate {
   confidence: number;
 }
 
+interface PrefixMatchResult {
+  prefixLength: number;
+  confidence: number;
+  type: string;
+}
+
 export class PdfMatchingService implements IPdfMatchingService {
   matchFiles(files: File[], entries: ParsedEntry[]): PdfMatchingResult {
     if (!entries || entries.length === 0 || files.length === 0) {
@@ -18,29 +24,54 @@ export class PdfMatchingService implements IPdfMatchingService {
 
     const matchedFiles: PdfMatchResult[] = [];
     const unmatchedFiles: File[] = [];
-    const matchedReferences = new Set<string>();
-    const webkitMatchedFiles = new Set<File>();
 
-    // Phase 1: Webkit path matching (highest priority)
-    for (const file of files) {
+    // Track which references have been matched to support multiple files per reference
+    const referenceFileCount = new Map<string, number>();
+    const processedFiles = new Set<File>();
+
+    // Phase 1: Maximum prefix path matching (highest priority)
+    const prefixMatches = this.findMaximumPrefixMatches(files, entries);
+
+    for (const match of prefixMatches) {
+      if (!processedFiles.has(match.file)) {
+        matchedFiles.push({
+          file: match.file,
+          bibEntry: match.entry,
+          matchType: match.type,
+          confidence: match.confidence,
+        });
+
+        // Track multiple files per reference
+        const currentCount = referenceFileCount.get(match.entry.reference) || 0;
+        referenceFileCount.set(match.entry.reference, currentCount + 1);
+        processedFiles.add(match.file);
+      }
+    }
+
+    // Phase 2: Webkit path matching for remaining files
+    const remainingFiles = files.filter((file) => !processedFiles.has(file));
+
+    for (const file of remainingFiles) {
       const webkitMatch = this.findWebkitPathMatch(file, entries);
-      if (webkitMatch && !matchedReferences.has(webkitMatch.entry.reference)) {
+      if (webkitMatch) {
         matchedFiles.push({
           file,
           bibEntry: webkitMatch.entry,
           matchType: webkitMatch.type,
           confidence: webkitMatch.confidence,
         });
-        matchedReferences.add(webkitMatch.entry.reference);
-        webkitMatchedFiles.add(file);
+
+        const currentCount = referenceFileCount.get(webkitMatch.entry.reference) || 0;
+        referenceFileCount.set(webkitMatch.entry.reference, currentCount + 1);
+        processedFiles.add(file);
       }
     }
 
-    // Phase 2: Other matching methods for remaining files
-    const remainingFiles = files.filter((file) => !webkitMatchedFiles.has(file));
+    // Phase 3: Other matching methods for remaining files
+    const finalRemainingFiles = files.filter((file) => !processedFiles.has(file));
 
-    for (const file of remainingFiles) {
-      const match = this.findBestNonWebkitMatch(file, entries, matchedReferences);
+    for (const file of finalRemainingFiles) {
+      const match = this.findBestNonWebkitMatch(file, entries);
       if (match) {
         matchedFiles.push({
           file,
@@ -48,19 +79,212 @@ export class PdfMatchingService implements IPdfMatchingService {
           matchType: match.type,
           confidence: match.confidence,
         });
-        matchedReferences.add(match.entry.reference);
+
+        const currentCount = referenceFileCount.get(match.entry.reference) || 0;
+        referenceFileCount.set(match.entry.reference, currentCount + 1);
+        processedFiles.add(file);
       } else {
         unmatchedFiles.push(file);
       }
     }
 
-    // Sort matched files by confidence (highest first)
-    matchedFiles.sort((a, b) => b.confidence - a.confidence);
+    // Sort matched files by confidence (highest first), then by reference for grouping
+    matchedFiles.sort((a, b) => {
+      if (Math.abs(a.confidence - b.confidence) < 0.01) {
+        return a.bibEntry.reference.localeCompare(b.bibEntry.reference);
+      }
+      return b.confidence - a.confidence;
+    });
 
     return {
       matchedFiles,
       unmatchedFiles,
     };
+  }
+
+  /**
+   * Find maximum prefix path matches for all files against all entries
+   * This method implements the core maximum prefix matching algorithm
+   */
+  private findMaximumPrefixMatches(
+    files: File[],
+    entries: ParsedEntry[]
+  ): Array<{
+    file: File;
+    entry: ParsedEntry;
+    type: string;
+    confidence: number;
+  }> {
+    const matches: Array<{
+      file: File;
+      entry: ParsedEntry;
+      type: string;
+      confidence: number;
+    }> = [];
+
+    // Create a map of all possible file-entry combinations with their prefix match scores
+    const allCombinations: Array<{
+      file: File;
+      entry: ParsedEntry;
+      prefixResult: PrefixMatchResult;
+    }> = [];
+
+    for (const file of files) {
+      const filePath: string = (file as any).webkitRelativePath || file.name;
+      const normalizedFilePath = this.normalizePath(filePath);
+
+      for (const entry of entries) {
+        if (!entry.filePaths || entry.filePaths.length === 0) continue;
+
+        for (const bibFilePath of entry.filePaths) {
+          const normalizedBibPath = this.normalizePath(bibFilePath);
+          const prefixResult = this.calculateMaximumPrefixMatch(normalizedFilePath, normalizedBibPath);
+
+          if (prefixResult.prefixLength > 0) {
+            allCombinations.push({
+              file,
+              entry,
+              prefixResult,
+            });
+          }
+        }
+      }
+    }
+
+    // Sort by prefix length (descending) and confidence (descending)
+    allCombinations.sort((a, b) => {
+      if (a.prefixResult.prefixLength !== b.prefixResult.prefixLength) {
+        return b.prefixResult.prefixLength - a.prefixResult.prefixLength;
+      }
+      return b.prefixResult.confidence - a.prefixResult.confidence;
+    });
+
+    // Progressive file addition with deduplication
+    const usedFiles = new Set<File>();
+    const referenceFileCounts = new Map<string, number>();
+
+    for (const combination of allCombinations) {
+      const { file, entry, prefixResult } = combination;
+
+      // Skip if file is already matched with higher confidence
+      if (usedFiles.has(file)) continue;
+
+      // Allow multiple files per reference, but ensure quality matches
+      const currentFileCount = referenceFileCounts.get(entry.reference) || 0;
+
+      // For multiple files per reference, require higher confidence
+      const minConfidence = currentFileCount === 0 ? 0.7 : 0.8;
+
+      if (prefixResult.confidence >= minConfidence) {
+        matches.push({
+          file,
+          entry,
+          type: prefixResult.type,
+          confidence: prefixResult.confidence,
+        });
+
+        usedFiles.add(file);
+        referenceFileCounts.set(entry.reference, currentFileCount + 1);
+      }
+    }
+
+    return matches;
+  }
+
+  /**
+   * Calculate maximum prefix match between two normalized paths
+   */
+  private calculateMaximumPrefixMatch(filePath: string, bibPath: string): PrefixMatchResult {
+    if (!filePath || !bibPath) {
+      return { prefixLength: 0, confidence: 0, type: "no_match" };
+    }
+
+    // Split paths into components
+    const filePathParts = filePath.split("/").filter((part) => part.length > 0);
+    const bibPathParts = bibPath.split("/").filter((part) => part.length > 0);
+
+    // Find maximum prefix match from the end (most specific parts first)
+    let maxPrefixLength = 0;
+    let matchType = "no_match";
+
+    // Check for exact path match first
+    if (filePath === bibPath) {
+      return {
+        prefixLength: Math.max(filePathParts.length, bibPathParts.length),
+        confidence: 1.0,
+        type: "exact_path_match",
+      };
+    }
+
+    // Check suffix matching (from the end of the path)
+    const minLength = Math.min(filePathParts.length, bibPathParts.length);
+
+    for (let i = 1; i <= minLength; i++) {
+      const filePathSuffix = filePathParts.slice(-i);
+      const bibPathSuffix = bibPathParts.slice(-i);
+
+      let allMatch = true;
+      for (let j = 0; j < i; j++) {
+        if (filePathSuffix[j] !== bibPathSuffix[j]) {
+          allMatch = false;
+          break;
+        }
+      }
+
+      if (allMatch) {
+        maxPrefixLength = i;
+        matchType = i === minLength ? "full_suffix_match" : "partial_suffix_match";
+      } else {
+        break; // Stop at first non-match since we're looking for continuous suffix
+      }
+    }
+
+    // If no exact suffix match, try filename similarity
+    if (maxPrefixLength === 0) {
+      const fileName = filePathParts[filePathParts.length - 1];
+      const bibFileName = bibPathParts[bibPathParts.length - 1];
+
+      if (fileName && bibFileName) {
+        // Remove .pdf extension for comparison
+        const cleanFileName = fileName.replace(/\.pdf$/i, "");
+        const cleanBibFileName = bibFileName.replace(/\.pdf$/i, "");
+
+        const similarity = this.calculateStringSimilarity(cleanFileName, cleanBibFileName);
+        if (similarity >= 0.8) {
+          return {
+            prefixLength: 1,
+            confidence: similarity * 0.7, // Lower confidence for filename-only matches
+            type: "filename_similarity",
+          };
+        }
+      }
+    }
+
+    // Calculate confidence based on prefix length and path lengths
+    if (maxPrefixLength > 0) {
+      const maxPathLength = Math.max(filePathParts.length, bibPathParts.length);
+      const minPathLength = Math.min(filePathParts.length, bibPathParts.length);
+
+      // Base confidence on how much of the shorter path is matched
+      let confidence = maxPrefixLength / minPathLength;
+
+      // Bonus for matching more of the longer path
+      const longerPathBonus = (maxPrefixLength / maxPathLength) * 0.2;
+      confidence = Math.min(1.0, confidence + longerPathBonus);
+
+      // Penalty for very different path lengths
+      const lengthDifference = Math.abs(filePathParts.length - bibPathParts.length);
+      const lengthPenalty = lengthDifference * 0.1;
+      confidence = Math.max(0.1, confidence - lengthPenalty);
+
+      return {
+        prefixLength: maxPrefixLength,
+        confidence,
+        type: matchType,
+      };
+    }
+
+    return { prefixLength: 0, confidence: 0, type: "no_match" };
   }
 
   private findWebkitPathMatch(file: File, entries: ParsedEntry[]): MatchCandidate | null {
@@ -79,20 +303,12 @@ export class PdfMatchingService implements IPdfMatchingService {
     return null;
   }
 
-  private findBestNonWebkitMatch(
-    file: File,
-    entries: ParsedEntry[],
-    matchedReferences: Set<string>
-  ): MatchCandidate | null {
+  private findBestNonWebkitMatch(file: File, entries: ParsedEntry[]): MatchCandidate | null {
     const fileName: string = file.name.toLowerCase().replace(/\.pdf$/, "");
     let bestMatch: MatchCandidate | null = null;
     let bestConfidence = 0;
 
     for (const entry of entries) {
-      if (matchedReferences.has(entry.reference)) {
-        continue;
-      }
-
       const matches = [
         this.checkFileFieldMatch(fileName, entry.filePaths),
         this.checkExactMatch(fileName, entry.reference),
@@ -129,21 +345,24 @@ export class PdfMatchingService implements IPdfMatchingService {
     for (const bibFilePath of parsedFilePaths) {
       const normalizedBibPath = this.normalizePath(bibFilePath);
 
-      if (normalizedFilePath === normalizedBibPath) {
-        return { type: "webkit_path_exact", confidence: 1.0 };
+      // Use the same maximum prefix matching logic for consistency
+      const prefixResult = this.calculateMaximumPrefixMatch(normalizedFilePath, normalizedBibPath);
+
+      if (prefixResult.confidence >= 0.8) {
+        return {
+          type: `webkit_${prefixResult.type}`,
+          confidence: prefixResult.confidence * 0.95, // Slightly lower than maximum prefix matches
+        };
       }
 
-      if (this.checkSuffixPathMatch(normalizedFilePath, normalizedBibPath)) {
-        return { type: "webkit_path_suffix", confidence: 0.95 };
-      }
-
+      // Fallback to filename similarity for webkit paths
       const filePathName = this.extractFileNameFromPath(normalizedFilePath);
       const bibPathName = this.extractFileNameFromPath(normalizedBibPath);
 
       if (filePathName && bibPathName) {
         const similarity = this.calculateStringSimilarity(filePathName, bibPathName);
         if (similarity >= 0.9) {
-          return { type: "webkit_path_filename", confidence: similarity * 0.9 };
+          return { type: "webkit_path_filename", confidence: similarity * 0.85 };
         }
       }
     }
@@ -268,25 +487,5 @@ export class PdfMatchingService implements IPdfMatchingService {
     const fileName = parts[parts.length - 1];
 
     return fileName ? fileName.replace(/\.pdf$/, "") : null;
-  }
-
-  private checkSuffixPathMatch(filePath: string, bibPath: string): boolean {
-    if (!filePath || !bibPath) return false;
-
-    const filePathParts = filePath.split("/");
-    const bibPathParts = bibPath.split("/");
-    const minLength = Math.min(filePathParts.length, bibPathParts.length);
-
-    for (let i = 1; i <= minLength; i++) {
-      const filePathSuffix = filePathParts.slice(-i).join("/");
-      const bibPathSuffix = bibPathParts.slice(-i).join("/");
-
-      if (filePathSuffix === bibPathSuffix) {
-        const matchRatio = i / Math.max(filePathParts.length, bibPathParts.length);
-        return matchRatio >= 0.5;
-      }
-    }
-
-    return false;
   }
 }
