@@ -142,7 +142,7 @@
 import Home from "@/layouts/Home.vue";
 import { useHomeViewModel } from "./useHomeViewModel";
 import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
-import ImportHistoryDetailsModal from "~/components/features/import/ImportHistoryDetailsModal.vue";
+import ImportHistoryDetailsModal from "~/components/features/import/history/ImportHistoryDetailsModal.vue";
 
 export default {
   data() {

@@ -47,23 +47,15 @@
         </div>
       </div>
 
-      <!-- Import options -->
-      <div class="import-options">
-        <h4>Import Options</h4>
-        <div class="option-group">
-          <BaseRadioButton v-model="importMode" value="all" name="import-mode-all" @change="handleImportModeChange">
-            Import all references (including those without PDFs)
-          </BaseRadioButton>
-          <BaseRadioButton v-model="importMode" value="with-pdfs" name="import-mode-pdfs" @change="handleImportModeChange">
-            Import only references with at least one PDF file
-          </BaseRadioButton>
-        </div>
-        <div class="option-stats">
-          <span class="stat-info">
-            References without PDFs: {{ referencesWithoutPdfsCount }}
-          </span>
+      <!-- Import info -->
+      <div class="import-info">
+        <h4>Import Information</h4>
+        <div class="info-stats">
           <span class="stat-info">
             References with PDFs: {{ referencesWithPdfsCount }}
+          </span>
+          <span class="stat-info">
+            References without PDFs: {{ referencesWithoutPdfsCount }} (will be ignored)
           </span>
         </div>
       </div>
@@ -86,13 +78,12 @@ import type {
   DataframeData,
   DocumentImportAnalysis,
 } from '~/v1/domain/entities/import/ImportAnalysis';
-import type {
+import {
   AnalysisTableRow,
   TableColumn,
   CellComponent,
-  ImportDataFrameMode,
 } from './types';
-import { useImportAnalysisViewModel } from './useImportAnalysisViewModel';
+import { useImportAnalysisViewModel } from './useImportAnalysisTableViewModel';
 import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
 
 export default {
@@ -122,7 +113,6 @@ export default {
   data() {
     return {
       localDocumentActions: {} as Record<string, ImportStatus>,
-      importMode: 'all' as ImportDataFrameMode, // Default to import all references
     };
   },
 
@@ -187,14 +177,8 @@ export default {
     },
 
     tableData(): AnalysisTableRow[] {
-      const allData = this.allTableData;
-
-      // Filter based on import mode
-      if (this.importMode === 'with-pdfs') {
-        return allData.filter(row => row.filePaths && row.filePaths.length > 0);
-      }
-
-      return allData;
+      // Only show rows with matched PDFs
+      return this.allTableData.filter(row => row.filePaths && row.filePaths.length > 0);
     },
 
     referencesWithoutPdfsCount(): number {
@@ -210,12 +194,7 @@ export default {
         return null;
       }
 
-      // If mode is 'all', return original dataframe data
-      if (this.importMode === 'all') {
-        return this.dataframeData;
-      }
-
-      // If mode is 'with-pdfs', filter out references without PDFs
+      // Only include references with PDFs
       const filteredData = this.dataframeData.data.filter((row: Record<string, any>) => {
         const filePaths = row.filePaths || [];
         return filePaths.length > 0;
@@ -319,13 +298,13 @@ export default {
       let count = 0;
 
       if (this.analysisResult) {
-        // Count from analysis result
+        // Count from analysis result - only include references with PDFs
         Object.entries(this.analysisResult.documents).forEach(([ref, docInfo]: [string, DocumentImportAnalysis]) => {
           const finalAction = documentActions[ref] || docInfo.status;
           const hasFiles = docInfo.associated_files && docInfo.associated_files.length > 0;
 
-          // Respect import mode: skip references without PDFs if mode is 'with-pdfs'
-          if (this.importMode === 'with-pdfs' && !hasFiles) {
+          // Only count references with PDFs
+          if (!hasFiles) {
             return;
           }
 
@@ -334,15 +313,15 @@ export default {
           }
         });
       } else if (this.dataframeData) {
-        // Count from dataframe data (default to add)
+        // Count from dataframe data - only include references with PDFs
         this.dataframeData.data.forEach((row: Record<string, any>) => {
           const reference = row.reference || row.key;
           const finalAction = documentActions[reference] || 'add';
           const filePaths = row.filePaths || [];
           const hasFiles = filePaths.length > 0;
 
-          // Respect import mode: skip references without PDFs if mode is 'with-pdfs'
-          if (this.importMode === 'with-pdfs' && !hasFiles) {
+          // Only count references with PDFs
+          if (!hasFiles) {
             return;
           }
 
@@ -483,30 +462,7 @@ export default {
       }
     },
 
-    handleImportModeChange(): void {
-      // When import mode changes, automatically set references without PDFs to ignore if mode is 'with-pdfs'
-      if (this.importMode === 'with-pdfs') {
-        this.allTableData.forEach(row => {
-          if (!row.filePaths || row.filePaths.length === 0) {
-            // Set references without PDFs to ignore
-            this.$set(this.localDocumentActions, row.reference, 'ignore');
-          }
-        });
-      } else if (this.importMode === 'all') {
-        // When switching back to 'all', restore original status for references without PDFs
-        this.allTableData.forEach(row => {
-          if (!row.filePaths || row.filePaths.length === 0) {
-            // Remove from local actions to restore original status
-            if (this.localDocumentActions[row.reference] === 'ignore') {
-              this.$delete(this.localDocumentActions, row.reference);
-            }
-          }
-        });
-      }
 
-      // Emit update to reflect the changes
-      this.emitUpdate();
-    },
 
 
     formatColumnTitle(fieldName: string) {
@@ -530,8 +486,8 @@ export default {
           const finalAction = documentActions[reference] || docInfo.status;
           const hasFiles = docInfo.associated_files && docInfo.associated_files.length > 0;
 
-          // Respect import mode: skip references without PDFs if mode is 'with-pdfs'
-          if (this.importMode === 'with-pdfs' && !hasFiles) {
+          // Only include references with PDFs
+          if (!hasFiles) {
             return;
           }
 
@@ -560,8 +516,8 @@ export default {
           const filePaths = row.filePaths || [];
           const hasFiles = filePaths.length > 0;
 
-          // Respect import mode: skip references without PDFs if mode is 'with-pdfs'
-          if (this.importMode === 'with-pdfs' && !hasFiles) {
+          // Only include references with PDFs
+          if (!hasFiles) {
             return;
           }
 
@@ -600,7 +556,6 @@ export default {
         confirmedDocuments,
         totalConfirmed: Object.keys(confirmedDocuments).length,
         documentActions: documentActions,
-        importMode: this.importMode,
         filteredDataframeData: this.filteredDataframeData,
       });
     },
@@ -618,7 +573,6 @@ export default {
 
     resetLocalState() {
       this.localDocumentActions = {};
-      this.importMode = 'all';
     },
 
 
@@ -800,8 +754,8 @@ export default {
   }
 }
 
-// Import options
-.import-options {
+// Import info
+.import-info {
   padding: $base-space * 2;
   background: var(--bg-solid-grey-1);
   border-radius: $border-radius;
@@ -814,14 +768,7 @@ export default {
     font-weight: 600;
   }
 
-  .option-group {
-    display: flex;
-    flex-direction: column;
-    gap: $base-space;
-    margin-bottom: $base-space * 2;
-  }
-
-  .option-stats {
+  .info-stats {
     display: flex;
     gap: $base-space * 3;
     flex-wrap: wrap;
@@ -833,11 +780,11 @@ export default {
       font-size: 0.9rem;
 
       &:first-child {
-        color: var(--fg-tertiary);
+        color: var(--color-success);
       }
 
       &:last-child {
-        color: var(--color-success);
+        color: var(--fg-tertiary);
       }
     }
   }

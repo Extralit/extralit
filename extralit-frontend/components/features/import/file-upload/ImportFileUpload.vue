@@ -1,13 +1,13 @@
 <template>
   <div class="import-file-upload">
     <div class="import-file-upload__header">
-      <h1 class="import-file-upload__title">Upload Bibliography and PDF Files</h1>
-      <p class="import-file-upload__description">Upload your bibliography file and PDF folder to import your library</p>
+      <h1 class="import-file-upload__title">Upload References and PDF Files</h1>
+      <p class="import-file-upload__description">Upload your BibTeX file and PDF folder to import your references</p>
     </div>
 
     <div class="import-file-upload__content">
       <div class="import-file-upload__main">
-        <!-- Bibliography Upload Section -->
+        <!-- Table Upload Section -->
         <TableUpload
           :initial-data="bibData"
           @update="handleBibUpdate"

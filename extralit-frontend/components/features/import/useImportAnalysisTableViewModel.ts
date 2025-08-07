@@ -10,6 +10,7 @@ export function useImportAnalysisViewModel(props: any) {
   const errorMessage = ref("");
   const analysisResult = ref<ImportAnalysisResponse | null>(null);
   const documentActions = ref<Record<string, ImportStatus>>({});
+  const lastAnalysisKey = ref<string>(""); // Track last analysis to prevent duplicates
 
   const importAnalysisUseCase = useResolve(GetImportAnalysisUseCase);
 
@@ -19,10 +20,24 @@ export function useImportAnalysisViewModel(props: any) {
     errorMessage.value = "";
     analysisResult.value = null;
     documentActions.value = {};
+    lastAnalysisKey.value = "";
   };
 
   const analyzeImport = async (workspace: Workspace, dataframeData: DataframeData, matchedFiles: any[]) => {
     if (!workspace || !dataframeData || dataframeData.data.length === 0) {
+      return;
+    }
+
+    // Create a unique key for this analysis to prevent duplicates
+    const analysisKey = `${workspace.id}-${dataframeData.data.length}-${matchedFiles.length}`;
+
+    // Skip if we've already analyzed this exact combination
+    if (lastAnalysisKey.value === analysisKey && analysisResult.value) {
+      return;
+    }
+
+    // Skip if already analyzing
+    if (isAnalyzing.value) {
       return;
     }
 
@@ -34,6 +49,7 @@ export function useImportAnalysisViewModel(props: any) {
       const result = await importAnalysisUseCase.analyzeImport(workspace.id, dataframeData, matchedFiles);
 
       analysisResult.value = result;
+      lastAnalysisKey.value = analysisKey;
 
       // Initialize document actions from analysis result
       const actions: Record<string, ImportStatus> = {};
@@ -51,19 +67,32 @@ export function useImportAnalysisViewModel(props: any) {
 
   const retryAnalysis = () => {
     if (props.workspace && props.dataframeData && props.pdfData?.matchedFiles) {
+      // Reset the last analysis key to force a retry
+      lastAnalysisKey.value = "";
       analyzeImport(props.workspace, props.dataframeData, props.pdfData.matchedFiles);
     }
   };
 
-  // Auto-trigger analysis when props change
+  // Auto-trigger analysis when props change - but only when we have all required data
   watch(
-    () => [props.workspace, props.dataframeData, props.pdfData],
-    ([workspace, dataframeData, pdfData]) => {
-      if (workspace && dataframeData && pdfData?.matchedFiles) {
-        analyzeImport(workspace, dataframeData, pdfData.matchedFiles);
+    () => ({
+      workspaceId: props.workspace?.id,
+      dataframeLength: props.dataframeData?.data?.length,
+      matchedFilesLength: props.pdfData?.matchedFiles?.length
+    }),
+    (newVal, oldVal) => {
+      // Only trigger if we have all required data and something actually changed
+      if (newVal.workspaceId && newVal.dataframeLength > 0 && newVal.matchedFilesLength > 0) {
+        // Check if this is a meaningful change
+        if (!oldVal ||
+          newVal.workspaceId !== oldVal.workspaceId ||
+          newVal.dataframeLength !== oldVal.dataframeLength ||
+          newVal.matchedFilesLength !== oldVal.matchedFilesLength) {
+          analyzeImport(props.workspace, props.dataframeData, props.pdfData.matchedFiles);
+        }
       }
     },
-    { deep: true, immediate: true }
+    { immediate: true }
   );
 
   return {

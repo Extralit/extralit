@@ -6,8 +6,6 @@
 import type {
   ImportStatus,
   DocumentMetadata,
-  ImportAnalysisResponse,
-  ImportHistoryResponse,
   DataframeData,
 } from "~/v1/domain/entities/import/ImportAnalysis";
 
@@ -67,15 +65,11 @@ export interface ImportSummaryData {
   importId: string | null;
 }
 
-// Import mode type
-export type ImportDataFrameMode = "all" | "with-pdfs";
-
 // Import confirmation data (Step 3)
 export interface ImportConfirmationData {
   confirmedDocuments: Record<string, DocumentMetadata>;
   totalConfirmed: number;
   documentActions: Record<string, ImportStatus>;
-  importMode: ImportDataFrameMode;
   filteredDataframeData: DataframeData | null;
 }
 
