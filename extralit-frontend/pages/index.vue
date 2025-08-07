@@ -148,7 +148,6 @@ export default {
   data() {
     return {
       showImportDatasetInput: false,
-      selectedWorkspace: null,
       activeTab: { id: 'datasets', name: this.$t('home.datasets') },
       tabs: [
         { id: 'datasets', name: this.$t('home.datasets') },
@@ -174,7 +173,7 @@ export default {
       this.getNewHfDatasetByRepoId(repoId);
     },
     onWorkspaceSelected(workspace: Workspace) {
-      this.selectedWorkspace = workspace;
+      this.setSelectedWorkspace(workspace);
     },
     onTabChange(tabId) {
       const selectedTab = this.tabs.find(tab => tab.id === tabId);
@@ -212,7 +211,7 @@ export default {
       handler(newWorkspaces) {
         // Auto-assign the first workspace if none is selected and workspaces exist
         if (!this.selectedWorkspace && newWorkspaces && newWorkspaces.length > 0) {
-          this.selectedWorkspace = newWorkspaces[0];
+          this.setSelectedWorkspace(newWorkspaces[0]);
         }
       }
     }

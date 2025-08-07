@@ -7,6 +7,7 @@ import { GetWorkspacesUseCase } from "~/v1/domain/usecases/get-workspaces-use-ca
 import { useDatasets } from "~/v1/infrastructure/storage/DatasetsStorage";
 import { useRole } from "~/v1/infrastructure/services/useRole";
 import { ImportHistoryListItem } from "~/v1/domain/usecases/get-import-history-use-case";
+import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
 
 export const useHomeViewModel = () => {
   const workspaces = ref<any[]>([]);
@@ -86,10 +87,19 @@ export const useHomeViewModel = () => {
   });
 
   // Workspace selection for import
-  const selectedWorkspaceId = ref<string | null>(null);
+  const selectedWorkspace = ref<Workspace | null>(null);
+
+  const setSelectedWorkspace = (workspace: Workspace | null) => {
+    selectedWorkspace.value = workspace;
+  };
 
   const setSelectedWorkspaceId = (workspaceId: string | null) => {
-    selectedWorkspaceId.value = workspaceId;
+    if (workspaceId === null) {
+      selectedWorkspace.value = null;
+    } else {
+      const workspace = workspaces.value.find((w) => w.id === workspaceId);
+      selectedWorkspace.value = workspace || null;
+    }
   };
 
   // Import history modal state
@@ -136,7 +146,8 @@ export const useHomeViewModel = () => {
     showImportModal,
     isImportModalVisible,
     openImportModal,
-    selectedWorkspace: selectedWorkspaceId,
+    selectedWorkspace,
+    setSelectedWorkspace,
     setSelectedWorkspaceId,
     showImportHistoryModal,
     isImportHistoryModalVisible,
