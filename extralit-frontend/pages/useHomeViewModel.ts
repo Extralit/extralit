@@ -127,9 +127,15 @@ export const useHomeViewModel = () => {
     goToImportConfiguration(importRecord.id);
   };
 
-  const handleImportCompleted = async () => {
+  const handleImportCompleted = async (recentImportsRef?: any) => {
     // Refresh datasets and workspaces after import completion
     await onLoadDatasets();
+
+    // Refresh recent imports list if ref is provided
+    if (recentImportsRef?.refresh) {
+      await recentImportsRef.refresh();
+    }
+
     // Close the import modal
     showImportFlow.value = false;
   };

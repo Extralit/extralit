@@ -47,19 +47,6 @@
         </div>
       </div>
 
-      <!-- Import info -->
-      <div class="import-info">
-        <h4>Import Information</h4>
-        <div class="info-stats">
-          <span class="stat-info">
-            References with PDFs: {{ referencesWithPdfsCount }}
-          </span>
-          <span class="stat-info">
-            References without PDFs: {{ referencesWithoutPdfsCount }} (will be ignored)
-          </span>
-        </div>
-      </div>
-
       <!-- Table -->
       <div class="table-container">
         <BaseSimpleTable :data="tableData" :columns="tableColumns" :options="tableOptions" />

@@ -54,6 +54,7 @@
           <BaseSeparator class="home__sidebar__separator" />
           <div class="home__sidebar__content">
             <RecentImports
+              ref="recentImportsComponent"
               :workspace="selectedWorkspace"
               @import-selected="handleImportSelected"
               @view-all-imports="openImportHistoryModal"
@@ -87,7 +88,7 @@
       :is-visible="isImportFlowVisible"
       :workspace="selectedWorkspace"
       @close="showImportFlow = false"
-      @import-completed="handleImportCompleted"
+      @import-completed="() => handleImportCompleted($refs.recentImportsComponent)"
     />
 
     <!-- Import History Modal -->
