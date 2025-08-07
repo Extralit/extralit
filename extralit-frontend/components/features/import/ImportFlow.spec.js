@@ -1,5 +1,5 @@
 import { mount } from "@vue/test-utils";
-import ImportModal from "./ImportModal.vue";
+import ImportFlow from "./ImportFlow.vue";
 
 // Mock dependencies
 jest.mock("@nuxtjs/composition-api", () => ({
@@ -7,7 +7,7 @@ jest.mock("@nuxtjs/composition-api", () => ({
   watch: jest.fn(),
 }));
 
-describe("ImportModal", () => {
+describe("ImportFlow", () => {
   let wrapper;
 
   const mockWorkspace = {
@@ -49,7 +49,7 @@ describe("ImportModal", () => {
     }));
     compositionApi.watch.mockImplementation(() => {});
 
-    wrapper = mount(ImportModal, {
+    wrapper = mount(ImportFlow, {
       propsData: {
         isVisible: true,
         workspace: mockWorkspace,

@@ -146,7 +146,7 @@ Note to reuse existing styles in extralit-frontend/assets/scss/base/base.scss, e
 
 **Workspace Selection Integration:**
 - Modify WorkspacesFilter component to support single workspace selection instead of multi-select
-- Pass selected workspace ID to ImportModal component for import analysis
+- Pass selected workspace ID to ImportFlow component for import analysis
 - Ensure workspace context is maintained throughout the import workflow
 
 #### 2. FlowModal Base Component (`extralit-frontend/components/base/base-flow-modal/BaseFlowModal.vue`)
@@ -204,7 +204,7 @@ interface FlowModalProps {
 - Smooth transitions between steps
 - Loading states and disabled button styling
 
-#### 3. Import Modal Workflow (`extralit-frontend/components/features/import/ImportModal.vue`)
+#### 3. Import Modal Workflow (`extralit-frontend/components/features/import/ImportFlow.vue`)
 
 **Full-page modal using new BaseFlowModal component with multi-step workflow:**
 - Step 1: Upload Bibliography File (.bib file upload)
@@ -622,7 +622,7 @@ extralit-frontend/
 │   └── WorkspaceSelector.vue          # Modified for single workspace selection
 └── components/features/import/
     ├── types.ts                       # UI component types + re-exports
-    ├── ImportModal.vue                # Main workflow modal (receives workspace ID)
+    ├── ImportFlow.vue                # Main workflow modal (receives workspace ID)
     ├── ImportFileUpload.vue           # Step 1 & 2: File uploads
     ├── ImportAnalysisTable.vue        # Step 3: Analysis & selection (uses workspace ID)
     ├── useImportAnalysisViewModel.ts  # View model that calls get-import-analysis-use-case.ts

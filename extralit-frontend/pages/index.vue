@@ -42,7 +42,7 @@
       <template v-slot:page-sidebar>
         <template v-if="true || isAdminOrOwnerRole">
           <div class="home__sidebar__buttons">
-            <ImportDocuments @on-click="openImportModal" />
+            <ImportDocuments @on-click="openImportFlow" />
             <ImportFromHub
               :is-expanded="showImportDatasetInput"
               @on-expand="showImportDatasetInput = true"
@@ -57,7 +57,7 @@
               :workspace="selectedWorkspace"
               @import-selected="handleImportSelected"
               @view-all-imports="openImportHistoryModal"
-              @import-documents="openImportModal"
+              @import-documents="openImportFlow"
             />
           </div>
         </template>
@@ -83,10 +83,10 @@
       </template>
     </Home>
 
-    <ImportModal
-      :is-visible="isImportModalVisible"
+    <ImportFlow
+      :is-visible="isImportFlowVisible"
       :workspace="selectedWorkspace"
-      @close="showImportModal = false"
+      @close="showImportFlow = false"
       @import-completed="handleImportCompleted"
     />
 
@@ -150,7 +150,7 @@ export default {
     },
     cardAction(action) {
       if (action === "expand-import-dataset") {
-        this.openImportModal();
+        this.openImportFlow();
       }
     },
     importHfDataset(repoId: string) {

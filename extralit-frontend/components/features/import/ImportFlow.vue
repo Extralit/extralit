@@ -34,7 +34,7 @@ import "assets/icons/import";
 import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
 
 export default {
-  name: "ImportModal",
+  name: "ImportFlow",
 
   props: {
     isVisible: {

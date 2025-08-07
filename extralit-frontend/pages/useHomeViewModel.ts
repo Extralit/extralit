@@ -19,7 +19,7 @@ export const useHomeViewModel = () => {
   const getDatasetsUseCase = useResolve(GetDatasetsUseCase);
   const getDatasetCreationUseCase = useResolve(GetHfDatasetCreationUseCase);
   const error = ref("");
-  const showImportModal = ref(false);
+  const showImportFlow = ref(false);
 
   useFocusTab(async () => {
     await onLoadDatasets();
@@ -78,12 +78,12 @@ export const useHomeViewModel = () => {
     isLoadingDatasets.value = false;
   };
 
-  const openImportModal = () => {
-    showImportModal.value = !showImportModal.value;
+  const openImportFlow = () => {
+    showImportFlow.value = !showImportFlow.value;
   };
 
-  const isImportModalVisible = computed(() => {
-    return showImportModal.value;
+  const isImportFlowVisible = computed(() => {
+    return showImportFlow.value;
   });
 
   // Workspace selection for import
@@ -131,7 +131,7 @@ export const useHomeViewModel = () => {
     // Refresh datasets and workspaces after import completion
     await onLoadDatasets();
     // Close the import modal
-    showImportModal.value = false;
+    showImportFlow.value = false;
   };
 
   return {
@@ -143,9 +143,9 @@ export const useHomeViewModel = () => {
     isAdminOrOwnerRole,
     exampleDatasets,
     error,
-    showImportModal,
-    isImportModalVisible,
-    openImportModal,
+    showImportFlow,
+    isImportFlowVisible,
+    openImportFlow,
     selectedWorkspace,
     setSelectedWorkspace,
     setSelectedWorkspaceId,

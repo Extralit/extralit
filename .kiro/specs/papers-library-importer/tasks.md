@@ -110,11 +110,11 @@
   - Style button to match existing import section design
   - Connect button to open full-page import modal
   - Modify WorkspacesFilter and WorkspaceSelector components to support single workspace selection instead of multi-select
-  - Pass selected workspace ID to ImportModal component
+  - Pass selected workspace ID to ImportFlow component
   - Update DatasetList.vue to handle single workspace selection and pass workspace ID to import modal
   - _Requirements: 1.1, 4.3_
 
-- [x] 5.2 Create ImportModal.vue full-page modal component with workspace context
+- [x] 5.2 Create ImportFlow.vue full-page modal component with workspace context
   - Implement full-page modal using existing base-modal component
   - Create multi-step workflow with navigation between steps
   - Add step indicators and progress tracking
@@ -124,7 +124,7 @@
   - _Requirements: 2.1, 4.3_
 
 - [x] 5.2.1 Improve modal flow control and closing behavior
-  - Update ImportModal.vue to disable confirm-close after successful completion
+  - Update ImportFlow.vue to disable confirm-close after successful completion
   - Ensure confirm-close is only active during import process, not after completion
   - Allow flexible upload order (bibliography first or PDFs first)
   - Improve step navigation to preserve data when moving between steps
@@ -150,7 +150,7 @@
   - Modify WorkspacesFilter.vue to support single workspace selection instead of multi-select
   - Update WorkspaceSelector.vue to use radio buttons instead of checkboxes for single selection
   - Update DatasetList.vue to handle single workspace selection and emit workspace ID
-  - Update useHomeViewModel.ts to track selected workspace ID and pass it to ImportModal
+  - Update useHomeViewModel.ts to track selected workspace ID and pass it to ImportFlow
   - Ensure workspace context is maintained and passed to import components
   - _Requirements: 1.1, 4.3_
 
@@ -178,10 +178,10 @@
   - Modify import confirmation logic to respect user's choice about references without PDFs
   - _Requirements: 2.6, 2.8, 2.9_
 
-- [x] 7.3 Fix ImportModal step navigation and data persistence
+- [x] 7.3 Fix ImportFlow step navigation and data persistence
   - Update ImportFileUpload.vue to accept initialBibData and initialPdfData props
   - Add initializeWithExistingData() method to restore component state when navigating back
-  - Update ImportModal.vue to pass existing data to ImportFileUpload component
+  - Update ImportFlow.vue to pass existing data to ImportFileUpload component
   - Ensure proper data persistence across step navigation without losing uploaded files
   - Fix component lifecycle management to show uploaded files when returning to step 0
   - _Requirements: 2.1, 2.2, 4.3_
