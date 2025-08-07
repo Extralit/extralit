@@ -51,10 +51,10 @@
       <div class="import-options">
         <h4>Import Options</h4>
         <div class="option-group">
-          <BaseRadioButton v-model="importMode" value="all" name="import-mode" @change="handleImportModeChange">
+          <BaseRadioButton v-model="importMode" value="all" name="import-mode-all" @change="handleImportModeChange">
             Import all references (including those without PDFs)
           </BaseRadioButton>
-          <BaseRadioButton v-model="importMode" value="with-pdfs" name="import-mode" @change="handleImportModeChange">
+          <BaseRadioButton v-model="importMode" value="with-pdfs" name="import-mode-pdfs" @change="handleImportModeChange">
             Import only references with at least one PDF file
           </BaseRadioButton>
         </div>
@@ -483,7 +483,7 @@ export default {
       }
     },
 
-    handleImportModeChange() {
+    handleImportModeChange(): void {
       // When import mode changes, automatically set references without PDFs to ignore if mode is 'with-pdfs'
       if (this.importMode === 'with-pdfs') {
         this.allTableData.forEach(row => {
@@ -672,7 +672,10 @@ export default {
   },
 
   setup(props) {
-    return useImportAnalysisViewModel(props);
+    const viewModel = useImportAnalysisViewModel(props);
+    return {
+      ...viewModel,
+    };
   }
 };
 </script>

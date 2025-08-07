@@ -8,250 +8,56 @@
     <div class="import-file-upload__content">
       <div class="import-file-upload__main">
         <!-- Bibliography Upload Section -->
-        <div class="import-file-upload__section">
-          <div class="import-file-upload__section-header">
-            <h3 class="import-file-upload__section-title">Step 1: Upload Your Bibliography File</h3>
-            <p class="import-file-upload__section-description">
-              Import your reference list to begin.<br />
-              We support .bib files exported from reference managers like Zotero, EndNote, or Mendeley, and .csv files with tabular data.
-            </p>
-          </div>
-
-          <div class="import-file-upload__dropzone" :class="{
-            'import-file-upload__dropzone--dragover': bibDragOver,
-            'import-file-upload__dropzone--error': bibHasError,
-            'import-file-upload__dropzone--success': bibUploaded,
-          }" @drop="handleBibDrop" @dragover="handleBibDragOver" @dragleave="handleBibDragLeave"
-            @click="triggerBibFileInput">
-            <input ref="bibFileInput" type="file" accept=".bib,.bibtex,.csv" style="display: none"
-              @change="handleBibFileSelect" />
-
-            <div class="import-file-upload__dropzone-content">
-              <BaseIcon :icon-name="getBibDropzoneIcon" class="import-file-upload__dropzone-icon" />
-              <p class="import-file-upload__dropzone-text">
-                {{ getBibDropzoneText }}
-              </p>
-              <p class="import-file-upload__dropzone-subtext">Supported formats: .bib, .bibtex, .csv</p>
-            </div>
-          </div>
-
-          <!-- Bibliography Success Display -->
-          <div v-if="bibUploaded && !bibHasError" class="import-file-upload__upload-success">
-            <BaseIcon icon-name="check" class="import-file-upload__upload-success-icon" />
-            <span class="import-file-upload__upload-success-text">
-              Successfully uploaded {{ bibData.fileName }} ({{ bibData.parsedEntries.length }} entries found)
-            </span>
-          </div>
-
-          <!-- Bibliography Error Display -->
-          <div v-if="bibHasError" class="import-file-upload__error">
-            <BaseIcon icon-name="danger" class="import-file-upload__error-icon" />
-            <div class="import-file-upload__error-content">
-              <h4>Bibliography Parsing Error</h4>
-              <p>{{ bibErrorMessage }}</p>
-            </div>
-          </div>
-
-          <!-- CSV Column Selection -->
-          <div v-if="showCsvColumnSelection" class="import-file-upload__csv-selection">
-            <div class="import-file-upload__csv-selection-header">
-              <h4 class="import-file-upload__csv-selection-title">Configure CSV Import</h4>
-              <p class="import-file-upload__csv-selection-description">
-                Select the columns that contain reference identifiers and file paths for PDF matching.
-              </p>
-            </div>
-
-            <div class="import-file-upload__csv-columns">
-              <div class="import-file-upload__csv-column-group">
-                <label class="import-file-upload__csv-column-label">
-                  Reference Column (Required)
-                  <select v-model="csvConfig.referenceColumn" class="import-file-upload__csv-column-select">
-                    <option value="">Select column...</option>
-                    <option v-for="column in csvColumns" :key="column" :value="column">
-                      {{ column }}
-                    </option>
-                  </select>
-                </label>
-                <p class="import-file-upload__csv-column-help">
-                  Column containing unique identifiers for each reference (e.g., citation key, ID)
-                </p>
-              </div>
-
-              <div class="import-file-upload__csv-column-group">
-                <label class="import-file-upload__csv-column-label">
-                  Files Column (Optional)
-                  <select v-model="csvConfig.filesColumn" class="import-file-upload__csv-column-select">
-                    <option value="">Select column...</option>
-                    <option v-for="column in csvColumns" :key="column" :value="column">
-                      {{ column }}
-                    </option>
-                  </select>
-                </label>
-                <p class="import-file-upload__csv-column-help">
-                  Column containing file paths or names for PDF matching (leave empty if not available)
-                </p>
-              </div>
-            </div>
-
-            <div class="import-file-upload__csv-preview">
-              <h5>Data Preview (first 3 rows):</h5>
-              <div class="import-file-upload__csv-preview-table">
-                <table class="import-file-upload__table">
-                  <thead>
-                    <tr>
-                      <th v-for="column in csvColumns" :key="column" :class="{
-                        'import-file-upload__csv-preview-header--selected':
-                          column === csvConfig.referenceColumn || column === csvConfig.filesColumn
-                      }">
-                        {{ column }}
-                        <span v-if="column === csvConfig.referenceColumn" class="import-file-upload__csv-preview-badge">REF</span>
-                        <span v-if="column === csvConfig.filesColumn" class="import-file-upload__csv-preview-badge">FILES</span>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="(row, index) in csvPreviewData" :key="index">
-                      <td v-for="column in csvColumns" :key="column" :class="{
-                        'import-file-upload__csv-preview-cell--selected':
-                          column === csvConfig.referenceColumn || column === csvConfig.filesColumn
-                      }">
-                        {{ row[column] || '' }}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <div class="import-file-upload__csv-actions">
-              <BaseButton
-                variant="primary"
-                :disabled="!csvConfig.referenceColumn"
-                @click="processCsvWithConfig"
-              >
-                Process CSV Data
-              </BaseButton>
-              <BaseButton variant="secondary" @click="cancelCsvSelection">
-                Cancel
-              </BaseButton>
-            </div>
-          </div>
-        </div>
+        <BibliographyUpload
+          :initial-data="bibData"
+          @update="handleBibUpdate"
+        />
 
         <!-- PDF Upload Section -->
-        <div class="import-file-upload__section">
-          <div class="import-file-upload__section-header">
-            <h3 class="import-file-upload__section-title">Step 2: Upload Full-Text PDFs</h3>
-            <p class="import-file-upload__section-description">
-              Upload the PDF files that correspond to the references in your .bib file.<br />
-              Extralit will match them automatically for extraction.
-            </p>
-          </div>
-
-          <div class="import-file-upload__dropzone" :class="{
-            'import-file-upload__dropzone--dragover': pdfDragOver,
-            'import-file-upload__dropzone--error': pdfHasError,
-            'import-file-upload__dropzone--success': pdfUploaded,
-          }" @drop="handlePdfDrop" @dragover="handlePdfDragOver" @dragleave="handlePdfDragLeave"
-            @click="triggerPdfFolderInput">
-            <input ref="pdfFolderInput" type="file" accept=".pdf" multiple webkitdirectory style="display: none"
-              @change="handlePdfFolderSelect" />
-
-            <div class="import-file-upload__dropzone-content">
-              <BaseIcon :icon-name="getPdfDropzoneIcon" class="import-file-upload__dropzone-icon" />
-              <p class="import-file-upload__dropzone-text">
-                {{ getPdfDropzoneText }}
-              </p>
-              <p class="import-file-upload__dropzone-subtext">Upload a folder containing your PDF files.<br /></p>
-            </div>
-          </div>
-
-          <!-- PDF Processing Progress -->
-          <div v-if="pdfProcessing" class="import-file-upload__progress">
-            <div class="import-file-upload__progress-header">
-              <h4>Processing PDF Files...</h4>
-              <span>{{ pdfProcessedFiles }}/{{ pdfTotalFiles }} files</span>
-            </div>
-            <div class="import-file-upload__progress-bar">
-              <div class="import-file-upload__progress-fill" :style="{ width: `${pdfProgressPercentage}%` }"></div>
-            </div>
-          </div>
-
-          <!-- PDF Success Display -->
-          <div v-if="pdfUploaded && !pdfHasError && !pdfProcessing" class="import-file-upload__upload-success">
-            <BaseIcon icon-name="check" class="import-file-upload__upload-success-icon" />
-            <span class="import-file-upload__upload-success-text">
-              {{ pdfData.totalFiles }} PDF files uploaded
-              <span v-if="pdfData.matchedFiles.length > 0" class="import-file-upload__match-info">
-                ({{ pdfData.matchedFiles.length }} matched)
-              </span>
-            </span>
-          </div>
-
-          <!-- PDF Error Display -->
-          <div v-if="pdfHasError" class="import-file-upload__error">
-            <BaseIcon icon-name="danger" class="import-file-upload__error-icon" />
-            <div class="import-file-upload__error-content">
-              <h4>PDF Processing Error</h4>
-              <p>{{ pdfErrorMessage }}</p>
-            </div>
-          </div>
-        </div>
+        <PdfUpload
+          :initial-data="pdfData"
+          :bibliography-entries="bibData.parsedEntries"
+          @update="handlePdfUpdate"
+        />
       </div>
 
       <!-- Summary Sidebar -->
-      <div class="import-file-upload__sidebar"
-        :style="{ visibility: bibUploaded || pdfUploaded ? 'visible' : 'hidden' }">
-        <h4 class="import-file-upload__sidebar-title">Summary status:</h4>
-
-        <div class="import-file-upload__sidebar-stats">
-          <!-- Bibliography Status -->
-          <div v-if="bibUploaded && !bibHasError" class="import-file-upload__sidebar-stat">
-            <BaseIcon icon-name="document"
-              class="import-file-upload__sidebar-stat-icon import-file-upload__sidebar-stat-icon--bib" />
-            <span class="import-file-upload__sidebar-stat-text">{{ bibData.parsedEntries.length }} references
-              found</span>
-          </div>
-
-          <!-- PDF Status -->
-          <div v-if="pdfUploaded && !pdfHasError && !pdfProcessing" class="import-file-upload__sidebar-stat">
-            <BaseIcon icon-name="import"
-              class="import-file-upload__sidebar-stat-icon import-file-upload__sidebar-stat-icon--pdf" />
-            <span class="import-file-upload__sidebar-stat-text">{{ pdfData.totalFiles }} PDF files uploaded</span>
-          </div>
-
-          <!-- Matching Status -->
-          <div v-if="pdfUploaded && !pdfHasError && !pdfProcessing && pdfData.matchedFiles.length > 0"
-            class="import-file-upload__sidebar-stat">
-            <BaseIcon icon-name="check"
-              class="import-file-upload__sidebar-stat-icon import-file-upload__sidebar-stat-icon--match" />
-            <span class="import-file-upload__sidebar-stat-text">
-              {{ pdfData.matchedFiles.length }} matched, {{ pdfData.unmatchedFiles.length }} mismatch{{
-                pdfData.unmatchedFiles.length === 1 ? "" : "es"
-              }}
-              detected
-            </span>
-          </div>
-        </div>
-      </div>
+      <ImportSummarySidebar
+        :bib-data="bibData"
+        :pdf-data="pdfData"
+      />
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { useResolve } from "ts-injecty";
-import type { CSVConfig } from "~/v1/domain/services/IFileService";
-import { FileService } from "~/v1/domain/services/FileService";
-import { PdfMatchingService } from "~/v1/domain/services/PdfMatchingService";
-import "assets/icons/check";
-import "assets/icons/danger";
-import "assets/icons/document";
-import "assets/icons/import";
-import "assets/icons/info";
-import "assets/icons/unavailable";
+import BibliographyUpload from "./BibliographyUpload.vue";
+import PdfUpload from "./PdfUpload.vue";
+import ImportSummarySidebar from "./ImportSummarySidebar.vue";
+
+type ComponentData = {
+  isInitializing: boolean;
+  bibData: {
+    fileName: string;
+    parsedEntries: any[];
+    dataframeData: any;
+    rawContent: string;
+  };
+  pdfData: {
+    matchedFiles: any[];
+    unmatchedFiles: any[];
+    totalFiles: number;
+  };
+};
 
 export default {
   name: "ImportFileUpload",
+
+  components: {
+    BibliographyUpload,
+    PdfUpload,
+    ImportSummarySidebar,
+  } as any,
 
   props: {
     // Props to receive existing data when navigating back to this step
@@ -274,26 +80,12 @@ export default {
     },
   },
 
-  setup() {
-    const fileService = useResolve(FileService);
-    const pdfMatchingService = useResolve(PdfMatchingService);
-
-    return {
-      fileService,
-      pdfMatchingService,
-    };
-  },
-
-  data() {
+  data(): ComponentData {
     return {
       // Internal flag to prevent recursive updates during initialization
       isInitializing: false,
 
-      // Bibliography state
-      bibDragOver: false,
-      bibUploaded: false,
-      bibHasError: false,
-      bibErrorMessage: "",
+      // Bibliography data
       bibData: {
         fileName: "",
         parsedEntries: [],
@@ -301,24 +93,7 @@ export default {
         rawContent: "",
       },
 
-      // CSV parsing state
-      showCsvColumnSelection: false,
-      csvRawData: null,
-      csvColumns: [],
-      csvPreviewData: [],
-      csvConfig: {
-        referenceColumn: "",
-        filesColumn: "",
-      },
-
-      // PDF state
-      pdfDragOver: false,
-      pdfUploaded: false,
-      pdfHasError: false,
-      pdfErrorMessage: "",
-      pdfProcessing: false,
-      pdfProcessedFiles: 0,
-      pdfTotalFiles: 0,
+      // PDF data
       pdfData: {
         matchedFiles: [],
         unmatchedFiles: [],
@@ -329,47 +104,12 @@ export default {
 
   mounted() {
     // Initialize with existing data if provided
-    this.initializeWithExistingData();
+    // Don't call initializeWithExistingData here since watchers with immediate: true will handle it
   },
 
   computed: {
-    getBibDropzoneIcon() {
-      if (this.bibHasError) return "danger";
-      if (this.bibUploaded) return "check";
-      return "document";
-    },
-
-    getBibDropzoneText() {
-      if (this.bibHasError) return "Error parsing bibliography file";
-      if (this.bibUploaded) return "Upload BibTeX File";
-      return "Upload BibTeX File";
-    },
-
-    getPdfDropzoneIcon() {
-      if (this.pdfHasError) return "danger";
-      if (this.pdfUploaded) return "check";
-      return "import";
-    },
-
-    getPdfDropzoneText() {
-      if (this.pdfHasError) return "Error processing PDF files";
-      if (this.pdfUploaded) return "Upload PDF Files";
-      return "Upload PDF Files";
-    },
-
-    pdfProgressPercentage() {
-      if (this.pdfTotalFiles === 0) return 0;
-      return Math.round((this.pdfProcessedFiles / this.pdfTotalFiles) * 100);
-    },
-
-    isValid() {
+    isValid(): boolean {
       return (
-        this.bibUploaded &&
-        this.pdfUploaded &&
-        !this.bibHasError &&
-        !this.pdfHasError &&
-        !this.pdfProcessing &&
-        !this.showCsvColumnSelection &&
         this.bibData.parsedEntries.length > 0 &&
         this.pdfData.matchedFiles.length > 0
       );
@@ -378,7 +118,7 @@ export default {
 
   watch: {
     initialBibData: {
-      handler(newData, oldData) {
+      handler(newData: any, oldData: any) {
         // Only initialize if data has actually changed and we're not already initializing
         if (!this.isInitializing && newData && (newData.fileName || newData.parsedEntries.length > 0)) {
           // Check if the data is actually different to avoid unnecessary updates
@@ -396,7 +136,7 @@ export default {
     },
 
     initialPdfData: {
-      handler(newData, oldData) {
+      handler(newData: any, oldData: any) {
         // Only initialize if data has actually changed and we're not already initializing
         if (!this.isInitializing && newData && (newData.matchedFiles.length > 0 || newData.unmatchedFiles.length > 0)) {
           // Check if the data is actually different to avoid unnecessary updates
@@ -413,347 +153,32 @@ export default {
       deep: true,
       immediate: true,
     },
-
-    bibData: {
-      handler() {
-        // Only emit updates if we're not in the middle of initializing
-        if (!this.isInitializing) {
-          this.emitBibUpdate();
-          if (this.bibUploaded && this.pdfUploaded) {
-            this.performFileMatching();
-          }
-        }
-      },
-      deep: true,
-    },
-
-    pdfData: {
-      handler() {
-        // Only emit updates if we're not in the middle of initializing
-        if (!this.isInitializing) {
-          this.emitPdfUpdate();
-        }
-      },
-      deep: true,
-    },
   },
 
   methods: {
-    triggerBibFileInput() {
-      this.$refs.bibFileInput.click();
-    },
-
-    handleBibDragOver(event) {
-      event.preventDefault();
-      this.bibDragOver = true;
-    },
-
-    handleBibDragLeave() {
-      this.bibDragOver = false;
-    },
-
-    handleBibDrop(event) {
-      event.preventDefault();
-      this.bibDragOver = false;
-
-      const files = event.dataTransfer.files;
-      if (files.length > 0) {
-        this.processBibFile(files[0]);
-      }
-    },
-
-    handleBibFileSelect(event) {
-      const files = event.target.files;
-      if (files.length > 0) {
-        this.processBibFile(files[0]);
-      }
-    },
-
-    async processBibFile(file: File) {
-      // Reset bib state
-      this.bibHasError = false;
-      this.bibErrorMessage = "";
+    handleBibUpdate(data: any): void {
       this.bibData = {
-        fileName: "",
-        parsedEntries: [],
-        dataframeData: null,
-        rawContent: "",
+        fileName: data.fileName || "",
+        parsedEntries: data.parsedEntries || [],
+        dataframeData: data.dataframeData || null,
+        rawContent: data.rawContent || "",
       };
+      this.emitBibUpdate();
+    },
 
-      // Reset CSV state
-      this.showCsvColumnSelection = false;
-      this.csvRawData = null;
-      this.csvColumns = [];
-      this.csvPreviewData = [];
-      this.csvConfig = {
-        referenceColumn: "",
-        filesColumn: "",
+    handlePdfUpdate(data: any): void {
+      this.pdfData = {
+        matchedFiles: data.matchedFiles || [],
+        unmatchedFiles: data.unmatchedFiles || [],
+        totalFiles: data.totalFiles || 0,
       };
-
-      // Validate file type
-      if (!this.fileService.isValidFileType(file, [".bib", ".bibtex", ".csv"])) {
-        this.showBibError("Invalid file type. Please upload a .bib, .bibtex, or .csv file.");
-        return;
-      }
-
-      this.bibData.fileName = file.name;
-
-      try {
-        // Read file content
-        const content = await this.fileService.readFileContent(file);
-        this.bibData.rawContent = content;
-
-        if (this.isCsvFile(file)) {
-          // Handle CSV file
-          await this.parseCsvContent(content);
-        } else if (this.isBibTexFile(file)) {
-          // Handle BibTeX file
-          const result = await this.fileService.parseBibTeX(content);
-          this.bibData.parsedEntries = result.entries;
-          this.bibData.dataframeData = result.dataframeData;
-
-          if (this.bibData.parsedEntries.length > 0) {
-            this.bibUploaded = true;
-          } else {
-            this.showBibError("No valid BibTeX entries found in the file.");
-          }
-        }
-      } catch (error) {
-        this.showBibError(`Failed to process file: ${error.message}`);
-      }
-    },
-
-    isCsvFile(file: File) {
-      return file.name.toLowerCase().endsWith(".csv");
-    },
-
-    isBibTexFile(file: File) {
-      const fileName = file.name.toLowerCase();
-      return fileName.endsWith(".bib") || fileName.endsWith(".bibtex");
-    },
-
-    async parseCsvContent(content) {
-      try {
-        const previewData = await this.fileService.parseCSVForPreview(content);
-
-        // Store CSV data for column selection
-        this.csvRawData = previewData.rawData;
-        this.csvColumns = previewData.columns;
-        this.csvPreviewData = previewData.previewRows;
-
-        // Show column selection UI
-        this.showCsvColumnSelection = true;
-
-      } catch (error) {
-        throw new Error(`CSV parsing failed: ${error.message}`);
-      }
-    },
-
-    async processCsvWithConfig() {
-      try {
-        if (!this.csvConfig.referenceColumn) {
-          this.showBibError("Please select a reference column to continue.");
-          return;
-        }
-
-        if (!this.csvRawData || this.csvRawData.length === 0) {
-          this.showBibError("No CSV data available. Please upload a file first.");
-          return;
-        }
-
-        const config: CSVConfig = {
-          referenceColumn: this.csvConfig.referenceColumn,
-          filesColumn: this.csvConfig.filesColumn || undefined,
-        };
-
-        const result = await this.fileService.parseCSVWithConfig(this.csvRawData, config);
-
-        this.bibData.parsedEntries = result.entries;
-        this.bibData.dataframeData = result.dataframeData;
-
-        // Hide column selection and mark as uploaded
-        this.showCsvColumnSelection = false;
-        this.bibUploaded = true;
-
-      } catch (error) {
-        this.showBibError(`Failed to process CSV data: ${error.message}`);
-      }
-    },
-
-
-
-    cancelCsvSelection() {
-      // Reset CSV state and clear upload
-      this.showCsvColumnSelection = false;
-      this.csvRawData = null;
-      this.csvColumns = [];
-      this.csvPreviewData = [];
-      this.csvConfig = {
-        referenceColumn: "",
-        filesColumn: "",
-      };
-
-      // Reset bib data
-      this.bibData = {
-        fileName: "",
-        parsedEntries: [],
-        dataframeData: null,
-        rawContent: "",
-      };
-      this.bibUploaded = false;
-      this.bibHasError = false;
-      this.bibErrorMessage = "";
-    },
-
-
-
-    showBibError(message) {
-      this.bibHasError = true;
-      this.bibErrorMessage = message;
-      this.bibUploaded = false;
-    },
-
-    // PDF methods
-    triggerPdfFolderInput() {
-      this.$refs.pdfFolderInput.click();
-    },
-
-    handlePdfDragOver(event) {
-      event.preventDefault();
-      this.pdfDragOver = true;
-    },
-
-    handlePdfDragLeave() {
-      this.pdfDragOver = false;
-    },
-
-    handlePdfDrop(event) {
-      event.preventDefault();
-      this.pdfDragOver = false;
-
-      const files = Array.from(event.dataTransfer.files);
-      this.processPdfFiles(files);
-    },
-
-    handlePdfFolderSelect(event) {
-      const files = Array.from(event.target.files);
-      this.processPdfFiles(files);
-    },
-
-    async processPdfFiles(files: File[]) {
-      // Reset PDF error state but preserve existing files for additive upload
-      this.pdfHasError = false;
-      this.pdfErrorMessage = "";
-
-      // Get existing files to merge with new ones
-      const existingFiles = [
-        ...this.pdfData.matchedFiles.map(mf => mf.file),
-        ...this.pdfData.unmatchedFiles
-      ];
-
-      this.pdfProcessedFiles = 0;
-
-      const pdfFiles = files.filter((file) => this.isValidPdfFile(file));
-
-      if (pdfFiles.length === 0) {
-        this.showPdfError("No valid PDF files found. Please select a folder containing PDF files.");
-        return;
-      }
-
-      this.pdfTotalFiles = pdfFiles.length;
-      this.pdfProcessing = true;
-      this.clearPdfError(); // Clear any previous errors
-
-      const validFiles: File[] = [];
-      const fileErrors: string[] = [];
-
-      for (const file of pdfFiles) {
-        // Skip files that are already uploaded (by name)
-        const isDuplicate = existingFiles.some(existingFile => existingFile.name === file.name);
-        if (!isDuplicate) {
-          const result = await this.validatePdfFile(file);
-          if (result.valid) {
-            validFiles.push(file);
-          } else {
-            fileErrors.push(`${file.name}: ${result.error}`);
-          }
-        }
-        this.pdfProcessedFiles++;
-      }
-
-      // Combine existing files with new valid files
-      const allFiles = [...existingFiles, ...validFiles];
-      this.pdfData.totalFiles = allFiles.length;
-
-      // Re-run file matching with all files (existing + new)
-      this.performFileMatching(allFiles);
-
-      this.pdfProcessing = false;
-
-      // Show errors if any files failed, but don't fail the entire process
-      if (fileErrors.length > 0) {
-        const successCount = validFiles.length;
-        const errorCount = fileErrors.length;
-        const totalCount = successCount + errorCount;
-
-        let errorMessage = `Processed ${successCount} of ${totalCount} files successfully.\n\n`;
-        errorMessage += `Files that could not be processed:\n${fileErrors.join('\n')}`;
-
-        this.showPdfError(errorMessage);
-      } else {
-        this.pdfUploaded = true;
-        this.pdfHasError = false;
-        this.pdfErrorMessage = "";
-      }
-    },
-
-    async validatePdfFile(file: File) {
-      const maxSize = 200 * 1024 * 1024; // 200MB
-      if (file.size > maxSize) {
-        return { valid: false, error: `File ${file.name} is too large (max 200MB)` };
-      } else if (file.size === 0) {
-        return { valid: false, error: `File ${file.name} is empty` };
-      }
-
-      return { valid: true };
-    },
-
-    isValidPdfFile(file: File) {
-      return file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
-    },
-
-
-    performFileMatching(uploadedFiles: File[] | null = null) {
-      const filesToMatch: File[] =
-        uploadedFiles || this.pdfData.matchedFiles.concat(this.pdfData.unmatchedFiles).map((item) => item.file || item);
-
-      if (!this.bibData.parsedEntries || this.bibData.parsedEntries.length === 0 || filesToMatch.length === 0) {
-        return;
-      }
-
-      const result = this.pdfMatchingService.matchFiles(filesToMatch, this.bibData.parsedEntries);
-
-      this.pdfData.matchedFiles = result.matchedFiles;
-      this.pdfData.unmatchedFiles = result.unmatchedFiles;
-    },
-
-
-
-    showPdfError(message) {
-      this.pdfHasError = true;
-      this.pdfErrorMessage = message;
-      this.pdfUploaded = false;
-    },
-
-    clearPdfError() {
-      this.pdfHasError = false;
-      this.pdfErrorMessage = "";
+      this.emitPdfUpdate();
     },
 
     // Event emitters
-    emitBibUpdate() {
+    emitBibUpdate(): void {
       this.$emit("bib-update", {
-        isValid: this.bibUploaded && !this.bibHasError && this.bibData.parsedEntries.length > 0,
+        isValid: this.bibData.parsedEntries.length > 0,
         fileName: this.bibData.fileName,
         parsedEntries: this.bibData.parsedEntries,
         dataframeData: this.bibData.dataframeData,
@@ -761,19 +186,17 @@ export default {
       });
     },
 
-    emitPdfUpdate() {
+    emitPdfUpdate(): void {
       this.$emit("pdf-update", {
-        isValid: this.pdfUploaded && !this.pdfHasError && this.pdfData.matchedFiles.length > 0,
+        isValid: this.pdfData.matchedFiles.length > 0,
         matchedFiles: this.pdfData.matchedFiles,
         unmatchedFiles: this.pdfData.unmatchedFiles,
         totalFiles: this.pdfData.totalFiles,
-        hasError: this.pdfHasError,
-        errorMessage: this.pdfErrorMessage,
       });
     },
 
     // Initialize component with existing data when navigating back
-    initializeWithExistingData() {
+    initializeWithExistingData(): void {
       // Set flag to prevent recursive updates
       this.isInitializing = true;
 
@@ -785,12 +208,6 @@ export default {
           dataframeData: this.initialBibData.dataframeData || null,
           rawContent: this.initialBibData.rawContent || "",
         };
-        this.bibUploaded = this.bibData.parsedEntries.length > 0;
-        this.bibHasError = false;
-        this.bibErrorMessage = "";
-
-        // Ensure CSV selection is hidden when initializing with existing data
-        this.showCsvColumnSelection = false;
       }
 
       // Initialize PDF data
@@ -800,10 +217,6 @@ export default {
           unmatchedFiles: this.initialPdfData.unmatchedFiles || [],
           totalFiles: this.initialPdfData.totalFiles || 0,
         };
-        this.pdfUploaded = this.pdfData.totalFiles > 0;
-        this.pdfHasError = false;
-        this.pdfErrorMessage = "";
-        this.pdfProcessing = false;
       }
 
       // Clear the initialization flag and emit updates after all data is set
@@ -816,15 +229,11 @@ export default {
     },
 
     // Public methods for parent components
-    reset() {
+    reset(): void {
       // Set flag to prevent recursive updates during reset
       this.isInitializing = true;
 
-      // Reset bibliography state
-      this.bibDragOver = false;
-      this.bibUploaded = false;
-      this.bibHasError = false;
-      this.bibErrorMessage = "";
+      // Reset bibliography data
       this.bibData = {
         fileName: "",
         parsedEntries: [],
@@ -832,24 +241,7 @@ export default {
         rawContent: "",
       };
 
-      // Reset CSV state
-      this.showCsvColumnSelection = false;
-      this.csvRawData = null;
-      this.csvColumns = [];
-      this.csvPreviewData = [];
-      this.csvConfig = {
-        referenceColumn: "",
-        filesColumn: "",
-      };
-
-      // Reset PDF state
-      this.pdfDragOver = false;
-      this.pdfUploaded = false;
-      this.pdfHasError = false;
-      this.pdfErrorMessage = "";
-      this.pdfProcessing = false;
-      this.pdfProcessedFiles = 0;
-      this.pdfTotalFiles = 0;
+      // Reset PDF data
       this.pdfData = {
         matchedFiles: [],
         unmatchedFiles: [],
