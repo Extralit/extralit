@@ -11,8 +11,8 @@ jest.mock("@nuxtjs/composition-api", () => ({
   watch: jest.fn(),
 }));
 
-jest.mock("./useImportAnalysisViewModel", () => ({
-  useImportAnalysisViewModel: jest.fn(() => ({
+jest.mock("./useImportAnalysisTableViewModel", () => ({
+  useImportAnalysisTableViewModel: jest.fn(() => ({
     isAnalyzing: false,
     hasError: false,
     errorMessage: "",

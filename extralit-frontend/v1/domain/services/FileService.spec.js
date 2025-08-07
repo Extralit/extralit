@@ -103,7 +103,7 @@ describe("FileService", () => {
       const rawData = [{ title: "Test" }];
       const config = { referenceColumn: "ref" };
 
-      expect(() => parser.processWithConfig(rawData, config)).toThrow("Reference column is required");
+      expect(() => parser.processWithConfig(rawData, config)).toThrow("No data found in the selected reference column \"ref\".");
     });
   });
 

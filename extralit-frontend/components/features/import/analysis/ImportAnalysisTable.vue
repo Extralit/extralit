@@ -82,7 +82,7 @@ import {
   AnalysisTableRow,
   TableColumn,
   CellComponent,
-} from './types';
+} from '../types';
 import { useImportAnalysisViewModel } from './useImportAnalysisTableViewModel';
 import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
 

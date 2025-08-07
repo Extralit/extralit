@@ -78,16 +78,18 @@ export function useImportAnalysisViewModel(props: any) {
     () => ({
       workspaceId: props.workspace?.id,
       dataframeLength: props.dataframeData?.data?.length,
-      matchedFilesLength: props.pdfData?.matchedFiles?.length
+      matchedFilesLength: props.pdfData?.matchedFiles?.length,
     }),
     (newVal, oldVal) => {
       // Only trigger if we have all required data and something actually changed
       if (newVal.workspaceId && newVal.dataframeLength > 0 && newVal.matchedFilesLength > 0) {
         // Check if this is a meaningful change
-        if (!oldVal ||
+        if (
+          !oldVal ||
           newVal.workspaceId !== oldVal.workspaceId ||
           newVal.dataframeLength !== oldVal.dataframeLength ||
-          newVal.matchedFilesLength !== oldVal.matchedFilesLength) {
+          newVal.matchedFilesLength !== oldVal.matchedFilesLength
+        ) {
           analyzeImport(props.workspace, props.dataframeData, props.pdfData.matchedFiles);
         }
       }
