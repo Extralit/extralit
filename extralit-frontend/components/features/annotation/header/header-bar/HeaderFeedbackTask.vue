@@ -19,7 +19,7 @@
         <slot name="topbar-buttons" />
       </div>
 
-      <user-avatar-tooltip />
+      <UserAvatarTooltip />
     </div>
   </BaseTopbarBrand>
 </template>

@@ -1,15 +1,15 @@
 <template>
   <section id="header" ref="header" class="header">
-    <base-topbar-brand>
-      <base-breadcrumbs
+    <BaseTopbarBrand>
+      <BaseBreadcrumbs
         role="button"
         aria-label="Home button"
         :breadcrumbs="breadcrumbs"
         @breadcrumb-action="onBreadcrumbAction"
       />
 
-      <user-avatar-tooltip />
-    </base-topbar-brand>
+      <UserAvatarTooltip />
+    </BaseTopbarBrand>
   </section>
 </template>
 
