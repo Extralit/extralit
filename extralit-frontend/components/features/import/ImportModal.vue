@@ -1,7 +1,7 @@
 <template>
   <BaseFlowModal :visible="isVisible" :title="$t('import.title', { workspaceName: workspace?.name })" :steps="steps"
     :current-step="currentStep" :can-go-back="canGoBack" :can-go-next="canGoNext" :can-complete="canComplete"
-    :loading="isProcessing" :step-data="stepData" :confirm-close="true" :submit-step-index="1"
+    :loading="isProcessing" :step-data="stepData" :confirm-close="shouldConfirmClose" :submit-step-index="1"
     @step-change="handleStepChange" @validate-step="handleValidateStep" @complete="handleComplete" @close="handleClose"
     @cancel="handleCancel">
     <template #default="{ currentStep: stepIndex }">
@@ -129,9 +129,11 @@ export default {
     canGoNext() {
       switch (this.currentStep) {
         case 0:
+          // Allow flexible upload order - can proceed if either:
+          // 1. Both bibliography and PDFs are uploaded, OR
+          // 2. Only bibliography is uploaded (can import references without PDFs)
           return (
             this.bibData.parsedEntries.length > 0 &&
-            this.pdfData.matchedFiles.length > 0 &&
             !this.hasError &&
             !!this.workspace
           );
@@ -147,6 +149,12 @@ export default {
 
     canComplete() {
       return this.currentStep === 3; // Only on summary step
+    },
+
+    shouldConfirmClose() {
+      // Only require confirmation during the import process (steps 0-2)
+      // After successful completion (step 3), allow closing without confirmation
+      return this.currentStep < 3 && (this.isProcessing || this.isUploading || this.hasDataToLose());
     },
 
     stepData() {
@@ -189,9 +197,10 @@ export default {
 
       switch (step) {
         case 0:
+          // Allow flexible upload order - can proceed if bibliography is uploaded
+          // PDFs are optional for proceeding to analysis step
           isValid =
             this.bibData.parsedEntries.length > 0 &&
-            this.pdfData.matchedFiles.length > 0 &&
             !this.hasError &&
             !!this.workspace;
           break;
@@ -215,6 +224,8 @@ export default {
     },
 
     handleComplete() {
+      // Emit import completed event before closing
+      this.$emit("import-completed");
       this.handleReturnToLibrary();
     },
 
@@ -315,13 +326,17 @@ export default {
 
     // Step 5: Summary handlers
     handleReturnToLibrary() {
-      this.handleClose();
+      // Emit import completed event before closing
+      this.$emit("import-completed");
+      this.$emit("close");
       // TODO: Navigate to workspace documents (would be handled by parent)
       this.$emit("navigate-to-library");
     },
 
     handleViewImportHistory() {
-      this.handleClose();
+      // Emit import completed event before closing
+      this.$emit("import-completed");
+      this.$emit("close");
       // TODO: Navigate to import history (would be handled by parent)
       this.$emit("navigate-to-import-history");
     },
@@ -349,15 +364,21 @@ export default {
     },
 
     handleClose() {
-      if (this.isUploading) {
-        // Confirm before closing during upload
-        if (confirm("Import is in progress. Are you sure you want to cancel?")) {
-          this.cancelUpload();
-          this.$emit("close");
-        }
-      } else {
-        this.$emit("close");
+      // If we're on the summary step (step 3), emit refresh event before closing
+      if (this.currentStep === 3) {
+        this.$emit("import-completed");
       }
+
+      this.$emit("close");
+    },
+
+    hasDataToLose() {
+      // Check if user has uploaded any data that would be lost on close
+      return (
+        this.bibData.parsedEntries.length > 0 ||
+        this.pdfData.totalFiles > 0 ||
+        Object.keys(this.uploadData.confirmedDocuments).length > 0
+      );
     },
 
     resetModal() {

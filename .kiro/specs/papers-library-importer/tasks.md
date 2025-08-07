@@ -96,7 +96,7 @@
   - Add validation for PDF file types and sizes
   - _Requirements: 1.3, 1.6_
 
-- [ ] 4.2.1 Enhance PDF matching with maximum prefix path matching
+- [x] 4.2.1 Enhance PDF matching with maximum prefix path matching
   - Implement maximum prefix path matching algorithm for better file association
   - Improve matching to handle multiple PDFs per reference correctly
   - Add progressive file addition with proper deduplication
@@ -123,7 +123,7 @@
   - Pass workspace ID to ImportAnalysisTable component
   - _Requirements: 2.1, 4.3_
 
-- [ ] 5.2.1 Improve modal flow control and closing behavior
+- [x] 5.2.1 Improve modal flow control and closing behavior
   - Update ImportModal.vue to disable confirm-close after successful completion
   - Ensure confirm-close is only active during import process, not after completion
   - Allow flexible upload order (bibliography first or PDFs first)

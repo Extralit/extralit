@@ -117,6 +117,13 @@ export const useHomeViewModel = () => {
     goToImportConfiguration(importRecord.id);
   };
 
+  const handleImportCompleted = async () => {
+    // Refresh datasets and workspaces after import completion
+    await onLoadDatasets();
+    // Close the import modal
+    showImportModal.value = false;
+  };
+
   return {
     datasets,
     workspaces,
@@ -137,5 +144,6 @@ export const useHomeViewModel = () => {
     closeImportHistoryModal,
     handleImportSelected,
     handleViewImportDetails,
+    handleImportCompleted,
   };
 };

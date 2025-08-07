@@ -183,4 +183,90 @@ describe("ImportModal", () => {
       expect(wrapper.vm.steps[3].id).toBe("summary");
     });
   });
+
+  describe("Confirm Close Behavior", () => {
+    it("should require confirmation during import process", () => {
+      wrapper.vm.currentStep = 1;
+      wrapper.vm.isProcessing = true;
+      wrapper.vm.bibData.parsedEntries = [{ reference: "test" }];
+
+      expect(wrapper.vm.shouldConfirmClose).toBe(true);
+    });
+
+    it("should not require confirmation after successful completion", () => {
+      wrapper.vm.currentStep = 3; // Summary step
+      wrapper.vm.isProcessing = false;
+      wrapper.vm.isUploading = false;
+
+      expect(wrapper.vm.shouldConfirmClose).toBe(false);
+    });
+
+    it("should require confirmation when user has data to lose", () => {
+      wrapper.vm.currentStep = 0;
+      wrapper.vm.bibData.parsedEntries = [{ reference: "test" }];
+
+      expect(wrapper.vm.shouldConfirmClose).toBe(true);
+    });
+
+    it("should not require confirmation when no data to lose", () => {
+      wrapper.vm.currentStep = 0;
+      wrapper.vm.bibData.parsedEntries = [];
+      wrapper.vm.pdfData.totalFiles = 0;
+      wrapper.vm.uploadData.confirmedDocuments = {};
+
+      expect(wrapper.vm.shouldConfirmClose).toBe(false);
+    });
+  });
+
+  describe("Import Completion Events", () => {
+    it("should emit import-completed event when closing from summary step", () => {
+      wrapper.vm.currentStep = 3;
+      wrapper.vm.handleClose();
+
+      expect(wrapper.emitted("import-completed")).toBeTruthy();
+      expect(wrapper.emitted("close")).toBeTruthy();
+    });
+
+    it("should emit import-completed event when completing import", () => {
+      wrapper.vm.handleComplete();
+
+      expect(wrapper.emitted("import-completed")).toBeTruthy();
+    });
+
+    it("should emit import-completed event when returning to library", () => {
+      wrapper.vm.handleReturnToLibrary();
+
+      expect(wrapper.emitted("import-completed")).toBeTruthy();
+      expect(wrapper.emitted("close")).toBeTruthy();
+      expect(wrapper.emitted("navigate-to-library")).toBeTruthy();
+    });
+  });
+
+  describe("Flexible Upload Order", () => {
+    it("should allow proceeding with only bibliography uploaded", async () => {
+      await wrapper.setProps({ workspace: { id: "test-workspace" } });
+      wrapper.vm.bibData.parsedEntries = [{ reference: "test" }];
+      wrapper.vm.pdfData.matchedFiles = []; // No PDFs uploaded
+      wrapper.vm.hasError = false;
+
+      expect(wrapper.vm.canGoNext).toBe(true);
+    });
+
+    it("should validate step with only bibliography uploaded", async () => {
+      await wrapper.setProps({ workspace: { id: "test-workspace" } });
+      wrapper.vm.bibData.parsedEntries = [{ reference: "test" }];
+      wrapper.vm.pdfData.matchedFiles = []; // No PDFs uploaded
+      wrapper.vm.hasError = false;
+
+      let isValid = false;
+      wrapper.vm.handleValidateStep({
+        step: 0,
+        callback: (valid) => {
+          isValid = valid;
+        },
+      });
+
+      expect(isValid).toBe(true);
+    });
+  });
 });

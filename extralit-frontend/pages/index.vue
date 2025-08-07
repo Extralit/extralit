@@ -102,6 +102,7 @@
       :is-visible="isImportModalVisible"
       :workspace="selectedWorkspace"
       @close="showImportModal = false"
+      @import-completed="handleImportCompleted"
     />
 
     <!-- Import History Modal -->
