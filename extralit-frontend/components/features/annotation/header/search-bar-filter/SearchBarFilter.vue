@@ -1,30 +1,13 @@
-<!--
-  - coding=utf-8
-  - Copyright 2021-present, the Recognai S.L. team.
-  -
-  - Licensed under the Apache License, Version 2.0 (the "License");
-  - you may not use this file except in compliance with the License.
-  - You may obtain a copy of the License at
-  -
-  -     http://www.apache.org/licenses/LICENSE-2.0
-  -
-  - Unless required by applicable law or agreed to in writing, software
-  - distributed under the License is distributed on an "AS IS" BASIS,
-  - WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  - See the License for the specific language governing permissions and
-  - limitations under the License.
-  -->
-
 <template>
   <div class="search-area" :class="{ active: isSearchActive, expanded: isExpanded }">
-    <BaseButton @on-click="openOrApply" class="search-area__icon --search" :data-title="$t('search')">
+    <BaseButton class="search-area__icon --search" :data-title="$t('search')" @on-click="openOrApply">
       <svgicon name="search" width="16" height="16" aria-hidden="true" />
     </BaseButton>
     <input
       ref="searchRef"
+      v-model.trim="searchValue"
       class="search-area__input"
       type="text"
-      v-model.trim="searchValue"
       role="search"
       :placeholder="$t('searchPlaceholder')"
       :aria-description="$t('searchPlaceholder')"
@@ -32,7 +15,7 @@
       @keydown.stop=""
       @keypress.enter.stop="applySearch"
     />
-    <BaseButton @on-click="resetValue" v-if="showDelete" class="search-area__icon --close">
+    <BaseButton v-if="showDelete" class="search-area__icon --close" @on-click="resetValue">
       <svgicon name="close" width="12" height="12" aria-hidden="true" />
     </BaseButton>
 
