@@ -72,13 +72,13 @@ graph TD
 - Show loading states and empty states appropriately
 - Integrate with existing workspace selection functionality
 - Add "View All Imports" button below recent imports list
-- Add "Import Documents" button to open ImportModal
+- Add "Import Documents" button to open ImportFlow
 
 **Modified Structure:**
 ```vue
 <template v-slot:page-sidebar>
   <div class="home__sidebar__buttons">
-    <ImportDocuments @on-click="openImportModal" />
+    <ImportDocuments @on-click="openImportFlow" />
     <!-- Other import buttons -->
   </div>
   <BaseSeparator class="home__sidebar__separator" />
@@ -87,7 +87,7 @@ graph TD
       :workspace="selectedWorkspace"
       @import-selected="navigateToImportConfig"
       @view-all-imports="openImportHistoryModal"
-      @import-documents="openImportModal"
+      @import-documents="openImportFlow"
     />
   </div>
 </template>

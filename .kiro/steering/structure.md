@@ -62,6 +62,11 @@ extralit-frontend/
 └── package.json            # npm configuration
 ```
 
+### Existing Auto-Imported Components
+
+<ImportHistoryDataPreview>, <BaseActionTooltip>, <BaseBadge>, <BaseBadgeSkeleton>, <BaseIconWithBadge>, <BaseBanner>, <BrandIcon>, <BrandLogo>, <BaseBreadcrumbs>, <BaseButton>, <BaseCard>, <BaseCardWithTabs>, <BaseCheckbox>, <BaseCode>, <BaseCollapsablePanel>, <BaseDate>, <BaseDropdown>, <BaseFeedback>, <BaseFlowModal>, <BaseIcon>, <BaseInput>, <BaseInputContainer>, <BaseLoading>, <BaseModal>, <BaseCircleProgress>, <BaseLinearProgress>, <BaseLinearProgressSkeleton>, <BaseRadioButton>, <BaseRangeMultipleSlider>, <BaseRangeSlider>, <RenderHTML>, <MarkdownRenderer>, <RenderTable>, <HorizontalResizable>, <VerticalResizable>, <SynchronizeScroll>, <BaseSearch>, <BaseSearchBar>, <BaseSeparator>, <BaseSimpleTable>, <BaseSlider>, <BaseSpinner>, <BaseSwitch>, <BaseTabs>, <BaseTabsAndContent>, <BaseTag>, <Toast>, <BaseTopbarBrand>, <BaseFixedTooltip>, <BaseTooltip>, <PageSizeSelector>, <Pagination>, <PaginationFeedbackTask>, <RadioButtonsSelectBase>, <StatusFilter>, <ToggleAnnotationType>, <AnnotationProgress>, <TeamProgress>, <Validation>, <UserBadge>, <LinkCard>, <CategoriesSelector>, <FilterBadge>, <FilterButton>, <FilterButtonWithBadges>, <FilterTooltip>, <LabelsSelector>, <LabelsSelectorSearch>, <OptionsSelector>, <RangeSelector>, <LoadLine>, <HeaderFeedbackTask>, <SuggestionFilter>, <StatusCounter>, <StatusCounterSkeleton>
+
+
 ### Key Frontend Patterns
 - **Components**: Base components in `components/base/`, feature components in `components/features/`
 - **Pages**: Nuxt.js file-based routing in `pages/`

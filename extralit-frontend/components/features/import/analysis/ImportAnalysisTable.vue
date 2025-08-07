@@ -65,12 +65,12 @@ import type {
   DataframeData,
   DocumentImportAnalysis,
 } from '~/v1/domain/entities/import/ImportAnalysis';
-import type {
+import {
   AnalysisTableRow,
   TableColumn,
   CellComponent,
-} from './types';
-import { useImportAnalysisViewModel } from './useImportAnalysisViewModel';
+} from '../types';
+import { useImportAnalysisTableViewModel } from './useImportAnalysisTableViewModel';
 import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
 
 export default {
@@ -119,7 +119,7 @@ export default {
       };
     },
 
-    tableData(): AnalysisTableRow[] {
+    allTableData(): AnalysisTableRow[] {
       if (!this.dataframeData || !this.dataframeData.data.length) {
         return [];
       }
@@ -161,6 +161,36 @@ export default {
 
         return rowData;
       });
+    },
+
+    tableData(): AnalysisTableRow[] {
+      // Only show rows with matched PDFs
+      return this.allTableData.filter(row => row.filePaths && row.filePaths.length > 0);
+    },
+
+    referencesWithoutPdfsCount(): number {
+      return this.allTableData.filter(row => !row.filePaths || row.filePaths.length === 0).length;
+    },
+
+    referencesWithPdfsCount(): number {
+      return this.allTableData.filter(row => row.filePaths && row.filePaths.length > 0).length;
+    },
+
+    filteredDataframeData(): DataframeData | null {
+      if (!this.dataframeData) {
+        return null;
+      }
+
+      // Only include references with PDFs
+      const filteredData = this.dataframeData.data.filter((row: Record<string, any>) => {
+        const filePaths = row.filePaths || [];
+        return filePaths.length > 0;
+      });
+
+      return {
+        ...this.dataframeData,
+        data: filteredData,
+      };
     },
 
     tableColumns(): TableColumn[] {
@@ -255,19 +285,33 @@ export default {
       let count = 0;
 
       if (this.analysisResult) {
-        // Count from analysis result
-        Object.entries(this.analysisResult.documents).forEach(([ref, docInfo]) => {
-          // @ts-ignore
+        // Count from analysis result - only include references with PDFs
+        Object.entries(this.analysisResult.documents).forEach(([ref, docInfo]: [string, DocumentImportAnalysis]) => {
           const finalAction = documentActions[ref] || docInfo.status;
+          const hasFiles = docInfo.associated_files && docInfo.associated_files.length > 0;
+
+          // Only count references with PDFs
+          if (!hasFiles) {
+            return;
+          }
+
           if (finalAction === "add" || finalAction === "update") {
             count++;
           }
         });
       } else if (this.dataframeData) {
-        // Count from dataframe data (default to add)
+        // Count from dataframe data - only include references with PDFs
         this.dataframeData.data.forEach((row: Record<string, any>) => {
           const reference = row.reference || row.key;
           const finalAction = documentActions[reference] || 'add';
+          const filePaths = row.filePaths || [];
+          const hasFiles = filePaths.length > 0;
+
+          // Only count references with PDFs
+          if (!hasFiles) {
+            return;
+          }
+
           if (finalAction === "add" || finalAction === "update") {
             count++;
           }
@@ -406,6 +450,8 @@ export default {
     },
 
 
+
+
     formatColumnTitle(fieldName: string) {
       // Convert field names to readable titles
       return fieldName
@@ -423,8 +469,14 @@ export default {
 
       // Handle analysis data case (preferred)
       if (this.analysisResult && this.analysisResult.documents && Object.keys(this.analysisResult.documents).length > 0) {
-        Object.entries(this.analysisResult.documents).forEach(([reference, docInfo]: [string, any]) => {
+        Object.entries(this.analysisResult.documents).forEach(([reference, docInfo]: [string, DocumentImportAnalysis]) => {
           const finalAction = documentActions[reference] || docInfo.status;
+          const hasFiles = docInfo.associated_files && docInfo.associated_files.length > 0;
+
+          // Only include references with PDFs
+          if (!hasFiles) {
+            return;
+          }
 
           // Only include documents that will be processed (add or update)
           if (finalAction === "add" || finalAction === "update") {
@@ -449,6 +501,12 @@ export default {
           const reference = row.reference || row.key || `row_${Math.random()}`;
           const finalAction = documentActions[reference] || 'add';
           const filePaths = row.filePaths || [];
+          const hasFiles = filePaths.length > 0;
+
+          // Only include references with PDFs
+          if (!hasFiles) {
+            return;
+          }
 
           // Only include documents that will be processed (add or update)
           if (finalAction === "add" || finalAction === "update") {
@@ -485,6 +543,7 @@ export default {
         confirmedDocuments,
         totalConfirmed: Object.keys(confirmedDocuments).length,
         documentActions: documentActions,
+        filteredDataframeData: this.filteredDataframeData,
       });
     },
 
@@ -554,7 +613,10 @@ export default {
   },
 
   setup(props) {
-    return useImportAnalysisViewModel(props);
+    const viewModel = useImportAnalysisTableViewModel(props);
+    return {
+      ...viewModel,
+    };
   }
 };
 </script>
@@ -674,6 +736,42 @@ export default {
 
       &.stat-failed .stat-value {
         color: var(--color-danger);
+      }
+    }
+  }
+}
+
+// Import info
+.import-info {
+  padding: $base-space * 2;
+  background: var(--bg-solid-grey-1);
+  border-radius: $border-radius;
+  border: 1px solid var(--border-field);
+
+  h4 {
+    margin: 0 0 $base-space * 2 0;
+    color: var(--fg-primary);
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .info-stats {
+    display: flex;
+    gap: $base-space * 3;
+    flex-wrap: wrap;
+    padding-top: $base-space;
+    border-top: 1px solid var(--border-field);
+
+    .stat-info {
+      color: var(--fg-secondary);
+      font-size: 0.9rem;
+
+      &:first-child {
+        color: var(--color-success);
+      }
+
+      &:last-child {
+        color: var(--fg-tertiary);
       }
     }
   }

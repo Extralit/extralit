@@ -354,7 +354,7 @@ describe("useRecentImportsViewModel", () => {
 
   describe("Error Handling", () => {
     it("should log errors to console", async () => {
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => { });
+      const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
       const error = new Error("API Error");
       mockGetImportHistoryUseCase.getRecent.mockRejectedValue(error);
 

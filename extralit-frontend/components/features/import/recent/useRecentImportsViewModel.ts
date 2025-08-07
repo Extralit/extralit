@@ -73,6 +73,11 @@ export function useRecentImportsViewModel(props: RecentImportsProps) {
     await loadRecentImports();
   };
 
+  // Public method to refresh the recent imports list
+  const refresh = async () => {
+    await loadRecentImports();
+  };
+
   return {
     // Reactive state
     recentImports,
@@ -85,5 +90,6 @@ export function useRecentImportsViewModel(props: RecentImportsProps) {
     // Methods
     loadRecentImports,
     retryLoad,
+    refresh,
   };
 }

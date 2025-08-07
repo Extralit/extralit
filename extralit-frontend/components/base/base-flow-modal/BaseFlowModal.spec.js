@@ -23,7 +23,7 @@ describe("BaseFlowModal", () => {
       propsData: defaultProps,
       stubs: {
         "base-icon": true,
-        "BaseButton": {
+        BaseButton: {
           template: '<button class="mock-base-button"><slot /></button>',
           props: ["variant", "disabled", "loading"],
         },

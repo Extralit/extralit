@@ -7,6 +7,7 @@ import { GetWorkspacesUseCase } from "~/v1/domain/usecases/get-workspaces-use-ca
 import { useDatasets } from "~/v1/infrastructure/storage/DatasetsStorage";
 import { useRole } from "~/v1/infrastructure/services/useRole";
 import { ImportHistoryListItem } from "~/v1/domain/usecases/get-import-history-use-case";
+import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
 
 export const useHomeViewModel = () => {
   const workspaces = ref<any[]>([]);
@@ -18,7 +19,7 @@ export const useHomeViewModel = () => {
   const getDatasetsUseCase = useResolve(GetDatasetsUseCase);
   const getDatasetCreationUseCase = useResolve(GetHfDatasetCreationUseCase);
   const error = ref("");
-  const showImportModal = ref(false);
+  const showImportFlow = ref(false);
 
   useFocusTab(async () => {
     await onLoadDatasets();
@@ -77,19 +78,28 @@ export const useHomeViewModel = () => {
     isLoadingDatasets.value = false;
   };
 
-  const openImportModal = () => {
-    showImportModal.value = !showImportModal.value;
+  const openImportFlow = () => {
+    showImportFlow.value = !showImportFlow.value;
   };
 
-  const isImportModalVisible = computed(() => {
-    return showImportModal.value;
+  const isImportFlowVisible = computed(() => {
+    return showImportFlow.value;
   });
 
   // Workspace selection for import
-  const selectedWorkspaceId = ref<string | null>(null);
+  const selectedWorkspace = ref<Workspace | null>(null);
+
+  const setSelectedWorkspace = (workspace: Workspace | null) => {
+    selectedWorkspace.value = workspace;
+  };
 
   const setSelectedWorkspaceId = (workspaceId: string | null) => {
-    selectedWorkspaceId.value = workspaceId;
+    if (workspaceId === null) {
+      selectedWorkspace.value = null;
+    } else {
+      const workspace = workspaces.value.find((w) => w.id === workspaceId);
+      selectedWorkspace.value = workspace || null;
+    }
   };
 
   // Import history modal state
@@ -117,6 +127,19 @@ export const useHomeViewModel = () => {
     goToImportConfiguration(importRecord.id);
   };
 
+  const handleImportCompleted = async (recentImportsRef?: any) => {
+    // Refresh datasets and workspaces after import completion
+    await onLoadDatasets();
+
+    // Refresh recent imports list if ref is provided
+    if (recentImportsRef?.refresh) {
+      await recentImportsRef.refresh();
+    }
+
+    // Close the import modal
+    showImportFlow.value = false;
+  };
+
   return {
     datasets,
     workspaces,
@@ -126,10 +149,11 @@ export const useHomeViewModel = () => {
     isAdminOrOwnerRole,
     exampleDatasets,
     error,
-    showImportModal,
-    isImportModalVisible,
-    openImportModal,
-    selectedWorkspace: selectedWorkspaceId,
+    showImportFlow,
+    isImportFlowVisible,
+    openImportFlow,
+    selectedWorkspace,
+    setSelectedWorkspace,
     setSelectedWorkspaceId,
     showImportHistoryModal,
     isImportHistoryModalVisible,
@@ -137,5 +161,6 @@ export const useHomeViewModel = () => {
     closeImportHistoryModal,
     handleImportSelected,
     handleViewImportDetails,
+    handleImportCompleted,
   };
 };
