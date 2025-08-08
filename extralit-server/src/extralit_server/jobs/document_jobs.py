@@ -132,7 +132,7 @@ async def upload_reference_documents_job(
 
                     try:
                         # Preprocess PDF files with OCRmyPDF for rotation and OCR, plus layout analysis
-                        preprocessing_result = preprocessing.pdf_preprocessor.preprocess(
+                        preprocessing_result = preprocessing.preprocessor.preprocess(
                             file_data=file_data, filename=filename
                         )
                         processed_file_data = preprocessing_result.processed_data

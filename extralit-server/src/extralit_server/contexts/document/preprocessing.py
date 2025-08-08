@@ -19,28 +19,30 @@ import os
 import tempfile
 import time
 from io import BytesIO
-from typing import List, Optional
+from typing import List
+from dataclasses import dataclass
 from uuid import uuid4
 
 import lazy_loader as lazy
 from pydantic import Field
 from pydantic_settings import BaseSettings
+from extralit_server.api.schemas.v1.document.preprocessing import PDFMetadata
+from extralit_server.contexts.document.analysis import PDFAnalyzer
 
-# Lazy load OCRmyPDF to avoid loading it in the main FastAPI process
-# Only loaded when actually used in Redis workers
+
 ocrmypdf = lazy.load("ocrmypdf")
 
-# Since OCRmyPDF is packaged with the application, it's always available
-OCRMYPDF_AVAILABLE = True
-
-try:
-    from extralit_server.contexts.document.analysis import PDFAnalyzer, PDFProcessingResult
-
-    ANALYSIS_AVAILABLE = True
-except ImportError:
-    ANALYSIS_AVAILABLE = False
-
 _LOGGER = logging.getLogger(__name__)
+
+
+@dataclass
+class PDFProcessingResponse:
+    """
+    Result of PDF preprocessing containing both processed data and analysis metadata.
+    """
+
+    processed_data: bytes
+    metadata: PDFMetadata
 
 
 class PDFPreprocessingSettings(BaseSettings):
@@ -56,6 +58,8 @@ class PDFPreprocessingSettings(BaseSettings):
     enabled: bool = Field(
         default=True, description="Enable PDF preprocessing with OCRmyPDF. Set to False to disable all processing."
     )
+
+    enable_analysis: bool = Field(default=True, description="Enable PDF layout analysis and margin detection")
 
     language: List[str] = Field(
         default=["eng"], description="List of languages for OCR processing (e.g., ['eng', 'spa', 'fra'])"
@@ -73,24 +77,22 @@ class PDFPreprocessingSettings(BaseSettings):
     clean: bool = Field(default=True, description="Use `unpaper` to clean up artifacts")
 
     optimize: int = Field(
-        default=0, description="Optimize output file size (0=none, 1=lossless, 2=lossy, 3=aggressive)"
+        default=1, description="Optimize output file size (0=none, 1=lossless, 2=lossy, 3=aggressive)"
     )
 
     pdf_renderer: str = Field(default="hocr", description="PDF renderer: 'auto', 'hocr', 'sandwich'")
 
     force_ocr: bool = Field(default=False, description="Force OCR on all pages, even if they already have text")
 
-    tesseract_timeout: int = Field(
-        default=0, description="Timeout for Tesseract OCR processing in seconds (0 to skip Tesseract OCR)"
-    )
-
     skip_text: bool = Field(default=True, description="Skip text-based operations (OCR only for images)")
 
     redo_ocr: bool = Field(default=False, description="Redo OCR on pages that already have OCR")
 
-    progress_bar: bool = Field(default=False, description="Show progress bar during processing")
+    tesseract_timeout: int = Field(
+        default=0, description="Timeout for Tesseract OCR processing in seconds (0 to skip Tesseract OCR)"
+    )
 
-    enable_analysis: bool = Field(default=True, description="Enable PDF layout analysis and margin detection")
+    progress_bar: bool = Field(default=False, description="Show progress bar during processing")
 
     output_type: str = Field(
         default="pdf",
@@ -102,9 +104,9 @@ class PDFPreprocessingSettings(BaseSettings):
         description="Fast web view optimization. Set to 999999 to disable fast web view optimization.",
     )
 
-    skip_big: bool = Field(
-        default=True,
-        description="Skip large images if some pages have large images.",
+    skip_big: float = Field(
+        default=100.0,
+        description="Image size threshold in MB to skip OCR processing.",
     )
 
     jobs: int = Field(
@@ -139,6 +141,9 @@ class PDFPreprocessingSettings(BaseSettings):
         }
 
 
+settings = PDFPreprocessingSettings()
+
+
 class PDFPreprocessor:
     """
     PDF preprocessor that uses OCRmyPDF for rotation, OCR, and optimization.
@@ -147,29 +152,21 @@ class PDFPreprocessor:
     Can be configured with environment variables using the PDFPreprocessingSettings.
     """
 
-    def __init__(self, settings: Optional[PDFPreprocessingSettings] = None):
+    def __init__(self, settings: PDFPreprocessingSettings = settings):
         """
         Initialize the PDF preprocessor.
 
         Args:
             settings: Optional PDFPreprocessingSettings instance. If None, loads from environment.
         """
-        self.settings = settings or PDFPreprocessingSettings()
+        self.settings = settings
 
-        # Initialize analyzer if available and enabled
-        if self.settings.enable_analysis and ANALYSIS_AVAILABLE:
+        if self.settings.enable_analysis:
             self.analyzer = PDFAnalyzer()
         else:
             self.analyzer = None
-            if self.settings.enable_analysis and not ANALYSIS_AVAILABLE:
-                _LOGGER.warning("PDF analysis is enabled but dependencies are not available")
 
-        if not self.settings.enabled:
-            _LOGGER.info("PDF preprocessing is disabled via configuration")
-        elif not OCRMYPDF_AVAILABLE:
-            _LOGGER.warning("OCRmyPDF not available, PDF preprocessing will be skipped")
-
-    def preprocess(self, file_data: bytes, filename: str) -> PDFProcessingResult:
+    def preprocess(self, file_data: bytes, filename: str) -> PDFProcessingResponse:
         """
         Preprocess PDF with OCRmyPDF and analyze layout structure.
 
@@ -180,59 +177,55 @@ class PDFPreprocessor:
         Returns:
             PDFProcessingResult containing processed data and layout analysis metadata
         """
-        metadata = {}
+        # Initialize metadata variables
+        analysis_results = None
+        processing_time = 0.0
+        processed_data = file_data
 
-        # Handle non-PDF files or disabled preprocessing
+        # Handle non-PDF files
         if not filename.lower().endswith(".pdf"):
-            return PDFProcessingResult(processed_data=file_data, metadata=metadata)
+            pass  # Use default values
 
-        if not self.settings.enabled:
+        # Handle disabled preprocessing
+        elif not self.settings.enabled:
             if self.analyzer:
-                layout_analysis = self.analyzer.analyze_pdf_layout(file_data, filename)
-                metadata.update(layout_analysis)
-            return PDFProcessingResult(processed_data=file_data, metadata=metadata)
+                analysis_results = self.analyzer.analyze_pdf_layout(file_data, filename)
 
-        if not OCRMYPDF_AVAILABLE:
-            _LOGGER.warning("OCRmyPDF not available, skipping preprocessing")
-            # Still run analysis on original data if enabled and available
-            if self.analyzer:
-                layout_analysis = self.analyzer.analyze_pdf_layout(file_data, filename)
-                metadata.update(layout_analysis)
-            return PDFProcessingResult(processed_data=file_data, metadata=metadata)
-
-        try:
-            start_time = time.time()
-
-            # Step 1: Analyze original PDF layout (if enabled and available)
-            if self.analyzer:
-                layout_analysis = self.analyzer.analyze_pdf_layout(file_data, filename)
-                metadata.update(layout_analysis)
-
-            # Step 2: OCR preprocessing
+        # Handle PDF processing
+        else:
             try:
-                input_buffer = BytesIO(file_data)
-                output_buffer = BytesIO()
+                start_time = time.time()
 
-                ocrmypdf.ocr(input_buffer, output_buffer, **self.settings.get_ocrmypdf_args())  # type: ignore
+                # Step 1: Analyze original PDF layout (if enabled)
+                if self.analyzer:
+                    analysis_results = self.analyzer.analyze_pdf_layout(file_data, filename)
 
-                processed_data = output_buffer.getvalue()
-                output_buffer.close()
-                input_buffer.close()
+                # Step 2: OCR preprocessing
+                try:
+                    input_buffer = BytesIO(file_data)
+                    output_buffer = BytesIO()
 
-            except Exception as buffer_error:
-                _LOGGER.debug(f"BytesIO approach failed for {filename}, falling back to temp files: {buffer_error}")
-                processed_data = self._preprocess_with_temp_files(file_data, filename)
+                    ocrmypdf.ocr(input_buffer, output_buffer, **self.settings.get_ocrmypdf_args())  # type: ignore
 
-            processing_time = time.time() - start_time
-            metadata["processing_time_seconds"] = processing_time
-            print(metadata)
-            _LOGGER.info(f"PDF preprocessing completed for {filename} in {processing_time:.2f} seconds")
+                    processed_data = output_buffer.getvalue()
+                    output_buffer.close()
+                    input_buffer.close()
 
-            return PDFProcessingResult(processed_data=processed_data, metadata=metadata)
+                except Exception as buffer_error:
+                    _LOGGER.debug(f"BytesIO approach failed for {filename}, falling back to temp files: {buffer_error}")
+                    processed_data = self._preprocess_with_temp_files(file_data, filename)
 
-        except Exception as e:
-            _LOGGER.error(f"PDF preprocessing failed for {filename}: {e}")
-            return PDFProcessingResult(processed_data=file_data, metadata=metadata)
+                processing_time = time.time() - start_time
+                print(filename, analysis_results)
+
+            except Exception:
+                # Use default values on error
+                pass
+
+        # Single PDFMetadata initialization for all code paths
+        metadata = PDFMetadata(filename=filename, processing_time=processing_time, analysis_results=analysis_results)
+
+        return PDFProcessingResponse(processed_data=processed_data, metadata=metadata)
 
     def _preprocess_with_temp_files(self, file_data: bytes, filename: str) -> bytes:
         """
@@ -274,23 +267,4 @@ class PDFPreprocessor:
                         _LOGGER.warning(f"Failed to clean up temp file: {e}")
 
 
-# Global preprocessor instance (can be configured via environment variables)
-pdf_preprocessor = PDFPreprocessor()
-
-
-def preprocess_pdf_with_ocrmypdf(file_data: bytes, filename: str) -> bytes:
-    """
-    Preprocess PDF with OCRmyPDF to add OCR layer and fix orientation.
-
-    This function provides backward compatibility by using the global pdf_preprocessor instance.
-    For new code, consider using PDFPreprocessor directly for better configuration control.
-
-    Args:
-        file_data: PDF file data as bytes
-        filename: Original filename for logging purposes
-
-    Returns:
-        Processed PDF data as bytes (or original bytes if processing fails)
-    """
-    result = pdf_preprocessor.preprocess(file_data, filename)
-    return result.processed_data
+preprocessor = PDFPreprocessor()

@@ -13,55 +13,36 @@
 # limitations under the License.
 
 import logging
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple
+
+from typing import Dict, List, Optional, Tuple, TYPE_CHECKING
 import numpy as np
 
 import lazy_loader as lazy
 
-# These are only loaded when actually used in Redis workers
 cv2 = lazy.load("cv2")
 pdf2image = lazy.load("pdf2image")
-PIL_ImageChops = lazy.load("PIL.ImageChops")
-PIL_ImageDraw = lazy.load("PIL.ImageDraw")
-PIL_Image = lazy.load("PIL.Image")
+PIL = lazy.load("PIL")
 
-# Since dependencies are packaged together, they're always available
-CV2_AVAILABLE = True
-PDF2IMAGE_AVAILABLE = True
-
-# For type hints - use Any to avoid import issues at module load time
-PILImage = Any  # Will be PIL.Image.Image when loaded
+if TYPE_CHECKING:
+    from PIL.Image import Image
 
 logger = logging.getLogger(__name__)
 
 
-@dataclass
-class PDFProcessingResult:
-    """
-    Result of PDF preprocessing containing both processed data and analysis metadata.
-    """
-
-    processed_data: bytes
-    metadata: Dict
-
-
-def pil_to_cv(image: PILImage) -> np.ndarray:
+def pil_to_cv(image: Image) -> np.ndarray:
     """Convert PIL Image to OpenCV format."""
     return cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)  # type: ignore
 
 
 def classify_and_draw_layout_regions(
-    reference: PILImage, mask: PILImage, min_area: int = 5000, label: bool = True
-) -> Tuple[PILImage, List[Dict]]:
+    reference: Image, mask: Image, min_area: int = 5000, label: bool = True
+) -> Tuple[Image, List[Dict]]:
     """
     Classify and optionally draw layout regions using contour detection.
 
     Returns:
         Tuple of (annotated image, list of detected regions)
     """
-    if not CV2_AVAILABLE:
-        return reference, []
 
     mask_np = np.array(mask.convert("L"))
     h, w = mask_np.shape
@@ -76,7 +57,7 @@ def classify_and_draw_layout_regions(
     regions = []
 
     if label:
-        draw = PIL_ImageDraw.Draw(img)  # type: ignore
+        draw = PIL.ImageDraw.Draw(img)  # type: ignore
 
     for cnt in contours:
         x, y, rw, rh = cv2.boundingRect(cnt)  # type: ignore
@@ -118,7 +99,7 @@ def classify_and_draw_layout_regions(
     return img, regions
 
 
-def find_horizontal_bands(mask: PILImage, min_height: int = 15, min_ratio: float = 0.95) -> List[Tuple[int, int]]:
+def find_horizontal_bands(mask: Image, min_height: int = 15, min_ratio: float = 0.95) -> List[Tuple[int, int]]:
     """Find horizontal bands of similar content across pages."""
     mask_np = np.array(mask.convert("L"))
     h, w = mask_np.shape
@@ -160,13 +141,9 @@ class PDFAnalyzer:
         Returns:
             Dictionary containing layout analysis metadata
         """
-        if not (PDF2IMAGE_AVAILABLE and CV2_AVAILABLE):
-            self.logger.warning("PDF analysis requires pdf2image and cv2, skipping layout analysis")
-            return {"analysis_available": False, "error": "Missing dependencies"}
 
         try:
-            # Convert PDF to images
-            images = pdf2image.convert_from_bytes(pdf_data, dpi=150)  # type: ignore  # Lower DPI for analysis
+            images = pdf2image.convert_from_bytes(pdf_data, dpi=150)  # type: ignore
             if not images:
                 return {"analysis_available": False, "error": "No pages found"}
 
@@ -186,7 +163,7 @@ class PDFAnalyzer:
             self.logger.error(f"PDF layout analysis failed for {filename}: {e}")
             return {"analysis_available": False, "error": str(e)}
 
-    def _analyze_page_layout(self, images: List[PILImage]) -> Dict:
+    def _analyze_page_layout(self, images: List[Image]) -> Dict:
         """
         Analyze page layout by comparing pages to find common regions.
         """
@@ -209,7 +186,7 @@ class PDFAnalyzer:
         else:
             return self._analyze_single_page(reference_img)
 
-    def _compare_pages_for_margins(self, reference: PILImage, compare: PILImage) -> Optional[Dict]:
+    def _compare_pages_for_margins(self, reference: Image, compare: Image) -> Optional[Dict]:
         """
         Compare two pages to identify common regions using advanced CV2 techniques.
         """
@@ -220,8 +197,8 @@ class PDFAnalyzer:
                 compare = compare.resize(reference.size)
 
             # Step 1: Compute difference and invert so white = same
-            diff = PIL_ImageChops.difference(reference, compare)  # type: ignore
-            sameness_mask = PIL_ImageChops.invert(diff.convert("L"))  # type: ignore
+            diff = PIL.ImageChops.difference(reference, compare)  # type: ignore
+            sameness_mask = PIL.ImageChops.invert(diff.convert("L"))  # type: ignore
 
             # Step 2: Threshold the mask (keep high-sameness pixels)
             # Create a lookup table for thresholding
@@ -454,7 +431,7 @@ class PDFAnalyzer:
             }
         }
 
-    def _analyze_single_page(self, image: PILImage) -> Dict:
+    def _analyze_single_page(self, image: Image) -> Dict:
         """
         Analyze a single page when comparison isn't possible.
         """
