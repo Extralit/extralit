@@ -69,8 +69,7 @@ dependencies = [
     # For document processing
     "ocrmypdf>=16.10.4",
     "pdf2image>=1.17.0",
-    "opencv-python>=4.11.0.86",
-    "pymupdf>=1.26.0"
+    "opencv-python>=4.11.0.86"
 ]
 
 [project.optional-dependencies]

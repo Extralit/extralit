@@ -28,12 +28,6 @@ from pydantic import Field
 from pydantic_settings import BaseSettings
 
 try:
-    import fitz  # PyMuPDF
-    FITZ_AVAILABLE = True
-except ImportError:
-    FITZ_AVAILABLE = False
-
-try:
     import ocrmypdf
 
     OCRMYPDF_AVAILABLE = True
@@ -53,65 +47,69 @@ _LOGGER = logging.getLogger(__name__)
 def _is_scanned_pdf_bytes(file_data: bytes, method: str = "simple",
                          text_threshold: float = 0.1, sample_pages: int = 5) -> bool:
     """
-    Detect if PDF is scanned (image-based) or born-digital based on text content.
+    Detect if PDF is scanned (image-based) or born-digital using OCRmyPDF's built-in detection.
 
     Args:
         file_data: PDF file data as bytes
-        method: Detection method - "simple" (no text check) or "density" (text density analysis)
-        text_threshold: Text density threshold for density method
-        sample_pages: Number of pages to sample
+        method: Detection method - "simple" (OCRmyPDF check) or "density" (fallback to simple)
+        text_threshold: Text density threshold (unused without PyMuPDF, kept for API compatibility)
+        sample_pages: Number of pages to sample (unused without PyMuPDF, kept for API compatibility)
 
     Returns:
         True if PDF appears to be scanned, False if born-digital
     """
-    if not FITZ_AVAILABLE:
-        _LOGGER.warning("PyMuPDF not available, assuming PDF is scanned")
+    if not OCRMYPDF_AVAILABLE:
+        _LOGGER.warning("OCRmyPDF not available, assuming PDF is scanned")
         return True
 
     try:
-        doc = fitz.open(stream=file_data, filetype="pdf")
+        # Use OCRmyPDF's built-in detection by trying to run it with skip_text=True
+        # If it processes successfully, the PDF likely has images/scanned content
+        # If it skips processing, the PDF likely has sufficient text already
 
-        if len(doc) == 0:
-            doc.close()
-            return False
+        input_buffer = BytesIO(file_data)
+        output_buffer = BytesIO()
 
-        if method == "simple":
-            # Simple method: check if any page has extractable text
-            pages_to_check = min(sample_pages, len(doc))
-            for i in range(pages_to_check):
-                text = doc[i].get_text().strip()
-                if text:
-                    doc.close()
-                    return False  # Found text, not scanned
-            doc.close()
-            return True  # No text found, likely scanned
+        try:
+            # Try OCRmyPDF with minimal processing to detect if it finds work to do
+            ocrmypdf.ocr(
+                input_buffer,
+                output_buffer,
+                skip_text=True,  # Only process images, skip text layers
+                force_ocr=False,  # Don't force OCR if text already exists
+                redo_ocr=False,   # Don't redo existing OCR
+                optimize=0,       # No optimization for speed
+                progress_bar=False,
+                quiet=True
+            )
 
-        elif method == "density":
-            # Density method: calculate text density across pages
-            total_chars = 0
-            total_area = 0
-            pages_to_check = min(sample_pages, len(doc))
+            # If OCRmyPDF processed the file, it likely found images to OCR
+            output_size = len(output_buffer.getvalue())
+            input_size = len(file_data)
 
-            for page_num in range(pages_to_check):
-                page = doc[page_num]
-                text = page.get_text()
-                total_chars += len(text.strip())
-                total_area += page.rect.width * page.rect.height
+            # If output is significantly different from input, OCR was applied
+            size_difference_ratio = abs(output_size - input_size) / input_size
+            is_scanned = size_difference_ratio > text_threshold
 
-            doc.close()
+            _LOGGER.debug(f"OCRmyPDF detection: input={input_size}, output={output_size}, "
+                         f"ratio={size_difference_ratio:.4f}, scanned={is_scanned}")
 
-            if total_area == 0:
-                return True
-
-            text_density = total_chars / total_area
-            is_scanned = text_density < text_threshold
-
-            _LOGGER.debug(f"PDF text density analysis: {total_chars} chars, density: {text_density:.6f}, scanned: {is_scanned}")
             return is_scanned
 
-        else:
-            doc.close()
-            raise ValueError(f"Unknown detection method: {method}")
+        except Exception as ocr_error:
+            # If OCRmyPDF fails or skips processing, assume it's born-digital
+            error_msg = str(ocr_error).lower()
+            if any(skip_indicator in error_msg for skip_indicator in
+                   ["already has text", "skipping", "no work to do", "nothing to do"]):
+                _LOGGER.debug(f"OCRmyPDF indicates born-digital PDF: {ocr_error}")
+                return False  # Born-digital
+            else:
+                _LOGGER.debug(f"OCRmyPDF processing error, assuming scanned: {ocr_error}")
+                return True   # Assume scanned on processing errors
+
+        finally:
+            input_buffer.close()
+            output_buffer.close()
 
     except Exception as e:
         _LOGGER.error(f"Error analyzing PDF for scanned detection: {e}")
@@ -202,18 +200,18 @@ class PDFPreprocessingSettings(BaseSettings):
 
     # Scanned PDF detection settings
     scanned_detection_method: str = Field(
-        default="simple",
-        description="Method for detecting scanned PDFs: 'simple' (no text check) or 'density' (text density analysis)"
+        default="ocrmypdf",
+        description="Method for detecting scanned PDFs: 'ocrmypdf' (use OCRmyPDF's built-in detection)"
     )
 
     text_density_threshold: float = Field(
-        default=0.1,
-        description="Text density threshold for scanned detection (chars per pixel area)"
+        default=0.01,
+        description="Size difference threshold for OCRmyPDF-based scanned detection (ratio)"
     )
 
     sample_pages: int = Field(
         default=5,
-        description="Number of pages to sample for scanned detection"
+        description="Number of pages to sample for scanned detection (kept for API compatibility)"
     )
 
     skip_ocr_for_born_digital: bool = Field(
