@@ -29,14 +29,14 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def pil_to_cv(image: Image) -> np.ndarray:
+def pil_to_cv(image: "Image") -> np.ndarray:
     """Convert PIL Image to OpenCV format."""
     return cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)  # type: ignore
 
 
 def classify_and_draw_layout_regions(
-    reference: Image, mask: Image, min_area: int = 5000, label: bool = True
-) -> Tuple[Image, List[Dict]]:
+    reference: "Image", mask: "Image", min_area: int = 5000, label: bool = True
+) -> Tuple["Image", List[Dict]]:
     """
     Classify and optionally draw layout regions using contour detection.
 
@@ -99,7 +99,7 @@ def classify_and_draw_layout_regions(
     return img, regions
 
 
-def find_horizontal_bands(mask: Image, min_height: int = 15, min_ratio: float = 0.95) -> List[Tuple[int, int]]:
+def find_horizontal_bands(mask: "Image", min_height: int = 15, min_ratio: float = 0.95) -> List[Tuple[int, int]]:
     """Find horizontal bands of similar content across pages."""
     mask_np = np.array(mask.convert("L"))
     h, w = mask_np.shape
@@ -163,7 +163,7 @@ class PDFAnalyzer:
             self.logger.error(f"PDF layout analysis failed for {filename}: {e}")
             return {"analysis_available": False, "error": str(e)}
 
-    def _analyze_page_layout(self, images: List[Image]) -> Dict:
+    def _analyze_page_layout(self, images: List["Image"]) -> Dict:
         """
         Analyze page layout by comparing pages to find common regions.
         """
@@ -186,7 +186,7 @@ class PDFAnalyzer:
         else:
             return self._analyze_single_page(reference_img)
 
-    def _compare_pages_for_margins(self, reference: Image, compare: Image) -> Optional[Dict]:
+    def _compare_pages_for_margins(self, reference: "Image", compare: "Image") -> Optional[Dict]:
         """
         Compare two pages to identify common regions using advanced CV2 techniques.
         """
@@ -431,7 +431,7 @@ class PDFAnalyzer:
             }
         }
 
-    def _analyze_single_page(self, image: Image) -> Dict:
+    def _analyze_single_page(self, image: "Image") -> Dict:
         """
         Analyze a single page when comparison isn't possible.
         """
