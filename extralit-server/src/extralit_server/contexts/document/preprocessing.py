@@ -22,15 +22,16 @@ from io import BytesIO
 from typing import List, Optional
 from uuid import uuid4
 
+import lazy_loader as lazy
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
-try:
-    import ocrmypdf
+# Lazy load OCRmyPDF to avoid loading it in the main FastAPI process
+# Only loaded when actually used in Redis workers
+ocrmypdf = lazy.load("ocrmypdf")
 
-    OCRMYPDF_AVAILABLE = True
-except ImportError:
-    OCRMYPDF_AVAILABLE = False
+# Since OCRmyPDF is packaged with the application, it's always available
+OCRMYPDF_AVAILABLE = True
 
 try:
     from extralit_server.contexts.document.analysis import PDFAnalyzer, PDFProcessingResult
@@ -212,7 +213,7 @@ class PDFPreprocessor:
                 input_buffer = BytesIO(file_data)
                 output_buffer = BytesIO()
 
-                ocrmypdf.ocr(input_buffer, output_buffer, **self.settings.get_ocrmypdf_args())
+                ocrmypdf.ocr(input_buffer, output_buffer, **self.settings.get_ocrmypdf_args())  # type: ignore
 
                 processed_data = output_buffer.getvalue()
                 output_buffer.close()
@@ -256,7 +257,7 @@ class PDFPreprocessor:
             )
             output_temp_file.close()
 
-            ocrmypdf.ocr(input_temp_file.name, output_temp_file.name, **self.settings.get_ocrmypdf_args())
+            ocrmypdf.ocr(input_temp_file.name, output_temp_file.name, **self.settings.get_ocrmypdf_args())  # type: ignore
 
             with open(output_temp_file.name, "rb") as f:
                 processed_data = f.read()

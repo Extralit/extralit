@@ -14,31 +14,24 @@
 
 import logging
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 
-try:
-    import cv2
+import lazy_loader as lazy
 
-    CV2_AVAILABLE = True
-except ImportError:
-    CV2_AVAILABLE = False
+# These are only loaded when actually used in Redis workers
+cv2 = lazy.load("cv2")
+pdf2image = lazy.load("pdf2image")
+PIL_ImageChops = lazy.load("PIL.ImageChops")
+PIL_ImageDraw = lazy.load("PIL.ImageDraw")
+PIL_Image = lazy.load("PIL.Image")
 
-try:
-    from pdf2image import convert_from_bytes
-    from PIL import ImageChops, ImageDraw
-    from PIL.Image import Image as PILImage
+# Since dependencies are packaged together, they're always available
+CV2_AVAILABLE = True
+PDF2IMAGE_AVAILABLE = True
 
-    PDF2IMAGE_AVAILABLE = True
-except ImportError:
-    PDF2IMAGE_AVAILABLE = False
-
-try:
-    pass
-
-    OCRMYPDF_AVAILABLE = True
-except ImportError:
-    OCRMYPDF_AVAILABLE = False
+# For type hints - use Any to avoid import issues at module load time
+PILImage = Any  # Will be PIL.Image.Image when loaded
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +48,7 @@ class PDFProcessingResult:
 
 def pil_to_cv(image: PILImage) -> np.ndarray:
     """Convert PIL Image to OpenCV format."""
-    return cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+    return cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)  # type: ignore
 
 
 def classify_and_draw_layout_regions(
@@ -74,19 +67,19 @@ def classify_and_draw_layout_regions(
     h, w = mask_np.shape
 
     # Clean up the mask using morphological operations
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-    cleaned = cv2.morphologyEx(mask_np, cv2.MORPH_CLOSE, kernel)
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))  # type: ignore
+    cleaned = cv2.morphologyEx(mask_np, cv2.MORPH_CLOSE, kernel)  # type: ignore
 
-    contours, _ = cv2.findContours(cleaned, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv2.findContours(cleaned, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)  # type: ignore
 
     img = reference.copy() if label else reference
     regions = []
 
     if label:
-        draw = ImageDraw.Draw(img)
+        draw = PIL_ImageDraw.Draw(img)  # type: ignore
 
     for cnt in contours:
-        x, y, rw, rh = cv2.boundingRect(cnt)
+        x, y, rw, rh = cv2.boundingRect(cnt)  # type: ignore
         area = rw * rh
 
         if area < min_area:
@@ -173,7 +166,7 @@ class PDFAnalyzer:
 
         try:
             # Convert PDF to images
-            images = convert_from_bytes(pdf_data, dpi=150)  # Lower DPI for analysis
+            images = pdf2image.convert_from_bytes(pdf_data, dpi=150)  # type: ignore  # Lower DPI for analysis
             if not images:
                 return {"analysis_available": False, "error": "No pages found"}
 
@@ -227,8 +220,8 @@ class PDFAnalyzer:
                 compare = compare.resize(reference.size)
 
             # Step 1: Compute difference and invert so white = same
-            diff = ImageChops.difference(reference, compare)
-            sameness_mask = ImageChops.invert(diff.convert("L"))
+            diff = PIL_ImageChops.difference(reference, compare)  # type: ignore
+            sameness_mask = PIL_ImageChops.invert(diff.convert("L"))  # type: ignore
 
             # Step 2: Threshold the mask (keep high-sameness pixels)
             # Create a lookup table for thresholding

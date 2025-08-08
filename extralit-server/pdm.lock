@@ -5,7 +5,7 @@
 groups = ["default", "postgresql", "test"]
 strategy = []
 lock_version = "4.5.0"
-content_hash = "sha256:b81b48f68a21fcdb9fe67c3d94a30419667da306d05bde66d807bcf4bb51858e"
+content_hash = "sha256:02264c865d9bc17964c0abbd121810947822b6ff067ac8fcd0cbcb1ef46de191"
 
 [[metadata.targets]]
 requires_python = ">=3.10"
@@ -1150,6 +1150,18 @@ files = [
 ]
 
 [[package]]
+name = "lazy-loader"
+version = "0.4"
+summary = ""
+dependencies = [
+    "packaging",
+]
+files = [
+    {file = "lazy_loader-0.4-py3-none-any.whl", hash = "sha256:342aa8e14d543a154047afb4ba8ef17f5563baad3fc610d7b15b213b0f119efc"},
+    {file = "lazy_loader-0.4.tar.gz", hash = "sha256:47c75182589b91a4e1a85a136c074285a5ad4d9f39c63e0d7fb76391c4574cd1"},
+]
+
+[[package]]
 name = "lxml"
 version = "6.0.0"
 summary = ""
@@ -1683,8 +1695,7 @@ files = [
 [[package]]
 name = "pillow"
 version = "11.3.0"
-requires_python = ">=3.9"
-summary = "Python Imaging Library (Fork)"
+summary = ""
 files = [
     {file = "pillow-11.3.0-cp310-cp310-macosx_10_10_x86_64.whl", hash = "sha256:1b9c17fd4ace828b3003dfd1e30bff24863e0eb59b535e8f80194d9cc7ecf860"},
     {file = "pillow-11.3.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:65dc69160114cdd0ca0f35cb434633c75e8e7fad4cf855177a05bf38678f73ad"},
@@ -2435,7 +2446,7 @@ name = "sqlalchemy"
 version = "2.0.36"
 summary = ""
 dependencies = [
-    "greenlet; (platform_machine == \"win32\" or platform_machine == \"WIN32\" or platform_machine == \"AMD64\" or platform_machine == \"amd64\" or platform_machine == \"x86_64\" or platform_machine == \"ppc64le\" or platform_machine == \"aarch64\") and python_full_version < \"3.13\"",
+    "greenlet; python_full_version < \"3.13\" and (platform_machine == \"win32\" or platform_machine == \"WIN32\" or platform_machine == \"AMD64\" or platform_machine == \"amd64\" or platform_machine == \"x86_64\" or platform_machine == \"ppc64le\" or platform_machine == \"aarch64\")",
     "typing-extensions",
 ]
 files = [
@@ -2607,7 +2618,7 @@ dependencies = [
     "python-dotenv",
     "pyyaml",
     "uvicorn==0.32.0",
-    "uvloop; (sys_platform != \"cygwin\" and sys_platform != \"win32\") and platform_python_implementation != \"PyPy\"",
+    "uvloop; platform_python_implementation != \"PyPy\" and (sys_platform != \"cygwin\" and sys_platform != \"win32\")",
     "watchfiles",
     "websockets",
 ]

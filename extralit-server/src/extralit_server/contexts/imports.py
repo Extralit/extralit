@@ -390,7 +390,6 @@ async def process_bulk_upload(
                     reference_data=doc.document_create.model_dump(),
                     file_data_list=[],
                     user_id=user_id,
-                    job_timeout=None,  # No timeout for large uploads
                 )
 
                 # Store job ID mapped to reference key for frontend tracking
