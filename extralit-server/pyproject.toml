@@ -60,7 +60,7 @@ dependencies = [
     "standardwebhooks>=1.0.0",
     # For HF dataset import
     "datasets >= 3.0.1",
-    "pillow >= 10.4.0",
+    "pillow>=11.3.0",
     # For Telemetry
     "huggingface-hub>=0.26.2",
     "Jinja2>=3.1.4",           # Used by huggingface-hub to render dataset card templates
