@@ -14,7 +14,7 @@
 
 import logging
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Any
 import numpy as np
 
 try:
@@ -32,6 +32,8 @@ try:
     PDF2IMAGE_AVAILABLE = True
 except ImportError:
     PDF2IMAGE_AVAILABLE = False
+    # Create dummy type for type hints when PIL is not available
+    PILImage = Any
 
 try:
     pass
@@ -55,6 +57,8 @@ class PDFProcessingResult:
 
 def pil_to_cv(image: PILImage) -> np.ndarray:
     """Convert PIL Image to OpenCV format."""
+    if not CV2_AVAILABLE:
+        raise RuntimeError("OpenCV not available")
     return cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
 
 
