@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = []
 lock_version = "4.5.0"
-content_hash = "sha256:70ce069646b7109d8dc4217449d7053c16b14700891f5b9902207ac35ba7943c"
+content_hash = "sha256:4eed977ec0ae819f547f71e5131d350c7686fa2a8399a998cb62994db78d442c"
 
 [[metadata.targets]]
 requires_python = ">=3.9.2,<3.14"
@@ -2128,6 +2128,18 @@ dependencies = [
 files = [
     {file = "language_data-1.3.0-py3-none-any.whl", hash = "sha256:e2ee943551b5ae5f89cd0e801d1fc3835bb0ef5b7e9c3a4e8e17b2b214548fbf"},
     {file = "language_data-1.3.0.tar.gz", hash = "sha256:7600ef8aa39555145d06c89f0c324bf7dab834ea0b0a439d8243762e3ebad7ec"},
+]
+
+[[package]]
+name = "lazy-loader"
+version = "0.4"
+summary = ""
+dependencies = [
+    "packaging",
+]
+files = [
+    {file = "lazy_loader-0.4-py3-none-any.whl", hash = "sha256:342aa8e14d543a154047afb4ba8ef17f5563baad3fc610d7b15b213b0f119efc"},
+    {file = "lazy_loader-0.4.tar.gz", hash = "sha256:47c75182589b91a4e1a85a136c074285a5ad4d9f39c63e0d7fb76391c4574cd1"},
 ]
 
 [[package]]
