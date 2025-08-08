@@ -72,7 +72,7 @@ class PDFPreprocessingSettings(BaseSettings):
     clean: bool = Field(default=True, description="Use `unpaper` to clean up artifacts")
 
     optimize: int = Field(
-        default=1, description="Optimize output file size (0=none, 1=lossless, 2=lossy, 3=aggressive)"
+        default=0, description="Optimize output file size (0=none, 1=lossless, 2=lossy, 3=aggressive)"
     )
 
     pdf_renderer: str = Field(default="hocr", description="PDF renderer: 'auto', 'hocr', 'sandwich'")
@@ -96,6 +96,21 @@ class PDFPreprocessingSettings(BaseSettings):
         description="Output type for OCRmyPDF. Set to 'pdf' to skip PDF/A conversion.",
     )
 
+    fast_web_view: int = Field(
+        default=999999,
+        description="Fast web view optimization. Set to 999999 to disable fast web view optimization.",
+    )
+
+    skip_big: bool = Field(
+        default=True,
+        description="Skip large images if some pages have large images.",
+    )
+
+    jobs: int = Field(
+        default=1,
+        description="Number of worker processes to use for OCR. Set to 1 for Docker containers with limited CPU to avoid oversubscription.",
+    )
+
     def get_ocrmypdf_args(self) -> dict:
         """
         Get OCRmyPDF arguments as a dictionary for use with **kwargs.
@@ -117,6 +132,9 @@ class PDFPreprocessingSettings(BaseSettings):
             "redo_ocr": self.redo_ocr,
             "progress_bar": self.progress_bar,
             "output_type": self.output_type,
+            "fast_web_view": self.fast_web_view,
+            "skip_big": self.skip_big,
+            "jobs": self.jobs,
         }
 
 
