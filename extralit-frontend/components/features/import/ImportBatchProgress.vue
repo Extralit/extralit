@@ -480,7 +480,7 @@ export default {
         await this.viewModel.createImportHistory(
           this.workspace,
           this.bibFileName,
-          this.dataframeData,
+          this.createFilteredDataframeData(),
           metadata
         );
 
@@ -540,17 +540,41 @@ export default {
       const metadata: Record<string, any> = {};
 
       // Create metadata for each reference with status and associated files
+      // Only include references that were actually uploaded (add or update status with PDFs)
       Object.entries(this.uploadData.confirmedDocuments).forEach(([reference, docMetadata]) => {
         const typedDocMetadata = docMetadata as DocumentMetadata;
-        metadata[reference] = {
-          status: 'add', // Default status for uploaded documents
-          associated_files: typedDocMetadata.associated_files.map(fileInfo =>
-            typeof fileInfo === 'string' ? fileInfo : fileInfo.filename
-          ),
-        };
+
+        // Only include references that have associated files (matched PDFs)
+        if (typedDocMetadata.associated_files && typedDocMetadata.associated_files.length > 0) {
+          metadata[reference] = {
+            status: 'add', // Default status for uploaded documents
+            associated_files: typedDocMetadata.associated_files.map(fileInfo =>
+              typeof fileInfo === 'string' ? fileInfo : fileInfo.filename
+            ),
+          };
+        }
       });
 
       return metadata;
+    },
+
+    createFilteredDataframeData() {
+      if (!this.dataframeData || !this.dataframeData.data) {
+        return null;
+      }
+
+      // Filter dataframe data to only include references that were actually uploaded
+      const uploadedReferences = new Set(Object.keys(this.uploadData.confirmedDocuments));
+
+      const filteredData = this.dataframeData.data.filter((row: Record<string, any>) => {
+        const reference = row.reference || row.key;
+        return uploadedReferences.has(reference);
+      });
+
+      return {
+        ...this.dataframeData,
+        data: filteredData,
+      };
     },
 
     reset() {

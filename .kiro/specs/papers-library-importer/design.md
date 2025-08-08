@@ -2,9 +2,11 @@
 
 ## Overview
 
-The Papers Library Importer feature enables researchers to import their existing reference libraries from .bib files and PDF folders into Extralit workspaces. The system leverages the existing document upload endpoint (`POST /documents`) and job queue system to process bibliographic metadata from .bib files, match PDF files to references, and provide a user-friendly interface for reviewing and confirming imports before executing bulk operations.
+The Papers Library Importer feature enables researchers to import their existing reference libraries from bibliography files (.bib or .csv) and PDF folders into Extralit workspaces. The system leverages the existing document upload endpoint (`POST /documents`) and job queue system to process bibliographic metadata from various formats, match PDF files to references using advanced path matching algorithms, and provide a user-friendly interface for reviewing and confirming imports before executing bulk operations.
 
-**Generalized Tabular Import Support**: The import system is designed to handle tabular data beyond just BibTeX files. The core functionality supports CSV imports and other structured data formats by storing imported data as dataframes with schema information. This enables future expansion to support various research data import formats while maintaining consistent processing workflows.
+**Generalized Tabular Import Support**: The import system is designed to handle multiple tabular data formats including BibTeX (.bib) and CSV files. The core functionality supports flexible column mapping for CSV imports and stores imported data as dataframes with schema information. This enables consistent processing workflows across different research data import formats.
+
+**Enhanced PDF Matching**: The system uses sophisticated file matching algorithms including maximum prefix path matching, exact filename matching, and fuzzy string matching to associate PDF files with bibliography entries. Users can import references with or without associated PDF files.
 
 The design follows Extralit's existing patterns: context-based backend architecture, FastAPI endpoints with proper authorization, Vue.js frontend components, and the existing RQ-based asynchronous job processing system for bulk operations.
 
@@ -12,7 +14,7 @@ The design follows Extralit's existing patterns: context-based backend architect
 
 ### High-Level Flow
 
-1. **Frontend Processing Phase**: User uploads .bib file and PDFs to frontend, which parses BibTeX entries into generic dataframe format and matches files to references
+1. **Frontend Processing Phase**: User uploads bibliography file (.bib or .csv) and PDFs to frontend, which parses entries into generic dataframe format and matches files to references using advanced path matching
 2. **Analysis Phase**: Frontend sends file metadata (not file contents) to backend for add/update/skip status analysis
 3. **Preview Phase**: Frontend displays import preview with status for each document based on server analysis
 4. **Bulk Upload Phase**: User confirms import, frontend sends paginated requests to bulk upload endpoint with actual file contents
@@ -23,8 +25,8 @@ The design follows Extralit's existing patterns: context-based backend architect
 
 ```mermaid
 graph TD
-    A[Frontend Upload Component] --> B[Frontend BibTeX Parser]
-    A --> C[Frontend File Matcher]
+    A[Frontend Upload Component] --> B[Frontend Bibliography Parser (.bib/.csv)]
+    A --> C[Frontend Advanced File Matcher]
     B --> D[File Metadata Analysis Request]
     B --> E[Generic Dataframe Conversion]
     C --> D
@@ -144,7 +146,7 @@ Note to reuse existing styles in extralit-frontend/assets/scss/base/base.scss, e
 
 **Workspace Selection Integration:**
 - Modify WorkspacesFilter component to support single workspace selection instead of multi-select
-- Pass selected workspace ID to ImportModal component for import analysis
+- Pass selected workspace ID to ImportFlow component for import analysis
 - Ensure workspace context is maintained throughout the import workflow
 
 #### 2. FlowModal Base Component (`extralit-frontend/components/base/base-flow-modal/BaseFlowModal.vue`)
@@ -202,10 +204,10 @@ interface FlowModalProps {
 - Smooth transitions between steps
 - Loading states and disabled button styling
 
-#### 3. Import Modal Workflow (`extralit-frontend/components/features/import/ImportModal.vue`)
+#### 3. Import Modal Workflow (`extralit-frontend/components/features/import/ImportFlow.vue`)
 
 **Full-page modal using new BaseFlowModal component with multi-step workflow:**
-- Step 1: Upload Bibliography File (.bib file upload)
+- Step 1: Upload Bibliography File (.bib or .csv file upload)
 - Step 2: Upload Full-Text PDFs (multiple PDF file upload)
 - Step 3: Import Analysis & Selection (table with toggle functionality)
 - Step 4: Batch Upload Progress (live progress tracking)
@@ -216,23 +218,37 @@ interface FlowModalProps {
 - Passes workspace ID to ImportAnalysisTable for backend analysis requests
 - Maintains workspace context throughout the import workflow
 
+**Flow Control Improvements:**
+- Requires confirmation to close modal during import process
+- No confirmation required after successful completion
+- Preserves uploaded data when navigating between steps
+- Refreshes recent import list on home screen when modal closes after completion
+- Supports flexible upload order (bibliography or PDFs can be uploaded first)
+
 #### 3. Upload Steps Components
 
-**Step 1: Bibliography Upload (`extralit-frontend/components/features/import/ImportBibUpload.vue`)**
-- Single .bib file upload with drag-and-drop or file picker
+**Step 1: Bibliography Upload (`extralit-frontend/components/features/import/ImportFileUpload.vue`)**
+- Combined .bib and .csv file upload with drag-and-drop or file picker
 - Support for ";"-separated values (especially the `file` attribute in zotero_export.bib)
-- Parsing preview of dataframe columns parsed from the .bib file,
+- **CSV Column Selection**: When CSV is uploaded, display column selection interface allowing user to:
+  - Select reference/ID column (primary key)
+  - Select files column for PDF matching
+  - Preview first few rows of data
+- Parsing preview of dataframe columns parsed from the bibliography file
 - Display upload status and reference count
+- Allow flexible upload order (bibliography first or PDFs first)
 
-**Step 2: PDF Upload (`extralit-frontend/components/features/import/ImportPdfUpload.vue`)**
+**Step 2: PDF Upload (integrated into ImportFileUpload.vue)**
 - Multiple PDF file upload with drag-and-drop or folder selection
-- File path matching preview with bibliography entries
+- Advanced file path matching preview with bibliography entries using maximum prefix matching
 - Upload progress and file validation
 - Summary status showing matched/unmatched files
+- Progressive file addition with deduplication
 
 **Dependencies:**
 - `vue-dropzone` or similar for file uploads
 - JavaScript BibTeX parser library (e.g., `bibtex-parse-js` or `@retorquere/bibtex-parser`)
+- Performant CSV parser library (e.g., `papaparse`)
 
 Example BibTeX files:
 
@@ -301,14 +317,17 @@ Example BibTeX files:
 
 **Features using new simple table component:**
 - Uses `GetImportAnalysisUseCase` from `~/v1/domain/usecases/get-import-analysis-use-case.ts` for backend communication
-- Uses `useImportAnalysisViewModel` for reactive state management and API integration
+- Uses `useImportAnalysisTableViewModel` for reactive state management and API integration
 - Imports backend API types from `~/v1/domain/entities/import/ImportAnalysis.ts`
 - Imports UI component types from `./types.ts` for table configuration and component state
 - Tabular display with columns: Reference (first column freeze), and Files, Import Status (last column freeze), while the rest of the columns imported from are sorted Title, Authors, Year, to the rest of the table
-- Toggle functionality for each reference to select Add/Update/Skip
+- Toggle functionality for each reference to select Add/Update/Skip/Ignore
 - User can toggle from Add or Update to Ignore, or back
 - Status indicators with color coding (Add: green, Update: blue, Skip: gray, Ignore: gray, Failed: red)
 - Filterable columns on the status indicator
+- **Import Filter Options**: Toggle between "Import All References" and "Import Only References with PDFs"
+- When "Import Only References with PDFs" is selected, references without matched files are automatically set to "Ignore" status
+- When "Import All References" is selected, references without matched files can be imported as metadata-only entries
 - Sends POST requests to `/api/v1/imports/analyze` with `ImportAnalysisRequest` to prepopulate Import Status column
 - Receives workspace ID as prop and passes it to the analysis use case
 - Automatically triggers analysis when dataframe data is available and workspace ID is provided
@@ -434,7 +453,7 @@ class ImportHistoryResponse(BaseModel):
     """Response schema for import history creation and retrieval."""
     id: UUID = Field(..., description="Import history record ID")
     workspace_id: UUID = Field(..., description="Workspace ID")
-    user_id: UUID = Field(..., description="User ID who created the import")
+    username: str = Field(..., description="User who created the import")
     filename: str = Field(..., description="Import filename")
     created_at: datetime = Field(..., description="Creation timestamp")
     data: Optional[Dict] = Field(None, description="Tabular dataframe data (only in detailed view)")
@@ -543,8 +562,9 @@ The import system processes tabular data (BibTeX, CSV, etc.) into a standardized
 - Type inference applied automatically (string, integer, float)
 - Schema generated dynamically based on available fields
 
-**Future CSV Support:**
-- First column as primary key (configurable)
+**CSV Support:**
+- User-selectable reference column as primary key
+- User-selectable files column for PDF matching
 - Column headers map to dataframe field names
 - Type inference for string, integer, float fields
 - Flexible schema definition for different data sources
@@ -555,10 +575,12 @@ The import system processes tabular data (BibTeX, CSV, etc.) into a standardized
 - Preserves all original metadata without field-specific mapping requirements
 
 ### PDF-to-Reference Matching Logic
-1. **Exact Match**: PDF filename matches Reference exactly
-2. **Partial Match**: PDF filename contains Reference
-3. **Fuzzy Match**: Use string similarity for close matches
-4. **Manual Association**: Allow user to manually associate files
+1. **Maximum Prefix Path Match**: PDF file path has maximum prefix match with bibliography entry file path (highest priority)
+2. **Exact Match**: PDF filename matches Reference exactly
+3. **File Field Match**: PDF filename matches parsed file paths from bibliography entry
+4. **Fuzzy Title Match**: PDF filename contains significant words from reference title (lowest priority)
+5. **Progressive File Addition**: Support for adding multiple PDF files progressively with proper deduplication
+6. **Multiple Files per Reference**: Handle cases where one reference matches multiple PDF files correctly
 
 ## Error Handling
 
@@ -620,10 +642,10 @@ extralit-frontend/
 │   └── WorkspaceSelector.vue          # Modified for single workspace selection
 └── components/features/import/
     ├── types.ts                       # UI component types + re-exports
-    ├── ImportModal.vue                # Main workflow modal (receives workspace ID)
+    ├── ImportFlow.vue                # Main workflow modal (receives workspace ID)
     ├── ImportFileUpload.vue           # Step 1 & 2: File uploads
     ├── ImportAnalysisTable.vue        # Step 3: Analysis & selection (uses workspace ID)
-    ├── useImportAnalysisViewModel.ts  # View model that calls get-import-analysis-use-case.ts
+    ├── useImportAnalysisTableViewModel.ts  # View model that calls get-import-analysis-use-case.ts
     └── ImportBatchProgress.vue        # Step 4: Upload progress
 ```
 

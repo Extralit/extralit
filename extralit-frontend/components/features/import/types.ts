@@ -6,8 +6,6 @@
 import type {
   ImportStatus,
   DocumentMetadata,
-  ImportAnalysisResponse,
-  ImportHistoryResponse,
   DataframeData,
 } from "~/v1/domain/entities/import/ImportAnalysis";
 
@@ -65,6 +63,14 @@ export interface ImportSummaryData {
   failed: number;
   errors: string[];
   importId: string | null;
+}
+
+// Import confirmation data (Step 3)
+export interface ImportConfirmationData {
+  confirmedDocuments: Record<string, DocumentMetadata>;
+  totalConfirmed: number;
+  documentActions: Record<string, ImportStatus>;
+  filteredDataframeData: DataframeData | null;
 }
 
 // Table row data for ImportAnalysisTable

@@ -27,6 +27,7 @@ These are the section headers that we use:
 - Enhanced workspace selection and integration with import features.
 
 ### Changed
+- Renamed `argilla-frontend/` → `extralit-frontend/` (entire frontend directory)
 - Updated route new dataset view from `/{dataset.repoId}` to `/new/hf/{dataset.repoId}` to prevent url conflicts.
 - Improved import modal navigation and state persistence across steps.
 - Updated workspace selection UI for single workspace mode.

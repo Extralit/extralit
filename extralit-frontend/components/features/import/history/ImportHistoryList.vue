@@ -90,7 +90,7 @@ import "assets/icons/document";
 import "assets/icons/external-link";
 import "assets/icons/time";
 
-import type { TableColumn } from "./types";
+import type { TableColumn } from "../types";
 import type {
   ImportHistoryListItem,
   ImportHistoryListResponse,

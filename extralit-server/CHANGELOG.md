@@ -23,6 +23,8 @@ These are the section headers that we use:
 - Document upload job system for multi-file reference uploads with retry and progress tracking
 
 ### Changed
+- Renamed `argilla-server/` → `extralit-server/` (entire backend directory)
+- Renamed `argilla-server/src/argilla_server/` → `extralit-server/src/extralit_server/`
 - Import analysis workflow integration into home page and modal components
 - Updated workspace selection UI for single workspace mode
 - Sequential batch upload logic with paginated bulk requests

@@ -1,19 +1,4 @@
-<!--
-  - coding=utf-8
-  - Copyright 2021-present, the Recognai S.L. team.
-  -
-  - Licensed under the Apache License, Version 2.0 (the "License");
-  - you may not use this file except in compliance with the License.
-  - You may obtain a copy of the License at
-  -
-  -     http://www.apache.org/licenses/LICENSE-2.0
-  -
-  - Unless required by applicable law or agreed to in writing, software
-  - distributed under the License is distributed on an "AS IS" BASIS,
-  - WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  - See the License for the specific language governing permissions and
-  - limitations under the License.
-  -->
+
 
 <template>
   <div>
@@ -57,7 +42,7 @@
       <template v-slot:page-sidebar>
         <template v-if="true || isAdminOrOwnerRole">
           <div class="home__sidebar__buttons">
-            <ImportDocuments @on-click="openImportModal" />
+            <ImportDocuments @on-click="openImportFlow" />
             <ImportFromHub
               :is-expanded="showImportDatasetInput"
               @on-expand="showImportDatasetInput = true"
@@ -69,10 +54,11 @@
           <BaseSeparator class="home__sidebar__separator" />
           <div class="home__sidebar__content">
             <RecentImports
+              ref="recentImportsComponent"
               :workspace="selectedWorkspace"
               @import-selected="handleImportSelected"
               @view-all-imports="openImportHistoryModal"
-              @import-documents="openImportModal"
+              @import-documents="openImportFlow"
             />
           </div>
         </template>
@@ -98,10 +84,11 @@
       </template>
     </Home>
 
-    <ImportModal
-      :is-visible="isImportModalVisible"
+    <ImportFlow
+      :is-visible="isImportFlowVisible"
       :workspace="selectedWorkspace"
-      @close="showImportModal = false"
+      @close="showImportFlow = false"
+      @import-completed="() => handleImportCompleted($refs.recentImportsComponent)"
     />
 
     <!-- Import History Modal -->
@@ -141,13 +128,11 @@
 import Home from "@/layouts/Home.vue";
 import { useHomeViewModel } from "./useHomeViewModel";
 import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
-import ImportHistoryDetailsModal from "~/components/features/import/ImportHistoryDetailsModal.vue";
 
 export default {
   data() {
     return {
       showImportDatasetInput: false,
-      selectedWorkspace: null,
       activeTab: { id: 'datasets', name: this.$t('home.datasets') },
       tabs: [
         { id: 'datasets', name: this.$t('home.datasets') },
@@ -166,14 +151,14 @@ export default {
     },
     cardAction(action) {
       if (action === "expand-import-dataset") {
-        this.showImportDatasetInput = true;
+        this.openImportFlow();
       }
     },
     importHfDataset(repoId: string) {
       this.getNewHfDatasetByRepoId(repoId);
     },
     onWorkspaceSelected(workspace: Workspace) {
-      this.selectedWorkspace = workspace;
+      this.setSelectedWorkspace(workspace);
     },
     onTabChange(tabId) {
       const selectedTab = this.tabs.find(tab => tab.id === tabId);
@@ -199,10 +184,6 @@ export default {
   },
   components: {
     Home,
-    ImportHistoryDetailsModal,
-  },
-  computed: {
-    // Modal state is managed by useHomeViewModel
   },
 
   watch: {
@@ -211,7 +192,7 @@ export default {
       handler(newWorkspaces) {
         // Auto-assign the first workspace if none is selected and workspaces exist
         if (!this.selectedWorkspace && newWorkspaces && newWorkspaces.length > 0) {
-          this.selectedWorkspace = newWorkspaces[0];
+          this.setSelectedWorkspace(newWorkspaces[0]);
         }
       }
     }
