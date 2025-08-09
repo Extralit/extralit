@@ -1,46 +1,46 @@
 <template>
-  <div class="workspace-breadcrumb-dropdown">
+  <div class="breadcrumb-dropdown">
     <BaseDropdown :visible="visibleDropdown" @visibility="onToggleVisibility">
       <span
         slot="dropdown-header"
-        class="workspace-breadcrumb-dropdown__header"
-        :class="{ '--active': visibleDropdown }"
+        class="breadcrumb-dropdown__header"
       >
         <span
-          class="workspace-breadcrumb-dropdown__name"
+          class="breadcrumb-dropdown__name"
           :class="{ '--last': isLastBreadcrumb }"
         >
           {{ selectedWorkspaceName }}
         </span>
         <BaseIcon
-          name="chevron-down"
-          class="workspace-breadcrumb-dropdown__icon"
+          icon-name="chevron-down"
+          class="breadcrumb-dropdown__icon"
           :class="{ '--rotated': visibleDropdown }"
         />
       </span>
-      <span slot="dropdown-content" class="workspace-breadcrumb-dropdown__content">
-        <div class="workspace-breadcrumb-dropdown__selector">
+      <span slot="dropdown-content" class="breadcrumb-dropdown__content">
+        <div class="breadcrumb-dropdown__selector">
           <BaseSearch v-model="searchText" :placeholder="$t('search')" />
-          <div class="workspace-breadcrumb-dropdown__items">
-            <div v-if="workspaces.length === 0" class="workspace-breadcrumb-dropdown__empty">
+          <div class="breadcrumb-dropdown__items">
+            <div v-if="workspaces.length === 0" class="breadcrumb-dropdown__empty">
               {{ $t('No workspaces available') }}
             </div>
-            <div v-else-if="workspacesFilteredBySearchText.length === 0" class="workspace-breadcrumb-dropdown__empty">
+            <div v-else-if="workspacesFilteredBySearchText.length === 0" class="breadcrumb-dropdown__empty">
               {{ $t('No workspaces match your search') }}
             </div>
-            <BaseRadioButton
-              v-else
-              class="workspace-breadcrumb-dropdown__item"
-              v-for="workspace in workspacesFilteredBySearchText"
-              :key="workspace.id"
-              :id="workspace.id"
-              :name="workspace.id"
-              :value="workspace.id"
-              v-model="selectedWorkspaceId"
-            >
-              {{ workspace.name }}
-              <span class="workspace-breadcrumb-dropdown__number">({{ workspace.numberOfDatasets || 0 }})</span>
-            </BaseRadioButton>
+            <template v-else>
+              <BaseRadioButton
+                class="breadcrumb-dropdown__item"
+                v-for="workspace in workspacesFilteredBySearchText"
+                :key="workspace.id"
+                :id="workspace.id"
+                :name="workspace.id"
+                :value="workspace.id"
+                :checked="selectedWorkspaceId === workspace.id"
+                @change="onWorkspaceSelectionChange(workspace.id)"
+              >
+                {{ workspace.name }}
+              </BaseRadioButton>
+            </template>
           </div>
         </div>
       </span>
@@ -119,59 +119,48 @@ export default {
         }
       });
     },
+    onWorkspaceSelectionChange(workspaceId: string) {
+      this.selectedWorkspaceId = workspaceId;
+    }
   },
 };
 </script>
 
 <style lang="scss" scoped>
-.workspace-breadcrumb-dropdown {
-  display: inline-block;
+.breadcrumb-dropdown {
+  position: relative;
 
   &__header {
     display: flex;
     align-items: center;
-    gap: 4px;
+    padding: $base-space / 2;
     color: var(--fg-lighter);
-    text-decoration: none;
-    outline: none;
     cursor: pointer;
-    padding: 2px 6px;
     border-radius: $border-radius-s;
     transition: all 0.2s ease;
 
-    // Match breadcrumb item styling
     &:hover {
-      background: var(--bg-opacity-4);
-      color: var(--fg-secondary);
-    }
-
-    // Active state when dropdown is open
-    &.--active {
-      background: var(--bg-opacity-4);
-      color: var(--fg-secondary);
+      background: var(--bg-opacity-20);
     }
   }
 
   &__name {
     font-weight: 600;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 200px;
+    line-height: 1;
 
-    // Match breadcrumb last item styling when this is the last breadcrumb
     &.--last {
       word-break: break-all;
-      white-space: pre-line;
     }
   }
 
   &__icon {
     width: 12px;
     height: 12px;
+    margin-left: 4px;
     transition: transform 0.2s ease;
     fill: currentColor;
-    opacity: 0.7;
+    opacity: 0.8;
 
     &.--rotated {
       transform: rotate(180deg);
@@ -180,9 +169,7 @@ export default {
 
   &__content {
     display: block;
-    width: auto;
-    max-width: 320px;
-    min-width: 280px;
+    margin-top: 0;
   }
 
   &__selector {
@@ -190,30 +177,24 @@ export default {
   }
 
   &__items {
-    max-height: 200px;
-    overflow: auto;
-    margin-top: $base-space;
+    padding: 0;
   }
 
   &__item {
     &.radio-button {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      padding: 6px $base-space;
+      padding: $base-space;
       border-radius: $border-radius-s;
       transition: background-color 0.2s ease;
 
       &:hover {
-        background: var(--bg-opacity-4);
+        background: var(--bg-opacity-20);
       }
     }
 
     :deep(.radio-button__container) {
-      background: none !important;
-      border: 0 !important;
-      flex: 1;
-      min-width: 0;
+      display: none !important;
     }
 
     :deep(label) {
@@ -221,13 +202,12 @@ export default {
       overflow: hidden;
       text-overflow: ellipsis;
       flex: 1;
-      min-width: 0;
+      margin: 0;
+      padding: 0;
     }
 
     &.radio-button :deep(.radio-button__container .svg-icon) {
       fill: var(--fg-cuaternary);
-      min-width: 16px;
-      flex-shrink: 0;
     }
   }
 
@@ -239,7 +219,6 @@ export default {
   }
 
   &__empty {
-    padding: $base-space * 2;
     text-align: center;
     color: var(--fg-tertiary);
     @include font-size(12px);
@@ -247,24 +226,53 @@ export default {
   }
 }
 
-// Override dropdown positioning for breadcrumb context
 :deep(.dropdown__content) {
-  right: 0;
-  left: auto;
-  z-index: 10; // Ensure it appears above other elements
+  right: auto;
+  left: 0;
+  z-index: 10;
+  margin-top: 0;
+  min-width: 120px;
+  border: 1px solid var(--border-field);
+  box-shadow: var(--shadow-200);
+  border-radius: $border-radius-s;
 }
 
-// Responsive behavior for mobile
-@include media("<=tablet") {
-  .workspace-breadcrumb-dropdown {
-    &__name {
-      max-width: 150px;
-    }
+:deep(.dropdown) {
+  margin: 0;
+  padding: 0;
+}
 
-    &__content {
-      min-width: 250px;
-      max-width: 280px;
+:deep(.dropdown__wrapper) {
+  position: absolute;
+  top: 100%;
+  left: 0;
+}
+
+:deep(.base-search) {
+  margin: 0;
+
+  .base-search__input {
+    padding: $base-space / 2;
+    border-radius: $border-radius-s;
+    border: 1px solid var(--border-field);
+    background: var(--bg-field);
+    color: var(--fg-primary);
+
+    &::placeholder {
+      color: var(--fg-tertiary);
     }
   }
 }
+
+:deep(.radio-button) {
+  margin: 0 0 2px 0;
+  padding: 0;
+  gap: 0;
+
+  .radio-button__label {
+    width: 100%;
+    flex: 1;
+  }
+}
+
 </style>

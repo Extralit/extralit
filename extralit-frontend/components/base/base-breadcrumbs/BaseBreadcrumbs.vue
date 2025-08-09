@@ -95,28 +95,35 @@ export default {
   margin-left: 1em;
   display: flex;
   align-items: center;
+
   ul {
     display: flex;
+    align-items: center;
     padding-left: 0;
+    margin: 0;
     font-weight: normal;
     list-style: none;
+
     @include media("<=tablet") {
       flex-wrap: wrap;
     }
   }
   li {
-    margin: auto 0.5em auto auto;
+    display: flex;
+    align-items: center;
+    margin: 0;
     white-space: nowrap;
     @include media("<=tablet") {
       margin: 0;
     }
     &:not(:last-child):after {
       content: "/";
-      margin-left: 0.5em;
+      margin: 0 0.5em;
+      color: var(--fg-lighter);
+      font-weight: normal;
     }
     &:last-child {
       word-break: break-all;
-      white-space: pre-line;
       font-weight: 600;
       a {
         cursor: default;
