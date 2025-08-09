@@ -3,6 +3,7 @@ import { DATASET_API_ERRORS } from "@/v1/infrastructure/repositories/DatasetRepo
 import { Dataset } from "~/v1/domain/entities/dataset/Dataset";
 import { useTranslate } from "~/v1/infrastructure/services";
 import { useNotifications } from "~/v1/infrastructure/services/useNotifications";
+import { BreadcrumbItem } from "~/v1/infrastructure/types/breadcrumb";
 
 export const useDatasetViewModel = () => {
   const isLoadingDataset = ref(false);
@@ -30,7 +31,7 @@ export const useDatasetViewModel = () => {
     });
   };
 
-  const createRootBreadCrumbs = (dataset: Dataset) => {
+  const createRootBreadCrumbs = (dataset: Dataset): BreadcrumbItem[] => {
     return [
       { link: { name: "index" }, name: t("breadcrumbs.home") },
       {

@@ -64,14 +64,14 @@
   - Maintain existing breadcrumb functionality for non-workspace items
   - _Requirements: 3.1, 3.3, 5.1_
 
-- [ ] 4.1 Add workspace breadcrumb detection to BaseBreadcrumbs
+- [x] 4.1 Add workspace breadcrumb detection to BaseBreadcrumbs
   - Modify BaseBreadcrumbs.vue to detect workspace breadcrumb items (isWorkspace flag)
   - Render WorkspaceBreadcrumbDropdown for workspace items
   - Render normal breadcrumb items for non-workspace items
   - Handle workspace selection events and link updates
   - _Requirements: 3.1, 3.3_
 
-- [ ] 4.2 Update breadcrumb item structure
+- [x] 4.2 Update breadcrumb item structure
   - Extend BreadcrumbItem interface to include isWorkspace and workspaceId properties
   - Update breadcrumb rendering logic to handle workspace-specific properties
   - Ensure backward compatibility with existing breadcrumb usage
