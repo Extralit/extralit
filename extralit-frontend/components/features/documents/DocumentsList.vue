@@ -101,6 +101,16 @@ export default {
   async mounted() {
     await this.fetchDocuments();
   },
+  watch: {
+    workspaceId: {
+      immediate: false,
+      async handler(newWorkspaceId, oldWorkspaceId) {
+        if (newWorkspaceId && newWorkspaceId !== oldWorkspaceId) {
+          await this.fetchDocuments();
+        }
+      }
+    }
+  },
   methods: {
     async fetchDocuments() {
       this.isLoading = true;
