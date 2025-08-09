@@ -37,6 +37,8 @@ export const useDatasetViewModel = () => {
       {
         link: { path: `/?workspaces=${dataset.workspace}` },
         name: dataset.workspace,
+        isWorkspace: true,
+        workspaceId: dataset.workspaceId,
       },
       {
         link: { path: "annotation-mode" },

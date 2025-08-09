@@ -58,7 +58,7 @@
   - Maintain existing breadcrumb visual hierarchy
   - _Requirements: 3.6, 5.3, 5.7_
 
-- [ ] 4. Enhance BaseBreadcrumbs component for workspace detection
+- [x] 4. Enhance BaseBreadcrumbs component for workspace detection
   - Add workspace breadcrumb detection and rendering logic
   - Implement conditional rendering for workspace breadcrumb items
   - Maintain existing breadcrumb functionality for non-workspace items
@@ -78,13 +78,13 @@
   - Add TypeScript types for enhanced breadcrumb structure
   - _Requirements: 3.6, 5.7_
 
-- [ ] 5. Update breadcrumb generation in view models
+- [-] 5. Update breadcrumb generation in view models
   - Modify view models to generate workspace-aware breadcrumbs
   - Add isWorkspace flags to workspace breadcrumb items
   - Ensure dynamic link generation for workspace changes
   - _Requirements: 3.1, 3.4_
 
-- [ ] 5.1 Update useDatasetViewModel breadcrumb generation
+- [-] 5.1 Update useDatasetViewModel breadcrumb generation
   - Modify createRootBreadCrumbs in useDatasetViewModel.ts to mark workspace breadcrumbs
   - Add isWorkspace: true flag to workspace breadcrumb items
   - Include workspaceId in workspace breadcrumb items
