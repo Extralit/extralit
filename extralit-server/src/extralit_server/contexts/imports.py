@@ -37,7 +37,7 @@ from extralit_server.api.schemas.v1.imports import (
     ImportHistoryCreate,
     ImportHistoryCreateResponse,
 )
-from extralit_server.jobs.document_jobs import upload_reference_documents_job
+from extralit_server.jobs.document_jobs import upload_and_preprocess_documents_job
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -385,7 +385,7 @@ async def process_bulk_upload(
             if not doc.associated_files:
                 # Create a reference-based job for documents without files
                 job = DEFAULT_QUEUE.enqueue(
-                    upload_reference_documents_job,
+                    upload_and_preprocess_documents_job,
                     reference=reference,
                     reference_data=doc.document_create.model_dump(),
                     file_data_list=[],
@@ -435,7 +435,7 @@ async def process_bulk_upload(
 
             # Create a reference-based job for multiple files
             job = DEFAULT_QUEUE.enqueue(
-                upload_reference_documents_job,
+                upload_and_preprocess_documents_job,
                 reference=reference,
                 reference_data=doc.document_create.model_dump(),
                 file_data_list=file_data_list,

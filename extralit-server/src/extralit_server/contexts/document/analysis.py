@@ -26,7 +26,7 @@ PIL = lazy.load("PIL")
 if TYPE_CHECKING:
     from PIL.Image import Image
 
-logger = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
 
 
 def pil_to_cv(image: "Image") -> np.ndarray:
@@ -123,13 +123,6 @@ def find_horizontal_bands(mask: "Image", min_height: int = 15, min_ratio: float 
 
 
 class PDFAnalyzer:
-    """
-    Analyzes PDF layout structure to detect margins, headers, footers, and other regions.
-    """
-
-    def __init__(self):
-        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
-
     def analyze_pdf_layout(self, pdf_data: bytes, filename: str) -> Dict:
         """
         Analyze PDF layout to extract margin and region information.
@@ -147,7 +140,7 @@ class PDFAnalyzer:
             if not images:
                 return {"analysis_available": False, "error": "No pages found"}
 
-            self.logger.info(f"Analyzing layout for {filename} with {len(images)} pages")
+            _LOGGER.info(f"Analyzing layout for {filename} with {len(images)} pages")
 
             # Analyze layout
             layout_data = self._analyze_page_layout(images)
@@ -160,7 +153,7 @@ class PDFAnalyzer:
             }
 
         except Exception as e:
-            self.logger.error(f"PDF layout analysis failed for {filename}: {e}")
+            _LOGGER.error(f"PDF layout analysis failed for {filename}: {e}")
             return {"analysis_available": False, "error": str(e)}
 
     def _analyze_page_layout(self, images: List["Image"]) -> Dict:
@@ -193,7 +186,7 @@ class PDFAnalyzer:
         try:
             # Ensure same size
             if reference.size != compare.size:
-                self.logger.debug(f"Resizing page to match reference size")
+                _LOGGER.debug(f"Resizing page to match reference size")
                 compare = compare.resize(reference.size)
 
             # Step 1: Compute difference and invert so white = same
@@ -220,7 +213,7 @@ class PDFAnalyzer:
             return regions
 
         except Exception as e:
-            self.logger.debug(f"Page comparison failed: {e}")
+            _LOGGER.debug(f"Page comparison failed: {e}")
             return None
 
     def _classify_regions_advanced(

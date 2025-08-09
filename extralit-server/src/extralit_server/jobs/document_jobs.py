@@ -33,7 +33,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @job(DEFAULT_QUEUE, timeout=JOB_TIMEOUT_DISABLED, retry=Retry(max=3, interval=[10, 30, 60]))
-async def upload_reference_documents_job(
+async def upload_and_preprocess_documents_job(
     reference: str,
     reference_data: Dict[str, Any],
     file_data_list: List[Tuple[str, bytes]],  # List of (filename, file_data) tuples
@@ -183,7 +183,7 @@ async def upload_reference_documents_job(
             results["success"] = results["failed_files"] == 0
 
     except Exception as e:
-        error_msg = f"Error in upload_reference_documents_job for reference {reference}: {str(e)}"
+        error_msg = f"Error uploading documents for reference {reference}: {str(e)}"
         _LOGGER.error(error_msg)
         results["success"] = False
         results["errors"].append(str(e))
