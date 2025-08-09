@@ -5,17 +5,19 @@ import { GetHfDatasetCreationUseCase } from "~/v1/domain/usecases/get-hf-dataset
 import { GetDatasetsUseCase } from "@/v1/domain/usecases/get-datasets-use-case";
 import { GetWorkspacesUseCase } from "~/v1/domain/usecases/get-workspaces-use-case";
 import { useDatasets } from "~/v1/infrastructure/storage/DatasetsStorage";
+import { useWorkspaces } from "~/v1/infrastructure/storage/WorkspaceStorage";
 import { useRole } from "~/v1/infrastructure/services/useRole";
 import { ImportHistoryListItem } from "~/v1/domain/usecases/get-import-history-use-case";
 import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
+import { BreadcrumbItem } from "~/v1/infrastructure/types/breadcrumb";
 
 export const useHomeViewModel = () => {
-  const workspaces = ref<any[]>([]);
   const getWorkspacesUseCase = useResolve(GetWorkspacesUseCase);
   const { isAdminOrOwnerRole } = useRole();
   const isLoadingDatasets = ref(false);
   const { goToImportDatasetFromHub, goToImportConfiguration } = useRoutes();
   const { state: datasets } = useDatasets();
+  const { get: getWorkspaceState, saveWorkspaces, saveSelectedWorkspace } = useWorkspaces();
   const getDatasetsUseCase = useResolve(GetDatasetsUseCase);
   const getDatasetCreationUseCase = useResolve(GetHfDatasetCreationUseCase);
   const error = ref("");
@@ -27,7 +29,8 @@ export const useHomeViewModel = () => {
 
   useFetch(async () => {
     loadDatasets();
-    workspaces.value = await getWorkspacesUseCase.execute();
+    const workspaces = await getWorkspacesUseCase.execute();
+    saveWorkspaces(workspaces);
   });
 
   const getNewHfDatasetByRepoId = async (repositoryId: string) => {
@@ -78,6 +81,28 @@ export const useHomeViewModel = () => {
     isLoadingDatasets.value = false;
   };
 
+  // Computed properties for workspace state
+  const workspaces = computed(() => getWorkspaceState().workspaces);
+  const selectedWorkspace = computed(() => getWorkspaceState().selectedWorkspace);
+
+  // Dynamic breadcrumb generation based on workspace state
+  const breadcrumbs = computed((): BreadcrumbItem[] => {
+    const baseBreadcrumbs: BreadcrumbItem[] = [
+      { action: "clearFilters", name: "Home" }, // Will be translated in template
+    ];
+
+    if (selectedWorkspace.value) {
+      baseBreadcrumbs.push({
+        name: selectedWorkspace.value.name,
+        link: { path: "/", query: { workspace: selectedWorkspace.value.name } },
+        isWorkspace: true,
+        workspaceId: selectedWorkspace.value.id,
+      });
+    }
+
+    return baseBreadcrumbs;
+  });
+
   const openImportFlow = () => {
     showImportFlow.value = !showImportFlow.value;
   };
@@ -86,19 +111,17 @@ export const useHomeViewModel = () => {
     return showImportFlow.value;
   });
 
-  // Workspace selection for import
-  const selectedWorkspace = ref<Workspace | null>(null);
-
+  // Workspace selection methods using global store
   const setSelectedWorkspace = (workspace: Workspace | null) => {
-    selectedWorkspace.value = workspace;
+    saveSelectedWorkspace(workspace);
   };
 
   const setSelectedWorkspaceId = (workspaceId: string | null) => {
     if (workspaceId === null) {
-      selectedWorkspace.value = null;
+      saveSelectedWorkspace(null);
     } else {
       const workspace = workspaces.value.find((w) => w.id === workspaceId);
-      selectedWorkspace.value = workspace || null;
+      saveSelectedWorkspace(workspace || null);
     }
   };
 
@@ -143,6 +166,8 @@ export const useHomeViewModel = () => {
   return {
     datasets,
     workspaces,
+    selectedWorkspace,
+    breadcrumbs,
     isLoadingDatasets,
     getNewHfDatasetByRepoId,
     goToImportConfiguration,
@@ -152,7 +177,6 @@ export const useHomeViewModel = () => {
     showImportFlow,
     isImportFlowVisible,
     openImportFlow,
-    selectedWorkspace,
     setSelectedWorkspace,
     setSelectedWorkspaceId,
     showImportHistoryModal,

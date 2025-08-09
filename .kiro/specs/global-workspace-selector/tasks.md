@@ -78,26 +78,26 @@
   - Add TypeScript types for enhanced breadcrumb structure
   - _Requirements: 3.6, 5.7_
 
-- [-] 5. Update breadcrumb generation in view models
+- [x] 5. Update breadcrumb generation in view models
   - Modify view models to generate workspace-aware breadcrumbs
   - Add isWorkspace flags to workspace breadcrumb items
   - Ensure dynamic link generation for workspace changes
   - _Requirements: 3.1, 3.4_
 
-- [-] 5.1 Update useDatasetViewModel breadcrumb generation
+- [x] 5.1 Update useDatasetViewModel breadcrumb generation
   - Modify createRootBreadCrumbs in useDatasetViewModel.ts to mark workspace breadcrumbs
   - Add isWorkspace: true flag to workspace breadcrumb items
   - Include workspaceId in workspace breadcrumb items
   - Ensure workspace breadcrumb links update dynamically
   - _Requirements: 3.1, 3.4_
 
-- [ ] 6. Update home page breadcrumbs and workspace integration
+- [x] 6. Update home page breadcrumbs and workspace integration
   - Update home page to use workspace-aware breadcrumbs
   - Remove workspace filter from DatasetList component
   - Ensure dataset and document filtering works with global workspace
   - _Requirements: 4.1, 4.2, 4.3, 5.5_
 
-- [ ] 6.1 Update home page breadcrumb generation
+- [x] 6.1 Update home page breadcrumb generation
   - Modify useHomeViewModel.ts to generate workspace-aware breadcrumbs
   - Add computed breadcrumbs property that includes workspace breadcrumb when workspace is selected
   - Update index.vue to use dynamic breadcrumbs from useHomeViewModel
@@ -106,27 +106,27 @@
   - Remove workspace filter from DatasetList component
   - _Requirements: 4.1, 5.5_
 
-- [ ] 6.2 Add dynamic breadcrumb generation to useHomeViewModel
+- [x] 6.2 Add dynamic breadcrumb generation to useHomeViewModel
   - Add computed breadcrumbs property to useHomeViewModel.ts
   - Generate breadcrumbs based on selected workspace state: `[{ name: 'Home' }]` or `[{ name: 'Home' }, { name: workspace.name, isWorkspace: true, workspaceId: workspace.id }]`
   - Connect breadcrumbs to global workspace store
   - Update breadcrumb links to include workspace parameter when workspace is selected
   - _Requirements: 4.2, 4.3, 2.3_
 
-- [ ] 6.3 Update useHomeViewModel for global workspace state
+- [x] 6.3 Update useHomeViewModel for global workspace state
   - Modify useHomeViewModel.ts to use global workspace store instead of local workspace state
   - Remove local workspace state management (workspaces, selectedWorkspace refs)
   - Connect dataset and document filtering to global workspace selection
   - Update workspace change handlers to use global state
   - _Requirements: 4.2, 4.3, 2.3_
 
-- [ ] 6.4 Update home page template to use dynamic breadcrumbs
+- [x] 6.4 Update home page template to use dynamic breadcrumbs
   - Modify index.vue to use breadcrumbs from useHomeViewModel instead of static breadcrumbs
   - Remove hardcoded breadcrumbs array from AppHeader component
   - Ensure breadcrumb actions are properly handled for workspace changes
   - _Requirements: 4.2, 4.3_
 
-- [ ] 6.5 Update DocumentsList component integration
+- [x] 6.5 Update DocumentsList component integration
   - Ensure DocumentsList component receives workspace from global state
   - Remove workspace prop passing from home page template
   - Update DocumentsList to reactively respond to workspace changes
