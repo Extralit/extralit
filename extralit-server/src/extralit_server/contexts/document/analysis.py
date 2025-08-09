@@ -12,447 +12,259 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+PDF text layer detection using OCRmyPDF internal functions.
+
+This module provides functionality to detect whether a PDF already has an OCR text layer
+by leveraging OCRmyPDF's internal PdfInfo and PageInfo classes.
+"""
+
 import logging
+from dataclasses import dataclass
+from io import BytesIO
+from pathlib import Path
+from typing import List, Optional, Union
+from concurrent.futures import ThreadPoolExecutor
 
-from typing import Dict, List, Optional, Tuple, TYPE_CHECKING
-import numpy as np
-
-import lazy_loader as lazy
-
-cv2 = lazy.load("cv2")
-pdf2image = lazy.load("pdf2image")
-PIL = lazy.load("PIL")
-
-if TYPE_CHECKING:
-    from PIL.Image import Image
+try:
+    from ocrmypdf.pdfinfo.info import PageInfo
+    from ocrmypdf.exceptions import EncryptedPdfError, InputFileError
+    from ocrmypdf._pipeline import get_pdfinfo
+    from ocrmypdf._concurrent import Executor
+except ImportError as e:
+    raise ImportError(
+        "OCRmyPDF is required for PDF text layer detection. " "Please install it with: pip install ocrmypdf"
+    ) from e
 
 _LOGGER = logging.getLogger(__name__)
 
-
-def pil_to_cv(image: "Image") -> np.ndarray:
-    """Convert PIL Image to OpenCV format."""
-    return cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)  # type: ignore
+DEFAULT_EXECUTOR = ThreadPoolExecutor(max_workers=1)
 
 
-def classify_and_draw_layout_regions(
-    reference: "Image", mask: "Image", min_area: int = 5000, label: bool = True
-) -> Tuple["Image", List[Dict]]:
+@dataclass
+class PageTextInfo:
+    """Information about text content on a specific PDF page."""
+
+    page_number: int
+    has_text: bool
+    has_images: bool
+    has_corrupt_text: bool = False
+    width_pixels: Optional[int] = None
+    height_pixels: Optional[int] = None
+    text_extraction_confidence: Optional[float] = None
+    needs_ocr: bool = True
+
+
+@dataclass
+class PDFTextAnalysisResult:
+    """Result of PDF text layer analysis."""
+
+    total_pages: int
+    has_text_layer: bool
+    pages_with_text: int
+    pages_with_images: int
+    pages_needing_ocr: int
+    is_encrypted: bool
+    analysis_error: Optional[str] = None
+    pages: List[PageTextInfo] = []
+
+
+class PDFTextLayerDetector:
     """
-    Classify and optionally draw layout regions using contour detection.
+    Detector for PDF text layers using OCRmyPDF internal functions.
 
-    Returns:
-        Tuple of (annotated image, list of detected regions)
+    This class uses OCRmyPDF's PdfInfo to analyze PDF pages and determine
+    which pages already have text content and which would require OCR processing.
     """
 
-    mask_np = np.array(mask.convert("L"))
-    h, w = mask_np.shape
-
-    # Clean up the mask using morphological operations
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))  # type: ignore
-    cleaned = cv2.morphologyEx(mask_np, cv2.MORPH_CLOSE, kernel)  # type: ignore
-
-    contours, _ = cv2.findContours(cleaned, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)  # type: ignore
-
-    img = reference.copy() if label else reference
-    regions = []
-
-    if label:
-        draw = PIL.ImageDraw.Draw(img)  # type: ignore
-
-    for cnt in contours:
-        x, y, rw, rh = cv2.boundingRect(cnt)  # type: ignore
-        area = rw * rh
-
-        if area < min_area:
-            continue
-
-        cx, cy = x + rw // 2, y + rh // 2
-
-        # Classify region based on position
-        if cy < h * 0.25:
-            region = "header"
-        elif cy > h * 0.75:
-            region = "footer"
-        elif cx < w * 0.15:
-            region = "left_margin"
-        elif cx > w * 0.85:
-            region = "right_margin"
-        else:
-            region = "body"
-
-        region_data = {
-            "type": region,
-            "x": x,
-            "y": y,
-            "width": rw,
-            "height": rh,
-            "area": area,
-            "center_x": cx,
-            "center_y": cy,
-        }
-        regions.append(region_data)
-
-        if label:
-            draw.rectangle([x, y, x + rw, y + rh], outline="green", width=2)
-            draw.text((x, y - 10), region, fill="green")
-
-    return img, regions
-
-
-def find_horizontal_bands(mask: "Image", min_height: int = 15, min_ratio: float = 0.95) -> List[Tuple[int, int]]:
-    """Find horizontal bands of similar content across pages."""
-    mask_np = np.array(mask.convert("L"))
-    h, w = mask_np.shape
-
-    row_sums = np.sum(mask_np == 255, axis=1) / w  # white = same
-    same_rows = row_sums >= min_ratio
-
-    bands = []
-    start = None
-    for i, val in enumerate(same_rows):
-        if val and start is None:
-            start = i
-        elif not val and start is not None:
-            if i - start >= min_height:
-                bands.append((start, i))
-            start = None
-    if start is not None and h - start >= min_height:
-        bands.append((start, h))
-
-    return bands
-
-
-class PDFAnalyzer:
-    def analyze_pdf_layout(self, pdf_data: bytes, filename: str) -> Dict:
+    def __init__(self, executor: Optional["Executor"] = None):
         """
-        Analyze PDF layout to extract margin and region information.
+        Initialize the PDF text layer detector.
 
         Args:
-            pdf_data: PDF file data as bytes
-            filename: Filename for logging
+            executor: Optional executor for concurrent processing. Defaults to ThreadPoolExecutor.
+        """
+        self.executor = executor or DEFAULT_EXECUTOR
+
+    def detect_text_layer(
+        self,
+        pdf_data: Union[bytes, str, Path],
+        filename: str,
+        detailed_analysis: bool = True,
+        check_pages: Optional[range] = None,
+    ) -> PDFTextAnalysisResult:
+        """
+        Detect if a PDF has an OCR text layer.
+
+        Args:
+            pdf_data: PDF data as bytes, file path string, or Path object
+            filename: Filename for logging and identification (required)
+            detailed_analysis: Whether to perform detailed page-by-page analysis
+            check_pages: Optional range of pages to check (None = check all pages)
 
         Returns:
-            Dictionary containing layout analysis metadata
+            PDFTextAnalysisResult containing text layer analysis information
         """
-
-        try:
-            images = pdf2image.convert_from_bytes(pdf_data, dpi=150)  # type: ignore
-            if not images:
-                return {"analysis_available": False, "error": "No pages found"}
-
-            _LOGGER.info(f"Analyzing layout for {filename} with {len(images)} pages")
-
-            # Analyze layout
-            layout_data = self._analyze_page_layout(images)
-
-            return {
-                "analysis_available": True,
-                "total_pages": len(images),
-                "page_dimensions": {"width": images[0].size[0], "height": images[0].size[1]} if images else {},
-                **layout_data,
-            }
-
-        except Exception as e:
-            _LOGGER.error(f"PDF layout analysis failed for {filename}: {e}")
-            return {"analysis_available": False, "error": str(e)}
-
-    def _analyze_page_layout(self, images: List["Image"]) -> Dict:
-        """
-        Analyze page layout by comparing pages to find common regions.
-        """
-        if len(images) < 2:
-            return self._analyze_single_page(images[0]) if images else {}
-
-        # Use first page as reference, compare with others
-        reference_img = images[0].convert("RGB")
-        margin_data = []
-
-        for i in range(1, min(len(images), 5)):  # Analyze up to 5 pages for efficiency
-            compare_img = images[i].convert("RGB")
-            page_margins = self._compare_pages_for_margins(reference_img, compare_img)
-            if page_margins:
-                margin_data.append(page_margins)
-
-        # Aggregate margin data
-        if margin_data:
-            return self._aggregate_margin_data(margin_data, reference_img.size)
+        # Handle different input types
+        if isinstance(pdf_data, bytes):
+            # Use BytesIO for bytes input - OCRmyPDF can work with file-like objects
+            input_file = BytesIO(pdf_data)
         else:
-            return self._analyze_single_page(reference_img)
+            # Handle string or Path input
+            input_path = Path(pdf_data)
+            if filename is None:
+                filename = input_path.name
+            input_file = input_path
 
-    def _compare_pages_for_margins(self, reference: "Image", compare: "Image") -> Optional[Dict]:
-        """
-        Compare two pages to identify common regions using advanced CV2 techniques.
-        """
         try:
-            # Ensure same size
-            if reference.size != compare.size:
-                _LOGGER.debug(f"Resizing page to match reference size")
-                compare = compare.resize(reference.size)
-
-            # Step 1: Compute difference and invert so white = same
-            diff = PIL.ImageChops.difference(reference, compare)  # type: ignore
-            sameness_mask = PIL.ImageChops.invert(diff.convert("L"))  # type: ignore
-
-            # Step 2: Threshold the mask (keep high-sameness pixels)
-            # Create a lookup table for thresholding
-            threshold = 30
-            lut = [255 if i > threshold else 0 for i in range(256)]
-            sameness_mask.point(lut).convert("1")
-
-            # Step 3: Find horizontal bands (potential headers/footers)
-            horizontal_bands = find_horizontal_bands(sameness_mask)
-
-            # Step 4: Use contour-based region classification
-            annotated_img, detected_regions = classify_and_draw_layout_regions(
-                reference, sameness_mask, min_area=5000, label=False
+            # Use OCRmyPDF's get_pdfinfo function to analyze the PDF
+            pdf_info = get_pdfinfo(
+                input_file,
+                executor=self.executor,  # type: ignore
+                detailed_analysis=detailed_analysis,
+                progbar=False,
+                check_pages=check_pages,
             )
 
-            # Step 5: Classify and aggregate results
-            regions = self._classify_regions_advanced(horizontal_bands, detected_regions, reference.size)
+            # Analyze pages
+            pages_info = []
+            pages_with_text = 0
+            pages_with_images = 0
+            pages_needing_ocr = 0
 
-            return regions
+            for page_num, page_info in enumerate(pdf_info.pages):
+                if page_info is None:
+                    continue
+
+                # Create PageTextInfo from OCRmyPDF's PageInfo
+                page_text_info = PageTextInfo(
+                    page_number=page_num + 1,  # 1-based page numbering
+                    has_text=page_info.has_text,
+                    has_images=bool(page_info.images),
+                    has_corrupt_text=getattr(page_info, "has_corrupt_text", False),
+                    width_pixels=getattr(page_info, "width_pixels", None),
+                    height_pixels=getattr(page_info, "height_pixels", None),
+                    needs_ocr=self._determine_ocr_requirement(page_info),
+                )
+
+                pages_info.append(page_text_info)
+
+                if page_text_info.has_text:
+                    pages_with_text += 1
+                if page_text_info.has_images:
+                    pages_with_images += 1
+                if page_text_info.needs_ocr:
+                    pages_needing_ocr += 1
+
+            # Determine overall text layer status
+            has_text_layer = pages_with_text > 0
+
+            result = PDFTextAnalysisResult(
+                total_pages=len(pdf_info.pages),
+                has_text_layer=has_text_layer,
+                pages_with_text=pages_with_text,
+                pages_with_images=pages_with_images,
+                pages_needing_ocr=pages_needing_ocr,
+                is_encrypted=False,
+                pages=pages_info,
+            )
+
+            _LOGGER.info(
+                f"PDF text analysis for {filename}: "
+                f"{pages_with_text}/{len(pdf_info.pages)} pages have text, "
+                f"{pages_needing_ocr} pages need OCR"
+            )
+
+            return result
+
+        except EncryptedPdfError:
+            _LOGGER.warning(f"PDF {filename} is encrypted")
+            return PDFTextAnalysisResult(
+                total_pages=0,
+                has_text_layer=False,
+                pages_with_text=0,
+                pages_with_images=0,
+                pages_needing_ocr=0,
+                is_encrypted=True,
+                analysis_error="PDF is encrypted",
+            )
+
+        except InputFileError as e:
+            _LOGGER.error(f"Invalid PDF file {filename}: {e}")
+            return PDFTextAnalysisResult(
+                total_pages=0,
+                has_text_layer=False,
+                pages_with_text=0,
+                pages_with_images=0,
+                pages_needing_ocr=0,
+                is_encrypted=False,
+                analysis_error=f"Invalid PDF file: {e}",
+            )
 
         except Exception as e:
-            _LOGGER.debug(f"Page comparison failed: {e}")
-            return None
+            _LOGGER.error(f"PDF text analysis failed for {filename}: {e}")
+            return PDFTextAnalysisResult(
+                total_pages=0,
+                has_text_layer=False,
+                pages_with_text=0,
+                pages_with_images=0,
+                pages_needing_ocr=0,
+                is_encrypted=False,
+                analysis_error=str(e),
+            )
 
-    def _classify_regions_advanced(
-        self, bands: List[Tuple[int, int]], detected_regions: List[Dict], page_size: Tuple[int, int]
-    ) -> Dict:
+    def _determine_ocr_requirement(self, page_info: PageInfo) -> bool:
         """
-        Advanced region classification combining horizontal bands and contour detection.
+        Determine if a page requires OCR processing based on OCRmyPDF logic.
+
+        This mirrors the logic from OCRmyPDF's is_ocr_required function but
+        simplified for detection purposes.
+
+        Args:
+            page_info: PageInfo object from OCRmyPDF
+
+        Returns:
+            True if the page needs OCR, False otherwise
         """
-        width, height = page_size
-        regions = {
-            "header_bands": [],
-            "footer_bands": [],
-            "detected_regions": detected_regions,
-            "estimated_margins": {},
-        }
+        # If page has text, it typically doesn't need OCR (unless forcing)
+        if page_info.has_text:
+            return False
 
-        # Process horizontal bands
-        for start_y, end_y in bands:
-            band_center = (start_y + end_y) / 2
-            band_height = end_y - start_y
+        # If page has images, it likely needs OCR
+        if page_info.images:
+            return True
 
-            # Classify based on position
-            if band_center < height * 0.25:  # Top 25%
-                regions["header_bands"].append({"start_y": start_y, "end_y": end_y, "height": band_height})
-            elif band_center > height * 0.75:  # Bottom 25%
-                regions["footer_bands"].append({"start_y": start_y, "end_y": end_y, "height": band_height})
+        # If page has no text and no images, it might be vector art
+        # For detection purposes, we'll assume it doesn't need OCR
+        return False
 
-        # Estimate margins using both techniques
-        regions["estimated_margins"] = self._estimate_margins_advanced(regions, detected_regions, page_size)
-
-        return regions
-
-    def _estimate_margins_advanced(
-        self, regions: Dict, detected_regions: List[Dict], page_size: Tuple[int, int]
-    ) -> Dict:
+    def has_text_layer(self, pdf_data: Union[bytes, str, Path], filename: str) -> bool:
         """
-        Advanced margin estimation using both band and contour information.
+        Simple boolean check if PDF has any text layer.
+
+        Args:
+            pdf_data: PDF data as bytes, file path string, or Path object
+            filename: Filename for logging (required)
+
+        Returns:
+            True if PDF has any text content, False otherwise
         """
-        width, height = page_size
-        margins = {
-            "top": 0,
-            "bottom": 0,
-            "left": 50,  # Default estimates
-            "right": 50,
-        }
+        result = self.detect_text_layer(pdf_data, filename, detailed_analysis=False)
+        return result.has_text_layer and result.analysis_error is None
 
-        # Calculate top margin from header regions
-        header_sources = []
-        if regions["header_bands"]:
-            header_sources.append(max(band["end_y"] for band in regions["header_bands"]))
-
-        # Add header regions from contour detection
-        header_regions = [r for r in detected_regions if r["type"] == "header"]
-        if header_regions:
-            header_sources.append(max(r["y"] + r["height"] for r in header_regions))
-
-        if header_sources:
-            margins["top"] = max(header_sources)
-
-        # Calculate bottom margin from footer regions
-        footer_sources = []
-        if regions["footer_bands"]:
-            footer_sources.append(min(band["start_y"] for band in regions["footer_bands"]))
-
-        # Add footer regions from contour detection
-        footer_regions = [r for r in detected_regions if r["type"] == "footer"]
-        if footer_regions:
-            footer_sources.append(min(r["y"] for r in footer_regions))
-
-        if footer_sources:
-            margins["bottom"] = height - min(footer_sources)
-
-        # Calculate left/right margins from contour detection
-        left_regions = [r for r in detected_regions if r["type"] == "left_margin"]
-        if left_regions:
-            margins["left"] = max(r["x"] + r["width"] for r in left_regions)
-
-        right_regions = [r for r in detected_regions if r["type"] == "right_margin"]
-        if right_regions:
-            margins["right"] = width - min(r["x"] for r in right_regions)
-
-        # Convert to relative percentages for consistency
-        return {
-            "top_px": margins["top"],
-            "bottom_px": margins["bottom"],
-            "left_px": margins["left"],
-            "right_px": margins["right"],
-            "top_percent": (margins["top"] / height) * 100 if height > 0 else 0,
-            "bottom_percent": (margins["bottom"] / height) * 100 if height > 0 else 0,
-            "left_percent": (margins["left"] / width) * 100 if width > 0 else 0,
-            "right_percent": (margins["right"] / width) * 100 if width > 0 else 0,
-        }
-
-    def _classify_regions(self, bands: List[Tuple[int, int]], page_size: Tuple[int, int]) -> Dict:
+    def get_pages_needing_ocr(self, pdf_data: Union[bytes, str, Path], filename: str) -> List[int]:
         """
-        Classify horizontal bands into headers, footers, and margins.
+        Get list of page numbers that need OCR processing.
+
+        Args:
+            pdf_data: PDF data as bytes, file path string, or Path object
+            filename: Filename for logging (required)
+
+        Returns:
+            List of 1-based page numbers that need OCR
         """
-        width, height = page_size
-        regions = {"header_bands": [], "footer_bands": [], "estimated_margins": {}}
+        result = self.detect_text_layer(pdf_data, filename, detailed_analysis=True)
+        if result.analysis_error:
+            return []
 
-        for start_y, end_y in bands:
-            band_center = (start_y + end_y) / 2
-            band_height = end_y - start_y
-
-            # Classify based on position
-            if band_center < height * 0.25:  # Top 25%
-                regions["header_bands"].append({"start_y": start_y, "end_y": end_y, "height": band_height})
-            elif band_center > height * 0.75:  # Bottom 25%
-                regions["footer_bands"].append({"start_y": start_y, "end_y": end_y, "height": band_height})
-
-        # Estimate margins based on bands
-        regions["estimated_margins"] = self._estimate_margins_from_bands(regions, page_size)
-
-        return regions
-
-    def _estimate_margins_from_bands(self, regions: Dict, page_size: Tuple[int, int]) -> Dict:
-        """
-        Estimate page margins based on detected bands.
-        """
-        width, height = page_size
-        margins = {
-            "top": 0,
-            "bottom": 0,
-            "left": 50,  # Default estimates
-            "right": 50,
-        }
-
-        # Calculate top margin from header bands
-        if regions["header_bands"]:
-            max_header_end = max(band["end_y"] for band in regions["header_bands"])
-            margins["top"] = max_header_end
-
-        # Calculate bottom margin from footer bands
-        if regions["footer_bands"]:
-            min_footer_start = min(band["start_y"] for band in regions["footer_bands"])
-            margins["bottom"] = height - min_footer_start
-
-        # Convert to relative percentages for consistency
-        return {
-            "top_px": margins["top"],
-            "bottom_px": margins["bottom"],
-            "left_px": margins["left"],
-            "right_px": margins["right"],
-            "top_percent": (margins["top"] / height) * 100,
-            "bottom_percent": (margins["bottom"] / height) * 100,
-            "left_percent": (margins["left"] / width) * 100,
-            "right_percent": (margins["right"] / width) * 100,
-        }
-
-    def _aggregate_margin_data(self, margin_data: List[Dict], page_size: Tuple[int, int]) -> Dict:
-        """
-        Aggregate margin data from multiple page comparisons.
-        """
-        # Average the margin estimates
-        all_margins = [data.get("estimated_margins", {}) for data in margin_data if data.get("estimated_margins")]
-
-        if not all_margins:
-            return self._analyze_single_page_size(page_size)
-
-        # Calculate average margins
-        avg_margins = {}
-        for key in [
-            "top_px",
-            "bottom_px",
-            "left_px",
-            "right_px",
-            "top_percent",
-            "bottom_percent",
-            "left_percent",
-            "right_percent",
-        ]:
-            values = [m.get(key, 0) for m in all_margins if key in m]
-            avg_margins[key] = sum(values) / len(values) if values else 0
-
-        # Collect all bands and regions
-        all_header_bands = []
-        all_footer_bands = []
-        all_detected_regions = []
-
-        for data in margin_data:
-            all_header_bands.extend(data.get("header_bands", []))
-            all_footer_bands.extend(data.get("footer_bands", []))
-            all_detected_regions.extend(data.get("detected_regions", []))
-
-        # Aggregate detected regions by type
-        region_stats = {}
-        for region in all_detected_regions:
-            region_type = region["type"]
-            if region_type not in region_stats:
-                region_stats[region_type] = []
-            region_stats[region_type].append(region)
-
-        return {
-            "layout_analysis": {
-                "header_bands": all_header_bands,
-                "footer_bands": all_footer_bands,
-                "detected_regions": all_detected_regions,
-                "region_statistics": {
-                    region_type: {
-                        "count": len(regions),
-                        "avg_area": sum(r["area"] for r in regions) / len(regions) if regions else 0,
-                        "total_area": sum(r["area"] for r in regions),
-                    }
-                    for region_type, regions in region_stats.items()
-                },
-                "estimated_margins": avg_margins,
-                "analysis_method": "multi_page_comparison_advanced",
-            }
-        }
-
-    def _analyze_single_page(self, image: "Image") -> Dict:
-        """
-        Analyze a single page when comparison isn't possible.
-        """
-        return self._analyze_single_page_size(image.size)
-
-    def _analyze_single_page_size(self, page_size: Tuple[int, int]) -> Dict:
-        """
-        Provide default margin estimates for single page analysis.
-        """
-        width, height = page_size
-
-        # Use common academic paper margins as defaults
-        default_margins = {
-            "top_px": int(height * 0.1),  # 10% top margin
-            "bottom_px": int(height * 0.1),  # 10% bottom margin
-            "left_px": int(width * 0.1),  # 10% left margin
-            "right_px": int(width * 0.1),  # 10% right margin
-            "top_percent": 10.0,
-            "bottom_percent": 10.0,
-            "left_percent": 10.0,
-            "right_percent": 10.0,
-        }
-
-        return {
-            "layout_analysis": {
-                "header_bands": [],
-                "footer_bands": [],
-                "estimated_margins": default_margins,
-                "analysis_method": "default_estimates",
-            }
-        }
+        return [page.page_number for page in result.pages if page.needs_ocr]
