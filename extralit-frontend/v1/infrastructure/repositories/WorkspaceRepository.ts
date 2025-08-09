@@ -94,7 +94,7 @@ export class WorkspaceRepository {
     return WORKSPACES_API_ERRORS.GET_WORKSPACES;
   }
 
-  private getErrorMessage(errorType: WORKSPACES_API_ERRORS, originalError: any): string {
+  private getErrorMessage(errorType: WORKSPACES_API_ERRORS, _originalError: any): string {
     switch (errorType) {
       case WORKSPACES_API_ERRORS.NETWORK_ERROR:
         return "Network error occurred while fetching workspaces. Please check your connection.";

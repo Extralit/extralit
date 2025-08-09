@@ -1,6 +1,6 @@
 import { Workspace } from "../entities/workspace/Workspace";
-import { WorkspaceRepository } from "~/v1/infrastructure/repositories/WorkspaceRepository";
 import { IWorkspaceStorage } from "../services/IWorkspaceStorage";
+import { WorkspaceRepository } from "~/v1/infrastructure/repositories/WorkspaceRepository";
 
 export class GetWorkspacesUseCase {
   constructor(
@@ -41,7 +41,7 @@ export class GetWorkspacesUseCase {
     }
   }
 
-  async executeWithRetry(maxRetries: number = 3, retryDelay: number = 1000): Promise<Workspace[]> {
+  async executeWithRetry(maxRetries = 3, retryDelay = 1000): Promise<Workspace[]> {
     try {
       const backendWorkspaces = await this.workspaceRepository.getWorkspacesWithRetry(maxRetries, retryDelay);
       const workspaces = backendWorkspaces.map((w) => new Workspace(w.id, w.name));
