@@ -17,7 +17,7 @@ export const useHomeViewModel = () => {
   const isLoadingDatasets = ref(false);
   const { goToImportDatasetFromHub, goToImportConfiguration } = useRoutes();
   const { state: datasets } = useDatasets();
-  const { get: getWorkspaceState, saveWorkspaces, saveSelectedWorkspace } = useWorkspaces();
+  const { get: getWorkspaces, saveWorkspaces, saveSelectedWorkspace } = useWorkspaces();
   const getDatasetsUseCase = useResolve(GetDatasetsUseCase);
   const getDatasetCreationUseCase = useResolve(GetHfDatasetCreationUseCase);
   const error = ref("");
@@ -28,8 +28,8 @@ export const useHomeViewModel = () => {
   const router = useRouter();
 
   // Computed properties for workspace state
-  const workspaces = computed(() => getWorkspaceState().workspaces);
-  const selectedWorkspace = computed(() => getWorkspaceState().selectedWorkspace);
+  const workspaces = computed(() => getWorkspaces().workspaces);
+  const selectedWorkspace = computed(() => getWorkspaces().selectedWorkspace);
 
   // Restore workspace selection from URL parameters
   const restoreWorkspaceFromUrl = () => {

@@ -215,7 +215,7 @@ export interface IWorkspaceStorage {
 - Integrated persistence following existing DatasetsStorage pattern
 
 ```typescript
-class WorkspaceState {
+class Workspaces {
   constructor(
     public readonly workspaces: Workspace[] = [],
     public readonly selectedWorkspace: Workspace | null = null
@@ -226,11 +226,11 @@ export const useWorkspaces = () => {
   const workspaceStore = useStoreForWorkspaces();
 
   const saveWorkspaces = (workspaces: Workspace[]) => {
-    workspaceStore.save(new WorkspaceState(workspaces, workspaceStore.get().selectedWorkspace));
+    workspaceStore.save(new Workspaces(workspaces, workspaceStore.get().selectedWorkspace));
   };
 
   const saveSelectedWorkspace = (workspace: Workspace | null) => {
-    workspaceStore.save(new WorkspaceState(workspaceStore.get().workspaces, workspace));
+    workspaceStore.save(new Workspaces(workspaceStore.get().workspaces, workspace));
   };
 
   return { ...workspaceStore, saveWorkspaces, saveSelectedWorkspace };
@@ -270,7 +270,7 @@ export class Workspace {
 ### Workspace State Model
 
 ```typescript
-interface WorkspaceState {
+interface Workspaces {
   workspaces: Workspace[]
   selectedWorkspace: Workspace | null
   isLoading: boolean

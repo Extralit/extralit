@@ -2,7 +2,7 @@ import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
 import { IWorkspaceStorage } from "@/v1/domain/services/IWorkspaceStorage";
 import { useStoreFor } from "@/v1/store/create";
 
-class WorkspaceState {
+class Workspaces {
   constructor(
     public readonly workspaces: Workspace[] = [],
     public readonly selectedWorkspace: Workspace | null = null
@@ -41,7 +41,7 @@ const saveSelectedWorkspaceId = (workspaceId: string | null) => {
   }
 };
 
-const useStoreForWorkspaces = useStoreFor<WorkspaceState, IWorkspaceStorage>(WorkspaceState);
+const useStoreForWorkspaces = useStoreFor<Workspaces, IWorkspaceStorage>(Workspaces);
 
 export const useWorkspaces = () => {
   const workspaceStore = useStoreForWorkspaces();
@@ -58,12 +58,12 @@ export const useWorkspaces = () => {
       }
     }
 
-    workspaceStore.save(new WorkspaceState(workspaces, selectedWorkspace));
+    workspaceStore.save(new Workspaces(workspaces, selectedWorkspace));
   };
 
   const saveSelectedWorkspace = (workspace: Workspace | null) => {
     const currentState = workspaceStore.get();
-    const newState = new WorkspaceState(currentState.workspaces, workspace);
+    const newState = new Workspaces(currentState.workspaces, workspace);
     workspaceStore.save(newState);
     // Persist the selected workspace ID to localStorage
     saveSelectedWorkspaceId(workspace?.id || null);

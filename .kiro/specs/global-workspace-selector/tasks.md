@@ -13,7 +13,7 @@
 
 - [x] 1.2 Implement workspace Pinia store with integrated persistence
   - Create WorkspaceStorage.ts in `v1/infrastructure/storage/` following DatasetsStorage pattern
-  - Implement WorkspaceState class with workspaces array and selectedWorkspace properties
+  - Implement Workspaces class with workspaces array and selectedWorkspace properties
   - Create useWorkspaces composable with saveWorkspaces and saveSelectedWorkspace methods
   - Integrate localStorage persistence directly in the store following existing patterns
   - Use existing useStoreFor pattern from create.ts
