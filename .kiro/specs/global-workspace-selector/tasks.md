@@ -38,79 +38,95 @@
   - Add retry logic for failed workspace API calls
   - _Requirements: 8.1, 8.6_
 
-- [ ] 3. Create global workspace selector component
-  - Create WorkspaceHeaderSelector component that wraps existing WorkspaceSelector
+- [ ] 3. Create workspace breadcrumb dropdown component
+  - Create WorkspaceBreadcrumbDropdown component for breadcrumb integration
   - Integrate with global workspace store
-  - Add proper styling for header layout
+  - Add proper styling for breadcrumb context
   - _Requirements: 3.1, 3.2, 5.1, 5.2_
 
-- [ ] 3.1 Create WorkspaceHeaderSelector component
-  - Create new component in `components/features/global/workspace-selector/`
-  - Wrap existing WorkspaceSelector component with header-specific styling
+- [ ] 3.1 Create WorkspaceBreadcrumbDropdown component
+  - Create new component in `components/base/base-breadcrumbs/WorkspaceBreadcrumbDropdown.vue`
+  - Reuse existing WorkspaceSelector logic with breadcrumb-specific styling
   - Connect to global workspace store using useWorkspaces composable
-  - Handle workspace selection events and update global state
+  - Handle workspace selection events and emit breadcrumb link updates
   - _Requirements: 3.2, 3.5, 5.4_
 
-- [ ] 3.2 Style workspace selector for header layout
-  - Adapt WorkspaceSelector styles for header breadcrumb integration
-  - Ensure dropdown positioning works correctly in header context
-  - Add responsive behavior for mobile layouts
-  - Maintain existing visual design patterns
+- [ ] 3.2 Style workspace dropdown for breadcrumb context
+  - Style dropdown to match breadcrumb item appearance
+  - Ensure dropdown positioning works correctly in breadcrumb context
+  - Add hover states and active workspace indication
+  - Maintain existing breadcrumb visual hierarchy
   - _Requirements: 3.6, 5.3, 5.7_
 
-- [ ] 4. Enhance BaseBreadcrumbs component
-  - Add workspace selector integration to BaseBreadcrumbs
-  - Implement conditional rendering based on showWorkspaceSelector prop
-  - Maintain existing breadcrumb functionality
+- [ ] 4. Enhance BaseBreadcrumbs component for workspace detection
+  - Add workspace breadcrumb detection and rendering logic
+  - Implement conditional rendering for workspace breadcrumb items
+  - Maintain existing breadcrumb functionality for non-workspace items
   - _Requirements: 3.1, 3.3, 5.1_
 
-- [ ] 4.1 Integrate workspace selector into BaseBreadcrumbs
-  - Modify BaseBreadcrumbs.vue to include WorkspaceHeaderSelector component
-  - Add showWorkspaceSelector prop with default value
-  - Position workspace selector before breadcrumb items
-  - Ensure proper spacing and layout integration
+- [ ] 4.1 Add workspace breadcrumb detection to BaseBreadcrumbs
+  - Modify BaseBreadcrumbs.vue to detect workspace breadcrumb items (isWorkspace flag)
+  - Render WorkspaceBreadcrumbDropdown for workspace items
+  - Render normal breadcrumb items for non-workspace items
+  - Handle workspace selection events and link updates
   - _Requirements: 3.1, 3.3_
 
-- [ ] 4.2 Update BaseBreadcrumbs styling and layout
-  - Adjust breadcrumb styles to accommodate workspace selector
-  - Ensure responsive behavior on mobile devices
-  - Maintain existing breadcrumb visual hierarchy
-  - Add proper spacing between workspace selector and breadcrumbs
+- [ ] 4.2 Update breadcrumb item structure
+  - Extend BreadcrumbItem interface to include isWorkspace and workspaceId properties
+  - Update breadcrumb rendering logic to handle workspace-specific properties
+  - Ensure backward compatibility with existing breadcrumb usage
+  - Add TypeScript types for enhanced breadcrumb structure
   - _Requirements: 3.6, 5.7_
 
-- [ ] 5. Update AppHeader component
-  - Modify AppHeader to enable workspace selector in breadcrumbs
-  - Handle workspace change events from breadcrumbs
-  - Maintain existing header functionality
+- [ ] 5. Update breadcrumb generation in view models
+  - Modify view models to generate workspace-aware breadcrumbs
+  - Add isWorkspace flags to workspace breadcrumb items
+  - Ensure dynamic link generation for workspace changes
   - _Requirements: 3.1, 3.4_
 
-- [ ] 5.1 Enable workspace selector in AppHeader
-  - Update AppHeader.vue to pass showWorkspaceSelector prop to BaseBreadcrumbs
-  - Add workspace change event handling
-  - Ensure workspace selector is visible on all pages using AppHeader
+- [ ] 5.1 Update useDatasetViewModel breadcrumb generation
+  - Modify createRootBreadCrumbs in useDatasetViewModel.ts to mark workspace breadcrumbs
+  - Add isWorkspace: true flag to workspace breadcrumb items
+  - Include workspaceId in workspace breadcrumb items
+  - Ensure workspace breadcrumb links update dynamically
   - _Requirements: 3.1, 3.4_
 
-- [ ] 6. Update home page components to use global workspace state
+- [ ] 6. Update home page breadcrumbs and workspace integration
+  - Update home page to use workspace-aware breadcrumbs
   - Remove workspace filter from DatasetList component
-  - Update useHomeViewModel to use global workspace state
   - Ensure dataset and document filtering works with global workspace
   - _Requirements: 4.1, 4.2, 4.3, 5.5_
 
-- [ ] 6.1 Remove workspace filter from DatasetList
-  - Remove WorkspacesFilter component from DatasetList.vue
-  - Remove workspace selection logic from DatasetList component
-  - Update DatasetList to receive selected workspace from global state
-  - Remove workspace-related props and events from DatasetList
+- [ ] 6.1 Update home page breadcrumb generation
+  - Modify useHomeViewModel.ts to generate workspace-aware breadcrumbs
+  - Add computed breadcrumbs property that includes workspace breadcrumb when workspace is selected
+  - Update index.vue to use dynamic breadcrumbs from useHomeViewModel
+  - Add isWorkspace flag to workspace breadcrumb items on home page
+  - Ensure home breadcrumb shows current workspace context
+  - Remove workspace filter from DatasetList component
   - _Requirements: 4.1, 5.5_
 
-- [ ] 6.2 Update useHomeViewModel for global workspace state
-  - Modify useHomeViewModel.ts to use global workspace store
-  - Remove local workspace state management
+- [ ] 6.2 Add dynamic breadcrumb generation to useHomeViewModel
+  - Add computed breadcrumbs property to useHomeViewModel.ts
+  - Generate breadcrumbs based on selected workspace state: `[{ name: 'Home' }]` or `[{ name: 'Home' }, { name: workspace.name, isWorkspace: true, workspaceId: workspace.id }]`
+  - Connect breadcrumbs to global workspace store
+  - Update breadcrumb links to include workspace parameter when workspace is selected
+  - _Requirements: 4.2, 4.3, 2.3_
+
+- [ ] 6.3 Update useHomeViewModel for global workspace state
+  - Modify useHomeViewModel.ts to use global workspace store instead of local workspace state
+  - Remove local workspace state management (workspaces, selectedWorkspace refs)
   - Connect dataset and document filtering to global workspace selection
   - Update workspace change handlers to use global state
   - _Requirements: 4.2, 4.3, 2.3_
 
-- [ ] 6.3 Update DocumentsList component integration
+- [ ] 6.4 Update home page template to use dynamic breadcrumbs
+  - Modify index.vue to use breadcrumbs from useHomeViewModel instead of static breadcrumbs
+  - Remove hardcoded breadcrumbs array from AppHeader component
+  - Ensure breadcrumb actions are properly handled for workspace changes
+  - _Requirements: 4.2, 4.3_
+
+- [ ] 6.5 Update DocumentsList component integration
   - Ensure DocumentsList component receives workspace from global state
   - Remove workspace prop passing from home page template
   - Update DocumentsList to reactively respond to workspace changes

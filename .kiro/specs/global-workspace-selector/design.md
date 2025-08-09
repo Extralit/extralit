@@ -61,23 +61,26 @@ sequenceDiagram
     participant User
     participant AppHeader
     participant BaseBreadcrumbs
-    participant WorkspaceSelector
+    participant WorkspaceBreadcrumb
     participant WorkspaceStore
     participant API
 
-    User->>AppHeader: Load page
-    AppHeader->>BaseBreadcrumbs: Render breadcrumbs
-    BaseBreadcrumbs->>WorkspaceSelector: Include workspace selector
-    WorkspaceSelector->>WorkspaceStore: Get workspace state
+    User->>AppHeader: Load page with dataset
+    AppHeader->>BaseBreadcrumbs: Render breadcrumbs with workspace item
+    BaseBreadcrumbs->>BaseBreadcrumbs: Detect workspace breadcrumb (isWorkspace: true)
+    BaseBreadcrumbs->>WorkspaceBreadcrumb: Render workspace dropdown
+    WorkspaceBreadcrumb->>WorkspaceStore: Get workspace state
     WorkspaceStore->>WorkspaceStore: Restore from localStorage
     WorkspaceStore->>API: Fetch workspace list
     API-->>WorkspaceStore: Return workspaces
-    WorkspaceStore-->>WorkspaceSelector: Provide workspace data
-    WorkspaceSelector-->>BaseBreadcrumbs: Render workspace dropdown
+    WorkspaceStore-->>WorkspaceBreadcrumb: Provide workspace data
+    WorkspaceBreadcrumb-->>BaseBreadcrumbs: Render workspace dropdown
 
-    User->>WorkspaceSelector: Select different workspace
-    WorkspaceSelector->>WorkspaceStore: Update selected workspace
+    User->>WorkspaceBreadcrumb: Select different workspace
+    WorkspaceBreadcrumb->>WorkspaceStore: Update selected workspace
     WorkspaceStore->>WorkspaceStore: Persist to localStorage
+    WorkspaceBreadcrumb->>BaseBreadcrumbs: Update breadcrumb link
+    BaseBreadcrumbs->>AppHeader: Emit breadcrumb change
     WorkspaceStore-->>DatasetList: Notify workspace change
     WorkspaceStore-->>DocumentsList: Notify workspace change
 ```
@@ -88,43 +91,85 @@ sequenceDiagram
 
 #### 1. Enhanced BaseBreadcrumbs Component
 
-**Purpose**: Integrate workspace selector into breadcrumb navigation
+**Purpose**: Render workspace breadcrumb items as interactive dropdowns
 **Location**: `components/base/base-breadcrumbs/BaseBreadcrumbs.vue`
 
 **Key Features**:
-- Embed WorkspaceSelector component before breadcrumb items
-- Maintain existing breadcrumb functionality
-- Responsive layout adaptation for workspace selector
-- Event handling for workspace selection
+- Detect workspace breadcrumb items and render them as dropdowns
+- Maintain existing breadcrumb functionality for non-workspace items
+- Dynamic link updates when workspace selection changes
+- Integration with global workspace store
+
+**Enhanced Breadcrumb Item Structure**:
+```typescript
+interface BreadcrumbItem {
+  name: string
+  link?: string | object
+  action?: string
+  isWorkspace?: boolean // New flag to identify workspace breadcrumbs
+  workspaceId?: string // Current workspace ID for workspace breadcrumbs
+}
+```
+
+**Workspace Breadcrumb Detection Logic**:
+- When `isWorkspace: true` is set on a breadcrumb item, BaseBreadcrumbs renders WorkspaceBreadcrumbDropdown
+- The dropdown shows the current workspace name and allows selection of other workspaces
+- When a different workspace is selected, the breadcrumb link is dynamically updated
+- The workspace change is persisted globally and affects all workspace-dependent components
+
+**Home Page Breadcrumb Enhancement**:
+- When no workspace is selected: `Home`
+- When workspace is selected: `Home / [Workspace Dropdown]`
+- The workspace breadcrumb allows switching between workspaces and updates dataset/document filtering
+- URL updates to reflect selected workspace: `/?workspace=workspace-name`
+
+**Example Home Page Breadcrumb Generation**:
+```typescript
+// In useHomeViewModel.ts
+const breadcrumbs = computed(() => {
+  const baseBreadcrumbs = [{ name: t('breadcrumbs.home'), action: 'clearFilters' }];
+
+  if (selectedWorkspace.value) {
+    baseBreadcrumbs.push({
+      name: selectedWorkspace.value.name,
+      link: { path: `/?workspace=${selectedWorkspace.value.name}` },
+      isWorkspace: true,
+      workspaceId: selectedWorkspace.value.id
+    });
+  }
+
+  return baseBreadcrumbs;
+});
+```
 
 **Props**:
 ```typescript
 interface BaseBreadcrumbsProps {
   breadcrumbs: BreadcrumbItem[]
   copyButton?: boolean
-  showWorkspaceSelector?: boolean // New prop
 }
 ```
 
-#### 2. Workspace Selector Integration
+#### 2. Workspace Breadcrumb Dropdown Component
 
-**Purpose**: Reuse existing WorkspaceSelector component in header context
-**Location**: Reuse `components/features/home/dataset-list/workspaces-filter/WorkspaceSelector.vue`
-
-**Adaptations**:
-- Style adjustments for header layout
-- Integration with global workspace store
-- Event emission for workspace changes
-
-#### 3. Enhanced AppHeader Component
-
-**Purpose**: Coordinate workspace selector integration
-**Location**: `components/features/global/AppHeader.vue`
+**Purpose**: Render workspace selector as breadcrumb dropdown
+**Location**: `components/base/base-breadcrumbs/WorkspaceBreadcrumbDropdown.vue`
 
 **Key Features**:
-- Pass workspace selector visibility flag to BaseBreadcrumbs
-- Handle workspace change events
-- Maintain existing header functionality
+- Reuse existing WorkspaceSelector logic in breadcrumb context
+- Style as breadcrumb item with dropdown functionality
+- Integration with global workspace store
+- Dynamic link generation for workspace changes
+
+#### 3. Enhanced Breadcrumb Link Generation
+
+**Purpose**: Update breadcrumb links when workspace changes
+**Location**: Various view models (useDatasetViewModel.ts, etc.)
+
+**Key Features**:
+- Detect workspace parameters in breadcrumb links
+- Regenerate links when workspace selection changes
+- Maintain existing breadcrumb structure and navigation
 
 ### State Management Layer
 

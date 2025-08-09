@@ -13,7 +13,7 @@
   </section>
 </template>
 
-<script>
+<script lang="ts">
 import "assets/icons/code";
 
 export default {

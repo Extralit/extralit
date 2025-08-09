@@ -24,7 +24,7 @@
   </BaseTopbarBrand>
 </template>
 
-<script>
+<script lang="ts">
 import { useRoutes } from "~/v1/infrastructure/services";
 
 export default {
