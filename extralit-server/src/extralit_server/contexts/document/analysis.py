@@ -20,7 +20,7 @@ by leveraging OCRmyPDF's internal PdfInfo and PageInfo classes.
 """
 
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from io import BytesIO
 from pathlib import Path
 from typing import List, Optional, Union
@@ -66,7 +66,7 @@ class PDFTextAnalysisResult:
     pages_needing_ocr: int
     is_encrypted: bool
     analysis_error: Optional[str] = None
-    pages: List[PageTextInfo] = []
+    pages: List[PageTextInfo] = field(default_factory=list)
 
 
 class PDFTextLayerDetector:

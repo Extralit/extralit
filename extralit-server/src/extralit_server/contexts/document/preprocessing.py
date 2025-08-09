@@ -26,8 +26,8 @@ from uuid import uuid4
 import lazy_loader as lazy
 from pydantic import Field
 from pydantic_settings import BaseSettings
+from extralit_server.contexts.document.margin import PDFAnalyzer
 from extralit_server.api.schemas.v1.document.preprocessing import PDFMetadata
-from extralit_server.contexts.document.analysis import PDFAnalyzer
 
 
 ocrmypdf = lazy.load("ocrmypdf")

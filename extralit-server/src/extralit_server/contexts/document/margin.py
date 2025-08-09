@@ -13,13 +13,25 @@
 # limitations under the License.
 
 import logging
+import os
 
 from typing import Dict, List, Optional, Tuple, TYPE_CHECKING
 import numpy as np
 
 import lazy_loader as lazy
 
-cv2 = lazy.load("cv2")
+os.environ["OPENCV_VIDEOIO_PRIORITY_MSMF"] = "0"
+os.environ["OPENCV_VIDEOIO_PRIORITY_INTEL_MFX"] = "0"
+
+try:
+    cv2 = lazy.load("cv2")
+    # Set OpenCV to use CPU-only mode to avoid OpenGL issues
+    cv2.setUseOptimized(False)  # type: ignore
+    cv2.setNumThreads(1)  # type: ignore
+except Exception as e:
+    _LOGGER = logging.getLogger(__name__)
+    _LOGGER.warning(f"OpenCV not available or failed to load: {e}")
+
 pdf2image = lazy.load("pdf2image")
 PIL = lazy.load("PIL")
 
