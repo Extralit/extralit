@@ -9,6 +9,13 @@
           :is-last-breadcrumb="index === filteredBreadcrumbs.length - 1"
           @workspace-change="onWorkspaceChange(breadcrumb, $event)"
         />
+        <!-- Render dataset breadcrumb dropdown for dataset items -->
+        <DatasetBreadcrumbDropdown
+          v-else-if="breadcrumb.isDataset"
+          :dataset-id="breadcrumb.datasetId"
+          :workspace-id="breadcrumb.workspaceId"
+          :is-last-breadcrumb="index === filteredBreadcrumbs.length - 1"
+        />
         <!-- Render normal breadcrumb items -->
         <nuxt-link
           v-else-if="breadcrumb.link"
@@ -45,10 +52,12 @@
 <script lang="ts">
 import { BreadcrumbItem, WorkspaceChangeEvent } from "~/v1/infrastructure/types/breadcrumb";
 import WorkspaceBreadcrumbDropdown from "./WorkspaceBreadcrumbDropdown.vue";
+import DatasetBreadcrumbDropdown from "./DatasetBreadcrumbDropdown.vue";
 
 export default {
   components: {
     WorkspaceBreadcrumbDropdown,
+    DatasetBreadcrumbDropdown,
   },
   props: {
     breadcrumbs: {

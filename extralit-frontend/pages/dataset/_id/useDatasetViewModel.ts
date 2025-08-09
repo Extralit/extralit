@@ -43,6 +43,9 @@ export const useDatasetViewModel = () => {
       {
         link: { path: "annotation-mode" },
         name: dataset.name,
+        isDataset: true,
+        datasetId: dataset.id,
+        workspaceId: dataset.workspaceId,
       },
     ];
   };

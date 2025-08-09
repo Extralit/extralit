@@ -161,7 +161,25 @@ interface BaseBreadcrumbsProps {
 - Integration with global workspace store
 - Dynamic link generation for workspace changes
 
-#### 3. Enhanced Breadcrumb Link Generation
+#### 3. Dataset Breadcrumb Dropdown Component
+
+**Purpose**: Render dataset selector as breadcrumb dropdown in annotation mode
+**Location**: `components/base/base-breadcrumbs/DatasetBreadcrumbDropdown.vue`
+
+**Key Features**:
+- Similar to WorkspaceBreadcrumbDropdown but for dataset selection
+- Filter datasets by selected workspace
+- Update URL parameters when dataset changes
+- Integration with existing dataset store
+- Show current dataset name with dropdown to switch between datasets
+
+**Dataset Breadcrumb Detection Logic**:
+- When `isDataset: true` is set on a breadcrumb item, BaseBreadcrumbs renders DatasetBreadcrumbDropdown
+- The dropdown shows the current dataset name and allows selection of other datasets in the same workspace
+- When a different dataset is selected, navigate to the new dataset's annotation mode
+- The dataset change updates the URL path: `/dataset/{new-dataset-id}/annotation-mode`
+
+#### 4. Enhanced Breadcrumb Link Generation
 
 **Purpose**: Update breadcrumb links when workspace changes
 **Location**: Various view models (useDatasetViewModel.ts, etc.)
@@ -260,27 +278,13 @@ interface WorkspaceState {
 }
 ```
 
-### Workspace Selection Event
+### Dataset Breadcrumb Model
 
 ```typescript
-interface WorkspaceSelectionEvent {
-  workspace: Workspace | null
-  previousWorkspace: Workspace | null
-  source: 'user-selection' | 'auto-selection' | 'persistence-restore'
-}
-```
-
-### Local Storage Schema
-
-```typescript
-interface WorkspaceStorageSchema {
-  selectedWorkspaceId: string | null
-  workspacePreferences: {
-    [workspaceId: string]: {
-      lastAccessed: string
-      preferences: Record<string, any>
-    }
-  }
+interface DatasetBreadcrumbItem extends BreadcrumbItem {
+  isDataset?: boolean
+  datasetId?: string
+  workspaceId?: string
 }
 ```
 

@@ -1,8 +1,9 @@
-import { computed, onBeforeMount, ref, useRouter } from "@nuxtjs/composition-api";
+import { computed, onBeforeMount, ref, useRouter, watch } from "@nuxtjs/composition-api";
 import { useResolve } from "ts-injecty";
 import { useDatasetViewModel } from "../useDatasetViewModel";
 import { GetDatasetByIdUseCase } from "@/v1/domain/usecases/get-dataset-by-id-use-case";
 import { useDataset } from "@/v1/infrastructure/storage/DatasetStorage";
+import { useWorkspaces } from "@/v1/infrastructure/storage/WorkspaceStorage";
 import { RecordCriteria } from "~/v1/domain/entities/record/RecordCriteria";
 import { useRoutes, useUser, useRole } from "~/v1/infrastructure/services";
 import { RecordStatus } from "~/v1/domain/entities/record/RecordAnswer";
@@ -13,6 +14,7 @@ export const useAnnotationModeViewModel = () => {
   const routes = useRoutes();
   const { user } = useUser();
   const { state: dataset } = useDataset();
+  const workspaceStore = useWorkspaces();
   const getDatasetUseCase = useResolve(GetDatasetByIdUseCase);
 
   const { datasetId, isLoadingDataset, handleError, createRootBreadCrumbs } = useDatasetViewModel();
@@ -95,6 +97,49 @@ export const useAnnotationModeViewModel = () => {
       isLoadingDataset.value = false;
     }
   };
+
+  // Handle workspace URL parameter and set workspace context from dataset
+  const handleWorkspaceContext = () => {
+    // Check if workspace is provided in URL query parameters
+    const workspaceParam = routes.getQueryParams<string>("workspace");
+
+    if (workspaceParam && dataset.value) {
+      // If workspace parameter matches dataset's workspace, ensure it's selected
+      if (dataset.value.workspace === workspaceParam) {
+        const currentWorkspaces = workspaceStore.get().workspaces;
+        const matchingWorkspace = currentWorkspaces.find((w) => w.name === workspaceParam);
+
+        if (matchingWorkspace && workspaceStore.get().selectedWorkspace?.id !== matchingWorkspace.id) {
+          workspaceStore.saveSelectedWorkspace(matchingWorkspace);
+        }
+      }
+    } else if (dataset.value) {
+      // If no workspace parameter, set workspace context based on dataset's workspace
+      const currentWorkspaces = workspaceStore.get().workspaces;
+      const datasetWorkspace = currentWorkspaces.find((w) => w.id === dataset.value.workspaceId);
+
+      if (datasetWorkspace && workspaceStore.get().selectedWorkspace?.id !== datasetWorkspace.id) {
+        workspaceStore.saveSelectedWorkspace(datasetWorkspace);
+
+        // Update URL to include workspace parameter
+        routes.setQueryParams({
+          key: "workspace",
+          value: datasetWorkspace.name,
+        });
+      }
+    }
+  };
+
+  // Watch for dataset changes to update workspace context
+  watch(
+    () => dataset.value,
+    (newDataset) => {
+      if (newDataset) {
+        handleWorkspaceContext();
+      }
+    },
+    { immediate: true }
+  );
 
   onBeforeMount(() => {
     loadDataset();

@@ -132,31 +132,52 @@
   - Update DocumentsList to reactively respond to workspace changes
   - _Requirements: 4.2, 4.3_
 
-- [-] 7. Implement workspace URL parameter integration
+- [x] 7. Implement workspace URL parameter integration
   - Add workspace ID to URL parameters when workspace is selected
   - Restore workspace selection from URL parameters on page load
   - Update routing to maintain workspace context
   - _Requirements: 4.5, 4.6_
 
-- [-] 7.1 Add workspace URL parameter handling
+- [ ] 7.1 Add workspace URL parameter handling
   - Update useHomeViewModel to read workspace from URL query parameters
   - Add logic to set workspace selection based on URL parameter
   - Implement URL parameter updates when workspace selection changes
   - Ensure URL parameters work with browser back/forward navigation
   - _Requirements: 4.5, 4.6_
 
-- [ ] 8. Add workspace change event handling
-  - Implement reactive updates for workspace-dependent components
-  - Add cache invalidation for workspace-dependent API calls
-  - Ensure all components respond to workspace changes
-  - _Requirements: 2.3, 2.7, 4.4_
+- [ ] 7.2 Add dataset URL parameter handling for annotation mode
+  - Update useAnnotationModeViewModel to read workspace from URL query parameters
+  - Add logic to set workspace selection based on dataset's workspace when navigating to dataset page
+  - Ensure workspace context is maintained when navigating between datasets
+  - Update breadcrumb generation to include workspace context from dataset
+  - _Requirements: 4.5, 4.6_
 
-- [ ] 8.1 Implement workspace change reactivity
-  - Add watchers in components that depend on workspace selection
-  - Implement automatic data refresh when workspace changes
-  - Add cache invalidation for workspace-dependent API endpoints
-  - Ensure smooth transitions between workspace selections
-  - _Requirements: 2.3, 2.7, 4.4_
+- [ ] 8. Create dataset breadcrumb dropdown component
+  - Create DatasetBreadcrumbDropdown component for dataset selection in annotation mode
+  - Integrate with existing dataset store and workspace filtering
+  - Add proper styling for breadcrumb context
+  - _Requirements: 3.1, 3.2, 5.1, 5.2_
+
+- [ ] 8.1 Create DatasetBreadcrumbDropdown component
+  - Create new component in `components/base/base-breadcrumbs/DatasetBreadcrumbDropdown.vue`
+  - Similar to WorkspaceBreadcrumbDropdown but for dataset selection
+  - Filter datasets by selected workspace
+  - Handle dataset selection events and navigate to new dataset annotation mode
+  - _Requirements: 3.2, 3.5, 5.4_
+
+- [ ] 8.2 Add dataset breadcrumb detection to BaseBreadcrumbs
+  - Modify BaseBreadcrumbs.vue to detect dataset breadcrumb items (isDataset flag)
+  - Render DatasetBreadcrumbDropdown for dataset items
+  - Handle dataset selection events and navigation
+  - Update breadcrumb item structure to include isDataset and datasetId properties
+  - _Requirements: 3.1, 3.3_
+
+- [ ] 8.3 Update useDatasetViewModel for dataset breadcrumb dropdown
+  - Modify createRootBreadCrumbs in useDatasetViewModel.ts to mark dataset breadcrumbs
+  - Add isDataset: true flag to dataset breadcrumb items
+  - Include datasetId in dataset breadcrumb items
+  - Ensure dataset breadcrumb shows dropdown for dataset selection
+  - _Requirements: 3.1, 3.4_
 
 - [ ] 9. Add comprehensive error handling
   - Implement error handling for workspace API failures

@@ -17,6 +17,12 @@ export interface BreadcrumbItem {
 
   /** Current workspace ID for workspace breadcrumbs */
   workspaceId?: string;
+
+  /** Flag to identify dataset breadcrumb items for special rendering */
+  isDataset?: boolean;
+
+  /** Current dataset ID for dataset breadcrumbs */
+  datasetId?: string;
 }
 
 /**
