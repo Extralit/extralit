@@ -132,13 +132,13 @@
   - Update DocumentsList to reactively respond to workspace changes
   - _Requirements: 4.2, 4.3_
 
-- [ ] 7. Implement workspace URL parameter integration
+- [-] 7. Implement workspace URL parameter integration
   - Add workspace ID to URL parameters when workspace is selected
   - Restore workspace selection from URL parameters on page load
   - Update routing to maintain workspace context
   - _Requirements: 4.5, 4.6_
 
-- [ ] 7.1 Add workspace URL parameter handling
+- [-] 7.1 Add workspace URL parameter handling
   - Update useHomeViewModel to read workspace from URL query parameters
   - Add logic to set workspace selection based on URL parameter
   - Implement URL parameter updates when workspace selection changes

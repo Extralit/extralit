@@ -1,5 +1,5 @@
 import { useResolve } from "ts-injecty";
-import { ref, useFetch, computed } from "@nuxtjs/composition-api";
+import { ref, useFetch, computed, watch, useRoute, useRouter } from "@nuxtjs/composition-api";
 import { useRoutes, useFocusTab } from "~/v1/infrastructure/services";
 import { GetHfDatasetCreationUseCase } from "~/v1/domain/usecases/get-hf-dataset-creation-use-case";
 import { GetDatasetsUseCase } from "@/v1/domain/usecases/get-datasets-use-case";
@@ -23,6 +23,48 @@ export const useHomeViewModel = () => {
   const error = ref("");
   const showImportFlow = ref(false);
 
+  // URL parameter handling
+  const route = useRoute();
+  const router = useRouter();
+
+  // Computed properties for workspace state
+  const workspaces = computed(() => getWorkspaceState().workspaces);
+  const selectedWorkspace = computed(() => getWorkspaceState().selectedWorkspace);
+
+  // Restore workspace selection from URL parameters
+  const restoreWorkspaceFromUrl = () => {
+    const workspaceParam = route.value.query.workspace as string;
+    if (workspaceParam && workspaces.value.length > 0) {
+      // Find workspace by name (as used in breadcrumb links)
+      const workspace = workspaces.value.find((w) => w.name === workspaceParam);
+      if (workspace && workspace.id !== selectedWorkspace.value?.id) {
+        saveSelectedWorkspace(workspace);
+      }
+    }
+  };
+
+  // Update URL parameters when workspace selection changes
+  const updateUrlForWorkspace = (workspace: Workspace | null) => {
+    const currentQuery = { ...route.value.query };
+
+    if (workspace) {
+      currentQuery.workspace = workspace.name;
+    } else {
+      delete currentQuery.workspace;
+    }
+
+    // Only update URL if the query actually changed
+    const currentWorkspaceParam = route.value.query.workspace as string;
+    const newWorkspaceParam = workspace?.name;
+
+    if (currentWorkspaceParam !== newWorkspaceParam) {
+      router.replace({
+        path: route.value.path,
+        query: currentQuery,
+      });
+    }
+  };
+
   useFocusTab(async () => {
     await onLoadDatasets();
   });
@@ -31,6 +73,9 @@ export const useHomeViewModel = () => {
     loadDatasets();
     const workspaces = await getWorkspacesUseCase.execute();
     saveWorkspaces(workspaces);
+
+    // Restore workspace selection from URL after workspaces are loaded
+    restoreWorkspaceFromUrl();
   });
 
   const getNewHfDatasetByRepoId = async (repositoryId: string) => {
@@ -81,9 +126,21 @@ export const useHomeViewModel = () => {
     isLoadingDatasets.value = false;
   };
 
-  // Computed properties for workspace state
-  const workspaces = computed(() => getWorkspaceState().workspaces);
-  const selectedWorkspace = computed(() => getWorkspaceState().selectedWorkspace);
+  // Watch for workspace changes to update URL
+  watch(
+    () => selectedWorkspace.value,
+    (newWorkspace) => {
+      updateUrlForWorkspace(newWorkspace);
+    }
+  );
+
+  // Watch for URL changes (browser back/forward navigation)
+  watch(
+    () => route.value.query.workspace,
+    () => {
+      restoreWorkspaceFromUrl();
+    }
+  );
 
   // Dynamic breadcrumb generation based on workspace state
   const breadcrumbs = computed((): BreadcrumbItem[] => {
@@ -114,6 +171,7 @@ export const useHomeViewModel = () => {
   // Workspace selection methods using global store
   const setSelectedWorkspace = (workspace: Workspace | null) => {
     saveSelectedWorkspace(workspace);
+    // URL will be updated automatically via the watcher
   };
 
   const setSelectedWorkspaceId = (workspaceId: string | null) => {
@@ -123,6 +181,7 @@ export const useHomeViewModel = () => {
       const workspace = workspaces.value.find((w) => w.id === workspaceId);
       saveSelectedWorkspace(workspace || null);
     }
+    // URL will be updated automatically via the watcher
   };
 
   // Import history modal state
