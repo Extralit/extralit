@@ -741,43 +741,6 @@ export default {
   }
 }
 
-// Import info
-.import-info {
-  padding: $base-space * 2;
-  background: var(--bg-solid-grey-1);
-  border-radius: $border-radius;
-  border: 1px solid var(--border-field);
-
-  h4 {
-    margin: 0 0 $base-space * 2 0;
-    color: var(--fg-primary);
-    font-size: 1rem;
-    font-weight: 600;
-  }
-
-  .info-stats {
-    display: flex;
-    gap: $base-space * 3;
-    flex-wrap: wrap;
-    padding-top: $base-space;
-    border-top: 1px solid var(--border-field);
-
-    .stat-info {
-      color: var(--fg-secondary);
-      font-size: 0.9rem;
-
-      &:first-child {
-        color: var(--color-success);
-      }
-
-      &:last-child {
-        color: var(--fg-tertiary);
-      }
-    }
-  }
-}
-
-// Table container
 .table-container {
   min-height: 300px;
   border-radius: $border-radius;
