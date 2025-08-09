@@ -19,20 +19,20 @@
   - Use existing useStoreFor pattern from create.ts
   - _Requirements: 2.1, 2.2, 2.6, 6.1, 6.2, 6.4, 6.5_
 
-- [ ] 2. Enhance workspace use case and repository integration
+- [x] 2. Enhance workspace use case and repository integration
   - Update GetWorkspacesUseCase to work with new workspace storage
   - Integrate workspace persistence with workspace fetching
   - Add error handling for workspace API failures
   - _Requirements: 2.5, 8.1, 8.2_
 
-- [ ] 2.1 Update GetWorkspacesUseCase
+- [x] 2.1 Update GetWorkspacesUseCase
   - Modify existing GetWorkspacesUseCase to use new workspace storage
   - Add logic to restore selected workspace from localStorage after fetching
   - Implement auto-selection of first workspace when none is selected
   - Add error handling and retry mechanisms
   - _Requirements: 1.5, 2.5, 8.1, 8.4_
 
-- [ ] 2.2 Add workspace repository error handling
+- [x] 2.2 Add workspace repository error handling
   - Enhance existing WorkspaceRepository error handling if needed
   - Ensure proper error propagation to use cases
   - Add retry logic for failed workspace API calls
