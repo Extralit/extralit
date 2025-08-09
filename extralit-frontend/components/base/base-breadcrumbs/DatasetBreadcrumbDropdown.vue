@@ -19,7 +19,7 @@
       </span>
       <span slot="dropdown-content" class="breadcrumb-dropdown__content">
         <div class="breadcrumb-dropdown__selector">
-          <BaseSearch v-model="searchText" :placeholder="$t('search')" />
+          <BaseSearch v-model="searchText" :placeholder="$t('searchDatasets')" />
           <div class="breadcrumb-dropdown__items">
             <div v-if="datasets.length === 0" class="breadcrumb-dropdown__empty">
               {{ $t('No datasets available') }}
@@ -191,7 +191,7 @@ export default {
   }
 
   &__items {
-    padding: 0;
+    padding: $base-space / 2;
   }
 
   &__item {

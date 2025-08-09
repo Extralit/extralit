@@ -15,6 +15,7 @@ export default {
   search: "Search",
   searchPlaceholder: "Introduce a query",
   searchDatasets: "Search datasets",
+  searchWorkspaces: "Search workspaces",
   share: "Share progress",
   expand: "Expand",
   copied: "Copied",

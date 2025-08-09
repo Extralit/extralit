@@ -19,7 +19,7 @@
       </span>
       <span slot="dropdown-content" class="breadcrumb-dropdown__content">
         <div class="breadcrumb-dropdown__selector">
-          <BaseSearch v-model="searchText" :placeholder="$t('search')" />
+          <BaseSearch v-model="searchText" :placeholder="$t('searchWorkspaces')" />
           <div class="breadcrumb-dropdown__items">
             <div v-if="workspaces.length === 0" class="breadcrumb-dropdown__empty">
               {{ $t('No workspaces available') }}
@@ -105,18 +105,24 @@ export default {
       this.visibleDropdown = value;
     },
     onWorkspaceChange(workspace: Workspace | null) {
+      // Navigate to home page (dataset selection) when workspace changes
+      // This ensures users always go to the dataset selection view when switching workspaces
+      const targetRoute = {
+        path: '/',
+        query: workspace ? { workspace: workspace.name } : {}
+      };
+
+      // Only navigate if we're not already on the home page
+      if (this.$route.path !== '/') {
+        this.$router.push(targetRoute);
+      }
+
       // Emit breadcrumb link update event with workspace information
       this.$emit('workspace-change', {
         workspace,
         workspaceId: workspace?.id || null,
         workspaceName: workspace?.name || null,
-        link: workspace ? {
-          path: this.$route.path,
-          query: { ...this.$route.query, workspace: workspace.name }
-        } : {
-          path: this.$route.path,
-          query: { ...this.$route.query, workspace: undefined }
-        }
+        link: targetRoute
       });
     },
     onWorkspaceSelectionChange(workspaceId: string) {
@@ -177,7 +183,7 @@ export default {
   }
 
   &__items {
-    padding: 0;
+    padding: $base-space / 2;
   }
 
   &__item {
@@ -231,7 +237,7 @@ export default {
   left: 0;
   z-index: 10;
   margin-top: 0;
-  min-width: 120px;
+  min-width: 170px;
   border: 1px solid var(--border-field);
   box-shadow: var(--shadow-200);
   border-radius: $border-radius-s;
