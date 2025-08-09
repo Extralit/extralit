@@ -16,10 +16,6 @@ flags:
     paths:
       - extralit/src/extralit/
     carryforward: true
-  extralit:
-    paths:
-      - extralit/src/extralit/
-    carryforward: true
   extralit_server:
     paths:
       - extralit-server/
@@ -33,18 +29,16 @@ component_management:
 
   individual_components:
     - component_id: extralit
-      paths:
-        - extralit/src/extralit/**
-
-    - component_id: extralit
       name: extralit
       paths:
         - extralit/src/extralit/**
 
     - component_id: extralit-server
+      name: extralit-server
       paths:
         - extralit-server/**
 
     - component_id: extralit-frontend
+      name: extralit-frontend
       paths:
         - extralit-frontend/**
