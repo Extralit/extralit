@@ -138,7 +138,7 @@
   - Update routing to maintain workspace context
   - _Requirements: 4.5, 4.6_
 
-- [ ] 7.1 Add workspace URL parameter handling
+- [x] 7.1 Add workspace URL parameter handling
   - Update useHomeViewModel to read workspace from URL query parameters
   - Add logic to set workspace selection based on URL parameter
   - Implement URL parameter updates when workspace selection changes
@@ -146,13 +146,13 @@
   - _Requirements: 4.5, 4.6_
 
 - [ ] 7.2 Add dataset URL parameter handling for annotation mode
-  - Update useAnnotationModeViewModel to read workspace from URL query parameters
-  - Add logic to set workspace selection based on dataset's workspace when navigating to dataset page
+  - Update useAnnotationModeViewModel to read workspace from the dataset uploaded
+  - Add logic to set workspace selection on the header's WorkspaceBreadcrumbDropdown based on dataset's workspace when navigating to dataset page
   - Ensure workspace context is maintained when navigating between datasets
   - Update breadcrumb generation to include workspace context from dataset
   - _Requirements: 4.5, 4.6_
 
-- [ ] 8. Create dataset breadcrumb dropdown component
+- [x] 8. Create dataset breadcrumb dropdown component
   - Create DatasetBreadcrumbDropdown component for dataset selection in annotation mode
   - Integrate with existing dataset store and workspace filtering
   - Add proper styling for breadcrumb context
