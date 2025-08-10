@@ -14,7 +14,7 @@ const options = {
   propsData: {
     breadcrumbs: [
       { link: { name: "datasets" }, name: "Home" },
-      { link: { path: "/datasets?workspaces=recognai" }, name: "recognai" },
+      { link: { path: "/?workspace=recognai" }, name: "recognai" },
       {
         link: {
           name: null,

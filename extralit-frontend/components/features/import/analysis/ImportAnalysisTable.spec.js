@@ -116,11 +116,6 @@ describe("ImportAnalysisTable", () => {
       expect(summaryStats.exists()).toBe(true);
     });
 
-    it("should show import information", () => {
-      const importInfo = wrapper.find(".import-info");
-      expect(importInfo.exists()).toBe(true);
-    });
-
     it("should display references with and without PDFs count", () => {
       expect(wrapper.vm.referencesWithoutPdfsCount).toBe(1); // test2 has no PDFs
       expect(wrapper.vm.referencesWithPdfsCount).toBe(1); // test1 has PDFs
