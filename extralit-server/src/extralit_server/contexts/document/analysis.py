@@ -12,259 +12,175 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-PDF text layer detection using OCRmyPDF internal functions.
-
-This module provides functionality to detect whether a PDF already has an OCR text layer
-by leveraging OCRmyPDF's internal PdfInfo and PageInfo classes.
-"""
-
-import logging
-from dataclasses import dataclass, field
+from pdfminer.pdfpage import PDFPage
+from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
+from pdfminer.converter import PDFPageAggregator
+from pdfminer.layout import LAParams, LTTextBox, LTChar
+from typing import Dict, List
 from io import BytesIO
-from pathlib import Path
-from typing import List, Optional, Union
-from concurrent.futures import ThreadPoolExecutor
-
-try:
-    from ocrmypdf.pdfinfo.info import PageInfo
-    from ocrmypdf.exceptions import EncryptedPdfError, InputFileError
-    from ocrmypdf._pipeline import get_pdfinfo
-    from ocrmypdf._concurrent import Executor
-except ImportError as e:
-    raise ImportError(
-        "OCRmyPDF is required for PDF text layer detection. " "Please install it with: pip install ocrmypdf"
-    ) from e
-
-_LOGGER = logging.getLogger(__name__)
-
-DEFAULT_EXECUTOR = ThreadPoolExecutor(max_workers=1)
 
 
-@dataclass
-class PageTextInfo:
-    """Information about text content on a specific PDF page."""
+class PDFOCRLayerDetector:
+    def __init__(self):
+        self.resource_manager = PDFResourceManager()
+        self.laparams = LAParams()
+        self.device = PDFPageAggregator(self.resource_manager, laparams=self.laparams)
+        self.interpreter = PDFPageInterpreter(self.resource_manager, self.device)
 
-    page_number: int
-    has_text: bool
-    has_images: bool
-    has_corrupt_text: bool = False
-    width_pixels: Optional[int] = None
-    height_pixels: Optional[int] = None
-    text_extraction_confidence: Optional[float] = None
-    needs_ocr: bool = True
-
-
-@dataclass
-class PDFTextAnalysisResult:
-    """Result of PDF text layer analysis."""
-
-    total_pages: int
-    has_text_layer: bool
-    pages_with_text: int
-    pages_with_images: int
-    pages_needing_ocr: int
-    is_encrypted: bool
-    analysis_error: Optional[str] = None
-    pages: List[PageTextInfo] = field(default_factory=list)
-
-
-class PDFTextLayerDetector:
-    """
-    Detector for PDF text layers using OCRmyPDF internal functions.
-
-    This class uses OCRmyPDF's PdfInfo to analyze PDF pages and determine
-    which pages already have text content and which would require OCR processing.
-    """
-
-    def __init__(self, executor: Optional["Executor"] = None):
+    def has_ocr_text_layer(self, pdf_bytes: bytes, threshold: float = 0.5, verbose=False) -> bool:
         """
-        Initialize the PDF text layer detector.
+        Detect if PDF has OCR text layer by analyzing font resources per page.
+        Returns True if more than 50% of pages have font resources (indicating searchable text).
 
         Args:
-            executor: Optional executor for concurrent processing. Defaults to ThreadPoolExecutor.
-        """
-        self.executor = executor or DEFAULT_EXECUTOR
-
-    def detect_text_layer(
-        self,
-        pdf_data: Union[bytes, str, Path],
-        filename: str,
-        detailed_analysis: bool = True,
-        check_pages: Optional[range] = None,
-    ) -> PDFTextAnalysisResult:
-        """
-        Detect if a PDF has an OCR text layer.
-
-        Args:
-            pdf_data: PDF data as bytes, file path string, or Path object
-            filename: Filename for logging and identification (required)
-            detailed_analysis: Whether to perform detailed page-by-page analysis
-            check_pages: Optional range of pages to check (None = check all pages)
+            pdf_bytes: PDF file content as bytes
 
         Returns:
-            PDFTextAnalysisResult containing text layer analysis information
+            bool: True if PDF has OCR text layer, False otherwise
         """
-        # Handle different input types
-        if isinstance(pdf_data, bytes):
-            # Use BytesIO for bytes input - OCRmyPDF can work with file-like objects
-            input_file = BytesIO(pdf_data)
-        else:
-            # Handle string or Path input
-            input_path = Path(pdf_data)
-            if filename is None:
-                filename = input_path.name
-            input_file = input_path
+        page_info = self._check_font_resources_per_page(pdf_bytes)
 
-        try:
-            # Use OCRmyPDF's get_pdfinfo function to analyze the PDF
-            pdf_info = get_pdfinfo(
-                input_file,
-                executor=self.executor,  # type: ignore
-                detailed_analysis=detailed_analysis,
-                progbar=False,
-                check_pages=check_pages,
-            )
-
-            # Analyze pages
-            pages_info = []
-            pages_with_text = 0
-            pages_with_images = 0
-            pages_needing_ocr = 0
-
-            for page_num, page_info in enumerate(pdf_info.pages):
-                if page_info is None:
-                    continue
-
-                # Create PageTextInfo from OCRmyPDF's PageInfo
-                page_text_info = PageTextInfo(
-                    page_number=page_num + 1,  # 1-based page numbering
-                    has_text=page_info.has_text,
-                    has_images=bool(page_info.images),
-                    has_corrupt_text=getattr(page_info, "has_corrupt_text", False),
-                    width_pixels=getattr(page_info, "width_pixels", None),
-                    height_pixels=getattr(page_info, "height_pixels", None),
-                    needs_ocr=self._determine_ocr_requirement(page_info),
-                )
-
-                pages_info.append(page_text_info)
-
-                if page_text_info.has_text:
-                    pages_with_text += 1
-                if page_text_info.has_images:
-                    pages_with_images += 1
-                if page_text_info.needs_ocr:
-                    pages_needing_ocr += 1
-
-            # Determine overall text layer status
-            has_text_layer = pages_with_text > 0
-
-            result = PDFTextAnalysisResult(
-                total_pages=len(pdf_info.pages),
-                has_text_layer=has_text_layer,
-                pages_with_text=pages_with_text,
-                pages_with_images=pages_with_images,
-                pages_needing_ocr=pages_needing_ocr,
-                is_encrypted=False,
-                pages=pages_info,
-            )
-
-            _LOGGER.info(
-                f"PDF text analysis for {filename}: "
-                f"{pages_with_text}/{len(pdf_info.pages)} pages have text, "
-                f"{pages_needing_ocr} pages need OCR"
-            )
-
-            return result
-
-        except EncryptedPdfError:
-            _LOGGER.warning(f"PDF {filename} is encrypted")
-            return PDFTextAnalysisResult(
-                total_pages=0,
-                has_text_layer=False,
-                pages_with_text=0,
-                pages_with_images=0,
-                pages_needing_ocr=0,
-                is_encrypted=True,
-                analysis_error="PDF is encrypted",
-            )
-
-        except InputFileError as e:
-            _LOGGER.error(f"Invalid PDF file {filename}: {e}")
-            return PDFTextAnalysisResult(
-                total_pages=0,
-                has_text_layer=False,
-                pages_with_text=0,
-                pages_with_images=0,
-                pages_needing_ocr=0,
-                is_encrypted=False,
-                analysis_error=f"Invalid PDF file: {e}",
-            )
-
-        except Exception as e:
-            _LOGGER.error(f"PDF text analysis failed for {filename}: {e}")
-            return PDFTextAnalysisResult(
-                total_pages=0,
-                has_text_layer=False,
-                pages_with_text=0,
-                pages_with_images=0,
-                pages_needing_ocr=0,
-                is_encrypted=False,
-                analysis_error=str(e),
-            )
-
-    def _determine_ocr_requirement(self, page_info: PageInfo) -> bool:
-        """
-        Determine if a page requires OCR processing based on OCRmyPDF logic.
-
-        This mirrors the logic from OCRmyPDF's is_ocr_required function but
-        simplified for detection purposes.
-
-        Args:
-            page_info: PageInfo object from OCRmyPDF
-
-        Returns:
-            True if the page needs OCR, False otherwise
-        """
-        # If page has text, it typically doesn't need OCR (unless forcing)
-        if page_info.has_text:
+        if not page_info:
             return False
 
-        # If page has images, it likely needs OCR
-        if page_info.images:
+        if verbose:
+            print(f"Total pages: {len(page_info)}")
+            print(page_info)
+
+        pages_with_fonts = sum(1 for page in page_info if page.get("has_fonts", False))
+        total_pages = len(page_info)
+
+        # Return True if more than 50% of pages have fonts
+        return pages_with_fonts > (total_pages * threshold)
+
+    def _check_font_resources_per_page(self, pdf_bytes: bytes) -> List[Dict]:
+        """
+        Check each page for font resources - indicates searchable text
+        """
+        page_info = []
+
+        pdf_stream = BytesIO(pdf_bytes)
+        for page_num, page in enumerate(PDFPage.get_pages(pdf_stream)):
+            page_data = {
+                "page_number": page_num + 1,
+                "has_fonts": False,
+                "font_count": 0,
+                "has_images": False,
+                "resource_types": [],
+            }
+
+            if hasattr(page, "resources") and page.resources:
+                resources = page.resources
+
+                if "Font" in resources:
+                    page_data["has_fonts"] = True
+                    font_resource = resources["Font"]
+                    try:
+                        page_data["font_count"] = len(font_resource)  # type: ignore
+                    except (TypeError, AttributeError):
+                        page_data["font_count"] = 1
+
+                if "XObject" in resources:
+                    page_data["has_images"] = True
+
+                page_data["resource_types"] = list(resources.keys())
+
+            page_info.append(page_data)
+
+        return page_info
+
+    def analyze_character_quality(self, pdf_bytes: bytes) -> Dict:
+        char_stats = {
+            "total_chars": 0,
+            "font_variations": set(),
+            "suspicious_patterns": 0,
+            "ocr_artifacts": 0,
+            "avg_char_size": 0,
+            "size_variations": [],
+        }
+
+        pdf_stream = BytesIO(pdf_bytes)
+        for page in PDFPage.get_pages(pdf_stream):
+            self.interpreter.process_page(page)
+            layout = self.device.get_result()
+
+            for element in layout:
+                if isinstance(element, LTTextBox):
+                    for line in element:
+                        for char in line:
+                            if isinstance(char, LTChar):
+                                char_stats["total_chars"] += 1
+
+                                if self._is_ocr_artifact(char):
+                                    char_stats["ocr_artifacts"] += 1
+
+                                if self._is_suspicious_char(char):
+                                    char_stats["suspicious_patterns"] += 1
+
+        char_stats["ocr_quality_score"] = self._calculate_quality_score(char_stats)
+
+        return char_stats
+
+    def _is_ocr_artifact(self, char: LTChar) -> bool:
+        if "hidden" in char.fontname.lower() or "ocr" in char.fontname.lower():
             return True
 
-        # If page has no text and no images, it might be vector art
-        # For detection purposes, we'll assume it doesn't need OCR
+        char_text = char.get_text()
+        if len(char_text) == 1:
+            # Look for replacement characters or unusual Unicode
+            if ord(char_text) > 65535 or char_text in ["�", "□", "▯"]:
+                return True
+
         return False
 
-    def has_text_layer(self, pdf_data: Union[bytes, str, Path], filename: str) -> bool:
-        """
-        Simple boolean check if PDF has any text layer.
+    def _is_suspicious_char(self, char: LTChar) -> bool:
+        char_text = char.get_text()
 
-        Args:
-            pdf_data: PDF data as bytes, file path string, or Path object
-            filename: Filename for logging (required)
+        # Single character that's not alphanumeric or common punctuation
+        if len(char_text) == 1 and not (char_text.isalnum() or char_text in ".,!?;: "):
+            return True
 
-        Returns:
-            True if PDF has any text content, False otherwise
-        """
-        result = self.detect_text_layer(pdf_data, filename, detailed_analysis=False)
-        return result.has_text_layer and result.analysis_error is None
+        # Very small font size (might indicate hidden text)
+        if char.size < 1.0:
+            return True
 
-    def get_pages_needing_ocr(self, pdf_data: Union[bytes, str, Path], filename: str) -> List[int]:
-        """
-        Get list of page numbers that need OCR processing.
+        return False
 
-        Args:
-            pdf_data: PDF data as bytes, file path string, or Path object
-            filename: Filename for logging (required)
+    def _calculate_quality_score(self, char_stats: Dict) -> float:
+        if char_stats["total_chars"] == 0:
+            return 0.0
 
-        Returns:
-            List of 1-based page numbers that need OCR
-        """
-        result = self.detect_text_layer(pdf_data, filename, detailed_analysis=True)
-        if result.analysis_error:
-            return []
+        score = 1.0
 
-        return [page.page_number for page in result.pages if page.needs_ocr]
+        # Penalize OCR artifacts
+        artifact_ratio = char_stats["ocr_artifacts"] / char_stats["total_chars"]
+        score -= artifact_ratio * 0.5
+
+        # Penalize suspicious patterns
+        suspicious_ratio = char_stats["suspicious_patterns"] / char_stats["total_chars"]
+        score -= suspicious_ratio * 0.3
+
+        return max(0.0, min(1.0, score))
+
+
+if __name__ == "__main__":
+    import sys
+    from pathlib import Path
+
+    if len(sys.argv) != 2:
+        print("Usage: python analysis.py <pdf_file_path>")
+        sys.exit(1)
+
+    pdf_path = sys.argv[1]
+    if not Path(pdf_path).is_file():
+        print(f"File not found: {pdf_path}")
+        sys.exit(1)
+
+    with open(pdf_path, "rb") as f:
+        pdf_bytes = f.read()
+
+    ocr_detector = PDFOCRLayerDetector()
+    has_ocr = ocr_detector.has_ocr_text_layer(pdf_bytes)
+    print(f"PDF has_ocr_text_layer: {has_ocr}")
+    ocr_quality = ocr_detector.analyze_character_quality(pdf_bytes)
+    print(f"PDF analyze_character_quality: {ocr_quality}")
