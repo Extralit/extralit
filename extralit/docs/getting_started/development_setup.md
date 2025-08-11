@@ -105,15 +105,15 @@ Then, select from three different development environments through devcontainers
 
 ### 3. Development workflow*
 
-    - **Backend Development**: Changes to `extralit-server/src/extralit_server/` or `argilla/src/{argilla,extralit}/` are automatically updated if Tilt is running
+    - **Backend Development**: Changes to `extralit-server/src/extralit_server/` or `extralit/src/extralit/` are automatically updated if Tilt is running
     - **Python SDK packages**
       ```bash
-      cd argilla
+      cd extralit
       pdm install
       ```
     - **Frontend Development**: For frontend live-reloading:
       ```bash
-      cd argilla/extralit-frontend
+      cd extralit/extralit-frontend
       npm install
       npm run dev
       ```
@@ -124,7 +124,7 @@ Then, select from three different development environments through devcontainers
 - Look for port 6900 in the "Ports" tab of your Codespace
 - Click on the link to open the Extralit web interface
 - Log in with the default credentials:
-  - Username: `argilla`
+  - Username: `extralit`
   - Password: `12345678`
   - API Key: `extralit.apikey`
 
@@ -275,7 +275,7 @@ ENV=dev DOCKER_REPO=localhost:5005 tilt up --namespace extralit-dev --context ki
 For a simpler setup using Docker without live development capabilities:
 
 
-### 0. Building the `extralit-server` and `argilla-hf-spaces` docker images
+### 0. Building the `extralit-server` and `extralit-hf-space` docker images
 
 To build and run the Extralit Server using Docker, follow these steps:
 
@@ -291,13 +291,13 @@ docker build -t extralit-server:latest -f docker/server/Dockerfile docker/server
 To build the Extralit HF Spaces Docker image, which includes the Extralit Server, ElasticSearch, and Redis, use the following command:
 
 ```bash
-docker build --build-arg extralit_server_IMAGE=extralit-server --build-arg EXTRALIT_VERSION=latest -t argilla-hf-spaces:latest -f docker/argilla-hf-spaces/Dockerfile docker/argilla-hf-spaces/
+docker build --build-arg extralit_server_IMAGE=extralit-server --build-arg EXTRALIT_VERSION=latest -t extralit-hf-space:latest -f docker/extralit-hf-space/Dockerfile docker/extralit-hf-space/
 ```
 
 Start the Extralit Server and other dependencies using Docker:
 
 ```bash
-docker run --rm -p 6900:6900 -e EXTRALIT_ENABLE_TELEMETRY=0 -e USERNAME=argilla -e PASSWORD=12345678 -e API_KEY=extralit.apikey --name argilla-hf-spaces argilla-hf-spaces:latest
+docker run --rm -p 6900:6900 -e EXTRALIT_ENABLE_TELEMETRY=0 -e USERNAME=extralit -e PASSWORD=12345678 -e API_KEY=extralit.apikey --name extralit-hf-space extralit-hf-space:latest
 ```
 
 

@@ -45,8 +45,8 @@ Extralit is a free, open-source, self-hosted tool. This means you need to deploy
 
     Next, we can use the `Extralit.deploy_on_spaces` method, which will create a Space in [the Hugging Face Hub](https://huggingface.co/). This method will automatically do the following:
 
-    - Deploy an Extralit Space on the Hugging Face Hub with [OAuth sign-in](#sign-in-into-the-extralit-ui) and a URL like `https://<your-username>-argilla.hf.space`, which takes around 2-3 minutes.
-    - Create a default workspace called `argilla` with an owner called `<your-username>` and an Extralit token set to `api_key`.
+    - Deploy an Extralit Space on the Hugging Face Hub with [OAuth sign-in](#sign-in-into-the-extralit-ui) and a URL like `https://<your-username>-extralit.hf.space`, which takes around 2-3 minutes.
+    - Create a default workspace called `extralit` with an owner called `<your-username>` and an Extralit token set to `api_key`.
     - Automatically return the authenticated Extralit client, which can directly be used to interact with your Extralit server.
 
     ```python
@@ -117,7 +117,7 @@ When you're happy with the result, you'll need to give a name to your dataset, s
 !!! info "Importing long datasets"
     Extralit will only import the first 10k rows of a dataset. If your dataset is larger, you can import the rest of the records at any point using the Python SDK.
 
-    To do that, open your dataset and copy the code snippet provided under "Import data". Now, open a Jupyter or Google Colab notebook and install argilla:
+    To do that, open your dataset and copy the code snippet provided under "Import data". Now, open a Jupyter or Google Colab notebook and install extralit:
 
     ```python
     !pip install extralit

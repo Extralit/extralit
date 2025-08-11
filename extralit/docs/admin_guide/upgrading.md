@@ -37,7 +37,7 @@ This guide covers the update process for Extralit across different deployment op
 3. Rebuild the `extralit` Python client package
 
    ```bash
-   rm -rf argilla/dist && python -m build -s argilla/
+   rm -rf extralit/dist && python -m build -s extralit/
    ```
 
 4. If using Tilt for development:
@@ -122,7 +122,7 @@ extralit_server database migrate
 4. For database schema changes, run migrations:
 
    ```bash
-   docker compose exec argilla extralit_server database migrate
+   docker compose exec extralit extralit_server database migrate
    ```
 
 <SwmMeta version="3.0.0"><sup>Powered by [Swimm](https://app.swimm.io/)</sup></SwmMeta>

@@ -4,7 +4,7 @@ description: In this section, we will provide a step-by-step guide to show how t
 # Annotate your dataset
 
 !!! note ""
-    To experience the UI features firsthand, you can take a look at the [Demo ↗](https://demo.argilla.io/sign-in?auth=ZGVtbzoxMjM0NTY3OA==).
+    To experience the UI features firsthand, you can take a look at the [Demo ↗](https://demo.extralit.ai/).
 
 Extralit UI offers many functions to help you manage your annotation workflow, aiming to provide the most flexible approach to fit the wide variety of use cases handled by the community.
 

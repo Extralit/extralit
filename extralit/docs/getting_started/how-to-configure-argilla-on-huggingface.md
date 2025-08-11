@@ -44,8 +44,8 @@ If you want to disable the persistence storage warning, you can set the environm
 
 By default, Extralit Spaces are configured with Hugging Face OAuth, in the following way:
 
-- Any Hugging Face user that can see your Space, can use the Sign in button, join as an `annotator`, and contribute to the datasets available under the `argilla` workspace. This workspace is created during the deployment process.
-- These users can only explore and annotate datasets in the `argilla` workspace but can't perform any critical operation like create, delete, update, or configure datasets. By default, any other workspace you create, won't be visible to these users.
+- Any Hugging Face user that can see your Space, can use the Sign in button, join as an `annotator`, and contribute to the datasets available under the `extralit` workspace. This workspace is created during the deployment process.
+- These users can only explore and annotate datasets in the `extralit` workspace but can't perform any critical operation like create, delete, update, or configure datasets. By default, any other workspace you create, won't be visible to these users.
 
 To restrict access or change the default behaviour, there's two options:
 
@@ -60,7 +60,7 @@ providers:
 
 # Allowed workspaces must exists
 allowed_workspaces:
-  - name: argilla
+  - name: extralit
 ```
 You can:
 
@@ -71,7 +71,7 @@ For example if you want to let users join a new workspace `community-initiative`
 
 ```yaml
 allowed_workspaces:
-  - name: argilla
+  - name: extralit
   - name: community-initiative
 ```
 
@@ -120,7 +120,7 @@ There's two optional secrets to set up the `USERNAME` and `PASSWORD` of the `own
 The `USERNAME` and `PASSWORD` are only useful in a couple of scenarios:
 
 - You have [disabled Hugging Face OAuth](#how-to-configure-and-disable-oauth-access).
-- You want to [set up Extralit under an organization](#how-to-deploy-argilla-under-a-hugging-face-organization) and want your Hugging Face username to be granted the `owner` role.
+- You want to [set up Extralit under an organization](#how-to-deploy-extralit-under-a-hugging-face-organization) and want your Hugging Face username to be granted the `owner` role.
 
 In summary, when setting up a Space:
 !!! info "Creating a Space under your personal account"

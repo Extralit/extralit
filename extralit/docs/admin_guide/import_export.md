@@ -149,7 +149,7 @@ The `ex.Dataset.from_hub` method loads the configuration and records from the da
     dataset.records.log(hf_dataset) # (1)
     ```
 
-    1. You could also use the `mapping` parameter to map record field names to argilla field and question names.
+    1. You could also use the `mapping` parameter to map record field names to field and question names.
 
 
 #### Import settings from Hub

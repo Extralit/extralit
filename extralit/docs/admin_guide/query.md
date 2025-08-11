@@ -79,13 +79,13 @@ If you need more complex searches, you can use [Elasticsearch's simple query str
 
 | operator       | description                                                      | example                                                                                                               |
 | -------------- | ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `+` or `space` | **AND**: search both terms                                       | `argilla + distilabel` or `argilla distilabel`</br> return records that include the terms "extralit" and "distilabel" |
-| `              | `                                                                | **OR**: search either term                                                                                            | `argilla                                                                                            | distilabel` </br> returns records that include the term "extralit" or "distilabel" |
-| `-`            | **Negation**: exclude a term                                     | `argilla -distilabel` </br> returns records that contain the term "extralit" and don't have the term "distilabel"     |
+| `+` or `space` | **AND**: search both terms                                       | `extralit + distilabel` or `extralit distilabel`</br> return records that include the terms "extralit" and "distilabel" |
+| `              | `                                                                | **OR**: search either term                                                                                            | `extralit                                                                                            | distilabel` </br> returns records that include the term "extralit" or "distilabel" |
+| `-`            | **Negation**: exclude a term                                     | `extralit -distilabel` </br> returns records that contain the term "extralit" and don't have the term "distilabel"     |
 | `*`            | **Prefix**: search a prefix                                      | `arg*`</br> returns records with any words starting with "arg-"                                                       |
-| `"`            | **Phrase**: search a phrase                                      | `"argilla and distilabel"` </br> returns records that contain the phrase "argilla and distilabel"                     |
-| `(` and `)`    | **Precedence**: group terms                                      | `(argilla                                                                                                             | distilabel) rules` </br> returns records that contain either "extralit" or "distilabel" and "rules" |
-| `~N`           | **Edit distance**: search a term or phrase with an edit distance | `argilla~1` </br> returns records that contain the term "extralit" with an edit distance of 1, e.g. "argila"          |
+| `"`            | **Phrase**: search a phrase                                      | `"extralit and distilabel"` </br> returns records that contain the phrase "extralit and distilabel"                     |
+| `(` and `)`    | **Precedence**: group terms                                      | `(extralit                                                                                                             | distilabel) rules` </br> returns records that contain either "extralit" or "distilabel" and "rules" |
+| `~N`           | **Edit distance**: search a term or phrase with an edit distance | `extralit~1` </br> returns records that contain the term "extralit" with an edit distance of 1, e.g. "argila"          |
 
 !!! tip
     To use one of these characters literally, escape it with a preceding backslash `\`, e.g. `"1 \+ 2"` would match records where the phrase "1 + 2" is found.

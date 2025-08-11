@@ -25,7 +25,7 @@ To connect to an Extralit server, instantiate the `Extralit` class and pass the 
 import extralit as ex
 
 client = ex.Extralit(
-    api_url="https://argilla.example.com",
+    api_url="https://extralit-public-demo.hf.space",
     api_key="my_api_key",
 )
 ```
