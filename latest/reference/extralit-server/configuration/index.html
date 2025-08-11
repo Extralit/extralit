@@ -3336,8 +3336,8 @@ See https://github.com/opensearch-project/k-NN/issues/1286</p>
 <h3 id="using-a-proxy">Using a proxy<a class="headerlink" href="#using-a-proxy" title="Permanent link">&para;</a></h3>
 <p>If you run Extralit behind a proxy by adding some extra prefix to expose the service, you should set the <code>EXTRALIT_BASE_URL</code>
 environment variable to properly route requests to the server application.</p>
-<p>For example, if your proxy exposes Extralit in the URL <code>https://my-proxy/custom-path-for-argilla</code>, you should launch the
-Extralit server with <code>EXTRALIT_BASE_URL=/custom-path-for-argilla</code>.</p>
+<p>For example, if your proxy exposes Extralit in the URL <code>https://my-proxy/custom-path-for-extralit</code>, you should launch the
+Extralit server with <code>EXTRALIT_BASE_URL=/custom-path-for-extralit</code>.</p>
 <p>NGINX and Traefik have been tested and are known to work with Extralit:</p>
 <ul>
 <li><a href="https://github.com/extralit/extralit/tree/main/examples/deployments/docker/nginx">NGINX example</a></li>
@@ -3349,7 +3349,7 @@ Extralit server with <code>EXTRALIT_BASE_URL=/custom-path-for-argilla</code>.</p
 <h4 id="fastapi">FastAPI<a class="headerlink" href="#fastapi" title="Permanent link">&para;</a></h4>
 <ul>
 <li>
-<p><code>EXTRALIT_HOME_PATH</code>: The directory where Extralit will store all the files needed to run. If the path doesn't exist it will be automatically created (Default: <code>~/.argilla</code>).</p>
+<p><code>EXTRALIT_HOME_PATH</code>: The directory where Extralit will store all the files needed to run. If the path doesn't exist it will be automatically created (Default: <code>~/.extralit</code>).</p>
 </li>
 <li>
 <p><code>EXTRALIT_BASE_URL</code>: If you want to launch the Extralit server in a specific base path other than /, you should set up this environment variable. This can be useful when running Extralit behind a proxy that adds a prefix path to route the service (Default: "/").</p>
@@ -3452,7 +3452,7 @@ Extralit server with <code>EXTRALIT_BASE_URL=/custom-path-for-argilla</code>.</p
 <p><code>REINDEX_DATASETS</code>: If <code>true</code> or <code>1</code>, the datasets will be reindexed in the search engine. This is needed when some search configuration changed or data must be refreshed (Default: <code>0</code>).</p>
 </li>
 <li>
-<p><code>USERNAME</code>: If provided, the owner username. This can be combined with <abbr title="HuggingFace - A platform for deploying and managing open-source AI applications, models and datasets in the cloud.">HF</abbr> OAuth to define the argilla server owner (Default: <code>""</code>).</p>
+<p><code>USERNAME</code>: If provided, the owner username. This can be combined with <abbr title="HuggingFace - A platform for deploying and managing open-source AI applications, models and datasets in the cloud.">HF</abbr> OAuth to define the extralit server owner (Default: <code>""</code>).</p>
 </li>
 <li>
 <p><code>PASSWORD</code>: If provided, the owner password. If <code>USERNAME</code> and <code>PASSWORD</code> are provided, the owner user will be created with these credentials on the server startup (Default: <code>""</code>).</p>

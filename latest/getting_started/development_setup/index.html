@@ -918,9 +918,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#0-building-the-extralit-server-and-argilla-hf-spaces-docker-images" class="md-nav__link">
+  <a href="#0-building-the-extralit-server-and-extralit-hf-space-docker-images" class="md-nav__link">
     <span class="md-ellipsis">
-      0. Building the extralit-server and argilla-hf-spaces docker images
+      0. Building the extralit-server and extralit-hf-space docker images
     </span>
   </a>
   
@@ -3581,9 +3581,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#0-building-the-extralit-server-and-argilla-hf-spaces-docker-images" class="md-nav__link">
+  <a href="#0-building-the-extralit-server-and-extralit-hf-space-docker-images" class="md-nav__link">
     <span class="md-ellipsis">
-      0. Building the extralit-server and argilla-hf-spaces docker images
+      0. Building the extralit-server and extralit-hf-space docker images
     </span>
   </a>
   
@@ -3850,15 +3850,15 @@
 </div>
 </div>
 <h3 id="3-development-workflow">3. Development workflow*<a class="headerlink" href="#3-development-workflow" title="Permanent link">&para;</a></h3>
-<div class="language-text highlight"><pre><span></span><code>- **Backend Development**: Changes to `extralit-server/src/extralit_server/` or `argilla/src/{argilla,extralit}/` are automatically updated if Tilt is running
+<div class="language-text highlight"><pre><span></span><code>- **Backend Development**: Changes to `extralit-server/src/extralit_server/` or `extralit/src/extralit/` are automatically updated if Tilt is running
 - **Python SDK packages**
   ```bash
-  cd argilla
+  cd extralit
   pdm install
   ```
 - **Frontend Development**: For frontend live-reloading:
   ```bash
-  cd argilla/extralit-frontend
+  cd extralit/extralit-frontend
   npm install
   npm run dev
   ```
@@ -3868,7 +3868,7 @@
 <li>Look for port 6900 in the "Ports" tab of your Codespace</li>
 <li>Click on the link to open the Extralit web interface</li>
 <li>Log in with the default credentials:</li>
-<li>Username: <code>argilla</code></li>
+<li>Username: <code>extralit</code></li>
 <li>Password: <code>12345678</code></li>
 <li><abbr title="Application Programming Interface.">API</abbr> Key: <code>extralit.apikey</code></li>
 </ul>
@@ -3967,7 +3967,7 @@
 </span></code></pre></div>
 <h2 id="option-4-docker-deployment">Option 4: Docker Deployment<a class="headerlink" href="#option-4-docker-deployment" title="Permanent link">&para;</a></h2>
 <p>For a simpler setup using Docker without live development capabilities:</p>
-<h3 id="0-building-the-extralit-server-and-argilla-hf-spaces-docker-images">0. Building the <code>extralit-server</code> and <code>argilla-hf-spaces</code> docker images<a class="headerlink" href="#0-building-the-extralit-server-and-argilla-hf-spaces-docker-images" title="Permanent link">&para;</a></h3>
+<h3 id="0-building-the-extralit-server-and-extralit-hf-space-docker-images">0. Building the <code>extralit-server</code> and <code>extralit-hf-space</code> docker images<a class="headerlink" href="#0-building-the-extralit-server-and-extralit-hf-space-docker-images" title="Permanent link">&para;</a></h3>
 <p>To build and run the Extralit Server using Docker, follow these steps:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="nb">cd</span><span class="w"> </span>extralit-server
 </span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>pdm<span class="w"> </span>build<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>cp<span class="w"> </span>-r<span class="w"> </span>dist/<span class="w"> </span>docker/server/
@@ -3975,10 +3975,10 @@
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>extralit-server:latest<span class="w"> </span>-f<span class="w"> </span>docker/server/Dockerfile<span class="w"> </span>docker/server/
 </span></code></pre></div>
 <p>To build the Extralit <abbr title="HuggingFace - A platform for deploying and managing open-source AI applications, models and datasets in the cloud.">HF</abbr> Spaces Docker image, which includes the Extralit Server, ElasticSearch, and Redis, use the following command:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>docker<span class="w"> </span>build<span class="w"> </span>--build-arg<span class="w"> </span><span class="nv">extralit_server_IMAGE</span><span class="o">=</span>extralit-server<span class="w"> </span>--build-arg<span class="w"> </span><span class="nv">EXTRALIT_VERSION</span><span class="o">=</span>latest<span class="w"> </span>-t<span class="w"> </span>argilla-hf-spaces:latest<span class="w"> </span>-f<span class="w"> </span>docker/argilla-hf-spaces/Dockerfile<span class="w"> </span>docker/argilla-hf-spaces/
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>docker<span class="w"> </span>build<span class="w"> </span>--build-arg<span class="w"> </span><span class="nv">extralit_server_IMAGE</span><span class="o">=</span>extralit-server<span class="w"> </span>--build-arg<span class="w"> </span><span class="nv">EXTRALIT_VERSION</span><span class="o">=</span>latest<span class="w"> </span>-t<span class="w"> </span>extralit-hf-space:latest<span class="w"> </span>-f<span class="w"> </span>docker/extralit-hf-space/Dockerfile<span class="w"> </span>docker/extralit-hf-space/
 </span></code></pre></div>
 <p>Start the Extralit Server and other dependencies using Docker:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-p<span class="w"> </span><span class="m">6900</span>:6900<span class="w"> </span>-e<span class="w"> </span><span class="nv">EXTRALIT_ENABLE_TELEMETRY</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>-e<span class="w"> </span><span class="nv">USERNAME</span><span class="o">=</span>argilla<span class="w"> </span>-e<span class="w"> </span><span class="nv">PASSWORD</span><span class="o">=</span><span class="m">12345678</span><span class="w"> </span>-e<span class="w"> </span><span class="nv">API_KEY</span><span class="o">=</span>extralit.apikey<span class="w"> </span>--name<span class="w"> </span>argilla-hf-spaces<span class="w"> </span>argilla-hf-spaces:latest
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-p<span class="w"> </span><span class="m">6900</span>:6900<span class="w"> </span>-e<span class="w"> </span><span class="nv">EXTRALIT_ENABLE_TELEMETRY</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>-e<span class="w"> </span><span class="nv">USERNAME</span><span class="o">=</span>extralit<span class="w"> </span>-e<span class="w"> </span><span class="nv">PASSWORD</span><span class="o">=</span><span class="m">12345678</span><span class="w"> </span>-e<span class="w"> </span><span class="nv">API_KEY</span><span class="o">=</span>extralit.apikey<span class="w"> </span>--name<span class="w"> </span>extralit-hf-space<span class="w"> </span>extralit-hf-space:latest
 </span></code></pre></div>
 <h3 id="1-create-a-project-directory">1. Create a Project Directory<a class="headerlink" href="#1-create-a-project-directory" title="Permanent link">&para;</a></h3>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>mkdir<span class="w"> </span>extralit<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>extralit

@@ -3234,17 +3234,17 @@
 <tr>
 <td><code>+</code> or <code>space</code></td>
 <td><strong>AND</strong>: search both terms</td>
-<td><code>argilla + distilabel</code> or <code>argilla distilabel</code></br> return <abbr title="In Extralit, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Extralit and can be associated with various metadata, labels, and annotations.">records</abbr> that include the terms "extralit" and "distilabel"</td>
+<td><code>extralit + distilabel</code> or <code>extralit distilabel</code></br> return <abbr title="In Extralit, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Extralit and can be associated with various metadata, labels, and annotations.">records</abbr> that include the terms "extralit" and "distilabel"</td>
 </tr>
 <tr>
 <td><code>|</code></td>
 <td><strong>OR</strong>: search either term</td>
-<td><code>argilla                                                                                            | distilabel</code> </br> returns <abbr title="In Extralit, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Extralit and can be associated with various metadata, labels, and annotations.">records</abbr> that include the term "extralit" or "distilabel"</td>
+<td><code>extralit                                                                                            | distilabel</code> </br> returns <abbr title="In Extralit, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Extralit and can be associated with various metadata, labels, and annotations.">records</abbr> that include the term "extralit" or "distilabel"</td>
 </tr>
 <tr>
 <td><code>-</code></td>
 <td><strong>Negation</strong>: exclude a term</td>
-<td><code>argilla -distilabel</code> </br> returns <abbr title="In Extralit, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Extralit and can be associated with various metadata, labels, and annotations.">records</abbr> that contain the term "extralit" and don't have the term "distilabel"</td>
+<td><code>extralit -distilabel</code> </br> returns <abbr title="In Extralit, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Extralit and can be associated with various metadata, labels, and annotations.">records</abbr> that contain the term "extralit" and don't have the term "distilabel"</td>
 </tr>
 <tr>
 <td><code>*</code></td>
@@ -3254,17 +3254,17 @@
 <tr>
 <td><code>"</code></td>
 <td><strong>Phrase</strong>: search a phrase</td>
-<td><code>"argilla and distilabel"</code> </br> returns <abbr title="In Extralit, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Extralit and can be associated with various metadata, labels, and annotations.">records</abbr> that contain the phrase "argilla and distilabel"</td>
+<td><code>"extralit and distilabel"</code> </br> returns <abbr title="In Extralit, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Extralit and can be associated with various metadata, labels, and annotations.">records</abbr> that contain the phrase "extralit and distilabel"</td>
 </tr>
 <tr>
 <td><code>(</code> and <code>)</code></td>
 <td><strong>Precedence</strong>: group terms</td>
-<td><code>(argilla                                                                                                             | distilabel) rules</code> </br> returns <abbr title="In Extralit, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Extralit and can be associated with various metadata, labels, and annotations.">records</abbr> that contain either "extralit" or "distilabel" and "rules"</td>
+<td><code>(extralit                                                                                                             | distilabel) rules</code> </br> returns <abbr title="In Extralit, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Extralit and can be associated with various metadata, labels, and annotations.">records</abbr> that contain either "extralit" or "distilabel" and "rules"</td>
 </tr>
 <tr>
 <td><code>~N</code></td>
 <td><strong>Edit distance</strong>: search a term or phrase with an edit distance</td>
-<td><code>argilla~1</code> </br> returns <abbr title="In Extralit, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Extralit and can be associated with various metadata, labels, and annotations.">records</abbr> that contain the term "extralit" with an edit distance of 1, e.g. "argila"</td>
+<td><code>extralit~1</code> </br> returns <abbr title="In Extralit, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Extralit and can be associated with various metadata, labels, and annotations.">records</abbr> that contain the term "extralit" with an edit distance of 1, e.g. "argila"</td>
 </tr>
 </tbody>
 </table>

@@ -3141,8 +3141,8 @@
 </span></code></pre></div>
 <p>Next, we can use the <code>Extralit.deploy_on_spaces</code> method, which will create a Space in <a href="https://huggingface.co/">the Hugging Face Hub</a>. This method will automatically do the following:</p>
 <ul>
-<li>Deploy an Extralit Space on the Hugging Face Hub with <a href="#sign-in-into-the-extralit-ui">OAuth sign-in</a> and a URL like <code>https://&lt;your-username&gt;-argilla.hf.space</code>, which takes around 2-3 minutes.</li>
-<li>Create a default workspace called <code>argilla</code> with an owner called <code>&lt;your-username&gt;</code> and an Extralit token set to <code>api_key</code>.</li>
+<li>Deploy an Extralit Space on the Hugging Face Hub with <a href="#sign-in-into-the-extralit-ui">OAuth sign-in</a> and a URL like <code>https://&lt;your-username&gt;-extralit.hf.space</code>, which takes around 2-3 minutes.</li>
+<li>Create a default workspace called <code>extralit</code> with an owner called <code>&lt;your-username&gt;</code> and an Extralit token set to <code>api_key</code>.</li>
 <li>Automatically return the authenticated Extralit client, which can directly be used to interact with your Extralit server.</li>
 </ul>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">extralit</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ex</span>
@@ -3204,7 +3204,7 @@
 <div class="admonition info">
 <p class="admonition-title">Importing long datasets</p>
 <p>Extralit will only import the first 10k rows of a dataset. If your dataset is larger, you can import the rest of the <abbr title="In Extralit, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Extralit and can be associated with various metadata, labels, and annotations.">records</abbr> at any point using the Python <abbr title="Software Development Kit.">SDK</abbr>.</p>
-<p>To do that, open your dataset and copy the code snippet provided under "Import data". Now, open a Jupyter or Google Colab notebook and install argilla:</p>
+<p>To do that, open your dataset and copy the code snippet provided under "Import data". Now, open a Jupyter or Google Colab notebook and install extralit:</p>
 <p><div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="err">!</span><span class="n">pip</span> <span class="n">install</span> <span class="n">extralit</span>
 </span></code></pre></div>
 Then, paste and run your code snippet. This will import the remaining <abbr title="In Extralit, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Extralit and can be associated with various metadata, labels, and annotations.">records</abbr> to your dataset.</p>
