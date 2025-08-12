@@ -3,7 +3,7 @@ name = "extralit-server"
 dynamic = ["version"]
 description = "Open-source tool for accurate & fast scientific literature data extraction with LLM and human-in-the-loop."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = { text = "Apache-2.0" }
 keywords = [
     "literature-review",
@@ -49,6 +49,7 @@ dependencies = [
     "social-auth-core ~= 4.5.0",
     # Background processing
     "rq ~= 1.16.2",
+    "lazy-loader>=0.4",
     # Info status
     "psutil ~= 5.8, <5.10",
     # For logging, tracebacks, printing, progressbars
@@ -60,12 +61,16 @@ dependencies = [
     "standardwebhooks>=1.0.0",
     # For HF dataset import
     "datasets >= 3.0.1",
-    "pillow >= 10.4.0",
+    "pillow>=11.3.0",
     # For Telemetry
     "huggingface-hub>=0.26.2",
     "Jinja2>=3.1.4",           # Used by huggingface-hub to render dataset card templates
     # For file storage
     "minio>=7.2.7",
+    # For document processing
+    "ocrmypdf>=16.10.4",
+    "pdf2image>=1.17.0",
+    "opencv-python>=4.11.0.86",
 ]
 
 [project.optional-dependencies]
@@ -182,8 +187,9 @@ worker = { cmd = "python -m extralit_server worker" }
 server-dev.composite = [
     "migrate",
     "cli database users create_default",
-    "server",
+    "server-and-worker",
 ]
+server-and-worker = { shell = "pdm run server & pdm run worker & wait" }
 test = { cmd = "pytest --verbosity=1 --disable-warnings", env_file = ".env.test" }
 test-cov = { cmd = "pytest tests --cov=extralit_server --cov-report=term --cov-report=xml --verbosity=0 --disable-warnings", env_file = ".env.test" }
 

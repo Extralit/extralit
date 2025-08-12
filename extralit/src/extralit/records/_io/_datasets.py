@@ -14,14 +14,17 @@
 
 import warnings
 from typing import TYPE_CHECKING, Any, Dict, List, Union, Optional, Tuple
-
-from datasets import Dataset as HFDataset, Sequence
-from datasets import Image, ClassLabel, Value
+import lazy_loader as lazy
 
 from extralit._helpers._media import pil_to_data_uri, uncast_image
 from extralit.records._io._generic import GenericIO
 
+datasets = lazy.load("datasets")
+
+
 if TYPE_CHECKING:
+    from datasets import Dataset as HFDataset, ClassLabel
+
     from extralit.records import Record
     from extralit.datasets import Dataset
     from extralit.records._mapping import IngestedRecordMapper
@@ -41,7 +44,7 @@ def _cast_images_as_urls(hf_dataset: "HFDataset", columns: List[str]) -> "HFData
     for column in columns:
         # make an updated features object with the new column type
         features = hf_dataset.features.copy()
-        features[column] = Value("string")
+        features[column] = datasets.Value("string")  # type: ignore
         # cast the column in batches
         hf_dataset = hf_dataset.map(
             function=lambda batch: {column: [pil_to_data_uri(sample) for sample in batch]},
@@ -55,7 +58,7 @@ def _cast_images_as_urls(hf_dataset: "HFDataset", columns: List[str]) -> "HFData
     return hf_dataset
 
 
-def _int2class_name(feature: ClassLabel, value: int) -> Optional[str]:
+def _int2class_name(feature: "ClassLabel", value: int) -> Optional[str]:
     try:
         return feature.int2str(value)
     except Exception as ex:
@@ -73,7 +76,7 @@ def _cast_class_label_sequence_as_string_list(hf_dataset: "HFDataset", columns: 
 
     for column in columns:
         features = hf_dataset.features.copy()
-        features[column] = Sequence(Value("string"))
+        features[column] = datasets.Sequence(datasets.Value("string"))  # type: ignore
         hf_dataset = hf_dataset.map(
             map2str_list,
             fn_kwargs={"column_name": column, "features": hf_dataset.features},
@@ -103,7 +106,7 @@ def _cast_classlabels_as_strings(hf_dataset: "HFDataset", columns: List[str]) ->
 
     for column in columns:
         features = hf_dataset.features.copy()
-        features[column] = Value("string")
+        features[column] = datasets.Value("string")  # type: ignore
         hf_dataset = hf_dataset.map(
             label_column2str, fn_kwargs={"column": column, "features": hf_dataset.features}, features=features
         )
@@ -126,7 +129,7 @@ def _uncast_uris_as_images(hf_dataset: "HFDataset", columns: List[str]) -> "HFDa
 
     for column in columns:
         features = hf_dataset.features.copy()
-        features[column] = Image()
+        features[column] = datasets.Image()  # type: ignore
         casted_hf_dataset = hf_dataset.map(
             function=lambda batch: {column: [uncast_image(sample) for sample in batch]},
             with_indices=False,
@@ -162,7 +165,7 @@ def _uncast_label_questions_as_classlabels(hf_dataset: "HFDataset", columns: Lis
             continue
         values = list(hf_dataset.unique(column))
         features = hf_dataset.features.copy()
-        features[column] = ClassLabel(names=values)
+        features[column] = datasets.ClassLabel(names=values)  # type: ignore
         hf_dataset = hf_dataset.map(
             function=lambda batch: {column: [values.index(sample) for sample in batch]},
             with_indices=False,
@@ -191,10 +194,10 @@ class HFDatasetsIO:
         Returns:
             bool: True if the object is a Hugging Face dataset, False otherwise.
         """
-        return isinstance(dataset, HFDataset)
+        return isinstance(dataset, datasets.Dataset)  # type: ignore
 
     @staticmethod
-    def to_datasets(records: List[Union["Record", Tuple["Record", float]]], dataset: "Dataset") -> HFDataset:
+    def to_datasets(records: List[Union["Record", Tuple["Record", float]]], dataset: "Dataset") -> "HFDataset":
         """
         Export the records to a Hugging Face dataset.
 
@@ -202,7 +205,7 @@ class HFDatasetsIO:
             The dataset containing the records.
         """
         record_dicts = GenericIO.to_dict(records, flatten=True)
-        hf_dataset = HFDataset.from_dict(record_dicts)
+        hf_dataset = datasets.Dataset.from_dict(record_dicts)  # type: ignore
         hf_dataset = HFDatasetsIO._uncast_argilla_attributes_to_datasets(hf_dataset, dataset.schema)
         return hf_dataset
 
@@ -277,11 +280,11 @@ class HFDatasetsIO:
         class_label_sequence_columns = []
 
         for name, feature in hf_dataset.features.items():
-            if isinstance(feature, Image):
+            if isinstance(feature, datasets.Image):  # type: ignore
                 image_columns.append(name)
-            elif isinstance(feature, ClassLabel):
+            elif isinstance(feature, datasets.ClassLabel):  # type: ignore
                 class_label_columns.append(name)
-            elif isinstance(feature, Sequence) and isinstance(feature.feature, ClassLabel):
+            elif isinstance(feature, datasets.Sequence) and isinstance(feature.feature, datasets.ClassLabel):  # type: ignore
                 class_label_sequence_columns.append(name)
 
         if image_columns:

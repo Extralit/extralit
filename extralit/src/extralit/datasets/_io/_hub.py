@@ -19,10 +19,8 @@ from collections import defaultdict
 from tempfile import TemporaryDirectory
 from typing import TYPE_CHECKING, Any, Dict, Optional, Type, Union, Literal
 from uuid import UUID
+import lazy_loader as lazy
 
-from datasets import DatasetDict
-from datasets.data_files import EmptyDatasetError
-from PIL import Image
 
 from extralit._exceptions import ImportDatasetError
 from extralit._exceptions._api import UnprocessableEntityError
@@ -33,6 +31,9 @@ from extralit.datasets._io._disk import DiskImportExportMixin
 from extralit.records._io._datasets import HFDatasetsIO
 from extralit.records._mapping import IngestedRecordMapper
 from extralit.responses import Response
+
+datasets = lazy.load("datasets")
+PIL = lazy.load("PIL")
 
 if TYPE_CHECKING:
     from datasets import Dataset as HFDataset
@@ -143,7 +144,8 @@ class HubImportExportMixin(DiskImportExportMixin):
             A `Dataset` loaded from the Hugging Face Hub.
         """
         from extralit.settings import Settings
-        from datasets import load_dataset
+
+        # load_dataset is accessed via lazy loaded datasets module
         from huggingface_hub import snapshot_download
 
         settings = settings or "ui"
@@ -194,15 +196,15 @@ class HubImportExportMixin(DiskImportExportMixin):
 
         if with_records:
             try:
-                hf_dataset = load_dataset(
+                hf_dataset = datasets.load_dataset(  # type: ignore
                     path=repo_id,
                     split=split,
                     name=subset,
                     **kwargs,
-                )  # type: ignore
+                )
                 hf_dataset = cls._get_dataset_split(hf_dataset=hf_dataset, split=split, **kwargs)
                 cls._log_dataset_records(hf_dataset=hf_dataset, dataset=dataset)
-            except EmptyDatasetError:
+            except datasets.data_files.EmptyDatasetError:  # type: ignore
                 warnings.warn(
                     message="Trying to load a dataset `with_records=True` but dataset does not contain any records.",
                     category=UserWarning,
@@ -298,7 +300,7 @@ class HubImportExportMixin(DiskImportExportMixin):
             HFDataset: The single dataset.
         """
 
-        if isinstance(hf_dataset, DatasetDict) and split is None:
+        if isinstance(hf_dataset, datasets.DatasetDict) and split is None:  # type: ignore
             split = next(iter(hf_dataset.keys()))
             if len(hf_dataset.keys()) > 1:
                 warnings.warn(
@@ -326,7 +328,7 @@ class HubImportExportMixin(DiskImportExportMixin):
                     json.dumps(value)
                     sample_huggingface_record[key] = value
                 except TypeError:
-                    if isinstance(value, Image.Image):
+                    if isinstance(value, PIL.Image.Image):  # type: ignore
                         sample_huggingface_record[key] = pil_to_data_uri(value)
                     else:
                         sample_huggingface_record[key] = "Record value is not serializable"

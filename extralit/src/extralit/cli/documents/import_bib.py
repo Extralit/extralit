@@ -38,14 +38,17 @@ from typing import Dict, List, Optional
 
 import pandas as pd
 import typer
-import bibtexparser
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
+import lazy_loader as lazy
 
 from extralit.workspaces._resource import Workspace
 from extralit.client import Extralit
 from extralit.cli.rich import get_themed_panel
+
+
+bibtexparser = lazy.load("bibtexparser")
 
 
 def _clean_bibtex_field(value: str) -> str:

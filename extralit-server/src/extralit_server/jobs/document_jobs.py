@@ -22,16 +22,18 @@ from uuid import UUID, uuid4
 from rq import Retry
 from rq.decorators import job
 
+
 from extralit_server.database import AsyncSessionLocal
 from extralit_server.jobs import DEFAULT_QUEUE, JOB_TIMEOUT_DISABLED
 from extralit_server.api.schemas.v1.documents import DocumentCreate
 from extralit_server.contexts import files, imports
+from extralit_server.contexts.document import preprocessing
 
 _LOGGER = logging.getLogger(__name__)
 
 
 @job(DEFAULT_QUEUE, timeout=JOB_TIMEOUT_DISABLED, retry=Retry(max=3, interval=[10, 30, 60]))
-async def upload_reference_documents_job(
+async def upload_and_preprocess_documents_job(
     reference: str,
     reference_data: Dict[str, Any],
     file_data_list: List[Tuple[str, bytes]],  # List of (filename, file_data) tuples
@@ -129,15 +131,22 @@ async def upload_reference_documents_job(
                         continue
 
                     try:
+                        # Preprocess PDF files with OCRmyPDF for rotation and OCR, plus layout analysis
+                        preprocessing_result = preprocessing.preprocessor.preprocess(
+                            file_data=file_data, filename=filename
+                        )
+                        processed_file_data = preprocessing_result.processed_data
+
+                        # Store preprocessing metadata in file metadata
+                        file_metadata.update({"preprocessing": preprocessing_result.metadata})
+
                         file_url = files.put_document_file(
                             client=client,
                             workspace_name=workspace.name,
                             document_id=file_document_create.id,  # type: ignore
-                            file_data=file_data,
+                            file_data=processed_file_data,
                             filename=filename,
-                            # metadata=file_document_create.model_dump(
-                            #     include={"file_name": True, "pmid": True, "doi": True}
-                            # ),
+                            metadata=file_metadata,
                         )
 
                         if file_url:
@@ -152,6 +161,7 @@ async def upload_reference_documents_job(
 
                     # Create document in database
                     try:
+                        file_document_create.metadata = file_metadata
                         document = await imports.create_document(db, file_document_create)
                         _LOGGER.info(f"Document created successfully for file {filename} with ID {document.id}")
                         file_result.update({"success": True, "document_id": str(document.id), "status": "created"})
@@ -173,7 +183,7 @@ async def upload_reference_documents_job(
             results["success"] = results["failed_files"] == 0
 
     except Exception as e:
-        error_msg = f"Error in upload_reference_documents_job for reference {reference}: {str(e)}"
+        error_msg = f"Error uploading documents for reference {reference}: {str(e)}"
         _LOGGER.error(error_msg)
         results["success"] = False
         results["errors"].append(str(e))
