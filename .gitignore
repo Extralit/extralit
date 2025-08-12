@@ -157,4 +157,4 @@ extralit-server/src/extralit_server/static
 extralit/site
 
 # Development files
-*.db
+**/*.db
