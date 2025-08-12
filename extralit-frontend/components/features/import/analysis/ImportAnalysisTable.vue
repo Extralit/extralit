@@ -175,7 +175,7 @@ export default {
       return this.allTableData.filter(row => row.filePaths && row.filePaths.length > 0).length;
     },
 
-    filteredDataframeData(): DataframeData | null {
+    filteredDataframeData(): TableData | null {
       if (!this.dataframeData) {
         return null;
       }
