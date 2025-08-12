@@ -34,12 +34,6 @@ export class BibTeXParser {
       throw new Error("Missing citation key (reference)");
     }
 
-    console.log("📝 Processing BibTeX entry:", {
-      citationKey: entry.citationKey,
-      entryType: entry.entryType,
-      entryTags: entry.entryTags ? Object.keys(entry.entryTags) : [],
-    });
-
     const processedEntry: ParsedEntry = {
       reference: entry.citationKey,
       type: entry.entryType || "unknown",
@@ -71,14 +65,6 @@ export class BibTeXParser {
         }
       });
     }
-
-    console.log("✅ Processed entry result:", {
-      reference: processedEntry.reference,
-      title: processedEntry.title,
-      authors: processedEntry.authors,
-      filePaths: processedEntry.filePaths,
-      allFields: Object.keys(processedEntry),
-    });
 
     return processedEntry;
   }
@@ -125,11 +111,6 @@ export class BibTeXParser {
     const cleaned = this.cleanField(fileField);
     if (!cleaned) return [];
 
-    console.log("🔍 Parsing file paths from field:", {
-      original: fileField,
-      cleaned,
-    });
-
     const filePaths: string[] = [];
     const fileEntries = cleaned
       .split(";")
@@ -146,7 +127,6 @@ export class BibTeXParser {
       }
     }
 
-    console.log("📁 Parsed file paths:", filePaths);
     return filePaths;
   }
 }
@@ -300,26 +280,10 @@ export class FileParsingService implements IFileParsingService {
   private csvParser = new CSVParser();
 
   async parseBibTeX(content: string): Promise<TableData> {
-    console.log("📖 FileParsingService.parseBibTeX called with content length:", content.length);
 
     const entries = this.bibTexParser.parse(content);
-    console.log("📖 BibTeX parsed entries:", {
-      entriesCount: entries.length,
-      entries: entries.map((e) => ({
-        reference: e.reference,
-        title: e.title,
-        filePaths: e.filePaths,
-        hasFilePaths: !!(e.filePaths && e.filePaths.length > 0),
-      })),
-    });
 
-    const dataframeData = DataframeBuilder.build(entries);
-    console.log("📊 Dataframe built:", {
-      dataLength: dataframeData.data.length,
-      schemaFields: dataframeData.schema.fields.map((f) => f.name),
-    });
-
-    return dataframeData;
+    return DataframeBuilder.build(entries);
   }
 
   async parseCSVForPreview(content: string): Promise<CSVPreviewData> {
