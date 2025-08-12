@@ -208,11 +208,11 @@ async def test_get_document_workspace_id_only(async_client: "AsyncClient", owner
 
 @pytest.mark.asyncio
 async def test_get_document_no_parameters(async_client: "AsyncClient", owner_auth_header: dict):
-    """Test that requesting documents without any parameters returns a 400 error."""
+    """Test that requesting documents without any parameters returns a 422 validation error."""
     response = await async_client.get("/api/v1/documents", headers=owner_auth_header)
 
-    assert response.status_code == 400
-    assert "At least one of id, pmid, doi, or reference must be provided" in response.json()["detail"]
+    assert response.status_code == 422
+    # FastAPI validation error for missing required parameter workspace_id
 
 
 @pytest.mark.skip(reason="Document delete API is failing with 500 error")

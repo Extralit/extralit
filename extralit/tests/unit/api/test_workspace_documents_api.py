@@ -157,19 +157,25 @@ class TestDocumentResourceCRUD:
     def test_document_get(self, mock_client, sample_document_id):
         """Test Document.get() class method."""
         client, documents_api = mock_client
+        sample_workspace_id = uuid4()
 
-        # Mock the API response
+        # Mock the API response - now returns a list
         retrieved_model = DocumentModel(
-            id=sample_document_id, workspace_id=uuid4(), reference="Retrieved2023", file_name="retrieved.pdf"
+            id=sample_document_id,
+            workspace_id=sample_workspace_id,
+            reference="Retrieved2023",
+            file_name="retrieved.pdf",
         )
-        documents_api.get.return_value = retrieved_model
+        documents_api.get_document.return_value = retrieved_model
 
-        # Call get
+        # Call get with required workspace_id
         with patch("extralit.documents._resource.Extralit._get_default", return_value=client):
-            doc = Document.get(id=sample_document_id)
+            doc = Document.get(workspace_id=sample_workspace_id, id=sample_document_id)
 
-        # Verify API was called
-        documents_api.get.assert_called_once_with(sample_document_id)
+        # Verify API was called with the new unified method
+        documents_api.get_document.assert_called_once_with(
+            {"workspace_id": str(sample_workspace_id), "id": str(sample_document_id)}
+        )
 
         # Verify result
         assert doc.id == sample_document_id
@@ -224,12 +230,12 @@ class TestDocumentResourceCRUD:
         client, documents_api = mock_client
 
         with patch("extralit.documents._resource.Extralit._get_default", return_value=client):
-            # Test from_pmid
+            # Test from_pmid - now requires workspace_id as required parameter
             doc_pmid = Document.from_pmid(pmid="12345678", workspace_id=sample_workspace_id)
             assert doc_pmid.pmid == "12345678"
             assert doc_pmid.workspace_id == sample_workspace_id
 
-            # Test from_doi
+            # Test from_doi - now requires workspace_id as required parameter
             doc_doi = Document.from_doi(doi="10.1234/example", workspace_id=sample_workspace_id)
             assert doc_doi.doi == "10.1234/example"
             assert doc_doi.workspace_id == sample_workspace_id

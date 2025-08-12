@@ -56,21 +56,6 @@ export default {
     };
   },
 
-  mounted() {
-    window.addEventListener("hashchange", this.onHashChange);
-    this.onHashChange(); // Call on component mount to handle initial hash
-  },
-
-  methods: {
-    onHashChange() {
-      const hash = window.location.hash.substring(1); // Remove the '#' from the hash
-      const [key, value] = hash.split(".");
-      if (key === "page_number" && !isNaN(value)) {
-        this.currentPageNumber = Number(value);
-      }
-    },
-  },
-
   errorCaptured(err, component, info) {
     this.error = err;
     console.error(`Error caught from ${component}: ${err}`);
