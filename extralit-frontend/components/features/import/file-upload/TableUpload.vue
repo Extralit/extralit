@@ -30,7 +30,7 @@
     <div v-if="uploaded && !hasError" class="table-upload__upload-success">
       <BaseIcon icon-name="check" class="table-upload__upload-success-icon" />
       <span class="table-upload__upload-success-text">
-        Successfully uploaded {{ data.fileName }} ({{ data.parsedEntries.length }} entries found)
+        Successfully uploaded {{ data.fileName }} ({{ data.dataframeData ? data.dataframeData.data.length : 0 }} entries found)
       </span>
     </div>
 
@@ -63,10 +63,10 @@ import CsvColumnSelection from "./CsvColumnSelection.vue";
 import "assets/icons/check";
 import "assets/icons/danger";
 import "assets/icons/document";
+import { TableData } from "~/v1/domain/entities/table/TableData";
 
 interface BibliographyData {
   fileName: string;
-  parsedEntries: any[];
   dataframeData: any;
   rawContent: string;
 }
@@ -89,7 +89,6 @@ export default {
       type: Object as () => BibliographyData,
       default: () => ({
         fileName: "",
-        parsedEntries: [],
         dataframeData: null,
         rawContent: "",
       }),
@@ -111,8 +110,7 @@ export default {
       errorMessage: "",
       data: {
         fileName: "",
-        parsedEntries: [],
-        dataframeData: null,
+        dataframeData: TableData,
         rawContent: "",
       } as BibliographyData,
 
@@ -151,7 +149,7 @@ export default {
   watch: {
     initialData: {
       handler(newData: BibliographyData) {
-        if (newData && (newData.fileName || newData.parsedEntries.length > 0)) {
+        if (newData && (newData.fileName || newData.dataframeData.length > 0)) {
           this.initializeWithExistingData();
         }
       },
@@ -198,7 +196,6 @@ export default {
       this.errorMessage = "";
       this.data = {
         fileName: "",
-        parsedEntries: [],
         dataframeData: null,
         rawContent: "",
       };
@@ -233,11 +230,9 @@ export default {
           await this.parseCsvContent(content);
         } else if (this.isBibTexFile(file)) {
           // Handle BibTeX file
-          const result = await this.fileService.parseBibTeX(content);
-          this.data.parsedEntries = result.entries;
-          this.data.dataframeData = result.dataframeData;
+          this.data.dataframeData = await this.fileService.parseBibTeX(content);
 
-          if (this.data.parsedEntries.length > 0) {
+          if (this.data.dataframeData && this.data.dataframeData.data.length > 0) {
             this.uploaded = true;
             this.emitUpdate();
           } else {
@@ -289,10 +284,7 @@ export default {
           return;
         }
 
-        const result = await this.fileService.parseCSVWithConfig(this.csvData.rawData, this.csvConfig);
-
-        this.data.parsedEntries = result.entries;
-        this.data.dataframeData = result.dataframeData;
+        this.data.dataframeData = await this.fileService.parseCSVWithConfig(this.csvData.rawData, this.csvConfig);
 
         // Hide column selection and mark as uploaded
         this.showCsvColumnSelection = false;
@@ -324,7 +316,6 @@ export default {
       // Reset data
       this.data = {
         fileName: "",
-        parsedEntries: [],
         dataframeData: null,
         rawContent: "",
       };
@@ -340,14 +331,13 @@ export default {
     },
 
     initializeWithExistingData(): void {
-      if (this.initialData && (this.initialData.fileName || this.initialData.parsedEntries.length > 0)) {
+      if (this.initialData && (this.initialData.fileName || (this.initialData.dataframeData && this.initialData.dataframeData.data.length > 0))) {
         this.data = {
           fileName: this.initialData.fileName || "",
-          parsedEntries: this.initialData.parsedEntries || [],
           dataframeData: this.initialData.dataframeData || null,
           rawContent: this.initialData.rawContent || "",
         };
-        this.uploaded = this.data.parsedEntries.length > 0;
+        this.uploaded = this.data.dataframeData && this.data.dataframeData.data.length > 0;
         this.hasError = false;
         this.errorMessage = "";
         this.showCsvColumnSelection = false;
@@ -358,9 +348,8 @@ export default {
 
     emitUpdate(): void {
       this.$emit("update", {
-        isValid: this.uploaded && !this.hasError && this.data.parsedEntries.length > 0,
+        isValid: this.uploaded && !this.hasError && this.data.dataframeData && this.data.dataframeData.data.length > 0,
         fileName: this.data.fileName,
-        parsedEntries: this.data.parsedEntries,
         dataframeData: this.data.dataframeData,
         rawContent: this.data.rawContent,
       });
@@ -373,7 +362,6 @@ export default {
       this.errorMessage = "";
       this.data = {
         fileName: "",
-        parsedEntries: [],
         dataframeData: null,
         rawContent: "",
       };

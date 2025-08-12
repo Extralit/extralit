@@ -8,24 +8,14 @@
     <div class="import-file-upload__content">
       <div class="import-file-upload__main">
         <!-- Table Upload Section -->
-        <TableUpload
-          :initial-data="bibData"
-          @update="handleBibUpdate"
-        />
+        <TableUpload :initial-data="bibData" @update="handleBibUpdate" />
 
         <!-- PDF Upload Section -->
-        <PdfUpload
-          :initial-data="pdfData"
-          :bibliography-entries="bibData.parsedEntries"
-          @update="handlePdfUpdate"
-        />
+        <PdfUpload :initial-data="pdfData" :bibliography-entries="bibData.dataframeData" @update="handlePdfUpdate" />
       </div>
 
       <!-- Summary Sidebar -->
-      <ImportSummarySidebar
-        :bib-data="bibData"
-        :pdf-data="pdfData"
-      />
+      <ImportSummarySidebar :bib-data="bibData" :pdf-data="pdfData" />
     </div>
   </div>
 </template>
@@ -39,7 +29,6 @@ type ComponentData = {
   isInitializing: boolean;
   bibData: {
     fileName: string;
-    parsedEntries: any[];
     dataframeData: any;
     rawContent: string;
   };
@@ -65,7 +54,6 @@ export default {
       type: Object,
       default: () => ({
         fileName: "",
-        parsedEntries: [],
         dataframeData: null,
         rawContent: "",
       }),
@@ -88,7 +76,6 @@ export default {
       // Bibliography data
       bibData: {
         fileName: "",
-        parsedEntries: [],
         dataframeData: null,
         rawContent: "",
       },
@@ -105,7 +92,7 @@ export default {
   computed: {
     isValid(): boolean {
       return (
-        this.bibData.parsedEntries.length > 0 &&
+        this.bibData.dataframeData && this.bibData.dataframeData.data.length > 0 &&
         this.pdfData.matchedFiles.length > 0
       );
     },
@@ -115,11 +102,11 @@ export default {
     initialBibData: {
       handler(newData: any, oldData: any) {
         // Only initialize if data has actually changed and we're not already initializing
-        if (!this.isInitializing && newData && (newData.fileName || newData.parsedEntries.length > 0)) {
+        if (!this.isInitializing && newData && (newData.fileName || (newData.dataframeData && newData.dataframeData.data.length > 0))) {
           // Check if the data is actually different to avoid unnecessary updates
           const hasChanged = !oldData ||
             newData.fileName !== oldData.fileName ||
-            newData.parsedEntries.length !== oldData.parsedEntries.length;
+            (newData.dataframeData?.data?.length || 0) !== (oldData.dataframeData?.data?.length || 0);
 
           if (hasChanged) {
             this.initializeWithExistingData();
@@ -154,7 +141,6 @@ export default {
     handleBibUpdate(data: any): void {
       this.bibData = {
         fileName: data.fileName || "",
-        parsedEntries: data.parsedEntries || [],
         dataframeData: data.dataframeData || null,
         rawContent: data.rawContent || "",
       };
@@ -167,15 +153,18 @@ export default {
         unmatchedFiles: data.unmatchedFiles || [],
         totalFiles: data.totalFiles || 0,
       };
+
+      // Update dataframe data with matched file paths
+      this.updateDataframeWithFilePaths(data.matchedFiles || []);
+
       this.emitPdfUpdate();
     },
 
     // Event emitters
     emitBibUpdate(): void {
       this.$emit("bib-update", {
-        isValid: this.bibData.parsedEntries.length > 0,
+        isValid: this.bibData.dataframeData && this.bibData.dataframeData.data.length > 0,
         fileName: this.bibData.fileName,
-        parsedEntries: this.bibData.parsedEntries,
         dataframeData: this.bibData.dataframeData,
         rawContent: this.bibData.rawContent,
       });
@@ -190,16 +179,55 @@ export default {
       });
     },
 
+    updateDataframeWithFilePaths(matchedFiles: any[]): void {
+      if (!this.bibData.dataframeData || !matchedFiles.length) {
+        return;
+      }
+
+      // Create a map of reference to file paths
+      const referenceToFiles = new Map<string, string[]>();
+
+      matchedFiles.forEach((matchedFile: any) => {
+        const reference = matchedFile.bibEntry?.reference;
+        const fileName = matchedFile.file?.name;
+
+        if (reference && fileName) {
+          if (!referenceToFiles.has(reference)) {
+            referenceToFiles.set(reference, []);
+          }
+          referenceToFiles.get(reference)!.push(fileName);
+        }
+      });
+      // Update the dataframe data with file paths
+      const updatedData = this.bibData.dataframeData.data.map((row: any) => {
+        const reference = row.reference || row.key;
+        const filePaths = referenceToFiles.get(reference) || [];
+
+        return {
+          ...row,
+          filePaths: filePaths
+        };
+      });
+
+      // Update the dataframe data
+      this.bibData.dataframeData = {
+        ...this.bibData.dataframeData,
+        data: updatedData
+      };
+
+      // Re-emit the bib update with the updated dataframe
+      this.emitBibUpdate();
+    },
+
     // Initialize component with existing data when navigating back
     initializeWithExistingData(): void {
       // Set flag to prevent recursive updates
       this.isInitializing = true;
 
       // Initialize bibliography data
-      if (this.initialBibData && (this.initialBibData.fileName || this.initialBibData.parsedEntries.length > 0)) {
+      if (this.initialBibData && (this.initialBibData.fileName || (this.initialBibData.dataframeData && this.initialBibData.dataframeData.data.length > 0))) {
         this.bibData = {
           fileName: this.initialBibData.fileName || "",
-          parsedEntries: this.initialBibData.parsedEntries || [],
           dataframeData: this.initialBibData.dataframeData || null,
           rawContent: this.initialBibData.rawContent || "",
         };
@@ -231,7 +259,6 @@ export default {
       // Reset bibliography data
       this.bibData = {
         fileName: "",
-        parsedEntries: [],
         dataframeData: null,
         rawContent: "",
       };

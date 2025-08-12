@@ -2,7 +2,7 @@ import bibtexParse from "@orcid/bibtex-parse-js";
 import Papa from "papaparse";
 import { TableData } from "../entities/table/TableData";
 import { DataFrameSchema } from "../entities/table/Schema";
-import type { IFileParsingService, ParsedEntry, ParseResult, CSVConfig, CSVPreviewData } from "./IFileParsingService";
+import type { IFileParsingService, ParsedEntry, CSVConfig, CSVPreviewData } from "./IFileParsingService";
 import type { FieldType } from "~/v1/domain/entities/import/ImportAnalysis";
 
 export class BibTeXParser {
@@ -33,6 +33,12 @@ export class BibTeXParser {
     if (!entry.citationKey) {
       throw new Error("Missing citation key (reference)");
     }
+
+    console.log("📝 Processing BibTeX entry:", {
+      citationKey: entry.citationKey,
+      entryType: entry.entryType,
+      entryTags: entry.entryTags ? Object.keys(entry.entryTags) : [],
+    });
 
     const processedEntry: ParsedEntry = {
       reference: entry.citationKey,
@@ -65,6 +71,14 @@ export class BibTeXParser {
         }
       });
     }
+
+    console.log("✅ Processed entry result:", {
+      reference: processedEntry.reference,
+      title: processedEntry.title,
+      authors: processedEntry.authors,
+      filePaths: processedEntry.filePaths,
+      allFields: Object.keys(processedEntry),
+    });
 
     return processedEntry;
   }
@@ -111,6 +125,11 @@ export class BibTeXParser {
     const cleaned = this.cleanField(fileField);
     if (!cleaned) return [];
 
+    console.log("🔍 Parsing file paths from field:", {
+      original: fileField,
+      cleaned,
+    });
+
     const filePaths: string[] = [];
     const fileEntries = cleaned
       .split(";")
@@ -127,6 +146,7 @@ export class BibTeXParser {
       }
     }
 
+    console.log("📁 Parsed file paths:", filePaths);
     return filePaths;
   }
 }
@@ -279,14 +299,27 @@ export class FileParsingService implements IFileParsingService {
   private bibTexParser = new BibTeXParser();
   private csvParser = new CSVParser();
 
-  async parseBibTeX(content: string): Promise<ParseResult> {
-    const entries = this.bibTexParser.parse(content);
-    const dataframeData = DataframeBuilder.build(entries);
+  async parseBibTeX(content: string): Promise<TableData> {
+    console.log("📖 FileParsingService.parseBibTeX called with content length:", content.length);
 
-    return {
-      entries,
-      dataframeData,
-    };
+    const entries = this.bibTexParser.parse(content);
+    console.log("📖 BibTeX parsed entries:", {
+      entriesCount: entries.length,
+      entries: entries.map((e) => ({
+        reference: e.reference,
+        title: e.title,
+        filePaths: e.filePaths,
+        hasFilePaths: !!(e.filePaths && e.filePaths.length > 0),
+      })),
+    });
+
+    const dataframeData = DataframeBuilder.build(entries);
+    console.log("📊 Dataframe built:", {
+      dataLength: dataframeData.data.length,
+      schemaFields: dataframeData.schema.fields.map((f) => f.name),
+    });
+
+    return dataframeData;
   }
 
   async parseCSVForPreview(content: string): Promise<CSVPreviewData> {
@@ -299,14 +332,11 @@ export class FileParsingService implements IFileParsingService {
     };
   }
 
-  async parseCSVWithConfig(rawData: Record<string, any>[], config: CSVConfig): Promise<ParseResult> {
+  async parseCSVWithConfig(rawData: Record<string, any>[], config: CSVConfig): Promise<TableData> {
     const entries = this.csvParser.processWithConfig(rawData, config);
     const dataframeData = DataframeBuilder.build(entries);
 
-    return {
-      entries,
-      dataframeData,
-    };
+    return dataframeData;
   }
 
   async readFileContent(file: File): Promise<string> {

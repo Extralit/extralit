@@ -1,4 +1,5 @@
 import type { ParsedEntry } from "./IFileParsingService";
+import { TableData } from "../entities/table/TableData";
 
 export interface FileMatchResult {
   file: File;
@@ -13,5 +14,5 @@ export interface FileMatchingResult {
 }
 
 export interface IFileMatchingService {
-  matchFiles(files: File[], entries: ParsedEntry[]): FileMatchingResult;
+  matchFiles(files: File[], dataframeData: TableData | null): FileMatchingResult;
 }

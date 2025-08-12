@@ -14,7 +14,9 @@ interface PrefixMatchResult {
 }
 
 export class PdfMatchingService implements IFileMatchingService {
-  matchFiles(files: File[], entries: ParsedEntry[]): FileMatchingResult {
+  matchFiles(files: File[], dataframeData): FileMatchingResult {
+    const entries: ParsedEntry[] = dataframeData?.data || [];
+
     if (!entries || entries.length === 0 || files.length === 0) {
       return {
         matchedFiles: [],

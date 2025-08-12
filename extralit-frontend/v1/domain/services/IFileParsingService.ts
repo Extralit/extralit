@@ -7,11 +7,6 @@ export interface ParsedEntry {
   [key: string]: any;
 }
 
-export interface ParseResult {
-  entries: ParsedEntry[];
-  dataframeData: TableData;
-}
-
 export interface CSVConfig {
   referenceColumn: string;
   filesColumn?: string;
@@ -24,9 +19,9 @@ export interface CSVPreviewData {
 }
 
 export interface IFileParsingService {
-  parseBibTeX(content: string): Promise<ParseResult>;
+  parseBibTeX(content: string): Promise<TableData>;
   parseCSVForPreview(content: string): Promise<CSVPreviewData>;
-  parseCSVWithConfig(rawData: Record<string, any>[], config: CSVConfig): Promise<ParseResult>;
+  parseCSVWithConfig(rawData: Record<string, any>[], config: CSVConfig): Promise<TableData>;
   readFileContent(file: File): Promise<string>;
   isValidFileType(file: File, validExtensions: string[]): boolean;
 }

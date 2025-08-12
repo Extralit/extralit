@@ -85,8 +85,8 @@ export default {
       }),
     },
     bibliographyEntries: {
-      type: Array,
-      default: () => [],
+      type: Object,
+      default: () => null,
     },
   },
 
@@ -262,7 +262,7 @@ export default {
     },
 
     performFileMatching(uploadedFiles: File[]): void {
-      if (!this.bibliographyEntries || this.bibliographyEntries.length === 0 || uploadedFiles.length === 0) {
+      if (!this.bibliographyEntries || !this.bibliographyEntries.data || this.bibliographyEntries.data.length === 0 || uploadedFiles.length === 0) {
         // If no bibliography entries, all files are unmatched
         this.data.matchedFiles = [];
         this.data.unmatchedFiles = uploadedFiles;

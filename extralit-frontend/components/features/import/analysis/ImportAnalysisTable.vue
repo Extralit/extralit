@@ -163,8 +163,9 @@ export default {
     },
 
     tableData(): AnalysisTableRow[] {
-      // Only show rows with matched PDFs
-      return this.allTableData.filter(row => row.filePaths && row.filePaths.length > 0);
+      const filteredData = this.allTableData.filter(row => row.filePaths && row.filePaths.length > 0);
+
+      return filteredData;
     },
 
     referencesWithoutPdfsCount(): number {
