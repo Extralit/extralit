@@ -1,8 +1,9 @@
 import { ref, watch } from "vue";
 import { useResolve } from "ts-injecty";
 import { GetImportAnalysisUseCase } from "~/v1/domain/usecases/get-import-analysis-use-case";
-import type { ImportAnalysisResponse, ImportStatus, DataframeData } from "~/v1/domain/entities/import/ImportAnalysis";
+import type { ImportAnalysisResponse, ImportStatus } from "~/v1/domain/entities/import/ImportAnalysis";
 import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
+import { TableData } from "~/v1/domain/entities/table/TableData";
 
 export function useImportAnalysisTableViewModel(props: any) {
   const isAnalyzing = ref(false);
@@ -23,7 +24,7 @@ export function useImportAnalysisTableViewModel(props: any) {
     lastAnalysisKey.value = "";
   };
 
-  const analyzeImport = async (workspace: Workspace, dataframeData: DataframeData, matchedFiles: any[]) => {
+  const analyzeImport = async (workspace: Workspace, dataframeData: TableData, matchedFiles: any[]) => {
     if (!workspace || !dataframeData || dataframeData.data.length === 0) {
       return;
     }

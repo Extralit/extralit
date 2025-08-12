@@ -1,6 +1,7 @@
 import bibtexParse from "@orcid/bibtex-parse-js";
 import Papa from "papaparse";
 import { TableData } from "../entities/table/TableData";
+import { DataFrameSchema } from "../entities/table/Schema";
 import type { IFileService, ParsedEntry, ParseResult, CSVConfig, CSVPreviewData } from "./IFileService";
 import type { FieldType } from "~/v1/domain/entities/import/ImportAnalysis";
 
@@ -245,10 +246,7 @@ export class CSVParser {
 export class DataframeBuilder {
   static build(entries: ParsedEntry[]): TableData {
     if (entries.length === 0) {
-      return {
-        schema: { fields: [], primaryKey: ["reference"] },
-        data: [],
-      };
+      return new TableData([], new DataFrameSchema([], ["reference"]));
     }
 
     const allFields = new Set<string>();
@@ -261,13 +259,7 @@ export class DataframeBuilder {
       type: this.inferFieldType(entries, fieldName),
     }));
 
-    return {
-      schema: {
-        fields,
-        primaryKey: ["reference"],
-      },
-      data: entries,
-    };
+    return new TableData(entries, new DataFrameSchema(fields, ["reference"]));
   }
 
   private static inferFieldType(entries: ParsedEntry[], fieldName: string): FieldType {
