@@ -25,10 +25,6 @@ os.environ["OPENCV_VIDEOIO_PRIORITY_INTEL_MFX"] = "0"
 try:
     cv2 = lazy.load("cv2")
     np = lazy.load("numpy")
-
-    # Set OpenCV to use CPU-only mode to avoid OpenGL issues
-    cv2.setUseOptimized(False)  # type: ignore
-    cv2.setNumThreads(1)  # type: ignore
 except Exception as e:
     _LOGGER = logging.getLogger(__name__)
     _LOGGER.warning(f"OpenCV not available or failed to load: {e}")
