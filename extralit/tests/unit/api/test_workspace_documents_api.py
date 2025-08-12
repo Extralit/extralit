@@ -187,7 +187,7 @@ class TestDocumentResourceCRUD:
         client, documents_api = mock_client
 
         # Create a document with existing data
-        doc = Document(id=sample_document_id, workspace_id=sample_workspace_id, reference="Original2023", client=client)
+        doc = Document(workspace_id=sample_workspace_id, reference="Original2023", id=sample_document_id, client=client)
 
         # Update some fields
         doc.reference = "Updated2023"
@@ -217,7 +217,7 @@ class TestDocumentResourceCRUD:
         client, documents_api = mock_client
 
         # Create a document
-        doc = Document(id=sample_document_id, workspace_id=sample_workspace_id, reference="ToDelete2023", client=client)
+        doc = Document(workspace_id=sample_workspace_id, reference="ToDelete2023", id=sample_document_id, client=client)
 
         # Call delete
         doc.delete()
@@ -230,13 +230,13 @@ class TestDocumentResourceCRUD:
         client, documents_api = mock_client
 
         with patch("extralit.documents._resource.Extralit._get_default", return_value=client):
-            # Test from_pmid - now requires workspace_id as required parameter
-            doc_pmid = Document.from_pmid(pmid="12345678", workspace_id=sample_workspace_id)
+            # Test the new unified get method with pmid
+            doc_pmid = Document.get(workspace_id=sample_workspace_id, pmid="12345678")
             assert doc_pmid.pmid == "12345678"
             assert doc_pmid.workspace_id == sample_workspace_id
 
-            # Test from_doi - now requires workspace_id as required parameter
-            doc_doi = Document.from_doi(doi="10.1234/example", workspace_id=sample_workspace_id)
+            # Test the new unified get method with doi
+            doc_doi = Document.get(workspace_id=sample_workspace_id, doi="10.1234/example")
             assert doc_doi.doi == "10.1234/example"
             assert doc_doi.workspace_id == sample_workspace_id
 
