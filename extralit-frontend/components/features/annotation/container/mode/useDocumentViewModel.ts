@@ -6,10 +6,12 @@ import { Segment } from "@/v1/domain/entities/document/Document";
 import { useDataset } from "@/v1/infrastructure/storage/DatasetStorage";
 import { waitForAsyncValue } from "@/v1/infrastructure/services/useWait";
 import { useNotifications } from "~/v1/infrastructure/services/useNotifications";
+import { useWorkspaces } from "~/v1/infrastructure/storage/WorkspaceStorage";
 
 export const useDocumentViewModel = (props: { record: any }) => {
   const notification = useNotifications();
   const getDocument = useResolve(GetDocumentByIdUseCase);
+  const { state: workspaces } = useWorkspaces();
   const { state: dataset } = useDataset();
   const { state: document, set: setDocument, clear: clearDocument } = useDocument();
   const isLoading = ref(false);
@@ -19,28 +21,38 @@ export const useDocumentViewModel = (props: { record: any }) => {
   });
   const hasDocument = computed(() => {
     return (
-      props.record.metadata === null || props.record.metadata?.doc_id != null || props.record.metadata?.pmid != null
+      props.record.metadata === null || props.record.metadata?.reference != null || props.record.metadata?.pmid != null
     );
   });
 
-  const fetchDocumentByID = async (id: string) => {
+  const fetchDocument = async (metadata: any) => {
     try {
-      await getDocument.setDocumentByID(id);
-    } catch (e) {
-      notification.notify({
-        message: `Error fetching document with ID ${id}`,
-        type: "danger",
-      });
-      clearDocument();
-    }
-  };
+      await waitForAsyncValue(() => workspaces.selectedWorkspace?.id);
 
-  const fetchDocumentByPubmedID = async (pmid: string) => {
-    try {
-      await getDocument.setDocumentByPubmedID(pmid);
+      const params: {
+        workspace_id: string;
+        doc_id?: string;
+        pmid?: string;
+        doi?: string;
+        reference?: string;
+      } = { workspace_id: workspaces.selectedWorkspace!.id };
+
+      if (metadata?.reference) params.reference = metadata.reference;
+      if (metadata?.doc_id) params.doc_id = metadata.doc_id;
+      if (metadata?.pmid) params.pmid = metadata.pmid;
+      if (metadata?.doi) params.doi = metadata.doi;
+
+      // Ensure at least one identifier is provided
+      if (Object.keys(params).length === 0) {
+        throw new Error("No valid document identifier found in metadata");
+      }
+
+      await getDocument.setDocument(params);
     } catch (e) {
+      const identifier = metadata?.pmid || metadata?.doi || metadata?.doc_id || metadata?.reference || "unknown";
+      console.error(`Error fetching document with identifier "${identifier}":`, e);
       notification.notify({
-        message: `Error fetching document with pmid "${pmid}"`,
+        message: `Error fetching document with identifier "${identifier}"`,
         type: "danger",
       });
       clearDocument();
@@ -48,13 +60,13 @@ export const useDocumentViewModel = (props: { record: any }) => {
   };
 
   const updateDocument = async (metadata: any) => {
-    if (metadata?.pmid != null) {
-      if (document.pmid !== metadata.pmid) {
-        fetchDocumentByPubmedID(metadata.pmid);
-      }
+    if (metadata?.pmid != null && document.pmid !== metadata.pmid) {
+      fetchDocument(metadata);
+    } else if (metadata?.doi != null && document.doi !== metadata.doi) {
+      fetchDocument(metadata);
     } else if (metadata?.doc_id != null && document.id !== metadata.doc_id) {
-      fetchDocumentByID(metadata.doc_id);
-    } else if (!metadata?.pmid && !metadata?.doc_id && hasDocumentLoaded.value) {
+      fetchDocument(metadata);
+    } else if (!metadata?.pmid && !metadata?.doi && !metadata?.doc_id && hasDocumentLoaded.value) {
       clearDocument();
     }
 
@@ -107,8 +119,6 @@ export const useDocumentViewModel = (props: { record: any }) => {
 
   return {
     document,
-    fetchDocumentByID,
-    fetchDocumentByPubmedID,
     fetchDocumentSegments,
     focusDocumentPageNumber,
     clearDocument,

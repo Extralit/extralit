@@ -19,7 +19,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import { PDFView } from "@jonnytran/vue-pdf-viewer";
 
 export default {
@@ -44,8 +44,8 @@ export default {
   },
 
   watch: {
-    pageNumber(newPageNumber) {
-      this.currentPageNumber = newPageNumber;
+    pageNumber(newPageNumber: Number | String) {
+      this.currentPageNumber = newPageNumber ? Number(newPageNumber) : 1;
     },
   },
 

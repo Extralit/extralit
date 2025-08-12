@@ -15,9 +15,9 @@
 import json
 import logging
 from uuid import UUID, uuid4
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Optional
 
-from fastapi import APIRouter, Body, Depends, File, Form, HTTPException, UploadFile, Path, status, Security
+from fastapi import APIRouter, Body, Depends, File, Form, HTTPException, UploadFile, Path, status, Security, Query
 from minio import Minio
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -71,7 +71,7 @@ async def add_document(
         file_url = files.put_document_file(
             client=client,
             workspace_name=workspace.name,
-            document_id=document_create.id,
+            document_id=document_create.id,  # type: ignore[arg-type]
             file_data=file_data_bytes,
             filename=file_data.filename or "",
             metadata=document_create.dict(include={"file_name": True, "pmid": True, "doi": True}),
@@ -106,58 +106,57 @@ async def add_document(
     return document.id
 
 
-@router.get("/documents/by-pmid/{pmid}", response_model=DocumentListItem)
-async def get_document_by_pmid(
-    *, db: AsyncSession = Depends(get_async_db), pmid: str, current_user: User = Security(auth.get_current_user)
-):
-    if pmid is None or not isinstance(pmid, str) or not pmid.isnumeric():
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Document with pmid `{pmid}` not found",
-        )
-
-    query = await db.execute(select(Document).where(Document.pmid == pmid))
-    await authorize(current_user, DocumentPolicy.get())
-
-    documents = query.fetchone()
-    if documents is None or len(documents) == 0:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Document with pmid `{pmid}` not found",
-        )
-
-    document: Document = documents[0]
-    return DocumentListItem.model_validate(document)
-
-
-@router.get("/documents/by-id/{id}", response_model=DocumentListItem)
-async def get_document_by_id(
+@router.get(
+    "/documents", response_model=List[DocumentListItem], description="Get documents by ID, PMID, DOI, or reference."
+)
+async def get_document(
     *,
-    id: UUID = Path(..., title="The UUID of the document to get"),
+    workspace_id: UUID = Query(..., description="Workspace ID"),
+    id: Optional[UUID] = Query(None, description="Document ID"),
+    reference: Optional[str] = Query(None, description="Document reference"),
+    pmid: Optional[str] = Query(None, description="PubMed ID"),
+    doi: Optional[str] = Query(None, description="DOI"),
     db: AsyncSession = Depends(get_async_db),
     current_user: User = Security(auth.get_current_user),
-):
-    if id is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Document with id `{id}` not found",
-        )
-
-    query = await db.execute(select(Document).where(Document.id == id))
+) -> List[DocumentListItem]:
     await authorize(current_user, DocumentPolicy.get())
 
-    documents = query.fetchone()
-    if documents is None or len(documents) == 0:
+    if not any([id, pmid, doi, reference]):
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Document with id `{id}` not found",
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="At least one of id, pmid, doi, or reference must be provided",
         )
 
-    document: Document = documents[0]
-    return DocumentListItem.model_validate(document)
+    documents = await imports.find_existing_documents(
+        db=db,
+        workspace_id=workspace_id,
+        document_id=id,
+        pmid=pmid,
+        doi=doi,
+        reference=reference,
+    )
+
+    if not documents:
+        # If we still haven't found anything, raise 404
+        search_criteria = []
+        if id:
+            search_criteria.append(f"id={id}")
+        if pmid:
+            search_criteria.append(f"pmid={pmid}")
+        if doi:
+            search_criteria.append(f"doi={doi}")
+        if reference:
+            search_criteria.append(f"reference={reference}")
+
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"No documents found with criteria: {', '.join(search_criteria)} in workspace {workspace_id}",
+        )
+
+    return documents
 
 
-@router.patch("/documents/{id}", response_model=DocumentListItem)
+@router.patch("/documents/{id}", response_model=DocumentListItem, description="Update a document by ID.")
 async def update_document(
     *,
     id: UUID = Path(..., title="The UUID of the document to update"),
@@ -165,7 +164,6 @@ async def update_document(
     db: AsyncSession = Depends(get_async_db),
     current_user: User = Security(auth.get_current_user),
 ):
-    """Update a document by ID."""
     # First, get the document to ensure it exists and check permissions
     query = await db.execute(select(Document).where(Document.id == id))
     result = query.fetchone()

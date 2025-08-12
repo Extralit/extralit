@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import os
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional
 from urllib.parse import unquote, urlparse
 from uuid import UUID
 
@@ -49,7 +49,7 @@ class DocumentModel(ResourceModel):
         file_path_or_url: str,
         *,
         reference: str,
-        workspace_id: Union[UUID, str],
+        workspace_id: UUID,
         id: Optional[UUID] = None,
         **kwargs: Any,
     ) -> "DocumentModel":
@@ -60,7 +60,7 @@ class DocumentModel(ResourceModel):
 
         elif urlparse(file_path_or_url).scheme:
             url = file_path_or_url
-            file_path_or_url = None
+            file_path_or_url = None  # type: ignore[assignment]
             parsed_url = urlparse(url)
             path = parsed_url.path
             file_name = unquote(path).split("/")[-1]
