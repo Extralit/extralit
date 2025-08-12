@@ -102,11 +102,6 @@ export default {
     };
   },
 
-  mounted() {
-    // Initialize with existing data if provided
-    // Don't call initializeWithExistingData here since watchers with immediate: true will handle it
-  },
-
   computed: {
     isValid(): boolean {
       return (

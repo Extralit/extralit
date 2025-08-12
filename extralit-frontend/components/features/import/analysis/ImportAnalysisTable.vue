@@ -62,7 +62,6 @@ import "assets/icons/chevron-down";
 import type {
   ImportAnalysisResponse,
   ImportStatus,
-  DataframeData,
   DocumentImportAnalysis,
 } from '~/v1/domain/entities/import/ImportAnalysis';
 import {
@@ -72,13 +71,14 @@ import {
 } from '../types';
 import { useImportAnalysisTableViewModel } from './useImportAnalysisTableViewModel';
 import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
+import { TableData } from "~/v1/domain/entities/table/TableData";
 
 export default {
   name: "ImportAnalysisTable",
 
   props: {
     dataframeData: {
-      type: Object as () => DataframeData | null,
+      type: Object as () => TableData | null,
       default: null,
     },
     pdfData: {
@@ -152,7 +152,6 @@ export default {
           canToggle: this.canToggleStatus(originalStatus) && !this.isAnalyzing,
         };
 
-        // Add all other dataframe fields dynamically
         Object.keys(row).forEach(key => {
           if (!['reference', 'title', 'authors', 'author', 'year', 'filePaths'].includes(key)) {
             rowData[key] = row[key];

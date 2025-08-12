@@ -6,15 +6,12 @@
 import type {
   ImportStatus,
   DocumentMetadata,
-  DataframeData,
 } from "~/v1/domain/entities/import/ImportAnalysis";
+import { TableData } from "~/v1/domain/entities/table/TableData";
 
 // Re-export commonly used backend types for convenience
 export type {
   FieldType,
-  DataframeField,
-  DataframeSchema,
-  DataframeData,
   ImportStatus,
   DocumentCreate,
   FileInfo,
@@ -70,7 +67,7 @@ export interface ImportConfirmationData {
   confirmedDocuments: Record<string, DocumentMetadata>;
   totalConfirmed: number;
   documentActions: Record<string, ImportStatus>;
-  filteredDataframeData: DataframeData | null;
+  filteredDataframeData: TableData | null;
 }
 
 // Table row data for ImportAnalysisTable

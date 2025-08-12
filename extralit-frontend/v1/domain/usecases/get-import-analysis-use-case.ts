@@ -121,33 +121,4 @@ export class GetImportAnalysisUseCase {
       documents,
     };
   }
-
-  private extractMetadata(row: Record<string, any>): Record<string, any> | undefined {
-    // Extract additional metadata fields not covered by DocumentCreate
-    const excludedFields = [
-      "reference",
-      "title",
-      "authors",
-      "year",
-      "journal",
-      "volume",
-      "pages",
-      "doi",
-      "url",
-      "abstract",
-      "keywords",
-      "pmid",
-      "filePaths",
-      "type",
-    ];
-
-    const metadata: Record<string, any> = {};
-    Object.keys(row).forEach((key) => {
-      if (!excludedFields.includes(key) && row[key] !== undefined && row[key] !== null && row[key] !== "") {
-        metadata[key] = row[key];
-      }
-    });
-
-    return Object.keys(metadata).length > 0 ? metadata : undefined;
-  }
 }

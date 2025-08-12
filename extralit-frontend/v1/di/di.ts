@@ -79,8 +79,6 @@ import { CreateDatasetUseCase } from "@/v1/domain/usecases/create-dataset-use-ca
 import { GetFirstRecordFromHub } from "@/v1/domain/usecases/get-first-record-from-hub";
 import { ExportDatasetToHubUseCase } from "@/v1/domain/usecases/export-dataset-to-hub-use-case";
 import { AuthLoginUseCase } from "@/v1/domain/usecases/auth-login-use-case";
-import { FileService } from "@/v1/domain/services/FileService";
-import { PdfMatchingService } from "@/v1/domain/services/PdfMatchingService";
 
 export const loadDependencyContainer = (context: Context) => {
   const useAxios = useAxiosExtension(context);
@@ -210,10 +208,6 @@ export const loadDependencyContainer = (context: Context) => {
     register(GetFirstRecordFromHub).withDependency(HubRepository).build(),
 
     register(ExportDatasetToHubUseCase).withDependencies(DatasetRepository, useLocalStorage).build(),
-
-    // File processing services
-    register(FileService).build(),
-    register(PdfMatchingService).build(),
   ];
 
   Container.register(dependencies);

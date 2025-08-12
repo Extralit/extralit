@@ -60,8 +60,7 @@
 </template>
 
 <script lang="ts">
-import { useResolve } from "ts-injecty";
-import { PdfMatchingService } from "~/v1/domain/services/PdfMatchingService";
+import { PdfMatchingService } from "~/v1/domain/services/FileMatchingService";
 import "assets/icons/check";
 import "assets/icons/danger";
 import "assets/icons/import";
@@ -91,11 +90,6 @@ export default {
   },
 
   emits: ["update"],
-
-  setup() {
-    const pdfMatchingService = useResolve(PdfMatchingService);
-    return { pdfMatchingService };
-  },
 
   data() {
     return {
@@ -327,6 +321,10 @@ export default {
         totalFiles: 0,
       };
     },
+  },
+
+  setup(props) {
+    return new PdfMatchingService();
   },
 };
 </script>

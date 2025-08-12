@@ -1,4 +1,4 @@
-import { PdfMatchingService } from "./PdfMatchingService";
+import { PdfMatchingService } from "./FileMatchingService";
 
 describe("PdfMatchingService", () => {
   let service;
