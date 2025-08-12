@@ -1,4 +1,4 @@
-import type { DataframeData } from "~/v1/domain/entities/import/ImportAnalysis";
+import { TableData } from "../entities/table/TableData";
 
 export interface ParsedEntry {
   reference: string;
@@ -9,7 +9,7 @@ export interface ParsedEntry {
 
 export interface ParseResult {
   entries: ParsedEntry[];
-  dataframeData: DataframeData;
+  dataframeData: TableData;
 }
 
 export interface CSVConfig {

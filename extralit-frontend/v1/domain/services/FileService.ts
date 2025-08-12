@@ -1,7 +1,8 @@
 import bibtexParse from "@orcid/bibtex-parse-js";
 import Papa from "papaparse";
+import { TableData } from "../entities/table/TableData";
 import type { IFileService, ParsedEntry, ParseResult, CSVConfig, CSVPreviewData } from "./IFileService";
-import type { DataframeData, FieldType } from "~/v1/domain/entities/import/ImportAnalysis";
+import type { FieldType } from "~/v1/domain/entities/import/ImportAnalysis";
 
 export class BibTeXParser {
   parse(content: string): ParsedEntry[] {
@@ -242,7 +243,7 @@ export class CSVParser {
 }
 
 export class DataframeBuilder {
-  static build(entries: ParsedEntry[]): DataframeData {
+  static build(entries: ParsedEntry[]): TableData {
     if (entries.length === 0) {
       return {
         schema: { fields: [], primaryKey: ["reference"] },

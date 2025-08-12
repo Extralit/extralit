@@ -3,9 +3,9 @@
  */
 
 import { type NuxtAxiosInstance } from "@nuxtjs/axios";
+import { TableData } from "../entities/table/TableData";
 import type {
   ImportHistoryResponse,
-  DataframeData,
   DocumentImportAnalysis,
   ImportStatus,
   ImportSummary,
@@ -22,7 +22,7 @@ export interface ImportHistoryDetailItem {
 }
 
 export interface ImportHistoryDetailsResponse extends ImportHistoryResponse {
-  data: DataframeData; // Always present in detailed view
+  data: TableData;
   metadata: {
     documents: Record<string, DocumentImportAnalysis>; // Reference key to document info mapping
     summary: ImportSummary; // Import analysis summary
@@ -73,7 +73,7 @@ export class GetImportHistoryDetailsUseCase {
   /**
    * Calculate summary from data and metadata
    */
-  calculateSummary(data: DataframeData, metadata?: ImportHistoryResponse["metadata"]): ImportSummary {
+  calculateSummary(data: TableData, metadata?: ImportHistoryResponse["metadata"]): ImportSummary {
     // If metadata already contains a summary, use it
     if (metadata?.summary) {
       return metadata.summary;

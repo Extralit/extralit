@@ -3,6 +3,8 @@
  * Maps to extralit-server/src/extralit_server/api/schemas/v1/imports.py
  */
 
+import { TableData } from "../table/TableData";
+
 // Basic field types supported in dataframes
 export type FieldType = "string" | "integer" | "float" | "boolean";
 
@@ -78,7 +80,7 @@ export interface ImportHistoryResponse {
   user_id: string;
   filename: string;
   created_at: string;
-  data?: DataframeData; // Tabular dataframe data (only in detailed view)
+  data?: TableData; // Tabular dataframe data (only in detailed view)
   metadata?: {
     documents: Record<string, DocumentImportAnalysis>; // Reference key to document info mapping
     summary: ImportSummary; // Import analysis summary
