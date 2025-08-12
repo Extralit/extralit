@@ -11,7 +11,7 @@ docker run -p 8080:8080 -e KC_BOOTSTRAP_ADMIN_USERNAME=admin -e KC_BOOTSTRAP_ADM
 General steps:
 1. create a new realm and a new client to use with Extralit.
 2. The client should expose the client audience via userinfo.
-3. After that add the users you want to have access to argilla.
+3. After that add the users you want to have access to extralit.
 
 The script below should do all of that for you to test. It needs one python dependency you can install with `pip install python-keycloak`.
 
@@ -21,7 +21,7 @@ from keycloak import KeycloakAdmin
 from keycloak import KeycloakOpenIDConnection
 from keycloak import KeycloakOpenID
 
-EXTRALIT_CLIENT_ID = "argilla-client"
+EXTRALIT_CLIENT_ID = "extralit-client"
 EXTRALIT_REALM = "extralit"
 
 keycloak_connection = KeycloakOpenIDConnection(
@@ -76,7 +76,7 @@ keycloak_openid = KeycloakOpenID(server_url="http://localhost:8080/",
 public_key = keycloak_openid.public_key()
 
 client_scope = keycloak_admin.create_client_scope({
-    "name": "argilla_client_scope",
+    "name": "extralit_client_scope",
     "protocol": "openid-connect",
     "include.in.token.scope": "true"
 })
@@ -181,10 +181,10 @@ allowed_workspaces:
 Then you need to set the two environment variables:
 
 ```bash
-export SOCIAL_AUTH_OIDC_ENDPOINT=http://localhost:8080/realms/argilla
+export SOCIAL_AUTH_OIDC_ENDPOINT=http://localhost:8080/realms/extralit
 ```
 
 - `http://localhost:8080` is your keycloak endpoint in this case the local docker
-- `argilla` is the name of the realm configured above
+- `extralit` is the name of the realm configured above
 
 

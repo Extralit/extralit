@@ -44,11 +44,10 @@ Once you have your environment set up, you can return to this guide to learn mor
 
 The Extralit repository has a monorepo structure, which means that all the components are located in the same repository: [`extralit/extralit`](https://github.com/extralit/extralit). This repo is divided into the following folders:
 
-- [`extralit/src/extralit/`](https://github.com/extralit/extralit/tree/develop/extralit/src/extralit): The FastAPI server project for extraction
+- [`extralit/src/extralit/`](https://github.com/extralit/extralit/tree/develop/extralit): The Extralit SDK
 - [`extralit/docs/`](https://github.com/extralit/extralit/tree/develop/extralit/docs): The documentation project
-- [`extralit/src/extralit/`](https://github.com/extralit/extralit/tree/develop/argilla): The argilla SDK project
 - [`extralit-server/src/extralit_server/`](https://github.com/extralit/extralit/tree/develop/extralit-server): The FastAPI server project for annotation
-- [`extralit-frontend/`](https://github.com/extralit/extralit/tree/develop/extralit-frontend): The Vue.js UI project
+- [`extralit-frontend/`](https://github.com/extralit/extralit/tree/develop/extralit-frontend): The Vue.js annotation UI project
 - [`examples`](https://github.com/extralit/extralit/tree/develop/examples): Example resources for deployments, scripts and notebooks
 
 !!! note "How to contribute?"

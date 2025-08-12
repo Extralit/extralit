@@ -28,7 +28,7 @@ providers:
     client_secret: "<client_secret>"
 
 allowed_workspaces:
-  - name: argilla
+  - name: extralit
 
 allow_http_redirect: false
 ```
@@ -52,7 +52,7 @@ you can use it to request specific permissions from the user access.
 ### Allowed Workspaces
 
 The `allowed_workspaces` key defines the available workspaces when users log in using the OAuth2 provider. This is
-a list of `name` fields that should match the workspace name in the Extralit server. By default, the `argilla` workspace
+a list of `name` fields that should match the workspace name in the Extralit server. By default, the `extralit` workspace
 is allowed to authenticate using the OAuth2 provider.
 
 If the workspace doesn't exist, it will be created automatically on the first server startup.

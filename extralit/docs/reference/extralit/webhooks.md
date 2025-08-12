@@ -2,7 +2,7 @@
 hide: footer
 ---
 
-# `argilla.webhooks`
+# `extralit.webhooks`
 
 Webhooks are a way for web applications to notify each other when something happens. For example, you might want to be
 notified when a new dataset is created in Extralit.
