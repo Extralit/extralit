@@ -57,8 +57,8 @@
 
 <script lang="ts">
 import { useResolve } from "ts-injecty";
-import type { CSVConfig } from "~/v1/domain/services/IFileService";
-import { FileService } from "~/v1/domain/services/FileService";
+import type { CSVConfig } from "~/v1/domain/services/IFileParsingService";
+import { FileParsingService } from "~/v1/domain/services/FileParsingService";
 import CsvColumnSelection from "./CsvColumnSelection.vue";
 import "assets/icons/check";
 import "assets/icons/danger";
@@ -99,7 +99,7 @@ export default {
   emits: ["update"],
 
   setup() {
-    const fileService = useResolve(FileService);
+    const fileService = useResolve(FileParsingService);
     return { fileService };
   },
 

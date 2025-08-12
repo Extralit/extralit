@@ -1,4 +1,4 @@
-import type { ParsedEntry } from "./IFileService";
+import type { ParsedEntry } from "./IFileParsingService";
 
 export interface FileMatchResult {
   file: File;

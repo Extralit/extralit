@@ -79,7 +79,7 @@ import { CreateDatasetUseCase } from "@/v1/domain/usecases/create-dataset-use-ca
 import { GetFirstRecordFromHub } from "@/v1/domain/usecases/get-first-record-from-hub";
 import { ExportDatasetToHubUseCase } from "@/v1/domain/usecases/export-dataset-to-hub-use-case";
 import { AuthLoginUseCase } from "@/v1/domain/usecases/auth-login-use-case";
-import { FileService } from "@/v1/domain/services/FileService";
+import { FileParsingService } from "~/v1/domain/services/FileParsingService";
 import { PdfMatchingService } from "@/v1/domain/services/FileMatchingService";
 
 export const loadDependencyContainer = (context: Context) => {
@@ -211,7 +211,7 @@ export const loadDependencyContainer = (context: Context) => {
 
     register(ExportDatasetToHubUseCase).withDependencies(DatasetRepository, useLocalStorage).build(),
 
-    register(FileService).build(),
+    register(FileParsingService).build(),
     register(PdfMatchingService).build(),
   ];
 

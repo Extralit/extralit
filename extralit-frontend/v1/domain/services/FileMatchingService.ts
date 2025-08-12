@@ -1,5 +1,5 @@
 import type { IFileMatchingService, FileMatchResult, FileMatchingResult } from "./IFileMatchingService";
-import type { ParsedEntry } from "./IFileService";
+import type { ParsedEntry } from "./IFileParsingService";
 
 interface MatchCandidate {
   entry: ParsedEntry;

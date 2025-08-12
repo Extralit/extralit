@@ -2,7 +2,7 @@ import bibtexParse from "@orcid/bibtex-parse-js";
 import Papa from "papaparse";
 import { TableData } from "../entities/table/TableData";
 import { DataFrameSchema } from "../entities/table/Schema";
-import type { IFileService, ParsedEntry, ParseResult, CSVConfig, CSVPreviewData } from "./IFileService";
+import type { IFileParsingService, ParsedEntry, ParseResult, CSVConfig, CSVPreviewData } from "./IFileParsingService";
 import type { FieldType } from "~/v1/domain/entities/import/ImportAnalysis";
 
 export class BibTeXParser {
@@ -275,7 +275,7 @@ export class DataframeBuilder {
   }
 }
 
-export class FileService implements IFileService {
+export class FileParsingService implements IFileParsingService {
   private bibTexParser = new BibTeXParser();
   private csvParser = new CSVParser();
 

@@ -297,8 +297,6 @@ export default {
         this.hasError = false;
         this.errorMessage = "";
         this.processing = false;
-        // Don't emit update when initializing with existing data to prevent loops
-        // The parent component already has this data
       }
     },
 

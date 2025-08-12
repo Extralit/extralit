@@ -23,7 +23,7 @@ export interface CSVPreviewData {
   rawData: Record<string, any>[];
 }
 
-export interface IFileService {
+export interface IFileParsingService {
   parseBibTeX(content: string): Promise<ParseResult>;
   parseCSVForPreview(content: string): Promise<CSVPreviewData>;
   parseCSVWithConfig(rawData: Record<string, any>[], config: CSVConfig): Promise<ParseResult>;
