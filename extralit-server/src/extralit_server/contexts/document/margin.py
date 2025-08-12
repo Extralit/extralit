@@ -16,7 +16,6 @@ import logging
 import os
 
 from typing import Dict, List, Optional, Tuple, TYPE_CHECKING
-import numpy as np
 
 import lazy_loader as lazy
 
@@ -25,6 +24,8 @@ os.environ["OPENCV_VIDEOIO_PRIORITY_INTEL_MFX"] = "0"
 
 try:
     cv2 = lazy.load("cv2")
+    np = lazy.load("numpy")
+
     # Set OpenCV to use CPU-only mode to avoid OpenGL issues
     cv2.setUseOptimized(False)  # type: ignore
     cv2.setNumThreads(1)  # type: ignore
@@ -37,11 +38,12 @@ PIL = lazy.load("PIL")
 
 if TYPE_CHECKING:
     from PIL.Image import Image
+    from numpy import ndarray as NDArray
 
 _LOGGER = logging.getLogger(__name__)
 
 
-def pil_to_cv(image: "Image") -> np.ndarray:
+def pil_to_cv(image: "Image") -> "NDArray":
     """Convert PIL Image to OpenCV format."""
     return cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)  # type: ignore
 
@@ -56,7 +58,7 @@ def classify_and_draw_layout_regions(
         Tuple of (annotated image, list of detected regions)
     """
 
-    mask_np = np.array(mask.convert("L"))
+    mask_np = np.array(mask.convert("L"))  # type: ignore
     h, w = mask_np.shape
 
     # Clean up the mask using morphological operations
@@ -113,11 +115,11 @@ def classify_and_draw_layout_regions(
 
 def find_horizontal_bands(mask: "Image", min_height: int = 15, min_ratio: float = 0.95) -> List[Tuple[int, int]]:
     """Find horizontal bands of similar content across pages."""
-    mask_np = np.array(mask.convert("L"))
+    mask_np: "NDArray" = np.array(mask.convert("L"))  # type: ignore
     h, w = mask_np.shape
 
-    row_sums = np.sum(mask_np == 255, axis=1) / w  # white = same
-    same_rows = row_sums >= min_ratio
+    row_sums: "NDArray" = np.sum(mask_np == 255, axis=1) / w  # type: ignore
+    same_rows: "NDArray" = row_sums >= min_ratio
 
     bands = []
     start = None
