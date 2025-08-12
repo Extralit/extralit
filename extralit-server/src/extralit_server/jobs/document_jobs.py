@@ -100,8 +100,9 @@ async def upload_and_preprocess_documents_job(
                 }
 
                 try:
-                    # Create a unique document for each file
-                    file_metadata = {"collections": (document_create.metadata or {}).get("collections", [])}
+                    file_metadata: Dict[str, Any] = {
+                        "collections": (document_create.metadata or {}).get("collections", [])
+                    }
 
                     file_document_create = DocumentCreate(
                         id=uuid4(),
@@ -138,7 +139,7 @@ async def upload_and_preprocess_documents_job(
                         processed_file_data = preprocessing_result.processed_data
 
                         # Store preprocessing metadata in file metadata
-                        file_metadata.update({"preprocessing": preprocessing_result.metadata})
+                        file_metadata.update(preprocessing_result.metadata.model_dump())
 
                         file_url = files.put_document_file(
                             client=client,
@@ -152,7 +153,7 @@ async def upload_and_preprocess_documents_job(
                         if file_url:
                             file_document_create.url = file_url
                     except Exception as e:
-                        error_msg = f"Error uploading file {filename} to S3: {str(e)}"
+                        error_msg = f"Error uploading file `{filename}` to S3: {str(e)}"
                         _LOGGER.error(error_msg)
                         file_result["error"] = error_msg
                         results["failed_files"] += 1
