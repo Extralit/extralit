@@ -24,6 +24,7 @@ from pathlib import Path
 from typing import Any, BinaryIO, Dict, List, Optional, Union
 from urllib.parse import urlparse
 from uuid import UUID
+from minio.datatypes import Object
 from urllib3 import HTTPResponse
 
 from fastapi import HTTPException
@@ -83,8 +84,8 @@ class LocalFileStorage:
         data: Union[BinaryIO, bytes],
         length: Optional[int] = None,
         content_type: Optional[str] = None,
-        part_size: int = None,
-        metadata: Dict[str, Any] = None,
+        part_size: Optional[int] = None,
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> ObjectWriteResult:
         # Ensure bucket exists
         bucket_path = self._get_bucket_path(bucket_name)
@@ -126,7 +127,7 @@ class LocalFileStorage:
             object_name=object_name,
             version_id=version_id,
             etag=content_hash,
-            http_headers={},
+            http_headers={},  # type: ignore
             last_modified=None,
             location=None,
         )
@@ -153,7 +154,7 @@ class LocalFileStorage:
         with open(meta_path, "r") as f:
             json.load(f)
 
-        return HTTPResponse(body=io.BytesIO(content), preload_content=False)
+        return HTTPResponse(body=io.BytesIO(content), preload_content=False)  # type: ignore
 
     def stat_object(self, bucket_name: str, object_name: str, version_id: Optional[str] = None) -> ObjectMetadata:
         if version_id:
@@ -177,15 +178,13 @@ class LocalFileStorage:
 
         stats = path.stat()
 
-        last_modified = datetime.fromtimestamp(stats.st_mtime)
-
         return ObjectMetadata(
             bucket_name=bucket_name,
             object_name=object_name,
             version_id=version_id or metadata.get("version_id"),
             etag=metadata.get("etag"),
             size=stats.st_size,
-            last_modified=last_modified,
+            last_modified=datetime.fromtimestamp(stats.st_mtime),
             metadata=metadata,
             content_type=metadata.get("content_type", "application/octet-stream"),
         )
@@ -235,6 +234,7 @@ class LocalFileStorage:
         if start_after:
             files = [f for f in files if str(f.relative_to(bucket_path)) > start_after]
 
+        result = []
         for file_path in files:
             object_name = str(file_path.relative_to(bucket_path))
             stats = file_path.stat()
@@ -252,25 +252,27 @@ class LocalFileStorage:
                 object_name=object_name,
                 etag=metadata.get("etag"),
                 size=stats.st_size,
-                last_modified=stats.st_mtime,
+                last_modified=datetime.fromtimestamp(stats.st_mtime),
                 metadata=metadata,
                 content_type=metadata.get("content_type", "application/octet-stream"),
                 version_id=metadata.get("version_id") if include_version else None,
             )
 
-            yield obj
+            result.append(obj)
+
+        return result
 
 
 def get_minio_client() -> Optional[Union[Minio, LocalFileStorage]]:
     if None in [settings.s3_endpoint, settings.s3_access_key, settings.s3_secret_key]:
         # Use local file system storage if S3 settings are not provided
-        local_storage_path = os.path.join(settings.home_path, "storage")
+        local_storage_path = os.path.join(settings.home_path, "storage")  # type: ignore
         _LOGGER.info(f"Using local file storage at: {local_storage_path}")
         return LocalFileStorage(local_storage_path)
 
     try:
         parsed_url = urlparse(settings.s3_endpoint)
-        hostname = parsed_url.hostname
+        hostname: str = str(parsed_url.hostname)
         port = parsed_url.port
 
         if hostname is None:
@@ -318,10 +320,12 @@ def list_objects(
     recursive=True,
     start_after: Optional[str] = None,
 ) -> ListObjectsResponse:
-    objects = client.list_objects(
+    objects: List[ObjectMetadata | Object] = client.list_objects(  # type: ignore
         bucket, prefix=prefix, recursive=recursive, include_version=include_version, start_after=start_after
     )
-    objects = [ObjectMetadata.from_minio_object(obj) for obj in objects]
+    objects: List[ObjectMetadata] = [
+        obj if isinstance(obj, ObjectMetadata) else ObjectMetadata.from_minio_object(obj) for obj in objects
+    ]
     return ListObjectsResponse(objects=objects)
 
 
@@ -368,9 +372,9 @@ def put_object(
     bucket: str,
     object: str,
     data: Union[BinaryIO, bytes, str],
-    content_type: str = None,
-    size: int = None,
-    metadata: Dict[str, Any] = None,
+    size: int,
+    content_type: str = "application/octet-stream",
+    metadata: Optional[Dict[str, Any]] = None,
     part_size: int = 100 * 1024 * 1024,
 ) -> ObjectMetadata:
     if isinstance(data, bytes):
@@ -391,7 +395,7 @@ def put_object(
             content_type=content_type,
             length=size,
             part_size=part_size,
-            metadata=metadata,
+            metadata=metadata or {},
         )
 
         return ObjectMetadata.from_minio_write_response(response)
@@ -512,7 +516,8 @@ def delete_bucket(client: Union[Minio, LocalFileStorage], workspace_name: str):
             obj_list = list(objects)
             for obj in obj_list:
                 try:
-                    client.remove_object(workspace_name, obj.object_name, version_id=obj.version_id)
+                    if obj.object_name is not None:
+                        client.remove_object(workspace_name, obj.object_name, version_id=obj.version_id)
                 except S3Error as remove_err:
                     _LOGGER.warning(
                         f"Error removing object {obj.object_name} (version: {obj.version_id}) during bucket delete: {remove_err}"
