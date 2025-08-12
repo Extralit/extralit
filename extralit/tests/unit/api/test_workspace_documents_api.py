@@ -166,14 +166,14 @@ class TestDocumentResourceCRUD:
             reference="Retrieved2023",
             file_name="retrieved.pdf",
         )
-        documents_api.get_document.return_value = retrieved_model
+        documents_api.get.return_value = retrieved_model
 
         # Call get with required workspace_id
         with patch("extralit.documents._resource.Extralit._get_default", return_value=client):
             doc = Document.get(workspace_id=sample_workspace_id, id=sample_document_id)
 
         # Verify API was called with the new unified method
-        documents_api.get_document.assert_called_once_with(
+        documents_api.get.assert_called_once_with(
             {"workspace_id": str(sample_workspace_id), "id": str(sample_document_id)}
         )
 
@@ -229,13 +229,29 @@ class TestDocumentResourceCRUD:
         """Test Document factory methods."""
         client, documents_api = mock_client
 
+        # Mock the API responses for the get method
+        pmid_model = DocumentModel(
+            id=uuid4(),
+            workspace_id=sample_workspace_id,
+            reference="PMID:12345678",
+            pmid="12345678",
+        )
+        doi_model = DocumentModel(
+            id=uuid4(),
+            workspace_id=sample_workspace_id,
+            reference="DOI:10.1234/example",
+            doi="10.1234/example",
+        )
+
         with patch("extralit.documents._resource.Extralit._get_default", return_value=client):
             # Test the new unified get method with pmid
+            documents_api.get.return_value = pmid_model
             doc_pmid = Document.get(workspace_id=sample_workspace_id, pmid="12345678")
             assert doc_pmid.pmid == "12345678"
             assert doc_pmid.workspace_id == sample_workspace_id
 
             # Test the new unified get method with doi
+            documents_api.get.return_value = doi_model
             doc_doi = Document.get(workspace_id=sample_workspace_id, doi="10.1234/example")
             assert doc_doi.doi == "10.1234/example"
             assert doc_doi.workspace_id == sample_workspace_id
