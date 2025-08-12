@@ -67,7 +67,7 @@ import { TableData } from "~/v1/domain/entities/table/TableData";
 
 interface BibliographyData {
   fileName: string;
-  dataframeData: any;
+  dataframeData: TableData | null;
   rawContent: string;
 }
 
@@ -110,7 +110,7 @@ export default {
       errorMessage: "",
       data: {
         fileName: "",
-        dataframeData: TableData,
+        dataframeData: null,
         rawContent: "",
       } as BibliographyData,
 
@@ -149,7 +149,7 @@ export default {
   watch: {
     initialData: {
       handler(newData: BibliographyData) {
-        if (newData && (newData.fileName || newData.dataframeData.length > 0)) {
+        if (newData && (newData.fileName || newData?.dataframeData?.data?.length > 0)) {
           this.initializeWithExistingData();
         }
       },
