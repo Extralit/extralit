@@ -357,7 +357,11 @@ def get_object(
         else:
             versions = None
 
-        return FileObjectResponse(response=obj, metadata=stat, versions=versions)
+        return FileObjectResponse(
+            response=obj,
+            metadata=stat if isinstance(stat, ObjectMetadata) else ObjectMetadata.from_minio_object(stat),
+            versions=versions,
+        )
 
     except S3Error as se:
         _LOGGER.error(f"Error getting object {object} from bucket {bucket}: {se}")
