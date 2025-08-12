@@ -1,4 +1,6 @@
 import { PdfMatchingService } from "./FileMatchingService";
+import { TableData } from "../entities/table/TableData";
+import { DataFrameSchema } from "../entities/table/Schema";
 
 describe("PdfMatchingService Integration", () => {
   let service;
@@ -27,6 +29,8 @@ describe("PdfMatchingService Integration", () => {
         },
       ];
 
+      const tableData = new TableData(entries, new DataFrameSchema());
+
       const files = [
         {
           name: "Linder et al. - 2025 - Predicting RNA-seq coverage from DNA sequence as a unifying model of gene regulation.pdf",
@@ -45,7 +49,7 @@ describe("PdfMatchingService Integration", () => {
         },
       ];
 
-      const result = service.matchFiles(files, entries);
+      const result = service.matchFiles(files, tableData);
 
       expect(result.matchedFiles).toHaveLength(3);
       expect(result.unmatchedFiles).toHaveLength(0);
@@ -79,6 +83,8 @@ describe("PdfMatchingService Integration", () => {
         },
       ];
 
+      const tableData = new TableData(entries, new DataFrameSchema());
+
       const files = [
         {
           name: "Hawley2003a_malaria_bed_nets.pdf",
@@ -90,7 +96,7 @@ describe("PdfMatchingService Integration", () => {
         },
       ];
 
-      const result = service.matchFiles(files, entries);
+      const result = service.matchFiles(files, tableData);
 
       expect(result.matchedFiles).toHaveLength(2);
       expect(result.unmatchedFiles).toHaveLength(0);
@@ -120,6 +126,8 @@ describe("PdfMatchingService Integration", () => {
         },
       ];
 
+      const tableData = new TableData(entries, new DataFrameSchema());
+
       const files = [
         {
           name: "Smith2023_ML_Healthcare.pdf",
@@ -131,7 +139,7 @@ describe("PdfMatchingService Integration", () => {
         },
       ];
 
-      const result = service.matchFiles(files, entries);
+      const result = service.matchFiles(files, tableData);
 
       expect(result.matchedFiles).toHaveLength(2); // Both files match Smith2023 reference
       expect(result.unmatchedFiles).toHaveLength(0);
@@ -162,6 +170,8 @@ describe("PdfMatchingService Integration", () => {
         },
       ];
 
+      const tableData = new TableData(entries, new DataFrameSchema());
+
       const files = [
         {
           name: "Johnson2022_part1.pdf",
@@ -181,7 +191,7 @@ describe("PdfMatchingService Integration", () => {
         },
       ];
 
-      const result = service.matchFiles(files, entries);
+      const result = service.matchFiles(files, tableData);
 
       expect(result.matchedFiles).toHaveLength(3);
       expect(result.unmatchedFiles).toHaveLength(1);
@@ -209,6 +219,8 @@ describe("PdfMatchingService Integration", () => {
         },
       ];
 
+      const tableData = new TableData(entries, new DataFrameSchema());
+
       const files = [
         {
           name: "Mixed2023.pdf",
@@ -216,7 +228,7 @@ describe("PdfMatchingService Integration", () => {
         },
       ];
 
-      const result = service.matchFiles(files, entries);
+      const result = service.matchFiles(files, tableData);
 
       expect(result.matchedFiles).toHaveLength(1);
       expect(result.matchedFiles[0].bibEntry.reference).toBe("Mixed2023");
@@ -234,6 +246,8 @@ describe("PdfMatchingService Integration", () => {
         },
       ];
 
+      const tableData = new TableData(entries, new DataFrameSchema());
+
       const files = [
         {
           name: "LongPath2023.pdf",
@@ -241,7 +255,7 @@ describe("PdfMatchingService Integration", () => {
         },
       ];
 
-      const result = service.matchFiles(files, entries);
+      const result = service.matchFiles(files, tableData);
 
       expect(result.matchedFiles).toHaveLength(1);
       expect(result.matchedFiles[0].confidence).toBeGreaterThan(0.7);
@@ -256,6 +270,8 @@ describe("PdfMatchingService Integration", () => {
         },
       ];
 
+      const tableData = new TableData(entries, new DataFrameSchema());
+
       const files = [
         {
           name: "Special (2023) - Title with [brackets] & symbols.pdf",
@@ -263,7 +279,7 @@ describe("PdfMatchingService Integration", () => {
         },
       ];
 
-      const result = service.matchFiles(files, entries);
+      const result = service.matchFiles(files, tableData);
 
       expect(result.matchedFiles).toHaveLength(1);
       expect(result.matchedFiles[0].confidence).toBeGreaterThan(0.8);
