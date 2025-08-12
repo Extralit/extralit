@@ -120,6 +120,7 @@ async def upload_and_preprocess_documents_job(
                         workspace_id=file_document_create.workspace_id,
                         document_id=file_document_create.id,
                         file_name=file_document_create.file_name,
+                        limit=1,
                     )
                     if existing_documents:
                         existing_document_id = existing_documents[0].id

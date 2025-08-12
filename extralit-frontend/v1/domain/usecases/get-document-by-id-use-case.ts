@@ -16,6 +16,7 @@ export class GetDocumentByIdUseCase {
     reference?: string;
   }) {
     const documents = await this.documentRepository.getDocuments(params);
+    console.log("Documents found:", documents);
 
     if (documents.length === 0) {
       throw new Error("No documents found with the provided criteria");

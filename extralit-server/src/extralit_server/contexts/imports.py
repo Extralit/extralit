@@ -76,7 +76,7 @@ async def delete_documents(
             params.append(Document.id == id)
         if reference:
             params.append(Document.reference == reference)
-        documents = await Document.delete_many(db=db, conditions=params, autocommit=False)
+        documents = await Document.delete_many(db=db, conditions=params, autocommit=False)  # type: ignore
 
     await db.commit()
     documents = [DocumentListItem.model_validate(doc) for doc in documents]
@@ -85,8 +85,7 @@ async def delete_documents(
 
 async def list_documents(db: "AsyncSession", workspace_id: UUID) -> List[DocumentListItem]:
     result = await db.execute(select(Document).filter_by(workspace_id=workspace_id))
-    documents: List[Document] = result.scalars().all()
-    documents = [DocumentListItem.model_validate(doc) for doc in documents]
+    documents = [DocumentListItem.model_validate(doc) for doc in result.scalars().all()]
 
     return documents
 
@@ -100,6 +99,7 @@ async def find_existing_documents(
     pmid: Optional[str] = None,
     doi: Optional[str] = None,
     url: Optional[str] = None,
+    limit: Optional[int] = None,
 ) -> List[DocumentListItem]:
     """
     Find existing documents that matches any of provided criteria.
@@ -112,6 +112,7 @@ async def find_existing_documents(
         pmid: Optional PMID to match
         doi: Optional DOI to match
         url: Optional URL to match
+        limit: Optional limit on the number of results returned
 
     Returns:
         List of existing documents matching the criteria (empty if none found)
@@ -135,7 +136,12 @@ async def find_existing_documents(
         return []
 
     # Find documents matching any of the conditions within the workspace
-    result = await db.execute(select(Document).where(and_(Document.workspace_id == workspace_id, or_(*conditions))))
+    query = select(Document).where(and_(Document.workspace_id == workspace_id, or_(*conditions)))
+
+    if limit is not None:
+        query = query.limit(limit)
+
+    result = await db.execute(query)
     existing_documents = result.scalars().all()
 
     return [DocumentListItem.model_validate(doc) for doc in existing_documents]

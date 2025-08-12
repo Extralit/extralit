@@ -86,6 +86,7 @@ async def add_document(
         document_id=document_create.id,
         file_name=document_create.file_name,
         url=document_create.url,
+        limit=1,
     )
     if existing_documents:
         return existing_documents[0].id
