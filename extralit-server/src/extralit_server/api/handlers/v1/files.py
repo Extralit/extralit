@@ -72,7 +72,12 @@ async def put_file(
 
     try:
         response = files.put_object(
-            client, bucket, object, data=file.file, size=file.size, content_type=file.content_type
+            client,
+            bucket,
+            object,
+            data=file.file,
+            size=file.size,  # type: ignore
+            content_type=file.content_type,  # type: ignore
         )
         return response
     except S3Error as se:

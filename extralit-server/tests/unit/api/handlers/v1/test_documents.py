@@ -129,22 +129,90 @@ async def test_get_document_by_pmid(async_client: "AsyncClient", db: "AsyncSessi
     workspace = await WorkspaceFactory.create()
     document = await DocumentFactory.create(pmid="123456", workspace=workspace, workspace_id=workspace.id)
 
-    response = await async_client.get(f"/api/v1/documents/by-pmid/{document.pmid}", headers=owner_auth_header)
+    response = await async_client.get(
+        "/api/v1/documents",
+        params={"pmid": document.pmid, "workspace_id": str(workspace.id)},
+        headers=owner_auth_header,
+    )
 
     assert response.status_code == 200
-    assert response.json()["pmid"] == document.pmid
+    response_data = response.json()
+    assert isinstance(response_data, list)
+    assert len(response_data) == 1
+    assert response_data[0]["pmid"] == document.pmid
 
 
 @pytest.mark.asyncio
 @pytest.mark.skip(reason="'coroutine' object has no attribute 'id'")
 async def test_get_document_by_id(async_client: AsyncClient, db: AsyncSession, owner_auth_header: dict):
-    document = await DocumentFactory.create()
+    workspace = await WorkspaceFactory.create()
+    document = await DocumentFactory.create(workspace=workspace, workspace_id=workspace.id)
 
-    response = await async_client.get(f"/api/v1/documents/by-id/{document.id}", headers=owner_auth_header)
+    response = await async_client.get(
+        "/api/v1/documents",
+        params={"id": str(document.id), "workspace_id": str(workspace.id)},
+        headers=owner_auth_header,
+    )
 
     assert response.status_code == 200
-    response_json = response.json()
-    assert response_json["id"] == str(document.id)
+    response_data = response.json()
+    assert isinstance(response_data, list)
+    assert len(response_data) == 1
+    assert response_data[0]["id"] == str(document.id)
+
+
+@pytest.mark.asyncio
+async def test_get_document_by_doi(async_client: "AsyncClient", db: "AsyncSession", owner_auth_header: dict):
+    workspace = await WorkspaceFactory.create()
+    document = await DocumentFactory.create(doi="10.1234/test.doi", workspace=workspace, workspace_id=workspace.id)
+
+    response = await async_client.get(
+        "/api/v1/documents", params={"doi": document.doi, "workspace_id": str(workspace.id)}, headers=owner_auth_header
+    )
+
+    assert response.status_code == 200
+    response_data = response.json()
+    assert isinstance(response_data, list)
+    assert len(response_data) == 1
+    assert response_data[0]["doi"] == document.doi
+
+
+@pytest.mark.asyncio
+async def test_get_document_by_reference(async_client: "AsyncClient", db: "AsyncSession", owner_auth_header: dict):
+    workspace = await WorkspaceFactory.create()
+    document = await DocumentFactory.create(reference="test_ref_123", workspace=workspace, workspace_id=workspace.id)
+
+    response = await async_client.get(
+        "/api/v1/documents",
+        params={"reference": document.reference, "workspace_id": str(workspace.id)},
+        headers=owner_auth_header,
+    )
+
+    assert response.status_code == 200
+    response_data = response.json()
+    assert isinstance(response_data, list)
+    assert len(response_data) == 1
+    assert response_data[0]["reference"] == document.reference
+
+
+@pytest.mark.asyncio
+async def test_get_document_workspace_id_only(async_client: "AsyncClient", owner_auth_header: dict):
+    """Test that requesting documents with only workspace_id returns a 400 error."""
+    response = await async_client.get(
+        "/api/v1/documents", params={"workspace_id": "123e4567-e89b-12d3-a456-426614174000"}, headers=owner_auth_header
+    )
+
+    assert response.status_code == 400
+    assert "At least one of id, pmid, doi, or reference must be provided" in response.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_get_document_no_parameters(async_client: "AsyncClient", owner_auth_header: dict):
+    """Test that requesting documents without any parameters returns a 422 validation error."""
+    response = await async_client.get("/api/v1/documents", headers=owner_auth_header)
+
+    assert response.status_code == 422
+    # FastAPI validation error for missing required parameter workspace_id
 
 
 @pytest.mark.skip(reason="Document delete API is failing with 500 error")

@@ -14,6 +14,10 @@ These are the section headers that we use:
 * "Security" in case of vulnerabilities.
 -->
 
+## [Extralit] [0.6.1](https://github.com/extralit/extralit/compare/v0.5.0...v0.6.1)
+### Changed
+- Updated backend document fetching logic to use the new unified endpoint, including improved input validation and error messages
+
 ## [Extralit] [0.6.0](https://github.com/extralit/extralit/compare/v0.5.0...v0.6.0)
 
 ### Added
