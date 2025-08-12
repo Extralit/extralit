@@ -12,19 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import typer
+from typing import Dict, List, Optional
+from pydantic import BaseModel
 
-from .database import app as database_app
-from .search_engine import app as search_engine_app
-from .start import start
-from .worker import worker
 
-app = typer.Typer(help="Commands for Extralit server management", no_args_is_help=True)
+class PDFMetadata(BaseModel):
+    """
+    Metadata for PDF processing results.
+    """
 
-app.add_typer(database_app, name="database")
-app.add_typer(search_engine_app, name="search-engine")
-app.command(name="worker", help="Starts rq workers")(worker)
-app.command(name="start", help="Starts the Extralit server")(start)
-
-if __name__ == "__main__":
-    app()
+    filename: str
+    processing_time: float
+    page_count: Optional[int] = None
+    language_detected: Optional[List[str]] = None
+    processing_settings: Optional[Dict] = None
+    analysis_results: Optional[Dict] = None
