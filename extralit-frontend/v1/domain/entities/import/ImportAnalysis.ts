@@ -3,26 +3,10 @@
  * Maps to extralit-server/src/extralit_server/api/schemas/v1/imports.py
  */
 
+import { TableData } from "../table/TableData";
+
 // Basic field types supported in dataframes
 export type FieldType = "string" | "integer" | "float" | "boolean";
-
-// Dataframe field definition
-export interface DataframeField {
-  name: string;
-  type: FieldType;
-}
-
-// Dataframe schema definition
-export interface DataframeSchema {
-  fields: DataframeField[];
-  primaryKey: string[];
-}
-
-// Tabular dataframe representation
-export interface DataframeData {
-  schema: DataframeSchema;
-  data: Record<string, any>[];
-}
 
 // Import analysis status for individual documents (maps to ImportStatus enum in backend)
 export type ImportStatus = "add" | "update" | "skip" | "ignore" | "failed";
@@ -96,7 +80,7 @@ export interface ImportHistoryResponse {
   user_id: string;
   filename: string;
   created_at: string;
-  data?: DataframeData; // Tabular dataframe data (only in detailed view)
+  data?: TableData; // Tabular dataframe data (only in detailed view)
   metadata?: {
     documents: Record<string, DocumentImportAnalysis>; // Reference key to document info mapping
     summary: ImportSummary; // Import analysis summary

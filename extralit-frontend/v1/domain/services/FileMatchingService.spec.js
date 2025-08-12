@@ -1,8 +1,11 @@
-import { PdfMatchingService } from "./PdfMatchingService";
+import { PdfMatchingService } from "./FileMatchingService";
+import { TableData } from "../entities/table/TableData";
+import { DataFrameSchema } from "../entities/table/Schema";
 
 describe("PdfMatchingService", () => {
   let service;
   let mockEntries;
+  let mockTableData;
   let mockFiles;
 
   beforeEach(() => {
@@ -26,6 +29,8 @@ describe("PdfMatchingService", () => {
         filePaths: ["documents/neural/Brown2021.pdf"],
       },
     ];
+
+    mockTableData = new TableData(mockEntries, new DataFrameSchema());
 
     // Mock file objects with webkitRelativePath
     mockFiles = [
@@ -56,13 +61,14 @@ describe("PdfMatchingService", () => {
     });
 
     it("should return all files as unmatched when no entries provided", () => {
-      const result = service.matchFiles(mockFiles, []);
+      const emptyTableData = new TableData([], new DataFrameSchema());
+      const result = service.matchFiles(mockFiles, emptyTableData);
       expect(result.matchedFiles).toEqual([]);
       expect(result.unmatchedFiles).toEqual(mockFiles);
     });
 
     it("should match files using maximum prefix path matching", () => {
-      const result = service.matchFiles(mockFiles, mockEntries);
+      const result = service.matchFiles(mockFiles, mockTableData);
 
       expect(result.matchedFiles).toHaveLength(3);
       expect(result.unmatchedFiles).toHaveLength(1);
@@ -82,7 +88,7 @@ describe("PdfMatchingService", () => {
     });
 
     it("should handle multiple files per reference correctly", () => {
-      const result = service.matchFiles(mockFiles, mockEntries);
+      const result = service.matchFiles(mockFiles, mockTableData);
 
       // Count files per reference
       const referenceCount = {};
@@ -96,7 +102,7 @@ describe("PdfMatchingService", () => {
     });
 
     it("should sort results by confidence and then by reference", () => {
-      const result = service.matchFiles(mockFiles, mockEntries);
+      const result = service.matchFiles(mockFiles, mockTableData);
 
       // Check that results are sorted by confidence (descending)
       for (let i = 1; i < result.matchedFiles.length; i++) {
@@ -199,7 +205,7 @@ describe("PdfMatchingService", () => {
     it("should handle files without webkitRelativePath", () => {
       const filesWithoutWebkit = [{ name: "Smith2023_ML_Healthcare.pdf" }, { name: "Johnson2022_part1.pdf" }];
 
-      const result = service.matchFiles(filesWithoutWebkit, mockEntries);
+      const result = service.matchFiles(filesWithoutWebkit, mockTableData);
 
       // Should still attempt matching using filename
       expect(result.matchedFiles.length).toBeGreaterThan(0);
@@ -214,7 +220,8 @@ describe("PdfMatchingService", () => {
         },
       ];
 
-      const result = service.matchFiles(mockFiles, entriesWithoutPaths);
+      const tableDataWithoutPaths = new TableData(entriesWithoutPaths, new DataFrameSchema());
+      const result = service.matchFiles(mockFiles, tableDataWithoutPaths);
 
       expect(result.matchedFiles).toHaveLength(0);
       expect(result.unmatchedFiles).toEqual(mockFiles);
@@ -229,8 +236,9 @@ describe("PdfMatchingService", () => {
         },
       ];
 
+      const tableDataWithNullPaths = new TableData(entriesWithNullPaths, new DataFrameSchema());
       expect(() => {
-        service.matchFiles(mockFiles, entriesWithNullPaths);
+        service.matchFiles(mockFiles, tableDataWithNullPaths);
       }).not.toThrow();
     });
   });

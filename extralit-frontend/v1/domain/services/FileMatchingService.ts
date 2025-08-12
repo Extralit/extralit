@@ -1,5 +1,5 @@
-import type { IPdfMatchingService, PdfMatchResult, PdfMatchingResult } from "./IPdfMatchingService";
-import type { ParsedEntry } from "./IFileService";
+import type { IFileMatchingService, FileMatchResult, FileMatchingResult } from "./IFileMatchingService";
+import type { ParsedEntry } from "./IFileParsingService";
 
 interface MatchCandidate {
   entry: ParsedEntry;
@@ -13,8 +13,10 @@ interface PrefixMatchResult {
   type: string;
 }
 
-export class PdfMatchingService implements IPdfMatchingService {
-  matchFiles(files: File[], entries: ParsedEntry[]): PdfMatchingResult {
+export class PdfMatchingService implements IFileMatchingService {
+  matchFiles(files: File[], dataframeData): FileMatchingResult {
+    const entries: ParsedEntry[] = dataframeData?.data || [];
+
     if (!entries || entries.length === 0 || files.length === 0) {
       return {
         matchedFiles: [],
@@ -22,7 +24,7 @@ export class PdfMatchingService implements IPdfMatchingService {
       };
     }
 
-    const matchedFiles: PdfMatchResult[] = [];
+    const matchedFiles: FileMatchResult[] = [];
     const unmatchedFiles: File[] = [];
 
     // Track which references have been matched to support multiple files per reference

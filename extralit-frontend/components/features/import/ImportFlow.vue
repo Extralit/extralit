@@ -61,7 +61,6 @@ export default {
       // Step data
       bibData: {
         fileName: "",
-        parsedEntries: [],
         dataframeData: null,
         rawContent: "",
       },
@@ -133,7 +132,9 @@ export default {
           // 1. Both bibliography and PDFs are uploaded, OR
           // 2. Only bibliography is uploaded (can import references without PDFs)
           return (
-            this.bibData.parsedEntries.length > 0 &&
+            this.bibData.dataframeData &&
+            this.bibData.dataframeData.data &&
+            this.bibData.dataframeData.data.length > 0 &&
             !this.hasError &&
             !!this.workspace
           );
@@ -200,7 +201,9 @@ export default {
           // Allow flexible upload order - can proceed if bibliography is uploaded
           // PDFs are optional for proceeding to analysis step
           isValid =
-            this.bibData.parsedEntries.length > 0 &&
+            this.bibData.dataframeData &&
+            this.bibData.dataframeData.data &&
+            this.bibData.dataframeData.data.length > 0 &&
             !this.hasError &&
             !!this.workspace;
           break;
@@ -240,7 +243,6 @@ export default {
     handleBibUpdate(data) {
       this.bibData = {
         fileName: data.fileName || "",
-        parsedEntries: data.parsedEntries || [],
         dataframeData: data.dataframeData || null,
         rawContent: data.rawContent || "",
       };
@@ -381,7 +383,7 @@ export default {
     hasDataToLose() {
       // Check if user has uploaded any data that would be lost on close
       return (
-        this.bibData.parsedEntries.length > 0 ||
+        (this.bibData.dataframeData && this.bibData.dataframeData.data && this.bibData.dataframeData.data.length > 0) ||
         this.pdfData.totalFiles > 0 ||
         Object.keys(this.uploadData.confirmedDocuments).length > 0
       );
@@ -397,7 +399,6 @@ export default {
       // Reset all step data
       this.bibData = {
         fileName: "",
-        parsedEntries: [],
         dataframeData: null,
         rawContent: "",
       };

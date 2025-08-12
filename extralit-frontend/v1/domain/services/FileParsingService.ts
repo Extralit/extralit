@@ -1,7 +1,9 @@
 import bibtexParse from "@orcid/bibtex-parse-js";
 import Papa from "papaparse";
-import type { IFileService, ParsedEntry, ParseResult, CSVConfig, CSVPreviewData } from "./IFileService";
-import type { DataframeData, FieldType } from "~/v1/domain/entities/import/ImportAnalysis";
+import { TableData } from "../entities/table/TableData";
+import { DataFrameSchema } from "../entities/table/Schema";
+import type { IFileParsingService, ParsedEntry, CSVConfig, CSVPreviewData } from "./IFileParsingService";
+import type { FieldType } from "~/v1/domain/entities/import/ImportAnalysis";
 
 export class BibTeXParser {
   parse(content: string): ParsedEntry[] {
@@ -242,12 +244,9 @@ export class CSVParser {
 }
 
 export class DataframeBuilder {
-  static build(entries: ParsedEntry[]): DataframeData {
+  static build(entries: ParsedEntry[]): TableData {
     if (entries.length === 0) {
-      return {
-        schema: { fields: [], primaryKey: ["reference"] },
-        data: [],
-      };
+      return new TableData([], new DataFrameSchema([], ["reference"]));
     }
 
     const allFields = new Set<string>();
@@ -260,13 +259,7 @@ export class DataframeBuilder {
       type: this.inferFieldType(entries, fieldName),
     }));
 
-    return {
-      schema: {
-        fields,
-        primaryKey: ["reference"],
-      },
-      data: entries,
-    };
+    return new TableData(entries, new DataFrameSchema(fields, ["reference"]));
   }
 
   private static inferFieldType(entries: ParsedEntry[], fieldName: string): FieldType {
@@ -282,18 +275,15 @@ export class DataframeBuilder {
   }
 }
 
-export class FileService implements IFileService {
+export class FileParsingService implements IFileParsingService {
   private bibTexParser = new BibTeXParser();
   private csvParser = new CSVParser();
 
-  async parseBibTeX(content: string): Promise<ParseResult> {
-    const entries = this.bibTexParser.parse(content);
-    const dataframeData = DataframeBuilder.build(entries);
+  async parseBibTeX(content: string): Promise<TableData> {
 
-    return {
-      entries,
-      dataframeData,
-    };
+    const entries = this.bibTexParser.parse(content);
+
+    return DataframeBuilder.build(entries);
   }
 
   async parseCSVForPreview(content: string): Promise<CSVPreviewData> {
@@ -306,14 +296,11 @@ export class FileService implements IFileService {
     };
   }
 
-  async parseCSVWithConfig(rawData: Record<string, any>[], config: CSVConfig): Promise<ParseResult> {
+  async parseCSVWithConfig(rawData: Record<string, any>[], config: CSVConfig): Promise<TableData> {
     const entries = this.csvParser.processWithConfig(rawData, config);
     const dataframeData = DataframeBuilder.build(entries);
 
-    return {
-      entries,
-      dataframeData,
-    };
+    return dataframeData;
   }
 
   async readFileContent(file: File): Promise<string> {
