@@ -1,5 +1,5 @@
 <template>
-  <VerticalResizable class="wrapper" :id="`${recordCriteria.datasetId}-r-v-rz`">
+  <VerticalResizable :id="`${recordCriteria.datasetId}-r-v-rz`" class="wrapper">
     <template #left>
       <HorizontalResizable :id="`${recordCriteria.datasetId}-r-h-rz`" class="wrapper__left" collapsable>
         <template #up>
@@ -74,10 +74,10 @@
       @toggle-expand="expandedGuidelines = !expandedGuidelines"
     >
       <template #panelHeader>
-        <p v-text="$t('document')" />
+        <p v-text="$t('guidelines')" />
       </template>
       <template #panelContent>
-        <PDFViewer :url="document.url" :file-name="document.file_name" :pageNumber="document.page_number" />
+        <AnnotationGuidelines />
       </template>
     </BaseCollapsablePanel>
   </VerticalResizable>

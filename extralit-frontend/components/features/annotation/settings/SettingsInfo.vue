@@ -7,7 +7,7 @@
           <div class="settings__item">
             <p class="settings__dataset-name --body1" v-html="settings.dataset.name" />
           </div>
-          <base-action-tooltip :tooltip="$t('copied')">
+          <BaseActionTooltip :tooltip="$t('copied')">
             <base-button
               :title="$t('button.tooltip.copyToClipboard')"
               class="secondary small"
@@ -15,7 +15,7 @@
             >
               {{ $t("copyLink") }}
             </base-button>
-          </base-action-tooltip>
+          </BaseActionTooltip>
         </div>
       </div>
       <div class="settings__area">

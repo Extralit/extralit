@@ -6,7 +6,7 @@
     <span class="user-token-value --body1" v-text="'**** **** **** ****'" />
 
     <div class="user-token-button">
-      <base-action-tooltip :tooltip="$t('copied')">
+      <BaseActionTooltip :tooltip="$t('copied')">
         <BaseButton
           :title="$t('button.tooltip.copyToClipboard')"
           class="secondary small"
@@ -14,7 +14,7 @@
         >
           {{ $t("userSettings.copyKey") }}
         </BaseButton>
-      </base-action-tooltip>
+      </BaseActionTooltip>
     </div>
   </div>
 </template>
