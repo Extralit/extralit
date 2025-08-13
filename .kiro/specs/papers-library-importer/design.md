@@ -356,7 +356,6 @@ Example BibTeX files:
 The import summary components have been refactored to provide accurate count tracking through a normalized summary interface:
 
 ```typescript
-// New normalized import summary interface
 interface ImportResultSummary {
   total: number;
   added: number;        // Documents successfully added (originally marked as "add")
@@ -373,17 +372,6 @@ interface ImportResultSummary {
   }>;
   importId?: string;
 }
-
-// Legacy interface maintained for backward compatibility
-interface ImportSummaryData {
-  totalProcessed: number;
-  successfullyAdded: number;  // Now accurately represents "added" count
-  updated: number;            // Now accurately represents "updated" count  
-  skipped: number;
-  failed: number;
-  errors: string[];          // Legacy flat error format
-  importId: string | null;
-}
 ```
 
 **Key Improvements:**
@@ -394,9 +382,9 @@ interface ImportSummaryData {
 
 **Data Flow:**
 1. `ImportAnalysisTable` emits `documentActions` containing original analysis status for each reference
-2. `ImportFlow` captures and passes this data to `ImportBatchProgress` 
+2. `ImportFlow` captures and passes this data to `ImportBatchProgress`
 3. `ImportBatchProgress` tracks job completion and maps job statuses back to references
-4. `useImportBatchProgressViewModel.createNormalizedSummary()` creates accurate counts by correlating original analysis status with final job status
+4. `useImportBatchProgressViewModel.createImportSummary()` creates accurate counts by correlating original analysis status with final job status
 5. `ImportSummary` displays the normalized data with proper zero-safe fallbacks
 
 #### 6. Import Summary & History Components

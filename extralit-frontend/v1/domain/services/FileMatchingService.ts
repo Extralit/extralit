@@ -133,14 +133,14 @@ export class PdfMatchingService implements IFileMatchingService {
 
     for (const file of files) {
       const filePath: string = (file as any).webkitRelativePath || file.name;
-      const normalizedFilePath = this.normalizePath(filePath);
+      const importFilePath = this.normalizePath(filePath);
 
       for (const entry of entries) {
         if (!entry.filePaths || entry.filePaths.length === 0) continue;
 
         for (const bibFilePath of entry.filePaths) {
-          const normalizedBibPath = this.normalizePath(bibFilePath);
-          const prefixResult = this.calculateMaximumPrefixMatch(normalizedFilePath, normalizedBibPath);
+          const importBibPath = this.normalizePath(bibFilePath);
+          const prefixResult = this.calculateMaximumPrefixMatch(importFilePath, importBibPath);
 
           if (prefixResult.prefixLength > 0) {
             allCombinations.push({
@@ -194,7 +194,7 @@ export class PdfMatchingService implements IFileMatchingService {
   }
 
   /**
-   * Calculate maximum prefix match between two normalized paths
+   * Calculate maximum prefix match between two import paths
    */
   private calculateMaximumPrefixMatch(filePath: string, bibPath: string): PrefixMatchResult {
     if (!filePath || !bibPath) {
@@ -342,13 +342,13 @@ export class PdfMatchingService implements IFileMatchingService {
   ): { type: string; confidence: number } | null {
     if (!parsedFilePaths || parsedFilePaths.length === 0) return null;
 
-    const normalizedFilePath = this.normalizePath(filePath);
+    const importFilePath = this.normalizePath(filePath);
 
     for (const bibFilePath of parsedFilePaths) {
-      const normalizedBibPath = this.normalizePath(bibFilePath);
+      const importBibPath = this.normalizePath(bibFilePath);
 
       // Use the same maximum prefix matching logic for consistency
-      const prefixResult = this.calculateMaximumPrefixMatch(normalizedFilePath, normalizedBibPath);
+      const prefixResult = this.calculateMaximumPrefixMatch(importFilePath, importBibPath);
 
       if (prefixResult.confidence >= 0.8) {
         return {
@@ -358,8 +358,8 @@ export class PdfMatchingService implements IFileMatchingService {
       }
 
       // Fallback to filename similarity for webkit paths
-      const filePathName = this.extractFileNameFromPath(normalizedFilePath);
-      const bibPathName = this.extractFileNameFromPath(normalizedBibPath);
+      const filePathName = this.extractFileNameFromPath(importFilePath);
+      const bibPathName = this.extractFileNameFromPath(importBibPath);
 
       if (filePathName && bibPathName) {
         const similarity = this.calculateStringSimilarity(filePathName, bibPathName);
@@ -484,8 +484,8 @@ export class PdfMatchingService implements IFileMatchingService {
   private extractFileNameFromPath(path: string): string | null {
     if (!path) return null;
 
-    const normalizedPath = this.normalizePath(path);
-    const parts = normalizedPath.split("/");
+    const importPath = this.normalizePath(path);
+    const parts = importPath.split("/");
     const fileName = parts[parts.length - 1];
 
     return fileName ? fileName.replace(/\.pdf$/, "") : null;

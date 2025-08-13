@@ -21,7 +21,7 @@
         @error="handleUploadError" @progress="handleUploadProgress" />
 
       <!-- Step 4: Import Summary -->
-      <ImportSummary v-if="stepIndex === 3" ref="summaryComponent" :normalized-summary="normalizedSummary"
+      <ImportSummary v-if="stepIndex === 3" ref="summaryComponent" :import-summary="importSummary"
         :workspace="workspace" :bibFileName="bibData.fileName"
         @return-to-library="handleReturnToLibrary" @view-import-history="handleViewImportHistory" />
     </template>
@@ -89,7 +89,7 @@ export default {
         completedJobs: 0,
         failedJobs: 0,
       },
-      normalizedSummary: {
+      importSummary: {
         total: 0,
         added: 0,
         updated: 0,
@@ -166,7 +166,7 @@ export default {
         pdfData: this.pdfData,
         analysisData: this.analysisData,
         uploadData: this.uploadData,
-        normalizedSummary: this.normalizedSummary,
+        importSummary: this.importSummary,
       };
     },
   },
@@ -305,8 +305,8 @@ export default {
       }
     },
 
-    handleUploadCompleted(normalizedSummary) {
-      this.normalizedSummary = normalizedSummary;
+    handleUploadCompleted(importSummary) {
+      this.importSummary = importSummary;
       this.isUploading = false;
       this.isProcessing = false;
       this.clearError();
@@ -429,7 +429,7 @@ export default {
         completedJobs: 0,
         failedJobs: 0,
       };
-      this.normalizedSummary = {
+      this.importSummary = {
         total: 0,
         added: 0,
         updated: 0,

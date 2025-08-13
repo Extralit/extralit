@@ -28,8 +28,8 @@ describe("ImportSummary", () => {
     name: "Test Workspace",
   };
 
-  const createWrapper = (normalizedSummary = {}, props = {}) => {
-    const defaultNormalizedSummary = {
+  const createWrapper = (importSummary = {}, props = {}) => {
+    const defaultImportSummary = {
       total: 0,
       added: 0,
       updated: 0,
@@ -37,12 +37,12 @@ describe("ImportSummary", () => {
       failed: 0,
       errors: [],
       importId: "test-import-123",
-      ...normalizedSummary,
+      ...importSummary,
     };
 
     return mount(ImportSummary, {
       propsData: {
-        normalizedSummary: defaultNormalizedSummary,
+        importSummary: defaultImportSummary,
         workspace: mockWorkspace,
         bibFileName: "test.bib",
         failedDocuments: [],
@@ -118,7 +118,7 @@ describe("ImportSummary", () => {
         failed: 5,
         errors: [
           { reference: "ref1", message: "error1" },
-          { reference: "ref2", message: "error2" }
+          { reference: "ref2", message: "error2" },
         ],
         importId: "test-123",
       });
@@ -169,7 +169,7 @@ describe("ImportSummary", () => {
         failed: 2,
         errors: [
           { reference: "ref1", message: "error1" },
-          { reference: "ref2", message: "error2" }
+          { reference: "ref2", message: "error2" },
         ],
         importId: "test-123",
       });
@@ -356,7 +356,7 @@ describe("ImportSummary", () => {
         errors: [
           { reference: "ref1", message: "error" },
           { reference: "ref2", message: "error" },
-          { reference: "ref3", message: "error" }
+          { reference: "ref3", message: "error" },
         ],
         importId: "test-123",
       });

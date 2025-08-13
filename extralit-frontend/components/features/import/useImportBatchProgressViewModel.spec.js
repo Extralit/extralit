@@ -31,7 +31,7 @@ describe("useImportBatchProgressViewModel", () => {
     viewModel = useImportBatchProgressViewModel(mockProps);
   });
 
-  describe("createNormalizedSummary", () => {
+  describe("createImportSummary", () => {
     const mockConfirmedDocuments = {
       ref1: {
         document_create: { reference: "ref1", title: "Paper 1" },
@@ -68,7 +68,7 @@ describe("useImportBatchProgressViewModel", () => {
 
       const mockErrors = [];
 
-      const result = viewModel.createNormalizedSummary(
+      const result = viewModel.createImportSummary(
         mockConfirmedDocuments,
         mockDocumentActions,
         mockAllJobIds,
@@ -96,7 +96,7 @@ describe("useImportBatchProgressViewModel", () => {
         { reference: "ref3", message: "File corrupted" },
       ];
 
-      const result = viewModel.createNormalizedSummary(
+      const result = viewModel.createImportSummary(
         mockConfirmedDocuments,
         mockDocumentActions,
         mockAllJobIds,
@@ -124,7 +124,7 @@ describe("useImportBatchProgressViewModel", () => {
 
       const mockErrors = [{ reference: "ref2", message: "Network error" }];
 
-      const result = viewModel.createNormalizedSummary(
+      const result = viewModel.createImportSummary(
         mockConfirmedDocuments,
         mockDocumentActions,
         mockAllJobIds,
@@ -155,7 +155,7 @@ describe("useImportBatchProgressViewModel", () => {
 
       const mockErrors = [{ reference: "ref2", message: "Upload failed" }];
 
-      const result = viewModel.createNormalizedSummary(
+      const result = viewModel.createImportSummary(
         mockConfirmedDocuments,
         mockDocumentActions,
         mockAllJobIdsPartial,
@@ -183,7 +183,7 @@ describe("useImportBatchProgressViewModel", () => {
         "job-3": "finished",
       };
 
-      const result = viewModel.createNormalizedSummary(
+      const result = viewModel.createImportSummary(
         mockConfirmedDocuments,
         mockDocumentActionsPartial,
         mockAllJobIds,
@@ -199,7 +199,7 @@ describe("useImportBatchProgressViewModel", () => {
     });
 
     it("handles empty inputs gracefully", () => {
-      const result = viewModel.createNormalizedSummary({}, {}, {}, {}, []);
+      const result = viewModel.createImportSummary({}, {}, {}, {}, []);
 
       expect(result.total).toBe(0);
       expect(result.added).toBe(0);

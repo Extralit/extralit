@@ -28,7 +28,6 @@
 
     <!-- Success Display -->
     <div v-if="uploaded && !hasError" class="table-upload__upload-success">
-      <BaseIcon icon-name="check" class="table-upload__upload-success-icon" />
       <span class="table-upload__upload-success-text">
         Successfully uploaded {{ data.fileName }} ({{ data.dataframeData ? data.dataframeData.data.length : 0 }} entries found)
       </span>

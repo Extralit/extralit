@@ -84,7 +84,6 @@
     <!-- Upload completed -->
     <div v-else-if="isCompleted" class="completion-container">
       <div class="completion-header">
-        <BaseIcon icon-name="check" class="completion-icon" />
         <h3>Import Completed</h3>
         <p>All batches have been processed successfully</p>
       </div>
@@ -485,8 +484,8 @@ export default {
           metadata
         );
 
-        // Create and emit normalized summary data
-        const normalizedSummary = this.viewModel.createNormalizedSummary(
+        // Create and emit summary data
+        const importSummary = this.viewModel.createImportSummary(
           this.uploadData.confirmedDocuments,
           this.uploadData.documentActions,
           this.allJobIds,
@@ -494,7 +493,7 @@ export default {
           this.errors
         );
 
-        this.$emit("completed", normalizedSummary);
+        this.$emit("completed", importSummary);
 
       } catch (error) {
         console.error("Error finalizing import:", error);

@@ -159,14 +159,14 @@ export function useImportBatchProgressViewModel(_props: any) {
   };
 
   /**
-   * Creates normalized import result summary with accurate counts
+   * Creates import result summary with accurate counts
    * @param confirmedDocuments - Documents that were selected for upload
    * @param documentActions - Original analysis status for each reference
    * @param allJobIds - Mapping of reference to job ID
    * @param jobStatuses - Current job statuses by job ID
    * @param errors - Upload errors
    */
-  const createNormalizedSummary = (
+  const createImportSummary = (
     confirmedDocuments: Record<string, DocumentMetadata>,
     documentActions: Record<string, "add" | "update" | "skip" | "ignore" | "failed">,
     allJobIds: Record<string, string>,
@@ -277,7 +277,7 @@ export function useImportBatchProgressViewModel(_props: any) {
     pollJobStatuses,
     waitForBatchCompletion,
     createImportHistory,
-    createNormalizedSummary,
+    createImportSummary,
     calculateOverallProgress,
     calculateBatchProgress,
     countJobsByStatus,
