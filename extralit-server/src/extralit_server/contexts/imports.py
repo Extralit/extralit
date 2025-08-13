@@ -120,10 +120,10 @@ async def find_existing_documents(
 
     if document_id:
         conditions.append(Document.id == document_id)
-    if reference:
-        conditions.append(Document.reference == reference)
     if url:
         conditions.append(Document.url == url)
+    if reference:
+        conditions.append(Document.reference == reference)
     if pmid:
         conditions.append(Document.pmid == pmid)
     if doi:

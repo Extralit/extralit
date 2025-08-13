@@ -18,8 +18,10 @@ from typing import Optional
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, Security
 from fastapi.responses import StreamingResponse
 from minio import Minio, S3Error
+from typing import Union
 
 from extralit_server.contexts import files
+from extralit_server.contexts.files import LocalFileStorage
 from extralit_server.models import User
 from extralit_server.api.policies.v1 import FilePolicy, authorize
 from extralit_server.api.schemas.v1.files import ListObjectsResponse, ObjectMetadata
@@ -36,7 +38,7 @@ async def get_file(
     bucket: str,
     object: str,
     version_id: Optional[str] = None,
-    client: Minio = Depends(files.get_minio_client),
+    client: Union[Minio, LocalFileStorage] = Depends(files.get_minio_client),
     current_user: Optional[User] = Security(auth.get_optional_current_user),
 ):
     # TODO LocalFileStorage currently needs to disable authorization checks since clients cannot access the bucket directly.
@@ -64,7 +66,7 @@ async def put_file(
     bucket: str,
     object: str,
     file: UploadFile = File(...),
-    client: Minio = Depends(files.get_minio_client),
+    client: Union[Minio, LocalFileStorage] = Depends(files.get_minio_client),
     current_user: User = Security(auth.get_current_user),
 ):
     # Check if the current user is in the workspace to have access to the s3 bucket of the same name
@@ -92,8 +94,8 @@ async def list_objects(
     include_version=True,
     recursive=True,
     start_after: Optional[str] = None,
-    client: Minio = Depends(files.get_minio_client),
-    current_user: User = Security(auth.get_current_user),
+    client: Union[Minio, LocalFileStorage] = Depends(files.get_minio_client),
+    current_user: User = Security(auth.get_optional_current_user),
 ):
     # Check if the current user is in the workspace to have access to the s3 bucket of the same name
     await authorize(current_user, FilePolicy.list(bucket))
@@ -124,7 +126,7 @@ async def delete_files(
     bucket: str,
     object: str,
     version_id: Optional[str] = None,
-    client: Minio = Depends(files.get_minio_client),
+    client: Union[Minio, files.LocalFileStorage] = Depends(files.get_minio_client),
     current_user: User = Security(auth.get_current_user),
 ):
     # Check if the current user is in the workspace to have access to the s3 bucket of the same name

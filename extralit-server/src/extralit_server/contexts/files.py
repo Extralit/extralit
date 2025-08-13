@@ -40,6 +40,63 @@ EXCLUDED_VERSIONING_PREFIXES = ["pdf"]
 
 _LOGGER = logging.getLogger(__name__)
 
+# Singleton instances
+_minio_client: Optional[Union[Minio, "LocalFileStorage"]] = None
+_local_storage_client: Optional["LocalFileStorage"] = None
+
+
+def _create_minio_client() -> Optional[Union[Minio, "LocalFileStorage"]]:
+    """Create a new Minio client instance."""
+    if None in [settings.s3_endpoint, settings.s3_access_key, settings.s3_secret_key]:
+        # Use local file system storage if S3 settings are not provided
+        local_storage_path = os.path.join(settings.home_path, "storage")  # type: ignore
+        _LOGGER.info(f"Using local file storage at: {local_storage_path}")
+        return LocalFileStorage(local_storage_path)
+
+    try:
+        parsed_url = urlparse(settings.s3_endpoint)
+        hostname: str = str(parsed_url.hostname)
+        port = parsed_url.port
+
+        if hostname is None:
+            print(
+                f"Invalid URL: no hostname found, possible due to lacking http(s) protocol. Given '{settings.s3_endpoint}'"
+            )
+            return None
+
+        return Minio(
+            endpoint=f"{hostname}:{port}" if port else hostname,
+            access_key=settings.s3_access_key,
+            secret_key=settings.s3_secret_key,
+            secure=parsed_url.scheme == "https",
+        )
+    except Exception as e:
+        _LOGGER.error(f"Error creating Minio client: {e}", stack_info=True)
+        raise e
+
+
+def get_minio_client() -> Optional[Union[Minio, "LocalFileStorage"]]:
+    """Get a singleton Minio client instance."""
+    global _minio_client
+
+    if _minio_client is None:
+        _minio_client = _create_minio_client()
+
+    return _minio_client
+
+
+async def get_async_minio_client() -> Optional[Union[Minio, "LocalFileStorage"]]:
+    """Get a singleton Minio client instance for async operations."""
+    # For now, return the sync client since Minio client operations are blocking
+    # In the future, you could implement an async wrapper or use aioboto3 for S3
+    return get_minio_client()
+
+
+def reset_minio_client():
+    """Reset the singleton Minio client (useful for testing or reconnection)."""
+    global _minio_client
+    _minio_client = None
+
 
 class LocalFileStorage:
     """Local file storage implementation that mimics Minio client interface."""
@@ -261,35 +318,6 @@ class LocalFileStorage:
             result.append(obj)
 
         return result
-
-
-def get_minio_client() -> Optional[Union[Minio, LocalFileStorage]]:
-    if None in [settings.s3_endpoint, settings.s3_access_key, settings.s3_secret_key]:
-        # Use local file system storage if S3 settings are not provided
-        local_storage_path = os.path.join(settings.home_path, "storage")  # type: ignore
-        _LOGGER.info(f"Using local file storage at: {local_storage_path}")
-        return LocalFileStorage(local_storage_path)
-
-    try:
-        parsed_url = urlparse(settings.s3_endpoint)
-        hostname: str = str(parsed_url.hostname)
-        port = parsed_url.port
-
-        if hostname is None:
-            print(
-                f"Invalid URL: no hostname found, possible due to lacking http(s) protocol. Given '{settings.s3_endpoint}'"
-            )
-            return None
-
-        return Minio(
-            endpoint=f"{hostname}:{port}" if port else hostname,
-            access_key=settings.s3_access_key,
-            secret_key=settings.s3_secret_key,
-            secure=parsed_url.scheme == "https",
-        )
-    except Exception as e:
-        _LOGGER.error(f"Error creating Minio client: {e}", stack_info=True)
-        raise e
 
 
 def compute_hash(data: bytes) -> str:

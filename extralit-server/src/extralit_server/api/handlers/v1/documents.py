@@ -15,7 +15,7 @@
 import json
 import logging
 from uuid import UUID, uuid4
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, List, Optional, Union
 
 from fastapi import APIRouter, Body, Depends, File, Form, HTTPException, UploadFile, Path, status, Security, Query
 from minio import Minio
@@ -27,6 +27,7 @@ from extralit_server.models.database import Document
 from extralit_server.security import auth
 from extralit_server.models import User, Workspace
 from extralit_server.contexts import files, imports
+from extralit_server.contexts.files import LocalFileStorage
 from extralit_server.api.policies.v1 import DocumentPolicy, authorize
 from extralit_server.api.schemas.v1.documents import DocumentCreate, DocumentDelete, DocumentListItem, DocumentUpdate
 from extralit_server.api.schemas.v1.imports import DocumentsBulkResponse, DocumentsBulkCreate
@@ -45,7 +46,7 @@ async def add_document(
     document_create: DocumentCreate = Depends(),
     file_data: UploadFile = File(None),
     db: AsyncSession = Depends(get_async_db),
-    client: Minio = Depends(files.get_minio_client),
+    client: Union[Minio, LocalFileStorage] = Depends(files.get_minio_client),
     current_user: User = Security(auth.get_current_user),
 ):
     await authorize(current_user, DocumentPolicy.create())
@@ -118,7 +119,7 @@ async def get_document(
     pmid: Optional[str] = Query(None, description="PubMed ID"),
     doi: Optional[str] = Query(None, description="DOI"),
     db: AsyncSession = Depends(get_async_db),
-    client: Minio = Depends(files.get_minio_client),
+    client: Union[Minio, LocalFileStorage] = Depends(files.get_minio_client),
     current_user: User = Security(auth.get_current_user),
 ) -> List[DocumentListItem]:
     await authorize(current_user, DocumentPolicy.get())
@@ -139,26 +140,12 @@ async def get_document(
     )
 
     if not documents:
-        # If we still haven't found anything, raise 404
-        search_criteria = []
-        if id:
-            search_criteria.append(f"id={id}")
-        if pmid:
-            search_criteria.append(f"pmid={pmid}")
-        if doi:
-            search_criteria.append(f"doi={doi}")
-        if reference:
-            search_criteria.append(f"reference={reference}")
-
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No documents found with criteria: {', '.join(search_criteria)} in workspace {workspace_id}",
+            detail=f"No documents found with given criteria in workspace {workspace_id}",
         )
 
     for document in documents:
-        # Ensure the document has a valid file URL
-        # Note: You can use files.get_presigned_url_from_document_url(document.url)
-        # to generate a presigned URL for direct file access
         document.url = files.get_presigned_url_from_document_url(
             client=client,
             document_url=document.url,
@@ -176,7 +163,6 @@ async def update_document(
     db: AsyncSession = Depends(get_async_db),
     current_user: User = Security(auth.get_current_user),
 ):
-    # First, get the document to ensure it exists and check permissions
     query = await db.execute(select(Document).where(Document.id == id))
     result = query.fetchone()
 
@@ -189,13 +175,11 @@ async def update_document(
     document: Document = result[0]
     await authorize(current_user, DocumentPolicy.get())
 
-    # Update the document fields
     update_data = document_update.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         if hasattr(document, field):
             setattr(document, field, value)
 
-    # Save the changes
     await imports.update_document(db, document)
 
     return DocumentListItem.model_validate(document)
@@ -212,7 +196,7 @@ async def delete_documents_by_workspace_id(
     workspace_id: UUID,
     document_delete: DocumentDelete = Body(None),
     db: AsyncSession = Depends(get_async_db),
-    client: Minio = Depends(files.get_minio_client),
+    client: Union[Minio, LocalFileStorage] = Depends(files.get_minio_client),
     current_user: User = Security(auth.get_current_user),
 ):
     await authorize(current_user, DocumentPolicy.delete(workspace_id))
