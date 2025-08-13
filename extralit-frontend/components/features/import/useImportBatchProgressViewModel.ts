@@ -23,14 +23,7 @@ interface UploadError {
   message: string;
 }
 
-interface ReferenceStatusInfo {
-  reference: string;
-  originalStatus: 'add' | 'update' | 'skip';
-  jobId?: string;
-  hasFiles: boolean;
-}
-
-export function useImportBatchProgressViewModel(props: any) {
+export function useImportBatchProgressViewModel(_props: any) {
   const bulkUploadUseCase = useResolve(BulkUploadDocumentsUseCase);
   const jobStatusUseCase = useResolve(GetJobStatusUseCase);
   const importHistoryUseCase = useResolve(CreateImportHistoryUseCase);
@@ -124,7 +117,7 @@ export function useImportBatchProgressViewModel(props: any) {
       return jobStatuses;
     },
 
-    async waitForBatchCompletion(
+    waitForBatchCompletion(
       batch: BatchInfo,
       jobStatuses: Record<string, JobStatus>,
       pollingIntervalMs = 2000
@@ -206,7 +199,7 @@ export function useImportBatchProgressViewModel(props: any) {
       };
 
       // Count references by their original analysis status and current job status
-      Object.entries(confirmedDocuments).forEach(([reference, docMetadata]) => {
+      Object.entries(confirmedDocuments).forEach(([reference, _docMetadata]) => {
         const originalStatus = documentActions[reference] || 'add';
         const jobId = allJobIds[reference];
         const jobStatus = jobId ? jobStatuses[jobId] : undefined;

@@ -9,7 +9,7 @@ jest.mock("~/components/base/base-icon/BaseIcon.vue", () => ({
 }));
 
 jest.mock("~/components/base/base-button/BaseButton.vue", () => ({
-  name: "BaseButton", 
+  name: "BaseButton",
   template: "<button><slot></slot></button>",
   props: ["variant", "disabled"],
 }));
@@ -291,9 +291,7 @@ describe("ImportSummary", () => {
       await returnButton.trigger("click");
 
       expect(wrapper.emitted("return-to-library")).toBeTruthy();
-      expect(wrapper.emitted("return-to-library")[0]).toEqual([
-        { workspace: mockWorkspace },
-      ]);
+      expect(wrapper.emitted("return-to-library")[0]).toEqual([{ workspace: mockWorkspace }]);
     });
 
     it("emits view-import-history event", async () => {

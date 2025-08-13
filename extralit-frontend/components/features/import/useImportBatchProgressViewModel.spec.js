@@ -27,7 +27,7 @@ describe("useImportBatchProgressViewModel", () => {
       uploadData: { confirmedDocuments: {} },
       bibFileName: "test.bib",
     };
-    
+
     viewModel = useImportBatchProgressViewModel(mockProps);
   });
 
@@ -55,7 +55,7 @@ describe("useImportBatchProgressViewModel", () => {
 
     const mockAllJobIds = {
       ref1: "job-1",
-      ref2: "job-2", 
+      ref2: "job-2",
       ref3: "job-3",
     };
 
@@ -87,8 +87,8 @@ describe("useImportBatchProgressViewModel", () => {
     it("correctly counts failed documents", () => {
       const mockJobStatuses = {
         "job-1": "finished", // ref1 - add (success)
-        "job-2": "failed",   // ref2 - update (failed)
-        "job-3": "failed",   // ref3 - add (failed)
+        "job-2": "failed", // ref2 - update (failed)
+        "job-3": "failed", // ref3 - add (failed)
       };
 
       const mockErrors = [
@@ -118,13 +118,11 @@ describe("useImportBatchProgressViewModel", () => {
     it("handles mixed job statuses correctly", () => {
       const mockJobStatuses = {
         "job-1": "finished", // ref1 - add (success)
-        "job-2": "failed",   // ref2 - update (failed)
-        "job-3": "started",  // ref3 - add (in progress)
+        "job-2": "failed", // ref2 - update (failed)
+        "job-3": "started", // ref3 - add (in progress)
       };
 
-      const mockErrors = [
-        { reference: "ref2", message: "Network error" },
-      ];
+      const mockErrors = [{ reference: "ref2", message: "Network error" }];
 
       const result = viewModel.createNormalizedSummary(
         mockConfirmedDocuments,
@@ -139,15 +137,13 @@ describe("useImportBatchProgressViewModel", () => {
       expect(result.updated).toBe(0); // ref2 failed
       expect(result.skipped).toBe(0);
       expect(result.failed).toBe(1); // ref2 only
-      expect(result.errors).toEqual([
-        { reference: "ref2", message: "Network error" },
-      ]);
+      expect(result.errors).toEqual([{ reference: "ref2", message: "Network error" }]);
     });
 
     it("handles missing job IDs gracefully", () => {
       const mockJobStatusesPartial = {
         "job-1": "finished", // ref1 - add (success)
-        "job-2": "failed",   // ref2 - update (failed)
+        "job-2": "failed", // ref2 - update (failed)
         // job-3 missing
       };
 
@@ -157,9 +153,7 @@ describe("useImportBatchProgressViewModel", () => {
         // ref3 missing
       };
 
-      const mockErrors = [
-        { reference: "ref2", message: "Upload failed" },
-      ];
+      const mockErrors = [{ reference: "ref2", message: "Upload failed" }];
 
       const result = viewModel.createNormalizedSummary(
         mockConfirmedDocuments,
@@ -185,7 +179,7 @@ describe("useImportBatchProgressViewModel", () => {
 
       const mockJobStatuses = {
         "job-1": "finished",
-        "job-2": "finished", 
+        "job-2": "finished",
         "job-3": "finished",
       };
 
@@ -239,10 +233,7 @@ describe("useImportBatchProgressViewModel", () => {
       expect(result.updated).toBe(2);
       expect(result.skipped).toBe(1);
       expect(result.failed).toBe(1);
-      expect(result.errors).toEqual([
-        "ref1: Error 1",
-        "ref2: Error 2",
-      ]);
+      expect(result.errors).toEqual(["ref1: Error 1", "ref2: Error 2"]);
       expect(result.importId).toBe("test-123");
     });
 
@@ -277,10 +268,7 @@ describe("useImportBatchProgressViewModel", () => {
       expect(result.updated).toBe(0); // Still hardcoded in legacy method
       expect(result.skipped).toBe(0);
       expect(result.failed).toBe(5);
-      expect(result.errors).toEqual([
-        "ref1: Error 1",
-        "ref2: Error 2",
-      ]);
+      expect(result.errors).toEqual(["ref1: Error 1", "ref2: Error 2"]);
       expect(typeof result.importId).toBe("string");
     });
   });

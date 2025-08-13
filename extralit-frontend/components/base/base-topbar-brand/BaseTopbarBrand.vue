@@ -1,5 +1,3 @@
-
-
 <template>
   <div class="topbar" role="banner" aria-label="Top navigation bar">
     <brand-icon class="brand-icon" color="white" aria-label="Extralit icon" />
