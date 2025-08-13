@@ -78,7 +78,7 @@ describe("ImportAnalysisTable", () => {
       value: initialValue,
     }));
 
-    mockWatch.mockImplementation(() => { });
+    mockWatch.mockImplementation(() => {});
 
     wrapper = mount(ImportAnalysisTable, {
       propsData: {

@@ -1,5 +1,3 @@
-
-
 <template>
   <div class="error">
     <div class="error__container">
