@@ -613,11 +613,8 @@ export default {
   },
 
   setup(props) {
-    const viewModel = useImportAnalysisTableViewModel(props);
-    return {
-      ...viewModel,
-    };
-  }
+    return useImportAnalysisTableViewModel(props);
+  },
 };
 </script>
 

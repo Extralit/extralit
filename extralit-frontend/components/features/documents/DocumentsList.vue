@@ -121,7 +121,7 @@ export default {
     },
   },
   setup(props) {
-    return useDocumentsListViewModel();
+    return useDocumentsListViewModel(props);
   },
 };
 </script>
