@@ -453,7 +453,7 @@ export const useImportBatchProgressViewModel = (
 
   const createImportSummary = (): ImportResultSummary => {
     const summary = {
-      total: totalReferences.value,
+      total: Object.keys(props.uploadData.confirmedDocuments).length,
       added: 0,
       updated: 0,
       skipped: 0,
@@ -476,6 +476,9 @@ export const useImportBatchProgressViewModel = (
         } else if (originalStatus === "update") {
           summary.updated++;
         }
+      } else if (jobStatus === "failed") {
+        // Job failed - already counted in summary.failed via failedJobs computed
+        // No need to increment here as it's handled by the computed property
       } else if (originalStatus === "skip") {
         // Document was marked to skip
         summary.skipped++;
