@@ -1,5 +1,3 @@
-
-
 <template>
   <div class="recent-imports">
     <div class="recent-imports__header">

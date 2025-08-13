@@ -9,10 +9,10 @@
     </div>
 
     <div class="table-upload__dropzone" :class="{
-      'table-upload__dropzone--dragover': dragOver,
-      'table-upload__dropzone--error': hasError,
-      'table-upload__dropzone--success': uploaded,
-    }" @drop="handleDrop" @dragover="handleDragOver" @dragleave="handleDragLeave"
+      'table-upload__dropzone--dragover': viewModel.state.isDragging,
+      'table-upload__dropzone--error': viewModel.state.hasError,
+      'table-upload__dropzone--success': viewModel.state.uploaded,
+    }" @drop="viewModel.handleDrop" @dragover="viewModel.handleDragOver" @dragleave="viewModel.handleDragLeave"
       @click="triggerFileInput">
       <input ref="fileInput" type="file" accept=".bib,.bibtex,.csv" style="display: none"
         @change="handleFileSelect" />
@@ -27,27 +27,27 @@
     </div>
 
     <!-- Success Display -->
-    <div v-if="uploaded && !hasError" class="table-upload__upload-success">
+    <div v-if="viewModel.state.uploaded && !viewModel.state.hasError" class="table-upload__upload-success">
       <BaseIcon icon-name="check" class="table-upload__upload-success-icon" />
       <span class="table-upload__upload-success-text">
-        Successfully uploaded {{ data.fileName }} ({{ data.dataframeData ? data.dataframeData.data.length : 0 }} entries found)
+        Successfully uploaded {{ viewModel.state.data?.fileName }} ({{ viewModel.state.data?.dataframeData?.data?.length || 0 }} entries found)
       </span>
     </div>
 
     <!-- Error Display -->
-    <div v-if="hasError" class="table-upload__error">
+    <div v-if="viewModel.state.hasError" class="table-upload__error">
       <BaseIcon icon-name="danger" class="table-upload__error-icon" />
       <div class="table-upload__error-content">
         <h4>Bibliography Parsing Error</h4>
-        <p>{{ errorMessage }}</p>
+        <p>{{ viewModel.state.errorMessage }}</p>
       </div>
     </div>
 
     <!-- CSV Column Selection -->
     <CsvColumnSelection
-      v-if="showCsvColumnSelection"
+      v-if="csvData.showColumnSelection"
       :csv-data="csvData"
-      :csv-config="csvConfig"
+      :csv-config="csvData.config"
       @config-updated="handleCsvConfigUpdate"
       @process-csv="processCsvWithConfig"
       @cancel="cancelCsvSelection"
@@ -55,329 +55,153 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, computed, watch } from '@nuxtjs/composition-api';
 import { useResolve } from "ts-injecty";
 import type { CSVConfig } from "~/v1/domain/services/IFileParsingService";
 import { FileParsingService } from "~/v1/domain/services/FileParsingService";
 import CsvColumnSelection from "./CsvColumnSelection.vue";
+import { useImportFileUploadViewModel, createBibStrategy } from "./useImportFileUploadViewModel";
+import type { BibliographyData } from "./types";
 import "assets/icons/check";
 import "assets/icons/danger";
 import "assets/icons/document";
-import { TableData } from "~/v1/domain/entities/table/TableData";
 
-interface BibliographyData {
-  fileName: string;
-  dataframeData: TableData | null;
-  rawContent: string;
+// Props and emits
+interface Props {
+  initialData: BibliographyData;
 }
 
-interface CsvData {
-  rawData: any;
-  columns: string[];
-  previewRows: any[];
-}
+const props = withDefaults(defineProps<Props>(), {
+  initialData: () => ({
+    fileName: "",
+    dataframeData: null,
+    rawContent: "",
+    type: 'bibliography' as const,
+  }),
+});
 
-export default {
-  name: "TableUpload",
+const emit = defineEmits<{
+  update: [data: any];
+}>();
 
-  components: {
-    CsvColumnSelection,
-  },
+// Services
+const fileService = useResolve(FileParsingService);
 
-  props: {
-    initialData: {
-      type: Object as () => BibliographyData,
-      default: () => ({
-        fileName: "",
-        dataframeData: null,
-        rawContent: "",
-      }),
-    },
-  },
+// CSV column selection state (managed by strategy but exposed for component)
+const csvData = ref({
+  rawData: null,
+  columns: [] as string[],
+  previewRows: [] as any[],
+  showColumnSelection: false,
+  config: {
+    referenceColumn: '',
+    filesColumn: '',
+  } as CSVConfig,
+});
 
-  emits: ["update"],
-
-  setup() {
-    const fileService = useResolve(FileParsingService);
-    return { fileService };
-  },
-
-  data() {
-    return {
-      dragOver: false,
-      uploaded: false,
-      hasError: false,
-      errorMessage: "",
-      data: {
-        fileName: "",
-        dataframeData: null,
-        rawContent: "",
-      } as BibliographyData,
-
-      // CSV parsing state
-      showCsvColumnSelection: false,
-      csvData: {
-        rawData: null,
-        columns: [],
-        previewRows: [],
-      } as CsvData,
-      csvConfig: {
-        referenceColumn: "",
-        filesColumn: "",
-      } as CSVConfig,
+// Create bibliography strategy with CSV callbacks
+const strategy = createBibStrategy({
+  fileParsingService: fileService,
+  onCsvConfigRequired: (previewData) => {
+    // Update local CSV state when config is required
+    csvData.value = {
+      ...csvData.value,
+      rawData: previewData.rawData,
+      columns: previewData.columns,
+      previewRows: previewData.previewRows,
+      showColumnSelection: true,
     };
   },
-
-  mounted() {
-    this.initializeWithExistingData();
+  onCsvConfigComplete: () => {
+    csvData.value.showColumnSelection = false;
   },
+});
 
-  computed: {
-    getDropzoneIcon(): string {
-      if (this.hasError) return "danger";
-      if (this.uploaded) return "check";
-      return "document";
-    },
-
-    getDropzoneText(): string {
-      if (this.hasError) return "Error parsing bibliography file";
-      if (this.uploaded) return "Upload BibTeX File";
-      return "Upload BibTeX File";
-    },
-  },
-
-  watch: {
-    initialData: {
-      handler(newData: BibliographyData) {
-        if (newData && (newData.fileName || newData?.dataframeData?.data?.length > 0)) {
-          this.initializeWithExistingData();
-        }
-      },
-      deep: true,
-      immediate: true,
-    },
-  },
-
-  methods: {
-    triggerFileInput(): void {
-      (this.$refs.fileInput as HTMLInputElement).click();
-    },
-
-    handleDragOver(event: DragEvent): void {
-      event.preventDefault();
-      this.dragOver = true;
-    },
-
-    handleDragLeave(): void {
-      this.dragOver = false;
-    },
-
-    handleDrop(event: DragEvent): void {
-      event.preventDefault();
-      this.dragOver = false;
-
-      const files = event.dataTransfer?.files;
-      if (files && files.length > 0) {
-        this.processFile(files[0]);
-      }
-    },
-
-    handleFileSelect(event: Event): void {
-      const target = event.target as HTMLInputElement;
-      const files = target.files;
-      if (files && files.length > 0) {
-        this.processFile(files[0]);
-      }
-    },
-
-    async processFile(file: File): Promise<void> {
-      // Reset state
-      this.hasError = false;
-      this.errorMessage = "";
-      this.data = {
-        fileName: "",
-        dataframeData: null,
-        rawContent: "",
-      };
-
-      // Reset CSV state
-      this.showCsvColumnSelection = false;
-      this.csvData = {
-        rawData: null,
-        columns: [],
-        previewRows: [],
-      };
-      this.csvConfig = {
-        referenceColumn: "",
-        filesColumn: "",
-      };
-
-      // Validate file type
-      if (!this.fileService.isValidFileType(file, [".bib", ".bibtex", ".csv"])) {
-        this.showError("Invalid file type. Please upload a .bib, .bibtex, or .csv file.");
-        return;
-      }
-
-      this.data.fileName = file.name;
-
-      try {
-        // Read file content
-        const content = await this.fileService.readFileContent(file);
-        this.data.rawContent = content;
-
-        if (this.isCsvFile(file)) {
-          // Handle CSV file
-          await this.parseCsvContent(content);
-        } else if (this.isBibTexFile(file)) {
-          // Handle BibTeX file
-          this.data.dataframeData = await this.fileService.parseBibTeX(content);
-
-          if (this.data.dataframeData && this.data.dataframeData.data.length > 0) {
-            this.uploaded = true;
-            this.emitUpdate();
-          } else {
-            this.showError("No valid BibTeX entries found in the file.");
-          }
-        }
-      } catch (error: any) {
-        this.showError(`Failed to process file: ${error.message}`);
-      }
-    },
-
-    isCsvFile(file: File): boolean {
-      return file.name.toLowerCase().endsWith(".csv");
-    },
-
-    isBibTexFile(file: File): boolean {
-      const fileName = file.name.toLowerCase();
-      return fileName.endsWith(".bib") || fileName.endsWith(".bibtex");
-    },
-
-    async parseCsvContent(content: string): Promise<void> {
-      try {
-        const previewData = await this.fileService.parseCSVForPreview(content);
-
-        // Store CSV data for column selection
-        this.csvData = {
-          rawData: previewData.rawData,
-          columns: previewData.columns,
-          previewRows: previewData.previewRows,
-        };
-
-        // Show column selection UI
-        this.showCsvColumnSelection = true;
-
-      } catch (error: any) {
-        throw new Error(`CSV parsing failed: ${error.message}`);
-      }
-    },
-
-    async processCsvWithConfig(): Promise<void> {
-      try {
-        if (!this.csvConfig.referenceColumn) {
-          this.showError("Please select a reference column to continue.");
-          return;
-        }
-
-        if (!this.csvData.rawData || this.csvData.rawData.length === 0) {
-          this.showError("No CSV data available. Please upload a file first.");
-          return;
-        }
-
-        this.data.dataframeData = await this.fileService.parseCSVWithConfig(this.csvData.rawData, this.csvConfig);
-
-        // Hide column selection and mark as uploaded
-        this.showCsvColumnSelection = false;
-        this.uploaded = true;
-        this.emitUpdate();
-
-      } catch (error: any) {
-        this.showError(`Failed to process CSV data: ${error.message}`);
-      }
-    },
-
-    handleCsvConfigUpdate(config: CSVConfig): void {
-      this.csvConfig = config;
-    },
-
-    cancelCsvSelection(): void {
-      // Reset CSV state and clear upload
-      this.showCsvColumnSelection = false;
-      this.csvData = {
-        rawData: null,
-        columns: [],
-        previewRows: [],
-      };
-      this.csvConfig = {
-        referenceColumn: "",
-        filesColumn: "",
-      };
-
-      // Reset data
-      this.data = {
-        fileName: "",
-        dataframeData: null,
-        rawContent: "",
-      };
-      this.uploaded = false;
-      this.hasError = false;
-      this.errorMessage = "";
-    },
-
-    showError(message: string): void {
-      this.hasError = true;
-      this.errorMessage = message;
-      this.uploaded = false;
-    },
-
-    initializeWithExistingData(): void {
-      if (this.initialData && (this.initialData.fileName || (this.initialData.dataframeData && this.initialData.dataframeData.data.length > 0))) {
-        this.data = {
-          fileName: this.initialData.fileName || "",
-          dataframeData: this.initialData.dataframeData || null,
-          rawContent: this.initialData.rawContent || "",
-        };
-        this.uploaded = this.data.dataframeData && this.data.dataframeData.data.length > 0;
-        this.hasError = false;
-        this.errorMessage = "";
-        this.showCsvColumnSelection = false;
-        // Don't emit update when initializing with existing data to prevent loops
-        // The parent component already has this data
-      }
-    },
-
-    emitUpdate(): void {
-      this.$emit("update", {
-        isValid: this.uploaded && !this.hasError && this.data.dataframeData && this.data.dataframeData.data.length > 0,
-        fileName: this.data.fileName,
-        dataframeData: this.data.dataframeData,
-        rawContent: this.data.rawContent,
+// Create view model
+const viewModel = useImportFileUploadViewModel(strategy, {
+  onUpdate: (payload) => {
+    if (payload) {
+      emit('update', {
+        isValid: viewModel.isValid(),
+        fileName: payload.fileName,
+        dataframeData: payload.dataframeData,
+        rawContent: payload.rawContent,
       });
-    },
-
-    reset(): void {
-      this.dragOver = false;
-      this.uploaded = false;
-      this.hasError = false;
-      this.errorMessage = "";
-      this.data = {
-        fileName: "",
-        dataframeData: null,
-        rawContent: "",
-      };
-      this.showCsvColumnSelection = false;
-      this.csvData = {
-        rawData: null,
-        columns: [],
-        previewRows: [],
-      };
-      this.csvConfig = {
-        referenceColumn: "",
-        filesColumn: "",
-      };
-    },
+    }
   },
-};
+});
+
+// File input ref
+const fileInput = ref<HTMLInputElement | null>(null);
+
+// Computed properties
+const getDropzoneIcon = computed(() => {
+  if (viewModel.state.hasError) return "danger";
+  if (viewModel.state.uploaded) return "check";
+  return "document";
+});
+
+const getDropzoneText = computed(() => {
+  if (viewModel.state.hasError) return "Error parsing bibliography file";
+  if (viewModel.state.uploaded) return "Upload BibTeX File";
+  return "Upload BibTeX File";
+});
+
+// Methods
+function triggerFileInput(): void {
+  fileInput.value?.click();
+}
+
+function handleFileSelect(event: Event): void {
+  const target = event.target as HTMLInputElement;
+  const files = Array.from(target.files || []);
+  viewModel.selectFiles(files);
+}
+
+async function processCsvWithConfig(): Promise<void> {
+  try {
+    const dataframeData = await (strategy as any).processCsvWithConfig(csvData.value.config);
+    
+    // Update the viewModel state with completed CSV processing
+    viewModel.state.data = {
+      ...viewModel.state.data,
+      dataframeData,
+    };
+    viewModel.state.uploaded = true;
+    
+    // Emit update
+    emit('update', {
+      isValid: viewModel.isValid(),
+      fileName: viewModel.state.data.fileName,
+      dataframeData,
+      rawContent: viewModel.state.data.rawContent,
+    });
+  } catch (error: any) {
+    viewModel.showError(`Failed to process CSV data: ${error.message}`);
+  }
+}
+
+function handleCsvConfigUpdate(config: CSVConfig): void {
+  csvData.value.config = config;
+}
+
+function cancelCsvSelection(): void {
+  csvData.value.showColumnSelection = false;
+  viewModel.reset();
+}
+
+// Initialize with existing data
+watch(() => props.initialData, (newData) => {
+  if (newData && (newData.fileName || newData?.dataframeData?.data?.length > 0)) {
+    viewModel.initialize(newData);
+  }
+}, { deep: true, immediate: true });
+
+// Expose reset method for parent
+defineExpose({
+  reset: viewModel.reset,
+});
 </script>
 
 <style lang="scss" scoped>

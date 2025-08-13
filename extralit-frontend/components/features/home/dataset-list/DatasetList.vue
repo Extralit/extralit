@@ -89,7 +89,6 @@ export default {
       this.$emit("on-click-card", action);
     },
   },
-
 };
 </script>
 

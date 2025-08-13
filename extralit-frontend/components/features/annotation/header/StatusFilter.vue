@@ -1,5 +1,3 @@
-
-
 <template>
   <RadioButtonsSelectBase
     v-if="options.length"
