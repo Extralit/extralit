@@ -22,6 +22,7 @@
 
       <!-- Step 4: Import Summary -->
       <ImportSummary v-if="stepIndex === 3" ref="summaryComponent" :summary-data="summaryData"
+        :workspace="workspace" :bibFileName="bibData.fileName"
         @return-to-library="handleReturnToLibrary" @view-import-history="handleViewImportHistory" />
     </template>
   </BaseFlowModal>
