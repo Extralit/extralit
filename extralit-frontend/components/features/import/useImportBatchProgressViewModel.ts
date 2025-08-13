@@ -23,7 +23,21 @@ interface UploadError {
   message: string;
 }
 
-export function useImportBatchProgressViewModel(_props: any) {
+export const useImportBatchProgressViewModel = (props: {
+  uploadData: {
+    confirmedDocuments: Record<string, DocumentMetadata>;
+    documentActions: Record<string, any>;
+    totalBatches: number;
+    currentBatch: number;
+    jobIds: Record<string, string>;
+    completedJobs: number;
+    failedJobs: number;
+  };
+  workspace?: any;
+  dataframeData?: any;
+  bibFileName?: string;
+  pdfFiles?: File[];
+}) => {
   const bulkUploadUseCase = useResolve(BulkUploadDocumentsUseCase);
   const jobStatusUseCase = useResolve(GetJobStatusUseCase);
   const importHistoryUseCase = useResolve(CreateImportHistoryUseCase);
