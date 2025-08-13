@@ -69,18 +69,10 @@ import "assets/icons/document";
 
 // Props and emits
 interface Props {
-  initialData: BibliographyData;
+  initialData?: BibliographyData;
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  initialData: () => ({
-    fileName: "",
-    dataframeData: null,
-    rawContent: "",
-    type: 'bibliography' as const,
-  }),
-});
-
+const props = defineProps<Props>();
 const emit = defineEmits<{
   update: [data: any];
 }>();

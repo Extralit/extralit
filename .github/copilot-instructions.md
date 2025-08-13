@@ -62,6 +62,48 @@ Key directories:
 - **View Models**: `setup(props) { return useViewModelName(props); }` pattern
 - **BaseSimpleTable**: Use existing `BaseSimpleTable.vue` for tabular display
 
+### Import File Upload Architecture (Refactored to Composition API)
+
+The import file upload system has been refactored to use the Composition API with a shared view model pattern:
+
+#### Shared Composable Pattern:
+- **`useImportFileUploadViewModel.ts`**: Main composable factory with strategy pattern
+- **`types.ts`**: Consolidated type definitions for all upload flows
+- **Strategy factories**:
+  - `createBibStrategy()`: Handles .bib/.csv file parsing and column selection
+  - `createPdfStrategy()`: Handles PDF validation and matching
+
+#### Component Structure:
+- **`ImportFileUpload.vue`**: Orchestrator component using Composition API
+- **`TableUpload.vue`**: Bibliography upload using `createBibStrategy`
+- **`PdfUpload.vue`**: PDF upload using `createPdfStrategy`
+
+#### Key Features:
+- **Unified state management**: Common drag/drop, upload states, error handling
+- **Strategy pattern**: File type-specific processing with shared interface
+- **Type safety**: Consolidated interfaces and payload structures
+- **Testable architecture**: Strategy and view model unit tests
+- **Backward compatibility**: Maintains existing event contracts
+
+#### Usage Pattern:
+```typescript
+// Create strategy
+const strategy = createBibStrategy({
+  fileParsingService,
+  onCsvConfigRequired: (csvData) => { /* handle CSV config */ },
+});
+
+// Create view model
+const viewModel = useImportFileUploadViewModel(strategy, {
+  onUpdate: (payload) => emit('update', payload),
+});
+
+// Use in template
+<div @drop="viewModel.handleDrop" @dragover="viewModel.handleDragOver">
+  <input @change="handleFileSelect" />
+</div>
+```
+
 ### Backend Server (`extralit-server/src/extralit_server`)
 
 The backend is a FastAPI application that handles API requests, database operations, and search functionality.

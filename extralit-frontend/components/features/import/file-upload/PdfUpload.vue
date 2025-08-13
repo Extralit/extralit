@@ -71,20 +71,11 @@ import "assets/icons/import";
 
 // Props and emits
 interface Props {
-  initialData: PdfData;
-  bibliographyEntries: any;
+  initialData?: PdfData;
+  bibliographyEntries?: any;
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  initialData: () => ({
-    matchedFiles: [],
-    unmatchedFiles: [],
-    totalFiles: 0,
-    type: 'pdf' as const,
-  }),
-  bibliographyEntries: () => null,
-});
-
+const props = defineProps<Props>();
 const emit = defineEmits<{
   update: [data: any];
 }>();
@@ -145,7 +136,7 @@ function handleFolderSelect(event: Event): void {
 // Watch for bibliography changes to update strategy
 watch(() => props.bibliographyEntries, (newEntries) => {
   // Update the strategy's bibliography entries
-  (strategy as any).bibliographyEntries = newEntries;
+  (strategy as any).setBibliographyEntries?.(newEntries);
   
   // Re-process existing files if we have them
   if (viewModel.state.data?.totalFiles > 0) {

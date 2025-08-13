@@ -29,24 +29,11 @@ import type { BibliographyData, PdfData } from "./types";
 
 // Props
 interface Props {
-  initialBibData: BibliographyData;
-  initialPdfData: PdfData;
+  initialBibData?: BibliographyData;
+  initialPdfData?: PdfData;
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  initialBibData: () => ({
-    fileName: "",
-    dataframeData: null,
-    rawContent: "",
-    type: 'bibliography' as const,
-  }),
-  initialPdfData: () => ({
-    matchedFiles: [],
-    unmatchedFiles: [],
-    totalFiles: 0,
-    type: 'pdf' as const,
-  }),
-});
+const props = defineProps<Props>();
 
 // Emits
 const emit = defineEmits<{
