@@ -186,6 +186,7 @@ export default {
       type: Object as () => ImportUploadData,
       default: () => ({
         confirmedDocuments: {},
+        documentActions: {},
         totalBatches: 0,
         currentBatch: 0,
         jobIds: {},
@@ -484,13 +485,17 @@ export default {
           metadata
         );
 
-        // Create and emit summary data
-        const summaryData = this.viewModel.createSummaryData(
-          this.totalReferences,
-          this.completedJobs,
-          this.failedJobs,
+        // Create and emit normalized summary data
+        const normalizedSummary = this.viewModel.createNormalizedSummary(
+          this.uploadData.confirmedDocuments,
+          this.uploadData.documentActions,
+          this.allJobIds,
+          this.jobStatuses,
           this.errors
         );
+
+        // Convert to legacy format for backward compatibility
+        const summaryData = this.viewModel.convertToLegacySummary(normalizedSummary);
 
         this.$emit("completed", summaryData);
 

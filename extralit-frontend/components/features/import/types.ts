@@ -44,6 +44,7 @@ export interface PdfUploadData {
 // Upload progress tracking (Step 4)
 export interface ImportUploadData {
   confirmedDocuments: Record<string, DocumentMetadata>;
+  documentActions: Record<string, ImportStatus>; // Track original analysis statuses
   totalBatches: number;
   currentBatch: number;
   jobIds: Record<string, string>;
@@ -51,7 +52,7 @@ export interface ImportUploadData {
   failedJobs: number;
 }
 
-// Final import summary (Step 5)
+// Final import summary (Step 5) - Legacy interface for backward compatibility
 export interface ImportSummaryData {
   totalProcessed: number;
   successfullyAdded: number;
@@ -60,6 +61,24 @@ export interface ImportSummaryData {
   failed: number;
   errors: string[];
   importId: string | null;
+}
+
+// New normalized import summary interface for accurate count display
+export interface ImportResultSummary {
+  total: number;
+  added: number;
+  updated: number;
+  skipped: number;
+  failed: number;
+  fileTotals?: {
+    processed: number;
+    failed: number;
+  };
+  errors: Array<{
+    reference: string;
+    message: string;
+  }>;
+  importId?: string;
 }
 
 // Import confirmation data (Step 3)

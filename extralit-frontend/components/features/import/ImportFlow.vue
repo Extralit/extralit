@@ -81,6 +81,7 @@ export default {
       },
       uploadData: {
         confirmedDocuments: {},
+        documentActions: {}, // Track original analysis statuses
         totalBatches: 0,
         currentBatch: 0,
         jobIds: {},
@@ -260,6 +261,7 @@ export default {
 
     handleAnalysisUpdate(data) {
       this.uploadData.confirmedDocuments = data.confirmedDocuments || {};
+      this.uploadData.documentActions = data.documentActions || {}; // Store the original analysis statuses
 
       // Update bibData with filtered dataframe data if provided
       if (data.filteredDataframeData) {
@@ -419,6 +421,7 @@ export default {
       };
       this.uploadData = {
         confirmedDocuments: {},
+        documentActions: {},
         totalBatches: 0,
         currentBatch: 0,
         jobIds: {},

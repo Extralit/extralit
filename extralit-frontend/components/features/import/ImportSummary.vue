@@ -13,27 +13,27 @@
     <div class="import-statistics">
       <div class="stats-grid">
         <div class="stat-card stat-total">
-          <div class="stat-value">{{ summaryData.totalProcessed }}</div>
+          <div class="stat-value">{{ summaryData.totalProcessed || 0 }}</div>
           <div class="stat-label">Total Processed</div>
         </div>
 
         <div class="stat-card stat-added">
-          <div class="stat-value">{{ summaryData.successfullyAdded }}</div>
+          <div class="stat-value">{{ summaryData.successfullyAdded || 0 }}</div>
           <div class="stat-label">Successfully Added</div>
         </div>
 
         <div class="stat-card stat-updated">
-          <div class="stat-value">{{ summaryData.updated }}</div>
+          <div class="stat-value">{{ summaryData.updated || 0 }}</div>
           <div class="stat-label">Updated</div>
         </div>
 
         <div class="stat-card stat-skipped">
-          <div class="stat-value">{{ summaryData.skipped }}</div>
+          <div class="stat-value">{{ summaryData.skipped || 0 }}</div>
           <div class="stat-label">Skipped</div>
         </div>
 
-        <div v-if="summaryData.failed > 0" class="stat-card stat-failed">
-          <div class="stat-value">{{ summaryData.failed }}</div>
+        <div class="stat-card stat-failed">
+          <div class="stat-value">{{ summaryData.failed || 0 }}</div>
           <div class="stat-label">Failed</div>
         </div>
       </div>
@@ -56,11 +56,11 @@
       </div>
 
       <!-- Skipped Summary -->
-      <div v-if="summaryData.skipped > 0" class="result-section skipped-section">
+      <div v-if="(summaryData.skipped || 0) > 0" class="result-section skipped-section">
         <div class="section-header">
           <BaseIcon icon-name="info" class="section-icon skipped-icon" />
           <span class="section-title">Skipped Documents</span>
-          <span class="section-count">{{ summaryData.skipped }}</span>
+          <span class="section-count">{{ summaryData.skipped || 0 }}</span>
         </div>
         <p class="section-description">
           Documents were skipped because they already exist in your workspace with no changes needed.
@@ -68,11 +68,11 @@
       </div>
 
       <!-- Failed Summary -->
-      <div v-if="summaryData.failed > 0" class="result-section failed-section">
+      <div v-if="(summaryData.failed || 0) > 0" class="result-section failed-section">
         <div class="section-header">
           <BaseIcon icon-name="danger" class="section-icon failed-icon" />
           <span class="section-title">Failed Imports</span>
-          <span class="section-count">{{ summaryData.failed }}</span>
+          <span class="section-count">{{ summaryData.failed || 0 }}</span>
         </div>
         <p class="section-description">
           Some documents could not be imported due to errors. Review the details below.
@@ -206,11 +206,11 @@ export default {
     },
 
     hasFailedImports(): boolean {
-      return this.summaryData.failed > 0 && this.failedDocuments.length > 0;
+      return (this.summaryData.failed || 0) > 0 && this.failedDocuments.length > 0;
     },
 
     successfulCount(): number {
-      return this.summaryData.successfullyAdded + this.summaryData.updated;
+      return (this.summaryData.successfullyAdded || 0) + (this.summaryData.updated || 0);
     },
 
     failedImportsTableData(): FailedImportRow[] {

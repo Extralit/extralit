@@ -4,7 +4,7 @@
  */
 
 import { useResolve } from "ts-injecty";
-import type { ImportSummaryData } from "./types";
+import type { ImportSummaryData, ImportResultSummary } from "./types";
 import type { DocumentMetadata } from "~/v1/domain/entities/import/ImportAnalysis";
 import { BulkUploadDocumentsUseCase } from "~/v1/domain/usecases/bulk-upload-documents-use-case";
 import { GetJobStatusUseCase, type JobStatus } from "~/v1/domain/usecases/get-job-status-use-case";
@@ -21,6 +21,13 @@ interface BatchInfo {
 interface UploadError {
   reference: string;
   message: string;
+}
+
+interface ReferenceStatusInfo {
+  reference: string;
+  originalStatus: 'add' | 'update' | 'skip';
+  jobId?: string;
+  hasFiles: boolean;
 }
 
 export function useImportBatchProgressViewModel(props: any) {
@@ -170,6 +177,75 @@ export function useImportBatchProgressViewModel(props: any) {
         failed: failedJobs,
         errors: errors.map((e) => `${e.reference}: ${e.message}`),
         importId: `import_${Date.now()}`,
+      };
+    },
+
+    /**
+     * Creates normalized import result summary with accurate counts
+     * @param confirmedDocuments - Documents that were selected for upload
+     * @param documentActions - Original analysis status for each reference  
+     * @param allJobIds - Mapping of reference to job ID
+     * @param jobStatuses - Current job statuses by job ID
+     * @param errors - Upload errors
+     */
+    createNormalizedSummary(
+      confirmedDocuments: Record<string, DocumentMetadata>,
+      documentActions: Record<string, 'add' | 'update' | 'skip' | 'ignore' | 'failed'>,
+      allJobIds: Record<string, string>,
+      jobStatuses: Record<string, JobStatus>,
+      errors: UploadError[]
+    ): ImportResultSummary {
+      const summary = {
+        total: 0,
+        added: 0,
+        updated: 0,
+        skipped: 0,
+        failed: 0,
+        errors: errors.map(e => ({ reference: e.reference, message: e.message })),
+        importId: `import_${Date.now()}`,
+      };
+
+      // Count references by their original analysis status and current job status
+      Object.entries(confirmedDocuments).forEach(([reference, docMetadata]) => {
+        const originalStatus = documentActions[reference] || 'add';
+        const jobId = allJobIds[reference];
+        const jobStatus = jobId ? jobStatuses[jobId] : undefined;
+
+        summary.total++;
+
+        // Determine final status based on job completion
+        if (jobStatus === 'finished') {
+          // Job completed successfully - count based on original intention
+          if (originalStatus === 'add') {
+            summary.added++;
+          } else if (originalStatus === 'update') {
+            summary.updated++;
+          }
+        } else if (jobStatus === 'failed') {
+          // Job failed
+          summary.failed++;
+        } else if (originalStatus === 'skip') {
+          // Document was marked to skip (though these shouldn't be in confirmedDocuments)
+          summary.skipped++;
+        }
+        // If job is still in progress, don't count it in any completion bucket yet
+      });
+
+      return summary;
+    },
+
+    /**
+     * Legacy method for backward compatibility - converts normalized summary to old format
+     */
+    convertToLegacySummary(normalizedSummary: ImportResultSummary): ImportSummaryData {
+      return {
+        totalProcessed: normalizedSummary.total,
+        successfullyAdded: normalizedSummary.added,
+        updated: normalizedSummary.updated,
+        skipped: normalizedSummary.skipped,
+        failed: normalizedSummary.failed,
+        errors: normalizedSummary.errors.map(e => `${e.reference}: ${e.message}`),
+        importId: normalizedSummary.importId || null,
       };
     },
 
