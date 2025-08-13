@@ -19,10 +19,9 @@ from typing import Dict, List, Optional
 
 from fastapi import HTTPException, status, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import and_, or_, select
+from sqlalchemy import and_, or_, select, case
 
 from extralit_server.models.database import Document, ImportHistory
-from extralit_server.models import Document
 from extralit_server.api.schemas.v1.documents import DocumentCreate, DocumentListItem
 from extralit_server.api.schemas.v1.imports import (
     FileInfo,
@@ -123,20 +122,25 @@ async def find_existing_documents(
         conditions.append(Document.id == document_id)
     if reference:
         conditions.append(Document.reference == reference)
-    if file_name:
-        conditions.append(Document.file_name == file_name)
+    if url:
+        conditions.append(Document.url == url)
     if pmid:
         conditions.append(Document.pmid == pmid)
     if doi:
         conditions.append(Document.doi == doi)
-    if url:
-        conditions.append(Document.url == url)
+    if file_name:
+        conditions.append(Document.file_name == file_name)
 
     if not conditions:
         return []
 
     # Find documents matching any of the conditions within the workspace
     query = select(Document).where(and_(Document.workspace_id == workspace_id, or_(*conditions)))
+
+    if conditions:
+        # Create a CASE statement for ordering based on ordinal position
+        order_case = case(*[(condition, i) for i, condition in enumerate(conditions)], else_=len(conditions))
+        query = query.order_by(order_case)
 
     if limit is not None:
         query = query.limit(limit)

@@ -47,13 +47,14 @@ class DocumentUpdate(BaseModel):
     pmid: Optional[str] = Field(None, description="The PubMed ID of the document.")
     doi: Optional[str] = Field(None, description="The DOI of the document.")
     file_name: Optional[str] = Field(None, description="The name of the file.")
+    url: Optional[str] = Field(None, description="A URL to the PDF document if it is publicly available online.")
     metadata: Optional[dict] = Field(None, description="Additional metadata for the document")
 
 
 class DocumentListItem(BaseModel):
     id: UUID
     workspace_id: UUID
-    url: Optional[str]
+    url: str
     file_name: Optional[str]
     reference: Optional[str]
     pmid: Optional[str]

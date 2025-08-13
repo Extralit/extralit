@@ -19,7 +19,7 @@ import json
 import hashlib
 import uuid
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, BinaryIO, Dict, List, Optional, Union
 from urllib.parse import urlparse
@@ -308,8 +308,46 @@ def get_pdf_s3_object_path(id: Union[UUID, str]) -> str:
     return object_path
 
 
-def get_s3_object_url(bucket_name: str, object_path: str) -> str:
+def get_proxy_document_url(bucket_name: str, object_path: str) -> str:
     return f"/api/v1/file/{bucket_name}/{object_path}"
+
+
+def get_presigned_url_from_document_url(
+    client: Minio | LocalFileStorage, document_url: str, expires: int = 3600
+) -> str:
+    """
+    Generate a presigned URL from a document URL by parsing the bucket_name and object_path.
+
+    Args:
+        document_url: URL in format "/api/v1/file/{bucket_name}/{object_path}"
+        expires: Expiration time in seconds (default: 1 hour)
+
+    Returns:
+        Presigned URL if successful, None if parsing fails or client is not Minio
+    """
+    if not isinstance(client, Minio):
+        return document_url
+
+    try:
+        # Parse the URL to extract bucket_name and object_path
+        # Expected format: "/api/v1/file/{bucket_name}/{object_path}"
+        if not document_url.startswith("/api/v1/file/"):
+            _LOGGER.warning(f"Invalid document URL format: {document_url}")
+            return document_url
+
+        path_parts = document_url[13:].split("/", 1)  # 13 = len("/api/v1/file/")
+        if len(path_parts) != 2:
+            _LOGGER.warning(f"Invalid document URL format: {document_url}")
+            return document_url
+
+        bucket_name, object_path = path_parts
+
+        presigned_url = client.presigned_get_object(bucket_name, object_path, expires=timedelta(seconds=expires))
+        return presigned_url
+
+    except Exception as e:
+        _LOGGER.error(f"Error generating presigned URL from document URL {document_url}: {e}")
+        return document_url
 
 
 def list_objects(
@@ -497,7 +535,7 @@ def put_document_file(
             metadata=metadata or {},
         )
 
-        return get_s3_object_url(response.bucket_name, response.object_name)
+        return get_proxy_document_url(response.bucket_name, response.object_name)
 
     return None
 

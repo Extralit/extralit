@@ -118,6 +118,7 @@ async def get_document(
     pmid: Optional[str] = Query(None, description="PubMed ID"),
     doi: Optional[str] = Query(None, description="DOI"),
     db: AsyncSession = Depends(get_async_db),
+    client: Minio = Depends(files.get_minio_client),
     current_user: User = Security(auth.get_current_user),
 ) -> List[DocumentListItem]:
     await authorize(current_user, DocumentPolicy.get())
@@ -152,6 +153,16 @@ async def get_document(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"No documents found with criteria: {', '.join(search_criteria)} in workspace {workspace_id}",
+        )
+
+    for document in documents:
+        # Ensure the document has a valid file URL
+        # Note: You can use files.get_presigned_url_from_document_url(document.url)
+        # to generate a presigned URL for direct file access
+        document.url = files.get_presigned_url_from_document_url(
+            client=client,
+            document_url=document.url,
+            expires=3600,
         )
 
     return documents

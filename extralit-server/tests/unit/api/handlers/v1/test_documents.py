@@ -20,7 +20,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from tests.factories import DocumentFactory, WorkspaceFactory, UserFactory, WorkspaceUserFactory
 
-from extralit_server.contexts.files import get_pdf_s3_object_path, get_s3_object_url
+from extralit_server.contexts.files import get_pdf_s3_object_path, get_proxy_document_url
 from extralit_server.models.database import Document
 from pydantic import BaseModel
 
@@ -62,7 +62,7 @@ async def test_upload_document(async_client: AsyncClient, db: AsyncSession, owne
         result = await db.execute(select(Document))
         documents = result.scalars().all()
         object_path = get_pdf_s3_object_path(document_json["id"])
-        s3_url = get_s3_object_url(workspace.name, object_path)
+        s3_url = get_proxy_document_url(workspace.name, object_path)
         assert [document.url for document in documents] == [s3_url]
 
         # Verify that put_object was called

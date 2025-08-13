@@ -39,9 +39,9 @@ async def get_file(
     client: Minio = Depends(files.get_minio_client),
     current_user: Optional[User] = Security(auth.get_optional_current_user),
 ):
-    # TODO Check if the current user is in the workspace to have access to the s3 bucket of the same name
-    # if current_user is not None or current_user.role != "owner":
-    #     await authorize(current_user, FilePolicy.get(bucket))
+    # TODO LocalFileStorage currently needs to disable authorization checks since clients cannot access the bucket directly.
+    if current_user is not None and isinstance(client, Minio):
+        await authorize(current_user, FilePolicy.get(bucket))
 
     try:
         file_response = files.get_object(client, bucket, object, version_id=version_id, include_versions=True)

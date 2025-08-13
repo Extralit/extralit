@@ -19,6 +19,7 @@ from extralit_server.constants import DEFAULT_API_KEY, DEFAULT_PASSWORD, DEFAULT
 from extralit_server.contexts import accounts
 from extralit_server.database import AsyncSessionLocal
 from extralit_server.models import User, UserRole
+from extralit_server.contexts import files
 
 from .utils import get_or_new_workspace
 
@@ -32,6 +33,8 @@ async def _create_default(api_key: str, password: str, quiet: bool):
 
             return
 
+        workspaces = [await get_or_new_workspace(session, DEFAULT_USERNAME)]
+
         await User.create(
             session,
             first_name="",
@@ -39,8 +42,20 @@ async def _create_default(api_key: str, password: str, quiet: bool):
             role=UserRole.owner,
             api_key=api_key,
             password_hash=accounts.hash_password(password),
-            workspaces=[await get_or_new_workspace(session, DEFAULT_USERNAME)],
+            workspaces=workspaces,
         )
+
+        if workspaces:
+            minio_client = files.get_minio_client()
+            if minio_client is not None:
+                for workspace in workspaces:
+                    try:
+                        files.create_bucket(minio_client, workspace.name)
+                        typer.echo(f"✓ Created/verified bucket for workspace: {workspace.name}")
+                    except Exception as e:
+                        typer.echo(f"⚠ Warning: Failed to create bucket for workspace {workspace.name}: {e}")
+            else:
+                typer.echo("⚠ Warning: MinIO client not available, skipping bucket creation")
 
         if not quiet:
             typer.echo("User with default credentials successfully created:")

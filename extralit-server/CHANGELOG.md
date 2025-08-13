@@ -16,6 +16,10 @@ These are the section headers that we use:
 
 ## [Extralit] [0.6.1](https://github.com/extralit/extralit/compare/v0.5.0...v0.6.1)
 
+### Added
+- Introduced presigned URL generation for document access in `get_document` function, ensuring valid file URLs.
+- Enabled minio/s3 bucket creation on new user creation in CLI command `extralit_server database users create`.
+
 ### Changed
 - Replaced separate /documents/by-id/{id} and /documents/by-pmid/{pmid} endpoints with a single /documents endpoint that accepts workspace_id and one or more identifiers (id, pmid, doi, reference), returning a list of matching documents
 
