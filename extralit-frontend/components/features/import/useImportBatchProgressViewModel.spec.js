@@ -19,12 +19,16 @@ jest.mock("ts-injecty", () => ({
 
 describe("useImportBatchProgressViewModel", () => {
   let viewModel;
+  let mockProps;
 
   beforeEach(() => {
     // Mock the use cases
-    const mockProps = {
+    mockProps = {
       workspace: { id: "workspace-1" },
-      uploadData: { confirmedDocuments: {} },
+      uploadData: {
+        confirmedDocuments: {},
+        documentActions: {}
+      },
       bibFileName: "test.bib",
     };
 
@@ -34,15 +38,18 @@ describe("useImportBatchProgressViewModel", () => {
   describe("createImportSummary", () => {
     const mockConfirmedDocuments = {
       ref1: {
-        document_create: { reference: "ref1", title: "Paper 1" },
+        title: "Paper 1",
+        authors: "Author 1",
         associated_files: [{ filename: "paper1.pdf", size: 1000 }],
       },
       ref2: {
-        document_create: { reference: "ref2", title: "Paper 2" },
+        title: "Paper 2",
+        authors: "Author 2",
         associated_files: [{ filename: "paper2.pdf", size: 2000 }],
       },
       ref3: {
-        document_create: { reference: "ref3", title: "Paper 3" },
+        title: "Paper 3",
+        authors: "Author 3",
         associated_files: [{ filename: "paper3.pdf", size: 3000 }],
       },
     };
@@ -60,21 +67,18 @@ describe("useImportBatchProgressViewModel", () => {
     };
 
     it("correctly counts added and updated documents when all jobs succeed", () => {
-      const mockJobStatuses = {
+      // Setup the view model state by updating props and internal state
+      mockProps.uploadData.confirmedDocuments = mockConfirmedDocuments;
+      mockProps.uploadData.documentActions = mockDocumentActions;
+      viewModel.allJobIds.value = mockAllJobIds;
+      viewModel.jobStatuses.value = {
         "job-1": "finished", // ref1 - add
         "job-2": "finished", // ref2 - update
         "job-3": "finished", // ref3 - add
       };
+      viewModel.errors.value = [];
 
-      const mockErrors = [];
-
-      const result = viewModel.createImportSummary(
-        mockConfirmedDocuments,
-        mockDocumentActions,
-        mockAllJobIds,
-        mockJobStatuses,
-        mockErrors
-      );
+      const result = viewModel.createImportSummary();
 
       expect(result.total).toBe(3);
       expect(result.added).toBe(2); // ref1 and ref3
@@ -85,24 +89,21 @@ describe("useImportBatchProgressViewModel", () => {
     });
 
     it("correctly counts failed documents", () => {
-      const mockJobStatuses = {
+      // Setup the view model state by updating props and internal state
+      mockProps.uploadData.confirmedDocuments = mockConfirmedDocuments;
+      mockProps.uploadData.documentActions = mockDocumentActions;
+      viewModel.allJobIds.value = mockAllJobIds;
+      viewModel.jobStatuses.value = {
         "job-1": "finished", // ref1 - add (success)
         "job-2": "failed", // ref2 - update (failed)
         "job-3": "failed", // ref3 - add (failed)
       };
-
-      const mockErrors = [
+      viewModel.errors.value = [
         { reference: "ref2", message: "Upload failed" },
         { reference: "ref3", message: "File corrupted" },
       ];
 
-      const result = viewModel.createImportSummary(
-        mockConfirmedDocuments,
-        mockDocumentActions,
-        mockAllJobIds,
-        mockJobStatuses,
-        mockErrors
-      );
+      const result = viewModel.createImportSummary();
 
       expect(result.total).toBe(3);
       expect(result.added).toBe(1); // ref1 only
@@ -116,21 +117,18 @@ describe("useImportBatchProgressViewModel", () => {
     });
 
     it("handles mixed job statuses correctly", () => {
-      const mockJobStatuses = {
+      // Setup the view model state by updating props and internal state
+      mockProps.uploadData.confirmedDocuments = mockConfirmedDocuments;
+      mockProps.uploadData.documentActions = mockDocumentActions;
+      viewModel.allJobIds.value = mockAllJobIds;
+      viewModel.jobStatuses.value = {
         "job-1": "finished", // ref1 - add (success)
         "job-2": "failed", // ref2 - update (failed)
         "job-3": "started", // ref3 - add (in progress)
       };
+      viewModel.errors.value = [{ reference: "ref2", message: "Network error" }];
 
-      const mockErrors = [{ reference: "ref2", message: "Network error" }];
-
-      const result = viewModel.createImportSummary(
-        mockConfirmedDocuments,
-        mockDocumentActions,
-        mockAllJobIds,
-        mockJobStatuses,
-        mockErrors
-      );
+      const result = viewModel.createImportSummary();
 
       expect(result.total).toBe(3);
       expect(result.added).toBe(1); // ref1 only (ref3 still in progress)
@@ -141,27 +139,22 @@ describe("useImportBatchProgressViewModel", () => {
     });
 
     it("handles missing job IDs gracefully", () => {
-      const mockJobStatusesPartial = {
-        "job-1": "finished", // ref1 - add (success)
-        "job-2": "failed", // ref2 - update (failed)
-        // job-3 missing
-      };
-
-      const mockAllJobIdsPartial = {
+      // Setup the view model state by updating props and internal state
+      mockProps.uploadData.confirmedDocuments = mockConfirmedDocuments;
+      mockProps.uploadData.documentActions = mockDocumentActions;
+      viewModel.allJobIds.value = {
         ref1: "job-1",
         ref2: "job-2",
         // ref3 missing
       };
+      viewModel.jobStatuses.value = {
+        "job-1": "finished", // ref1 - add (success)
+        "job-2": "failed", // ref2 - update (failed)
+        // job-3 missing
+      };
+      viewModel.errors.value = [{ reference: "ref2", message: "Upload failed" }];
 
-      const mockErrors = [{ reference: "ref2", message: "Upload failed" }];
-
-      const result = viewModel.createImportSummary(
-        mockConfirmedDocuments,
-        mockDocumentActions,
-        mockAllJobIdsPartial,
-        mockJobStatusesPartial,
-        mockErrors
-      );
+      const result = viewModel.createImportSummary();
 
       expect(result.total).toBe(3);
       expect(result.added).toBe(1); // ref1 only
@@ -172,24 +165,21 @@ describe("useImportBatchProgressViewModel", () => {
     });
 
     it("defaults to 'add' status when document action is missing", () => {
-      const mockDocumentActionsPartial = {
+      // Setup the view model state by updating props and internal state
+      mockProps.uploadData.confirmedDocuments = mockConfirmedDocuments;
+      mockProps.uploadData.documentActions = {
         ref1: "add",
         // ref2 and ref3 missing - should default to 'add'
       };
-
-      const mockJobStatuses = {
+      viewModel.allJobIds.value = mockAllJobIds;
+      viewModel.jobStatuses.value = {
         "job-1": "finished",
         "job-2": "finished",
         "job-3": "finished",
       };
+      viewModel.errors.value = [];
 
-      const result = viewModel.createImportSummary(
-        mockConfirmedDocuments,
-        mockDocumentActionsPartial,
-        mockAllJobIds,
-        mockJobStatuses,
-        []
-      );
+      const result = viewModel.createImportSummary();
 
       expect(result.total).toBe(3);
       expect(result.added).toBe(3); // all default to 'add'
@@ -199,7 +189,14 @@ describe("useImportBatchProgressViewModel", () => {
     });
 
     it("handles empty inputs gracefully", () => {
-      const result = viewModel.createImportSummary({}, {}, {}, {}, []);
+      // Setup the view model state by updating props and internal state
+      mockProps.uploadData.confirmedDocuments = {};
+      mockProps.uploadData.documentActions = {};
+      viewModel.allJobIds.value = {};
+      viewModel.jobStatuses.value = {};
+      viewModel.errors.value = [];
+
+      const result = viewModel.createImportSummary();
 
       expect(result.total).toBe(0);
       expect(result.added).toBe(0);
