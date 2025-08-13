@@ -6,7 +6,7 @@ export class GetDocumentByIdUseCase {
   constructor(
     private readonly documentRepository: DocumentRepository,
     private readonly documentStorage: IDocumentStorage
-  ) {}
+  ) { }
 
   async setDocument(params: {
     workspace_id: string;

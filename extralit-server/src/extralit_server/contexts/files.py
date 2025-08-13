@@ -19,7 +19,7 @@ import json
 import hashlib
 import uuid
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, BinaryIO, Dict, List, Optional, Union
 from urllib.parse import urlparse
@@ -39,6 +39,63 @@ from extralit_server.settings import settings
 EXCLUDED_VERSIONING_PREFIXES = ["pdf"]
 
 _LOGGER = logging.getLogger(__name__)
+
+# Singleton instances
+_minio_client: Optional[Union[Minio, "LocalFileStorage"]] = None
+_local_storage_client: Optional["LocalFileStorage"] = None
+
+
+def _create_minio_client() -> Optional[Union[Minio, "LocalFileStorage"]]:
+    """Create a new Minio client instance."""
+    if None in [settings.s3_endpoint, settings.s3_access_key, settings.s3_secret_key]:
+        # Use local file system storage if S3 settings are not provided
+        local_storage_path = os.path.join(settings.home_path, "storage")  # type: ignore
+        _LOGGER.info(f"Using local file storage at: {local_storage_path}")
+        return LocalFileStorage(local_storage_path)
+
+    try:
+        parsed_url = urlparse(settings.s3_endpoint)
+        hostname: str = str(parsed_url.hostname)
+        port = parsed_url.port
+
+        if hostname is None:
+            print(
+                f"Invalid URL: no hostname found, possible due to lacking http(s) protocol. Given '{settings.s3_endpoint}'"
+            )
+            return None
+
+        return Minio(
+            endpoint=f"{hostname}:{port}" if port else hostname,
+            access_key=settings.s3_access_key,
+            secret_key=settings.s3_secret_key,
+            secure=parsed_url.scheme == "https",
+        )
+    except Exception as e:
+        _LOGGER.error(f"Error creating Minio client: {e}", stack_info=True)
+        raise e
+
+
+def get_minio_client() -> Optional[Union[Minio, "LocalFileStorage"]]:
+    """Get a singleton Minio client instance."""
+    global _minio_client
+
+    if _minio_client is None:
+        _minio_client = _create_minio_client()
+
+    return _minio_client
+
+
+async def get_async_minio_client() -> Optional[Union[Minio, "LocalFileStorage"]]:
+    """Get a singleton Minio client instance for async operations."""
+    # For now, return the sync client since Minio client operations are blocking
+    # In the future, you could implement an async wrapper or use aioboto3 for S3
+    return get_minio_client()
+
+
+def reset_minio_client():
+    """Reset the singleton Minio client (useful for testing or reconnection)."""
+    global _minio_client
+    _minio_client = None
 
 
 class LocalFileStorage:
@@ -263,35 +320,6 @@ class LocalFileStorage:
         return result
 
 
-def get_minio_client() -> Optional[Union[Minio, LocalFileStorage]]:
-    if None in [settings.s3_endpoint, settings.s3_access_key, settings.s3_secret_key]:
-        # Use local file system storage if S3 settings are not provided
-        local_storage_path = os.path.join(settings.home_path, "storage")  # type: ignore
-        _LOGGER.info(f"Using local file storage at: {local_storage_path}")
-        return LocalFileStorage(local_storage_path)
-
-    try:
-        parsed_url = urlparse(settings.s3_endpoint)
-        hostname: str = str(parsed_url.hostname)
-        port = parsed_url.port
-
-        if hostname is None:
-            print(
-                f"Invalid URL: no hostname found, possible due to lacking http(s) protocol. Given '{settings.s3_endpoint}'"
-            )
-            return None
-
-        return Minio(
-            endpoint=f"{hostname}:{port}" if port else hostname,
-            access_key=settings.s3_access_key,
-            secret_key=settings.s3_secret_key,
-            secure=parsed_url.scheme == "https",
-        )
-    except Exception as e:
-        _LOGGER.error(f"Error creating Minio client: {e}", stack_info=True)
-        raise e
-
-
 def compute_hash(data: bytes) -> str:
     return hashlib.md5(data).hexdigest()
 
@@ -308,8 +336,46 @@ def get_pdf_s3_object_path(id: Union[UUID, str]) -> str:
     return object_path
 
 
-def get_s3_object_url(bucket_name: str, object_path: str) -> str:
+def get_proxy_document_url(bucket_name: str, object_path: str) -> str:
     return f"/api/v1/file/{bucket_name}/{object_path}"
+
+
+def get_presigned_url_from_document_url(
+    client: Minio | LocalFileStorage, document_url: str, expires: int = 3600
+) -> str:
+    """
+    Generate a presigned URL from a document URL by parsing the bucket_name and object_path.
+
+    Args:
+        document_url: URL in format "/api/v1/file/{bucket_name}/{object_path}"
+        expires: Expiration time in seconds (default: 1 hour)
+
+    Returns:
+        Presigned URL if successful, None if parsing fails or client is not Minio
+    """
+    if not isinstance(client, Minio):
+        return document_url
+
+    try:
+        # Parse the URL to extract bucket_name and object_path
+        # Expected format: "/api/v1/file/{bucket_name}/{object_path}"
+        if not document_url.startswith("/api/v1/file/"):
+            _LOGGER.warning(f"Invalid document URL format: {document_url}")
+            return document_url
+
+        path_parts = document_url[13:].split("/", 1)  # 13 = len("/api/v1/file/")
+        if len(path_parts) != 2:
+            _LOGGER.warning(f"Invalid document URL format: {document_url}")
+            return document_url
+
+        bucket_name, object_path = path_parts
+
+        presigned_url = client.presigned_get_object(bucket_name, object_path, expires=timedelta(seconds=expires))
+        return presigned_url
+
+    except Exception as e:
+        _LOGGER.error(f"Error generating presigned URL from document URL {document_url}: {e}")
+        return document_url
 
 
 def list_objects(
@@ -497,7 +563,7 @@ def put_document_file(
             metadata=metadata or {},
         )
 
-        return get_s3_object_url(response.bucket_name, response.object_name)
+        return get_proxy_document_url(response.bucket_name, response.object_name)
 
     return None
 

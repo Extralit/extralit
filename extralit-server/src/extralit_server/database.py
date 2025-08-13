@@ -42,6 +42,7 @@ TAGGED_REVISIONS = OrderedDict(
         "2.0": "237f7c674d74",
         "2.4": "660d6c6b3360",  # Extralit v0.3.0
         "2.5": "580a6553186f",
+        "0.6.0": "7d6b33203390",  # Extralit v0.6.0
     }
 )
 

@@ -15,13 +15,14 @@ import asyncio
 from typing import List, Optional
 
 import typer
+from pydantic import constr
 
 from extralit_server.api.schemas.v1.users import USER_PASSWORD_MIN_LENGTH, UserCreate
 from extralit_server.api.schemas.v1.workspaces import WorkspaceCreate
 from extralit_server.contexts import accounts
 from extralit_server.database import AsyncSessionLocal
 from extralit_server.models import User, UserRole
-from pydantic import constr
+from extralit_server.contexts import files
 
 from .utils import get_or_new_workspace
 
@@ -61,7 +62,9 @@ async def _create(
     password: str,
     last_name: Optional[str] = None,
     api_key: Optional[str] = None,
-    workspace: List[str] = None,
+    workspace: List[str] = typer.Option(
+        default=[], help="A workspace that the user will be a member of (can be used multiple times)."
+    ),
 ):
     """Creates a new user in the Extralit database with provided parameters"""
     if workspace is None:
@@ -96,6 +99,19 @@ async def _create(
             api_key=user_create.api_key,
             workspaces=[await get_or_new_workspace(session, workspace.name) for workspace in user_create.workspaces],
         )
+
+        # Create MinIO buckets for each workspace if they don't exist
+        if workspace:
+            minio_client = files.get_minio_client()
+            if minio_client is not None:
+                for workspace_name in workspace:
+                    try:
+                        files.create_bucket(minio_client, workspace_name)
+                        typer.echo(f"✓ Created/verified bucket for workspace: {workspace_name}")
+                    except Exception as e:
+                        typer.echo(f"⚠ Warning: Failed to create bucket for workspace {workspace_name}: {e}")
+            else:
+                typer.echo("⚠ Warning: MinIO client not available, skipping bucket creation")
 
         typer.echo("User successfully created:")
         typer.echo(f"• first_name: {user.first_name!r}")
