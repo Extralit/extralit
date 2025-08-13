@@ -24,21 +24,24 @@ interface UploadError {
   message: string;
 }
 
-export const useImportBatchProgressViewModel = (props: {
-  uploadData: {
-    confirmedDocuments: Record<string, DocumentMetadata>;
-    documentActions: Record<string, any>;
-    totalBatches: number;
-    currentBatch: number;
-    jobIds: Record<string, string>;
-    completedJobs: number;
-    failedJobs: number;
-  };
-  workspace?: any;
-  dataframeData?: any;
-  bibFileName?: string;
-  pdfFiles?: File[];
-}) => {
+export const useImportBatchProgressViewModel = (
+  props: {
+    uploadData: {
+      confirmedDocuments: Record<string, DocumentMetadata>;
+      documentActions: Record<string, any>;
+      totalBatches: number;
+      currentBatch: number;
+      jobIds: Record<string, string>;
+      completedJobs: number;
+      failedJobs: number;
+    };
+    workspace?: any;
+    dataframeData?: any;
+    bibFileName?: string;
+    pdfFiles?: File[];
+  },
+  emit?: (event: string, data?: any) => void
+) => {
   const bulkUploadUseCase = useResolve(BulkUploadDocumentsUseCase);
   const jobStatusUseCase = useResolve(GetJobStatusUseCase);
   const importHistoryUseCase = useResolve(CreateImportHistoryUseCase);
@@ -436,6 +439,75 @@ export const useImportBatchProgressViewModel = (props: {
     await initializeUpload();
   };
 
+  const emitProgressUpdate = () => {
+    if (emit) {
+      emit("progress", {
+        progress: overallProgressPercentage.value,
+        completedReferences: completedReferences.value,
+        totalReferences: totalReferences.value,
+        currentBatch: currentBatch.value,
+        totalBatches: totalBatches.value,
+      });
+    }
+  };
+
+  const createImportSummary = (): ImportResultSummary => {
+    const summary = {
+      total: totalReferences.value,
+      added: 0,
+      updated: 0,
+      skipped: 0,
+      failed: failedJobs.value,
+      errors: errors.value.map((e) => ({ reference: e.reference, message: e.message })),
+      importId: `import_${Date.now()}`,
+    };
+
+    // Count references by their original analysis status and current job status
+    Object.entries(props.uploadData.confirmedDocuments).forEach(([reference, _docMetadata]) => {
+      const originalStatus = props.uploadData.documentActions[reference] || "add";
+      const jobId = allJobIds.value[reference];
+      const jobStatus = jobId ? jobStatuses.value[jobId] : undefined;
+
+      // Determine final status based on job completion
+      if (jobStatus === "finished") {
+        // Job completed successfully - count based on original intention
+        if (originalStatus === "add") {
+          summary.added++;
+        } else if (originalStatus === "update") {
+          summary.updated++;
+        }
+      } else if (originalStatus === "skip") {
+        // Document was marked to skip
+        summary.skipped++;
+      }
+      // If job is still in progress, don't count it in any completion bucket yet
+    });
+
+    return summary;
+  };
+
+  const getFailedDocuments = () => {
+    const failedDocs: any[] = [];
+
+    Object.entries(props.uploadData.confirmedDocuments).forEach(([reference, docMetadata]) => {
+      const jobId = allJobIds.value[reference];
+      const jobStatus = jobId ? jobStatuses.value[jobId] : undefined;
+
+      if (jobStatus === "failed") {
+        // Find the error message for this reference
+        const error = errors.value.find((e) => e.reference === reference);
+
+        failedDocs.push({
+          reference,
+          error: error?.message || "Unknown error occurred",
+          validation_errors: error ? [error.message] : [],
+        });
+      }
+    });
+
+    return failedDocs;
+  };
+
   // Watch for upload data changes
   watch(
     () => props.uploadData,
@@ -446,6 +518,62 @@ export const useImportBatchProgressViewModel = (props: {
     },
     { deep: true, immediate: true }
   );
+
+  // Watch for completion and emit events
+  if (emit) {
+    watch(
+      () => isCompleted.value,
+      (isCompleted) => {
+        if (isCompleted) {
+          const summary = createImportSummary();
+          const failedDocs = getFailedDocuments();
+          emit("completed", {
+            importSummary: summary,
+            failedDocuments: failedDocs,
+            totalReferences: totalReferences.value,
+            completedJobs: completedJobs.value,
+            failedJobs: failedJobs.value,
+            errors: errors.value,
+          });
+        }
+      }
+    );
+
+    watch(
+      () => isCancelled.value,
+      (isCancelled) => {
+        if (isCancelled) {
+          emit("cancelled");
+        }
+      }
+    );
+
+    watch(
+      () => hasError.value,
+      (hasError) => {
+        if (hasError) {
+          emit("error", {
+            message: errorMessage.value,
+            errors: errors.value,
+          });
+        }
+      }
+    );
+
+    // Emit progress updates
+    watch(
+      () => overallProgressPercentage.value,
+      (progress) => {
+        emit("progress", {
+          progress,
+          completedReferences: completedReferences.value,
+          totalReferences: totalReferences.value,
+          currentBatch: currentBatch.value,
+          totalBatches: totalBatches.value,
+        });
+      }
+    );
+  }
 
   // Cleanup on unmount
   onBeforeUnmount(() => {
@@ -486,5 +614,8 @@ export const useImportBatchProgressViewModel = (props: {
     // Methods (only those actually used by the Vue component)
     cancelUpload,
     retryUpload,
+    createImportSummary,
+    getFailedDocuments,
+    emitProgressUpdate,
   };
 };

@@ -22,7 +22,7 @@
 
       <!-- Step 4: Import Summary -->
       <ImportSummary v-if="stepIndex === 3" ref="summaryComponent" :import-summary="importSummary"
-        :workspace="workspace" :bibFileName="bibData.fileName"
+        :workspace="workspace" :bibFileName="bibData.fileName" :failed-documents="failedDocuments"
         @return-to-library="handleReturnToLibrary" @view-import-history="handleViewImportHistory" />
     </template>
   </BaseFlowModal>
@@ -98,6 +98,7 @@ export default {
         errors: [],
         importId: null,
       },
+      failedDocuments: [],
 
       // Step definitions
       steps: [
@@ -305,8 +306,9 @@ export default {
       }
     },
 
-    handleUploadCompleted(importSummary) {
-      this.importSummary = importSummary;
+    handleUploadCompleted(uploadResult) {
+      this.importSummary = uploadResult.importSummary;
+      this.failedDocuments = uploadResult.failedDocuments || [];
       this.isUploading = false;
       this.isProcessing = false;
       this.clearError();
@@ -438,6 +440,7 @@ export default {
         errors: [],
         importId: null,
       };
+      this.failedDocuments = [];
 
       // Reset child components
       this.$nextTick(() => {

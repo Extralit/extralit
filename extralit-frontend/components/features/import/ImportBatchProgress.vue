@@ -156,7 +156,6 @@
 </template>
 
 <script lang="ts">
-import { watch } from "@nuxtjs/composition-api";
 import "assets/icons/check";
 import "assets/icons/close";
 import "assets/icons/danger";
@@ -200,8 +199,8 @@ export default {
 
   emits: ["completed", "cancelled", "error", "progress"],
 
-  setup(props) {
-    return useImportBatchProgressViewModel(props);
+  setup(props, { emit }) {
+    return useImportBatchProgressViewModel(props, emit);
   },
 };
 </script>
