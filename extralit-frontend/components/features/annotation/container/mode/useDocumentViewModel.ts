@@ -15,6 +15,7 @@ export const useDocumentViewModel = (props: { record: any }) => {
   const { state: dataset } = useDataset();
   const { state: document, set: setDocument, clear: clearDocument } = useDocument();
   const isLoading = ref(false);
+  const isDocumentPanelExpanded = ref(false);
 
   const hasDocumentLoaded = computed(() => {
     return document.id !== null;
@@ -24,25 +25,28 @@ export const useDocumentViewModel = (props: { record: any }) => {
     try {
       await waitForAsyncValue(() => workspaces.selectedWorkspace?.id);
 
-      const params: {
-        workspace_id: string;
-        doc_id?: string;
-        pmid?: string;
-        doi?: string;
-        reference?: string;
-      } = { workspace_id: workspaces.selectedWorkspace!.id };
+      const params = getDocument.createParams(metadata, workspaces.selectedWorkspace!.id);
 
-      if (metadata?.reference) params.reference = metadata.reference;
-      if (metadata?.doc_id) params.doc_id = metadata.doc_id;
-      if (metadata?.pmid) params.pmid = metadata.pmid;
-      if (metadata?.doi) params.doi = metadata.doi;
+      // Check if we have any valid identifiers
+      const hasValidIdentifier = params.reference || params.doc_id || params.pmid || params.doi;
 
-      // Ensure at least one identifier is provided
-      if (Object.keys(params).length === 0) {
-        throw new Error("No valid document identifier found in metadata");
+      if (!hasValidIdentifier) {
+        // No valid identifiers, clear the document
+        clearDocument();
+        return;
       }
 
-      await getDocument.setDocument(params);
+      const result = await getDocument.setDocument(params);
+
+      // If no documents were found, the use case will have already cleared the storage
+      if (!result) {
+        console.log("No documents found for the provided criteria");
+        // Collapse the document panel when no document is found
+        isDocumentPanelExpanded.value = false;
+      } else {
+        // Expand the document panel when a document is found
+        isDocumentPanelExpanded.value = true;
+      }
     } catch (e) {
       const identifier = metadata?.pmid || metadata?.doi || metadata?.doc_id || metadata?.reference || "unknown";
       console.error(`Error fetching document with identifier "${identifier}":`, e);
@@ -55,14 +59,20 @@ export const useDocumentViewModel = (props: { record: any }) => {
   };
 
   const updateDocument = async (metadata: any) => {
+    const hasValidIdentifier = metadata?.pmid || metadata?.doi || metadata?.doc_id || metadata?.reference;
+
     if (metadata?.pmid != null && document.pmid !== metadata.pmid) {
-      fetchDocument(metadata);
+      await fetchDocument(metadata);
     } else if (metadata?.doi != null && document.doi !== metadata.doi) {
-      fetchDocument(metadata);
+      await fetchDocument(metadata);
     } else if (metadata?.doc_id != null && document.id !== metadata.doc_id) {
-      fetchDocument(metadata);
-    } else if (!metadata?.pmid && !metadata?.doi && !metadata?.doc_id && hasDocumentLoaded.value) {
+      await fetchDocument(metadata);
+    } else if (metadata?.reference != null && document.reference !== metadata.reference) {
+      await fetchDocument(metadata);
+    } else if (!hasValidIdentifier && hasDocumentLoaded.value) {
       clearDocument();
+      // Collapse the document panel when no document is available
+      isDocumentPanelExpanded.value = false;
     }
 
     if (metadata?.page_number != null) {
@@ -114,6 +124,7 @@ export const useDocumentViewModel = (props: { record: any }) => {
     fetchDocumentSegments,
     focusDocumentPageNumber,
     clearDocument,
+    isDocumentPanelExpanded,
   };
 };
 

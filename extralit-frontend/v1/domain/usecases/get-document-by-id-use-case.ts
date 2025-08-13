@@ -6,7 +6,33 @@ export class GetDocumentByIdUseCase {
   constructor(
     private readonly documentRepository: DocumentRepository,
     private readonly documentStorage: IDocumentStorage
-  ) { }
+  ) {}
+
+  createParams(
+    metadata: any,
+    workspaceId: string
+  ): {
+    workspace_id: string;
+    doc_id?: string;
+    pmid?: string;
+    doi?: string;
+    reference?: string;
+  } {
+    const params: {
+      workspace_id: string;
+      doc_id?: string;
+      pmid?: string;
+      doi?: string;
+      reference?: string;
+    } = { workspace_id: workspaceId };
+
+    if (metadata?.reference) params.reference = metadata.reference;
+    if (metadata?.doc_id) params.doc_id = metadata.doc_id;
+    if (metadata?.pmid) params.pmid = metadata.pmid;
+    if (metadata?.doi) params.doi = metadata.doi;
+
+    return params;
+  }
 
   async setDocument(params: {
     workspace_id: string;
@@ -18,7 +44,9 @@ export class GetDocumentByIdUseCase {
     const documents = await this.documentRepository.getDocuments(params);
 
     if (documents.length === 0) {
-      throw new Error("No documents found with the provided criteria");
+      // Clear the document storage when no documents are found
+      this.documentStorage.clear();
+      return null;
     }
 
     // For now, we'll use the first document found
@@ -28,6 +56,7 @@ export class GetDocumentByIdUseCase {
     }
 
     this.documentStorage.set(documents[0]);
+    return documents[0];
   }
 
   async setSegments(workspace: string, reference: string): Promise<Segment[]> {

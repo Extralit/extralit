@@ -1,7 +1,12 @@
 <template>
-  <VerticalResizable class="wrapper" :id="`${recordCriteria.datasetId}-r-v-rz`">
+  <VerticalResizable :id="`${recordCriteria.datasetId}-r-v-rz`" class="wrapper">
     <template #left>
-      <HorizontalResizable :id="`${recordCriteria.datasetId}-r-h-rz`" class="wrapper__left" collapsable>
+      <HorizontalResizable
+        :id="`${recordCriteria.datasetId}-r-h-rz`"
+        ref="documentPanel"
+        class="wrapper__left"
+        collapsable
+      >
         <template #up>
           <section class="wrapper__records" aria-label="Focus Annotation View">
             <DatasetFilters :recordCriteria="recordCriteria">
@@ -32,7 +37,15 @@
           <p v-text="$t('document')" />
         </template>
         <template #downContent>
-          <PDFViewer :url="document.url" :file-name="document.file_name" :pageNumber="document.page_number" />
+          <PDFViewer
+            v-if="document.url"
+            :url="document.url"
+            :file-name="document.file_name"
+            :pageNumber="document.page_number"
+          />
+          <div v-else class="no-document-message">
+            <p>{{ $t("no_document_available") }}</p>
+          </div>
         </template>
       </HorizontalResizable>
     </template>
@@ -117,6 +130,23 @@ export default {
       expandedGuidelines: false,
     };
   },
+  watch: {
+    isDocumentPanelExpanded(newValue) {
+      if (this.$refs.documentPanel && this.$refs.documentPanel.isExpanded !== newValue) {
+        this.$refs.documentPanel.isExpanded = newValue;
+      }
+    },
+    "document.url"(newUrl, oldUrl) {
+      // Collapse panel when document is cleared
+      if (!newUrl && oldUrl) {
+        this.isDocumentPanelExpanded = false;
+      }
+      // Expand panel when document is loaded
+      else if (newUrl && !oldUrl) {
+        this.isDocumentPanelExpanded = true;
+      }
+    },
+  },
   methods: {
     async onSubmit() {
       await this.submit(this.record);
@@ -146,7 +176,6 @@ export default {
         this.isDraftSaving = false;
       }
     },
-
   },
   setup(props) {
     return {
@@ -230,5 +259,14 @@ export default {
   .--expanded & {
     display: block;
   }
+}
+
+.no-document-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--fg-secondary);
+  font-style: italic;
 }
 </style>

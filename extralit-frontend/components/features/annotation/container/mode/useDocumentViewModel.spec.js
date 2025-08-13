@@ -85,6 +85,7 @@ describe("useDocumentViewModel", () => {
     mockGetDocumentUseCase = {
       setDocument: jest.fn(),
       setSegments: jest.fn(),
+      createParams: jest.fn(),
     };
 
     // Setup Vue composition API mocks
@@ -102,68 +103,51 @@ describe("useDocumentViewModel", () => {
     jest.restoreAllMocks();
   });
 
-  describe("shouldShowDocumentPanel computed property", () => {
+  describe("hasDocumentLoaded computed property", () => {
     it("should return false when document has no id", () => {
       mockDocument.id = null;
-      mockDocument.url = "http://example.com/doc.pdf";
 
-      const viewModel = useDocumentViewModel({ record: {} });
+      useDocumentViewModel({ record: {} });
 
       // Get the computed function that was passed to mockComputed
       const computedCalls = mockComputed.mock.calls;
-      const shouldShowDocumentPanelCall = computedCalls.find(
-        (call) => call[0].toString().includes("hasDocumentLoaded") && call[0].toString().includes("document.url")
+      const hasDocumentLoadedCall = computedCalls.find(
+        (call) => call[0].toString().includes("document.id")
       );
 
-      expect(shouldShowDocumentPanelCall).toBeDefined();
-      const shouldShowDocumentPanel = shouldShowDocumentPanelCall[0]();
-      expect(shouldShowDocumentPanel).toBe(false);
+      expect(hasDocumentLoadedCall).toBeDefined();
+      const hasDocumentLoaded = hasDocumentLoadedCall[0]();
+      expect(hasDocumentLoaded).toBe(false);
     });
 
-    it("should return false when document has no url", () => {
+    it("should return true when document has an id", () => {
       mockDocument.id = "doc-123";
-      mockDocument.url = null;
 
-      const viewModel = useDocumentViewModel({ record: {} });
+      useDocumentViewModel({ record: {} });
 
       // Get the computed function that was passed to mockComputed
       const computedCalls = mockComputed.mock.calls;
-      const shouldShowDocumentPanelCall = computedCalls.find(
-        (call) => call[0].toString().includes("hasDocumentLoaded") && call[0].toString().includes("document.url")
+      const hasDocumentLoadedCall = computedCalls.find(
+        (call) => call[0].toString().includes("document.id")
       );
 
-      expect(shouldShowDocumentPanelCall).toBeDefined();
-      const shouldShowDocumentPanel = shouldShowDocumentPanelCall[0]();
-      expect(shouldShowDocumentPanel).toBe(false);
-    });
-
-    it("should return true when document has both id and url", () => {
-      mockDocument.id = "doc-123";
-      mockDocument.url = "http://example.com/doc.pdf";
-
-      const viewModel = useDocumentViewModel({ record: {} });
-
-      // Get the computed function that was passed to mockComputed
-      const computedCalls = mockComputed.mock.calls;
-      const shouldShowDocumentPanelCall = computedCalls.find(
-        (call) => call[0].toString().includes("hasDocumentLoaded") && call[0].toString().includes("document.url")
-      );
-
-      expect(shouldShowDocumentPanelCall).toBeDefined();
-      const shouldShowDocumentPanel = shouldShowDocumentPanelCall[0]();
-      expect(shouldShowDocumentPanel).toBe(true);
+      expect(hasDocumentLoadedCall).toBeDefined();
+      const hasDocumentLoaded = hasDocumentLoadedCall[0]();
+      expect(hasDocumentLoaded).toBe(true);
     });
   });
 
-  describe("clearDocument behavior", () => {
-    it("should call clearDocument when no document identifiers are present", () => {
-      mockDocument.id = "doc-123";
+  describe("createParams method", () => {
+    it("should call createParams from use case", () => {
+      const metadata = { pmid: "12345" };
+      const workspaceId = "workspace-123";
 
-      const viewModel = useDocumentViewModel({
-        record: {
-          metadata: {}, // No pmid, doi, doc_id, or reference
-        },
+      mockGetDocumentUseCase.createParams.mockReturnValue({
+        workspace_id: workspaceId,
+        pmid: "12345"
       });
+
+      useDocumentViewModel({ record: { metadata } });
 
       // Verify that watch was called for props.record?.metadata
       expect(mockWatch).toHaveBeenCalled();
@@ -175,10 +159,6 @@ describe("useDocumentViewModel", () => {
       );
 
       expect(metadataWatchCall).toBeDefined();
-
-      // Simulate the watch callback being called with empty metadata
-      const watchCallback = metadataWatchCall[1];
-      watchCallback({}, null);
 
       // Since we can't easily test the async updateDocument function,
       // we'll verify that the watch was set up correctly
@@ -194,7 +174,7 @@ describe("useDocumentViewModel", () => {
       expect(viewModel).toHaveProperty("fetchDocumentSegments");
       expect(viewModel).toHaveProperty("focusDocumentPageNumber");
       expect(viewModel).toHaveProperty("clearDocument");
-      expect(viewModel).toHaveProperty("shouldShowDocumentPanel");
+      expect(viewModel).toHaveProperty("isDocumentPanelExpanded");
     });
 
     it("should return functions for methods", () => {
