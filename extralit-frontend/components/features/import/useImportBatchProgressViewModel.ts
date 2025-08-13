@@ -78,24 +78,26 @@ export const useImportBatchProgressViewModel = (props: {
     }
     return 0;
   });
-  
+
   const completedInCurrentBatch = computed(() => {
     if (currentBatchIndex.value < batches.value.length) {
       const currentBatch = batches.value[currentBatchIndex.value];
-      return currentBatch.references.filter(ref => {
+      return currentBatch.references.filter((ref) => {
         const jobId = allJobIds.value[ref];
-        return jobId && (jobStatuses.value[jobId] === 'finished' || jobStatuses.value[jobId] === 'failed');
+        return jobId && (jobStatuses.value[jobId] === "finished" || jobStatuses.value[jobId] === "failed");
       }).length;
     }
     return 0;
   });
 
   const overallProgressPercentage = computed(() => {
-    return calculateOverallProgress(completedReferences.value, totalReferences.value);
+    if (totalReferences.value === 0) return 0;
+    return Math.round((completedReferences.value / totalReferences.value) * 100);
   });
 
   const batchProgressPercentage = computed(() => {
-    return calculateBatchProgress(completedInCurrentBatch.value, currentBatchSize.value);
+    if (currentBatchSize.value === 0) return 0;
+    return Math.round((completedInCurrentBatch.value / currentBatchSize.value) * 100);
   });
 
   const completedJobs = computed(() => {
@@ -114,23 +116,75 @@ export const useImportBatchProgressViewModel = (props: {
     return countJobsByStatus(jobStatuses.value).queued;
   });
 
-  // Watch for upload data changes
-  watch(
-    () => props.uploadData,
-    (newData) => {
-      if (newData && Object.keys(newData.confirmedDocuments).length > 0 && !isUploading.value) {
-        initializeUpload();
+  // Helper functions (defined first to avoid dependency issues)
+  const countJobsByStatus = (jobStatuses: Record<string, JobStatus>) => {
+    const statusCounts = {
+      completed: 0,
+      failed: 0,
+      processing: 0,
+      queued: 0,
+    };
+
+    Object.values(jobStatuses).forEach((status) => {
+      switch (status) {
+        case "finished":
+          statusCounts.completed++;
+          break;
+        case "failed":
+          statusCounts.failed++;
+          break;
+        case "started":
+          statusCounts.processing++;
+          break;
+        case "queued":
+        case "deferred":
+          statusCounts.queued++;
+          break;
       }
-    },
-    { deep: true, immediate: true }
-  );
+    });
 
-  // Cleanup on unmount
-  onBeforeUnmount(() => {
-    stopStatusPolling();
-  });
+    return statusCounts;
+  };
 
-  // State management methods
+  const createBatches = (confirmedDocuments: Record<string, DocumentMetadata>, batchSize = 15): BatchInfo[] => {
+    const references = Object.keys(confirmedDocuments);
+    const batchArray: BatchInfo[] = [];
+
+    for (let i = 0; i < references.length; i += batchSize) {
+      const batchReferences = references.slice(i, i + batchSize);
+      batchArray.push({
+        batchIndex: Math.floor(i / batchSize),
+        references: batchReferences,
+        jobIds: {},
+        completed: false,
+        failed: false,
+      });
+    }
+
+    return batchArray;
+  };
+
+  const handleBatchError = (batch: BatchInfo, error: any): UploadError[] => {
+    return batch.references.map((reference) => ({
+      reference,
+      message: error.message || "Batch upload failed",
+    }));
+  };
+
+  const handleValidationErrors = (validationErrors: string[]): UploadError[] => {
+    return validationErrors.map((error) => ({
+      reference: "validation",
+      message: error,
+    }));
+  };
+
+  const stopStatusPolling = () => {
+    if (statusPollingInterval.value) {
+      clearInterval(statusPollingInterval.value);
+      statusPollingInterval.value = null;
+    }
+  };
+
   const resetState = () => {
     isUploading.value = false;
     isCompleted.value = false;
@@ -148,250 +202,9 @@ export const useImportBatchProgressViewModel = (props: {
     stopStatusPolling();
   };
 
-  const initializeUpload = async () => {
-    if (Object.keys(props.uploadData.confirmedDocuments).length === 0) {
-      return;
-    }
-
-    resetState();
-    createBatchesInternal();
-    await startBatchUpload();
-  };
-
   const createBatchesInternal = () => {
     totalReferences.value = Object.keys(props.uploadData.confirmedDocuments).length;
     batches.value = createBatches(props.uploadData.confirmedDocuments, batchSize.value);
-  };
-
-  const startBatchUpload = async () => {
-    isUploading.value = true;
-    currentBatchIndex.value = 0;
-
-    try {
-      await processBatchSequentially();
-    } catch (error) {
-      handleUploadError(error);
-    }
-  };
-
-  const processBatchSequentially = async () => {
-    for (let batchIndex = 0; batchIndex < batches.value.length; batchIndex++) {
-      if (isCancelling.value) {
-        isCancelled.value = true;
-        isUploading.value = false;
-        return;
-      }
-
-      currentBatchIndex.value = batchIndex;
-      const batch = batches.value[batchIndex];
-
-      try {
-        // Upload current batch
-        await uploadBatchInternal(batch);
-
-        // Wait for all jobs in this batch to complete (success or failure)
-        await waitForBatchCompletion(batch, jobStatuses.value, pollingIntervalMs.value);
-
-        // Mark batch as completed
-        batch.completed = true;
-
-      } catch (error) {
-        batch.failed = true;
-        const batchErrors = handleBatchError(batch, error);
-        errors.value.push(...batchErrors);
-      }
-    }
-
-    // All batches completed - set completed state
-    stopStatusPolling();
-    isUploading.value = false;
-    isCompleted.value = true;
-  };
-
-  const uploadBatchInternal = async (batch: BatchInfo) => {
-    const response = await uploadBatch(
-      batch,
-      props.uploadData.confirmedDocuments,
-      props.pdfFiles || []
-    );
-
-    // Store job IDs globally
-    Object.assign(allJobIds.value, response.job_ids);
-
-    // Initialize job statuses
-    Object.values(response.job_ids).forEach((jobId: string) => {
-      jobStatuses.value[jobId] = 'queued';
-    });
-
-    // Handle validation failures
-    if (response.failed_validations.length > 0) {
-      const validationErrors = handleValidationErrors(response.failed_validations);
-      errors.value.push(...validationErrors);
-    }
-
-    // Start polling for this batch
-    startStatusPolling();
-  };
-
-  const startStatusPolling = () => {
-    if (statusPollingInterval.value) {
-      return; // Already polling
-    }
-
-    statusPollingInterval.value = setInterval(async () => {
-      await pollJobStatusesInternal();
-    }, pollingIntervalMs.value);
-  };
-
-  const stopStatusPolling = () => {
-    if (statusPollingInterval.value) {
-      clearInterval(statusPollingInterval.value);
-      statusPollingInterval.value = null;
-    }
-  };
-
-  const pollJobStatusesInternal = async () => {
-    if (Object.keys(allJobIds.value).length === 0) {
-      return;
-    }
-
-    try {
-      const jobIds = Object.values(allJobIds.value);
-      const newJobStatuses = await pollJobStatuses(jobIds);
-
-      // Update job statuses
-      Object.assign(jobStatuses.value, newJobStatuses);
-
-      // Update completed references count
-      completedReferences.value = Object.values(jobStatuses.value).filter(
-        status => status === 'finished' || status === 'failed'
-      ).length;
-
-    } catch (error) {
-      console.error("Error polling job statuses:", error);
-    }
-  };
-
-  const createFinalImportSummary = async () => {
-    try {
-      // Create import history record with metadata
-      const metadata = createImportMetadata();
-      await createImportHistory(
-        props.workspace,
-        props.bibFileName || "",
-        createFilteredDataframeData(),
-        metadata
-      );
-
-      // Create and return summary data
-      const importSummary = createImportSummary(
-        props.uploadData.confirmedDocuments,
-        props.uploadData.documentActions,
-        allJobIds.value,
-        jobStatuses.value,
-        errors.value
-      );
-
-      return importSummary;
-
-    } catch (error) {
-      console.error("Error creating final import summary:", error);
-      handleUploadError(error);
-      throw error;
-    }
-  };
-
-  const cancelUpload = async () => {
-    if (isCancelling.value) return;
-
-    isCancelling.value = true;
-    stopStatusPolling();
-
-    // Note: We can't actually cancel running jobs, but we can stop processing new batches
-    // The jobs will continue to run in the background
-
-    setTimeout(() => {
-      isCancelled.value = true;
-      isUploading.value = false;
-      isCancelling.value = false;
-    }, 1000);
-  };
-
-  const retryUpload = async () => {
-    hasError.value = false;
-    errorMessage.value = "";
-    await initializeUpload();
-  };
-
-  const handleUploadError = (error: any) => {
-    isUploading.value = false;
-    hasError.value = true;
-    errorMessage.value = error.message || "An unexpected error occurred during upload";
-    stopStatusPolling();
-  };
-
-  const createImportMetadata = () => {
-    const metadata: Record<string, any> = {};
-
-    // Create metadata for each reference with status and associated files
-    // Only include references that were actually uploaded (add or update status with PDFs)
-    Object.entries(props.uploadData.confirmedDocuments).forEach(([reference, docMetadata]) => {
-      const typedDocMetadata = docMetadata as DocumentMetadata;
-
-      // Only include references that have associated files (matched PDFs)
-      if (typedDocMetadata.associated_files && typedDocMetadata.associated_files.length > 0) {
-        metadata[reference] = {
-          status: 'add', // Default status for uploaded documents
-          associated_files: typedDocMetadata.associated_files.map(fileInfo =>
-            typeof fileInfo === 'string' ? fileInfo : fileInfo.filename
-          ),
-        };
-      }
-    });
-
-    return metadata;
-  };
-
-  const createFilteredDataframeData = () => {
-    if (!props.dataframeData || !props.dataframeData.data) {
-      return null;
-    }
-
-    // Filter dataframe data to only include references that were actually uploaded
-    const uploadedReferences = new Set(Object.keys(props.uploadData.confirmedDocuments));
-
-    const filteredData = props.dataframeData.data.filter((row: Record<string, any>) => {
-      const reference = row.reference || row.key;
-      return uploadedReferences.has(reference);
-    });
-
-    return {
-      ...props.dataframeData,
-      data: filteredData,
-    };
-  };
-
-  const reset = () => {
-    resetState();
-  };
-
-  // Helper functions
-  const createBatches = (confirmedDocuments: Record<string, DocumentMetadata>, batchSize = 15): BatchInfo[] => {
-    const references = Object.keys(confirmedDocuments);
-    const batchArray: BatchInfo[] = [];
-
-    for (let i = 0; i < references.length; i += batchSize) {
-      const batchReferences = references.slice(i, i + batchSize);
-      batchArray.push({
-        batchIndex: Math.floor(i / batchSize),
-        references: batchReferences,
-        jobIds: {},
-        completed: false,
-        failed: false,
-      });
-    }
-
-    return batchArray;
   };
 
   const uploadBatch = async (
@@ -488,133 +301,156 @@ export const useImportBatchProgressViewModel = (props: {
     });
   };
 
-  const createImportHistory = async (
-    workspace: any,
-    bibFileName: string,
-    dataframeData: any,
-    metadata?: Record<string, any>
-  ) => {
-    if (!dataframeData || !workspace) {
-      return null;
+  const startStatusPolling = () => {
+    if (statusPollingInterval.value) {
+      return; // Already polling
     }
 
-    return await importHistoryUseCase.execute({
-      workspace_id: workspace.id,
-      filename: bibFileName || "import.bib",
-      data: dataframeData,
-      metadata,
-    });
+    statusPollingInterval.value = setInterval(async () => {
+      await pollJobStatusesInternal();
+    }, pollingIntervalMs.value);
   };
 
-  /**
-   * Creates import result summary with accurate counts
-   * @param confirmedDocuments - Documents that were selected for upload
-   * @param documentActions - Original analysis status for each reference
-   * @param allJobIds - Mapping of reference to job ID
-   * @param jobStatuses - Current job statuses by job ID
-   * @param errors - Upload errors
-   */
-  const createImportSummary = (
-    confirmedDocuments: Record<string, DocumentMetadata>,
-    documentActions: Record<string, "add" | "update" | "skip" | "ignore" | "failed">,
-    allJobIds: Record<string, string>,
-    jobStatuses: Record<string, JobStatus>,
-    errors: UploadError[]
-  ): ImportResultSummary => {
-    const summary = {
-      total: 0,
-      added: 0,
-      updated: 0,
-      skipped: 0,
-      failed: 0,
-      errors: errors.map((e) => ({ reference: e.reference, message: e.message })),
-      importId: `import_${Date.now()}`,
-    };
+  const pollJobStatusesInternal = async () => {
+    if (Object.keys(allJobIds.value).length === 0) {
+      return;
+    }
 
-    // Count references by their original analysis status and current job status
-    Object.entries(confirmedDocuments).forEach(([reference, _docMetadata]) => {
-      const originalStatus = documentActions[reference] || "add";
-      const jobId = allJobIds[reference];
-      const jobStatus = jobId ? jobStatuses[jobId] : undefined;
+    try {
+      const jobIds = Object.values(allJobIds.value);
+      const newJobStatuses = await pollJobStatuses(jobIds);
 
-      summary.total++;
+      // Update job statuses
+      Object.assign(jobStatuses.value, newJobStatuses);
 
-      // Determine final status based on job completion
-      if (jobStatus === "finished") {
-        // Job completed successfully - count based on original intention
-        if (originalStatus === "add") {
-          summary.added++;
-        } else if (originalStatus === "update") {
-          summary.updated++;
-        }
-      } else if (jobStatus === "failed") {
-        // Job failed
-        summary.failed++;
-      } else if (originalStatus === "skip") {
-        // Document was marked to skip (though these shouldn't be in confirmedDocuments)
-        summary.skipped++;
+      // Update completed references count
+      completedReferences.value = Object.values(jobStatuses.value).filter(
+        (status) => status === "finished" || status === "failed"
+      ).length;
+    } catch (error) {
+      console.error("Error polling job statuses:", error);
+    }
+  };
+
+  const uploadBatchInternal = async (batch: BatchInfo) => {
+    const response = await uploadBatch(batch, props.uploadData.confirmedDocuments, props.pdfFiles || []);
+
+    // Store job IDs globally
+    Object.assign(allJobIds.value, response.job_ids);
+
+    // Initialize job statuses
+    Object.values(response.job_ids).forEach((jobId: string) => {
+      jobStatuses.value[jobId] = "queued";
+    });
+
+    // Handle validation failures
+    if (response.failed_validations.length > 0) {
+      const validationErrors = handleValidationErrors(response.failed_validations);
+      errors.value.push(...validationErrors);
+    }
+
+    // Start polling for this batch
+    startStatusPolling();
+  };
+
+  const processBatchSequentially = async () => {
+    for (let batchIndex = 0; batchIndex < batches.value.length; batchIndex++) {
+      if (isCancelling.value) {
+        isCancelled.value = true;
+        isUploading.value = false;
+        return;
       }
-      // If job is still in progress, don't count it in any completion bucket yet
-    });
 
-    return summary;
-  };
+      currentBatchIndex.value = batchIndex;
+      const batch = batches.value[batchIndex];
 
-  // Progress calculation helpers
-  const calculateOverallProgress = (completedReferences: number, totalReferences: number): number => {
-    if (totalReferences === 0) return 0;
-    return Math.round((completedReferences / totalReferences) * 100);
-  };
+      try {
+        // Upload current batch
+        await uploadBatchInternal(batch);
 
-  const calculateBatchProgress = (completedInBatch: number, batchSize: number): number => {
-    if (batchSize === 0) return 0;
-    return Math.round((completedInBatch / batchSize) * 100);
-  };
+        // Wait for all jobs in this batch to complete (success or failure)
+        await waitForBatchCompletion(batch, jobStatuses.value, pollingIntervalMs.value);
 
-  // Job status counting helpers
-  const countJobsByStatus = (jobStatuses: Record<string, JobStatus>) => {
-    const statusCounts = {
-      completed: 0,
-      failed: 0,
-      processing: 0,
-      queued: 0,
-    };
-
-    Object.values(jobStatuses).forEach((status) => {
-      switch (status) {
-        case "finished":
-          statusCounts.completed++;
-          break;
-        case "failed":
-          statusCounts.failed++;
-          break;
-        case "started":
-          statusCounts.processing++;
-          break;
-        case "queued":
-        case "deferred":
-          statusCounts.queued++;
-          break;
+        // Mark batch as completed
+        batch.completed = true;
+      } catch (error) {
+        batch.failed = true;
+        const batchErrors = handleBatchError(batch, error);
+        errors.value.push(...batchErrors);
       }
-    });
+    }
 
-    return statusCounts;
+    // All batches completed - set completed state
+    stopStatusPolling();
+    isUploading.value = false;
+    isCompleted.value = true;
   };
 
-  // Error handling helpers
-  const handleBatchError = (batch: BatchInfo, error: any): UploadError[] => {
-    return batch.references.map((reference) => ({
-      reference,
-      message: error.message || "Batch upload failed",
-    }));
+  const startBatchUpload = async () => {
+    isUploading.value = true;
+    currentBatchIndex.value = 0;
+
+    try {
+      await processBatchSequentially();
+    } catch (error) {
+      handleUploadError(error);
+    }
   };
 
-  const handleValidationErrors = (validationErrors: string[]): UploadError[] => {
-    return validationErrors.map((error) => ({
-      reference: "validation",
-      message: error,
-    }));
+  const handleUploadError = (error: any) => {
+    isUploading.value = false;
+    hasError.value = true;
+    errorMessage.value = error.message || "An unexpected error occurred during upload";
+    stopStatusPolling();
   };
+
+  const initializeUpload = async () => {
+    if (Object.keys(props.uploadData.confirmedDocuments).length === 0) {
+      return;
+    }
+
+    resetState();
+    createBatchesInternal();
+    await startBatchUpload();
+  };
+
+  const cancelUpload = async () => {
+    if (isCancelling.value) return;
+
+    isCancelling.value = true;
+    stopStatusPolling();
+
+    // Note: We can't actually cancel running jobs, but we can stop processing new batches
+    // The jobs will continue to run in the background
+
+    setTimeout(() => {
+      isCancelled.value = true;
+      isUploading.value = false;
+      isCancelling.value = false;
+    }, 1000);
+  };
+
+  const retryUpload = async () => {
+    hasError.value = false;
+    errorMessage.value = "";
+    await initializeUpload();
+  };
+
+  // Watch for upload data changes
+  watch(
+    () => props.uploadData,
+    (newData) => {
+      if (newData && Object.keys(newData.confirmedDocuments).length > 0 && !isUploading.value) {
+        initializeUpload();
+      }
+    },
+    { deep: true, immediate: true }
+  );
+
+  // Cleanup on unmount
+  onBeforeUnmount(() => {
+    stopStatusPolling();
+  });
 
   return {
     // Reactive state
@@ -647,35 +483,8 @@ export const useImportBatchProgressViewModel = (props: {
     processingJobs,
     queuedJobs,
 
-    // Methods
-    initializeUpload,
-    resetState,
-    createBatchesInternal,
-    startBatchUpload,
-    processBatchSequentially,
-    uploadBatchInternal,
-    startStatusPolling,
-    stopStatusPolling,
-    pollJobStatusesInternal,
-    createFinalImportSummary,
+    // Methods (only those actually used by the Vue component)
     cancelUpload,
     retryUpload,
-    handleUploadError,
-    createImportMetadata,
-    createFilteredDataframeData,
-    reset,
-
-    // Helper functions (for compatibility)
-    createBatches,
-    uploadBatch,
-    pollJobStatuses,
-    waitForBatchCompletion,
-    createImportHistory,
-    createImportSummary,
-    calculateOverallProgress,
-    calculateBatchProgress,
-    countJobsByStatus,
-    handleBatchError,
-    handleValidationErrors,
   };
 };

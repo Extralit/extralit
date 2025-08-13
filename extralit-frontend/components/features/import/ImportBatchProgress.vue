@@ -160,23 +160,9 @@ import { watch } from "@nuxtjs/composition-api";
 import "assets/icons/check";
 import "assets/icons/close";
 import "assets/icons/danger";
-import type { DocumentMetadata } from "~/v1/domain/entities/import/ImportAnalysis";
 import type { ImportUploadData } from "./types";
-import type { JobStatus } from "~/v1/domain/usecases/get-job-status-use-case";
 import { useImportBatchProgressViewModel } from "./useImportBatchProgressViewModel";
 
-interface BatchInfo {
-  batchIndex: number;
-  references: string[];
-  jobIds: Record<string, string>;
-  completed: boolean;
-  failed: boolean;
-}
-
-interface UploadError {
-  reference: string;
-  message: string;
-}
 
 export default {
   name: "ImportBatchProgress",
@@ -214,53 +200,8 @@ export default {
 
   emits: ["completed", "cancelled", "error", "progress"],
 
-  setup(props, { emit }) {
-    const viewModel = useImportBatchProgressViewModel(props);
-
-    // Watch for completion and emit events
-    watch(viewModel.isCompleted, async (isCompleted) => {
-      if (isCompleted) {
-        try {
-          const summary = await viewModel.createFinalImportSummary();
-          if (summary) {
-            emit("completed", summary);
-          }
-        } catch (error) {
-          emit("error", error);
-        }
-      }
-    });
-
-    // Watch for cancellation
-    watch(viewModel.isCancelled, (isCancelled) => {
-      if (isCancelled) {
-        emit("cancelled");
-      }
-    });
-
-    // Watch for errors
-    watch(viewModel.hasError, (hasError) => {
-      if (hasError) {
-        emit("error", new Error(viewModel.errorMessage.value));
-      }
-    });
-
-    // Watch for progress updates
-    watch([viewModel.completedReferences, viewModel.totalReferences, viewModel.completedJobs, viewModel.failedJobs], () => {
-      emit("progress", {
-        completedReferences: viewModel.completedReferences.value,
-        totalReferences: viewModel.totalReferences.value,
-        completedJobs: viewModel.completedJobs.value,
-        failedJobs: viewModel.failedJobs.value,
-        currentBatch: viewModel.currentBatch.value,
-        totalBatches: viewModel.totalBatches.value,
-      });
-    });
-
-    return {
-      // Reactive state and computed properties from view model
-      ...viewModel,
-    };
+  setup(props) {
+    return useImportBatchProgressViewModel(props);
   },
 };
 </script>
