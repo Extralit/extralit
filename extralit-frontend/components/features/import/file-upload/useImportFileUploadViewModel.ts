@@ -249,7 +249,10 @@ export function createPdfStrategy(
       const allFiles = [...existingFiles, ...newFiles];
       data.value.totalFiles = allFiles.length;
 
-      // No additional processing needed for PDFs - matching happens separately
+      // Update the unmatched files list with all files for now
+      // Matching will be handled separately by the component
+      data.value.unmatchedFiles = allFiles;
+      data.value.matchedFiles = [];
     },
 
     performFileMatching(uploadedFiles: File[], bibliographyEntries: TableData | null) {

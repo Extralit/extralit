@@ -9,9 +9,9 @@
     </div>
 
     <div class="pdf-upload__dropzone" :class="{
-      'pdf-upload__dropzone--dragover': dragOver,
-      'pdf-upload__dropzone--error': hasError,
-      'pdf-upload__dropzone--success': uploaded,
+      'pdf-upload__dropzone--dragover': state.isDragging,
+      'pdf-upload__dropzone--error': state.hasError,
+      'pdf-upload__dropzone--success': state.uploaded,
     }" @drop="handleDrop" @dragover="handleDragOver" @dragleave="handleDragLeave"
       @click="triggerFolderInput">
       <input ref="folderInput" type="file" accept=".pdf" multiple webkitdirectory style="display: none"
@@ -27,10 +27,10 @@
     </div>
 
     <!-- Processing Progress -->
-    <div v-if="processing" class="pdf-upload__progress">
+    <div v-if="state.processing" class="pdf-upload__progress">
       <div class="pdf-upload__progress-header">
         <h4>Processing PDF Files...</h4>
-        <span>{{ processedFiles }}/{{ totalFiles }} files</span>
+        <span>{{ state.processedFiles }}/{{ state.totalFiles }} files</span>
       </div>
       <div class="pdf-upload__progress-bar">
         <div class="pdf-upload__progress-fill" :style="{ width: `${progressPercentage}%` }"></div>
@@ -38,41 +38,39 @@
     </div>
 
     <!-- Success Display -->
-    <div v-if="uploaded && !hasError && !processing" class="pdf-upload__upload-success">
+    <div v-if="state.uploaded && !state.hasError && !state.processing" class="pdf-upload__upload-success">
       <BaseIcon icon-name="check" class="pdf-upload__upload-success-icon" />
       <span class="pdf-upload__upload-success-text">
-        {{ data.totalFiles }} PDF files uploaded
-        <span v-if="data.matchedFiles.length > 0" class="pdf-upload__match-info">
-          ({{ data.matchedFiles.length }} matched)
+        {{ strategy.data.totalFiles }} PDF files uploaded
+        <span v-if="strategy.data.matchedFiles.length > 0" class="pdf-upload__match-info">
+          ({{ strategy.data.matchedFiles.length }} matched)
         </span>
       </span>
     </div>
 
     <!-- Error Display -->
-    <div v-if="hasError" class="pdf-upload__error">
+    <div v-if="state.hasError" class="pdf-upload__error">
       <BaseIcon icon-name="danger" class="pdf-upload__error-icon" />
       <div class="pdf-upload__error-content">
         <h4>PDF Processing Error</h4>
-        <p>{{ errorMessage }}</p>
+        <p>{{ state.errorMessage }}</p>
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
+import { ref, defineComponent, watch } from "@nuxtjs/composition-api";
 import { useResolve } from "ts-injecty";
 import { PdfMatchingService } from "~/v1/domain/services/FileMatchingService";
 import "assets/icons/check";
 import "assets/icons/danger";
 import "assets/icons/import";
+import { createPdfStrategy, useImportFileUploadViewModel } from "./useImportFileUploadViewModel";
+import type { PdfData } from "./types";
+import { TableData } from "~/v1/domain/entities/table/TableData";
 
-interface PdfData {
-  matchedFiles: any[];
-  unmatchedFiles: any[];
-  totalFiles: number;
-}
-
-export default {
+export default defineComponent({
   name: "PdfUpload",
 
   props: {
@@ -82,251 +80,116 @@ export default {
         matchedFiles: [],
         unmatchedFiles: [],
         totalFiles: 0,
+        type: 'pdf'
       }),
     },
     bibliographyEntries: {
-      type: Object,
+      type: Object as () => TableData | null,
       default: () => null,
     },
   },
 
   emits: ["update"],
 
-  setup() {
+  setup(props: any, { emit }: any) {
     const pdfMatchingService = useResolve(PdfMatchingService);
-    return { pdfMatchingService };
-  },
+    const strategy = createPdfStrategy(pdfMatchingService, {
+      maxFileSize: 200 * 1024 * 1024 // 200MB
+    });
+    
+    const viewModel = useImportFileUploadViewModel(strategy, {
+      enableDragDrop: true,
+      allowMultiple: true
+    });
 
-  data() {
-    return {
-      dragOver: false,
-      uploaded: false,
-      hasError: false,
-      errorMessage: "",
-      processing: false,
-      processedFiles: 0,
-      totalFiles: 0,
-      data: {
-        matchedFiles: [],
-        unmatchedFiles: [],
-        totalFiles: 0,
-      } as PdfData,
+    // File input ref
+    const folderInput = ref<HTMLInputElement | null>(null);
+
+    // Initialize with existing data
+    if (props.initialData && (props.initialData.matchedFiles.length > 0 || props.initialData.unmatchedFiles.length > 0 || props.initialData.totalFiles > 0)) {
+      viewModel.initialize(props.initialData);
+    }
+
+    // File input handling
+    const triggerFolderInput = () => {
+      folderInput.value?.click();
     };
-  },
 
-  mounted() {
-    this.initializeWithExistingData();
-  },
+    const handleFolderSelect = async (event: Event) => {
+      const target = event.target as HTMLInputElement;
+      const files = target.files;
+      if (files && files.length > 0) {
+        await processFiles(Array.from(files));
+      }
+    };
 
-  computed: {
-    getDropzoneIcon(): string {
-      if (this.hasError) return "danger";
-      if (this.uploaded) return "check";
-      return "import";
-    },
+    // Custom PDF processing that includes file matching
+    const processFiles = async (files: File[]) => {
+      try {
+        // First validate and process files using the base strategy
+        await viewModel.selectFiles(files);
+        
+        // If successful, perform file matching
+        if (viewModel.state.uploaded && !viewModel.state.hasError) {
+          const allFiles = [
+            ...strategy.data.value.matchedFiles.map(mf => mf.file),
+            ...strategy.data.value.unmatchedFiles
+          ];
+          
+          strategy.performFileMatching(allFiles, props.bibliographyEntries);
+          emitUpdate();
+        }
+      } catch (error) {
+        // Error is already handled by the view model
+      }
+    };
 
-    getDropzoneText(): string {
-      if (this.hasError) return "Error processing PDF files";
-      if (this.uploaded) return "Upload PDF Files";
-      return "Upload PDF Files";
-    },
+    // Emit update to parent
+    const emitUpdate = () => {
+      const payload = viewModel.emitPayload();
+      emit("update", payload);
+    };
 
-    progressPercentage(): number {
-      if (this.totalFiles === 0) return 0;
-      return Math.round((this.processedFiles / this.totalFiles) * 100);
-    },
-  },
-
-  watch: {
-    initialData: {
-      handler(newData: PdfData) {
-        if (newData && (newData.matchedFiles.length > 0 || newData.unmatchedFiles.length > 0 || newData.totalFiles > 0)) {
-          this.initializeWithExistingData();
+    // Watch for changes in bibliography entries to re-run matching
+    watch(
+      () => props.bibliographyEntries,
+      (newEntries) => {
+        if (strategy.data.value.totalFiles > 0) {
+          const allFiles = [
+            ...strategy.data.value.matchedFiles.map(mf => mf.file),
+            ...strategy.data.value.unmatchedFiles
+          ];
+          strategy.performFileMatching(allFiles, newEntries);
+          emitUpdate();
         }
       },
-      deep: true,
-      immediate: true,
-    },
+      { deep: true }
+    );
+
+    // Public methods for parent components
+    const reset = () => {
+      viewModel.reset();
+      emitUpdate();
+    };
+
+    const initializeWithExistingData = () => {
+      if (props.initialData && (props.initialData.matchedFiles.length > 0 || props.initialData.unmatchedFiles.length > 0 || props.initialData.totalFiles > 0)) {
+        viewModel.initialize(props.initialData);
+        // Don't emit update when initializing with existing data to prevent loops
+      }
+    };
+
+    return {
+      ...viewModel,
+      strategy,
+      folderInput,
+      triggerFolderInput,
+      handleFolderSelect,
+      reset,
+      initializeWithExistingData,
+    };
   },
-
-  methods: {
-    triggerFolderInput(): void {
-      (this.$refs.folderInput as HTMLInputElement).click();
-    },
-
-    handleDragOver(event: DragEvent): void {
-      event.preventDefault();
-      this.dragOver = true;
-    },
-
-    handleDragLeave(): void {
-      this.dragOver = false;
-    },
-
-    handleDrop(event: DragEvent): void {
-      event.preventDefault();
-      this.dragOver = false;
-
-      const files = Array.from(event.dataTransfer?.files || []);
-      this.processFiles(files);
-    },
-
-    handleFolderSelect(event: Event): void {
-      const target = event.target as HTMLInputElement;
-      const files = Array.from(target.files || []);
-      this.processFiles(files);
-    },
-
-    async processFiles(files: File[]): Promise<void> {
-      // Reset error state but preserve existing files for additive upload
-      this.hasError = false;
-      this.errorMessage = "";
-
-      // Get existing files to merge with new ones
-      const existingFiles = [
-        ...this.data.matchedFiles.map(mf => mf.file),
-        ...this.data.unmatchedFiles
-      ];
-
-      this.processedFiles = 0;
-
-      const pdfFiles = files.filter((file) => this.isValidPdfFile(file));
-
-      if (pdfFiles.length === 0) {
-        this.showError("No valid PDF files found. Please select a folder containing PDF files.");
-        return;
-      }
-
-      this.totalFiles = pdfFiles.length;
-      this.processing = true;
-      this.clearError();
-
-      const validFiles: File[] = [];
-      const fileErrors: string[] = [];
-
-      for (const file of pdfFiles) {
-        // Skip files that are already uploaded (by name)
-        const isDuplicate = existingFiles.some(existingFile => existingFile.name === file.name);
-        if (!isDuplicate) {
-          const result = await this.validatePdfFile(file);
-          if (result.valid) {
-            validFiles.push(file);
-          } else {
-            fileErrors.push(`${file.name}: ${result.error}`);
-          }
-        }
-        this.processedFiles++;
-      }
-
-      // Combine existing files with new valid files
-      const allFiles = [...existingFiles, ...validFiles];
-      this.data.totalFiles = allFiles.length;
-
-      // Re-run file matching with all files (existing + new)
-      this.performFileMatching(allFiles);
-
-      this.processing = false;
-
-      // Show errors if any files failed, but don't fail the entire process
-      if (fileErrors.length > 0) {
-        const successCount = validFiles.length;
-        const errorCount = fileErrors.length;
-        const totalCount = successCount + errorCount;
-
-        let errorMessage = `Processed ${successCount} of ${totalCount} files successfully.\n\n`;
-        errorMessage += `Files that could not be processed:\n${fileErrors.join('\n')}`;
-
-        this.showError(errorMessage);
-      } else {
-        this.uploaded = true;
-        this.hasError = false;
-        this.errorMessage = "";
-      }
-
-      this.emitUpdate();
-    },
-
-    async validatePdfFile(file: File): Promise<{ valid: boolean; error?: string }> {
-      const maxSize = 200 * 1024 * 1024; // 200MB
-      if (file.size > maxSize) {
-        return { valid: false, error: `File ${file.name} is too large (max 200MB)` };
-      } else if (file.size === 0) {
-        return { valid: false, error: `File ${file.name} is empty` };
-      }
-
-      return { valid: true };
-    },
-
-    isValidPdfFile(file: File): boolean {
-      return file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
-    },
-
-    performFileMatching(uploadedFiles: File[]): void {
-      if (!this.bibliographyEntries || !this.bibliographyEntries.data || this.bibliographyEntries.data.length === 0 || uploadedFiles.length === 0) {
-        // If no bibliography entries, all files are unmatched
-        this.data.matchedFiles = [];
-        this.data.unmatchedFiles = uploadedFiles;
-        return;
-      }
-
-      const result = this.pdfMatchingService.matchFiles(uploadedFiles, this.bibliographyEntries);
-
-      this.data.matchedFiles = result.matchedFiles;
-      this.data.unmatchedFiles = result.unmatchedFiles;
-    },
-
-    showError(message: string): void {
-      this.hasError = true;
-      this.errorMessage = message;
-      this.uploaded = false;
-    },
-
-    clearError(): void {
-      this.hasError = false;
-      this.errorMessage = "";
-    },
-
-    initializeWithExistingData(): void {
-      if (this.initialData && (this.initialData.matchedFiles.length > 0 || this.initialData.unmatchedFiles.length > 0 || this.initialData.totalFiles > 0)) {
-        this.data = {
-          matchedFiles: this.initialData.matchedFiles || [],
-          unmatchedFiles: this.initialData.unmatchedFiles || [],
-          totalFiles: this.initialData.totalFiles || 0,
-        };
-        this.uploaded = this.data.totalFiles > 0;
-        this.hasError = false;
-        this.errorMessage = "";
-        this.processing = false;
-      }
-    },
-
-    emitUpdate(): void {
-      this.$emit("update", {
-        isValid: this.uploaded && !this.hasError && this.data.matchedFiles.length > 0,
-        matchedFiles: this.data.matchedFiles,
-        unmatchedFiles: this.data.unmatchedFiles,
-        totalFiles: this.data.totalFiles,
-        hasError: this.hasError,
-        errorMessage: this.errorMessage,
-      });
-    },
-
-    reset(): void {
-      this.dragOver = false;
-      this.uploaded = false;
-      this.hasError = false;
-      this.errorMessage = "";
-      this.processing = false;
-      this.processedFiles = 0;
-      this.totalFiles = 0;
-      this.data = {
-        matchedFiles: [],
-        unmatchedFiles: [],
-        totalFiles: 0,
-      };
-    },
-  },
-};
+});
 </script>
 
 <style lang="scss" scoped>
