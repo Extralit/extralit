@@ -20,8 +20,6 @@
 
       <!-- Matching Status -->
       <div v-if="pdfData.matchedFiles.length > 0" class="import-summary-sidebar__stat">
-        <BaseIcon icon-name="check"
-          class="import-summary-sidebar__stat-icon import-summary-sidebar__stat-icon--match" />
         <span class="import-summary-sidebar__stat-text">
           {{ pdfData.matchedFiles.length }} matched, {{ pdfData.unmatchedFiles.length }} mismatch{{
             pdfData.unmatchedFiles.length === 1 ? "" : "es"

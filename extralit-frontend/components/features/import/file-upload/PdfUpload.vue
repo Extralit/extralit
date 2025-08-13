@@ -38,8 +38,7 @@
     </div>
 
     <!-- Success Display -->
-    <div v-if="state.uploaded && !state.hasError && !state.processing" class="pdf-upload__upload-success">
-      <BaseIcon icon-name="check" class="pdf-upload__upload-success-icon" />
+    <div v-if="uploaded && !hasError && !processing" class="pdf-upload__upload-success">
       <span class="pdf-upload__upload-success-text">
         {{ strategy.data.totalFiles }} PDF files uploaded
         <span v-if="strategy.data.matchedFiles.length > 0" class="pdf-upload__match-info">
@@ -96,7 +95,7 @@ export default defineComponent({
     const strategy = createPdfStrategy(pdfMatchingService, {
       maxFileSize: 200 * 1024 * 1024 // 200MB
     });
-    
+
     const viewModel = useImportFileUploadViewModel(strategy, {
       enableDragDrop: true,
       allowMultiple: true
@@ -128,14 +127,14 @@ export default defineComponent({
       try {
         // First validate and process files using the base strategy
         await viewModel.selectFiles(files);
-        
+
         // If successful, perform file matching
         if (viewModel.state.uploaded && !viewModel.state.hasError) {
           const allFiles = [
             ...strategy.data.value.matchedFiles.map(mf => mf.file),
             ...strategy.data.value.unmatchedFiles
           ];
-          
+
           strategy.performFileMatching(allFiles, props.bibliographyEntries);
           emitUpdate();
         }

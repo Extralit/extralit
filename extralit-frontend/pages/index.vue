@@ -13,7 +13,7 @@
       </template>
       <template v-slot:page-content>
         <div class="home__tabs">
-          <BaseTabs :active-tab="activeTab" :tabs="tabs" @change-tab="onTabChange" />
+          <BaseTabs :active-tab="activeTab" :tabs="tabs" tabSize="medium" @change-tab="onTabChange" />
         </div>
 
         <div class="home__tab-content">

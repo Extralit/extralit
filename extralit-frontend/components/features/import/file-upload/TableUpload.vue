@@ -27,8 +27,7 @@
     </div>
 
     <!-- Success Display -->
-    <div v-if="state.uploaded && !state.hasError" class="table-upload__upload-success">
-      <BaseIcon icon-name="check" class="table-upload__upload-success-icon" />
+    <div v-if="uploaded && !hasError" class="table-upload__upload-success">
       <span class="table-upload__upload-success-text">
         Successfully uploaded {{ strategy.data.fileName }} ({{ strategy.data.dataframeData ? strategy.data.dataframeData.data.length : 0 }} entries found)
       </span>
@@ -90,7 +89,7 @@ export default defineComponent({
   setup(props: any, { emit }: any) {
     const fileService = useResolve(FileParsingService);
     const strategy = createBibStrategy(fileService);
-    
+
     const viewModel = useImportFileUploadViewModel(strategy, {
       enableDragDrop: true,
       acceptedExtensions: [".bib", ".bibtex", ".csv"]
