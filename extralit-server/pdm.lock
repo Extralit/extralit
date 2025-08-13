@@ -5,7 +5,7 @@
 groups = ["default", "postgresql", "test"]
 strategy = []
 lock_version = "4.5.0"
-content_hash = "sha256:02264c865d9bc17964c0abbd121810947822b6ff067ac8fcd0cbcb1ef46de191"
+content_hash = "sha256:27aee5423445c4af9206f4c9822e864e4aec0de735ff9b7ae80c7690258f267e"
 
 [[metadata.targets]]
 requires_python = ">=3.10"
