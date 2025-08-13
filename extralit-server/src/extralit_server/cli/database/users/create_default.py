@@ -51,11 +51,13 @@ async def _create_default(api_key: str, password: str, quiet: bool):
                 for workspace in workspaces:
                     try:
                         files.create_bucket(minio_client, workspace.name)
-                        typer.echo(f"✓ Created/verified bucket for workspace: {workspace.name}")
+                        typer.echo(f"✓ Created/verified bucket for workspace: {workspace.name}") if not quiet else None
                     except Exception as e:
-                        typer.echo(f"⚠ Warning: Failed to create bucket for workspace {workspace.name}: {e}")
+                        typer.echo(
+                            f"⚠ Warning: Failed to create bucket for workspace {workspace.name}: {e}"
+                        ) if not quiet else None
             else:
-                typer.echo("⚠ Warning: MinIO client not available, skipping bucket creation")
+                typer.echo("⚠ Warning: MinIO client not available, skipping bucket creation") if not quiet else None
 
         if not quiet:
             typer.echo("User with default credentials successfully created:")
