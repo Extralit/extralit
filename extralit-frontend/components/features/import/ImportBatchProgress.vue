@@ -494,10 +494,7 @@ export default {
           this.errors
         );
 
-        // Convert to legacy format for backward compatibility
-        const summaryData = this.viewModel.convertToLegacySummary(normalizedSummary);
-
-        this.$emit("completed", summaryData);
+        this.$emit("completed", normalizedSummary);
 
       } catch (error) {
         console.error("Error finalizing import:", error);

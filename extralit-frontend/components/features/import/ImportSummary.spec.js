@@ -28,21 +28,21 @@ describe("ImportSummary", () => {
     name: "Test Workspace",
   };
 
-  const createWrapper = (summaryData = {}, props = {}) => {
-    const defaultSummaryData = {
-      totalProcessed: 0,
-      successfullyAdded: 0,
+  const createWrapper = (normalizedSummary = {}, props = {}) => {
+    const defaultNormalizedSummary = {
+      total: 0,
+      added: 0,
       updated: 0,
       skipped: 0,
       failed: 0,
       errors: [],
       importId: "test-import-123",
-      ...summaryData,
+      ...normalizedSummary,
     };
 
     return mount(ImportSummary, {
       propsData: {
-        summaryData: defaultSummaryData,
+        normalizedSummary: defaultNormalizedSummary,
         workspace: mockWorkspace,
         bibFileName: "test.bib",
         failedDocuments: [],
@@ -75,8 +75,8 @@ describe("ImportSummary", () => {
 
     it("displays 0 for missing properties in summary data", () => {
       wrapper = createWrapper({
-        totalProcessed: 10,
-        successfullyAdded: 5,
+        total: 10,
+        added: 5,
         // updated, skipped, failed are missing
         errors: [],
         importId: "test-123",
@@ -91,8 +91,8 @@ describe("ImportSummary", () => {
 
     it("displays 0 for null/undefined values", () => {
       wrapper = createWrapper({
-        totalProcessed: null,
-        successfullyAdded: undefined,
+        total: null,
+        added: undefined,
         updated: null,
         skipped: undefined,
         failed: null,
@@ -111,12 +111,15 @@ describe("ImportSummary", () => {
   describe("Accurate count display", () => {
     it("displays correct counts for mixed summary", () => {
       wrapper = createWrapper({
-        totalProcessed: 100,
-        successfullyAdded: 60,
+        total: 100,
+        added: 60,
         updated: 25,
         skipped: 10,
         failed: 5,
-        errors: ["ref1: error1", "ref2: error2"],
+        errors: [
+          { reference: "ref1", message: "error1" },
+          { reference: "ref2", message: "error2" }
+        ],
         importId: "test-123",
       });
 
@@ -129,8 +132,8 @@ describe("ImportSummary", () => {
 
     it("computes successful count correctly", () => {
       wrapper = createWrapper({
-        totalProcessed: 100,
-        successfullyAdded: 40,
+        total: 100,
+        added: 40,
         updated: 35,
         skipped: 15,
         failed: 10,
@@ -143,8 +146,8 @@ describe("ImportSummary", () => {
 
     it("computes successful count with zero-safe values", () => {
       wrapper = createWrapper({
-        totalProcessed: 50,
-        successfullyAdded: null,
+        total: 50,
+        added: null,
         updated: undefined,
         skipped: 10,
         failed: 5,
@@ -159,12 +162,15 @@ describe("ImportSummary", () => {
   describe("Failed imports section", () => {
     it("shows failed section when failed count > 0", () => {
       wrapper = createWrapper({
-        totalProcessed: 10,
-        successfullyAdded: 5,
+        total: 10,
+        added: 5,
         updated: 2,
         skipped: 1,
         failed: 2,
-        errors: ["ref1: error1", "ref2: error2"],
+        errors: [
+          { reference: "ref1", message: "error1" },
+          { reference: "ref2", message: "error2" }
+        ],
         importId: "test-123",
       });
 
@@ -175,8 +181,8 @@ describe("ImportSummary", () => {
 
     it("hides failed section when failed count is 0", () => {
       wrapper = createWrapper({
-        totalProcessed: 10,
-        successfullyAdded: 7,
+        total: 10,
+        added: 7,
         updated: 2,
         skipped: 1,
         failed: 0,
@@ -200,12 +206,12 @@ describe("ImportSummary", () => {
 
       wrapper = createWrapper(
         {
-          totalProcessed: 10,
-          successfullyAdded: 8,
+          total: 10,
+          added: 8,
           updated: 1,
           skipped: 0,
           failed: 1,
-          errors: ["ref1: Upload failed"],
+          errors: [{ reference: "ref1", message: "Upload failed" }],
           importId: "test-123",
         },
         { failedDocuments: failedDocs }
@@ -220,8 +226,8 @@ describe("ImportSummary", () => {
   describe("Skipped section", () => {
     it("shows skipped section when skipped count > 0", () => {
       wrapper = createWrapper({
-        totalProcessed: 10,
-        successfullyAdded: 5,
+        total: 10,
+        added: 5,
         updated: 2,
         skipped: 3,
         failed: 0,
@@ -236,8 +242,8 @@ describe("ImportSummary", () => {
 
     it("hides skipped section when skipped count is 0", () => {
       wrapper = createWrapper({
-        totalProcessed: 10,
-        successfullyAdded: 7,
+        total: 10,
+        added: 7,
         updated: 3,
         skipped: 0,
         failed: 0,
@@ -253,8 +259,8 @@ describe("ImportSummary", () => {
   describe("Success section", () => {
     it("shows success section when there are successful imports", () => {
       wrapper = createWrapper({
-        totalProcessed: 10,
-        successfullyAdded: 5,
+        total: 10,
+        added: 5,
         updated: 3,
         skipped: 1,
         failed: 1,
@@ -269,8 +275,8 @@ describe("ImportSummary", () => {
 
     it("hides success section when no successful imports", () => {
       wrapper = createWrapper({
-        totalProcessed: 10,
-        successfullyAdded: 0,
+        total: 10,
+        added: 0,
         updated: 0,
         skipped: 5,
         failed: 5,
@@ -296,8 +302,8 @@ describe("ImportSummary", () => {
 
     it("emits view-import-history event", async () => {
       wrapper = createWrapper({
-        totalProcessed: 5,
-        successfullyAdded: 3,
+        total: 5,
+        added: 3,
         updated: 1,
         skipped: 1,
         failed: 0,
@@ -318,8 +324,8 @@ describe("ImportSummary", () => {
   describe("Edge cases", () => {
     it("handles all-zero summary correctly", () => {
       wrapper = createWrapper({
-        totalProcessed: 0,
-        successfullyAdded: 0,
+        total: 0,
+        added: 0,
         updated: 0,
         skipped: 0,
         failed: 0,
@@ -342,12 +348,16 @@ describe("ImportSummary", () => {
 
     it("handles failure-heavy summary correctly", () => {
       wrapper = createWrapper({
-        totalProcessed: 10,
-        successfullyAdded: 1,
+        total: 10,
+        added: 1,
         updated: 0,
         skipped: 1,
         failed: 8,
-        errors: ["ref1: error", "ref2: error", "ref3: error"],
+        errors: [
+          { reference: "ref1", message: "error" },
+          { reference: "ref2", message: "error" },
+          { reference: "ref3", message: "error" }
+        ],
         importId: "test-123",
       });
 
