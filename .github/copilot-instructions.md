@@ -61,6 +61,9 @@ Key directories:
 - **Styling**: SCSS in `assets/scss/`, component-scoped
 - **View Models**: `setup(props) { return useViewModelName(props); }` pattern
 - **BaseSimpleTable**: Use existing `BaseSimpleTable.vue` for tabular display
+- **Composition API**: Use `defineComponent` with Composition API for new components and refactoring
+- **Shared Logic**: Create composables (`use*ViewModel.ts`) with strategy pattern for common functionality
+- **File Upload**: Use `useImportFileUploadViewModel` with `createBibStrategy` or `createPdfStrategy` for file upload components
 
 ### Backend Server (`extralit-server/src/extralit_server`)
 
