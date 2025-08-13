@@ -1,7 +1,7 @@
 <template>
-  <VerticalResizable :id="`${recordCriteria.datasetId}-r-v-rz`" class="wrapper">
+  <VerticalResizable class="wrapper" :id="`${recordCriteria.datasetId}-r-v-rz`">
     <template #left>
-      <HorizontalResizable :id="`${recordCriteria.datasetId}-r-h-rz`" class="wrapper__left" :collapsable="shouldShowDocumentPanel">
+      <HorizontalResizable :id="`${recordCriteria.datasetId}-r-h-rz`" class="wrapper__left" collapsable>
         <template #up>
           <section class="wrapper__records" aria-label="Focus Annotation View">
             <DatasetFilters :recordCriteria="recordCriteria">
@@ -25,13 +25,13 @@
             <Record v-else :datasetVectors="datasetVectors" :recordCriteria="recordCriteria" :record="record" />
           </section>
         </template>
-        <template #downHeader v-if="shouldShowDocumentPanel">
+        <template #downHeader>
           <p v-text="$t('document')" />
         </template>
-        <template #downHeaderExpanded v-if="shouldShowDocumentPanel">
+        <template #downHeaderExpanded>
           <p v-text="$t('document')" />
         </template>
-        <template #downContent v-if="shouldShowDocumentPanel">
+        <template #downContent>
           <PDFViewer :url="document.url" :file-name="document.file_name" :pageNumber="document.page_number" />
         </template>
       </HorizontalResizable>
@@ -69,16 +69,15 @@
       </HorizontalResizable>
     </template>
     <BaseCollapsablePanel
-      v-if="shouldShowDocumentPanel"
       hideOnDesktop
       :isExpanded="expandedGuidelines"
       @toggle-expand="expandedGuidelines = !expandedGuidelines"
     >
       <template #panelHeader>
-        <p v-text="$t('guidelines')" />
+        <p v-text="$t('document')" />
       </template>
       <template #panelContent>
-        <AnnotationGuidelines />
+        <PDFViewer :url="document.url" :file-name="document.file_name" :pageNumber="document.page_number" />
       </template>
     </BaseCollapsablePanel>
   </VerticalResizable>

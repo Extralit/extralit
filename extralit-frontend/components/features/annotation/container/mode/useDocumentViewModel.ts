@@ -20,10 +20,6 @@ export const useDocumentViewModel = (props: { record: any }) => {
     return document.id !== null;
   });
 
-  const shouldShowDocumentPanel = computed(() => {
-    return hasDocumentLoaded.value && document.url !== null;
-  });
-
   const fetchDocument = async (metadata: any) => {
     try {
       await waitForAsyncValue(() => workspaces.selectedWorkspace?.id);
@@ -118,7 +114,6 @@ export const useDocumentViewModel = (props: { record: any }) => {
     fetchDocumentSegments,
     focusDocumentPageNumber,
     clearDocument,
-    shouldShowDocumentPanel,
   };
 };
 
