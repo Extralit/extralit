@@ -52,18 +52,7 @@ export interface ImportUploadData {
   failedJobs: number;
 }
 
-// Final import summary (Step 5) - Legacy interface for backward compatibility
-export interface ImportSummaryData {
-  totalProcessed: number;
-  successfullyAdded: number;
-  updated: number;
-  skipped: number;
-  failed: number;
-  errors: string[];
-  importId: string | null;
-}
-
-// New normalized import summary interface for accurate count display
+// Import result summary interface for accurate count display
 export interface ImportResultSummary {
   total: number;
   added: number;

@@ -74,7 +74,28 @@ extralit-frontend/
 - **Domain Logic**: Dependency injection in `v1/di/`
 - **Axios**: @nuxt/axios makes API calls with `{proxy: true, browserBaseURL: "api"}`
 - **Dependency Injection**: Use `useResolve` from `ts-injecty` for dependency resolution in use cases
-- **View Models**: Use `setup(props) { return useViewModelName(props); }` pattern with the `useViewModelName.ts` file in the folder for business logic separation
+- **View Models**: Use the simple function return pattern inspired by `useHomeViewModel.ts`
+  ```typescript
+  export const useMyViewModel = (props) => {
+    const dependency = useResolve(MyUseCase);
+    
+    const methodOne = () => {
+      // implementation
+    };
+    
+    const methodTwo = async (param) => {
+      // implementation
+    };
+    
+    return {
+      dependency,
+      methodOne,
+      methodTwo,
+      // ... all public methods and properties
+    };
+  };
+  ```
+- **Component Setup**: Components use `setup(props) { return useViewModelName(props); }` pattern
 - **Styling**: SCSS in `assets/scss/` with component-scoped styles
 - **Base Components**: BaseSimpleTable.vue already exists for tabular data display
 

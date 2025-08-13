@@ -161,7 +161,7 @@ import "assets/icons/check";
 import "assets/icons/close";
 import "assets/icons/danger";
 import type { DocumentMetadata } from "~/v1/domain/entities/import/ImportAnalysis";
-import type { ImportUploadData, ImportSummaryData } from "./types";
+import type { ImportUploadData, ImportResultSummary } from "./types";
 import type { JobStatus } from "~/v1/domain/usecases/get-job-status-use-case";
 import { useImportBatchProgressViewModel } from "./useImportBatchProgressViewModel";
 
@@ -494,10 +494,7 @@ export default {
           this.errors
         );
 
-        // Convert to legacy format for backward compatibility
-        const summaryData = this.viewModel.convertToLegacySummary(normalizedSummary);
-
-        this.$emit("completed", summaryData);
+        this.$emit("completed", normalizedSummary);
 
       } catch (error) {
         console.error("Error finalizing import:", error);
