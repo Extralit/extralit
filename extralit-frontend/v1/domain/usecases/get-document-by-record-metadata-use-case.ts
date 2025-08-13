@@ -2,14 +2,14 @@ import { Segment } from "../entities/document/Document";
 import { IDocumentStorage } from "../services/IDocumentStorage";
 import { DocumentRepository } from "@/v1/infrastructure/repositories/DocumentRepository";
 
-export class GetDocumentByIdUseCase {
+export class GetDocumentByRecordMetadataUseCase {
   constructor(
     private readonly documentRepository: DocumentRepository,
     private readonly documentStorage: IDocumentStorage
-  ) {}
+  ) { }
 
   createParams(
-    metadata: any,
+    metadata: Record<string, any> | null,
     workspaceId: string
   ): {
     workspace_id: string;
@@ -44,8 +44,6 @@ export class GetDocumentByIdUseCase {
     const documents = await this.documentRepository.getDocuments(params);
 
     if (documents.length === 0) {
-      // Clear the document storage when no documents are found
-      this.documentStorage.clear();
       return null;
     }
 
@@ -56,7 +54,6 @@ export class GetDocumentByIdUseCase {
     }
 
     this.documentStorage.set(documents[0]);
-    return documents[0];
   }
 
   async setSegments(workspace: string, reference: string): Promise<Segment[]> {

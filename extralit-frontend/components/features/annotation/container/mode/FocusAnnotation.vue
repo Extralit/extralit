@@ -1,12 +1,7 @@
 <template>
-  <VerticalResizable :id="`${recordCriteria.datasetId}-r-v-rz`" class="wrapper">
+  <VerticalResizable class="wrapper" :id="`${recordCriteria.datasetId}-r-v-rz`">
     <template #left>
-      <HorizontalResizable
-        :id="`${recordCriteria.datasetId}-r-h-rz`"
-        ref="documentPanel"
-        class="wrapper__left"
-        collapsable
-      >
+      <HorizontalResizable :id="`${recordCriteria.datasetId}-r-h-rz`" class="wrapper__left" collapsable>
         <template #up>
           <section class="wrapper__records" aria-label="Focus Annotation View">
             <DatasetFilters :recordCriteria="recordCriteria">
@@ -96,7 +91,7 @@
   </VerticalResizable>
 </template>
 
-<script>
+<script lang="ts">
 import { useFocusAnnotationViewModel } from "./useFocusAnnotationViewModel";
 import { useDocumentViewModel } from "./useDocumentViewModel";
 
@@ -129,23 +124,6 @@ export default {
     return {
       expandedGuidelines: false,
     };
-  },
-  watch: {
-    isDocumentPanelExpanded(newValue) {
-      if (this.$refs.documentPanel && this.$refs.documentPanel.isExpanded !== newValue) {
-        this.$refs.documentPanel.isExpanded = newValue;
-      }
-    },
-    "document.url"(newUrl, oldUrl) {
-      // Collapse panel when document is cleared
-      if (!newUrl && oldUrl) {
-        this.isDocumentPanelExpanded = false;
-      }
-      // Expand panel when document is loaded
-      else if (newUrl && !oldUrl) {
-        this.isDocumentPanelExpanded = true;
-      }
-    },
   },
   methods: {
     async onSubmit() {
