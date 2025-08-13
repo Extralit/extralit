@@ -19,10 +19,9 @@ export const useDocumentViewModel = (props: { record: any }) => {
   const hasDocumentLoaded = computed(() => {
     return document.id !== null;
   });
-  const hasDocument = computed(() => {
-    return (
-      props.record.metadata === null || props.record.metadata?.reference != null || props.record.metadata?.pmid != null
-    );
+
+  const shouldShowDocumentPanel = computed(() => {
+    return hasDocumentLoaded.value && document.url !== null;
   });
 
   const fetchDocument = async (metadata: any) => {
@@ -105,9 +104,6 @@ export const useDocumentViewModel = (props: { record: any }) => {
           console.log(error);
         } finally {
           isLoading.value = false;
-          if (!hasDocumentLoaded.value) {
-            // TODO closePanel();
-          }
         }
       }
       if (newMetadata?.reference && oldMetadata?.reference !== newMetadata.reference) {
@@ -122,6 +118,7 @@ export const useDocumentViewModel = (props: { record: any }) => {
     fetchDocumentSegments,
     focusDocumentPageNumber,
     clearDocument,
+    shouldShowDocumentPanel,
   };
 };
 

@@ -1,7 +1,7 @@
 <template>
   <VerticalResizable class="wrapper" :id="`${recordCriteria.datasetId}-r-v-rz`">
     <template #left>
-      <HorizontalResizable :id="`${recordCriteria.datasetId}-r-h-rz`" class="wrapper__left" collapsable>
+      <HorizontalResizable :id="`${recordCriteria.datasetId}-r-h-rz`" class="wrapper__left" :collapsable="shouldShowDocumentPanel">
         <template #up>
           <section class="wrapper__records" aria-label="Focus Annotation View">
             <DatasetFilters :recordCriteria="recordCriteria">
@@ -25,13 +25,13 @@
             <Record v-else :datasetVectors="datasetVectors" :recordCriteria="recordCriteria" :record="record" />
           </section>
         </template>
-        <template #downHeader>
+        <template #downHeader v-if="shouldShowDocumentPanel">
           <p v-text="$t('document')" />
         </template>
-        <template #downHeaderExpanded>
+        <template #downHeaderExpanded v-if="shouldShowDocumentPanel">
           <p v-text="$t('document')" />
         </template>
-        <template #downContent>
+        <template #downContent v-if="shouldShowDocumentPanel">
           <PDFViewer :url="document.url" :file-name="document.file_name" :pageNumber="document.page_number" />
         </template>
       </HorizontalResizable>
@@ -69,6 +69,7 @@
       </HorizontalResizable>
     </template>
     <BaseCollapsablePanel
+      v-if="shouldShowDocumentPanel"
       hideOnDesktop
       :isExpanded="expandedGuidelines"
       @toggle-expand="expandedGuidelines = !expandedGuidelines"
@@ -146,6 +147,7 @@ export default {
         this.isDraftSaving = false;
       }
     },
+
   },
   setup(props) {
     return {
