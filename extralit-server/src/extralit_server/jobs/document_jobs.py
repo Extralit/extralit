@@ -148,7 +148,6 @@ async def upload_and_preprocess_documents_job(
                             document_id=file_document_create.id,  # type: ignore
                             file_data=processed_file_data,
                             filename=filename,
-                            metadata=file_metadata,
                         )
 
                         if file_url:

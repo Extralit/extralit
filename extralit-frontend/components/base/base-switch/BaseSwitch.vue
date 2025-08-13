@@ -1,5 +1,3 @@
-
-
 <template>
   <div :class="{ disabled: !checked, 'disable-action': disableAction }" class="switch">
     <label v-if="$slots.default" :for="id || name" class="switch-label">

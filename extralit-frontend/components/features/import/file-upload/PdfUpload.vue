@@ -39,7 +39,6 @@
 
     <!-- Success Display -->
     <div v-if="uploaded && !hasError && !processing" class="pdf-upload__upload-success">
-      <BaseIcon icon-name="check" class="pdf-upload__upload-success-icon" />
       <span class="pdf-upload__upload-success-text">
         {{ data.totalFiles }} PDF files uploaded
         <span v-if="data.matchedFiles.length > 0" class="pdf-upload__match-info">
