@@ -161,7 +161,7 @@ import "assets/icons/check";
 import "assets/icons/close";
 import "assets/icons/danger";
 import type { DocumentMetadata } from "~/v1/domain/entities/import/ImportAnalysis";
-import type { ImportUploadData, ImportSummaryData } from "./types";
+import type { ImportUploadData } from "./types";
 import type { JobStatus } from "~/v1/domain/usecases/get-job-status-use-case";
 import { useImportBatchProgressViewModel } from "./useImportBatchProgressViewModel";
 

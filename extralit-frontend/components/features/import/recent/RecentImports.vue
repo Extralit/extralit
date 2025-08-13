@@ -69,15 +69,8 @@ export default {
 
   emits: ["import-selected", "view-all-imports", "import-documents"],
 
-  setup(props, { expose }) {
-    const viewModel = useRecentImportsViewModel(props);
-
-    // Expose refresh method to parent component
-    expose({
-      refresh: viewModel.refresh,
-    });
-
-    return viewModel;
+  setup(props) {
+    return useRecentImportsViewModel(props);
   },
 };
 </script>

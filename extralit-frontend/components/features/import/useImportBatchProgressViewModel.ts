@@ -156,34 +156,17 @@ export function useImportBatchProgressViewModel(_props: any) {
       });
     },
 
-    createSummaryData(
-      totalReferences: number,
-      completedJobs: number,
-      failedJobs: number,
-      errors: UploadError[]
-    ): ImportSummaryData {
-      return {
-        totalProcessed: totalReferences,
-        successfullyAdded: completedJobs,
-        updated: 0, // TODO: Track updates vs adds
-        skipped: 0,
-        failed: failedJobs,
-        errors: errors.map((e) => `${e.reference}: ${e.message}`),
-        importId: `import_${Date.now()}`,
-      };
-    },
-
     /**
      * Creates normalized import result summary with accurate counts
      * @param confirmedDocuments - Documents that were selected for upload
-     * @param documentActions - Original analysis status for each reference  
+     * @param documentActions - Original analysis status for each reference
      * @param allJobIds - Mapping of reference to job ID
      * @param jobStatuses - Current job statuses by job ID
      * @param errors - Upload errors
      */
     createNormalizedSummary(
       confirmedDocuments: Record<string, DocumentMetadata>,
-      documentActions: Record<string, 'add' | 'update' | 'skip' | 'ignore' | 'failed'>,
+      documentActions: Record<string, "add" | "update" | "skip" | "ignore" | "failed">,
       allJobIds: Record<string, string>,
       jobStatuses: Record<string, JobStatus>,
       errors: UploadError[]
@@ -194,30 +177,30 @@ export function useImportBatchProgressViewModel(_props: any) {
         updated: 0,
         skipped: 0,
         failed: 0,
-        errors: errors.map(e => ({ reference: e.reference, message: e.message })),
+        errors: errors.map((e) => ({ reference: e.reference, message: e.message })),
         importId: `import_${Date.now()}`,
       };
 
       // Count references by their original analysis status and current job status
       Object.entries(confirmedDocuments).forEach(([reference, _docMetadata]) => {
-        const originalStatus = documentActions[reference] || 'add';
+        const originalStatus = documentActions[reference] || "add";
         const jobId = allJobIds[reference];
         const jobStatus = jobId ? jobStatuses[jobId] : undefined;
 
         summary.total++;
 
         // Determine final status based on job completion
-        if (jobStatus === 'finished') {
+        if (jobStatus === "finished") {
           // Job completed successfully - count based on original intention
-          if (originalStatus === 'add') {
+          if (originalStatus === "add") {
             summary.added++;
-          } else if (originalStatus === 'update') {
+          } else if (originalStatus === "update") {
             summary.updated++;
           }
-        } else if (jobStatus === 'failed') {
+        } else if (jobStatus === "failed") {
           // Job failed
           summary.failed++;
-        } else if (originalStatus === 'skip') {
+        } else if (originalStatus === "skip") {
           // Document was marked to skip (though these shouldn't be in confirmedDocuments)
           summary.skipped++;
         }
@@ -237,7 +220,7 @@ export function useImportBatchProgressViewModel(_props: any) {
         updated: normalizedSummary.updated,
         skipped: normalizedSummary.skipped,
         failed: normalizedSummary.failed,
-        errors: normalizedSummary.errors.map(e => `${e.reference}: ${e.message}`),
+        errors: normalizedSummary.errors.map((e) => `${e.reference}: ${e.message}`),
         importId: normalizedSummary.importId || null,
       };
     },
