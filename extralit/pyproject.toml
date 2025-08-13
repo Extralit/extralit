@@ -35,8 +35,8 @@ dependencies = [
     "pypandoc ~= 1.13",
     "beautifulsoup4 ~= 4.12.2",
     "pandas ~= 2.2.2",
-    "pandera[io] ~= 0.19.3",
-    "numpy >= 1.26.4,<2.0.0",
+    "pandera[io] >= 0.21.0, < 0.27.0",
+    "numpy >= 1.26.4",
     "spacy ~= 3.7.2; python_version < '3.13'",
     "spacy >= 3.8.0; python_version >= '3.13' and python_version < '3.13.3'",
     # Install spaCy with wheels only for Python 3.13.3+

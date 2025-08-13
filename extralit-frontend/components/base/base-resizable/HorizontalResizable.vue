@@ -125,7 +125,7 @@ export default {
     }
   },
   destroyed() {
-    this.resizer.removeEventListener(EVENT.MOUSE_DOWN, this.mouseDownHandler);
+    this.resizer?.removeEventListener(EVENT.MOUSE_DOWN, this.mouseDownHandler);
   },
   methods: {
     savePosition() {},
