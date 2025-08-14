@@ -12,20 +12,10 @@ import type {
   CsvState,
 } from "./types";
 
-export const createBibStrategy = (props: BibStrategyProps): FileUploadStrategy & {
-  // Additional state and methods specific to bibliography
-  csvState: CsvState;
-  processCsvWithConfig: () => Promise<void>;
-  handleCsvConfigUpdate: (config: CSVConfig) => void;
-  cancelCsvSelection: () => void;
-  isCsvFile: (file: File) => boolean;
-  isBibTexFile: (file: File) => boolean;
-  hasValidData: (data: BibliographyData) => boolean;
-  createPayload: () => BibliographyPayload;
-} => {
+export const createBibStrategy = (props: BibStrategyProps) => {
   const { fileParsingService, initialData, onUpdate } = props;
 
-  // CSV-specific state
+  // CSV-specific state (reactive externally)
   const csvState: CsvState = {
     showCsvColumnSelection: false,
     csvData: {
@@ -39,7 +29,7 @@ export const createBibStrategy = (props: BibStrategyProps): FileUploadStrategy &
     },
   };
 
-  // Current data
+  // Current data (managed separately from the composable)
   let currentData: BibliographyData = initialData || {
     fileName: "",
     dataframeData: null,
@@ -184,7 +174,7 @@ export const createBibStrategy = (props: BibStrategyProps): FileUploadStrategy &
   };
 
   const hasValidData = (data: BibliographyData): boolean => {
-    return data && (data.fileName || (data.dataframeData && data.dataframeData.data.length > 0));
+    return Boolean(data && (data.fileName || (data.dataframeData && data.dataframeData.data.length > 0)));
   };
 
   const createPayload = (): BibliographyPayload => {

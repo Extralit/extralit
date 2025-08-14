@@ -124,7 +124,7 @@ describe("useImportFileUploadViewModel", () => {
   describe("drag and drop handlers", () => {
     it("should handle drag over events", () => {
       const viewModel = useImportFileUploadViewModel(mockOptions);
-      const mockEvent = { preventDefault: jest.fn() };
+      const mockEvent = { preventDefault: jest.fn() } as any;
 
       viewModel.handleDragOver(mockEvent);
 

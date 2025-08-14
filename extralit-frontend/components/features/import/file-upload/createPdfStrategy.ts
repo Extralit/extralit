@@ -14,7 +14,7 @@ export const createPdfStrategy = (props: PdfStrategyProps): FileUploadStrategy &
   // Additional methods specific to PDF
   hasValidData: (data: PdfData) => boolean;
   createPayload: () => PdfPayload;
-  updateProgress: (processed: number, total: number) => void;
+  setUpdateProgressCallback: (callback: (processed: number, total: number) => void) => void;
 } => {
   const { pdfMatchingService, bibliographyEntries, initialData } = props;
 
@@ -153,6 +153,6 @@ export const createPdfStrategy = (props: PdfStrategyProps): FileUploadStrategy &
     ...strategy,
     hasValidData,
     createPayload,
-    updateProgress: setProgressCallback,
+    setUpdateProgressCallback: setProgressCallback,
   };
 };
