@@ -21,23 +21,11 @@
 </template>
 
 <script lang="ts">
+import { ref, computed, watch, onMounted, nextTick } from "@nuxtjs/composition-api";
 import TableUpload from "./TableUpload.vue";
 import PdfUpload from "./PdfUpload.vue";
 import ImportSummarySidebar from "./ImportSummarySidebar.vue";
-
-type ComponentData = {
-  isInitializing: boolean;
-  bibData: {
-    fileName: string;
-    dataframeData: any;
-    rawContent: string;
-  };
-  pdfData: {
-    matchedFiles: any[];
-    unmatchedFiles: any[];
-    totalFiles: number;
-  };
-};
+import type { BibliographyData, PdfData } from "./types";
 
 export default {
   name: "ImportFileUpload",
@@ -68,119 +56,78 @@ export default {
     },
   },
 
-  data(): ComponentData {
-    return {
-      // Internal flag to prevent recursive updates during initialization
-      isInitializing: false,
+  emits: ["bib-update", "pdf-update"],
 
-      // Bibliography data
-      bibData: {
-        fileName: "",
-        dataframeData: null,
-        rawContent: "",
-      },
+  setup(props: any, { emit }: any) {
+    // Internal flag to prevent recursive updates during initialization
+    const isInitializing = ref(false);
 
-      // PDF data
-      pdfData: {
-        matchedFiles: [],
-        unmatchedFiles: [],
-        totalFiles: 0,
-      },
-    };
-  },
+    // Bibliography data
+    const bibData = ref<BibliographyData>({
+      fileName: "",
+      dataframeData: null,
+      rawContent: "",
+    });
 
-  computed: {
-    isValid(): boolean {
+    // PDF data
+    const pdfData = ref<PdfData>({
+      matchedFiles: [],
+      unmatchedFiles: [],
+      totalFiles: 0,
+    });
+
+    // Computed properties
+    const isValid = computed(() => {
       return (
-        this.bibData.dataframeData && this.bibData.dataframeData.data.length > 0 &&
-        this.pdfData.matchedFiles.length > 0
+        bibData.value.dataframeData && bibData.value.dataframeData.data.length > 0 &&
+        pdfData.value.matchedFiles.length > 0
       );
-    },
-  },
+    });
 
-  watch: {
-    initialBibData: {
-      handler(newData: any, oldData: any) {
-        // Only initialize if data has actually changed and we're not already initializing
-        if (!this.isInitializing && newData && (newData.fileName || (newData.dataframeData && newData.dataframeData.data.length > 0))) {
-          // Check if the data is actually different to avoid unnecessary updates
-          const hasChanged = !oldData ||
-            newData.fileName !== oldData.fileName ||
-            (newData.dataframeData?.data?.length || 0) !== (oldData.dataframeData?.data?.length || 0);
-
-          if (hasChanged) {
-            this.initializeWithExistingData();
-          }
-        }
-      },
-      deep: true,
-      immediate: true,
-    },
-
-    initialPdfData: {
-      handler(newData: any, oldData: any) {
-        // Only initialize if data has actually changed and we're not already initializing
-        if (!this.isInitializing && newData && (newData.matchedFiles.length > 0 || newData.unmatchedFiles.length > 0)) {
-          // Check if the data is actually different to avoid unnecessary updates
-          const hasChanged = !oldData ||
-            newData.matchedFiles.length !== oldData.matchedFiles.length ||
-            newData.unmatchedFiles.length !== oldData.unmatchedFiles.length ||
-            newData.totalFiles !== oldData.totalFiles;
-
-          if (hasChanged) {
-            this.initializeWithExistingData();
-          }
-        }
-      },
-      deep: true,
-      immediate: true,
-    },
-  },
-
-  methods: {
-    handleBibUpdate(data: any): void {
-      this.bibData = {
+    // Event handlers
+    const handleBibUpdate = (data: any) => {
+      bibData.value = {
         fileName: data.fileName || "",
         dataframeData: data.dataframeData || null,
         rawContent: data.rawContent || "",
       };
-      this.emitBibUpdate();
-    },
+      emitBibUpdate();
+    };
 
-    handlePdfUpdate(data: any): void {
-      this.pdfData = {
+    const handlePdfUpdate = (data: any) => {
+      pdfData.value = {
         matchedFiles: data.matchedFiles || [],
         unmatchedFiles: data.unmatchedFiles || [],
         totalFiles: data.totalFiles || 0,
       };
 
       // Update dataframe data with matched file paths
-      this.updateDataframeWithFilePaths(data.matchedFiles || []);
+      updateDataframeWithFilePaths(data.matchedFiles || []);
 
-      this.emitPdfUpdate();
-    },
+      emitPdfUpdate();
+    };
 
     // Event emitters
-    emitBibUpdate(): void {
-      this.$emit("bib-update", {
-        isValid: this.bibData.dataframeData && this.bibData.dataframeData.data.length > 0,
-        fileName: this.bibData.fileName,
-        dataframeData: this.bibData.dataframeData,
-        rawContent: this.bibData.rawContent,
+    const emitBibUpdate = () => {
+      emit("bib-update", {
+        isValid: bibData.value.dataframeData && bibData.value.dataframeData.data.length > 0,
+        fileName: bibData.value.fileName,
+        dataframeData: bibData.value.dataframeData,
+        rawContent: bibData.value.rawContent,
       });
-    },
+    };
 
-    emitPdfUpdate(): void {
-      this.$emit("pdf-update", {
-        isValid: this.pdfData.matchedFiles.length > 0,
-        matchedFiles: this.pdfData.matchedFiles,
-        unmatchedFiles: this.pdfData.unmatchedFiles,
-        totalFiles: this.pdfData.totalFiles,
+    const emitPdfUpdate = () => {
+      emit("pdf-update", {
+        isValid: pdfData.value.matchedFiles.length > 0,
+        matchedFiles: pdfData.value.matchedFiles,
+        unmatchedFiles: pdfData.value.unmatchedFiles,
+        totalFiles: pdfData.value.totalFiles,
       });
-    },
+    };
 
-    updateDataframeWithFilePaths(matchedFiles: any[]): void {
-      if (!this.bibData.dataframeData || !matchedFiles.length) {
+    const updateDataframeWithFilePaths = (matchedFiles: any[]) => {
+      if (!bibData.value.dataframeData || !matchedFiles.length) {
         return;
       }
 
@@ -198,8 +145,9 @@ export default {
           referenceToFiles.get(reference)!.push(fileName);
         }
       });
+
       // Update the dataframe data with file paths
-      const updatedData = this.bibData.dataframeData.data.map((row: any) => {
+      const updatedData = bibData.value.dataframeData.data.map((row: any) => {
         const reference = row.reference || row.key;
         const filePaths = referenceToFiles.get(reference) || [];
 
@@ -210,73 +158,130 @@ export default {
       });
 
       // Update the dataframe data
-      this.bibData.dataframeData = {
-        ...this.bibData.dataframeData,
+      bibData.value.dataframeData = {
+        ...bibData.value.dataframeData,
         data: updatedData
       };
 
       // Re-emit the bib update with the updated dataframe
-      this.emitBibUpdate();
-    },
+      emitBibUpdate();
+    };
 
     // Initialize component with existing data when navigating back
-    initializeWithExistingData(): void {
+    const initializeWithExistingData = () => {
       // Set flag to prevent recursive updates
-      this.isInitializing = true;
+      isInitializing.value = true;
 
       // Initialize bibliography data
-      if (this.initialBibData && (this.initialBibData.fileName || (this.initialBibData.dataframeData && this.initialBibData.dataframeData.data.length > 0))) {
-        this.bibData = {
-          fileName: this.initialBibData.fileName || "",
-          dataframeData: this.initialBibData.dataframeData || null,
-          rawContent: this.initialBibData.rawContent || "",
+      if (props.initialBibData && (props.initialBibData.fileName || (props.initialBibData.dataframeData && props.initialBibData.dataframeData.data.length > 0))) {
+        bibData.value = {
+          fileName: props.initialBibData.fileName || "",
+          dataframeData: props.initialBibData.dataframeData || null,
+          rawContent: props.initialBibData.rawContent || "",
         };
       }
 
       // Initialize PDF data
-      if (this.initialPdfData && (this.initialPdfData.matchedFiles.length > 0 || this.initialPdfData.unmatchedFiles.length > 0 || this.initialPdfData.totalFiles > 0)) {
-        this.pdfData = {
-          matchedFiles: this.initialPdfData.matchedFiles || [],
-          unmatchedFiles: this.initialPdfData.unmatchedFiles || [],
-          totalFiles: this.initialPdfData.totalFiles || 0,
+      if (props.initialPdfData && (props.initialPdfData.matchedFiles.length > 0 || props.initialPdfData.unmatchedFiles.length > 0 || props.initialPdfData.totalFiles > 0)) {
+        pdfData.value = {
+          matchedFiles: props.initialPdfData.matchedFiles || [],
+          unmatchedFiles: props.initialPdfData.unmatchedFiles || [],
+          totalFiles: props.initialPdfData.totalFiles || 0,
         };
       }
 
       // Clear the initialization flag and emit updates after all data is set
-      this.$nextTick(() => {
-        this.isInitializing = false;
+      nextTick(() => {
+        isInitializing.value = false;
         // Emit updates to parent to ensure consistency
-        this.emitBibUpdate();
-        this.emitPdfUpdate();
+        emitBibUpdate();
+        emitPdfUpdate();
       });
-    },
+    };
 
     // Public methods for parent components
-    reset(): void {
+    const reset = () => {
       // Set flag to prevent recursive updates during reset
-      this.isInitializing = true;
+      isInitializing.value = true;
 
       // Reset bibliography data
-      this.bibData = {
+      bibData.value = {
         fileName: "",
         dataframeData: null,
         rawContent: "",
       };
 
       // Reset PDF data
-      this.pdfData = {
+      pdfData.value = {
         matchedFiles: [],
         unmatchedFiles: [],
         totalFiles: 0,
       };
 
       // Clear the initialization flag and emit updates after reset
-      this.$nextTick(() => {
-        this.isInitializing = false;
-        this.emitBibUpdate();
-        this.emitPdfUpdate();
+      nextTick(() => {
+        isInitializing.value = false;
+        emitBibUpdate();
+        emitPdfUpdate();
       });
-    },
+    };
+
+    // Watch for initial data changes
+    watch(
+      () => props.initialBibData,
+      (newData: any, oldData: any) => {
+        // Only initialize if data has actually changed and we're not already initializing
+        if (!isInitializing.value && newData && (newData.fileName || (newData.dataframeData && newData.dataframeData.data.length > 0))) {
+          // Check if the data is actually different to avoid unnecessary updates
+          const hasChanged = !oldData ||
+            newData.fileName !== oldData.fileName ||
+            (newData.dataframeData?.data?.length || 0) !== (oldData.dataframeData?.data?.length || 0);
+
+          if (hasChanged) {
+            initializeWithExistingData();
+          }
+        }
+      },
+      { deep: true, immediate: true }
+    );
+
+    watch(
+      () => props.initialPdfData,
+      (newData: any, oldData: any) => {
+        // Only initialize if data has actually changed and we're not already initializing
+        if (!isInitializing.value && newData && (newData.matchedFiles.length > 0 || newData.unmatchedFiles.length > 0)) {
+          // Check if the data is actually different to avoid unnecessary updates
+          const hasChanged = !oldData ||
+            newData.matchedFiles.length !== oldData.matchedFiles.length ||
+            newData.unmatchedFiles.length !== oldData.unmatchedFiles.length ||
+            newData.totalFiles !== oldData.totalFiles;
+
+          if (hasChanged) {
+            initializeWithExistingData();
+          }
+        }
+      },
+      { deep: true, immediate: true }
+    );
+
+    return {
+      // Reactive state
+      isInitializing,
+      bibData,
+      pdfData,
+
+      // Computed
+      isValid,
+
+      // Methods
+      handleBibUpdate,
+      handlePdfUpdate,
+      emitBibUpdate,
+      emitPdfUpdate,
+      updateDataframeWithFilePaths,
+      initializeWithExistingData,
+      reset,
+    };
   },
 };
 </script>

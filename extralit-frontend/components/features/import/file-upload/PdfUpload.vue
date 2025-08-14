@@ -33,7 +33,7 @@
         <span>{{ processedFiles }}/{{ totalFiles }} files</span>
       </div>
       <div class="pdf-upload__progress-bar">
-        <div class="pdf-upload__progress-fill" :style="{ width: `${progressPercentage}%` }"></div>
+        <div class="pdf-upload__progress-fill" :style="{ width: `${progressPercentage()}%` }"></div>
       </div>
     </div>
 
@@ -59,17 +59,12 @@
 </template>
 
 <script lang="ts">
-import { useResolve } from "ts-injecty";
-import { PdfMatchingService } from "~/v1/domain/services/FileMatchingService";
+import { computed } from "@nuxtjs/composition-api";
 import "assets/icons/check";
 import "assets/icons/danger";
 import "assets/icons/import";
-
-interface PdfData {
-  matchedFiles: any[];
-  unmatchedFiles: any[];
-  totalFiles: number;
-}
+import { usePdfUploadLogic } from "./usePdfUploadLogic";
+import type { PdfData } from "./types";
 
 export default {
   name: "PdfUpload",
@@ -91,239 +86,69 @@ export default {
 
   emits: ["update"],
 
-  setup() {
-    const pdfMatchingService = useResolve(PdfMatchingService);
-    return { pdfMatchingService };
-  },
+  setup(props: any, { emit }: any) {
+    // Use the composable for logic
+    const logic = usePdfUploadLogic(props);
 
-  data() {
-    return {
-      dragOver: false,
-      uploaded: false,
-      hasError: false,
-      errorMessage: "",
-      processing: false,
-      processedFiles: 0,
-      totalFiles: 0,
-      data: {
-        matchedFiles: [],
-        unmatchedFiles: [],
-        totalFiles: 0,
-      } as PdfData,
-    };
-  },
-
-  mounted() {
-    this.initializeWithExistingData();
-  },
-
-  computed: {
-    getDropzoneIcon(): string {
-      if (this.hasError) return "danger";
-      if (this.uploaded) return "check";
+    // Computed properties
+    const getDropzoneIcon = computed(() => {
+      if (logic.hasError.value) return "danger";
+      if (logic.uploaded.value) return "check";
       return "import";
-    },
+    });
 
-    getDropzoneText(): string {
-      if (this.hasError) return "Error processing PDF files";
-      if (this.uploaded) return "Upload PDF Files";
+    const getDropzoneText = computed(() => {
+      if (logic.hasError.value) return "Error processing PDF files";
+      if (logic.uploaded.value) return "Upload PDF Files";
       return "Upload PDF Files";
-    },
+    });
 
-    progressPercentage(): number {
-      if (this.totalFiles === 0) return 0;
-      return Math.round((this.processedFiles / this.totalFiles) * 100);
-    },
-  },
+    // File input handling
+    const triggerFolderInput = () => {
+      const folderInput = document.querySelector('input[type="file"][webkitdirectory]') as HTMLInputElement;
+      if (folderInput) {
+        folderInput.click();
+      }
+    };
 
-  watch: {
-    initialData: {
-      handler(newData: PdfData) {
-        if (newData && (newData.matchedFiles.length > 0 || newData.unmatchedFiles.length > 0 || newData.totalFiles > 0)) {
-          this.initializeWithExistingData();
-        }
-      },
-      deep: true,
-      immediate: true,
-    },
-  },
-
-  methods: {
-    triggerFolderInput(): void {
-      (this.$refs.folderInput as HTMLInputElement).click();
-    },
-
-    handleDragOver(event: DragEvent): void {
-      event.preventDefault();
-      this.dragOver = true;
-    },
-
-    handleDragLeave(): void {
-      this.dragOver = false;
-    },
-
-    handleDrop(event: DragEvent): void {
-      event.preventDefault();
-      this.dragOver = false;
-
-      const files = Array.from(event.dataTransfer?.files || []);
-      this.processFiles(files);
-    },
-
-    handleFolderSelect(event: Event): void {
+    const handleFolderSelect = (event: Event) => {
       const target = event.target as HTMLInputElement;
       const files = Array.from(target.files || []);
-      this.processFiles(files);
-    },
+      logic.processFiles(files);
+    };
 
-    async processFiles(files: File[]): Promise<void> {
-      // Reset error state but preserve existing files for additive upload
-      this.hasError = false;
-      this.errorMessage = "";
-
-      // Get existing files to merge with new ones
-      const existingFiles = [
-        ...this.data.matchedFiles.map(mf => mf.file),
-        ...this.data.unmatchedFiles
-      ];
-
-      this.processedFiles = 0;
-
-      const pdfFiles = files.filter((file) => this.isValidPdfFile(file));
-
-      if (pdfFiles.length === 0) {
-        this.showError("No valid PDF files found. Please select a folder containing PDF files.");
-        return;
-      }
-
-      this.totalFiles = pdfFiles.length;
-      this.processing = true;
-      this.clearError();
-
-      const validFiles: File[] = [];
-      const fileErrors: string[] = [];
-
-      for (const file of pdfFiles) {
-        // Skip files that are already uploaded (by name)
-        const isDuplicate = existingFiles.some(existingFile => existingFile.name === file.name);
-        if (!isDuplicate) {
-          const result = await this.validatePdfFile(file);
-          if (result.valid) {
-            validFiles.push(file);
-          } else {
-            fileErrors.push(`${file.name}: ${result.error}`);
-          }
-        }
-        this.processedFiles++;
-      }
-
-      // Combine existing files with new valid files
-      const allFiles = [...existingFiles, ...validFiles];
-      this.data.totalFiles = allFiles.length;
-
-      // Re-run file matching with all files (existing + new)
-      this.performFileMatching(allFiles);
-
-      this.processing = false;
-
-      // Show errors if any files failed, but don't fail the entire process
-      if (fileErrors.length > 0) {
-        const successCount = validFiles.length;
-        const errorCount = fileErrors.length;
-        const totalCount = successCount + errorCount;
-
-        let errorMessage = `Processed ${successCount} of ${totalCount} files successfully.\n\n`;
-        errorMessage += `Files that could not be processed:\n${fileErrors.join('\n')}`;
-
-        this.showError(errorMessage);
-      } else {
-        this.uploaded = true;
-        this.hasError = false;
-        this.errorMessage = "";
-      }
-
-      this.emitUpdate();
-    },
-
-    async validatePdfFile(file: File): Promise<{ valid: boolean; error?: string }> {
-      const maxSize = 200 * 1024 * 1024; // 200MB
-      if (file.size > maxSize) {
-        return { valid: false, error: `File ${file.name} is too large (max 200MB)` };
-      } else if (file.size === 0) {
-        return { valid: false, error: `File ${file.name} is empty` };
-      }
-
-      return { valid: true };
-    },
-
-    isValidPdfFile(file: File): boolean {
-      return file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
-    },
-
-    performFileMatching(uploadedFiles: File[]): void {
-      if (!this.bibliographyEntries || !this.bibliographyEntries.data || this.bibliographyEntries.data.length === 0 || uploadedFiles.length === 0) {
-        // If no bibliography entries, all files are unmatched
-        this.data.matchedFiles = [];
-        this.data.unmatchedFiles = uploadedFiles;
-        return;
-      }
-
-      const result = this.pdfMatchingService.matchFiles(uploadedFiles, this.bibliographyEntries);
-
-      this.data.matchedFiles = result.matchedFiles;
-      this.data.unmatchedFiles = result.unmatchedFiles;
-    },
-
-    showError(message: string): void {
-      this.hasError = true;
-      this.errorMessage = message;
-      this.uploaded = false;
-    },
-
-    clearError(): void {
-      this.hasError = false;
-      this.errorMessage = "";
-    },
-
-    initializeWithExistingData(): void {
-      if (this.initialData && (this.initialData.matchedFiles.length > 0 || this.initialData.unmatchedFiles.length > 0 || this.initialData.totalFiles > 0)) {
-        this.data = {
-          matchedFiles: this.initialData.matchedFiles || [],
-          unmatchedFiles: this.initialData.unmatchedFiles || [],
-          totalFiles: this.initialData.totalFiles || 0,
-        };
-        this.uploaded = this.data.totalFiles > 0;
-        this.hasError = false;
-        this.errorMessage = "";
-        this.processing = false;
-      }
-    },
-
-    emitUpdate(): void {
-      this.$emit("update", {
-        isValid: this.uploaded && !this.hasError && this.data.matchedFiles.length > 0,
-        matchedFiles: this.data.matchedFiles,
-        unmatchedFiles: this.data.unmatchedFiles,
-        totalFiles: this.data.totalFiles,
-        hasError: this.hasError,
-        errorMessage: this.errorMessage,
+    // Watch for changes and emit updates
+    const emitUpdate = () => {
+      emit("update", {
+        isValid: logic.uploaded.value && !logic.hasError.value && logic.data.value.matchedFiles.length > 0,
+        matchedFiles: logic.data.value.matchedFiles,
+        unmatchedFiles: logic.data.value.unmatchedFiles,
+        totalFiles: logic.data.value.totalFiles,
+        hasError: logic.hasError.value,
+        errorMessage: logic.errorMessage.value,
       });
-    },
+    };
 
-    reset(): void {
-      this.dragOver = false;
-      this.uploaded = false;
-      this.hasError = false;
-      this.errorMessage = "";
-      this.processing = false;
-      this.processedFiles = 0;
-      this.totalFiles = 0;
-      this.data = {
-        matchedFiles: [],
-        unmatchedFiles: [],
-        totalFiles: 0,
-      };
-    },
+    // Override processFiles to emit updates
+    const processFiles = async (files: File[]) => {
+      await logic.processFiles(files);
+      emitUpdate();
+    };
+
+    return {
+      // From composable
+      ...logic,
+
+      // Computed properties
+      getDropzoneIcon,
+      getDropzoneText,
+
+      // Custom methods
+      triggerFolderInput,
+      handleFolderSelect,
+      processFiles,
+      emitUpdate,
+    };
   },
 };
 </script>
