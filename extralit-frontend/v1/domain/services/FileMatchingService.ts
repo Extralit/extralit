@@ -31,13 +31,14 @@ export class PdfMatchingService implements IFileMatchingService {
 
     // Track which references have been matched to support multiple files per reference
     const referenceFileCount = new Map<string, number>();
-    const processedFiles = new Set<File>();
+    // Track which files have been used to ensure one-to-one file-to-bib-entry matching
+    const usedFiles = new Set<File>();
 
     // Phase 1: Maximum prefix path matching for entries with file attributes
-    const prefixMatches = this.findMaximumPrefixMatches(files, entries);
+    const prefixMatches = this.findMaximumPrefixMatches(files, entries, usedFiles);
 
     for (const match of prefixMatches) {
-      if (!processedFiles.has(match.file)) {
+      if (!usedFiles.has(match.file)) {
         matchedFiles.push({
           file: match.file,
           bibEntry: match.entry,
@@ -48,15 +49,15 @@ export class PdfMatchingService implements IFileMatchingService {
         // Track multiple files per reference
         const currentCount = referenceFileCount.get(match.entry.reference) || 0;
         referenceFileCount.set(match.entry.reference, currentCount + 1);
-        processedFiles.add(match.file);
+        usedFiles.add(match.file); // Mark file as used
       }
     }
 
-    // Phase 2: Exact matching for entries without file attributes
-    const remainingFiles = files.filter((file) => !processedFiles.has(file));
+    // Phase 2: Exact matching for remaining files against all entries
+    const remainingFiles = files.filter((file) => !usedFiles.has(file));
 
     for (const file of remainingFiles) {
-      const exactMatch = this.findExactMatch(file, entries);
+      const exactMatch = this.findExactMatch(file, entries, usedFiles);
       if (exactMatch) {
         matchedFiles.push({
           file,
@@ -67,12 +68,12 @@ export class PdfMatchingService implements IFileMatchingService {
 
         const currentCount = referenceFileCount.get(exactMatch.entry.reference) || 0;
         referenceFileCount.set(exactMatch.entry.reference, currentCount + 1);
-        processedFiles.add(file);
+        usedFiles.add(file); // Mark file as used
       }
     }
 
     // Add remaining unmatched files
-    const finalRemainingFiles = files.filter((file) => !processedFiles.has(file));
+    const finalRemainingFiles = files.filter((file) => !usedFiles.has(file));
     unmatchedFiles.push(...finalRemainingFiles);
 
     // Sort matched files by confidence (highest first), then by reference for grouping
@@ -94,7 +95,8 @@ export class PdfMatchingService implements IFileMatchingService {
    */
   private findMaximumPrefixMatches(
     files: File[],
-    entries: ParsedEntry[]
+    entries: ParsedEntry[],
+    usedFiles: Set<File> = new Set()
   ): Array<{
     file: File;
     entry: ParsedEntry;
@@ -109,7 +111,7 @@ export class PdfMatchingService implements IFileMatchingService {
     }> = [];
 
     // Only process entries that have file attributes
-    const entriesWithFiles = entries.filter(entry => entry.filePaths && entry.filePaths.length > 0);
+    const entriesWithFiles = entries.filter((entry) => entry.filePaths && entry.filePaths.length > 0);
 
     if (entriesWithFiles.length === 0) {
       return matches;
@@ -123,6 +125,9 @@ export class PdfMatchingService implements IFileMatchingService {
     }> = [];
 
     for (const file of files) {
+      // Skip files that are already matched
+      if (usedFiles.has(file)) continue;
+
       const filePath: string = (file as any).webkitRelativePath || file.name;
       const importFilePath = this.normalizePath(filePath);
 
@@ -151,14 +156,14 @@ export class PdfMatchingService implements IFileMatchingService {
     });
 
     // Progressive file addition with deduplication
-    const usedFiles = new Set<File>();
+    const localUsedFiles = new Set<File>();
     const referenceFileCounts = new Map<string, number>();
 
     for (const combination of allCombinations) {
       const { file, entry, prefixResult } = combination;
 
       // Skip if file is already matched with higher confidence
-      if (usedFiles.has(file)) continue;
+      if (localUsedFiles.has(file)) continue;
 
       // Allow multiple files per reference, but ensure quality matches
       const currentFileCount = referenceFileCounts.get(entry.reference) || 0;
@@ -174,7 +179,7 @@ export class PdfMatchingService implements IFileMatchingService {
           confidence: prefixResult.confidence,
         });
 
-        usedFiles.add(file);
+        localUsedFiles.add(file);
         referenceFileCounts.set(entry.reference, currentFileCount + 1);
       }
     }
@@ -183,13 +188,11 @@ export class PdfMatchingService implements IFileMatchingService {
   }
 
   /**
-   * Find exact matches for entries without file attributes
+   * Find exact matches for remaining files against all entries
    */
-  private findExactMatch(file: File, entries: ParsedEntry[]): MatchCandidate | null {
-    // Only process entries that don't have file attributes
-    const entriesWithoutFiles = entries.filter(entry => !entry.filePaths || entry.filePaths.length === 0);
-
-    if (entriesWithoutFiles.length === 0) {
+  private findExactMatch(file: File, entries: ParsedEntry[], usedFiles: Set<File> = new Set()): MatchCandidate | null {
+    // Skip if file is already matched
+    if (usedFiles.has(file)) {
       return null;
     }
 
@@ -197,7 +200,7 @@ export class PdfMatchingService implements IFileMatchingService {
     let bestMatch: MatchCandidate | null = null;
     let bestConfidence = 0;
 
-    for (const entry of entriesWithoutFiles) {
+    for (const entry of entries) {
       const matches = [
         this.checkReferenceSubstringMatch(fileName, entry.reference),
         this.checkTitleSubstringMatch(fileName, entry.title),
@@ -225,7 +228,10 @@ export class PdfMatchingService implements IFileMatchingService {
   /**
    * Check if filename contains the reference as a substring
    */
-  private checkReferenceSubstringMatch(fileName: string, reference?: string): { type: string; confidence: number } | null {
+  private checkReferenceSubstringMatch(
+    fileName: string,
+    reference?: string
+  ): { type: string; confidence: number } | null {
     if (!reference) return null;
 
     const refKey = reference.toLowerCase();
@@ -254,9 +260,7 @@ export class PdfMatchingService implements IFileMatchingService {
       .replace(/[_\-\s]+/g, " ")
       .trim();
 
-    const cleanFileName = fileName
-      .replace(/[_\-\s]+/g, " ")
-      .trim();
+    const cleanFileName = fileName.replace(/[_\-\s]+/g, " ").trim();
 
     // Check for exact match first
     if (cleanFileName === cleanTitle) {
@@ -330,6 +334,27 @@ export class PdfMatchingService implements IFileMatchingService {
         matchType = i === minLength ? "full_suffix_match" : "partial_suffix_match";
       } else {
         break; // Stop at first non-match since we're looking for continuous suffix
+      }
+    }
+
+    // If no exact suffix match, try exact filename match
+    if (maxPrefixLength === 0) {
+      const fileName = filePathParts[filePathParts.length - 1];
+      const bibFileName = bibPathParts[bibPathParts.length - 1];
+
+      if (fileName && bibFileName) {
+        // Remove .pdf extension for comparison
+        const cleanFileName = fileName.replace(/\.pdf$/i, "");
+        const cleanBibFileName = bibFileName.replace(/\.pdf$/i, "");
+
+        // Only match if filenames are exactly the same (no fuzzy matching)
+        if (cleanFileName === cleanBibFileName) {
+          return {
+            prefixLength: 1,
+            confidence: 0.8, // Lower confidence for filename-only matches
+            type: "filename_similarity",
+          };
+        }
       }
     }
 

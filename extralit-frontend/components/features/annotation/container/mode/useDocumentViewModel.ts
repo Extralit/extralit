@@ -109,6 +109,7 @@ export const useDocumentViewModel = (props: { record: any }) => {
     fetchDocumentSegments,
     focusDocumentPageNumber,
     clearDocument,
+    isDocumentPanelExpanded: computed(() => false), // Default to collapsed
   };
 };
 
