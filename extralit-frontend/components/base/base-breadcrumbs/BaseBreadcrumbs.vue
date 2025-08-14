@@ -33,7 +33,7 @@
         </span>
       </li>
     </ul>
-    <!-- <base-action-tooltip :tooltip="$t('copied')">
+    <BaseActionTooltip :tooltip="$t('copied')">
       <a
         v-if="copyButton"
         class="breadcrumbs__copy"
@@ -45,7 +45,7 @@
       >
         <svgicon name="copy" width="16" height="16" />
       </a>
-    </base-action-tooltip> -->
+    </BaseActionTooltip>
   </div>
 </template>
 

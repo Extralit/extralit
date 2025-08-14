@@ -2,11 +2,37 @@ import { Segment } from "../entities/document/Document";
 import { IDocumentStorage } from "../services/IDocumentStorage";
 import { DocumentRepository } from "@/v1/infrastructure/repositories/DocumentRepository";
 
-export class GetDocumentByIdUseCase {
+export class GetDocumentByRecordMetadataUseCase {
   constructor(
     private readonly documentRepository: DocumentRepository,
     private readonly documentStorage: IDocumentStorage
   ) { }
+
+  createParams(
+    metadata: Record<string, any> | null,
+    workspaceId: string
+  ): {
+    workspace_id: string;
+    doc_id?: string;
+    pmid?: string;
+    doi?: string;
+    reference?: string;
+  } {
+    const params: {
+      workspace_id: string;
+      doc_id?: string;
+      pmid?: string;
+      doi?: string;
+      reference?: string;
+    } = { workspace_id: workspaceId };
+
+    if (metadata?.reference) params.reference = metadata.reference;
+    if (metadata?.doc_id) params.doc_id = metadata.doc_id;
+    if (metadata?.pmid) params.pmid = metadata.pmid;
+    if (metadata?.doi) params.doi = metadata.doi;
+
+    return params;
+  }
 
   async setDocument(params: {
     workspace_id: string;
@@ -18,7 +44,7 @@ export class GetDocumentByIdUseCase {
     const documents = await this.documentRepository.getDocuments(params);
 
     if (documents.length === 0) {
-      throw new Error("No documents found with the provided criteria");
+      return null;
     }
 
     // For now, we'll use the first document found

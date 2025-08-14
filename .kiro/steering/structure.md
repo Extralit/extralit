@@ -78,15 +78,15 @@ extralit-frontend/
   ```typescript
   export const useMyViewModel = (props) => {
     const dependency = useResolve(MyUseCase);
-    
+
     const methodOne = () => {
       // implementation
     };
-    
+
     const methodTwo = async (param) => {
       // implementation
     };
-    
+
     return {
       dependency,
       methodOne,

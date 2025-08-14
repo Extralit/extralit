@@ -1,6 +1,6 @@
 import { ref, watch, computed } from "vue-demi";
 import { useResolve } from "ts-injecty";
-import { GetDocumentByIdUseCase } from "@/v1/domain/usecases/get-document-by-id-use-case";
+import { GetDocumentByRecordMetadataUseCase } from "~/v1/domain/usecases/get-document-by-record-metadata-use-case";
 import { useDocument } from "@/v1/infrastructure/storage/DocumentStorage";
 import { Segment } from "@/v1/domain/entities/document/Document";
 import { useDataset } from "@/v1/infrastructure/storage/DatasetStorage";
@@ -10,7 +10,7 @@ import { useWorkspaces } from "~/v1/infrastructure/storage/WorkspaceStorage";
 
 export const useDocumentViewModel = (props: { record: any }) => {
   const notification = useNotifications();
-  const getDocument = useResolve(GetDocumentByIdUseCase);
+  const getDocument = useResolve(GetDocumentByRecordMetadataUseCase);
   const { state: workspaces } = useWorkspaces();
   const { state: dataset } = useDataset();
   const { state: document, set: setDocument, clear: clearDocument } = useDocument();
@@ -19,32 +19,18 @@ export const useDocumentViewModel = (props: { record: any }) => {
   const hasDocumentLoaded = computed(() => {
     return document.id !== null;
   });
-  const hasDocument = computed(() => {
-    return (
-      props.record.metadata === null || props.record.metadata?.reference != null || props.record.metadata?.pmid != null
-    );
-  });
 
   const fetchDocument = async (metadata: any) => {
     try {
       await waitForAsyncValue(() => workspaces.selectedWorkspace?.id);
 
-      const params: {
-        workspace_id: string;
-        doc_id?: string;
-        pmid?: string;
-        doi?: string;
-        reference?: string;
-      } = { workspace_id: workspaces.selectedWorkspace!.id };
+      const params = getDocument.createParams(metadata, workspaces.selectedWorkspace!.id);
 
-      if (metadata?.reference) params.reference = metadata.reference;
-      if (metadata?.doc_id) params.doc_id = metadata.doc_id;
-      if (metadata?.pmid) params.pmid = metadata.pmid;
-      if (metadata?.doi) params.doi = metadata.doi;
+      const hasValidIdentifier = params.reference || params.doc_id || params.pmid || params.doi;
 
-      // Ensure at least one identifier is provided
-      if (Object.keys(params).length === 0) {
-        throw new Error("No valid document identifier found in metadata");
+      if (!hasValidIdentifier) {
+        clearDocument();
+        return;
       }
 
       await getDocument.setDocument(params);
@@ -60,13 +46,17 @@ export const useDocumentViewModel = (props: { record: any }) => {
   };
 
   const updateDocument = async (metadata: any) => {
+    const hasValidIdentifier = metadata?.pmid || metadata?.doi || metadata?.doc_id || metadata?.reference;
+
     if (metadata?.pmid != null && document.pmid !== metadata.pmid) {
-      fetchDocument(metadata);
+      await fetchDocument(metadata);
     } else if (metadata?.doi != null && document.doi !== metadata.doi) {
-      fetchDocument(metadata);
+      await fetchDocument(metadata);
     } else if (metadata?.doc_id != null && document.id !== metadata.doc_id) {
-      fetchDocument(metadata);
-    } else if (!metadata?.pmid && !metadata?.doi && !metadata?.doc_id && hasDocumentLoaded.value) {
+      await fetchDocument(metadata);
+    } else if (metadata?.reference != null && document.reference !== metadata.reference) {
+      await fetchDocument(metadata);
+    } else if (!hasValidIdentifier && hasDocumentLoaded.value) {
       clearDocument();
     }
 
@@ -105,9 +95,6 @@ export const useDocumentViewModel = (props: { record: any }) => {
           console.log(error);
         } finally {
           isLoading.value = false;
-          if (!hasDocumentLoaded.value) {
-            // TODO closePanel();
-          }
         }
       }
       if (newMetadata?.reference && oldMetadata?.reference !== newMetadata.reference) {
@@ -122,6 +109,7 @@ export const useDocumentViewModel = (props: { record: any }) => {
     fetchDocumentSegments,
     focusDocumentPageNumber,
     clearDocument,
+    isDocumentPanelExpanded: computed(() => false), // Default to collapsed
   };
 };
 

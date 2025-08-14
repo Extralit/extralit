@@ -82,7 +82,7 @@ export default {
       default: null,
     },
     pdfData: {
-      type: Object,
+      type: Object as () => { matchedFiles: any[] } | null,
       default: () => ({ matchedFiles: [] }),
     },
     workspace: {
@@ -401,8 +401,6 @@ export default {
       return files.join(", ");
     },
 
-
-
     getStatusText(status: string) {
       const statusMap = {
         add: "Add",
@@ -449,9 +447,6 @@ export default {
       }
     },
 
-
-
-
     formatColumnTitle(fieldName: string) {
       // Convert field names to readable titles
       return fieldName
@@ -459,9 +454,6 @@ export default {
         .replace(/^./, str => str.toUpperCase())
         .trim();
     },
-
-
-
 
     emitUpdate() {
       const confirmedDocuments: Record<string, any> = {};
@@ -562,6 +554,19 @@ export default {
       this.localDocumentActions = {};
     },
 
+    // Add missing methods
+    retryAnalysis() {
+      if (this.$refs.viewModel && this.$refs.viewModel.retryAnalysis) {
+        this.$refs.viewModel.retryAnalysis();
+      }
+    },
+
+    reset() {
+      this.resetLocalState();
+      if (this.$refs.viewModel && this.$refs.viewModel.reset) {
+        this.$refs.viewModel.reset();
+      }
+    },
 
     // Helper method to prepare data for ImportHistoryCreate payload
     getImportHistoryData() {
@@ -613,11 +618,8 @@ export default {
   },
 
   setup(props) {
-    const viewModel = useImportAnalysisTableViewModel(props);
-    return {
-      ...viewModel,
-    };
-  }
+    return useImportAnalysisTableViewModel(props);
+  },
 };
 </script>
 

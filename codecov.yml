@@ -6,6 +6,7 @@ coverage:
     patch:
       default:
         enabled: false
+comment: false
 
 flags:
   frontend:

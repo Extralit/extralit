@@ -2,7 +2,7 @@
   <div class="resizable-v" :class="resizing ? '--v-resizing' : ''">
     <div class="resizable-v__left"><slot name="left" /></div>
 
-    <div class="resizable-v__bar" ref="resizableBar">
+    <div ref="resizableBar" class="resizable-v__bar">
       <div class="resizable-v__bar__inner" />
     </div>
 
@@ -64,7 +64,7 @@ export default {
     }
   },
   destroyed() {
-    this.resizer.removeEventListener(EVENT.MOUSE_DOWN, this.mouseDownHandler);
+    this.resizer?.removeEventListener(EVENT.MOUSE_DOWN, this.mouseDownHandler);
   },
   methods: {
     limitElementWidth(element) {

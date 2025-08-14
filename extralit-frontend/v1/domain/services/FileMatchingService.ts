@@ -1,3 +1,4 @@
+import { TableData } from "../entities/table/TableData";
 import type { IFileMatchingService, FileMatchResult, FileMatchingResult } from "./IFileMatchingService";
 import type { ParsedEntry } from "./IFileParsingService";
 
@@ -14,7 +15,8 @@ interface PrefixMatchResult {
 }
 
 export class PdfMatchingService implements IFileMatchingService {
-  matchFiles(files: File[], dataframeData): FileMatchingResult {
+  matchFiles(files: File[], dataframeData: TableData): FileMatchingResult {
+    // @ts-ignore
     const entries: ParsedEntry[] = dataframeData?.data || [];
 
     if (!entries || entries.length === 0 || files.length === 0) {
@@ -29,13 +31,14 @@ export class PdfMatchingService implements IFileMatchingService {
 
     // Track which references have been matched to support multiple files per reference
     const referenceFileCount = new Map<string, number>();
-    const processedFiles = new Set<File>();
+    // Track which files have been used to ensure one-to-one file-to-bib-entry matching
+    const usedFiles = new Set<File>();
 
-    // Phase 1: Maximum prefix path matching (highest priority)
-    const prefixMatches = this.findMaximumPrefixMatches(files, entries);
+    // Phase 1: Maximum prefix path matching for entries with file attributes
+    const prefixMatches = this.findMaximumPrefixMatches(files, entries, usedFiles);
 
     for (const match of prefixMatches) {
-      if (!processedFiles.has(match.file)) {
+      if (!usedFiles.has(match.file)) {
         matchedFiles.push({
           file: match.file,
           bibEntry: match.entry,
@@ -46,49 +49,32 @@ export class PdfMatchingService implements IFileMatchingService {
         // Track multiple files per reference
         const currentCount = referenceFileCount.get(match.entry.reference) || 0;
         referenceFileCount.set(match.entry.reference, currentCount + 1);
-        processedFiles.add(match.file);
+        usedFiles.add(match.file); // Mark file as used
       }
     }
 
-    // Phase 2: Webkit path matching for remaining files
-    const remainingFiles = files.filter((file) => !processedFiles.has(file));
+    // Phase 2: Exact matching for remaining files against all entries
+    const remainingFiles = files.filter((file) => !usedFiles.has(file));
 
     for (const file of remainingFiles) {
-      const webkitMatch = this.findWebkitPathMatch(file, entries);
-      if (webkitMatch) {
+      const exactMatch = this.findExactMatch(file, entries, usedFiles);
+      if (exactMatch) {
         matchedFiles.push({
           file,
-          bibEntry: webkitMatch.entry,
-          matchType: webkitMatch.type,
-          confidence: webkitMatch.confidence,
+          bibEntry: exactMatch.entry,
+          matchType: exactMatch.type,
+          confidence: exactMatch.confidence,
         });
 
-        const currentCount = referenceFileCount.get(webkitMatch.entry.reference) || 0;
-        referenceFileCount.set(webkitMatch.entry.reference, currentCount + 1);
-        processedFiles.add(file);
+        const currentCount = referenceFileCount.get(exactMatch.entry.reference) || 0;
+        referenceFileCount.set(exactMatch.entry.reference, currentCount + 1);
+        usedFiles.add(file); // Mark file as used
       }
     }
 
-    // Phase 3: Other matching methods for remaining files
-    const finalRemainingFiles = files.filter((file) => !processedFiles.has(file));
-
-    for (const file of finalRemainingFiles) {
-      const match = this.findBestNonWebkitMatch(file, entries);
-      if (match) {
-        matchedFiles.push({
-          file,
-          bibEntry: match.entry,
-          matchType: match.type,
-          confidence: match.confidence,
-        });
-
-        const currentCount = referenceFileCount.get(match.entry.reference) || 0;
-        referenceFileCount.set(match.entry.reference, currentCount + 1);
-        processedFiles.add(file);
-      } else {
-        unmatchedFiles.push(file);
-      }
-    }
+    // Add remaining unmatched files
+    const finalRemainingFiles = files.filter((file) => !usedFiles.has(file));
+    unmatchedFiles.push(...finalRemainingFiles);
 
     // Sort matched files by confidence (highest first), then by reference for grouping
     matchedFiles.sort((a, b) => {
@@ -105,12 +91,12 @@ export class PdfMatchingService implements IFileMatchingService {
   }
 
   /**
-   * Find maximum prefix path matches for all files against all entries
-   * This method implements the core maximum prefix matching algorithm
+   * Find maximum prefix path matches for entries with file attributes
    */
   private findMaximumPrefixMatches(
     files: File[],
-    entries: ParsedEntry[]
+    entries: ParsedEntry[],
+    usedFiles: Set<File> = new Set()
   ): Array<{
     file: File;
     entry: ParsedEntry;
@@ -124,6 +110,13 @@ export class PdfMatchingService implements IFileMatchingService {
       confidence: number;
     }> = [];
 
+    // Only process entries that have file attributes
+    const entriesWithFiles = entries.filter((entry) => entry.filePaths && entry.filePaths.length > 0);
+
+    if (entriesWithFiles.length === 0) {
+      return matches;
+    }
+
     // Create a map of all possible file-entry combinations with their prefix match scores
     const allCombinations: Array<{
       file: File;
@@ -132,12 +125,13 @@ export class PdfMatchingService implements IFileMatchingService {
     }> = [];
 
     for (const file of files) {
+      // Skip files that are already matched
+      if (usedFiles.has(file)) continue;
+
       const filePath: string = (file as any).webkitRelativePath || file.name;
       const importFilePath = this.normalizePath(filePath);
 
-      for (const entry of entries) {
-        if (!entry.filePaths || entry.filePaths.length === 0) continue;
-
+      for (const entry of entriesWithFiles) {
         for (const bibFilePath of entry.filePaths) {
           const importBibPath = this.normalizePath(bibFilePath);
           const prefixResult = this.calculateMaximumPrefixMatch(importFilePath, importBibPath);
@@ -162,14 +156,14 @@ export class PdfMatchingService implements IFileMatchingService {
     });
 
     // Progressive file addition with deduplication
-    const usedFiles = new Set<File>();
+    const localUsedFiles = new Set<File>();
     const referenceFileCounts = new Map<string, number>();
 
     for (const combination of allCombinations) {
       const { file, entry, prefixResult } = combination;
 
       // Skip if file is already matched with higher confidence
-      if (usedFiles.has(file)) continue;
+      if (localUsedFiles.has(file)) continue;
 
       // Allow multiple files per reference, but ensure quality matches
       const currentFileCount = referenceFileCounts.get(entry.reference) || 0;
@@ -185,12 +179,126 @@ export class PdfMatchingService implements IFileMatchingService {
           confidence: prefixResult.confidence,
         });
 
-        usedFiles.add(file);
+        localUsedFiles.add(file);
         referenceFileCounts.set(entry.reference, currentFileCount + 1);
       }
     }
 
     return matches;
+  }
+
+  /**
+   * Find exact matches for remaining files against all entries
+   */
+  private findExactMatch(file: File, entries: ParsedEntry[], usedFiles: Set<File> = new Set()): MatchCandidate | null {
+    // Skip if file is already matched
+    if (usedFiles.has(file)) {
+      return null;
+    }
+
+    const fileName: string = file.name.toLowerCase().replace(/\.pdf$/, "");
+    let bestMatch: MatchCandidate | null = null;
+    let bestConfidence = 0;
+
+    for (const entry of entries) {
+      const matches = [
+        this.checkReferenceSubstringMatch(fileName, entry.reference),
+        this.checkTitleSubstringMatch(fileName, entry.title),
+      ].filter(Boolean);
+
+      if (matches.length > 0) {
+        const bestFileMatch = matches.reduce((best, current) =>
+          current.confidence > best.confidence ? current : best
+        );
+
+        if (bestFileMatch.confidence > bestConfidence) {
+          bestMatch = {
+            entry,
+            type: bestFileMatch.type,
+            confidence: bestFileMatch.confidence,
+          };
+          bestConfidence = bestFileMatch.confidence;
+        }
+      }
+    }
+
+    return bestConfidence >= 0.9 ? bestMatch : null;
+  }
+
+  /**
+   * Check if filename contains the reference as a substring
+   */
+  private checkReferenceSubstringMatch(
+    fileName: string,
+    reference?: string
+  ): { type: string; confidence: number } | null {
+    if (!reference) return null;
+
+    const refKey = reference.toLowerCase();
+
+    // Check for exact match first
+    if (fileName === refKey) {
+      return { type: "exact_reference", confidence: 1.0 };
+    }
+
+    // Check if filename contains reference as substring, but only if it's a significant match
+    if (fileName.includes(refKey)) {
+      // Calculate how much of the filename the reference represents
+      const referenceRatio = refKey.length / fileName.length;
+
+      // Only accept if reference represents at least 60% of the filename
+      // This prevents short references from matching long filenames inappropriately
+      if (referenceRatio >= 0.6) {
+        return { type: "reference_substring", confidence: 0.9 };
+      }
+
+      // For less significant matches, reduce confidence
+      if (referenceRatio >= 0.4) {
+        return { type: "reference_substring", confidence: 0.7 };
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Check if filename contains normalized title words as substrings
+   */
+  private checkTitleSubstringMatch(fileName: string, title?: string): { type: string; confidence: number } | null {
+    if (!title) return null;
+
+    const cleanTitle = title
+      .toLowerCase()
+      .replace(/[_\-\s]+/g, " ")
+      .trim();
+
+    const cleanFileName = fileName.replace(/[_\-\s]+/g, " ").trim();
+
+    // Check for exact match first
+    if (cleanFileName === cleanTitle) {
+      return { type: "exact_title", confidence: 1.0 };
+    }
+
+    // Split title into words and check if filename contains each word
+    const titleWords = cleanTitle.split(" ").filter((word) => word.length > 2);
+
+    if (titleWords.length === 0) return null;
+
+    let matchedWords = 0;
+    for (const titleWord of titleWords) {
+      if (cleanFileName.includes(titleWord)) {
+        matchedWords++;
+      }
+    }
+
+    if (matchedWords > 0) {
+      const confidence = matchedWords / titleWords.length;
+      if (confidence >= 0.6) {
+        return { type: "title_substring", confidence: confidence * 0.8 };
+      }
+    }
+
+    return null;
   }
 
   /**
@@ -241,7 +349,7 @@ export class PdfMatchingService implements IFileMatchingService {
       }
     }
 
-    // If no exact suffix match, try filename similarity
+    // If no exact suffix match, try exact filename match
     if (maxPrefixLength === 0) {
       const fileName = filePathParts[filePathParts.length - 1];
       const bibFileName = bibPathParts[bibPathParts.length - 1];
@@ -251,11 +359,20 @@ export class PdfMatchingService implements IFileMatchingService {
         const cleanFileName = fileName.replace(/\.pdf$/i, "");
         const cleanBibFileName = bibFileName.replace(/\.pdf$/i, "");
 
-        const similarity = this.calculateStringSimilarity(cleanFileName, cleanBibFileName);
-        if (similarity >= 0.8) {
+        // Check for exact filename match
+        if (cleanFileName === cleanBibFileName) {
           return {
             prefixLength: 1,
-            confidence: similarity * 0.7, // Lower confidence for filename-only matches
+            confidence: 0.8, // Lower confidence for filename-only matches
+            type: "filename_similarity",
+          };
+        }
+
+        // Check for similar filenames (e.g., with version suffixes)
+        if (cleanFileName.includes(cleanBibFileName) || cleanBibFileName.includes(cleanFileName)) {
+          return {
+            prefixLength: 1,
+            confidence: 0.7, // Even lower confidence for similar filenames
             type: "filename_similarity",
           };
         }
@@ -289,205 +406,9 @@ export class PdfMatchingService implements IFileMatchingService {
     return { prefixLength: 0, confidence: 0, type: "no_match" };
   }
 
-  private findWebkitPathMatch(file: File, entries: ParsedEntry[]): MatchCandidate | null {
-    const filePath: string = (file as any).webkitRelativePath || file.name;
-
-    for (const entry of entries) {
-      const webkitMatch = this.checkWebkitPathMatch(filePath, entry.filePaths);
-      if (webkitMatch) {
-        return {
-          entry,
-          type: webkitMatch.type,
-          confidence: webkitMatch.confidence,
-        };
-      }
-    }
-    return null;
-  }
-
-  private findBestNonWebkitMatch(file: File, entries: ParsedEntry[]): MatchCandidate | null {
-    const fileName: string = file.name.toLowerCase().replace(/\.pdf$/, "");
-    let bestMatch: MatchCandidate | null = null;
-    let bestConfidence = 0;
-
-    for (const entry of entries) {
-      const matches = [
-        this.checkFileFieldMatch(fileName, entry.filePaths),
-        this.checkExactMatch(fileName, entry.reference),
-        this.checkTitleMatch(fileName, entry.title),
-      ].filter(Boolean);
-
-      if (matches.length > 0) {
-        const bestFileMatch = matches.reduce((best, current) =>
-          current.confidence > best.confidence ? current : best
-        );
-
-        if (bestFileMatch.confidence > bestConfidence) {
-          bestMatch = {
-            entry,
-            type: bestFileMatch.type,
-            confidence: bestFileMatch.confidence,
-          };
-          bestConfidence = bestFileMatch.confidence;
-        }
-      }
-    }
-
-    return bestConfidence >= 0.6 ? bestMatch : null;
-  }
-
-  private checkWebkitPathMatch(
-    filePath: string,
-    parsedFilePaths?: string[]
-  ): { type: string; confidence: number } | null {
-    if (!parsedFilePaths || parsedFilePaths.length === 0) return null;
-
-    const importFilePath = this.normalizePath(filePath);
-
-    for (const bibFilePath of parsedFilePaths) {
-      const importBibPath = this.normalizePath(bibFilePath);
-
-      // Use the same maximum prefix matching logic for consistency
-      const prefixResult = this.calculateMaximumPrefixMatch(importFilePath, importBibPath);
-
-      if (prefixResult.confidence >= 0.8) {
-        return {
-          type: `webkit_${prefixResult.type}`,
-          confidence: prefixResult.confidence * 0.95, // Slightly lower than maximum prefix matches
-        };
-      }
-
-      // Fallback to filename similarity for webkit paths
-      const filePathName = this.extractFileNameFromPath(importFilePath);
-      const bibPathName = this.extractFileNameFromPath(importBibPath);
-
-      if (filePathName && bibPathName) {
-        const similarity = this.calculateStringSimilarity(filePathName, bibPathName);
-        if (similarity >= 0.9) {
-          return { type: "webkit_path_filename", confidence: similarity * 0.85 };
-        }
-      }
-    }
-
-    return null;
-  }
-
-  private checkFileFieldMatch(
-    fileName: string,
-    parsedFilePaths?: string[]
-  ): { type: string; confidence: number } | null {
-    if (!parsedFilePaths || parsedFilePaths.length === 0) return null;
-
-    for (const filePath of parsedFilePaths) {
-      const pathFileName = this.extractFileNameFromPath(filePath);
-      if (pathFileName) {
-        const cleanPathFileName = pathFileName.toLowerCase().replace(/\.pdf$/, "");
-
-        if (fileName === cleanPathFileName) {
-          return { type: "file_field_parsed", confidence: 0.95 };
-        }
-
-        const similarity = this.calculateStringSimilarity(fileName, cleanPathFileName);
-        if (similarity >= 0.8) {
-          return { type: "file_field_parsed", confidence: similarity * 0.9 };
-        }
-      }
-    }
-
-    return null;
-  }
-
-  private checkExactMatch(fileName: string, reference?: string): { type: string; confidence: number } | null {
-    if (!reference) return null;
-
-    const refKey = reference.toLowerCase();
-    if (fileName === refKey) {
-      return { type: "exact", confidence: 1.0 };
-    }
-    return null;
-  }
-
-  private checkTitleMatch(fileName: string, title?: string): { type: string; confidence: number } | null {
-    if (!title) return null;
-
-    const cleanTitle = title
-      .toLowerCase()
-      .replace(/[^\w\s]/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-
-    const cleanFileName = fileName
-      .replace(/[^\w\s]/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-
-    const titleWords = cleanTitle.split(" ").filter((word) => word.length > 3);
-    const fileWords = cleanFileName.split(" ");
-
-    let matchedWords = 0;
-    for (const titleWord of titleWords) {
-      if (fileWords.some((fileWord) => fileWord.includes(titleWord) || titleWord.includes(fileWord))) {
-        matchedWords++;
-      }
-    }
-
-    if (titleWords.length > 0) {
-      const confidence = matchedWords / titleWords.length;
-      if (confidence >= 0.6) {
-        return { type: "title", confidence: confidence * 0.8 };
-      }
-    }
-
-    return null;
-  }
-
-  private calculateStringSimilarity(str1: string, str2: string): number {
-    const longer = str1.length > str2.length ? str1 : str2;
-    const shorter = str1.length > str2.length ? str2 : str1;
-
-    if (longer.length === 0) return 1.0;
-
-    const distance = this.levenshteinDistance(longer, shorter);
-    return (longer.length - distance) / longer.length;
-  }
-
-  private levenshteinDistance(str1: string, str2: string): number {
-    const matrix: number[][] = [];
-
-    for (let i = 0; i <= str2.length; i++) {
-      matrix[i] = [i];
-    }
-
-    for (let j = 0; j <= str1.length; j++) {
-      matrix[0][j] = j;
-    }
-
-    for (let i = 1; i <= str2.length; i++) {
-      for (let j = 1; j <= str1.length; j++) {
-        if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
-          matrix[i][j] = matrix[i - 1][j - 1];
-        } else {
-          matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j] + 1);
-        }
-      }
-    }
-
-    return matrix[str2.length][str1.length];
-  }
-
   private normalizePath(path: string): string {
     if (!path) return "";
 
     return path.toLowerCase().replace(/\\/g, "/").replace(/\/+/g, "/").replace(/^\/*/, "").replace(/\/*$/, "").trim();
-  }
-
-  private extractFileNameFromPath(path: string): string | null {
-    if (!path) return null;
-
-    const importPath = this.normalizePath(path);
-    const parts = importPath.split("/");
-    const fileName = parts[parts.length - 1];
-
-    return fileName ? fileName.replace(/\.pdf$/, "") : null;
   }
 }

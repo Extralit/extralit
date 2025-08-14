@@ -39,7 +39,7 @@ import { useWorkspaces } from "@/v1/infrastructure/storage/WorkspaceStorage";
 import { GetHfDatasetCreationUseCase } from "~/v1/domain/usecases/get-hf-dataset-creation-use-case";
 import { GetDatasetsUseCase } from "@/v1/domain/usecases/get-datasets-use-case";
 import { GetDatasetByIdUseCase } from "@/v1/domain/usecases/get-dataset-by-id-use-case";
-import { GetDocumentByIdUseCase } from "@/v1/domain/usecases/get-document-by-id-use-case";
+import { GetDocumentByRecordMetadataUseCase } from "~/v1/domain/usecases/get-document-by-record-metadata-use-case";
 import { GetDocumentsByWorkspaceUseCase } from "@/v1/domain/usecases/get-documents-by-workspace-use-case";
 import { GetLLMExtractionUseCase } from "@/v1/domain/usecases/get-extraction-completion-use-case";
 import { GetExtractionSchemaUseCase } from "@/v1/domain/usecases/get-extraction-schema-use-case";
@@ -115,7 +115,7 @@ export const loadDependencyContainer = (context: Context) => {
 
     register(GetDatasetsUseCase).withDependencies(DatasetRepository, useDatasets).build(),
 
-    register(GetDocumentByIdUseCase).withDependencies(DocumentRepository, useDocument).build(),
+    register(GetDocumentByRecordMetadataUseCase).withDependencies(DocumentRepository, useDocument).build(),
 
     register(GetDocumentsByWorkspaceUseCase).withDependency(DocumentRepository).build(),
 

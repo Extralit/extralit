@@ -159,11 +159,15 @@ class DiskImportExportMixin(ABC):
 
     @classmethod
     def _define_child_paths(cls, path: Union[Path, str]) -> Tuple[Path, Path, Path]:
-        path = Path(path)
-        if not path.is_dir():
-            raise NotADirectoryError(f"Path {path} is not a directory")
+        path = Path(os.path.expanduser(str(path)))
+
+        # Resolve ~ in the path if present
         main_path = path / cls._DEFAULT_CONFIG_REPO_DIR
-        main_path.mkdir(exist_ok=True)
+        main_path.mkdir(parents=True, exist_ok=True)
+
+        if not main_path.is_dir():
+            raise NotADirectoryError(f"Path {path} is not a directory")
+
         dataset_path = path / cls._DEFAULT_DATASET_PATH
         settings_path = path / cls._DEFAULT_SETTINGS_PATH
         records_path = path / cls._DEFAULT_RECORDS_PATH
