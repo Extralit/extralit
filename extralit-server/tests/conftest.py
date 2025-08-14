@@ -13,8 +13,7 @@
 # limitations under the License.
 
 import asyncio
-from collections.abc import AsyncGenerator, Generator
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, AsyncGenerator, Generator
 
 import httpx
 import pytest

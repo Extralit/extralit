@@ -14,7 +14,7 @@
 
 import os
 from collections import OrderedDict
-from collections.abc import AsyncGenerator, Generator
+from typing import AsyncGenerator, Generator
 
 from sqlalchemy import create_engine, event, make_url
 from sqlalchemy.engine import Engine

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import asyncio
-from collections.abc import AsyncGenerator
+from typing import AsyncGenerator
 from uuid import UUID
 
 import typer
