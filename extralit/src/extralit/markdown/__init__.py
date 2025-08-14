@@ -12,5 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from extralit.markdown.media import pdf_to_html, audio_to_html, image_to_html, video_to_html  # noqa
-from extralit.markdown.chat import chat_to_html  # noqa
+from extralit.markdown.media import pdf_to_html, audio_to_html, image_to_html, video_to_html
+from extralit.markdown.chat import chat_to_html

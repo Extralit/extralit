@@ -100,6 +100,7 @@ select = [
     "B012", # return in finally (can suppress real exceptions)
     "ASYNC",  # flake8-async - async/await specific rules
     "PLE",    # pylint errors (includes await-outside-async)
+    "RUF",  # ruff-specific rules
 ]
 ignore = [
     "E402",

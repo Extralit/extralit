@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .jwt import JWT  # noqa
+from .jwt import JWT
 from .provider import AuthenticationProvider
 from .userinfo import UserInfo
 

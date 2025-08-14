@@ -212,7 +212,7 @@ class TestSearchRecords:
 
         dataset.records.log(data)
 
-        record = list(dataset.records(limit=1, with_vectors=False))[0]
+        record = next(iter(dataset.records(limit=1, with_vectors=False)))
 
         records = list(
             dataset.records(
@@ -236,7 +236,7 @@ class TestSearchRecords:
 
         dataset.records.log(data)
 
-        record = list(dataset.records(limit=1, with_vectors=False))[0]
+        record = next(iter(dataset.records(limit=1, with_vectors=False)))
 
         records = list(
             dataset.records(

@@ -393,6 +393,6 @@ class TestHubImportExportMixin:
                 or "doesn't exist on the Hub" in str(e)
                 or isinstance(e, (HfHubHTTPError, ReadTimeout, ConnectTimeout, HTTPError, RequestException))
             ):
-                pytest.skip(f"Dataset not found on Hub or Hugging Face Hub connection error: {str(e)}")
+                pytest.skip(f"Dataset not found on Hub or Hugging Face Hub connection error: {e!s}")
             else:
                 raise e

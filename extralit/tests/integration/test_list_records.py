@@ -162,7 +162,7 @@ def test_get_record_by_id(client: Extralit, dataset: Dataset):
         },
     )
 
-    record = list(dataset.records(with_responses=False))[0]
+    record = next(iter(dataset.records(with_responses=False)))
     assert not record.responses
 
     record.get()

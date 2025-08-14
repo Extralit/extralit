@@ -53,7 +53,7 @@ class Users(Sequence["User"], ResourceHTMLReprMixin):
         """Get a user by id if exists. Otherwise, returns `None`"""
         ...
 
-    def __call__(self, username: str = None, id: Union[str, UUID] = None) -> Optional["User"]:
+    def __call__(self, username: Optional[str] = None, id: Optional[Union[str, UUID]] = None) -> Optional["User"]:
         if not (username or id):
             raise ExtralitError("One of 'username' or 'id' must be provided")
         if username and id:
@@ -149,7 +149,7 @@ class Workspaces(Sequence["Workspace"], ResourceHTMLReprMixin):
         """Get a workspace by id if exists. Otherwise, returns `None`"""
         ...
 
-    def __call__(self, name: str = None, id: Union[UUID, str] = None) -> Optional["Workspace"]:
+    def __call__(self, name: Optional[str] = None, id: Optional[Union[UUID, str]] = None) -> Optional["Workspace"]:
         if not (name or id):
             raise ExtralitError("One of 'name' or 'id' must be provided")
 
@@ -252,7 +252,10 @@ class Datasets(Sequence["Dataset"], ResourceHTMLReprMixin):
         ...
 
     def __call__(
-        self, name: str = None, workspace: Optional[Union["Workspace", str]] = None, id: Union[UUID, str] = None
+        self,
+        name: Optional[str] = None,
+        workspace: Optional[Union["Workspace", str]] = None,
+        id: Optional[Union[UUID, str]] = None,
     ) -> Union[Optional["Dataset"], List["Dataset"]]:
         """
         Get a dataset by name and workspace, by id, or all datasets for a workspace.

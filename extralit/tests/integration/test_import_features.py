@@ -123,13 +123,13 @@ class TestImportFeaturesFromHub:
             pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
         except Exception as e:
             if "Repository Not Found" in str(e) or "Dataset not found" in str(e):
-                pytest.skip(f"Dataset not available on Hub: {str(e)}")
+                pytest.skip(f"Dataset not available on Hub: {e!s}")
             else:
                 raise
 
         if created_dataset:
             assert created_dataset.settings.fields[0].name == "Text"
-            assert list(created_dataset.records)[0].fields["Text"] == "Hello World, how are you?"
+            assert next(iter(created_dataset.records)).fields["Text"] == "Hello World, how are you?"
 
     def test_import_from_hub_with_unlabelled_classes(self, client: ex.Extralit, token: str, dataset_name: str):
         created_dataset = None
@@ -144,12 +144,12 @@ class TestImportFeaturesFromHub:
             pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
         except Exception as e:
             if "Repository Not Found" in str(e) or "Dataset not found" in str(e):
-                pytest.skip(f"Dataset not available on Hub: {str(e)}")
+                pytest.skip(f"Dataset not available on Hub: {e!s}")
             else:
                 raise
         if created_dataset:
             assert created_dataset.settings.fields[0].name == "Text"
-            assert list(created_dataset.records)[0].fields["Text"] == "Hello World, how are you?"
+            assert next(iter(created_dataset.records)).fields["Text"] == "Hello World, how are you?"
 
     def test_import_with_row_id_as_record_id(self, client: ex.Extralit, token: str, dataset_name: str):
         created_dataset = None
@@ -165,7 +165,7 @@ class TestImportFeaturesFromHub:
             pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
         except Exception as e:
             if "Repository Not Found" in str(e) or "Dataset not found" in str(e):
-                pytest.skip(f"Dataset not available on Hub: {str(e)}")
+                pytest.skip(f"Dataset not available on Hub: {e!s}")
             else:
                 raise
 

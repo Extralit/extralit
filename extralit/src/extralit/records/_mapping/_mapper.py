@@ -151,7 +151,7 @@ class IngestedRecordMapper:
     def _parse_dot_notation(self, attribute_mapping: str) -> Tuple[str, Optional[str], Optional[str]]:
         """Parses a string in the format of 'attribute.type.parameter' into its attribute parts parts using regex."""
 
-        available_attributes = list(self._schema.keys()) + ["id"]
+        available_attributes = [*list(self._schema.keys()), "id"]
         available_parameters = ParameterType.values()
         available_types = AttributeType.values()
 
