@@ -14,7 +14,7 @@ These are the section headers that we use:
 * "Security" in case of vulnerabilities.
 -->
 
-## [Extralit] [0.6.1](https://github.com/extralit/extralit/compare/v0.5.0...v0.6.1)
+## [Extralit] [Unreleased](https://github.com/extralit/extralit/compare/v0.5.0...v0.6.1)
 
 ### Added
 - Introduced presigned URL generation for document access in `get_document` function, ensuring valid file URLs.
