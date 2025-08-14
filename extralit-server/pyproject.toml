@@ -218,5 +218,6 @@ server-dev.composite = [
 server-and-worker = { shell = "pdm run server & pdm run worker & wait" }
 test = { cmd = "pytest --verbosity=1 --disable-warnings", env_file = ".env.test" }
 test-cov = { cmd = "pytest tests --cov=extralit_server --cov-report=term --cov-report=xml --verbosity=0 --disable-warnings", env_file = ".env.test" }
+lint = "ruff check"
 
 docker-build-extralit-server = { shell = "pdm build && cp -R dist docker/server && docker build -t extralit/extralit-server:local docker/server" }

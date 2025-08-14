@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# isort: off
 from extralit._version import __version__
 from extralit.client import *
 from extralit.datasets import *
@@ -24,3 +25,4 @@ from extralit.responses import *
 from extralit.records import *
 from extralit.vectors import *
 from extralit.webhooks import *
+# isort: on

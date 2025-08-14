@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# isort: off
 from extralit._api._datasets import *
 from extralit._api._documents import *
 from extralit._api._http import *
@@ -21,3 +22,4 @@ from extralit._api._client import *
 from extralit._api._fields import *
 from extralit._api._records import *
 from extralit._api._questions import *
+# isort: on
