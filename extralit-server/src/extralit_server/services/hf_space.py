@@ -106,7 +106,12 @@ class HfSpaceClient:
         
         data = {}
         if analysis_metadata:
-            data["analysis_metadata"] = json.dumps(analysis_metadata)
+            if hasattr(analysis_metadata, 'model_dump'):
+                # If it's a Pydantic model, serialize it
+                data["analysis_metadata"] = json.dumps(analysis_metadata.model_dump())
+            else:
+                # If it's already a dict, serialize it directly
+                data["analysis_metadata"] = json.dumps(analysis_metadata)
         
         extract_url = f"{self.settings.hf_space_url.rstrip('/')}/extract"
         
