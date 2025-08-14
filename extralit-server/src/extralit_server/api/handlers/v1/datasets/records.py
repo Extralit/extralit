@@ -331,7 +331,7 @@ async def delete_dataset_records(
     search_engine: Annotated[SearchEngine, Depends(get_search_engine)],
     dataset_id: UUID,
     current_user: Annotated[User, Security(auth.get_current_user)],
-    ids: Annotated[str, Query(description="A comma separated list with the IDs of the records to be removed")] = ...,
+    ids: Annotated[str, Query(description="A comma separated list with the IDs of the records to be removed")],
 ):
     dataset = await Dataset.get_or_raise(db, dataset_id)
 

@@ -44,7 +44,7 @@ router = APIRouter(tags=["documents"])
 async def add_document(
     *,
     document_create: Annotated[DocumentCreate, Depends()],
-    file_data: Annotated[UploadFile, File()] = None,
+    file_data: UploadFile | None = File(None),
     db: AsyncSession = Depends(get_async_db),
     client: Minio | LocalFileStorage = Depends(files.get_minio_client),
     current_user: User = Security(auth.get_current_user),
@@ -111,7 +111,7 @@ async def add_document(
 @router.get("/documents", description="Get documents by ID, PMID, DOI, or reference.")
 async def get_document(
     *,
-    workspace_id: Annotated[UUID, Query(description="Workspace ID")] = ...,
+    workspace_id: Annotated[UUID, Query(description="Workspace ID")],
     id: Annotated[UUID | None, Query(description="Document ID")] = None,
     reference: Annotated[str | None, Query(description="Document reference")] = None,
     pmid: Annotated[str | None, Query(description="PubMed ID")] = None,
@@ -156,7 +156,7 @@ async def get_document(
 @router.patch("/documents/{id}", response_model=DocumentListItem, description="Update a document by ID.")
 async def update_document(
     *,
-    id: Annotated[UUID, Path(title="The UUID of the document to update")] = ...,
+    id: Annotated[UUID, Path(title="The UUID of the document to update")],
     document_update: DocumentUpdate,
     db: AsyncSession = Depends(get_async_db),
     current_user: User = Security(auth.get_current_user),
@@ -192,7 +192,7 @@ async def update_document(
 async def delete_documents_by_workspace_id(
     *,
     workspace_id: UUID,
-    document_delete: Annotated[DocumentDelete, Body()] = None,
+    document_delete: Annotated[DocumentDelete | None, Body()] = None,
     db: AsyncSession = Depends(get_async_db),
     client: Minio | LocalFileStorage = Depends(files.get_minio_client),
     current_user: User = Security(auth.get_current_user),
@@ -227,7 +227,7 @@ async def delete_documents_by_workspace_id(
 async def list_documents(
     *,
     db: Annotated[AsyncSession, Depends(get_async_db)],
-    workspace_id: Annotated[UUID, Path(title="The UUID of the workspace whose documents will be retrieved")] = ...,
+    workspace_id: Annotated[UUID, Path(title="The UUID of the workspace whose documents will be retrieved")],
     current_user: User = Security(auth.get_current_user),
 ) -> list[DocumentListItem]:
     await authorize(current_user, DocumentPolicy.list(workspace_id))
@@ -240,8 +240,8 @@ async def list_documents(
 @router.post("/documents/bulk", status_code=status.HTTP_201_CREATED)
 async def create_documents_bulk(
     *,
-    documents_metadata: Annotated[str, Form(description="JSON string matching the DocumentsBulkCreate schema")] = ...,
-    files: Annotated[list[UploadFile], File()] = ...,
+    documents_metadata: Annotated[str, Form(description="JSON string matching the DocumentsBulkCreate schema")],
+    files: Annotated[list[UploadFile], File()],
     db: AsyncSession = Depends(get_async_db),
     current_user: User = Security(auth.get_current_user),
 ) -> DocumentsBulkResponse:

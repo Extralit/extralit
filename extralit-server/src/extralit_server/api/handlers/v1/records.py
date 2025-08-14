@@ -195,9 +195,7 @@ async def delete_record_suggestions(
     search_engine: Annotated[SearchEngine, Depends(get_search_engine)],
     record_id: UUID,
     current_user: Annotated[User, Security(auth.get_current_user)],
-    ids: Annotated[
-        str, Query(description="A comma separated list with the IDs of the suggestions to be removed")
-    ] = ...,
+    ids: Annotated[str, Query(description="A comma separated list with the IDs of the suggestions to be removed")],
 ):
     record = await Record.get_or_raise(
         db,

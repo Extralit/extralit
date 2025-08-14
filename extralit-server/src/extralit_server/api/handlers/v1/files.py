@@ -64,7 +64,7 @@ async def put_file(
     *,
     bucket: str,
     object: str,
-    file: Annotated[UploadFile, File()] = ...,
+    file: Annotated[UploadFile, File()],
     client: Minio | LocalFileStorage = Depends(files.get_minio_client),
     current_user: User = Security(auth.get_current_user),
 ):
