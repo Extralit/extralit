@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = []
 lock_version = "4.5.0"
-content_hash = "sha256:4eed977ec0ae819f547f71e5131d350c7686fa2a8399a998cb62994db78d442c"
+content_hash = "sha256:835ce32222428fd6dcc0dd37ce61240d8bfdb2b32bc0d64bdf350073b75d3b60"
 
 [[metadata.targets]]
 requires_python = ">=3.9.2,<3.14"
@@ -3007,15 +3007,6 @@ files = [
 ]
 
 [[package]]
-name = "multimethod"
-version = "1.10"
-summary = ""
-files = [
-    {file = "multimethod-1.10-py3-none-any.whl", hash = "sha256:afd84da9c3d0445c84f827e4d63ad42d17c6d29b122427c6dee9032ac2d2a0d4"},
-    {file = "multimethod-1.10.tar.gz", hash = "sha256:daa45af3fe257f73abb69673fd54ddeaf31df0eb7363ad6e1251b7c9b192d8c5"},
-]
-
-[[package]]
 name = "multiprocess"
 version = "0.70.16"
 summary = ""
@@ -3350,37 +3341,34 @@ files = [
 
 [[package]]
 name = "pandera"
-version = "0.19.3"
+version = "0.26.0"
 summary = ""
 dependencies = [
-    "multimethod",
-    "numpy",
     "packaging",
-    "pandas",
     "pydantic",
     "typeguard",
+    "typing-extensions",
     "typing-inspect",
-    "wrapt",
 ]
 files = [
-    {file = "pandera-0.19.3-py3-none-any.whl", hash = "sha256:4ff2f0446f4b8dd7c2fa2aac547044911f4957d137456bfe2b281ccd02cc5ff5"},
-    {file = "pandera-0.19.3.tar.gz", hash = "sha256:1bf9dc8a30525cb5bc77edb7d6a044cc59d59c3ef405517825cf6b04c6160c07"},
+    {file = "pandera-0.26.0-py3-none-any.whl", hash = "sha256:85e4ab058e8e6c1f13f364450e080fcb52c8320bb40ca952342ac8709d1a7a4e"},
+    {file = "pandera-0.26.0.tar.gz", hash = "sha256:37dbca1e53d12f70e576c45d886a31e454b48990c40d92c3466c26d28141b07b"},
 ]
 
 [[package]]
 name = "pandera"
-version = "0.19.3"
+version = "0.26.0"
 extras = ["io"]
 summary = ""
 dependencies = [
     "black",
     "frictionless",
-    "pandera==0.19.3",
+    "pandera==0.26.0",
     "pyyaml",
 ]
 files = [
-    {file = "pandera-0.19.3-py3-none-any.whl", hash = "sha256:4ff2f0446f4b8dd7c2fa2aac547044911f4957d137456bfe2b281ccd02cc5ff5"},
-    {file = "pandera-0.19.3.tar.gz", hash = "sha256:1bf9dc8a30525cb5bc77edb7d6a044cc59d59c3ef405517825cf6b04c6160c07"},
+    {file = "pandera-0.26.0-py3-none-any.whl", hash = "sha256:85e4ab058e8e6c1f13f364450e080fcb52c8320bb40ca952342ac8709d1a7a4e"},
+    {file = "pandera-0.26.0.tar.gz", hash = "sha256:37dbca1e53d12f70e576c45d886a31e454b48990c40d92c3466c26d28141b07b"},
 ]
 
 [[package]]

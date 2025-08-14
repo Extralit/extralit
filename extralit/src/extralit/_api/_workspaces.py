@@ -510,7 +510,18 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
                     continue
 
             logger.info(f"Successfully loaded {len(schemas)} schemas from workspace '{workspace_name}'")
-            return SchemaStructure(schemas=list(schemas.values()))
+
+            # Ensure all schemas are proper DataFrameSchema instances
+            schema_list = []
+            for schema in schemas.values():
+                if isinstance(schema, pa.DataFrameSchema):
+                    schema_list.append(schema)
+                else:
+                    logger.warning(
+                        f"Schema {getattr(schema, 'name', 'unknown')} is not a DataFrameSchema instance, skipping"
+                    )
+
+            return SchemaStructure(schemas=schema_list)
 
         except Exception as e:
             logger.error(f"Unexpected error loading schemas from workspace '{workspace_name}': {str(e)}")
