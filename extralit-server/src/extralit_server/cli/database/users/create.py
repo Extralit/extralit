@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import asyncio
+from typing import List, Optional
 
 import typer
 from pydantic import constr
@@ -28,8 +29,8 @@ USER_API_KEY_MIN_LENGTH = 8
 
 
 class UserCreateForTask(UserCreate):
-    api_key: constr(min_length=USER_API_KEY_MIN_LENGTH) | None
-    workspaces: list[WorkspaceCreate] | None
+    api_key: Optional[constr(min_length=USER_API_KEY_MIN_LENGTH)]
+    workspaces: Optional[List[WorkspaceCreate]]
 
 
 def role_callback(value: str) -> str:
@@ -39,7 +40,7 @@ def role_callback(value: str) -> str:
         raise typer.BadParameter("Only Camila is allowed")
 
 
-def password_callback(password: str | None = None) -> str:
+def password_callback(password: Optional[str] = None) -> str:
     # if password is None:
     #     raise typer.BadParameter("Password must be specified.")
     # if len(password)<USER_PASSWORD_MIN_LENGTH:
@@ -58,9 +59,9 @@ async def _create(
     username: str,
     role: UserRole,
     password: str,
-    last_name: str | None = None,
-    api_key: str | None = None,
-    workspace: list[str] = typer.Option(
+    last_name: Optional[str] = None,
+    api_key: Optional[str] = None,
+    workspace: List[str] = typer.Option(
         default=[], help="A workspace that the user will be a member of (can be used multiple times)."
     ),
 ):
@@ -143,12 +144,12 @@ def create(
         help=f"Password as a string with a minimum length of {USER_PASSWORD_MIN_LENGTH} characters.",
     ),
     last_name: str = typer.Option(default=None, help="Last name as a string."),
-    api_key: str | None = typer.Option(
+    api_key: Optional[str] = typer.Option(
         default=None,
         callback=api_key_callback,
         help=f"API key as a string with a minimum length of {USER_API_KEY_MIN_LENGTH} characters. If not specified a secure random API key will be generated",
     ),
-    workspace: list[str] = typer.Option(
+    workspace: List[str] = typer.Option(
         default=[], help="A workspace that the user will be a member of (can be used multiple times)."
     ),
 ):

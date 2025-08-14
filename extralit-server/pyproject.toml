@@ -195,7 +195,7 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401", "F403"]  # Ignore unused imports and wildcard imports in __init__.py
 "tests/**/*.py" = ["ASYNC", "F821"]  # More lenient async rules in tests (ignore undefined names like forward refs/fixtures)
-
+"src/extralit_server/cli/**/*.py" = ["UP007", "UP045"]  # Typer doesn't support new union syntax
 
 [tool.pdm.scripts]
 _.env_file = ".env.dev"

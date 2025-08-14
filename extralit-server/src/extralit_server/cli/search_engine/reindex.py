@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import asyncio
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Optional
 from uuid import UUID
 
 import typer
@@ -157,7 +157,7 @@ async def _reindex_dataset_records(
         progress.advance(task, advance=len(records))
 
 
-async def _reindex(dataset_id: UUID | None = None) -> None:
+async def _reindex(dataset_id: Optional[UUID] = None) -> None:
     async with AsyncSessionLocal() as db:
         async for search_engine in get_search_engine():
             with Progress() as progress:
@@ -175,7 +175,7 @@ async def list_indexes() -> None:
 
 
 def reindex(
-    dataset_id: UUID | None = typer.Option(None, help="The id of a dataset to be reindexed"),
+    dataset_id: Optional[UUID] = typer.Option(None, help="The id of a dataset to be reindexed"),
 ) -> None:
     asyncio.run(_reindex(dataset_id))
 

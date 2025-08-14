@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Optional
 
 import alembic
 import typer
@@ -24,7 +25,7 @@ from extralit_server.database import ALEMBIC_CONFIG_FILE, TAGGED_REVISIONS
 from . import utils
 
 
-def migrate_db(revision: str | None = typer.Option(default="head", help="DB Revision to migrate to")):
+def migrate_db(revision: Optional[str] = typer.Option(default="head", help="DB Revision to migrate to")):
     current_revision = utils.get_current_revision(ALEMBIC_CONFIG_FILE)
     revision = TAGGED_REVISIONS.get(revision, revision)
 
