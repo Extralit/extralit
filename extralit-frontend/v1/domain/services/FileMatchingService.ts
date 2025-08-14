@@ -222,7 +222,7 @@ export class PdfMatchingService implements IFileMatchingService {
       }
     }
 
-    return bestConfidence >= 0.8 ? bestMatch : null;
+    return bestConfidence >= 0.9 ? bestMatch : null;
   }
 
   /**
@@ -241,9 +241,21 @@ export class PdfMatchingService implements IFileMatchingService {
       return { type: "exact_reference", confidence: 1.0 };
     }
 
-    // Check if filename contains reference as substring
+    // Check if filename contains reference as substring, but only if it's a significant match
     if (fileName.includes(refKey)) {
-      return { type: "reference_substring", confidence: 0.9 };
+      // Calculate how much of the filename the reference represents
+      const referenceRatio = refKey.length / fileName.length;
+
+      // Only accept if reference represents at least 60% of the filename
+      // This prevents short references from matching long filenames inappropriately
+      if (referenceRatio >= 0.6) {
+        return { type: "reference_substring", confidence: 0.9 };
+      }
+
+      // For less significant matches, reduce confidence
+      if (referenceRatio >= 0.4) {
+        return { type: "reference_substring", confidence: 0.7 };
+      }
     }
 
     return null;
@@ -347,11 +359,20 @@ export class PdfMatchingService implements IFileMatchingService {
         const cleanFileName = fileName.replace(/\.pdf$/i, "");
         const cleanBibFileName = bibFileName.replace(/\.pdf$/i, "");
 
-        // Only match if filenames are exactly the same (no fuzzy matching)
+        // Check for exact filename match
         if (cleanFileName === cleanBibFileName) {
           return {
             prefixLength: 1,
             confidence: 0.8, // Lower confidence for filename-only matches
+            type: "filename_similarity",
+          };
+        }
+
+        // Check for similar filenames (e.g., with version suffixes)
+        if (cleanFileName.includes(cleanBibFileName) || cleanBibFileName.includes(cleanFileName)) {
+          return {
+            prefixLength: 1,
+            confidence: 0.7, // Even lower confidence for similar filenames
             type: "filename_similarity",
           };
         }
