@@ -487,6 +487,8 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
             schemas = {}
             for obj in schema_versions.values():
                 try:
+                    # The object_name includes the full path (e.g., "schemas/test_schema_name")
+                    # We need to use the full path for get_file since that's how it was stored
                     file_response = self.get_file(workspace_name, obj.object_name)
 
                     # Skip empty content
