@@ -26,10 +26,10 @@
           </section>
         </template>
         <template #downHeader>
-          <p v-text="hasDocumentLoaded ? $t('document') : $t('document.notFound')" />
+          <p v-text="$t('home.documents')" />
         </template>
         <template #downHeaderExpanded>
-          <p v-text="hasDocumentLoaded ? $t('document') : $t('document.notFound')" />
+          <p v-text="$t('home.documents')" />
         </template>
         <template #downContent>
           <PDFViewer

@@ -10,6 +10,7 @@ import type { DocumentMetadata } from "~/v1/domain/entities/import/ImportAnalysi
 import { BulkUploadDocumentsUseCase } from "~/v1/domain/usecases/bulk-upload-documents-use-case";
 import { GetJobStatusUseCase, type JobStatus } from "~/v1/domain/usecases/get-job-status-use-case";
 import { CreateImportHistoryUseCase } from "~/v1/domain/usecases/create-import-history-use-case";
+import { TableData } from "~/v1/domain/entities/table/TableData";
 
 interface BatchInfo {
   batchIndex: number;
@@ -36,7 +37,7 @@ export const useImportBatchProgressViewModel = (
       failedJobs: number;
     };
     workspace?: any;
-    dataframeData?: any;
+    dataframeData?: TableData;
     bibFileName?: string;
     pdfFiles?: File[];
   },
@@ -44,7 +45,7 @@ export const useImportBatchProgressViewModel = (
 ) => {
   const bulkUploadUseCase = useResolve(BulkUploadDocumentsUseCase);
   const jobStatusUseCase = useResolve(GetJobStatusUseCase);
-  const importHistoryUseCase = useResolve(CreateImportHistoryUseCase);
+  const createImportHistoryUseCase = useResolve(CreateImportHistoryUseCase);
 
   // Reactive state
   const isUploading = ref(false);
@@ -53,6 +54,9 @@ export const useImportBatchProgressViewModel = (
   const isCancelling = ref(false);
   const hasError = ref(false);
   const errorMessage = ref("");
+
+  // Import history tracking
+  const importHistoryId = ref<string | null>(null);
 
   // Batch processing
   const batches = ref<BatchInfo[]>([]);
@@ -202,6 +206,7 @@ export const useImportBatchProgressViewModel = (
     completedReferences.value = 0;
     totalReferences.value = 0;
     errors.value = [];
+    importHistoryId.value = null; // Reset import history ID
     stopStatusPolling();
   };
 
@@ -414,7 +419,96 @@ export const useImportBatchProgressViewModel = (
 
     resetState();
     createBatchesInternal();
+
+    await createImportHistory();
+
     await startBatchUpload();
+  };
+
+  const createImportHistory = async () => {
+    if (!props.workspace?.id || !props.bibFileName || !props.dataframeData) {
+      console.warn("Cannot create import history: missing workspace ID, filename, or dataframe data");
+      return;
+    }
+
+    try {
+      const addReferences = Object.entries(props.uploadData.documentActions)
+        .filter(([_, action]) => action === "add")
+        .map(([reference]) => reference);
+
+      // Create filtered dataframe data with only "add" references
+      const filteredDataframeData = {
+        schema: props.dataframeData.schema,
+        data: props.dataframeData.data.filter((row: any) => {
+          const possibleReferenceFields = ["reference"];
+          const referenceField = possibleReferenceFields.find((field) => row[field]);
+
+          if (!referenceField) {
+            return false;
+          }
+          return addReferences.includes(row[referenceField]);
+        }),
+      };
+
+      // Validate that we have data to send
+      if (filteredDataframeData.data.length === 0) {
+        console.warn("No rows with 'add' status found in dataframe data");
+      }
+
+      // Prepare metadata with document actions and associated files for all references
+      const metadata: Record<string, any> = {};
+
+      // Build metadata in the format expected by backend: {"reference": {"status": "add|update|skip|failed", "associated_files": [...]}}
+      Object.entries(props.uploadData.confirmedDocuments).forEach(([reference, docMetadata]) => {
+        metadata[reference] = {
+          status: props.uploadData.documentActions[reference] || "add",
+          associated_files: docMetadata.associated_files.map((fileInfo) =>
+            typeof fileInfo === "string" ? fileInfo : fileInfo.filename
+          ),
+          document_create: docMetadata.document_create,
+        };
+      });
+
+      metadata.summary = {
+        total_documents: Object.keys(props.uploadData.confirmedDocuments).length,
+        add_count: Object.values(props.uploadData.documentActions).filter((action) => action === "add").length,
+        update_count: Object.values(props.uploadData.documentActions).filter((action) => action === "update").length,
+        skip_count: Object.values(props.uploadData.documentActions).filter((action) => action === "skip").length,
+        failed_count: 0,
+      };
+
+      const importHistoryData = {
+        workspace_id: props.workspace.id,
+        filename: props.bibFileName,
+        data: filteredDataframeData,
+        metadata,
+      };
+
+      console.log("Creating import history with data:", importHistoryData);
+
+      const response = await createImportHistoryUseCase.execute(importHistoryData);
+
+      // Store the import history ID for potential future use
+      importHistoryId.value = response.id;
+    } catch (error) {
+      console.error("Failed to create import history:", error);
+
+      // Provide more specific error information
+      if (error instanceof Error) {
+        if (error.message.includes("Dataframe data must contain a reference field")) {
+          console.error("Data validation failed: missing reference field in dataframe");
+        } else if (error.message.includes("workspace")) {
+          console.error("Workspace validation failed");
+        } else if (error.message.includes("filename")) {
+          console.error("Filename validation failed");
+        } else {
+          console.error("Unknown error during import history creation:", error.message);
+        }
+      }
+
+      // Don't fail the import if history creation fails
+      // Just log the error and continue
+    }
   };
 
   const cancelUpload = async () => {
@@ -601,6 +695,7 @@ export const useImportBatchProgressViewModel = (
     errors,
     statusPollingInterval,
     pollingIntervalMs,
+    importHistoryId,
 
     // Computed properties
     totalBatches,
