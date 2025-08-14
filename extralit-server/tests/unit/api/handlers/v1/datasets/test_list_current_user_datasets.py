@@ -1,24 +1,25 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+from datetime import timedelta
 
 import pytest
 from httpx import AsyncClient
-from datetime import timedelta
 
 from extralit_server.constants import API_KEY_HEADER_NAME
 from extralit_server.enums import DatasetStatus, UserRole
-from tests.factories import DatasetFactory, WorkspaceUserFactory, WorkspaceFactory, UserFactory
+from tests.factories import DatasetFactory, UserFactory, WorkspaceFactory, WorkspaceUserFactory
 
 
 @pytest.mark.asyncio
@@ -118,9 +119,9 @@ class TestListCurrentUserDatasets:
         workspace = await WorkspaceFactory.create()
         another_workspace = await WorkspaceFactory.create()
 
-        dataset_a = await DatasetFactory.create(name="dataset-a", workspace=workspace)
-        dataset_b = await DatasetFactory.create(name="dataset-b", workspace=workspace)
-        dataset_c = await DatasetFactory.create(name="dataset-c", workspace=another_workspace)
+        await DatasetFactory.create(name="dataset-a", workspace=workspace)
+        await DatasetFactory.create(name="dataset-b", workspace=workspace)
+        await DatasetFactory.create(name="dataset-c", workspace=another_workspace)
 
         annotator = await UserFactory.create(role=role)
         another_annotator = await UserFactory.create(role=role)

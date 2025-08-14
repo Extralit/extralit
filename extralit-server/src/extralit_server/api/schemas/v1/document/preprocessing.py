@@ -13,7 +13,8 @@
 # limitations under the License.
 
 import unicodedata
-from typing import Dict, List, Optional, Any
+from typing import Any
+
 from pydantic import BaseModel
 
 
@@ -50,12 +51,12 @@ class PDFMetadata(BaseModel):
 
     filename: str
     processing_time: float
-    page_count: Optional[int] = None
-    language_detected: Optional[List[str]] = None
-    processing_settings: Optional[Dict] = None
-    analysis_results: Optional[Dict] = None
+    page_count: int | None = None
+    language_detected: list[str] | None = None
+    processing_settings: dict | None = None
+    analysis_results: dict | None = None
 
-    def model_dump(self, **kwargs) -> Dict[str, Any]:
+    def model_dump(self, **kwargs) -> dict[str, Any]:
         """
         Override model_dump to sanitize output for S3 compatibility.
         Ensures all string values are ASCII-safe.

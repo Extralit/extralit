@@ -23,7 +23,7 @@ from huggingface_hub.hf_api import RepoUrl
 from extralit._helpers._log import LoggingMixin
 
 if TYPE_CHECKING:
-    from huggingface_hub.hf_api import RepoUrl, SpaceHardware, SpaceStorage  # noqa
+    from huggingface_hub.hf_api import RepoUrl, SpaceHardware, SpaceStorage
 
     from extralit.client import Extralit
 

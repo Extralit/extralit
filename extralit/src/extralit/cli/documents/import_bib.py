@@ -36,17 +36,16 @@ import json
 from pathlib import Path
 from typing import Dict, List, Optional
 
+import lazy_loader as lazy
 import pandas as pd
 import typer
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
-import lazy_loader as lazy
 
-from extralit.workspaces._resource import Workspace
-from extralit.client import Extralit
 from extralit.cli.rich import get_themed_panel
-
+from extralit.client import Extralit
+from extralit.workspaces._resource import Workspace
 
 bibtexparser = lazy.load("bibtexparser")
 
@@ -68,7 +67,7 @@ def _parse_bibtex_to_dataframe(bibtex_file: Path, console: Console) -> pd.DataFr
         task = progress.add_task("Parsing BibTeX file to DataFrame...", total=None)
 
         try:
-            with open(bibtex_file, "r", encoding="utf-8") as bibtex_fp:
+            with open(bibtex_file, encoding="utf-8") as bibtex_fp:
                 bib_database = bibtexparser.load(bibtex_fp)
                 entries = bib_database.entries
 
@@ -98,7 +97,7 @@ def _parse_bibtex_to_dataframe(bibtex_file: Path, console: Console) -> pd.DataFr
 
         except Exception as e:
             progress.update(task, completed=True, description="Failed to parse BibTeX file")
-            raise ValueError(f"Error parsing BibTeX file: {str(e)}")
+            raise ValueError(f"Error parsing BibTeX file: {e!s}")
 
 
 def _match_pdfs_to_dataframe(df: pd.DataFrame, pdf_folder: Path, console: Console) -> pd.DataFrame:
@@ -413,7 +412,7 @@ def _execute_document_bulk_import(
                 try:
                     _store_import_history(client, analysis_result, df_data, bibtex_file, console)
                 except Exception as e:
-                    console.print(f"[yellow]Warning: Could not store import history: {str(e)}[/yellow]")
+                    console.print(f"[yellow]Warning: Could not store import history: {e!s}[/yellow]")
 
                 # Calculate total files across all references
                 total_files = sum(len(doc.get("associated_files", [])) for doc in bulk_documents)
@@ -539,14 +538,14 @@ def _store_import_history(
                 do_store(progress, task)
 
     except Exception as e:
-        console.print(f"[yellow]Warning: Error storing import history: {str(e)}[/yellow]")
+        console.print(f"[yellow]Warning: Error storing import history: {e!s}[/yellow]")
         raise e
 
 
 def _handle_cli_exception(console: Console, e: Exception, debug: bool = False) -> None:
     """Handle CLI exceptions with consistent error formatting."""
     panel = get_themed_panel(
-        f"Error: {str(e)}",
+        f"Error: {e!s}",
         title="Error",
         title_align="left",
         exception=e,

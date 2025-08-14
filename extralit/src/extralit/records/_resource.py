@@ -13,7 +13,8 @@
 # limitations under the License.
 
 from collections import defaultdict
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Union
+from collections.abc import Iterable
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from uuid import UUID
 
 from extralit._exceptions import ExtralitError
@@ -33,9 +34,9 @@ from extralit.suggestions import Suggestion
 from extralit.vectors import Vector
 
 if TYPE_CHECKING:
-    from extralit.datasets import Dataset
     from extralit import Extralit
     from extralit._api import RecordsAPI
+    from extralit.datasets import Dataset
 
 
 class Record(Resource):

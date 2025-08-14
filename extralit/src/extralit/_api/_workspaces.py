@@ -12,24 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import logging
+import os
 from pathlib import Path
-from typing import Dict, List, Optional, Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from uuid import UUID
 
 import httpx
 
-from extralit._constants import _DEFAULT_SCHEMA_S3_PATH
 from extralit._api._base import ResourceAPI
-from extralit._exceptions._api import api_error_handler, ExtralitAPIError
+from extralit._constants import _DEFAULT_SCHEMA_S3_PATH
+from extralit._exceptions._api import ExtralitAPIError, api_error_handler
+from extralit._models._files import FileObjectResponse, ListObjectsResponse, ObjectMetadata
 from extralit._models._workspace import WorkspaceModel
-from extralit._models._files import ListObjectsResponse, ObjectMetadata, FileObjectResponse
-
 
 if TYPE_CHECKING:
-    from extralit._models._schema import SchemaStructure
     from extralit._models._documents import Document
+    from extralit._models._schema import SchemaStructure
 
 
 logger = logging.getLogger(__name__)
@@ -176,10 +175,10 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
             if e.response.status_code == 404:
                 logger.info(f"No files found at path '{path}' in workspace '{workspace_name}'")
                 return ListObjectsResponse(objects=[])
-            logger.error(f"Failed to list files in workspace '{workspace_name}': {str(e)}")
-            raise ExtralitAPIError(f"Failed to list files: {str(e)}") from e
+            logger.error(f"Failed to list files in workspace '{workspace_name}': {e!s}")
+            raise ExtralitAPIError(f"Failed to list files: {e!s}") from e
         except Exception as e:
-            logger.error(f"Unexpected error listing files in workspace '{workspace_name}': {str(e)}")
+            logger.error(f"Unexpected error listing files in workspace '{workspace_name}': {e!s}")
             raise
 
     @api_error_handler
@@ -248,11 +247,11 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
             if e.response.status_code == 404:
                 logger.error(f"File '{path}' not found in workspace '{workspace_name}'")
                 raise FileNotFoundError(f"File '{path}' not found in workspace '{workspace_name}'") from e
-            logger.error(f"Failed to get file '{path}' from workspace '{workspace_name}': {str(e)}")
-            raise ExtralitAPIError(f"Failed to get file: {str(e)}") from e
+            logger.error(f"Failed to get file '{path}' from workspace '{workspace_name}': {e!s}")
+            raise ExtralitAPIError(f"Failed to get file: {e!s}") from e
 
         except Exception as e:
-            logger.error(f"Unexpected error getting file '{path}' from workspace '{workspace_name}': {str(e)}")
+            logger.error(f"Unexpected error getting file '{path}' from workspace '{workspace_name}': {e!s}")
             raise
 
     @api_error_handler
@@ -307,10 +306,10 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
             logger.info(f"Successfully uploaded file '{file_path}' to workspace '{workspace_name}' as '{path}'")
             return metadata
         except httpx.HTTPStatusError as e:
-            logger.error(f"Failed to upload file '{file_path}' to workspace '{workspace_name}': {str(e)}")
-            raise ExtralitAPIError(f"Failed to upload file: {str(e)}") from e
+            logger.error(f"Failed to upload file '{file_path}' to workspace '{workspace_name}': {e!s}")
+            raise ExtralitAPIError(f"Failed to upload file: {e!s}") from e
         except Exception as e:
-            logger.error(f"Unexpected error uploading file '{file_path}' to workspace '{workspace_name}': {str(e)}")
+            logger.error(f"Unexpected error uploading file '{file_path}' to workspace '{workspace_name}': {e!s}")
             raise
 
     @api_error_handler
@@ -347,10 +346,10 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
             if e.response.status_code == 404:
                 logger.error(f"File '{path}' not found in workspace '{workspace_name}'")
                 raise FileNotFoundError(f"File '{path}' not found in workspace '{workspace_name}'") from e
-            logger.error(f"Failed to delete file '{path}' from workspace '{workspace_name}': {str(e)}")
-            raise ExtralitAPIError(f"Failed to delete file: {str(e)}") from e
+            logger.error(f"Failed to delete file '{path}' from workspace '{workspace_name}': {e!s}")
+            raise ExtralitAPIError(f"Failed to delete file: {e!s}") from e
         except Exception as e:
-            logger.error(f"Unexpected error deleting file '{path}' from workspace '{workspace_name}': {str(e)}")
+            logger.error(f"Unexpected error deleting file '{path}' from workspace '{workspace_name}': {e!s}")
             raise
 
     @api_error_handler
@@ -442,6 +441,7 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
         """
         try:
             import pandera as pa
+
             from extralit._models._schema import SchemaStructure
         except ImportError:
             logger.error("Required packages missing for schema operations")
@@ -511,7 +511,7 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
                     logger.debug(f"Schema file '{obj.object_name}' not found in workspace '{workspace_name}'")
                     continue
                 except Exception as e:
-                    logger.warning(f"Error loading schema {obj.object_name}: {str(e)}")
+                    logger.warning(f"Error loading schema {obj.object_name}: {e!s}")
                     continue
 
             logger.info(f"Successfully loaded {len(schemas)} schemas from workspace '{workspace_name}'")
@@ -529,10 +529,10 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
             return SchemaStructure(schemas=schema_list, singleton_schema=None)
 
         except Exception as e:
-            logger.error(f"Unexpected error loading schemas from workspace '{workspace_name}': {str(e)}")
+            logger.error(f"Unexpected error loading schemas from workspace '{workspace_name}': {e!s}")
             if isinstance(e, (ImportError, ExtralitAPIError, ValueError)):
                 raise
-            raise ExtralitAPIError(f"Failed to load schemas: {str(e)}") from e
+            raise ExtralitAPIError(f"Failed to load schemas: {e!s}") from e
 
     @api_error_handler
     def add_schema(self, workspace_name: str, schema: Any, prefix: str = _DEFAULT_SCHEMA_S3_PATH) -> None:

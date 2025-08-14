@@ -13,14 +13,14 @@
 # limitations under the License.
 import asyncio
 import os
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING
 
 import typer
 import yaml
+from pydantic import BaseModel, Field, constr
 
 from extralit_server.database import AsyncSessionLocal
 from extralit_server.models import User, UserRole
-from pydantic import BaseModel, Field, constr
 
 from .utils import get_or_new_workspace
 
@@ -38,7 +38,7 @@ class UserCreate(BaseModel):
     role: UserRole
     api_key: constr(min_length=1)
     password_hash: constr(min_length=1)
-    workspaces: Optional[List[WorkspaceCreate]]
+    workspaces: list[WorkspaceCreate] | None
 
 
 class UsersMigrator:
@@ -95,13 +95,13 @@ class UsersMigrator:
 
         return UserRole.annotator
 
-    def _user_workspace_names(self, user: dict) -> List[str]:
-        workspace_names = [workspace_name for workspace_name in user.get("workspaces", [])]
+    def _user_workspace_names(self, user: dict) -> list[str]:
+        workspace_names = list(user.get("workspaces", []))
 
         if user["username"] in workspace_names:
             return workspace_names
 
-        return [user["username"]] + workspace_names
+        return [user["username"], *workspace_names]
 
 
 def migrate():

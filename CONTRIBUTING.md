@@ -5,7 +5,7 @@ Everyone is welcome to contribute, and we value everybody's contribution. Code c
 ## How you can help
 
 - Submit issues for bugs or feature requests
-- Contribute code improvements or bug fixes 
+- Contribute code improvements or bug fixes
 - Improve documentation
 - Share your experiences using Extralit
 - Answer questions in the [Slack community](https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ)

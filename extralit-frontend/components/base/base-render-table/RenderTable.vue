@@ -1,6 +1,6 @@
 <template>
   <div class="table-container"
-    @focusin="setFocus(true)" 
+    @focusin="setFocus(true)"
     @focusout="setFocus(false)"
   >
     <div class="__table-buttons">
@@ -59,8 +59,8 @@
           <BaseButton @click.prevent="$emit('updateValidValues', true);">
             Ignore errors
           </BaseButton>
-          <BaseButton 
-            v-if="tableJSON?.schema?.is_latest === false" 
+          <BaseButton
+            v-if="tableJSON?.schema?.is_latest === false"
             @click.prevent="fetchValidation({ latest: true });"
           >
             Fetch latest schema
@@ -69,9 +69,9 @@
       </BaseDropdown>
     </div>
 
-    <div 
-      ref="tabulator" 
-      class="__table" 
+    <div
+      ref="tabulator"
+      class="__table"
       @keydown.enter.prevent
     />
 
@@ -82,7 +82,7 @@
 import { merge } from 'lodash';
 import { CellComponent, ColumnComponent, GroupComponent, RangeComponent, RowComponent, TabulatorFull as Tabulator } from "tabulator-tables";
 import "tabulator-tables/dist/css/tabulator.min.css";
-import { cellTooltip, headerTooltip, groupHeader, getRangeRowData, getRangeColumns, getColumnEditorParams } from "./tableUtils"; 
+import { cellTooltip, headerTooltip, groupHeader, getRangeRowData, getRangeColumns, getColumnEditorParams } from "./tableUtils";
 import { getColumnValidators } from "./validatorUtils";
 import { useReferenceTablesViewModel } from "./useReferenceTablesViewModel";
 import { useSchemaTableViewModel } from "./useSchemaTableViewModel";
@@ -182,7 +182,7 @@ export default {
       );
       return filteredColumns || {};
     },
-    columnValidators() { 
+    columnValidators() {
       return getColumnValidators(this.tableJSON, this.validation);
     },
     columns() {
@@ -201,8 +201,8 @@ export default {
 
       if (!this.editable) {
         return configs;
-      } 
-      
+      }
+
       if (this.columns.includes("_id")) {
         configs = configs.filter((column) => column.field !== "_id");
       }
@@ -291,10 +291,10 @@ export default {
       };
     },
     referenceValues() {
-      // First get the metadata.reference from the current table by checking the first row's _ref columns, 
+      // First get the metadata.reference from the current table by checking the first row's _ref columns,
       // then use refValues to find the matching tables from other records and get the dict of reference values to rows
       if (!this.refColumns) return null;
-      
+
       const reference = this.tableJSON?.reference;
       if (!reference) return null;
       let recordTables = this.getTableDataFromRecords((record: any) => record?.metadata?.reference == reference)
@@ -385,10 +385,10 @@ export default {
           return field;
         });
       }
-      
+
       this.tableJSON.data = this.tabulator.getData().map(({ _id, ...rest }) => rest);
     },
-    isIndexRefColumn(field: string) { 
+    isIndexRefColumn(field: string) {
       return this.indexColumns?.includes(field) || this.refColumns?.includes(field);
     },
     generateColumnConfig(field: string) {
@@ -479,11 +479,11 @@ export default {
         selectedRow = this.tabulator.getRows()[this.tabulator.getRows().length - 1];
       }
       delete rowData._id;
-      
+
       for (const field of this.columns) {
         if (rowData[field] != undefined) {
           continue
-        } else if (this.indexColumns.includes(field) && !this.refColumns.includes(field) && 
+        } else if (this.indexColumns.includes(field) && !this.refColumns.includes(field) &&
             selectedRow?.getData()[field]) {
           const maxRefValue = this.getColumnMaxValue(field, this.tabulator.getData());
           rowData[field] = this.incrementReferenceStr(maxRefValue);
@@ -527,7 +527,7 @@ export default {
         newFieldName = `newColumn${count}`;
         count++;
       }
-      
+
       let selectedColumnField = null;
       if (selectedColumn && selectedColumn?.getField()) {
         selectedColumnField = selectedColumn?.getField();
@@ -538,8 +538,8 @@ export default {
           ...this.generateColumnConfig(newFieldName),
           ...this.generateColumnEditableConfig(newFieldName),
           editableTitle: newFieldName.includes("newColumn"),
-        }, 
-        false, 
+        },
+        false,
         selectedColumnField)
 
       this.updateTableJsonData(false, true);
@@ -627,7 +627,7 @@ export default {
       selectedIndices.forEach((index: string, i: number) => {
         if (!updateRowsData || !updateRowsData[i]) return;
         const predictedRow = updateRowsData[i]
-        
+
         const dataUpdate: Record<string, any> = Object.keys(predictedRow)
           ?.filter(field => rangeColumns.includes(field))
           ?.reduce((acc, field) => {
@@ -694,7 +694,7 @@ export default {
           disabled: !this.editable,
           action: function(e, column: ColumnComponent) {
             if (column.getDefinition().frozen) return;
-            
+
             // @ts-ignore
             column.updateDefinition({
               editableTitle: !column.getDefinition().editableTitle,
@@ -772,7 +772,7 @@ export default {
                 this.indexColumns.forEach((field: string) => {
                   newRowData[field] = undefined;
                 });
-                
+
                 this.addRow(lastRowInSelection, newRowData);
               });
             } else {
@@ -798,7 +798,7 @@ export default {
             } else {
               row.delete();
             }
-            
+
             this.updateTableJsonData(true)
           }
         },
@@ -828,7 +828,7 @@ export default {
           const p = document.createElement('p');
           p.textContent = 'No data available';
           div.appendChild(p);
-          
+
           if (this.referenceValues) {
             const button = document.createElement('button');
             button.textContent = 'Generate empty rows for every reference';
@@ -841,9 +841,9 @@ export default {
 
         // Row
         movableRows: true,
-        rowHeader: { 
+        rowHeader: {
           headerSort: false, resizable: false, rowHandle: true, editor: false,
-          minWidth: 30, width: 30, maxWidth: 30, headerHozAlign: "center", hozAlign: "center", 
+          minWidth: 30, width: 30, maxWidth: 30, headerHozAlign: "center", hozAlign: "center",
           formatter: "rownum", cssClass:"range-header-col",
         },
         rowContextMenu: this.rowContextMenu,
@@ -890,7 +890,7 @@ export default {
           sort: true,
           filter: true,
           headerFilter: true,
-          // columns: ["frozen"], 
+          // columns: ["frozen"],
           group: {
             groupBy: true,
             groupStartOpen: true,
@@ -942,7 +942,7 @@ export default {
         this.isLoaded = true;
         this.tabulator?.setColumns(this.columnsConfig);
         this.validateTable();
-      }); 
+      });
 
     } catch (error) {
       const message = `Failed to load table: ${error}`;
@@ -988,7 +988,7 @@ export default {
     resize: vertical;
     overflow: auto;
   }
-  
+
   .__table-buttons {
     display: flex;
     justify-content: space-between;
@@ -1027,7 +1027,7 @@ export default {
 
   .tabulator-row {
     min-height: none;
-    
+
     .tabulator-cell {
       // white-space: normal;
       // overflow: visible;
@@ -1072,7 +1072,7 @@ export default {
     &.tabulator-group-visible {
       .tabulator-arrow {
         width: 10px;
-        
+
         &:before {
           content: "";
           position: absolute;

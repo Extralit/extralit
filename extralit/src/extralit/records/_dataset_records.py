@@ -12,17 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import warnings
-from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Sequence, Tuple, Union
-from uuid import UUID
+from collections.abc import Iterable, Sequence
 from enum import Enum
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
+from uuid import UUID
 
 from tqdm import tqdm
 
 from extralit._api import RecordsAPI
+from extralit._exceptions import RecordsIngestionError
 from extralit._helpers import LoggingMixin
 from extralit._models import RecordModel
-from extralit._exceptions import RecordsIngestionError
 from extralit.client import Extralit
 from extralit.records._io import GenericIO, HFDatasetsIO, JsonIO
 from extralit.records._mapping import IngestedRecordMapper
@@ -30,8 +31,9 @@ from extralit.records._resource import Record
 from extralit.records._search import Query
 
 if TYPE_CHECKING:
-    from extralit.datasets import Dataset
     from datasets import Dataset as HFDataset
+
+    from extralit.datasets import Dataset
 
 
 class RecordErrorHandling(Enum):

@@ -13,30 +13,29 @@
 # limitations under the License.
 
 import logging
-from uuid import UUID
 from os.path import basename
-from typing import Dict, List, Optional
+from uuid import UUID
 
-from fastapi import HTTPException, status, UploadFile
+from fastapi import HTTPException, UploadFile, status
+from sqlalchemy import and_, case, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import and_, or_, select, case
 
-from extralit_server.models.database import Document, ImportHistory
 from extralit_server.api.schemas.v1.documents import DocumentCreate, DocumentListItem
 from extralit_server.api.schemas.v1.imports import (
-    FileInfo,
-    DocumentMetadata,
-    ImportAnalysisRequest,
-    ImportAnalysisResponse,
     DocumentImportAnalysis,
-    ImportStatus,
-    ImportSummary,
+    DocumentMetadata,
     DocumentsBulkCreate,
     DocumentsBulkResponse,
+    FileInfo,
+    ImportAnalysisRequest,
+    ImportAnalysisResponse,
     ImportHistoryCreate,
     ImportHistoryCreateResponse,
+    ImportStatus,
+    ImportSummary,
 )
 from extralit_server.jobs.document_jobs import upload_and_preprocess_documents_job
+from extralit_server.models.database import Document, ImportHistory
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -66,9 +65,9 @@ async def update_document(db: "AsyncSession", document: Document) -> Document:
 async def delete_documents(
     db: "AsyncSession",
     workspace_id: UUID,
-    id: Optional[UUID] = None,
-    reference: Optional[str] = None,
-) -> List[DocumentListItem]:
+    id: UUID | None = None,
+    reference: str | None = None,
+) -> list[DocumentListItem]:
     async with db.begin_nested():
         params = [Document.workspace_id == workspace_id]
         if id is not None and id != "":
@@ -82,7 +81,7 @@ async def delete_documents(
     return documents
 
 
-async def list_documents(db: "AsyncSession", workspace_id: UUID) -> List[DocumentListItem]:
+async def list_documents(db: "AsyncSession", workspace_id: UUID) -> list[DocumentListItem]:
     result = await db.execute(select(Document).filter_by(workspace_id=workspace_id))
     documents = [DocumentListItem.model_validate(doc) for doc in result.scalars().all()]
 
@@ -92,14 +91,14 @@ async def list_documents(db: "AsyncSession", workspace_id: UUID) -> List[Documen
 async def find_existing_documents(
     db: AsyncSession,
     workspace_id: UUID,
-    document_id: Optional[UUID] = None,
-    reference: Optional[str] = None,
-    file_name: Optional[str] = None,
-    pmid: Optional[str] = None,
-    doi: Optional[str] = None,
-    url: Optional[str] = None,
-    limit: Optional[int] = None,
-) -> List[DocumentListItem]:
+    document_id: UUID | None = None,
+    reference: str | None = None,
+    file_name: str | None = None,
+    pmid: str | None = None,
+    doi: str | None = None,
+    url: str | None = None,
+    limit: int | None = None,
+) -> list[DocumentListItem]:
     """
     Find existing documents that matches any of provided criteria.
 
@@ -163,7 +162,7 @@ async def analyze_import_status(db: AsyncSession, analysis_request: ImportAnalys
     Returns:
         ImportAnalysisResponse with document statuses and summary
     """
-    documents_info: Dict[str, DocumentImportAnalysis] = {}
+    documents_info: dict[str, DocumentImportAnalysis] = {}
     add_count = update_count = skip_count = failed_count = 0
 
     for reference, file_metadata in analysis_request.documents.items():
@@ -212,12 +211,12 @@ async def analyze_import_status(db: AsyncSession, analysis_request: ImportAnalys
             )
 
         except Exception as e:
-            _LOGGER.error(f"Error analyzing document {reference}: {str(e)}")
+            _LOGGER.error(f"Error analyzing document {reference}: {e!s}")
             documents_info[reference] = DocumentImportAnalysis(
                 document_create=file_metadata.document_create,
                 associated_files=[f.filename for f in file_metadata.associated_files],
                 status=ImportStatus.FAILED,
-                validation_errors=[f"Error analyzing document: {str(e)}"],
+                validation_errors=[f"Error analyzing document: {e!s}"],
             )
             failed_count += 1
 
@@ -232,7 +231,7 @@ async def analyze_import_status(db: AsyncSession, analysis_request: ImportAnalys
     return ImportAnalysisResponse(documents=documents_info, summary=summary)
 
 
-async def _has_new_files(existing_documents: List[Document], new_files: List[FileInfo]) -> bool:
+async def _has_new_files(existing_documents: list[Document], new_files: list[FileInfo]) -> bool:
     """
     Check if there are new files to add to existing documents.
 
@@ -273,7 +272,7 @@ async def _has_new_files(existing_documents: List[Document], new_files: List[Fil
     return False
 
 
-def validate_document_metadata(file_metadata: DocumentMetadata) -> List[str]:
+def validate_document_metadata(file_metadata: DocumentMetadata) -> list[str]:
     """
     Validate DocumentCreate object for import requirements.
 
@@ -331,7 +330,7 @@ def _is_valid_pmid(pmid: str) -> bool:
 
 async def process_bulk_upload(
     bulk_create: DocumentsBulkCreate,
-    files: List[UploadFile],
+    files: list[UploadFile],
     user_id: str,
 ) -> DocumentsBulkResponse:
     """
@@ -431,8 +430,8 @@ async def process_bulk_upload(
                     file_data_list.append((filename, file_content))
 
                 except Exception as e:
-                    _LOGGER.error(f"Error processing file {filename} for reference {reference}: {str(e)}")
-                    failed_validations.append(f"{filename}: {str(e)}")
+                    _LOGGER.error(f"Error processing file {filename} for reference {reference}: {e!s}")
+                    failed_validations.append(f"{filename}: {e!s}")
                     reference_failed = True
 
             # Skip this reference if any files failed validation
@@ -460,8 +459,8 @@ async def process_bulk_upload(
             )
 
         except Exception as e:
-            _LOGGER.error(f"Error processing reference {reference}: {str(e)}")
-            failed_validations.append(f"{reference}: {str(e)}")
+            _LOGGER.error(f"Error processing reference {reference}: {e!s}")
+            failed_validations.append(f"{reference}: {e!s}")
 
     return DocumentsBulkResponse(
         job_ids=job_ids, total_documents=len(reference_to_doc), failed_validations=failed_validations
@@ -516,9 +515,9 @@ async def create_import_history(
         )
 
     except Exception as e:
-        _LOGGER.error(f"Error creating import history: {str(e)}")
+        _LOGGER.error(f"Error creating import history: {e!s}")
         await db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error creating import history: {str(e)}",
+            detail=f"Error creating import history: {e!s}",
         )

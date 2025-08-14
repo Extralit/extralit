@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pathlib import Path
-import os
 import glob
-from typing import Optional, List
+import os
+from pathlib import Path
+from typing import List, Optional
+
 import typer
 
 
@@ -38,9 +39,10 @@ def upload_schemas(
         help="List of schema names to exclude from the update.",
     ),
 ) -> None:
-    from extralit.cli.rich import get_themed_panel, print_rich_table
     from rich.console import Console
     from rich.progress import Progress, SpinnerColumn, TextColumn
+
+    from extralit.cli.rich import get_themed_panel, print_rich_table
 
     console = Console()
 
@@ -177,7 +179,7 @@ def upload_schemas(
 
     except Exception as e:
         panel = get_themed_panel(
-            f"Unable to update schemas in workspace: {str(e)}",
+            f"Unable to update schemas in workspace: {e!s}",
             title="Unexpected error",
             title_align="left",
             success=False,

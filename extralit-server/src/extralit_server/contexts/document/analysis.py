@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pdfminer.pdfpage import PDFPage
-from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
-from pdfminer.converter import PDFPageAggregator
-from pdfminer.layout import LAParams, LTTextBox, LTChar
-from typing import Dict, List
 from io import BytesIO
+
+from pdfminer.converter import PDFPageAggregator
+from pdfminer.layout import LAParams, LTChar, LTTextBox
+from pdfminer.pdfinterp import PDFPageInterpreter, PDFResourceManager
+from pdfminer.pdfpage import PDFPage
 
 
 class PDFOCRLayerDetector:
@@ -53,7 +53,7 @@ class PDFOCRLayerDetector:
         # Return True if more than 50% of pages have fonts
         return pages_with_fonts > (total_pages * threshold)
 
-    def _check_font_resources_per_page(self, pdf_bytes: bytes) -> List[Dict]:
+    def _check_font_resources_per_page(self, pdf_bytes: bytes) -> list[dict]:
         """
         Check each page for font resources - indicates searchable text
         """
@@ -89,7 +89,7 @@ class PDFOCRLayerDetector:
 
         return page_info
 
-    def analyze_character_quality(self, pdf_bytes: bytes) -> Dict:
+    def analyze_character_quality(self, pdf_bytes: bytes) -> dict:
         char_stats = {
             "total_chars": 0,
             "font_variations": set(),
@@ -146,7 +146,7 @@ class PDFOCRLayerDetector:
 
         return False
 
-    def _calculate_quality_score(self, char_stats: Dict) -> float:
+    def _calculate_quality_score(self, char_stats: dict) -> float:
         if char_stats["total_chars"] == 0:
             return 0.0
 

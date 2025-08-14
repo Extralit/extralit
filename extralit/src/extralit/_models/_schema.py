@@ -13,8 +13,9 @@
 # limitations under the License.
 
 from typing import List, Optional
-from pydantic.v1 import BaseModel, Field
+
 import pandera as pa
+from pydantic.v1 import BaseModel, Field
 
 
 class SchemaStructure(BaseModel):

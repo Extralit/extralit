@@ -16,7 +16,7 @@ import base64
 import io
 import warnings
 from pathlib import Path
-from typing import Union, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional, Union
 
 import lazy_loader as lazy
 

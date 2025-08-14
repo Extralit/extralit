@@ -15,18 +15,19 @@
 import json
 import os
 import warnings
+from collections.abc import Iterator, Sequence
 from functools import cached_property
 from pathlib import Path
-from typing import List, Optional, TYPE_CHECKING, Dict, Union, Iterator, Sequence, Literal
+from typing import TYPE_CHECKING, Dict, List, Literal, Optional, Union
 from uuid import UUID
 
-from extralit._exceptions import SettingsError, ExtralitAPIError, ExtralitSerializeError
+from extralit._exceptions import ExtralitAPIError, ExtralitSerializeError, SettingsError
 from extralit._models._dataset import DatasetModel
 from extralit._resource import Resource
-from extralit.settings._field import Field, _field_from_dict, _field_from_model, FieldBase
+from extralit.settings._field import Field, FieldBase, _field_from_dict, _field_from_model
 from extralit.settings._io import build_settings_from_repo_id
-from extralit.settings._metadata import MetadataType, MetadataField, MetadataPropertyBase
-from extralit.settings._question import QuestionType, question_from_model, _question_from_dict, QuestionBase
+from extralit.settings._metadata import MetadataField, MetadataPropertyBase, MetadataType
+from extralit.settings._question import QuestionBase, QuestionType, _question_from_dict, question_from_model
 from extralit.settings._task_distribution import TaskDistribution
 from extralit.settings._templates import DefaultSettingsMixin
 from extralit.settings._vector import VectorField
@@ -259,7 +260,7 @@ class Settings(DefaultSettingsMixin, Resource):
     def from_json(cls, path: Union[Path, str]) -> "Settings":
         """Load the settings from a file on disk"""
 
-        with open(path, "r") as file:
+        with open(path) as file:
             settings_dict = json.load(file)
             return cls._from_dict(settings_dict)
 
@@ -464,7 +465,7 @@ class Settings(DefaultSettingsMixin, Resource):
             raise SettingsError("Guidelines must be a string or a path to a file")
 
         if os.path.exists(guidelines):
-            with open(guidelines, "r") as file:
+            with open(guidelines) as file:
                 return file.read()
 
         return guidelines
@@ -565,4 +566,4 @@ class SettingsProperties(Sequence[Property]):
     def __repr__(self) -> str:
         """Return a string representation of the object."""
 
-        return f"{repr([prop for prop in self])}"
+        return f"{[prop for prop in self]!r}"

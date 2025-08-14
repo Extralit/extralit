@@ -12,17 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
-
-import respx
 import json
 
+import pytest
+import respx
 from httpx import Response
 from standardwebhooks.webhooks import Webhook
 
-from extralit_server.webhooks.v1.ping import notify_ping_event
 from extralit_server.contexts import info
-
+from extralit_server.webhooks.v1.ping import notify_ping_event
 from tests.factories import WebhookFactory
 
 

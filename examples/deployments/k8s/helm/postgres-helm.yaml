@@ -21,7 +21,7 @@ postgresql:
     enabled: true
     storageClass: "local-path"
     size: 1Gi
-  nodeAffinity: 
+  nodeAffinity:
     preferredDuringSchedulingIgnoredDuringExecution:
     - weight: 1
       preference:

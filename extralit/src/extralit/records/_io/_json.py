@@ -15,8 +15,8 @@ import json
 from pathlib import Path
 from typing import List, Tuple, Union
 
-from extralit.records._resource import Record
 from extralit.records._io import GenericIO
+from extralit.records._resource import Record
 
 
 class JsonIO:
@@ -54,7 +54,7 @@ class JsonIO:
             DatasetRecords: The DatasetRecords object created from the disk path.
 
         """
-        with open(path, "r") as f:
+        with open(path) as f:
             record_dicts = json.load(f)
         records = [Record.from_dict(record_dict) for record_dict in record_dicts]
         return records

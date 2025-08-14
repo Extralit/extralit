@@ -15,7 +15,7 @@
 """Download schemas from a workspace."""
 
 from pathlib import Path
-from typing import Optional, List
+from typing import List, Optional
 
 import typer
 from rich.console import Console
@@ -185,7 +185,7 @@ def download_schemas(
 
     except Exception as e:
         panel = get_themed_panel(
-            f"Error downloading schemas: {str(e)}",
+            f"Error downloading schemas: {e!s}",
             title="Error",
             title_align="left",
             success=False,

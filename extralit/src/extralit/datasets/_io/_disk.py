@@ -21,7 +21,7 @@ from abc import ABC
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional, Tuple, Type, Union
 
-from extralit._exceptions import RecordsIngestionError, ExtralitError, ImportDatasetError
+from extralit._exceptions import ExtralitError, ImportDatasetError, RecordsIngestionError
 from extralit._models import DatasetModel
 from extralit.client import Extralit
 from extralit.settings import Settings
@@ -152,7 +152,7 @@ class DiskImportExportMixin(ABC):
         """Loads the dataset model from disk."""
         if not os.path.exists(path):
             raise FileNotFoundError(f"Dataset model not found at {path}")
-        with open(file=path, mode="r") as f:
+        with open(file=path) as f:
             dataset_model = json.load(f)
             dataset_model = DatasetModel(**dataset_model)
         return dataset_model

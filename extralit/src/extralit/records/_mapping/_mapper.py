@@ -13,24 +13,25 @@
 # limitations under the License.
 
 import re
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Union, Tuple
-from uuid import UUID
 import warnings
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
+from uuid import UUID
 
 from extralit._exceptions import RecordsIngestionError
+from extralit.records._mapping._routes import (
+    AttributeParameter,
+    AttributeRoute,
+    AttributeType,
+    ParameterType,
+    RecordAttributesMap,
+)
 from extralit.records._resource import Record
 from extralit.responses import Response
 from extralit.settings import FieldBase, VectorField
 from extralit.settings._metadata import MetadataPropertyBase
 from extralit.settings._question import QuestionBase
 from extralit.suggestions import Suggestion
-from extralit.records._mapping._routes import (
-    AttributeRoute,
-    RecordAttributesMap,
-    AttributeType,
-    ParameterType,
-    AttributeParameter,
-)
 
 if TYPE_CHECKING:
     from extralit.datasets import Dataset

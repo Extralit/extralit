@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, List, TYPE_CHECKING
 from pathlib import Path
+from typing import TYPE_CHECKING, List, Optional
 
 import typer
+from rich.console import Console
 
 from extralit.cli.callback import init_callback
 from extralit.cli.rich import get_themed_panel
-from rich.console import Console
 
 if TYPE_CHECKING:
     pass
@@ -111,8 +111,9 @@ def list_schemas(
     ),
 ) -> None:
     """List available schemas with optional filtering."""
-    from extralit.cli.rich import get_themed_panel, print_rich_table, console_table_to_pandas_df
     from rich.console import Console
+
+    from extralit.cli.rich import console_table_to_pandas_df, get_themed_panel, print_rich_table
 
     client, workspace_data = get_workspace_client(workspace)
     ctx.obj = {

@@ -14,7 +14,7 @@
 
 from extralit.settings._field import *  # noqa: F403
 from extralit.settings._metadata import *  # noqa: F403
-from extralit.settings._vector import *  # noqa: F403
 from extralit.settings._question import *  # noqa: F403
 from extralit.settings._resource import *  # noqa: F403
 from extralit.settings._task_distribution import *  # noqa: F403
+from extralit.settings._vector import *  # noqa: F403

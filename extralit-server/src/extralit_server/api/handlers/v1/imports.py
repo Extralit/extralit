@@ -13,39 +13,39 @@
 # limitations under the License.
 
 import logging
-from typing import List, Optional
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Security, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from sqlalchemy.orm import selectinload
 from pydantic import ValidationError
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
-from extralit_server.database import get_async_db
-from extralit_server.security import auth
-from extralit_server.models import User, Workspace, ImportHistory
 from extralit_server.api.policies.v1 import DocumentPolicy, authorize
-from extralit_server.contexts.imports import analyze_import_status, create_import_history
 from extralit_server.api.schemas.v1.imports import (
     ImportAnalysisRequest,
     ImportAnalysisResponse,
     ImportHistoryCreate,
-    ImportHistoryResponse,
     ImportHistoryCreateResponse,
+    ImportHistoryResponse,
 )
+from extralit_server.contexts.imports import analyze_import_status, create_import_history
+from extralit_server.database import get_async_db
+from extralit_server.models import ImportHistory, User, Workspace
+from extralit_server.security import auth
 
 _LOGGER = logging.getLogger(__name__)
 
 router = APIRouter(tags=["imports"])
 
 
-@router.post("/imports/analyze", status_code=status.HTTP_200_OK, response_model=ImportAnalysisResponse)
+@router.post("/imports/analyze", status_code=status.HTTP_200_OK)
 async def analyze_import(
     *,
     analysis_request: ImportAnalysisRequest,
-    db: AsyncSession = Depends(get_async_db),
-    current_user: User = Security(auth.get_current_user),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ) -> ImportAnalysisResponse:
     """
     Analyze import request to determine add/update/skip status for each document.
@@ -94,20 +94,20 @@ async def analyze_import(
         return response
 
     except ValidationError as e:
-        _LOGGER.error(f"Validation error during import analysis: {str(e)}")
+        _LOGGER.error(f"Validation error during import analysis: {e!s}")
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail={"message": "Validation error during import analysis", "errors": e.errors()},
         )
     except Exception as e:
-        _LOGGER.error(f"Error during import analysis: {str(e)}")
+        _LOGGER.error(f"Error during import analysis: {e!s}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error analyzing import: {str(e)}",
+            detail=f"Error analyzing import: {e!s}",
         )
 
 
-def _validate_analysis_request(analysis_request: ImportAnalysisRequest) -> List[str]:
+def _validate_analysis_request(analysis_request: ImportAnalysisRequest) -> list[str]:
     """
     Validate the import analysis request.
 
@@ -140,12 +140,12 @@ def _validate_analysis_request(analysis_request: ImportAnalysisRequest) -> List[
     return errors
 
 
-@router.post("/imports/history", status_code=status.HTTP_201_CREATED, response_model=ImportHistoryCreateResponse)
+@router.post("/imports/history", status_code=status.HTTP_201_CREATED)
 async def create_import_history_endpoint(
     *,
     import_history_create: ImportHistoryCreate,
-    db: AsyncSession = Depends(get_async_db),
-    current_user: User = Security(auth.get_current_user),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ) -> ImportHistoryCreateResponse:
     """
     Create import history record to store generic tabular dataframe data.
@@ -192,14 +192,14 @@ async def create_import_history_endpoint(
         return response
 
     except Exception as e:
-        _LOGGER.error(f"Error creating import history: {str(e)}")
+        _LOGGER.error(f"Error creating import history: {e!s}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error creating import history: {str(e)}",
+            detail=f"Error creating import history: {e!s}",
         )
 
 
-def _validate_import_history_request(import_history_create: ImportHistoryCreate) -> List[str]:
+def _validate_import_history_request(import_history_create: ImportHistoryCreate) -> list[str]:
     """
     Validate the import history creation request.
 
@@ -284,10 +284,10 @@ def _validate_import_history_request(import_history_create: ImportHistoryCreate)
 async def list_import_histories(
     *,
     workspace_id: UUID,
-    limit: Optional[int] = None,
+    limit: int | None = None,
     db: AsyncSession = Depends(get_async_db),
     current_user: User = Security(auth.get_current_user),
-) -> List[ImportHistoryResponse]:
+) -> list[ImportHistoryResponse]:
     """
     List import history records for a workspace.
 
@@ -344,10 +344,10 @@ async def list_import_histories(
         return response_list
 
     except Exception as e:
-        _LOGGER.error(f"Error retrieving import histories: {str(e)}")
+        _LOGGER.error(f"Error retrieving import histories: {e!s}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error retrieving import histories: {str(e)}",
+            detail=f"Error retrieving import histories: {e!s}",
         )
 
 
@@ -355,8 +355,8 @@ async def list_import_histories(
 async def get_import_history(
     *,
     history_id: UUID,
-    db: AsyncSession = Depends(get_async_db),
-    current_user: User = Security(auth.get_current_user),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ) -> ImportHistoryResponse:
     """
     Get detailed import history record including data and metadata.
@@ -390,7 +390,7 @@ async def get_import_history(
         if not workspace:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Workspace not found",
+                detail="Workspace not found",
             )
 
         response = ImportHistoryResponse(
@@ -409,8 +409,8 @@ async def get_import_history(
     except HTTPException:
         raise
     except Exception as e:
-        _LOGGER.error(f"Error retrieving import history {history_id}: {str(e)}")
+        _LOGGER.error(f"Error retrieving import history {history_id}: {e!s}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error retrieving import history: {str(e)}",
+            detail=f"Error retrieving import history: {e!s}",
         )

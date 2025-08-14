@@ -14,8 +14,8 @@
 from extralit._exceptions import ExtralitError
 
 __all__ = [
-    "ImportDatasetError",
     "DatasetsServerException",
+    "ImportDatasetError",
 ]
 
 

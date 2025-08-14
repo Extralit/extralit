@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v6.0.0
     hooks:
       - id: check-yaml
         exclude: extralit/mkdocs.yml|examples/deployments/k8s
@@ -9,7 +9,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.4.8
+    rev: v0.12.9
     hooks:
       - id: ruff
         args: [--fix]
@@ -19,17 +19,8 @@ repos:
   # extralit SDK specific hooks
   ##############################################################################
 
-  - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.4.8
-    hooks:
-      - id: ruff
-        files: 'extralit/src/.*\.py$'
-        args:
-          - --fix
-          - --select
-          - "E,W,F,I,B,C4,UP,ASYNC,PLE,FAST,RUF"
-          - --ignore
-          - "E501,B008"
+  # (Removed duplicate ruff hook for extralit SDK; global ruff hook above
+  # now serves as single source of truth using pyproject.toml configuration)
 
   - repo: https://github.com/Lucas-C/pre-commit-hooks
     rev: v1.5.5
@@ -44,7 +35,7 @@ repos:
           - --fuzzy-match-generates-todo
 
   - repo: https://github.com/kynan/nbstripout
-    rev: 0.7.1
+    rev: 0.8.1
     hooks:
       - id: nbstripout
         files: '^extralit/.*\.ipynb$'
@@ -63,17 +54,8 @@ repos:
   # extralit-server specific hooks
   ##############################################################################
 
-  - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.4.8
-    hooks:
-      - id: ruff
-        files: 'extralit-server/src/.*\.py$'
-        args:
-          - --fix
-          - --select
-          - "E,W,F,I,B,C4,UP,ASYNC,PLE,FAST,RUF"
-          - --ignore
-          - "E501,B008"
+  # (Removed duplicate ruff hook for extralit-server; global ruff hook above
+  # now serves as single source of truth using pyproject.toml configuration)
 
   - repo: https://github.com/Lucas-C/pre-commit-hooks
     rev: v1.5.5
@@ -102,7 +84,7 @@ repos:
   # Helm lint hook
   ##############################################################################
   - repo: https://github.com/gruntwork-io/pre-commit
-    rev: v0.1.24
+    rev: v0.1.30
     hooks:
       - id: helmlint
         name: Helm lint

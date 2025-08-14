@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from typing import TYPE_CHECKING, List
+
 import typer
 
 if TYPE_CHECKING:
@@ -21,8 +22,9 @@ if TYPE_CHECKING:
 
 def echo_in_panel(text, title=None, title_align="center", success=True):
     """Echoes a message in a rich panel with Extralit theme."""
-    from extralit.cli.rich import get_themed_panel
     from rich.console import Console
+
+    from extralit.cli.rich import get_themed_panel
 
     panel = get_themed_panel(
         renderable=text,

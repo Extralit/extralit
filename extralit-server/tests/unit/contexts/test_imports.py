@@ -12,15 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
 from uuid import uuid4
 
+import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from extralit_server.api.schemas.v1.documents import DocumentCreate
 from extralit_server.api.schemas.v1.imports import (
-    FileInfo,
     DocumentMetadata,
+    FileInfo,
     ImportAnalysisRequest,
     ImportStatus,
 )
@@ -28,7 +28,6 @@ from extralit_server.contexts.imports import (
     analyze_import_status,
     validate_document_metadata,
 )
-
 from tests.factories import DocumentFactory, WorkspaceFactory
 
 
@@ -87,7 +86,7 @@ class TestImportAnalysis:
         workspace = await WorkspaceFactory.create()
 
         # Create existing document with same file name as the new import
-        existing_doc = await DocumentFactory.create(
+        await DocumentFactory.create(
             workspace=workspace,
             reference="existing_ref",
             doi="10.1234/existing.doi",
@@ -134,9 +133,7 @@ class TestImportAnalysis:
         workspace = await WorkspaceFactory.create()
 
         # Create existing document
-        existing_doc = await DocumentFactory.create(
-            workspace=workspace, reference="update_ref", doi="10.1234/update.doi"
-        )
+        await DocumentFactory.create(workspace=workspace, reference="update_ref", doi="10.1234/update.doi")
 
         # Create request with same document but new files
         document_create = DocumentCreate(
@@ -206,7 +203,7 @@ class TestImportAnalysis:
         workspace = await WorkspaceFactory.create()
 
         # Create existing document for skip test - with same file name
-        existing_skip = await DocumentFactory.create(
+        await DocumentFactory.create(
             workspace=workspace,
             reference="skip_ref",
             doi="10.1234/skip.doi",
@@ -214,9 +211,7 @@ class TestImportAnalysis:
         )
 
         # Create existing document for update test
-        existing_update = await DocumentFactory.create(
-            workspace=workspace, reference="update_ref", doi="10.1234/update.doi"
-        )
+        await DocumentFactory.create(workspace=workspace, reference="update_ref", doi="10.1234/update.doi")
 
         # Prepare mixed documents
         documents = {

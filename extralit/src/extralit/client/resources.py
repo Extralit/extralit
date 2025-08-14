@@ -27,10 +27,10 @@ from extralit._helpers._resource_repr import ResourceHTMLReprMixin
 from extralit._models import DatasetModel, ResourceModel, UserModel, WorkspaceModel
 
 if TYPE_CHECKING:
-    from extralit import Dataset, User, Workspace, Webhook
+    from extralit import Dataset, User, Webhook, Workspace
     from extralit.client.core import Extralit
 
-__all__ = ["Users", "Workspaces", "Datasets", "Webhooks"]
+__all__ = ["Datasets", "Users", "Webhooks", "Workspaces"]
 
 
 class Users(Sequence["User"], ResourceHTMLReprMixin):
@@ -63,7 +63,7 @@ class Users(Sequence["User"], ResourceHTMLReprMixin):
         if id is not None:
             model = _get_model_by_id(self._api, id)
             if model:
-                return self._from_model(model)  # noqa
+                return self._from_model(model)
             warnings.warn(f"User with id {id!r} not found.")
         else:
             for model in self._api.list():
@@ -160,12 +160,12 @@ class Workspaces(Sequence["Workspace"], ResourceHTMLReprMixin):
         if id is not None:
             model = _get_model_by_id(self._api, id)
             if model:
-                return self._from_model(model)  # noqa
+                return self._from_model(model)
             warnings.warn(f"Workspace with id {id!r} not found")
         else:
             for model in self._api.list():
                 if model.name == name:
-                    return self._from_model(model)  # noqa
+                    return self._from_model(model)
             warnings.warn(f"Workspace with name {name!r} not found.")
 
     def __iter__(self):
@@ -359,7 +359,7 @@ class Webhooks(Sequence["Webhook"], ResourceHTMLReprMixin):
 
         model = _get_model_by_id(self._api, id)
         if model:
-            return self._from_model(model)  # noqa
+            return self._from_model(model)
         warnings.warn(f"Webhook with id {id!r} not found")
 
     def __iter__(self):

@@ -12,22 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
 from uuid import uuid4
+
+import pytest
 from fastapi import status
 from httpx import AsyncClient
 
 from extralit_server.api.schemas.v1.documents import DocumentCreate
 from extralit_server.api.schemas.v1.imports import (
-    FileInfo,
     DocumentMetadata,
+    FileInfo,
     ImportAnalysisRequest,
-    ImportStatus,
     ImportHistoryCreate,
+    ImportStatus,
 )
-
 from extralit_server.models import UserRole
-from tests.factories import DocumentFactory, WorkspaceFactory, UserFactory
+from tests.factories import DocumentFactory, UserFactory, WorkspaceFactory
 
 
 @pytest.mark.asyncio
@@ -48,7 +48,7 @@ class TestImportsAPI:
     async def test_analyze_import_empty_documents(self, async_client: AsyncClient, owner_auth_header: dict):
         """Test analyze endpoint with empty documents list."""
         # Create owner user and workspace
-        owner = await UserFactory.create(role=UserRole.owner)
+        await UserFactory.create(role=UserRole.owner)
         workspaces = await WorkspaceFactory.create_batch(1)
         # Optionally assign workspaces to owner if needed by your logic
         # owner.workspaces = workspaces
@@ -96,7 +96,7 @@ class TestImportsAPI:
     async def test_analyze_import_mismatched_workspace_ids(self, async_client: AsyncClient, owner_auth_header: dict):
         """Test analyze endpoint with mismatched workspace IDs."""
         # Create owner user and workspace
-        owner = await UserFactory.create(role=UserRole.owner)
+        await UserFactory.create(role=UserRole.owner)
         workspaces = await WorkspaceFactory.create_batch(1)
         workspace = workspaces[0]
         other_workspace_id = uuid4()
@@ -133,7 +133,7 @@ class TestImportsAPI:
 
     async def test_analyze_import_invalid_document_metadata(self, async_client: AsyncClient, owner_auth_header: dict):
         """Test analyze endpoint with invalid document metadata - should not raise exceptions."""
-        owner = await UserFactory.create(role=UserRole.owner)
+        await UserFactory.create(role=UserRole.owner)
         workspaces = await WorkspaceFactory.create_batch(1)
         workspace = workspaces[0]
 
@@ -174,7 +174,7 @@ class TestImportsAPI:
 
     async def test_analyze_import_new_documents(self, async_client: AsyncClient, owner_auth_header: dict):
         """Test analyze endpoint with new documents."""
-        owner = await UserFactory.create(role=UserRole.owner)
+        await UserFactory.create(role=UserRole.owner)
         workspaces = await WorkspaceFactory.create_batch(1)
         workspace = workspaces[0]
 
@@ -218,14 +218,12 @@ class TestImportsAPI:
 
     async def test_analyze_import_existing_documents(self, async_client: AsyncClient, owner_auth_header: dict):
         """Test analyze endpoint with existing documents."""
-        owner = await UserFactory.create(role=UserRole.owner)
+        await UserFactory.create(role=UserRole.owner)
         workspaces = await WorkspaceFactory.create_batch(1)
         workspace = workspaces[0]
 
         # Create existing document
-        existing_doc = await DocumentFactory.create(
-            workspace=workspace, reference="existing_ref", doi="10.1234/existing.doi"
-        )
+        await DocumentFactory.create(workspace=workspace, reference="existing_ref", doi="10.1234/existing.doi")
 
         # Create request with existing document
         request = ImportAnalysisRequest(
@@ -269,14 +267,12 @@ class TestImportsAPI:
 
     async def test_analyze_import_update_documents(self, async_client: AsyncClient, owner_auth_header: dict):
         """Test analyze endpoint with documents that need updates."""
-        owner = await UserFactory.create(role=UserRole.owner)
+        await UserFactory.create(role=UserRole.owner)
         workspaces = await WorkspaceFactory.create_batch(1)
         workspace = workspaces[0]
 
         # Create existing document
-        existing_doc = await DocumentFactory.create(
-            workspace=workspace, reference="update_ref", doi="10.1234/update.doi"
-        )
+        await DocumentFactory.create(workspace=workspace, reference="update_ref", doi="10.1234/update.doi")
 
         # Create request with document that needs update
         request = ImportAnalysisRequest(
@@ -318,15 +314,13 @@ class TestImportsAPI:
 
     async def test_analyze_import_mixed_documents(self, async_client: AsyncClient, owner_auth_header: dict):
         """Test analyze endpoint with mixed document types."""
-        owner = await UserFactory.create(role=UserRole.owner)
+        await UserFactory.create(role=UserRole.owner)
         workspaces = await WorkspaceFactory.create_batch(1)
         workspace = workspaces[0]
 
         # Create existing documents
-        existing_skip = await DocumentFactory.create(workspace=workspace, reference="skip_ref", doi="10.1234/skip.doi")
-        existing_update = await DocumentFactory.create(
-            workspace=workspace, reference="update_ref", doi="10.1234/update.doi"
-        )
+        await DocumentFactory.create(workspace=workspace, reference="skip_ref", doi="10.1234/skip.doi")
+        await DocumentFactory.create(workspace=workspace, reference="update_ref", doi="10.1234/update.doi")
 
         # Create request with mixed documents
         request = ImportAnalysisRequest(
@@ -452,7 +446,7 @@ class TestImportsAPI:
     async def test_create_import_history_invalid_data(self, async_client: AsyncClient, owner_auth_header: dict):
         """Test import history endpoint with invalid data structure."""
         # Create owner user and workspace
-        owner = await UserFactory.create(role=UserRole.owner)
+        await UserFactory.create(role=UserRole.owner)
         workspaces = await WorkspaceFactory.create_batch(1)
         workspace = workspaces[0]
 
@@ -476,7 +470,7 @@ class TestImportsAPI:
     async def test_create_import_history_empty_filename(self, async_client: AsyncClient, owner_auth_header: dict):
         """Test import history endpoint with empty filename."""
         # Create owner user and workspace
-        owner = await UserFactory.create(role=UserRole.owner)
+        await UserFactory.create(role=UserRole.owner)
         workspaces = await WorkspaceFactory.create_batch(1)
         workspace = workspaces[0]
 
@@ -499,7 +493,7 @@ class TestImportsAPI:
     async def test_create_import_history_invalid_metadata(self, async_client: AsyncClient, owner_auth_header: dict):
         """Test import history endpoint with invalid metadata structure."""
         # Create owner user and workspace
-        owner = await UserFactory.create(role=UserRole.owner)
+        await UserFactory.create(role=UserRole.owner)
         workspaces = await WorkspaceFactory.create_batch(1)
         workspace = workspaces[0]
 
@@ -532,7 +526,7 @@ class TestImportsAPI:
     async def test_create_import_history_success(self, async_client: AsyncClient, owner_auth_header: dict):
         """Test successful import history creation."""
         # Create owner user and workspace
-        owner = await UserFactory.create(role=UserRole.owner)
+        await UserFactory.create(role=UserRole.owner)
         workspaces = await WorkspaceFactory.create_batch(1)
         workspace = workspaces[0]
 
@@ -596,7 +590,7 @@ class TestImportsAPI:
     async def test_create_import_history_bibtex_data(self, async_client: AsyncClient, owner_auth_header: dict):
         """Test import history creation with BibTeX-style dataframe data."""
         # Create owner user and workspace
-        owner = await UserFactory.create(role=UserRole.owner)
+        await UserFactory.create(role=UserRole.owner)
         workspaces = await WorkspaceFactory.create_batch(1)
         workspace = workspaces[0]
 
@@ -692,7 +686,7 @@ class TestImportsAPI:
     async def test_list_import_histories_empty(self, async_client: AsyncClient, owner_auth_header: dict):
         """Test list import histories endpoint with no import histories."""
         # Create owner user and workspace
-        owner = await UserFactory.create(role=UserRole.owner)
+        await UserFactory.create(role=UserRole.owner)
         workspaces = await WorkspaceFactory.create_batch(1)
         workspace = workspaces[0]
 
@@ -710,7 +704,7 @@ class TestImportsAPI:
     async def test_list_import_histories_with_limit(self, async_client: AsyncClient, owner_auth_header: dict):
         """Test list import histories endpoint with limit parameter for Recent Imports sidebar."""
         # Create owner user and workspace
-        owner = await UserFactory.create(role=UserRole.owner)
+        await UserFactory.create(role=UserRole.owner)
         workspaces = await WorkspaceFactory.create_batch(1)
         workspace = workspaces[0]
 

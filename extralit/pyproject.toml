@@ -92,6 +92,32 @@ build-backend = "pdm.backend"
 [tool.ruff]
 line-length = 120
 
+[tool.ruff.lint]
+select = [
+    "F",    # Pyflakes (undefined names, logical issues)
+    "E7",   # Syntax/indentation errors
+    "E9",   # Runtime-like errors
+    "B012", # return in finally (can suppress real exceptions)
+    "ASYNC",  # flake8-async - async/await specific rules
+    "PLE",    # pylint errors (includes await-outside-async)
+]
+ignore = [
+    "E402",
+    "B904",
+    "UP007",
+    "UP045",
+    "B027",
+    "B024",
+    "B017",
+    "RUF012",
+    "B008",
+    "FAST002",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401", "F403"]
+"tests/**/*.py" = ["ASYNC", "F821"]
+
 [tool.black]
 line-length = 120
 

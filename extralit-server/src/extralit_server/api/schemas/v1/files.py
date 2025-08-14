@@ -13,31 +13,32 @@
 # limitations under the License.
 
 from collections import defaultdict
+from collections.abc import Iterable
 from datetime import datetime
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any
 
 from minio.datatypes import Object
+from minio.helpers import ObjectWriteResult
 from pydantic import BaseModel, Field, field_validator
 from urllib3 import HTTPResponse
 from urllib3._collections import HTTPHeaderDict
-from minio.helpers import ObjectWriteResult
 
 
 class ObjectMetadata(BaseModel):
     bucket_name: str
     object_name: str
-    last_modified: Optional[datetime] = None
-    is_latest: Optional[bool] = None
-    etag: Optional[str] = None
-    size: Optional[int] = None
-    content_type: Optional[str] = None
-    version_id: Optional[str] = None
-    version_tag: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
+    last_modified: datetime | None = None
+    is_latest: bool | None = None
+    etag: str | None = None
+    size: int | None = None
+    content_type: str | None = None
+    version_id: str | None = None
+    version_tag: str | None = None
+    metadata: dict[str, Any] | None = None
 
     @field_validator("metadata", mode="before")
     def parse_metadata(cls, v):
-        if v and isinstance(v, (HTTPHeaderDict, dict)):
+        if v and isinstance(v, HTTPHeaderDict | dict):
             v = {key[11:]: value for key, value in v.items() if key.lower().startswith("x-amz-meta-")}
         else:
             v = None
@@ -91,14 +92,14 @@ class ListObjectsResponse(BaseModel):
         return v
 
     @field_validator("objects")
-    def assign_version_id(cls, objects: List[ObjectMetadata]) -> List[ObjectMetadata]:
+    def assign_version_id(cls, objects: list[ObjectMetadata]) -> list[ObjectMetadata]:
         # Group objects by object_name
         grouped_objects = defaultdict(list)
         for obj in objects:
             grouped_objects[obj.object_name].append(obj)
 
         # Assign version_id based on last_modified
-        for object_name, object_list in grouped_objects.items():
+        for _object_name, object_list in grouped_objects.items():
             sorted_objects = sorted(object_list, key=lambda o: o.last_modified or datetime.min)
 
             for i, obj in enumerate(sorted_objects):
@@ -115,13 +116,13 @@ class ListObjectsResponse(BaseModel):
 class FileObjectResponse(BaseModel):
     response: HTTPResponse
     metadata: ObjectMetadata
-    versions: Optional[ListObjectsResponse]
+    versions: ListObjectsResponse | None
 
     class Config:
         arbitrary_types_allowed = True
 
     @property
-    def version_tag(self) -> Optional[str]:
+    def version_tag(self) -> str | None:
         if not self.metadata or not self.versions:
             return ""
         else:
@@ -131,7 +132,7 @@ class FileObjectResponse(BaseModel):
         return ""
 
     @property
-    def is_latest(self) -> Optional[bool]:
+    def is_latest(self) -> bool | None:
         if not self.metadata or not self.versions:
             return None
         else:
@@ -141,7 +142,7 @@ class FileObjectResponse(BaseModel):
         return None
 
     @property
-    def http_headers(self) -> Dict[str, str]:
+    def http_headers(self) -> dict[str, str]:
         if not self.metadata:
             return {}
 

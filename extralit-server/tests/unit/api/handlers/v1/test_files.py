@@ -13,14 +13,14 @@
 # limitations under the License.
 
 import io
-from typing import TYPE_CHECKING
-from unittest.mock import patch, MagicMock
 import os
+from typing import TYPE_CHECKING
+from unittest.mock import MagicMock, patch
 
 import pytest
-from extralit_server.contexts.files import ListObjectsResponse, ObjectMetadata
-from extralit_server.constants import API_KEY_HEADER_NAME
 
+from extralit_server.constants import API_KEY_HEADER_NAME
+from extralit_server.contexts.files import ListObjectsResponse, ObjectMetadata
 from tests.factories import (
     MinioFileFactory,
     UserFactory,
@@ -123,7 +123,7 @@ async def test_list_objects_with_versions(async_client: "AsyncClient", owner_aut
     # Mock get_minio_client and bucket_exists
     with (
         patch("extralit_server.contexts.files.get_minio_client") as mock_get_minio_client,
-        patch("extralit_server.contexts.files.delete_bucket") as mock_delete_bucket,
+        patch("extralit_server.contexts.files.delete_bucket"),
         patch("extralit_server.contexts.files.list_objects") as mock_list_objects,
     ):
         # Setup mocks

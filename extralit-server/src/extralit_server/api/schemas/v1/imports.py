@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from uuid import UUID
-from typing import Any, Dict, List, Optional
 from datetime import datetime
-from pydantic import BaseModel, Field
 from enum import Enum
+from typing import Any
+from uuid import UUID
+
+from pydantic import BaseModel, Field
 
 from extralit_server.api.schemas.v1.documents import DocumentCreate
 
@@ -34,21 +35,21 @@ class FileInfo(BaseModel):
     """Information about a file to be imported."""
 
     filename: str = Field(..., description="Name of the file")
-    size: Optional[int] = Field(None, description="File size in bytes for comparison")
+    size: int | None = Field(None, description="File size in bytes for comparison")
 
 
 class DocumentMetadata(BaseModel):
     """Metadata information for a document to be imported."""
 
     document_create: DocumentCreate = Field(..., description="Document creation data")
-    associated_files: List[FileInfo] = Field(default_factory=list, description="PDF file metadata (not contents)")
+    associated_files: list[FileInfo] = Field(default_factory=list, description="PDF file metadata (not contents)")
 
 
 class ImportAnalysisRequest(BaseModel):
     """Request schema for import analysis."""
 
     workspace_id: UUID = Field(..., description="Target workspace ID")
-    documents: Dict[str, DocumentMetadata] = Field(..., description="Reference key to file metadata mapping")
+    documents: dict[str, DocumentMetadata] = Field(..., description="Reference key to file metadata mapping")
 
 
 class DataframeField(BaseModel):
@@ -61,24 +62,24 @@ class DataframeField(BaseModel):
 class DataframeSchema(BaseModel):
     """Schema definition for tabular dataframe structure."""
 
-    fields: List[DataframeField] = Field(..., description="List of field definitions")
-    primaryKey: List[str] = Field(..., description="Primary key field names")
+    fields: list[DataframeField] = Field(..., description="List of field definitions")
+    primaryKey: list[str] = Field(..., description="Primary key field names")
 
 
 class DataframeData(BaseModel):
     """Tabular dataframe representation for generalized import support."""
 
     schema_: DataframeSchema = Field(..., alias="schema", description="Schema definition with fields and primary key")
-    data: List[Dict[str, Any]] = Field(..., description="List of data rows as dictionaries")
+    data: list[dict[str, Any]] = Field(..., description="List of data rows as dictionaries")
 
 
 class DocumentImportAnalysis(BaseModel):
     """Information about a document in the import analysis response."""
 
     document_create: DocumentCreate = Field(..., description="Document creation data")
-    associated_files: List[str] = Field(default_factory=list, description="PDF filenames matched to this reference")
+    associated_files: list[str] = Field(default_factory=list, description="PDF filenames matched to this reference")
     status: ImportStatus = Field(..., description="Import status (add, update, skip, failed)")
-    validation_errors: Optional[List[str]] = Field(default_factory=list, description="Validation error messages if any")
+    validation_errors: list[str] | None = Field(default_factory=list, description="Validation error messages if any")
 
 
 class ImportSummary(BaseModel):
@@ -94,7 +95,7 @@ class ImportSummary(BaseModel):
 class ImportAnalysisResponse(BaseModel):
     """Response schema for import analysis."""
 
-    documents: Dict[str, DocumentImportAnalysis] = Field(..., description="Reference key to document info mapping")
+    documents: dict[str, DocumentImportAnalysis] = Field(..., description="Reference key to document info mapping")
     summary: ImportSummary = Field(..., description="Import analysis summary")
 
 
@@ -103,21 +104,21 @@ class BulkDocumentInfo(BaseModel):
 
     reference: str = Field(..., description="BibTeX reference key for job tracking")
     document_create: DocumentCreate = Field(..., description="Document creation data")
-    associated_files: List[str] = Field(..., description="Multiple PDF filenames for this reference")
+    associated_files: list[str] = Field(..., description="Multiple PDF filenames for this reference")
 
 
 class DocumentsBulkCreate(BaseModel):
     """Metadata for bulk document upload."""
 
-    documents: List[BulkDocumentInfo] = Field(..., description="List of documents to upload")
+    documents: list[BulkDocumentInfo] = Field(..., description="List of documents to upload")
 
 
 class DocumentsBulkResponse(BaseModel):
     """Response schema for bulk document upload."""
 
-    job_ids: Dict[str, str] = Field(..., description="Reference key to job_id mapping for frontend tracking")
+    job_ids: dict[str, str] = Field(..., description="Reference key to job_id mapping for frontend tracking")
     total_documents: int = Field(..., description="Total number of documents in the request")
-    failed_validations: List[str] = Field(default_factory=list, description="Files that failed validation")
+    failed_validations: list[str] = Field(default_factory=list, description="Files that failed validation")
 
 
 class ImportHistoryCreate(BaseModel):
@@ -125,8 +126,8 @@ class ImportHistoryCreate(BaseModel):
 
     workspace_id: UUID = Field(..., description="Target workspace ID")
     filename: str = Field(..., description="Import filename (.bib, .csv, etc.)")
-    data: Dict[str, Any] = Field(..., description="Tabular dataframe data converted from BibTeX file")
-    metadata: Optional[Dict[str, Any]] = Field(
+    data: dict[str, Any] = Field(..., description="Tabular dataframe data converted from BibTeX file")
+    metadata: dict[str, Any] | None = Field(
         default=None, description="Import metadata including ImportStatus and associated files for each reference"
     )
 
@@ -139,8 +140,8 @@ class ImportHistoryResponse(BaseModel):
     username: str = Field(..., description="Username who created the import")
     filename: str = Field(..., description="Import filename")
     created_at: datetime = Field(..., description="Creation timestamp")
-    data: Optional[Dict[str, Any]] = Field(None, description="Tabular dataframe data (only in detailed view)")
-    metadata: Optional[Dict[str, Any]] = Field(
+    data: dict[str, Any] | None = Field(None, description="Tabular dataframe data (only in detailed view)")
+    metadata: dict[str, Any] | None = Field(
         None, description="Import metadata with status and files (in list and detailed view)"
     )
 

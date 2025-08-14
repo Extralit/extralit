@@ -13,28 +13,26 @@
 # limitations under the License.
 
 import pytest
-
-from sqlalchemy import select, func
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from extralit_server.api.schemas.v1.datasets import HubDatasetMapping, HubDatasetMappingItem
-from extralit_server.enums import DatasetStatus, QuestionType
-from extralit_server.models import Record
-from extralit_server.contexts.hub import HubDataset
-from extralit_server.search_engine import SearchEngine
+from datasets.exceptions import DataFilesNotFoundError
 
 # Import Hugging Face and network-related exceptions
 from huggingface_hub.errors import HfHubHTTPError
-from datasets.exceptions import DataFilesNotFoundError
-from requests.exceptions import ReadTimeout, ConnectTimeout, HTTPError, RequestException
+from requests.exceptions import ConnectTimeout, HTTPError, ReadTimeout, RequestException
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from extralit_server.api.schemas.v1.datasets import HubDatasetMapping, HubDatasetMappingItem
+from extralit_server.contexts.hub import HubDataset
+from extralit_server.enums import DatasetStatus, QuestionType
+from extralit_server.models import Record
+from extralit_server.search_engine import SearchEngine
 from tests.factories import (
     ChatFieldFactory,
     DatasetFactory,
     ImageFieldFactory,
+    IntegerMetadataPropertyFactory,
     QuestionFactory,
     TextFieldFactory,
-    IntegerMetadataPropertyFactory,
 )
 
 
@@ -191,7 +189,7 @@ class TestHubDataset:
 
         await TextFieldFactory.create(name="text", required=True, dataset=dataset)
 
-        question = await QuestionFactory.create(
+        await QuestionFactory.create(
             name="labels",
             required=True,
             settings={
@@ -270,7 +268,7 @@ class TestHubDataset:
 
         await TextFieldFactory.create(name="text", required=True, dataset=dataset)
 
-        question = await QuestionFactory.create(
+        await QuestionFactory.create(
             name="label",
             settings={
                 "type": QuestionType.label_selection,

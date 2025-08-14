@@ -17,7 +17,6 @@ import json
 import logging
 import platform
 import uuid
-from typing import Optional
 
 from fastapi import Request, Response
 from huggingface_hub.utils import send_telemetry
@@ -26,12 +25,12 @@ from extralit_server._version import __version__
 from extralit_server.api.errors.v1.exception_handlers import get_request_error
 from extralit_server.integrations.huggingface.spaces import HUGGINGFACE_SETTINGS
 from extralit_server.security.authentication.provider import get_request_user
-from extralit_server.utils._fastapi import resolve_endpoint_path_for_request
 from extralit_server.telemetry._helpers import (
+    get_server_id,
     is_running_on_docker_container,
     server_deployment_type,
-    get_server_id,
 )
+from extralit_server.utils._fastapi import resolve_endpoint_path_for_request
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -56,7 +55,7 @@ class TelemetryClient:
         _LOGGER.info("System Info:")
         _LOGGER.info(f"Context: {json.dumps(self._system_info, indent=2)}")
 
-    def track_data(self, topic: str, data: Optional[dict] = None):
+    def track_data(self, topic: str, data: dict | None = None):
         library_name = "extralit-server"
         topic = f"extralit/server/{topic}"
 
@@ -97,7 +96,7 @@ class TelemetryClient:
 
         if response.status_code >= 400:
             if extralit_error := get_request_error(request=request):
-                data["response.error_code"] = extralit_error.code  # noqa
+                data["response.error_code"] = extralit_error.code
 
         self.track_data(topic="endpoints", data=data)
 

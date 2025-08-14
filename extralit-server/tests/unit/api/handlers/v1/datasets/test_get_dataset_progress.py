@@ -12,16 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
-
 from uuid import UUID, uuid4
+
+import pytest
 from httpx import AsyncClient
 
 from extralit_server.constants import API_KEY_HEADER_NAME
 from extralit_server.enums import UserRole
 from extralit_server.search_engine import SearchEngine
-
-from tests.factories import DatasetFactory, UserFactory, DatasetUserFactory
+from tests.factories import DatasetFactory, DatasetUserFactory, UserFactory
 
 
 @pytest.mark.asyncio

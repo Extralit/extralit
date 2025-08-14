@@ -1,11 +1,11 @@
 <template>
   <form
+    v-click-outside="onClickOutside"
     class="questions-form"
     :class="questionFormClass"
-    @submit.stop.prevent=""
-    v-click-outside="onClickOutside"
-    @click="focusOnFirstQuestionFromOutside"
     aria-label="Annotation Questions"
+    @submit.stop.prevent=""
+    @click="focusOnFirstQuestionFromOutside"
   >
     <div class="questions-form__content">
       <div class="questions-form__header">
@@ -17,8 +17,8 @@
           <div v-else-if="record.isDraft" class="questions-form__status">
             {{ $t("saved") }}
             <BaseDate
-              class="tooltip"
               v-if="record.updatedAt"
+              class="tooltip"
               :date="record.updatedAt?.toLocaleString()"
               format="date-relative-now"
               :updateEverySecond="10"
@@ -185,7 +185,7 @@ export default {
       default: false,
     },
   },
-  
+
   data() {
     return {
       autofocusPosition: 0,
@@ -229,7 +229,7 @@ export default {
       deep: true,
       immediate: true,
       handler() {
-        this.isSubmittedTouched = 
+        this.isSubmittedTouched =
           this.record.isSubmitted && this.record.isModified;
         if (this.duration.value > 1) {
           this.checkAndSaveDraft();
@@ -347,7 +347,7 @@ export default {
       const condition = modified?.questions?.some(
         question => {
           const conditionForThisQuestion = question && question.answer && (
-            question.answer?.value || 
+            question.answer?.value ||
             question.answer?.values?.some(value => !!value)
           );
           return conditionForThisQuestion;

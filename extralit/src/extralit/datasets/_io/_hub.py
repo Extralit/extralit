@@ -17,10 +17,10 @@ import os
 import warnings
 from collections import defaultdict
 from tempfile import TemporaryDirectory
-from typing import TYPE_CHECKING, Any, Dict, Optional, Type, Union, Literal
+from typing import TYPE_CHECKING, Any, Dict, Literal, Optional, Type, Union
 from uuid import UUID
-import lazy_loader as lazy
 
+import lazy_loader as lazy
 
 from extralit._exceptions import ImportDatasetError
 from extralit._exceptions._api import UnprocessableEntityError
@@ -38,7 +38,7 @@ PIL = lazy.load("PIL")
 if TYPE_CHECKING:
     from datasets import Dataset as HFDataset
 
-    from extralit import Extralit, Dataset, Settings, Workspace
+    from extralit import Dataset, Extralit, Settings, Workspace
 
 
 class HubImportExportMixin(DiskImportExportMixin):
@@ -143,10 +143,10 @@ class HubImportExportMixin(DiskImportExportMixin):
         Returns:
             A `Dataset` loaded from the Hugging Face Hub.
         """
-        from extralit.settings import Settings
-
         # load_dataset is accessed via lazy loaded datasets module
         from huggingface_hub import snapshot_download
+
+        from extralit.settings import Settings
 
         settings = settings or "ui"
 
@@ -336,10 +336,10 @@ class HubImportExportMixin(DiskImportExportMixin):
 
     @classmethod
     def _run_settings_ui(cls, repo_id: str, subset: str, split: str, client: Optional["Extralit"] = None) -> str:
-        from urllib.parse import quote_plus, urlencode
-        from extralit.client import Extralit
-
         import webbrowser
+        from urllib.parse import quote_plus, urlencode
+
+        from extralit.client import Extralit
 
         client = client or Extralit._get_default()
 
@@ -354,6 +354,5 @@ class HubImportExportMixin(DiskImportExportMixin):
             webbrowser.open(url, new=2, autoraise=True)
         except Exception as e:
             warnings.warn(f"Error opening the URL in the browser: {e}")
-        finally:
-            warnings.warn(f"Open the following URL in your browser to configure the dataset: {url}")
-            return url
+        warnings.warn(f"Open the following URL in your browser to configure the dataset: {url}")
+        return url

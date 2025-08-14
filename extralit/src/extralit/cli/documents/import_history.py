@@ -35,8 +35,8 @@ from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
 
-from extralit.client import Extralit
 from extralit.cli.rich import get_themed_panel
+from extralit.client import Extralit
 
 
 def list_import_histories(
@@ -85,7 +85,7 @@ def list_import_histories(
 
     except Exception as e:
         panel = get_themed_panel(
-            f"Error managing import histories: {str(e)}",
+            f"Error managing import histories: {e!s}",
             title="Error",
             title_align="left",
             exception=e,

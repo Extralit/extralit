@@ -12,26 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from collections.abc import Sequence
 from pathlib import Path
-from typing import List, TYPE_CHECKING, Optional, overload, Union, Sequence, Any
+from typing import TYPE_CHECKING, Any, List, Optional, Union, overload
 from urllib.parse import unquote, urlparse
 
-from extralit._constants import _DEFAULT_SCHEMA_S3_PATH
 from extralit._api._workspaces import WorkspacesAPI
-from extralit._helpers import GenericIterator
-from extralit._helpers import LoggingMixin
+from extralit._constants import _DEFAULT_SCHEMA_S3_PATH
+from extralit._helpers import GenericIterator, LoggingMixin
 from extralit._models import WorkspaceModel
 from extralit._resource import Resource
 from extralit.client import Extralit
 
 if TYPE_CHECKING:
     from uuid import UUID
-    from extralit.users._resource import User
+
+    from extralit._models._documents import DocumentModel
+    from extralit._models._files import FileObjectResponse, ListObjectsResponse, ObjectMetadata
+    from extralit._models._schema import SchemaStructure
     from extralit.datasets._resource import Dataset
     from extralit.documents._resource import Document
-    from extralit._models._files import ListObjectsResponse, ObjectMetadata, FileObjectResponse
-    from extralit._models._documents import DocumentModel
-    from extralit._models._schema import SchemaStructure
+    from extralit.users._resource import User
 
 
 class Workspace(Resource):

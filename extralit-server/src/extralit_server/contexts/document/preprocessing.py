@@ -18,17 +18,16 @@ import logging
 import os
 import tempfile
 import time
-from io import BytesIO
-from typing import List
 from dataclasses import dataclass
+from io import BytesIO
 from uuid import uuid4
 
 import lazy_loader as lazy
 from pydantic import Field
 from pydantic_settings import BaseSettings
-from extralit_server.contexts.document.margin import PDFAnalyzer
-from extralit_server.api.schemas.v1.document.preprocessing import PDFMetadata
 
+from extralit_server.api.schemas.v1.document.preprocessing import PDFMetadata
+from extralit_server.contexts.document.margin import PDFAnalyzer
 
 ocrmypdf = lazy.load("ocrmypdf")
 
@@ -61,7 +60,7 @@ class PDFPreprocessingSettings(BaseSettings):
 
     enable_analysis: bool = Field(default=True, description="Enable PDF layout analysis and margin detection")
 
-    language: List[str] = Field(
+    language: list[str] = Field(
         default=["eng"], description="List of languages for OCR processing (e.g., ['eng', 'spa', 'fra'])"
     )
 

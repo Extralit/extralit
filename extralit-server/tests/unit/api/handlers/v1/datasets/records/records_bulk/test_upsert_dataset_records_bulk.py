@@ -12,29 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
-
 from uuid import UUID
-from httpx import AsyncClient
+
+import pytest
 from fastapi.encoders import jsonable_encoder
+from httpx import AsyncClient
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from extralit_server.models import User, Record
+from extralit_server.enums import DatasetDistributionStrategy, DatasetStatus, RecordStatus, ResponseStatus
 from extralit_server.jobs.queues import HIGH_QUEUE
-from extralit_server.models import User, Record
-from extralit_server.enums import DatasetDistributionStrategy, ResponseStatus, DatasetStatus, RecordStatus
+from extralit_server.models import Record, User
 from extralit_server.webhooks.v1.enums import RecordEvent
 from extralit_server.webhooks.v1.records import build_record_event
-
 from tests.factories import (
+    AnnotatorFactory,
     DatasetFactory,
     RecordFactory,
+    ResponseFactory,
     TextFieldFactory,
     TextQuestionFactory,
-    AnnotatorFactory,
     WebhookFactory,
-    ResponseFactory,
 )
 
 

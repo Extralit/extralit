@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import json
+import os
 from pathlib import Path
 from typing import Dict, Optional
 
@@ -77,7 +77,7 @@ class ExtralitCredentials:
         if not cls.exists():
             raise FileNotFoundError(f"'{EXTRALIT_CREDENTIALS_FILE}' does not exist.")
 
-        with open(EXTRALIT_CREDENTIALS_FILE, "r") as f:
+        with open(EXTRALIT_CREDENTIALS_FILE) as f:
             data = json.load(f)
             return cls(
                 api_url=data["api_url"],
@@ -139,4 +139,4 @@ def login(
         ExtralitCredentials(api_url=api_url, api_key=api_key, workspace=workspace, extra_headers=extra_headers).save()
     except Exception as e:
         # Authentication failed
-        raise ValueError(f"Failed to authenticate with the provided credentials: {str(e)}")
+        raise ValueError(f"Failed to authenticate with the provided credentials: {e!s}")

@@ -13,7 +13,8 @@
 # limitations under the License.
 
 import warnings
-from typing import TYPE_CHECKING, Any, Dict, List, Union, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
+
 import lazy_loader as lazy
 
 from extralit._helpers._media import pil_to_data_uri, uncast_image
@@ -23,10 +24,11 @@ datasets = lazy.load("datasets")
 
 
 if TYPE_CHECKING:
-    from datasets import Dataset as HFDataset, ClassLabel
+    from datasets import ClassLabel
+    from datasets import Dataset as HFDataset
 
-    from extralit.records import Record
     from extralit.datasets import Dataset
+    from extralit.records import Record
     from extralit.records._mapping import IngestedRecordMapper
 
 
@@ -266,8 +268,7 @@ class HFDatasetsIO:
         if id_column_name not in hf_dataset.column_names:
             split = hf_dataset.split
             warnings.warn(
-                message="Record id column not found in Hugging Face dataset. "
-                "Using row index and split for record ids.",
+                message="Record id column not found in Hugging Face dataset. Using row index and split for record ids.",
             )
 
             hf_dataset = hf_dataset.map(

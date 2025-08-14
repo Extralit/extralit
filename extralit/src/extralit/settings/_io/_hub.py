@@ -12,27 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import httpx
 import warnings
 from enum import Enum
-from typing import Any, Dict, TYPE_CHECKING, Union, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+
+import httpx
 
 from extralit._exceptions._hub import DatasetsServerException
 from extralit._exceptions._settings import SettingsError
 from extralit.settings._field import (
+    ChatField,
     ImageField,
     TextField,
-    ChatField,
+)
+from extralit.settings._metadata import (
+    FloatMetadataProperty,
+    IntegerMetadataProperty,
+    TermsMetadataProperty,
 )
 from extralit.settings._question import (
     LabelQuestion,
-    TextQuestion,
     RatingQuestion,
-)
-from extralit.settings._metadata import (
-    TermsMetadataProperty,
-    IntegerMetadataProperty,
-    FloatMetadataProperty,
+    TextQuestion,
 )
 
 if TYPE_CHECKING:
@@ -94,7 +95,7 @@ def _get_dataset_features(
             return features
 
     except (httpx.RequestError, httpx.HTTPStatusError, KeyError) as e:
-        raise DatasetsServerException(f"Failed to get dataset info from the datasets server. Error: {str(e)}") from e
+        raise DatasetsServerException(f"Failed to get dataset info from the datasets server. Error: {e!s}") from e
 
 
 def _map_feature_type(feature):
@@ -158,10 +159,10 @@ def _is_chat_feature(sub_features):
 def _render_code_snippet(repo_id: str, subset: Optional[str] = None):
     """Render the code snippet to use feature_mapping to load a dataset and log its records."""
 
-    from rich.console import Console, Group
-    from rich.syntax import Syntax
-    from rich.panel import Panel
     from rich import box
+    from rich.console import Console, Group
+    from rich.panel import Panel
+    from rich.syntax import Syntax
 
     from_hub_args = [f'repo_id="{repo_id}"']
     if subset:

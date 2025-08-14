@@ -15,6 +15,7 @@
 from typing import Any
 
 import pytest
+
 from extralit_server.api.schemas.v1.responses import (
     RankingQuestionResponseValueItem,
     ResponseValueCreate,

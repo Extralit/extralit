@@ -1,18 +1,18 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 import asyncio
-from typing import AsyncGenerator, List, Optional
+from collections.abc import AsyncGenerator
 from uuid import UUID
 
 import typer
@@ -101,9 +101,9 @@ class Reindexer:
     @classmethod
     async def count_dataset_records(cls, db: AsyncSession, dataset: Dataset) -> int:
         return (await db.execute(select(func.count(Record.id)).filter_by(dataset_id=dataset.id))).scalar_one()
-    
+
     @classmethod
-    async def get_all_index_names(cls, search_engine: SearchEngine) -> List[str]:
+    async def get_all_index_names(cls, search_engine: SearchEngine) -> list[str]:
         index_names = await search_engine.get_all_index_names()
         return index_names
 
@@ -136,7 +136,7 @@ async def _reindex_datasets(db: AsyncSession, search_engine: SearchEngine, progr
             await _reindex_dataset_records(db, search_engine, progress, dataset)
         except Exception as e:
             echo_in_panel(
-                f"Failed to reindex dataset `{dataset.name}`: {str(e)}",
+                f"Failed to reindex dataset `{dataset.name}`: {e!s}",
                 title="Reindexing Error",
                 title_align="left",
                 success=False,
@@ -157,7 +157,7 @@ async def _reindex_dataset_records(
         progress.advance(task, advance=len(records))
 
 
-async def _reindex(dataset_id: Optional[UUID] = None) -> None:
+async def _reindex(dataset_id: UUID | None = None) -> None:
     async with AsyncSessionLocal() as db:
         async for search_engine in get_search_engine():
             with Progress() as progress:
@@ -165,6 +165,7 @@ async def _reindex(dataset_id: Optional[UUID] = None) -> None:
                     await _reindex_dataset(db, search_engine, progress, dataset_id)
                 else:
                     await _reindex_datasets(db, search_engine, progress)
+
 
 async def list_indexes() -> None:
     async for search_engine in get_search_engine():
@@ -174,12 +175,14 @@ async def list_indexes() -> None:
 
 
 def reindex(
-    dataset_id: Optional[UUID] = typer.Option(None, help="The id of a dataset to be reindexed"),
+    dataset_id: UUID | None = typer.Option(None, help="The id of a dataset to be reindexed"),
 ) -> None:
     asyncio.run(_reindex(dataset_id))
 
+
 def list() -> None:
     asyncio.run(list_indexes())
+
 
 if __name__ == "__main__":
     typer.run(reindex)

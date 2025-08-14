@@ -12,20 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Dict, List, Literal, Optional, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, List, Literal, Optional, Union
 
 from extralit import Extralit
 from extralit._api import QuestionsAPI
 from extralit._models._settings._questions import (
-    QuestionModel,
-    QuestionSettings,
     LabelQuestionSettings,
     MultiLabelQuestionSettings,
-    TextQuestionSettings,
-    RatingQuestionSettings,
+    QuestionModel,
+    QuestionSettings,
     RankingQuestionSettings,
+    RatingQuestionSettings,
     SpanQuestionSettings,
     TableQuestionSettings,
+    TextQuestionSettings,
 )
 from extralit.settings._common import SettingsPropertyBase
 
@@ -40,12 +40,12 @@ except ImportError:
 __all__ = [
     "LabelQuestion",
     "MultiLabelQuestion",
+    "QuestionType",
     "RankingQuestion",
-    "TextQuestion",
     "RatingQuestion",
     "SpanQuestion",
     "TableQuestion",
-    "QuestionType",
+    "TextQuestion",
 ]
 
 
@@ -78,7 +78,7 @@ class QuestionBase(SettingsPropertyBase):
 
     @classmethod
     def from_model(cls, model: QuestionModel) -> "Self":
-        instance = cls(name=model.name)  # noqa
+        instance = cls(name=model.name)
         instance._model = model
 
         return instance
@@ -197,7 +197,7 @@ class LabelQuestion(QuestionBase):
 
     @classmethod
     def from_model(cls, model: QuestionModel) -> "Self":
-        instance = cls(name=model.name, labels=cls._render_options_as_labels(model.settings.options))  # noqa
+        instance = cls(name=model.name, labels=cls._render_options_as_labels(model.settings.options))
         instance._model = model
 
         return instance
@@ -248,7 +248,7 @@ class MultiLabelQuestion(LabelQuestion):
 
     @classmethod
     def from_model(cls, model: QuestionModel) -> "Self":
-        instance = cls(name=model.name, labels=cls._render_options_as_labels(getattr(model.settings, "options", [])))  # noqa
+        instance = cls(name=model.name, labels=cls._render_options_as_labels(getattr(model.settings, "options", [])))
         instance._model = model
 
         return instance
@@ -326,7 +326,7 @@ class RatingQuestion(QuestionBase):
 
     @property
     def values(self) -> List[int]:
-        return self._render_options_as_labels(self._model.settings.options)  # noqa
+        return self._render_options_as_labels(self._model.settings.options)
 
     @values.setter
     def values(self, values: List[int]) -> None:
@@ -334,7 +334,7 @@ class RatingQuestion(QuestionBase):
 
     @classmethod
     def from_model(cls, model: QuestionModel) -> "Self":
-        instance = cls(name=model.name, values=cls._render_options_as_labels(model.settings.options))  # noqa
+        instance = cls(name=model.name, values=cls._render_options_as_labels(model.settings.options))
         instance._model = model
 
         return instance
@@ -380,7 +380,7 @@ class RankingQuestion(QuestionBase):
 
     @classmethod
     def from_model(cls, model: QuestionModel) -> "Self":
-        instance = cls(name=model.name, values=cls._render_options_as_labels(model.settings.options))  # noqa
+        instance = cls(name=model.name, values=cls._render_options_as_labels(model.settings.options))
         instance._model = model
 
         return instance
@@ -467,7 +467,7 @@ class SpanQuestion(QuestionBase):
             name=model.name,
             field=model.settings.field,
             labels=cls._render_options_as_labels(model.settings.options),
-        )  # noqa
+        )
         instance._model = model
 
         return instance
@@ -504,7 +504,7 @@ class TableQuestion(QuestionBase):
 
     @classmethod
     def from_model(cls, model: QuestionModel) -> "Self":
-        instance = cls(name=model.name)  # noqa
+        instance = cls(name=model.name)
         instance._model = model
 
         return instance

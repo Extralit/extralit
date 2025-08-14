@@ -1,18 +1,17 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-from typing import Optional
 
 from extralit_server.api.schemas.v1.questions import (
     LabelSelectionQuestionSettings,
@@ -44,7 +43,7 @@ class ResponseValueValidator:
         response_value: ResponseValueTypes,
         question_settings: QuestionSettings,
         record: Record,
-        response_status: Optional[ResponseStatus] = None,
+        response_status: ResponseStatus | None = None,
     ) -> None:
         if question_settings.type == QuestionType.text:
             TextQuestionResponseValueValidator(response_value).validate()
@@ -88,7 +87,10 @@ class LabelSelectionQuestionResponseValueValidator:
     ) -> None:
         available_labels = [option.value for option in label_selection_question_settings.options]
 
-        if self._response_value not in available_labels and not label_selection_question_settings.type == QuestionType.dynamic_label_selection:
+        if (
+            self._response_value not in available_labels
+            and not label_selection_question_settings.type == QuestionType.dynamic_label_selection
+        ):
             raise UnprocessableEntityError(
                 f"{self._response_value!r} is not a valid label for label selection question.\nValid labels are: {available_labels!r}"
             )
@@ -124,9 +126,12 @@ class MultiLabelSelectionQuestionResponseValueValidator:
         self, multi_label_selection_question_settings: MultiLabelSelectionQuestionSettings
     ) -> None:
         available_labels = [option.value for option in multi_label_selection_question_settings.options]
-        invalid_labels = sorted(list(set(self._response_value) - set(available_labels)))
+        invalid_labels = sorted(set(self._response_value) - set(available_labels))
 
-        if invalid_labels and not multi_label_selection_question_settings.type == QuestionType.dynamic_multi_label_selection:
+        if (
+            invalid_labels
+            and not multi_label_selection_question_settings.type == QuestionType.dynamic_multi_label_selection
+        ):
             raise UnprocessableEntityError(
                 f"{invalid_labels!r} are not valid labels for multi label selection question.\nValid labels are: {available_labels!r}"
             )
@@ -155,7 +160,7 @@ class RankingQuestionResponseValueValidator:
         self._response_value = response_value
 
     def validate_for(
-        self, ranking_question_settings: RankingQuestionSettings, response_status: Optional[ResponseStatus] = None
+        self, ranking_question_settings: RankingQuestionSettings, response_status: ResponseStatus | None = None
     ) -> None:
         self._validate_value_type()
         self._validate_all_rankings_are_present_when_submitted(ranking_question_settings, response_status)
@@ -170,7 +175,7 @@ class RankingQuestionResponseValueValidator:
             )
 
     def _validate_all_rankings_are_present_when_submitted(
-        self, ranking_question_settings: RankingQuestionSettings, response_status: Optional[ResponseStatus] = None
+        self, ranking_question_settings: RankingQuestionSettings, response_status: ResponseStatus | None = None
     ) -> None:
         if response_status != ResponseStatus.submitted:
             return
@@ -186,14 +191,14 @@ class RankingQuestionResponseValueValidator:
     def _validate_all_rankings_are_valid_when_submitted(
         self,
         ranking_question_settings: RankingQuestionSettings,
-        response_status: Optional[ResponseStatus] = None,
+        response_status: ResponseStatus | None = None,
     ) -> None:
         if response_status != ResponseStatus.submitted:
             return
 
         available_rankings = list(range(1, len(ranking_question_settings.options) + 1))
         response_rankings = [value_item.rank for value_item in self._response_value]
-        invalid_rankings = sorted(list(set(response_rankings) - set(available_rankings)))
+        invalid_rankings = sorted(set(response_rankings) - set(available_rankings))
 
         if invalid_rankings:
             raise UnprocessableEntityError(
@@ -205,7 +210,7 @@ class RankingQuestionResponseValueValidator:
     ) -> None:
         available_values = [option.value for option in ranking_question_settings.options]
         response_values = [value_item.value for value_item in self._response_value]
-        invalid_values = sorted(list(set(response_values) - set(available_values)))
+        invalid_values = sorted(set(response_values) - set(available_values))
 
         if invalid_values:
             raise UnprocessableEntityError(
@@ -306,6 +311,4 @@ class TableQuestionResponseValueValidator:
     ) -> None:
         invalid_columns = []
         if False:
-            raise UnprocessableEntityError(
-                f"{invalid_columns!r} are not valid columns for table question.\nValid columns are: {available_columns!r}"
-            )
+            raise UnprocessableEntityError(f"{invalid_columns!r} are not valid columns for table question.")

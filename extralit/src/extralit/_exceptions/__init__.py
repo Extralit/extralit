@@ -14,8 +14,8 @@
 
 from extralit._exceptions._api import *  # noqa: F403
 from extralit._exceptions._client import *  # noqa: F403
+from extralit._exceptions._hub import *  # noqa: F403
 from extralit._exceptions._metadata import *  # noqa: F403
+from extralit._exceptions._records import *  # noqa: F403
 from extralit._exceptions._serialization import *  # noqa: F403
 from extralit._exceptions._settings import *  # noqa: F403
-from extralit._exceptions._records import *  # noqa: F403
-from extralit._exceptions._hub import *  # noqa: F403

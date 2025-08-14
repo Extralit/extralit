@@ -13,8 +13,9 @@
 # limitations under the License.
 
 import sys
+from collections.abc import Coroutine
 from functools import wraps
-from typing import Any, Callable, Coroutine, Dict, Type, TypeVar
+from typing import Any, Callable, Dict, Type, TypeVar
 
 import typer
 

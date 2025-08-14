@@ -12,60 +12,61 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import secrets
 import base64
+import secrets
 from datetime import datetime
-from typing import Any, List, Optional, Union
+from typing import Any, Union
 from uuid import UUID
 
-from sqlalchemy import Enum as SAEnum, PrimaryKeyConstraint
+from pydantic import TypeAdapter
 from sqlalchemy import (
     JSON,
     ForeignKey,
+    PrimaryKeyConstraint,
     String,
     Text,
     UniqueConstraint,
     sql,
 )
+from sqlalchemy import Enum as SAEnum
 from sqlalchemy.engine.default import DefaultExecutionContext
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from extralit_server.api.schemas.v1.questions import QuestionSettings
 from extralit_server.enums import (
+    DatasetDistributionStrategy,
     DatasetStatus,
     FieldType,
     MetadataPropertyType,
     QuestionType,
+    RecordStatus,
     ResponseStatus,
     SuggestionType,
     UserRole,
-    DatasetDistributionStrategy,
-    RecordStatus,
 )
 from extralit_server.models.base import DatabaseModel
 from extralit_server.models.metadata_properties import MetadataPropertySettings
 from extralit_server.models.mixins import inserted_at_current_value
-from pydantic import TypeAdapter
 
 # Include here the data model ref to be accessible for automatic alembic migration scripts
 __all__ = [
     "Dataset",
+    "DatasetUser",
+    "Document",
     "Field",
+    "ImportHistory",
+    "MetadataProperty",
     "Question",
     "Record",
     "Response",
     "Suggestion",
     "User",
-    "Workspace",
-    "WorkspaceUser",
-    "MetadataProperty",
     "Vector",
     "VectorSettings",
-    "Document",
     "Webhook",
-    "DatasetUser",
-    "ImportHistory",
+    "Workspace",
+    "WorkspaceUser",
 ]
 
 _USER_API_KEY_BYTES_LENGTH = 80
@@ -123,7 +124,7 @@ ResponseStatusEnum = SAEnum(ResponseStatus, name="response_status_enum")
 class Response(DatabaseModel):
     __tablename__ = "responses"
 
-    values: Mapped[Optional[dict]] = mapped_column(MutableDict.as_mutable(JSON))
+    values: Mapped[dict | None] = mapped_column(MutableDict.as_mutable(JSON))
     status: Mapped[ResponseStatus] = mapped_column(ResponseStatusEnum, default=ResponseStatus.submitted, index=True)
     record_id: Mapped[UUID] = mapped_column(ForeignKey("records.id", ondelete="CASCADE"), index=True)
     user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
@@ -152,9 +153,9 @@ class Suggestion(DatabaseModel):
     __tablename__ = "suggestions"
 
     value: Mapped[Any] = mapped_column(JSON)
-    score: Mapped[Optional[Union[float, List[float]]]] = mapped_column(JSON, nullable=True)
-    agent: Mapped[Optional[str]] = mapped_column(nullable=True)
-    type: Mapped[Optional[SuggestionType]] = mapped_column(SuggestionTypeEnum, nullable=True, index=True)
+    score: Mapped[float | list[float] | None] = mapped_column(JSON, nullable=True)
+    agent: Mapped[str | None] = mapped_column(nullable=True)
+    type: Mapped[SuggestionType | None] = mapped_column(SuggestionTypeEnum, nullable=True, index=True)
     record_id: Mapped[UUID] = mapped_column(ForeignKey("records.id", ondelete="CASCADE"), index=True)
     question_id: Mapped[UUID] = mapped_column(ForeignKey("questions.id", ondelete="CASCADE"), index=True)
 
@@ -179,7 +180,7 @@ class Suggestion(DatabaseModel):
 class Vector(DatabaseModel):
     __tablename__ = "vectors"
 
-    value: Mapped[List[Any]] = mapped_column(JSON)
+    value: Mapped[list[Any]] = mapped_column(JSON)
     record_id: Mapped[UUID] = mapped_column(ForeignKey("records.id", ondelete="CASCADE"), index=True)
     vector_settings_id: Mapped[UUID] = mapped_column(ForeignKey("vectors_settings.id", ondelete="CASCADE"), index=True)
 
@@ -207,7 +208,7 @@ class VectorSettings(DatabaseModel):
     dataset_id: Mapped[UUID] = mapped_column(ForeignKey("datasets.id", ondelete="CASCADE"), index=True)
 
     dataset: Mapped["Dataset"] = relationship(back_populates="vectors_settings")
-    vectors: Mapped[List["Vector"]] = relationship(
+    vectors: Mapped[list["Vector"]] = relationship(
         back_populates="vector_settings",
         cascade="all, delete-orphan",
         passive_deletes=True,
@@ -230,33 +231,33 @@ class Record(DatabaseModel):
     __tablename__ = "records"
 
     fields: Mapped[dict] = mapped_column(JSON, default={})
-    metadata_: Mapped[Optional[dict]] = mapped_column("metadata", MutableDict.as_mutable(JSON), nullable=True)
+    metadata_: Mapped[dict | None] = mapped_column("metadata", MutableDict.as_mutable(JSON), nullable=True)
     status: Mapped[RecordStatus] = mapped_column(
         RecordStatusEnum, default=RecordStatus.pending, server_default=RecordStatus.pending, index=True
     )
-    external_id: Mapped[Optional[str]] = mapped_column(index=True)
+    external_id: Mapped[str | None] = mapped_column(index=True)
     dataset_id: Mapped[UUID] = mapped_column(ForeignKey("datasets.id", ondelete="CASCADE"), index=True)
 
     dataset: Mapped["Dataset"] = relationship(back_populates="records")
-    responses: Mapped[List["Response"]] = relationship(
+    responses: Mapped[list["Response"]] = relationship(
         back_populates="record",
         cascade="all, delete-orphan",
         passive_deletes=True,
         order_by=Response.inserted_at.asc(),
     )
-    responses_submitted: Mapped[List["Response"]] = relationship(
+    responses_submitted: Mapped[list["Response"]] = relationship(
         back_populates="record",
         viewonly=True,
         primaryjoin=f"and_(Record.id==Response.record_id, Response.status=='{ResponseStatus.submitted}')",
         order_by=Response.inserted_at.asc(),
     )
-    suggestions: Mapped[List["Suggestion"]] = relationship(
+    suggestions: Mapped[list["Suggestion"]] = relationship(
         back_populates="record",
         cascade="all, delete-orphan",
         passive_deletes=True,
         order_by=Suggestion.inserted_at.asc(),
     )
-    vectors: Mapped[List["Vector"]] = relationship(
+    vectors: Mapped[list["Vector"]] = relationship(
         back_populates="record",
         cascade="all, delete-orphan",
         passive_deletes=True,
@@ -268,7 +269,7 @@ class Record(DatabaseModel):
     def is_completed(self) -> bool:
         return self.status == RecordStatus.completed
 
-    def vector_value_by_vector_settings(self, vector_settings: "VectorSettings") -> Union[List[float], None]:
+    def vector_value_by_vector_settings(self, vector_settings: "VectorSettings") -> list[float] | None:
         for vector in self.vectors:
             if vector.vector_settings_id == vector_settings.id:
                 return vector.value
@@ -291,7 +292,7 @@ class Question(DatabaseModel):
     dataset_id: Mapped[UUID] = mapped_column(ForeignKey("datasets.id", ondelete="CASCADE"), index=True)
 
     dataset: Mapped["Dataset"] = relationship(back_populates="questions")
-    suggestions: Mapped[List["Suggestion"]] = relationship(
+    suggestions: Mapped[list["Suggestion"]] = relationship(
         back_populates="question",
         cascade="all, delete-orphan",
         passive_deletes=True,
@@ -333,7 +334,7 @@ class Question(DatabaseModel):
         return QuestionType(self.settings["type"])
 
     @property
-    def values(self) -> List[Any]:
+    def values(self) -> list[Any]:
         return [option["value"] for option in self.settings.get("options", [])]
 
     def __repr__(self):
@@ -350,7 +351,7 @@ class MetadataProperty(DatabaseModel):
     name: Mapped[str] = mapped_column(String, index=True)
     title: Mapped[str] = mapped_column(Text)
     settings: Mapped[dict] = mapped_column(MutableDict.as_mutable(JSON), default={})
-    allowed_roles: Mapped[List[UserRole]] = mapped_column(MutableList.as_mutable(JSON), default=[], server_default="[]")
+    allowed_roles: Mapped[list[UserRole]] = mapped_column(MutableList.as_mutable(JSON), default=[], server_default="[]")
     dataset_id: Mapped[UUID] = mapped_column(ForeignKey("datasets.id", ondelete="CASCADE"), index=True)
 
     dataset: Mapped["Dataset"] = relationship(back_populates="metadata_properties")
@@ -374,7 +375,7 @@ class MetadataProperty(DatabaseModel):
         return MetadataPropertyType(self.settings["type"])
 
     @property
-    def values(self) -> List[Any]:
+    def values(self) -> list[Any]:
         return self.settings.get("values", [])
 
     @property
@@ -425,11 +426,11 @@ class Dataset(DatabaseModel):
     __tablename__ = "datasets"
 
     name: Mapped[str] = mapped_column(index=True)
-    guidelines: Mapped[Optional[str]] = mapped_column(Text)
+    guidelines: Mapped[str | None] = mapped_column(Text)
     allow_extra_metadata: Mapped[bool] = mapped_column(default=True, server_default=sql.true())
     status: Mapped[DatasetStatus] = mapped_column(DatasetStatusEnum, default=DatasetStatus.draft, index=True)
     distribution: Mapped[dict] = mapped_column(MutableDict.as_mutable(JSON))
-    metadata_: Mapped[Optional[dict]] = mapped_column("metadata", JSON, nullable=True)
+    metadata_: Mapped[dict | None] = mapped_column("metadata", JSON, nullable=True)
     workspace_id: Mapped[UUID] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
     inserted_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(default=inserted_at_current_value, onupdate=datetime.utcnow)
@@ -438,38 +439,38 @@ class Dataset(DatabaseModel):
     )
 
     workspace: Mapped["Workspace"] = relationship(back_populates="datasets")
-    fields: Mapped[List["Field"]] = relationship(
+    fields: Mapped[list["Field"]] = relationship(
         back_populates="dataset",
         cascade="all, delete-orphan",
         passive_deletes=True,
         order_by=Field.inserted_at.asc(),
     )
-    questions: Mapped[List["Question"]] = relationship(
+    questions: Mapped[list["Question"]] = relationship(
         back_populates="dataset",
         cascade="all, delete-orphan",
         passive_deletes=True,
         order_by=Question.inserted_at.asc(),
     )
-    records: Mapped[List["Record"]] = relationship(
+    records: Mapped[list["Record"]] = relationship(
         back_populates="dataset",
         cascade="all, delete-orphan",
         passive_deletes=True,
         order_by=Record.inserted_at.asc(),
     )
-    metadata_properties: Mapped[List["MetadataProperty"]] = relationship(
+    metadata_properties: Mapped[list["MetadataProperty"]] = relationship(
         back_populates="dataset",
         cascade="all, delete-orphan",
         passive_deletes=True,
         order_by=MetadataProperty.inserted_at.asc(),
     )
-    vectors_settings: Mapped[List["VectorSettings"]] = relationship(
+    vectors_settings: Mapped[list["VectorSettings"]] = relationship(
         back_populates="dataset",
         cascade="all, delete-orphan",
         passive_deletes=True,
         order_by=VectorSettings.inserted_at.asc(),
     )
 
-    users: Mapped[List["User"]] = relationship(
+    users: Mapped[list["User"]] = relationship(
         secondary="datasets_users",
         back_populates="datasets",
         passive_deletes=True,
@@ -500,12 +501,12 @@ class Dataset(DatabaseModel):
             if metadata_property.name == name:
                 return metadata_property
 
-    def question_by_id(self, question_id: UUID) -> Union[Question, None]:
+    def question_by_id(self, question_id: UUID) -> Question | None:
         for question in self.questions:
             if question.id == question_id:
                 return question
 
-    def question_by_name(self, name: str) -> Union[Question, None]:
+    def question_by_name(self, name: str) -> Question | None:
         for question in self.questions:
             if question.name == name:
                 return question
@@ -548,11 +549,11 @@ class Workspace(DatabaseModel):
 
     name: Mapped[str] = mapped_column(unique=True, index=True)
 
-    datasets: Mapped[List["Dataset"]] = relationship(back_populates="workspace", order_by=Dataset.inserted_at.asc())
-    users: Mapped[List["User"]] = relationship(
+    datasets: Mapped[list["Dataset"]] = relationship(back_populates="workspace", order_by=Dataset.inserted_at.asc())
+    users: Mapped[list["User"]] = relationship(
         secondary="workspaces_users", back_populates="workspaces", order_by=WorkspaceUser.inserted_at.asc()
     )
-    documents: Mapped[List["Document"]] = relationship(
+    documents: Mapped[list["Document"]] = relationship(
         back_populates="workspace",
         cascade="all, delete-orphan",
         passive_deletes=True,
@@ -576,23 +577,23 @@ class User(DatabaseModel):
     __tablename__ = "users"
 
     first_name: Mapped[str]
-    last_name: Mapped[Optional[str]]
+    last_name: Mapped[str | None]
     username: Mapped[str] = mapped_column(unique=True, index=True)
     role: Mapped[UserRole] = mapped_column(UserRoleEnum, default=UserRole.annotator, index=True)
     api_key: Mapped[str] = mapped_column(Text, unique=True, index=True, default=generate_user_api_key)
     password_hash: Mapped[str] = mapped_column(Text)
 
-    workspaces: Mapped[List["Workspace"]] = relationship(
+    workspaces: Mapped[list["Workspace"]] = relationship(
         secondary="workspaces_users", back_populates="users", order_by=WorkspaceUser.inserted_at.asc()
     )
-    responses: Mapped[List["Response"]] = relationship(
+    responses: Mapped[list["Response"]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
         passive_deletes=True,
         order_by=Response.inserted_at.asc(),
     )
 
-    datasets: Mapped[List["Dataset"]] = relationship(
+    datasets: Mapped[list["Dataset"]] = relationship(
         secondary="datasets_users",
         back_populates="users",
         order_by=DatasetUser.inserted_at.asc(),
@@ -643,7 +644,7 @@ class Document(DatabaseModel):
     pmid: Mapped[str] = mapped_column(String, index=True, nullable=True)
     doi: Mapped[str] = mapped_column(String, index=True, nullable=True)
     workspace_id: Mapped[UUID] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
-    metadata_: Mapped[Optional[dict]] = mapped_column("metadata", MutableDict.as_mutable(JSON()), nullable=True)
+    metadata_: Mapped[dict | None] = mapped_column("metadata", MutableDict.as_mutable(JSON()), nullable=True)
 
     workspace: Mapped["Workspace"] = relationship("Workspace", back_populates="documents")
 
@@ -664,9 +665,9 @@ class Webhook(DatabaseModel):
 
     url: Mapped[str] = mapped_column(Text)
     secret: Mapped[str] = mapped_column(Text, default=generate_webhook_secret)
-    events: Mapped[List[str]] = mapped_column(JSON)
+    events: Mapped[list[str]] = mapped_column(JSON)
     enabled: Mapped[bool] = mapped_column(default=True, server_default=sql.true())
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     def __repr__(self):
         return (
@@ -683,7 +684,7 @@ class ImportHistory(DatabaseModel):
     user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
     filename: Mapped[str] = mapped_column(String, nullable=False)
     data: Mapped[dict] = mapped_column(MutableDict.as_mutable(JSON()), nullable=False)
-    metadata_: Mapped[Optional[dict]] = mapped_column("metadata", MutableDict.as_mutable(JSON()), nullable=True)
+    metadata_: Mapped[dict | None] = mapped_column("metadata", MutableDict.as_mutable(JSON()), nullable=True)
 
     workspace: Mapped["Workspace"] = relationship("Workspace")
     user: Mapped["User"] = relationship("User")
