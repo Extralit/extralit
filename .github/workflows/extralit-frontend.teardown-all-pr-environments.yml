@@ -9,7 +9,7 @@ jobs:
   teardown_pr_environments:
     name: Teardown Cloud Run PR environments
     runs-on: ubuntu-latest
-    
+
     # Grant permissions to `GITHUB_TOKEN` for Google Cloud Workload Identity Provider
     permissions:
       contents: read

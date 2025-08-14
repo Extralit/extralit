@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from extralit._models import ResourceModel
-
 import re
-from pydantic import field_validator, ConfigDict
+
+from pydantic import ConfigDict, field_validator
+
+from extralit._models import ResourceModel
 
 __all__ = ["WorkspaceModel"]
 

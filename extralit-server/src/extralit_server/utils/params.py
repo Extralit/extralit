@@ -1,29 +1,29 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import re
 from collections import defaultdict
-from typing import Any, Callable, Dict, List, Optional, Type, TypeVar, Union
+from collections.abc import Callable
+from typing import Any, Optional, TypeVar
 from uuid import UUID
 
 from fastapi import HTTPException, Query
-
 from pydantic import BaseModel
 
 
 # TODO: remove this function at some point
-def parse_uuids(uuids_str: str) -> List[UUID]:
+def parse_uuids(uuids_str: str) -> list[UUID]:
     try:
         return [UUID(uuid_str) for uuid_str in uuids_str.split(",")]
     except ValueError:
@@ -38,12 +38,12 @@ PARAM_REGEX = re.compile(r"^(?:(?:[^,:]+(?:,[^,:]+)*)|(?:[^,:]+:[^,:]+(?:,[^,:]+
 
 def parse_query_param(
     name: str,
-    max_keys: Optional[int] = None,
-    max_values_per_key: Optional[int] = None,
-    model: Optional[Type[T]] = None,
+    max_keys: int | None = None,
+    max_values_per_key: int | None = None,
+    model: type[T] | None = None,
     group_keys_without_values: bool = True,
     **kwargs: Any,
-) -> Callable[[Optional[List[str]]], Union[Dict[str, Any], T, None]]:
+) -> Callable[[list[str] | None], dict[str, Any] | T | None]:
     """Generates a function that can be used as a FastAPI dependency (`fastapi.Depends`) and that parses the values of
     a query parameter with the following format:
 
@@ -105,18 +105,18 @@ def parse_query_param(
     if max_keys is not None and max_keys == 1:
         query_param_typing = Optional[str]
     else:
-        query_param_typing = Optional[List[str]]
+        query_param_typing = Optional[list[str]]
 
     def _parse(
-        param_values: Optional[query_param_typing] = Query(None, alias=name, **kwargs),
-    ) -> Union[Dict[str, Any], T, None]:
+        param_values: query_param_typing | None = Query(None, alias=name, **kwargs),
+    ) -> dict[str, Any] | T | None:
         if param_values is None:
             return None
 
         if isinstance(param_values, str):
             param_values = [param_values]
 
-        parsed_params: Dict[str, Any] = defaultdict(list)
+        parsed_params: dict[str, Any] = defaultdict(list)
         for value in param_values:
             if not PARAM_REGEX.match(value):
                 raise HTTPException(

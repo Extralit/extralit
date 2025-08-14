@@ -20,12 +20,12 @@ from pydantic import BaseModel, ConfigDict
 
 from extralit import Dataset, Record, UserResponse, Workspace
 from extralit._exceptions import ExtralitAPIError
-from extralit._models import RecordModel, UserResponseModel, WorkspaceModel, EventType
+from extralit._models import EventType, RecordModel, UserResponseModel, WorkspaceModel
 
 if TYPE_CHECKING:
     from extralit import Extralit
 
-__all__ = ["RecordEvent", "DatasetEvent", "UserResponseEvent", "WebhookEvent"]
+__all__ = ["DatasetEvent", "RecordEvent", "UserResponseEvent", "WebhookEvent"]
 
 
 class RecordEvent(BaseModel):
@@ -147,8 +147,8 @@ class WebhookEvent(BaseModel):
         except ExtralitAPIError:
             # TODO: Show notification
             pass
-        finally:
-            return dataset
+
+        return dataset
 
     @classmethod
     def _parse_record_from_webhook_data(cls, data: dict, client: "Extralit") -> Record:
@@ -160,8 +160,8 @@ class WebhookEvent(BaseModel):
         except ExtralitAPIError:
             # TODO: Show notification
             pass
-        finally:
-            return record
+
+        return record
 
     @classmethod
     def _parse_response_from_webhook_data(cls, data: dict, client: "Extralit") -> UserResponse:

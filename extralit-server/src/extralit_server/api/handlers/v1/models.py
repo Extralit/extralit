@@ -20,10 +20,10 @@ from fastapi import APIRouter, Depends
 from starlette.requests import Request
 from starlette.responses import StreamingResponse
 
+from extralit_server.errors import BadRequestError, UnauthorizedError
 from extralit_server.models import User
 from extralit_server.security import auth
 from extralit_server.settings import settings
-from extralit_server.errors import UnauthorizedError, BadRequestError
 
 _LOGGER = logging.getLogger(__name__)
 

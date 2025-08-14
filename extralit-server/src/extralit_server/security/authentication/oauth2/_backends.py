@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import os
-from typing import Type, Dict, Any, Optional, List
+from typing import Any
 
 from social_core.backends.oauth import BaseOAuth2
 from social_core.backends.open_id_connect import OpenIdConnectAuth
@@ -25,7 +25,7 @@ from extralit_server.models import UserRole
 
 
 class Strategy(BaseStrategy):
-    def request_data(self, merge=True) -> Dict[str, Any]:
+    def request_data(self, merge=True) -> dict[str, Any]:
         return {}
 
     def absolute_uri(self, path=None) -> str:
@@ -68,7 +68,7 @@ class KeycloakOpenId(OpenIdConnectAuth):
 
         return value
 
-    def get_user_details(self, response: Dict[str, Any]) -> Dict[str, Any]:
+    def get_user_details(self, response: dict[str, Any]) -> dict[str, Any]:
         user = super().get_user_details(response)
 
         if role := self._extract_role(response):
@@ -79,7 +79,7 @@ class KeycloakOpenId(OpenIdConnectAuth):
 
         return user
 
-    def _extract_role(self, response: Dict[str, Any]) -> Optional[str]:
+    def _extract_role(self, response: dict[str, Any]) -> str | None:
         roles = self._read_realm_roles(response)
         role_to_value = {UserRole.owner: 3, UserRole.admin: 2, UserRole.annotator: 1}
         role_list = [role.split(":")[1] for role in roles if role.startswith("argilla_role:")]
@@ -87,7 +87,7 @@ class KeycloakOpenId(OpenIdConnectAuth):
             max_role = max(role_list, key=lambda s: role_to_value.get(s, 0))
             return max_role
 
-    def _extract_available_workspaces(self, response: Dict[str, Any]) -> List[str]:
+    def _extract_available_workspaces(self, response: dict[str, Any]) -> list[str]:
         roles = self._read_realm_roles(response)
 
         workspaces = []
@@ -99,7 +99,7 @@ class KeycloakOpenId(OpenIdConnectAuth):
         return workspaces
 
     @classmethod
-    def _read_realm_roles(cls, response) -> List[str]:
+    def _read_realm_roles(cls, response) -> list[str]:
         realm_access = response.get("realm_access") or {}
         return realm_access.get("roles") or []
 
@@ -107,7 +107,7 @@ class KeycloakOpenId(OpenIdConnectAuth):
 _SUPPORTED_BACKENDS = {}
 
 
-def load_supported_backends(extra_backends: list = None) -> Dict[str, Type[BaseOAuth2]]:
+def load_supported_backends(extra_backends: list | None = None) -> dict[str, type[BaseOAuth2]]:
     global _SUPPORTED_BACKENDS
 
     backends = [
@@ -132,7 +132,7 @@ def load_supported_backends(extra_backends: list = None) -> Dict[str, Type[BaseO
     return _SUPPORTED_BACKENDS
 
 
-def get_supported_backend_by_name(name: str) -> Type[BaseOAuth2]:
+def get_supported_backend_by_name(name: str) -> type[BaseOAuth2]:
     """Get a registered oauth provider by name. Raise a ValueError if provided not found."""
     global _SUPPORTED_BACKENDS
 

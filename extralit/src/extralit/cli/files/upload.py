@@ -19,8 +19,8 @@ import typer
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
-from extralit.client import Extralit
 from extralit.cli.rich import get_themed_panel
+from extralit.client import Extralit
 
 
 def upload_file(
@@ -87,7 +87,7 @@ def upload_file(
 
     except Exception as e:
         panel = get_themed_panel(
-            f"Error uploading file: {str(e)}",
+            f"Error uploading file: {e!s}",
             title="Error",
             title_align="left",
             success=False,

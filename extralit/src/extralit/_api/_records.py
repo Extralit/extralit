@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List, Dict, Tuple, Union, Optional
+import builtins
+from typing import Optional, Union
 from uuid import UUID
 
 import httpx
@@ -20,7 +21,7 @@ from typing_extensions import deprecated
 
 from extralit._api._base import ResourceAPI
 from extralit._exceptions import api_error_handler
-from extralit._models import RecordModel, UserResponseModel, SearchQueryModel
+from extralit._models import RecordModel, SearchQueryModel, UserResponseModel
 
 __all__ = ["RecordsAPI"]
 
@@ -71,8 +72,8 @@ class RecordsAPI(ResourceAPI[RecordModel]):
         limit: int = 100,
         with_suggestions: bool = True,
         with_responses: bool = True,
-        with_vectors: Optional[Union[List, bool]] = None,
-    ) -> List[RecordModel]:
+        with_vectors: Optional[Union[list, bool]] = None,
+    ) -> list[RecordModel]:
         """List records in a dataset
         Args:
             dataset_id: The ID of the dataset
@@ -111,8 +112,8 @@ class RecordsAPI(ResourceAPI[RecordModel]):
         limit: int = 100,
         with_suggestions: bool = True,
         with_responses: bool = True,
-        with_vectors: Optional[Union[List, bool]] = None,
-    ) -> Tuple[List[Tuple[RecordModel, float]], int]:
+        with_vectors: Optional[Union[builtins.list, bool]] = None,
+    ) -> tuple[builtins.list[tuple[RecordModel, float]], int]:
         include = []
         if with_suggestions:
             include.append("suggestions")
@@ -139,7 +140,7 @@ class RecordsAPI(ResourceAPI[RecordModel]):
 
     @api_error_handler
     @deprecated("Use `bulk_create` or `bulk_upsert` instead")
-    def create_many(self, dataset_id: UUID, records: List[RecordModel]) -> None:
+    def create_many(self, dataset_id: UUID, records: builtins.list[RecordModel]) -> None:
         record_dicts = [record.model_dump() for record in records]
         response = self.http_client.post(
             url=f"/api/v1/datasets/{dataset_id}/records",
@@ -151,7 +152,7 @@ class RecordsAPI(ResourceAPI[RecordModel]):
 
     @api_error_handler
     @deprecated("Use `bulk_create` or `bulk_upsert` instead")
-    def update_many(self, dataset_id: UUID, records: List[RecordModel]) -> None:
+    def update_many(self, dataset_id: UUID, records: builtins.list[RecordModel]) -> None:
         record_dicts = [record.model_dump() for record in records]
         response = self.http_client.patch(
             url=f"/api/v1/datasets/{dataset_id}/records",
@@ -161,7 +162,7 @@ class RecordsAPI(ResourceAPI[RecordModel]):
         self._log_message(message=f"Updated {len(records)} records in dataset {dataset_id}")
 
     @api_error_handler
-    def delete_many(self, dataset_id: UUID, records: List[RecordModel]) -> None:
+    def delete_many(self, dataset_id: UUID, records: builtins.list[RecordModel]) -> None:
         record_ids = [str(record.id) for record in records]
         record_ids_str = ",".join(record_ids)
         response = self.http_client.delete(url=f"/api/v1/datasets/{dataset_id}/records", params={"ids": record_ids_str})
@@ -170,8 +171,8 @@ class RecordsAPI(ResourceAPI[RecordModel]):
 
     @api_error_handler
     def bulk_create(
-        self, dataset_id: UUID, records: List[RecordModel]
-    ) -> Union[List[RecordModel], Tuple[List[RecordModel], int]]:
+        self, dataset_id: UUID, records: builtins.list[RecordModel]
+    ) -> Union[builtins.list[RecordModel], tuple[builtins.list[RecordModel], int]]:
         if len(records) > self.MAX_RECORDS_PER_CREATE_BULK:
             raise ValueError(f"Cannot create more than {self.MAX_RECORDS_PER_CREATE_BULK} records at once")
         record_dicts = [record.model_dump() for record in records]
@@ -185,7 +186,9 @@ class RecordsAPI(ResourceAPI[RecordModel]):
         return self._model_from_jsons(response_jsons=response_json["items"])
 
     @api_error_handler
-    def bulk_upsert(self, dataset_id: UUID, records: List[RecordModel]) -> Tuple[List[RecordModel], int]:
+    def bulk_upsert(
+        self, dataset_id: UUID, records: builtins.list[RecordModel]
+    ) -> tuple[builtins.list[RecordModel], int]:
         if len(records) > self.MAX_RECORDS_PER_UPSERT_BULK:
             raise ValueError(f"Cannot upsert more than {self.MAX_RECORDS_PER_UPSERT_BULK} records at once")
         record_dicts = [record.model_dump() for record in records]
@@ -224,17 +227,17 @@ class RecordsAPI(ResourceAPI[RecordModel]):
     # Private methods #
     ####################
 
-    def _model_from_json(self, response_json: Dict) -> RecordModel:
+    def _model_from_json(self, response_json: dict) -> RecordModel:
         if "vectors" in response_json:
             response_json["vectors"] = [
                 {"name": key, "vector_values": value} for key, value in response_json["vectors"].items()
             ]
         return RecordModel(**response_json)
 
-    def _model_from_jsons(self, response_jsons: List[Dict]) -> List[RecordModel]:
+    def _model_from_jsons(self, response_jsons: builtins.list[dict]) -> builtins.list[RecordModel]:
         return list(map(self._model_from_json, response_jsons))
 
-    def _represent_vectors_to_include(self, with_vectors: Union[List, str, bool]) -> Union[str, None]:
+    def _represent_vectors_to_include(self, with_vectors: Union[builtins.list, str, bool]) -> Union[str, None]:
         """Represent the vectors to include in the API request"""
         vector_stub = "vectors"
         if with_vectors is True:

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List, Dict
+import builtins
 from uuid import UUID
 
 import httpx
@@ -68,7 +68,7 @@ class FieldsAPI(ResourceAPI[FieldModel]):
     ####################
 
     @api_error_handler
-    def list(self, dataset_id: UUID) -> List[FieldModel]:
+    def list(self, dataset_id: UUID) -> list[FieldModel]:
         response = self.http_client.get(f"/api/v1/datasets/{dataset_id}/fields")
         response.raise_for_status()
         response_json = response.json()
@@ -79,8 +79,8 @@ class FieldsAPI(ResourceAPI[FieldModel]):
     # Private methods #
     ####################
 
-    def _model_from_json(self, response_json: Dict) -> FieldModel:
+    def _model_from_json(self, response_json: dict) -> FieldModel:
         return FieldModel(**response_json)
 
-    def _model_from_jsons(self, response_jsons: List[Dict]) -> List[FieldModel]:
+    def _model_from_jsons(self, response_jsons: builtins.list[dict]) -> builtins.list[FieldModel]:
         return list(map(self._model_from_json, response_jsons))

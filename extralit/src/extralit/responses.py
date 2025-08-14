@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import warnings
+from collections.abc import Iterable
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
 from uuid import UUID
 
 from extralit._exceptions._responses import RecordResponsesError
@@ -25,7 +26,7 @@ from extralit.settings import RankingQuestion
 if TYPE_CHECKING:
     from extralit import Extralit, Record
 
-__all__ = ["Response", "UserResponse", "ResponseStatus"]
+__all__ = ["Response", "ResponseStatus", "UserResponse"]
 
 
 class ResponseStatus(str, Enum):
@@ -127,13 +128,13 @@ class UserResponse(Resource):
 
     """
 
-    responses: List[Response]
+    responses: list[Response]
 
     _model: UserResponseModel
 
     def __init__(
         self,
-        responses: List[Response],
+        responses: list[Response],
         client: Optional["Extralit"] = None,
         _record: Optional["Record"] = None,
     ) -> None:
@@ -175,7 +176,7 @@ class UserResponse(Resource):
         self._model.user_id = user_id
 
     @property
-    def responses(self) -> List[Response]:
+    def responses(self) -> list[Response]:
         """Returns the list of responses"""
         return self.__model_as_responses_list(self._model, record=self._record)
 
@@ -226,37 +227,40 @@ class UserResponse(Resource):
 
         return UserResponseModel(values=values, status=self._model.status, user_id=self._model.user_id)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Returns the UserResponse as a dictionary"""
         return self._model.model_dump()
 
     @staticmethod
-    def _compute_status_from_responses(responses: List[Response]) -> ResponseStatus:
+    def _compute_status_from_responses(responses: list[Response]) -> ResponseStatus:
         """Computes the status of the UserResponse from the responses"""
-        statuses = set([answer.status for answer in responses if answer.status is not None])
+        statuses = {answer.status for answer in responses if answer.status is not None}
         if len(statuses) > 1:
-            warnings.warn(f"Multiple status found in user responses. Using {ResponseStatus.draft.value!r} as default.")
+            warnings.warn(
+                f"Multiple status found in user responses. Using {ResponseStatus.draft.value!r} as default.",
+                stacklevel=2,
+            )
         elif len(statuses) == 1:
             return ResponseStatusModel(next(iter(statuses)))
         return ResponseStatusModel.draft
 
     @staticmethod
-    def _compute_user_id_from_responses(responses: List[Response]) -> Optional[UUID]:
+    def _compute_user_id_from_responses(responses: list[Response]) -> Optional[UUID]:
         if len(responses) == 0:
             return None
 
-        user_ids = set([answer.user_id for answer in responses])
+        user_ids = {answer.user_id for answer in responses}
         if len(user_ids) > 1:
             raise ValueError("Multiple user_ids found in user responses.")
         return next(iter(user_ids))
 
     @staticmethod
-    def __responses_as_model_values(responses: List[Response]) -> Dict[str, Dict[str, Any]]:
+    def __responses_as_model_values(responses: list[Response]) -> dict[str, dict[str, Any]]:
         """Creates a dictionary of response values from a list of Responses"""
         return {answer.question_name: {"value": answer.value} for answer in responses if answer.value is not None}
 
     @classmethod
-    def __model_as_responses_list(cls, model: UserResponseModel, record: "Record") -> List[Response]:
+    def __model_as_responses_list(cls, model: UserResponseModel, record: "Record") -> list[Response]:
         """Creates a list of Responses from a UserResponseModel without changing the format of the values"""
 
         return [
@@ -271,11 +275,11 @@ class UserResponse(Resource):
         ]
 
     @classmethod
-    def __ranking_from_model_value(cls, value: List[Dict[str, Any]]) -> List[str]:
+    def __ranking_from_model_value(cls, value: list[dict[str, Any]]) -> list[str]:
         return [v["value"] for v in value]
 
     @classmethod
-    def __ranking_to_model_value(cls, value: List[str]) -> List[Dict[str, str]]:
+    def __ranking_to_model_value(cls, value: list[str]) -> list[dict[str, str]]:
         values = []
         for v in value or []:
             if isinstance(v, dict):

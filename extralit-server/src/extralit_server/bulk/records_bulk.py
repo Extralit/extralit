@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from collections.abc import Sequence
 from datetime import datetime
-from typing import Dict, List, Sequence, Tuple, Union
 from uuid import UUID
 
 from fastapi.encoders import jsonable_encoder
@@ -30,9 +30,6 @@ from extralit_server.api.schemas.v1.records_bulk import (
 )
 from extralit_server.api.schemas.v1.responses import UserResponseCreate
 from extralit_server.api.schemas.v1.suggestions import SuggestionCreate
-from extralit_server.models.database import DatasetUser
-from extralit_server.webhooks.v1.enums import RecordEvent
-from extralit_server.webhooks.v1.records import notify_record_event as notify_record_event_v1
 from extralit_server.contexts import distribution
 from extralit_server.contexts.records import (
     fetch_records_by_external_ids_as_dict,
@@ -80,10 +77,10 @@ class CreateRecordsBulk:
 
         return RecordsBulk(items=records)
 
-    async def _upsert_records_relationships(self, records: List[Record], records_create: List[RecordCreate]) -> None:
-        records_and_suggestions = list(zip(records, [r.suggestions for r in records_create]))
-        records_and_responses = list(zip(records, [r.responses for r in records_create]))
-        records_and_vectors = list(zip(records, [r.vectors for r in records_create]))
+    async def _upsert_records_relationships(self, records: list[Record], records_create: list[RecordCreate]) -> None:
+        records_and_suggestions = list(zip(records, [r.suggestions for r in records_create], strict=False))
+        records_and_responses = list(zip(records, [r.responses for r in records_create], strict=False))
+        records_and_vectors = list(zip(records, [r.vectors for r in records_create], strict=False))
         # The asyncio.gather version is replaced by the following three await calls to avoid the following error:
         # https://github.com/sqlalchemy/sqlalchemy/discussions/9312
 
@@ -92,10 +89,10 @@ class CreateRecordsBulk:
         await self._upsert_records_responses(records_and_responses)
 
     async def _upsert_records_suggestions(
-        self, records_and_suggestions: List[Tuple[Record, List[SuggestionCreate]]]
-    ) -> List[Suggestion]:
+        self, records_and_suggestions: list[tuple[Record, list[SuggestionCreate]]]
+    ) -> list[Suggestion]:
         upsert_many_suggestions = []
-        for idx, (record, suggestions) in enumerate(records_and_suggestions):
+        for _idx, (record, suggestions) in enumerate(records_and_suggestions):
             for suggestion_create in suggestions or []:
                 upsert_many_suggestions.append(dict(**suggestion_create.model_dump(), record_id=record.id))
 
@@ -110,11 +107,11 @@ class CreateRecordsBulk:
         )
 
     async def _upsert_records_responses(
-        self, records_and_responses: List[Tuple[Record, List[UserResponseCreate]]]
-    ) -> List[Response]:
+        self, records_and_responses: list[tuple[Record, list[UserResponseCreate]]]
+    ) -> list[Response]:
         upsert_many_responses = []
         datasets_users = set()
-        for idx, (record, responses) in enumerate(records_and_responses):
+        for _idx, (record, responses) in enumerate(records_and_responses):
             for response_create in responses or []:
                 upsert_many_responses.append(dict(**response_create.model_dump(), record_id=record.id))
                 datasets_users.add((response_create.user_id, record.dataset_id))
@@ -137,15 +134,15 @@ class CreateRecordsBulk:
         )
 
     async def _upsert_records_vectors(
-        self, records_and_vectors: List[Tuple[Record, Dict[str, List[float]]]]
-    ) -> List[Vector]:
+        self, records_and_vectors: list[tuple[Record, dict[str, list[float]]]]
+    ) -> list[Vector]:
         upsert_many_vectors = []
-        for idx, (record, vectors) in enumerate(records_and_vectors):
+        for _idx, (record, vectors) in enumerate(records_and_vectors):
             dataset = record.dataset
 
             for name, value in (vectors or {}).items():
                 settings = dataset.vector_settings_by_name(name)
-                upsert_many_vectors.append(dict(value=value, record_id=record.id, vector_settings_id=settings.id))
+                upsert_many_vectors.append({"value": value, "record_id": record.id, "vector_settings_id": settings.id})
 
         if not upsert_many_vectors:
             return []
@@ -215,8 +212,8 @@ class UpsertRecordsBulk(CreateRecordsBulk):
     async def _fetch_existing_dataset_records(
         self,
         dataset: Dataset,
-        records_upsert: List[RecordUpsert],
-    ) -> Dict[Union[str, UUID], Record]:
+        records_upsert: list[RecordUpsert],
+    ) -> dict[str | UUID, Record]:
         records_by_external_id = await fetch_records_by_external_ids_as_dict(
             self._db, dataset, [r.external_id for r in records_upsert]
         )
@@ -226,7 +223,7 @@ class UpsertRecordsBulk(CreateRecordsBulk):
 
         return {**records_by_external_id, **records_by_id}
 
-    async def _notify_upsert_record_events(self, records: List[Record]) -> None:
+    async def _notify_upsert_record_events(self, records: list[Record]) -> None:
         for record in records:
             if record.inserted_at == record.updated_at:
                 await notify_record_event_v1(self._db, RecordEvent.created, record)

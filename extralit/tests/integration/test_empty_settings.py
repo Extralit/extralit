@@ -17,7 +17,7 @@ from string import ascii_lowercase
 
 import pytest
 
-from extralit import Extralit, Dataset, Settings, Workspace, TextQuestion, TextField
+from extralit import Dataset, Extralit, Settings, TextField, TextQuestion, Workspace
 from extralit._exceptions import SettingsError
 
 

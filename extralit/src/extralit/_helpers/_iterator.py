@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Generic, List, TypeVar
+from typing import Generic, TypeVar
 
 __all__ = ["GenericIterator"]
 
@@ -22,8 +22,8 @@ Item = TypeVar("Item")
 class GenericIterator(Generic[Item]):
     """Generic iterator for any collection of items."""
 
-    def __init__(self, collection: List[Item]):
-        self._collection = [v for v in collection]
+    def __init__(self, collection: list[Item]):
+        self._collection = list(collection)
         self._index = 0
 
     def __iter__(self):

@@ -1,23 +1,23 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import json
 import os
 import random
 import re
 import string
-from typing import Dict, Any, ClassVar, Type, Optional, List, Tuple
+from typing import Any, ClassVar
 from urllib.parse import urljoin
 
 import httpx
@@ -43,11 +43,11 @@ class OAuth2ClientProvider:
 
     def __init__(
         self,
-        backend_class: Type[BaseOAuth2],
-        client_id: str = None,
-        client_secret: str = None,
-        scope: Optional[List[str]] = None,
-        redirect_uri: str = None,
+        backend_class: type[BaseOAuth2],
+        client_id: str | None = None,
+        client_secret: str | None = None,
+        scope: list[str] | None = None,
+        redirect_uri: str | None = None,
         sync_user: bool = False,
     ) -> None:
         self.name = backend_class.name
@@ -78,7 +78,7 @@ class OAuth2ClientProvider:
         self.sync_user = sync_user
 
     @classmethod
-    def from_dict(cls, provider: dict, backend_class: Type[BaseOAuth2]) -> "OAuth2ClientProvider":
+    def from_dict(cls, provider: dict, backend_class: type[BaseOAuth2]) -> "OAuth2ClientProvider":
         return cls(backend_class=backend_class, **provider)
 
     def new_oauth_client(self) -> WebApplicationClient:
@@ -88,7 +88,7 @@ class OAuth2ClientProvider:
         url = urljoin(str(request.base_url), self.redirect_uri)
         return self._align_url_to_allow_http_redirect(url)
 
-    def authorization_url(self, request: Request) -> Tuple[str, Optional[str]]:
+    def authorization_url(self, request: Request) -> tuple[str, str | None]:
         redirect_uri = self.get_redirect_uri(request)
         state = "".join([random.choice(string.ascii_letters) for _ in range(32)])
 
@@ -113,7 +113,7 @@ class OAuth2ClientProvider:
 
         return response
 
-    def standardize(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    def standardize(self, data: dict[str, Any]) -> dict[str, Any]:
         data = self._backend.get_user_details(data)
 
         data["provider"] = self.name
@@ -127,7 +127,7 @@ class OAuth2ClientProvider:
         redirect_uri = self.get_redirect_uri(request)
         authorization_response = self._align_url_to_allow_http_redirect(str(request.url))
 
-        oauth2_query_params = dict(redirect_url=redirect_uri)
+        oauth2_query_params = {"redirect_url": redirect_uri}
         oauth2_query_params.update(request.query_params)
 
         return await self._fetch_user_data(authorization_response=authorization_response, **oauth2_query_params)
@@ -143,7 +143,7 @@ class OAuth2ClientProvider:
         if request.query_params.get("state") != state:
             raise ValueError("'state' parameter does not match")
 
-    def _get_state(self, request) -> Optional[str]:
+    def _get_state(self, request) -> str | None:
         return request.cookies.get(self._get_state_cookie_name())
 
     @staticmethod
@@ -193,7 +193,7 @@ class OAuth2ClientProvider:
             except AuthException as e:
                 raise future.AuthenticationError(str(e))
 
-    def _environment_variable_for_property(self, property_name: str, default: str = None) -> str:
+    def _environment_variable_for_property(self, property_name: str, default: str | None = None) -> str:
         env_var_name = f"OAUTH2_{self.name.upper()}_{property_name.upper()}"
 
         return os.getenv(env_var_name, default)

@@ -16,10 +16,9 @@ import asyncio
 import typer
 
 from extralit_server.constants import DEFAULT_API_KEY, DEFAULT_PASSWORD, DEFAULT_USERNAME
-from extralit_server.contexts import accounts
+from extralit_server.contexts import accounts, files
 from extralit_server.database import AsyncSessionLocal
 from extralit_server.models import User, UserRole
-from extralit_server.contexts import files
 
 from .utils import get_or_new_workspace
 

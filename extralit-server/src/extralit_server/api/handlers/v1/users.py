@@ -1,20 +1,21 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
+from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Request, Security, status
+from fastapi import APIRouter, Depends, Security, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from extralit_server.api.policies.v1 import UserPolicy, authorize
@@ -31,7 +32,7 @@ router = APIRouter(tags=["users"])
 
 @router.get("/me", response_model=UserSchema)
 async def get_current_user(
-    current_user: User = Security(auth.get_current_user),
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     return current_user
 
@@ -39,9 +40,9 @@ async def get_current_user(
 @router.get("/users/{user_id}", response_model=UserSchema)
 async def get_user(
     *,
-    db: AsyncSession = Depends(get_async_db),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     user_id: UUID,
-    current_user: User = Security(auth.get_current_user),
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     await authorize(current_user, UserPolicy.get)
 
@@ -51,8 +52,8 @@ async def get_user(
 @router.get("/users", response_model=Users)
 async def list_users(
     *,
-    db: AsyncSession = Depends(get_async_db),
-    current_user: User = Security(auth.get_current_user),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     await authorize(current_user, UserPolicy.list)
 
@@ -64,9 +65,9 @@ async def list_users(
 @router.post("/users", status_code=status.HTTP_201_CREATED, response_model=UserSchema)
 async def create_user(
     *,
-    db: AsyncSession = Depends(get_async_db),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     user_create: UserCreate,
-    current_user: User = Security(auth.get_current_user),
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     await authorize(current_user, UserPolicy.create)
 
@@ -78,9 +79,9 @@ async def create_user(
 @router.delete("/users/{user_id}", response_model=UserSchema)
 async def delete_user(
     *,
-    db: AsyncSession = Depends(get_async_db),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     user_id: UUID,
-    current_user: User = Security(auth.get_current_user),
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     user = await User.get_or_raise(db, user_id)
 
@@ -92,10 +93,10 @@ async def delete_user(
 @router.patch("/users/{user_id}", status_code=status.HTTP_200_OK, response_model=UserSchema)
 async def update_user(
     *,
-    db: AsyncSession = Depends(get_async_db),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     user_id: UUID,
     user_update: UserUpdate,
-    current_user: User = Security(auth.get_current_user),
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     user = await User.get_or_raise(db, user_id)
 
@@ -107,9 +108,9 @@ async def update_user(
 @router.get("/users/{user_id}/workspaces", response_model=Workspaces)
 async def list_user_workspaces(
     *,
-    db: AsyncSession = Depends(get_async_db),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     user_id: UUID,
-    current_user: User = Security(auth.get_current_user),
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     await authorize(current_user, UserPolicy.list_workspaces)
 

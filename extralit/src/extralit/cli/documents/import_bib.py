@@ -34,19 +34,18 @@ The CLI workflow:
 
 import json
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Optional
 
+import lazy_loader as lazy
 import pandas as pd
 import typer
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
-import lazy_loader as lazy
 
-from extralit.workspaces._resource import Workspace
-from extralit.client import Extralit
 from extralit.cli.rich import get_themed_panel
-
+from extralit.client import Extralit
+from extralit.workspaces._resource import Workspace
 
 bibtexparser = lazy.load("bibtexparser")
 
@@ -68,7 +67,7 @@ def _parse_bibtex_to_dataframe(bibtex_file: Path, console: Console) -> pd.DataFr
         task = progress.add_task("Parsing BibTeX file to DataFrame...", total=None)
 
         try:
-            with open(bibtex_file, "r", encoding="utf-8") as bibtex_fp:
+            with open(bibtex_file, encoding="utf-8") as bibtex_fp:
                 bib_database = bibtexparser.load(bibtex_fp)
                 entries = bib_database.entries
 
@@ -98,7 +97,7 @@ def _parse_bibtex_to_dataframe(bibtex_file: Path, console: Console) -> pd.DataFr
 
         except Exception as e:
             progress.update(task, completed=True, description="Failed to parse BibTeX file")
-            raise ValueError(f"Error parsing BibTeX file: {str(e)}")
+            raise ValueError(f"Error parsing BibTeX file: {e!s}")
 
 
 def _match_pdfs_to_dataframe(df: pd.DataFrame, pdf_folder: Path, console: Console) -> pd.DataFrame:
@@ -186,7 +185,7 @@ def _match_pdfs_to_dataframe(df: pd.DataFrame, pdf_folder: Path, console: Consol
     return df_matched
 
 
-def _dataframe_to_import_history_format(df: pd.DataFrame) -> Dict:
+def _dataframe_to_import_history_format(df: pd.DataFrame) -> dict:
     """Convert DataFrame to import history data format."""
     if df.empty:
         return {"schema": {"fields": []}, "data": []}
@@ -224,7 +223,7 @@ def _dataframe_to_import_history_format(df: pd.DataFrame) -> Dict:
     return {"schema": schema, "data": data_rows}
 
 
-def _build_documents_payload(df: pd.DataFrame, workspace_obj: Workspace, collection: Optional[str]) -> Dict:
+def _build_documents_payload(df: pd.DataFrame, workspace_obj: Workspace, collection: Optional[str]) -> dict:
     """Build documents payload for import analysis request from DataFrame."""
     documents = {}
 
@@ -289,7 +288,7 @@ def _send_import_analysis_request(client: Extralit, workspace_obj: Workspace, do
 
 
 def _execute_document_bulk_import(
-    client: Extralit, analysis_result: Dict, df: pd.DataFrame, df_data: Dict, bibtex_file: Path, console: Console
+    client: Extralit, analysis_result: dict, df: pd.DataFrame, df_data: dict, bibtex_file: Path, console: Console
 ) -> None:
     """Execute bulk document import with multi-file support per reference."""
     with Progress(
@@ -300,7 +299,7 @@ def _execute_document_bulk_import(
         task = progress.add_task("Executing import...", total=None)
 
         # Filter documents to import (add/update status only)
-        documents_to_import: Dict[str, Dict] = {}
+        documents_to_import: dict[str, dict] = {}
         for ref_key, doc_info in analysis_result.get("documents", {}).items():
             status = doc_info.get("status", "")
             if status in ["add", "update"]:
@@ -318,8 +317,8 @@ def _execute_document_bulk_import(
             return
 
         # Build bulk upload payload - one entry per file (not per reference)
-        bulk_documents: List[Dict] = []
-        files_to_upload: List = []
+        bulk_documents: list[dict] = []
+        files_to_upload: list = []
 
         # Create file mapping from DataFrame
         file_map = {}
@@ -413,7 +412,7 @@ def _execute_document_bulk_import(
                 try:
                     _store_import_history(client, analysis_result, df_data, bibtex_file, console)
                 except Exception as e:
-                    console.print(f"[yellow]Warning: Could not store import history: {str(e)}[/yellow]")
+                    console.print(f"[yellow]Warning: Could not store import history: {e!s}[/yellow]")
 
                 # Calculate total files across all references
                 total_files = sum(len(doc.get("associated_files", [])) for doc in bulk_documents)
@@ -445,7 +444,7 @@ def _execute_document_bulk_import(
 
 
 def _store_import_history(
-    client: Extralit, analysis_result: Dict, df_data: Dict, bibtex_file: Path, console: Console
+    client: Extralit, analysis_result: dict, df_data: dict, bibtex_file: Path, console: Console
 ) -> None:
     """
     Store import history record with dataframe data and metadata.
@@ -539,14 +538,14 @@ def _store_import_history(
                 do_store(progress, task)
 
     except Exception as e:
-        console.print(f"[yellow]Warning: Error storing import history: {str(e)}[/yellow]")
+        console.print(f"[yellow]Warning: Error storing import history: {e!s}[/yellow]")
         raise e
 
 
 def _handle_cli_exception(console: Console, e: Exception, debug: bool = False) -> None:
     """Handle CLI exceptions with consistent error formatting."""
     panel = get_themed_panel(
-        f"Error: {str(e)}",
+        f"Error: {e!s}",
         title="Error",
         title_align="left",
         exception=e,
@@ -583,7 +582,7 @@ def _validate_workspace_and_folder(client: Extralit, workspace: str, pdf_folder:
     return workspace_obj
 
 
-def _get_user_confirmation_for_import(console: Console, analysis_result: Dict) -> bool:
+def _get_user_confirmation_for_import(console: Console, analysis_result: dict) -> bool:
     """Get user confirmation before proceeding with bulk import."""
     summary = analysis_result.get("summary", {})
     total_files = sum(len(doc.get("associated_files", [])) for doc in analysis_result.get("documents", {}).values())
@@ -676,7 +675,7 @@ def import_bib(
         _handle_cli_exception(console, e, debug)
 
 
-def _display_import_analysis_results(console: Console, analysis_result: Dict) -> None:
+def _display_import_analysis_results(console: Console, analysis_result: dict) -> None:
     """Display import analysis results in a formatted table with multi-file support."""
     documents = analysis_result.get("documents", {})
     summary = analysis_result.get("summary", {})

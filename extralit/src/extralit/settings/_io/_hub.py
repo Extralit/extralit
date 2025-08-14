@@ -12,27 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import httpx
 import warnings
 from enum import Enum
-from typing import Any, Dict, TYPE_CHECKING, Union, List, Optional
+from typing import TYPE_CHECKING, Any, Optional, Union
+
+import httpx
 
 from extralit._exceptions._hub import DatasetsServerException
 from extralit._exceptions._settings import SettingsError
 from extralit.settings._field import (
+    ChatField,
     ImageField,
     TextField,
-    ChatField,
+)
+from extralit.settings._metadata import (
+    FloatMetadataProperty,
+    IntegerMetadataProperty,
+    TermsMetadataProperty,
 )
 from extralit.settings._question import (
     LabelQuestion,
-    TextQuestion,
     RatingQuestion,
-)
-from extralit.settings._metadata import (
-    TermsMetadataProperty,
-    IntegerMetadataProperty,
-    FloatMetadataProperty,
+    TextQuestion,
 )
 
 if TYPE_CHECKING:
@@ -62,7 +63,7 @@ class AttributeType(Enum):
 def _get_dataset_features(
     repo_id: str,
     config: Optional[str] = None,
-) -> Dict[str, Dict[str, Any]]:
+) -> dict[str, dict[str, Any]]:
     """Get the features of a dataset from the datasets server using the repo_id and config.
     Extract the features from the response and return them as a dictionary.
 
@@ -94,7 +95,7 @@ def _get_dataset_features(
             return features
 
     except (httpx.RequestError, httpx.HTTPStatusError, KeyError) as e:
-        raise DatasetsServerException(f"Failed to get dataset info from the datasets server. Error: {str(e)}") from e
+        raise DatasetsServerException(f"Failed to get dataset info from the datasets server. Error: {e!s}") from e
 
 
 def _map_feature_type(feature):
@@ -105,7 +106,7 @@ def _map_feature_type(feature):
         if _is_chat_feature(sub_feature):
             return FeatureType.CHAT
     if not isinstance(feature, dict):
-        warnings.warn(f"Unsupported feature format: {feature}")
+        warnings.warn(f"Unsupported feature format: {feature}", stacklevel=2)
         return None
 
     hf_type = feature.get("_type")
@@ -125,7 +126,7 @@ def _map_feature_type(feature):
     elif hf_type == "ClassLabel":
         return FeatureType.LABEL
     else:
-        warnings.warn(f"Unsupported feature type. hf_type: {hf_type}, dtype: {dtype}")
+        warnings.warn(f"Unsupported feature type. hf_type: {hf_type}, dtype: {dtype}", stacklevel=2)
 
 
 def _map_attribute_type(attribute_type):
@@ -139,7 +140,7 @@ def _map_attribute_type(attribute_type):
     elif attribute_type is None:
         return None
     else:
-        warnings.warn(f"Unsupported attribute type: {attribute_type}")
+        warnings.warn(f"Unsupported attribute type: {attribute_type}", stacklevel=2)
         return None
 
 
@@ -158,10 +159,10 @@ def _is_chat_feature(sub_features):
 def _render_code_snippet(repo_id: str, subset: Optional[str] = None):
     """Render the code snippet to use feature_mapping to load a dataset and log its records."""
 
-    from rich.console import Console, Group
-    from rich.syntax import Syntax
-    from rich.panel import Panel
     from rich import box
+    from rich.console import Console, Group
+    from rich.panel import Panel
+    from rich.syntax import Syntax
 
     from_hub_args = [f'repo_id="{repo_id}"']
     if subset:
@@ -201,7 +202,7 @@ def _render_code_snippet(repo_id: str, subset: Optional[str] = None):
 
 
 def _define_settings_from_features(
-    features: Union[List[Dict], Dict[str, Any]], feature_mapping: Optional[Dict[str, str]]
+    features: Union[list[dict], dict[str, Any]], feature_mapping: Optional[dict[str, str]]
 ) -> "Settings":
     """Define the argilla settings from the features of a dataset.
 
@@ -243,7 +244,7 @@ def _define_settings_from_features(
         elif feature_type == FeatureType.LABEL:
             names = feature.get("names")
             if names is None:
-                warnings.warn(f"Feature '{name}' has no labels. Skipping.")
+                warnings.warn(f"Feature '{name}' has no labels. Skipping.", stacklevel=2)
                 continue
             if attribute_definition == AttributeType.QUESTION or attribute_definition is None:
                 questions.append(LabelQuestion(name=name, labels=names, required=False))
@@ -260,7 +261,9 @@ def _define_settings_from_features(
         elif feature_type == FeatureType.BOOL:
             metadata.append(TermsMetadataProperty(name=name))
         else:
-            warnings.warn(f"Feature '{name}' has an unsupported type. Skipping. Feature type: {feature_type}")
+            warnings.warn(
+                f"Feature '{name}' has an unsupported type. Skipping. Feature type: {feature_type}", stacklevel=2
+            )
 
     settings = Settings(fields=fields, questions=questions, metadata=metadata)
 
@@ -272,7 +275,7 @@ def _define_settings_from_features(
 
 def build_settings_from_repo_id(
     repo_id: str,
-    feature_mapping: Optional[Dict[str, str]] = None,
+    feature_mapping: Optional[dict[str, str]] = None,
     subset: Optional[str] = None,
 ) -> "Settings":
     """Build the argilla settings from the features of a dataset.

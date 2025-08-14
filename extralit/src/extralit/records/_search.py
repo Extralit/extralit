@@ -11,31 +11,32 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import List, Any, Union, Tuple, Iterable, TYPE_CHECKING
+from collections.abc import Iterable
+from typing import TYPE_CHECKING, Any, Union
 
 from extralit._models import SearchQueryModel
 from extralit._models._search import (
-    TextQueryModel,
-    ResponseFilterScopeModel,
-    SuggestionFilterScopeModel,
-    MetadataFilterScopeModel,
-    ScopeModel,
-    RangeFilterModel,
-    TermsFilterModel,
-    FilterModel,
     AndFilterModel,
+    FilterModel,
+    MetadataFilterScopeModel,
     QueryModel,
+    RangeFilterModel,
     RecordFilterScopeModel,
+    ResponseFilterScopeModel,
+    ScopeModel,
+    SuggestionFilterScopeModel,
+    TermsFilterModel,
+    TextQueryModel,
     VectorQueryModel,
 )
 
 if TYPE_CHECKING:
     from extralit.records import Record
 
-__all__ = ["Query", "Filter", "Condition", "Similar", "Conditions"]
+__all__ = ["Condition", "Conditions", "Filter", "Query", "Similar"]
 
 
-class Condition(Tuple[str, str, Any]):
+class Condition(tuple[str, str, Any]):
     """This class is used to map user conditions to the internal filter models"""
 
     def api_model(self) -> FilterModel:
@@ -94,7 +95,7 @@ class Condition(Tuple[str, str, Any]):
             return SuggestionFilterScopeModel(question=field)
 
 
-Conditions = Union[List[Tuple[str, str, Any]], Tuple[str, str, Any]]
+Conditions = Union[list[tuple[str, str, Any]], tuple[str, str, Any]]
 
 
 class Similar:

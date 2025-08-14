@@ -22,7 +22,7 @@ import extralit as ex
 def dataset(client: ex.Extralit, dataset_name: str):
     ws = client.workspaces.default
     settings = ex.Settings(
-        guidelines=f"The dataset guidelines",
+        guidelines="The dataset guidelines",
         fields=[ex.TextField(name="text", required=True, title="Text")],
         questions=[
             ex.LabelQuestion(name="label", title="Label", labels=["positive", "negative"]),

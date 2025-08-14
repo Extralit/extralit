@@ -38,8 +38,8 @@ import typer
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
-from extralit.client import Extralit
 from extralit.cli.rich import get_themed_panel
+from extralit.client import Extralit
 from extralit.documents import Document
 
 
@@ -145,7 +145,7 @@ def add_document(
 
     except Exception as e:
         panel = get_themed_panel(
-            f"Error adding document: {str(e)}",
+            f"Error adding document: {e!s}",
             title="Error",
             title_align="left",
             exception=e,

@@ -39,11 +39,12 @@ def _validate_media_type(media_type: str, file_type: str) -> None:
     if file_type not in SUPPORTED_MEDIA_TYPES[media_type]:
         warnings.warn(
             f"This {file_type} might not be supported. Supported types for {media_type} are {SUPPORTED_MEDIA_TYPES[media_type]}",
+            stacklevel=2,
             category=UserWarning,
         )
 
     if file_type == "ogg":
-        warnings.warn("'ogg' files might not be supported in Safari.", category=UserWarning)
+        warnings.warn("'ogg' files might not be supported in Safari.", stacklevel=2, category=UserWarning)
 
 
 def _get_file_data(

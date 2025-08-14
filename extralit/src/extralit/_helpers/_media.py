@@ -16,7 +16,7 @@ import base64
 import io
 import warnings
 from pathlib import Path
-from typing import Union, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional, Union
 
 import lazy_loader as lazy
 
@@ -41,7 +41,7 @@ def pil_to_data_uri(image_object: Optional["Image"]) -> Optional[str]:
     image_format = image_object.format
     if image_format is None:
         image_format = "PNG"
-        warnings.warn("The image format is not set. Defaulting to PNG.", UserWarning)
+        warnings.warn("The image format is not set. Defaulting to PNG.", UserWarning, stacklevel=2)
 
     try:
         buffered = io.BytesIO()

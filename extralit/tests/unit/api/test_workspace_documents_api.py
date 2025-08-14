@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+import tempfile
 from unittest.mock import MagicMock, patch
 from uuid import UUID, uuid4
-import tempfile
-import os
 
 import pytest
 

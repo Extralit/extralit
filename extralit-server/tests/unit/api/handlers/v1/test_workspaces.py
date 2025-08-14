@@ -15,10 +15,10 @@
 from uuid import uuid4
 
 import pytest
-from extralit_server.constants import API_KEY_HEADER_NAME
-from extralit_server.models import UserRole
 from httpx import AsyncClient
 
+from extralit_server.constants import API_KEY_HEADER_NAME
+from extralit_server.models import UserRole
 from tests.factories import AnnotatorFactory, DatasetFactory, UserFactory, WorkspaceFactory
 
 

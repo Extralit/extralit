@@ -14,8 +14,8 @@
 
 import typer
 
-from extralit.client import Extralit
 from extralit.cli.rich import get_themed_panel, print_rich_table
+from extralit.client import Extralit
 
 
 def list_files(
@@ -69,7 +69,7 @@ def list_files(
 
     except Exception as e:
         panel = get_themed_panel(
-            f"Error listing files: {str(e)}",
+            f"Error listing files: {e!s}",
             title="Error",
             title_align="left",
             success=False,

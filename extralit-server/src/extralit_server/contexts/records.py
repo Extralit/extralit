@@ -12,23 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from collections.abc import Iterable, Sequence
 from datetime import datetime
-from typing import Dict, Iterable, Sequence, Union, List, Tuple, Optional
 from uuid import UUID
 
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy import select, and_, or_, func, Select
+from sqlalchemy import Select, and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload, contains_eager
+from sqlalchemy.orm import contains_eager, selectinload
 
 from extralit_server.api.schemas.v1.records import RecordUpdate
 from extralit_server.api.schemas.v1.vectors import Vector as VectorSchema
-from extralit_server.models import Dataset, Record, VectorSettings, Vector, Response, ResponseStatus, Suggestion
+from extralit_server.models import Dataset, Record, Response, ResponseStatus, Suggestion, Vector, VectorSettings
 from extralit_server.search_engine import SearchEngine
 from extralit_server.validators.records import RecordUpdateValidator
 from extralit_server.webhooks.v1.enums import RecordEvent
 from extralit_server.webhooks.v1.records import (
     build_record_event as build_record_event_v1,
+)
+from extralit_server.webhooks.v1.records import (
     notify_record_event as notify_record_event_v1,
 )
 
@@ -40,10 +42,10 @@ async def list_dataset_records(
     limit: int,
     with_responses: bool = False,
     with_suggestions: bool = False,
-    with_vectors: Union[bool, List[str]] = False,
+    with_vectors: bool | list[str] = False,
     with_response_suggestions: bool = False,
-    workspace_user_ids: Optional[Iterable[UUID]] = None,
-) -> Tuple[Sequence[Record], int]:
+    workspace_user_ids: Iterable[UUID] | None = None,
+) -> tuple[Sequence[Record], int]:
     query = _build_list_records_query(
         dataset_id=dataset_id,
         offset=offset,
@@ -82,27 +84,27 @@ async def list_dataset_records_by_external_ids(
 
 async def fetch_records_by_ids_as_dict(
     db: AsyncSession, dataset: Dataset, record_ids: Sequence[UUID]
-) -> Dict[UUID, Record]:
+) -> dict[UUID, Record]:
     records_by_ids = await list_dataset_records_by_ids(db, dataset.id, record_ids)
     return {record.id: record for record in records_by_ids}
 
 
 async def fetch_records_by_external_ids_as_dict(
     db: AsyncSession, dataset: Dataset, external_ids: Sequence[str]
-) -> Dict[str, Record]:
+) -> dict[str, Record]:
     records_by_external_ids = await list_dataset_records_by_external_ids(db, dataset.id, external_ids)
     return {record.external_id: record for record in records_by_external_ids}
 
 
 def _build_list_records_query(
     dataset_id,
-    offset: Optional[int] = None,
-    limit: Optional[int] = None,
+    offset: int | None = None,
+    limit: int | None = None,
     with_responses: bool = False,
     with_suggestions: bool = False,
-    with_vectors: Union[bool, List[str]] = False,
+    with_vectors: bool | list[str] = False,
     with_response_suggestions: bool = False,
-    workspace_user_ids: Optional[Iterable[UUID]] = None,
+    workspace_user_ids: Iterable[UUID] | None = None,
 ) -> Select:
     query = select(Record).filter_by(dataset_id=dataset_id)
 
@@ -226,7 +228,7 @@ async def delete_record(db: AsyncSession, search_engine: "SearchEngine", record:
 
 
 async def delete_records(
-    db: AsyncSession, search_engine: "SearchEngine", dataset: Dataset, records_ids: List[UUID]
+    db: AsyncSession, search_engine: "SearchEngine", dataset: Dataset, records_ids: list[UUID]
 ) -> None:
     params = [Record.id.in_(records_ids), Record.dataset_id == dataset.id]
 

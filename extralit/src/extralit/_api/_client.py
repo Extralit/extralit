@@ -17,10 +17,6 @@ from typing import Optional
 
 import httpx
 
-from extralit._api._webhooks import WebhooksAPI
-from extralit._exceptions._api import UnauthorizedError
-from extralit._exceptions._client import ExtralitCredentialsError
-
 from extralit._api import HTTPClientConfig, create_http_client
 from extralit._api._datasets import DatasetsAPI
 from extralit._api._documents import DocumentsAPI
@@ -28,12 +24,15 @@ from extralit._api._fields import FieldsAPI
 from extralit._api._metadata import MetadataAPI
 from extralit._api._questions import QuestionsAPI
 from extralit._api._records import RecordsAPI
+from extralit._api._token import get_secret
 from extralit._api._users import UsersAPI
 from extralit._api._vectors import VectorsAPI
+from extralit._api._webhooks import WebhooksAPI
 from extralit._api._workspaces import WorkspacesAPI
-from extralit._exceptions import ExtralitError
 from extralit._constants import _DEFAULT_API_URL
-from extralit._api._token import get_secret
+from extralit._exceptions import ExtralitError
+from extralit._exceptions._api import UnauthorizedError
+from extralit._exceptions._client import ExtralitCredentialsError
 
 __all__ = ["APIClient"]
 

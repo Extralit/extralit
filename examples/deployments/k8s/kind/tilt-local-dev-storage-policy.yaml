@@ -21,7 +21,7 @@ spec:
   storageClassName: local-path
   persistentVolumeReclaimPolicy: Retain
   local:
-    path: "/usr/share/elasticsearch/data"  
+    path: "/usr/share/elasticsearch/data"
   nodeAffinity:
     required:
       nodeSelectorTerms:
@@ -47,12 +47,12 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   local:
     path: "/var/lib/postgresql/data"
-  nodeAffinity: 
+  nodeAffinity:
     required:
       nodeSelectorTerms:
       - matchExpressions:
         - key: kubernetes.io/hostname
-          operator: In  
+          operator: In
           values:
           - kind-control-plane
 ---

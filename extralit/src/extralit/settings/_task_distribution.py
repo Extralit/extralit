@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # from typing import Literal, Any, Dict
-from typing import Dict, Any, Literal
+from typing import Any, Literal
 
 from extralit._models._settings._task_distribution import OverlapTaskDistributionModel
 
@@ -58,7 +58,7 @@ class OverlapTaskDistribution:
         return cls(min_submitted=model.min_submitted)
 
     @classmethod
-    def from_dict(cls, dict: Dict[str, Any]) -> "OverlapTaskDistribution":
+    def from_dict(cls, dict: dict[str, Any]) -> "OverlapTaskDistribution":
         return cls.from_model(OverlapTaskDistributionModel.model_validate(dict))
 
     def to_dict(self):

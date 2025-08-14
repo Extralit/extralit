@@ -13,7 +13,8 @@
 # limitations under the License.
 
 from collections import defaultdict
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Union
+from collections.abc import Iterable
+from typing import TYPE_CHECKING, Any, Optional, Union
 from uuid import UUID
 
 from extralit._exceptions import ExtralitError
@@ -33,9 +34,9 @@ from extralit.suggestions import Suggestion
 from extralit.vectors import Vector
 
 if TYPE_CHECKING:
-    from extralit.datasets import Dataset
     from extralit import Extralit
     from extralit._api import RecordsAPI
+    from extralit.datasets import Dataset
 
 
 class Record(Resource):
@@ -59,11 +60,11 @@ class Record(Resource):
     def __init__(
         self,
         id: Optional[Union[UUID, str]] = None,
-        fields: Optional[Dict[str, FieldValue]] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-        vectors: Optional[Dict[str, VectorValue]] = None,
-        responses: Optional[List[Response]] = None,
-        suggestions: Optional[List[Suggestion]] = None,
+        fields: Optional[dict[str, FieldValue]] = None,
+        metadata: Optional[dict[str, Any]] = None,
+        vectors: Optional[dict[str, VectorValue]] = None,
+        responses: Optional[list[Response]] = None,
+        suggestions: Optional[list[Suggestion]] = None,
         _server_id: Optional[UUID] = None,
         _dataset: Optional["Dataset"] = None,
     ):
@@ -175,7 +176,7 @@ class Record(Resource):
             status=self.status,
         )
 
-    def serialize(self) -> Dict[str, Any]:
+    def serialize(self) -> dict[str, Any]:
         """Serializes the Record to a dictionary for interaction with the API"""
         serialized_model = self._model.model_dump()
         serialized_suggestions = [suggestion.serialize() for suggestion in self.__suggestions]
@@ -185,7 +186,7 @@ class Record(Resource):
 
         return serialized_model
 
-    def to_dict(self) -> Dict[str, Dict]:
+    def to_dict(self) -> dict[str, dict]:
         """Converts a Record object to a dictionary for export.
         Returns:
             A dictionary representing the record where the keys are "fields",
@@ -215,7 +216,7 @@ class Record(Resource):
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Dict], dataset: Optional["Dataset"] = None) -> "Record":
+    def from_dict(cls, data: dict[str, dict], dataset: Optional["Dataset"] = None) -> "Record":
         """Converts a dictionary to a Record object.
         Args:
             data: A dictionary representing the record.
@@ -294,7 +295,7 @@ class RecordFields(dict):
     It allows for accessing fields by attribute and key name.
     """
 
-    def __init__(self, record: Record, fields: Optional[Dict[str, FieldValue]] = None) -> None:
+    def __init__(self, record: Record, fields: Optional[dict[str, FieldValue]] = None) -> None:
         super().__init__(fields or {})
         self.record = record
 
@@ -330,13 +331,13 @@ class RecordFields(dict):
 class RecordMetadata(dict):
     """This is a container class for the metadata of a Record."""
 
-    def __init__(self, metadata: Optional[Dict[str, Any]] = None) -> None:
+    def __init__(self, metadata: Optional[dict[str, Any]] = None) -> None:
         super().__init__(metadata or {})
 
     def to_dict(self) -> dict:
         return dict(self.items())
 
-    def api_models(self) -> List[MetadataModel]:
+    def api_models(self) -> list[MetadataModel]:
         return [MetadataModel(name=key, value=value) for key, value in self.items()]
 
 
@@ -345,13 +346,13 @@ class RecordVectors(dict):
     It allows for accessing suggestions by attribute and key name.
     """
 
-    def __init__(self, vectors: Dict[str, VectorValue]) -> None:
+    def __init__(self, vectors: dict[str, VectorValue]) -> None:
         super().__init__(vectors or {})
 
-    def to_dict(self) -> Dict[str, List[float]]:
+    def to_dict(self) -> dict[str, list[float]]:
         return dict(self.items())
 
-    def api_models(self) -> List[VectorModel]:
+    def api_models(self) -> list[VectorModel]:
         return [Vector(name=name, values=value).api_model() for name, value in self.items()]
 
 
@@ -362,7 +363,7 @@ class RecordResponses(Iterable[Response]):
     in a list default dictionary with the question name as the key.
     """
 
-    def __init__(self, responses: List[Response], record: Record) -> None:
+    def __init__(self, responses: list[Response], record: Record) -> None:
         self.record = record
         self.__responses_by_question_name = defaultdict(list)
         self.__responses = []
@@ -382,7 +383,7 @@ class RecordResponses(Iterable[Response]):
     def __repr__(self) -> str:
         return {k: [{"value": v["value"]} for v in values] for k, values in self.to_dict().items()}.__repr__()
 
-    def to_dict(self) -> Dict[str, List[Dict]]:
+    def to_dict(self) -> dict[str, list[dict]]:
         """Converts the responses to a dictionary.
         Returns:
             A dictionary of responses.
@@ -392,7 +393,7 @@ class RecordResponses(Iterable[Response]):
             response_dict[response.question_name].append({"value": response.value, "user_id": str(response.user_id)})
         return dict(response_dict)
 
-    def api_models(self) -> List[UserResponseModel]:
+    def api_models(self) -> list[UserResponseModel]:
         """Returns a list of ResponseModel objects."""
 
         responses_by_user_id = defaultdict(list)
@@ -424,7 +425,7 @@ class RecordResponses(Iterable[Response]):
                     f"already found. The responses for the same question name do not support more than one user"
                 )
 
-    def from_models(self, responses: List[UserResponseModel]) -> None:
+    def from_models(self, responses: list[UserResponseModel]) -> None:
         for response_model in responses:
             for response in UserResponse.from_model(response_model, record=self.record):
                 self.add(response)
@@ -435,9 +436,9 @@ class RecordSuggestions(Iterable[Suggestion]):
     It allows for accessing suggestions by attribute and iterating over them.
     """
 
-    def __init__(self, suggestions: List[Suggestion], record: Record) -> None:
+    def __init__(self, suggestions: list[Suggestion], record: Record) -> None:
         self.record = record
-        self._suggestion_by_question_name: Dict[str, Suggestion] = {}
+        self._suggestion_by_question_name: dict[str, Suggestion] = {}
         suggestions = suggestions or []
         for suggestion in suggestions:
             suggestion.record = self.record
@@ -455,7 +456,7 @@ class RecordSuggestions(Iterable[Suggestion]):
     def __repr__(self) -> str:
         return self.to_dict().__repr__()
 
-    def to_dict(self) -> Dict[str, List[str]]:
+    def to_dict(self) -> dict[str, list[str]]:
         """Converts the suggestions to a dictionary.
         Returns:
             A dictionary of suggestions.
@@ -469,7 +470,7 @@ class RecordSuggestions(Iterable[Suggestion]):
             }
         return suggestion_dict
 
-    def api_models(self) -> List[SuggestionModel]:
+    def api_models(self) -> list[SuggestionModel]:
         suggestions = self._suggestion_by_question_name.values()
         return [suggestion.api_model() for suggestion in suggestions]
 
@@ -482,6 +483,6 @@ class RecordSuggestions(Iterable[Suggestion]):
         suggestion.record = self.record
         self._suggestion_by_question_name[suggestion.question_name] = suggestion
 
-    def from_models(self, suggestions: List[SuggestionModel]) -> None:
+    def from_models(self, suggestions: list[SuggestionModel]) -> None:
         for suggestion_model in suggestions:
             self.add(Suggestion.from_model(suggestion_model, record=self.record))

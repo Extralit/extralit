@@ -1,13 +1,13 @@
 import { TableData } from "@/v1/domain/entities/table/TableData";
 import { Checks, SchemaColumns, ValidationSchema, Validator, Validators } from "@/v1/domain/entities/table/Validation";
 
-var integer = (cell: any, value: string, parameters: { nullable: boolean }): boolean => 
+var integer = (cell: any, value: string, parameters: { nullable: boolean }): boolean =>
 	(parameters.nullable && value == "NA") || /^-?\d+$/.test(value);
-var decimal = (cell: any, value: string, parameters: { nullable: boolean }): boolean => 
+var decimal = (cell: any, value: string, parameters: { nullable: boolean }): boolean =>
 	(parameters.nullable && value == "NA") || /^-?\d*(\.\d+)?$/.test(value);
-var greater_equal = (cell: any, value: string, parameters: number): boolean => 
+var greater_equal = (cell: any, value: string, parameters: number): boolean =>
 	value == null || value == "NA" || parseFloat(value) >= parameters;
-var less_equal = (cell: any, value: string, parameters: number): boolean => 
+var less_equal = (cell: any, value: string, parameters: number): boolean =>
 	value == null || value == "NA" || parseFloat(value) <= parameters;
 
 var unique = (cell: any, value: string, parameters: any): boolean => {
@@ -17,7 +17,7 @@ var unique = (cell: any, value: string, parameters: any): boolean => {
     .map((row) => row[cell.getField()]);
   return columnValues.filter((v) => v === value).length === 1;
 };
-	
+
 var less_than = (cell: any, value: any, parameters: { column: string, or_equal: boolean }): boolean => {
   const rowData = cell.getRow().getData();
   const other = rowData[parameters.column];
@@ -44,7 +44,7 @@ var between = (cell: any, value: any, parameters: { lower: string, upper: string
   value = parseFloat(value);
   const value_lower = parseFloat(row[parameters.lower]);
   const value_upper = parseFloat(row[parameters.upper]);
-  return (parameters.or_equal ? 
+  return (parameters.or_equal ?
       value >= value_lower && value <= value_upper :
       value > value_lower && value < value_upper
     );
@@ -52,7 +52,7 @@ var between = (cell: any, value: any, parameters: { lower: string, upper: string
 
 /**
  * Retrieves the Tabulator validators based on the provided Pandera DataFrameSchema serialized json.
- * 
+ *
  * @param tableJSON - The table JSON containing the validation information.
  * @returns An object containing the column validators.
  */
@@ -61,7 +61,7 @@ export function getColumnValidators(tableJSON: TableData, validation: Validation
 	const indexColumns: SchemaColumns = validation?.index?.reduce((acc, curr) => ({ ...acc, [curr.name]: curr }), {}) || {};
 	if (schemaColumns == null) return {};
 	const tableColumns = tableJSON.schema.fields.map((col) => col.name);
-	
+
 	const columnValidators: Validators = {};
 	for (const [columnName, columnSchema] of Object.entries({...schemaColumns, ...indexColumns})) {
 		if (!tableColumns.includes(columnName)) continue;
@@ -113,7 +113,7 @@ export function getColumnValidators(tableJSON: TableData, validation: Validation
 
 /**
  * Adds dataframe-level checks to the column validators.
- * 
+ *
  * @param checks - The checks to be added.
  * @param columnValidators - The column validators to add the checks to.
  */
@@ -122,7 +122,7 @@ function addDataFrameChecks(checks: Checks, columnValidators: Validators) {
     checks.check_less_than.columns_a.forEach((columnName, index) => {
 			if (!columnValidators[columnName]) {
         columnValidators[columnName] = [];
-      }			
+      }
       columnValidators[columnName].push({
         type: less_than,
         parameters: {

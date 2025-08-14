@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Annotated
 from uuid import UUID
-from typing import Union
 
 from fastapi import APIRouter, Depends, HTTPException, Security, status
-from sqlalchemy.ext.asyncio import AsyncSession
 from minio import Minio
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from extralit_server.api.policies.v1 import WorkspacePolicy, WorkspaceUserPolicy, authorize
 from extralit_server.api.schemas.v1.users import User as UserSchema
@@ -33,7 +33,7 @@ from extralit_server.api.schemas.v1.workspaces import (
 from extralit_server.contexts import accounts, files
 from extralit_server.database import get_async_db
 from extralit_server.errors import GenericServerError
-from extralit_server.errors.future import NotFoundError, UnprocessableEntityError, NotUniqueError
+from extralit_server.errors.future import NotFoundError, NotUniqueError, UnprocessableEntityError
 from extralit_server.models import User, Workspace, WorkspaceUser
 from extralit_server.security import auth
 
@@ -43,9 +43,9 @@ router = APIRouter(tags=["workspaces"])
 @router.get("/workspaces/{workspace_id}", response_model=WorkspaceSchema)
 async def get_workspace(
     *,
-    db: AsyncSession = Depends(get_async_db),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     workspace_id: UUID,
-    current_user: User = Security(auth.get_current_user),
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     await authorize(current_user, WorkspacePolicy.get(workspace_id))
 
@@ -55,10 +55,10 @@ async def get_workspace(
 @router.post("/workspaces", status_code=status.HTTP_201_CREATED, response_model=WorkspaceSchema)
 async def create_workspace(
     *,
-    db: AsyncSession = Depends(get_async_db),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     workspace_create: WorkspaceCreate,
-    current_user: User = Security(auth.get_current_user),
-    minio_client: Union[Minio, files.LocalFileStorage] = Depends(files.get_minio_client),
+    current_user: Annotated[User, Security(auth.get_current_user)],
+    minio_client: Annotated[Minio | files.LocalFileStorage, Depends(files.get_minio_client)],
 ):
     await authorize(current_user, WorkspacePolicy.create)
 
@@ -78,10 +78,10 @@ async def create_workspace(
 @router.delete("/workspaces/{workspace_id}", response_model=WorkspaceSchema)
 async def delete_workspace(
     *,
-    db: AsyncSession = Depends(get_async_db),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     workspace_id: UUID,
-    current_user: User = Security(auth.get_current_user),
-    minio_client: Union[Minio, files.LocalFileStorage] = Depends(files.get_minio_client),
+    current_user: Annotated[User, Security(auth.get_current_user)],
+    minio_client: Annotated[Minio | files.LocalFileStorage, Depends(files.get_minio_client)],
 ):
     await authorize(current_user, WorkspacePolicy.delete)
 
@@ -94,7 +94,7 @@ async def delete_workspace(
         await files.delete_bucket(minio_client, workspace.name)
     except Exception as e:
         # Log the error but continue with workspace deletion
-        print(f"Error deleting bucket for workspace {workspace.name}: {str(e)}")
+        print(f"Error deleting bucket for workspace {workspace.name}: {e!s}")
 
     try:
         return await accounts.delete_workspace(db, workspace)
@@ -104,17 +104,17 @@ async def delete_workspace(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
     except Exception as e:
         # Handle any other unexpected errors
-        print(f"Error deleting workspace {workspace.id}: {str(e)}")
+        print(f"Error deleting workspace {workspace.id}: {e!s}")
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error deleting workspace: {str(e)}"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error deleting workspace: {e!s}"
         )
 
 
-@router.get("/me/workspaces", response_model=Workspaces)
+@router.get("/me/workspaces")
 async def list_workspaces_me(
     *,
-    db: AsyncSession = Depends(get_async_db),
-    current_user: User = Security(auth.get_current_user),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ) -> Workspaces:
     await authorize(current_user, WorkspacePolicy.list_workspaces_me)
 
@@ -129,9 +129,9 @@ async def list_workspaces_me(
 @router.get("/workspaces/{workspace_id}/users", response_model=Users)
 async def list_workspace_users(
     *,
-    db: AsyncSession = Depends(get_async_db),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     workspace_id: UUID,
-    current_user: User = Security(auth.get_current_user),
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     await authorize(current_user, WorkspaceUserPolicy.list(workspace_id))
 
@@ -145,10 +145,10 @@ async def list_workspace_users(
 @router.post("/workspaces/{workspace_id}/users", status_code=status.HTTP_201_CREATED, response_model=UserSchema)
 async def create_workspace_user(
     *,
-    db: AsyncSession = Depends(get_async_db),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     workspace_id: UUID,
     workspace_user_create: WorkspaceUserCreate,
-    current_user: User = Security(auth.get_current_user),
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     await authorize(current_user, WorkspaceUserPolicy.create)
 
@@ -167,10 +167,10 @@ async def create_workspace_user(
 @router.delete("/workspaces/{workspace_id}/users/{user_id}", response_model=UserSchema)
 async def delete_workspace_user(
     *,
-    db: AsyncSession = Depends(get_async_db),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     workspace_id: UUID,
     user_id: UUID,
-    current_user: User = Security(auth.get_current_user),
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     workspace_user = await WorkspaceUser.get_by_or_raise(db, workspace_id=workspace_id, user_id=user_id)
 

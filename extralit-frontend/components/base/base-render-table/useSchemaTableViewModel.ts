@@ -20,12 +20,12 @@ export interface SchemaTableViewModel {
 }
 
 export const useSchemaTableViewModel = (
-  props: { 
-    tableJSON: TableData, 
-    editable: boolean, 
+  props: {
+    tableJSON: TableData,
+    editable: boolean,
     hasValidValues: boolean,
     questions: Question[],
-  }, 
+  },
 ) => {
   const getSchema = useResolve(GetExtractionSchemaUseCase);
   const { state: dataset } = useDataset();
@@ -46,7 +46,7 @@ export const useSchemaTableViewModel = (
     }
     var version_id: string = latest ? null : props.tableJSON.schema?.version_id;
     await waitForAsyncValue(() => dataset.workspaceName);
-    
+
     const [schema, fileMetadata] = await getSchema.fetch(dataset.workspaceName, schemaName, version_id);
 
     // const schemaMetadataUpdate = {

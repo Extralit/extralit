@@ -1,30 +1,29 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 import dataclasses
 from abc import ABCMeta, abstractmethod
+from collections.abc import AsyncGenerator, Iterable
 from contextlib import asynccontextmanager
 from typing import (
-    AsyncGenerator,
     Generic,
-    Iterable,
-    List,
-    Optional,
-    Union,
-    TypeVar,
     Literal,
+    TypeVar,
+    Union,
 )
 from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict, Field
 
 from extralit_server.enums import (
     MetadataPropertyType,
@@ -35,29 +34,28 @@ from extralit_server.enums import (
     SortOrder,
 )
 from extralit_server.models import Dataset, MetadataProperty, Record, Response, Suggestion, User, VectorSettings
-from pydantic import BaseModel, Field, ConfigDict
 
 __all__ = [
+    "AndFilter",
+    "Filter",
+    "FilterScope",
+    "FloatMetadataMetrics",
+    "IntegerMetadataMetrics",
+    "MetadataFilterScope",
+    "MetadataMetrics",
+    "Order",
+    "RangeFilter",
+    "RecordFilterScope",
+    "ResponseFilterScope",
     "SearchEngine",
-    "TextQuery",
-    "UserResponseStatusFilter",
     "SearchResponseItem",
     "SearchResponses",
     "SortBy",
-    "MetadataMetrics",
-    "TermsMetrics",
-    "IntegerMetadataMetrics",
-    "FloatMetadataMetrics",
     "SuggestionFilterScope",
-    "ResponseFilterScope",
-    "MetadataFilterScope",
-    "RecordFilterScope",
-    "FilterScope",
     "TermsFilter",
-    "RangeFilter",
-    "AndFilter",
-    "Filter",
-    "Order",
+    "TermsMetrics",
+    "TextQuery",
+    "UserResponseStatusFilter",
 ]
 
 
@@ -69,9 +67,9 @@ class SuggestionFilterScope:
 
 @dataclasses.dataclass
 class ResponseFilterScope:
-    question: Optional[str] = None
-    property: Optional[str] = None
-    user: Optional[User] = None
+    question: str | None = None
+    property: str | None = None
+    user: User | None = None
 
 
 @dataclasses.dataclass
@@ -90,19 +88,19 @@ FilterScope = Union[SuggestionFilterScope, ResponseFilterScope, MetadataFilterSc
 @dataclasses.dataclass
 class TermsFilter:
     scope: FilterScope
-    values: List[str]
+    values: list[str]
 
 
 @dataclasses.dataclass
 class RangeFilter:
     scope: FilterScope
-    ge: Optional[float] = None
-    le: Optional[float] = None
+    ge: float | None = None
+    le: float | None = None
 
 
 @dataclasses.dataclass
 class AndFilter:
-    filters: List["Filter"]
+    filters: list["Filter"]
 
 
 Filter = Union[AndFilter, TermsFilter, RangeFilter]
@@ -116,34 +114,34 @@ class Order:
 
 class TextQuery(BaseModel):
     q: str
-    field: Optional[str] = None
+    field: str | None = None
 
     model_config = ConfigDict(coerce_numbers_to_str=True)
 
 
 class UserResponseStatusFilter(BaseModel):
-    statuses: List[ResponseStatusFilter]
-    user: Optional[User] = None
+    statuses: list[ResponseStatusFilter]
+    user: User | None = None
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     @property
-    def response_statuses(self) -> List[ResponseStatus]:
+    def response_statuses(self) -> list[ResponseStatus]:
         return [status.value for status in self.statuses if status == ResponseStatusFilter.pending]
 
 
 class SearchResponseItem(BaseModel):
     record_id: UUID
-    score: Optional[float] = None
+    score: float | None = None
 
 
 class SearchResponses(BaseModel):
-    items: List[SearchResponseItem]
+    items: list[SearchResponseItem]
     total: int = 0
 
 
 class SortBy(BaseModel):
-    field: Union[MetadataProperty, RecordSortField]
+    field: MetadataProperty | RecordSortField
     order: SortOrder = SortOrder.asc
 
     class Config:
@@ -157,15 +155,15 @@ class TermsMetrics(BaseModel):
 
     type: Literal["terms"] = "terms"
     total: int
-    values: List[TermCount] = Field(default_factory=list)
+    values: list[TermCount] = Field(default_factory=list)
 
 
 NT = TypeVar("NT", int, float)
 
 
 class NumericMetadataMetrics(BaseModel, Generic[NT]):
-    min: Optional[NT] = None
-    max: Optional[NT] = None
+    min: NT | None = None
+    max: NT | None = None
 
 
 class IntegerMetadataMetrics(NumericMetadataMetrics[int]):
@@ -229,7 +227,7 @@ class SearchEngine(metaclass=ABCMeta):
                 await engine.close()
 
     @abstractmethod
-    async def get_all_index_names(self) -> List[str]:
+    async def get_all_index_names(self) -> list[str]:
         pass
 
     @abstractmethod
@@ -284,9 +282,9 @@ class SearchEngine(metaclass=ABCMeta):
     async def search(
         self,
         dataset: Dataset,
-        query: Optional[Union[TextQuery, str]] = None,
-        filter: Optional[Filter] = None,
-        sort: Optional[List[Order]] = None,
+        query: TextQuery | str | None = None,
+        filter: Filter | None = None,
+        sort: list[Order] | None = None,
         offset: int = 0,
         limit: int = 100,
     ) -> SearchResponses:
@@ -304,12 +302,12 @@ class SearchEngine(metaclass=ABCMeta):
         self,
         dataset: Dataset,
         vector_settings: VectorSettings,
-        value: Optional[List[float]] = None,
-        record: Optional[Record] = None,
-        query: Optional[Union[TextQuery, str]] = None,
-        filter: Optional[Filter] = None,
+        value: list[float] | None = None,
+        record: Record | None = None,
+        query: TextQuery | str | None = None,
+        filter: Filter | None = None,
         max_results: int = 100,
         order: SimilarityOrder = SimilarityOrder.most_similar,
-        threshold: Optional[float] = None,
+        threshold: float | None = None,
     ) -> SearchResponses:
         pass

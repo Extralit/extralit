@@ -16,18 +16,17 @@
 
 import logging
 import os
-from typing import Dict, Any, List, Tuple
+from typing import Any
 from uuid import UUID, uuid4
 
 from rq import Retry
 from rq.decorators import job
 
-
-from extralit_server.database import AsyncSessionLocal
-from extralit_server.jobs import DEFAULT_QUEUE, JOB_TIMEOUT_DISABLED
 from extralit_server.api.schemas.v1.documents import DocumentCreate
 from extralit_server.contexts import files, imports
 from extralit_server.contexts.document import preprocessing
+from extralit_server.database import AsyncSessionLocal
+from extralit_server.jobs import DEFAULT_QUEUE, JOB_TIMEOUT_DISABLED
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -35,10 +34,10 @@ _LOGGER = logging.getLogger(__name__)
 @job(DEFAULT_QUEUE, timeout=JOB_TIMEOUT_DISABLED, retry=Retry(max=3, interval=[10, 30, 60]))
 async def upload_and_preprocess_documents_job(
     reference: str,
-    reference_data: Dict[str, Any],
-    file_data_list: List[Tuple[str, bytes]],  # List of (filename, file_data) tuples
+    reference_data: dict[str, Any],
+    file_data_list: list[tuple[str, bytes]],  # List of (filename, file_data) tuples
     user_id: UUID,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Asynchronous job to upload multiple documents for a single reference.
 
@@ -100,7 +99,7 @@ async def upload_and_preprocess_documents_job(
                 }
 
                 try:
-                    file_metadata: Dict[str, Any] = {
+                    file_metadata: dict[str, Any] = {
                         "collections": (document_create.metadata or {}).get("collections", [])
                     }
 
@@ -153,7 +152,7 @@ async def upload_and_preprocess_documents_job(
                         if file_url:
                             file_document_create.url = file_url
                     except Exception as e:
-                        error_msg = f"Error uploading file `{filename}` to S3: {str(e)}"
+                        error_msg = f"Error uploading file `{filename}` to S3: {e!s}"
                         _LOGGER.error(error_msg)
                         file_result["error"] = error_msg
                         results["failed_files"] += 1
@@ -168,13 +167,13 @@ async def upload_and_preprocess_documents_job(
                         file_result.update({"success": True, "document_id": str(document.id), "status": "created"})
                         results["successful_files"] += 1
                     except Exception as e:
-                        error_msg = f"Error creating document for file {filename} in database: {str(e)}"
+                        error_msg = f"Error creating document for file {filename} in database: {e!s}"
                         _LOGGER.error(error_msg)
                         file_result["error"] = error_msg
                         results["failed_files"] += 1
 
                 except Exception as e:
-                    error_msg = f"Error processing file {filename}: {str(e)}"
+                    error_msg = f"Error processing file {filename}: {e!s}"
                     _LOGGER.error(error_msg)
                     file_result["error"] = error_msg
                     results["failed_files"] += 1
@@ -184,7 +183,7 @@ async def upload_and_preprocess_documents_job(
             results["success"] = results["failed_files"] == 0
 
     except Exception as e:
-        error_msg = f"Error uploading documents for reference {reference}: {str(e)}"
+        error_msg = f"Error uploading documents for reference {reference}: {e!s}"
         _LOGGER.error(error_msg)
         results["success"] = False
         results["errors"].append(str(e))
@@ -195,6 +194,6 @@ async def upload_and_preprocess_documents_job(
                 if os.path.exists(temp_file):
                     os.unlink(temp_file)
             except Exception as e:
-                _LOGGER.warning(f"Failed to cleanup temporary file {temp_file}: {str(e)}")
+                _LOGGER.warning(f"Failed to cleanup temporary file {temp_file}: {e!s}")
 
     return results

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import logging
-from typing import Any, Dict
+from typing import Any
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exception_handlers import http_exception_handler
@@ -38,7 +38,7 @@ from extralit_server.errors.base_errors import (
 
 class ErrorDetail(BaseModel):
     code: str
-    params: Dict[str, Any]
+    params: dict[str, Any]
 
     # TODO: Newer version does not serialize some exceptions such as ValueError
     @field_serializer("params")

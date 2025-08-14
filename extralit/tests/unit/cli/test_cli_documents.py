@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from pathlib import Path
+from unittest.mock import MagicMock, patch
+
 import pytest
 from typer.testing import CliRunner
-from unittest.mock import patch, MagicMock
-from pathlib import Path
 
 from extralit.cli.app import app
 
@@ -189,9 +190,11 @@ def test_import_bibtex_api_error(mock_parse_bib, mock_validate, mock_from_creden
 
 def test_display_import_analysis_results():
     """Test the _display_import_analysis_results function."""
-    from extralit.cli.documents.import_bib import _display_import_analysis_results
-    from rich.console import Console
     from io import StringIO
+
+    from rich.console import Console
+
+    from extralit.cli.documents.import_bib import _display_import_analysis_results
 
     # Create a console that captures output
     output = StringIO()

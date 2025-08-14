@@ -16,6 +16,10 @@ from datetime import datetime
 from uuid import UUID, uuid4
 
 import pytest
+from httpx import AsyncClient
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from extralit_server.api.schemas.v1.questions import (
     QUESTION_CREATE_DESCRIPTION_MAX_LENGTH,
     QUESTION_CREATE_NAME_MAX_LENGTH,
@@ -31,10 +35,6 @@ from extralit_server.constants import API_KEY_HEADER_NAME
 from extralit_server.enums import DatasetStatus
 from extralit_server.models import Question
 from extralit_server.settings import settings
-from httpx import AsyncClient
-from sqlalchemy import func, select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from tests.factories import (
     AdminFactory,
     AnnotatorFactory,

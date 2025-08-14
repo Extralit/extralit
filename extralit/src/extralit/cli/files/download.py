@@ -20,8 +20,8 @@ import typer
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
-from extralit.client import Extralit
 from extralit.cli.rich import get_themed_panel
+from extralit.client import Extralit
 
 
 def download_file(
@@ -95,7 +95,7 @@ def download_file(
 
     except Exception as e:
         panel = get_themed_panel(
-            f"Error downloading file: {str(e)}",
+            f"Error downloading file: {e!s}",
             title="Error",
             title_align="left",
             success=False,

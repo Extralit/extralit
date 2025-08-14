@@ -17,18 +17,17 @@ from unittest import mock
 import pytest
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.routing import Mount
+from starlette.testclient import TestClient
 
 from extralit_server._app import (
-    create_server_app,
     _create_oauth_allowed_workspaces,
+    create_server_app,
     track_server_startup,
 )
 from extralit_server.models import Workspace
 from extralit_server.security.authentication.oauth2 import OAuth2Settings
 from extralit_server.settings import Settings, settings
-from starlette.routing import Mount
-from starlette.testclient import TestClient
-
 from extralit_server.telemetry import TelemetryClient
 from tests.factories import WorkspaceFactory
 
@@ -80,7 +79,7 @@ class TestApp:
 
             workspaces = (await db.scalars(select(Workspace))).all()
             assert len(workspaces) == 2
-            assert set([ws.name for ws in workspaces]) == {"ws1", "ws2"}
+            assert {ws.name for ws in workspaces} == {"ws1", "ws2"}
 
     async def test_create_workspaces_with_empty_workspaces_list(self, db: AsyncSession):
         with mock.patch("extralit_server.security.settings.Settings.oauth", new_callable=OAuth2Settings):

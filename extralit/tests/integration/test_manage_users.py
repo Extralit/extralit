@@ -15,7 +15,7 @@ import uuid
 
 import pytest
 
-from extralit import User, Extralit, Workspace
+from extralit import Extralit, User, Workspace
 from extralit._exceptions import UnprocessableEntityError
 
 

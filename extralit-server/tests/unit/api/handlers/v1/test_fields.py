@@ -17,11 +17,11 @@ from typing import TYPE_CHECKING
 from uuid import uuid4
 
 import pytest
+from sqlalchemy import func, select
+
 from extralit_server.api.schemas.v1.fields import FIELD_CREATE_TITLE_MAX_LENGTH
 from extralit_server.constants import API_KEY_HEADER_NAME
 from extralit_server.models import DatasetStatus, Field, UserRole
-from sqlalchemy import func, select
-
 from tests.factories import (
     AnnotatorFactory,
     DatasetFactory,

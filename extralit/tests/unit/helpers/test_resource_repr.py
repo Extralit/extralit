@@ -30,8 +30,8 @@ class TestResourceHTMLReprMixin:
             ResourceHTMLReprMixin()._represent_as_html(workspaces) == "<h3>Workspaces</h3>"
             "<table>"
             "<tr><th>name</th><th>id</th><th>updated_at</th></tr>"
-            f"<tr><td>workspace1</td><td>{str(workspaces[0].id)}</td><td>None</td></tr>"
-            f"<tr><td>workspace2</td><td>{str(workspaces[1].id)}</td><td>None</td></tr>"
+            f"<tr><td>workspace1</td><td>{workspaces[0].id!s}</td><td>None</td></tr>"
+            f"<tr><td>workspace2</td><td>{workspaces[1].id!s}</td><td>None</td></tr>"
             "</table>"
             ""
         )
@@ -49,7 +49,7 @@ class TestResourceHTMLReprMixin:
             ResourceHTMLReprMixin()._represent_as_html(datasets) == "<h3>Datasets</h3>"
             "<table>"
             "<tr><th>name</th><th>id</th><th>workspace_id</th><th>updated_at</th></tr>"
-            f"<tr><td>dataset1</td><td>{str(datasets[0].id)}</td><td>{str(workspace.id)}</td><td>None</td></tr>"
-            f"<tr><td>dataset2</td><td>{str(datasets[1].id)}</td><td>{str(workspace.id)}</td><td>None</td></tr>"
+            f"<tr><td>dataset1</td><td>{datasets[0].id!s}</td><td>{workspace.id!s}</td><td>None</td></tr>"
+            f"<tr><td>dataset2</td><td>{datasets[1].id!s}</td><td>{workspace.id!s}</td><td>None</td></tr>"
             "</table>"
         )

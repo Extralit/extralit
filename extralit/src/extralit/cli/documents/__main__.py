@@ -14,13 +14,12 @@
 
 """Documents CLI commands."""
 
-from extralit.cli.typer_ext import ExtralitTyper
-
-from extralit.cli.documents.list import list_documents
 from extralit.cli.documents.add import add_document
-from extralit.cli.documents.import_bib import import_bib
 from extralit.cli.documents.delete import delete_document
+from extralit.cli.documents.import_bib import import_bib
 from extralit.cli.documents.import_history import list_import_histories
+from extralit.cli.documents.list import list_documents
+from extralit.cli.typer_ext import ExtralitTyper
 
 app = ExtralitTyper(help="Manage documents in workspaces", no_args_is_help=True)
 
