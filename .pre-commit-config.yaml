@@ -11,21 +11,14 @@ repos:
   - repo: https://github.com/charliermarsh/ruff-pre-commit
     rev: v0.4.8
     hooks:
+      - id: ruff
+        args: [--fix]
       - id: ruff-format
 
   ##############################################################################
   # extralit SDK specific hooks
   ##############################################################################
-  - repo: https://github.com/pycqa/autoflake
-    rev: v2.2.1
-    hooks:
-      - id: autoflake
-        name: "Remove unused imports and variables"
-        files: '^extralit/.*\.py$'
-        args:
-          - "--remove-all-unused-imports"
-          - "--remove-unused-variables"
-          - "--in-place"
+
   - repo: https://github.com/charliermarsh/ruff-pre-commit
     rev: v0.4.8
     hooks:
@@ -33,6 +26,11 @@ repos:
         files: 'extralit/src/.*\.py$'
         args:
           - --fix
+          - --select
+          - "E,W,F,I,B,C4,UP,ASYNC,PLE,FAST,RUF"
+          - --ignore
+          - "E501,B008"
+
   - repo: https://github.com/Lucas-C/pre-commit-hooks
     rev: v1.5.5
     hooks:
@@ -44,6 +42,7 @@ repos:
           - --license-filepath
           - extralit/LICENSE_HEADER
           - --fuzzy-match-generates-todo
+
   - repo: https://github.com/kynan/nbstripout
     rev: 0.7.1
     hooks:
@@ -63,24 +62,18 @@ repos:
   ##############################################################################
   # extralit-server specific hooks
   ##############################################################################
-  - repo: https://github.com/pycqa/autoflake
-    rev: v2.2.1
-    hooks:
-      - id: autoflake
-        name: "Remove unused imports and variables in extralit-server"
-        files: '^extralit-server/.*\.py$'
-        args:
-          - "--remove-all-unused-imports"
-          - "--remove-unused-variables"
-          - "--in-place"
 
   - repo: https://github.com/charliermarsh/ruff-pre-commit
     rev: v0.4.8
     hooks:
       - id: ruff
-        files: 'argila-server/src/.*\.py$'
+        files: 'extralit-server/src/.*\.py$'
         args:
           - --fix
+          - --select
+          - "E,W,F,I,B,C4,UP,ASYNC,PLE,FAST,RUF"
+          - --ignore
+          - "E501,B008"
 
   - repo: https://github.com/Lucas-C/pre-commit-hooks
     rev: v1.5.5
