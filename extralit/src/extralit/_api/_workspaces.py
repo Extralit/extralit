@@ -462,7 +462,7 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
 
             if not schema_files.objects:
                 logger.info(f"No valid schemas found in workspace '{workspace_name}' with prefix '{prefix}'")
-                return SchemaStructure(schemas=[])
+                return SchemaStructure(schemas=[], singleton_schema=None)
 
             # Filter by exclude list
             if exclude:
@@ -475,7 +475,9 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
             # Group by schema name to get the latest version
             schema_versions = {}
             for obj in schema_files.objects:
-                schema_name = obj.object_name
+                # Extract the actual schema name from the object path
+                # object_name is like "schemas/test_schema_name", we want just "test_schema_name"
+                schema_name = os.path.basename(obj.object_name)
                 if schema_name not in schema_versions or (
                     obj.last_modified
                     and schema_versions[schema_name].last_modified
@@ -500,9 +502,10 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
                     schema_json = file_response.content.decode("utf-8")
                     schema = pa.DataFrameSchema.from_json(schema_json)
 
-                    # Add to dictionary
-                    schemas[schema.name] = schema
-                    logger.debug(f"Successfully loaded schema '{schema.name}' from '{obj.object_name}'")
+                    # Add to dictionary using the actual schema name (without prefix)
+                    schema_name = os.path.basename(obj.object_name)
+                    schemas[schema_name] = schema
+                    logger.debug(f"Successfully loaded schema '{schema_name}' from '{obj.object_name}'")
 
                 except FileNotFoundError:
                     logger.debug(f"Schema file '{obj.object_name}' not found in workspace '{workspace_name}'")
@@ -523,7 +526,7 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
                         f"Schema {getattr(schema, 'name', 'unknown')} is not a DataFrameSchema instance, skipping"
                     )
 
-            return SchemaStructure(schemas=schema_list)
+            return SchemaStructure(schemas=schema_list, singleton_schema=None)
 
         except Exception as e:
             logger.error(f"Unexpected error loading schemas from workspace '{workspace_name}': {str(e)}")
