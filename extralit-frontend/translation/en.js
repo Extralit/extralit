@@ -297,6 +297,9 @@ export default {
     datasets: "Datasets",
     documents: "Documents",
   },
+  document: {
+    notFound: "Document not found",
+  },
   import: {
     title: "Import Documents to {workspaceName} Workspace",
     historyTitle: "Import History",

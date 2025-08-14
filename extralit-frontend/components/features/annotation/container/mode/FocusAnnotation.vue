@@ -26,10 +26,10 @@
           </section>
         </template>
         <template #downHeader>
-          <p v-text="$t('document')" />
+          <p v-text="hasDocumentLoaded ? $t('document') : $t('document.notFound')" />
         </template>
         <template #downHeaderExpanded>
-          <p v-text="$t('document')" />
+          <p v-text="hasDocumentLoaded ? $t('document') : $t('document.notFound')" />
         </template>
         <template #downContent>
           <PDFViewer
@@ -39,7 +39,7 @@
             :pageNumber="document.page_number"
           />
           <div v-else class="no-document-message">
-            <p>{{ $t("no_document_available") }}</p>
+            <p>{{ $t("document.notFound") }}</p>
           </div>
         </template>
       </HorizontalResizable>
@@ -76,18 +76,6 @@
         </template>
       </HorizontalResizable>
     </template>
-    <BaseCollapsablePanel
-      hideOnDesktop
-      :isExpanded="expandedGuidelines"
-      @toggle-expand="expandedGuidelines = !expandedGuidelines"
-    >
-      <template #panelHeader>
-        <p v-text="$t('document')" />
-      </template>
-      <template #panelContent>
-        <PDFViewer :url="document.url" :file-name="document.file_name" :pageNumber="document.page_number" />
-      </template>
-    </BaseCollapsablePanel>
   </VerticalResizable>
 </template>
 
