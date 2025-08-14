@@ -261,7 +261,9 @@ class Dataset(Resource, HubImportExportMixin, DiskImportExportMixin):
 
         if workspace is None:
             workspace = self._client.workspaces.default
-            warnings.warn(f"Workspace not provided. Using default workspace: {workspace.name} id: {workspace.id}")
+            warnings.warn(
+                f"Workspace not provided. Using default workspace: {workspace.name} id: {workspace.id}", stacklevel=2
+            )
         elif isinstance(workspace, str):
             workspace = self._client.workspaces(workspace)
             if workspace is None:

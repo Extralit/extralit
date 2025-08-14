@@ -13,9 +13,8 @@
 # limitations under the License.
 
 import os
-import uuid
 import tempfile
-
+import uuid
 
 from extralit import Workspace
 

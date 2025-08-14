@@ -13,7 +13,7 @@
 # limitations under the License.
 import json
 from pathlib import Path
-from typing import List, Tuple, Union
+from typing import Union
 
 from extralit.records._io import GenericIO
 from extralit.records._resource import Record
@@ -21,7 +21,7 @@ from extralit.records._resource import Record
 
 class JsonIO:
     @staticmethod
-    def to_json(records: List[Union["Record", Tuple["Record", float]]], path: Union[Path, str]) -> Path:
+    def to_json(records: list[Union["Record", tuple["Record", float]]], path: Union[Path, str]) -> Path:
         """
         Export the records to a file on disk. This is a convenient shortcut for dataset.records(...).to_disk().
 
@@ -44,7 +44,7 @@ class JsonIO:
         return path
 
     @staticmethod
-    def _records_from_json(path: Union[Path, str]) -> List["Record"]:
+    def _records_from_json(path: Union[Path, str]) -> list["Record"]:
         """Creates a DatasetRecords object from a disk path.
 
         Parameters:

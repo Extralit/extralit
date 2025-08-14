@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import TYPE_CHECKING, Dict, List, Literal, Optional, Union
+from typing import TYPE_CHECKING, Literal, Optional, Union
 
 from extralit import Extralit
 from extralit._api import QuestionsAPI
@@ -106,7 +106,7 @@ class QuestionBase(SettingsPropertyBase):
         return self
 
     @staticmethod
-    def _render_values_as_options(values: Union[List[str], List[int], Dict[str, str]]) -> List[Dict[str, str]]:
+    def _render_values_as_options(values: Union[list[str], list[int], dict[str, str]]) -> list[dict[str, str]]:
         """Render values as options for the question so that the model conforms to the API schema"""
         if isinstance(values, dict):
             return [{"text": value, "value": key} for key, value in values.items()]
@@ -120,7 +120,7 @@ class QuestionBase(SettingsPropertyBase):
             )
 
     @staticmethod
-    def _render_options_as_values(options: List[dict]) -> Dict[str, str]:
+    def _render_options_as_values(options: list[dict]) -> dict[str, str]:
         """Render options as values for the question so that the model conforms to the API schema"""
         values = {}
         for option in options:
@@ -131,7 +131,7 @@ class QuestionBase(SettingsPropertyBase):
         return values
 
     @classmethod
-    def _render_options_as_labels(cls, options: List[Dict[str, str]]) -> List[str]:
+    def _render_options_as_labels(cls, options: list[dict[str, str]]) -> list[str]:
         """Render values as labels for the question so that they can be returned as a list of strings"""
         return list(cls._render_options_as_values(options=options).keys())
 
@@ -140,7 +140,7 @@ class LabelQuestion(QuestionBase):
     def __init__(
         self,
         name: str,
-        labels: Union[List[str], Dict[str, str]],
+        labels: Union[list[str], dict[str, str]],
         title: Optional[str] = None,
         description: Optional[str] = None,
         required: bool = True,
@@ -180,11 +180,11 @@ class LabelQuestion(QuestionBase):
     ##############################
 
     @property
-    def labels(self) -> List[str]:
+    def labels(self) -> list[str]:
         return self._render_options_as_labels(getattr(self._model.settings, "options", []))
 
     @labels.setter
-    def labels(self, labels: List[str]) -> None:
+    def labels(self, labels: list[str]) -> None:
         self._model.settings.options = self._render_values_as_options(labels)
 
     @property
@@ -207,7 +207,7 @@ class MultiLabelQuestion(LabelQuestion):
     def __init__(
         self,
         name: str,
-        labels: Union[List[str], Dict[str, str]],
+        labels: Union[list[str], dict[str, str]],
         visible_labels: Optional[int] = None,
         labels_order: Literal["natural", "suggestion"] = "natural",
         title: Optional[str] = None,
@@ -298,7 +298,7 @@ class RatingQuestion(QuestionBase):
     def __init__(
         self,
         name: str,
-        values: List[int],
+        values: list[int],
         title: Optional[str] = None,
         description: Optional[str] = None,
         required: bool = True,
@@ -325,11 +325,11 @@ class RatingQuestion(QuestionBase):
         )
 
     @property
-    def values(self) -> List[int]:
+    def values(self) -> list[int]:
         return self._render_options_as_labels(self._model.settings.options)
 
     @values.setter
-    def values(self, values: List[int]) -> None:
+    def values(self, values: list[int]) -> None:
         self._model.values = self._render_values_as_options(values)
 
     @classmethod
@@ -344,7 +344,7 @@ class RankingQuestion(QuestionBase):
     def __init__(
         self,
         name: str,
-        values: Union[List[str], Dict[str, str]],
+        values: Union[list[str], dict[str, str]],
         title: Optional[str] = None,
         description: Optional[str] = None,
         required: bool = True,
@@ -371,11 +371,11 @@ class RankingQuestion(QuestionBase):
         )
 
     @property
-    def values(self) -> List[str]:
+    def values(self) -> list[str]:
         return self._render_options_as_labels(self._model.settings.options)
 
     @values.setter
-    def values(self, values: List[int]) -> None:
+    def values(self, values: list[int]) -> None:
         self._model.settings.options = self._render_values_as_options(values)
 
     @classmethod
@@ -391,7 +391,7 @@ class SpanQuestion(QuestionBase):
         self,
         name: str,
         field: str,
-        labels: Union[List[str], Dict[str, str]],
+        labels: Union[list[str], dict[str, str]],
         allow_overlapping: bool = False,
         visible_labels: Optional[int] = None,
         title: Optional[str] = None,
@@ -454,11 +454,11 @@ class SpanQuestion(QuestionBase):
         self._model.settings.visible_options = visible_labels
 
     @property
-    def labels(self) -> List[str]:
+    def labels(self) -> list[str]:
         return self._render_options_as_labels(self._model.settings.options)
 
     @labels.setter
-    def labels(self, labels: List[str]) -> None:
+    def labels(self, labels: list[str]) -> None:
         self._model.settings.options = self._render_values_as_options(labels)
 
     @classmethod

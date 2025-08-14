@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Annotated, ClassVar, Dict, List, Literal, Optional, Union
+from typing import Annotated, ClassVar, Literal, Optional, Union
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_validator, model_validator
@@ -31,15 +31,15 @@ class LabelQuestionSettings(BaseModel):
 
     _MIN_VISIBLE_OPTIONS: ClassVar[int] = 3
 
-    options: List[Dict[str, Optional[str]]] = Field(default_factory=list, validate_default=True)
+    options: list[dict[str, Optional[str]]] = Field(default_factory=list, validate_default=True)
     visible_options: Optional[int] = Field(None, validate_default=True, ge=_MIN_VISIBLE_OPTIONS)
 
     @field_validator("options", mode="before")
     @classmethod
-    def __labels_are_unique(cls, options: List[Dict[str, Optional[str]]]) -> List[Dict[str, Optional[str]]]:
+    def __labels_are_unique(cls, options: list[dict[str, Optional[str]]]) -> list[dict[str, Optional[str]]]:
         """Ensure that labels are unique"""
 
-        unique_labels = list(set([option["value"] for option in options]))
+        unique_labels = list({option["value"] for option in options})
         if len(unique_labels) != len(options):
             raise ValueError("All labels must be unique")
         return options
@@ -59,14 +59,14 @@ class MultiLabelQuestionSettings(LabelQuestionSettings):
 class RankingQuestionSettings(BaseModel):
     type: Literal["ranking"] = "ranking"
 
-    options: List[Dict[str, Optional[str]]] = Field(default_factory=list, validate_default=True)
+    options: list[dict[str, Optional[str]]] = Field(default_factory=list, validate_default=True)
 
     @field_validator("options", mode="before")
     @classmethod
-    def __values_are_unique(cls, options: List[Dict[str, Optional[str]]]) -> List[Dict[str, Optional[str]]]:
+    def __values_are_unique(cls, options: list[dict[str, Optional[str]]]) -> list[dict[str, Optional[str]]]:
         """Ensure that values are unique"""
 
-        unique_values = list(set([option["value"] for option in options]))
+        unique_values = list({option["value"] for option in options})
         if len(unique_values) != len(options):
             raise ValueError("All values must be unique")
 
@@ -76,14 +76,14 @@ class RankingQuestionSettings(BaseModel):
 class RatingQuestionSettings(BaseModel):
     type: Literal["rating"] = "rating"
 
-    options: List[dict] = Field(..., validate_default=True)
+    options: list[dict] = Field(..., validate_default=True)
 
     @field_validator("options", mode="before")
     @classmethod
-    def __values_are_unique(cls, options: List[dict]) -> List[dict]:
+    def __values_are_unique(cls, options: list[dict]) -> list[dict]:
         """Ensure that values are unique"""
 
-        unique_values = list(set([option["value"] for option in options]))
+        unique_values = list({option["value"] for option in options})
         if len(unique_values) != len(options):
             raise ValueError("All values must be unique")
 
@@ -97,15 +97,15 @@ class SpanQuestionSettings(BaseModel):
 
     allow_overlapping: bool = False
     field: Optional[str] = None
-    options: List[Dict[str, Optional[str]]] = Field(default_factory=list, validate_default=True)
+    options: list[dict[str, Optional[str]]] = Field(default_factory=list, validate_default=True)
     visible_options: Optional[int] = Field(None, validate_default=True, ge=_MIN_VISIBLE_OPTIONS)
 
     @field_validator("options", mode="before")
     @classmethod
-    def __values_are_unique(cls, options: List[Dict[str, Optional[str]]]) -> List[Dict[str, Optional[str]]]:
+    def __values_are_unique(cls, options: list[dict[str, Optional[str]]]) -> list[dict[str, Optional[str]]]:
         """Ensure that values are unique"""
 
-        unique_values = list(set([option["value"] for option in options]))
+        unique_values = list({option["value"] for option in options})
         if len(unique_values) != len(options):
             raise ValueError("All values must be unique")
 

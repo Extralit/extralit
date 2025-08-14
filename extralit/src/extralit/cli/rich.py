@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import traceback
-from typing import TYPE_CHECKING, List, Optional, Union
+from typing import TYPE_CHECKING, Optional, Union
 
 from rich.console import Console, RenderableType
 from rich.panel import Panel
@@ -112,8 +112,8 @@ def console_table_to_pandas_df(table: Table) -> "pd.DataFrame":
 
 
 def print_rich_table(
-    resources: List[Union["Resource", "pa.DataFrameSchema", "ObjectMetadata", "Document"]],
-    columns: Optional[List[str]] = None,
+    resources: list[Union["Resource", "pa.DataFrameSchema", "ObjectMetadata", "Document"]],
+    columns: Optional[list[str]] = None,
     title: Optional[str] = None,
     return_table: bool = False,
 ) -> Optional[Table]:

@@ -19,7 +19,7 @@ import os
 import warnings
 from abc import ABC
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional, Tuple, Type, Union
+from typing import TYPE_CHECKING, Optional, Union
 
 from extralit._exceptions import ExtralitError, ImportDatasetError, RecordsIngestionError
 from extralit._models import DatasetModel
@@ -62,7 +62,7 @@ class DiskImportExportMixin(ABC):
 
     @classmethod
     def from_disk(
-        cls: Type["Dataset"],
+        cls: type["Dataset"],
         path: str,
         *,
         name: Optional[str] = None,
@@ -99,7 +99,7 @@ class DiskImportExportMixin(ABC):
             if not workspace:
                 raise ExtralitError(f"Workspace {workspace} not found on the server.")
         else:
-            warnings.warn("Workspace not provided. Using default workspace.")
+            warnings.warn("Workspace not provided. Using default workspace.", stacklevel=2)
             workspace = client.workspaces.default
         dataset_model.workspace_id = workspace.id
 
@@ -109,7 +109,8 @@ class DiskImportExportMixin(ABC):
 
         if client.api.datasets.name_exists(name=dataset_model.name, workspace_id=workspace.id):
             warnings.warn(
-                f"Loaded dataset name {dataset_model.name} already exists in the workspace {workspace.name} so using it. To create a new dataset, provide a unique name to the `name` parameter."
+                f"Loaded dataset name {dataset_model.name} already exists in the workspace {workspace.name} so using it. To create a new dataset, provide a unique name to the `name` parameter.",
+                stacklevel=2,
             )
             dataset_model = client.api.datasets.get_by_name_and_workspace_id(
                 name=dataset_model.name, workspace_id=workspace.id
@@ -158,7 +159,7 @@ class DiskImportExportMixin(ABC):
         return dataset_model
 
     @classmethod
-    def _define_child_paths(cls, path: Union[Path, str]) -> Tuple[Path, Path, Path]:
+    def _define_child_paths(cls, path: Union[Path, str]) -> tuple[Path, Path, Path]:
         path = Path(os.path.expanduser(str(path)))
 
         # Resolve ~ in the path if present

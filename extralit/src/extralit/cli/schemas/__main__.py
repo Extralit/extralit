@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from pathlib import Path
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, Optional
 
 import typer
 from rich.console import Console
@@ -74,7 +74,7 @@ def upload_schemas_command(
         help="Force overwrite of existing schemas in the workspace.",
         show_choices=True,
     ),
-    exclude: Optional[List[str]] = typer.Option(
+    exclude: Optional[list[str]] = typer.Option(
         None,
         "--exclude",
         help="List of schema names to exclude from the update.",
@@ -252,7 +252,7 @@ def download_schemas_command(
         "-n",
         help="Filter schemas by name",
     ),
-    exclude: Optional[List[str]] = typer.Option(
+    exclude: Optional[list[str]] = typer.Option(
         None,
         "--exclude",
         "-e",

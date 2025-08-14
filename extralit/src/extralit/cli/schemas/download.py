@@ -15,7 +15,7 @@
 """Download schemas from a workspace."""
 
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 import typer
 from rich.console import Console
@@ -39,7 +39,7 @@ def download_schemas(
         "-n",
         help="Filter schemas by name",
     ),
-    exclude: Optional[List[str]] = typer.Option(
+    exclude: Optional[list[str]] = typer.Option(
         None,
         "--exclude",
         "-e",

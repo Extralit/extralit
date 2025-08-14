@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from datetime import datetime
-from typing import Annotated, Any, List, Literal, Optional, Union
+from typing import Annotated, Any, Literal, Optional, Union
 from uuid import UUID
 
 from pydantic import BaseModel, Field, field_serializer
@@ -61,7 +61,7 @@ class TermsFilterModel(BaseModel):
     """Filter model for terms filter."""
 
     type: Literal["terms"] = "terms"
-    values: List[Any]
+    values: list[Any]
     scope: ScopeModel
 
     @field_serializer("values", when_used="unless-none")
@@ -106,7 +106,7 @@ class AndFilterModel(BaseModel):
 
     type: Literal["and"] = "and"
 
-    and_: List["FilterModel"] = Field(alias="and")
+    and_: list["FilterModel"] = Field(alias="and")
 
 
 class TextQueryModel(BaseModel):
@@ -119,7 +119,7 @@ class TextQueryModel(BaseModel):
 class VectorQueryModel(BaseModel):
     name: str
     record_id: Optional[UUID] = None
-    value: Optional[List[float]] = None
+    value: Optional[list[float]] = None
     order: Literal["most_similar", "least_similar"] = "most_similar"
 
     @field_serializer("record_id", when_used="unless-none", return_type=str)

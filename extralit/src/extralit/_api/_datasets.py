@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Dict, List, Optional
+from typing import Optional
 from uuid import UUID
 
 import httpx
@@ -22,6 +22,8 @@ from extralit._exceptions._api import api_error_handler
 from extralit._models import DatasetModel
 
 __all__ = ["DatasetsAPI"]
+
+import builtins
 
 from extralit._models._dataset_progress import DatasetProgressModel, UserProgressModel
 
@@ -93,7 +95,7 @@ class DatasetsAPI(ResourceAPI[DatasetModel]):
         return DatasetProgressModel.model_validate(response_json)
 
     @api_error_handler
-    def list_users_progress(self, dataset_id: UUID) -> List[UserProgressModel]:
+    def list_users_progress(self, dataset_id: UUID) -> list[UserProgressModel]:
         response = self.http_client.get(f"{self.url_stub}/{dataset_id}/users/progress")
         response.raise_for_status()
         response_json = response.json()
@@ -110,7 +112,7 @@ class DatasetsAPI(ResourceAPI[DatasetModel]):
         return self._model_from_json(response_json=response_json)
 
     @api_error_handler
-    def list(self, workspace_id: Optional[UUID] = None) -> List["DatasetModel"]:
+    def list(self, workspace_id: Optional[UUID] = None) -> list["DatasetModel"]:
         response = self.http_client.get("/api/v1/me/datasets")
         response.raise_for_status()
         response_json = response.json()
@@ -134,8 +136,8 @@ class DatasetsAPI(ResourceAPI[DatasetModel]):
     # Private methods #
     ####################
 
-    def _model_from_json(self, response_json: Dict) -> "DatasetModel":
+    def _model_from_json(self, response_json: dict) -> "DatasetModel":
         return DatasetModel(**response_json)
 
-    def _model_from_jsons(self, response_jsons: List[Dict]) -> List["DatasetModel"]:
+    def _model_from_jsons(self, response_jsons: builtins.list[dict]) -> builtins.list["DatasetModel"]:
         return list(map(self._model_from_json, response_jsons))

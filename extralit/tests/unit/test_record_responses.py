@@ -15,8 +15,8 @@ import uuid
 
 import pytest
 
-from extralit import Response, User, Dataset, Settings, TextQuestion, TextField, Workspace
-from extralit.records._resource import RecordResponses, Record
+from extralit import Dataset, Response, Settings, TextField, TextQuestion, User, Workspace
+from extralit.records._resource import Record, RecordResponses
 
 
 @pytest.fixture

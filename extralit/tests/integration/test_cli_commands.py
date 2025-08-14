@@ -13,9 +13,9 @@
 # limitations under the License.
 
 import os
-import uuid
-import tempfile
 import subprocess
+import tempfile
+import uuid
 
 import pytest
 

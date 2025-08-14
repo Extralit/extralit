@@ -18,7 +18,7 @@ import warnings
 from collections.abc import Iterator, Sequence
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, List, Literal, Optional, Union
+from typing import TYPE_CHECKING, Literal, Optional, Union
 from uuid import UUID
 
 from extralit._exceptions import ExtralitAPIError, ExtralitSerializeError, SettingsError
@@ -47,14 +47,14 @@ class Settings(DefaultSettingsMixin, Resource):
 
     def __init__(
         self,
-        fields: Optional[List[Field]] = None,
-        questions: Optional[List[QuestionType]] = None,
-        vectors: Optional[List[VectorField]] = None,
-        metadata: Optional[List[MetadataType]] = None,
+        fields: Optional[list[Field]] = None,
+        questions: Optional[list[QuestionType]] = None,
+        vectors: Optional[list[VectorField]] = None,
+        metadata: Optional[list[MetadataType]] = None,
         guidelines: Optional[str] = None,
         allow_extra_metadata: bool = False,
         distribution: Optional[TaskDistribution] = None,
-        mapping: Optional[Dict[str, Union[str, Sequence[str]]]] = None,
+        mapping: Optional[dict[str, Union[str, Sequence[str]]]] = None,
         _dataset: Optional["Dataset"] = None,
     ) -> None:
         """
@@ -93,7 +93,7 @@ class Settings(DefaultSettingsMixin, Resource):
         return self.__fields
 
     @fields.setter
-    def fields(self, fields: List[Field]):
+    def fields(self, fields: list[Field]):
         self.__fields = SettingsProperties(self, fields)
 
     @property
@@ -101,7 +101,7 @@ class Settings(DefaultSettingsMixin, Resource):
         return self.__questions
 
     @questions.setter
-    def questions(self, questions: List[QuestionType]):
+    def questions(self, questions: list[QuestionType]):
         self.__questions = SettingsProperties(self, questions)
 
     @property
@@ -109,7 +109,7 @@ class Settings(DefaultSettingsMixin, Resource):
         return self.__vectors
 
     @vectors.setter
-    def vectors(self, vectors: List[VectorField]):
+    def vectors(self, vectors: list[VectorField]):
         self.__vectors = SettingsProperties(self, vectors)
 
     @property
@@ -117,7 +117,7 @@ class Settings(DefaultSettingsMixin, Resource):
         return self.__metadata
 
     @metadata.setter
-    def metadata(self, metadata: List[MetadataType]):
+    def metadata(self, metadata: list[MetadataType]):
         self.__metadata = SettingsProperties(self, metadata)
 
     @property
@@ -145,11 +145,11 @@ class Settings(DefaultSettingsMixin, Resource):
         self._distribution = value
 
     @property
-    def mapping(self) -> Dict[str, Union[str, Sequence[str]]]:
+    def mapping(self) -> dict[str, Union[str, Sequence[str]]]:
         return self._mapping
 
     @mapping.setter
-    def mapping(self, value: Dict[str, Union[str, Sequence[str]]]):
+    def mapping(self, value: dict[str, Union[str, Sequence[str]]]):
         self._mapping = value
 
     @property
@@ -180,7 +180,7 @@ class Settings(DefaultSettingsMixin, Resource):
         return schema_dict
 
     @cached_property
-    def schema_by_id(self) -> Dict[UUID, Union[Field, QuestionType, MetadataType, VectorField]]:
+    def schema_by_id(self) -> dict[UUID, Union[Field, QuestionType, MetadataType, VectorField]]:
         return {v.id: v for v in self.schema.values()}
 
     def validate(self) -> None:
@@ -269,7 +269,7 @@ class Settings(DefaultSettingsMixin, Resource):
         cls,
         repo_id: str,
         subset: Optional[str] = None,
-        feature_mapping: Optional[Dict[str, Literal["question", "field", "metadata"]]] = None,
+        feature_mapping: Optional[dict[str, Literal["question", "field", "metadata"]]] = None,
         **kwargs,
     ) -> "Settings":
         """Load the settings from the Hub
@@ -308,7 +308,7 @@ class Settings(DefaultSettingsMixin, Resource):
                 if prop.name == property.name:
                     message = f"Property with name {property.name!r} already exists in settings as {prop.__class__.__name__!r}"
                     if override:
-                        warnings.warn(message + ". Overriding the existing property.")
+                        warnings.warn(message + ". Overriding the existing property.", stacklevel=2)
                         attributes.remove(prop)
                     else:
                         raise SettingsError(message)
@@ -376,19 +376,19 @@ class Settings(DefaultSettingsMixin, Resource):
         instance = self.__class__._from_dict(self.serialize())
         return instance
 
-    def _fetch_fields(self) -> List[Field]:
+    def _fetch_fields(self) -> list[Field]:
         models = self._client.api.fields.list(dataset_id=self._dataset.id)
         return [_field_from_model(model) for model in models]
 
-    def _fetch_questions(self) -> List[QuestionType]:
+    def _fetch_questions(self) -> list[QuestionType]:
         models = self._client.api.questions.list(dataset_id=self._dataset.id)
         return [question_from_model(model) for model in models]
 
-    def _fetch_vectors(self) -> List[VectorField]:
+    def _fetch_vectors(self) -> list[VectorField]:
         models = self.dataset._client.api.vectors.list(self.dataset.id)
         return [VectorField.from_model(model) for model in models]
 
-    def _fetch_metadata(self) -> List[MetadataType]:
+    def _fetch_metadata(self) -> list[MetadataType]:
         models = self._client.api.metadata.list(dataset_id=self._dataset.id)
         return [MetadataField.from_model(model) for model in models]
 
@@ -445,7 +445,7 @@ class Settings(DefaultSettingsMixin, Resource):
                 dataset_properties_by_name[property.name] = property
 
     @classmethod
-    def _validate_mapping(cls, mapping: Dict[str, Union[str, Sequence[str]]]) -> dict:
+    def _validate_mapping(cls, mapping: dict[str, Union[str, Sequence[str]]]) -> dict:
         validate_mapping = {}
         for key, value in mapping.items():
             if isinstance(value, str):
@@ -480,7 +480,7 @@ class SettingsProperties(Sequence[Property]):
     This class is used to store the properties of a dataset settings object
     """
 
-    def __init__(self, settings: "Settings", properties: List[Property]):
+    def __init__(self, settings: "Settings", properties: list[Property]):
         self._properties_by_name = {}
         self._settings = settings
         self._removed_properties = []
@@ -501,7 +501,7 @@ class SettingsProperties(Sequence[Property]):
             return self._properties_by_name.get(key)
 
     def __iter__(self) -> Iterator[Property]:
-        return iter([v for v in self._properties_by_name.values()])
+        return iter(list(self._properties_by_name.values()))
 
     def __len__(self):
         return len(self._properties_by_name)
@@ -553,7 +553,7 @@ class SettingsProperties(Sequence[Property]):
             except ExtralitAPIError as e:
                 raise SettingsError(f"Failed to delete {item.name!r}: {e.message}") from e
 
-    def serialize(self) -> List[dict]:
+    def serialize(self) -> list[dict]:
         return [property.serialize() for property in self]
 
     def _validate_new_property(self, property: Property) -> None:
@@ -566,4 +566,4 @@ class SettingsProperties(Sequence[Property]):
     def __repr__(self) -> str:
         """Return a string representation of the object."""
 
-        return f"{[prop for prop in self]!r}"
+        return f"{list(self)!r}"

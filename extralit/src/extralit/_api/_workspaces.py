@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import builtins
 import logging
 import os
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID
 
 import httpx
@@ -76,7 +77,7 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
     ####################
 
     @api_error_handler
-    def list(self) -> List[WorkspaceModel]:
+    def list(self) -> list[WorkspaceModel]:
         response = self.http_client.get(url="/api/v1/me/workspaces")
         response.raise_for_status()
         response_json = response.json()
@@ -85,7 +86,7 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
         return workspaces
 
     @api_error_handler
-    def list_by_user_id(self, user_id: "UUID") -> List[WorkspaceModel]:
+    def list_by_user_id(self, user_id: "UUID") -> builtins.list[WorkspaceModel]:
         response = self.http_client.get(f"/api/v1/users/{user_id}/workspaces")
         response.raise_for_status()
         response_json = response.json()
@@ -94,7 +95,7 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
         return workspaces
 
     @api_error_handler
-    def list_current_user_workspaces(self) -> List[WorkspaceModel]:
+    def list_current_user_workspaces(self) -> builtins.list[WorkspaceModel]:
         response = self.http_client.get(url="/api/v1/me/workspaces")
         response.raise_for_status()
         response_json = response.json()
@@ -398,7 +399,7 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
         return created_document.id
 
     @api_error_handler
-    def get_documents(self, workspace_id: "UUID") -> List["Document"]:
+    def get_documents(self, workspace_id: "UUID") -> builtins.list["Document"]:
         """Get documents from a workspace.
 
         Args:
@@ -422,7 +423,7 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
 
     @api_error_handler
     def list_schemas(
-        self, workspace_name: str, prefix: str = _DEFAULT_SCHEMA_S3_PATH, exclude: Optional[List[str]] = None
+        self, workspace_name: str, prefix: str = _DEFAULT_SCHEMA_S3_PATH, exclude: Optional[builtins.list[str]] = None
     ) -> "SchemaStructure":
         """Get schemas from a workspace.
 
@@ -617,7 +618,7 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
     # Private methods #
     ####################
 
-    def _model_from_json(self, json_workspace: Dict) -> WorkspaceModel:
+    def _model_from_json(self, json_workspace: dict) -> WorkspaceModel:
         return WorkspaceModel(
             id=UUID(json_workspace["id"]),
             name=json_workspace["name"],
@@ -625,5 +626,5 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
             updated_at=json_workspace["updated_at"],
         )
 
-    def _model_from_jsons(self, json_workspaces: List[Dict]) -> List[WorkspaceModel]:
+    def _model_from_jsons(self, json_workspaces: builtins.list[dict]) -> builtins.list[WorkspaceModel]:
         return list(map(self._model_from_json, json_workspaces))

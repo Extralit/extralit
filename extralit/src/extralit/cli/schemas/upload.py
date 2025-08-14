@@ -15,7 +15,7 @@
 import glob
 import os
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 import typer
 
@@ -33,7 +33,7 @@ def upload_schemas(
         help="Force overwrite of existing schemas in the workspace.",
         show_choices=True,
     ),
-    exclude: Optional[List[str]] = typer.Option(
+    exclude: Optional[list[str]] = typer.Option(
         None,
         "--exclude",
         help="List of schema names to exclude from the update.",

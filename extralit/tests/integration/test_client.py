@@ -16,7 +16,7 @@ import uuid
 
 import pytest
 
-from extralit import Extralit, Dataset, TextField, TextQuestion, Settings, User, Workspace
+from extralit import Dataset, Extralit, Settings, TextField, TextQuestion, User, Workspace
 from extralit._exceptions import ExtralitError
 
 

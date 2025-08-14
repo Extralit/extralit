@@ -13,8 +13,8 @@
 # limitations under the License.
 
 import os
+from collections.abc import Generator
 from functools import wraps
-from typing import Generator
 from uuid import uuid4
 
 import pytest

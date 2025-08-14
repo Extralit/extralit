@@ -18,18 +18,18 @@ from random import random
 import pytest
 
 from extralit import (
-    Extralit,
-    Workspace,
     Dataset,
-    Settings,
-    TextField,
-    TextQuestion,
+    Extralit,
     LabelQuestion,
     Query,
     Record,
-    Suggestion,
-    VectorField,
+    Settings,
     Similar,
+    Suggestion,
+    TextField,
+    TextQuestion,
+    VectorField,
+    Workspace,
 )
 
 

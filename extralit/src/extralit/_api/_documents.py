@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import os
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 from uuid import UUID
 
 from extralit._api._base import ResourceAPI
@@ -100,7 +100,7 @@ class DocumentsAPI(ResourceAPI):
         )
 
     @api_error_handler
-    def list(self, workspace_id: UUID) -> List["DocumentModel"]:
+    def list(self, workspace_id: UUID) -> list["DocumentModel"]:
         """List documents in a workspace.
 
         Args:

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Annotated, Any, List, Literal, Optional, Union
+from typing import Annotated, Any, Literal, Optional, Union
 from uuid import UUID
 
 from pydantic import BaseModel, Field, field_serializer, field_validator, model_validator
@@ -27,7 +27,7 @@ class BaseMetadataPropertySettings(BaseModel):
 
 class TermsMetadataPropertySettings(BaseMetadataPropertySettings):
     type: Literal["terms"] = "terms"
-    values: Optional[List[Any]] = None
+    values: Optional[list[Any]] = None
 
     @field_validator("values")
     @classmethod

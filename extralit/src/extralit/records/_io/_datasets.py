@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import warnings
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 import lazy_loader as lazy
 
@@ -32,7 +32,7 @@ if TYPE_CHECKING:
     from extralit.records._mapping import IngestedRecordMapper
 
 
-def _cast_images_as_urls(hf_dataset: "HFDataset", columns: List[str]) -> "HFDataset":
+def _cast_images_as_urls(hf_dataset: "HFDataset", columns: list[str]) -> "HFDataset":
     """Cast the image features in the Hugging Face dataset as URLs.
 
     Parameters:
@@ -64,11 +64,11 @@ def _int2class_name(feature: "ClassLabel", value: int) -> Optional[str]:
     try:
         return feature.int2str(value)
     except Exception as ex:
-        warnings.warn(f"Could not cast {value} to string. Error: {ex}")
+        warnings.warn(f"Could not cast {value} to string. Error: {ex}", stacklevel=2)
         return None
 
 
-def _cast_class_label_sequence_as_string_list(hf_dataset: "HFDataset", columns: List[str]) -> "HFDataset":
+def _cast_class_label_sequence_as_string_list(hf_dataset: "HFDataset", columns: list[str]) -> "HFDataset":
     def map2str_list(x: dict, column_name: str, features: dict):
         value = x[column_name]
         feature = features[column]
@@ -88,7 +88,7 @@ def _cast_class_label_sequence_as_string_list(hf_dataset: "HFDataset", columns: 
     return hf_dataset
 
 
-def _cast_classlabels_as_strings(hf_dataset: "HFDataset", columns: List[str]) -> "HFDataset":
+def _cast_classlabels_as_strings(hf_dataset: "HFDataset", columns: list[str]) -> "HFDataset":
     """Cast the class label features in the Hugging Face dataset as strings.
 
     Parameters:
@@ -99,7 +99,7 @@ def _cast_classlabels_as_strings(hf_dataset: "HFDataset", columns: List[str]) ->
         HFDataset: The Hugging Face dataset with class label features cast as strings.
     """
 
-    def label_column2str(x: dict, column: str, features: dict) -> Dict[str, Union[str, None]]:
+    def label_column2str(x: dict, column: str, features: dict) -> dict[str, Union[str, None]]:
         value = x[column]
         feature = features[column]
 
@@ -116,7 +116,7 @@ def _cast_classlabels_as_strings(hf_dataset: "HFDataset", columns: List[str]) ->
     return hf_dataset
 
 
-def _uncast_uris_as_images(hf_dataset: "HFDataset", columns: List[str]) -> "HFDataset":
+def _uncast_uris_as_images(hf_dataset: "HFDataset", columns: list[str]) -> "HFDataset":
     """Cast the image features in the Hugging Face dataset as PIL images.
 
     Parameters:
@@ -144,14 +144,15 @@ def _uncast_uris_as_images(hf_dataset: "HFDataset", columns: List[str]) -> "HFDa
             casted_hf_dataset[0]
         except FileNotFoundError:
             warnings.warn(
-                f"Image file not found for column {column}. Image will be persisted as string (URL, path, or base64)."
+                f"Image file not found for column {column}. Image will be persisted as string (URL, path, or base64).",
+                stacklevel=2,
             )
             casted_hf_dataset = hf_dataset
 
     return casted_hf_dataset
 
 
-def _uncast_label_questions_as_classlabels(hf_dataset: "HFDataset", columns: List[str]) -> "HFDataset":
+def _uncast_label_questions_as_classlabels(hf_dataset: "HFDataset", columns: list[str]) -> "HFDataset":
     """Cast the class label features in the Hugging Face dataset as strings.
 
     Parameters:
@@ -199,7 +200,7 @@ class HFDatasetsIO:
         return isinstance(dataset, datasets.Dataset)  # type: ignore
 
     @staticmethod
-    def to_datasets(records: List[Union["Record", Tuple["Record", float]]], dataset: "Dataset") -> "HFDataset":
+    def to_datasets(records: list[Union["Record", tuple["Record", float]]], dataset: "Dataset") -> "HFDataset":
         """
         Export the records to a Hugging Face dataset.
 
@@ -214,7 +215,7 @@ class HFDatasetsIO:
     @staticmethod
     def _record_dicts_from_datasets(
         hf_dataset: "HFDataset", mapper: "IngestedRecordMapper"
-    ) -> List[Dict[str, Union[str, float, int, list]]]:
+    ) -> list[dict[str, Union[str, float, int, list]]]:
         """Creates a dictionaries from an HF dataset that can be passed to DatasetRecords.add or DatasetRecords.update.
 
         Parameters:
@@ -231,11 +232,11 @@ class HFDatasetsIO:
         except AttributeError:
             pass
 
-        record_dicts = [example for example in hf_dataset]
+        record_dicts = list(hf_dataset)
         return record_dicts
 
     @staticmethod
-    def _uncast_argilla_attributes_to_datasets(hf_dataset: "HFDataset", schema: Dict) -> "HFDataset":
+    def _uncast_argilla_attributes_to_datasets(hf_dataset: "HFDataset", schema: dict) -> "HFDataset":
         """Get the names of the Extralit fields that contain image data.
 
         Parameters:
@@ -268,6 +269,7 @@ class HFDatasetsIO:
         if id_column_name not in hf_dataset.column_names:
             split = hf_dataset.split
             warnings.warn(
+                stacklevel=2,
                 message="Record id column not found in Hugging Face dataset. Using row index and split for record ids.",
             )
 

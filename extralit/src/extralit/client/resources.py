@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import builtins
 import warnings
 from abc import abstractmethod
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, List, Optional, Union, overload
+from typing import TYPE_CHECKING, Optional, Union, overload
 from uuid import UUID
 
 from extralit._api._base import ResourceAPI
@@ -57,19 +58,19 @@ class Users(Sequence["User"], ResourceHTMLReprMixin):
         if not (username or id):
             raise ExtralitError("One of 'username' or 'id' must be provided")
         if username and id:
-            warnings.warn("Only one of 'username' or 'id' must be provided. Using 'id'")
+            warnings.warn("Only one of 'username' or 'id' must be provided. Using 'id'", stacklevel=2)
             username = None
 
         if id is not None:
             model = _get_model_by_id(self._api, id)
             if model:
                 return self._from_model(model)
-            warnings.warn(f"User with id {id!r} not found.")
+            warnings.warn(f"User with id {id!r} not found.", stacklevel=2)
         else:
             for model in self._api.list():
                 if model.username == username:
                     return self._from_model(model)
-            warnings.warn(f"User with username {username!r} not found.")
+            warnings.warn(f"User with username {username!r} not found.", stacklevel=2)
 
     def __iter__(self):
         return self._Iterator(self.list())
@@ -102,12 +103,12 @@ class Users(Sequence["User"], ResourceHTMLReprMixin):
         return user.create()
 
     @overload
-    def list(self) -> List["User"]: ...
+    def list(self) -> list["User"]: ...
 
     @overload
-    def list(self, workspace: "Workspace") -> List["User"]: ...
+    def list(self, workspace: "Workspace") -> builtins.list["User"]: ...
 
-    def list(self, workspace: Optional["Workspace"] = None) -> List["User"]:
+    def list(self, workspace: Optional["Workspace"] = None) -> builtins.list["User"]:
         """List all users."""
         if workspace is not None:
             models = self._api.list_by_workspace_id(workspace.id)
@@ -154,19 +155,19 @@ class Workspaces(Sequence["Workspace"], ResourceHTMLReprMixin):
             raise ExtralitError("One of 'name' or 'id' must be provided")
 
         if name and id:
-            warnings.warn("Only one of 'name' or 'id' must be provided. Using 'id'")
+            warnings.warn("Only one of 'name' or 'id' must be provided. Using 'id'", stacklevel=2)
             name = None
 
         if id is not None:
             model = _get_model_by_id(self._api, id)
             if model:
                 return self._from_model(model)
-            warnings.warn(f"Workspace with id {id!r} not found")
+            warnings.warn(f"Workspace with id {id!r} not found", stacklevel=2)
         else:
             for model in self._api.list():
                 if model.name == name:
                     return self._from_model(model)
-            warnings.warn(f"Workspace with name {name!r} not found.")
+            warnings.warn(f"Workspace with name {name!r} not found.", stacklevel=2)
 
     def __iter__(self):
         return self._Iterator(self.list())
@@ -197,7 +198,7 @@ class Workspaces(Sequence["Workspace"], ResourceHTMLReprMixin):
         workspace._client = self._client
         return workspace.create()
 
-    def list(self) -> List["Workspace"]:
+    def list(self) -> list["Workspace"]:
         return [self._from_model(model) for model in self._api.list()]
 
     ############################
@@ -247,7 +248,7 @@ class Datasets(Sequence["Dataset"], ResourceHTMLReprMixin):
         ...
 
     @overload
-    def __call__(self, workspace: Union["Workspace", str]) -> List["Dataset"]:
+    def __call__(self, workspace: Union["Workspace", str]) -> list["Dataset"]:
         """Get all datasets for a given workspace."""
         ...
 
@@ -256,7 +257,7 @@ class Datasets(Sequence["Dataset"], ResourceHTMLReprMixin):
         name: Optional[str] = None,
         workspace: Optional[Union["Workspace", str]] = None,
         id: Optional[Union[UUID, str]] = None,
-    ) -> Union[Optional["Dataset"], List["Dataset"]]:
+    ) -> Union[Optional["Dataset"], list["Dataset"]]:
         """
         Get a dataset by name and workspace, by id, or all datasets for a workspace.
         """
@@ -264,7 +265,7 @@ class Datasets(Sequence["Dataset"], ResourceHTMLReprMixin):
             model = _get_model_by_id(self._api, id)
             if model:
                 return self._from_model(model)
-            warnings.warn(f"Dataset with id {id!r} not found")
+            warnings.warn(f"Dataset with id {id!r} not found", stacklevel=2)
             return None
 
         elif name is not None and id is None:
@@ -278,7 +279,7 @@ class Datasets(Sequence["Dataset"], ResourceHTMLReprMixin):
             for dataset in workspace_obj.datasets:
                 if dataset.name == name:
                     return dataset.get()
-            warnings.warn(f"Dataset with name {name!r} not found in workspace {workspace_obj.name!r}")
+            warnings.warn(f"Dataset with name {name!r} not found in workspace {workspace_obj.name!r}", stacklevel=2)
             return None
 
         elif name is None and id is None and workspace is not None:
@@ -288,11 +289,11 @@ class Datasets(Sequence["Dataset"], ResourceHTMLReprMixin):
             return list(workspace_obj.datasets)
 
         elif name is not None and id is not None:
-            warnings.warn("Only one of 'name' or 'id' must be provided. Using 'id'")
+            warnings.warn("Only one of 'name' or 'id' must be provided. Using 'id'", stacklevel=2)
             model = _get_model_by_id(self._api, id)
             if model:
                 return self._from_model(model)
-            warnings.warn(f"Dataset with id {id!r} not found")
+            warnings.warn(f"Dataset with id {id!r} not found", stacklevel=2)
             return None
 
         else:
@@ -331,7 +332,7 @@ class Datasets(Sequence["Dataset"], ResourceHTMLReprMixin):
 
         return dataset
 
-    def list(self) -> List["Dataset"]:
+    def list(self) -> list["Dataset"]:
         return list(self)
 
     ############################
@@ -363,7 +364,7 @@ class Webhooks(Sequence["Webhook"], ResourceHTMLReprMixin):
         model = _get_model_by_id(self._api, id)
         if model:
             return self._from_model(model)
-        warnings.warn(f"Webhook with id {id!r} not found")
+        warnings.warn(f"Webhook with id {id!r} not found", stacklevel=2)
 
     def __iter__(self):
         return self._Iterator(self.list())
@@ -394,7 +395,7 @@ class Webhooks(Sequence["Webhook"], ResourceHTMLReprMixin):
         webhook._client = self._client
         return webhook.create()
 
-    def list(self) -> List["Webhook"]:
+    def list(self) -> list["Webhook"]:
         return [self._from_model(model) for model in self._api.list()]
 
     ############################

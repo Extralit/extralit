@@ -15,7 +15,7 @@
 
 import pytest
 
-from extralit import Extralit, Dataset, Settings, TextField, TextQuestion, Workspace, LabelQuestion
+from extralit import Dataset, Extralit, LabelQuestion, Settings, TextField, TextQuestion, Workspace
 
 
 @pytest.fixture

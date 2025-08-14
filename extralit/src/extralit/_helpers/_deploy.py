@@ -125,7 +125,8 @@ class SpacesDeploymentMixin(LoggingMixin):
     @staticmethod
     def _space_storage_warning() -> None:
         warnings.warn(
-            "No storage provided. The space will not have persistent storage so every 48 hours your data will be reset."
+            "No storage provided. The space will not have persistent storage so every 48 hours your data will be reset.",
+            stacklevel=2,
         )
 
     @classmethod

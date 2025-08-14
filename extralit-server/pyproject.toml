@@ -170,11 +170,16 @@ select = [
     "F",    # Pyflakes (undefined names, logical issues)
     "E7",   # Syntax/indentation errors
     "E9",   # Runtime-like errors
+    "E4",   # Import-related errors (E401, E402, etc.)
     "B012", # return in finally (can suppress real exceptions)
-    "ASYNC",  # flake8-async - async/await specific rules
-    "PLE",    # pylint errors (includes await-outside-async)
-    "FAST",   # fastapi-specific rules
-    "RUF",  # ruff-specific rules
+    "B",    # flake8-bugbear (broader than just B012)
+    "C4",   # flake8-comprehensions
+    "I",    # isort (import sorting)
+    "UP",   # pyupgrade (modern Python syntax)
+    "ASYNC", # flake8-async - async/await specific rules
+    "PLE",   # pylint errors (includes await-outside-async)
+    "FAST",  # FastAPI-specific rules (valuable for your backend)
+    "RUF",   # ruff-specific rules
 ]
 
 # Temporarily ignore modernization and lower-priority/style rules.

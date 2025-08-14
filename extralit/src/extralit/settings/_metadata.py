@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import TYPE_CHECKING, Any, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 from extralit._api._metadata import MetadataAPI
 from extralit._exceptions import MetadataError
@@ -102,7 +102,7 @@ class TermsMetadataProperty(MetadataPropertyBase):
     def __init__(
         self,
         name: str,
-        options: Optional[List[Any]] = None,
+        options: Optional[list[Any]] = None,
         title: Optional[str] = None,
         visible_for_annotators: Optional[bool] = True,
         client: Optional[Extralit] = None,
@@ -133,7 +133,7 @@ class TermsMetadataProperty(MetadataPropertyBase):
         )
 
     @property
-    def options(self) -> Optional[List[str]]:
+    def options(self) -> Optional[list[str]]:
         return self._model.settings.values
 
     @options.setter

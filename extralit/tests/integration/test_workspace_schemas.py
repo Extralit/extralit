@@ -18,6 +18,7 @@ import pytest
 
 try:
     import pandera as pa
+
     from extralit._models._schema import SchemaStructure
 
     PANDERA_AVAILABLE = True

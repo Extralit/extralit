@@ -16,14 +16,15 @@ import json
 import os
 import uuid
 from tempfile import TemporaryDirectory
-from typing import Any, List
+from typing import Any
 
-import extralit as ex
 import pytest
-from extralit._exceptions import SettingsError
 from datasets import load_dataset
 from huggingface_hub.errors import BadRequestError, FileMetadataError, HfHubHTTPError
-from requests.exceptions import ReadTimeout, ConnectTimeout, HTTPError, RequestException
+from requests.exceptions import ConnectTimeout, HTTPError, ReadTimeout, RequestException
+
+import extralit as ex
+from extralit._exceptions import SettingsError
 
 _RETRIES = 5
 
@@ -51,7 +52,7 @@ def dataset(client, dataset_name: str) -> ex.Dataset:
 
 
 @pytest.fixture
-def mock_data() -> List[dict[str, Any]]:
+def mock_data() -> list[dict[str, Any]]:
     return [
         {
             "text": "Hello World, how are you?",
@@ -101,7 +102,7 @@ def token():
 @pytest.mark.parametrize("with_records_export", [True, False])
 class TestDiskImportExportMixin:
     def test_export_dataset_to_disk(
-        self, dataset: ex.Dataset, mock_data: List[dict[str, Any]], with_records_export: bool
+        self, dataset: ex.Dataset, mock_data: list[dict[str, Any]], with_records_export: bool
     ):
         dataset.records.log(records=mock_data)
 
@@ -111,7 +112,7 @@ class TestDiskImportExportMixin:
             records_path = os.path.join(output_dir, ex.Dataset._DEFAULT_RECORDS_PATH)
             if with_records_export:
                 assert os.path.exists(records_path)
-                with open(records_path, "r") as f:
+                with open(records_path) as f:
                     exported_records = json.load(f)
 
                 assert len(exported_records) == len(mock_data)
@@ -122,12 +123,12 @@ class TestDiskImportExportMixin:
 
             settings_path = os.path.join(output_dir, ex.Dataset._DEFAULT_SETTINGS_PATH)
             assert os.path.exists(settings_path)
-            with open(settings_path, "r") as f:
+            with open(settings_path) as f:
                 exported_settings = json.load(f)
 
             dataset_path = os.path.join(output_dir, ex.Dataset._DEFAULT_DATASET_PATH)
             assert os.path.exists(dataset_path)
-            with open(dataset_path, "r") as f:
+            with open(dataset_path) as f:
                 exported_dataset = json.load(f)
 
         assert exported_settings["fields"][0]["name"] == "text"
@@ -141,7 +142,7 @@ class TestDiskImportExportMixin:
         self,
         dataset: ex.Dataset,
         client,
-        mock_data: List[dict[str, Any]],
+        mock_data: list[dict[str, Any]],
         with_records_export: bool,
         with_records_import: bool,
     ):
@@ -186,7 +187,7 @@ class TestDiskImportExportMixin:
 @pytest.mark.parametrize("with_records_export", [True, False])
 class TestHubImportExportMixin:
     def test_export_dataset_to_hub(
-        self, token: str, dataset: ex.Dataset, mock_data: List[dict[str, Any]], with_records_export: bool
+        self, token: str, dataset: ex.Dataset, mock_data: list[dict[str, Any]], with_records_export: bool
     ):
         repo_id = f"extralit-dev/test_export_dataset_to_hub_with_records_{with_records_export}"
         dataset.records.log(records=mock_data)
@@ -201,7 +202,7 @@ class TestHubImportExportMixin:
         token: str,
         dataset: ex.Dataset,
         client,
-        mock_data: List[dict[str, Any]],
+        mock_data: list[dict[str, Any]],
         with_records_export: bool,
         with_records_import: bool,
     ):
@@ -260,7 +261,7 @@ class TestHubImportExportMixin:
         token: str,
         dataset: ex.Dataset,
         client: ex.Extralit,
-        mock_data: List[dict[str, Any]],
+        mock_data: list[dict[str, Any]],
         with_records_export: bool,
         with_records_import: bool,
     ):
@@ -330,7 +331,7 @@ class TestHubImportExportMixin:
         token: str,
         dataset: ex.Dataset,
         client: ex.Extralit,
-        mock_data: List[dict[str, Any]],
+        mock_data: list[dict[str, Any]],
         with_records_export: bool,
     ):
         repo_id = f"extralit-dev/test_import_dataset_from_hub_using_wrong_settings_with_records_{with_records_export}"
@@ -365,7 +366,7 @@ class TestHubImportExportMixin:
                 pytest.skip(f"Skipping test due to Hugging Face Hub connection error: {e}")
 
     def test_import_dataset_from_hub_with_automatic_settings(
-        self, token: str, dataset: ex.Dataset, client, mock_data: List[dict[str, Any]], with_records_export: bool
+        self, token: str, dataset: ex.Dataset, client, mock_data: list[dict[str, Any]], with_records_export: bool
     ):
         repo_id = f"extralit-dev/test_import_dataset_from_hub_with_automatic_settings_{with_records_export}"
         mock_dataset_name = f"test_import_dataset_from_hub_with_automatic_settings_{uuid.uuid4()}"

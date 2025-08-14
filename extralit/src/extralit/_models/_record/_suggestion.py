@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, List, Literal, Optional, Union
+from typing import Any, Literal, Optional, Union
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, field_serializer
@@ -25,7 +25,7 @@ class SuggestionModel(BaseModel):
 
     question_name: Optional[str] = None
     type: Optional[Literal["model", "human", "selection"]] = None
-    score: Union[float, List[float], None] = None
+    score: Union[float, list[float], None] = None
     agent: Optional[str] = None
     id: Optional[UUID] = uuid4()
     question_id: Optional[UUID] = None

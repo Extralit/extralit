@@ -16,5 +16,6 @@
 # We need to review and avoid this. This is only a workaround to not change everything right now
 
 from extralit_server.enums import *
+
 from .database import *
 from .metadata_properties import *

@@ -17,7 +17,7 @@ import os
 import warnings
 from collections import defaultdict
 from tempfile import TemporaryDirectory
-from typing import TYPE_CHECKING, Any, Dict, Literal, Optional, Type, Union
+from typing import TYPE_CHECKING, Any, Literal, Optional, Union
 from uuid import UUID
 
 import lazy_loader as lazy
@@ -113,7 +113,7 @@ class HubImportExportMixin(DiskImportExportMixin):
 
     @classmethod
     def from_hub(
-        cls: Type["Dataset"],
+        cls: type["Dataset"],
         repo_id: str,
         *,
         name: Optional[str] = None,
@@ -206,6 +206,7 @@ class HubImportExportMixin(DiskImportExportMixin):
                 cls._log_dataset_records(hf_dataset=hf_dataset, dataset=dataset)
             except datasets.data_files.EmptyDatasetError:  # type: ignore
                 warnings.warn(
+                    stacklevel=2,
                     message="Trying to load a dataset `with_records=True` but dataset does not contain any records.",
                     category=UserWarning,
                 )
@@ -238,8 +239,9 @@ class HubImportExportMixin(DiskImportExportMixin):
         my_user = dataset._client.me
         if len(unknown_user_ids) > 1:
             warnings.warn(
+                stacklevel=2,
                 message=f"""Found unknown user ids in dataset repo: {unknown_user_ids}.
-                    Assigning first response for each record to current user ({my_user.username}) and discarding the rest."""
+                    Assigning first response for each record to current user ({my_user.username}) and discarding the rest.""",
             )
         for unknown_user_id in unknown_user_ids:
             user_ids[unknown_user_id] = my_user.id
@@ -290,7 +292,7 @@ class HubImportExportMixin(DiskImportExportMixin):
             ) from e
 
     @staticmethod
-    def _get_dataset_split(hf_dataset: "HFDataset", split: Optional[str] = None, **kwargs: Dict) -> "HFDataset":
+    def _get_dataset_split(hf_dataset: "HFDataset", split: Optional[str] = None, **kwargs: dict) -> "HFDataset":
         """Get a single dataset from a Hugging Face dataset.
 
         Parameters:
@@ -304,14 +306,15 @@ class HubImportExportMixin(DiskImportExportMixin):
             split = next(iter(hf_dataset.keys()))
             if len(hf_dataset.keys()) > 1:
                 warnings.warn(
+                    stacklevel=2,
                     message=f"Multiple splits found in Hugging Face dataset. Using the first split: {split}. "
-                    f"Available splits are: {', '.join(hf_dataset.keys())}."
+                    f"Available splits are: {', '.join(hf_dataset.keys())}.",
                 )
             hf_dataset = hf_dataset[split]
         return hf_dataset
 
     @staticmethod
-    def _get_sample_hf_record(hf_dataset: "HFDataset") -> Dict:
+    def _get_sample_hf_record(hf_dataset: "HFDataset") -> dict:
         """Get a sample record from a Hugging Face dataset.
 
         Parameters:
@@ -353,6 +356,6 @@ class HubImportExportMixin(DiskImportExportMixin):
         try:
             webbrowser.open(url, new=2, autoraise=True)
         except Exception as e:
-            warnings.warn(f"Error opening the URL in the browser: {e}")
-        warnings.warn(f"Open the following URL in your browser to configure the dataset: {url}")
+            warnings.warn(f"Error opening the URL in the browser: {e}", stacklevel=2)
+        warnings.warn(f"Open the following URL in your browser to configure the dataset: {url}", stacklevel=2)
         return url

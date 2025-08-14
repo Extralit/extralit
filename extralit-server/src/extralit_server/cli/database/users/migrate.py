@@ -13,7 +13,7 @@
 # limitations under the License.
 import asyncio
 import os
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, Optional
 
 import typer
 import yaml
@@ -38,7 +38,7 @@ class UserCreate(BaseModel):
     role: UserRole
     api_key: constr(min_length=1)
     password_hash: constr(min_length=1)
-    workspaces: Optional[List[WorkspaceCreate]]
+    workspaces: Optional[list[WorkspaceCreate]]
 
 
 class UsersMigrator:
@@ -95,8 +95,8 @@ class UsersMigrator:
 
         return UserRole.annotator
 
-    def _user_workspace_names(self, user: dict) -> List[str]:
-        workspace_names = [workspace_name for workspace_name in user.get("workspaces", [])]
+    def _user_workspace_names(self, user: dict) -> list[str]:
+        workspace_names = list(user.get("workspaces", []))
 
         if user["username"] in workspace_names:
             return workspace_names

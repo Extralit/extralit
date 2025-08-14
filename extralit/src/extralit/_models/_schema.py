@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List, Optional
+from typing import Optional
 
 import pandera as pa
 from pydantic.v1 import BaseModel, Field
@@ -40,7 +40,7 @@ class SchemaStructure(BaseModel):
     ```
     """
 
-    schemas: List[pa.DataFrameSchema] = Field(default_factory=list, description="A list of all the extraction schemas.")
+    schemas: list[pa.DataFrameSchema] = Field(default_factory=list, description="A list of all the extraction schemas.")
     singleton_schema: Optional[pa.DataFrameSchema] = Field(
         None, repr=True, description="A singleton schema that exists in `schemas` list."
     )

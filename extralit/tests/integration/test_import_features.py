@@ -14,12 +14,15 @@
 
 import os
 import uuid
-from typing import Any, List, Generator
+from collections.abc import Generator
+from typing import Any
+
+import pytest
+from datasets import ClassLabel, Features, Value
+from datasets import Dataset as HFDataset
+from huggingface_hub.errors import HfHubHTTPError
 
 import extralit as ex
-import pytest
-from datasets import Dataset as HFDataset, Value, Features, ClassLabel
-from huggingface_hub.errors import HfHubHTTPError
 
 _RETRIES = 5
 
@@ -46,7 +49,7 @@ def dataset(client, dataset_name: str) -> Generator[ex.Dataset, None, None]:
 
 
 @pytest.fixture
-def mock_data() -> List[dict[str, Any]]:
+def mock_data() -> list[dict[str, Any]]:
     return [
         {
             "text": "Hello World, how are you?",
@@ -77,7 +80,7 @@ def token():
 @pytest.mark.skipif(not os.getenv("HF_TOKEN_EXTRALIT_INTERNAL_TESTING"), reason="No HF token provided")
 class TestImportFeaturesFromHub:
     def test_import_records_from_datasets_with_classlabel(
-        self, token: str, dataset: ex.Dataset, client, mock_data: List[dict[str, Any]]
+        self, token: str, dataset: ex.Dataset, client, mock_data: list[dict[str, Any]]
     ):
         repo_id = f"extralit-dev/test_import_dataset_from_hub_with_classlabel_{uuid.uuid4()}"
 

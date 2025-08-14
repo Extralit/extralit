@@ -15,7 +15,7 @@ import os
 import time
 import warnings
 from threading import Thread
-from typing import TYPE_CHECKING, Callable, List, Optional, Union
+from typing import TYPE_CHECKING, Callable, Optional, Union
 
 import extralit as ex
 from extralit import Extralit
@@ -60,7 +60,7 @@ def _webhook_url_for_func(func: Callable) -> str:
 
 
 def webhook_listener(
-    events: Union[str, List[str]],
+    events: Union[str, list[str]],
     description: Optional[str] = None,
     client: Optional["Extralit"] = None,
     server: Optional["FastAPI"] = None,
@@ -93,7 +93,9 @@ def webhook_listener(
         webhook = None
         for extralit_webhook in client.webhooks:
             if extralit_webhook.url == webhook_url and extralit_webhook.events == events:
-                warnings.warn(f"Found existing webhook with for URL {extralit_webhook.url}: {extralit_webhook}")
+                warnings.warn(
+                    f"Found existing webhook with for URL {extralit_webhook.url}: {extralit_webhook}", stacklevel=2
+                )
                 webhook = extralit_webhook
                 webhook.description = description or webhook.description
                 webhook.enabled = True
@@ -176,7 +178,7 @@ def start_webhook_server():
     global _server_runner
 
     if _server_runner:
-        warnings.warn("Server already started")
+        warnings.warn("Server already started", stacklevel=2)
     else:
         server = get_webhook_server()
 
@@ -190,7 +192,7 @@ def stop_webhook_server():
     global _server_runner
 
     if not _server_runner:
-        warnings.warn("Server not started")
+        warnings.warn("Server not started", stacklevel=2)
     else:
         try:
             _server_runner.stop()

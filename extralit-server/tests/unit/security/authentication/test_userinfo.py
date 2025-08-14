@@ -24,7 +24,7 @@ class TestUserInfo:
     def test_get_user_name_without_claims(self):
         userinfo = UserInfo()
         with pytest.raises(KeyError):
-            userinfo.username
+            _ = userinfo.username
 
     def test_get_userinfo_first_name(self):
         userinfo = UserInfo({"username": "user", "first_name": "User"})

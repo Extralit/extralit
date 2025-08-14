@@ -13,11 +13,10 @@
 # limitations under the License.
 import dataclasses
 from abc import ABCMeta, abstractmethod
+from collections.abc import AsyncGenerator, Iterable
 from contextlib import asynccontextmanager
 from typing import (
-    AsyncGenerator,
     Generic,
-    Iterable,
     Literal,
     TypeVar,
     Union,

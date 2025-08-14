@@ -15,7 +15,7 @@ import warnings
 from collections.abc import Iterable, Sequence
 from enum import Enum
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
 from uuid import UUID
 
 from tqdm import tqdm
@@ -54,7 +54,7 @@ class DatasetRecordsIterator:
         batch_size: Optional[int] = None,
         with_suggestions: bool = False,
         with_responses: bool = False,
-        with_vectors: Optional[Union[str, List[str], bool]] = None,
+        with_vectors: Optional[Union[str, list[str], bool]] = None,
         limit: Optional[int] = None,
     ):
         self.__dataset = dataset
@@ -69,7 +69,7 @@ class DatasetRecordsIterator:
         self.__limit = limit
 
         if self.__limit is not None and self.__limit <= 0:
-            warnings.warn(f"Limit {self.__limit} is invalid: must be greater than 0. Setting limit to 1.")
+            warnings.warn(f"Limit {self.__limit} is invalid: must be greater than 0. Setting limit to 1.", stacklevel=2)
             self.__limit = 1
 
         if self.__limit is not None and self.__limit < self.__batch_size:
@@ -89,7 +89,7 @@ class DatasetRecordsIterator:
             return False
         return self.__limit <= 0
 
-    def _next_record(self) -> Union[Record, Tuple[Record, float]]:
+    def _next_record(self) -> Union[Record, tuple[Record, float]]:
         if self._limit_reached() or self._no_records():
             raise StopIteration()
 
@@ -107,9 +107,9 @@ class DatasetRecordsIterator:
         self.__records_batch = list(self._list())
         self.__offset += len(self.__records_batch)
 
-    def _list(self) -> Sequence[Union[Record, Tuple[Record, float]]]:
+    def _list(self) -> Sequence[Union[Record, tuple[Record, float]]]:
         if not self.__client.api.datasets.exists(self.__dataset.id):
-            warnings.warn(f"Dataset {self.__dataset.id!r} does not exist on the server. Skipping...")
+            warnings.warn(f"Dataset {self.__dataset.id!r} does not exist on the server. Skipping...", stacklevel=2)
             return []
 
         if self._is_search_query():
@@ -125,7 +125,7 @@ class DatasetRecordsIterator:
             for record_model in self._fetch_from_server_with_list():
                 yield Record.from_model(model=record_model, dataset=self.__dataset)
 
-    def _fetch_from_server_with_list(self) -> List[RecordModel]:
+    def _fetch_from_server_with_list(self) -> list[RecordModel]:
         return self.__client.api.records.list(
             dataset_id=self.__dataset.id,
             limit=self.__batch_size,
@@ -135,7 +135,7 @@ class DatasetRecordsIterator:
             with_vectors=self.__with_vectors,
         )
 
-    def _fetch_from_server_with_search(self) -> List[Tuple[RecordModel, float]]:
+    def _fetch_from_server_with_search(self) -> list[tuple[RecordModel, float]]:
         search_items, total = self.__client.api.records.search(
             dataset_id=self.__dataset.id,
             query=self.__query.api_model(),
@@ -150,10 +150,10 @@ class DatasetRecordsIterator:
     def _is_search_query(self) -> bool:
         return self.__query.has_search()
 
-    def to_list(self, flatten: bool) -> List[Dict[str, Any]]:
+    def to_list(self, flatten: bool) -> list[dict[str, Any]]:
         return GenericIO.to_list(records=list(self), flatten=flatten)
 
-    def to_dict(self, flatten: bool, orient: str) -> Dict[str, Any]:
+    def to_dict(self, flatten: bool, orient: str) -> dict[str, Any]:
         data = GenericIO.to_dict(records=list(self), flatten=flatten, orient=orient)
         return data
 
@@ -180,7 +180,7 @@ class DatasetRecords(Iterable[Record], LoggingMixin):
     DEFAULT_DELETE_BATCH_SIZE = 64
 
     def __init__(
-        self, client: "Extralit", dataset: "Dataset", mapping: Optional[Dict[str, Union[str, Sequence[str]]]] = None
+        self, client: "Extralit", dataset: "Dataset", mapping: Optional[dict[str, Union[str, Sequence[str]]]] = None
     ):
         """Initializes a DatasetRecords object with a client and a dataset.
         Args:
@@ -202,7 +202,7 @@ class DatasetRecords(Iterable[Record], LoggingMixin):
         start_offset: int = 0,
         with_suggestions: bool = True,
         with_responses: bool = True,
-        with_vectors: Optional[Union[List, bool, str]] = None,
+        with_vectors: Optional[Union[list, bool, str]] = None,
         limit: Optional[int] = None,
     ) -> DatasetRecordsIterator:
         """Returns an iterator over the records in the dataset on the server.
@@ -249,8 +249,8 @@ class DatasetRecords(Iterable[Record], LoggingMixin):
 
     def log(
         self,
-        records: Union[List[dict], List[Record], "HFDataset"],
-        mapping: Optional[Dict[str, Union[str, Sequence[str]]]] = None,
+        records: Union[list[dict], list[Record], "HFDataset"],
+        mapping: Optional[dict[str, Union[str, Sequence[str]]]] = None,
         user_id: Optional[UUID] = None,
         batch_size: int = DEFAULT_BATCH_SIZE,
         on_error: RecordErrorHandling = RecordErrorHandling.RAISE,
@@ -306,9 +306,9 @@ class DatasetRecords(Iterable[Record], LoggingMixin):
 
     def delete(
         self,
-        records: List[Record],
+        records: list[Record],
         batch_size: int = DEFAULT_DELETE_BATCH_SIZE,
-    ) -> List[Record]:
+    ) -> list[Record]:
         """Delete records in a dataset on the server using the provided records
             and matching based on the id.
 
@@ -348,7 +348,7 @@ class DatasetRecords(Iterable[Record], LoggingMixin):
 
         return records
 
-    def to_dict(self, flatten: bool = False, orient: str = "names") -> Dict[str, Any]:
+    def to_dict(self, flatten: bool = False, orient: str = "names") -> dict[str, Any]:
         """
         Return the records as a dictionary. This is a convenient shortcut for dataset.records(...).to_dict().
 
@@ -365,7 +365,7 @@ class DatasetRecords(Iterable[Record], LoggingMixin):
         """
         return self().to_dict(flatten=flatten, orient=orient)
 
-    def to_list(self, flatten: bool = False) -> List[Dict[str, Any]]:
+    def to_list(self, flatten: bool = False) -> list[dict[str, Any]]:
         """
         Return the records as a list of dictionaries. This is a convenient shortcut for dataset.records(...).to_list().
 
@@ -392,7 +392,7 @@ class DatasetRecords(Iterable[Record], LoggingMixin):
         """
         return self().to_json(path=path)
 
-    def from_json(self, path: Union[Path, str]) -> List[Record]:
+    def from_json(self, path: Union[Path, str]) -> list[Record]:
         """Creates a DatasetRecords object from a disk path to a JSON file.
             The JSON file should be defined by `DatasetRecords.to_json`.
 
@@ -423,11 +423,11 @@ class DatasetRecords(Iterable[Record], LoggingMixin):
 
     def _ingest_records(
         self,
-        records: Union[List[Dict[str, Any]], List[Record], "HFDataset"],
-        mapping: Optional[Dict[str, Union[str, Sequence[str]]]] = None,
+        records: Union[list[dict[str, Any]], list[Record], "HFDataset"],
+        mapping: Optional[dict[str, Union[str, Sequence[str]]]] = None,
         user_id: Optional[UUID] = None,
         on_error: RecordErrorHandling = RecordErrorHandling.RAISE,
-    ) -> List[RecordModel]:
+    ) -> list[RecordModel]:
         """Ingests records from a list of dictionaries, a Hugging Face Dataset, or a list of Record objects."""
 
         mapping = mapping or self._mapping
@@ -460,7 +460,7 @@ class DatasetRecords(Iterable[Record], LoggingMixin):
                     )
                     continue
                 elif on_error == RecordErrorHandling.WARN:
-                    warnings.warn(f"Failed to ingest record from dict {record}: {e}")
+                    warnings.warn(f"Failed to ingest record from dict {record}: {e}", stacklevel=2)
                     continue
                 raise RecordsIngestionError(f"Failed to ingest record from dict {record}") from e
             ingested_records.append(record.api_model())
@@ -477,7 +477,7 @@ class DatasetRecords(Iterable[Record], LoggingMixin):
 
         return norm_batch_size
 
-    def _validate_vector_names(self, vector_names: Union[List[str], str]) -> None:
+    def _validate_vector_names(self, vector_names: Union[list[str], str]) -> None:
         if not isinstance(vector_names, list):
             vector_names = [vector_names]
         for vector_name in vector_names:

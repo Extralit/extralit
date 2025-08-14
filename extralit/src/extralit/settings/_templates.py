@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import TYPE_CHECKING, List, Literal, Optional
+from typing import TYPE_CHECKING, Literal, Optional
 
 if TYPE_CHECKING:
     from extralit.settings._field import TextField
@@ -37,7 +37,7 @@ class DefaultSettingsMixin:
     @classmethod
     def for_classification(
         cls: "Settings",
-        labels: List[str],
+        labels: list[str],
         field_type: Optional[Literal["text", "image", "chat"]] = "text",
     ) -> "Settings":
         """Default settings for document classification task. Document classification template consists of a text field and a label question.
