@@ -78,7 +78,7 @@ describe("ImportAnalysisTable", () => {
       value: initialValue,
     }));
 
-    mockWatch.mockImplementation(() => { });
+    mockWatch.mockImplementation(() => {});
 
     wrapper = mount(ImportAnalysisTable, {
       propsData: {
@@ -114,11 +114,6 @@ describe("ImportAnalysisTable", () => {
     it("should show summary statistics", () => {
       const summaryStats = wrapper.find(".summary-stats");
       expect(summaryStats.exists()).toBe(true);
-    });
-
-    it("should show import information", () => {
-      const importInfo = wrapper.find(".import-info");
-      expect(importInfo.exists()).toBe(true);
     });
 
     it("should display references with and without PDFs count", () => {

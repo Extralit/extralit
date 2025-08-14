@@ -155,3 +155,6 @@ src/**/server/static/
 # App generated files
 extralit-server/src/extralit_server/static
 extralit/site
+
+# Development files
+**/*.db

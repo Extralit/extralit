@@ -25,7 +25,7 @@
     <div class="form-group">
       <h2 class="--heading5 --medium description__title" v-text="$t('userSettings.fields.workspaces')" />
       <BaseBadgeSkeleton v-if="isLoadingWorkspaces" :quantity="5" />
-      <div class="workspaces" v-else-if="workspaces.length">
+      <div v-else-if="workspaces?.length" class="workspaces">
         <BaseBadge
           v-for="workspace in workspaces"
           :key="workspace.id"
@@ -55,7 +55,7 @@ import { useUserInfoViewModel } from "./useUserInfoViewModel";
 export default {
   methods: {
     goToWorkspace(workspace) {
-      this.$router.push(`/datasets?workspaces=${workspace}`);
+      this.$router.push(`/?workspace=${workspace}`);
     },
   },
   setup() {

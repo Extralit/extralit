@@ -6,14 +6,14 @@
       <template v-slot:header>
         <AppHeader
           class="home__header"
-          :breadcrumbs="[{ action: 'clearFilters', name: $t('breadcrumbs.home') }]"
+          :breadcrumbs="breadcrumbs.map(b => ({ ...b, name: b.name === 'Home' ? $t('breadcrumbs.home') : b.name }))"
           @breadcrumb-action="onBreadcrumbAction"
         />
         <PersistentStorageBanner class="home__banner" />
       </template>
       <template v-slot:page-content>
         <div class="home__tabs">
-          <BaseTabs :active-tab="activeTab" :tabs="tabs" @change-tab="onTabChange" />
+          <BaseTabs :active-tab="activeTab" :tabs="tabs" tabSize="medium" @change-tab="onTabChange" />
         </div>
 
         <div class="home__tab-content">
@@ -22,8 +22,8 @@
             <DatasetList
               :workspaces="workspaces"
               :datasets="datasets.datasets"
+              :selected-workspace="selectedWorkspace"
               @on-click-card="cardAction"
-              @workspace-selected="onWorkspaceSelected"
             />
           </template>
 
@@ -157,9 +157,7 @@ export default {
     importHfDataset(repoId: string) {
       this.getNewHfDatasetByRepoId(repoId);
     },
-    onWorkspaceSelected(workspace: Workspace) {
-      this.setSelectedWorkspace(workspace);
-    },
+
     onTabChange(tabId) {
       const selectedTab = this.tabs.find(tab => tab.id === tabId);
       if (selectedTab) {

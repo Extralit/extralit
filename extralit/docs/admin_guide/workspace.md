@@ -18,7 +18,7 @@ A **workspace** is a *space* inside your Extralit instance where authorized user
 
 Depending on [your Extralit deployment](../getting_started/quickstart.md), the initial workspace will vary.
 
-* If you deploy on the Hugging Face Hub, the initial workspace will be the one indicated in the `.oauth.yaml` file. By default, `argilla`.
+* If you deploy on the Hugging Face Hub, the initial workspace will be the one indicated in the `.oauth.yaml` file. By default, `extralit`.
 * If you deploy with Docker, you will need to create a workspace as shown [in the next section](#create-a-new-workspace).
 
 !!! info "Main Class"

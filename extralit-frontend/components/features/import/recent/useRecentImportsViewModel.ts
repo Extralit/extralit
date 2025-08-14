@@ -8,14 +8,13 @@ import { useResolve } from "ts-injecty";
 import { GetImportHistoryUseCase } from "~/v1/domain/usecases/get-import-history-use-case";
 import type { ImportHistoryListItem } from "~/v1/domain/usecases/get-import-history-use-case";
 
-interface RecentImportsProps {
+
+export const useRecentImportsViewModel = (props: {
   workspace: {
     id: string;
     name: string;
   } | null;
-}
-
-export function useRecentImportsViewModel(props: RecentImportsProps) {
+}) => {
   const getImportHistoryUseCase = useResolve(GetImportHistoryUseCase);
 
   // Reactive state

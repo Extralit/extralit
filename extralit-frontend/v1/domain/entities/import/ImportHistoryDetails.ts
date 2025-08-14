@@ -3,9 +3,9 @@
  * Provides TypeScript interfaces for ImportHistory data structure
  */
 
+import { TableData } from "../table/TableData";
 import type {
   ImportHistoryResponse,
-  DataframeData,
   ImportStatus,
   DocumentImportAnalysis,
   ImportSummary,
@@ -38,7 +38,7 @@ export interface ImportHistorySummaryStats {
  * Enhanced ImportHistory details with computed properties
  */
 export class ImportHistoryDetails {
-  constructor(private readonly data: ImportHistoryResponse & { data: DataframeData }) {}
+  constructor(private readonly data: ImportHistoryResponse & { data: TableData }) {}
 
   get id(): string {
     return this.data.id;
@@ -161,7 +161,7 @@ export class ImportHistoryDetails {
   /**
    * Get raw data for export or further processing
    */
-  getRawData(): ImportHistoryResponse & { data: DataframeData } {
+  getRawData(): ImportHistoryResponse & { data: TableData } {
     return this.data;
   }
 

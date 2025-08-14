@@ -19,10 +19,9 @@ from typing import Dict, List, Optional
 
 from fastapi import HTTPException, status, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import and_, or_, select
+from sqlalchemy import and_, or_, select, case
 
 from extralit_server.models.database import Document, ImportHistory
-from extralit_server.models import Document
 from extralit_server.api.schemas.v1.documents import DocumentCreate, DocumentListItem
 from extralit_server.api.schemas.v1.imports import (
     FileInfo,
@@ -37,7 +36,7 @@ from extralit_server.api.schemas.v1.imports import (
     ImportHistoryCreate,
     ImportHistoryCreateResponse,
 )
-from extralit_server.jobs.document_jobs import upload_reference_documents_job
+from extralit_server.jobs.document_jobs import upload_and_preprocess_documents_job
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -76,7 +75,7 @@ async def delete_documents(
             params.append(Document.id == id)
         if reference:
             params.append(Document.reference == reference)
-        documents = await Document.delete_many(db=db, conditions=params, autocommit=False)
+        documents = await Document.delete_many(db=db, conditions=params, autocommit=False)  # type: ignore
 
     await db.commit()
     documents = [DocumentListItem.model_validate(doc) for doc in documents]
@@ -85,8 +84,7 @@ async def delete_documents(
 
 async def list_documents(db: "AsyncSession", workspace_id: UUID) -> List[DocumentListItem]:
     result = await db.execute(select(Document).filter_by(workspace_id=workspace_id))
-    documents: List[Document] = result.scalars().all()
-    documents = [DocumentListItem.model_validate(doc) for doc in documents]
+    documents = [DocumentListItem.model_validate(doc) for doc in result.scalars().all()]
 
     return documents
 
@@ -100,6 +98,7 @@ async def find_existing_documents(
     pmid: Optional[str] = None,
     doi: Optional[str] = None,
     url: Optional[str] = None,
+    limit: Optional[int] = None,
 ) -> List[DocumentListItem]:
     """
     Find existing documents that matches any of provided criteria.
@@ -112,6 +111,7 @@ async def find_existing_documents(
         pmid: Optional PMID to match
         doi: Optional DOI to match
         url: Optional URL to match
+        limit: Optional limit on the number of results returned
 
     Returns:
         List of existing documents matching the criteria (empty if none found)
@@ -120,22 +120,32 @@ async def find_existing_documents(
 
     if document_id:
         conditions.append(Document.id == document_id)
+    if url:
+        conditions.append(Document.url == url)
     if reference:
         conditions.append(Document.reference == reference)
-    if file_name:
-        conditions.append(Document.file_name == file_name)
     if pmid:
         conditions.append(Document.pmid == pmid)
     if doi:
         conditions.append(Document.doi == doi)
-    if url:
-        conditions.append(Document.url == url)
+    if file_name:
+        conditions.append(Document.file_name == file_name)
 
     if not conditions:
         return []
 
     # Find documents matching any of the conditions within the workspace
-    result = await db.execute(select(Document).where(and_(Document.workspace_id == workspace_id, or_(*conditions))))
+    query = select(Document).where(and_(Document.workspace_id == workspace_id, or_(*conditions)))
+
+    if conditions:
+        # Create a CASE statement for ordering based on ordinal position
+        order_case = case(*[(condition, i) for i, condition in enumerate(conditions)], else_=len(conditions))
+        query = query.order_by(order_case)
+
+    if limit is not None:
+        query = query.limit(limit)
+
+    result = await db.execute(query)
     existing_documents = result.scalars().all()
 
     return [DocumentListItem.model_validate(doc) for doc in existing_documents]
@@ -385,12 +395,11 @@ async def process_bulk_upload(
             if not doc.associated_files:
                 # Create a reference-based job for documents without files
                 job = DEFAULT_QUEUE.enqueue(
-                    upload_reference_documents_job,
+                    upload_and_preprocess_documents_job,
                     reference=reference,
                     reference_data=doc.document_create.model_dump(),
                     file_data_list=[],
                     user_id=user_id,
-                    job_timeout=None,  # No timeout for large uploads
                 )
 
                 # Store job ID mapped to reference key for frontend tracking
@@ -436,7 +445,7 @@ async def process_bulk_upload(
 
             # Create a reference-based job for multiple files
             job = DEFAULT_QUEUE.enqueue(
-                upload_reference_documents_job,
+                upload_and_preprocess_documents_job,
                 reference=reference,
                 reference_data=doc.document_create.model_dump(),
                 file_data_list=file_data_list,

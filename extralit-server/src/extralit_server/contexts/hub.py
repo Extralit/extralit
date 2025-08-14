@@ -19,16 +19,23 @@ import json
 
 from uuid import uuid4
 from pathlib import Path
-from typing import Any, Optional, List
+from typing import Any, Optional, List, TYPE_CHECKING
 from typing_extensions import Self
 from tempfile import TemporaryDirectory
 
-from PIL import Image
+import lazy_loader as lazy
+
+datasets = lazy.load("datasets")
+PIL = lazy.load("PIL")
+
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
 from huggingface_hub import HfApi, DatasetCard, DatasetCardData
-from datasets import Dataset as HFDataset, NamedSplit, load_dataset, features
+
+if TYPE_CHECKING:
+    from PIL import Image
+    from datasets import Dataset as HFDataset
 
 from extralit_server.contexts import info
 from extralit_server.database import get_sync_db
@@ -62,7 +69,7 @@ HUB_DATASET_CARD_TEMPLATE_PATH = os.path.join(Path(__file__).parent, "hub_templa
 
 class HubDataset:
     def __init__(self, name: str, subset: str, split: str, mapping: HubDatasetMapping):
-        self.dataset: HFDataset = load_dataset(path=name, name=subset, split=split, streaming=True)  # type: ignore
+        self.dataset: "HFDataset" = datasets.load_dataset(path=name, name=subset, split=split, streaming=True)  # type: ignore
         self.split = split
         self.mapping = mapping
         self.mapping_feature_names = mapping.sources
@@ -121,14 +128,14 @@ class HubDataset:
         return row
 
     def _cast_feature_value(self, feature: Any, value: Any) -> Any:
-        if isinstance(feature, features.ClassLabel):
+        if isinstance(feature, datasets.features.ClassLabel):  # type: ignore
             if value == FEATURE_CLASS_LABEL_NO_LABEL:
                 return None
             else:
                 return feature.int2str(value)
-        elif isinstance(feature, features.Sequence):
+        elif isinstance(feature, datasets.features.Sequence):  # type: ignore
             return [self._cast_feature_value(feature.feature, v) for v in value]
-        elif isinstance(feature, features.Image) and isinstance(value, Image.Image):
+        elif isinstance(feature, datasets.features.Image) and isinstance(value, PIL.Image.Image):  # type: ignore
             return pil_image_to_data_url(value)
         else:
             return value
@@ -231,7 +238,9 @@ class HubDatasetExporter:
         self.cache_version = uuid4()
 
     def export_to(self, name: str, subset: str, split: str, private: bool, token: str) -> None:
-        hf_dataset: HFDataset = HFDataset.from_generator(self._rows_generator, split=NamedSplit(split))  # type: ignore
+        hf_dataset: "HFDataset" = datasets.Dataset.from_generator(
+            self._rows_generator, split=datasets.NamedSplit(split)
+        )  # type: ignore
         hf_dataset.push_to_hub(
             repo_id=name,
             config_name=subset,
@@ -285,7 +294,7 @@ class HubDatasetExporter:
             feature_value = record.fields.get(field.name)
 
             if field.is_image and feature_value is not None and feature_value.startswith("data:"):
-                row_fields[feature_name] = Image.open(io.BytesIO(data_url_to_bytes(feature_value)))
+                row_fields[feature_name] = PIL.Image.open(io.BytesIO(data_url_to_bytes(feature_value)))  # type: ignore
             else:
                 row_fields[feature_name] = feature_value
 
@@ -474,7 +483,7 @@ class HubDatasetExporter:
         card.save(os.path.join(directory, "README.md"))
 
 
-def pil_image_to_data_url(image: Image.Image):
+def pil_image_to_data_url(image: "Image"):
     buffer = io.BytesIO()
 
     image_format = image.format or DATA_URL_DEFAULT_IMAGE_FORMAT

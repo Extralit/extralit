@@ -4,10 +4,10 @@
 
     <div class="import-summary-sidebar__stats">
       <!-- Bibliography Status -->
-      <div v-if="bibData.parsedEntries.length > 0" class="import-summary-sidebar__stat">
+      <div v-if="bibData.dataframeData && bibData.dataframeData.data.length > 0" class="import-summary-sidebar__stat">
         <BaseIcon icon-name="document"
           class="import-summary-sidebar__stat-icon import-summary-sidebar__stat-icon--bib" />
-        <span class="import-summary-sidebar__stat-text">{{ bibData.parsedEntries.length }} references
+        <span class="import-summary-sidebar__stat-text">{{ bibData.dataframeData.data.length }} references
           found</span>
       </div>
 
@@ -20,8 +20,6 @@
 
       <!-- Matching Status -->
       <div v-if="pdfData.matchedFiles.length > 0" class="import-summary-sidebar__stat">
-        <BaseIcon icon-name="check"
-          class="import-summary-sidebar__stat-icon import-summary-sidebar__stat-icon--match" />
         <span class="import-summary-sidebar__stat-text">
           {{ pdfData.matchedFiles.length }} matched, {{ pdfData.unmatchedFiles.length }} mismatch{{
             pdfData.unmatchedFiles.length === 1 ? "" : "es"
@@ -40,7 +38,6 @@ import "assets/icons/import";
 
 interface BibliographyData {
   fileName: string;
-  parsedEntries: any[];
   dataframeData: any;
   rawContent: string;
 }
@@ -59,7 +56,6 @@ export default {
       type: Object as () => BibliographyData,
       default: () => ({
         fileName: "",
-        parsedEntries: [],
         dataframeData: null,
         rawContent: "",
       }),
@@ -76,7 +72,7 @@ export default {
 
   computed: {
     hasData(): boolean {
-      return this.bibData.parsedEntries.length > 0 || this.pdfData.totalFiles > 0;
+      return (this.bibData.dataframeData && this.bibData.dataframeData.data.length > 0) || this.pdfData.totalFiles > 0;
     },
   },
 };

@@ -22,8 +22,8 @@ Please, review your backend and upgrade it if necessary.
 If you run Extralit behind a proxy by adding some extra prefix to expose the service, you should set the `EXTRALIT_BASE_URL`
 environment variable to properly route requests to the server application.
 
-For example, if your proxy exposes Extralit in the URL `https://my-proxy/custom-path-for-argilla`, you should launch the
-Extralit server with `EXTRALIT_BASE_URL=/custom-path-for-argilla`.
+For example, if your proxy exposes Extralit in the URL `https://my-proxy/custom-path-for-extralit`, you should launch the
+Extralit server with `EXTRALIT_BASE_URL=/custom-path-for-extralit`.
 
 NGINX and Traefik have been tested and are known to work with Extralit:
 
@@ -38,7 +38,7 @@ You can set the following environment variables to further configure your server
 
 #### FastAPI
 
-- `EXTRALIT_HOME_PATH`: The directory where Extralit will store all the files needed to run. If the path doesn't exist it will be automatically created (Default: `~/.argilla`).
+- `EXTRALIT_HOME_PATH`: The directory where Extralit will store all the files needed to run. If the path doesn't exist it will be automatically created (Default: `~/.extralit`).
 
 - `EXTRALIT_BASE_URL`: If you want to launch the Extralit server in a specific base path other than /, you should set up this environment variable. This can be useful when running Extralit behind a proxy that adds a prefix path to route the service (Default: "/").
 
@@ -120,7 +120,7 @@ Redis is used by Extralit to store information about jobs to be processed on bac
 
 - `REINDEX_DATASETS`: If `true` or `1`, the datasets will be reindexed in the search engine. This is needed when some search configuration changed or data must be refreshed (Default: `0`).
 
-- `USERNAME`: If provided, the owner username. This can be combined with HF OAuth to define the argilla server owner (Default: `""`).
+- `USERNAME`: If provided, the owner username. This can be combined with HF OAuth to define the extralit server owner (Default: `""`).
 
 - `PASSWORD`: If provided, the owner password. If `USERNAME` and `PASSWORD` are provided, the owner user will be created with these credentials on the server startup (Default: `""`).
 

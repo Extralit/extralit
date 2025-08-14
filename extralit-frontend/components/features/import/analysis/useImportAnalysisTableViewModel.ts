@@ -1,10 +1,20 @@
 import { ref, watch } from "vue";
 import { useResolve } from "ts-injecty";
 import { GetImportAnalysisUseCase } from "~/v1/domain/usecases/get-import-analysis-use-case";
-import type { ImportAnalysisResponse, ImportStatus, DataframeData } from "~/v1/domain/entities/import/ImportAnalysis";
+import type { ImportAnalysisResponse, ImportStatus } from "~/v1/domain/entities/import/ImportAnalysis";
 import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
+import { TableData } from "~/v1/domain/entities/table/TableData";
 
-export function useImportAnalysisTableViewModel(props: any) {
+export const useImportAnalysisTableViewModel = (props: {
+  workspace: Workspace | null;
+  dataframeData: TableData | null;
+  pdfData: {
+    matchedFiles: any[];
+  } | null;
+}) => {
+  const importAnalysisUseCase = useResolve(GetImportAnalysisUseCase);
+
+  // Reactive state
   const isAnalyzing = ref(false);
   const hasError = ref(false);
   const errorMessage = ref("");
@@ -12,8 +22,17 @@ export function useImportAnalysisTableViewModel(props: any) {
   const documentActions = ref<Record<string, ImportStatus>>({});
   const lastAnalysisKey = ref<string>(""); // Track last analysis to prevent duplicates
 
-  const importAnalysisUseCase = useResolve(GetImportAnalysisUseCase);
+  // Computed properties
+  const hasRequiredData = () => {
+    return (
+      props.workspace &&
+      props.dataframeData &&
+      props.dataframeData.data.length > 0 &&
+      props.pdfData?.matchedFiles?.length > 0
+    );
+  };
 
+  // Methods
   const reset = () => {
     isAnalyzing.value = false;
     hasError.value = false;
@@ -23,7 +42,7 @@ export function useImportAnalysisTableViewModel(props: any) {
     lastAnalysisKey.value = "";
   };
 
-  const analyzeImport = async (workspace: Workspace, dataframeData: DataframeData, matchedFiles: any[]) => {
+  const analyzeImport = async (workspace: Workspace, dataframeData: TableData, matchedFiles: any[]) => {
     if (!workspace || !dataframeData || dataframeData.data.length === 0) {
       return;
     }
@@ -57,7 +76,7 @@ export function useImportAnalysisTableViewModel(props: any) {
         actions[reference] = docInfo.status;
       });
       documentActions.value = actions;
-    } catch (error) {
+    } catch (error: any) {
       hasError.value = true;
       errorMessage.value = error.message || "Failed to analyze import";
     } finally {
@@ -90,7 +109,7 @@ export function useImportAnalysisTableViewModel(props: any) {
           newVal.dataframeLength !== oldVal.dataframeLength ||
           newVal.matchedFilesLength !== oldVal.matchedFilesLength
         ) {
-          analyzeImport(props.workspace, props.dataframeData, props.pdfData.matchedFiles);
+          analyzeImport(props.workspace!, props.dataframeData!, props.pdfData!.matchedFiles);
         }
       }
     },
@@ -98,13 +117,19 @@ export function useImportAnalysisTableViewModel(props: any) {
   );
 
   return {
+    // Reactive state
     isAnalyzing,
     hasError,
     errorMessage,
     analysisResult,
     documentActions,
+
+    // Computed properties
+    hasRequiredData,
+
+    // Methods
     reset,
     analyzeImport,
     retryAnalysis,
   };
-}
+};

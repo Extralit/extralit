@@ -1,10 +1,10 @@
-import { FileService, BibTeXParser, CSVParser, DataframeBuilder } from "./FileService";
+import { FileParsingService, BibTeXParser, CSVParser, DataframeBuilder } from "./FileParsingService";
 
 describe("FileService", () => {
   let fileService;
 
   beforeEach(() => {
-    fileService = new FileService();
+    fileService = new FileParsingService();
   });
 
   describe("BibTeXParser", () => {
@@ -103,7 +103,9 @@ describe("FileService", () => {
       const rawData = [{ title: "Test" }];
       const config = { referenceColumn: "ref" };
 
-      expect(() => parser.processWithConfig(rawData, config)).toThrow("No data found in the selected reference column \"ref\".");
+      expect(() => parser.processWithConfig(rawData, config)).toThrow(
+        'No data found in the selected reference column "ref".'
+      );
     });
   });
 

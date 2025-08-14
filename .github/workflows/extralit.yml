@@ -96,6 +96,10 @@ jobs:
         run: |
             pdm run test-cov tests/unit
 
+      - name: Check test status
+        if: steps.tests-unit.outcome == 'failure'
+        run: exit 1
+
       - name: Run integration tests
         id: tests-integration
         continue-on-error: true
@@ -119,7 +123,7 @@ jobs:
           fail_ci_if_error: false
 
       - name: Check test status
-        if: steps.tests-unit.outcome == 'failure' || steps.tests-integration.outcome == 'failure'
+        if: steps.tests-integration.outcome == 'failure'
         run: exit 1
 
       - name: Build package

@@ -24,13 +24,14 @@ from extralit._helpers import LoggingMixin
 from extralit._models import RecordModel
 from extralit._exceptions import RecordsIngestionError
 from extralit.client import Extralit
-from extralit.records._io import GenericIO, HFDataset, HFDatasetsIO, JsonIO
+from extralit.records._io import GenericIO, HFDatasetsIO, JsonIO
 from extralit.records._mapping import IngestedRecordMapper
 from extralit.records._resource import Record
 from extralit.records._search import Query
 
 if TYPE_CHECKING:
     from extralit.datasets import Dataset
+    from datasets import Dataset as HFDataset
 
 
 class RecordErrorHandling(Enum):
@@ -246,7 +247,7 @@ class DatasetRecords(Iterable[Record], LoggingMixin):
 
     def log(
         self,
-        records: Union[List[dict], List[Record], HFDataset],
+        records: Union[List[dict], List[Record], "HFDataset"],
         mapping: Optional[Dict[str, Union[str, Sequence[str]]]] = None,
         user_id: Optional[UUID] = None,
         batch_size: int = DEFAULT_BATCH_SIZE,
@@ -403,7 +404,7 @@ class DatasetRecords(Iterable[Record], LoggingMixin):
         records = JsonIO._records_from_json(path=path)
         return self.log(records=records)
 
-    def to_datasets(self) -> HFDataset:
+    def to_datasets(self) -> "HFDataset":
         """
         Export the records to a HFDataset.
 
@@ -420,7 +421,7 @@ class DatasetRecords(Iterable[Record], LoggingMixin):
 
     def _ingest_records(
         self,
-        records: Union[List[Dict[str, Any]], List[Record], HFDataset],
+        records: Union[List[Dict[str, Any]], List[Record], "HFDataset"],
         mapping: Optional[Dict[str, Union[str, Sequence[str]]]] = None,
         user_id: Optional[UUID] = None,
         on_error: RecordErrorHandling = RecordErrorHandling.RAISE,

@@ -5,8 +5,8 @@ import {
   ImportAnalysisResponse,
   DocumentMetadata,
   FileInfo,
-  DataframeData,
 } from "~/v1/domain/entities/import/ImportAnalysis";
+import { TableData } from "@/v1/domain/entities/table/TableData";
 
 const IMPORT_ANALYSIS_API_ERRORS = {
   ERROR_FETCHING_IMPORT_ANALYSIS: "ERROR_FETCHING_IMPORT_ANALYSIS",
@@ -17,7 +17,7 @@ export class GetImportAnalysisUseCase {
 
   async analyzeImport(
     workspaceId: string,
-    dataframeData: DataframeData,
+    dataframeData: TableData,
     matchedFiles: any[]
   ): Promise<ImportAnalysisResponse> {
     try {
@@ -46,7 +46,7 @@ export class GetImportAnalysisUseCase {
 
   private createAnalysisRequest(
     workspaceId: string,
-    dataframeData: DataframeData,
+    dataframeData: TableData,
     matchedFiles: any[]
   ): ImportAnalysisRequest {
     const documents: Record<string, DocumentMetadata> = {};
@@ -120,34 +120,5 @@ export class GetImportAnalysisUseCase {
       workspace_id: workspaceId,
       documents,
     };
-  }
-
-  private extractMetadata(row: Record<string, any>): Record<string, any> | undefined {
-    // Extract additional metadata fields not covered by DocumentCreate
-    const excludedFields = [
-      "reference",
-      "title",
-      "authors",
-      "year",
-      "journal",
-      "volume",
-      "pages",
-      "doi",
-      "url",
-      "abstract",
-      "keywords",
-      "pmid",
-      "filePaths",
-      "type",
-    ];
-
-    const metadata: Record<string, any> = {};
-    Object.keys(row).forEach((key) => {
-      if (!excludedFields.includes(key) && row[key] !== undefined && row[key] !== null && row[key] !== "") {
-        metadata[key] = row[key];
-      }
-    });
-
-    return Object.keys(metadata).length > 0 ? metadata : undefined;
   }
 }

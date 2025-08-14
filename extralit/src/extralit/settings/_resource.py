@@ -251,8 +251,7 @@ class Settings(DefaultSettingsMixin, Resource):
         """
         if not isinstance(path, Path):
             path = Path(path)
-        if path.exists():
-            raise FileExistsError(f"File {path} already exists")
+        path.parent.mkdir(parents=True, exist_ok=True)
         with open(path, "w") as file:
             json.dump(self.serialize(), file)
 

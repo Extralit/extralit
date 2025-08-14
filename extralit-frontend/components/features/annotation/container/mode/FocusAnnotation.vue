@@ -26,13 +26,21 @@
           </section>
         </template>
         <template #downHeader>
-          <p v-text="$t('document')" />
+          <p v-text="$t('home.documents')" />
         </template>
         <template #downHeaderExpanded>
-          <p v-text="$t('document')" />
+          <p v-text="$t('home.documents')" />
         </template>
         <template #downContent>
-          <PDFViewer :url="document.url" :file-name="document.file_name" :pageNumber="document.page_number" />
+          <PDFViewer
+            v-if="document.url"
+            :url="document.url"
+            :file-name="document.file_name"
+            :pageNumber="document.page_number"
+          />
+          <div v-else class="no-document-message">
+            <p>{{ $t("document.notFound") }}</p>
+          </div>
         </template>
       </HorizontalResizable>
     </template>
@@ -68,22 +76,10 @@
         </template>
       </HorizontalResizable>
     </template>
-    <BaseCollapsablePanel
-      hideOnDesktop
-      :isExpanded="expandedGuidelines"
-      @toggle-expand="expandedGuidelines = !expandedGuidelines"
-    >
-      <template #panelHeader>
-        <p v-text="$t('document')" />
-      </template>
-      <template #panelContent>
-        <PDFViewer :url="document.url" :file-name="document.file_name" :pageNumber="document.page_number" />
-      </template>
-    </BaseCollapsablePanel>
   </VerticalResizable>
 </template>
 
-<script>
+<script lang="ts">
 import { useFocusAnnotationViewModel } from "./useFocusAnnotationViewModel";
 import { useDocumentViewModel } from "./useDocumentViewModel";
 
@@ -229,5 +225,14 @@ export default {
   .--expanded & {
     display: block;
   }
+}
+
+.no-document-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--fg-secondary);
+  font-style: italic;
 }
 </style>

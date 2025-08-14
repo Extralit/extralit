@@ -1,5 +1,3 @@
-
-
 <template>
   <transition v-if="modalVisible" name="modal" appear>
     <div class="modal-mask" :class="modalMaskClass">

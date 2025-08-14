@@ -1,12 +1,5 @@
 <template>
   <div class="import-history-list">
-    <!-- Header -->
-    <div class="history-header">
-      <h3>Import History</h3>
-      <p class="history-subtitle">
-        View and manage all your document import operations
-      </p>
-    </div>
 
     <!-- Loading State -->
     <div v-if="isLoading" class="loading-container">

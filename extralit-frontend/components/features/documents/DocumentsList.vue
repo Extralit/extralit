@@ -14,8 +14,7 @@
       </div>
     </div>
     <div class="documents-list__content">
-      <BaseLoading v-if="isLoading" />
-      <div v-else-if="groupedDocuments.length === 0" class="documents-list__empty">
+      <div v-if="groupedDocuments.length === 0" class="documents-list__empty">
         <p>No documents found in this workspace.</p>
       </div>
       <div v-else class="documents-list__groups">
@@ -80,9 +79,6 @@ export default {
       required: true,
     },
   },
-  setup(props) {
-    return useDocumentsListViewModel();
-  },
   data() {
     return {
       documents: [] as Document[],
@@ -101,6 +97,16 @@ export default {
   async mounted() {
     await this.fetchDocuments();
   },
+  watch: {
+    workspaceId: {
+      immediate: false,
+      async handler(newWorkspaceId, oldWorkspaceId) {
+        if (newWorkspaceId && newWorkspaceId !== oldWorkspaceId) {
+          await this.fetchDocuments();
+        }
+      }
+    }
+  },
   methods: {
     async fetchDocuments() {
       this.isLoading = true;
@@ -113,6 +119,9 @@ export default {
         this.isLoading = false;
       }
     },
+  },
+  setup(props) {
+    return useDocumentsListViewModel(props);
   },
 };
 </script>

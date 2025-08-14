@@ -66,12 +66,6 @@ git clone https://github.com/[your-github-username]/extralit.git
 cd extralit
 ```
 
-To keep view changes between Extralit and Extralit, add Extralit as remote upstreams:
-
-```sh
-git remote add upstream https://github.com/argilla-io/argilla.git
-```
-
 
 ### Create a new branch
 

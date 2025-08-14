@@ -21,7 +21,8 @@
         @error="handleUploadError" @progress="handleUploadProgress" />
 
       <!-- Step 4: Import Summary -->
-      <ImportSummary v-if="stepIndex === 3" ref="summaryComponent" :summary-data="summaryData"
+      <ImportSummary v-if="stepIndex === 3" ref="summaryComponent" :import-summary="importSummary"
+        :workspace="workspace" :bibFileName="bibData.fileName" :failed-documents="failedDocuments"
         @return-to-library="handleReturnToLibrary" @view-import-history="handleViewImportHistory" />
     </template>
   </BaseFlowModal>
@@ -61,7 +62,6 @@ export default {
       // Step data
       bibData: {
         fileName: "",
-        parsedEntries: [],
         dataframeData: null,
         rawContent: "",
       },
@@ -82,21 +82,23 @@ export default {
       },
       uploadData: {
         confirmedDocuments: {},
+        documentActions: {}, // Track original analysis statuses
         totalBatches: 0,
         currentBatch: 0,
         jobIds: {},
         completedJobs: 0,
         failedJobs: 0,
       },
-      summaryData: {
-        totalProcessed: 0,
-        successfullyAdded: 0,
+      importSummary: {
+        total: 0,
+        added: 0,
         updated: 0,
         skipped: 0,
         failed: 0,
         errors: [],
         importId: null,
       },
+      failedDocuments: [],
 
       // Step definitions
       steps: [
@@ -133,7 +135,9 @@ export default {
           // 1. Both bibliography and PDFs are uploaded, OR
           // 2. Only bibliography is uploaded (can import references without PDFs)
           return (
-            this.bibData.parsedEntries.length > 0 &&
+            this.bibData.dataframeData &&
+            this.bibData.dataframeData.data &&
+            this.bibData.dataframeData.data.length > 0 &&
             !this.hasError &&
             !!this.workspace
           );
@@ -163,7 +167,7 @@ export default {
         pdfData: this.pdfData,
         analysisData: this.analysisData,
         uploadData: this.uploadData,
-        summaryData: this.summaryData,
+        importSummary: this.importSummary,
       };
     },
   },
@@ -200,7 +204,9 @@ export default {
           // Allow flexible upload order - can proceed if bibliography is uploaded
           // PDFs are optional for proceeding to analysis step
           isValid =
-            this.bibData.parsedEntries.length > 0 &&
+            this.bibData.dataframeData &&
+            this.bibData.dataframeData.data &&
+            this.bibData.dataframeData.data.length > 0 &&
             !this.hasError &&
             !!this.workspace;
           break;
@@ -240,7 +246,6 @@ export default {
     handleBibUpdate(data) {
       this.bibData = {
         fileName: data.fileName || "",
-        parsedEntries: data.parsedEntries || [],
         dataframeData: data.dataframeData || null,
         rawContent: data.rawContent || "",
       };
@@ -258,6 +263,7 @@ export default {
 
     handleAnalysisUpdate(data) {
       this.uploadData.confirmedDocuments = data.confirmedDocuments || {};
+      this.uploadData.documentActions = data.documentActions || {}; // Store the original analysis statuses
 
       // Update bibData with filtered dataframe data if provided
       if (data.filteredDataframeData) {
@@ -300,8 +306,9 @@ export default {
       }
     },
 
-    handleUploadCompleted(summaryData) {
-      this.summaryData = summaryData;
+    handleUploadCompleted(uploadResult) {
+      this.importSummary = uploadResult.importSummary;
+      this.failedDocuments = uploadResult.failedDocuments || [];
       this.isUploading = false;
       this.isProcessing = false;
       this.clearError();
@@ -381,7 +388,7 @@ export default {
     hasDataToLose() {
       // Check if user has uploaded any data that would be lost on close
       return (
-        this.bibData.parsedEntries.length > 0 ||
+        (this.bibData.dataframeData && this.bibData.dataframeData.data && this.bibData.dataframeData.data.length > 0) ||
         this.pdfData.totalFiles > 0 ||
         Object.keys(this.uploadData.confirmedDocuments).length > 0
       );
@@ -397,7 +404,6 @@ export default {
       // Reset all step data
       this.bibData = {
         fileName: "",
-        parsedEntries: [],
         dataframeData: null,
         rawContent: "",
       };
@@ -418,21 +424,23 @@ export default {
       };
       this.uploadData = {
         confirmedDocuments: {},
+        documentActions: {},
         totalBatches: 0,
         currentBatch: 0,
         jobIds: {},
         completedJobs: 0,
         failedJobs: 0,
       };
-      this.summaryData = {
-        totalProcessed: 0,
-        successfullyAdded: 0,
+      this.importSummary = {
+        total: 0,
+        added: 0,
         updated: 0,
         skipped: 0,
         failed: 0,
         errors: [],
         importId: null,
       };
+      this.failedDocuments = [];
 
       // Reset child components
       this.$nextTick(() => {

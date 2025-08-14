@@ -85,7 +85,7 @@
 </template>
 
 <script lang="ts">
-import type { CSVConfig } from "~/v1/domain/services/IFileService";
+import type { CSVConfig } from "~/v1/domain/services/IFileParsingService";
 
 interface CsvData {
   rawData: any;

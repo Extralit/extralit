@@ -240,13 +240,13 @@ export default {
     },
 
     showCancelConfirmation() {
-      if (confirm(this.$t("common.confirmCancel"))) {
+      if (confirm(this.$t("button.confirmCancel"))) {
         this.$emit("cancel");
       }
     },
 
     showCloseConfirmation() {
-      if (confirm(this.$t("common.confirmCancel"))) {
+      if (confirm(this.$t("button.confirmCancel"))) {
         this.$emit("close");
       }
     },

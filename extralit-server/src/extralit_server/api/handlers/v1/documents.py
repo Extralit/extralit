@@ -15,9 +15,9 @@
 import json
 import logging
 from uuid import UUID, uuid4
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Optional, Union
 
-from fastapi import APIRouter, Body, Depends, File, Form, HTTPException, UploadFile, Path, status, Security
+from fastapi import APIRouter, Body, Depends, File, Form, HTTPException, UploadFile, Path, status, Security, Query
 from minio import Minio
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -27,6 +27,7 @@ from extralit_server.models.database import Document
 from extralit_server.security import auth
 from extralit_server.models import User, Workspace
 from extralit_server.contexts import files, imports
+from extralit_server.contexts.files import LocalFileStorage
 from extralit_server.api.policies.v1 import DocumentPolicy, authorize
 from extralit_server.api.schemas.v1.documents import DocumentCreate, DocumentDelete, DocumentListItem, DocumentUpdate
 from extralit_server.api.schemas.v1.imports import DocumentsBulkResponse, DocumentsBulkCreate
@@ -45,7 +46,7 @@ async def add_document(
     document_create: DocumentCreate = Depends(),
     file_data: UploadFile = File(None),
     db: AsyncSession = Depends(get_async_db),
-    client: Minio = Depends(files.get_minio_client),
+    client: Union[Minio, LocalFileStorage] = Depends(files.get_minio_client),
     current_user: User = Security(auth.get_current_user),
 ):
     await authorize(current_user, DocumentPolicy.create())
@@ -71,7 +72,7 @@ async def add_document(
         file_url = files.put_document_file(
             client=client,
             workspace_name=workspace.name,
-            document_id=document_create.id,
+            document_id=document_create.id,  # type: ignore[arg-type]
             file_data=file_data_bytes,
             filename=file_data.filename or "",
             metadata=document_create.dict(include={"file_name": True, "pmid": True, "doi": True}),
@@ -86,6 +87,7 @@ async def add_document(
         document_id=document_create.id,
         file_name=document_create.file_name,
         url=document_create.url,
+        limit=1,
     )
     if existing_documents:
         return existing_documents[0].id
@@ -106,58 +108,54 @@ async def add_document(
     return document.id
 
 
-@router.get("/documents/by-pmid/{pmid}", response_model=DocumentListItem)
-async def get_document_by_pmid(
-    *, db: AsyncSession = Depends(get_async_db), pmid: str, current_user: User = Security(auth.get_current_user)
-):
-    if pmid is None or not isinstance(pmid, str) or not pmid.isnumeric():
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Document with pmid `{pmid}` not found",
-        )
-
-    query = await db.execute(select(Document).where(Document.pmid == pmid))
-    await authorize(current_user, DocumentPolicy.get())
-
-    documents = query.fetchone()
-    if documents is None or len(documents) == 0:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Document with pmid `{pmid}` not found",
-        )
-
-    document: Document = documents[0]
-    return DocumentListItem.model_validate(document)
-
-
-@router.get("/documents/by-id/{id}", response_model=DocumentListItem)
-async def get_document_by_id(
+@router.get(
+    "/documents", response_model=List[DocumentListItem], description="Get documents by ID, PMID, DOI, or reference."
+)
+async def get_document(
     *,
-    id: UUID = Path(..., title="The UUID of the document to get"),
+    workspace_id: UUID = Query(..., description="Workspace ID"),
+    id: Optional[UUID] = Query(None, description="Document ID"),
+    reference: Optional[str] = Query(None, description="Document reference"),
+    pmid: Optional[str] = Query(None, description="PubMed ID"),
+    doi: Optional[str] = Query(None, description="DOI"),
     db: AsyncSession = Depends(get_async_db),
+    client: Union[Minio, LocalFileStorage] = Depends(files.get_minio_client),
     current_user: User = Security(auth.get_current_user),
-):
-    if id is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Document with id `{id}` not found",
-        )
-
-    query = await db.execute(select(Document).where(Document.id == id))
+) -> List[DocumentListItem]:
     await authorize(current_user, DocumentPolicy.get())
 
-    documents = query.fetchone()
-    if documents is None or len(documents) == 0:
+    if not any([id, pmid, doi, reference]):
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Document with id `{id}` not found",
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="At least one of id, pmid, doi, or reference must be provided",
         )
 
-    document: Document = documents[0]
-    return DocumentListItem.model_validate(document)
+    documents = await imports.find_existing_documents(
+        db=db,
+        workspace_id=workspace_id,
+        document_id=id,
+        pmid=pmid,
+        doi=doi,
+        reference=reference,
+    )
+
+    if not documents:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"No documents found with given criteria in workspace {workspace_id}",
+        )
+
+    for document in documents:
+        document.url = files.get_presigned_url_from_document_url(
+            client=client,
+            document_url=document.url,
+            expires=3600,
+        )
+
+    return documents
 
 
-@router.patch("/documents/{id}", response_model=DocumentListItem)
+@router.patch("/documents/{id}", response_model=DocumentListItem, description="Update a document by ID.")
 async def update_document(
     *,
     id: UUID = Path(..., title="The UUID of the document to update"),
@@ -165,8 +163,6 @@ async def update_document(
     db: AsyncSession = Depends(get_async_db),
     current_user: User = Security(auth.get_current_user),
 ):
-    """Update a document by ID."""
-    # First, get the document to ensure it exists and check permissions
     query = await db.execute(select(Document).where(Document.id == id))
     result = query.fetchone()
 
@@ -179,13 +175,11 @@ async def update_document(
     document: Document = result[0]
     await authorize(current_user, DocumentPolicy.get())
 
-    # Update the document fields
     update_data = document_update.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         if hasattr(document, field):
             setattr(document, field, value)
 
-    # Save the changes
     await imports.update_document(db, document)
 
     return DocumentListItem.model_validate(document)
@@ -202,7 +196,7 @@ async def delete_documents_by_workspace_id(
     workspace_id: UUID,
     document_delete: DocumentDelete = Body(None),
     db: AsyncSession = Depends(get_async_db),
-    client: Minio = Depends(files.get_minio_client),
+    client: Union[Minio, LocalFileStorage] = Depends(files.get_minio_client),
     current_user: User = Security(auth.get_current_user),
 ):
     await authorize(current_user, DocumentPolicy.delete(workspace_id))

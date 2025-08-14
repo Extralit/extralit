@@ -44,10 +44,10 @@ class ObjectMetadata(BaseModel):
         return v
 
     @classmethod
-    def from_minio_object(cls, minio_object: Object):
+    def from_minio_object(cls, minio_object: Object) -> "ObjectMetadata":
         return cls(
             bucket_name=minio_object.bucket_name,
-            object_name=minio_object.object_name,
+            object_name=minio_object.object_name or "",
             last_modified=minio_object.last_modified,
             is_latest=None if minio_object.is_latest is None else minio_object.is_latest.lower() == "true",
             etag=minio_object.etag,
@@ -58,7 +58,7 @@ class ObjectMetadata(BaseModel):
         )
 
     @classmethod
-    def from_minio_write_response(cls, write_result: ObjectWriteResult):
+    def from_minio_write_response(cls, write_result: ObjectWriteResult) -> "ObjectMetadata":
         return cls(
             bucket_name=write_result.bucket_name,
             object_name=write_result.object_name,
@@ -76,10 +76,10 @@ class ListObjectsResponse(BaseModel):
     objects: Iterable[ObjectMetadata] = Field(default_factory=list)
 
     def __len__(self) -> int:
-        return len(self.objects)
+        return len(self.objects)  # type: ignore
 
     def __getitem__(self, index) -> ObjectMetadata:
-        return self.objects[index]
+        return self.objects[index]  # type: ignore
 
     def __iter__(self):
         return iter(self.objects)
@@ -114,14 +114,14 @@ class ListObjectsResponse(BaseModel):
 
 class FileObjectResponse(BaseModel):
     response: HTTPResponse
-    metadata: Optional[ObjectMetadata]
+    metadata: ObjectMetadata
     versions: Optional[ListObjectsResponse]
 
     class Config:
         arbitrary_types_allowed = True
 
     @property
-    def version_tag(self) -> str:
+    def version_tag(self) -> Optional[str]:
         if not self.metadata or not self.versions:
             return ""
         else:

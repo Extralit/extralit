@@ -57,22 +57,35 @@ class DocumentsAPI(ResourceAPI):
         return model
 
     @api_error_handler
-    def get(self, id: UUID) -> "DocumentModel":
-        """Get a document by ID.
+    def get(self, params: dict) -> "DocumentModel":
+        """Get a document using multiple search criteria.
 
         Args:
-            id: The document ID.
+            params: Dictionary containing any combination of:
+                - workspace_id: Workspace ID (required)
+                - id: Document ID
+                - pmid: PubMed ID
+                - doi: DOI
+                - reference: Document reference
 
         Returns:
             The document model.
         """
         from extralit._models._documents import DocumentModel
 
-        url = f"/api/v1/documents/by-id/{id}"
-        response = self.http_client.get(url=url)
+        url = "/api/v1/documents"
+        response = self.http_client.get(url=url, params=params)
         response.raise_for_status()
 
-        doc_data = response.json()
+        doc_data_list = response.json()
+
+        if not doc_data_list:
+            raise ValueError("No documents found with the provided criteria")
+
+        if len(doc_data_list) > 1:
+            print(f"Warning: Multiple documents found ({len(doc_data_list)}). Using the first one.")
+
+        doc_data = doc_data_list[0]
         return DocumentModel(
             id=doc_data.get("id"),
             workspace_id=doc_data.get("workspace_id"),
@@ -83,35 +96,7 @@ class DocumentsAPI(ResourceAPI):
             doi=doc_data.get("doi"),
             inserted_at=doc_data.get("inserted_at"),
             updated_at=doc_data.get("updated_at"),
-        )
-
-    @api_error_handler
-    def get_by_pmid(self, pmid: str) -> "DocumentModel":
-        """Get a document by PMID.
-
-        Args:
-            pmid: The PubMed ID.
-
-        Returns:
-            The document model.
-        """
-        from extralit._models._documents import DocumentModel
-
-        url = f"/api/v1/documents/by-pmid/{pmid}"
-        response = self.http_client.get(url=url)
-        response.raise_for_status()
-
-        doc_data = response.json()
-        return DocumentModel(
-            id=doc_data.get("id"),
-            workspace_id=doc_data.get("workspace_id"),
-            file_name=doc_data.get("file_name"),
-            reference=doc_data.get("reference"),
-            url=doc_data.get("url"),
-            pmid=doc_data.get("pmid"),
-            doi=doc_data.get("doi"),
-            inserted_at=doc_data.get("inserted_at"),
-            updated_at=doc_data.get("updated_at"),
+            file_path=None,
         )
 
     @api_error_handler
@@ -142,6 +127,7 @@ class DocumentsAPI(ResourceAPI):
                 doi=doc_data.get("doi"),
                 inserted_at=doc_data.get("inserted_at"),
                 updated_at=doc_data.get("updated_at"),
+                file_path=None,
             )
             documents.append(doc)
 
@@ -199,4 +185,5 @@ class DocumentsAPI(ResourceAPI):
             doi=doc_data.get("doi"),
             inserted_at=doc_data.get("inserted_at"),
             updated_at=doc_data.get("updated_at"),
+            file_path=None,
         )

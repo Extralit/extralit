@@ -6,15 +6,12 @@
 import type {
   ImportStatus,
   DocumentMetadata,
-  DataframeData,
 } from "~/v1/domain/entities/import/ImportAnalysis";
+import { TableData } from "~/v1/domain/entities/table/TableData";
 
 // Re-export commonly used backend types for convenience
 export type {
   FieldType,
-  DataframeField,
-  DataframeSchema,
-  DataframeData,
   ImportStatus,
   DocumentCreate,
   FileInfo,
@@ -47,6 +44,7 @@ export interface PdfUploadData {
 // Upload progress tracking (Step 4)
 export interface ImportUploadData {
   confirmedDocuments: Record<string, DocumentMetadata>;
+  documentActions: Record<string, ImportStatus>; // Track original analysis statuses
   totalBatches: number;
   currentBatch: number;
   jobIds: Record<string, string>;
@@ -54,15 +52,22 @@ export interface ImportUploadData {
   failedJobs: number;
 }
 
-// Final import summary (Step 5)
-export interface ImportSummaryData {
-  totalProcessed: number;
-  successfullyAdded: number;
+// Import result summary interface for accurate count display
+export interface ImportResultSummary {
+  total: number;
+  added: number;
   updated: number;
   skipped: number;
   failed: number;
-  errors: string[];
-  importId: string | null;
+  fileTotals?: {
+    processed: number;
+    failed: number;
+  };
+  errors: Array<{
+    reference: string;
+    message: string;
+  }>;
+  importId?: string;
 }
 
 // Import confirmation data (Step 3)
@@ -70,7 +75,7 @@ export interface ImportConfirmationData {
   confirmedDocuments: Record<string, DocumentMetadata>;
   totalConfirmed: number;
   documentActions: Record<string, ImportStatus>;
-  filteredDataframeData: DataframeData | null;
+  filteredDataframeData: TableData | null;
 }
 
 // Table row data for ImportAnalysisTable

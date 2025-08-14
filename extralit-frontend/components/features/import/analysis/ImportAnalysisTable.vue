@@ -62,7 +62,6 @@ import "assets/icons/chevron-down";
 import type {
   ImportAnalysisResponse,
   ImportStatus,
-  DataframeData,
   DocumentImportAnalysis,
 } from '~/v1/domain/entities/import/ImportAnalysis';
 import {
@@ -72,17 +71,18 @@ import {
 } from '../types';
 import { useImportAnalysisTableViewModel } from './useImportAnalysisTableViewModel';
 import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
+import { TableData } from "~/v1/domain/entities/table/TableData";
 
 export default {
   name: "ImportAnalysisTable",
 
   props: {
     dataframeData: {
-      type: Object as () => DataframeData | null,
+      type: Object as () => TableData | null,
       default: null,
     },
     pdfData: {
-      type: Object,
+      type: Object as () => { matchedFiles: any[] } | null,
       default: () => ({ matchedFiles: [] }),
     },
     workspace: {
@@ -152,7 +152,6 @@ export default {
           canToggle: this.canToggleStatus(originalStatus) && !this.isAnalyzing,
         };
 
-        // Add all other dataframe fields dynamically
         Object.keys(row).forEach(key => {
           if (!['reference', 'title', 'authors', 'author', 'year', 'filePaths'].includes(key)) {
             rowData[key] = row[key];
@@ -164,8 +163,9 @@ export default {
     },
 
     tableData(): AnalysisTableRow[] {
-      // Only show rows with matched PDFs
-      return this.allTableData.filter(row => row.filePaths && row.filePaths.length > 0);
+      const filteredData = this.allTableData.filter(row => row.filePaths && row.filePaths.length > 0);
+
+      return filteredData;
     },
 
     referencesWithoutPdfsCount(): number {
@@ -176,7 +176,7 @@ export default {
       return this.allTableData.filter(row => row.filePaths && row.filePaths.length > 0).length;
     },
 
-    filteredDataframeData(): DataframeData | null {
+    filteredDataframeData(): TableData | null {
       if (!this.dataframeData) {
         return null;
       }
@@ -401,8 +401,6 @@ export default {
       return files.join(", ");
     },
 
-
-
     getStatusText(status: string) {
       const statusMap = {
         add: "Add",
@@ -449,9 +447,6 @@ export default {
       }
     },
 
-
-
-
     formatColumnTitle(fieldName: string) {
       // Convert field names to readable titles
       return fieldName
@@ -459,9 +454,6 @@ export default {
         .replace(/^./, str => str.toUpperCase())
         .trim();
     },
-
-
-
 
     emitUpdate() {
       const confirmedDocuments: Record<string, any> = {};
@@ -562,6 +554,19 @@ export default {
       this.localDocumentActions = {};
     },
 
+    // Add missing methods
+    retryAnalysis() {
+      if (this.$refs.viewModel && this.$refs.viewModel.retryAnalysis) {
+        this.$refs.viewModel.retryAnalysis();
+      }
+    },
+
+    reset() {
+      this.resetLocalState();
+      if (this.$refs.viewModel && this.$refs.viewModel.reset) {
+        this.$refs.viewModel.reset();
+      }
+    },
 
     // Helper method to prepare data for ImportHistoryCreate payload
     getImportHistoryData() {
@@ -613,11 +618,8 @@ export default {
   },
 
   setup(props) {
-    const viewModel = useImportAnalysisTableViewModel(props);
-    return {
-      ...viewModel,
-    };
-  }
+    return useImportAnalysisTableViewModel(props);
+  },
 };
 </script>
 
@@ -741,43 +743,6 @@ export default {
   }
 }
 
-// Import info
-.import-info {
-  padding: $base-space * 2;
-  background: var(--bg-solid-grey-1);
-  border-radius: $border-radius;
-  border: 1px solid var(--border-field);
-
-  h4 {
-    margin: 0 0 $base-space * 2 0;
-    color: var(--fg-primary);
-    font-size: 1rem;
-    font-weight: 600;
-  }
-
-  .info-stats {
-    display: flex;
-    gap: $base-space * 3;
-    flex-wrap: wrap;
-    padding-top: $base-space;
-    border-top: 1px solid var(--border-field);
-
-    .stat-info {
-      color: var(--fg-secondary);
-      font-size: 0.9rem;
-
-      &:first-child {
-        color: var(--color-success);
-      }
-
-      &:last-child {
-        color: var(--fg-tertiary);
-      }
-    }
-  }
-}
-
-// Table container
 .table-container {
   min-height: 300px;
   border-radius: $border-radius;

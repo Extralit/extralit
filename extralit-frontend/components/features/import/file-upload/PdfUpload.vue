@@ -39,7 +39,6 @@
 
     <!-- Success Display -->
     <div v-if="uploaded && !hasError && !processing" class="pdf-upload__upload-success">
-      <BaseIcon icon-name="check" class="pdf-upload__upload-success-icon" />
       <span class="pdf-upload__upload-success-text">
         {{ data.totalFiles }} PDF files uploaded
         <span v-if="data.matchedFiles.length > 0" class="pdf-upload__match-info">
@@ -61,7 +60,7 @@
 
 <script lang="ts">
 import { useResolve } from "ts-injecty";
-import { PdfMatchingService } from "~/v1/domain/services/PdfMatchingService";
+import { PdfMatchingService } from "~/v1/domain/services/FileMatchingService";
 import "assets/icons/check";
 import "assets/icons/danger";
 import "assets/icons/import";
@@ -85,8 +84,8 @@ export default {
       }),
     },
     bibliographyEntries: {
-      type: Array,
-      default: () => [],
+      type: Object,
+      default: () => null,
     },
   },
 
@@ -262,7 +261,7 @@ export default {
     },
 
     performFileMatching(uploadedFiles: File[]): void {
-      if (!this.bibliographyEntries || this.bibliographyEntries.length === 0 || uploadedFiles.length === 0) {
+      if (!this.bibliographyEntries || !this.bibliographyEntries.data || this.bibliographyEntries.data.length === 0 || uploadedFiles.length === 0) {
         // If no bibliography entries, all files are unmatched
         this.data.matchedFiles = [];
         this.data.unmatchedFiles = uploadedFiles;
@@ -297,8 +296,6 @@ export default {
         this.hasError = false;
         this.errorMessage = "";
         this.processing = false;
-        // Don't emit update when initializing with existing data to prevent loops
-        // The parent component already has this data
       }
     },
 

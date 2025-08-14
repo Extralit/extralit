@@ -134,7 +134,7 @@ async def upload_reference_documents_job(
 Note to reuse existing styles in extralit-frontend/assets/scss/base/base.scss, extralit-frontend/assets/scss/abstract/variables/_variables.scss and existing components in `components/base` where possible to keep similar the design system and code reuse and best practices.
 
 - `extralit-frontend/components/base`:
-    base-action-tooltip, base-badge, base-banner, base-brand-icon, base-breadcrumbs, base-button, base-card, base-checkbox, base-code, base-collpasable-panel, base-date, base-documentation-viewer, base-dropdown, base-feedback, base-icon, base-input, base-loading, base-modal, base-pdf-viewer, base-progress, base-radio-button, base-range, base-render-html, base-render-markdown, base-render-table, base-resizable, base-scroll, base-search-bar, base-separator, base-shapes, base-slider, base-spinner, base-switch, base-tabs, base-tag, base-toast, base-tooltip, base-topbar-brand
+    BaseActionTooltip, base-badge, base-banner, base-brand-icon, base-breadcrumbs, base-button, base-card, base-checkbox, base-code, base-collpasable-panel, base-date, base-documentation-viewer, base-dropdown, base-feedback, base-icon, base-input, base-loading, base-modal, base-pdf-viewer, base-progress, base-radio-button, base-range, base-render-html, base-render-markdown, base-render-table, base-resizable, base-scroll, base-search-bar, base-separator, base-shapes, base-slider, base-spinner, base-switch, base-tabs, base-tag, base-toast, base-tooltip, base-topbar-brand
 
 
 #### 1. Home Page Integration (`extralit-frontend/pages/index.vue`)
@@ -351,9 +351,51 @@ Example BibTeX files:
 
 #### 6. Import Summary & History Components
 
+**Import Summary Interface Refactor:**
+
+The import summary components have been refactored to provide accurate count tracking through a normalized summary interface:
+
+```typescript
+interface ImportResultSummary {
+  total: number;
+  added: number;        // Documents successfully added (originally marked as "add")
+  updated: number;      // Documents successfully updated (originally marked as "update")
+  skipped: number;      // Documents skipped during processing
+  failed: number;       // Documents that failed upload (matches job failure count)
+  fileTotals?: {
+    processed: number;
+    failed: number;
+  };
+  errors: Array<{       // Structured error information
+    reference: string;
+    message: string;
+  }>;
+  importId?: string;
+}
+```
+
+**Key Improvements:**
+- **Accurate Add vs Update Tracking**: The system now properly tracks which documents were marked as "add" vs "update" during analysis and maps them to final job completion status
+- **Job Status Integration**: Failed count accurately reflects the number of jobs that failed, not just error array length
+- **Zero-Safe Display**: All UI components display 0 for missing counts instead of hiding sections
+- **Structured Error Information**: Errors include both reference and message for better debugging
+
+**Data Flow:**
+1. `ImportAnalysisTable` emits `documentActions` containing original analysis status for each reference
+2. `ImportFlow` captures and passes this data to `ImportBatchProgress`
+3. `ImportBatchProgress` tracks job completion and maps job statuses back to references
+4. `useImportBatchProgressViewModel.createImportSummary()` creates accurate counts by correlating original analysis status with final job status
+5. `ImportSummary` displays the normalized data with proper zero-safe fallbacks
+
+#### 6. Import Summary & History Components
+
 **Import Summary (`extralit-frontend/components/features/import/ImportSummary.vue`)**
 - Import metadata summary with statistics (total processed, successfully added, updated, skipped, failed)
-- Detailed breakdown of results with error information
+- **Normalized Summary Interface**: Uses `ImportResultSummary` interface with accurate count tracking based on analysis results
+- **Zero-Safe Display**: All stat buckets display 0 instead of being hidden when count is missing or zero
+- **Accurate Count Mapping**: Failed count matches number of failing job statuses, not just generic errors array length
+- **Add vs Update Differentiation**: Successfully distinguishes between newly added documents vs updated existing documents based on original analysis status
+- Detailed breakdown of results with structured error information (reference + message pairs)
 - Failed imports table with retry options
 - "View Import Log" button to access detailed history
 - "Return to Library" button for navigation

@@ -19,7 +19,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import { PDFView } from "@jonnytran/vue-pdf-viewer";
 
 export default {
@@ -44,8 +44,8 @@ export default {
   },
 
   watch: {
-    pageNumber(newPageNumber) {
-      this.currentPageNumber = newPageNumber;
+    pageNumber(newPageNumber: Number | String) {
+      this.currentPageNumber = newPageNumber ? Number(newPageNumber) : 1;
     },
   },
 
@@ -54,21 +54,6 @@ export default {
       scale: "1.50",
       currentPageNumber: this.pageNumber,
     };
-  },
-
-  mounted() {
-    window.addEventListener("hashchange", this.onHashChange);
-    this.onHashChange(); // Call on component mount to handle initial hash
-  },
-
-  methods: {
-    onHashChange() {
-      const hash = window.location.hash.substring(1); // Remove the '#' from the hash
-      const [key, value] = hash.split(".");
-      if (key === "page_number" && !isNaN(value)) {
-        this.currentPageNumber = Number(value);
-      }
-    },
   },
 
   errorCaptured(err, component, info) {
