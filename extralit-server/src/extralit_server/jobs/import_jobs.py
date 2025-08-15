@@ -41,7 +41,7 @@ from extralit_server.api.schemas.v1.datasets import HubDatasetMapping
 from extralit_server.api.schemas.v1.records import RecordUpsert as RecordUpsertSchema
 from extralit_server.api.schemas.v1.records_bulk import RecordsBulkUpsert as RecordsBulkUpsertSchema
 from extralit_server.api.schemas.v1.suggestions import SuggestionCreate
-from extralit_server.bulk.records_bulk import UpsertRecordsBulk
+from extralit_server.contexts.records_bulk import UpsertRecordsBulk
 from extralit_server.database import AsyncSessionLocal
 from extralit_server.jobs.queues import DEFAULT_QUEUE, JOB_TIMEOUT_DISABLED
 from extralit_server.models import Dataset, ImportHistory
