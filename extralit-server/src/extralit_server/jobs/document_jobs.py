@@ -28,7 +28,7 @@ from extralit_server.jobs import DEFAULT_QUEUE, JOB_TIMEOUT_DISABLED
 from extralit_server.api.schemas.v1.documents import DocumentCreate
 from extralit_server.contexts import files, imports
 from extralit_server.contexts.document import preprocessing
-from extralit_server.services.hf_space import extract_pdf_with_pymupdf
+from extralit_server.contexts.ocr import extract_pdf_text
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -142,24 +142,25 @@ async def upload_and_preprocess_documents_job(
                         # Store preprocessing metadata in file metadata
                         file_metadata.update(preprocessing_result.metadata.model_dump())
 
-                        # Extract markdown using PyMuPDF via hf-space service
+                        # Extract markdown using PyMuPDF via text extraction service
                         try:
-                            _LOGGER.info(f"Extracting markdown from {filename} using PyMuPDF via hf-space")
-                            extraction_result = await extract_pdf_with_pymupdf(
+                            _LOGGER.info(f"Extracting text from {filename} using PyMuPDF service")
+                            extraction_result = await extract_pdf_text(
                                 pdf_bytes=processed_file_data,
                                 filename=filename,
                                 analysis_metadata=preprocessing_result.metadata
                             )
                             
                             if extraction_result:
+                                markdown, metadata = extraction_result
                                 # Store the markdown content and extraction metadata
                                 file_metadata["pymupdf_extraction"] = {
-                                    "markdown_content": extraction_result.markdown,
-                                    "extraction_metadata": extraction_result.metadata.model_dump(),
+                                    "markdown_content": markdown,
+                                    "extraction_metadata": metadata,
                                     "extraction_successful": True,
-                                    "extraction_time": extraction_result.processing_time
+                                    "extraction_time": metadata.get("processing_time")
                                 }
-                                _LOGGER.info(f"Successfully extracted markdown from {filename}: {len(extraction_result.markdown)} characters")
+                                _LOGGER.info(f"Successfully extracted text from {filename}: {len(markdown)} characters")
                             else:
                                 _LOGGER.warning(f"PyMuPDF extraction returned None for {filename}")
                                 file_metadata["pymupdf_extraction"] = {

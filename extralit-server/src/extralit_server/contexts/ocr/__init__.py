@@ -12,3 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+OCR and text extraction functionality for extralit-server.
+
+This package provides various OCR and text extraction capabilities including:
+- PyMuPDF-based text extraction (text.py)
+- Figure processing (figures.py) 
+- Table extraction (tables.py)
+"""
+
+from .text import (
+    extract_pdf_text,
+    check_service_health,
+    cleanup_extraction_client,
+    PyMuPDFServiceSettings,
+    PyMuPDFExtractionClient,
+)
+
+__all__ = [
+    "extract_pdf_text",
+    "check_service_health", 
+    "cleanup_extraction_client",
+    "PyMuPDFServiceSettings",
+    "PyMuPDFExtractionClient",
+]

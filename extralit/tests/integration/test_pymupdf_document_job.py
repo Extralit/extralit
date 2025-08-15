@@ -71,7 +71,7 @@ async def test_document_upload_job():
         
         # Test just the preprocessing and extraction part
         from extralit_server.contexts.document import preprocessing
-        from extralit_server.services.hf_space import extract_pdf_with_pymupdf
+        from extralit_server.contexts.ocr import extract_pdf_text
         
         # Simulate preprocessing
         print("⚙️ Running preprocessing...")
@@ -83,8 +83,8 @@ async def test_document_upload_job():
         print(f"✅ Preprocessing completed. Metadata: {preprocessing_result.metadata}")
         
         # Simulate PyMuPDF extraction
-        print("🔍 Running PyMuPDF extraction...")
-        extraction_result = await extract_pdf_with_pymupdf(
+        print("🔍 Running PyMuPDF text extraction...")
+        extraction_result = await extract_pdf_text(
             pdf_bytes=preprocessing_result.processed_data,
             filename=test_pdf.name,
             analysis_metadata=preprocessing_result.metadata

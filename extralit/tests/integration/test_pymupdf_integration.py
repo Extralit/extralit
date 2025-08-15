@@ -10,7 +10,7 @@ from pathlib import Path
 # Add the extralit-server source to the path
 sys.path.insert(0, str(Path(__file__).parent / "extralit-server" / "src"))
 
-from extralit_server.services.hf_space import extract_pdf_with_pymupdf
+from extralit_server.contexts.ocr import extract_pdf_text
 
 
 async def test_hf_space_integration():
@@ -53,8 +53,8 @@ async def test_hf_space_integration():
         }
         
         # Call the extraction service
-        print("🚀 Calling PyMuPDF extraction service...")
-        result = await extract_pdf_with_pymupdf(
+        print("🚀 Calling PyMuPDF text extraction service...")
+        result = await extract_pdf_text(
             pdf_bytes=pdf_bytes,
             filename=test_pdf.name,
             analysis_metadata=analysis_metadata
@@ -84,18 +84,16 @@ async def test_health_check():
     print("🏥 Testing health check...")
     
     try:
-        from extralit_server.services.hf_space import HfSpaceClient, HfSpaceSettings
+        from extralit_server.contexts.ocr import check_service_health
         
-        settings = HfSpaceSettings()
-        async with HfSpaceClient(settings) as client:
-            health = await client.health_check()
-            if health:
-                print("✅ Health check passed")
-                return True
-            else:
-                print("❌ Health check failed")
-                return False
-                
+        health = await check_service_health()
+        if health:
+            print("✅ Health check passed")
+            return True
+        else:
+            print("❌ Health check failed")
+            return False
+            
     except Exception as e:
         print(f"❌ Health check error: {str(e)}")
         return False
