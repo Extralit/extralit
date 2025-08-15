@@ -24,11 +24,11 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from extralit_server.constants import API_KEY_HEADER_NAME
+from extralit_server.contexts.responses_bulk import UpsertResponsesInBulkUseCase
 from extralit_server.enums import DatasetDistributionStrategy, RecordStatus, ResponseStatus
 from extralit_server.jobs.queues import HIGH_QUEUE
 from extralit_server.models import Response, User
 from extralit_server.search_engine import SearchEngine
-from extralit_server.use_cases.responses.upsert_responses_in_bulk import UpsertResponsesInBulkUseCase
 from extralit_server.webhooks.v1.enums import RecordEvent, ResponseEvent
 from extralit_server.webhooks.v1.records import build_record_event
 from extralit_server.webhooks.v1.responses import build_response_event

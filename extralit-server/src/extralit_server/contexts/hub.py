@@ -52,8 +52,8 @@ from extralit_server.api.schemas.v1.records import RecordUpsert as RecordUpsertS
 from extralit_server.api.schemas.v1.records_bulk import RecordsBulkUpsert as RecordsBulkUpsertSchema
 from extralit_server.api.schemas.v1.suggestions import SuggestionCreate
 from extralit_server.api.schemas.v1.vector_settings import VectorSettings as VectorSettingsSchema
-from extralit_server.bulk.records_bulk import UpsertRecordsBulk
 from extralit_server.contexts import info
+from extralit_server.contexts.records_bulk import UpsertRecordsBulk
 from extralit_server.database import get_sync_db
 from extralit_server.models.database import Dataset, Field, MetadataProperty, Question, Record, VectorSettings
 from extralit_server.search_engine import SearchEngine

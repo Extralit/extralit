@@ -29,14 +29,14 @@ from extralit_server.api.schemas.v1.responses import (
     ResponseUpdate,
 )
 from extralit_server.contexts import datasets
+from extralit_server.contexts.responses_bulk import (
+    UpsertResponsesInBulkUseCase,
+    UpsertResponsesInBulkUseCaseFactory,
+)
 from extralit_server.database import get_async_db
 from extralit_server.models import Dataset, Record, Response, User
 from extralit_server.search_engine import SearchEngine, get_search_engine
 from extralit_server.security import auth
-from extralit_server.use_cases.responses.upsert_responses_in_bulk import (
-    UpsertResponsesInBulkUseCase,
-    UpsertResponsesInBulkUseCaseFactory,
-)
 
 router = APIRouter(tags=["responses"])
 

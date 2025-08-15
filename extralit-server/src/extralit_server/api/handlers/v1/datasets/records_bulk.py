@@ -22,7 +22,7 @@ from starlette import status
 
 from extralit_server.api.policies.v1 import DatasetPolicy, authorize
 from extralit_server.api.schemas.v1.records_bulk import RecordsBulk, RecordsBulkCreate, RecordsBulkUpsert
-from extralit_server.bulk.records_bulk import CreateRecordsBulk, UpsertRecordsBulk
+from extralit_server.contexts.records_bulk import CreateRecordsBulk, UpsertRecordsBulk
 from extralit_server.database import get_async_db
 from extralit_server.models import Dataset, User
 from extralit_server.search_engine import SearchEngine, get_search_engine
