@@ -22,8 +22,10 @@ from typing import Dict, Any, Optional, Tuple
 from io import BytesIO
 
 import httpx
-from pydantic import BaseModel
 from pydantic_settings import BaseSettings
+
+# Import centralized schemas - single source of truth
+from extralit_server.api.schemas.v1.document.ocr import PyMuPDFExtractionResult
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -43,15 +45,6 @@ class HfSpaceSettings(BaseSettings):
     
     class Config:
         env_prefix = "HF_SPACE_"
-
-
-class PyMuPDFExtractionResult(BaseModel):
-    """Result from PyMuPDF extraction service."""
-    
-    markdown: str
-    metadata: Dict[str, Any]
-    filename: Optional[str] = None
-    processing_time: Optional[float] = None
 
 
 class HfSpaceClient:
@@ -171,8 +164,23 @@ class HfSpaceClient:
             return False
 
 
-# Global settings instance
+# Global settings and client management
 hf_space_settings = HfSpaceSettings()
+_global_client: Optional[HfSpaceClient] = None
+
+
+async def get_client() -> HfSpaceClient:
+    """
+    Get or create a global HTTP client instance for connection reuse.
+    This improves performance by avoiding client initialization overhead.
+    """
+    global _global_client
+    if _global_client is None:
+        _global_client = HfSpaceClient(hf_space_settings)
+        await _global_client.__aenter__()
+    elif _global_client._client is None:
+        await _global_client.__aenter__()
+    return _global_client
 
 
 async def extract_pdf_with_pymupdf(
@@ -181,7 +189,7 @@ async def extract_pdf_with_pymupdf(
     analysis_metadata: Optional[Dict[str, Any]] = None
 ) -> Tuple[str, Dict[str, Any]]:
     """
-    Convenience function to extract PDF markdown using hf-space service.
+    Extract PDF markdown using hf-space service with connection reuse.
     
     Args:
         pdf_bytes: Raw PDF bytes
@@ -194,6 +202,33 @@ async def extract_pdf_with_pymupdf(
     Raises:
         ValueError: If extraction fails or service is unavailable
     """
-    async with HfSpaceClient(hf_space_settings) as client:
+    try:
+        client = await get_client()
         result = await client.extract_pdf_markdown(pdf_bytes, filename, analysis_metadata)
         return result.markdown, result.metadata
+    except Exception as e:
+        _LOGGER.error(f"PyMuPDF extraction failed for {filename}: {str(e)}")
+        raise ValueError(f"PDF extraction failed: {str(e)}") from e
+
+
+async def cleanup_client():
+    """Clean up global client resources. Call this on application shutdown."""
+    global _global_client
+    if _global_client is not None:
+        await _global_client.__aexit__(None, None, None)
+        _global_client = None
+
+
+async def health_check() -> bool:
+    """
+    Check if the hf-space service is healthy using the global client.
+    
+    Returns:
+        True if service is healthy, False otherwise
+    """
+    try:
+        client = await get_client()
+        return await client.health_check()
+    except Exception as e:
+        _LOGGER.warning(f"Health check failed: {str(e)}")
+        return False
