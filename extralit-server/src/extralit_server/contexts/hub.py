@@ -12,48 +12,51 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import io
-import os
 import base64
+import io
 import json
-
-from uuid import uuid4
+import os
 from pathlib import Path
-from typing import Any, Optional, List, TYPE_CHECKING
-from typing_extensions import Self
 from tempfile import TemporaryDirectory
+from typing import TYPE_CHECKING, Any
+from uuid import uuid4
 
 import lazy_loader as lazy
+from typing_extensions import Self
 
 datasets = lazy.load("datasets")
 PIL = lazy.load("PIL")
 
-from sqlalchemy.orm import selectinload
-from sqlalchemy.ext.asyncio import AsyncSession
+from huggingface_hub import DatasetCard, DatasetCardData, HfApi
 from pydantic import BaseModel
-from huggingface_hub import HfApi, DatasetCard, DatasetCardData
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 if TYPE_CHECKING:
-    from PIL import Image
     from datasets import Dataset as HFDataset
+    from PIL import Image
 
-from extralit_server.contexts import info
-from extralit_server.database import get_sync_db
-from extralit_server.models.database import Dataset, Record, Field, Question, MetadataProperty, VectorSettings
-from extralit_server.search_engine import SearchEngine
-from extralit_server.bulk.records_bulk import UpsertRecordsBulk
 from extralit_server.api.schemas.v1.datasets import (
-    HubDatasetMapping,
     Dataset as DatasetSchema,
+)
+from extralit_server.api.schemas.v1.datasets import (
     DatasetDistribution as DatasetDistributionSchema,
 )
+from extralit_server.api.schemas.v1.datasets import (
+    HubDatasetMapping,
+)
 from extralit_server.api.schemas.v1.fields import Field as FieldSchema
+from extralit_server.api.schemas.v1.metadata_properties import MetadataProperty as MetadataPropertySchema
 from extralit_server.api.schemas.v1.questions import Question as QuestionSchema
 from extralit_server.api.schemas.v1.records import RecordUpsert as RecordUpsertSchema
 from extralit_server.api.schemas.v1.records_bulk import RecordsBulkUpsert as RecordsBulkUpsertSchema
-from extralit_server.api.schemas.v1.metadata_properties import MetadataProperty as MetadataPropertySchema
-from extralit_server.api.schemas.v1.vector_settings import VectorSettings as VectorSettingsSchema
 from extralit_server.api.schemas.v1.suggestions import SuggestionCreate
+from extralit_server.api.schemas.v1.vector_settings import VectorSettings as VectorSettingsSchema
+from extralit_server.contexts import info
+from extralit_server.contexts.records_bulk import UpsertRecordsBulk
+from extralit_server.database import get_sync_db
+from extralit_server.models.database import Dataset, Field, MetadataProperty, Question, Record, VectorSettings
+from extralit_server.search_engine import SearchEngine
 
 BATCH_SIZE = 100
 RESET_ROW_IDX = -1
@@ -69,7 +72,7 @@ HUB_DATASET_CARD_TEMPLATE_PATH = os.path.join(Path(__file__).parent, "hub_templa
 
 class HubDataset:
     def __init__(self, name: str, subset: str, split: str, mapping: HubDatasetMapping):
-        self.dataset: "HFDataset" = datasets.load_dataset(path=name, name=subset, split=split, streaming=True)  # type: ignore
+        self.dataset: HFDataset = datasets.load_dataset(path=name, name=subset, split=split, streaming=True)  # type: ignore
         self.split = split
         self.mapping = mapping
         self.mapping_feature_names = mapping.sources
@@ -120,7 +123,7 @@ class HubDataset:
     def _batch_index_to_row(self, batch: dict, index: int) -> dict:
         row = {}
         for feature_name, values in batch.items():
-            if not feature_name in self.mapping_feature_names:
+            if feature_name not in self.mapping_feature_names:
                 continue
 
             row[feature_name] = self._cast_feature_value(self.features[feature_name], values[index])
@@ -218,14 +221,14 @@ class HubDataset:
 
 
 class HubDatasetSettingsSchema(BaseModel):
-    guidelines: Optional[str] = None
+    guidelines: str | None = None
     allow_extra_metadata: bool
     distribution: DatasetDistributionSchema
     # TODO: Add missing mapping attribute. Discuss it with Ben.
-    fields: List[FieldSchema]
-    questions: List[QuestionSchema]
-    metadata: List[MetadataPropertySchema]
-    vectors: List[VectorSettingsSchema]
+    fields: list[FieldSchema]
+    questions: list[QuestionSchema]
+    metadata: list[MetadataPropertySchema]
+    vectors: list[VectorSettingsSchema]
 
 
 class HubDatasetExporter:
@@ -238,9 +241,7 @@ class HubDatasetExporter:
         self.cache_version = uuid4()
 
     def export_to(self, name: str, subset: str, split: str, private: bool, token: str) -> None:
-        hf_dataset: "HFDataset" = datasets.Dataset.from_generator(
-            self._rows_generator, split=datasets.NamedSplit(split)
-        )  # type: ignore
+        hf_dataset: HFDataset = datasets.Dataset.from_generator(self._rows_generator, split=datasets.NamedSplit(split))  # type: ignore
         hf_dataset.push_to_hub(
             repo_id=name,
             config_name=subset,

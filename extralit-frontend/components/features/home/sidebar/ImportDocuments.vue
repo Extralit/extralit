@@ -1,5 +1,3 @@
-
-
 <template>
   <div class="import-documents">
     <BaseButton class="import-documents__button" @click="handleClick">

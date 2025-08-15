@@ -1,28 +1,26 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 
 import pytest
-
-from typing import Any
 from httpx import AsyncClient
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from extralit_server.webhooks.v1.enums import WebhookEvent
-from extralit_server.models import Webhook
 from extralit_server.constants import API_KEY_HEADER_NAME
-
+from extralit_server.models import Webhook
+from extralit_server.webhooks.v1.enums import WebhookEvent
 from tests.factories import AdminFactory, AnnotatorFactory, WebhookFactory
 
 
@@ -74,7 +72,7 @@ class TestCreateWebhook:
         assert response.status_code == 201
 
         assert (await db.execute(select(func.count(Webhook.id)))).scalar() == 1
-        webhook = (await db.execute(select(Webhook))).scalar_one()
+        (await db.execute(select(Webhook))).scalar_one()
 
         assert response.json()["url"] == "http://1.1.1.1/webhook"
 
@@ -208,11 +206,11 @@ class TestCreateWebhook:
         )
 
         assert response.status_code == 201
-        assert response.json()["description"] == None
+        assert response.json()["description"] is None
 
         assert (await db.execute(select(func.count(Webhook.id)))).scalar() == 1
         webhook = (await db.execute(select(Webhook))).scalar_one()
-        assert webhook.description == None
+        assert webhook.description is None
 
     async def test_create_webhook_without_url(
         self, db: AsyncSession, async_client: AsyncClient, owner_auth_header: dict

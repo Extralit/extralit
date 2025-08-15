@@ -13,7 +13,7 @@
 # limitations under the License.
 from typer import Typer
 
-from .reindex import reindex, list
+from .reindex import list, reindex
 
 app = Typer(help="Commands for Extralit server search engine management", no_args_is_help=True)
 

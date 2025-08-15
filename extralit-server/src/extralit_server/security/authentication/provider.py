@@ -1,18 +1,18 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-from typing import ClassVar, List, Optional
+from typing import ClassVar
 
 from fastapi import Depends
 from fastapi.security import SecurityScopes
@@ -41,7 +41,7 @@ def set_request_user(request: Request, user: User):
     request.state.user = user
 
 
-def get_request_user(request: Request) -> Optional[User]:
+def get_request_user(request: Request) -> User | None:
     """
     Get the current user from the request.
 
@@ -57,7 +57,7 @@ def get_request_user(request: Request) -> Optional[User]:
 class AuthenticationProvider:
     """Authentication provider for the API requests."""
 
-    backends: ClassVar[List[AuthenticationBackend]] = [
+    backends: ClassVar[list[AuthenticationBackend]] = [
         APIKeyAuthenticationBackend(),
         BearerTokenAuthenticationBackend(),
     ]
@@ -68,11 +68,11 @@ class AuthenticationProvider:
 
     async def get_current_user(
         self,
-        security_scopes: SecurityScopes,  # noqa
+        security_scopes: SecurityScopes,
         request: Request,
         db: AsyncSession = Depends(get_async_db),
-        _api_key: Optional[str] = Depends(APIKeyAuthenticationBackend.scheme),
-        _bearer: Optional[str] = Depends(BearerTokenAuthenticationBackend.scheme),
+        _api_key: str | None = Depends(APIKeyAuthenticationBackend.scheme),
+        _bearer: str | None = Depends(BearerTokenAuthenticationBackend.scheme),
     ) -> User:
         """Get the current user from the request."""
 
@@ -86,15 +86,15 @@ class AuthenticationProvider:
 
         set_request_user(request, user)
         return user
-    
+
     async def get_optional_current_user(
         self,
-        security_scopes: SecurityScopes,  # noqa
+        security_scopes: SecurityScopes,
         request: Request,
         db: AsyncSession = Depends(get_async_db),
-        _api_key: Optional[str] = Depends(APIKeyAuthenticationBackend.scheme),
-        _bearer: Optional[str] = Depends(BearerTokenAuthenticationBackend.scheme),
-    ) -> Optional[User]:
+        _api_key: str | None = Depends(APIKeyAuthenticationBackend.scheme),
+        _bearer: str | None = Depends(BearerTokenAuthenticationBackend.scheme),
+    ) -> User | None:
         """Get the current user from the request, or None if authentication fails."""
 
         userinfo = await self._authenticate_request_user(db, request)
@@ -107,7 +107,7 @@ class AuthenticationProvider:
 
         return user
 
-    async def _authenticate_request_user(self, db: AsyncSession, request: Request) -> Optional[UserInfo]:
+    async def _authenticate_request_user(self, db: AsyncSession, request: Request) -> UserInfo | None:
         # This db will be used by the backends. Ideally this should be done as a global dependency
         # but is not working as expected. Sometimes the db is not available in the request state at the
         # middlewares level.

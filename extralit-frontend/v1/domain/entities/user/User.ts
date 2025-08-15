@@ -9,7 +9,7 @@ export class User {
   ) {}
 
   get avatar() {
-    return this.userName.slice(0, 2);
+    return this.userName?.slice(0, 2);
   }
 
   get isAdminOrOwner() {

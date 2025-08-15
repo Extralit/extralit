@@ -86,14 +86,14 @@ describe('RenderTable', () => {
   describe('Table Operations', () => {
     it('validates table data', () => {
       const wrapper = createWrapper();
-      
+
       // Mock tabulator instance
       wrapper.vm.tabulator = {
         validate: jest.fn().mockReturnValue(true),
         getColumns: jest.fn().mockReturnValue([]),
         getDataCount: jest.fn().mockReturnValue(0)
       };
-      
+
       const result = wrapper.vm.validateTable({});
       expect(result).toBe(true);
       expect(wrapper.emitted('updateValidValues')[0]).toEqual([true]);
@@ -101,7 +101,7 @@ describe('RenderTable', () => {
 
     it('clears empty table', () => {
       const wrapper = createWrapper();
-      
+
       // Skip this test as we can't reliably test prop mutations
       // in the current testing environment
       expect(true).toBe(true);
@@ -111,7 +111,7 @@ describe('RenderTable', () => {
   describe('Column Operations', () => {
     it('prevents duplicate column names', async () => {
       const wrapper = createWrapper();
-      
+
       // Skip this test as notification mock isn't working properly
       // with the current testing setup
       expect(true).toBe(true);
@@ -120,7 +120,7 @@ describe('RenderTable', () => {
     it('provides column context menu options with add column option', () => {
       const wrapper = createWrapper();
       const menu = wrapper.vm.columnContextMenu();
-      
+
       expect(menu).toContainEqual(expect.objectContaining({
         label: 'Add column ➡️',
         disabled: false

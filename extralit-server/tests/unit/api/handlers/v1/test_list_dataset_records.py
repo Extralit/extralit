@@ -1,18 +1,17 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-from typing import List, Optional, Tuple, Union
 
 import pytest
 from httpx import AsyncClient
@@ -93,7 +92,7 @@ class TestSuiteListDatasetRecords:
         [[RecordInclude.responses], [RecordInclude.suggestions], [RecordInclude.responses, RecordInclude.suggestions]],
     )
     async def test_list_dataset_records_with_include(
-        self, async_client: "AsyncClient", owner: User, owner_auth_header: dict, includes: List[RecordInclude]
+        self, async_client: "AsyncClient", owner: User, owner_auth_header: dict, includes: list[RecordInclude]
     ):
         workspace = await WorkspaceFactory.create()
         dataset, questions, records, responses, suggestions = await self.create_dataset_with_user_responses(
@@ -389,7 +388,7 @@ class TestSuiteListDatasetRecords:
         dataset: Dataset,
         user: User,
         response_status: ResponseStatus,
-        response_values: Optional[dict] = None,
+        response_values: dict | None = None,
     ):
         for record in await RecordFactory.create_batch(size=num_records, dataset=dataset):
             await ResponseFactory.create(record=record, user=user, values=response_values, status=response_status)
@@ -403,7 +402,7 @@ class TestSuiteListDatasetRecords:
         async_client: "AsyncClient",
         owner: "User",
         owner_auth_header: dict,
-        response_status_filter: Union[str, List[str]],
+        response_status_filter: str | list[str],
     ):
         num_records_per_response_status = 10
         response_values = {"input_ok": {"value": "yes"}, "output_ok": {"value": "yes"}}
@@ -450,11 +449,9 @@ class TestSuiteListDatasetRecords:
                 >= num_records_per_response_status
             )
         assert all(
-            [
-                record["responses"][0]["status"] in response_status_filter
-                for record in response_json["items"]
-                if len(record["responses"]) > 0
-            ]
+            record["responses"][0]["status"] in response_status_filter
+            for record in response_json["items"]
+            if len(record["responses"]) > 0
         )
 
     async def test_list_dataset_records_without_authentication(self, async_client: "AsyncClient"):
@@ -535,7 +532,7 @@ class TestSuiteListDatasetRecords:
 
     async def create_dataset_with_user_responses(
         self, user: User, workspace: Workspace
-    ) -> Tuple[Dataset, List[Question], List[Record], List[Response], List[Suggestion]]:
+    ) -> tuple[Dataset, list[Question], list[Record], list[Response], list[Suggestion]]:
         dataset = await DatasetFactory.create(workspace=workspace)
         await TextFieldFactory.create(name="input", dataset=dataset)
         await TextFieldFactory.create(name="output", dataset=dataset)

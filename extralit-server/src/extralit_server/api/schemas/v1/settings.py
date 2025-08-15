@@ -12,28 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
 
 class HuggingfaceSettings(BaseModel):
-    space_id: Optional[str]
-    space_title: Optional[str]
-    space_subdomain: Optional[str]
-    space_host: Optional[str]
-    space_repo_name: Optional[str]
-    space_author_name: Optional[str]
+    space_id: str | None
+    space_title: str | None
+    space_subdomain: str | None
+    space_host: str | None
+    space_repo_name: str | None
+    space_author_name: str | None
     space_persistent_storage_enabled: bool
 
     model_config = ConfigDict(from_attributes=True)
 
 
 class ExtralitSettings(BaseModel):
-    show_huggingface_space_persistent_storage_warning: Optional[bool] = None
+    show_huggingface_space_persistent_storage_warning: bool | None = None
     share_your_progress_enabled: bool = False
 
 
 class Settings(BaseModel):
     extralit: ExtralitSettings
-    huggingface: Optional[HuggingfaceSettings] = None
+    huggingface: HuggingfaceSettings | None = None

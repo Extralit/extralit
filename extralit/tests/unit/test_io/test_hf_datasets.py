@@ -14,7 +14,7 @@
 
 from uuid import uuid4
 
-from datasets import Value, Sequence, load_dataset
+from datasets import Sequence, Value, load_dataset
 
 import extralit as ex
 from extralit.records._io import HFDatasetsIO

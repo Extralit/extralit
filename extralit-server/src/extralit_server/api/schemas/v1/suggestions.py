@@ -1,22 +1,22 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from datetime import datetime
-from typing import Any, List, Literal, Optional, Union
+from typing import Any, Literal
 from uuid import UUID
 
-from pydantic import BaseModel, Field, ConfigDict, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from extralit_server.api.schemas.v1.questions import QuestionName
 from extralit_server.api.schemas.v1.responses import (
@@ -24,8 +24,8 @@ from extralit_server.api.schemas.v1.responses import (
     RankingQuestionResponseValue,
     RatingQuestionResponseValue,
     SpanQuestionResponseValue,
-    TextAndLabelSelectionQuestionResponseValue,
     TableQuestionResponseValue,
+    TextAndLabelSelectionQuestionResponseValue,
 )
 from extralit_server.enums import SuggestionType
 
@@ -41,7 +41,7 @@ SCORE_LESS_THAN_OR_EQUAL = 1
 class SuggestionFilterScope(BaseModel):
     entity: Literal["suggestion"]
     question: QuestionName
-    property: Union[Literal["value", "score", "agent", "type"], None] = "value"
+    property: Literal["value", "score", "agent", "type"] | None = "value"
 
 
 class SearchSuggestionOptionsQuestion(BaseModel):
@@ -51,19 +51,19 @@ class SearchSuggestionOptionsQuestion(BaseModel):
 
 class SearchSuggestionOptions(BaseModel):
     question: SearchSuggestionOptionsQuestion
-    agents: List[str]
+    agents: list[str]
 
 
 class SearchSuggestionsOptions(BaseModel):
-    items: List[SearchSuggestionOptions]
+    items: list[SearchSuggestionOptions]
 
 
 class BaseSuggestion(BaseModel):
     question_id: UUID
-    type: Optional[SuggestionType] = None
+    type: SuggestionType | None = None
     value: Any
-    agent: Optional[str] = None
-    score: Optional[Union[float, List[float]]] = None
+    agent: str | None = None
+    score: float | list[float] | None = None
 
 
 class Suggestion(BaseSuggestion):
@@ -75,26 +75,26 @@ class Suggestion(BaseSuggestion):
 
 
 class Suggestions(BaseModel):
-    items: List[Suggestion]
+    items: list[Suggestion]
 
 
 class SuggestionCreate(BaseSuggestion):
-    value: Union[
-        SpanQuestionResponseValue,
-        RankingQuestionResponseValue,
-        MultiLabelSelectionQuestionResponseValue,
-        RatingQuestionResponseValue,
-        TextAndLabelSelectionQuestionResponseValue,
-        TableQuestionResponseValue,
-    ]
-    agent: Optional[str] = Field(
+    value: (
+        SpanQuestionResponseValue
+        | RankingQuestionResponseValue
+        | MultiLabelSelectionQuestionResponseValue
+        | RatingQuestionResponseValue
+        | TextAndLabelSelectionQuestionResponseValue
+        | TableQuestionResponseValue
+    )
+    agent: str | None = Field(
         None,
         pattern=AGENT_REGEX,
         min_length=AGENT_MIN_LENGTH,
         max_length=AGENT_MAX_LENGTH,
         description="Agent used to generate the suggestion",
     )
-    score: Optional[Union[float, List[float]]] = Field(None, description="The score assigned to the suggestion")
+    score: float | list[float] | None = Field(None, description="The score assigned to the suggestion")
 
     @field_validator("score")
     @classmethod

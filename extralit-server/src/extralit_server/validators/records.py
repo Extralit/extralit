@@ -15,14 +15,14 @@
 import copy
 import mimetypes
 from abc import ABC
-from typing import Dict, List, Union, Any, Optional
-from urllib.parse import urlparse, ParseResult, ParseResultBytes
+from typing import Any
+from urllib.parse import ParseResult, ParseResultBytes, urlparse
 
 from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from extralit_server.api.schemas.v1.chat import ChatFieldValue
-from extralit_server.api.schemas.v1.records import RecordCreate, RecordUpsert, RecordUpdate
+from extralit_server.api.schemas.v1.records import RecordCreate, RecordUpdate, RecordUpsert
 from extralit_server.api.schemas.v1.records_bulk import RecordsBulkCreate
 from extralit_server.api.schemas.v1.responses import UserResponseCreate
 from extralit_server.api.schemas.v1.suggestions import SuggestionCreate
@@ -60,18 +60,18 @@ class RecordValidatorBase(ABC):
         cls._validate_custom_fields(dataset=dataset, fields=fields)
 
     @classmethod
-    def _validate_non_empty_fields(cls, fields: Dict[str, str]) -> None:
+    def _validate_non_empty_fields(cls, fields: dict[str, str]) -> None:
         if not (isinstance(fields, dict) and len(fields) >= 1):
             raise UnprocessableEntityError("fields cannot be empty")
 
     @classmethod
-    def _validate_required_fields(cls, dataset: Dataset, fields: Dict[str, str]) -> None:
+    def _validate_required_fields(cls, dataset: Dataset, fields: dict[str, str]) -> None:
         for field in dataset.fields:
             if field.required and not (field.name in fields and fields.get(field.name) is not None):
                 raise UnprocessableEntityError(f"missing required value for field: {field.name!r}")
 
     @classmethod
-    def _validate_extra_fields(cls, dataset: Dataset, fields: Dict[str, str]) -> None:
+    def _validate_extra_fields(cls, dataset: Dataset, fields: dict[str, str]) -> None:
         fields_copy = copy.copy(fields)
         for field in dataset.fields:
             fields_copy.pop(field.name, None)
@@ -100,17 +100,17 @@ class RecordValidatorBase(ABC):
                 )
 
     @classmethod
-    def _validate_text_fields(cls, dataset: Dataset, fields: Dict[str, str]) -> None:
+    def _validate_text_fields(cls, dataset: Dataset, fields: dict[str, str]) -> None:
         for field in filter(lambda field: field.is_text, dataset.fields):
             cls._validate_text_field(field.name, fields.get(field.name))
 
     @classmethod
-    def _validate_image_fields(cls, dataset: Dataset, fields: Dict[str, str]) -> None:
+    def _validate_image_fields(cls, dataset: Dataset, fields: dict[str, str]) -> None:
         for field in filter(lambda field: field.is_image, dataset.fields):
             cls._validate_image_field(field.name, fields.get(field.name))
 
     @classmethod
-    def _validate_chat_fields(cls, dataset: Dataset, fields: Dict[str, Any]) -> None:
+    def _validate_chat_fields(cls, dataset: Dataset, fields: dict[str, Any]) -> None:
         for field in filter(lambda field: field.is_chat, dataset.fields):
             cls._validate_chat_field(field.name, fields.get(field.name))
 
@@ -123,7 +123,7 @@ class RecordValidatorBase(ABC):
             raise UnprocessableEntityError(f"text field {field_name!r} value must be a string")
 
     @classmethod
-    def _validate_image_field(cls, field_name: str, field_value: Union[str, None]) -> None:
+    def _validate_image_field(cls, field_name: str, field_value: str | None) -> None:
         if field_value is None:
             return
 
@@ -149,9 +149,7 @@ class RecordValidatorBase(ABC):
             raise UnprocessableEntityError(f"chat field {field_name!r} value must be a list of messages")
 
     @staticmethod
-    def _validate_web_url(
-        field_name: str, field_value: str, parse_result: Union[ParseResult, ParseResultBytes]
-    ) -> None:
+    def _validate_web_url(field_name: str, field_value: str, parse_result: ParseResult | ParseResultBytes) -> None:
         if not parse_result.netloc or not parse_result.path:
             raise UnprocessableEntityError(f"image field {field_name!r} has an invalid URL value")
 
@@ -161,9 +159,7 @@ class RecordValidatorBase(ABC):
             )
 
     @staticmethod
-    def _validate_data_url(
-        field_name: str, field_value: str, parse_result: Union[ParseResult, ParseResultBytes]
-    ) -> None:
+    def _validate_data_url(field_name: str, field_value: str, parse_result: ParseResult | ParseResultBytes) -> None:
         if not parse_result.path:
             raise UnprocessableEntityError(f"image field {field_name!r} has an invalid URL value")
 
@@ -179,7 +175,7 @@ class RecordValidatorBase(ABC):
             )
 
     @classmethod
-    def _validate_custom_fields(cls, dataset: Dataset, fields: Dict[str, Any]) -> None:
+    def _validate_custom_fields(cls, dataset: Dataset, fields: dict[str, Any]) -> None:
         for field in filter(lambda field: field.is_custom, dataset.fields):
             cls._validate_custom_field(field.name, fields.get(field.name))
 
@@ -192,7 +188,7 @@ class RecordValidatorBase(ABC):
             raise UnprocessableEntityError(f"custom field {name!r} value must be a dictionary")
 
     @classmethod
-    def _validate_suggestions(cls, suggestions: List[SuggestionCreate], dataset: Dataset, record: Record):
+    def _validate_suggestions(cls, suggestions: list[SuggestionCreate], dataset: Dataset, record: Record):
         if not suggestions:
             return
 
@@ -210,14 +206,14 @@ class RecordValidatorBase(ABC):
             raise UnprocessableEntityError(f"record does not have valid suggestions: {ex}") from ex
 
     @classmethod
-    def _validate_duplicated_suggestions(cls, suggestions: List[SuggestionCreate]):
+    def _validate_duplicated_suggestions(cls, suggestions: list[SuggestionCreate]):
         question_ids = [s.question_id for s in suggestions]
 
         if len(question_ids) != len(set(question_ids)):
             raise UnprocessableEntityError("found duplicate suggestions question IDs")
 
     @classmethod
-    def _validate_vectors(cls, vectors: Optional[dict], dataset: Dataset):
+    def _validate_vectors(cls, vectors: dict | None, dataset: Dataset):
         if not vectors:
             return
 
@@ -235,7 +231,7 @@ class RecordValidatorBase(ABC):
             raise UnprocessableEntityError(f"record does not have valid vectors: {ex}") from ex
 
     @classmethod
-    async def _validate_responses(cls, responses: List[UserResponseCreate], dataset: Dataset, record: Record):
+    async def _validate_responses(cls, responses: list[UserResponseCreate], dataset: Dataset, record: Record):
         from extralit_server.contexts.accounts import list_users_by_ids
 
         if not responses:
@@ -279,7 +275,7 @@ class RecordUpdateValidator(RecordValidatorBase):
 
 class RecordUpsertValidator(RecordValidatorBase):
     @classmethod
-    async def validate(cls, record_upsert: RecordUpsert, dataset: Dataset, record: Optional[Record]) -> None:
+    async def validate(cls, record_upsert: RecordUpsert, dataset: Dataset, record: Record | None) -> None:
         if record is None:
             return await RecordCreateValidator.validate(record_upsert, dataset)
 
@@ -318,7 +314,7 @@ class RecordsBulkCreateValidator:
             raise UnprocessableEntityError(f"found records with same external ids: {', '.join(found_records)}")
 
     @staticmethod
-    async def _validate_all_bulk_records(dataset: Dataset, records_create: List[RecordCreate]):
+    async def _validate_all_bulk_records(dataset: Dataset, records_create: list[RecordCreate]):
         for idx, record_create in enumerate(records_create):
             try:
                 await RecordCreateValidator.validate(record_create, dataset)

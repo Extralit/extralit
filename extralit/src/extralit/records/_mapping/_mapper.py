@@ -13,24 +13,25 @@
 # limitations under the License.
 
 import re
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Union, Tuple
-from uuid import UUID
 import warnings
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Any, Optional, Union
+from uuid import UUID
 
 from extralit._exceptions import RecordsIngestionError
+from extralit.records._mapping._routes import (
+    AttributeParameter,
+    AttributeRoute,
+    AttributeType,
+    ParameterType,
+    RecordAttributesMap,
+)
 from extralit.records._resource import Record
 from extralit.responses import Response
 from extralit.settings import FieldBase, VectorField
 from extralit.settings._metadata import MetadataPropertyBase
 from extralit.settings._question import QuestionBase
 from extralit.suggestions import Suggestion
-from extralit.records._mapping._routes import (
-    AttributeRoute,
-    RecordAttributesMap,
-    AttributeType,
-    ParameterType,
-    AttributeParameter,
-)
 
 if TYPE_CHECKING:
     from extralit.datasets import Dataset
@@ -55,7 +56,7 @@ class IngestedRecordMapper:
         self,
         dataset: "Dataset",
         user_id: UUID,
-        mapping: Optional[Dict[str, Union[str, Sequence[str]]]] = None,
+        mapping: Optional[dict[str, Union[str, Sequence[str]]]] = None,
     ):
         self._dataset = dataset
         self._schema = dataset.schema
@@ -65,7 +66,7 @@ class IngestedRecordMapper:
         default_mapping = self._schematize_default_attributes()
         self.mapping = self._schematize_mapped_attributes(mapping=mapping, default_mapping=default_mapping)
 
-    def __call__(self, data: Dict[str, Any], user_id: Optional[UUID] = None) -> Record:
+    def __call__(self, data: dict[str, Any], user_id: Optional[UUID] = None) -> Record:
         """Maps a dictionary of data to a record object.
 
         Parameters:
@@ -86,7 +87,9 @@ class IngestedRecordMapper:
 
         unknown_keys = [key for key in data.keys() if key not in self.mapping.keys()]
         if unknown_keys:
-            warnings.warn(f"Keys {unknown_keys} in data are not present in the mapping and will be ignored.")
+            warnings.warn(
+                f"Keys {unknown_keys} in data are not present in the mapping and will be ignored.", stacklevel=2
+            )
 
         if len([k for k in data if k != self.mapping.id.source]) == 0:
             raise RecordsIngestionError(
@@ -118,7 +121,7 @@ class IngestedRecordMapper:
 
     def _schematize_mapped_attributes(
         self,
-        mapping: Dict[str, Union[str, Sequence[str]]],
+        mapping: dict[str, Union[str, Sequence[str]]],
         default_mapping: RecordAttributesMap,
     ) -> RecordAttributesMap:
         """Extends the default mapping with a schematized mapping object provided from a dict"""
@@ -147,10 +150,10 @@ class IngestedRecordMapper:
 
         return default_mapping
 
-    def _parse_dot_notation(self, attribute_mapping: str) -> Tuple[str, Optional[str], Optional[str]]:
+    def _parse_dot_notation(self, attribute_mapping: str) -> tuple[str, Optional[str], Optional[str]]:
         """Parses a string in the format of 'attribute.type.parameter' into its attribute parts parts using regex."""
 
-        available_attributes = list(self._schema.keys()) + ["id"]
+        available_attributes = [*list(self._schema.keys()), "id"]
         available_parameters = ParameterType.values()
         available_types = AttributeType.values()
 
@@ -241,7 +244,7 @@ class IngestedRecordMapper:
     # Private helper functions - Parse Records
     ##########################################
 
-    def _map_suggestions(self, data: Dict[str, Any], mapping) -> List[Suggestion]:
+    def _map_suggestions(self, data: dict[str, Any], mapping) -> list[Suggestion]:
         """Converts an arbitrary dictionary to a list of Suggestion objects for use by the add or update methods.
         Suggestions can be defined accross multiple columns in the data, so we need to map them to the appropriately.add()
 
@@ -270,7 +273,7 @@ class IngestedRecordMapper:
 
         return suggestions
 
-    def _map_responses(self, data: Dict[str, Any], user_id: UUID, mapping) -> List[Response]:
+    def _map_responses(self, data: dict[str, Any], user_id: UUID, mapping) -> list[Response]:
         """Converts an arbitrary dictionary to a list of Response objects for use by the add or update methods.
 
         Parameters:
@@ -296,7 +299,7 @@ class IngestedRecordMapper:
 
         return responses
 
-    def _map_attributes(self, data: Dict[str, Any], mapping: Dict[str, AttributeRoute]) -> Dict[str, Any]:
+    def _map_attributes(self, data: dict[str, Any], mapping: dict[str, AttributeRoute]) -> dict[str, Any]:
         """Converts a dictionary to a dictionary of attributes for use by the add or update methods."""
         attributes = {}
 

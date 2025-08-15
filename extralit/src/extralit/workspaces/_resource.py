@@ -12,26 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from collections.abc import Sequence
 from pathlib import Path
-from typing import List, TYPE_CHECKING, Optional, overload, Union, Sequence, Any
+from typing import TYPE_CHECKING, Any, Optional, Union, overload
 from urllib.parse import unquote, urlparse
 
-from extralit._constants import _DEFAULT_SCHEMA_S3_PATH
 from extralit._api._workspaces import WorkspacesAPI
-from extralit._helpers import GenericIterator
-from extralit._helpers import LoggingMixin
+from extralit._constants import _DEFAULT_SCHEMA_S3_PATH
+from extralit._helpers import GenericIterator, LoggingMixin
 from extralit._models import WorkspaceModel
 from extralit._resource import Resource
 from extralit.client import Extralit
 
 if TYPE_CHECKING:
     from uuid import UUID
-    from extralit.users._resource import User
+
+    from extralit._models._documents import DocumentModel
+    from extralit._models._files import FileObjectResponse, ListObjectsResponse, ObjectMetadata
+    from extralit._models._schema import SchemaStructure
     from extralit.datasets._resource import Dataset
     from extralit.documents._resource import Document
-    from extralit._models._files import ListObjectsResponse, ObjectMetadata, FileObjectResponse
-    from extralit._models._documents import DocumentModel
-    from extralit._models._schema import SchemaStructure
+    from extralit.users._resource import User
 
 
 class Workspace(Resource):
@@ -93,14 +94,14 @@ class Workspace(Resource):
         return self.users.delete(user)
 
     # TODO: Make this method private
-    def list_datasets(self) -> List["Dataset"]:
+    def list_datasets(self) -> list["Dataset"]:
         from extralit.datasets import Dataset
 
         datasets = self._client.api.datasets.list(self.id)
         self._log_message(f"Got {len(datasets)} datasets for workspace {self.id}")
         return [Dataset.from_model(model=dataset, client=self._client) for dataset in datasets]
 
-    def list_documents(self) -> List["Document"]:
+    def list_documents(self) -> list["Document"]:
         """List documents in the workspace as Document resource objects.
 
         Returns:
@@ -207,7 +208,7 @@ class Workspace(Resource):
 
         return self._api.add_document(document)
 
-    def get_documents(self) -> List["DocumentModel"]:
+    def get_documents(self) -> list["DocumentModel"]:
         """Get documents from the workspace.
 
         Returns:
@@ -220,7 +221,7 @@ class Workspace(Resource):
     ####################
 
     def list_schemas(
-        self, prefix: str = _DEFAULT_SCHEMA_S3_PATH, exclude: Optional[List[str]] = None
+        self, prefix: str = _DEFAULT_SCHEMA_S3_PATH, exclude: Optional[list[str]] = None
     ) -> "SchemaStructure":
         """Get schemas from the workspace.
 
@@ -277,7 +278,7 @@ class Workspace(Resource):
         self._model.name = value
 
     @property
-    def datasets(self) -> List["Dataset"]:
+    def datasets(self) -> list["Dataset"]:
         """List all datasets in the workspace
 
         Returns:
@@ -286,7 +287,7 @@ class Workspace(Resource):
         return self.list_datasets()
 
     @property
-    def documents(self) -> List["Document"]:
+    def documents(self) -> list["Document"]:
         """List all documents in the workspace
 
         Returns:
@@ -350,7 +351,7 @@ class WorkspaceUsers(Sequence["User"], LoggingMixin):
     # Private methods
     ####################
 
-    def _list_users(self) -> List["User"]:
+    def _list_users(self) -> list["User"]:
         users = self._workspace._client.users.list(workspace=self._workspace)
         self._log_message(f"Got {len(users)} users for workspace {self._workspace.id}")
         return users

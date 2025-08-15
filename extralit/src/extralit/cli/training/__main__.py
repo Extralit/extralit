@@ -12,13 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from enum import Enum
 import json
+from enum import Enum
+
 import typer
+from rich.console import Console
 
 from extralit.cli.callback import init_callback
 from extralit.cli.rich import get_themed_panel
-from rich.console import Console
 
 
 class Framework(str, Enum):
@@ -93,8 +94,8 @@ def train(
         Console().print(panel)
 
         # Start training process with a spinner
-        from rich.spinner import Spinner
         from rich.live import Live
+        from rich.spinner import Spinner
 
         spinner = Spinner(
             name="dots",

@@ -39,8 +39,9 @@ def get_current_user():
 @app.callback(help="Show information about the current user")
 def whoami() -> None:
     """Display information about the current user."""
-    from extralit.cli.rich import get_themed_panel
     from rich.console import Console
+
+    from extralit.cli.rich import get_themed_panel
 
     try:
         # Get current user (this will initialize the client)

@@ -7,7 +7,7 @@
     </li>
   </ul>
 </template>
-<script>
+<script lang="ts">
 export default {
   props: {
     tabs: {
@@ -19,7 +19,7 @@ export default {
       required: true,
     },
     tabSize: {
-      type: String,
+      type: String as () => 'small' | 'medium' | 'large',
       default: "small",
     },
   },

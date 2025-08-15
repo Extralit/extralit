@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
 import uuid
 from datetime import datetime
 from tempfile import TemporaryDirectory
 
 import httpx
+import pytest
 from pytest_httpx import HTTPXMock
 
 import extralit as ex
@@ -80,7 +80,7 @@ def test_settings_to_json(settings):
     with TemporaryDirectory() as temp_dir:
         temp_file_path = f"{temp_dir}/settings.json"
         settings.to_json(temp_file_path)
-        with open(temp_file_path, "r") as f:
+        with open(temp_file_path) as f:
             settings_json = f.read()
 
             assert "fields" in settings_json

@@ -1,18 +1,18 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-from typing import Any, Dict, Set, Union
+from typing import Any
 
 from extralit_server.pydantic_v1 import BaseModel, root_validator
 
@@ -23,10 +23,10 @@ class UpdateSchema(BaseModel):
     `ValueError` if any of the fields in the set was set to `None` explicitly.
     """
 
-    __non_nullable_fields__: Union[Set[str], None] = None
+    __non_nullable_fields__: set[str] | None = None
 
     @root_validator(pre=True)
-    def validate_non_nullable_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    def validate_non_nullable_fields(cls, values: dict[str, Any]) -> dict[str, Any]:
         if cls.__non_nullable_fields__ is None:
             return values
 

@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import json
+import os
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Optional
 
 # Define the cache directory for storing credentials
 cache_dir_env = os.environ.get("EXTRALIT_CACHE_DIR")
@@ -33,7 +33,7 @@ class ExtralitCredentials:
         api_url: str,
         api_key: str,
         workspace: Optional[str] = None,
-        extra_headers: Optional[Dict[str, str]] = None,
+        extra_headers: Optional[dict[str, str]] = None,
     ):
         """Initialize credentials.
 
@@ -77,7 +77,7 @@ class ExtralitCredentials:
         if not cls.exists():
             raise FileNotFoundError(f"'{EXTRALIT_CREDENTIALS_FILE}' does not exist.")
 
-        with open(EXTRALIT_CREDENTIALS_FILE, "r") as f:
+        with open(EXTRALIT_CREDENTIALS_FILE) as f:
             data = json.load(f)
             return cls(
                 api_url=data["api_url"],
@@ -109,7 +109,7 @@ class ExtralitCredentials:
 
 
 def login(
-    api_url: str, api_key: str, workspace: Optional[str] = None, extra_headers: Optional[Dict[str, str]] = None
+    api_url: str, api_key: str, workspace: Optional[str] = None, extra_headers: Optional[dict[str, str]] = None
 ) -> None:
     """Login to an Extralit server using the provided URL and API key.
 
@@ -132,11 +132,11 @@ def login(
         client = Extralit(api_url=api_url, api_key=api_key)
 
         # Try to get user info - this will raise an exception if authentication fails
-        client.me
+        _ = client.me
 
         # If we get here, the credentials are valid
         # Save credentials
         ExtralitCredentials(api_url=api_url, api_key=api_key, workspace=workspace, extra_headers=extra_headers).save()
     except Exception as e:
         # Authentication failed
-        raise ValueError(f"Failed to authenticate with the provided credentials: {str(e)}")
+        raise ValueError(f"Failed to authenticate with the provided credentials: {e!s}")

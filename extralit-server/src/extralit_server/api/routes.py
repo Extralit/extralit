@@ -26,13 +26,26 @@ from extralit_server.api.handlers.v1 import (
     datasets as datasets_v1,
 )
 from extralit_server.api.handlers.v1 import (
+    documents as documents_v1,
+)
+from extralit_server.api.handlers.v1 import (
     fields as fields_v1,
+)
+from extralit_server.api.handlers.v1 import (
+    files as files_v1,
+)
+from extralit_server.api.handlers.v1 import (
+    imports as imports_v1,
 )
 from extralit_server.api.handlers.v1 import (
     info as info_v1,
 )
+from extralit_server.api.handlers.v1 import jobs as jobs_v1
 from extralit_server.api.handlers.v1 import (
     metadata_properties as metadata_properties_v1,
+)
+from extralit_server.api.handlers.v1 import (
+    models as models_v1,
 )
 from extralit_server.api.handlers.v1 import (
     oauth2 as oauth2_v1,
@@ -58,22 +71,9 @@ from extralit_server.api.handlers.v1 import (
 from extralit_server.api.handlers.v1 import (
     vectors_settings as vectors_settings_v1,
 )
+from extralit_server.api.handlers.v1 import webhooks as webhooks_v1
 from extralit_server.api.handlers.v1 import (
     workspaces as workspaces_v1,
-)
-from extralit_server.api.handlers.v1 import webhooks as webhooks_v1
-from extralit_server.api.handlers.v1 import jobs as jobs_v1
-from extralit_server.api.handlers.v1 import (
-    documents as documents_v1,
-)
-from extralit_server.api.handlers.v1 import (
-    files as files_v1,
-)
-from extralit_server.api.handlers.v1 import (
-    models as models_v1,
-)
-from extralit_server.api.handlers.v1 import (
-    imports as imports_v1,
 )
 from extralit_server.errors.base_errors import __ALL__
 from extralit_server.errors.error_handler import APIErrorHandler

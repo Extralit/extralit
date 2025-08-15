@@ -13,34 +13,34 @@
 # limitations under the License.
 
 import os
-import pytest
-
-from uuid import UUID, uuid4
 from datetime import datetime
 from unittest.mock import call
+from uuid import UUID, uuid4
+
+import pytest
+from fastapi.encoders import jsonable_encoder
 from httpx import AsyncClient
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi.encoders import jsonable_encoder
 
 from extralit_server.constants import API_KEY_HEADER_NAME
-from extralit_server.enums import DatasetDistributionStrategy, ResponseStatus, RecordStatus
+from extralit_server.contexts.responses_bulk import UpsertResponsesInBulkUseCase
+from extralit_server.enums import DatasetDistributionStrategy, RecordStatus, ResponseStatus
 from extralit_server.jobs.queues import HIGH_QUEUE
 from extralit_server.models import Response, User
 from extralit_server.search_engine import SearchEngine
-from extralit_server.use_cases.responses.upsert_responses_in_bulk import UpsertResponsesInBulkUseCase
 from extralit_server.webhooks.v1.enums import RecordEvent, ResponseEvent
-from extralit_server.webhooks.v1.responses import build_response_event
 from extralit_server.webhooks.v1.records import build_record_event
+from extralit_server.webhooks.v1.responses import build_response_event
 from tests.factories import (
     AnnotatorFactory,
     DatasetFactory,
     RatingQuestionFactory,
     RecordFactory,
     ResponseFactory,
+    TextQuestionFactory,
     WebhookFactory,
     WorkspaceUserFactory,
-    TextQuestionFactory,
 )
 
 
@@ -410,10 +410,10 @@ class TestCreateCurrentUserResponsesBulk:
 
     @pytest.mark.skipif(reason="Profiling is not active", condition=not bool(os.getenv("TEST_PROFILING", None)))
     async def test_create_responses_in_bulk_profiling(self, db: "AsyncSession", elasticsearch_config: dict):
-        from extralit_server.api.schemas.v1.responses import DraftResponseUpsert
-        from extralit_server.search_engine import ElasticSearchEngine
         from pyinstrument import Profiler
 
+        from extralit_server.api.schemas.v1.responses import DraftResponseUpsert
+        from extralit_server.search_engine import ElasticSearchEngine
         from tests.factories import OwnerFactory, TextFieldFactory
 
         async def refresh_dataset(dataset):

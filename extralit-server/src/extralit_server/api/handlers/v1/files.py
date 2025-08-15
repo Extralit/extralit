@@ -13,16 +13,17 @@
 # limitations under the License.
 
 import logging
-from typing import Optional
+from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, Security
+from fastapi import APIRouter, Depends, File, HTTPException, Security, UploadFile
 from fastapi.responses import StreamingResponse
 from minio import Minio, S3Error
 
-from extralit_server.contexts import files
-from extralit_server.models import User
 from extralit_server.api.policies.v1 import FilePolicy, authorize
 from extralit_server.api.schemas.v1.files import ListObjectsResponse, ObjectMetadata
+from extralit_server.contexts import files
+from extralit_server.contexts.files import LocalFileStorage
+from extralit_server.models import User
 from extralit_server.security import auth
 
 _LOGGER = logging.getLogger(__name__)
@@ -35,13 +36,13 @@ async def get_file(
     *,
     bucket: str,
     object: str,
-    version_id: Optional[str] = None,
-    client: Minio = Depends(files.get_minio_client),
-    current_user: Optional[User] = Security(auth.get_optional_current_user),
+    version_id: str | None = None,
+    client: Minio | LocalFileStorage = Depends(files.get_minio_client),
+    current_user: User | None = Security(auth.get_optional_current_user),
 ):
-    # TODO Check if the current user is in the workspace to have access to the s3 bucket of the same name
-    # if current_user is not None or current_user.role != "owner":
-    #     await authorize(current_user, FilePolicy.get(bucket))
+    # TODO LocalFileStorage currently needs to disable authorization checks since clients cannot access the bucket directly.
+    if current_user is not None and isinstance(client, Minio):
+        await authorize(current_user, FilePolicy.get(bucket))
 
     try:
         file_response = files.get_object(client, bucket, object, version_id=version_id, include_versions=True)
@@ -63,8 +64,8 @@ async def put_file(
     *,
     bucket: str,
     object: str,
-    file: UploadFile = File(...),
-    client: Minio = Depends(files.get_minio_client),
+    file: Annotated[UploadFile, File()],
+    client: Minio | LocalFileStorage = Depends(files.get_minio_client),
     current_user: User = Security(auth.get_current_user),
 ):
     # Check if the current user is in the workspace to have access to the s3 bucket of the same name
@@ -72,7 +73,12 @@ async def put_file(
 
     try:
         response = files.put_object(
-            client, bucket, object, data=file.file, size=file.size, content_type=file.content_type
+            client,
+            bucket,
+            object,
+            data=file.file,
+            size=file.size,  # type: ignore
+            content_type=file.content_type,  # type: ignore
         )
         return response
     except S3Error as se:
@@ -86,9 +92,9 @@ async def list_objects(
     prefix: str,
     include_version=True,
     recursive=True,
-    start_after: Optional[str] = None,
-    client: Minio = Depends(files.get_minio_client),
-    current_user: User = Security(auth.get_current_user),
+    start_after: str | None = None,
+    client: Minio | LocalFileStorage = Depends(files.get_minio_client),
+    current_user: User = Security(auth.get_optional_current_user),
 ):
     # Check if the current user is in the workspace to have access to the s3 bucket of the same name
     await authorize(current_user, FilePolicy.list(bucket))
@@ -118,8 +124,8 @@ async def delete_files(
     *,
     bucket: str,
     object: str,
-    version_id: Optional[str] = None,
-    client: Minio = Depends(files.get_minio_client),
+    version_id: str | None = None,
+    client: Minio | files.LocalFileStorage = Depends(files.get_minio_client),
     current_user: User = Security(auth.get_current_user),
 ):
     # Check if the current user is in the workspace to have access to the s3 bucket of the same name

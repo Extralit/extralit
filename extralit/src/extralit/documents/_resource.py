@@ -51,10 +51,10 @@ class Document(Resource):
 
     def __init__(
         self,
-        workspace_id: Optional[UUID] = None,
+        workspace_id: UUID,
+        reference: str,
         file_name: Optional[str] = None,
         file_path: Optional[Union[str, Path]] = None,
-        reference: Optional[str] = None,
         url: Optional[str] = None,
         pmid: Optional[str] = None,
         doi: Optional[str] = None,
@@ -64,10 +64,10 @@ class Document(Resource):
         """Initializes a Document object.
 
         Parameters:
-            workspace_id (UUID): The workspace ID to which this document belongs.
+            workspace_id (UUID): The workspace ID to which this document belongs (required).
+            reference (str): A reference identifier for the document (required).
             file_name (str): The name of the document file.
             file_path (Union[str, Path]): Local path to the document file.
-            reference (str): A reference identifier for the document.
             url (str): The URL of the document.
             pmid (str): The PubMed ID of the document.
             doi (str): The DOI of the document.
@@ -100,7 +100,7 @@ class Document(Resource):
         file_path_or_url: Union[str, Path],
         *,
         reference: str,
-        workspace_id: Optional[UUID] = None,
+        workspace_id: UUID,
         pmid: Optional[str] = None,
         doi: Optional[str] = None,
         client: Optional["Extralit"] = None,
@@ -111,7 +111,6 @@ class Document(Resource):
             file_path_or_url: Local file path or URL to the document.
             reference: A reference identifier for the document.
             workspace_id: The workspace ID to which this document belongs.
-            id: The document ID. If provided, the document will be created with this ID.
             pmid: The PubMed ID of the document.
             doi: The DOI of the document.
             client: The client used to interact with Extralit.
@@ -120,8 +119,14 @@ class Document(Resource):
             Document: The created document object.
 
         Raises:
-            ValueError: If the file path does not exist or URL is invalid.
+            ValueError: If the file path does not exist or URL is invalid, or if required parameters are missing.
         """
+        if not workspace_id:
+            raise ValueError("workspace_id is required")
+
+        if not reference:
+            raise ValueError("reference is required")
+
         if isinstance(file_path_or_url, Path):
             file_path_or_url = str(file_path_or_url)
 
@@ -147,60 +152,6 @@ class Document(Resource):
             url=url,
             pmid=pmid,
             doi=doi,
-            client=client,
-        )
-
-    @classmethod
-    def from_pmid(
-        cls,
-        pmid: str,
-        *,
-        reference: Optional[str] = None,
-        workspace_id: Optional[UUID] = None,
-        client: Optional["Extralit"] = None,
-    ) -> "Document":
-        """Create a Document from a PubMed ID.
-
-        Args:
-            pmid: The PubMed ID.
-            reference: A reference identifier for the document.
-            workspace_id: The workspace ID to which this document belongs.
-            client: The client used to interact with Extralit.
-
-        Returns:
-            Document: The created document object.
-        """
-        return cls(
-            workspace_id=workspace_id,
-            pmid=pmid,
-            reference=reference or f"PMID:{pmid}",
-            client=client,
-        )
-
-    @classmethod
-    def from_doi(
-        cls,
-        doi: str,
-        *,
-        reference: Optional[str] = None,
-        workspace_id: Optional[UUID] = None,
-        client: Optional["Extralit"] = None,
-    ) -> "Document":
-        """Create a Document from a DOI.
-
-        Args:
-            doi: The DOI.
-            reference: A reference identifier for the document.
-            workspace_id: The workspace ID to which this document belongs.
-            client: The client used to interact with Extralit.
-
-        Returns:
-            Document: The created document object.
-        """
-        return cls(
-            workspace_id=workspace_id,
-            doi=doi,
-            reference=reference or f"DOI:{doi}",
             client=client,
         )
 
@@ -232,32 +183,50 @@ class Document(Resource):
     @classmethod
     def get(
         cls,
+        workspace_id: UUID,
+        reference: Optional[str] = None,
         id: Optional[UUID] = None,
         pmid: Optional[str] = None,
+        doi: Optional[str] = None,
         client: Optional["Extralit"] = None,
     ) -> "Document":
-        """Get a document by ID or PMID.
+        """Get a document by ID, PMID, DOI, reference, or workspace_id.
 
         Args:
+            workspace_id: The workspace ID (required).
             id: The document ID.
             pmid: The PubMed ID.
+            doi: The DOI.
+            reference: The document reference.
             client: The client used to interact with Extralit.
 
         Returns:
             Document: The document object.
 
         Raises:
-            ValueError: If neither id nor pmid is provided.
+            ValueError: If workspace_id is not provided or if none of id, pmid, doi, or reference is provided.
         """
+        if not workspace_id:
+            raise ValueError("workspace_id is required")
+
         client = client or Extralit._get_default()
 
+        # Build parameters object
+        params = {"workspace_id": str(workspace_id)}
         if id:
-            model = client.api.documents.get(id)
-        elif pmid:
-            model = client.api.documents.get_by_pmid(pmid)
-        else:
-            raise ValueError("Either id or pmid must be provided")
+            params["id"] = str(id)
+        if pmid:
+            params["pmid"] = pmid
+        if doi:
+            params["doi"] = doi
+        if reference:
+            params["reference"] = reference
 
+        # Ensure at least one identifier is provided in addition to workspace_id
+        if len(params) <= 1:  # Only workspace_id is provided
+            raise ValueError("At least one of id, pmid, doi, or reference must be provided in addition to workspace_id")
+
+        model: DocumentModel = client.api.documents.get(params)
         return cls.from_model(model, client)
 
     ############################
@@ -340,4 +309,4 @@ class Document(Resource):
         self._log_message(f"Document deleted: {self}")
 
     def _with_client(self, client: "Extralit") -> "Self":
-        return Document.from_model(self._model, client)
+        return Document.from_model(self._model, client)  # type: ignore[return-value]

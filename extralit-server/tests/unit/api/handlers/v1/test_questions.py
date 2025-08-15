@@ -12,10 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import TYPE_CHECKING, Type
+from typing import TYPE_CHECKING
 from uuid import uuid4
 
 import pytest
+from sqlalchemy import func, select
+
 from extralit_server.api.schemas.v1.questions import (
     QUESTION_CREATE_DESCRIPTION_MAX_LENGTH,
     QUESTION_CREATE_TITLE_MAX_LENGTH,
@@ -23,8 +25,6 @@ from extralit_server.api.schemas.v1.questions import (
 from extralit_server.constants import API_KEY_HEADER_NAME
 from extralit_server.enums import OptionsOrder
 from extralit_server.models import DatasetStatus, Question, UserRole
-from sqlalchemy import func, select
-
 from tests.factories import (
     AnnotatorFactory,
     DatasetFactory,
@@ -244,7 +244,7 @@ if TYPE_CHECKING:
 async def test_update_question(
     async_client: "AsyncClient",
     db: "AsyncSession",
-    QuestionFactory: Type["QuestionFactoryType"],
+    QuestionFactory: type["QuestionFactoryType"],
     payload: dict,
     expected_settings: dict,
     role: UserRole,
@@ -311,10 +311,10 @@ async def test_update_question_with_description_as_none(
     )
 
     assert response.status_code == 200
-    assert response.json()["description"] == None
+    assert response.json()["description"] is None
 
     question = await db.get(Question, question.id)
-    assert question.description == None
+    assert question.description is None
 
 
 @pytest.mark.parametrize("description", ["", "d" * (QUESTION_CREATE_DESCRIPTION_MAX_LENGTH + 1)])
@@ -418,7 +418,7 @@ async def test_update_question_with_invalid_description(
 )
 @pytest.mark.asyncio
 async def test_update_question_with_invalid_settings(
-    async_client: "AsyncClient", owner_auth_header: dict, QuestionFactory: Type["QuestionFactoryType"], payload: dict
+    async_client: "AsyncClient", owner_auth_header: dict, QuestionFactory: type["QuestionFactoryType"], payload: dict
 ):
     question = await QuestionFactory.create()
 

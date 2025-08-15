@@ -130,6 +130,7 @@ export default {
     "hf-login": "Sign in with Hugging Face",
     sign_in_with_username: "Sign in with username",
     cancel: "Cancel",
+    confirmCancel: "Are you sure you want to cancel? Any unsaved changes will be lost.",
     continue: "Continue",
     delete: "Delete",
     exportToHub: "Push to Hub",
@@ -140,9 +141,6 @@ export default {
       goToDatasetSettings: "Go to dataset settings",
       datasetSettings: "Dataset settings",
     },
-  },
-  common: {
-    confirmCancel: "Are you sure you want to cancel? Any unsaved changes will be lost.",
   },
   to_submit_complete_required: "To submit complete \nrequired responses",
   some_records_failed_to_annotate: "Some records failed to annotate",
@@ -296,6 +294,9 @@ export default {
     createdAt: "Created",
     datasets: "Datasets",
     documents: "Documents",
+  },
+  document: {
+    notFound: "Document not found",
   },
   import: {
     title: "Import Documents to {workspaceName} Workspace",

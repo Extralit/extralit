@@ -37,7 +37,7 @@ def get_server_id() -> UUID:
     server_id_file = os.path.join(settings.home_path, _SERVER_ID_DAT_FILE)
 
     if os.path.exists(server_id_file):
-        with open(server_id_file, "r") as f:
+        with open(server_id_file) as f:
             server_id = f.read().strip()
             try:
                 return UUID(server_id)

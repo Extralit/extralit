@@ -1,15 +1,17 @@
 import { ref, watch, computed } from "vue-demi";
 import { useResolve } from "ts-injecty";
-import { GetDocumentByIdUseCase } from "@/v1/domain/usecases/get-document-by-id-use-case";
+import { GetDocumentByRecordMetadataUseCase } from "~/v1/domain/usecases/get-document-by-record-metadata-use-case";
 import { useDocument } from "@/v1/infrastructure/storage/DocumentStorage";
 import { Segment } from "@/v1/domain/entities/document/Document";
 import { useDataset } from "@/v1/infrastructure/storage/DatasetStorage";
 import { waitForAsyncValue } from "@/v1/infrastructure/services/useWait";
 import { useNotifications } from "~/v1/infrastructure/services/useNotifications";
+import { useWorkspaces } from "~/v1/infrastructure/storage/WorkspaceStorage";
 
 export const useDocumentViewModel = (props: { record: any }) => {
   const notification = useNotifications();
-  const getDocument = useResolve(GetDocumentByIdUseCase);
+  const getDocument = useResolve(GetDocumentByRecordMetadataUseCase);
+  const { state: workspaces } = useWorkspaces();
   const { state: dataset } = useDataset();
   const { state: document, set: setDocument, clear: clearDocument } = useDocument();
   const isLoading = ref(false);
@@ -17,30 +19,26 @@ export const useDocumentViewModel = (props: { record: any }) => {
   const hasDocumentLoaded = computed(() => {
     return document.id !== null;
   });
-  const hasDocument = computed(() => {
-    return (
-      props.record.metadata === null || props.record.metadata?.doc_id != null || props.record.metadata?.pmid != null
-    );
-  });
 
-  const fetchDocumentByID = async (id: string) => {
+  const fetchDocument = async (metadata: any) => {
     try {
-      await getDocument.setDocumentByID(id);
-    } catch (e) {
-      notification.notify({
-        message: `Error fetching document with ID ${id}`,
-        type: "danger",
-      });
-      clearDocument();
-    }
-  };
+      await waitForAsyncValue(() => workspaces.selectedWorkspace?.id);
 
-  const fetchDocumentByPubmedID = async (pmid: string) => {
-    try {
-      await getDocument.setDocumentByPubmedID(pmid);
+      const params = getDocument.createParams(metadata, workspaces.selectedWorkspace!.id);
+
+      const hasValidIdentifier = params.reference || params.doc_id || params.pmid || params.doi;
+
+      if (!hasValidIdentifier) {
+        clearDocument();
+        return;
+      }
+
+      await getDocument.setDocument(params);
     } catch (e) {
+      const identifier = metadata?.pmid || metadata?.doi || metadata?.doc_id || metadata?.reference || "unknown";
+      console.error(`Error fetching document with identifier "${identifier}":`, e);
       notification.notify({
-        message: `Error fetching document with pmid "${pmid}"`,
+        message: `Error fetching document with identifier "${identifier}"`,
         type: "danger",
       });
       clearDocument();
@@ -48,13 +46,17 @@ export const useDocumentViewModel = (props: { record: any }) => {
   };
 
   const updateDocument = async (metadata: any) => {
-    if (metadata?.pmid != null) {
-      if (document.pmid !== metadata.pmid) {
-        fetchDocumentByPubmedID(metadata.pmid);
-      }
+    const hasValidIdentifier = metadata?.pmid || metadata?.doi || metadata?.doc_id || metadata?.reference;
+
+    if (metadata?.pmid != null && document.pmid !== metadata.pmid) {
+      await fetchDocument(metadata);
+    } else if (metadata?.doi != null && document.doi !== metadata.doi) {
+      await fetchDocument(metadata);
     } else if (metadata?.doc_id != null && document.id !== metadata.doc_id) {
-      fetchDocumentByID(metadata.doc_id);
-    } else if (!metadata?.pmid && !metadata?.doc_id && hasDocumentLoaded.value) {
+      await fetchDocument(metadata);
+    } else if (metadata?.reference != null && document.reference !== metadata.reference) {
+      await fetchDocument(metadata);
+    } else if (!hasValidIdentifier && hasDocumentLoaded.value) {
       clearDocument();
     }
 
@@ -93,9 +95,6 @@ export const useDocumentViewModel = (props: { record: any }) => {
           console.log(error);
         } finally {
           isLoading.value = false;
-          if (!hasDocumentLoaded.value) {
-            // TODO closePanel();
-          }
         }
       }
       if (newMetadata?.reference && oldMetadata?.reference !== newMetadata.reference) {
@@ -107,11 +106,10 @@ export const useDocumentViewModel = (props: { record: any }) => {
 
   return {
     document,
-    fetchDocumentByID,
-    fetchDocumentByPubmedID,
     fetchDocumentSegments,
     focusDocumentPageNumber,
     clearDocument,
+    isDocumentPanelExpanded: computed(() => false), // Default to collapsed
   };
 };
 

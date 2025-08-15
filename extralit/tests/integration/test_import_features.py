@@ -14,12 +14,15 @@
 
 import os
 import uuid
-from typing import Any, List, Generator
+from collections.abc import Generator
+from typing import Any
+
+import pytest
+from datasets import ClassLabel, Features, Value
+from datasets import Dataset as HFDataset
+from huggingface_hub.errors import HfHubHTTPError
 
 import extralit as ex
-import pytest
-from datasets import Dataset as HFDataset, Value, Features, ClassLabel
-from huggingface_hub.errors import HfHubHTTPError
 
 _RETRIES = 5
 
@@ -46,7 +49,7 @@ def dataset(client, dataset_name: str) -> Generator[ex.Dataset, None, None]:
 
 
 @pytest.fixture
-def mock_data() -> List[dict[str, Any]]:
+def mock_data() -> list[dict[str, Any]]:
     return [
         {
             "text": "Hello World, how are you?",
@@ -77,7 +80,7 @@ def token():
 @pytest.mark.skipif(not os.getenv("HF_TOKEN_EXTRALIT_INTERNAL_TESTING"), reason="No HF token provided")
 class TestImportFeaturesFromHub:
     def test_import_records_from_datasets_with_classlabel(
-        self, token: str, dataset: ex.Dataset, client, mock_data: List[dict[str, Any]]
+        self, token: str, dataset: ex.Dataset, client, mock_data: list[dict[str, Any]]
     ):
         repo_id = f"extralit-dev/test_import_dataset_from_hub_with_classlabel_{uuid.uuid4()}"
 
@@ -123,13 +126,13 @@ class TestImportFeaturesFromHub:
             pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
         except Exception as e:
             if "Repository Not Found" in str(e) or "Dataset not found" in str(e):
-                pytest.skip(f"Dataset not available on Hub: {str(e)}")
+                pytest.skip(f"Dataset not available on Hub: {e!s}")
             else:
                 raise
 
         if created_dataset:
             assert created_dataset.settings.fields[0].name == "Text"
-            assert list(created_dataset.records)[0].fields["Text"] == "Hello World, how are you?"
+            assert next(iter(created_dataset.records)).fields["Text"] == "Hello World, how are you?"
 
     def test_import_from_hub_with_unlabelled_classes(self, client: ex.Extralit, token: str, dataset_name: str):
         created_dataset = None
@@ -144,12 +147,12 @@ class TestImportFeaturesFromHub:
             pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
         except Exception as e:
             if "Repository Not Found" in str(e) or "Dataset not found" in str(e):
-                pytest.skip(f"Dataset not available on Hub: {str(e)}")
+                pytest.skip(f"Dataset not available on Hub: {e!s}")
             else:
                 raise
         if created_dataset:
             assert created_dataset.settings.fields[0].name == "Text"
-            assert list(created_dataset.records)[0].fields["Text"] == "Hello World, how are you?"
+            assert next(iter(created_dataset.records)).fields["Text"] == "Hello World, how are you?"
 
     def test_import_with_row_id_as_record_id(self, client: ex.Extralit, token: str, dataset_name: str):
         created_dataset = None
@@ -165,7 +168,7 @@ class TestImportFeaturesFromHub:
             pytest.skip(f"Skipping test due to Hugging Face Hub HTTP error: {e}")
         except Exception as e:
             if "Repository Not Found" in str(e) or "Dataset not found" in str(e):
-                pytest.skip(f"Dataset not available on Hub: {str(e)}")
+                pytest.skip(f"Dataset not available on Hub: {e!s}")
             else:
                 raise
 

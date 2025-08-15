@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import List, Optional
+from typing import Optional
 
 from extralit import Extralit
 from extralit._api._webhooks import WebhookModel, WebhooksAPI
@@ -34,7 +34,7 @@ class Webhook(Resource):
     _model: WebhookModel
     _api: WebhooksAPI
 
-    def __init__(self, url: str, events: List[EventType], description: Optional[str] = None, _client: Extralit = None):
+    def __init__(self, url: str, events: list[EventType], description: Optional[str] = None, _client: Extralit = None):
         client = _client or Extralit._get_default()
         api = client.api.webhooks
         events = events or []
@@ -53,12 +53,12 @@ class Webhook(Resource):
         self._model.url = value
 
     @property
-    def events(self) -> List[EventType]:
+    def events(self) -> list[EventType]:
         """The events that the webhook is subscribed to."""
         return self._model.events
 
     @events.setter
-    def events(self, value: List[EventType]):
+    def events(self, value: list[EventType]):
         self._model.events = value
 
     @property

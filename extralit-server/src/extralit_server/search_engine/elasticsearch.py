@@ -1,19 +1,19 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import dataclasses
-from typing import Any, Dict, List, Optional
+from typing import Any
 from uuid import UUID
 
 from elasticsearch8 import AsyncElasticsearch, helpers
@@ -41,20 +41,20 @@ def _compute_num_candidates_from_k(k: int) -> int:
 @SearchEngine.register(engine_name=SEARCH_ENGINE_ELASTICSEARCH)
 @dataclasses.dataclass
 class ElasticSearchEngine(BaseElasticAndOpenSearchEngine):
-    config: Dict[str, Any] = dataclasses.field(default_factory=dict)
+    config: dict[str, Any] = dataclasses.field(default_factory=dict)
 
     def __post_init__(self):
         self.client = AsyncElasticsearch(**self.config)
 
     @classmethod
     async def new_instance(cls) -> "ElasticSearchEngine":
-        config = dict(
-            hosts=settings.elasticsearch,
-            verify_certs=settings.elasticsearch_ssl_verify,
-            ca_certs=settings.elasticsearch_ca_path,
-            retry_on_timeout=True,
-            max_retries=5,
-        )
+        config = {
+            "hosts": settings.elasticsearch,
+            "verify_certs": settings.elasticsearch_ssl_verify,
+            "ca_certs": settings.elasticsearch_ca_path,
+            "retry_on_timeout": True,
+            "max_retries": 5,
+        }
         return cls(
             config=config,
             number_of_shards=settings.es_records_index_shards,
@@ -88,10 +88,10 @@ class ElasticSearchEngine(BaseElasticAndOpenSearchEngine):
         self,
         index: str,
         vector_settings: VectorSettings,
-        value: List[float],
+        value: list[float],
         k: int,
-        excluded_id: Optional[UUID] = None,
-        query_filters: Optional[List[dict]] = None,
+        excluded_id: UUID | None = None,
+        query_filters: list[dict] | None = None,
     ) -> dict:
         knn_query = {
             "field": es_field_for_vector_settings(vector_settings),
@@ -133,10 +133,10 @@ class ElasticSearchEngine(BaseElasticAndOpenSearchEngine):
         self,
         index: str,
         query: dict,
-        size: Optional[int] = None,
-        from_: Optional[int] = None,
-        sort: Optional[dict] = None,
-        aggregations: Optional[dict] = None,
+        size: int | None = None,
+        from_: int | None = None,
+        sort: dict | None = None,
+        aggregations: dict | None = None,
     ) -> dict:
         return await self.client.search(
             index=index,
@@ -152,7 +152,7 @@ class ElasticSearchEngine(BaseElasticAndOpenSearchEngine):
     async def _index_exists_request(self, index_name: str) -> bool:
         return await self.client.indices.exists(index=index_name)
 
-    async def _bulk_op_request(self, actions: List[Dict[str, Any]]):
+    async def _bulk_op_request(self, actions: list[dict[str, Any]]):
         # https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-refresh.html
         _, errors = await helpers.async_bulk(
             client=self.client,
@@ -164,6 +164,6 @@ class ElasticSearchEngine(BaseElasticAndOpenSearchEngine):
         for error in errors:
             self._LOGGER.error(f"Error in bulk operation: {error}")
 
-    async def get_all_index_names(self) -> List[str]:
+    async def get_all_index_names(self) -> list[str]:
         indices = await self.client.indices.get_alias(index="*")
         return list(indices)

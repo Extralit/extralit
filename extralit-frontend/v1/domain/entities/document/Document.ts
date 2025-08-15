@@ -6,19 +6,19 @@ export class Segment {
 		public readonly header: string | null,
 		public readonly page_number: number | null,
 		public readonly type: string | null,
-	) {}
+	) { }
 
 	public static getDescription(segment: Segment): string {
-			let segmentDescription = Object.entries(segment)
-					.filter(([key, value]) => !['header', 'doc_id'].includes(key))
-					.map(([key, value]) => `${key}: ${value}`)
-					.join('\n');
-			return segmentDescription;
+		let segmentDescription = Object.entries(segment)
+			.filter(([key, value]) => !['header', 'doc_id'].includes(key))
+			.map(([key, value]) => `${key}: ${value}`)
+			.join('\n');
+		return segmentDescription;
 	}
 }
 
 export interface Segments {
-  items: Segment[];
+	items: Segment[];
 }
 
 export class Document {
@@ -27,6 +27,7 @@ export class Document {
 		public readonly url?: string,
 		public readonly file_name?: string,
 		public readonly pmid?: string,
+		public readonly doi?: string,
 		public readonly page_number?: number | string,
 		public reference?: string,
 		public segments?: Segment[],

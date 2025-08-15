@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import httpx
-
 from datetime import datetime
+
+import httpx
 
 from extralit_server.contexts import info
 from extralit_server.models import Webhook

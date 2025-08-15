@@ -23,6 +23,7 @@ dmypy.json
 
 # Visual Studio Code
 .vscode/
+.cursor/
 
 /coverage.xml
 /.coverage

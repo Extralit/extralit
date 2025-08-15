@@ -13,20 +13,17 @@
 # limitations under the License.
 
 import os
-
 from collections import OrderedDict
-from typing import AsyncGenerator, Optional, Generator
+from collections.abc import AsyncGenerator, Generator
 
 from sqlalchemy import create_engine, event, make_url
 from sqlalchemy.engine import Engine
 from sqlalchemy.engine.interfaces import IsolationLevel
-from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker, scoped_session, Session
-
-from extralit_server.settings import settings
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.orm import Session, scoped_session, sessionmaker
 
 import extralit_server
-
+from extralit_server.settings import settings
 
 ALEMBIC_CONFIG_FILE = os.path.normpath(os.path.join(os.path.dirname(extralit_server.__file__), "alembic.ini"))
 TAGGED_REVISIONS = OrderedDict(
@@ -42,6 +39,7 @@ TAGGED_REVISIONS = OrderedDict(
         "2.0": "237f7c674d74",
         "2.4": "660d6c6b3360",  # Extralit v0.3.0
         "2.5": "580a6553186f",
+        "0.6.0": "7d6b33203390",  # Extralit v0.6.0
     }
 )
 
@@ -86,7 +84,7 @@ async def get_async_db() -> AsyncGenerator[AsyncSession, None]:
         yield db
 
 
-async def _get_async_db(isolation_level: Optional[IsolationLevel] = None) -> AsyncGenerator[AsyncSession, None]:
+async def _get_async_db(isolation_level: IsolationLevel | None = None) -> AsyncGenerator[AsyncSession, None]:
     db: AsyncSession = AsyncSessionLocal()
 
     if isolation_level is not None:

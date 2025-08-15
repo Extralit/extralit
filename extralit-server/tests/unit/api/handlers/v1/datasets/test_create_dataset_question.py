@@ -1,28 +1,27 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from datetime import datetime
-from typing import Union
 from uuid import UUID
 
 import pytest
-from extralit_server.enums import QuestionType
-from extralit_server.models import Question
 from httpx import AsyncClient
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from extralit_server.enums import QuestionType
+from extralit_server.models import Question
 from tests.factories import DatasetFactory, SpanQuestionFactory, TextFieldFactory
 
 
@@ -39,7 +38,7 @@ class TestCreateDatasetQuestion:
         async_client: AsyncClient,
         db: AsyncSession,
         owner_auth_header: dict,
-        allow_overlapping: Union[bool, None],
+        allow_overlapping: bool | None,
         expected_allow_overlapping: bool,
     ):
         dataset = await DatasetFactory.create()

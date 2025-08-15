@@ -13,16 +13,17 @@
 # limitations under the License.
 
 import json
-import pytest
 from io import BytesIO
-from uuid import uuid4
 from unittest.mock import patch
+from uuid import uuid4
+
+import pytest
 from fastapi import status
 from httpx import AsyncClient
 
-from extralit_server.models import UserRole
 from extralit_server.api.schemas.v1.imports import DocumentsBulkResponse
-from tests.factories import WorkspaceFactory, UserFactory
+from extralit_server.models import UserRole
+from tests.factories import UserFactory, WorkspaceFactory
 
 
 @pytest.mark.asyncio
@@ -63,7 +64,7 @@ class TestBulkDocumentsAPI:
     async def test_bulk_upload_documents_invalid_metadata(self, async_client: AsyncClient, owner_auth_header: dict):
         """Test bulk upload with invalid metadata."""
         # Create owner user and workspace
-        owner = await UserFactory.create(role=UserRole.owner)
+        await UserFactory.create(role=UserRole.owner)
 
         # Create invalid metadata (not JSON)
         documents_metadata = "not valid json"
@@ -88,7 +89,7 @@ class TestBulkDocumentsAPI:
     async def test_bulk_upload_documents_missing_files(self, async_client: AsyncClient, owner_auth_header: dict):
         """Test bulk upload with missing files."""
         # Create owner user and workspace
-        owner = await UserFactory.create(role=UserRole.owner)
+        await UserFactory.create(role=UserRole.owner)
         workspace = await WorkspaceFactory.create()
 
         # Create metadata with reference to non-existent file
@@ -125,7 +126,7 @@ class TestBulkDocumentsAPI:
     async def test_bulk_upload_documents_invalid_workspace(self, async_client: AsyncClient, owner_auth_header: dict):
         """Test bulk upload with invalid workspace ID."""
         # Create owner user
-        owner = await UserFactory.create(role=UserRole.owner)
+        await UserFactory.create(role=UserRole.owner)
 
         # Create metadata with non-existent workspace
         documents_metadata = {
@@ -169,7 +170,7 @@ class TestBulkDocumentsAPI:
         )
 
         # Create owner user and workspace
-        owner = await UserFactory.create(role=UserRole.owner)
+        await UserFactory.create(role=UserRole.owner)
         workspace = await WorkspaceFactory.create()
 
         # Create valid metadata
@@ -222,7 +223,7 @@ class TestBulkDocumentsAPI:
         )
 
         # Create owner user and workspace
-        owner = await UserFactory.create(role=UserRole.owner)
+        await UserFactory.create(role=UserRole.owner)
         workspace = await WorkspaceFactory.create()
 
         # Create valid metadata with multiple documents
@@ -284,7 +285,7 @@ class TestBulkDocumentsAPI:
         )
 
         # Create owner user and workspace
-        owner = await UserFactory.create(role=UserRole.owner)
+        await UserFactory.create(role=UserRole.owner)
         workspace = await WorkspaceFactory.create()
 
         # Create metadata with one valid and one invalid file

@@ -14,6 +14,19 @@ These are the section headers that we use:
 * "Security" in case of vulnerabilities.
 -->
 
+
+## [Extralit] [Unreleased](https://github.com/extralit/extralit/compare/v0.5.0...v0.6.1)
+### Changed
+- Updated backend document fetching logic to use the new unified endpoint, including improved input validation and error messages
+- Refactored document handling to use `GetDocumentByRecordMetadataUseCase` for improved document fetching
+
+### Fixed
+- Fixed document panel behavior and handling of missing documents
+- Improved error handling and validation for document operations
+- Fixed import analysis table display issues
+- Enhanced component state persistence across import modal steps
+
+
 ## [Extralit] [0.6.0](https://github.com/extralit/extralit/compare/v0.5.0...v0.6.0)
 
 ### Added

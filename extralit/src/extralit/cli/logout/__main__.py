@@ -33,9 +33,10 @@ def remove_credentials():
 @app.callback(help="Logout from an Extralit Server")
 def logout(force: bool = typer.Option(False, help="Force the logout even if the server cannot be reached")) -> None:
     """Logout from an Extralit Server by removing stored credentials."""
+    from rich.console import Console
+
     from extralit.cli.callback import init_callback
     from extralit.cli.rich import get_themed_panel
-    from rich.console import Console
 
     if not force:
         try:

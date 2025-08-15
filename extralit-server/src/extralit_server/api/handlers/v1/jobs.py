@@ -1,28 +1,29 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Security, status
+from rq.exceptions import NoSuchJobError
+from rq.job import Job
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from rq.job import Job
-from rq.exceptions import NoSuchJobError
-
+from extralit_server.api.policies.v1 import JobPolicy, authorize
+from extralit_server.api.schemas.v1.jobs import Job as JobSchema
 from extralit_server.database import get_async_db
 from extralit_server.jobs.queues import REDIS_CONNECTION
 from extralit_server.models import User
-from extralit_server.api.policies.v1 import JobPolicy, authorize
-from extralit_server.api.schemas.v1.jobs import Job as JobSchema
 from extralit_server.security import auth
 
 router = APIRouter(tags=["jobs"])
@@ -41,9 +42,9 @@ def _get_job(job_id: str) -> Job:
 @router.get("/jobs/{job_id}", response_model=JobSchema)
 async def get_job(
     *,
-    db: AsyncSession = Depends(get_async_db),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     job_id: str,
-    current_user: User = Security(auth.get_current_user),
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     job = _get_job(job_id)
 

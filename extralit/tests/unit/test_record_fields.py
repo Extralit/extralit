@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
 import random
 from tempfile import NamedTemporaryFile
 
+import pytest
 from PIL import Image
 
-from extralit import Record, Settings, ImageField, Dataset, ChatField, TextField
+from extralit import ChatField, Dataset, ImageField, Record, Settings, TextField
 
 
 @pytest.fixture

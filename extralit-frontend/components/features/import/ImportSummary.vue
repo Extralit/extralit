@@ -2,7 +2,6 @@
   <div class="import-summary">
     <!-- Summary Header -->
     <div class="summary-header">
-      <BaseIcon icon-name="check" class="summary-icon" />
       <h3>Import Complete</h3>
       <p class="summary-subtitle">
         Your document import has been processed successfully
@@ -13,27 +12,27 @@
     <div class="import-statistics">
       <div class="stats-grid">
         <div class="stat-card stat-total">
-          <div class="stat-value">{{ summaryData.totalProcessed }}</div>
+          <div class="stat-value">{{ importSummary.total || 0 }}</div>
           <div class="stat-label">Total Processed</div>
         </div>
 
         <div class="stat-card stat-added">
-          <div class="stat-value">{{ summaryData.successfullyAdded }}</div>
+          <div class="stat-value">{{ importSummary.added || 0 }}</div>
           <div class="stat-label">Successfully Added</div>
         </div>
 
         <div class="stat-card stat-updated">
-          <div class="stat-value">{{ summaryData.updated }}</div>
+          <div class="stat-value">{{ importSummary.updated || 0 }}</div>
           <div class="stat-label">Updated</div>
         </div>
 
         <div class="stat-card stat-skipped">
-          <div class="stat-value">{{ summaryData.skipped }}</div>
+          <div class="stat-value">{{ importSummary.skipped || 0 }}</div>
           <div class="stat-label">Skipped</div>
         </div>
 
-        <div v-if="summaryData.failed > 0" class="stat-card stat-failed">
-          <div class="stat-value">{{ summaryData.failed }}</div>
+        <div class="stat-card stat-failed">
+          <div class="stat-value">{{ importSummary.failed || 0 }}</div>
           <div class="stat-label">Failed</div>
         </div>
       </div>
@@ -46,7 +45,6 @@
       <!-- Success Summary -->
       <div v-if="hasSuccessfulImports" class="result-section success-section">
         <div class="section-header">
-          <BaseIcon icon-name="check" class="section-icon success-icon" />
           <span class="section-title">Successfully Imported</span>
           <span class="section-count">{{ successfulCount }}</span>
         </div>
@@ -56,11 +54,11 @@
       </div>
 
       <!-- Skipped Summary -->
-      <div v-if="summaryData.skipped > 0" class="result-section skipped-section">
+      <div v-if="(importSummary.skipped || 0) > 0" class="result-section skipped-section">
         <div class="section-header">
           <BaseIcon icon-name="info" class="section-icon skipped-icon" />
           <span class="section-title">Skipped Documents</span>
-          <span class="section-count">{{ summaryData.skipped }}</span>
+          <span class="section-count">{{ importSummary.skipped || 0 }}</span>
         </div>
         <p class="section-description">
           Documents were skipped because they already exist in your workspace with no changes needed.
@@ -68,11 +66,11 @@
       </div>
 
       <!-- Failed Summary -->
-      <div v-if="summaryData.failed > 0" class="result-section failed-section">
+      <div v-if="(importSummary.failed || 0) > 0" class="result-section failed-section">
         <div class="section-header">
           <BaseIcon icon-name="danger" class="section-icon failed-icon" />
           <span class="section-title">Failed Imports</span>
-          <span class="section-count">{{ summaryData.failed }}</span>
+          <span class="section-count">{{ importSummary.failed || 0 }}</span>
         </div>
         <p class="section-description">
           Some documents could not be imported due to errors. Review the details below.
@@ -113,7 +111,7 @@
       <div class="metadata-grid">
         <div class="metadata-item">
           <span class="metadata-label">Import ID:</span>
-          <span class="metadata-value">{{ summaryData.importId || 'N/A' }}</span>
+          <span class="metadata-value">{{ importSummary.importId || 'N/A' }}</span>
         </div>
         <div class="metadata-item">
           <span class="metadata-label">Source File:</span>
@@ -160,7 +158,7 @@ import "assets/icons/danger";
 import "assets/icons/document";
 import "assets/icons/external-link";
 
-import type { ImportSummaryData, TableColumn } from "./types";
+import type { ImportResultSummary, TableColumn } from "./types";
 
 interface FailedImportRow {
   reference: string;
@@ -174,8 +172,8 @@ export default {
   name: "ImportSummary",
 
   props: {
-    summaryData: {
-      type: Object as () => ImportSummaryData,
+    importSummary: {
+      type: Object as () => ImportResultSummary,
       required: true,
     },
     workspace: {
@@ -206,11 +204,11 @@ export default {
     },
 
     hasFailedImports(): boolean {
-      return this.summaryData.failed > 0 && this.failedDocuments.length > 0;
+      return (this.importSummary.failed || 0) > 0 && this.failedDocuments.length > 0;
     },
 
     successfulCount(): number {
-      return this.summaryData.successfullyAdded + this.summaryData.updated;
+      return (this.importSummary.added || 0) + (this.importSummary.updated || 0);
     },
 
     failedImportsTableData(): FailedImportRow[] {
@@ -340,7 +338,7 @@ export default {
 
     viewImportLog() {
       this.$emit("view-import-history", {
-        importId: this.summaryData.importId,
+        importId: this.importSummary.importId,
         workspace: this.workspace,
       });
     },

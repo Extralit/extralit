@@ -1,26 +1,26 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 from uuid import uuid4
 
 import pytest
-from extralit_server.constants import API_KEY_HEADER_NAME
-from extralit_server.enums import UserRole
-from extralit_server.models import User
 from httpx import AsyncClient
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from extralit_server.constants import API_KEY_HEADER_NAME
+from extralit_server.enums import UserRole
+from extralit_server.models import User
 from tests.factories import UserFactory
 
 
@@ -120,8 +120,8 @@ class TestCreateUser:
         assert (await db.execute(select(func.count(User.id)))).scalar() == 2
         user = (await db.execute(select(User).filter_by(username="username"))).scalar_one()
 
-        assert response.json()["last_name"] == None
-        assert user.last_name == None
+        assert response.json()["last_name"] is None
+        assert user.last_name is None
 
     async def test_create_user_with_non_default_role(
         self, db: AsyncSession, async_client: AsyncClient, owner_auth_header: dict

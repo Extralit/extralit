@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
 from uuid import uuid4
+
 import factory
+import pytest
 
 from extralit_server.models.database import ImportHistory
-from tests.factories import UserFactory, WorkspaceFactory, BaseFactory
+from tests.factories import BaseFactory, UserFactory, WorkspaceFactory
 
 
 class ImportHistoryFactory(BaseFactory):

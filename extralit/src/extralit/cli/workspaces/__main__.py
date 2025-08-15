@@ -16,13 +16,11 @@ import sys
 from typing import Optional
 
 import typer
-
-from extralit.cli.callback import init_callback
-from extralit.cli.rich import get_themed_panel, print_rich_table
-from extralit._models._user import Role
-
 from rich.console import Console
 
+from extralit._models._user import Role
+from extralit.cli.callback import init_callback
+from extralit.cli.rich import get_themed_panel, print_rich_table
 
 _COMMANDS_REQUIRING_WORKSPACE = ["add-user", "delete-user"]
 

@@ -29,24 +29,24 @@ This module provides background jobs for importing data from ImportHistory recor
 reusing the same mapping and processing infrastructure as HuggingFace Hub imports.
 """
 
+from typing import Any
 from uuid import UUID
-from typing import Any, Dict, List
 
 from rq import Retry
 from rq.decorators import job
-from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
-from extralit_server.models import Dataset, ImportHistory
-from extralit_server.settings import settings
-from extralit_server.database import AsyncSessionLocal
-from extralit_server.search_engine.base import SearchEngine
 from extralit_server.api.schemas.v1.datasets import HubDatasetMapping
 from extralit_server.api.schemas.v1.records import RecordUpsert as RecordUpsertSchema
 from extralit_server.api.schemas.v1.records_bulk import RecordsBulkUpsert as RecordsBulkUpsertSchema
 from extralit_server.api.schemas.v1.suggestions import SuggestionCreate
-from extralit_server.bulk.records_bulk import UpsertRecordsBulk
+from extralit_server.contexts.records_bulk import UpsertRecordsBulk
+from extralit_server.database import AsyncSessionLocal
 from extralit_server.jobs.queues import DEFAULT_QUEUE, JOB_TIMEOUT_DISABLED
+from extralit_server.models import Dataset, ImportHistory
+from extralit_server.search_engine.base import SearchEngine
+from extralit_server.settings import settings
 
 BATCH_SIZE = 100
 
@@ -76,7 +76,7 @@ class ImportHistoryDataset:
             await self._import_batch_to(db, search_engine, batch, dataset)
 
     async def _import_batch_to(
-        self, db: AsyncSession, search_engine: SearchEngine, batch: List[Dict[str, Any]], dataset: Dataset
+        self, db: AsyncSession, search_engine: SearchEngine, batch: list[dict[str, Any]], dataset: Dataset
     ) -> None:
         items = []
         for row in batch:
@@ -88,7 +88,7 @@ class ImportHistoryDataset:
             raise_on_error=True,
         )
 
-    def _row_to_record_schema(self, row: Dict[str, Any], dataset: Dataset) -> RecordUpsertSchema:
+    def _row_to_record_schema(self, row: dict[str, Any], dataset: Dataset) -> RecordUpsertSchema:
         return RecordUpsertSchema(
             id=None,
             external_id=self._row_external_id(row),
@@ -99,13 +99,13 @@ class ImportHistoryDataset:
             vectors=None,
         )
 
-    def _row_external_id(self, row: Dict[str, Any]) -> str:
+    def _row_external_id(self, row: dict[str, Any]) -> str:
         if not self.mapping.external_id:
             return f"import_history_{self.import_history.id}_{self._next_row_idx()}"
 
         return str(row.get(self.mapping.external_id, f"import_history_{self.import_history.id}_{self._next_row_idx()}"))
 
-    def _row_fields(self, row: Dict[str, Any], dataset: Dataset) -> Dict[str, Any]:
+    def _row_fields(self, row: dict[str, Any], dataset: Dataset) -> dict[str, Any]:
         fields = {}
         for mapping_field in self.mapping.fields:
             value = row.get(mapping_field.source)
@@ -120,7 +120,7 @@ class ImportHistoryDataset:
 
         return fields
 
-    def _row_metadata(self, row: Dict[str, Any], dataset: Dataset) -> Dict[str, Any]:
+    def _row_metadata(self, row: dict[str, Any], dataset: Dataset) -> dict[str, Any]:
         metadata = {}
         for mapping_metadata in self.mapping.metadata or []:
             value = row.get(mapping_metadata.source)
@@ -132,7 +132,7 @@ class ImportHistoryDataset:
 
         return metadata
 
-    def _row_suggestions(self, row: Dict[str, Any], dataset: Dataset) -> List[SuggestionCreate]:
+    def _row_suggestions(self, row: dict[str, Any], dataset: Dataset) -> list[SuggestionCreate]:
         suggestions = []
         for mapping_suggestion in self.mapping.suggestions or []:
             value = row.get(mapping_suggestion.source)

@@ -1,30 +1,29 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-from typing import TYPE_CHECKING, Type
+from typing import TYPE_CHECKING
 from uuid import uuid4
 
 import pytest
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from extralit_server.api.schemas.v1.metadata_properties import METADATA_PROPERTY_CREATE_TITLE_MAX_LENGTH
 from extralit_server.constants import API_KEY_HEADER_NAME
 from extralit_server.enums import MetadataPropertyType, UserRole
-from extralit_server.models import MetadataProperty, UserRole
+from extralit_server.models import MetadataProperty
 from extralit_server.search_engine import FloatMetadataMetrics, IntegerMetadataMetrics, TermsMetrics
-from sqlalchemy import func, select
-
 from tests.factories import (
     AdminFactory,
     AnnotatorFactory,
@@ -37,8 +36,9 @@ from tests.factories import (
 )
 
 if TYPE_CHECKING:
-    from extralit_server.search_engine import MetadataMetrics, SearchEngine
     from httpx import AsyncClient
+
+    from extralit_server.search_engine import MetadataMetrics, SearchEngine
 
 
 @pytest.mark.asyncio
@@ -73,7 +73,7 @@ class TestSuiteMetadataProperties:
         async_client: "AsyncClient",
         mock_search_engine: "SearchEngine",
         owner_auth_header: dict,
-        factory_class: Type[BaseFactory],
+        factory_class: type[BaseFactory],
         expected_metric: "MetadataMetrics",
         expected_json: dict,
     ):
@@ -167,7 +167,7 @@ async def test_update_metadata_property(async_client: "AsyncClient", db: "AsyncS
         name="name", title="title", allowed_roles=[UserRole.admin, UserRole.annotator]
     )
 
-    assert metadata_property.visible_for_annotators == True
+    assert metadata_property.visible_for_annotators
 
     response = await async_client.patch(
         f"/api/v1/metadata-properties/{metadata_property.id}",
@@ -189,7 +189,7 @@ async def test_update_metadata_property(async_client: "AsyncClient", db: "AsyncS
 
     metadata_property = await db.get(MetadataProperty, metadata_property.id)
     assert metadata_property.title == "updated title"
-    assert metadata_property.visible_for_annotators == False
+    assert not metadata_property.visible_for_annotators
     assert metadata_property.allowed_roles == [UserRole.admin]
 
 
@@ -249,7 +249,7 @@ async def test_update_metadata_property_enabling_visible_for_annotators(
 ):
     metadata_property = await IntegerMetadataPropertyFactory.create(allowed_roles=[UserRole.admin])
 
-    assert metadata_property.visible_for_annotators == False
+    assert not metadata_property.visible_for_annotators
 
     response = await async_client.patch(
         f"/api/v1/metadata-properties/{metadata_property.id}",
@@ -260,10 +260,10 @@ async def test_update_metadata_property_enabling_visible_for_annotators(
     assert response.status_code == 200
 
     response_json = response.json()
-    assert response_json["visible_for_annotators"] == True
+    assert response_json["visible_for_annotators"]
 
     metadata_property = await db.get(MetadataProperty, metadata_property.id)
-    assert metadata_property.visible_for_annotators == True
+    assert metadata_property.visible_for_annotators
     assert metadata_property.allowed_roles == [UserRole.admin, UserRole.annotator]
 
 
@@ -273,7 +273,7 @@ async def test_update_metadata_property_disabling_visible_for_annotators(
 ):
     metadata_property = await IntegerMetadataPropertyFactory.create(allowed_roles=[UserRole.admin, UserRole.annotator])
 
-    assert metadata_property.visible_for_annotators == True
+    assert metadata_property.visible_for_annotators
 
     response = await async_client.patch(
         f"/api/v1/metadata-properties/{metadata_property.id}",
@@ -284,10 +284,10 @@ async def test_update_metadata_property_disabling_visible_for_annotators(
     assert response.status_code == 200
 
     response_json = response.json()
-    assert response_json["visible_for_annotators"] == False
+    assert not response_json["visible_for_annotators"]
 
     metadata_property = await db.get(MetadataProperty, metadata_property.id)
-    assert metadata_property.visible_for_annotators == False
+    assert not metadata_property.visible_for_annotators
     assert metadata_property.allowed_roles == [UserRole.admin]
 
 
@@ -297,7 +297,7 @@ async def test_update_metadata_property_with_visible_for_annotators_as_none(
 ):
     metadata_property = await IntegerMetadataPropertyFactory.create(allowed_roles=[UserRole.admin, UserRole.annotator])
 
-    assert metadata_property.visible_for_annotators == True
+    assert metadata_property.visible_for_annotators
 
     response = await async_client.patch(
         f"/api/v1/metadata-properties/{metadata_property.id}",
@@ -308,7 +308,7 @@ async def test_update_metadata_property_with_visible_for_annotators_as_none(
     assert response.status_code == 422
 
     metadata_property = await db.get(MetadataProperty, metadata_property.id)
-    assert metadata_property.visible_for_annotators == True
+    assert metadata_property.visible_for_annotators
     assert metadata_property.allowed_roles == [UserRole.admin, UserRole.annotator]
 
 

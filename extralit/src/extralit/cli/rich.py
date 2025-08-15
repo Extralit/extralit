@@ -12,9 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import TYPE_CHECKING, List, Optional, Union
 import traceback
-
+from typing import TYPE_CHECKING, Optional, Union
 
 from rich.console import Console, RenderableType
 from rich.panel import Panel
@@ -22,9 +21,9 @@ from rich.table import Table
 from rich.text import Text
 
 if TYPE_CHECKING:
-    from extralit._resource import Resource
     from extralit._models._documents import Document
     from extralit._models._files import ObjectMetadata
+    from extralit._resource import Resource
 
     try:
         import pandas as pd
@@ -113,8 +112,8 @@ def console_table_to_pandas_df(table: Table) -> "pd.DataFrame":
 
 
 def print_rich_table(
-    resources: List[Union["Resource", "pa.DataFrameSchema", "ObjectMetadata", "Document"]],
-    columns: Optional[List[str]] = None,
+    resources: list[Union["Resource", "pa.DataFrameSchema", "ObjectMetadata", "Document"]],
+    columns: Optional[list[str]] = None,
     title: Optional[str] = None,
     return_table: bool = False,
 ) -> Optional[Table]:

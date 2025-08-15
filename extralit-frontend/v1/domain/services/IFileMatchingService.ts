@@ -1,5 +1,5 @@
-import type { ParsedEntry } from "./IFileParsingService";
 import { TableData } from "../entities/table/TableData";
+import type { ParsedEntry } from "./IFileParsingService";
 
 export interface FileMatchResult {
   file: File;
