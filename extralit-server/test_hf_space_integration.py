@@ -13,29 +13,29 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 async def test_hf_space_service():
-    """Test the hf-space service integration."""
+    """Test the PyMuPDF extraction service integration."""
     
     try:
-        from src.extralit_server.services.hf_space import extract_pdf_with_pymupdf, HfSpaceClient
-        from src.extralit_server.api.schemas.v1.document.preprocessing import PDFMetadata
+        from src.extralit_server.contexts.ocr.text import extract_pdf_text, get_extraction_client
+        from src.extralit_server.api.schemas.v1.document.ocr import ExtractionRequest
         
-        logger.info("Successfully imported hf-space service modules")
+        logger.info("Successfully imported PyMuPDF extraction modules")
         
-        # Test 1: Check if we can create HfSpaceClient
+        # Test 1: Check if we can get extraction client
         try:
-            client = HfSpaceClient()
-            logger.info(f"HfSpaceClient created successfully with base_url: {client.base_url}")
+            client = get_extraction_client()
+            logger.info(f"PyMuPDF extraction client created successfully with base_url: {client.base_url}")
         except Exception as e:
-            logger.error(f"Failed to create HfSpaceClient: {e}")
+            logger.error(f"Failed to create extraction client: {e}")
             return False
         
-        # Test 2: Check health endpoint (if hf-space is running)
+        # Test 2: Check health endpoint (if extralit-hf-space is running)
         try:
             health_status = await client.health_check()
             if health_status:
-                logger.info("✅ HF-Space service is healthy and reachable")
+                logger.info("✅ PyMuPDF extraction service is healthy and reachable")
             else:
-                logger.warning("⚠️  HF-Space service health check failed (service might not be running)")
+                logger.warning("⚠️  PyMuPDF extraction service health check failed (service might not be running)")
         except Exception as e:
             logger.warning(f"⚠️  Health check failed (expected if service not running): {e}")
         
@@ -62,24 +62,22 @@ async def test_hf_space_service():
                 with open(test_pdf, "rb") as f:
                     pdf_bytes = f.read()
                 
-                # Create sample metadata
-                sample_metadata = PDFMetadata(
+                # Create extraction request
+                request = ExtractionRequest(
                     filename=test_pdf.name,
-                    processing_time=0.0,
-                    page_count=None
+                    analysis_metadata={}
                 )
                 
-                logger.info("Attempting to extract markdown using hf-space service...")
-                result = await extract_pdf_with_pymupdf(
+                logger.info("Attempting to extract markdown using PyMuPDF service...")
+                result = await extract_pdf_text(
                     pdf_bytes=pdf_bytes,
-                    filename=test_pdf.name,
-                    analysis_metadata=sample_metadata
+                    request=request
                 )
                 
                 if result:
                     logger.info(f"✅ Successfully extracted {len(result.markdown)} characters of markdown")
                     logger.info(f"Processing time: {result.processing_time:.2f}s")
-                    logger.info(f"Metadata keys: {list(result.metadata.model_dump().keys())}")
+                    logger.info(f"Pages processed: {result.page_count}")
                 else:
                     logger.warning("⚠️  Extraction returned None")
                     
@@ -87,9 +85,9 @@ async def test_hf_space_service():
                 logger.error(f"❌ PDF extraction test failed: {e}")
                 
         else:
-            logger.info("No test PDFs found in test-pdf directory, skipping PDF extraction test")
+            logger.info("No test PDFs found in test directories, skipping PDF extraction test")
         
-        logger.info("🎉 HF-Space integration test completed!")
+        logger.info("🎉 PyMuPDF integration test completed!")
         return True
         
     except ImportError as e:
@@ -101,7 +99,7 @@ async def test_hf_space_service():
 
 async def main():
     """Main test function."""
-    logger.info("🔧 Starting HF-Space integration test...")
+    logger.info("🔧 Starting PyMuPDF extraction service integration test...")
     
     # Check environment variables
     hf_space_url = os.getenv("HF_SPACE_BASE_URL", "http://localhost:7860")
