@@ -233,13 +233,3 @@ async def check_service_health() -> bool:
     except Exception as e:
         _LOGGER.warning(f"Service health check failed: {e!s}")
         return False
-
-
-# Public API exports
-__all__ = [
-    "PyMuPDFExtractionClient",
-    "PyMuPDFServiceSettings",
-    "check_service_health",
-    "cleanup_extraction_client",
-    "extract_pdf_text",
-]

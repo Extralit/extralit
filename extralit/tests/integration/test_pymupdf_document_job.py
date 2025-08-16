@@ -83,7 +83,7 @@ async def test_document_upload_job():
 
         # Test just the preprocessing and extraction part
         from extralit_server.contexts.document import preprocessing
-        from extralit_server.contexts.ocr import extract_pdf_text
+        from extralit_server.contexts.ocr.text import extract_pdf_text
 
         # Simulate preprocessing
         print("⚙️ Running preprocessing...")

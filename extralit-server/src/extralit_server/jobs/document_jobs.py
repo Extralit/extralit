@@ -25,7 +25,7 @@ from rq.decorators import job
 from extralit_server.api.schemas.v1.documents import DocumentCreate
 from extralit_server.contexts import files, imports
 from extralit_server.contexts.document import preprocessing
-from extralit_server.contexts.ocr import extract_pdf_text
+from extralit_server.contexts.ocr.text import extract_pdf_text
 from extralit_server.database import AsyncSessionLocal
 from extralit_server.jobs import DEFAULT_QUEUE, JOB_TIMEOUT_DISABLED
 

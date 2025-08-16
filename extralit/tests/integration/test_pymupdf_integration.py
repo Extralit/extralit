@@ -24,7 +24,7 @@ from pathlib import Path
 # Add the extralit-server source to the path
 sys.path.insert(0, str(Path(__file__).parent / "extralit-server" / "src"))
 
-from extralit_server.contexts.ocr import extract_pdf_text
+from extralit_server.contexts.ocr.text import extract_pdf_text
 
 
 async def test_hf_space_integration():
@@ -97,7 +97,7 @@ async def test_health_check():
     print("🏥 Testing health check...")
 
     try:
-        from extralit_server.contexts.ocr import check_service_health
+        from extralit_server.contexts.ocr.text import check_service_health
 
         health = await check_service_health()
         if health:

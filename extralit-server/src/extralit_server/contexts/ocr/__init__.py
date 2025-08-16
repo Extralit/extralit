@@ -19,20 +19,9 @@ This package provides various OCR and text extraction capabilities including:
 - PyMuPDF-based text extraction (text.py)
 - Figure processing (figures.py)
 - Table extraction (tables.py)
+
+Usage:
+    from extralit_server.contexts.ocr.text import extract_pdf_text, check_service_health
 """
 
-from .text import (
-    extract_pdf_text,
-    check_service_health,
-    cleanup_extraction_client,
-    PyMuPDFServiceSettings,
-    PyMuPDFExtractionClient,
-)
-
-__all__ = [
-    "PyMuPDFExtractionClient",
-    "PyMuPDFServiceSettings",
-    "check_service_health",
-    "cleanup_extraction_client",
-    "extract_pdf_text",
-]
+# No explicit imports - use direct imports from submodules instead
