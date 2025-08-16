@@ -148,9 +148,9 @@ async def upload_and_preprocess_documents_job(
                             extraction_result = await extract_pdf_text(
                                 pdf_bytes=processed_file_data,
                                 filename=filename,
-                                analysis_metadata=preprocessing_result.metadata
+                                analysis_metadata=preprocessing_result.metadata,
                             )
-                            
+
                             if extraction_result:
                                 markdown, metadata = extraction_result
                                 # Store the markdown content and extraction metadata
@@ -158,20 +158,20 @@ async def upload_and_preprocess_documents_job(
                                     "markdown_content": markdown,
                                     "extraction_metadata": metadata,
                                     "extraction_successful": True,
-                                    "extraction_time": metadata.get("processing_time")
+                                    "extraction_time": metadata.get("processing_time"),
                                 }
                                 _LOGGER.info(f"Successfully extracted text from {filename}: {len(markdown)} characters")
                             else:
                                 _LOGGER.warning(f"PyMuPDF extraction returned None for {filename}")
                                 file_metadata["pymupdf_extraction"] = {
                                     "extraction_successful": False,
-                                    "error": "Extraction service returned None"
+                                    "error": "Extraction service returned None",
                                 }
                         except Exception as extraction_error:
-                            _LOGGER.error(f"PyMuPDF extraction failed for {filename}: {str(extraction_error)}")
+                            _LOGGER.error(f"PyMuPDF extraction failed for {filename}: {extraction_error!s}")
                             file_metadata["pymupdf_extraction"] = {
                                 "extraction_successful": False,
-                                "error": str(extraction_error)
+                                "error": str(extraction_error),
                             }
                             # Continue with upload even if extraction fails
 
