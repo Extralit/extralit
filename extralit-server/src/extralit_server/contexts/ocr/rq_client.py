@@ -28,7 +28,7 @@ _LOGGER = logging.getLogger(__name__)
 
 # Configuration from environment variables
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
-EXTRACTION_QUEUE_NAME = os.getenv("PYMUPDF_EXTRACTION_QUEUE", "extraction")
+EXTRACTION_QUEUE_NAME = os.getenv("PYMUPDF_EXTRACTION_QUEUE", "pdf_queue")
 
 # Global Redis connection and queue (following rq_pymupdf pattern)
 _redis = None
