@@ -27,12 +27,13 @@ from extralit_server.api.schemas.v1.document.metadata import DocumentProcessingM
 from extralit_server.api.schemas.v1.documents import DocumentCreate
 from extralit_server.contexts import files, imports
 from extralit_server.contexts.document import preprocessing
-from extralit_server.contexts.document.analysis import PDFOCRLayerDetector
-from extralit_server.contexts.document.margin import PDFAnalyzer
-from extralit_server.contexts.document.preprocessing import PDFPreprocessingSettings, PDFPreprocessor
-from extralit_server.database import AsyncSessionLocal, SyncSessionLocal
-from extralit_server.jobs.queues import DEFAULT_QUEUE, JOB_TIMEOUT_DISABLED, REDIS_CONNECTION
-from extralit_server.models.database import Document
+from extralit_server.database import AsyncSessionLocal
+from extralit_server.jobs import DEFAULT_QUEUE, JOB_TIMEOUT_DISABLED
+from extralit_server.jobs.pdf_extraction_jobs import (
+    create_extraction_config,
+    extract_pdf_text_sync,
+    should_extract_text,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -151,6 +152,45 @@ async def upload_and_preprocess_documents_job(
 
                         # Store preprocessing metadata in file metadata
                         file_metadata.update(preprocessing_result.metadata.model_dump())
+
+                        # Extract text from PDF using RQ-based PyMuPDF service
+                        if should_extract_text(filename, file_metadata):
+                            try:
+                                _LOGGER.info(f"Extracting text from PDF: {filename}")
+
+                                # Create extraction config based on analysis results
+                                extraction_config = create_extraction_config(
+                                    analysis_metadata=preprocessing_result.metadata.model_dump()
+                                )
+
+                                # Extract text using RQ/HTTP service
+                                markdown_text, extraction_metadata = await extract_pdf_text_sync(
+                                    pdf_bytes=processed_file_data,
+                                    filename=filename,
+                                    analysis_metadata=preprocessing_result.metadata.model_dump(),
+                                    extraction_config=extraction_config,
+                                    use_rq=True,  # Prefer RQ-based processing
+                                )
+
+                                # Store extraction results in file metadata
+                                file_metadata.update(
+                                    {
+                                        "text_extracted": True,
+                                        "markdown_text": markdown_text,
+                                        "text_length": len(markdown_text),
+                                        "extraction_metadata": extraction_metadata,
+                                    }
+                                )
+
+                                _LOGGER.info(
+                                    f"Text extraction completed for {filename} ({len(markdown_text)} characters)"
+                                )
+
+                            except Exception as e:
+                                # Log error but don't fail the entire document upload
+                                error_msg = f"Text extraction failed for {filename}: {e}"
+                                _LOGGER.warning(error_msg)
+                                file_metadata.update({"text_extracted": False, "text_extraction_error": str(e)})
 
                         file_url = files.put_document_file(
                             client=client,
