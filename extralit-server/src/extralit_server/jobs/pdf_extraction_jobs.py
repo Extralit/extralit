@@ -16,10 +16,16 @@
 PDF extraction job orchestration for document processing pipeline.
 """
 
+import asyncio
 import logging
 from typing import Any, Optional
 
-from extralit_server.contexts.ocr.text import extract_pdf_text_async
+from extralit_server.contexts.ocr.rq_client import (
+    cancel_job,
+    enqueue_pdf_extraction,
+    get_job_status,
+    is_redis_available,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -30,24 +36,80 @@ async def extract_pdf_text_sync(
     analysis_metadata: Optional[dict[str, Any]] = None,
     extraction_config: Optional[dict[str, Any]] = None,
     use_rq: bool = True,
+    max_wait_time: int = 600,
 ) -> tuple[str, dict[str, Any]]:
-    """Synchronous wrapper for PDF text extraction."""
-    try:
-        _LOGGER.info(f"Extracting text from PDF: {filename}")
+    """
+    Extract PDF text using direct RQ communication with extralit-hf-space worker.
 
-        markdown_text, metadata = await extract_pdf_text_async(
+    This function implements the correct flow:
+    extralit-server → RQ (pdf_queue) → extralit-hf-space worker → extract_pdf_markdown_job
+    """
+    try:
+        _LOGGER.info(f"Extracting text from PDF: {filename} using direct RQ")
+
+        if not use_rq or not is_redis_available():
+            raise Exception("RQ is not available and HTTP fallback is disabled for direct RQ flow")
+
+        # Enqueue job directly to pdf_queue
+        job_id = enqueue_pdf_extraction(
             pdf_bytes=pdf_bytes,
             filename=filename,
             analysis_metadata=analysis_metadata,
             extraction_config=extraction_config,
-            use_rq=use_rq,
+            job_timeout=max_wait_time,
         )
 
-        _LOGGER.info(f"Text extraction completed for {filename} ({len(markdown_text)} characters)")
-        return markdown_text, metadata
+        # Poll for completion
+        poll_interval = 2  # Start with 2 second intervals
+        max_poll_interval = 10  # Cap at 10 seconds
+        elapsed_time = 0
+
+        while elapsed_time < max_wait_time:
+            await asyncio.sleep(poll_interval)
+            elapsed_time += poll_interval
+
+            try:
+                status_info = get_job_status(job_id)
+                status = status_info.get("status")
+
+                if status == "finished":
+                    result = status_info.get("result", {})
+                    if result.get("ok", False):
+                        markdown = result.get("markdown", "")
+                        metadata = result.get("metadata", {})
+                        _LOGGER.info(f"Direct RQ extraction completed for {filename} in {elapsed_time}s")
+                        return markdown, metadata
+                    else:
+                        error = result.get("error", "Unknown error")
+                        raise Exception(f"Extraction job failed: {error}")
+
+                elif status == "failed":
+                    error = status_info.get("error", "Job failed without details")
+                    raise Exception(f"Extraction job failed: {error}")
+
+                elif status in ["queued", "started"]:
+                    # Job is still processing, continue polling
+                    # Gradually increase poll interval to reduce load
+                    poll_interval = min(poll_interval * 1.2, max_poll_interval)
+                    continue
+
+                else:
+                    _LOGGER.warning(f"Unknown job status for {job_id}: {status}")
+                    continue
+
+            except Exception as e:
+                _LOGGER.error(f"Error checking job status for {job_id}: {e}")
+                # Try to cancel the job before giving up
+                cancel_job(job_id)
+                raise
+
+        # Timeout reached
+        _LOGGER.error(f"Direct RQ extraction timed out for {filename} after {max_wait_time}s")
+        cancel_job(job_id)
+        raise Exception(f"PDF extraction timed out after {max_wait_time} seconds")
 
     except Exception as e:
-        _LOGGER.error(f"Text extraction failed for {filename}: {e}")
+        _LOGGER.error(f"Direct RQ text extraction failed for {filename}: {e}")
         raise
 
 
