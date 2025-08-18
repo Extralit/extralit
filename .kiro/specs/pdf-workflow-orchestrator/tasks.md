@@ -2,7 +2,7 @@
 
 ## Phase 1: Basic RQ Job Chaining (Week 1)
 
-- [-] 1. Refactor existing document upload job
+- [x] 1. Refactor existing document upload job
   - Split `upload_and_preprocess_documents_job` into separate chained jobs
   - Move file upload to S3 into the API endpoint (process_bulk_upload)
   - Pass document IDs and S3 URLs to jobs instead of raw file data
@@ -17,14 +17,14 @@
   - Store combined results in documents.metadata_ using DocumentProcessingMetadata schema
   - _Requirements: 1.1, 2.1, 4.1, 4.5_
 
-- [ ] 1.2 Create DocumentWorkflow database model
+- [x] 1.2 Create DocumentWorkflow database model
   - Add DocumentWorkflow model to models/database.py for efficient job tracking
   - Create database migration for document_workflows table
   - Add relationship to Document model
   - Include methods for job status updates and workflow queries
   - _Requirements: 2.2, 2.5, 6.1_
 
-- [ ] 1.3 Create centralized workflow orchestrator
+- [x] 1.3 Create centralized workflow orchestrator
   - Create start_pdf_workflow() function that manages entire job chain
   - Use RQ's depends_on parameter for job dependencies (no jobs enqueueing other jobs)
   - Create DocumentWorkflow record and store job IDs for efficient querying
@@ -32,13 +32,13 @@
   - Update workflow to use single analysis_and_preprocess_job instead of separate jobs
   - _Requirements: 1.1, 1.3, 1.4, 8.1_
 
-- [ ] 1.4 Set up queue routing for GPU tasks
+- [x] 1.4 Set up queue routing for GPU tasks
   - Add GPU_QUEUE to existing queue configuration
   - Route table extraction jobs to GPU queue in workflow orchestrator
   - Test queue routing with existing worker setup
   - _Requirements: 7.1, 7.4, 8.4_
 
-- [ ] 1.5 Update process_bulk_upload function
+- [x] 1.5 Update process_bulk_upload function
   - Move file upload to S3 into process_bulk_upload (before job enqueueing)
   - Create document records in database before enqueueing jobs
   - Replace upload_and_preprocess_documents_job with start_pdf_workflow() call

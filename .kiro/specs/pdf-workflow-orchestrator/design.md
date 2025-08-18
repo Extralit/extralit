@@ -558,7 +558,7 @@ WORKFLOW_QUEUES = {
 ```python
 # Add to existing CLI using typer
 import typer
-from extralit_server.jobs.pdf_workflow import start_pdf_workflow, get_jobs_for_document
+from extralit_server.jobs.pdf import start_pdf_workflow, get_jobs_for_document
 
 workflow_app = typer.Typer()
 
