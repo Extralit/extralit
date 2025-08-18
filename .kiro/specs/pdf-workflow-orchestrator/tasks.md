@@ -1,0 +1,117 @@
+# Implementation Plan
+
+## Phase 1: Basic RQ Job Chaining (Week 1)
+
+- [ ] 1. Refactor existing document upload job
+  - Split `upload_and_preprocess_documents_job` into separate chained jobs
+  - Move file upload to S3 into the API endpoint (process_bulk_upload)
+  - Pass document IDs and S3 URLs to jobs instead of raw file data
+  - _Requirements: 1.1, 1.2, 5.1, 5.3_
+
+- [ ] 1.1 Create separate PDF processing job functions
+  - Create `analysis_job(document_id, s3_url)` with @job decorator
+  - Create `preprocess_job(document_id, s3_url)` with @job decorator
+  - Add job metadata tracking (document_id, reference, workflow_step)
+  - Use type hints for all parameters and return values
+  - _Requirements: 1.1, 2.1, 4.1, 4.5_
+
+- [ ] 1.2 Implement conditional job enqueueing
+  - Add logic in analysis_job to conditionally enqueue OCR job
+  - Use RQ's job.delay() to enqueue dependent jobs within functions
+  - Store child job IDs in parent job metadata
+  - _Requirements: 1.4, 3.1, 8.2_
+
+- [ ] 1.3 Set up queue routing for GPU tasks
+  - Add GPU_QUEUE to existing queue configuration
+  - Route table extraction (mock) jobs to GPU queue
+  - Test queue routing with existing worker setup
+  - _Requirements: 7.1, 7.4, 8.4_
+
+- [ ] 1.4 Update process_bulk_upload function
+  - Move file upload to S3 into process_bulk_upload (before job enqueueing)
+  - Modify to enqueue analysis_job and preprocess_job instead of single job
+  - Update DocumentsBulkResponse to return multiple job IDs
+  - Maintain backward compatibility with existing API
+  - _Requirements: 5.1, 5.2_
+
+## Phase 2: Job Querying and API Enhancement (Week 2)
+
+- [ ] 2. Implement job metadata querying
+  - Create `get_jobs_for_document(document_id)` function
+  - Create `get_jobs_by_reference(reference)` function
+  - Scan RQ job registries (started, finished, failed, deferred) for metadata matches
+  - _Requirements: 2.2, 2.5_
+
+- [ ] 2.1 Extend existing jobs API endpoint
+  - Add query parameters to GET /jobs/ (document_id, reference, workflow_step)
+  - Modify existing JobSchema to include workflow metadata
+  - Return job metadata in API responses
+  - _Requirements: 6.1, 6.2_
+
+- [ ] 2.2 Add document workflow status endpoint
+  - Create GET /documents/{document_id}/workflow-status endpoint
+  - Calculate workflow progress based on completed steps
+  - Return overall workflow status (pending, running, completed, failed)
+  - _Requirements: 6.5, 8.1_
+
+- [ ] 2.3 Implement RQ Groups for document tracking
+  - Create RQ Group when starting document workflow
+  - Add jobs to document group for easier tracking
+  - Use group.get_jobs() for workflow status queries
+  - _Requirements: 3.1, 3.2, 3.4_
+
+## Phase 3: Complete PDF Workflow Implementation (Week 3)
+
+- [ ] 3. Implement remaining PDF processing jobs
+  - Create `ocr_job(document_id, s3_url, analysis_result)`
+  - Create `text_extraction_job(document_id, s3_url, analysis_result)`
+  - Create `table_extraction_job(document_id, s3_url, analysis_result, ocr_result)` for GPU queue
+  - Create `embedding_job(document_id, text_result, table_result)`
+  - _Requirements: 8.2, 8.3, 8.4, 8.5_
+
+- [ ] 3.1 Implement job dependency chaining
+  - Use RQ's depends_on parameter for job dependencies
+  - Chain text_extraction_job to depend on analysis_job
+  - Chain table_extraction_job to depend on analysis_job and ocr_job (if exists)
+  - Chain embedding_job to depend on text_extraction_job and table_extraction_job
+  - _Requirements: 1.1, 1.3, 8.5_
+
+- [ ] 3.2 Add database and S3 access to jobs
+  - Use existing get_async_db dependency injection pattern in jobs
+  - Use existing S3 client for file access via presigned URLs
+  - Store intermediate results in job.result for dependent jobs
+  - _Requirements: 5.1, 5.2, 5.5_
+
+- [ ] 3.3 Test complete workflow integration
+  - Test PDF upload through complete 6-step workflow
+  - Verify job chaining and dependency handling
+  - Test with both CPU and GPU workers
+  - _Requirements: 7.2, 7.3, 8.1_
+
+## Phase 4: CLI and Error Handling (Week 4)
+
+- [ ] 4. Add CLI workflow management commands
+  - Create `workflow start` command using typer (not click)
+  - Create `workflow status` command to check document progress
+  - Create `workflow restart` command for failed jobs
+  - _Requirements: 6.4_
+
+- [ ] 4.1 Implement workflow error handling
+  - Use RQ's built-in retry mechanism for transient failures
+  - Store error details in job metadata
+  - Implement job restart logic for failed workflows
+  - _Requirements: 6.3_
+
+- [ ] 4.2 Add comprehensive testing
+  - Unit tests for individual job functions
+  - Integration tests for complete workflow
+  - Test job metadata querying functions
+  - Test CLI commands
+  - _Requirements: All requirements validation_
+
+- [ ] 4.3 Performance optimization
+  - Test with multiple concurrent workflows
+  - Optimize job metadata querying performance
+  - Add monitoring for queue performance
+  - Test worker scaling (CPU + GPU workers)
+  - _Requirements: 7.2, 7.3, 7.5_
