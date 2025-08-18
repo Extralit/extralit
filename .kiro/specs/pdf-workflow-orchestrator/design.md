@@ -34,7 +34,7 @@ The design uses existing file operations from `contexts/files.py` but requires s
 ```python
 # Add to extralit_server/src/extralit_server/contexts/files.py
 
-async def download_file_content(client: Minio | LocalFileStorage, document_url: str) -> bytes:
+def download_file_content(client: Minio | LocalFileStorage, document_url: str) -> bytes:
     """
     Download file content from a document URL.
 
@@ -107,16 +107,16 @@ async def process_bulk_upload(
             file_data_list.append((filename, file_content))
 
         # NEW: Upload files to storage immediately using existing file operations
-        from extralit_server.contexts.files import get_async_minio_client, put_document_file, create_bucket
+        from extralit_server.contexts.files import get_minio_client, put_document_file, create_bucket
 
-        client = await get_async_minio_client()
+        client = await get_minio_client()
         workspace_name = str(doc.document_create.workspace_id)
 
         # Ensure workspace bucket exists
         create_bucket(client, workspace_name)
 
         # NEW: Create document records in database first to get document ID
-        async with get_async_db() as db:
+        async with AsyncSessionLocal() as db:
             document = Document(**doc.document_create.model_dump())
             db.add(document)
             await db.commit()
@@ -185,7 +185,7 @@ def analysis_and_preprocess_job(document_id: UUID, s3_url: str, reference: str, 
     from extralit_server.contexts.document.analysis import PDFOCRLayerDetector
     from extralit_server.contexts.document.margin import PDFAnalyzer
     from extralit_server.contexts.document.preprocessing import PDFPreprocessingSettings, PDFPreprocessor
-    from extralit_server.contexts.files import get_async_minio_client, download_file_content, put_object
+    from extralit_server.contexts.files import get_minio_client, download_file_content, put_object
     from extralit_server.models.database import Document
     from extralit_server.api.schemas.v1.documents.metadata import DocumentProcessingMetadata
 
@@ -200,8 +200,8 @@ def analysis_and_preprocess_job(document_id: UUID, s3_url: str, reference: str, 
     current_job.save_meta()
 
     # Download original PDF from storage
-    client = await get_async_minio_client()
-    pdf_data = await download_file_content(client, s3_url)
+    client = get_minio_client()
+    pdf_data = download_file_content(client, s3_url)
     filename = s3_url.split('/')[-1]
 
     # Step 1: Analyze original PDF structure and content
@@ -284,7 +284,7 @@ def analysis_and_preprocess_job(document_id: UUID, s3_url: str, reference: str, 
     }
 
     # Store preprocessing results in document.metadata_
-    async with get_async_db() as db:
+    async with AsyncSessionLocal() as db:
         document = await db.get(Document, document_id)
         if document and document.metadata_:
             metadata = DocumentProcessingMetadata(**document.metadata_)
@@ -329,7 +329,7 @@ def start_pdf_workflow(document_id: UUID, s3_url: str, reference: str, workspace
     from extralit_server.api.schemas.v1.documents.metadata import DocumentProcessingMetadata
 
     # Step 1: Initialize document metadata
-    async with get_async_db() as db:
+    async with AsyncSessionLocal() as db:
         document = await db.get(Document, document_id)
         if document:
             # Initialize document metadata for workflow tracking
@@ -392,7 +392,7 @@ def start_pdf_workflow(document_id: UUID, s3_url: str, reference: str, workspace
     workflow.save()
 
     # Step 6: Update document metadata with workflow ID
-    async with get_async_db() as db:
+    async with AsyncSessionLocal() as db:
         document = await db.get(Document, document_id)
         if document and document.metadata_:
             metadata = DocumentProcessingMetadata(**document.metadata_)
