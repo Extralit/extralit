@@ -48,14 +48,14 @@
 
 ## Phase 2: Job Querying and API Enhancement (Week 2)
 
-- [ ] 2. Create Pydantic schemas for job input/output
-  - Create api/schemas/v1/documents/metadata.py with DocumentProcessingMetadata schema for documents.metadata_ field
+- [x] 2. Create Pydantic schemas for job input/output
+  - Create api/schemas/v1/document/metadata.py with DocumentProcessingMetadata schema for documents.metadata_ field
   - Create AnalysisAndPreprocessJobInput and AnalysisAndPreprocessJobOutput schemas
   - Add WorkflowJobResult schema to api/schemas/v1/jobs.py
   - Ensure all schemas have proper type hints and validation
   - _Requirements: 4.1, 4.2_
 
-- [ ] 2.1 Implement efficient job querying using database
+- [x] 2.1 Implement efficient job querying using database
   - Create `get_jobs_for_document(db, document_id)` using DocumentWorkflow lookup
   - Create `get_jobs_by_reference(db, reference)` using document lookup
   - Create `get_workflow_status(db, document_id)` for complete workflow status
@@ -63,20 +63,20 @@
   - Handle job expiration and missing jobs gracefully
   - _Requirements: 2.2, 2.5_
 
-- [ ] 2.2 Extend existing jobs API endpoint
+- [x] 2.2 Extend existing jobs API endpoint
   - Add query parameters to GET /jobs/ (document_id, reference, workflow_step) in api/handlers/v1/jobs.py
   - Use WorkflowJobResult schema created in task 2
   - Modify existing JobSchema to include workflow metadata from job.meta
   - Return job metadata in API responses including workflow_step and progress
   - _Requirements: 6.1, 6.2_
 
-- [ ] 2.3 Add document workflow status endpoint
+- [x] 2.3 Add document workflow status endpoint
   - Create GET /documents/{document_id}/workflow-status endpoint
   - Calculate workflow progress based on completed steps
   - Return overall workflow status (pending, running, completed, failed)
   - _Requirements: 6.5, 8.1_
 
-- [ ] 2.4 Add workflow status monitoring
+- [x] 2.4 Add workflow status monitoring
   - Implement workflow status updates when jobs complete/fail
   - Add job status change callbacks to update DocumentWorkflow
   - Create workflow progress calculation based on completed steps

@@ -16,7 +16,7 @@
 
 import logging
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 from uuid import UUID, uuid4
 
@@ -30,7 +30,7 @@ from extralit_server.contexts.document import preprocessing
 from extralit_server.contexts.document.analysis import PDFOCRLayerDetector
 from extralit_server.contexts.document.margin import PDFAnalyzer
 from extralit_server.contexts.document.preprocessing import PDFPreprocessingSettings, PDFPreprocessor
-from extralit_server.database import AsyncSessionLocal
+from extralit_server.database import AsyncSessionLocal, SyncSessionLocal
 from extralit_server.jobs import DEFAULT_QUEUE, JOB_TIMEOUT_DISABLED
 from extralit_server.models.database import Document
 
@@ -231,7 +231,7 @@ def analysis_and_preprocess_job(document_id: UUID, s3_url: str, reference: str, 
             "reference": reference,
             "workspace_id": str(workspace_id),
             "workflow_step": "analysis_and_preprocess",
-            "started_at": datetime.utcnow().isoformat(),
+            "started_at": datetime.now(timezone.utc).isoformat(),
         }
     )
     current_job.save_meta()
@@ -298,33 +298,27 @@ def analysis_and_preprocess_job(document_id: UUID, s3_url: str, reference: str, 
             "needs_ocr": analysis_result["needs_ocr"],
         }
 
-        # Store combined results in document.metadata_
-        async def update_document_metadata():
-            async with AsyncSessionLocal() as db:
-                document = await db.get(Document, document_id)
-                if document:
-                    # Initialize or update document metadata
-                    if document.metadata_ is None:
-                        document.metadata_ = DocumentProcessingMetadata(
-                            workflow_started_at=datetime.utcnow()
-                        ).model_dump()
+        # Store combined results in document.metadata_ using sync database operations
+        with SyncSessionLocal() as db:
+            document = db.get(Document, document_id)
+            if document:
+                # Initialize or update document metadata
+                if document.metadata_ is None:
+                    document.metadata_ = DocumentProcessingMetadata(
+                        workflow_started_at=datetime.now(timezone.utc)
+                    ).model_dump()
 
-                    metadata = DocumentProcessingMetadata(**document.metadata_)
-                    metadata.update_analysis_results(analysis_result)
-                    metadata.update_preprocessing_results(combined_result["preprocessing_result"])
-                    document.metadata_ = metadata.model_dump()
-                    await db.commit()
-
-        # Run the async function
-        import asyncio
-
-        asyncio.run(update_document_metadata())
+                metadata = DocumentProcessingMetadata(**document.metadata_)
+                metadata.update_analysis_results(analysis_result)
+                metadata.update_preprocessing_results(combined_result["preprocessing_result"])
+                document.metadata_ = metadata.model_dump()
+                db.commit()
 
         # Store results for dependent jobs
         current_job.meta["needs_ocr"] = analysis_result["needs_ocr"]
         current_job.meta["analysis_complete"] = True
         current_job.meta["preprocessing_complete"] = True
-        current_job.meta["completed_at"] = datetime.utcnow().isoformat()
+        current_job.meta["completed_at"] = datetime.now(timezone.utc).isoformat()
         current_job.save_meta()
 
         return combined_result
@@ -332,6 +326,6 @@ def analysis_and_preprocess_job(document_id: UUID, s3_url: str, reference: str, 
     except Exception as e:
         _LOGGER.error(f"Error in analysis_and_preprocess_job for document {document_id}: {e}")
         current_job.meta["error"] = str(e)
-        current_job.meta["completed_at"] = datetime.utcnow().isoformat()
+        current_job.meta["completed_at"] = datetime.now(timezone.utc).isoformat()
         current_job.save_meta()
         raise

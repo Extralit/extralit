@@ -15,9 +15,9 @@
 
 import logging
 from typing import Any
-from uuid import UUID
+from uuid import UUID, uuid4
 
-from extralit_server.database import AsyncSessionLocal
+from extralit_server.database import SyncSessionLocal
 from extralit_server.jobs.document_jobs import analysis_and_preprocess_job
 from extralit_server.jobs.queues import DEFAULT_QUEUE
 from extralit_server.models.database import DocumentWorkflow
@@ -43,18 +43,14 @@ def start_pdf_workflow(document_id: UUID, s3_url: str, reference: str, workspace
     """
 
     try:
-        # Step 1: Create DocumentWorkflow record for tracking
-        async def create_workflow_record():
-            async with AsyncSessionLocal() as db:
-                workflow = await DocumentWorkflow.create(
-                    db, document_id=document_id, workflow_type="pdf_processing", status="running"
-                )
-                return workflow
-
-        # Run the async function
-        import asyncio
-
-        workflow = asyncio.run(create_workflow_record())
+        # Step 1: Create DocumentWorkflow record for tracking using sync database operations
+        with SyncSessionLocal() as db:
+            workflow = DocumentWorkflow(
+                id=uuid4(), document_id=document_id, workflow_type="pdf_processing", status="running", job_ids={}
+            )
+            db.add(workflow)
+            db.commit()
+            db.refresh(workflow)
 
         # Step 2: Enqueue analysis and preprocessing job
         analysis_job = DEFAULT_QUEUE.enqueue(
@@ -68,18 +64,18 @@ def start_pdf_workflow(document_id: UUID, s3_url: str, reference: str, workspace
         #     depends_on=analysis_job
         # )
 
-        # Step 4: Store job IDs in workflow record
+        # Step 3: Store job IDs in workflow record
         job_ids = {
             "analysis_and_preprocess": analysis_job.id,
             "workflow_id": str(workflow.id),
             # 'table_extraction': table_extraction_job.id  # Future implementation
         }
 
-        async def update_workflow_jobs():
-            async with AsyncSessionLocal() as db:
-                await workflow.update_job_ids(db, job_ids)
-
-        asyncio.run(update_workflow_jobs())
+        # Step 4: Update workflow with job IDs using sync database operations
+        with SyncSessionLocal() as db:
+            workflow.job_ids = job_ids
+            db.add(workflow)
+            db.commit()
 
         _LOGGER.info(
             f"Started PDF workflow {workflow.id} for document {document_id} with analysis job {analysis_job.id}"

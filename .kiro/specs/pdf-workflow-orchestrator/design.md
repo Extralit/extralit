@@ -622,7 +622,7 @@ app.add_typer(workflow_app, name="workflow")
 The `documents.metadata_` field needs a structured schema to store analysis and preprocessing results:
 
 ```python
-# extralit_server/src/extralit_server/api/schemas/v1/documents/metadata.py
+# extralit_server/src/extralit_server/api/schemas/v1/document/metadata.py
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any
 from datetime import datetime
