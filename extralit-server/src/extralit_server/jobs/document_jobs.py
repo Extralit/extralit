@@ -206,7 +206,7 @@ async def upload_and_preprocess_documents_job(
 
 
 @job(queue=DEFAULT_QUEUE, timeout=600, retry=Retry(max=3, interval=[10, 30, 60]))
-def analysis_and_preprocess_job(document_id: UUID, s3_url: str, reference: str, workspace_id: UUID) -> dict[str, Any]:
+def analysis_and_preprocess_job(document_id: UUID, s3_url: str, reference: str, workspace_name: str) -> dict[str, Any]:
     """
     Analyze PDF structure and content, then preprocess using existing modules.
 
@@ -219,7 +219,7 @@ def analysis_and_preprocess_job(document_id: UUID, s3_url: str, reference: str, 
         document_id: UUID of the document to process
         s3_url: S3 URL of the PDF file
         reference: Reference key for tracking
-        workspace_id: UUID of the workspace
+        workspace_name: Name of the workspace where the document is stored
 
     Returns:
         Dictionary containing combined analysis and preprocessing results
@@ -229,7 +229,7 @@ def analysis_and_preprocess_job(document_id: UUID, s3_url: str, reference: str, 
         {
             "document_id": str(document_id),
             "reference": reference,
-            "workspace_id": str(workspace_id),
+            "workspace_name": str(workspace_name),
             "workflow_step": "analysis_and_preprocess",
             "started_at": datetime.now(timezone.utc).isoformat(),
         }
@@ -273,7 +273,6 @@ def analysis_and_preprocess_job(document_id: UUID, s3_url: str, reference: str, 
         processing_response = preprocessor.preprocess(pdf_data, filename)
 
         # OCRmyPDF overwrites the same S3 object path, so we upload back to same location
-        workspace_name = str(workspace_id)
         object_path = s3_url.replace(f"/api/v1/file/{workspace_name}/", "")
 
         files.put_object(

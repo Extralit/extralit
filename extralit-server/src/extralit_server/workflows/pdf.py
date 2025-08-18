@@ -25,7 +25,7 @@ from extralit_server.models.database import DocumentWorkflow
 _LOGGER = logging.getLogger(__name__)
 
 
-def start_pdf_workflow(document_id: UUID, s3_url: str, reference: str, workspace_id: UUID) -> dict[str, Any]:
+def start_pdf_workflow(document_id: UUID, s3_url: str, reference: str, workspace_name: str) -> dict[str, Any]:
     """
     Start PDF processing workflow by orchestrating job dependencies.
 
@@ -54,7 +54,7 @@ def start_pdf_workflow(document_id: UUID, s3_url: str, reference: str, workspace
 
         # Step 2: Enqueue analysis and preprocessing job
         analysis_job = DEFAULT_QUEUE.enqueue(
-            analysis_and_preprocess_job, document_id, s3_url, reference, workspace_id, job_timeout=600
+            analysis_and_preprocess_job, document_id, s3_url, reference, workspace_name, job_timeout=600
         )
 
         # Step 3: Future table extraction jobs will be routed to GPU_QUEUE

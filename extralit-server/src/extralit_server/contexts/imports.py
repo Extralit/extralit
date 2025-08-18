@@ -400,21 +400,8 @@ async def process_bulk_upload(
 
                 # Handle documents with no associated files
                 if not doc.associated_files:
-                    # Create document record without file
+                    # Create document record without file (uses remote url)
                     document = await create_document(db, doc.document_create)
-
-                    # Start workflow (will handle no-file case)
-                    workflow_result = start_pdf_workflow(
-                        document_id=document.id,
-                        s3_url="",  # No file
-                        reference=reference,
-                        workspace_id=doc.document_create.workspace_id,
-                    )
-
-                    job_ids[reference] = workflow_result["job_ids"]
-                    _LOGGER.info(
-                        f"Started workflow {workflow_result['workflow_id']} for reference {reference} with no files"
-                    )
                     continue
 
                 # Process files for this reference
@@ -503,7 +490,7 @@ async def process_bulk_upload(
                             document_id=document.id,
                             s3_url=s3_url,
                             reference=reference,
-                            workspace_id=document.workspace_id,
+                            workspace_id=workspace.name,
                         )
 
                         reference_workflows[str(document.id)] = workflow_result["job_ids"]
