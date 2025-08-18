@@ -34,7 +34,10 @@ from extralit_server.api.schemas.v1.imports import (
     ImportStatus,
     ImportSummary,
 )
-from extralit_server.models.database import Document, ImportHistory
+from extralit_server.contexts import files as file_context
+from extralit_server.database import AsyncSessionLocal
+from extralit_server.models.database import Document, ImportHistory, Workspace
+from extralit_server.workflows.pdf import start_pdf_workflow
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -346,10 +349,6 @@ async def process_bulk_upload(
     Returns:
         DocumentsBulkResponse with workflow_id and job_ids for tracking
     """
-    from extralit_server.contexts import files as file_context
-    from extralit_server.database import AsyncSessionLocal
-    from extralit_server.jobs.document_jobs import start_pdf_workflow
-    from extralit_server.models.database import Workspace
 
     # Create a mapping of filenames to file objects for quick lookup
     file_mapping = {file.filename: file for file in files} if files else {}

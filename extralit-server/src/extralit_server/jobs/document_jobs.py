@@ -32,7 +32,7 @@ from extralit_server.contexts.document.margin import PDFAnalyzer
 from extralit_server.contexts.document.preprocessing import PDFPreprocessingSettings, PDFPreprocessor
 from extralit_server.database import AsyncSessionLocal
 from extralit_server.jobs import DEFAULT_QUEUE, JOB_TIMEOUT_DISABLED
-from extralit_server.models.database import Document, DocumentWorkflow
+from extralit_server.models.database import Document
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -334,77 +334,4 @@ def analysis_and_preprocess_job(document_id: UUID, s3_url: str, reference: str, 
         current_job.meta["error"] = str(e)
         current_job.meta["completed_at"] = datetime.utcnow().isoformat()
         current_job.save_meta()
-        raise
-
-
-def start_pdf_workflow(document_id: UUID, s3_url: str, reference: str, workspace_id: UUID) -> dict[str, Any]:
-    """
-    Start PDF processing workflow by orchestrating job dependencies.
-
-    Creates DocumentWorkflow record and manages entire job chain using RQ's depends_on parameter.
-    Handles conditional OCR logic in orchestrator, not in individual jobs.
-
-    Args:
-        document_id: UUID of the document to process
-        s3_url: S3 URL of the PDF file
-        reference: Reference key for tracking
-        workspace_id: UUID of the workspace
-
-    Returns:
-        Dictionary containing workflow_id and job_ids for tracking
-    """
-    from extralit_server.jobs.queues import DEFAULT_QUEUE
-
-    try:
-        # Step 1: Create DocumentWorkflow record for tracking
-        async def create_workflow_record():
-            async with AsyncSessionLocal() as db:
-                workflow = await DocumentWorkflow.create(
-                    db, document_id=document_id, workflow_type="pdf_processing", status="running"
-                )
-                return workflow
-
-        # Run the async function
-        import asyncio
-
-        workflow = asyncio.run(create_workflow_record())
-
-        # Step 2: Enqueue analysis and preprocessing job
-        analysis_job = DEFAULT_QUEUE.enqueue(
-            analysis_and_preprocess_job, document_id, s3_url, reference, workspace_id, job_timeout=600
-        )
-
-        # Step 3: Future table extraction jobs will be routed to GPU_QUEUE
-        # table_extraction_job = GPU_QUEUE.enqueue(
-        #     table_extraction_job_function,
-        #     document_id,
-        #     depends_on=analysis_job
-        # )
-
-        # Step 4: Store job IDs in workflow record
-        job_ids = {
-            "analysis_and_preprocess": analysis_job.id,
-            "workflow_id": str(workflow.id),
-            # 'table_extraction': table_extraction_job.id  # Future implementation
-        }
-
-        async def update_workflow_jobs():
-            async with AsyncSessionLocal() as db:
-                await workflow.update_job_ids(db, job_ids)
-
-        asyncio.run(update_workflow_jobs())
-
-        _LOGGER.info(
-            f"Started PDF workflow {workflow.id} for document {document_id} with analysis job {analysis_job.id}"
-        )
-
-        return {
-            "workflow_id": str(workflow.id),
-            "job_ids": job_ids,
-            "document_id": str(document_id),
-            "reference": reference,
-        }
-
-    except Exception as e:
-        _LOGGER.error(f"Error starting PDF workflow for document {document_id}: {e}")
         raise
