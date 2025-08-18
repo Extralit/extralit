@@ -16,7 +16,6 @@
 
 from datetime import datetime, timezone
 from typing import Any, Optional
-from uuid import UUID
 
 from pydantic import BaseModel, Field
 
@@ -126,26 +125,3 @@ class DocumentProcessingMetadata(BaseModel):
                 self.embedding_metadata is not None,
             ]
         )
-
-
-# Job Input/Output Schemas for PDF Workflow
-
-
-class AnalysisAndPreprocessJobInput(BaseModel):
-    """Input schema for combined analysis and preprocessing job."""
-
-    document_id: UUID = Field(..., description="Document ID to process")
-    s3_url: str = Field(..., description="S3 URL of the PDF file")
-    reference: str = Field(..., description="Document reference for tracking")
-    workspace_id: UUID = Field(..., description="Workspace ID")
-
-
-class AnalysisAndPreprocessJobOutput(BaseModel):
-    """Output schema for combined analysis and preprocessing job."""
-
-    document_id: UUID = Field(..., description="Document ID that was processed")
-    analysis_result: dict[str, Any] = Field(..., description="Analysis results including OCR quality and layout")
-    preprocessing_result: dict[str, Any] = Field(..., description="Preprocessing results including processing time")
-    needs_ocr: bool = Field(..., description="Whether additional OCR processing is needed")
-    processed_s3_url: str = Field(..., description="S3 URL of the processed PDF")
-    processing_time: float = Field(..., description="Total processing time in seconds")

@@ -296,7 +296,7 @@ def analysis_and_preprocess_job(document_id: UUID, s3_url: str, reference: str, 
     current_job.save_meta()
     return preprocess_result
 
-@job(queue='gpu', timeout=600, result_ttl=3600)  # GPU queue for table extraction
+@job(queue='gpu', timeout=600, result_ttl=3600)  # queue for text extraction
 def table_extraction_job(document_id: UUID, s3_url: str, reference: str, workspace_id: UUID,
                         analysis_result: dict, ocr_result: dict = None) -> dict:
     """Extract tables using GPU resources."""
@@ -310,7 +310,7 @@ def table_extraction_job(document_id: UUID, s3_url: str, reference: str, workspa
     })
     current_job.save_meta()
 
-    # Table extraction logic using GPU
+    # Table extraction logic (mock for now)
     table_result = extract_tables_gpu(s3_url, analysis_result, ocr_result)
 
     current_job.meta['completed_at'] = datetime.utcnow().isoformat()
