@@ -33,7 +33,7 @@ class OCRQualityMetadata(BaseModel):
 class LayoutAnalysisMetadata(BaseModel):
     """PDF layout analysis metadata."""
 
-    page_count: int = Field(..., description="Number of pages in PDF")
+    page_count: int = Field(None, description="Number of pages in PDF")
     has_tables: bool = Field(default=False, description="Whether tables were detected")
     has_figures: bool = Field(default=False, description="Whether figures were detected")
     text_regions: int = Field(default=0, description="Number of text regions detected")
@@ -43,8 +43,8 @@ class LayoutAnalysisMetadata(BaseModel):
 class AnalysisMetadata(BaseModel):
     """Analysis job results stored in documents.metadata_."""
 
-    has_ocr_text_layer: bool = Field(..., description="Whether PDF has OCR text layer")
-    needs_ocr: bool = Field(..., description="Whether additional OCR processing is needed")
+    has_ocr_text_layer: Optional[bool] = Field(None, description="Whether PDF has OCR text layer")
+    needs_ocr: Optional[bool] = Field(None, description="Whether additional OCR processing is needed")
     ocr_quality: OCRQualityMetadata = Field(..., description="OCR quality analysis")
     layout_analysis: LayoutAnalysisMetadata = Field(..., description="Layout analysis results")
     analysis_completed_at: datetime = Field(..., description="When analysis was completed")
@@ -92,17 +92,17 @@ class DocumentProcessingMetadata(BaseModel):
     text_extraction_metadata: Optional[TextExtractionMetadata] = Field(None, description="Text extraction results")
     table_extraction_metadata: Optional[TableExtractionMetadata] = Field(None, description="Table extraction results")
     embedding_metadata: Optional[EmbeddingMetadata] = Field(None, description="Embedding results")
-    workflow_started_at: datetime = Field(..., description="When workflow was started")
+    workflow_started_at: Optional[datetime] = Field(None, description="When workflow was started")
     workflow_completed_at: Optional[datetime] = Field(None, description="When workflow was completed")
     workflow_status: str = Field(default="running", description="Overall workflow status")
 
     def update_analysis_results(self, analysis_result: dict) -> None:
         """Update analysis metadata from job result."""
         self.analysis_metadata = AnalysisMetadata(
-            has_ocr_text_layer=analysis_result["has_ocr_text_layer"],
-            needs_ocr=analysis_result["needs_ocr"],
-            ocr_quality=OCRQualityMetadata(**analysis_result["analysis_metadata"]),
-            layout_analysis=LayoutAnalysisMetadata(**analysis_result["layout_analysis"]),
+            has_ocr_text_layer=analysis_result.get("has_ocr_text_layer"),
+            needs_ocr=analysis_result.get("needs_ocr"),
+            ocr_quality=OCRQualityMetadata(**analysis_result.get("analysis_metadata", {})),
+            layout_analysis=LayoutAnalysisMetadata(**analysis_result.get("layout_analysis", {})),
             analysis_completed_at=datetime.now(timezone.utc),
         )
 

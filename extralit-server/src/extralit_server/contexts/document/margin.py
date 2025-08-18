@@ -147,7 +147,7 @@ class PDFAnalyzer:
         try:
             images = pdf2image.convert_from_bytes(pdf_data, dpi=150)  # type: ignore
             if not images:
-                return {"analysis_available": False, "error": "No pages found"}
+                return {"error": "No pages found"}
 
             _LOGGER.info(f"Analyzing layout for {filename} with {len(images)} pages")
 
@@ -155,15 +155,14 @@ class PDFAnalyzer:
             layout_data = self._analyze_page_layout(images)
 
             return {
-                "analysis_available": True,
-                "total_pages": len(images),
+                "page_count": len(images),
                 "page_dimensions": {"width": images[0].size[0], "height": images[0].size[1]} if images else {},
                 **layout_data,
             }
 
         except Exception as e:
             _LOGGER.error(f"PDF layout analysis failed for {filename}: {e}")
-            return {"analysis_available": False, "error": str(e)}
+            return {"error": str(e)}
 
     def _analyze_page_layout(self, images: list["Image"]) -> dict:
         """

@@ -28,10 +28,6 @@ def worker(
 
     from extralit_server.jobs.queues import REDIS_CONNECTION
 
-    worker_pool = WorkerPool(
-        connection=REDIS_CONNECTION,
-        queues=queues,
-        num_workers=num_workers,
-    )
+    worker_pool = WorkerPool(connection=REDIS_CONNECTION, queues=queues, num_workers=num_workers, reload=True)
 
     worker_pool.start()
