@@ -26,7 +26,41 @@ POST /documents/bulk → process_bulk_upload() → Upload files to S3 + Create D
 
 ## Integration with Existing Code
 
+### File Operations Integration
+
+The design uses existing file operations from `contexts/files.py` but requires some helper functions to be added:
+
+```python
+# Add to extralit_server/src/extralit_server/contexts/files.py
+
+async def download_file_content(client: Minio | LocalFileStorage, document_url: str) -> bytes:
+    """
+    Download file content from a document URL.
+
+    Args:
+        client: Minio or LocalFileStorage client
+        document_url: URL in format "/api/v1/file/{bucket_name}/{object_path}"
+
+    Returns:
+        File content as bytes
+    """
+    # Parse URL to get bucket and object path
+    if not document_url.startswith("/api/v1/file/"):
+        raise ValueError(f"Invalid document URL format: {document_url}")
+
+    url_parts = document_url.replace("/api/v1/file/", "").split("/", 1)
+    if len(url_parts) != 2:
+        raise ValueError(f"Invalid document URL format: {document_url}")
+
+    bucket_name, object_path = url_parts
+
+    file_response = get_object(client, bucket_name, object_path)
+    return file_response.response.read()
+```
+
 ### Refactoring process_bulk_upload()
+
+The current implementation already handles file mapping correctly by creating a `file_mapping = {file.filename: file for file in files}` dictionary and validating that all referenced files exist. The key changes needed are:
 
 ```python
 # Current implementation in contexts/imports.py
@@ -35,7 +69,14 @@ async def process_bulk_upload(
     files: list[UploadFile],
     user_id: str,
 ) -> DocumentsBulkResponse:
-    # ... validation logic ...
+    # Current file mapping logic (KEEP THIS - it works correctly)
+    file_mapping = {file.filename: file for file in files} if files else {}
+
+    # Current validation logic (KEEP THIS - it works correctly)
+    for doc in bulk_create.documents:
+        for filename in doc.associated_files:
+            if filename not in file_mapping:
+                missing_files.append(filename)
 
     # OLD: Enqueue single job with file data
     job = DEFAULT_QUEUE.enqueue(
@@ -52,25 +93,67 @@ async def process_bulk_upload(
     files: list[UploadFile],
     user_id: str,
 ) -> DocumentsBulkResponse:
-    # ... validation logic ...
+    # KEEP existing file mapping and validation logic
+    file_mapping = {file.filename: file for file in files} if files else {}
+    # ... existing validation logic ...
 
-    # NEW: Upload files to S3 immediately
-    s3_urls = await upload_files_to_s3(file_data_list)
+    for reference, doc in reference_to_doc.items():
+        # KEEP existing file processing logic that maps filenames to file objects
+        file_data_list = []
+        for filename in doc.associated_files:
+            file = file_mapping[filename]  # This mapping works correctly
+            file_content = await file.read()
+            file_data_list.append((filename, file_content))
 
-    # NEW: Create document records in database
-    document = await create_document(db, doc.document_create)
+        # NEW: Upload files to storage immediately using existing file operations
+        from extralit_server.contexts.files import get_async_minio_client, put_document_file, create_bucket
 
-    # NEW: Start workflow with document ID and S3 URLs
-    workflow_jobs = start_pdf_workflow(
-        document_id=document.id,
-        reference=reference,
-        s3_urls=s3_urls,
-        workspace_id=document.workspace_id,
-        user_id=user_id
-    )
+        client = await get_async_minio_client()
+        workspace_name = str(doc.document_create.workspace_id)
+
+        # Ensure workspace bucket exists
+        create_bucket(client, workspace_name)
+
+        # NEW: Create document records in database first to get document ID
+        async with get_async_db() as db:
+            document = Document(**doc.document_create.model_dump())
+            db.add(document)
+            await db.commit()
+            await db.refresh(document)
+
+        # Upload files and collect S3 URLs
+        s3_urls = []
+        for filename, file_content in file_data_list:
+            s3_url = put_document_file(
+                client,
+                workspace_name,
+                document.id,
+                file_content,
+                filename,
+                metadata={"reference": reference, "original_filename": filename}
+            )
+            if s3_url:
+                s3_urls.append(s3_url)
+            else:
+                # File already exists with same hash, get existing URL
+                from extralit_server.contexts.files import get_pdf_s3_object_path, get_proxy_document_url
+                object_path = get_pdf_s3_object_path(document.id)
+                s3_url = get_proxy_document_url(workspace_name, object_path)
+                s3_urls.append(s3_url)
+
+        # NEW: Start workflow with document ID and S3 URLs
+        workflow_jobs = start_pdf_workflow(
+            document_id=document.id,
+            reference=reference,
+            s3_urls=s3_urls,
+            workspace_id=document.workspace_id,
+            user_id=user_id
+        )
+
+        job_ids[reference] = workflow_jobs['workflow_id']
 
     return DocumentsBulkResponse(
-        job_ids=workflow_jobs,  # Multiple job IDs
+        job_ids=job_ids,  # Workflow IDs for tracking
         total_documents=len(reference_to_doc),
         failed_validations=failed_validations
     )
@@ -93,12 +176,16 @@ def upload_and_preprocess_documents_job(
 from rq.decorators import job
 from rq import get_current_job
 
+from extralit_server.database import AsyncSessionLocal
+
 @job(queue='default', timeout=300, result_ttl=3600)
 def analysis_job(document_id: UUID, s3_url: str, reference: str, workspace_id: UUID) -> dict:
     """Analyze PDF structure and content using existing analysis modules."""
     from extralit_server.contexts.document.analysis import PDFOCRLayerDetector
     from extralit_server.contexts.document.margin import PDFAnalyzer
     from extralit_server.contexts.files import download_file_from_s3
+    from extralit_server.models.database import Document
+    from extralit_server.api.schemas.v1.documents.metadata import DocumentProcessingMetadata
 
     current_job = get_current_job()
     current_job.meta.update({
@@ -110,8 +197,11 @@ def analysis_job(document_id: UUID, s3_url: str, reference: str, workspace_id: U
     })
     current_job.save_meta()
 
-    # Download PDF from S3
-    pdf_data = download_file_from_s3(s3_url)
+    # Download PDF from storage using existing file operations
+    from extralit_server.contexts.files import get_async_minio_client, download_file_content
+
+    client = await get_async_minio_client()
+    pdf_data = await download_file_content(client, s3_url)
     filename = s3_url.split('/')[-1]
 
     # Step 1: Check if PDF has OCR text layer
@@ -132,16 +222,32 @@ def analysis_job(document_id: UUID, s3_url: str, reference: str, workspace_id: U
         'analysis_metadata': {
             'total_chars': ocr_quality.get('total_chars', 0),
             'ocr_artifacts': ocr_quality.get('ocr_artifacts', 0),
-            'suspicious_patterns': ocr_quality.get('suspicious_patterns', 0)
+            'suspicious_patterns': ocr_quality.get('suspicious_patterns', 0),
+            'ocr_quality_score': ocr_quality.get('ocr_quality_score', 0.0)
         }
     }
+
+    # Store analysis results in document.metadata_
+    async with AsyncSessionLocal() as db:
+        document = await db.get(Document, document_id)
+        if document:
+            # Initialize or update document metadata
+            if document.metadata_ is None:
+                document.metadata_ = DocumentProcessingMetadata(
+                    workflow_started_at=datetime.utcnow()
+                ).model_dump()
+
+            metadata = DocumentProcessingMetadata(**document.metadata_)
+            metadata.update_analysis_results(analysis_result)
+            document.metadata_ = metadata.model_dump()
+            await db.commit()
 
     # Store analysis results for dependent jobs (no job enqueueing here)
     current_job.meta['needs_ocr'] = analysis_result['needs_ocr']
     current_job.meta['analysis_complete'] = True
-
     current_job.meta['completed_at'] = datetime.utcnow().isoformat()
     current_job.save_meta()
+
     return analysis_result
 
 @job(queue='default', timeout=300, result_ttl=3600)
@@ -149,6 +255,8 @@ def preprocess_job(document_id: UUID, s3_url: str, reference: str, workspace_id:
     """Preprocess PDF using existing PDFPreprocessor (OCR-only, no analysis)."""
     from extralit_server.contexts.document.preprocessing import PDFPreprocessingSettings, PDFPreprocessor
     from extralit_server.contexts.files import download_file_from_s3, upload_file_to_s3
+    from extralit_server.models.database import Document
+    from extralit_server.api.schemas.v1.documents.metadata import DocumentProcessingMetadata
 
     current_job = get_current_job()
     current_job.meta.update({
@@ -160,8 +268,11 @@ def preprocess_job(document_id: UUID, s3_url: str, reference: str, workspace_id:
     })
     current_job.save_meta()
 
-    # Download PDF from S3
-    pdf_data = download_file_from_s3(s3_url)
+    # Download PDF from storage using existing file operations
+    from extralit_server.contexts.files import get_async_minio_client, download_file_content, put_object, get_pdf_s3_object_path
+
+    client = await get_async_minio_client()
+    pdf_data = await download_file_content(client, s3_url)
     filename = s3_url.split('/')[-1]
 
     # Configure preprocessing for OCR-only (disable analysis since it's done separately)
@@ -171,12 +282,12 @@ def preprocess_job(document_id: UUID, s3_url: str, reference: str, workspace_id:
     # Process PDF (OCR only)
     processing_response = preprocessor.preprocess(pdf_data, filename)
 
-    # Upload processed PDF back to S3
     processed_filename = f"processed_{filename}"
-    processed_s3_url = upload_file_to_s3(
+    processed_s3_url = put_object(
+        client,
+        workspace_name,
+        get_pdf_s3_object_path(document_id),
         processing_response.processed_data,
-        processed_filename,
-        workspace_id
     )
 
     preprocess_result = {
@@ -184,8 +295,18 @@ def preprocess_job(document_id: UUID, s3_url: str, reference: str, workspace_id:
         'original_s3_url': s3_url,
         'processed_s3_url': processed_s3_url,
         'processing_time': processing_response.metadata.processing_time,
+        'ocr_applied': processing_response.metadata.ocr_applied,
         'preprocessing_metadata': processing_response.metadata.model_dump()
     }
+
+    # Store preprocessing results in document.metadata_
+    async with get_async_db() as db:
+        document = await db.get(Document, document_id)
+        if document and document.metadata_:
+            metadata = DocumentProcessingMetadata(**document.metadata_)
+            metadata.update_preprocessing_results(preprocess_result)
+            document.metadata_ = metadata.model_dump()
+            await db.commit()
 
     current_job.meta['completed_at'] = datetime.utcnow().isoformat()
     current_job.save_meta()
@@ -220,9 +341,22 @@ def table_extraction_job(document_id: UUID, s3_url: str, reference: str, workspa
 ```python
 def start_pdf_workflow(document_id: UUID, s3_url: str, reference: str, workspace_id: UUID, user_id: UUID) -> dict:
     """Start complete PDF workflow using centralized orchestration with RQ dependencies."""
-    from extralit_server.models.database import DocumentWorkflow
+    from extralit_server.models.database import DocumentWorkflow, Document
+    from extralit_server.api.schemas.v1.documents.metadata import DocumentProcessingMetadata
 
-    # Step 1: Create workflow record in database
+    # Step 1: Initialize document metadata
+    async with get_async_db() as db:
+        document = await db.get(Document, document_id)
+        if document:
+            # Initialize document metadata for workflow tracking
+            initial_metadata = DocumentProcessingMetadata(
+                workflow_started_at=datetime.utcnow(),
+                workflow_status="running"
+            )
+            document.metadata_ = initial_metadata.model_dump()
+            await db.commit()
+
+    # Step 2: Create workflow record in database
     workflow = DocumentWorkflow.create(
         document_id=document_id,
         workflow_type="pdf_processing",
@@ -230,7 +364,7 @@ def start_pdf_workflow(document_id: UUID, s3_url: str, reference: str, workspace
         job_ids={}
     )
 
-    # Step 2: Enqueue parallel jobs (no dependencies)
+    # Step 3: Enqueue parallel jobs (no dependencies)
     analysis_job = DEFAULT_QUEUE.enqueue(
         'pdf_analysis_job',
         document_id, s3_url, reference, workspace_id,
@@ -245,7 +379,7 @@ def start_pdf_workflow(document_id: UUID, s3_url: str, reference: str, workspace
         meta={'document_id': str(document_id), 'workflow_step': 'preprocess', 'workflow_id': workflow.id}
     )
 
-    # Step 3: Chain dependent jobs using RQ's depends_on
+    # Step 4: Chain dependent jobs using RQ's depends_on
     text_job = DEFAULT_QUEUE.enqueue(
         'pdf_text_extraction_job',
         document_id, s3_url, reference, workspace_id,
@@ -270,7 +404,7 @@ def start_pdf_workflow(document_id: UUID, s3_url: str, reference: str, workspace
         meta={'document_id': str(document_id), 'workflow_step': 'embedding', 'workflow_id': workflow.id}
     )
 
-    # Step 4: Update workflow with job IDs
+    # Step 5: Update workflow with job IDs and metadata
     workflow.job_ids = {
         'analysis': analysis_job.id,
         'preprocess': preprocess_job.id,
@@ -280,6 +414,15 @@ def start_pdf_workflow(document_id: UUID, s3_url: str, reference: str, workspace
     }
     workflow.status = "running"
     workflow.save()
+
+    # Step 6: Update document metadata with workflow ID
+    async with get_async_db() as db:
+        document = await db.get(Document, document_id)
+        if document and document.metadata_:
+            metadata = DocumentProcessingMetadata(**document.metadata_)
+            metadata.workflow_id = workflow.id
+            document.metadata_ = metadata.model_dump()
+            await db.commit()
 
     return {
         'workflow_id': workflow.id,
@@ -498,6 +641,106 @@ app.add_typer(workflow_app, name="workflow")
 
 ## Data Models
 
+### Document Metadata Schema
+
+The `documents.metadata_` field needs a structured schema to store analysis and preprocessing results:
+
+```python
+# extralit_server/src/extralit_server/api/schemas/v1/documents/metadata.py
+from pydantic import BaseModel, Field
+from typing import Optional, Dict, Any
+from datetime import datetime
+
+class OCRQualityMetadata(BaseModel):
+    """OCR quality analysis metadata."""
+    total_chars: int = Field(..., description="Total characters analyzed")
+    ocr_artifacts: int = Field(..., description="Number of OCR artifacts detected")
+    suspicious_patterns: int = Field(..., description="Number of suspicious patterns found")
+    ocr_quality_score: float = Field(..., description="Overall OCR quality score (0.0-1.0)")
+
+class LayoutAnalysisMetadata(BaseModel):
+    """PDF layout analysis metadata."""
+    page_count: int = Field(..., description="Number of pages in PDF")
+    has_tables: bool = Field(..., description="Whether tables were detected")
+    has_figures: bool = Field(..., description="Whether figures were detected")
+    text_regions: int = Field(..., description="Number of text regions detected")
+    margin_analysis: Dict[str, Any] = Field(default_factory=dict, description="Margin analysis results")
+
+class AnalysisMetadata(BaseModel):
+    """Analysis job results stored in documents.metadata_."""
+    has_ocr_text_layer: bool = Field(..., description="Whether PDF has OCR text layer")
+    needs_ocr: bool = Field(..., description="Whether additional OCR processing is needed")
+    ocr_quality: OCRQualityMetadata = Field(..., description="OCR quality analysis")
+    layout_analysis: LayoutAnalysisMetadata = Field(..., description="Layout analysis results")
+    analysis_completed_at: datetime = Field(..., description="When analysis was completed")
+
+class PreprocessingMetadata(BaseModel):
+    """Preprocessing job results stored in documents.metadata_."""
+    processing_time: float = Field(..., description="Processing time in seconds")
+    ocr_applied: bool = Field(..., description="Whether OCR was applied during preprocessing")
+    processed_s3_url: Optional[str] = Field(None, description="S3 URL of processed PDF")
+    preprocessing_completed_at: datetime = Field(..., description="When preprocessing was completed")
+
+class TextExtractionMetadata(BaseModel):
+    """Text extraction job results."""
+    extracted_text_length: int = Field(..., description="Length of extracted text")
+    extraction_method: str = Field(..., description="Method used for extraction")
+    text_extraction_completed_at: datetime = Field(..., description="When text extraction was completed")
+
+class TableExtractionMetadata(BaseModel):
+    """Table extraction job results."""
+    tables_found: int = Field(..., description="Number of tables extracted")
+    extraction_method: str = Field(..., description="Method used for table extraction")
+    table_extraction_completed_at: datetime = Field(..., description="When table extraction was completed")
+
+class EmbeddingMetadata(BaseModel):
+    """Embedding job results."""
+    embedding_model: str = Field(..., description="Model used for embeddings")
+    embedding_dimensions: int = Field(..., description="Dimensionality of embeddings")
+    embedding_completed_at: datetime = Field(..., description="When embedding was completed")
+
+class DocumentProcessingMetadata(BaseModel):
+    """Complete document processing metadata stored in documents.metadata_."""
+    workflow_id: Optional[str] = Field(None, description="Workflow ID for tracking")
+    analysis_metadata: Optional[AnalysisMetadata] = Field(None, description="Analysis results")
+    preprocessing_metadata: Optional[PreprocessingMetadata] = Field(None, description="Preprocessing results")
+    text_extraction_metadata: Optional[TextExtractionMetadata] = Field(None, description="Text extraction results")
+    table_extraction_metadata: Optional[TableExtractionMetadata] = Field(None, description="Table extraction results")
+    embedding_metadata: Optional[EmbeddingMetadata] = Field(None, description="Embedding results")
+    workflow_started_at: datetime = Field(..., description="When workflow was started")
+    workflow_completed_at: Optional[datetime] = Field(None, description="When workflow was completed")
+    workflow_status: str = Field(default="running", description="Overall workflow status")
+
+    def update_analysis_results(self, analysis_result: dict) -> None:
+        """Update analysis metadata from job result."""
+        self.analysis_metadata = AnalysisMetadata(
+            has_ocr_text_layer=analysis_result['has_ocr_text_layer'],
+            needs_ocr=analysis_result['needs_ocr'],
+            ocr_quality=OCRQualityMetadata(**analysis_result['analysis_metadata']),
+            layout_analysis=LayoutAnalysisMetadata(**analysis_result['layout_analysis']),
+            analysis_completed_at=datetime.utcnow()
+        )
+
+    def update_preprocessing_results(self, preprocess_result: dict) -> None:
+        """Update preprocessing metadata from job result."""
+        self.preprocessing_metadata = PreprocessingMetadata(
+            processing_time=preprocess_result['processing_time'],
+            ocr_applied=preprocess_result.get('ocr_applied', False),
+            processed_s3_url=preprocess_result.get('processed_s3_url'),
+            preprocessing_completed_at=datetime.utcnow()
+        )
+
+    def is_workflow_complete(self) -> bool:
+        """Check if all workflow steps are complete."""
+        return all([
+            self.analysis_metadata is not None,
+            self.preprocessing_metadata is not None,
+            self.text_extraction_metadata is not None,
+            self.table_extraction_metadata is not None,
+            self.embedding_metadata is not None
+        ])
+```
+
 ### Database Model for Workflow Tracking
 
 ```python
@@ -574,7 +817,6 @@ class AnalysisJobOutput(BaseModel):
     document_id: UUID
     has_ocr_text_layer: bool
     ocr_quality_score: float
-    layout_analysis: dict
     needs_ocr: bool
     analysis_metadata: dict
 
