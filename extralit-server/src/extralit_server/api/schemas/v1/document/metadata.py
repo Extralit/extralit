@@ -14,8 +14,9 @@
 
 """Document processing metadata schemas for workflow tracking."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Optional
+from uuid import UUID
 
 from pydantic import BaseModel, Field
 
@@ -102,7 +103,7 @@ class DocumentProcessingMetadata(BaseModel):
             needs_ocr=analysis_result["needs_ocr"],
             ocr_quality=OCRQualityMetadata(**analysis_result["analysis_metadata"]),
             layout_analysis=LayoutAnalysisMetadata(**analysis_result["layout_analysis"]),
-            analysis_completed_at=datetime.utcnow(),
+            analysis_completed_at=datetime.now(timezone.utc),
         )
 
     def update_preprocessing_results(self, preprocess_result: dict) -> None:
@@ -111,7 +112,7 @@ class DocumentProcessingMetadata(BaseModel):
             processing_time=preprocess_result["processing_time"],
             ocr_applied=preprocess_result.get("ocr_applied", False),
             processed_s3_url=preprocess_result.get("processed_s3_url"),
-            preprocessing_completed_at=datetime.utcnow(),
+            preprocessing_completed_at=datetime.now(timezone.utc),
         )
 
     def is_workflow_complete(self) -> bool:
@@ -125,3 +126,26 @@ class DocumentProcessingMetadata(BaseModel):
                 self.embedding_metadata is not None,
             ]
         )
+
+
+# Job Input/Output Schemas for PDF Workflow
+
+
+class AnalysisAndPreprocessJobInput(BaseModel):
+    """Input schema for combined analysis and preprocessing job."""
+
+    document_id: UUID = Field(..., description="Document ID to process")
+    s3_url: str = Field(..., description="S3 URL of the PDF file")
+    reference: str = Field(..., description="Document reference for tracking")
+    workspace_id: UUID = Field(..., description="Workspace ID")
+
+
+class AnalysisAndPreprocessJobOutput(BaseModel):
+    """Output schema for combined analysis and preprocessing job."""
+
+    document_id: UUID = Field(..., description="Document ID that was processed")
+    analysis_result: dict[str, Any] = Field(..., description="Analysis results including OCR quality and layout")
+    preprocessing_result: dict[str, Any] = Field(..., description="Preprocessing results including processing time")
+    needs_ocr: bool = Field(..., description="Whether additional OCR processing is needed")
+    processed_s3_url: str = Field(..., description="S3 URL of the processed PDF")
+    processing_time: float = Field(..., description="Total processing time in seconds")
