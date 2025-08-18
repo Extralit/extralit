@@ -21,7 +21,7 @@ from sqlalchemy.orm import selectinload
 from extralit_server.api.schemas.v1.datasets import HubDatasetMapping
 from extralit_server.contexts.hub import HubDataset, HubDatasetExporter
 from extralit_server.database import AsyncSessionLocal
-from extralit_server.jobs.queues import DEFAULT_QUEUE, JOB_TIMEOUT_DISABLED
+from extralit_server.jobs.queues import DEFAULT_QUEUE, JOB_TIMEOUT_DISABLED, REDIS_CONNECTION
 from extralit_server.models import Dataset
 from extralit_server.search_engine.base import SearchEngine
 from extralit_server.settings import settings
@@ -29,7 +29,7 @@ from extralit_server.settings import settings
 HUB_DATASET_TAKE_ROWS = 10_000
 
 
-@job(DEFAULT_QUEUE, timeout=JOB_TIMEOUT_DISABLED, retry=Retry(max=3))
+@job(DEFAULT_QUEUE, connection=REDIS_CONNECTION, timeout=JOB_TIMEOUT_DISABLED, retry=Retry(max=3))
 async def import_dataset_from_hub_job(name: str, subset: str, split: str, dataset_id: UUID, mapping: dict) -> None:
     async with AsyncSessionLocal() as db:
         dataset = await Dataset.get_or_raise(
@@ -52,7 +52,7 @@ async def import_dataset_from_hub_job(name: str, subset: str, split: str, datase
             )
 
 
-@job(DEFAULT_QUEUE, timeout=JOB_TIMEOUT_DISABLED, retry=Retry(max=3))
+@job(DEFAULT_QUEUE, connection=REDIS_CONNECTION, timeout=JOB_TIMEOUT_DISABLED, retry=Retry(max=3))
 async def export_dataset_to_hub_job(
     name: str, subset: str, split: str, private: bool, token: str, dataset_id: UUID
 ) -> None:

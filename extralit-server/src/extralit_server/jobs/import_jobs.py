@@ -43,7 +43,7 @@ from extralit_server.api.schemas.v1.records_bulk import RecordsBulkUpsert as Rec
 from extralit_server.api.schemas.v1.suggestions import SuggestionCreate
 from extralit_server.contexts.records_bulk import UpsertRecordsBulk
 from extralit_server.database import AsyncSessionLocal
-from extralit_server.jobs.queues import DEFAULT_QUEUE, JOB_TIMEOUT_DISABLED
+from extralit_server.jobs.queues import DEFAULT_QUEUE, JOB_TIMEOUT_DISABLED, REDIS_CONNECTION
 from extralit_server.models import Dataset, ImportHistory
 from extralit_server.search_engine.base import SearchEngine
 from extralit_server.settings import settings
@@ -165,7 +165,7 @@ class ImportHistoryDataset:
         return suggestions
 
 
-@job(DEFAULT_QUEUE, timeout=JOB_TIMEOUT_DISABLED, retry=Retry(max=3))
+@job(DEFAULT_QUEUE, connection=REDIS_CONNECTION, timeout=JOB_TIMEOUT_DISABLED, retry=Retry(max=3))
 async def import_dataset_from_import_history_job(history_id: UUID, dataset_id: UUID, mapping: dict) -> None:
     """
     Import dataset records from ImportHistory data.

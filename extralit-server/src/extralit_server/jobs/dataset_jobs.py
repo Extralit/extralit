@@ -20,7 +20,7 @@ from sqlalchemy import select
 
 from extralit_server.contexts import distribution
 from extralit_server.database import AsyncSessionLocal
-from extralit_server.jobs.queues import DEFAULT_QUEUE, JOB_TIMEOUT_DISABLED
+from extralit_server.jobs.queues import DEFAULT_QUEUE, JOB_TIMEOUT_DISABLED, REDIS_CONNECTION
 from extralit_server.models import Record, Response
 from extralit_server.search_engine.base import SearchEngine
 from extralit_server.settings import settings
@@ -28,7 +28,7 @@ from extralit_server.settings import settings
 JOB_RECORDS_YIELD_PER = 100
 
 
-@job(DEFAULT_QUEUE, timeout=JOB_TIMEOUT_DISABLED, retry=Retry(max=3))
+@job(DEFAULT_QUEUE, connection=REDIS_CONNECTION, timeout=JOB_TIMEOUT_DISABLED, retry=Retry(max=3))
 async def update_dataset_records_status_job(dataset_id: UUID) -> None:
     """This Job updates the status of all the records in the dataset when the distribution strategy changes."""
 

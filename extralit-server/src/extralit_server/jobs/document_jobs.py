@@ -31,13 +31,18 @@ from extralit_server.contexts.document.analysis import PDFOCRLayerDetector
 from extralit_server.contexts.document.margin import PDFAnalyzer
 from extralit_server.contexts.document.preprocessing import PDFPreprocessingSettings, PDFPreprocessor
 from extralit_server.database import AsyncSessionLocal, SyncSessionLocal
-from extralit_server.jobs import DEFAULT_QUEUE, JOB_TIMEOUT_DISABLED
+from extralit_server.jobs.queues import DEFAULT_QUEUE, JOB_TIMEOUT_DISABLED, REDIS_CONNECTION
 from extralit_server.models.database import Document
 
 _LOGGER = logging.getLogger(__name__)
 
 
-@job(queue=DEFAULT_QUEUE, timeout=JOB_TIMEOUT_DISABLED, retry=Retry(max=3, interval=[10, 30, 60]))
+@job(
+    queue=DEFAULT_QUEUE,
+    connection=REDIS_CONNECTION,
+    timeout=JOB_TIMEOUT_DISABLED,
+    retry=Retry(max=3, interval=[10, 30, 60]),
+)
 async def upload_and_preprocess_documents_job(
     reference: str,
     reference_data: dict[str, Any],
@@ -205,7 +210,7 @@ async def upload_and_preprocess_documents_job(
     return results
 
 
-@job(queue=DEFAULT_QUEUE, timeout=600, retry=Retry(max=3, interval=[10, 30, 60]))
+@job(queue=DEFAULT_QUEUE, connection=REDIS_CONNECTION, timeout=600, retry=Retry(max=3, interval=[10, 30, 60]))
 def analysis_and_preprocess_job(document_id: UUID, s3_url: str, reference: str, workspace_name: str) -> dict[str, Any]:
     """
     Analyze PDF structure and content, then preprocess using existing modules.
