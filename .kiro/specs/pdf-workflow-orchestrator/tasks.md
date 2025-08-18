@@ -9,10 +9,11 @@
   - _Requirements: 1.1, 1.2, 5.1, 5.3_
 
 - [ ] 1.1 Create separate PDF processing job functions
-  - Create `analysis_job(document_id, s3_url)` with @job decorator
-  - Create `preprocess_job(document_id, s3_url)` with @job decorator
-  - Add job metadata tracking (document_id, reference, workflow_step)
+  - Create `analysis_job(document_id, s3_url, reference, workspace_id)` using existing PDFOCRLayerDetector and PDFAnalyzer
+  - Create `preprocess_job(document_id, s3_url, reference, workspace_id)` using existing PDFPreprocessor with analysis disabled
+  - Add job metadata tracking (document_id, reference, workflow_step, started_at, completed_at)
   - Use type hints for all parameters and return values
+  - Integrate with existing file download/upload functions from contexts/files.py
   - _Requirements: 1.1, 2.1, 4.1, 4.5_
 
 - [ ] 1.2 Implement conditional job enqueueing
@@ -29,32 +30,42 @@
 
 - [ ] 1.4 Update process_bulk_upload function
   - Move file upload to S3 into process_bulk_upload (before job enqueueing)
-  - Modify to enqueue analysis_job and preprocess_job instead of single job
-  - Update DocumentsBulkResponse to return multiple job IDs
-  - Maintain backward compatibility with existing API
+  - Create document records in database before enqueueing jobs
+  - Modify to enqueue analysis_job and preprocess_job instead of upload_and_preprocess_documents_job
+  - Update DocumentsBulkResponse to return multiple job IDs (analysis + preprocess)
+  - Maintain backward compatibility with existing API contracts
   - _Requirements: 5.1, 5.2_
 
 ## Phase 2: Job Querying and API Enhancement (Week 2)
 
-- [ ] 2. Implement job metadata querying
-  - Create `get_jobs_for_document(document_id)` function
-  - Create `get_jobs_by_reference(reference)` function
+- [ ] 2. Create Pydantic schemas for job input/output
+  - Create api/schemas/v1/documents/analysis.py with AnalysisJobInput and AnalysisJobOutput
+  - Extend api/schemas/v1/documents/preprocessing.py with PreprocessJobInput and PreprocessJobOutput
+  - Add WorkflowJobResult schema to api/schemas/v1/jobs.py
+  - Ensure all schemas have proper type hints and validation
+  - _Requirements: 4.1, 4.2_
+
+- [ ] 2.1 Implement job metadata querying
+  - Create `get_jobs_for_document(document_id)` function in jobs/pdf_workflow.py
+  - Create `get_jobs_by_reference(reference)` function in jobs/pdf_workflow.py
   - Scan RQ job registries (started, finished, failed, deferred) for metadata matches
+  - Handle job expiration and missing jobs gracefully
   - _Requirements: 2.2, 2.5_
 
-- [ ] 2.1 Extend existing jobs API endpoint
-  - Add query parameters to GET /jobs/ (document_id, reference, workflow_step)
-  - Modify existing JobSchema to include workflow metadata
-  - Return job metadata in API responses
+- [ ] 2.2 Extend existing jobs API endpoint
+  - Add query parameters to GET /jobs/ (document_id, reference, workflow_step) in api/handlers/v1/jobs.py
+  - Use WorkflowJobResult schema created in task 2
+  - Modify existing JobSchema to include workflow metadata from job.meta
+  - Return job metadata in API responses including workflow_step and progress
   - _Requirements: 6.1, 6.2_
 
-- [ ] 2.2 Add document workflow status endpoint
+- [ ] 2.3 Add document workflow status endpoint
   - Create GET /documents/{document_id}/workflow-status endpoint
   - Calculate workflow progress based on completed steps
   - Return overall workflow status (pending, running, completed, failed)
   - _Requirements: 6.5, 8.1_
 
-- [ ] 2.3 Implement RQ Groups for document tracking
+- [ ] 2.4 Implement RQ Groups for document tracking
   - Create RQ Group when starting document workflow
   - Add jobs to document group for easier tracking
   - Use group.get_jobs() for workflow status queries
@@ -63,10 +74,11 @@
 ## Phase 3: Complete PDF Workflow Implementation (Week 3)
 
 - [ ] 3. Implement remaining PDF processing jobs
-  - Create `ocr_job(document_id, s3_url, analysis_result)`
-  - Create `text_extraction_job(document_id, s3_url, analysis_result)`
+  - Create `ocr_job(document_id, s3_url, analysis_result)` (mock implementation for now)
+  - Create `text_extraction_job(document_id, s3_url, analysis_result)` using existing text extraction logic
   - Create `table_extraction_job(document_id, s3_url, analysis_result, ocr_result)` for GPU queue
-  - Create `embedding_job(document_id, text_result, table_result)`
+  - Create `embedding_job(document_id, text_result, table_result)` using existing embedding logic
+  - Add corresponding Pydantic schemas for each job's input/output
   - _Requirements: 8.2, 8.3, 8.4, 8.5_
 
 - [ ] 3.1 Implement job dependency chaining

@@ -70,7 +70,7 @@ async def process_bulk_upload(
     )
 
     return DocumentsBulkResponse(
-        job_ids=workflow_jobs,  # Multiple job IDs instead of single
+        job_ids=workflow_jobs,  # Multiple job IDs
         total_documents=len(reference_to_doc),
         failed_validations=failed_validations
     )
@@ -95,7 +95,11 @@ from rq import get_current_job
 
 @job(queue='default', timeout=300, result_ttl=3600)
 def analysis_job(document_id: UUID, s3_url: str, reference: str, workspace_id: UUID) -> dict:
-    """Analyze PDF structure and content."""
+    """Analyze PDF structure and content using existing analysis modules."""
+    from extralit_server.contexts.document.analysis import PDFOCRLayerDetector
+    from extralit_server.contexts.document.margin import PDFAnalyzer
+    from extralit_server.contexts.files import download_file_from_s3
+
     current_job = get_current_job()
     current_job.meta.update({
         'document_id': str(document_id),
@@ -106,17 +110,42 @@ def analysis_job(document_id: UUID, s3_url: str, reference: str, workspace_id: U
     })
     current_job.save_meta()
 
-    # Download PDF from S3 and analyze
-    analysis_result = perform_pdf_analysis(s3_url)
+    # Download PDF from S3
+    pdf_data = download_file_from_s3(s3_url)
+    filename = s3_url.split('/')[-1]
+
+    # Step 1: Check if PDF has OCR text layer
+    ocr_detector = PDFOCRLayerDetector()
+    has_ocr_text_layer = ocr_detector.has_ocr_text_layer(pdf_data)
+    ocr_quality = ocr_detector.analyze_character_quality(pdf_data)
+
+    # Step 2: Analyze PDF layout and margins
+    pdf_analyzer = PDFAnalyzer()
+    layout_analysis = pdf_analyzer.analyze_pdf_layout(pdf_data, filename)
+
+    analysis_result = {
+        'document_id': str(document_id),
+        'has_ocr_text_layer': has_ocr_text_layer,
+        'ocr_quality_score': ocr_quality.get('ocr_quality_score', 0.0),
+        'layout_analysis': layout_analysis,
+        'needs_ocr': not has_ocr_text_layer or ocr_quality.get('ocr_quality_score', 0.0) < 0.7,
+        'analysis_metadata': {
+            'total_chars': ocr_quality.get('total_chars', 0),
+            'ocr_artifacts': ocr_quality.get('ocr_artifacts', 0),
+            'suspicious_patterns': ocr_quality.get('suspicious_patterns', 0)
+        }
+    }
 
     # Conditionally enqueue OCR job based on analysis
-    if analysis_result.get('needs_ocr'):
-        ocr_job_instance = ocr_job.delay(document_id, s3_url, reference, workspace_id, analysis_result)
-        current_job.meta['ocr_job_id'] = ocr_job_instance.id
+    if analysis_result['needs_ocr']:
+        # Note: ocr_job will be implemented in Phase 3
+        # ocr_job_instance = ocr_job.delay(document_id, s3_url, reference, workspace_id, analysis_result)
+        # current_job.meta['ocr_job_id'] = ocr_job_instance.id
+        current_job.meta['ocr_needed'] = True
 
-    # Always enqueue text extraction
-    text_job_instance = text_extraction_job.delay(document_id, s3_url, reference, workspace_id, analysis_result)
-    current_job.meta['text_job_id'] = text_job_instance.id
+    # Always enqueue text extraction (will be implemented in Phase 3)
+    # text_job_instance = text_extraction_job.delay(document_id, s3_url, reference, workspace_id, analysis_result)
+    # current_job.meta['text_job_id'] = text_job_instance.id
 
     current_job.meta['completed_at'] = datetime.utcnow().isoformat()
     current_job.save_meta()
@@ -124,7 +153,10 @@ def analysis_job(document_id: UUID, s3_url: str, reference: str, workspace_id: U
 
 @job(queue='default', timeout=300, result_ttl=3600)
 def preprocess_job(document_id: UUID, s3_url: str, reference: str, workspace_id: UUID) -> dict:
-    """Preprocess PDF for downstream tasks."""
+    """Preprocess PDF using existing PDFPreprocessor (OCR-only, no analysis)."""
+    from extralit_server.contexts.document.preprocessing import PDFPreprocessingSettings, PDFPreprocessor
+    from extralit_server.contexts.files import download_file_from_s3, upload_file_to_s3
+
     current_job = get_current_job()
     current_job.meta.update({
         'document_id': str(document_id),
@@ -135,8 +167,32 @@ def preprocess_job(document_id: UUID, s3_url: str, reference: str, workspace_id:
     })
     current_job.save_meta()
 
-    # Preprocessing logic
-    preprocess_result = preprocess_pdf(s3_url)
+    # Download PDF from S3
+    pdf_data = download_file_from_s3(s3_url)
+    filename = s3_url.split('/')[-1]
+
+    # Configure preprocessing for OCR-only (disable analysis since it's done separately)
+    settings = PDFPreprocessingSettings(enable_analysis=False)
+    preprocessor = PDFPreprocessor(settings)
+
+    # Process PDF (OCR only)
+    processing_response = preprocessor.preprocess(pdf_data, filename)
+
+    # Upload processed PDF back to S3
+    processed_filename = f"processed_{filename}"
+    processed_s3_url = upload_file_to_s3(
+        processing_response.processed_data,
+        processed_filename,
+        workspace_id
+    )
+
+    preprocess_result = {
+        'document_id': str(document_id),
+        'original_s3_url': s3_url,
+        'processed_s3_url': processed_s3_url,
+        'processing_time': processing_response.metadata.processing_time,
+        'preprocessing_metadata': processing_response.metadata.model_dump()
+    }
 
     current_job.meta['completed_at'] = datetime.utcnow().isoformat()
     current_job.save_meta()
@@ -288,29 +344,6 @@ async def get_jobs(
 
     return jobs_data
 
-@router.get("/documents/{document_id}/workflow-status")
-async def get_document_workflow_status(
-    document_id: UUID,
-    db: Annotated[AsyncSession, Depends(get_async_db)],
-    current_user: Annotated[User, Security(auth.get_current_user)],
-):
-    """Get complete workflow status for a document."""
-
-    jobs = get_jobs_for_document(document_id)
-
-    # Calculate progress
-    workflow_steps = ['analysis', 'preprocess', 'text_extraction', 'table_extraction', 'embedding']
-    completed_steps = {j['workflow_step'] for j in jobs if j['status'] == 'finished'}
-    progress = len(completed_steps) / len(workflow_steps)
-
-    return {
-        'document_id': document_id,
-        'progress': progress,
-        'status': 'completed' if progress == 1.0 else 'running',
-        'jobs': jobs
-    }
-```
-
 ## Queue Configuration
 
 ```python
@@ -397,6 +430,74 @@ def status(
 app.add_typer(workflow_app, name="workflow")
 ```
 
+## Data Models
+
+### New Pydantic Schemas for Job Input/Output
+
+```python
+# extralit_server/src/extralit_server/api/schemas/v1/documents/analysis.py
+from pydantic import BaseModel
+from typing import Optional
+from uuid import UUID
+
+class AnalysisJobInput(BaseModel):
+    """Input for PDF analysis job"""
+    document_id: UUID
+    s3_url: str
+    filename: str
+    reference: str
+    workspace_id: UUID
+
+class AnalysisJobOutput(BaseModel):
+    """Output from PDF analysis job"""
+    document_id: UUID
+    has_ocr_text_layer: bool
+    ocr_quality_score: float
+    layout_analysis: dict
+    needs_ocr: bool
+    analysis_metadata: dict
+
+# extralit_server/src/extralit_server/api/schemas/v1/documents/preprocessing.py (extend existing)
+class PreprocessJobInput(BaseModel):
+    """Input for PDF preprocessing job"""
+    document_id: UUID
+    s3_url: str
+    filename: str
+    reference: str
+    workspace_id: UUID
+
+class PreprocessJobOutput(BaseModel):
+    """Output from PDF preprocessing job"""
+    document_id: UUID
+    original_s3_url: str
+    processed_s3_url: str
+    processing_time: float
+    preprocessing_metadata: dict
+
+# extralit_server/src/extralit_server/api/schemas/v1/jobs.py (extend existing)
+class WorkflowJobResult(BaseModel):
+    """Generic job result wrapper for workflow jobs"""
+    job_id: str
+    document_id: UUID
+    job_type: str  # 'analysis', 'preprocess', 'ocr', 'text_extraction', 'table_extraction', 'embedding'
+    status: str    # 'queued', 'started', 'finished', 'failed', 'deferred'
+    result_data: Optional[dict] = None
+    error_message: Optional[str] = None
+    started_at: Optional[str] = None
+    completed_at: Optional[str] = None
+```
+
+### Integration with Existing Code Structure
+
+The design leverages existing modules:
+
+1. **Analysis Job**: Uses `PDFOCRLayerDetector` from `analysis.py` and `PDFAnalyzer` from `margin.py`
+2. **Preprocess Job**: Uses `PDFPreprocessor` from `preprocessing.py` with analysis disabled
+3. **File Handling**: Uses existing `download_file_from_s3()` and `upload_file_to_s3()` from `files.py`
+4. **Schemas**: Extends existing `PDFMetadata` from `preprocessing.py`
+
+This approach minimizes code duplication and leverages the existing, well-tested PDF processing logic.
+
 ## Implementation Strategy
 
 ### Phase 1: Minimal Viable Workflow
@@ -418,7 +519,5 @@ app.add_typer(workflow_app, name="workflow")
 4. **Performance**: Optimize for multiple concurrent workflows
 
 ### Key Principles
-- **No Custom Abstractions**: Use only RQ's built-in features
 - **Incremental Refactoring**: Modify existing code gradually
-- **Backward Compatibility**: Maintain existing API contracts
 - **Simple Recovery**: Use RQ registries and metadata for workflow state
