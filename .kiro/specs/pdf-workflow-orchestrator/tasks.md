@@ -16,23 +16,31 @@
   - Integrate with existing file download/upload functions from contexts/files.py
   - _Requirements: 1.1, 2.1, 4.1, 4.5_
 
-- [ ] 1.2 Implement conditional job enqueueing
-  - Add logic in analysis_job to conditionally enqueue OCR job
-  - Use RQ's job.delay() to enqueue dependent jobs within functions
-  - Store child job IDs in parent job metadata
-  - _Requirements: 1.4, 3.1, 8.2_
+- [ ] 1.2 Create DocumentWorkflow database model
+  - Add DocumentWorkflow model to models/database.py for efficient job tracking
+  - Create database migration for document_workflows table
+  - Add relationship to Document model
+  - Include methods for job status updates and workflow queries
+  - _Requirements: 2.2, 2.5, 6.1_
 
-- [ ] 1.3 Set up queue routing for GPU tasks
+- [ ] 1.3 Create centralized workflow orchestrator
+  - Create start_pdf_workflow() function that manages entire job chain
+  - Use RQ's depends_on parameter for job dependencies (no jobs enqueueing other jobs)
+  - Create DocumentWorkflow record and store job IDs for efficient querying
+  - Handle conditional OCR logic in orchestrator, not in individual jobs
+  - _Requirements: 1.1, 1.3, 1.4, 8.1_
+
+- [ ] 1.4 Set up queue routing for GPU tasks
   - Add GPU_QUEUE to existing queue configuration
-  - Route table extraction (mock) jobs to GPU queue
+  - Route table extraction jobs to GPU queue in workflow orchestrator
   - Test queue routing with existing worker setup
   - _Requirements: 7.1, 7.4, 8.4_
 
-- [ ] 1.4 Update process_bulk_upload function
+- [ ] 1.5 Update process_bulk_upload function
   - Move file upload to S3 into process_bulk_upload (before job enqueueing)
   - Create document records in database before enqueueing jobs
-  - Modify to enqueue analysis_job and preprocess_job instead of upload_and_preprocess_documents_job
-  - Update DocumentsBulkResponse to return multiple job IDs (analysis + preprocess)
+  - Replace upload_and_preprocess_documents_job with start_pdf_workflow() call
+  - Update DocumentsBulkResponse to return workflow_id and job_ids
   - Maintain backward compatibility with existing API contracts
   - _Requirements: 5.1, 5.2_
 
@@ -45,10 +53,11 @@
   - Ensure all schemas have proper type hints and validation
   - _Requirements: 4.1, 4.2_
 
-- [ ] 2.1 Implement job metadata querying
-  - Create `get_jobs_for_document(document_id)` function in jobs/pdf_workflow.py
-  - Create `get_jobs_by_reference(reference)` function in jobs/pdf_workflow.py
-  - Scan RQ job registries (started, finished, failed, deferred) for metadata matches
+- [ ] 2.1 Implement efficient job querying using database
+  - Create `get_jobs_for_document(db, document_id)` using DocumentWorkflow lookup
+  - Create `get_jobs_by_reference(db, reference)` using document lookup
+  - Create `get_workflow_status(db, document_id)` for complete workflow status
+  - Replace expensive registry scanning with single job fetches
   - Handle job expiration and missing jobs gracefully
   - _Requirements: 2.2, 2.5_
 
@@ -65,11 +74,12 @@
   - Return overall workflow status (pending, running, completed, failed)
   - _Requirements: 6.5, 8.1_
 
-- [ ] 2.4 Implement RQ Groups for document tracking
-  - Create RQ Group when starting document workflow
-  - Add jobs to document group for easier tracking
-  - Use group.get_jobs() for workflow status queries
-  - _Requirements: 3.1, 3.2, 3.4_
+- [ ] 2.4 Add workflow status monitoring
+  - Implement workflow status updates when jobs complete/fail
+  - Add job status change callbacks to update DocumentWorkflow
+  - Create workflow progress calculation based on completed steps
+  - Add workflow cleanup for expired/completed workflows
+  - _Requirements: 2.1, 2.4, 6.5_
 
 ## Phase 3: Complete PDF Workflow Implementation (Week 3)
 

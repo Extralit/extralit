@@ -136,16 +136,9 @@ def analysis_job(document_id: UUID, s3_url: str, reference: str, workspace_id: U
         }
     }
 
-    # Conditionally enqueue OCR job based on analysis
-    if analysis_result['needs_ocr']:
-        # Note: ocr_job will be implemented in Phase 3
-        # ocr_job_instance = ocr_job.delay(document_id, s3_url, reference, workspace_id, analysis_result)
-        # current_job.meta['ocr_job_id'] = ocr_job_instance.id
-        current_job.meta['ocr_needed'] = True
-
-    # Always enqueue text extraction (will be implemented in Phase 3)
-    # text_job_instance = text_extraction_job.delay(document_id, s3_url, reference, workspace_id, analysis_result)
-    # current_job.meta['text_job_id'] = text_job_instance.id
+    # Store analysis results for dependent jobs (no job enqueueing here)
+    current_job.meta['needs_ocr'] = analysis_result['needs_ocr']
+    current_job.meta['analysis_complete'] = True
 
     current_job.meta['completed_at'] = datetime.utcnow().isoformat()
     current_job.save_meta()
@@ -222,40 +215,75 @@ def table_extraction_job(document_id: UUID, s3_url: str, reference: str, workspa
 
 ## RQ Native Features Usage
 
-### Job Dependencies and Chaining
+### Workflow Orchestrator (Centralized Job Chaining)
 
 ```python
 def start_pdf_workflow(document_id: UUID, s3_url: str, reference: str, workspace_id: UUID, user_id: UUID) -> dict:
-    """Start complete PDF workflow using RQ native dependencies."""
+    """Start complete PDF workflow using centralized orchestration with RQ dependencies."""
+    from extralit_server.models.database import DocumentWorkflow
 
-    # Step 1 & 2: Parallel jobs (no dependencies)
-    analysis_job_instance = analysis_job.delay(document_id, s3_url, reference, workspace_id)
-    preprocess_job_instance = preprocess_job.delay(document_id, s3_url, reference, workspace_id)
-
-    # Step 3: Text extraction depends on analysis
-    text_job_instance = text_extraction_job.delay(
-        document_id, s3_url, reference, workspace_id,
-        depends_on=[analysis_job_instance]  # RQ native dependency
+    # Step 1: Create workflow record in database
+    workflow = DocumentWorkflow.create(
+        document_id=document_id,
+        workflow_type="pdf_processing",
+        status="queued",
+        job_ids={}
     )
 
-    # Step 4: Table extraction depends on analysis (and OCR if it runs)
-    table_job_instance = table_extraction_job.delay(
+    # Step 2: Enqueue parallel jobs (no dependencies)
+    analysis_job = DEFAULT_QUEUE.enqueue(
+        'pdf_analysis_job',
         document_id, s3_url, reference, workspace_id,
-        depends_on=[analysis_job_instance]  # OCR job will be added dynamically if needed
+        job_id=f"analysis_{document_id}",
+        meta={'document_id': str(document_id), 'workflow_step': 'analysis', 'workflow_id': workflow.id}
     )
 
-    # Step 5: Embedding depends on both text and table extraction
-    embedding_job_instance = embedding_job.delay(
+    preprocess_job = DEFAULT_QUEUE.enqueue(
+        'pdf_preprocess_job',
+        document_id, s3_url, reference, workspace_id,
+        job_id=f"preprocess_{document_id}",
+        meta={'document_id': str(document_id), 'workflow_step': 'preprocess', 'workflow_id': workflow.id}
+    )
+
+    # Step 3: Chain dependent jobs using RQ's depends_on
+    text_job = DEFAULT_QUEUE.enqueue(
+        'pdf_text_extraction_job',
+        document_id, s3_url, reference, workspace_id,
+        depends_on=[analysis_job],
+        job_id=f"text_{document_id}",
+        meta={'document_id': str(document_id), 'workflow_step': 'text_extraction', 'workflow_id': workflow.id}
+    )
+
+    table_job = GPU_QUEUE.enqueue(
+        'pdf_table_extraction_job',
+        document_id, s3_url, reference, workspace_id,
+        depends_on=[analysis_job, preprocess_job],  # Depends on both parallel jobs
+        job_id=f"table_{document_id}",
+        meta={'document_id': str(document_id), 'workflow_step': 'table_extraction', 'workflow_id': workflow.id}
+    )
+
+    embed_job = DEFAULT_QUEUE.enqueue(
+        'pdf_embedding_job',
         document_id, reference, workspace_id,
-        depends_on=[text_job_instance, table_job_instance]
+        depends_on=[text_job, table_job],
+        job_id=f"embed_{document_id}",
+        meta={'document_id': str(document_id), 'workflow_step': 'embedding', 'workflow_id': workflow.id}
     )
+
+    # Step 4: Update workflow with job IDs
+    workflow.job_ids = {
+        'analysis': analysis_job.id,
+        'preprocess': preprocess_job.id,
+        'text_extraction': text_job.id,
+        'table_extraction': table_job.id,
+        'embedding': embed_job.id
+    }
+    workflow.status = "running"
+    workflow.save()
 
     return {
-        'analysis_job_id': analysis_job_instance.id,
-        'preprocess_job_id': preprocess_job_instance.id,
-        'text_job_id': text_job_instance.id,
-        'table_job_id': table_job_instance.id,
-        'embedding_job_id': embedding_job_instance.id
+        'workflow_id': workflow.id,
+        'job_ids': workflow.job_ids
     }
 ```
 
@@ -275,43 +303,81 @@ job.meta = {
 }
 ```
 
-### Job Querying by Metadata
+### Efficient Job Querying Using Database Index
 
 ```python
-from rq.registry import StartedJobRegistry, FinishedJobRegistry, FailedJobRegistry
+def get_jobs_for_document(db: AsyncSession, document_id: UUID) -> list[dict]:
+    """Get jobs for document using database index (much faster than registry scanning)."""
+    workflow = DocumentWorkflow.get_by_document_id(db, document_id)
+    if not workflow:
+        return []
 
-def get_jobs_for_document(document_id: UUID) -> list[dict]:
-    """Find all jobs for a document by scanning RQ registries."""
+    jobs = []
+    for step_name, job_id in workflow.job_ids.items():
+        try:
+            job = Job.fetch(job_id, connection=REDIS_CONNECTION)  # Single job fetch
+            job_info = {
+                'job_id': job_id,
+                'workflow_step': step_name,
+                'status': job.get_status(),
+                'document_id': str(document_id),
+                'workflow_id': workflow.id,
+                'started_at': job.started_at.isoformat() if job.started_at else None,
+                'ended_at': job.ended_at.isoformat() if job.ended_at else None,
+                'error': str(job.exc_info) if job.is_failed else None,
+                'result': job.result if job.is_finished else None
+            }
+            jobs.append(job_info)
+        except Exception as e:
+            # Job might have expired, but we still have the workflow record
+            jobs.append({
+                'job_id': job_id,
+                'workflow_step': step_name,
+                'status': 'expired',
+                'document_id': str(document_id),
+                'workflow_id': workflow.id,
+                'error': f'Job expired or not found: {e}'
+            })
+
+    return jobs
+
+def get_jobs_by_reference(db: AsyncSession, reference: str) -> list[dict]:
+    """Get jobs by reference using document lookup."""
+    # First find documents with this reference
+    documents = db.query(Document).filter(Document.reference == reference).all()
+
     all_jobs = []
-
-    # Scan all RQ job registries
-    registries = [
-        ('started', StartedJobRegistry(connection=REDIS_CONNECTION)),
-        ('finished', FinishedJobRegistry(connection=REDIS_CONNECTION)),
-        ('failed', FailedJobRegistry(connection=REDIS_CONNECTION))
-    ]
-
-    for status, registry in registries:
-        for job_id in registry.get_job_ids():
-            try:
-                job = Job.fetch(job_id, connection=REDIS_CONNECTION)
-                if job.meta.get('document_id') == str(document_id):
-                    job_info = {
-                        'job_id': job.id,
-                        'status': status,
-                        'workflow_step': job.meta.get('workflow_step'),
-                        'reference': job.meta.get('reference'),
-                        'started_at': job.meta.get('started_at'),
-                        'completed_at': job.meta.get('completed_at'),
-                        'progress': job.meta.get('progress', 0),
-                        'error': str(job.exc_info) if job.is_failed else None
-                    }
-                    all_jobs.append(job_info)
-            except Exception:
-                # Job might have expired
-                continue
+    for doc in documents:
+        jobs = get_jobs_for_document(db, doc.id)
+        all_jobs.extend(jobs)
 
     return sorted(all_jobs, key=lambda x: x.get('started_at', ''))
+
+def get_workflow_status(db: AsyncSession, document_id: UUID) -> dict:
+    """Get complete workflow status for a document."""
+    workflow = DocumentWorkflow.get_by_document_id(db, document_id)
+    if not workflow:
+        return {'status': 'not_found', 'jobs': []}
+
+    jobs = get_jobs_for_document(db, document_id)
+
+    # Calculate progress
+    total_steps = len(workflow.job_ids)
+    completed_steps = len([j for j in jobs if j['status'] == 'finished'])
+    progress = completed_steps / total_steps if total_steps > 0 else 0
+
+    return {
+        'workflow_id': workflow.id,
+        'document_id': document_id,
+        'status': workflow.status,
+        'progress': progress,
+        'total_jobs': total_steps,
+        'completed_jobs': completed_steps,
+        'failed_jobs': len([j for j in jobs if j['status'] == 'failed']),
+        'jobs': jobs,
+        'created_at': workflow.created_at.isoformat(),
+        'updated_at': workflow.updated_at.isoformat()
+    }
 ```
 
 ## API Extensions
@@ -431,6 +497,61 @@ app.add_typer(workflow_app, name="workflow")
 ```
 
 ## Data Models
+
+### Database Model for Workflow Tracking
+
+```python
+# extralit_server/src/extralit_server/models/database.py (add to existing models)
+from sqlalchemy import Column, String, JSON, DateTime, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
+from uuid import uuid4
+from datetime import datetime
+
+class DocumentWorkflow(Base):
+    """Track document processing workflows for efficient job querying."""
+    __tablename__ = "document_workflows"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    document_id: Mapped[UUID] = mapped_column(ForeignKey("documents.id"), nullable=False, index=True)
+    workflow_type: Mapped[str] = mapped_column(String(50), default="pdf_processing")
+    status: Mapped[str] = mapped_column(String(50), default="queued")  # queued, running, completed, failed
+    job_ids: Mapped[dict] = mapped_column(JSON, default=dict)  # Map of step_name -> job_id
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    document: Mapped["Document"] = relationship("Document", back_populates="workflows")
+
+    @classmethod
+    def get_by_document_id(cls, db: AsyncSession, document_id: UUID) -> Optional["DocumentWorkflow"]:
+        """Get workflow by document ID."""
+        return db.query(cls).filter(cls.document_id == document_id).first()
+
+    def update_job_status(self, db: AsyncSession, step_name: str, job_id: str, status: str):
+        """Update individual job status and overall workflow status."""
+        if step_name not in self.job_ids:
+            self.job_ids[step_name] = job_id
+
+        # Update overall workflow status based on job statuses
+        if status == "failed":
+            self.status = "failed"
+        elif all(self._get_job_status(job_id) == "finished" for job_id in self.job_ids.values()):
+            self.status = "completed"
+        elif any(self._get_job_status(job_id) in ["started", "queued"] for job_id in self.job_ids.values()):
+            self.status = "running"
+
+        self.updated_at = datetime.utcnow()
+        db.commit()
+
+    def _get_job_status(self, job_id: str) -> str:
+        """Helper to get job status from RQ."""
+        try:
+            job = Job.fetch(job_id, connection=REDIS_CONNECTION)
+            return job.get_status()
+        except:
+            return "unknown"
+```
 
 ### New Pydantic Schemas for Job Input/Output
 
