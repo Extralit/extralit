@@ -16,7 +16,7 @@ import base64
 import secrets
 from datetime import datetime
 from typing import Any, Union
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from pydantic import TypeAdapter
 from sqlalchemy import (
@@ -30,6 +30,7 @@ from sqlalchemy import (
 )
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.engine.default import DefaultExecutionContext
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -54,6 +55,7 @@ __all__ = [
     "Dataset",
     "DatasetUser",
     "Document",
+    "DocumentWorkflow",
     "Field",
     "ImportHistory",
     "MetadataProperty",
@@ -635,6 +637,61 @@ class User(DatabaseModel):
         )
 
 
+class DocumentWorkflow(DatabaseModel):
+    """Track document processing workflows for efficient job querying."""
+
+    __tablename__ = "workflows"
+
+    document_id: Mapped[UUID] = mapped_column(
+        ForeignKey("documents.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    workflow_type: Mapped[str] = mapped_column(String(50), default="pdf_processing")
+    status: Mapped[str] = mapped_column(String(50), default="queued")  # queued, running, completed, failed
+    job_ids: Mapped[dict] = mapped_column(MutableDict.as_mutable(JSON), default=dict)
+
+    document: Mapped["Document"] = relationship("Document", back_populates="workflows")
+
+    @classmethod
+    async def create(
+        cls,
+        db: AsyncSession,
+        document_id: UUID,
+        workflow_type: str = "pdf_processing",
+        status: str = "queued",
+        job_ids: dict | None = None,
+    ) -> "DocumentWorkflow":
+        """Create a new document workflow record."""
+        workflow = cls(
+            id=uuid4(), document_id=document_id, workflow_type=workflow_type, status=status, job_ids=job_ids or {}
+        )
+        db.add(workflow)
+        await db.commit()
+        await db.refresh(workflow)
+        return workflow
+
+    @classmethod
+    async def get_by_document_id(cls, db: AsyncSession, document_id: UUID) -> "DocumentWorkflow | None":
+        """Get workflow by document ID."""
+        return await cls.get_by(db, document_id=document_id)
+
+    async def update_status(self, db: AsyncSession, status: str) -> None:
+        """Update workflow status."""
+        self.status = status
+        await self.save(db, autocommit=True)
+
+    async def update_job_ids(self, db: AsyncSession, job_ids: dict) -> None:
+        """Update job IDs."""
+        self.job_ids = job_ids
+        await self.save(db, autocommit=True)
+
+    def __repr__(self):
+        return (
+            f"DocumentWorkflow(id={str(self.id)!r}, document_id={str(self.document_id)!r}, "
+            f"workflow_type={self.workflow_type!r}, status={self.status!r}, "
+            f"inserted_at={str(self.inserted_at)!r}, updated_at={str(self.updated_at)!r})"
+        )
+
+
 class Document(DatabaseModel):
     __tablename__ = "documents"
 
@@ -647,6 +704,13 @@ class Document(DatabaseModel):
     metadata_: Mapped[dict | None] = mapped_column("metadata", MutableDict.as_mutable(JSON()), nullable=True)
 
     workspace: Mapped["Workspace"] = relationship("Workspace", back_populates="documents")
+    workflows: Mapped[list["DocumentWorkflow"]] = relationship(
+        "DocumentWorkflow",
+        back_populates="document",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        order_by="DocumentWorkflow.inserted_at.desc()",
+    )
 
     def __repr__(self):
         return (

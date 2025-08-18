@@ -729,7 +729,7 @@ from datetime import datetime
 
 class DocumentWorkflow(Base):
     """Track document processing workflows for efficient job querying."""
-    __tablename__ = "document_workflows"
+    __tablename__ = "workflows"
 
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
     document_id: Mapped[UUID] = mapped_column(ForeignKey("documents.id"), nullable=False, index=True)

@@ -568,6 +568,31 @@ def put_document_file(
     return None
 
 
+def download_file_content(client: Minio | LocalFileStorage, document_url: str) -> bytes:
+    """
+    Download file content from a document URL.
+
+    Args:
+        client: Minio or LocalFileStorage client
+        document_url: URL in format "/api/v1/file/{bucket_name}/{object_path}"
+
+    Returns:
+        File content as bytes
+    """
+    # Parse URL to get bucket and object path
+    if not document_url.startswith("/api/v1/file/"):
+        raise ValueError(f"Invalid document URL format: {document_url}")
+
+    url_parts = document_url.replace("/api/v1/file/", "").split("/", 1)
+    if len(url_parts) != 2:
+        raise ValueError(f"Invalid document URL format: {document_url}")
+
+    bucket_name, object_path = url_parts
+
+    file_response = get_object(client, bucket_name, object_path)
+    return file_response.response.read()
+
+
 def delete_bucket(client: Minio | LocalFileStorage, workspace_name: str):
     if isinstance(client, LocalFileStorage):
         try:

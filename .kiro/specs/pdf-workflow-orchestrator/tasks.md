@@ -2,13 +2,13 @@
 
 ## Phase 1: Basic RQ Job Chaining (Week 1)
 
-- [ ] 1. Refactor existing document upload job
+- [-] 1. Refactor existing document upload job
   - Split `upload_and_preprocess_documents_job` into separate chained jobs
   - Move file upload to S3 into the API endpoint (process_bulk_upload)
   - Pass document IDs and S3 URLs to jobs instead of raw file data
   - _Requirements: 1.1, 1.2, 5.1, 5.3_
 
-- [ ] 1.1 Create combined PDF processing job function
+- [x] 1.1 Create combined PDF processing job function
   - Create `analysis_and_preprocess_job(document_id, s3_url, reference, workspace_id)` combining PDFOCRLayerDetector, PDFAnalyzer, and PDFPreprocessor
   - Analysis runs on original PDF, then OCRmyPDF preprocessing overwrites same S3 path for page rotation
   - Add job metadata tracking (document_id, reference, workflow_step, started_at, completed_at)
