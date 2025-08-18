@@ -19,6 +19,7 @@ from uuid import UUID
 
 from extralit_server.database import AsyncSessionLocal
 from extralit_server.jobs.document_jobs import analysis_and_preprocess_job
+from extralit_server.jobs.queues import DEFAULT_QUEUE
 from extralit_server.models.database import DocumentWorkflow
 
 _LOGGER = logging.getLogger(__name__)
@@ -40,7 +41,6 @@ def start_pdf_workflow(document_id: UUID, s3_url: str, reference: str, workspace
     Returns:
         Dictionary containing workflow_id and job_ids for tracking
     """
-    from extralit_server.jobs.queues import DEFAULT_QUEUE
 
     try:
         # Step 1: Create DocumentWorkflow record for tracking
