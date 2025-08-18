@@ -17,6 +17,7 @@ import logging
 from typing import Any
 from uuid import UUID, uuid4
 
+from extralit_server.contexts.ocr.rq_client import enqueue_pdf_extraction
 from extralit_server.database import SyncSessionLocal
 from extralit_server.jobs.document_jobs import analysis_and_preprocess_job
 from extralit_server.jobs.queues import DEFAULT_QUEUE
@@ -57,16 +58,18 @@ def start_pdf_workflow(document_id: UUID, s3_url: str, reference: str, workspace
             analysis_and_preprocess_job, document_id, s3_url, reference, workspace_name, job_timeout=600
         )
 
-        # Step 3: Future table extraction jobs will be routed to GPU_QUEUE
-        # table_extraction_job = GPU_QUEUE.enqueue(
-        #     table_extraction_job_function,
-        #     document_id,
-        #     depends_on=analysis_job
-        # )
+        pymupdf_job_id = enqueue_pdf_extraction(
+            pdf_bytes=None,  # Will be downloaded by the job
+            filename=s3_url.split("/")[-1],
+            analysis_metadata=None,  # Will get from analysis_job result
+            extraction_config=None,
+            job_timeout=900,
+        )
 
         # Step 3: Store job IDs in workflow record
         job_ids = {
             "analysis_and_preprocess": analysis_job.id,
+            "pymupdf_extraction": pymupdf_job_id,
             "workflow_id": str(workflow.id),
             # 'table_extraction': table_extraction_job.id  # Future implementation
         }
