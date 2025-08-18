@@ -490,7 +490,7 @@ async def process_bulk_upload(
                             document_id=document.id,
                             s3_url=s3_url,
                             reference=reference,
-                            workspace_id=workspace.name,
+                            workspace_name=workspace.name,
                         )
 
                         reference_workflows[str(document.id)] = workflow_result["job_ids"]
