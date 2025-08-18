@@ -13,16 +13,17 @@ POST /documents/bulk → process_bulk_upload() → upload_and_preprocess_documen
 
 ### New Flow (Chained Jobs)
 ```
-POST /documents/bulk → process_bulk_upload() → Upload files to S3 + Create DB records → analysis_job(document_id, s3_url) → preprocess_job(document_id, s3_url) → conditional_ocr_job (if needed) → text_extraction_job + table_extraction_job (parallel) → embedding_job
+POST /documents/bulk → process_bulk_upload() → Upload files to S3 + Create DB records → analysis_and_preprocess_job(document_id, s3_url) → conditional_ocr_job (if needed) → text_extraction_job + table_extraction_job (parallel) → embedding_job
 ```
 
 ### Key Changes from Current Implementation
 
 1. **File Upload Moved to API**: Files uploaded to S3 in `process_bulk_upload()` before job enqueueing
-2. **Job Splitting**: `upload_and_preprocess_documents_job` split into separate chained jobs
+2. **Job Splitting**: `upload_and_preprocess_documents_job` split into chained jobs with combined analysis+preprocessing
 3. **S3 URLs Instead of File Data**: Jobs receive document IDs and S3 URLs, not raw file bytes
 4. **RQ Dependencies**: Use `depends_on` parameter for job chaining
 5. **Job Metadata**: Track workflow progress using `job.meta`
+6. **In-Place Processing**: OCRmyPDF overwrites the same S3 object path for page rotation
 
 ## Integration with Existing Code
 
@@ -172,18 +173,19 @@ def upload_and_preprocess_documents_job(
     # Does everything: upload, DB creation, preprocessing
     pass
 
-# NEW: Separate job functions with RQ chaining
+# NEW: Combined analysis and preprocessing job
 from rq.decorators import job
 from rq import get_current_job
 
 from extralit_server.database import AsyncSessionLocal
 
-@job(queue='default', timeout=300, result_ttl=3600)
-def analysis_job(document_id: UUID, s3_url: str, reference: str, workspace_id: UUID) -> dict:
-    """Analyze PDF structure and content using existing analysis modules."""
+@job(queue='default', timeout=600, result_ttl=3600)
+def analysis_and_preprocess_job(document_id: UUID, s3_url: str, reference: str, workspace_id: UUID) -> dict:
+    """Analyze PDF structure and content, then preprocess using existing modules."""
     from extralit_server.contexts.document.analysis import PDFOCRLayerDetector
     from extralit_server.contexts.document.margin import PDFAnalyzer
-    from extralit_server.contexts.files import download_file_from_s3
+    from extralit_server.contexts.document.preprocessing import PDFPreprocessingSettings, PDFPreprocessor
+    from extralit_server.contexts.files import get_async_minio_client, download_file_content, put_object
     from extralit_server.models.database import Document
     from extralit_server.api.schemas.v1.documents.metadata import DocumentProcessingMetadata
 
@@ -192,24 +194,21 @@ def analysis_job(document_id: UUID, s3_url: str, reference: str, workspace_id: U
         'document_id': str(document_id),
         'reference': reference,
         'workspace_id': str(workspace_id),
-        'workflow_step': 'analysis',
+        'workflow_step': 'analysis_and_preprocess',
         'started_at': datetime.utcnow().isoformat()
     })
     current_job.save_meta()
 
-    # Download PDF from storage using existing file operations
-    from extralit_server.contexts.files import get_async_minio_client, download_file_content
-
+    # Download original PDF from storage
     client = await get_async_minio_client()
     pdf_data = await download_file_content(client, s3_url)
     filename = s3_url.split('/')[-1]
 
-    # Step 1: Check if PDF has OCR text layer
+    # Step 1: Analyze original PDF structure and content
     ocr_detector = PDFOCRLayerDetector()
     has_ocr_text_layer = ocr_detector.has_ocr_text_layer(pdf_data)
     ocr_quality = ocr_detector.analyze_character_quality(pdf_data)
 
-    # Step 2: Analyze PDF layout and margins
     pdf_analyzer = PDFAnalyzer()
     layout_analysis = pdf_analyzer.analyze_pdf_layout(pdf_data, filename)
 
@@ -227,7 +226,38 @@ def analysis_job(document_id: UUID, s3_url: str, reference: str, workspace_id: U
         }
     }
 
-    # Store analysis results in document.metadata_
+    # Step 2: Preprocess PDF (OCRmyPDF for page rotation, overwrites same S3 path)
+    settings = PDFPreprocessingSettings(enable_analysis=False)  # Analysis already done
+    preprocessor = PDFPreprocessor(settings)
+    processing_response = preprocessor.preprocess(pdf_data, filename)
+
+    # OCRmyPDF overwrites the same S3 object path, so we upload back to same location
+    workspace_name = str(workspace_id)
+    object_path = s3_url.replace(f"/api/v1/file/{workspace_name}/", "")
+
+    put_object(
+        client,
+        workspace_name,
+        object_path,
+        processing_response.processed_data,
+        len(processing_response.processed_data),
+        content_type="application/pdf",
+        metadata={"processing_applied": "ocrmypdf_rotation", "original_filename": filename}
+    )
+
+    # Combine results
+    combined_result = {
+        'document_id': str(document_id),
+        'analysis_result': analysis_result,
+        'preprocessing_result': {
+            'processing_time': processing_response.metadata.processing_time,
+            'ocr_applied': processing_response.metadata.ocr_applied,
+            'preprocessing_metadata': processing_response.metadata.model_dump()
+        },
+        'needs_ocr': analysis_result['needs_ocr']
+    }
+
+    # Store combined results in document.metadata_
     async with AsyncSessionLocal() as db:
         document = await db.get(Document, document_id)
         if document:
@@ -239,64 +269,18 @@ def analysis_job(document_id: UUID, s3_url: str, reference: str, workspace_id: U
 
             metadata = DocumentProcessingMetadata(**document.metadata_)
             metadata.update_analysis_results(analysis_result)
+            metadata.update_preprocessing_results(combined_result['preprocessing_result'])
             document.metadata_ = metadata.model_dump()
             await db.commit()
 
-    # Store analysis results for dependent jobs (no job enqueueing here)
+    # Store results for dependent jobs
     current_job.meta['needs_ocr'] = analysis_result['needs_ocr']
     current_job.meta['analysis_complete'] = True
+    current_job.meta['preprocessing_complete'] = True
     current_job.meta['completed_at'] = datetime.utcnow().isoformat()
     current_job.save_meta()
 
-    return analysis_result
-
-@job(queue='default', timeout=300, result_ttl=3600)
-def preprocess_job(document_id: UUID, s3_url: str, reference: str, workspace_id: UUID) -> dict:
-    """Preprocess PDF using existing PDFPreprocessor (OCR-only, no analysis)."""
-    from extralit_server.contexts.document.preprocessing import PDFPreprocessingSettings, PDFPreprocessor
-    from extralit_server.contexts.files import download_file_from_s3, upload_file_to_s3
-    from extralit_server.models.database import Document
-    from extralit_server.api.schemas.v1.documents.metadata import DocumentProcessingMetadata
-
-    current_job = get_current_job()
-    current_job.meta.update({
-        'document_id': str(document_id),
-        'reference': reference,
-        'workspace_id': str(workspace_id),
-        'workflow_step': 'preprocess',
-        'started_at': datetime.utcnow().isoformat()
-    })
-    current_job.save_meta()
-
-    # Download PDF from storage using existing file operations
-    from extralit_server.contexts.files import get_async_minio_client, download_file_content, put_object, get_pdf_s3_object_path
-
-    client = await get_async_minio_client()
-    pdf_data = await download_file_content(client, s3_url)
-    filename = s3_url.split('/')[-1]
-
-    # Configure preprocessing for OCR-only (disable analysis since it's done separately)
-    settings = PDFPreprocessingSettings(enable_analysis=False)
-    preprocessor = PDFPreprocessor(settings)
-
-    # Process PDF (OCR only)
-    processing_response = preprocessor.preprocess(pdf_data, filename)
-
-    processed_filename = f"processed_{filename}"
-    processed_s3_url = put_object(
-        client,
-        workspace_name,
-        get_pdf_s3_object_path(document_id),
-        processing_response.processed_data,
-    )
-
-    preprocess_result = {
-        'document_id': str(document_id),
-        'original_s3_url': s3_url,
-        'processed_s3_url': processed_s3_url,
-        'processing_time': processing_response.metadata.processing_time,
-        'ocr_applied': processing_response.metadata.ocr_applied,
-        'preprocessing_metadata': processing_response.metadata.model_dump()
+    return combined_result
     }
 
     # Store preprocessing results in document.metadata_
@@ -364,26 +348,19 @@ def start_pdf_workflow(document_id: UUID, s3_url: str, reference: str, workspace
         job_ids={}
     )
 
-    # Step 3: Enqueue parallel jobs (no dependencies)
-    analysis_job = DEFAULT_QUEUE.enqueue(
-        'pdf_analysis_job',
+    # Step 3: Enqueue combined analysis and preprocessing job
+    analysis_preprocess_job = DEFAULT_QUEUE.enqueue(
+        'pdf_analysis_and_preprocess_job',
         document_id, s3_url, reference, workspace_id,
-        job_id=f"analysis_{document_id}",
-        meta={'document_id': str(document_id), 'workflow_step': 'analysis', 'workflow_id': workflow.id}
-    )
-
-    preprocess_job = DEFAULT_QUEUE.enqueue(
-        'pdf_preprocess_job',
-        document_id, s3_url, reference, workspace_id,
-        job_id=f"preprocess_{document_id}",
-        meta={'document_id': str(document_id), 'workflow_step': 'preprocess', 'workflow_id': workflow.id}
+        job_id=f"analysis_preprocess_{document_id}",
+        meta={'document_id': str(document_id), 'workflow_step': 'analysis_and_preprocess', 'workflow_id': workflow.id}
     )
 
     # Step 4: Chain dependent jobs using RQ's depends_on
     text_job = DEFAULT_QUEUE.enqueue(
         'pdf_text_extraction_job',
         document_id, s3_url, reference, workspace_id,
-        depends_on=[analysis_job],
+        depends_on=[analysis_preprocess_job],
         job_id=f"text_{document_id}",
         meta={'document_id': str(document_id), 'workflow_step': 'text_extraction', 'workflow_id': workflow.id}
     )
@@ -391,7 +368,7 @@ def start_pdf_workflow(document_id: UUID, s3_url: str, reference: str, workspace
     table_job = GPU_QUEUE.enqueue(
         'pdf_table_extraction_job',
         document_id, s3_url, reference, workspace_id,
-        depends_on=[analysis_job, preprocess_job],  # Depends on both parallel jobs
+        depends_on=[analysis_preprocess_job],  # Depends on combined job
         job_id=f"table_{document_id}",
         meta={'document_id': str(document_id), 'workflow_step': 'table_extraction', 'workflow_id': workflow.id}
     )
@@ -406,8 +383,7 @@ def start_pdf_workflow(document_id: UUID, s3_url: str, reference: str, workspace
 
     # Step 5: Update workflow with job IDs and metadata
     workflow.job_ids = {
-        'analysis': analysis_job.id,
-        'preprocess': preprocess_job.id,
+        'analysis_and_preprocess': analysis_preprocess_job.id,
         'text_extraction': text_job.id,
         'table_extraction': table_job.id,
         'embedding': embed_job.id

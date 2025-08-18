@@ -8,12 +8,13 @@
   - Pass document IDs and S3 URLs to jobs instead of raw file data
   - _Requirements: 1.1, 1.2, 5.1, 5.3_
 
-- [ ] 1.1 Create separate PDF processing job functions
-  - Create `analysis_job(document_id, s3_url, reference, workspace_id)` using existing PDFOCRLayerDetector and PDFAnalyzer
-  - Create `preprocess_job(document_id, s3_url, reference, workspace_id)` using existing PDFPreprocessor with analysis disabled
+- [ ] 1.1 Create combined PDF processing job function
+  - Create `analysis_and_preprocess_job(document_id, s3_url, reference, workspace_id)` combining PDFOCRLayerDetector, PDFAnalyzer, and PDFPreprocessor
+  - Analysis runs on original PDF, then OCRmyPDF preprocessing overwrites same S3 path for page rotation
   - Add job metadata tracking (document_id, reference, workflow_step, started_at, completed_at)
   - Use type hints for all parameters and return values
   - Integrate with existing file download/upload functions from contexts/files.py
+  - Store combined results in documents.metadata_ using DocumentProcessingMetadata schema
   - _Requirements: 1.1, 2.1, 4.1, 4.5_
 
 - [ ] 1.2 Create DocumentWorkflow database model
@@ -28,6 +29,7 @@
   - Use RQ's depends_on parameter for job dependencies (no jobs enqueueing other jobs)
   - Create DocumentWorkflow record and store job IDs for efficient querying
   - Handle conditional OCR logic in orchestrator, not in individual jobs
+  - Update workflow to use single analysis_and_preprocess_job instead of separate jobs
   - _Requirements: 1.1, 1.3, 1.4, 8.1_
 
 - [ ] 1.4 Set up queue routing for GPU tasks
@@ -47,8 +49,8 @@
 ## Phase 2: Job Querying and API Enhancement (Week 2)
 
 - [ ] 2. Create Pydantic schemas for job input/output
-  - Create api/schemas/v1/documents/analysis.py with AnalysisJobInput and AnalysisJobOutput
-  - Extend api/schemas/v1/documents/preprocessing.py with PreprocessJobInput and PreprocessJobOutput
+  - Create api/schemas/v1/documents/metadata.py with DocumentProcessingMetadata schema for documents.metadata_ field
+  - Create AnalysisAndPreprocessJobInput and AnalysisAndPreprocessJobOutput schemas
   - Add WorkflowJobResult schema to api/schemas/v1/jobs.py
   - Ensure all schemas have proper type hints and validation
   - _Requirements: 4.1, 4.2_
@@ -93,8 +95,8 @@
 
 - [ ] 3.1 Implement job dependency chaining
   - Use RQ's depends_on parameter for job dependencies
-  - Chain text_extraction_job to depend on analysis_job
-  - Chain table_extraction_job to depend on analysis_job and ocr_job (if exists)
+  - Chain text_extraction_job to depend on analysis_and_preprocess_job
+  - Chain table_extraction_job to depend on analysis_and_preprocess_job
   - Chain embedding_job to depend on text_extraction_job and table_extraction_job
   - _Requirements: 1.1, 1.3, 8.5_
 

@@ -97,8 +97,8 @@ The PDF Workflow Orchestrator leverages RQ's native job chaining capabilities to
 #### Acceptance Criteria
 
 1. When enqueing PDF jobs, THEN they should ordered such that documents within reference are processed in FIFO order
-2. WHEN starting PDF processing THEN the system SHALL enqueue analysis and preprocess jobs in parallel
-3. WHEN analysis completes THEN the system SHALL conditionally enqueue OCR job if needed
-4. WHEN analysis completes THEN the system SHALL enqueue text extraction job
-5. WHEN OCR and analysis complete THEN the system SHALL enqueue table extraction job on GPU queue
+2. WHEN starting PDF processing THEN the system SHALL enqueue combined analysis and preprocessing job
+3. WHEN analysis and preprocessing complete THEN the system SHALL conditionally enqueue OCR job if needed
+4. WHEN analysis and preprocessing complete THEN the system SHALL enqueue text extraction job
+5. WHEN analysis and preprocessing complete THEN the system SHALL enqueue table extraction job on GPU queue
 6. WHEN text and table extraction complete THEN the system SHALL enqueue embedding job
