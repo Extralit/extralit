@@ -26,5 +26,6 @@ else:
 DEFAULT_QUEUE = Queue("default", connection=REDIS_CONNECTION)
 HIGH_QUEUE = Queue("high", connection=REDIS_CONNECTION)
 GPU_QUEUE = Queue("gpu", connection=REDIS_CONNECTION)
+PDF_QUEUE = Queue("pdf_queue", connection=REDIS_CONNECTION)
 
 JOB_TIMEOUT_DISABLED = -1
