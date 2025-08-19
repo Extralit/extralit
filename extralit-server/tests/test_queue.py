@@ -19,8 +19,8 @@ Simple test script to verify PDF_QUEUE is working correctly.
 
 import sys
 
-# Add src to path
-sys.path.insert(0, "src")
+# Add src to path (adjust for tests folder location)
+sys.path.insert(0, "../src")
 
 
 def test_pdf_queue():
