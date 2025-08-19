@@ -61,7 +61,8 @@ class OpenSearchEngine(BaseElasticAndOpenSearchEngine):
         return await self.client.ping()
 
     async def info(self) -> dict:
-        return await self.client.info()
+        response = await self.client.info()
+        return dict(response)
 
     def _configure_index_settings(self):
         base_settings = super()._configure_index_settings()

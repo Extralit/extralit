@@ -45,7 +45,7 @@ _minio_client: Union[Minio, "LocalFileStorage"] | None = None
 _local_storage_client: Optional["LocalFileStorage"] = None
 
 
-def _create_minio_client() -> Union[Minio, "LocalFileStorage"] | None:
+def _create_minio_client() -> Union[Minio, "LocalFileStorage"]:
     """Create a new Minio client instance."""
     if None in [settings.s3_endpoint, settings.s3_access_key, settings.s3_secret_key]:
         # Use local file system storage if S3 settings are not provided
@@ -59,10 +59,7 @@ def _create_minio_client() -> Union[Minio, "LocalFileStorage"] | None:
         port = parsed_url.port
 
         if hostname is None:
-            print(
-                f"Invalid URL: no hostname found, possible due to lacking http(s) protocol. Given '{settings.s3_endpoint}'"
-            )
-            return None
+            raise ValueError("S3 endpoint hostname is required")
 
         return Minio(
             endpoint=f"{hostname}:{port}" if port else hostname,
@@ -75,7 +72,7 @@ def _create_minio_client() -> Union[Minio, "LocalFileStorage"] | None:
         raise e
 
 
-def get_minio_client() -> Union[Minio, "LocalFileStorage"] | None:
+def get_minio_client() -> Union[Minio, "LocalFileStorage"]:
     """Get a singleton Minio client instance."""
     global _minio_client
 
@@ -85,7 +82,7 @@ def get_minio_client() -> Union[Minio, "LocalFileStorage"] | None:
     return _minio_client
 
 
-async def get_async_minio_client() -> Union[Minio, "LocalFileStorage"] | None:
+async def get_async_minio_client() -> Union[Minio, "LocalFileStorage"]:
     """Get a singleton Minio client instance for async operations."""
     # For now, return the sync client since Minio client operations are blocking
     # In the future, you could implement an async wrapper or use aioboto3 for S3
