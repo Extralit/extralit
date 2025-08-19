@@ -17,10 +17,9 @@ import logging
 from typing import Any
 from uuid import UUID, uuid4
 
-from extralit_server.contexts.ocr.rq_client import enqueue_pdf_extraction
 from extralit_server.database import SyncSessionLocal
 from extralit_server.jobs.document_jobs import analysis_and_preprocess_job
-from extralit_server.jobs.queues import DEFAULT_QUEUE
+from extralit_server.jobs.queues import DEFAULT_QUEUE, PDF_QUEUE
 from extralit_server.models.database import DocumentWorkflow
 
 _LOGGER = logging.getLogger(__name__)
@@ -58,23 +57,28 @@ def start_pdf_workflow(document_id: UUID, s3_url: str, reference: str, workspace
             analysis_and_preprocess_job, document_id, s3_url, reference, workspace_name, job_timeout=600
         )
 
-        pymupdf_job_id = enqueue_pdf_extraction(
-            pdf_bytes=None,  # Will be downloaded by the job
-            filename=s3_url.split("/")[-1],
-            analysis_metadata=None,  # Will get from analysis_job result
-            extraction_config=None,
+        # Step 3: Enqueue PyMuPDF extraction job (depends on analysis)
+        pymupdf_job = PDF_QUEUE.enqueue(
+            "extract_pdf_from_s3_job",
+            document_id,
+            s3_url,
+            s3_url.split("/")[-1],
+            {},
+            workspace_name,
+            depends_on=[analysis_job],
             job_timeout=900,
+            job_id=f"pymupdf_{document_id}",
         )
 
-        # Step 3: Store job IDs in workflow record
+        # Step 4: Store job IDs in workflow record
         job_ids = {
             "analysis_and_preprocess": analysis_job.id,
-            "pymupdf_extraction": pymupdf_job_id,
+            "pymupdf_extraction": pymupdf_job.id,
             "workflow_id": str(workflow.id),
             # 'table_extraction': table_extraction_job.id  # Future implementation
         }
 
-        # Step 4: Update workflow with job IDs using sync database operations
+        # Step 5: Update workflow with job IDs using sync database operations
         with SyncSessionLocal() as db:
             workflow.job_ids = job_ids
             db.add(workflow)
