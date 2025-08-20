@@ -139,7 +139,6 @@ exclude_lines = [
 ]
 
 [tool.ruff]
-# Exclude a variety of commonly ignored directories.
 exclude = [
     ".bzr",
     ".direnv",
@@ -165,7 +164,6 @@ line-length = 120
 target-version = "py310"
 
 [tool.ruff.lint]
-# Enforce only high-priority correctness rules initially.
 select = [
     "F",    # Pyflakes (undefined names, logical issues)
     "E7",   # Syntax/indentation errors
@@ -182,7 +180,6 @@ select = [
     "RUF",   # ruff-specific rules
 ]
 
-# Temporarily ignore modernization and lower-priority/style rules.
 ignore = [
     "E402",   # imports not at top (lazy / optional import patterns)
     "B904",   # exception chaining (will phase in later)
@@ -196,7 +193,6 @@ ignore = [
     "FAST002" # FastAPI Depends suggestion
 ]
 
-# Per-file ignores
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401", "F403", "I001"]  # Ignore unused imports and wildcard imports in __init__.py
 "tests/**/*.py" = ["ASYNC", "F821"]  # More lenient async rules in tests (ignore undefined names like forward refs/fixtures)
