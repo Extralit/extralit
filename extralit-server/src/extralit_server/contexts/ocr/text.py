@@ -23,20 +23,11 @@ error handling and fallback mechanisms.
 
 import asyncio
 import logging
-import os
 from typing import Any, Optional
 
 import httpx
 
-from .rq_client import cancel_job, enqueue_pdf_extraction, get_job_status, is_redis_available
-
 _LOGGER = logging.getLogger(__name__)
-
-# Configuration from environment variables
-PYMUPDF_SERVICE_URL = os.getenv("PYMUPDF_SERVICE_URL", "http://localhost:7860")
-PYMUPDF_REQUEST_TIMEOUT = float(os.getenv("PYMUPDF_REQUEST_TIMEOUT", "300.0"))
-PYMUPDF_RQ_ENABLED = os.getenv("PYMUPDF_RQ_ENABLED", "true").lower() == "true"
-PYMUPDF_RQ_FALLBACK_HTTP = os.getenv("PYMUPDF_RQ_FALLBACK_HTTP", "true").lower() == "true"
 
 
 async def extract_pdf_text_async(

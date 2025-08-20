@@ -58,8 +58,8 @@ def start_pdf_workflow(document_id: UUID, s3_url: str, reference: str, workspace
         )
 
         # Step 3: Enqueue PyMuPDF extraction job (depends on analysis)
-        pymupdf_job = PDF_QUEUE.enqueue(
-            "extract_pdf_from_s3_job",
+        text_extraction_job = PDF_QUEUE.enqueue(
+            "extralit_ocr.jobs.extract_pdf_from_s3_job",
             document_id,
             s3_url,
             s3_url.split("/")[-1],
@@ -67,13 +67,13 @@ def start_pdf_workflow(document_id: UUID, s3_url: str, reference: str, workspace
             workspace_name,
             depends_on=[analysis_job],
             job_timeout=900,
-            job_id=f"pymupdf_{document_id}",
+            job_id=f"text_extraction_{document_id}",
         )
 
         # Step 4: Store job IDs in workflow record
         job_ids = {
             "analysis_and_preprocess": analysis_job.id,
-            "pymupdf_extraction": pymupdf_job.id,
+            "text_extraction_job": text_extraction_job.id,
             "workflow_id": str(workflow.id),
             # 'table_extraction': table_extraction_job.id  # Future implementation
         }

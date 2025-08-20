@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-from typing import Annotated, Any, Optional
+from typing import Annotated, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Security, status
@@ -29,8 +28,6 @@ from extralit_server.database import get_async_db
 from extralit_server.jobs.queues import REDIS_CONNECTION
 from extralit_server.models import User
 from extralit_server.security import auth
-
-# RQ client functions imported dynamically to avoid circular imports
 
 router = APIRouter(tags=["jobs"])
 
@@ -107,105 +104,3 @@ async def get_job(
     await authorize(current_user, JobPolicy.get)
 
     return JobSchema(id=job.id, status=job.get_status(refresh=True))
-
-
-@router.get("/jobs/pdf-extraction/{job_id}/status")
-async def get_pdf_extraction_job_status(
-    *,
-    db: Annotated[AsyncSession, Depends(get_async_db)],
-    job_id: str,
-    current_user: Annotated[User, Security(auth.get_current_user)],
-) -> dict[str, Any]:
-    """
-    Get detailed status of a PDF extraction job from the RQ system.
-
-    This endpoint provides more detailed information about PDF extraction jobs
-    including extraction metadata, processing times, and error details.
-    """
-    await authorize(current_user, JobPolicy.get)
-
-    try:
-        # Import dynamically to avoid circular imports
-        from extralit_server.contexts.ocr.rq_client import get_job_status
-
-        # Get detailed job status from RQ client
-        job_status = get_job_status(job_id)
-        return job_status
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"PDF extraction job with id `{job_id}` not found: {e!s}",
-        )
-
-
-@router.get("/jobs/queues/status")
-async def get_queue_status(
-    *,
-    db: Annotated[AsyncSession, Depends(get_async_db)],
-    current_user: Annotated[User, Security(auth.get_current_user)],
-) -> dict[str, Any]:
-    """
-    Get status of all RQ queues including PDF extraction queues.
-
-    This endpoint provides information about queue lengths, worker status,
-    and overall system health for monitoring purposes.
-    """
-    await authorize(current_user, JobPolicy.get)
-
-    try:
-        # Import dynamically to avoid circular imports
-        from extralit_server.contexts.ocr.rq_client import get_queue_info, is_redis_available
-
-        # Check Redis availability
-        redis_available = is_redis_available()
-
-        if not redis_available:
-            return {"redis_available": False, "error": "Redis connection unavailable", "queues": {}}
-
-        # Get queue information
-        queue_info = get_queue_info()
-
-        return {"redis_available": True, "extraction_queue": queue_info, "timestamp": Job.utcnow().isoformat()}
-
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get queue status: {e!s}",
-        )
-
-
-@router.post("/jobs/pdf-extraction/{job_id}/cancel")
-async def cancel_pdf_extraction_job(
-    *,
-    db: Annotated[AsyncSession, Depends(get_async_db)],
-    job_id: str,
-    current_user: Annotated[User, Security(auth.get_current_user)],
-) -> dict[str, Any]:
-    """
-    Cancel a running or queued PDF extraction job.
-
-    This endpoint allows users to cancel PDF extraction jobs that are
-    queued or currently running in the RQ system.
-    """
-    await authorize(current_user, JobPolicy.get)  # Could be a separate cancel policy
-
-    try:
-        # Import dynamically to avoid circular imports
-        from extralit_server.contexts.ocr.rq_client import cancel_job
-
-        success = cancel_job(job_id)
-
-        if success:
-            return {"job_id": job_id, "cancelled": True, "message": "Job cancelled successfully"}
-        else:
-            return {
-                "job_id": job_id,
-                "cancelled": False,
-                "message": "Job could not be cancelled (may already be completed or failed)",
-            }
-
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to cancel job: {e!s}",
-        )
