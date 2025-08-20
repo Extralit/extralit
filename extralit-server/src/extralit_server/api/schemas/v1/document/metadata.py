@@ -16,7 +16,6 @@
 
 from datetime import datetime, timezone
 from typing import Any, Optional
-from uuid import UUID
 
 from pydantic import BaseModel, Field
 
@@ -47,7 +46,7 @@ class AnalysisMetadata(BaseModel):
     needs_ocr: Optional[bool] = Field(None, description="Whether additional OCR processing is needed")
     ocr_quality: OCRQualityMetadata = Field(..., description="OCR quality analysis")
     layout_analysis: LayoutAnalysisMetadata = Field(..., description="Layout analysis results")
-    analysis_completed_at: datetime = Field(..., description="When analysis was completed")
+    analysis_completed_at: Optional[str] = Field(None, description="When analysis was completed")
 
 
 class PreprocessingMetadata(BaseModel):
@@ -56,7 +55,7 @@ class PreprocessingMetadata(BaseModel):
     processing_time: float = Field(..., description="Processing time in seconds")
     ocr_applied: bool = Field(..., description="Whether OCR was applied during preprocessing")
     processed_s3_url: Optional[str] = Field(None, description="S3 URL of processed PDF")
-    preprocessing_completed_at: datetime = Field(..., description="When preprocessing was completed")
+    preprocessing_completed_at: Optional[str] = Field(None, description="When preprocessing was completed")
 
 
 class TextExtractionMetadata(BaseModel):
@@ -64,7 +63,7 @@ class TextExtractionMetadata(BaseModel):
 
     extracted_text_length: int = Field(..., description="Length of extracted text")
     extraction_method: str = Field(..., description="Method used for extraction")
-    text_extraction_completed_at: datetime = Field(..., description="When text extraction was completed")
+    text_extraction_completed_at: Optional[str] = Field(None, description="When text extraction was completed")
 
 
 class TableExtractionMetadata(BaseModel):
@@ -72,7 +71,7 @@ class TableExtractionMetadata(BaseModel):
 
     tables_found: int = Field(..., description="Number of tables extracted")
     extraction_method: str = Field(..., description="Method used for table extraction")
-    table_extraction_completed_at: datetime = Field(..., description="When table extraction was completed")
+    table_extraction_completed_at: Optional[str] = Field(None, description="When table extraction was completed")
 
 
 class EmbeddingMetadata(BaseModel):
@@ -80,7 +79,7 @@ class EmbeddingMetadata(BaseModel):
 
     embedding_model: str = Field(..., description="Model used for embeddings")
     embedding_dimensions: int = Field(..., description="Dimensionality of embeddings")
-    embedding_completed_at: datetime = Field(..., description="When embedding was completed")
+    embedding_completed_at: Optional[str] = Field(None, description="When embedding was completed")
 
 
 class DocumentProcessingMetadata(BaseModel):
@@ -103,7 +102,7 @@ class DocumentProcessingMetadata(BaseModel):
             needs_ocr=analysis_result.get("needs_ocr"),
             ocr_quality=OCRQualityMetadata(**analysis_result.get("analysis_metadata", {})),
             layout_analysis=LayoutAnalysisMetadata(**analysis_result.get("layout_analysis", {})),
-            analysis_completed_at=datetime.now(timezone.utc),
+            analysis_completed_at=datetime.now(timezone.utc).isoformat(),
         )
 
     def update_preprocessing_results(self, preprocess_result: dict) -> None:
@@ -112,7 +111,7 @@ class DocumentProcessingMetadata(BaseModel):
             processing_time=preprocess_result["processing_time"],
             ocr_applied=preprocess_result.get("ocr_applied", False),
             processed_s3_url=preprocess_result.get("processed_s3_url"),
-            preprocessing_completed_at=datetime.now(timezone.utc),
+            preprocessing_completed_at=datetime.now(timezone.utc).isoformat(),
         )
 
     def is_workflow_complete(self) -> bool:
@@ -126,26 +125,3 @@ class DocumentProcessingMetadata(BaseModel):
                 self.embedding_metadata is not None,
             ]
         )
-
-
-# Job Input/Output Schemas for PDF Workflow
-
-
-class AnalysisAndPreprocessJobInput(BaseModel):
-    """Input schema for combined analysis and preprocessing job."""
-
-    document_id: UUID = Field(..., description="Document ID to process")
-    s3_url: str = Field(..., description="S3 URL of the PDF file")
-    reference: str = Field(..., description="Document reference for tracking")
-    workspace_id: UUID = Field(..., description="Workspace ID")
-
-
-class AnalysisAndPreprocessJobOutput(BaseModel):
-    """Output schema for combined analysis and preprocessing job."""
-
-    document_id: UUID = Field(..., description="Document ID that was processed")
-    analysis_result: dict[str, Any] = Field(..., description="Analysis results including OCR quality and layout")
-    preprocessing_result: dict[str, Any] = Field(..., description="Preprocessing results including processing time")
-    needs_ocr: bool = Field(..., description="Whether additional OCR processing is needed")
-    processed_s3_url: str = Field(..., description="S3 URL of the processed PDF")
-    processing_time: float = Field(..., description="Total processing time in seconds")

@@ -27,7 +27,6 @@ from extralit_server.api.schemas.v1.documents import DocumentCreate, DocumentDel
 from extralit_server.api.schemas.v1.imports import DocumentsBulkCreate, DocumentsBulkResponse
 from extralit_server.contexts import files, imports
 from extralit_server.contexts.files import LocalFileStorage
-from extralit_server.contexts.workflows import get_workflow_status
 from extralit_server.database import get_async_db
 from extralit_server.models import User, Workspace
 from extralit_server.models.database import Document
@@ -267,12 +266,14 @@ async def create_documents_bulk(
     try:
         metadata_dict = json.loads(documents_metadata)
         bulk_create = DocumentsBulkCreate.model_validate(metadata_dict)
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as e:
+        print(e)
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Invalid JSON in documents_metadata",
         )
     except Exception as e:
+        print(e)
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Invalid metadata format: {e!s}",
@@ -295,43 +296,3 @@ async def create_documents_bulk(
         await authorize(current_user, DocumentPolicy.bulk_create(workspace_id))
 
     return await imports.process_bulk_upload(bulk_create=bulk_create, files=files, user_id=str(current_user.id))
-
-
-@router.get("/documents/{document_id}/workflow-status", status_code=status.HTTP_200_OK)
-async def get_document_workflow_status(
-    *,
-    document_id: Annotated[UUID, Path(description="Document ID")],
-    db: AsyncSession = Depends(get_async_db),
-    current_user: User = Security(auth.get_current_user),
-) -> dict:
-    """
-    Get workflow status for a document including progress and job details.
-
-    Returns:
-        - document_id: Document ID
-        - workflow_id: Workflow ID if exists
-        - status: Overall workflow status (pending, running, completed, failed)
-        - progress: Progress as float 0.0-1.0
-        - total_jobs: Total number of jobs in workflow
-        - completed_jobs: Number of completed jobs
-        - failed_jobs: Number of failed jobs
-        - running_jobs: Number of running jobs
-        - jobs: List of individual job details
-        - created_at: When workflow was created
-        - updated_at: When workflow was last updated
-    """
-    # Check if document exists and user has access
-    document = await Document.get(db, document_id)
-    if not document:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Document with id `{document_id}` not found",
-        )
-
-    # Check authorization
-    await authorize(current_user, DocumentPolicy.get(document.workspace_id))
-
-    # Get workflow status
-    workflow_status = await get_workflow_status(db, document_id)
-
-    return workflow_status

@@ -50,7 +50,6 @@
 
 - [x] 2. Create Pydantic schemas for job input/output
   - Create api/schemas/v1/document/metadata.py with DocumentProcessingMetadata schema for documents.metadata_ field
-  - Create AnalysisAndPreprocessJobInput and AnalysisAndPreprocessJobOutput schemas
   - Add WorkflowJobResult schema to api/schemas/v1/jobs.py
   - Ensure all schemas have proper type hints and validation
   - _Requirements: 4.1, 4.2_
@@ -86,10 +85,10 @@
 ## Phase 3: Complete PDF Workflow Implementation (Week 3)
 
 - [ ] 3. Implement remaining PDF processing jobs
-  - Create `ocr_job(document_id, s3_url, analysis_result)` (mock implementation for now)
-  - Create `text_extraction_job(document_id, s3_url, analysis_result)` using existing text extraction logic
-  - Create `table_extraction_job(document_id, s3_url, analysis_result, ocr_result)` for GPU queue
-  - Create `embedding_job(document_id, text_result, table_result)` using existing embedding logic
+  - Create `layout_extraction_job(document_id, s3_url, analysis_result)` (mock implementation for now)
+  - Create `text_extraction_job(document_id, s3_url, analysis_result)` (mock implementation for now)
+  - Create `table_extraction_job(document_id, s3_url, analysis_result, ocr_result)` (mock implementation for now)
+  - Create `embedding_job(document_id, text_result, table_result)` (mock implementation for now)
   - Add corresponding Pydantic schemas for each job's input/output
   - _Requirements: 8.2, 8.3, 8.4, 8.5_
 
