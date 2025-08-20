@@ -15,13 +15,15 @@
 
 import typer
 
-from extralit_server.jobs.queues import DEFAULT_QUEUE, HIGH_QUEUE
+from extralit_server.jobs.queues import DEFAULT_QUEUE, HIGH_QUEUE, OCR_QUEUE
 
 DEFAULT_NUM_WORKERS = 2
 
 
 def worker(
-    queues: list[str] = typer.Option([DEFAULT_QUEUE.name, HIGH_QUEUE.name], help="Name of queues to listen"),
+    queues: list[str] = typer.Option(
+        [DEFAULT_QUEUE.name, HIGH_QUEUE.name, OCR_QUEUE.name], help="Name of queues to listen"
+    ),
     num_workers: int = typer.Option(DEFAULT_NUM_WORKERS, help="Number of workers to start"),
 ) -> None:
     from rq.worker_pool import WorkerPool
