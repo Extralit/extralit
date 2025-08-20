@@ -19,7 +19,7 @@ from uuid import UUID, uuid4
 
 from extralit_server.database import SyncSessionLocal
 from extralit_server.jobs.document_jobs import analysis_and_preprocess_job
-from extralit_server.jobs.queues import DEFAULT_QUEUE
+from extralit_server.jobs.queues import DEFAULT_QUEUE, PDF_OCR_QUEUE
 from extralit_server.models.database import DocumentWorkflow
 
 _LOGGER = logging.getLogger(__name__)
@@ -57,21 +57,28 @@ def start_pdf_workflow(document_id: UUID, s3_url: str, reference: str, workspace
             analysis_and_preprocess_job, document_id, s3_url, reference, workspace_name, job_timeout=600
         )
 
-        # Step 3: Future table extraction jobs will be routed to GPU_QUEUE
-        # table_extraction_job = GPU_QUEUE.enqueue(
-        #     table_extraction_job_function,
-        #     document_id,
-        #     depends_on=analysis_job
-        # )
+        # Step 3: Enqueue PyMuPDF extraction job (depends on analysis)
+        text_extraction_job = PDF_OCR_QUEUE.enqueue(
+            "extralit_ocr.jobs.pymupdf_to_markdown_job",
+            document_id,
+            s3_url,
+            s3_url.split("/")[-1],
+            {},
+            workspace_name,
+            depends_on=[analysis_job],
+            job_timeout=900,
+            job_id=f"text_extraction_{document_id}",
+        )
 
-        # Step 3: Store job IDs in workflow record
+        # Step 4: Store job IDs in workflow record
         job_ids = {
             "analysis_and_preprocess": analysis_job.id,
+            "text_extraction_job": text_extraction_job.id,
             "workflow_id": str(workflow.id),
             # 'table_extraction': table_extraction_job.id  # Future implementation
         }
 
-        # Step 4: Update workflow with job IDs using sync database operations
+        # Step 5: Update workflow with job IDs using sync database operations
         with SyncSessionLocal() as db:
             workflow.job_ids = job_ids
             db.add(workflow)
