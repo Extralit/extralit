@@ -19,7 +19,7 @@ from uuid import UUID, uuid4
 
 from extralit_server.database import SyncSessionLocal
 from extralit_server.jobs.document_jobs import analysis_and_preprocess_job
-from extralit_server.jobs.queues import DEFAULT_QUEUE, PDF_QUEUE
+from extralit_server.jobs.queues import DEFAULT_QUEUE
 from extralit_server.models.database import DocumentWorkflow
 
 _LOGGER = logging.getLogger(__name__)
@@ -58,7 +58,7 @@ def start_pdf_workflow(document_id: UUID, s3_url: str, reference: str, workspace
         )
 
         # Step 3: Enqueue PyMuPDF extraction job (depends on analysis)
-        text_extraction_job = PDF_QUEUE.enqueue(
+        text_extraction_job = DEFAULT_QUEUE.enqueue(
             "extralit_ocr.jobs.extract_pdf_from_s3_job",
             document_id,
             s3_url,
