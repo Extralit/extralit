@@ -178,34 +178,9 @@ Based on the design requirements, the current implementation needs to be updated
   - Display comprehensive workflow information in formatted table
   - _Requirements: 6.4_
 
-## Phase 4: RQ Groups Implementation Details
-
-- [ ] 4.1 Research and implement RQ Groups integration
-  - Research RQ Groups API and capabilities (may need to use RQ-Scheduler or custom implementation)
-  - Implement Group class wrapper if RQ Groups are not available in current RQ version
-  - Create group management utilities (create_group, add_job_to_group, get_group_status)
-  - Add group-based job lifecycle management (group creation, job addition, status tracking)
-  - Test RQ Groups functionality with Redis backend
-  - _Requirements: 3.1, 3.2, 3.3_
-
-- [ ] 4.2 Create RQ Groups database migration
-  - Create Alembic migration to add group_id field to workflows table
-  - Create migration to remove job_ids field from workflows table
-  - Add status field to workflows table for caching group status
-  - Create indexes on group_id for efficient querying
-  - Handle data migration for existing workflows (if any)
-  - _Requirements: 3.1_
-
-- [ ] 4.3 Update workflow error handling for RQ Groups
-  - Use RQ Groups' built-in job failure tracking
-  - Store error details in group metadata
-  - Implement group-based job restart logic for failed workflows
-  - Add group-level retry mechanisms
-  - Handle group expiration and cleanup
-  - _Requirements: 6.3, 3.4, 3.5_
-
-## Phase 5: Tests and workflow handling
-- [ ] 5.1 Add comprehensive RQ Groups testing
+## Phase 4: Tests and workflow handling
+- [x] 4. Tests and workflow handling
+- [x] 4.1 Add comprehensive RQ Groups testing
   - Unit tests for RQ Groups integration functions (See extralit-server/tests/unit/jobs/test_jobs.py)
   - Integration tests for complete workflow using RQ Groups
   - Test group-based job querying and status functions
@@ -213,7 +188,7 @@ Based on the design requirements, the current implementation needs to be updated
   - Test group failure and restart scenarios
   - _Requirements: All requirements validation, 3.1, 3.2, 3.3, 3.4, 3.5_
 
-- [ ] 5.2 Performance optimization for RQ Groups
+- [x] 4.2 Performance optimization for RQ Groups
   - Test with multiple concurrent workflows using RQ Groups
   - Optimize group-based job querying performance
   - Add monitoring for group and queue performance
@@ -221,7 +196,7 @@ Based on the design requirements, the current implementation needs to be updated
   - Benchmark RQ Groups vs individual job tracking performance
   - _Requirements: 7.2, 7.3, 7.5, 3.2_
 
-- [ ] 5.3 RQ Groups documentation and examples
+- [x] 4.3 RQ Groups documentation and examples
   - Document RQ Groups integration patterns
   - Create examples of group-based workflow management
   - Document group-based job restart procedures
