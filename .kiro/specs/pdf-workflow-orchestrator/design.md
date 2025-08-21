@@ -378,7 +378,7 @@ def _display_workflow_status_table(workflows: list, watch: bool = False):
 
             # Calculate duration
             import datetime
-            started = workflow.get('created_at')
+            started = workflow.get('inserted_at')
             if started:
                 if isinstance(started, str):
                     started = datetime.datetime.fromisoformat(started.replace('Z', '+00:00'))
@@ -535,45 +535,17 @@ class DocumentWorkflow(Base):
     __tablename__ = "workflows"
 
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    workflow_type: Mapped[str] = mapped_column(String(50))
+    workspace_id: Mapped[UUID] = mapped_column(ForeignKey("workspaces.id"), nullable=False)
     document_id: Mapped[UUID] = mapped_column(ForeignKey("documents.id"), nullable=False, index=True)
-    workflow_type: Mapped[str] = mapped_column(String(50), default="pdf_processing")
+    reference: Mapped[str] = mapped_column(String(255), nullable=True, index=True)  # For batch tracking
 
     # RQ Group integration
     group_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)  # RQ Group ID
-    reference: Mapped[str] = mapped_column(String(255), nullable=True, index=True)  # For batch tracking
-    workspace_name: Mapped[str] = mapped_column(String(255), nullable=False)
-
-    # Minimal tracking - RQ Group is source of truth for job status
-    initial_job_ids: Mapped[dict] = mapped_column(JSON, default=dict)  # Initial job IDs for reference
-
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
     document: Mapped["Document"] = relationship("Document", back_populates="workflows")
-
-    @classmethod
-    async def create_for_group(
-        cls,
-        db: AsyncSession,
-        document_id: UUID,
-        group_id: str,
-        reference: str,
-        workspace_name: str,
-        initial_job_ids: dict
-    ) -> "DocumentWorkflow":
-        """Create workflow record for RQ Group."""
-        workflow = cls(
-            document_id=document_id,
-            group_id=group_id,
-            reference=reference,
-            workspace_name=workspace_name,
-            initial_job_ids=initial_job_ids
-        )
-        db.add(workflow)
-        await db.commit()
-        await db.refresh(workflow)
-        return workflow
+    workspace: Mapped["Workspace"] = relationship("Workspace")
 
     @classmethod
     async def get_by_document_id(cls, db: AsyncSession, document_id: UUID) -> Optional["DocumentWorkflow"]:
@@ -588,18 +560,16 @@ class DocumentWorkflow(Base):
         return result.scalar_one_or_none()
 
     @classmethod
-    async def get_by_reference(cls, db: AsyncSession, reference: str, workspace_name: str = None) -> list["DocumentWorkflow"]:
+    async def get_by_reference(cls, db: AsyncSession, reference: str, workspace_id: str = None) -> list["DocumentWorkflow"]:
         """Get workflows by reference (batch tracking)."""
         query = select(cls).where(cls.reference == reference)
-        if workspace_name:
-            query = query.where(cls.workspace_name == workspace_name)
+        if workspace_id:
+            query = query.where(cls.workspace_id == workspace_id)
         result = await db.execute(query)
         return result.scalars().all()
 
     def get_workflow_status(self) -> dict:
         """Get workflow status from RQ Group (source of truth)."""
-        from extralit_server.workflows.pdf_workflow import pdf_workflow_orchestrator
-        return pdf_workflow_orchestrator.get_workflow_status(self.group_id)
 
     def is_resumable(self) -> bool:
         """Check if workflow can be resumed using RQ Group status."""
@@ -613,8 +583,6 @@ class DocumentWorkflow(Base):
 
     def restart_failed_jobs(self) -> dict:
         """Restart failed jobs using RQ Group orchestrator."""
-        from extralit_server.workflows.pdf_workflow import pdf_workflow_orchestrator
-        return pdf_workflow_orchestrator.restart_failed_jobs(self.document_id, self.group_id)
 ```
 
 ### New Pydantic Schemas for Job Input/Output

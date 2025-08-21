@@ -15,7 +15,7 @@
 import base64
 import secrets
 from datetime import datetime
-from typing import Any, Union
+from typing import Any, Optional, Union
 from uuid import UUID
 
 from pydantic import TypeAdapter
@@ -26,6 +26,7 @@ from sqlalchemy import (
     String,
     Text,
     UniqueConstraint,
+    select,
     sql,
 )
 from sqlalchemy import Enum as SAEnum
@@ -637,43 +638,6 @@ class User(DatabaseModel):
         )
 
 
-class DocumentWorkflow(DatabaseModel):
-    """Track document processing workflows for efficient job querying."""
-
-    __tablename__ = "workflows"
-
-    document_id: Mapped[UUID] = mapped_column(
-        ForeignKey("documents.id", ondelete="CASCADE"), nullable=False, index=True
-    )
-    workflow_type: Mapped[str] = mapped_column(String(50), default="pdf_processing")
-    status: Mapped[str] = mapped_column(String(50), default="queued")  # queued, running, completed, failed
-    job_ids: Mapped[dict] = mapped_column(MutableDict.as_mutable(JSON), default=dict)
-
-    document: Mapped["Document"] = relationship("Document", back_populates="workflows")
-
-    @classmethod
-    async def get_by_document_id(cls, db: AsyncSession, document_id: UUID) -> "DocumentWorkflow | None":
-        """Get workflow by document ID."""
-        return await cls.get_by(db, document_id=document_id)
-
-    async def update_status(self, db: AsyncSession, status: str) -> None:
-        """Update workflow status."""
-        self.status = status
-        await self.save(db, autocommit=True)
-
-    async def update_job_ids(self, db: AsyncSession, job_ids: dict) -> None:
-        """Update job IDs."""
-        self.job_ids = job_ids
-        await self.save(db, autocommit=True)
-
-    def __repr__(self):
-        return (
-            f"DocumentWorkflow(id={str(self.id)!r}, document_id={str(self.document_id)!r}, "
-            f"workflow_type={self.workflow_type!r}, status={self.status!r}, "
-            f"inserted_at={str(self.inserted_at)!r}, updated_at={str(self.updated_at)!r})"
-        )
-
-
 class Document(DatabaseModel):
     __tablename__ = "documents"
 
@@ -741,3 +705,44 @@ class ImportHistory(DatabaseModel):
             f"user_id={str(self.user_id)!r}, filename={self.filename!r}, "
             f"inserted_at={str(self.inserted_at)!r}, updated_at={str(self.updated_at)!r})"
         )
+
+
+class DocumentWorkflow(DatabaseModel):
+    """Track document processing workflows for efficient job querying."""
+
+    __tablename__ = "workflows"
+
+    workflow_type: Mapped[str] = mapped_column(String(50))
+    workspace_id: Mapped[UUID] = mapped_column(ForeignKey("workspaces.id"), nullable=False)
+    document_id: Mapped[UUID] = mapped_column(ForeignKey("documents.id"), nullable=False, index=True)
+    reference: Mapped[str] = mapped_column(String(255), nullable=True, index=True)  # For batch tracking
+
+    # RQ Group integration
+    group_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)  # RQ Group ID
+
+    # Relationships
+    document: Mapped["Document"] = relationship("Document", back_populates="workflows")
+    workspace: Mapped["Workspace"] = relationship("Workspace")
+
+    @classmethod
+    async def get_by_document_id(cls, db: AsyncSession, document_id: UUID) -> Optional["DocumentWorkflow"]:
+        """Get workflow by document ID."""
+        result = await db.execute(select(cls).where(cls.document_id == document_id))
+        return result.scalar_one_or_none()
+
+    @classmethod
+    async def get_by_group_id(cls, db: AsyncSession, group_id: str) -> Optional["DocumentWorkflow"]:
+        """Get workflow by RQ Group ID."""
+        result = await db.execute(select(cls).where(cls.group_id == group_id))
+        return result.scalar_one_or_none()
+
+    @classmethod
+    async def get_by_reference(
+        cls, db: AsyncSession, reference: str, workspace_id: str | None = None
+    ) -> list["DocumentWorkflow"]:
+        """Get workflows by reference (batch tracking)."""
+        query = select(cls).where(cls.reference == reference)
+        if workspace_id:
+            query = query.where(cls.workspace_id == workspace_id)
+        result = await db.execute(query)
+        return result.scalars().all()
