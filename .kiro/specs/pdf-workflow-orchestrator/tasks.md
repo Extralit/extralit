@@ -1,6 +1,6 @@
 # Implementation Plan
 
-## Phase 1: Basic RQ Job Chaining (Week 1)
+## Phase 1: Basic RQ Job Chaining
 
 - [x] 1. Refactor existing document upload job
   - Split `upload_and_preprocess_documents_job` into separate chained jobs
@@ -46,7 +46,7 @@
   - Maintain backward compatibility with existing API contracts
   - _Requirements: 5.1, 5.2_
 
-## Phase 2: Job Querying and API Enhancement (Week 2)
+## Phase 2: Job Querying and API Enhancement
 
 - [x] 2. Create Pydantic schemas for job input/output
   - Create api/schemas/v1/document/metadata.py with DocumentProcessingMetadata schema for documents.metadata_ field
@@ -82,14 +82,77 @@
   - Add workflow cleanup for expired/completed workflows
   - _Requirements: 2.1, 2.4, 6.5_
 
-## Phase 3: CLI and Error Handling (Week 3)
+## Phase 3: CLI
 
-- [ ] 4. Add CLI workflow management commands
-  - Create `workflow start` command using typer
-  - Create `workflow status` command to check document progress
-  - Create `workflow restart` command for failed jobs
+- [ ] 3. Add CLI workflow management commands
+- [ ] 3.1 Create FastAPI workflow endpoints
+  - Create `extralit-server/src/extralit_server/api/handlers/v1/workflows.py` with workflow router
+  - Add Pydantic schemas in `extralit-server/src/extralit_server/api/schemas/v1/workflows.py`
+  - Implement `POST /workflows/start` endpoint for starting workflows
+  - Implement `GET /workflows/status` endpoint for querying workflow status
+  - Implement `POST /workflows/restart` endpoint for restarting failed workflows
+  - Implement `GET /workflows/` endpoint for listing workflows with filters
   - _Requirements: 6.4_
 
+- [ ] 3.2 Extend WorkflowContext for API operations
+  - Add `get_workflow_status()` method to retrieve comprehensive workflow details
+  - Add `get_workflows_by_reference()` method for batch operations
+  - Add `list_workflows()` method with filtering and pagination
+  - Implement efficient database queries with proper indexing
+  - Add error handling for missing workflows and database connection issues
+  - _Requirements: 6.4_
+
+- [ ] 3.3 Implement workflow restart functionality
+  - Create `restart_failed_workflow()` function in workflows module
+  - Add logic to identify failed jobs using RQ job registries
+  - Implement job re-enqueueing with proper dependency chains
+  - Update DocumentWorkflow records with new job IDs
+  - Add support for partial vs full workflow restart scenarios
+  - _Requirements: 6.4_
+
+- [ ] 3.4 Create CLI module structure and integration
+  - Create `extralit/src/extralit/cli/workflows.py` with typer app
+  - Add workflow_app to main CLI using `app.add_typer(workflow_app, name="workflow")`
+  - Import Rich library components for formatted output (Console, Table, Progress)
+  - Set up HTTP client communication pattern following `import_bib.py` example
+  - Set up error handling patterns with typer.Exit and console.print
+  - _Requirements: 6.4_
+
+- [ ] 3.5 Implement CLI workflow start command
+  - Create `workflow start` command with document_id, workspace_name, reference, force, and verbose options
+  - Use `client.api.http_client.post()` to call `/workflows/start` endpoint
+  - Add validation and error handling for HTTP responses
+  - Add confirmation prompts and detailed output formatting
+  - Handle errors gracefully with user-friendly messages
+  - _Requirements: 6.4_
+
+- [ ] 3.6 Implement CLI workflow status command
+  - Create `workflow status` command with document_id, reference, workspace_name, watch, and json_output options
+  - Use `client.api.http_client.get()` to call `/workflows/status` endpoint
+  - Implement `_display_workflow_status_table()` helper function using Rich Table
+  - Add real-time status watching with `--watch` flag and periodic updates
+  - Support JSON output format for scripting and automation
+  - Calculate and display progress percentages and duration information
+  - _Requirements: 6.4_
+
+- [ ] 3.7 Implement CLI workflow restart command
+  - Create `workflow restart` command with document_id, reference, failed_only, and confirm options
+  - Use `client.api.http_client.post()` to call `/workflows/restart` endpoint
+  - Add confirmation prompts before restarting workflows
+  - Implement selective restart logic (failed jobs only vs full workflow)
+  - Display progress and results of restart operations
+  - _Requirements: 6.4_
+
+- [ ] 3.8 Implement CLI workflow list command
+  - Create `workflow list` command with workspace_name, status_filter, limit, and json_output options
+  - Use `client.api.http_client.get()` to call `/workflows/` endpoint
+  - Add filtering capabilities by workspace and status
+  - Implement pagination with configurable limits
+  - Support both table and JSON output formats
+  - Display comprehensive workflow information in formatted table
+  - _Requirements: 6.4_
+
+## Phase 4: Tests and workflow handling
 - [ ] 4.1 Implement workflow error handling
   - Use RQ's built-in retry mechanism for transient failures
   - Store error details in job metadata

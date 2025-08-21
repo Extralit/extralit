@@ -46,11 +46,11 @@ async def create_document_workflow(
 
     try:
         # Step 1: Create DocumentWorkflow record for tracking using sync database operations
-        with AsyncSessionLocal() as db:
+        async with AsyncSessionLocal() as db:
             workflow = DocumentWorkflow(
                 id=uuid4(), document_id=document_id, workflow_type="pdf_processing", status="running", job_ids={}
             )
-            await db.add(workflow)
+            db.add(workflow)
             await db.commit()
             await db.refresh(workflow)
 
@@ -81,9 +81,9 @@ async def create_document_workflow(
         }
 
         # Step 5: Update workflow with job IDs using sync database operations
-        with AsyncSessionLocal() as db:
+        async with AsyncSessionLocal() as db:
             workflow.job_ids = job_ids
-            await db.add(workflow)
+            db.add(workflow)
             await db.commit()
 
         _LOGGER.info(

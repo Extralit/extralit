@@ -80,12 +80,12 @@ The PDF Workflow Orchestrator leverages RQ's native job chaining capabilities to
 
 ### Requirement 7: Multi-Queue Worker Support
 
-**User Story:** As a system operator, I want to run workers on different queues for CPU and GPU tasks, so that I can scale processing based on resource requirements.
+**User Story:** As a system operator, I want to run workers on different queues, so that I can scale processing based on resource requirements.
 
 #### Acceptance Criteria
 
 1. WHEN running CPU workers THEN they SHALL process jobs from default and high priority queues
-2. WHEN running GPU workers THEN they SHALL process jobs from dedicated GPU queues
+2. WHEN running workers THEN they SHALL process jobs from dedicated queues
 3. WHEN scaling workers THEN the system SHALL support multiple workers per queue type
 4. WHEN jobs require specific resources THEN they SHALL be enqueued to appropriate queues
 5. WHEN workers are distributed THEN RQ SHALL handle job distribution and coordination automatically
@@ -99,6 +99,4 @@ The PDF Workflow Orchestrator leverages RQ's native job chaining capabilities to
 1. When enqueing PDF jobs, THEN they should ordered such that documents within reference are processed in FIFO order
 2. WHEN starting PDF processing THEN the system SHALL enqueue combined analysis and preprocessing job
 3. WHEN analysis and preprocessing complete THEN the system SHALL conditionally enqueue OCR job if needed
-4. WHEN analysis and preprocessing complete THEN the system SHALL enqueue text extraction job
-5. WHEN analysis and preprocessing complete THEN the system SHALL enqueue table extraction job on GPU queue
-6. WHEN text and table extraction complete THEN the system SHALL enqueue embedding job
+5. WHEN analysis and preprocessing complete THEN the system SHALL enqueue table extraction job
