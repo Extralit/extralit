@@ -14,7 +14,6 @@
 
 
 import logging
-from typing import Any
 from uuid import UUID, uuid4
 
 from rq.group import Group
@@ -29,7 +28,7 @@ _LOGGER = logging.getLogger(__name__)
 
 async def create_document_workflow(
     document_id: UUID, s3_url: str, reference: str, workspace_name: str, workspace_id: UUID
-) -> dict[str, Any]:
+) -> Group:
     """
     Start PDF processing workflow using RQ Groups for job tracking.
 
@@ -46,11 +45,7 @@ async def create_document_workflow(
     Returns:
         Dictionary containing workflow_id and group_id for tracking
     """
-
-    # Step 1: Generate unique group ID for this workflow
-    group_id = f"pdf_workflow_{document_id}_{uuid4().hex[:8]}"
-
-    # Step 2: Create RQ Group for workflow tracking
+    group_id = f"document_workflow_{document_id}_{uuid4().hex[:8]}"
     group = Group(REDIS_CONNECTION, name=group_id)
 
     # Step 3: Create DocumentWorkflow record for tracking
@@ -95,8 +90,8 @@ async def create_document_workflow(
         },
     )
 
-    jobs = group.enqueue_many(queue=DEFAULT_QUEUE, job_datas=[analysis_job_data])
-    gpu_jobs = group.enqueue_many(queue=OCR_QUEUE, job_datas=[text_extraction_job_data])
+    group.enqueue_many(queue=DEFAULT_QUEUE, job_datas=[analysis_job_data])
+    group.enqueue_many(queue=OCR_QUEUE, job_datas=[text_extraction_job_data])
 
     # Step 6: Future table extraction job (conditional based on analysis results)
     # This will be added when table extraction is implemented
@@ -116,13 +111,4 @@ async def create_document_workflow(
 
     _LOGGER.info(f"Started PDF workflow {workflow.id} for document {document_id} with group {group_id}")
 
-    return {
-        "workflow_id": str(workflow.id),
-        "group_id": group_id,
-        "document_id": str(document_id),
-        "reference": reference,
-        "jobs": {
-            "analysis_and_preprocess": jobs[0].id if jobs else None,
-            "text_extraction": gpu_jobs[0].id if gpu_jobs else None,
-        },
-    }
+    return group

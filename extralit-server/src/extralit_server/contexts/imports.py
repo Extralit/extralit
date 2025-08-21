@@ -340,7 +340,7 @@ async def process_bulk_upload(
     Process bulk document upload with associated PDF files using new workflow orchestrator.
 
     This function now handles file upload to S3 before job enqueueing, creates document records
-    in database, and uses the new start_pdf_workflow() orchestrator for processing.
+    in database, and uses the new start_document_workflow() orchestrator for processing.
 
     Args:
         bulk_create: DocumentsBulkCreate with reference-based document information
@@ -386,7 +386,7 @@ async def process_bulk_upload(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to get storage client")
 
     # Process each reference: upload files to S3, create documents, start workflows
-    job_ids = {}
+    job_ids: dict[str, list[str]] = {}
     failed_validations = []
 
     async with AsyncSessionLocal() as db:
@@ -477,10 +477,10 @@ async def process_bulk_upload(
                     continue
 
                 # Start workflows for each uploaded document
-                reference_workflows = {}
+                document_job_group = {}
                 for document in uploaded_documents:
                     try:
-                        workflow_result = await create_document_workflow(
+                        job_group = await create_document_workflow(
                             document_id=document.id,
                             s3_url=document.url,
                             reference=reference,
@@ -488,23 +488,16 @@ async def process_bulk_upload(
                             workspace_id=workspace.id,
                         )
 
-                        reference_workflows[str(document.id)] = {
-                            "workflow_id": workflow_result["workflow_id"],
-                            "group_id": workflow_result["group_id"],
-                            "jobs": workflow_result["jobs"],
-                        }
-                        _LOGGER.info(
-                            f"Started workflow {workflow_result['workflow_id']} for document {document.id} "
-                            f"in reference {reference} with group {workflow_result['group_id']}"
-                        )
+                        # Store the group object for later use
+                        document_job_group[str(document.id)] = job_group
 
                     except Exception as e:
                         _LOGGER.error(f"Error starting workflow for document {document.id}: {e}")
                         failed_validations.append(f"{reference}/{document.file_name}: Workflow start failed: {e}")
 
-                # Store all workflow information for this reference
-                if reference_workflows:
-                    job_ids[reference] = reference_workflows
+                # For each reference, select first job id
+                # TODO handle multiple jobs per reference or skip reporting job status during frontend upload
+                job_ids[reference] = next(group for group in document_job_group.values()).get_jobs()[0].id
 
             except Exception as e:
                 _LOGGER.error(f"Error processing reference {reference}: {e!s}")

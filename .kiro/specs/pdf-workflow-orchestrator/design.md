@@ -63,7 +63,7 @@ router = APIRouter(tags=["workflows"])
 @router.post("/workflows/start", response_model=StartWorkflowResponse)
 async def start_workflow(request: StartWorkflowRequest) -> StartWorkflowResponse:
     """Start PDF processing workflow for a document."""
-    # Implementation calls start_pdf_workflow() function
+    # Implementation calls start_document_workflow() function
     pass
 
 @router.get("/workflows/status", response_model=List[WorkflowStatusResponse])
