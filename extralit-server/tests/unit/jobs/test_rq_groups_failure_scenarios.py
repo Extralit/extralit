@@ -158,6 +158,9 @@ class TestRQGroupsFailureScenarios:
         memory_error_job.get_status.return_value = "failed"
         memory_error_job.meta = {"workflow_step": "analysis_and_preprocess"}
         memory_error_job.exc_info = "MemoryError: Unable to allocate memory for PDF processing"
+        memory_error_job.created_at = datetime.now(timezone.utc)
+        memory_error_job.started_at = datetime.now(timezone.utc)
+        memory_error_job.ended_at = datetime.now(timezone.utc)
 
         mock_group = MagicMock(spec=Group)
         mock_group.get_jobs.return_value = [memory_error_job]

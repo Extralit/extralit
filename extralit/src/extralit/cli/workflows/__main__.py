@@ -71,7 +71,17 @@ def start(
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Show detailed output"),
 ) -> None:
     """Start PDF processing workflow for a document."""
-    client = Extralit.from_credentials()
+    try:
+        client = Extralit.from_credentials()
+    except Exception as e:
+        panel = get_themed_panel(
+            f"Authentication failed: {e}",
+            title="Authentication Error",
+            title_align="left",
+            success=False,
+        )
+        console.print(panel)
+        raise typer.Exit(1)
 
     try:
         # Validate document_id is a valid UUID
@@ -153,7 +163,17 @@ def status(
     json_output: bool = typer.Option(False, "--json", help="Output status as JSON"),
 ) -> None:
     """Check workflow status for documents."""
-    client = Extralit.from_credentials()
+    try:
+        client = Extralit.from_credentials()
+    except Exception as e:
+        panel = get_themed_panel(
+            f"Authentication failed: {e}",
+            title="Authentication Error",
+            title_align="left",
+            success=False,
+        )
+        console.print(panel)
+        raise typer.Exit(1)
 
     try:
         if not document_id and not reference:
@@ -326,10 +346,20 @@ def restart(
     reference: Optional[str] = typer.Option(None, "--reference", "-r", help="Document reference to restart"),
     workspace_name: Optional[str] = typer.Option(None, "--workspace", "-w", help="Filter by workspace name"),
     failed_only: bool = typer.Option(True, "--failed-only/--all", help="Only restart failed jobs"),
-    confirm: bool = typer.Option(False, "--force", "-f", help="Skip confirmation prompt"),
+    confirm: bool = typer.Option(False, "--yes", "-y", help="Skip confirmation prompt"),
 ) -> None:
     """Restart failed workflow jobs for documents."""
-    client = Extralit.from_credentials()
+    try:
+        client = Extralit.from_credentials()
+    except Exception as e:
+        panel = get_themed_panel(
+            f"Authentication failed: {e}",
+            title="Authentication Error",
+            title_align="left",
+            success=False,
+        )
+        console.print(panel)
+        raise typer.Exit(1)
 
     try:
         if not document_id and not reference:
@@ -499,16 +529,41 @@ def list(
     json_output: bool = typer.Option(False, "--json", help="Output as JSON"),
 ) -> None:
     """List recent workflows."""
-    client = Extralit.from_credentials()
+    try:
+        client = Extralit.from_credentials()
+    except Exception as e:
+        panel = get_themed_panel(
+            f"Authentication failed: {e}",
+            title="Authentication Error",
+            title_align="left",
+            success=False,
+        )
+        console.print(panel)
+        raise typer.Exit(1)
 
     try:
-        with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            console=console,
-        ) as progress:
-            task = progress.add_task("Fetching workflows...", total=None)
+        # Don't show progress for JSON output
+        if not json_output:
+            with Progress(
+                SpinnerColumn(),
+                TextColumn("[progress.description]{task.description}"),
+                console=console,
+            ) as progress:
+                task = progress.add_task("Fetching workflows...", total=None)
 
+                # Use client.api.http_client.get() to call /workflows/ endpoint
+                params = {"limit": limit}
+                if workspace_name:
+                    params["workspace_name"] = workspace_name
+                if status_filter:
+                    params["status_filter"] = status_filter
+
+                response = client.api.http_client.get(
+                    f"{client.api_url}/api/v1/workflows/",
+                    params=params,
+                )
+                progress.update(task, completed=True, description="Workflows retrieved")
+        else:
             # Use client.api.http_client.get() to call /workflows/ endpoint
             params = {"limit": limit}
             if workspace_name:
@@ -520,7 +575,6 @@ def list(
                 f"{client.api_url}/api/v1/workflows/",
                 params=params,
             )
-            progress.update(task, completed=True, description="Workflows retrieved")
 
         if response.status_code != 200:
             _handle_http_error(response, "listing workflows")
