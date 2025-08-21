@@ -32,66 +32,413 @@ POST /documents/bulk → process_bulk_upload() → Upload files to S3 + Create D
 The design uses existing file operations from `contexts/files.py` but requires some helper functions to be added:
 
 
-## CLI Commands (Using Typer)
+## CLI Commands Architecture
+
+### Overview
+
+The CLI workflow management system integrates with the existing Extralit CLI using Typer's sub-application pattern. It communicates with the server through FastAPI endpoints using the HTTP client, following the same pattern as the existing `import_bib.py` command.
+
+**Key Architecture Principles:**
+- CLI located in `extralit/src/extralit/cli/` (client-side)
+- Server endpoints in `extralit-server/src/extralit_server/api/handlers/v1/` (server-side)
+- Communication via `client.api.http_client.post/get()` calls
+- No direct imports between CLI and server modules
+
+### Required FastAPI Endpoints
+
+Before implementing the CLI, we need these server endpoints:
 
 ```python
-# Add to existing CLI using typer
-import typer
-from extralit_server.jobs.documents import create_document_workflow, get_jobs_for_document
+# extralit-server/src/extralit_server/api/handlers/v1/workflows.py
+from fastapi import APIRouter, HTTPException, Query, Security
+from typing import Optional, List
+from uuid import UUID
+from extralit_server.api.schemas.v1.workflows import (
+    StartWorkflowRequest, StartWorkflowResponse,
+    WorkflowStatusResponse, RestartWorkflowRequest
+)
 
-workflow_app = typer.Typer()
+router = APIRouter(tags=["workflows"])
+
+@router.post("/workflows/start", response_model=StartWorkflowResponse)
+async def start_workflow(request: StartWorkflowRequest) -> StartWorkflowResponse:
+    """Start PDF processing workflow for a document."""
+    # Implementation calls start_pdf_workflow() function
+    pass
+
+@router.get("/workflows/status", response_model=List[WorkflowStatusResponse])
+async def get_workflow_status(
+    document_id: Optional[UUID] = Query(None),
+    reference: Optional[str] = Query(None),
+    workspace_name: Optional[str] = Query(None)
+) -> List[WorkflowStatusResponse]:
+    """Get workflow status for documents."""
+    # Implementation calls WorkflowContext methods
+    pass
+
+@router.post("/workflows/restart", response_model=StartWorkflowResponse)
+async def restart_workflow(request: RestartWorkflowRequest) -> StartWorkflowResponse:
+    """Restart failed workflow jobs using DAG-based resumability."""
+    try:
+        # Get current workflow state
+        workflow = await DocumentWorkflow.get_by_document_id(db, request.document_id)
+        if not workflow:
+            raise HTTPException(404, "Workflow not found")
+
+        if not workflow.is_resumable():
+            raise HTTPException(400, "Workflow is not in a resumable state")
+
+        # Get workflow context for resumption
+        current_context = workflow.get_workflow_context()
+
+        updated_context = resume_workflow(
+            request.document_id,
+            current_context
+        )
+
+        # Update workflow record
+        workflow.update_workflow_context(updated_context)
+        await db.commit()
+
+        return StartWorkflowResponse(
+            workflow_id=str(workflow.id),
+            document_id=str(request.document_id),
+            job_ids=updated_context["job_ids"],
+            status="running",
+            restarted_jobs=workflow.get_failed_jobs()
+        )
+
+    except Exception as e:
+        raise HTTPException(500, f"Failed to restart workflow: {str(e)}")
+    pass
+
+@router.get("/workflows/", response_model=List[WorkflowStatusResponse])
+async def list_workflows(
+    workspace_name: Optional[str] = Query(None),
+    status_filter: Optional[str] = Query(None),
+    limit: int = Query(50)
+) -> List[WorkflowStatusResponse]:
+    """List workflows with optional filtering."""
+    # Implementation calls WorkflowContext.list_workflows()
+    pass
+```
+
+### CLI Implementation
+
+```python
+# extralit/src/extralit/cli/workflows.py
+import typer
+from typing import Optional
+from uuid import UUID
+from rich.console import Console
+from rich.table import Table
+from rich.progress import Progress, SpinnerColumn, TextColumn
+from extralit.client import Extralit
+
+console = Console()
+workflow_app = typer.Typer(help="Manage PDF processing workflows")
 
 @workflow_app.command()
 def start(
     document_id: str = typer.Option(..., help="Document UUID to process"),
-    reference: str = typer.Option(None, help="Document reference"),
-    workspace_id: str = typer.Option(..., help="Workspace UUID"),
-    user_id: str = typer.Option(..., help="User UUID")
+    workspace_name: str = typer.Option(..., help="Workspace name"),
+    reference: str = typer.Option(None, help="Document reference for tracking"),
+    force: bool = typer.Option(False, help="Force restart if workflow already exists"),
+    verbose: bool = typer.Option(False, "-v", "--verbose", help="Show detailed output")
 ):
     """Start PDF processing workflow for a document."""
     try:
-        # Get document and S3 URL from database
-        doc = get_document_by_id(UUID(document_id))
-        s3_url = get_document_s3_url(doc)
+        client = Extralit.from_credentials()
 
-        job_ids = create_document_workflow(
-            UUID(document_id),
-            s3_url,
-            reference or f"doc_{document_id[:8]}",
-            UUID(workspace_id),
-            UUID(user_id)
+        # Call server endpoint
+        response = client.api.http_client.post(
+            f"{client.api_url}/api/v1/workflows/start",
+            json={
+                "document_id": document_id,
+                "workspace_name": workspace_name,
+                "reference": reference or f"doc_{document_id[:8]}",
+                "force": force
+            }
         )
-        typer.echo(f"Started workflow jobs: {job_ids}")
+
+        if response.status_code != 200:
+            error_detail = response.json().get("detail", str(response.text))
+            raise ValueError(f"Error starting workflow: {error_detail}")
+
+        result = response.json()
+        console.print(f"[green]✓ Started workflow {result['workflow_id']}[/green]")
+
+        if verbose:
+            console.print(f"Document ID: {result['document_id']}")
+            console.print(f"Reference: {result['reference']}")
+            console.print(f"Job IDs: {result['job_ids']}")
+
+        console.print(f"Track progress with: [bold]extralit workflow status --document-id {document_id}[/bold]")
+
     except Exception as e:
-        typer.echo(f"Error starting workflow: {e}", err=True)
+        console.print(f"[red]Error starting workflow: {e}[/red]")
+        raise typer.Exit(1)
 
 @workflow_app.command()
 def status(
     document_id: str = typer.Option(None, help="Document UUID to check"),
-    reference: str = typer.Option(None, help="Document reference to check")
+    reference: str = typer.Option(None, help="Document reference to check"),
+    workspace_name: str = typer.Option(None, help="Filter by workspace name"),
+    watch: bool = typer.Option(False, "-w", "--watch", help="Watch status updates in real-time"),
+    json_output: bool = typer.Option(False, "--json", help="Output status as JSON")
 ):
-    """Check workflow status."""
+    """Check workflow status for documents."""
     try:
+        if not document_id and not reference:
+            console.print("[red]Must specify either --document-id or --reference[/red]")
+            raise typer.Exit(1)
+
+        client = Extralit.from_credentials()
+
+        # Call server endpoint
+        params = {}
         if document_id:
-            jobs = get_jobs_for_document(UUID(document_id))
-        elif reference:
-            jobs = get_jobs_by_reference(reference)
-        else:
-            typer.echo("Must specify either --document-id or --reference", err=True)
+            params["document_id"] = document_id
+        if reference:
+            params["reference"] = reference
+        if workspace_name:
+            params["workspace_name"] = workspace_name
+
+        response = client.api.http_client.get(
+            f"{client.api_url}/api/v1/workflows/status",
+            params=params
+        )
+
+        if response.status_code != 200:
+            error_detail = response.json().get("detail", str(response.text))
+            raise ValueError(f"Error checking status: {error_detail}")
+
+        workflows = response.json()
+
+        if not workflows:
+            console.print("[yellow]No workflows found[/yellow]")
             return
 
-        if not jobs:
-            typer.echo("No jobs found")
+        if json_output:
+            import json
+            console.print(json.dumps(workflows, indent=2))
             return
 
-        typer.echo(f"Found {len(jobs)} jobs:")
-        for job in jobs:
-            typer.echo(f"  {job['workflow_step']}: {job['status']} ({job['job_id']})")
+        # Display status table
+        _display_workflow_status_table(workflows, watch)
+
     except Exception as e:
-        typer.echo(f"Error checking status: {e}", err=True)
+        console.print(f"[red]Error checking status: {e}[/red]")
+        raise typer.Exit(1)
+
+@workflow_app.command()
+def restart(
+    document_id: str = typer.Option(None, help="Document UUID to restart"),
+    reference: str = typer.Option(None, help="Document reference to restart"),
+    workspace_name: str = typer.Option(None, help="Filter by workspace name"),
+    failed_only: bool = typer.Option(True, help="Only restart failed jobs"),
+    confirm: bool = typer.Option(False, "-y", "--yes", help="Skip confirmation prompt")
+):
+    """Restart failed workflow jobs for documents."""
+    try:
+        if not document_id and not reference:
+            console.print("[red]Must specify either --document-id or --reference[/red]")
+            raise typer.Exit(1)
+
+        client = Extralit.from_credentials()
+
+        # First get workflows to restart
+        params = {}
+        if document_id:
+            params["document_id"] = document_id
+        if reference:
+            params["reference"] = reference
+        if workspace_name:
+            params["workspace_name"] = workspace_name
+
+        status_response = client.api.http_client.get(
+            f"{client.api_url}/api/v1/workflows/status",
+            params=params
+        )
+
+        if status_response.status_code != 200:
+            raise ValueError("Failed to get workflow status")
+
+        workflows = status_response.json()
+        failed_workflows = [w for w in workflows if w['status'] == 'failed']
+
+        if not failed_workflows:
+            console.print("[yellow]No failed workflows found[/yellow]")
+            return
+
+        # Confirmation prompt
+        if not confirm:
+            workflow_count = len(failed_workflows)
+            if not typer.confirm(f"Restart {workflow_count} failed workflow(s)?"):
+                console.print("Cancelled")
+                return
+
+        # Restart workflows
+        restarted_count = 0
+        for workflow in failed_workflows:
+            try:
+                restart_response = client.api.http_client.post(
+                    f"{client.api_url}/api/v1/workflows/restart",
+                    json={
+                        "document_id": workflow['document_id'],
+                        "failed_only": failed_only
+                    }
+                )
+
+                if restart_response.status_code == 200:
+                    console.print(f"[green]✓ Restarted workflow for document {workflow['document_id']}[/green]")
+                    restarted_count += 1
+                else:
+                    error_detail = restart_response.json().get("detail", "Unknown error")
+                    console.print(f"[red]✗ Failed to restart workflow for document {workflow['document_id']}: {error_detail}[/red]")
+
+            except Exception as e:
+                console.print(f"[red]✗ Failed to restart workflow for document {workflow['document_id']}: {e}[/red]")
+
+        console.print(f"[blue]Restarted {restarted_count} of {len(failed_workflows)} workflows[/blue]")
+
+    except Exception as e:
+        console.print(f"[red]Error restarting workflows: {e}[/red]")
+        raise typer.Exit(1)
+
+@workflow_app.command()
+def list(
+    workspace_name: str = typer.Option(None, help="Filter by workspace name"),
+    status_filter: str = typer.Option(None, help="Filter by status (running, completed, failed)"),
+    limit: int = typer.Option(50, help="Maximum number of workflows to show"),
+    json_output: bool = typer.Option(False, "--json", help="Output as JSON")
+):
+    """List recent workflows."""
+    try:
+        client = Extralit.from_credentials()
+
+        params = {"limit": limit}
+        if workspace_name:
+            params["workspace_name"] = workspace_name
+        if status_filter:
+            params["status_filter"] = status_filter
+
+        response = client.api.http_client.get(
+            f"{client.api_url}/api/v1/workflows/",
+            params=params
+        )
+
+        if response.status_code != 200:
+            error_detail = response.json().get("detail", str(response.text))
+            raise ValueError(f"Error listing workflows: {error_detail}")
+
+        workflows = response.json()
+
+        if not workflows:
+            console.print("[yellow]No workflows found[/yellow]")
+            return
+
+        if json_output:
+            import json
+            console.print(json.dumps(workflows, indent=2, default=str))
+            return
+
+        _display_workflow_status_table(workflows, watch=False)
+
+    except Exception as e:
+        console.print(f"[red]Error listing workflows: {e}[/red]")
+        raise typer.Exit(1)
+
+def _display_workflow_status_table(workflows: list, watch: bool = False):
+    """Display workflow status in a formatted table."""
+    def create_table():
+        table = Table(title="PDF Processing Workflows")
+        table.add_column("Document ID", style="cyan", no_wrap=True)
+        table.add_column("Reference", style="magenta")
+        table.add_column("Workspace", style="blue")
+        table.add_column("Status", style="green")
+        table.add_column("Progress", style="yellow")
+        table.add_column("Started", style="dim")
+        table.add_column("Duration", style="dim")
+
+        for workflow in workflows:
+            # Calculate progress percentage
+            total_jobs = len(workflow.get('job_ids', {}))
+            completed_jobs = sum(1 for job in workflow.get('jobs', []) if job['status'] == 'finished')
+            progress = f"{completed_jobs}/{total_jobs} ({int(completed_jobs/total_jobs*100) if total_jobs > 0 else 0}%)"
+
+            # Format status with color
+            status = workflow['status']
+            if status == 'completed':
+                status = f"[green]{status}[/green]"
+            elif status == 'failed':
+                status = f"[red]{status}[/red]"
+            elif status == 'running':
+                status = f"[yellow]{status}[/yellow]"
+
+            # Calculate duration
+            import datetime
+            started = workflow.get('created_at')
+            if started:
+                if isinstance(started, str):
+                    started = datetime.datetime.fromisoformat(started.replace('Z', '+00:00'))
+                duration = str(datetime.datetime.utcnow() - started.replace(tzinfo=None)).split('.')[0]
+            else:
+                duration = "Unknown"
+
+            table.add_row(
+                workflow['document_id'][:8] + "...",
+                workflow.get('reference', 'N/A'),
+                workflow.get('workspace_name', 'N/A'),
+                status,
+                progress,
+                started.strftime('%Y-%m-%d %H:%M') if started else 'N/A',
+                duration
+            )
+
+        return table
+
+    if watch:
+        import time
+        try:
+            while True:
+                console.clear()
+                console.print(create_table())
+                console.print("\n[dim]Press Ctrl+C to stop watching[/dim]")
+                time.sleep(5)
+        except KeyboardInterrupt:
+            console.print("\n[yellow]Stopped watching[/yellow]")
+    else:
+        console.print(create_table())
 
 # Add to main CLI app
-app.add_typer(workflow_app, name="workflow")
+# In extralit/src/extralit/cli/__init__.py
+# app.add_typer(workflow_app, name="workflow")
+```
+
+### CLI Usage Examples
+
+```bash
+# Start workflow for a specific document
+extralit workflow start --document-id 123e4567-e89b-12d3-a456-426614174000 --workspace-name "research-papers"
+
+# Check status of a specific document
+extralit workflow status --document-id 123e4567-e89b-12d3-a456-426614174000
+
+# Check status of all documents in a reference batch
+extralit workflow status --reference "batch_2024_01_15" --workspace-name "research-papers"
+
+# Watch status updates in real-time
+extralit workflow status --document-id 123e4567-e89b-12d3-a456-426614174000 --watch
+
+# List recent workflows
+extralit workflow list --workspace-name "research-papers" --status-filter "failed"
+
+# Restart failed workflows
+extralit workflow restart --reference "batch_2024_01_15" --failed-only
+
+# Get status as JSON for scripting
+extralit workflow status --document-id 123e4567-e89b-12d3-a456-426614174000 --json
 ```
 
 ## Data Models
@@ -172,25 +519,33 @@ class DocumentProcessingMetadata(BaseModel):
         ])
 ```
 
-### Database Model for Workflow Tracking
+### Simplified Database Model Using RQ Groups
 
 ```python
-# extralit_server/src/extralit_server/models/database.py (add to existing models)
+# extralit_server/src/extralit_server/models/database.py (simplified for RQ Groups)
 from sqlalchemy import Column, String, JSON, DateTime, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from uuid import uuid4
 from datetime import datetime
+from typing import Optional
 
 class DocumentWorkflow(Base):
-    """Track document processing workflows for efficient job querying."""
+    """Simplified workflow tracking using RQ Groups as source of truth."""
     __tablename__ = "workflows"
 
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
     document_id: Mapped[UUID] = mapped_column(ForeignKey("documents.id"), nullable=False, index=True)
     workflow_type: Mapped[str] = mapped_column(String(50), default="pdf_processing")
-    status: Mapped[str] = mapped_column(String(50), default="queued")  # queued, running, completed, failed
-    job_ids: Mapped[dict] = mapped_column(JSON, default=dict)  # Map of step_name -> job_id
+
+    # RQ Group integration
+    group_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)  # RQ Group ID
+    reference: Mapped[str] = mapped_column(String(255), nullable=True, index=True)  # For batch tracking
+    workspace_name: Mapped[str] = mapped_column(String(255), nullable=False)
+
+    # Minimal tracking - RQ Group is source of truth for job status
+    initial_job_ids: Mapped[dict] = mapped_column(JSON, default=dict)  # Initial job IDs for reference
+
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -198,33 +553,68 @@ class DocumentWorkflow(Base):
     document: Mapped["Document"] = relationship("Document", back_populates="workflows")
 
     @classmethod
-    def get_by_document_id(cls, db: AsyncSession, document_id: UUID) -> Optional["DocumentWorkflow"]:
+    async def create_for_group(
+        cls,
+        db: AsyncSession,
+        document_id: UUID,
+        group_id: str,
+        reference: str,
+        workspace_name: str,
+        initial_job_ids: dict
+    ) -> "DocumentWorkflow":
+        """Create workflow record for RQ Group."""
+        workflow = cls(
+            document_id=document_id,
+            group_id=group_id,
+            reference=reference,
+            workspace_name=workspace_name,
+            initial_job_ids=initial_job_ids
+        )
+        db.add(workflow)
+        await db.commit()
+        await db.refresh(workflow)
+        return workflow
+
+    @classmethod
+    async def get_by_document_id(cls, db: AsyncSession, document_id: UUID) -> Optional["DocumentWorkflow"]:
         """Get workflow by document ID."""
-        return db.query(cls).filter(cls.document_id == document_id).first()
+        result = await db.execute(select(cls).where(cls.document_id == document_id))
+        return result.scalar_one_or_none()
 
-    def update_job_status(self, db: AsyncSession, step_name: str, job_id: str, status: str):
-        """Update individual job status and overall workflow status."""
-        if step_name not in self.job_ids:
-            self.job_ids[step_name] = job_id
+    @classmethod
+    async def get_by_group_id(cls, db: AsyncSession, group_id: str) -> Optional["DocumentWorkflow"]:
+        """Get workflow by RQ Group ID."""
+        result = await db.execute(select(cls).where(cls.group_id == group_id))
+        return result.scalar_one_or_none()
 
-        # Update overall workflow status based on job statuses
-        if status == "failed":
-            self.status = "failed"
-        elif all(self._get_job_status(job_id) == "finished" for job_id in self.job_ids.values()):
-            self.status = "completed"
-        elif any(self._get_job_status(job_id) in ["started", "queued"] for job_id in self.job_ids.values()):
-            self.status = "running"
+    @classmethod
+    async def get_by_reference(cls, db: AsyncSession, reference: str, workspace_name: str = None) -> list["DocumentWorkflow"]:
+        """Get workflows by reference (batch tracking)."""
+        query = select(cls).where(cls.reference == reference)
+        if workspace_name:
+            query = query.where(cls.workspace_name == workspace_name)
+        result = await db.execute(query)
+        return result.scalars().all()
 
-        self.updated_at = datetime.utcnow()
-        db.commit()
+    def get_workflow_status(self) -> dict:
+        """Get workflow status from RQ Group (source of truth)."""
+        from extralit_server.workflows.pdf_workflow import pdf_workflow_orchestrator
+        return pdf_workflow_orchestrator.get_workflow_status(self.group_id)
 
-    def _get_job_status(self, job_id: str) -> str:
-        """Helper to get job status from RQ."""
-        try:
-            job = Job.fetch(job_id, connection=REDIS_CONNECTION)
-            return job.get_status()
-        except:
-            return "unknown"
+    def is_resumable(self) -> bool:
+        """Check if workflow can be resumed using RQ Group status."""
+        status = self.get_workflow_status()
+        if status.get("error"):
+            return False
+
+        failed_jobs = status.get("failed_jobs", 0)
+        completed_jobs = status.get("completed_jobs", 0)
+        return failed_jobs > 0 and completed_jobs > 0
+
+    def restart_failed_jobs(self) -> dict:
+        """Restart failed jobs using RQ Group orchestrator."""
+        from extralit_server.workflows.pdf_workflow import pdf_workflow_orchestrator
+        return pdf_workflow_orchestrator.restart_failed_jobs(self.document_id, self.group_id)
 ```
 
 ### New Pydantic Schemas for Job Input/Output
@@ -281,16 +671,42 @@ class WorkflowJobResult(BaseModel):
     completed_at: Optional[datetime] = None
 ```
 
+## RQ-Native Workflow Design
+
+### Leveraging RQ Groups and Dependencies
+
+Instead of building custom workflow orchestration, we use RQ's native Groups and job dependencies for resumable workflows:
+
+### Job Properties for Resumability
+
+Each job must have these properties to enable resumability:
+
+1. **Idempotency**: Jobs can be safely re-run without side effects
+2. **Artifact Management**: Clear definition of what artifacts are produced/consumed
+3. **Context Awareness**: Jobs receive and update workflow context
+4. **Dependency Declaration**: Explicit dependencies in the DAG definition
+5. **Conditional Logic**: Ability to skip jobs based on workflow state
+
+### RQ-Native Job Implementation Pattern
+
+```python
+# extralit_server/src/extralit_server/jobs/pdf.py
+from rq import get_current_job
+from rq.job import Job
+
+```
+
 ### Integration with Existing Code Structure
 
-The design leverages existing modules:
+The design leverages existing modules while adding resumability:
 
 1. **Analysis Job**: Uses `PDFOCRLayerDetector` from `analysis.py` and `PDFAnalyzer` from `margin.py`
 2. **Preprocess Job**: Uses `PDFPreprocessor` from `preprocessing.py` with analysis disabled
 3. **File Handling**: Uses existing `download_file_from_s3()` and `upload_file_to_s3()` from `files.py`
 4. **Schemas**: Extends existing `PDFMetadata` from `preprocessing.py`
+5. **Workflow State**: Stored in enhanced `DocumentWorkflow` model with artifact tracking
 
-This approach minimizes code duplication and leverages the existing, well-tested PDF processing logic.
+This approach minimizes code duplication and leverages the existing, well-tested PDF processing logic while adding comprehensive resumability.
 
 ## Implementation Strategy
 

@@ -43,7 +43,7 @@ _LOGGER = logging.getLogger(__name__)
     timeout=JOB_TIMEOUT_DISABLED,
     retry=Retry(max=3, interval=[10, 30, 60]),
 )
-async def upload_and_preprocess_documents_job(
+async def upload_and_preprocess_documents_job(  # Deprecated
     reference: str,
     reference_data: dict[str, Any],
     file_data_list: list[tuple[str, bytes]],  # List of (filename, file_data) tuples
