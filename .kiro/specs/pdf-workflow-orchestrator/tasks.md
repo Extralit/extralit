@@ -63,11 +63,6 @@ Based on the design requirements, the current implementation needs to be updated
   - Update workflow to use single analysis_and_preprocess_job instead of separate jobs
   - _Requirements: 1.1, 1.3, 1.4, 8.1_
 
-- [x] 1.5 Set up queue routing for GPU tasks
-  - Add GPU_QUEUE to existing queue configuration
-  - Route table extraction jobs to GPU queue in workflow orchestrator
-  - Test queue routing with existing worker setup
-  - _Requirements: 7.1, 7.4, 8.4_
 
 - [x] 1.6 Update process_bulk_upload function for RQ Groups
   - Move file upload to S3 into process_bulk_upload (before job enqueueing)
@@ -85,7 +80,7 @@ Based on the design requirements, the current implementation needs to be updated
   - Ensure all schemas have proper type hints and validation
   - _Requirements: 4.1, 4.2_
 
-- [ ] 2.1 Implement RQ Groups-based job querying
+- [x] 2.1 Implement RQ Groups-based job querying
   - Update `get_jobs_for_document(db, document_id)` to use RQ Group.get_jobs() via group_id
   - Update `get_jobs_by_reference(db, reference)` to query multiple groups
   - Update `get_workflow_status(db, document_id)` to use RQ Group status methods
@@ -93,7 +88,7 @@ Based on the design requirements, the current implementation needs to be updated
   - Handle group expiration and missing groups gracefully
   - _Requirements: 2.2, 2.5, 3.2, 3.3_
 
-- [ ] 2.2 Update jobs API endpoint for RQ Groups
+- [x] 2.2 Update jobs API endpoint for RQ Groups
   - Update GET /jobs/ to use RQ Groups-based job querying functions
   - Add group_id parameter for direct group querying
   - Modify WorkflowJobResult schema to include group information
@@ -101,7 +96,7 @@ Based on the design requirements, the current implementation needs to be updated
   - _Requirements: 6.1, 6.2, 3.2_
 
 - [ ] 2.3 Update document workflow status endpoint for RQ Groups
-  - Update GET /documents/{document_id}/workflow-status to use RQ Group status
+  - Update GET /workflows/document/{document_id} to use RQ Group status
   - Calculate workflow progress using RQ Group.get_jobs() and job statuses
   - Return overall workflow status derived from RQ Group state
   - _Requirements: 6.5, 8.1, 3.2_

@@ -20,13 +20,11 @@ from uuid import UUID
 
 from rq.exceptions import NoSuchJobError
 from rq.group import Group
-from rq.job import Job, JobStatus
-from sqlalchemy import select
+from rq.job import Job
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
 from extralit_server.jobs.queues import REDIS_CONNECTION
-from extralit_server.models.database import Document, DocumentWorkflow
+from extralit_server.models.database import DocumentWorkflow
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -48,10 +46,24 @@ async def get_jobs_for_document(db: AsyncSession, document_id: UUID) -> list[dic
         # Get workflow record for the document
         workflow = await DocumentWorkflow.get_by_document_id(db, document_id)
         if not workflow:
+            _LOGGER.info(f"No workflow found for document {document_id}")
             return []
 
-        # Use RQ Group to get all jobs
-        group = Group.fetch(name=workflow.group_id, connection=REDIS_CONNECTION)
+        # Handle group expiration and missing groups gracefully
+        try:
+            group = Group.fetch(name=workflow.group_id, connection=REDIS_CONNECTION)
+        except Exception as e:
+            _LOGGER.warning(f"Group {workflow.group_id} not found or expired for document {document_id}: {e}")
+            return [
+                {
+                    "id": "group_expired",
+                    "status": "expired",
+                    "workflow_step": "unknown",
+                    "document_id": document_id,
+                    "error": f"Group not found or expired: {e}",
+                }
+            ]
+
         jobs = group.get_jobs()
 
         job_data_list = []
@@ -62,6 +74,7 @@ async def get_jobs_for_document(db: AsyncSession, document_id: UUID) -> list[dic
                     "status": job.get_status(refresh=True),
                     "workflow_step": job.meta.get("workflow_step", "unknown") if job.meta else "unknown",
                     "document_id": document_id,
+                    "group_id": workflow.group_id,
                     "created_at": job.created_at,
                     "started_at": job.started_at,
                     "ended_at": job.ended_at,
@@ -72,13 +85,14 @@ async def get_jobs_for_document(db: AsyncSession, document_id: UUID) -> list[dic
                 job_data_list.append(job_data)
             except Exception as e:
                 # Handle individual job errors gracefully
-                _LOGGER.warning(f"Error processing job {job.id}: {e}")
+                _LOGGER.warning(f"Error processing job {job.id} for document {document_id}: {e}")
                 job_data_list.append(
                     {
                         "id": job.id,
-                        "status": JobStatus.FAILED,
+                        "status": "error",
                         "workflow_step": "unknown",
                         "document_id": document_id,
+                        "group_id": workflow.group_id,
                         "error": f"Job processing error: {e}",
                     }
                 )
@@ -92,7 +106,10 @@ async def get_jobs_for_document(db: AsyncSession, document_id: UUID) -> list[dic
 
 async def get_jobs_by_reference(db: AsyncSession, reference: str) -> list[dict[str, Any]]:
     """
-    Get all jobs for documents with a specific reference.
+    Get all jobs for documents with a specific reference using RQ Groups.
+
+    This efficiently queries multiple RQ Groups for all documents in a reference batch
+    by reusing the get_jobs_for_document function.
 
     Args:
         db: Database session
@@ -102,18 +119,35 @@ async def get_jobs_by_reference(db: AsyncSession, reference: str) -> list[dict[s
         List of job dictionaries with status and metadata
     """
     try:
-        # Get all documents with the reference
-        stmt = select(Document).where(Document.reference == reference).options(selectinload(Document.workflows))
-        result = await db.execute(stmt)
-        documents = result.scalars().all()
+        # Get all workflows with the reference
+        workflows = await DocumentWorkflow.get_by_reference(db, reference)
+
+        if not workflows:
+            _LOGGER.info(f"No workflows found for reference {reference}")
+            return []
 
         all_jobs = []
-        for document in documents:
-            document_jobs = await get_jobs_for_document(db, document.id)
-            # Add reference to each job
-            for job in document_jobs:
-                job["reference"] = reference
-            all_jobs.extend(document_jobs)
+        for workflow in workflows:
+            try:
+                # Reuse get_jobs_for_document for each document in the reference
+                document_jobs = await get_jobs_for_document(db, workflow.document_id)
+                all_jobs.extend(document_jobs)
+            except Exception as workflow_error:
+                _LOGGER.error(
+                    f"Error getting jobs for document {workflow.document_id} in reference {reference}: {workflow_error}"
+                )
+                # Add placeholder job for workflow processing error
+                all_jobs.append(
+                    {
+                        "id": f"workflow_error_{workflow.id}",
+                        "status": "error",
+                        "workflow_step": "unknown",
+                        "document_id": workflow.document_id,
+                        "group_id": workflow.group_id,
+                        "reference": reference,
+                        "error": f"Workflow processing error: {workflow_error}",
+                    }
+                )
 
         return all_jobs
 
@@ -136,15 +170,20 @@ async def get_workflow_status(db: AsyncSession, document_id: UUID) -> dict[str, 
     try:
         workflow = await DocumentWorkflow.get_by_document_id(db, document_id)
         if not workflow:
+            _LOGGER.info(f"No workflow found for document {document_id}")
             return {
                 "document_id": document_id,
                 "status": "not_found",
                 "progress": 0.0,
+                "total_jobs": 0,
+                "completed_jobs": 0,
+                "failed_jobs": 0,
+                "running_jobs": 0,
                 "jobs": [],
                 "error": "No workflow found for document",
             }
 
-        # Get workflow status using RQ Groups
+        # Get workflow status using RQ Groups with enhanced error handling
         workflow_status = get_workflow_status_from_group(workflow.group_id)
 
         # Add additional workflow metadata
@@ -154,10 +193,23 @@ async def get_workflow_status(db: AsyncSession, document_id: UUID) -> dict[str, 
                 "workflow_id": workflow.id,
                 "workflow_type": workflow.workflow_type,
                 "group_id": workflow.group_id,
+                "reference": workflow.reference,
+                "workspace_id": workflow.workspace_id,
                 "created_at": workflow.inserted_at,
                 "updated_at": workflow.updated_at,
+                "cached_status": workflow.status,  # Include cached status for comparison
             }
         )
+
+        # Update cached status if it differs from RQ Group status
+        if workflow.status != workflow_status["status"] and workflow_status["status"] not in ["error", "expired"]:
+            try:
+                await update_workflow_status(db, workflow, workflow_status["status"])
+                _LOGGER.info(
+                    f"Updated cached workflow status for document {document_id} from {workflow.status} to {workflow_status['status']}"
+                )
+            except Exception as update_error:
+                _LOGGER.warning(f"Failed to update cached workflow status for document {document_id}: {update_error}")
 
         return workflow_status
 
@@ -167,6 +219,10 @@ async def get_workflow_status(db: AsyncSession, document_id: UUID) -> dict[str, 
             "document_id": document_id,
             "status": "error",
             "progress": 0.0,
+            "total_jobs": 0,
+            "completed_jobs": 0,
+            "failed_jobs": 0,
+            "running_jobs": 0,
             "jobs": [],
             "error": str(e),
         }
@@ -286,7 +342,22 @@ def get_workflow_status_from_group(group_id: str) -> dict[str, Any]:
         Dictionary with workflow status and job information
     """
     try:
-        group = Group.fetch(name=group_id, connection=REDIS_CONNECTION)
+        # Handle group expiration and missing groups gracefully
+        try:
+            group = Group.fetch(name=group_id, connection=REDIS_CONNECTION)
+        except Exception as e:
+            _LOGGER.warning(f"Group {group_id} not found or expired: {e}")
+            return {
+                "status": "expired",
+                "progress": 0.0,
+                "total_jobs": 0,
+                "completed_jobs": 0,
+                "failed_jobs": 0,
+                "running_jobs": 0,
+                "jobs": [],
+                "error": f"Group not found or expired: {e}",
+            }
+
         jobs = group.get_jobs()
 
         total_jobs = len(jobs)
@@ -320,18 +391,29 @@ def get_workflow_status_from_group(group_id: str) -> dict[str, Any]:
 
         job_details = []
         for job in jobs:
-            job_details.append(
-                {
-                    "id": job.id,
-                    "status": job.get_status(refresh=True),
-                    "created_at": job.created_at,
-                    "started_at": job.started_at,
-                    "ended_at": job.ended_at,
-                    "meta": job.meta,
-                    "result": job.result if job.is_finished else None,
-                    "exc_info": job.exc_info if job.is_failed else None,
-                }
-            )
+            try:
+                job_details.append(
+                    {
+                        "id": job.id,
+                        "status": job.get_status(refresh=True),
+                        "created_at": job.created_at,
+                        "started_at": job.started_at,
+                        "ended_at": job.ended_at,
+                        "meta": job.meta,
+                        "result": job.result if job.is_finished else None,
+                        "exc_info": job.exc_info if job.is_failed else None,
+                    }
+                )
+            except Exception as job_error:
+                # Handle individual job errors gracefully
+                _LOGGER.warning(f"Error processing job {job.id}: {job_error}")
+                job_details.append(
+                    {
+                        "id": job.id,
+                        "status": "error",
+                        "error": f"Job processing error: {job_error}",
+                    }
+                )
 
         return {
             "status": overall_status,
@@ -344,6 +426,7 @@ def get_workflow_status_from_group(group_id: str) -> dict[str, Any]:
         }
 
     except Exception as e:
+        _LOGGER.error(f"Error getting workflow status from group {group_id}: {e}")
         return {
             "status": "error",
             "progress": 0.0,
@@ -367,14 +450,21 @@ def is_workflow_resumable(group_id: str) -> bool:
         True if workflow has failed jobs that can be resumed
     """
     try:
-        group = Group.fetch(name=group_id, connection=REDIS_CONNECTION)
+        # Handle group expiration and missing groups gracefully
+        try:
+            group = Group.fetch(name=group_id, connection=REDIS_CONNECTION)
+        except Exception as e:
+            _LOGGER.warning(f"Group {group_id} not found or expired, cannot resume: {e}")
+            return False
+
         jobs = group.get_jobs()
 
         # Check if there are any failed jobs
         failed_jobs = [job for job in jobs if job.is_failed]
         return len(failed_jobs) > 0
 
-    except Exception:
+    except Exception as e:
+        _LOGGER.error(f"Error checking if workflow {group_id} is resumable: {e}")
         return False
 
 
@@ -390,7 +480,18 @@ async def restart_failed_jobs_in_workflow(db: AsyncSession, workflow: DocumentWo
         Dictionary with restart results
     """
     try:
-        group = Group.fetch(name=workflow.group_id, connection=REDIS_CONNECTION)
+        # Handle group expiration and missing groups gracefully
+        try:
+            group = Group.fetch(name=workflow.group_id, connection=REDIS_CONNECTION)
+        except Exception as e:
+            _LOGGER.error(f"Group {workflow.group_id} not found or expired, cannot restart: {e}")
+            return {
+                "success": False,
+                "error": f"Group not found or expired: {e}",
+                "restarted_jobs": [],
+                "total_failed": 0,
+            }
+
         jobs = group.get_jobs()
 
         failed_jobs = [job for job in jobs if job.is_failed]
@@ -401,6 +502,7 @@ async def restart_failed_jobs_in_workflow(db: AsyncSession, workflow: DocumentWo
                 # Requeue the failed job
                 job.requeue()
                 restarted_jobs.append(job.id)
+                _LOGGER.info(f"Restarted failed job {job.id} in workflow {workflow.id}")
             except Exception as e:
                 # Log individual job restart failures but continue
                 _LOGGER.warning(f"Failed to restart job {job.id}: {e}")
@@ -408,10 +510,14 @@ async def restart_failed_jobs_in_workflow(db: AsyncSession, workflow: DocumentWo
         # Update workflow status if jobs were restarted
         if restarted_jobs:
             await update_workflow_status(db, workflow, "running")
+            _LOGGER.info(
+                f"Updated workflow {workflow.id} status to running after restarting {len(restarted_jobs)} jobs"
+            )
 
         return {"success": True, "restarted_jobs": restarted_jobs, "total_failed": len(failed_jobs)}
 
     except Exception as e:
+        _LOGGER.error(f"Error restarting failed jobs in workflow {workflow.id}: {e}")
         return {"success": False, "error": str(e), "restarted_jobs": [], "total_failed": 0}
 
 
@@ -472,3 +578,90 @@ async def get_workflows_by_reference(
         List of DocumentWorkflow instances
     """
     return await DocumentWorkflow.get_by_reference(db, reference, str(workspace_id) if workspace_id else None)
+
+
+async def get_workflow_statuses_by_reference(db: AsyncSession, reference: str) -> list[dict[str, Any]]:
+    """
+    Get workflow statuses for all documents with a specific reference.
+
+    This is more efficient than calling get_workflow_status for each document individually.
+
+    Args:
+        db: Database session
+        reference: Document reference to search for
+
+    Returns:
+        List of workflow status dictionaries
+    """
+    try:
+        workflows = await DocumentWorkflow.get_by_reference(db, reference)
+
+        if not workflows:
+            _LOGGER.info(f"No workflows found for reference {reference}")
+            return []
+
+        workflow_statuses = []
+        for workflow in workflows:
+            try:
+                # Get workflow status using RQ Groups
+                workflow_status = get_workflow_status_from_group(workflow.group_id)
+
+                # Add workflow metadata
+                workflow_status.update(
+                    {
+                        "document_id": workflow.document_id,
+                        "workflow_id": workflow.id,
+                        "workflow_type": workflow.workflow_type,
+                        "group_id": workflow.group_id,
+                        "reference": reference,
+                        "workspace_id": workflow.workspace_id,
+                        "created_at": workflow.inserted_at,
+                        "updated_at": workflow.updated_at,
+                        "cached_status": workflow.status,
+                    }
+                )
+
+                workflow_statuses.append(workflow_status)
+
+                # Update cached status if needed
+                if workflow.status != workflow_status["status"] and workflow_status["status"] not in [
+                    "error",
+                    "expired",
+                ]:
+                    try:
+                        await update_workflow_status(db, workflow, workflow_status["status"])
+                    except Exception as update_error:
+                        _LOGGER.warning(
+                            f"Failed to update cached workflow status for workflow {workflow.id}: {update_error}"
+                        )
+
+            except Exception as workflow_error:
+                _LOGGER.error(f"Error processing workflow {workflow.id} for reference {reference}: {workflow_error}")
+                # Add error status for failed workflow processing
+                workflow_statuses.append(
+                    {
+                        "document_id": workflow.document_id,
+                        "workflow_id": workflow.id,
+                        "workflow_type": workflow.workflow_type,
+                        "group_id": workflow.group_id,
+                        "reference": reference,
+                        "workspace_id": workflow.workspace_id,
+                        "status": "error",
+                        "progress": 0.0,
+                        "total_jobs": 0,
+                        "completed_jobs": 0,
+                        "failed_jobs": 0,
+                        "running_jobs": 0,
+                        "jobs": [],
+                        "error": f"Workflow processing error: {workflow_error}",
+                        "created_at": workflow.inserted_at,
+                        "updated_at": workflow.updated_at,
+                        "cached_status": workflow.status,
+                    }
+                )
+
+        return workflow_statuses
+
+    except Exception as e:
+        _LOGGER.error(f"Error getting workflow statuses for reference {reference}: {e}")
+        return []
