@@ -13,7 +13,7 @@ POST /documents/bulk → process_bulk_upload() → upload_and_preprocess_documen
 
 ### New Flow (Chained Jobs)
 ```
-POST /documents/bulk → process_bulk_upload() → Upload files to S3 + Create DB records → analysis_and_preprocess_job(document_id, s3_url) → conditional_ocr_job (if needed) → text_extraction_job + table_extraction_job (parallel) → embedding_job
+POST /documents/bulk → process_bulk_upload() → Upload files to S3 + Create DB records → analysis_and_preprocess_job(document_id, s3_url) → conditional_ocr_job (if needed) → text_extraction_job
 ```
 
 ### Key Changes from Current Implementation
@@ -136,32 +136,11 @@ class PreprocessingMetadata(BaseModel):
     processed_s3_url: Optional[str] = Field(None, description="S3 URL of processed PDF")
     preprocessing_completed_at: datetime = Field(..., description="When preprocessing was completed")
 
-class TextExtractionMetadata(BaseModel):
-    """Text extraction job results."""
-    extracted_text_length: int = Field(..., description="Length of extracted text")
-    extraction_method: str = Field(..., description="Method used for extraction")
-    text_extraction_completed_at: datetime = Field(..., description="When text extraction was completed")
-
-class TableExtractionMetadata(BaseModel):
-    """Table extraction job results."""
-    tables_found: int = Field(..., description="Number of tables extracted")
-    extraction_method: str = Field(..., description="Method used for table extraction")
-    table_extraction_completed_at: datetime = Field(..., description="When table extraction was completed")
-
-class EmbeddingMetadata(BaseModel):
-    """Embedding job results."""
-    embedding_model: str = Field(..., description="Model used for embeddings")
-    embedding_dimensions: int = Field(..., description="Dimensionality of embeddings")
-    embedding_completed_at: datetime = Field(..., description="When embedding was completed")
-
 class DocumentProcessingMetadata(BaseModel):
     """Complete document processing metadata stored in documents.metadata_."""
     workflow_id: Optional[str] = Field(None, description="Workflow ID for tracking")
     analysis_metadata: Optional[AnalysisMetadata] = Field(None, description="Analysis results")
     preprocessing_metadata: Optional[PreprocessingMetadata] = Field(None, description="Preprocessing results")
-    text_extraction_metadata: Optional[TextExtractionMetadata] = Field(None, description="Text extraction results")
-    table_extraction_metadata: Optional[TableExtractionMetadata] = Field(None, description="Table extraction results")
-    embedding_metadata: Optional[EmbeddingMetadata] = Field(None, description="Embedding results")
     workflow_started_at: datetime = Field(..., description="When workflow was started")
     workflow_completed_at: Optional[datetime] = Field(None, description="When workflow was completed")
     workflow_status: str = Field(default="running", description="Overall workflow status")
@@ -190,9 +169,6 @@ class DocumentProcessingMetadata(BaseModel):
         return all([
             self.analysis_metadata is not None,
             self.preprocessing_metadata is not None,
-            self.text_extraction_metadata is not None,
-            self.table_extraction_metadata is not None,
-            self.embedding_metadata is not None
         ])
 ```
 
@@ -325,9 +301,7 @@ This approach minimizes code duplication and leverages the existing, well-tested
 4. **Test Basic Chaining**: Verify jobs can enqueue dependent jobs
 
 ### Phase 2: Complete Workflow
-1. **Add Remaining Jobs**: Implement OCR, text extraction, table extraction, embedding jobs
 2. **RQ Dependencies**: Use `depends_on` parameter for job chaining
-3. **GPU Queue**: Route table extraction to GPU workers
 4. **API Extensions**: Add document workflow status endpoint
 
 ### Phase 3: Management and Recovery
@@ -339,3 +313,48 @@ This approach minimizes code duplication and leverages the existing, well-tested
 ### Key Principles
 - **Incremental Refactoring**: Modify existing code gradually
 - **Simple Recovery**: Use RQ registries and metadata for workflow state
+
+## Testing Strategy
+
+### End-to-End Workflow Tests
+
+**Complete PDF Processing Workflow:**
+- Test PDF workflow from upload through analysis, preprocessing, and conditional OCR completion with all jobs succeeding
+
+**Conditional OCR Logic:**
+- Test workflow skips OCR job when analysis determines PDF has good OCR text layer
+- Test workflow enqueues OCR job when analysis determines PDF needs OCR processing
+
+**Workflow State Tracking:**
+- Test document metadata is updated correctly at each workflow step completion
+- Test workflow status progresses from "queued" to "running" to "completed" appropriately
+
+### API Integration Tests
+
+**Bulk Upload Integration:**
+- Test POST /documents/bulk creates workflow jobs with proper RQ dependencies after S3 upload
+- Test API returns workflow job IDs and initial status for tracking purposes
+
+**Job Status Querying:**
+- Test GET /jobs API filters jobs by document_id, reference, and workflow_step parameters
+- Test API returns job metadata including workflow progress and RQ group information
+- Test API shows error details and failure information when jobs fail
+
+**Workflow Progress Monitoring:**
+- Test API shows current workflow step and overall progress percentage for active workflows
+- Test API correctly identifies completed workflows versus failed or stalled ones
+
+### CLI Workflow Management Tests
+
+**Workflow Status Commands:**
+- Test `workflow status --document-id` command shows all jobs for a specific document
+- Test `workflow status --reference` command shows jobs for all documents in a reference batch
+
+**Failed Job Restart:**
+- Test CLI can identify failed jobs in a workflow chain for a given document_id
+- Test CLI restart command re-enqueues failed jobs with proper dependencies restored
+- Test restarted workflow continues from the failed step without re-running completed jobs
+
+**Error Handling:**
+- Test CLI commands provide clear error messages for invalid document IDs or missing workflows
+- Test CLI gracefully handles Redis connection issues and RQ registry access problems
