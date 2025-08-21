@@ -25,7 +25,9 @@ from extralit_server.models.database import DocumentWorkflow
 _LOGGER = logging.getLogger(__name__)
 
 
-async def start_pdf_workflow(document_id: UUID, s3_url: str, reference: str, workspace_name: str) -> dict[str, Any]:
+async def create_document_workflow(
+    document_id: UUID, s3_url: str, reference: str, workspace_name: str
+) -> dict[str, Any]:
     """
     Start PDF processing workflow by orchestrating job dependencies.
 

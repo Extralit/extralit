@@ -37,7 +37,7 @@ from extralit_server.api.schemas.v1.imports import (
 from extralit_server.contexts import files as file_context
 from extralit_server.database import AsyncSessionLocal
 from extralit_server.models.database import Document, ImportHistory, Workspace
-from extralit_server.workflows.pdf import start_pdf_workflow
+from extralit_server.workflows.documents import create_document_workflow
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -486,7 +486,7 @@ async def process_bulk_upload(
                 reference_workflows = {}
                 for document, s3_url in uploaded_documents:
                     try:
-                        workflow_result = start_pdf_workflow(
+                        workflow_result = create_document_workflow(
                             document_id=document.id,
                             s3_url=s3_url,
                             reference=reference,

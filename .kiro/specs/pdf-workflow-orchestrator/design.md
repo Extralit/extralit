@@ -37,7 +37,7 @@ The design uses existing file operations from `contexts/files.py` but requires s
 ```python
 # Add to existing CLI using typer
 import typer
-from extralit_server.jobs.pdf import start_pdf_workflow, get_jobs_for_document
+from extralit_server.jobs.documents import create_document_workflow, get_jobs_for_document
 
 workflow_app = typer.Typer()
 
@@ -54,7 +54,7 @@ def start(
         doc = get_document_by_id(UUID(document_id))
         s3_url = get_document_s3_url(doc)
 
-        job_ids = start_pdf_workflow(
+        job_ids = create_document_workflow(
             UUID(document_id),
             s3_url,
             reference or f"doc_{document_id[:8]}",
