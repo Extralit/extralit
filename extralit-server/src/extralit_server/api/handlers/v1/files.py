@@ -15,8 +15,8 @@
 import logging
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, HTTPException, Security, UploadFile
-from fastapi.responses import StreamingResponse
+from fastapi import APIRouter, Depends, File, Header, HTTPException, Request, Security, UploadFile
+from fastapi.responses import Response, StreamingResponse
 from minio import Minio, S3Error
 
 from extralit_server.api.policies.v1 import FilePolicy, authorize
@@ -36,7 +36,10 @@ async def get_file(
     *,
     bucket: str,
     object: str,
+    request: Request,
     version_id: str | None = None,
+    range_header: str | None = Header(None, alias="range"),
+    if_none_match: str | None = Header(None, alias="if-none-match"),
     client: Minio | LocalFileStorage = Depends(files.get_minio_client),
     current_user: User | None = Security(auth.get_optional_current_user),
 ):
@@ -47,8 +50,66 @@ async def get_file(
     try:
         file_response = files.get_object(client, bucket, object, version_id=version_id, include_versions=True)
 
+        # Handle ETag for caching
+        etag = file_response.metadata.etag
+        if if_none_match and etag and if_none_match.strip('"') == etag.strip('"'):
+            return Response(status_code=304)
+
+        # Prepare headers for caching and CORS
+        headers = {
+            **file_response.http_headers,
+            "Cache-Control": "public, max-age=3600",  # Cache for 1 hour
+            "ETag": f'"{etag}"' if etag else None,
+            "Access-Control-Allow-Origin": "*",  # Allow CORS for file access
+            "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
+            "Access-Control-Allow-Headers": "Range, If-None-Match",
+            "Access-Control-Expose-Headers": "Content-Length, Content-Range, ETag",
+            "Accept-Ranges": "bytes",
+        }
+
+        # PDF-specific optimizations
+        if file_response.metadata.content_type == "application/pdf":
+            headers.update(
+                {
+                    "Content-Disposition": "inline",
+                    "X-Content-Type-Options": "nosniff",
+                    "Cache-Control": "public, max-age=3600",
+                }
+            )
+
+        # Remove None values
+        headers = {k: v for k, v in headers.items() if v is not None}
+
+        # Handle range requests for partial content
+        content_length = file_response.metadata.size
+        if range_header and content_length:
+            try:
+                # Parse range header (e.g., "bytes=0-1023")
+                range_match = range_header.replace("bytes=", "").split("-")
+                start = int(range_match[0]) if range_match[0] else 0
+                end = int(range_match[1]) if range_match[1] else content_length - 1
+
+                # Validate range
+                if start >= content_length or end >= content_length or start > end:
+                    headers["Content-Range"] = f"bytes */{content_length}"
+                    return Response(status_code=416, headers=headers)
+
+                # Update headers for partial content
+                headers["Content-Range"] = f"bytes {start}-{end}/{content_length}"
+                headers["Content-Length"] = str(end - start + 1)
+
+                return StreamingResponse(
+                    file_response.response,
+                    status_code=206,
+                    media_type=file_response.metadata.content_type,
+                    headers=headers,
+                )
+            except (ValueError, IndexError):
+                # Invalid range header, serve full content
+                pass
+
         return StreamingResponse(
-            file_response.response, media_type=file_response.metadata.content_type, headers=file_response.http_headers
+            file_response.response, media_type=file_response.metadata.content_type, headers=headers
         )
     except S3Error as se:
         _LOGGER.error(f"Error getting object '{bucket}/{object}': {se}")
@@ -57,6 +118,20 @@ async def get_file(
     except Exception as e:
         _LOGGER.error(f"Error getting object '{bucket}/{object}': {e}")
         raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+@router.options("/file/{bucket}/{object:path}")
+async def options_file(bucket: str, object: str):
+    """Handle CORS preflight requests for file access"""
+    return Response(
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
+            "Access-Control-Allow-Headers": "Range, If-None-Match, Content-Type",
+            "Access-Control-Max-Age": "3600",
+            "Accept-Ranges": "bytes",
+        }
+    )
 
 
 @router.post("/file/{bucket}/{object:path}", response_model=ObjectMetadata)
