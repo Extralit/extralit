@@ -17,7 +17,7 @@ import logging
 from typing import Any
 from uuid import UUID, uuid4
 
-from extralit_server.database import SyncSessionLocal
+from extralit_server.database import AsyncSessionLocal
 from extralit_server.jobs.document_jobs import analysis_and_preprocess_job
 from extralit_server.jobs.queues import DEFAULT_QUEUE, OCR_QUEUE
 from extralit_server.models.database import DocumentWorkflow
@@ -25,7 +25,7 @@ from extralit_server.models.database import DocumentWorkflow
 _LOGGER = logging.getLogger(__name__)
 
 
-def start_pdf_workflow(document_id: UUID, s3_url: str, reference: str, workspace_name: str) -> dict[str, Any]:
+async def start_pdf_workflow(document_id: UUID, s3_url: str, reference: str, workspace_name: str) -> dict[str, Any]:
     """
     Start PDF processing workflow by orchestrating job dependencies.
 
@@ -44,13 +44,13 @@ def start_pdf_workflow(document_id: UUID, s3_url: str, reference: str, workspace
 
     try:
         # Step 1: Create DocumentWorkflow record for tracking using sync database operations
-        with SyncSessionLocal() as db:
+        with AsyncSessionLocal() as db:
             workflow = DocumentWorkflow(
                 id=uuid4(), document_id=document_id, workflow_type="pdf_processing", status="running", job_ids={}
             )
-            db.add(workflow)
-            db.commit()
-            db.refresh(workflow)
+            await db.add(workflow)
+            await db.commit()
+            await db.refresh(workflow)
 
         # Step 2: Enqueue analysis and preprocessing job
         analysis_job = DEFAULT_QUEUE.enqueue(
@@ -79,10 +79,10 @@ def start_pdf_workflow(document_id: UUID, s3_url: str, reference: str, workspace
         }
 
         # Step 5: Update workflow with job IDs using sync database operations
-        with SyncSessionLocal() as db:
+        with AsyncSessionLocal() as db:
             workflow.job_ids = job_ids
-            db.add(workflow)
-            db.commit()
+            await db.add(workflow)
+            await db.commit()
 
         _LOGGER.info(
             f"Started PDF workflow {workflow.id} for document {document_id} with analysis job {analysis_job.id}"

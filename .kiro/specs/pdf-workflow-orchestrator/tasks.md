@@ -82,39 +82,10 @@
   - Add workflow cleanup for expired/completed workflows
   - _Requirements: 2.1, 2.4, 6.5_
 
-## Phase 3: Complete PDF Workflow Implementation (Week 3)
-
-- [ ] 3. Implement remaining PDF processing jobs
-  - Create `layout_extraction_job(document_id, s3_url, analysis_result)` (mock implementation for now)
-  - Create `text_extraction_job(document_id, s3_url, analysis_result)` (mock implementation for now)
-  - Create `table_extraction_job(document_id, s3_url, analysis_result, ocr_result)` (mock implementation for now)
-  - Create `embedding_job(document_id, text_result, table_result)` (mock implementation for now)
-  - Add corresponding Pydantic schemas for each job's input/output
-  - _Requirements: 8.2, 8.3, 8.4, 8.5_
-
-- [ ] 3.1 Implement job dependency chaining
-  - Use RQ's depends_on parameter for job dependencies
-  - Chain text_extraction_job to depend on analysis_and_preprocess_job
-  - Chain table_extraction_job to depend on analysis_and_preprocess_job
-  - Chain embedding_job to depend on text_extraction_job and table_extraction_job
-  - _Requirements: 1.1, 1.3, 8.5_
-
-- [ ] 3.2 Add database and S3 access to jobs
-  - Use existing get_async_db dependency injection pattern in jobs
-  - Use existing S3 client for file access via presigned URLs
-  - Store intermediate results in job.result for dependent jobs
-  - _Requirements: 5.1, 5.2, 5.5_
-
-- [ ] 3.3 Test complete workflow integration
-  - Test PDF upload through complete 6-step workflow
-  - Verify job chaining and dependency handling
-  - Test with both CPU and GPU workers
-  - _Requirements: 7.2, 7.3, 8.1_
-
-## Phase 4: CLI and Error Handling (Week 4)
+## Phase 3: CLI and Error Handling (Week 3)
 
 - [ ] 4. Add CLI workflow management commands
-  - Create `workflow start` command using typer (not click)
+  - Create `workflow start` command using typer
   - Create `workflow status` command to check document progress
   - Create `workflow restart` command for failed jobs
   - _Requirements: 6.4_

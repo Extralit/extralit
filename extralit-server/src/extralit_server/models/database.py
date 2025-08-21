@@ -16,7 +16,7 @@ import base64
 import secrets
 from datetime import datetime
 from typing import Any, Union
-from uuid import UUID, uuid4
+from uuid import UUID
 
 from pydantic import TypeAdapter
 from sqlalchemy import (
@@ -650,24 +650,6 @@ class DocumentWorkflow(DatabaseModel):
     job_ids: Mapped[dict] = mapped_column(MutableDict.as_mutable(JSON), default=dict)
 
     document: Mapped["Document"] = relationship("Document", back_populates="workflows")
-
-    @classmethod
-    async def create(
-        cls,
-        db: AsyncSession,
-        document_id: UUID,
-        workflow_type: str = "pdf_processing",
-        status: str = "queued",
-        job_ids: dict | None = None,
-    ) -> "DocumentWorkflow":
-        """Create a new document workflow record."""
-        workflow = cls(
-            id=uuid4(), document_id=document_id, workflow_type=workflow_type, status=status, job_ids=job_ids or {}
-        )
-        db.add(workflow)
-        await db.commit()
-        await db.refresh(workflow)
-        return workflow
 
     @classmethod
     async def get_by_document_id(cls, db: AsyncSession, document_id: UUID) -> "DocumentWorkflow | None":

@@ -25,6 +25,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from extralit_server.api.schemas.v1.jobs import WorkflowJobResult
 from extralit_server.jobs.queues import REDIS_CONNECTION
 from extralit_server.models.database import Document, DocumentWorkflow
 
@@ -132,8 +133,7 @@ async def get_workflow_status(db: AsyncSession, document_id: UUID) -> dict[str, 
         Dictionary with workflow status and progress information
     """
     try:
-        # Get workflow record
-        workflow = await DocumentWorkflow.get_by_document_id(db, document_id)
+        workflow: WorkflowJobResult = await DocumentWorkflow.get_by_document_id(db, document_id)
         if not workflow:
             return {
                 "document_id": document_id,
