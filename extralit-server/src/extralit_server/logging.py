@@ -67,3 +67,7 @@ def configure_logging():
     # See the note here: https://docs.python.org/3/library/logging.html#logging.Logger.propagate
     # We only attach our handler to the root logger and let propagation take care of the rest
     logging.basicConfig(handlers=[handler], level=logging.WARNING)
+
+    # Suppress pdfminer warnings about invalid color values
+    logging.getLogger("pdfminer.pdfinterp").setLevel(logging.ERROR)
+    logging.getLogger("pdfminer").setLevel(logging.ERROR)

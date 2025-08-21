@@ -58,12 +58,21 @@ class PreprocessingMetadata(BaseModel):
     preprocessing_completed_at: Optional[str] = Field(None, description="When preprocessing was completed")
 
 
+class TextExtractionMetadata(BaseModel):
+    """Text extraction job results."""
+
+    extracted_text_length: int = Field(..., description="Length of extracted text")
+    extraction_method: str = Field(..., description="Method used for extraction")
+    text_extraction_completed_at: Optional[str] = Field(None, description="When text extraction was completed")
+
+
 class DocumentProcessingMetadata(BaseModel):
     """Complete document processing metadata stored in documents.metadata_."""
 
     workflow_id: Optional[str] = Field(None, description="Workflow ID for tracking")
     analysis_metadata: Optional[AnalysisMetadata] = Field(None, description="Analysis results")
     preprocessing_metadata: Optional[PreprocessingMetadata] = Field(None, description="Preprocessing results")
+    text_extraction_metadata: Optional[TextExtractionMetadata] = Field(None, description="Text extraction results")
     workflow_started_at: Optional[datetime] = Field(None, description="When workflow was started")
     workflow_completed_at: Optional[datetime] = Field(None, description="When workflow was completed")
     workflow_status: str = Field(default="running", description="Overall workflow status")
@@ -93,5 +102,6 @@ class DocumentProcessingMetadata(BaseModel):
             [
                 self.analysis_metadata is not None,
                 self.preprocessing_metadata is not None,
+                self.text_extraction_metadata is not None,
             ]
         )

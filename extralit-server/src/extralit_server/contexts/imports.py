@@ -22,6 +22,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from extralit_server.api.schemas.v1.documents import DocumentCreate, DocumentListItem
 from extralit_server.api.schemas.v1.imports import (
+    BulkDocumentInfo,
     DocumentImportAnalysis,
     DocumentMetadata,
     DocumentsBulkCreate,
@@ -351,7 +352,7 @@ async def process_bulk_upload(
     """
 
     # Create a mapping of filenames to file objects for quick lookup
-    file_mapping = {file.filename: file for file in files} if files else {}
+    file_mapping: dict[str, UploadFile] = {file.filename: file for file in files} if files else {}
 
     # Validate that all referenced files are included in the upload
     missing_files = []
@@ -370,8 +371,7 @@ async def process_bulk_upload(
             detail=f"Referenced files not found in upload: {', '.join(missing_files)}",
         )
 
-    # Group documents by reference (should be 1:1 but validate)
-    reference_to_doc = {}
+    reference_to_doc: dict[str, BulkDocumentInfo] = {}
     for doc in bulk_create.documents:
         if doc.reference in reference_to_doc:
             raise HTTPException(
@@ -406,7 +406,7 @@ async def process_bulk_upload(
 
                 # Process files for this reference
                 reference_failed = False
-                uploaded_documents = []
+                uploaded_documents: list[DocumentListItem] = []
 
                 for filename in doc.associated_files:
                     try:
@@ -419,12 +419,6 @@ async def process_bulk_upload(
 
                         # Read file content
                         file_content = await file.read()
-
-                        # Validate file size (100 MB limit)
-                        if len(file_content) > 100 * 1024 * 1024:
-                            failed_validations.append(f"{filename}: File exceeds maximum size of 100 MB")
-                            reference_failed = True
-                            continue
 
                         # Reset file position for potential future reads
                         await file.seek(0)
@@ -469,7 +463,7 @@ async def process_bulk_upload(
 
                             # Create document in database
                             document = await create_document(db, file_document_create)
-                            uploaded_documents.append((document, file_url))
+                            uploaded_documents.append(document)
 
                             _LOGGER.info(f"Uploaded file {filename} to S3 and created document {document.id}")
 
@@ -484,11 +478,11 @@ async def process_bulk_upload(
 
                 # Start workflows for each uploaded document
                 reference_workflows = {}
-                for document, s3_url in uploaded_documents:
+                for document in uploaded_documents:
                     try:
                         workflow_result = await create_document_workflow(
                             document_id=document.id,
-                            s3_url=s3_url,
+                            s3_url=document.url,
                             reference=reference,
                             workspace_name=workspace.name,
                             workspace_id=workspace.id,

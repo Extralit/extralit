@@ -21,7 +21,7 @@ from rq.group import Group
 
 from extralit_server.database import AsyncSessionLocal
 from extralit_server.jobs.document_jobs import analysis_and_preprocess_job
-from extralit_server.jobs.queues import DEFAULT_QUEUE, GPU_QUEUE, REDIS_CONNECTION
+from extralit_server.jobs.queues import DEFAULT_QUEUE, OCR_QUEUE, REDIS_CONNECTION
 from extralit_server.models.database import DocumentWorkflow
 
 _LOGGER = logging.getLogger(__name__)
@@ -47,96 +47,82 @@ async def create_document_workflow(
         Dictionary containing workflow_id and group_id for tracking
     """
 
-    try:
-        # Step 1: Generate unique group ID for this workflow
-        group_id = f"pdf_workflow_{document_id}_{uuid4().hex[:8]}"
+    # Step 1: Generate unique group ID for this workflow
+    group_id = f"pdf_workflow_{document_id}_{uuid4().hex[:8]}"
 
-        # Step 2: Create RQ Group for workflow tracking
-        group = Group(REDIS_CONNECTION, name=group_id)
+    # Step 2: Create RQ Group for workflow tracking
+    group = Group(REDIS_CONNECTION, name=group_id)
 
-        # Step 3: Create DocumentWorkflow record for tracking
-        async with AsyncSessionLocal() as db:
-            workflow = DocumentWorkflow(
-                id=uuid4(),
-                document_id=document_id,
-                workflow_type="pdf_processing",
-                workspace_id=workspace_id,
-                reference=reference,
-                group_id=group_id,
-                status="running",
-            )
-            db.add(workflow)
-            await db.commit()
-            await db.refresh(workflow)
-
-        # Step 4: Enqueue analysis and preprocessing job to the group
-        analysis_job = DEFAULT_QUEUE.enqueue(
-            analysis_and_preprocess_job,
-            document_id,
-            s3_url,
-            reference,
-            workspace_name,
-            job_timeout=600,
-            group=group,
-            job_id=f"analysis_preprocess_{document_id}",
-            meta={
-                "document_id": str(document_id),
-                "reference": reference,
-                "workflow_step": "analysis_and_preprocess",
-                "workflow_id": str(workflow.id),
-            },
+    # Step 3: Create DocumentWorkflow record for tracking
+    async with AsyncSessionLocal() as db:
+        workflow = DocumentWorkflow(
+            id=uuid4(),
+            document_id=document_id,
+            workflow_type="pdf_processing",
+            workspace_id=workspace_id,
+            reference=reference,
+            group_id=group_id,
+            status="running",
         )
+        db.add(workflow)
+        await db.commit()
+        await db.refresh(workflow)
 
-        # Step 5: Enqueue PyMuPDF extraction job (depends on analysis)
-        text_extraction_job = GPU_QUEUE.enqueue(
-            "extralit_ocr.jobs.pymupdf_to_markdown_job",
-            document_id,
-            s3_url,
-            s3_url.split("/")[-1],
-            {},
-            workspace_name,
-            depends_on=[analysis_job],
-            job_timeout=900,
-            group=group,
-            job_id=f"text_extraction_{document_id}",
-            meta={
-                "document_id": str(document_id),
-                "reference": reference,
-                "workflow_step": "text_extraction",
-                "workflow_id": str(workflow.id),
-            },
-        )
-
-        # Step 6: Future table extraction job (conditional based on analysis results)
-        # This will be added when table extraction is implemented
-        # table_extraction_job = GPU_QUEUE.enqueue(
-        #     "extralit_ocr.jobs.table_extraction_job",
-        #     document_id,
-        #     s3_url,
-        #     depends_on=[analysis_job],
-        #     group=group,
-        #     job_id=f"table_extraction_{document_id}",
-        #     meta={
-        #         "document_id": str(document_id),
-        #         "reference": reference,
-        #         "workflow_step": "table_extraction",
-        #         "workflow_id": str(workflow.id)
-        #     }
-        # )
-
-        _LOGGER.info(f"Started PDF workflow {workflow.id} for document {document_id} with group {group_id}")
-
-        return {
-            "workflow_id": str(workflow.id),
-            "group_id": group_id,
+    # Step 4: Prepare jobs using Queue.prepare_data()
+    analysis_job_data = DEFAULT_QUEUE.prepare_data(
+        analysis_and_preprocess_job,
+        (document_id, s3_url, reference, workspace_name),
+        timeout=600,
+        job_id=f"analysis_preprocess_{document_id}",
+        meta={
             "document_id": str(document_id),
             "reference": reference,
-            "jobs": {
-                "analysis_and_preprocess": analysis_job.id,
-                "text_extraction": text_extraction_job.id,
-            },
-        }
+            "workflow_step": "analysis_and_preprocess",
+            "workflow_id": str(workflow.id),
+        },
+    )
 
-    except Exception as e:
-        _LOGGER.error(f"Error starting PDF workflow for document {document_id}: {e}")
-        raise
+    text_extraction_job_data = OCR_QUEUE.prepare_data(
+        "extralit_ocr.jobs.pymupdf_to_markdown_job",
+        (document_id, s3_url, s3_url.split("/")[-1], {}, workspace_name),
+        timeout=900,
+        job_id=f"text_extraction_{document_id}",
+        meta={
+            "document_id": str(document_id),
+            "reference": reference,
+            "workflow_step": "text_extraction",
+            "workflow_id": str(workflow.id),
+        },
+    )
+
+    jobs = group.enqueue_many(queue=DEFAULT_QUEUE, job_datas=[analysis_job_data])
+    gpu_jobs = group.enqueue_many(queue=OCR_QUEUE, job_datas=[text_extraction_job_data])
+
+    # Step 6: Future table extraction job (conditional based on analysis results)
+    # This will be added when table extraction is implemented
+    # table_extraction_job_data = OCR_QUEUE.prepare_data(
+    #     "extralit_ocr.jobs.table_extraction_job",
+    #     (document_id, s3_url),
+    #     depends_on=[jobs[0]],  # depends on analysis job
+    #     group=group,
+    #     job_id=f"table_extraction_{document_id}",
+    #     meta={
+    #         "document_id": str(document_id),
+    #         "reference": reference,
+    #         "workflow_step": "table_extraction",
+    #         "workflow_id": str(workflow.id)
+    #     }
+    # )
+
+    _LOGGER.info(f"Started PDF workflow {workflow.id} for document {document_id} with group {group_id}")
+
+    return {
+        "workflow_id": str(workflow.id),
+        "group_id": group_id,
+        "document_id": str(document_id),
+        "reference": reference,
+        "jobs": {
+            "analysis_and_preprocess": jobs[0].id if jobs else None,
+            "text_extraction": gpu_jobs[0].id if gpu_jobs else None,
+        },
+    }
