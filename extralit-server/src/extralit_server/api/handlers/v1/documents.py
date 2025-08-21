@@ -143,12 +143,13 @@ async def get_document(
             detail=f"No documents found with given criteria in workspace {workspace_id}",
         )
 
-    for document in documents:
-        document.url = files.get_presigned_url_from_document_url(
-            client=client,
-            document_url=document.url,
-            expires=3600,
-        )
+    # TODO disable due to CORS restrictions from frontend
+    # for document in documents:
+    #     document.url = files.get_presigned_url_from_document_url(
+    #         client=client,
+    #         document_url=document.url,
+    #         expires=3600,
+    #     )
 
     return documents
 
