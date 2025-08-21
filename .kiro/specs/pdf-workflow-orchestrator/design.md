@@ -103,7 +103,7 @@ async def restart_workflow(request: RestartWorkflowRequest) -> StartWorkflowResp
         return StartWorkflowResponse(
             workflow_id=str(workflow.id),
             document_id=str(request.document_id),
-            job_ids=updated_context["job_ids"],
+            group_id=workflow.group_id,
             status="running",
             restarted_jobs=workflow.get_failed_jobs()
         )
@@ -171,7 +171,7 @@ def start(
         if verbose:
             console.print(f"Document ID: {result['document_id']}")
             console.print(f"Reference: {result['reference']}")
-            console.print(f"Job IDs: {result['job_ids']}")
+            console.print(f"Group ID: {result['group_id']}")
 
         console.print(f"Track progress with: [bold]extralit workflow status --document-id {document_id}[/bold]")
 
@@ -362,9 +362,9 @@ def _display_workflow_status_table(workflows: list, watch: bool = False):
         table.add_column("Duration", style="dim")
 
         for workflow in workflows:
-            # Calculate progress percentage
-            total_jobs = len(workflow.get('job_ids', {}))
-            completed_jobs = sum(1 for job in workflow.get('jobs', []) if job['status'] == 'finished')
+            # Calculate progress percentage from RQ Group
+            total_jobs = workflow.get('total_jobs', 0)
+            completed_jobs = workflow.get('completed_jobs', 0)
             progress = f"{completed_jobs}/{total_jobs} ({int(completed_jobs/total_jobs*100) if total_jobs > 0 else 0}%)"
 
             # Format status with color
@@ -445,199 +445,44 @@ extralit workflow status --document-id 123e4567-e89b-12d3-a456-426614174000 --js
 
 ### Document Metadata Schema
 
-The `documents.metadata_` field needs a structured schema to store analysis and preprocessing results:
+The `documents.metadata_` field uses the existing structured schema in `extralit_server/src/extralit_server/api/schemas/v1/document/metadata.py` to store analysis and preprocessing results. This schema includes:
 
-```python
-# extralit_server/src/extralit_server/api/schemas/v1/document/metadata.py
-from pydantic import BaseModel, Field
-from typing import Optional, Dict, Any
-from datetime import datetime
+- **DocumentProcessingMetadata**: Complete workflow metadata with analysis and preprocessing results
+- **AnalysisMetadata**: PDF analysis results (OCR quality, layout analysis)
+- **PreprocessingMetadata**: Processing results and timing information
+- **OCRQualityMetadata**: OCR quality metrics and scores
+- **LayoutAnalysisMetadata**: PDF layout analysis results
 
-class OCRQualityMetadata(BaseModel):
-    """OCR quality analysis metadata."""
-    total_chars: int = Field(..., description="Total characters analyzed")
-    ocr_artifacts: int = Field(..., description="Number of OCR artifacts detected")
-    suspicious_patterns: int = Field(..., description="Number of suspicious patterns found")
-    ocr_quality_score: float = Field(..., description="Overall OCR quality score (0.0-1.0)")
+### Database Model Using RQ Groups
 
-class LayoutAnalysisMetadata(BaseModel):
-    """PDF layout analysis metadata."""
-    page_count: int = Field(..., description="Number of pages in PDF")
-    has_tables: bool = Field(..., description="Whether tables were detected")
-    has_figures: bool = Field(..., description="Whether figures were detected")
-    text_regions: int = Field(..., description="Number of text regions detected")
-    margin_analysis: Dict[str, Any] = Field(default_factory=dict, description="Margin analysis results")
+The existing `DocumentWorkflow` model in `extralit_server/src/extralit_server/models/database.py` needs to be updated to support RQ Groups:
 
-class AnalysisMetadata(BaseModel):
-    """Analysis job results stored in documents.metadata_."""
-    has_ocr_text_layer: bool = Field(..., description="Whether PDF has OCR text layer")
-    needs_ocr: bool = Field(..., description="Whether additional OCR processing is needed")
-    ocr_quality: OCRQualityMetadata = Field(..., description="OCR quality analysis")
-    layout_analysis: LayoutAnalysisMetadata = Field(..., description="Layout analysis results")
-    analysis_completed_at: datetime = Field(..., description="When analysis was completed")
+**Key Changes Required:**
+- Replace `job_ids` dictionary field with `group_id` string field
+- Add `status` field for caching workflow status
+- Add methods to interact with RQ Groups (`get_workflow_status`, `is_resumable`, `restart_failed_jobs`)
+- Update database migration to support the new schema
 
-class PreprocessingMetadata(BaseModel):
-    """Preprocessing job results stored in documents.metadata_."""
-    processing_time: float = Field(..., description="Processing time in seconds")
-    ocr_applied: bool = Field(..., description="Whether OCR was applied during preprocessing")
-    processed_s3_url: Optional[str] = Field(None, description="S3 URL of processed PDF")
-    preprocessing_completed_at: datetime = Field(..., description="When preprocessing was completed")
+**RQ Groups Integration:**
+- Each document workflow gets a unique RQ Group ID
+- All jobs for a document are added to the same group
+- Group status becomes the source of truth for workflow state
+- Database model provides efficient querying and caching layer
 
-class DocumentProcessingMetadata(BaseModel):
-    """Complete document processing metadata stored in documents.metadata_."""
-    workflow_id: Optional[str] = Field(None, description="Workflow ID for tracking")
-    analysis_metadata: Optional[AnalysisMetadata] = Field(None, description="Analysis results")
-    preprocessing_metadata: Optional[PreprocessingMetadata] = Field(None, description="Preprocessing results")
-    workflow_started_at: datetime = Field(..., description="When workflow was started")
-    workflow_completed_at: Optional[datetime] = Field(None, description="When workflow was completed")
-    workflow_status: str = Field(default="running", description="Overall workflow status")
+### Job Schemas for RQ Groups Integration
 
-    def update_analysis_results(self, analysis_result: dict) -> None:
-        """Update analysis metadata from job result."""
-        self.analysis_metadata = AnalysisMetadata(
-            has_ocr_text_layer=analysis_result['has_ocr_text_layer'],
-            needs_ocr=analysis_result['needs_ocr'],
-            ocr_quality=OCRQualityMetadata(**analysis_result['analysis_metadata']),
-            layout_analysis=LayoutAnalysisMetadata(**analysis_result['layout_analysis']),
-            analysis_completed_at=datetime.utcnow()
-        )
+The existing `WorkflowJobResult` schema in `extralit_server/src/extralit_server/api/schemas/v1/jobs.py` needs to be extended to support RQ Groups:
 
-    def update_preprocessing_results(self, preprocess_result: dict) -> None:
-        """Update preprocessing metadata from job result."""
-        self.preprocessing_metadata = PreprocessingMetadata(
-            processing_time=preprocess_result['processing_time'],
-            ocr_applied=preprocess_result.get('ocr_applied', False),
-            processed_s3_url=preprocess_result.get('processed_s3_url'),
-            preprocessing_completed_at=datetime.utcnow()
-        )
+**Required Updates:**
+- Add `group_id` field to track which RQ Group the job belongs to
+- Add `group_status` field for overall group status information
+- Extend job metadata to include group-level progress information
 
-    def is_workflow_complete(self) -> bool:
-        """Check if all workflow steps are complete."""
-        return all([
-            self.analysis_metadata is not None,
-            self.preprocessing_metadata is not None,
-        ])
-```
-
-### Simplified Database Model Using RQ Groups
-
-```python
-# extralit_server/src/extralit_server/models/database.py (simplified for RQ Groups)
-from sqlalchemy import Column, String, JSON, DateTime, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
-from uuid import uuid4
-from datetime import datetime
-from typing import Optional
-
-class DocumentWorkflow(Base):
-    """Simplified workflow tracking using RQ Groups as source of truth."""
-    __tablename__ = "workflows"
-
-    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
-    workflow_type: Mapped[str] = mapped_column(String(50))
-    workspace_id: Mapped[UUID] = mapped_column(ForeignKey("workspaces.id"), nullable=False)
-    document_id: Mapped[UUID] = mapped_column(ForeignKey("documents.id"), nullable=False, index=True)
-    reference: Mapped[str] = mapped_column(String(255), nullable=True, index=True)  # For batch tracking
-
-    # RQ Group integration
-    group_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)  # RQ Group ID
-
-    # Relationships
-    document: Mapped["Document"] = relationship("Document", back_populates="workflows")
-    workspace: Mapped["Workspace"] = relationship("Workspace")
-
-    @classmethod
-    async def get_by_document_id(cls, db: AsyncSession, document_id: UUID) -> Optional["DocumentWorkflow"]:
-        """Get workflow by document ID."""
-        result = await db.execute(select(cls).where(cls.document_id == document_id))
-        return result.scalar_one_or_none()
-
-    @classmethod
-    async def get_by_group_id(cls, db: AsyncSession, group_id: str) -> Optional["DocumentWorkflow"]:
-        """Get workflow by RQ Group ID."""
-        result = await db.execute(select(cls).where(cls.group_id == group_id))
-        return result.scalar_one_or_none()
-
-    @classmethod
-    async def get_by_reference(cls, db: AsyncSession, reference: str, workspace_id: str = None) -> list["DocumentWorkflow"]:
-        """Get workflows by reference (batch tracking)."""
-        query = select(cls).where(cls.reference == reference)
-        if workspace_id:
-            query = query.where(cls.workspace_id == workspace_id)
-        result = await db.execute(query)
-        return result.scalars().all()
-
-    def get_workflow_status(self) -> dict:
-        """Get workflow status from RQ Group (source of truth)."""
-
-    def is_resumable(self) -> bool:
-        """Check if workflow can be resumed using RQ Group status."""
-        status = self.get_workflow_status()
-        if status.get("error"):
-            return False
-
-        failed_jobs = status.get("failed_jobs", 0)
-        completed_jobs = status.get("completed_jobs", 0)
-        return failed_jobs > 0 and completed_jobs > 0
-
-    def restart_failed_jobs(self) -> dict:
-        """Restart failed jobs using RQ Group orchestrator."""
-```
-
-### New Pydantic Schemas for Job Input/Output
-
-```python
-# extralit_server/src/extralit_server/api/schemas/v1/documents/analysis.py
-from pydantic import BaseModel
-from typing import Optional
-from uuid import UUID
-
-class AnalysisJobInput(BaseModel):
-    """Input for PDF analysis job"""
-    document_id: UUID
-    s3_url: str
-    filename: str
-    reference: str
-    workspace_id: UUID
-
-class AnalysisJobOutput(BaseModel):
-    """Output from PDF analysis job"""
-    document_id: UUID
-    has_ocr_text_layer: bool
-    ocr_quality_score: float
-    needs_ocr: bool
-    analysis_metadata: dict
-
-# extralit_server/src/extralit_server/api/schemas/v1/documents/preprocessing.py (extend existing)
-class PreprocessJobInput(BaseModel):
-    """Input for PDF preprocessing job"""
-    document_id: UUID
-    s3_url: str
-    filename: str
-    reference: str
-    workspace_id: UUID
-
-class PreprocessJobOutput(BaseModel):
-    """Output from PDF preprocessing job"""
-    document_id: UUID
-    original_s3_url: str
-    processed_s3_url: str
-    processing_time: float
-    preprocessing_metadata: dict
-
-# extralit_server/src/extralit_server/api/schemas/v1/jobs.py (extend existing)
-class WorkflowJobResult(BaseModel):
-    """Generic job result wrapper for workflow jobs"""
-    job_id: str
-    document_id: UUID
-    job_type: str  # 'analysis', 'preprocess', 'ocr', 'text_extraction', 'table_extraction', 'embedding'
-    status: str    # 'queued', 'started', 'finished', 'failed', 'deferred'
-    result_data: Optional[dict] = None
-    error_message: Optional[str] = None
-    started_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
-```
+**New Schema Fields:**
+- `group_id`: RQ Group identifier for the workflow
+- `group_progress`: Overall progress of the group (0.0-1.0)
+- `group_status`: Status of the entire group (running, completed, failed)
+- `workflow_step`: Current step in the workflow process
 
 ## RQ-Native Workflow Design
 
@@ -655,14 +500,21 @@ Each job must have these properties to enable resumability:
 4. **Dependency Declaration**: Explicit dependencies in the DAG definition
 5. **Conditional Logic**: Ability to skip jobs based on workflow state
 
-### RQ-Native Job Implementation Pattern
+### RQ Groups Job Implementation Pattern
 
-```python
-# extralit_server/src/extralit_server/jobs/pdf.py
-from rq import get_current_job
-from rq.job import Job
+Jobs will be implemented using RQ Groups for workflow coordination:
 
-```
+**Key Implementation Requirements:**
+- Jobs are added to RQ Groups during enqueueing
+- Job metadata includes group_id and workflow context
+- Jobs use `depends_on` parameter for dependency management
+- Group status is queried using RQ Groups API
+- Failed jobs can be restarted within the same group
+
+**Integration Points:**
+- `extralit_server/src/extralit_server/jobs/document_jobs.py`: Update existing job functions
+- `extralit_server/src/extralit_server/workflows/documents.py`: Update workflow orchestrator
+- `extralit_server/src/extralit_server/contexts/workflows.py`: Update job querying functions
 
 ### Integration with Existing Code Structure
 
@@ -716,13 +568,14 @@ This approach minimizes code duplication and leverages the existing, well-tested
 ### API Integration Tests
 
 **Bulk Upload Integration:**
-- Test POST /documents/bulk creates workflow jobs with proper RQ dependencies after S3 upload
-- Test API returns workflow job IDs and initial status for tracking purposes
+- Test POST /documents/bulk creates RQ Groups with proper job dependencies after S3 upload
+- Test API returns workflow group_id and initial status for tracking purposes
 
 **Job Status Querying:**
 - Test GET /jobs API filters jobs by document_id, reference, and workflow_step parameters
-- Test API returns job metadata including workflow progress and RQ group information
+- Test API returns job metadata including RQ Group information and progress
 - Test API shows error details and failure information when jobs fail
+- Test API correctly queries RQ Groups for job status instead of individual job fetches
 
 **Workflow Progress Monitoring:**
 - Test API shows current workflow step and overall progress percentage for active workflows
@@ -735,10 +588,12 @@ This approach minimizes code duplication and leverages the existing, well-tested
 - Test `workflow status --reference` command shows jobs for all documents in a reference batch
 
 **Failed Job Restart:**
-- Test CLI can identify failed jobs in a workflow chain for a given document_id
-- Test CLI restart command re-enqueues failed jobs with proper dependencies restored
+- Test CLI can identify failed jobs using RQ Group status for a given document_id
+- Test CLI restart command re-enqueues failed jobs within the same RQ Group with proper dependencies
 - Test restarted workflow continues from the failed step without re-running completed jobs
+- Test RQ Group-based resumability maintains workflow integrity
 
 **Error Handling:**
 - Test CLI commands provide clear error messages for invalid document IDs or missing workflows
-- Test CLI gracefully handles Redis connection issues and RQ registry access problems
+- Test CLI gracefully handles Redis connection issues and RQ Groups access problems
+- Test CLI handles RQ Group expiration and cleanup scenarios
