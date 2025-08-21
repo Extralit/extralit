@@ -468,6 +468,62 @@ def is_workflow_resumable(group_id: str) -> bool:
         return False
 
 
+def get_failed_jobs_in_group(group_id: str) -> list[dict[str, Any]]:
+    """
+    Add logic to identify failed jobs using RQ Group.get_jobs() with status filtering.
+
+    Args:
+        group_id: RQ Group ID
+
+    Returns:
+        List of failed job dictionaries with details
+    """
+    try:
+        # Handle group expiration and missing groups gracefully
+        try:
+            group = Group.fetch(name=group_id, connection=REDIS_CONNECTION)
+        except Exception as e:
+            _LOGGER.warning(f"Group {group_id} not found or expired: {e}")
+            return []
+
+        jobs = group.get_jobs()
+
+        # Filter failed jobs and return detailed information
+        failed_jobs = []
+        for job in jobs:
+            try:
+                if job.is_failed:
+                    failed_job_info = {
+                        "id": job.id,
+                        "status": job.get_status(refresh=True),
+                        "created_at": job.created_at,
+                        "started_at": job.started_at,
+                        "ended_at": job.ended_at,
+                        "meta": job.meta,
+                        "exc_info": job.exc_info,
+                        "failure_reason": str(job.exc_info) if job.exc_info else "Unknown failure",
+                        "workflow_step": job.meta.get("workflow_step", "unknown") if job.meta else "unknown",
+                    }
+                    failed_jobs.append(failed_job_info)
+            except Exception as job_error:
+                _LOGGER.warning(f"Error processing failed job {job.id}: {job_error}")
+                # Add basic info even if detailed processing fails
+                failed_jobs.append(
+                    {
+                        "id": job.id,
+                        "status": "failed",
+                        "error": f"Job processing error: {job_error}",
+                        "workflow_step": "unknown",
+                    }
+                )
+
+        return failed_jobs
+
+    except Exception as e:
+        _LOGGER.error(f"Error getting failed jobs for group {group_id}: {e}")
+        return []
+
+
 async def restart_failed_jobs_in_workflow(db: AsyncSession, workflow: DocumentWorkflow) -> dict[str, Any]:
     """
     Restart failed jobs in the workflow group.
@@ -518,6 +574,90 @@ async def restart_failed_jobs_in_workflow(db: AsyncSession, workflow: DocumentWo
 
     except Exception as e:
         _LOGGER.error(f"Error restarting failed jobs in workflow {workflow.id}: {e}")
+        return {"success": False, "error": str(e), "restarted_jobs": [], "total_failed": 0}
+
+
+async def restart_failed_workflow(db: AsyncSession, document_id: UUID, partial_restart: bool = True) -> dict[str, Any]:
+    """
+    Create restart_failed_workflow() function using RQ Group failed job identification.
+
+    This function provides a high-level interface for restarting workflows with
+    support for partial vs full workflow restart using RQ Group capabilities.
+
+    Args:
+        db: Database session
+        document_id: Document ID to restart workflow for
+        partial_restart: If True, only restart failed jobs; if False, restart entire workflow
+
+    Returns:
+        Dictionary with restart results including job re-enqueueing status
+    """
+    try:
+        # Get workflow by document ID
+        workflow = await DocumentWorkflow.get_by_document_id(db, document_id)
+        if not workflow:
+            return {
+                "success": False,
+                "error": f"No workflow found for document {document_id}",
+                "restarted_jobs": [],
+                "total_failed": 0,
+            }
+
+        # Check if workflow is resumable
+        if not is_workflow_resumable(workflow.group_id):
+            return {
+                "success": False,
+                "error": "Workflow is not in a resumable state (no failed jobs found)",
+                "restarted_jobs": [],
+                "total_failed": 0,
+            }
+
+        if partial_restart:
+            # Use existing function for partial restart (failed jobs only)
+            return await restart_failed_jobs_in_workflow(db, workflow)
+        else:
+            # Full workflow restart - restart all jobs in the group
+            try:
+                group = Group.fetch(name=workflow.group_id, connection=REDIS_CONNECTION)
+            except Exception as e:
+                _LOGGER.error(f"Group {workflow.group_id} not found or expired, cannot restart: {e}")
+                return {
+                    "success": False,
+                    "error": f"Group not found or expired: {e}",
+                    "restarted_jobs": [],
+                    "total_failed": 0,
+                }
+
+            jobs = group.get_jobs()
+            restarted_jobs = []
+            failed_jobs = [job for job in jobs if job.is_failed]
+
+            # Restart all jobs in the workflow with proper dependencies
+            for job in jobs:
+                try:
+                    # Requeue job (RQ will handle dependencies automatically)
+                    job.requeue()
+                    restarted_jobs.append(job.id)
+                    _LOGGER.info(f"Restarted job {job.id} in full workflow restart for {workflow.id}")
+                except Exception as e:
+                    _LOGGER.warning(f"Failed to restart job {job.id} in full restart: {e}")
+
+            # Update DocumentWorkflow records with new group state information
+            if restarted_jobs:
+                await update_workflow_status(db, workflow, "running")
+                _LOGGER.info(
+                    f"Updated workflow {workflow.id} status to running after full restart of {len(restarted_jobs)} jobs"
+                )
+
+            return {
+                "success": True,
+                "restarted_jobs": restarted_jobs,
+                "total_failed": len(failed_jobs),
+                "restart_type": "full",
+            }
+
+    except Exception as e:
+        _LOGGER.error(f"Error restarting workflow for document {document_id}: {e}")
         return {"success": False, "error": str(e), "restarted_jobs": [], "total_failed": 0}
 
 
@@ -664,4 +804,106 @@ async def get_workflow_statuses_by_reference(db: AsyncSession, reference: str) -
 
     except Exception as e:
         _LOGGER.error(f"Error getting workflow statuses for reference {reference}: {e}")
+        return []
+
+
+async def list_workflows(
+    db: AsyncSession,
+    workspace_id: Optional[UUID] = None,
+    status_filter: Optional[str] = None,
+    limit: int = 50,
+) -> list[dict[str, Any]]:
+    """
+    List workflows with optional filtering and RQ Group information.
+
+    Args:
+        db: Database session
+        workspace_id: Optional workspace ID filter
+        status_filter: Optional status filter
+        limit: Maximum number of workflows to return
+
+    Returns:
+        List of workflow status dictionaries with RQ Group information
+    """
+    try:
+        from sqlalchemy import select
+
+        # Build query with efficient database queries using group_id indexing
+        query = select(DocumentWorkflow).order_by(DocumentWorkflow.inserted_at.desc()).limit(limit)
+
+        if workspace_id:
+            query = query.where(DocumentWorkflow.workspace_id == workspace_id)
+
+        if status_filter:
+            query = query.where(DocumentWorkflow.status == status_filter)
+
+        # Execute query
+        result = await db.execute(query)
+        workflows = result.scalars().all()
+
+        workflow_statuses = []
+        for workflow in workflows:
+            try:
+                # Get workflow status using RQ Groups with enhanced error handling
+                workflow_status = get_workflow_status_from_group(workflow.group_id)
+
+                # Add workflow metadata including RQ Group information
+                workflow_status.update(
+                    {
+                        "document_id": workflow.document_id,
+                        "workflow_id": workflow.id,
+                        "workflow_type": workflow.workflow_type,
+                        "group_id": workflow.group_id,
+                        "reference": workflow.reference,
+                        "workspace_id": workflow.workspace_id,
+                        "created_at": workflow.inserted_at,
+                        "updated_at": workflow.updated_at,
+                        "cached_status": workflow.status,
+                    }
+                )
+
+                workflow_statuses.append(workflow_status)
+
+                # Update cached status if needed for performance optimization
+                if workflow.status != workflow_status["status"] and workflow_status["status"] not in [
+                    "error",
+                    "expired",
+                ]:
+                    try:
+                        await update_workflow_status(db, workflow, workflow_status["status"])
+                    except Exception as update_error:
+                        _LOGGER.warning(
+                            f"Failed to update cached workflow status for workflow {workflow.id}: {update_error}"
+                        )
+
+            except Exception as workflow_error:
+                # Handle missing groups and RQ connection issues gracefully
+                _LOGGER.warning(f"Error processing workflow {workflow.id}: {workflow_error}")
+                # Add basic workflow info even if RQ Group access fails
+                workflow_statuses.append(
+                    {
+                        "document_id": workflow.document_id,
+                        "workflow_id": workflow.id,
+                        "workflow_type": workflow.workflow_type,
+                        "group_id": workflow.group_id,
+                        "reference": workflow.reference,
+                        "workspace_id": workflow.workspace_id,
+                        "status": "error",
+                        "progress": 0.0,
+                        "total_jobs": 0,
+                        "completed_jobs": 0,
+                        "failed_jobs": 0,
+                        "running_jobs": 0,
+                        "jobs": [],
+                        "error": f"RQ Group access error: {workflow_error}",
+                        "created_at": workflow.inserted_at,
+                        "updated_at": workflow.updated_at,
+                        "cached_status": workflow.status,
+                    }
+                )
+
+        return workflow_statuses
+
+    except Exception as e:
+        _LOGGER.error(f"Error listing workflows: {e}")
         return []

@@ -110,8 +110,8 @@ Based on the design requirements, the current implementation needs to be updated
 
 ## Phase 3: CLI
 
-- [ ] 3. Add CLI workflow management commands
-- [ ] 3.1 Create FastAPI workflow endpoints
+- [x] 3. Add CLI workflow management commands
+- [x] 3.1 Create FastAPI workflow endpoints
   - Create `extralit-server/src/extralit_server/api/handlers/v1/workflows.py` with workflow router
   - Add Pydantic schemas in `extralit-server/src/extralit_server/api/schemas/v1/workflows.py`
   - Implement `POST /workflows/start` endpoint for starting workflows
@@ -120,7 +120,7 @@ Based on the design requirements, the current implementation needs to be updated
   - Implement `GET /workflows/` endpoint for listing workflows with filters
   - _Requirements: 6.4_
 
-- [ ] 3.2 Extend WorkflowContext for RQ Groups API operations
+- [x] 3.2 Extend WorkflowContext for RQ Groups API operations
   - Update `get_workflow_status()` method to use RQ Group status and job information
   - Update `get_workflows_by_reference()` method to work with group-based tracking
   - Update `list_workflows()` method to include RQ Group information
@@ -128,7 +128,7 @@ Based on the design requirements, the current implementation needs to be updated
   - Add error handling for missing groups and RQ connection issues
   - _Requirements: 6.4, 3.2, 3.3_
 
-- [ ] 3.3 Implement RQ Groups-based workflow restart functionality
+- [x] 3.3 Implement RQ Groups-based workflow restart functionality
   - Create `restart_failed_workflow()` function using RQ Group failed job identification
   - Add logic to identify failed jobs using RQ Group.get_jobs() with status filtering
   - Implement job re-enqueueing within the same RQ Group with proper dependencies
@@ -136,7 +136,7 @@ Based on the design requirements, the current implementation needs to be updated
   - Add support for partial vs full workflow restart using RQ Group capabilities
   - _Requirements: 6.4, 3.4, 3.5_
 
-- [ ] 3.4 Create CLI module structure and integration
+- [x] 3.4 Create CLI module structure and integration
   - Create `extralit/src/extralit/cli/workflows.py` with typer app
   - Add workflow_app to main CLI using `app.add_typer(workflow_app, name="workflow")`
   - Import Rich library components for formatted output (Console, Table, Progress)
@@ -144,7 +144,7 @@ Based on the design requirements, the current implementation needs to be updated
   - Set up error handling patterns with typer.Exit and console.print
   - _Requirements: 6.4_
 
-- [ ] 3.5 Implement CLI workflow start command
+- [x] 3.5 Implement CLI workflow start command
   - Create `workflow start` command with document_id, workspace_name, reference, force, and verbose options
   - Use `client.api.http_client.post()` to call `/workflows/start` endpoint
   - Add validation and error handling for HTTP responses
@@ -152,7 +152,7 @@ Based on the design requirements, the current implementation needs to be updated
   - Handle errors gracefully with user-friendly messages
   - _Requirements: 6.4_
 
-- [ ] 3.6 Implement CLI workflow status command
+- [x] 3.6 Implement CLI workflow status command
   - Create `workflow status` command with document_id, reference, workspace_name, watch, and json_output options
   - Use `client.api.http_client.get()` to call `/workflows/status` endpoint
   - Implement `_display_workflow_status_table()` helper function using Rich Table
@@ -161,7 +161,7 @@ Based on the design requirements, the current implementation needs to be updated
   - Calculate and display progress percentages and duration information
   - _Requirements: 6.4_
 
-- [ ] 3.7 Implement CLI workflow restart command
+- [x] 3.7 Implement CLI workflow restart command
   - Create `workflow restart` command with document_id, reference, failed_only, and confirm options
   - Use `client.api.http_client.post()` to call `/workflows/restart` endpoint
   - Add confirmation prompts before restarting workflows
@@ -169,7 +169,7 @@ Based on the design requirements, the current implementation needs to be updated
   - Display progress and results of restart operations
   - _Requirements: 6.4_
 
-- [ ] 3.8 Implement CLI workflow list command
+- [x] 3.8 Implement CLI workflow list command
   - Create `workflow list` command with workspace_name, status_filter, limit, and json_output options
   - Use `client.api.http_client.get()` to call `/workflows/` endpoint
   - Add filtering capabilities by workspace and status
@@ -206,7 +206,7 @@ Based on the design requirements, the current implementation needs to be updated
 
 ## Phase 5: Tests and workflow handling
 - [ ] 5.1 Add comprehensive RQ Groups testing
-  - Unit tests for RQ Groups integration functions
+  - Unit tests for RQ Groups integration functions (See extralit-server/tests/unit/jobs/test_jobs.py)
   - Integration tests for complete workflow using RQ Groups
   - Test group-based job querying and status functions
   - Test CLI commands with RQ Groups

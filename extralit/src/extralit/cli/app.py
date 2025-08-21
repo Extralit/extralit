@@ -27,6 +27,7 @@ from extralit.cli import (
     training,
     users,
     whoami,
+    workflows,
     workspaces,
 )
 from extralit.cli.typer_ext import ExtralitTyper
@@ -67,6 +68,7 @@ def register_subcommands():
     app.add_typer(training.app, name="training")
     app.add_typer(users.app, name="users")
     app.add_typer(whoami.app, name="whoami")
+    app.add_typer(workflows.app, name="workflows")
     app.add_typer(workspaces.app, name="workspaces")
 
 
