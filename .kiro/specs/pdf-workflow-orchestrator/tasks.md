@@ -21,7 +21,7 @@ Based on the design requirements, the current implementation needs to be updated
 
 ## Phase 1: RQ Groups Integration and Job Chaining
 
-- [ ] 1. Implement RQ Groups for workflow tracking
+- [x] 1. Implement RQ Groups for workflow tracking
   - Replace custom DocumentWorkflow.job_ids tracking with RQ Groups
   - Update workflow orchestrator to create and manage RQ Groups for document workflows
   - Modify job querying functions to use RQ Group.get_jobs() instead of individual job fetches
@@ -44,7 +44,7 @@ Based on the design requirements, the current implementation needs to be updated
   - Include methods for job status updates and workflow queries
   - _Requirements: 2.2, 2.5, 6.1_
 
-- [ ] 1.3 Update DocumentWorkflow model for RQ Groups
+- [x] 1.3 Update DocumentWorkflow model for RQ Groups
   - Remove job_ids field and add group_id field to DocumentWorkflow model
   - Add status field to track overall workflow status
   - Create database migration to update existing workflows table
@@ -52,7 +52,7 @@ Based on the design requirements, the current implementation needs to be updated
   - Update relationships and queries to work with RQ Groups
   - _Requirements: 3.1, 3.2, 3.3_
 
-- [ ] 1.4 Refactor workflow orchestrator to use RQ Groups
+- [x] 1.4 Refactor workflow orchestrator to use RQ Groups
   - Update create_document_workflow() to create RQ Group for each document workflow
   - Add all workflow jobs to the same RQ Group using group parameter
   - Use RQ's depends_on parameter for job dependencies within the group
@@ -69,7 +69,7 @@ Based on the design requirements, the current implementation needs to be updated
   - Test queue routing with existing worker setup
   - _Requirements: 7.1, 7.4, 8.4_
 
-- [ ] 1.6 Update process_bulk_upload function for RQ Groups
+- [x] 1.6 Update process_bulk_upload function for RQ Groups
   - Move file upload to S3 into process_bulk_upload (before job enqueueing)
   - Create document records in database before enqueueing jobs
   - Replace upload_and_preprocess_documents_job with RQ Groups-based workflow

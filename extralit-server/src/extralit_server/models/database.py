@@ -715,10 +715,11 @@ class DocumentWorkflow(DatabaseModel):
     workflow_type: Mapped[str] = mapped_column(String(50))
     workspace_id: Mapped[UUID] = mapped_column(ForeignKey("workspaces.id"), nullable=False)
     document_id: Mapped[UUID] = mapped_column(ForeignKey("documents.id"), nullable=False, index=True)
-    reference: Mapped[str] = mapped_column(String(255), nullable=True, index=True)  # For batch tracking
+    reference: Mapped[str] = mapped_column(String(255), nullable=True, index=True)
 
     # RQ Group integration
-    group_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)  # RQ Group ID
+    group_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    status: Mapped[str] = mapped_column(String(50), default="pending", index=True)  # Cached workflow status
 
     # Relationships
     document: Mapped["Document"] = relationship("Document", back_populates="workflows")

@@ -486,24 +486,29 @@ async def process_bulk_upload(
                 reference_workflows = {}
                 for document, s3_url in uploaded_documents:
                     try:
-                        workflow_result = create_document_workflow(
+                        workflow_result = await create_document_workflow(
                             document_id=document.id,
                             s3_url=s3_url,
                             reference=reference,
                             workspace_name=workspace.name,
+                            workspace_id=workspace.id,
                         )
 
-                        reference_workflows[str(document.id)] = workflow_result["job_ids"]
+                        reference_workflows[str(document.id)] = {
+                            "workflow_id": workflow_result["workflow_id"],
+                            "group_id": workflow_result["group_id"],
+                            "jobs": workflow_result["jobs"],
+                        }
                         _LOGGER.info(
                             f"Started workflow {workflow_result['workflow_id']} for document {document.id} "
-                            f"in reference {reference}"
+                            f"in reference {reference} with group {workflow_result['group_id']}"
                         )
 
                     except Exception as e:
                         _LOGGER.error(f"Error starting workflow for document {document.id}: {e}")
                         failed_validations.append(f"{reference}/{document.file_name}: Workflow start failed: {e}")
 
-                # Store all workflow job IDs for this reference
+                # Store all workflow information for this reference
                 if reference_workflows:
                     job_ids[reference] = reference_workflows
 

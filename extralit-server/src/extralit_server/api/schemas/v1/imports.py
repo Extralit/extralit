@@ -116,7 +116,9 @@ class DocumentsBulkCreate(BaseModel):
 class DocumentsBulkResponse(BaseModel):
     """Response schema for bulk document upload."""
 
-    job_ids: dict[str, str] = Field(..., description="Reference key to job_id mapping for frontend tracking")
+    job_ids: dict[str, Any] = Field(
+        ..., description="Reference key to workflow information mapping for frontend tracking"
+    )
     total_documents: int = Field(..., description="Total number of documents in the request")
     failed_validations: list[str] = Field(default_factory=list, description="Files that failed validation")
 

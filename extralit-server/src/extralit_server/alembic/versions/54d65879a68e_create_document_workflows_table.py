@@ -35,6 +35,7 @@ def upgrade() -> None:
     op.create_table(
         "workflows",
         sa.Column("workflow_type", sa.String(length=50), nullable=False),
+        sa.Column("status", sa.String(length=50), default="pending", nullable=False),
         sa.Column("workspace_id", sa.Uuid(), nullable=False),
         sa.Column("document_id", sa.Uuid(), nullable=False),
         sa.Column("reference", sa.String(length=255), nullable=True),
