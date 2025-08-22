@@ -59,7 +59,7 @@
                 <BaseButton
                   v-if="document.metadata"
                   class="document-action"
-                  @click="showDocumentMetadata(document)"
+                  @on-click="showDocumentMetadata(document)"
                   title="View Metadata"
                 >
                   <svgicon name="info" width="14" height="14" />
@@ -67,7 +67,7 @@
                 <BaseButton
                   v-if="document.url"
                   class="document-action"
-                  @click="openDocument(document)"
+                  @on-click="openDocument(document)"
                   title="View Document"
                 >
                   <svgicon name="external-link" width="14" height="14" />
@@ -83,12 +83,19 @@
     <BaseModal
       v-if="showMetadataModal"
       :modal-visible="showMetadataModal"
-      :modal-title="`Metadata - ${selectedDocumentName}`"
+      :modal-title="selectedDocumentName"
       modal-class="modal-auto"
       @close-modal="closeMetadataModal"
     >
       <div class="metadata-content">
-        <pre class="metadata-json">{{ JSON.stringify(selectedDocumentMetadata, null, 2) }}</pre>
+        <pre class="metadata-json">
+          <template v-if="!selectedDocumentMetadata?.text_extraction_metadata?.markdown">{{ JSON.stringify(selectedDocumentMetadata, null, 2) }}
+          </template>
+          <MarkdownRenderer
+            v-if-else="selectedDocumentMetadata?.text_extraction_metadata?.markdown"
+            :markdown="selectedDocumentMetadata?.text_extraction_metadata?.markdown"
+          />
+        </pre>
       </div>
     </BaseModal>
   </div>
@@ -99,8 +106,7 @@ import "assets/icons/document";
 import "assets/icons/external-link";
 import "assets/icons/info";
 
-import { Document } from "~/v1/domain/entities/document/Document";
-import { useDocumentsListViewModel, type DocumentGroup } from "./useDocumentsListViewModel";
+import { useDocumentsListViewModel } from "./useDocumentsListViewModel";
 
 export default {
   name: "DocumentsList",
@@ -108,62 +114,6 @@ export default {
     workspaceId: {
       type: String,
       required: true,
-    },
-  },
-  data() {
-    return {
-      documents: [] as Document[],
-      isLoading: false,
-      showMetadataModal: false,
-      selectedDocumentMetadata: null as any,
-      selectedDocumentName: "" as string,
-    };
-  },
-  computed: {
-    groupedDocuments(): DocumentGroup[] {
-      return this.groupDocumentsByReference(this.documents);
-    },
-
-    totalFiles(): number {
-      return this.documents.length;
-    },
-  },
-  async mounted() {
-    await this.fetchDocuments();
-  },
-  watch: {
-    workspaceId: {
-      immediate: false,
-      async handler(newWorkspaceId, oldWorkspaceId) {
-        if (newWorkspaceId && newWorkspaceId !== oldWorkspaceId) {
-          await this.fetchDocuments();
-        }
-      },
-    },
-  },
-  methods: {
-    async fetchDocuments() {
-      this.isLoading = true;
-      try {
-        this.documents = await this.loadDocuments(this.workspaceId);
-      } catch (error) {
-        console.error("Error loading documents:", error);
-        this.$notification.error("Failed to load documents");
-      } finally {
-        this.isLoading = false;
-      }
-    },
-
-    showDocumentMetadata(document: Document) {
-      this.selectedDocumentMetadata = document.metadata;
-      this.selectedDocumentName = document.file_name || "Unknown Document";
-      this.showMetadataModal = true;
-    },
-
-    closeMetadataModal() {
-      this.showMetadataModal = false;
-      this.selectedDocumentMetadata = null;
-      this.selectedDocumentName = "";
     },
   },
   setup(props) {
@@ -324,7 +274,8 @@ export default {
 }
 
 .metadata-content {
-  max-height: 60vh;
+  max-height: 80vh;
+  max-width: 90vw;
   overflow-y: auto;
 
   .metadata-json {
@@ -333,7 +284,6 @@ export default {
     border-radius: $border-radius-s;
     padding: $base-space * 2;
     margin: 0;
-    font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
     font-size: 12px;
     line-height: 1.4;
     color: var(--fg-primary);

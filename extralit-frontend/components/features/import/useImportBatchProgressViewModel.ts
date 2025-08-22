@@ -484,8 +484,6 @@ export const useImportBatchProgressViewModel = (
         metadata,
       };
 
-      console.log("Creating import history with data:", importHistoryData);
-
       const response = await createImportHistoryUseCase.execute(importHistoryData);
 
       // Store the import history ID for potential future use

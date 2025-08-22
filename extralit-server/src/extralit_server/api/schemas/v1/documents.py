@@ -59,8 +59,11 @@ class DocumentListItem(BaseModel):
     reference: str | None
     pmid: str | None
     doi: str | None
-    metadata: dict | None = Field(alias="metadata_")
+    metadata: dict | None = Field(None, alias="metadata_", serialization_alias="metadata")
     inserted_at: datetime
     updated_at: datetime
 
-    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+    model_config = ConfigDict(
+        from_attributes=True,
+        populate_by_name=True,
+    )

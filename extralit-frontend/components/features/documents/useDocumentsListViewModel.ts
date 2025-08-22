@@ -22,6 +22,11 @@ export const useDocumentsListViewModel = (props: { workspaceId: string }) => {
   const isLoading = ref(false);
   const error = ref<string | null>(null);
 
+  // Modal state
+  const showMetadataModal = ref(false);
+  const selectedDocumentMetadata = ref(null as any);
+  const selectedDocumentName = ref("" as string);
+
   // Computed properties
   const groupedDocuments = computed(() => {
     return groupDocumentsByReference(documents.value);
@@ -96,6 +101,19 @@ export const useDocumentsListViewModel = (props: { workspaceId: string }) => {
     }
   };
 
+  // Modal methods
+  const showDocumentMetadata = (document: Document) => {
+    selectedDocumentMetadata.value = document.metadata;
+    selectedDocumentName.value = document.file_name || "Unknown Document";
+    showMetadataModal.value = true;
+  };
+
+  const closeMetadataModal = () => {
+    showMetadataModal.value = false;
+    selectedDocumentMetadata.value = null;
+    selectedDocumentName.value = "";
+  };
+
   // Watch for workspace changes and reload data
   watch(
     () => props.workspaceId,
@@ -131,6 +149,11 @@ export const useDocumentsListViewModel = (props: { workspaceId: string }) => {
     isLoading,
     error,
 
+    // Modal state
+    showMetadataModal,
+    selectedDocumentMetadata,
+    selectedDocumentName,
+
     // Computed properties
     groupedDocuments,
     totalFiles,
@@ -141,5 +164,7 @@ export const useDocumentsListViewModel = (props: { workspaceId: string }) => {
     openDocument,
     retryLoad,
     refresh,
+    showDocumentMetadata,
+    closeMetadataModal,
   };
 };

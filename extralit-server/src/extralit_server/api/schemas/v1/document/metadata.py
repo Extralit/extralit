@@ -61,7 +61,7 @@ class PreprocessingMetadata(BaseModel):
 class TextExtractionMetadata(BaseModel):
     """Text extraction job results."""
 
-    extracted_text_length: int = Field(..., description="Length of extracted text")
+    markdown: str = Field(None, description="Extracted text")
     extraction_method: str = Field(..., description="Method used for extraction")
     text_extraction_completed_at: Optional[str] = Field(None, description="When text extraction was completed")
 
