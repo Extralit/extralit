@@ -32,10 +32,15 @@ npm run dev              # Development server
 npm run build            # Production build
 npm run test             # Run Jest tests
 npm run test:watch       # Run tests in watch mode
-npm run e2e              # Run Playwright e2e tests
+npm run test:coverage    # Run tests with coverage report
+npm run e2e              # Run Playwright e2e tests (interactive UI)
+npm run e2e:silent       # Run e2e tests in headless mode
+npm run e2e:report       # Show Playwright test report
 npm run lint             # ESLint check
 npm run lint:fix         # Fix ESLint issues
 npm run format           # Format with Prettier
+npm run format:check     # Check formatting without modifying files
+npm run generate-icons   # Generate icon components from SVG files
 ```
 
 ### Client SDK (extralit/)
