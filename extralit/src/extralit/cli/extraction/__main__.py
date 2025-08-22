@@ -16,13 +16,12 @@ import sys
 from typing import Optional
 
 import typer
+from rich.console import Console
+from rich.live import Live
+from rich.spinner import Spinner
 
 from extralit.cli.callback import init_callback
 from extralit.cli.rich import get_themed_panel
-from rich.console import Console
-from rich.spinner import Spinner
-from rich.live import Live
-
 
 # Commands that require specific parameters
 _COMMANDS_REQUIRING_WORKSPACE = ["export"]
@@ -87,7 +86,7 @@ def callback(
                 Console().print(panel)
             except Exception as e:
                 panel = get_themed_panel(
-                    f"Failed to load environment variables from {env_file}: {str(e)}",
+                    f"Failed to load environment variables from {env_file}: {e!s}",
                     title="Environment Load Failed",
                     title_align="left",
                     success=False,
@@ -164,7 +163,7 @@ def export(
 
         # Show completion message
         panel = get_themed_panel(
-            f"Extraction data successfully exported to {output_path}\n" f"• Workspace: {workspace['name']}\n",
+            f"Extraction data successfully exported to {output_path}\n• Workspace: {workspace['name']}\n",
             title="Export Complete",
             title_align="left",
         )
@@ -172,7 +171,7 @@ def export(
 
     except Exception as e:
         panel = get_themed_panel(
-            f"An unexpected error occurred during data export: {str(e)}",
+            f"An unexpected error occurred during data export: {e!s}",
             title="Export Failed",
             title_align="left",
             success=False,
@@ -234,7 +233,7 @@ def check_status(
 
     except Exception as e:
         panel = get_themed_panel(
-            f"An unexpected error occurred when checking extraction status: {str(e)}",
+            f"An unexpected error occurred when checking extraction status: {e!s}",
             title="Status Check Failed",
             title_align="left",
             success=False,

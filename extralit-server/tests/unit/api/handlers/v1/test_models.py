@@ -13,17 +13,16 @@
 # limitations under the License.
 
 from typing import TYPE_CHECKING
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
-
-from extralit_server.api.handlers.v1.models import proxy
-from extralit_server.models import User
-from extralit_server.errors import BadRequestError
-
 from starlette.requests import Request
 from starlette.responses import StreamingResponse
 
-from tests.factories import WorkspaceFactory, AdminFactory, WorkspaceUserFactory
+from extralit_server.api.handlers.v1.models import proxy
+from extralit_server.errors import BadRequestError
+from extralit_server.models import User
+from tests.factories import AdminFactory, WorkspaceFactory, WorkspaceUserFactory
 
 if TYPE_CHECKING:
     pass

@@ -12,17 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from unittest.mock import MagicMock, patch
+from uuid import uuid4
+
 import pytest
 from httpx import AsyncClient
-from unittest.mock import patch, MagicMock
-from uuid import uuid4
+from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from tests.factories import DocumentFactory, WorkspaceFactory, UserFactory, WorkspaceUserFactory
 
 from extralit_server.contexts.files import get_pdf_s3_object_path, get_proxy_document_url
 from extralit_server.models.database import Document
-from pydantic import BaseModel
+from tests.factories import DocumentFactory, UserFactory, WorkspaceFactory, WorkspaceUserFactory
 
 
 # Mock DocumentDeleteRequest since it's used in tests but might be missing from the current codebase
@@ -35,14 +36,14 @@ class DocumentDeleteRequest(BaseModel):
 async def test_upload_document(async_client: AsyncClient, db: AsyncSession, owner_auth_header: dict):
     workspace = await WorkspaceFactory.create_with_s3(name="test-workspace")
 
-    document_json = dict(
-        id=str(uuid4()),
-        reference="Test Document",
-        pmid="123456",
-        doi="10.1234/test.doi",
-        file_name="test.pdf",
-        workspace_id=str(workspace.id),
-    )
+    document_json = {
+        "id": str(uuid4()),
+        "reference": "Test Document",
+        "pmid": "123456",
+        "doi": "10.1234/test.doi",
+        "file_name": "test.pdf",
+        "workspace_id": str(workspace.id),
+    }
 
     # Mock the put_object function
     with patch("extralit_server.contexts.files.put_object") as mock_put_object:
@@ -74,14 +75,14 @@ async def test_upload_document(async_client: AsyncClient, db: AsyncSession, owne
 async def test_upload_duplicate_document(async_client: AsyncClient, db: AsyncSession, owner_auth_header: dict):
     workspace = await WorkspaceFactory.create_with_s3(name="test-workspace")
 
-    existing_document = dict(
-        id=str(uuid4()),
-        reference="Test Document",
-        pmid="123456",
-        doi="10.1234/test.doi",
-        file_name="test.pdf",
-        workspace_id=str(workspace.id),
-    )
+    existing_document = {
+        "id": str(uuid4()),
+        "reference": "Test Document",
+        "pmid": "123456",
+        "doi": "10.1234/test.doi",
+        "file_name": "test.pdf",
+        "workspace_id": str(workspace.id),
+    }
 
     # Mock the put_object function
     with (
@@ -101,14 +102,14 @@ async def test_upload_duplicate_document(async_client: AsyncClient, db: AsyncSes
         )
 
         # Attempt to upload a new document with the same pmid, url, doi, or id
-        update_document = dict(
-            id=upload_response.json(),
-            reference="Test Document",
-            pmid="123456",
-            doi="10.1234/test.doi",
-            file_name="test.pdf",
-            workspace_id=str(workspace.id),
-        )
+        update_document = {
+            "id": upload_response.json(),
+            "reference": "Test Document",
+            "pmid": "123456",
+            "doi": "10.1234/test.doi",
+            "file_name": "test.pdf",
+            "workspace_id": str(workspace.id),
+        }
 
         await async_client.post(
             "/api/v1/documents",
@@ -249,7 +250,7 @@ async def test_delete_documents_by_id(async_client: AsyncClient, db: AsyncSessio
 async def test_list_documents(async_client: "AsyncClient", db: "AsyncSession", owner_auth_header: dict):
     workspace = await WorkspaceFactory.create()
     document_a = await DocumentFactory.create(workspace=workspace)
-    document_b = await DocumentFactory.create(workspace=workspace)
+    await DocumentFactory.create(workspace=workspace)
 
     response = await async_client.get(f"/api/v1/documents/workspace/{workspace.id}", headers=owner_auth_header)
 

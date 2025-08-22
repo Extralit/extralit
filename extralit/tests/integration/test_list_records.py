@@ -15,7 +15,7 @@
 
 import pytest
 
-from extralit import Extralit, Dataset, Settings, TextField, TextQuestion, Workspace, LabelQuestion
+from extralit import Dataset, Extralit, LabelQuestion, Settings, TextField, TextQuestion, Workspace
 
 
 @pytest.fixture
@@ -162,7 +162,7 @@ def test_get_record_by_id(client: Extralit, dataset: Dataset):
         },
     )
 
-    record = list(dataset.records(with_responses=False))[0]
+    record = next(iter(dataset.records(with_responses=False)))
     assert not record.responses
 
     record.get()

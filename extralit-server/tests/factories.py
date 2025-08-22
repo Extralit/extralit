@@ -15,18 +15,18 @@
 import inspect
 import random
 import uuid
-import factory
 from unittest.mock import MagicMock
 
+import factory
 from factory.alchemy import SESSION_PERSISTENCE_COMMIT, SESSION_PERSISTENCE_FLUSH
 from factory.builder import BuildStep, StepBuilder, parse_declarations
 from sqlalchemy.ext.asyncio import async_object_session
 
 from extralit_server.contexts.files import ObjectMetadata, get_minio_client
 from extralit_server.enums import DatasetDistributionStrategy, FieldType, MetadataPropertyType, OptionsOrder
-from extralit_server.webhooks.v1.enums import WebhookEvent
 from extralit_server.models import (
     Dataset,
+    DatasetUser,
     Document,
     Field,
     ImportHistory,
@@ -40,13 +40,12 @@ from extralit_server.models import (
     UserRole,
     Vector,
     VectorSettings,
+    Webhook,
     Workspace,
     WorkspaceUser,
-    Webhook,
-    DatasetUser,
 )
 from extralit_server.models.base import DatabaseModel
-
+from extralit_server.webhooks.v1.enums import WebhookEvent
 from tests.database import SyncTestSession, TestSession
 
 
@@ -56,9 +55,9 @@ class AsyncSQLAlchemyModelFactory(factory.alchemy.SQLAlchemyModelFactory):
     async def _generate(cls, strategy, params):
         if cls._meta.abstract:
             raise factory.errors.FactoryError(
-                "Cannot generate instances of abstract factory %(f)s; "
-                "Ensure %(f)s.Meta.model is set and %(f)s.Meta.abstract "
-                "is either not set or False." % dict(f=cls.__name__)
+                "Cannot generate instances of abstract factory {f}; "
+                "Ensure {f}.Meta.model is set and {f}.Meta.abstract "
+                "is either not set or False.".format(**{"f": cls.__name__})
             )
 
         step = AsyncStepBuilder(cls._meta, params, strategy)
@@ -174,7 +173,7 @@ class WorkspaceSyncFactory(BaseSyncFactory):
         try:
             await minio_client.make_bucket(workspace.name)
         except Exception as e:
-            print(f"Error creating bucket for workspace {workspace.name}: {str(e)}")
+            print(f"Error creating bucket for workspace {workspace.name}: {e!s}")
         return workspace
 
 
@@ -608,7 +607,7 @@ class MinioFileFactory(factory.Factory):
     def attributes(cls, **kwargs):
         return {
             "bucket_name": kwargs.get("bucket_name", cls.bucket_name),
-            "object_name": kwargs.get("object_name", f"test-object-0"),
+            "object_name": kwargs.get("object_name", "test-object-0"),
             "last_modified": kwargs.get("last_modified", None),
             "etag": kwargs.get("etag", None),
             "size": kwargs.get("size", 0),

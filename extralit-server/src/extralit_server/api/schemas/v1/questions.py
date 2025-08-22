@@ -13,19 +13,20 @@
 # limitations under the License.
 
 from datetime import datetime
-from typing import List, Literal, Optional, Union
+from typing import Literal
 from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict, Field, conlist, constr, model_validator
 
 from extralit_server.api.schemas.v1.commons import UpdateSchema
 from extralit_server.api.schemas.v1.fields import FieldName
 from extralit_server.enums import OptionsOrder, QuestionType
-from pydantic import BaseModel, Field, conlist, constr, ConfigDict, model_validator
 from extralit_server.settings import settings
 
 try:
     from typing import Annotated
 except ImportError:
-    from typing_extensions import Annotated
+    from typing import Annotated
 
 QUESTION_CREATE_NAME_MIN_LENGTH = 1
 QUESTION_CREATE_NAME_MAX_LENGTH = 200
@@ -79,7 +80,7 @@ class UniqueValuesCheckerMixin(BaseModel):
 class OptionSettings(BaseModel):
     value: str
     text: str
-    description: Optional[str] = None
+    description: str | None = None
 
 
 class OptionSettingsCreate(BaseModel):
@@ -91,12 +92,10 @@ class OptionSettingsCreate(BaseModel):
         min_length=VALUE_TEXT_OPTION_TEXT_MIN_LENGTH,
         max_length=VALUE_TEXT_OPTION_TEXT_MAX_LENGTH,
     )
-    description: Optional[
-        constr(
-            min_length=VALUE_TEXT_OPTION_DESCRIPTION_MIN_LENGTH,
-            max_length=VALUE_TEXT_OPTION_DESCRIPTION_MAX_LENGTH,
-        )
-    ] = None
+    description: (
+        constr(min_length=VALUE_TEXT_OPTION_DESCRIPTION_MIN_LENGTH, max_length=VALUE_TEXT_OPTION_DESCRIPTION_MAX_LENGTH)
+        | None
+    ) = None
 
 
 # Text question
@@ -114,8 +113,8 @@ class TextQuestionSettingsCreate(BaseModel):
 
 class TextQuestionSettingsUpdate(UpdateSchema):
     type: Literal[QuestionType.text]
-    use_markdown: Optional[bool] = None
-    use_table: Optional[bool] = None
+    use_markdown: bool | None = None
+    use_table: bool | None = None
 
     __non_nullable_fields__ = {"use_markdown", "use_table"}
 
@@ -131,12 +130,12 @@ class RatingQuestionSettingsOptionCreate(BaseModel):
 
 class RatingQuestionSettings(BaseModel):
     type: Literal[QuestionType.rating]
-    options: List[RatingQuestionSettingsOption]
+    options: list[RatingQuestionSettingsOption]
 
 
 class RatingQuestionSettingsCreate(UniqueValuesCheckerMixin):
     type: Literal[QuestionType.rating]
-    options: List[RatingQuestionSettingsOptionCreate] = Field(
+    options: list[RatingQuestionSettingsOptionCreate] = Field(
         min_length=RATING_OPTIONS_MIN_ITEMS,
         max_length=RATING_OPTIONS_MAX_ITEMS,
     )
@@ -149,8 +148,8 @@ class RatingQuestionSettingsUpdate(UpdateSchema):
 # Label selection question
 class LabelSelectionQuestionSettings(BaseModel):
     type: Literal[QuestionType.label_selection, QuestionType.dynamic_label_selection]
-    options: List[OptionSettings]
-    visible_options: Optional[int] = None
+    options: list[OptionSettings]
+    visible_options: int | None = None
 
 
 class LabelSelectionQuestionSettingsCreate(UniqueValuesCheckerMixin):
@@ -160,7 +159,7 @@ class LabelSelectionQuestionSettingsCreate(UniqueValuesCheckerMixin):
         min_length=LABEL_SELECTION_OPTIONS_MIN_ITEMS,
         max_length=settings.label_selection_options_max_items,
     )
-    visible_options: Optional[int] = Field(None, ge=LABEL_SELECTION_MIN_VISIBLE_OPTIONS)
+    visible_options: int | None = Field(None, ge=LABEL_SELECTION_MIN_VISIBLE_OPTIONS)
 
     @model_validator(mode="after")
     @classmethod
@@ -181,14 +180,15 @@ class LabelSelectionQuestionSettingsCreate(UniqueValuesCheckerMixin):
 
 class LabelSelectionSettingsUpdate(UpdateSchema):
     type: Literal[QuestionType.label_selection, QuestionType.dynamic_label_selection]
-    visible_options: Optional[int] = Field(None)
-    options: Optional[
+    visible_options: int | None = Field(None)
+    options: (
         conlist(
             item_type=OptionSettings,
             min_length=LABEL_SELECTION_OPTIONS_MIN_ITEMS,
             max_length=settings.label_selection_options_max_items,
         )
-    ] = None
+        | None
+    ) = None
 
 
 # Multi-label selection question
@@ -204,7 +204,7 @@ class MultiLabelSelectionQuestionSettingsCreate(LabelSelectionQuestionSettingsCr
 
 class MultiLabelSelectionQuestionSettingsUpdate(LabelSelectionSettingsUpdate):
     type: Literal[QuestionType.multi_label_selection, QuestionType.dynamic_multi_label_selection]
-    options_order: Optional[OptionsOrder] = None
+    options_order: OptionsOrder | None = None
 
     __non_nullable_fields__ = {"options_order"}
 
@@ -212,7 +212,7 @@ class MultiLabelSelectionQuestionSettingsUpdate(LabelSelectionSettingsUpdate):
 # Ranking question
 class RankingQuestionSettings(BaseModel):
     type: Literal[QuestionType.ranking]
-    options: List[OptionSettings]
+    options: list[OptionSettings]
 
 
 class RankingQuestionSettingsCreate(UniqueValuesCheckerMixin):
@@ -232,8 +232,8 @@ class RankingQuestionSettingsUpdate(UpdateSchema):
 class SpanQuestionSettings(BaseModel):
     type: Literal[QuestionType.span]
     field: str
-    options: List[OptionSettings]
-    visible_options: Optional[int] = None
+    options: list[OptionSettings]
+    visible_options: int | None = None
     # These attributes are read-only for now
     allow_overlapping: bool = Field(default=False, description="Allow spans overlapping")
     allow_character_annotation: bool = Field(default=True, description="Allow character-level annotation")
@@ -247,7 +247,7 @@ class SpanQuestionSettingsCreate(UniqueValuesCheckerMixin):
         min_length=SPAN_OPTIONS_MIN_ITEMS,
         max_length=settings.span_options_max_items,
     )
-    visible_options: Optional[int] = Field(None, ge=SPAN_MIN_VISIBLE_OPTIONS)
+    visible_options: int | None = Field(None, ge=SPAN_MIN_VISIBLE_OPTIONS)
     allow_overlapping: bool = False
 
     @model_validator(mode="after")
@@ -267,15 +267,12 @@ class SpanQuestionSettingsCreate(UniqueValuesCheckerMixin):
 
 class SpanQuestionSettingsUpdate(UpdateSchema):
     type: Literal[QuestionType.span]
-    options: Optional[
-        conlist(
-            item_type=OptionSettings,
-            min_length=SPAN_OPTIONS_MIN_ITEMS,
-            max_length=settings.span_options_max_items,
-        )
-    ] = None
-    visible_options: Optional[int] = Field(None, ge=SPAN_MIN_VISIBLE_OPTIONS)
-    allow_overlapping: Optional[bool] = None
+    options: (
+        conlist(item_type=OptionSettings, min_length=SPAN_OPTIONS_MIN_ITEMS, max_length=settings.span_options_max_items)
+        | None
+    ) = None
+    visible_options: int | None = Field(None, ge=SPAN_MIN_VISIBLE_OPTIONS)
+    allow_overlapping: bool | None = None
 
 
 class TableQuestionSettings(BaseModel):
@@ -293,15 +290,13 @@ class TableQuestionSettingsUpdate(UpdateSchema):
 
 
 QuestionSettings = Annotated[
-    Union[
-        TextQuestionSettings,
-        RatingQuestionSettings,
-        LabelSelectionQuestionSettings,
-        MultiLabelSelectionQuestionSettings,
-        RankingQuestionSettings,
-        SpanQuestionSettings,
-        TableQuestionSettings,
-    ],
+    TextQuestionSettings
+    | RatingQuestionSettings
+    | LabelSelectionQuestionSettings
+    | MultiLabelSelectionQuestionSettings
+    | RankingQuestionSettings
+    | SpanQuestionSettings
+    | TableQuestionSettings,
     Field(..., discriminator="type"),
 ]
 
@@ -330,28 +325,24 @@ QuestionDescription = Annotated[
 ]
 
 QuestionSettingsCreate = Annotated[
-    Union[
-        TextQuestionSettingsCreate,
-        RatingQuestionSettingsCreate,
-        LabelSelectionQuestionSettingsCreate,
-        MultiLabelSelectionQuestionSettingsCreate,
-        RankingQuestionSettingsCreate,
-        SpanQuestionSettingsCreate,
-        TableQuestionSettingsCreate,
-    ],
+    TextQuestionSettingsCreate
+    | RatingQuestionSettingsCreate
+    | LabelSelectionQuestionSettingsCreate
+    | MultiLabelSelectionQuestionSettingsCreate
+    | RankingQuestionSettingsCreate
+    | SpanQuestionSettingsCreate
+    | TableQuestionSettingsCreate,
     Field(discriminator="type"),
 ]
 
 QuestionSettingsUpdate = Annotated[
-    Union[
-        TextQuestionSettingsUpdate,
-        RatingQuestionSettingsUpdate,
-        LabelSelectionSettingsUpdate,
-        MultiLabelSelectionQuestionSettingsUpdate,
-        RankingQuestionSettingsUpdate,
-        SpanQuestionSettingsUpdate,
-        TableQuestionSettingsUpdate,
-    ],
+    TextQuestionSettingsUpdate
+    | RatingQuestionSettingsUpdate
+    | LabelSelectionSettingsUpdate
+    | MultiLabelSelectionQuestionSettingsUpdate
+    | RankingQuestionSettingsUpdate
+    | SpanQuestionSettingsUpdate
+    | TableQuestionSettingsUpdate,
     Field(..., discriminator="type"),
 ]
 
@@ -360,7 +351,7 @@ class Question(BaseModel):
     id: UUID
     name: str
     title: str
-    description: Optional[str] = None
+    description: str | None = None
     required: bool
     settings: QuestionSettings
     dataset_id: UUID
@@ -371,20 +362,20 @@ class Question(BaseModel):
 
 
 class Questions(BaseModel):
-    items: List[Question]
+    items: list[Question]
 
 
 class QuestionCreate(BaseModel):
     name: QuestionName
     title: QuestionTitle
-    description: Optional[QuestionDescription] = None
-    required: Optional[bool] = None
+    description: QuestionDescription | None = None
+    required: bool | None = None
     settings: QuestionSettingsCreate
 
 
 class QuestionUpdate(UpdateSchema):
-    title: Optional[QuestionTitle] = None
-    description: Optional[QuestionDescription] = None
-    settings: Optional[QuestionSettingsUpdate] = None
+    title: QuestionTitle | None = None
+    description: QuestionDescription | None = None
+    settings: QuestionSettingsUpdate | None = None
 
     __non_nullable_fields__ = {"title", "settings"}

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List
+import builtins
 from uuid import UUID
 
 import httpx
@@ -77,7 +77,7 @@ class UsersAPI(ResourceAPI[UserModel]):
     ####################
 
     @api_error_handler
-    def list(self) -> List[UserModel]:
+    def list(self) -> list[UserModel]:
         response = self.http_client.get(url="/api/v1/users")
         response.raise_for_status()
         response_json = response.json()
@@ -86,7 +86,7 @@ class UsersAPI(ResourceAPI[UserModel]):
         return users
 
     @api_error_handler
-    def list_by_workspace_id(self, workspace_id: UUID) -> List[UserModel]:
+    def list_by_workspace_id(self, workspace_id: UUID) -> builtins.list[UserModel]:
         response = self.http_client.get(url=f"/api/v1/workspaces/{workspace_id}/users")
         response.raise_for_status()
         response_json = response.json()
@@ -123,5 +123,5 @@ class UsersAPI(ResourceAPI[UserModel]):
     def _model_from_json(self, response_json) -> UserModel:
         return UserModel(**response_json)
 
-    def _model_from_jsons(self, response_jsons) -> List[UserModel]:
+    def _model_from_jsons(self, response_jsons) -> builtins.list[UserModel]:
         return list(map(self._model_from_json, response_jsons))

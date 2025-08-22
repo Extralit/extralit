@@ -48,7 +48,7 @@ dependencies = [
     "oauthlib ~= 3.2.0",
     "social-auth-core ~= 4.5.0",
     # Background processing
-    "rq ~= 1.16.2",
+    "rq~=2.4.1",
     "lazy-loader>=0.4",
     # Info status
     "psutil ~= 5.8, <5.10",
@@ -138,14 +138,7 @@ exclude_lines = [
     "if typing.TYPE_CHECKING:",
 ]
 
-[tool.isort]
-profile = "black"
-
 [tool.ruff]
-# Ignore line length violations
-ignore = ["E501"]
-
-# Exclude a variety of commonly ignored directories.
 exclude = [
     ".bzr",
     ".direnv",
@@ -168,13 +161,42 @@ exclude = [
     "venv",
 ]
 line-length = 120
+target-version = "py310"
 
-[tool.ruff.per-file-ignores]
-# Ignore imported but unused;
-"__init__.py" = ["F401"]
+[tool.ruff.lint]
+select = [
+    "F",    # Pyflakes (undefined names, logical issues)
+    "E7",   # Syntax/indentation errors
+    "E9",   # Runtime-like errors
+    "E4",   # Import-related errors (E401, E402, etc.)
+    "B012", # return in finally (can suppress real exceptions)
+    "B",    # flake8-bugbear (broader than just B012)
+    "C4",   # flake8-comprehensions
+    "I",    # isort (import sorting)
+    "UP",   # pyupgrade (modern Python syntax)
+    "ASYNC", # flake8-async - async/await specific rules
+    "PLE",   # pylint errors (includes await-outside-async)
+    "FAST",  # FastAPI-specific rules (valuable for your backend)
+    "RUF",   # ruff-specific rules
+]
 
-[tool.black]
-line-length = 120
+ignore = [
+    "E402",   # imports not at top (lazy / optional import patterns)
+    "B904",   # exception chaining (will phase in later)
+    "UP007",  # | union syntax modernization
+    "UP045",  # Optional[...] -> X | None modernization
+    "B027",   # empty abstract method not marked abstract
+    "B024",   # abstract base class without abstract methods
+    "B017",   # broad exception asserts in tests
+    "RUF012", # mutable class var typing inference
+    "B008",   # FastAPI Depends pattern
+    "FAST002" # FastAPI Depends suggestion
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401", "F403", "I001"]  # Ignore unused imports and wildcard imports in __init__.py
+"tests/**/*.py" = ["ASYNC", "F821"]  # More lenient async rules in tests (ignore undefined names like forward refs/fixtures)
+"src/extralit_server/cli/**/*.py" = ["UP007", "UP045"]  # Typer doesn't support new union syntax
 
 [tool.pdm.scripts]
 _.env_file = ".env.dev"
@@ -192,5 +214,6 @@ server-dev.composite = [
 server-and-worker = { shell = "pdm run server & pdm run worker & wait" }
 test = { cmd = "pytest --verbosity=1 --disable-warnings", env_file = ".env.test" }
 test-cov = { cmd = "pytest tests --cov=extralit_server --cov-report=term --cov-report=xml --verbosity=0 --disable-warnings", env_file = ".env.test" }
+lint = "ruff check"
 
 docker-build-extralit-server = { shell = "pdm build && cp -R dist docker/server && docker build -t extralit/extralit-server:local docker/server" }

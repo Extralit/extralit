@@ -11,43 +11,41 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import pytest
-
 from typing import Any
 from uuid import UUID
+
+import pytest
+from fastapi.encoders import jsonable_encoder
 from httpx import AsyncClient
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi.encoders import jsonable_encoder
 
 from extralit_server.enums import (
+    DatasetDistributionStrategy,
     DatasetStatus,
     QuestionType,
+    RecordStatus,
     ResponseStatus,
     SuggestionType,
-    RecordStatus,
-    DatasetDistributionStrategy,
 )
 from extralit_server.jobs.queues import HIGH_QUEUE
 from extralit_server.models.database import Record, Response, Suggestion, User
 from extralit_server.webhooks.v1.enums import RecordEvent
 from extralit_server.webhooks.v1.records import build_record_event
-from extralit_server.models.database import Record, Response, Suggestion, User
-
 from tests.factories import (
+    AnnotatorFactory,
+    ChatFieldFactory,
+    CustomFieldFactory,
     DatasetFactory,
+    ImageFieldFactory,
     LabelSelectionQuestionFactory,
     MultiLabelSelectionQuestionFactory,
     RankingQuestionFactory,
     RatingQuestionFactory,
     SpanQuestionFactory,
     TextFieldFactory,
-    ImageFieldFactory,
     TextQuestionFactory,
-    ChatFieldFactory,
-    CustomFieldFactory,
     WebhookFactory,
-    AnnotatorFactory,
 )
 
 
@@ -371,7 +369,7 @@ class TestCreateDatasetRecordsBulk:
 
         assert response.status_code == 422
         assert response.json() == {
-            "detail": f"Record at position 0 is not valid because image field 'image' has an invalid URL value",
+            "detail": "Record at position 0 is not valid because image field 'image' has an invalid URL value",
         }
 
         assert (await db.execute(select(func.count(Record.id)))).scalar_one() == 0
@@ -400,7 +398,7 @@ class TestCreateDatasetRecordsBulk:
 
         assert response.status_code == 422
         assert response.json() == {
-            "detail": f"Record at position 0 is not valid because image field 'image' value is exceeding the maximum length of 2038 characters for Web URLs",
+            "detail": "Record at position 0 is not valid because image field 'image' value is exceeding the maximum length of 2038 characters for Web URLs",
         }
 
         assert (await db.execute(select(func.count(Record.id)))).scalar_one() == 0
@@ -429,7 +427,7 @@ class TestCreateDatasetRecordsBulk:
 
         assert response.status_code == 422
         assert response.json() == {
-            "detail": f"Record at position 0 is not valid because image field 'image' value is using an unsupported MIME type, supported MIME types are: ['image/avif', 'image/gif', 'image/ico', 'image/jpeg', 'image/jpg', 'image/png', 'image/svg', 'image/webp']",
+            "detail": "Record at position 0 is not valid because image field 'image' value is using an unsupported MIME type, supported MIME types are: ['image/avif', 'image/gif', 'image/ico', 'image/jpeg', 'image/jpg', 'image/png', 'image/svg', 'image/webp']",
         }
 
         assert (await db.execute(select(func.count(Record.id)))).scalar_one() == 0
@@ -458,7 +456,7 @@ class TestCreateDatasetRecordsBulk:
 
         assert response.status_code == 422
         assert response.json() == {
-            "detail": f"Record at position 0 is not valid because image field 'image' value is exceeding the maximum length of 5000000 characters for Data URLs",
+            "detail": "Record at position 0 is not valid because image field 'image' value is exceeding the maximum length of 5000000 characters for Data URLs",
         }
 
         assert (await db.execute(select(func.count(Record.id)))).scalar_one() == 0

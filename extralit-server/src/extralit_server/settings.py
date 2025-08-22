@@ -21,12 +21,11 @@ import os
 import re
 import warnings
 from pathlib import Path
-from typing import Dict, List, Optional
+from urllib.parse import urlparse, urlunparse
 
 from pydantic import Field, field_validator, model_validator
 from pydantic_core.core_schema import ValidationInfo
 from pydantic_settings import BaseSettings
-from urllib.parse import urlparse, urlunparse
 
 from extralit_server.constants import (
     DATABASE_POSTGRESQL,
@@ -76,48 +75,48 @@ class Settings(BaseSettings):
     __DATASETS_INDEX_NAME__ = "ar.datasets"
     __DATASETS_RECORDS_INDEX_NAME__ = "ar.dataset.{}"
 
-    home_path: Optional[str] = Field(
+    home_path: str | None = Field(
         None,
         validate_default=True,
         description="The home path where extralit related files will be stored",
     )
-    base_url: Optional[str] = Field(
+    base_url: str | None = Field(
         None,
         validate_default=True,
         description="The default base url where server will be deployed",
     )
 
-    database_url: Optional[str] = Field(
+    database_url: str | None = Field(
         None,
         validate_default=True,
         description="The database url that extralit will use as data store",
     )
     # https://docs.sqlalchemy.org/en/20/core/engines.html#sqlalchemy.create_engine.params.pool_size
-    database_postgresql_pool_size: Optional[int] = Field(
+    database_postgresql_pool_size: int | None = Field(
         default=DEFAULT_DATABASE_POSTGRESQL_POOL_SIZE,
         description="The number of connections to keep open inside the database connection pool",
     )
     # https://docs.sqlalchemy.org/en/20/core/engines.html#sqlalchemy.create_engine.params.max_overflow
-    database_postgresql_max_overflow: Optional[int] = Field(
+    database_postgresql_max_overflow: int | None = Field(
         default=DEFAULT_DATABASE_POSTGRESQL_MAX_OVERFLOW,
         description="The number of connections that can be opened above and beyond the pool_size setting",
     )
     # https://docs.python.org/3/library/sqlite3.html#sqlite3.connect
-    database_sqlite_timeout: Optional[int] = Field(
+    database_sqlite_timeout: int | None = Field(
         default=DEFAULT_DATABASE_SQLITE_TIMEOUT,
         description="SQLite database connection timeout in seconds",
     )
 
-    s3_endpoint: Optional[str] = Field(default=None, description="The S3 endpoint for data storage")
-    s3_access_key: Optional[str] = Field(default=None, description="The access key for the S3 storage")
-    s3_secret_key: Optional[str] = Field(default=None, description="The secret key for the S3 storage")
+    s3_endpoint: str | None = Field(default=None, description="The S3 endpoint for data storage")
+    s3_access_key: str | None = Field(default=None, description="The access key for the S3 storage")
+    s3_secret_key: str | None = Field(default=None, description="The secret key for the S3 storage")
 
-    extralit_url: Optional[str] = Field(default=None, description="The extralit server url for LLM serving endpoint")
+    extralit_url: str | None = Field(default=None, description="The extralit server url for LLM serving endpoint")
 
     elasticsearch: str = "http://localhost:9200"
     elasticsearch_ssl_verify: bool = True
-    elasticsearch_ca_path: Optional[str] = None
-    cors_origins: List[str] = ["*"]
+    elasticsearch_ca_path: str | None = None
+    cors_origins: list[str] = ["*"]
 
     redis_url: str = "redis://localhost:6379/0"
     redis_use_cluster: bool = False
@@ -170,7 +169,8 @@ class Settings(BaseSettings):
         if os.getenv("EXTRALIT_ENABLE_TELEMETRY") == "0":
             os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
             warnings.warn(
-                "environment vairbale EXTRALIT_ENABLE_TELEMETRY is deprecated, use HF_HUB_DISABLE_TELEMETRY or HF_HUB_OFFLINE instead."
+                "environment vairbale EXTRALIT_ENABLE_TELEMETRY is deprecated, use HF_HUB_DISABLE_TELEMETRY or HF_HUB_OFFLINE instead.",
+                stacklevel=2,
             )
             enable_telemetry = False
 
@@ -207,7 +207,8 @@ class Settings(BaseSettings):
                 warnings.warn(
                     "From version 1.14.0, Extralit will use `aiosqlite` as default SQLite driver. The protocol in the"
                     " provided database URL has been automatically replaced from `sqlite` to `sqlite+aiosqlite`."
-                    " Please, update your database URL to use `sqlite+aiosqlite` protocol."
+                    " Please, update your database URL to use `sqlite+aiosqlite` protocol.",
+                    stacklevel=2,
                 )
                 return re.sub(regex, "sqlite+aiosqlite", database_url)
 
@@ -237,7 +238,7 @@ class Settings(BaseSettings):
         return instance
 
     @property
-    def database_engine_args(self) -> Dict:
+    def database_engine_args(self) -> dict:
         if self.database_is_sqlite:
             return {
                 "connect_args": {

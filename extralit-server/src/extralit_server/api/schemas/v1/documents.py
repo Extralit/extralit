@@ -14,52 +14,52 @@
 
 from datetime import datetime
 from uuid import UUID
-from typing import Optional
-from pydantic import BaseModel, Field, ConfigDict
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class DocumentCreate(BaseModel):
-    id: Optional[UUID] = None
+    id: UUID | None = None
     workspace_id: UUID = Field(..., description="The workspace ID where the document will be uploaded.")
-    url: Optional[str] = Field(
+    url: str | None = Field(
         None,
         description="A URL to the PDF document if it is public available online. If the `file_data` is uploaded, this field should be left empty.",
         repr=False,
     )
-    file_name: Optional[str] = Field(None, description="The name of the file.")
-    reference: Optional[str] = Field(None, description="Extraction reference for the document")
-    pmid: Optional[str] = Field(None, description="The PubMed ID of the document.")
-    doi: Optional[str] = Field(None, description="The DOI of the document.")
-    metadata: Optional[dict] = Field(None, description="Additional metadata for the document")
+    file_name: str | None = Field(None, description="The name of the file.")
+    reference: str | None = Field(None, description="Extraction reference for the document")
+    pmid: str | None = Field(None, description="The PubMed ID of the document.")
+    doi: str | None = Field(None, description="The DOI of the document.")
+    metadata: dict | None = Field(None, description="Additional metadata for the document")
 
 
 class DocumentDelete(BaseModel):
     """Query Schema for deleting a document (within a Workspace)."""
 
     id: UUID
-    reference: Optional[str] = Field(None, description="Extraction reference for the document")
+    reference: str | None = Field(None, description="Extraction reference for the document")
 
 
 class DocumentUpdate(BaseModel):
     """Schema for updating a document."""
 
-    reference: Optional[str] = Field(None, description="Extraction reference for the document")
-    pmid: Optional[str] = Field(None, description="The PubMed ID of the document.")
-    doi: Optional[str] = Field(None, description="The DOI of the document.")
-    file_name: Optional[str] = Field(None, description="The name of the file.")
-    url: Optional[str] = Field(None, description="A URL to the PDF document if it is publicly available online.")
-    metadata: Optional[dict] = Field(None, description="Additional metadata for the document")
+    reference: str | None = Field(None, description="Extraction reference for the document")
+    pmid: str | None = Field(None, description="The PubMed ID of the document.")
+    doi: str | None = Field(None, description="The DOI of the document.")
+    file_name: str | None = Field(None, description="The name of the file.")
+    url: str | None = Field(None, description="A URL to the PDF document if it is publicly available online.")
+    metadata: dict | None = Field(None, description="Additional metadata for the document")
 
 
 class DocumentListItem(BaseModel):
     id: UUID
     workspace_id: UUID
     url: str
-    file_name: Optional[str]
-    reference: Optional[str]
-    pmid: Optional[str]
-    doi: Optional[str]
-    metadata: Optional[dict] = Field(alias="metadata_")
+    file_name: str | None
+    reference: str | None
+    pmid: str | None
+    doi: str | None
+    metadata: dict | None = Field(alias="metadata_")
     inserted_at: datetime
     updated_at: datetime
 

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import uuid
-from typing import Optional, Any, List, Union
+from typing import Any, Optional, Union
 
 from pydantic import BaseModel, Field, validator
 
@@ -24,7 +24,7 @@ We may want to switch to using LlamaIndexDocument or other document models in th
 
 
 class Segments(BaseModel):
-    items: List[Union["TextSegment", "TableSegment", "FigureSegment"]] = Field(
+    items: list[Union["TextSegment", "TableSegment", "FigureSegment"]] = Field(
         default_factory=list,
         description="List of segments in the reading order of the document",
     )
@@ -60,12 +60,12 @@ class Segments(BaseModel):
 
 
 class Coordinates(BaseModel):
-    points: List[List[float]] = Field(
+    points: list[list[float]] = Field(
         ..., description="List of 4 points, e.g. [[x1, y1], [x2, y1], [x1, y2], [x2, y2]]"
     )
-    layout_width: Optional[int] = Field(None, description="Width of the layout")
-    layout_height: Optional[int] = Field(None, description="Height of the layout")
-    system: Optional[str] = Field(description="System of coordinates")
+    layout_width: int | None = Field(None, description="Width of the layout")
+    layout_height: int | None = Field(None, description="Height of the layout")
+    system: str | None = Field(description="System of coordinates")
 
     def __repr_str__(self, join_str: str) -> str:
         return ""
@@ -76,20 +76,20 @@ class TextSegment(BaseModel):
         default_factory=lambda: str(uuid.uuid4()), description="Unique identifier of the segment", repr=False
     )
 
-    header: Optional[str] = Field(
+    header: str | None = Field(
         None,
         description="Header of the element",
     )
     text: str = Field(..., description="Content as plain text", repr=False)
-    summary: Optional[str] = Field(None, description="Summary of the content")
-    page_number: Optional[int] = Field(None, description="Page number of the segment")
+    summary: str | None = Field(None, description="Summary of the content")
+    page_number: int | None = Field(None, description="Page number of the segment")
     coordinates: Optional["Coordinates"] = Field(
         None, description="Coordinates of the element in the document", repr=False
     )
-    level: Optional[int] = Field(None, description="Level of the header")
-    source: Optional[str] = Field(None, description="Source of the element", repr=False)
-    type: Optional[str] = Field("text", description="Type of the element", repr=False)
-    original: Optional[Any] = Field(
+    level: int | None = Field(None, description="Level of the header")
+    source: str | None = Field(None, description="Source of the element", repr=False)
+    type: str | None = Field("text", description="Type of the element", repr=False)
+    original: Any | None = Field(
         None, exclude=True, description="Original object from which the segment was extracted", repr=False
     )
 
@@ -111,12 +111,12 @@ class TextSegment(BaseModel):
 
 
 class TableSegment(TextSegment):
-    footer: Optional[str] = Field(None, description="Footer of the table or figure, to explain variable acronyms.")
-    html: Optional[str] = Field(None, description="Content as HTML structured", repr=False)
-    image: Optional[str] = Field(None, description="URL/filepath of the element's image", repr=False)
-    probability: Optional[float] = Field(None, description="Probability or confidence of the segment's extraction")
-    type: Optional[str] = Field("table", description="Type of the element", repr=False)
+    footer: str | None = Field(None, description="Footer of the table or figure, to explain variable acronyms.")
+    html: str | None = Field(None, description="Content as HTML structured", repr=False)
+    image: str | None = Field(None, description="URL/filepath of the element's image", repr=False)
+    probability: float | None = Field(None, description="Probability or confidence of the segment's extraction")
+    type: str | None = Field("table", description="Type of the element", repr=False)
 
 
 class FigureSegment(TableSegment):
-    type: Optional[str] = Field("figure", description="Type of the element", repr=False)
+    type: str | None = Field("figure", description="Type of the element", repr=False)

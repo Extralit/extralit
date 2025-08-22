@@ -1,18 +1,17 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-from typing import List
 from uuid import UUID
 
 from pydantic import BaseModel, Field, field_validator
@@ -27,21 +26,21 @@ RECORDS_BULK_UPSERT_MAX_ITEMS = 500
 
 
 class RecordsBulk(BaseModel):
-    items: List[Record]
+    items: list[Record]
 
 
 class RecordsBulkWithUpdatedItemIds(RecordsBulk):
-    updated_item_ids: List[UUID]
+    updated_item_ids: list[UUID]
 
 
 class RecordsBulkCreate(BaseModel):
-    items: List[RecordCreate] = Field(
+    items: list[RecordCreate] = Field(
         ..., min_length=RECORDS_BULK_CREATE_MIN_ITEMS, max_length=RECORDS_BULK_CREATE_MAX_ITEMS
     )
 
     @field_validator("items")
     @classmethod
-    def check_unique_external_ids(cls, items: List[RecordCreate]) -> List[RecordCreate]:
+    def check_unique_external_ids(cls, items: list[RecordCreate]) -> list[RecordCreate]:
         """Check that external_ids are unique"""
         external_ids = [item.external_id for item in items if item.external_id is not None]
         if len(external_ids) != len(set(external_ids)):
@@ -51,6 +50,6 @@ class RecordsBulkCreate(BaseModel):
 
 
 class RecordsBulkUpsert(RecordsBulkCreate):
-    items: List[RecordUpsert] = Field(
+    items: list[RecordUpsert] = Field(
         ..., min_length=RECORDS_BULK_UPSERT_MIN_ITEMS, max_length=RECORDS_BULK_UPSERT_MAX_ITEMS
     )

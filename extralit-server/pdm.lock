@@ -5,7 +5,7 @@
 groups = ["default", "postgresql", "test"]
 strategy = []
 lock_version = "4.5.0"
-content_hash = "sha256:27aee5423445c4af9206f4c9822e864e4aec0de735ff9b7ae80c7690258f267e"
+content_hash = "sha256:e23b9777a04acef9716156bc7a9fd7e8d35368569c52ad594e321e60cd05977b"
 
 [[metadata.targets]]
 requires_python = ">=3.10"
@@ -2382,15 +2382,15 @@ files = [
 
 [[package]]
 name = "rq"
-version = "1.16.2"
+version = "2.4.1"
 summary = ""
 dependencies = [
     "click",
     "redis",
 ]
 files = [
-    {file = "rq-1.16.2-py3-none-any.whl", hash = "sha256:52e619f6cb469b00e04da74305045d244b75fecb2ecaa4f26422add57d3c5f09"},
-    {file = "rq-1.16.2.tar.gz", hash = "sha256:5c5b9ad5fbaf792b8fada25cc7627f4d206a9a4455aced371d4f501cc3f13b34"},
+    {file = "rq-2.4.1-py3-none-any.whl", hash = "sha256:a3a0839ba3213a9be013b398670caf71d9360a0c8525f343687cf2c2199e5ec8"},
+    {file = "rq-2.4.1.tar.gz", hash = "sha256:40ba01af3edacc008ab376009a3a547278d2bfe02a77cd4434adc0b01788239f"},
 ]
 
 [[package]]

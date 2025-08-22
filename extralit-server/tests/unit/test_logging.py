@@ -14,6 +14,7 @@
 import logging
 
 import pytest
+
 from extralit_server.logging import ExtralitHandler, LoggingMixin
 
 

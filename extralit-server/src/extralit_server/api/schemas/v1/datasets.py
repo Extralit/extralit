@@ -13,19 +13,19 @@
 # limitations under the License.
 
 from datetime import datetime
-from typing import List, Literal, Optional, Dict, Any
+from typing import Any, Literal
 from uuid import UUID
 
+from pydantic import BaseModel, ConfigDict, Field, constr, model_validator
 from pydantic.v1.utils import GetterDict
 
 from extralit_server.api.schemas.v1.commons import UpdateSchema
 from extralit_server.enums import DatasetDistributionStrategy, DatasetStatus
-from pydantic import BaseModel, Field, constr, ConfigDict, model_validator
 
 try:
     from typing import Annotated
 except ImportError:
-    from typing_extensions import Annotated
+    from typing import Annotated
 
 DATASET_NAME_MIN_LENGTH = 1
 DATASET_NAME_MAX_LENGTH = 200
@@ -102,11 +102,11 @@ class DatasetProgress(BaseModel):
     total: int
     completed: int
     pending: int
-    users: List[UserProgress] = Field(default_factory=list)
+    users: list[UserProgress] = Field(default_factory=list)
 
 
 class UsersProgress(BaseModel):
-    users: List[UserProgress]
+    users: list[UserProgress]
 
 
 class DatasetGetterDict(GetterDict):
@@ -120,11 +120,11 @@ class DatasetGetterDict(GetterDict):
 class Dataset(BaseModel):
     id: UUID
     name: str
-    guidelines: Optional[str] = None
+    guidelines: str | None = None
     allow_extra_metadata: bool
     status: DatasetStatus
     distribution: DatasetDistribution
-    metadata: Optional[Dict[str, Any]] = None
+    metadata: dict[str, Any] | None = None
     workspace_id: UUID
     last_activity_at: datetime
     inserted_at: datetime
@@ -145,27 +145,27 @@ class Dataset(BaseModel):
 
 
 class Datasets(BaseModel):
-    items: List[Dataset]
+    items: list[Dataset]
 
 
 class DatasetCreate(BaseModel):
     name: DatasetName
-    guidelines: Optional[DatasetGuidelines] = None
+    guidelines: DatasetGuidelines | None = None
     allow_extra_metadata: bool = True
     distribution: DatasetDistributionCreate = DatasetOverlapDistributionCreate(
         strategy=DatasetDistributionStrategy.overlap,
         min_submitted=1,
     )
-    metadata: Optional[Dict[str, Any]] = None
+    metadata: dict[str, Any] | None = None
     workspace_id: UUID
 
 
 class DatasetUpdate(UpdateSchema):
-    name: Optional[DatasetName] = None
-    guidelines: Optional[DatasetGuidelines] = None
-    allow_extra_metadata: Optional[bool] = None
-    distribution: Optional[DatasetDistributionUpdate] = None
-    metadata_: Optional[Dict[str, Any]] = Field(None, alias="metadata")
+    name: DatasetName | None = None
+    guidelines: DatasetGuidelines | None = None
+    allow_extra_metadata: bool | None = None
+    distribution: DatasetDistributionUpdate | None = None
+    metadata_: dict[str, Any] | None = Field(None, alias="metadata")
 
     __non_nullable_fields__ = {"name", "allow_extra_metadata", "distribution"}
 
@@ -176,13 +176,13 @@ class HubDatasetMappingItem(BaseModel):
 
 
 class HubDatasetMapping(BaseModel):
-    fields: List[HubDatasetMappingItem] = Field(..., min_length=1)
-    metadata: Optional[List[HubDatasetMappingItem]] = []
-    suggestions: Optional[List[HubDatasetMappingItem]] = []
-    external_id: Optional[str] = None
+    fields: list[HubDatasetMappingItem] = Field(..., min_length=1)
+    metadata: list[HubDatasetMappingItem] | None = []
+    suggestions: list[HubDatasetMappingItem] | None = []
+    external_id: str | None = None
 
     @property
-    def sources(self) -> List[str]:
+    def sources(self) -> list[str]:
         fields_sources = [field.source for field in self.fields]
         metadata_sources = [metadata.source for metadata in self.metadata]
         suggestions_sources = [suggestion.source for suggestion in self.suggestions]
@@ -200,9 +200,9 @@ class HubDataset(BaseModel):
 
 class HubDatasetExport(BaseModel):
     name: str = Field(..., min_length=1)
-    subset: Optional[str] = Field("default", min_length=1)
-    split: Optional[str] = Field("train", min_length=1)
-    private: Optional[bool] = False
+    subset: str | None = Field("default", min_length=1)
+    split: str | None = Field("train", min_length=1)
+    private: bool | None = False
     token: str = Field(..., min_length=1)
 
 

@@ -1,24 +1,25 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from datetime import datetime
-from typing import Any, Dict, Generic, List, Literal, Optional, TypeVar, Union
+from typing import Any, Generic, Literal, TypeVar
 from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict, Field, constr, field_validator, model_validator
 
 from extralit_server.api.schemas.v1.commons import UpdateSchema
 from extralit_server.enums import MetadataPropertyType
-from pydantic import BaseModel, Field, constr, ConfigDict, field_validator, model_validator
 
 FLOAT_METADATA_METRICS_PRECISION = 5
 
@@ -34,7 +35,7 @@ TERMS_METADATA_PROPERTY_VALUES_MAX_ITEMS = 250
 try:
     from typing import Annotated
 except ImportError:
-    from typing_extensions import Annotated
+    from typing import Annotated
 
 
 class TermsMetadataMetrics(BaseModel):
@@ -44,15 +45,15 @@ class TermsMetadataMetrics(BaseModel):
 
     type: Literal[MetadataPropertyType.terms] = MetadataPropertyType.terms
     total: int
-    values: List[TermCount] = Field(default_factory=list)
+    values: list[TermCount] = Field(default_factory=list)
 
 
 NT = TypeVar("NT", int, float)
 
 
 class NumericMetadataMetrics(BaseModel, Generic[NT]):
-    min: Optional[NT] = None
-    max: Optional[NT] = None
+    min: NT | None = None
+    max: NT | None = None
 
 
 class IntegerMetadataMetrics(NumericMetadataMetrics[int]):
@@ -64,41 +65,37 @@ class FloatMetadataMetrics(NumericMetadataMetrics[float]):
 
     @field_validator("min", "max")
     @classmethod
-    def round_result(cls, v: Optional[float]) -> Optional[float]:
+    def round_result(cls, v: float | None) -> float | None:
         if v is not None:
             return round(v, FLOAT_METADATA_METRICS_PRECISION)
         return v
 
 
 MetadataMetrics = Annotated[
-    Union[
-        TermsMetadataMetrics,
-        IntegerMetadataMetrics,
-        FloatMetadataMetrics,
-    ],
+    TermsMetadataMetrics | IntegerMetadataMetrics | FloatMetadataMetrics,
     Field(..., discriminator="type"),
 ]
 
 
 class TermsMetadataProperty(BaseModel):
     type: Literal[MetadataPropertyType.terms]
-    values: Optional[List[Any]] = None
+    values: list[Any] | None = None
 
 
 class IntegerMetadataProperty(BaseModel):
     type: Literal[MetadataPropertyType.integer]
-    min: Optional[int] = None
-    max: Optional[int] = None
+    min: int | None = None
+    max: int | None = None
 
 
 class FloatMetadataProperty(BaseModel):
     type: Literal[MetadataPropertyType.float]
-    min: Optional[float] = None
-    max: Optional[float] = None
+    min: float | None = None
+    max: float | None = None
 
 
 MetadataPropertySettings = Annotated[
-    Union[TermsMetadataProperty, IntegerMetadataProperty, FloatMetadataProperty],
+    TermsMetadataProperty | IntegerMetadataProperty | FloatMetadataProperty,
     Field(..., discriminator="type"),
 ]
 
@@ -118,8 +115,8 @@ MetadataPropertyTitle = Annotated[
 
 
 class NumericMetadataProperty(BaseModel, Generic[NT]):
-    min: Optional[NT] = None
-    max: Optional[NT] = None
+    min: NT | None = None
+    max: NT | None = None
 
     @model_validator(mode="after")
     @classmethod
@@ -135,7 +132,7 @@ class NumericMetadataProperty(BaseModel, Generic[NT]):
 
 class TermsMetadataPropertyCreate(BaseModel):
     type: Literal[MetadataPropertyType.terms]
-    values: Optional[List[Any]] = Field(
+    values: list[Any] | None = Field(
         None,
         min_length=TERMS_METADATA_PROPERTY_VALUES_MIN_ITEMS,
         max_length=TERMS_METADATA_PROPERTY_VALUES_MAX_ITEMS,
@@ -151,7 +148,7 @@ class FloatMetadataPropertyCreate(NumericMetadataProperty[float]):
 
 
 MetadataPropertySettingsCreate = Annotated[
-    Union[TermsMetadataPropertyCreate, IntegerMetadataPropertyCreate, FloatMetadataPropertyCreate],
+    TermsMetadataPropertyCreate | IntegerMetadataPropertyCreate | FloatMetadataPropertyCreate,
     Field(..., discriminator="type"),
 ]
 
@@ -170,7 +167,7 @@ class MetadataProperty(BaseModel):
 
 
 class MetadataProperties(BaseModel):
-    items: List[MetadataProperty]
+    items: list[MetadataProperty]
 
 
 class MetadataPropertyCreate(BaseModel):
@@ -181,7 +178,7 @@ class MetadataPropertyCreate(BaseModel):
 
 
 class MetadataPropertyUpdate(UpdateSchema):
-    title: Optional[MetadataPropertyTitle] = None
-    visible_for_annotators: Optional[bool] = None
+    title: MetadataPropertyTitle | None = None
+    visible_for_annotators: bool | None = None
 
     __non_nullable_fields__ = {"title", "visible_for_annotators"}

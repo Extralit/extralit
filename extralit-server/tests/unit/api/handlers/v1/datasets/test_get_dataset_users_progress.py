@@ -18,8 +18,8 @@ import pytest
 from httpx import AsyncClient
 
 from extralit_server.constants import API_KEY_HEADER_NAME
-from extralit_server.enums import RecordStatus, UserRole, ResponseStatus
-from tests.factories import DatasetFactory, RecordFactory, AnnotatorFactory, ResponseFactory, UserFactory
+from extralit_server.enums import RecordStatus, ResponseStatus, UserRole
+from tests.factories import AnnotatorFactory, DatasetFactory, RecordFactory, ResponseFactory, UserFactory
 
 
 @pytest.mark.asyncio

@@ -12,4 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from extralit.records._mapping._mapper import IngestedRecordMapper  # noqa: F401
+from extralit.records._mapping._mapper import IngestedRecordMapper

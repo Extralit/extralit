@@ -1,20 +1,19 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from datetime import datetime
-from datetime import datetime
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 from uuid import UUID
 
 import pytest
@@ -302,7 +301,7 @@ class TestCreateDatasetMetadataProperties:
         assert (await db.execute(select(func.count(MetadataProperty.id)))).scalar() == 1
 
         response_body = response.json()
-        assert response_body["visible_for_annotators"] == True
+        assert response_body["visible_for_annotators"]
 
         created_metadata_property = await db.get(MetadataProperty, UUID(response_body["id"]))
         assert created_metadata_property
@@ -327,7 +326,7 @@ class TestCreateDatasetMetadataProperties:
         assert (await db.execute(select(func.count(MetadataProperty.id)))).scalar() == 1
 
         response_body = response.json()
-        assert response_body["visible_for_annotators"] == False
+        assert not response_body["visible_for_annotators"]
 
         created_metadata_property = await db.get(MetadataProperty, UUID(response_body["id"]))
         assert created_metadata_property
@@ -347,7 +346,7 @@ class TestCreateDatasetMetadataProperties:
         assert (await db.execute(select(func.count(MetadataProperty.id)))).scalar() == 1
 
         response_body = response.json()
-        assert response_body["visible_for_annotators"] == True
+        assert response_body["visible_for_annotators"]
 
         created_metadata_property = await db.get(MetadataProperty, UUID(response_body["id"]))
         assert created_metadata_property
@@ -355,7 +354,7 @@ class TestCreateDatasetMetadataProperties:
 
     @pytest.mark.parametrize("values", [[], ["value"] * (TERMS_METADATA_PROPERTY_VALUES_MAX_ITEMS + 1)])
     async def test_create_dataset_terms_metadata_property_with_invalid_number_of_values(
-        self, async_client: "AsyncClient", db: "AsyncSession", owner_auth_header: dict, values: List[str]
+        self, async_client: "AsyncClient", db: "AsyncSession", owner_auth_header: dict, values: list[str]
     ):
         dataset = await DatasetFactory.create()
 

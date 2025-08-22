@@ -28,15 +28,15 @@ status and associated files for each reference.
 import csv
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Optional
 
 import typer
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
 
-from extralit.client import Extralit
 from extralit.cli.rich import get_themed_panel
+from extralit.client import Extralit
 
 
 def list_import_histories(
@@ -85,7 +85,7 @@ def list_import_histories(
 
     except Exception as e:
         panel = get_themed_panel(
-            f"Error managing import histories: {str(e)}",
+            f"Error managing import histories: {e!s}",
             title="Error",
             title_align="left",
             exception=e,
@@ -256,7 +256,7 @@ def _show_import_history_internal(
     _display_import_history_summary(history, console)
 
 
-def _export_data_to_csv(data: Dict, output_path: Path, console: Console) -> None:
+def _export_data_to_csv(data: dict, output_path: Path, console: Console) -> None:
     """Export tabular dataframe data to CSV file."""
     with Progress(
         SpinnerColumn(),
@@ -292,7 +292,7 @@ def _export_data_to_csv(data: Dict, output_path: Path, console: Console) -> None
         progress.update(task, completed=True, description=f"Exported {len(data_rows)} rows to {output_path.name}")
 
 
-def _export_metadata_to_csv(metadata: Dict, output_path: Path, console: Console) -> None:
+def _export_metadata_to_csv(metadata: dict, output_path: Path, console: Console) -> None:
     """Export import metadata to CSV file."""
     with Progress(
         SpinnerColumn(),
@@ -332,7 +332,7 @@ def _export_metadata_to_csv(metadata: Dict, output_path: Path, console: Console)
         progress.update(task, completed=True, description=f"Exported {len(rows)} references to {output_path.name}")
 
 
-def _display_import_history_summary(history: Dict, console: Console) -> None:
+def _display_import_history_summary(history: dict, console: Console) -> None:
     """Display summary information about an import history record."""
 
     # Basic info table

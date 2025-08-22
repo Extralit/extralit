@@ -13,7 +13,7 @@
 # limitations under the License.
 import uuid
 
-from extralit import Extralit, Workspace, User
+from extralit import Extralit, User, Workspace
 
 
 class TestWorkspacesManagement:

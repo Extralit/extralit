@@ -1,18 +1,17 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-from typing import List
 
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -31,14 +30,14 @@ class UpsertResponsesInBulkUseCase:
         self.db = db
         self.search_engine = search_engine
 
-    async def execute(self, responses: List[ResponseUpsert], user: User) -> List[ResponseBulk]:
+    async def execute(self, responses: list[ResponseUpsert], user: User) -> list[ResponseBulk]:
         responses_bulk_items = []
 
         all_records = await datasets.get_records_by_ids(self.db, [item.record_id for item in responses])
         non_empty_records = [r for r in all_records if r is not None]
 
         await datasets.preload_records_relationships_before_validate(self.db, non_empty_records)
-        for item, record in zip(responses, all_records):
+        for item, record in zip(responses, all_records, strict=False):
             try:
                 if record is None:
                     raise errors.NotFoundError(f"Record with id `{item.record_id}` not found")

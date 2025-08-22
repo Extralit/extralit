@@ -18,8 +18,8 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 import pytest
-from PIL import Image
 from datasets import Dataset as HFDataset
+from PIL import Image
 
 import extralit as ex
 from extralit import Extralit
@@ -161,7 +161,7 @@ def test_export_records_to_json(dataset: ex.Dataset, mock_data):
     with TemporaryDirectory() as temp_dir:
         temp_file = Path(temp_dir) / "records.json"
         dataset.records.to_json(path=temp_file)
-        with open(temp_file, "r") as f:
+        with open(temp_file) as f:
             exported_records = json.load(f)
     assert len(exported_records) == len(mock_data)
     assert exported_records[0]["fields"]["text"] == "Hello World, how are you?"
@@ -194,11 +194,11 @@ def test_export_records_to_hf_datasets(dataset: ex.Dataset, mock_data):
     assert hf_dataset["id"][0] == str(mock_data[0]["id"])
 
     assert "image" in hf_dataset.column_names
-    for i, image in enumerate(hf_dataset["image"]):
+    for _i, image in enumerate(hf_dataset["image"]):
         assert isinstance(image, Image.Image)
 
     assert "chat" in hf_dataset.column_names
-    for i, chat in enumerate(hf_dataset["chat"]):
+    for _i, chat in enumerate(hf_dataset["chat"]):
         assert isinstance(chat, list)
         assert isinstance(chat[0], dict)
         assert chat[0]["role"] == "user"

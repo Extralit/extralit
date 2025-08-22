@@ -12,15 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, Union, List, TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 from extralit._api._metadata import MetadataAPI
 from extralit._exceptions import MetadataError
 from extralit._models import (
-    TermsMetadataPropertySettings,
     FloatMetadataPropertySettings,
     IntegerMetadataPropertySettings,
     MetadataFieldModel,
+    TermsMetadataPropertySettings,
 )
 from extralit._resource import Resource
 from extralit.client import Extralit
@@ -34,10 +34,10 @@ if TYPE_CHECKING:
     from extralit import Dataset
 
 __all__ = [
-    "TermsMetadataProperty",
     "FloatMetadataProperty",
     "IntegerMetadataProperty",
     "MetadataType",
+    "TermsMetadataProperty",
 ]
 
 
@@ -102,7 +102,7 @@ class TermsMetadataProperty(MetadataPropertyBase):
     def __init__(
         self,
         name: str,
-        options: Optional[List[Any]] = None,
+        options: Optional[list[Any]] = None,
         title: Optional[str] = None,
         visible_for_annotators: Optional[bool] = True,
         client: Optional[Extralit] = None,
@@ -133,7 +133,7 @@ class TermsMetadataProperty(MetadataPropertyBase):
         )
 
     @property
-    def options(self) -> Optional[List[str]]:
+    def options(self) -> Optional[list[str]]:
         return self._model.settings.values
 
     @options.setter

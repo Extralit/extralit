@@ -13,11 +13,11 @@
 # limitations under the License.
 
 __all__ = [
+    "AuthenticationError",
+    "MissingVectorError",
     "NotFoundError",
     "NotUniqueError",
     "UnprocessableEntityError",
-    "AuthenticationError",
-    "MissingVectorError",
     "UpdateDistributionWithExistingResponsesError",
 ]
 

@@ -13,18 +13,18 @@
 # limitations under the License.
 
 from extralit import (
-    Extralit,
-    Dataset,
     ChatField,
+    CustomField,
+    Dataset,
+    Extralit,
+    ImageField,
+    LabelQuestion,
+    RatingQuestion,
     Settings,
     TermsMetadataProperty,
     TextField,
-    ImageField,
-    RatingQuestion,
-    LabelQuestion,
     VectorField,
     Workspace,
-    CustomField,
 )
 from extralit.settings._task_distribution import TaskDistribution
 

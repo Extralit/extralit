@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Dict, List
 
 import markdown
 
@@ -45,7 +44,7 @@ CHAT_CSS_STYLE = """
     """
 
 
-def chat_to_html(messages: List[Dict[str, str]]) -> str:
+def chat_to_html(messages: list[dict[str, str]]) -> str:
     """
     Converts a list of chat messages in the OpenAI format to HTML.
 

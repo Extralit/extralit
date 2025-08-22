@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List, Dict
+import builtins
 from uuid import UUID
 
 import httpx
+
 from extralit._api._base import ResourceAPI
 from extralit._exceptions import api_error_handler
 from extralit._models import QuestionModel
@@ -69,7 +70,7 @@ class QuestionsAPI(ResourceAPI[QuestionModel]):
     ####################
 
     @api_error_handler
-    def list(self, dataset_id: UUID) -> List[QuestionModel]:
+    def list(self, dataset_id: UUID) -> list[QuestionModel]:
         response = self.http_client.get(f"/api/v1/datasets/{dataset_id}/questions")
         response.raise_for_status()
         response_json = response.json()
@@ -80,8 +81,8 @@ class QuestionsAPI(ResourceAPI[QuestionModel]):
     # Private methods #
     ####################
 
-    def _model_from_json(self, response_json: Dict) -> QuestionModel:
+    def _model_from_json(self, response_json: dict) -> QuestionModel:
         return QuestionModel(**response_json)
 
-    def _model_from_jsons(self, response_jsons: List[Dict]) -> List[QuestionModel]:
+    def _model_from_jsons(self, response_jsons: builtins.list[dict]) -> builtins.list[QuestionModel]:
         return list(map(self._model_from_json, response_jsons))

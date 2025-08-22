@@ -14,8 +14,7 @@
 
 import logging
 import os
-
-from typing import Dict, List, Optional, Tuple, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import lazy_loader as lazy
 
@@ -33,8 +32,8 @@ pdf2image = lazy.load("pdf2image")
 PIL = lazy.load("PIL")
 
 if TYPE_CHECKING:
-    from PIL.Image import Image
     from numpy import ndarray as NDArray
+    from PIL.Image import Image
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -46,7 +45,7 @@ def pil_to_cv(image: "Image") -> "NDArray":
 
 def classify_and_draw_layout_regions(
     reference: "Image", mask: "Image", min_area: int = 5000, label: bool = True
-) -> Tuple["Image", List[Dict]]:
+) -> tuple["Image", list[dict]]:
     """
     Classify and optionally draw layout regions using contour detection.
 
@@ -109,13 +108,13 @@ def classify_and_draw_layout_regions(
     return img, regions
 
 
-def find_horizontal_bands(mask: "Image", min_height: int = 15, min_ratio: float = 0.95) -> List[Tuple[int, int]]:
+def find_horizontal_bands(mask: "Image", min_height: int = 15, min_ratio: float = 0.95) -> list[tuple[int, int]]:
     """Find horizontal bands of similar content across pages."""
-    mask_np: "NDArray" = np.array(mask.convert("L"))  # type: ignore
+    mask_np: NDArray = np.array(mask.convert("L"))  # type: ignore
     h, w = mask_np.shape
 
-    row_sums: "NDArray" = np.sum(mask_np == 255, axis=1) / w  # type: ignore
-    same_rows: "NDArray" = row_sums >= min_ratio
+    row_sums: NDArray = np.sum(mask_np == 255, axis=1) / w  # type: ignore
+    same_rows: NDArray = row_sums >= min_ratio
 
     bands = []
     start = None
@@ -133,7 +132,7 @@ def find_horizontal_bands(mask: "Image", min_height: int = 15, min_ratio: float 
 
 
 class PDFAnalyzer:
-    def analyze_pdf_layout(self, pdf_data: bytes, filename: str) -> Dict:
+    def analyze_pdf_layout(self, pdf_data: bytes, filename: str) -> dict:
         """
         Analyze PDF layout to extract margin and region information.
 
@@ -148,7 +147,7 @@ class PDFAnalyzer:
         try:
             images = pdf2image.convert_from_bytes(pdf_data, dpi=150)  # type: ignore
             if not images:
-                return {"analysis_available": False, "error": "No pages found"}
+                return {"error": "No pages found"}
 
             _LOGGER.info(f"Analyzing layout for {filename} with {len(images)} pages")
 
@@ -156,17 +155,16 @@ class PDFAnalyzer:
             layout_data = self._analyze_page_layout(images)
 
             return {
-                "analysis_available": True,
-                "total_pages": len(images),
+                "page_count": len(images),
                 "page_dimensions": {"width": images[0].size[0], "height": images[0].size[1]} if images else {},
                 **layout_data,
             }
 
         except Exception as e:
             _LOGGER.error(f"PDF layout analysis failed for {filename}: {e}")
-            return {"analysis_available": False, "error": str(e)}
+            return {"error": str(e)}
 
-    def _analyze_page_layout(self, images: List["Image"]) -> Dict:
+    def _analyze_page_layout(self, images: list["Image"]) -> dict:
         """
         Analyze page layout by comparing pages to find common regions.
         """
@@ -189,14 +187,14 @@ class PDFAnalyzer:
         else:
             return self._analyze_single_page(reference_img)
 
-    def _compare_pages_for_margins(self, reference: "Image", compare: "Image") -> Optional[Dict]:
+    def _compare_pages_for_margins(self, reference: "Image", compare: "Image") -> dict | None:
         """
         Compare two pages to identify common regions using advanced CV2 techniques.
         """
         try:
             # Ensure same size
             if reference.size != compare.size:
-                _LOGGER.debug(f"Resizing page to match reference size")
+                _LOGGER.debug("Resizing page to match reference size")
                 compare = compare.resize(reference.size)
 
             # Step 1: Compute difference and invert so white = same
@@ -227,8 +225,8 @@ class PDFAnalyzer:
             return None
 
     def _classify_regions_advanced(
-        self, bands: List[Tuple[int, int]], detected_regions: List[Dict], page_size: Tuple[int, int]
-    ) -> Dict:
+        self, bands: list[tuple[int, int]], detected_regions: list[dict], page_size: tuple[int, int]
+    ) -> dict:
         """
         Advanced region classification combining horizontal bands and contour detection.
         """
@@ -257,8 +255,8 @@ class PDFAnalyzer:
         return regions
 
     def _estimate_margins_advanced(
-        self, regions: Dict, detected_regions: List[Dict], page_size: Tuple[int, int]
-    ) -> Dict:
+        self, regions: dict, detected_regions: list[dict], page_size: tuple[int, int]
+    ) -> dict:
         """
         Advanced margin estimation using both band and contour information.
         """
@@ -317,7 +315,7 @@ class PDFAnalyzer:
             "right_percent": (margins["right"] / width) * 100 if width > 0 else 0,
         }
 
-    def _classify_regions(self, bands: List[Tuple[int, int]], page_size: Tuple[int, int]) -> Dict:
+    def _classify_regions(self, bands: list[tuple[int, int]], page_size: tuple[int, int]) -> dict:
         """
         Classify horizontal bands into headers, footers, and margins.
         """
@@ -339,7 +337,7 @@ class PDFAnalyzer:
 
         return regions
 
-    def _estimate_margins_from_bands(self, regions: Dict, page_size: Tuple[int, int]) -> Dict:
+    def _estimate_margins_from_bands(self, regions: dict, page_size: tuple[int, int]) -> dict:
         """
         Estimate page margins based on detected bands.
         """
@@ -373,7 +371,7 @@ class PDFAnalyzer:
             "right_percent": (margins["right"] / width) * 100,
         }
 
-    def _aggregate_margin_data(self, margin_data: List[Dict], page_size: Tuple[int, int]) -> Dict:
+    def _aggregate_margin_data(self, margin_data: list[dict], page_size: tuple[int, int]) -> dict:
         """
         Aggregate margin data from multiple page comparisons.
         """
@@ -434,13 +432,13 @@ class PDFAnalyzer:
             }
         }
 
-    def _analyze_single_page(self, image: "Image") -> Dict:
+    def _analyze_single_page(self, image: "Image") -> dict:
         """
         Analyze a single page when comparison isn't possible.
         """
         return self._analyze_single_page_size(image.size)
 
-    def _analyze_single_page_size(self, page_size: Tuple[int, int]) -> Dict:
+    def _analyze_single_page_size(self, page_size: tuple[int, int]) -> dict:
         """
         Provide default margin estimates for single page analysis.
         """

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Security, status
@@ -41,9 +42,9 @@ router = APIRouter(tags=["records"])
 @router.get("/records/{record_id}", response_model=RecordSchema)
 async def get_record(
     *,
-    db: AsyncSession = Depends(get_async_db),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     record_id: UUID,
-    current_user: User = Security(auth.get_current_user),
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     record = await Record.get_or_raise(
         db,
@@ -64,11 +65,11 @@ async def get_record(
 @router.patch("/records/{record_id}", status_code=status.HTTP_200_OK, response_model=RecordSchema)
 async def update_record(
     *,
-    db: AsyncSession = Depends(get_async_db),
-    search_engine: SearchEngine = Depends(get_search_engine),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    search_engine: Annotated[SearchEngine, Depends(get_search_engine)],
     record_id: UUID,
     record_update: RecordUpdate,
-    current_user: User = Security(auth.get_current_user),
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     record = await Record.get_or_raise(
         db,
@@ -94,11 +95,11 @@ async def update_record(
 @router.post("/records/{record_id}/responses", status_code=status.HTTP_201_CREATED, response_model=Response)
 async def create_record_response(
     *,
-    db: AsyncSession = Depends(get_async_db),
-    search_engine: SearchEngine = Depends(get_search_engine),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    search_engine: Annotated[SearchEngine, Depends(get_search_engine)],
     record_id: UUID,
     response_create: ResponseCreate,
-    current_user: User = Security(auth.get_current_user),
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     record = await Record.get_or_raise(
         db,
@@ -117,9 +118,9 @@ async def create_record_response(
 @router.get("/records/{record_id}/suggestions", status_code=status.HTTP_200_OK, response_model=Suggestions)
 async def get_record_suggestions(
     *,
-    db: AsyncSession = Depends(get_async_db),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     record_id: UUID,
-    current_user: User = Security(auth.get_current_user),
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     record = await Record.get_or_raise(
         db,
@@ -148,11 +149,11 @@ async def get_record_suggestions(
 )
 async def upsert_suggestion(
     *,
-    db: AsyncSession = Depends(get_async_db),
-    search_engine: SearchEngine = Depends(get_search_engine),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    search_engine: Annotated[SearchEngine, Depends(get_search_engine)],
     record_id: UUID,
     suggestion_create: SuggestionCreate,
-    current_user: User = Security(auth.get_current_user),
+    current_user: Annotated[User, Security(auth.get_current_user)],
     response: HTTPResponse,
 ):
     record = await Record.get_or_raise(
@@ -190,11 +191,11 @@ async def upsert_suggestion(
 )
 async def delete_record_suggestions(
     *,
-    db: AsyncSession = Depends(get_async_db),
-    search_engine: SearchEngine = Depends(get_search_engine),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    search_engine: Annotated[SearchEngine, Depends(get_search_engine)],
     record_id: UUID,
-    current_user: User = Security(auth.get_current_user),
-    ids: str = Query(..., description="A comma separated list with the IDs of the suggestions to be removed"),
+    current_user: Annotated[User, Security(auth.get_current_user)],
+    ids: Annotated[str, Query(description="A comma separated list with the IDs of the suggestions to be removed")],
 ):
     record = await Record.get_or_raise(
         db,
@@ -222,10 +223,10 @@ async def delete_record_suggestions(
 @router.delete("/records/{record_id}", response_model=RecordSchema, response_model_exclude_unset=True)
 async def delete_record(
     *,
-    db: AsyncSession = Depends(get_async_db),
-    search_engine: SearchEngine = Depends(get_search_engine),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    search_engine: Annotated[SearchEngine, Depends(get_search_engine)],
     record_id: UUID,
-    current_user: User = Security(auth.get_current_user),
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     record = await Record.get_or_raise(
         db,

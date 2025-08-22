@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import os
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 from urllib.parse import unquote, urlparse
 from uuid import UUID
 
@@ -78,7 +78,7 @@ class DocumentModel(ResourceModel):
             **kwargs,
         )
 
-    def to_server_payload(self) -> Dict[str, Any]:
+    def to_server_payload(self) -> dict[str, Any]:
         """Method that will be used to create the payload that will be sent to Extralit
         to create a field in the `FeedbackDataset`.
         """

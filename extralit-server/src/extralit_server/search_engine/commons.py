@@ -15,7 +15,8 @@
 import dataclasses
 import logging
 from abc import abstractmethod
-from typing import Any, Dict, Iterable, List, Optional, Union
+from collections.abc import Iterable
+from typing import Any
 from uuid import UUID
 
 from elasticsearch8 import AsyncElasticsearch
@@ -31,9 +32,9 @@ from extralit_server.models import (
     Record,
     Response,
     Suggestion,
+    User,
     Vector,
     VectorSettings,
-    User,
 )
 from extralit_server.search_engine.base import (
     AndFilter,
@@ -61,7 +62,7 @@ def es_index_name_for_dataset(dataset: Dataset):
     return f"rg.{dataset.id}"
 
 
-def es_terms_query(field_name: str, values: List[str]) -> dict:
+def es_terms_query(field_name: str, values: list[str]) -> dict:
     return {"terms": {field_name: values}}
 
 
@@ -69,7 +70,7 @@ def es_term_query(field_name: str, value: str) -> dict:
     return {"term": {field_name: value}}
 
 
-def es_range_query(field_name: str, gte: Optional[Any] = None, lte: Optional[Any] = None) -> dict:
+def es_range_query(field_name: str, gte: Any | None = None, lte: Any | None = None) -> dict:
     query = {}
     if gte is not None:
         query["gte"] = gte
@@ -80,11 +81,11 @@ def es_range_query(field_name: str, gte: Optional[Any] = None, lte: Optional[Any
 
 def es_bool_query(
     *,
-    must: Optional[Any] = None,
-    must_not: Optional[Any] = None,
-    should: Optional[List[dict]] = None,
-    minimum_should_match: Optional[Union[int, str]] = None,
-) -> Dict[str, Any]:
+    must: Any | None = None,
+    must_not: Any | None = None,
+    should: list[dict] | None = None,
+    minimum_should_match: int | str | None = None,
+) -> dict[str, Any]:
     bool_query = {}
 
     if must:
@@ -104,7 +105,7 @@ def es_exists_field_query(field: str) -> dict:
     return {"exists": {"field": field}}
 
 
-def es_ids_query(ids: List[str]) -> dict:
+def es_ids_query(ids: list[str]) -> dict:
     return {"ids": {"values": ids}}
 
 
@@ -145,7 +146,7 @@ def es_field_for_record_property(property: str) -> str:
     return property
 
 
-def es_field_for_metadata_property(metadata_property: Union[str, MetadataProperty]) -> str:
+def es_field_for_metadata_property(metadata_property: str | MetadataProperty) -> str:
     if isinstance(metadata_property, MetadataProperty):
         property_name = metadata_property.name
     else:
@@ -316,7 +317,7 @@ class BaseElasticAndOpenSearchEngine(SearchEngine):
     # See https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-settings-limit.html#mapping-settings-limit
     default_total_fields_limit: int = 2000
 
-    client: Union[AsyncElasticsearch, AsyncOpenSearch] = dataclasses.field(init=False)
+    client: AsyncElasticsearch | AsyncOpenSearch = dataclasses.field(init=False)
 
     _LOGGER = logging.getLogger(__name__)
 
@@ -470,18 +471,18 @@ class BaseElasticAndOpenSearchEngine(SearchEngine):
     async def search(
         self,
         dataset: Dataset,
-        query: Optional[Union[TextQuery, str]] = None,
-        filter: Optional[Filter] = None,
-        sort: Optional[List[Order]] = None,
+        query: TextQuery | str | None = None,
+        filter: Filter | None = None,
+        sort: list[Order] | None = None,
         offset: int = 0,
         limit: int = 100,
-        user_id: Optional[str] = None,
+        user_id: str | None = None,
     ) -> SearchResponses:
         # See https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html
         index = es_index_name_for_dataset(dataset)
 
         text_query = self._build_text_query(dataset, text=query)
-        bool_query: Dict[str, Any] = {"must": [text_query]}
+        bool_query: dict[str, Any] = {"must": [text_query]}
 
         if filter:
             bool_query["filter"] = self.build_elasticsearch_filter(filter)
@@ -508,13 +509,13 @@ class BaseElasticAndOpenSearchEngine(SearchEngine):
         self,
         dataset: Dataset,
         vector_settings: VectorSettings,
-        value: Optional[List[float]] = None,
-        record: Optional[Record] = None,
-        query: Optional[Union[TextQuery, str]] = None,
-        filter: Optional[Filter] = None,
+        value: list[float] | None = None,
+        record: Record | None = None,
+        query: TextQuery | str | None = None,
+        filter: Filter | None = None,
         max_results: int = 100,
         order: SimilarityOrder = SimilarityOrder.most_similar,
-        threshold: Optional[float] = None,
+        threshold: float | None = None,
     ) -> SearchResponses:
         if bool(value) == bool(record):
             raise ValueError("Must provide either vector value or record to compute the similarity search")
@@ -560,7 +561,7 @@ class BaseElasticAndOpenSearchEngine(SearchEngine):
         if metadata_property.type in [MetadataPropertyType.float, MetadataPropertyType.integer]:
             return await self._metrics_for_numeric_property(index_name, metadata_property)
 
-    def build_elasticsearch_filter(self, filter: Filter) -> Dict[str, Any]:
+    def build_elasticsearch_filter(self, filter: Filter) -> dict[str, Any]:
         if isinstance(filter, AndFilter):
             filters = [self.build_elasticsearch_filter(f) for f in filter.filters]
             return es_bool_query(must=filters)
@@ -571,7 +572,7 @@ class BaseElasticAndOpenSearchEngine(SearchEngine):
             es_field = self._scope_to_elasticsearch_field(filter.scope)
             return self._map_filter_to_es_filter(filter, es_field)
 
-    def build_elasticsearch_sort(self, sort: List[Order]) -> List[dict]:
+    def build_elasticsearch_sort(self, sort: list[Order]) -> list[dict]:
         sort_config = []
 
         for order in sort:
@@ -603,10 +604,10 @@ class BaseElasticAndOpenSearchEngine(SearchEngine):
             raise ValueError(f"Cannot process request for filter {filter}")
 
     @staticmethod
-    def _inverse_vector(vector_value: List[float]) -> List[float]:
+    def _inverse_vector(vector_value: list[float]) -> list[float]:
         return [vector_value[i] * -1 for i in range(0, len(vector_value))]
 
-    def _map_record_to_es_document(self, record: Record) -> Dict[str, Any]:
+    def _map_record_to_es_document(self, record: Record) -> dict[str, Any]:
         dataset = record.dataset
 
         document = {
@@ -630,7 +631,7 @@ class BaseElasticAndOpenSearchEngine(SearchEngine):
         return document
 
     @staticmethod
-    def _map_record_suggestions_to_es(suggestions: List[Suggestion]) -> dict:
+    def _map_record_suggestions_to_es(suggestions: list[Suggestion]) -> dict:
         return {
             suggestion.question.name: {
                 "type": suggestion.type,
@@ -642,13 +643,13 @@ class BaseElasticAndOpenSearchEngine(SearchEngine):
         }
 
     @staticmethod
-    def _map_record_vectors_to_es(vectors: List[Vector]) -> Dict[str, List[float]]:
+    def _map_record_vectors_to_es(vectors: list[Vector]) -> dict[str, list[float]]:
         return {es_path_for_vector_settings(vector.vector_settings): vector.value for vector in vectors}
 
     @staticmethod
     def _map_record_metadata_to_es(
-        metadata: Dict[str, Any], metadata_properties: List[MetadataProperty]
-    ) -> Dict[str, Any]:
+        metadata: dict[str, Any], metadata_properties: list[MetadataProperty]
+    ) -> dict[str, Any]:
         search_engine_metadata = {}
 
         for metadata_property in metadata_properties:
@@ -658,12 +659,12 @@ class BaseElasticAndOpenSearchEngine(SearchEngine):
 
         return search_engine_metadata
 
-    def _map_record_responses_to_es(self, responses: List[Response]) -> List[dict]:
+    def _map_record_responses_to_es(self, responses: list[Response]) -> list[dict]:
         return [self._map_record_response_to_es(response) for response in responses]
 
     async def _metrics_for_numeric_property(
-        self, index_name: str, metadata_property: MetadataProperty, query: Optional[dict] = None
-    ) -> Union[IntegerMetadataMetrics, FloatMetadataMetrics]:
+        self, index_name: str, metadata_property: MetadataProperty, query: dict | None = None
+    ) -> IntegerMetadataMetrics | FloatMetadataMetrics:
         field_name = es_field_for_metadata_property(metadata_property)
         query = query or {"match_all": {}}
 
@@ -676,7 +677,7 @@ class BaseElasticAndOpenSearchEngine(SearchEngine):
         return metrics_class(min=stats["min"], max=stats["max"])
 
     async def _compute_terms_metrics_for(
-        self, index_name: str, field_name: str, query: Optional[dict] = None
+        self, index_name: str, field_name: str, query: dict | None = None
     ) -> TermsMetrics:
         query = query or {"match_all": {}}
 
@@ -692,7 +693,7 @@ class BaseElasticAndOpenSearchEngine(SearchEngine):
         return TermsMetrics(total=total_terms, values=terms_values)
 
     async def _metrics_for_terms_property(
-        self, index_name: str, metadata_property: MetadataProperty, query: Optional[dict] = None
+        self, index_name: str, metadata_property: MetadataProperty, query: dict | None = None
     ) -> TermsMetrics:
         field_name = es_field_for_metadata_property(metadata_property)
         return await self._compute_terms_metrics_for(index_name, field_name, query)
@@ -721,7 +722,7 @@ class BaseElasticAndOpenSearchEngine(SearchEngine):
         }
 
     @staticmethod
-    def _process_search_response(response: dict, score_threshold: Optional[float] = None) -> SearchResponses:
+    def _process_search_response(response: dict, score_threshold: float | None = None) -> SearchResponses:
         hits = response["hits"]["hits"]
 
         if score_threshold is not None:
@@ -733,7 +734,7 @@ class BaseElasticAndOpenSearchEngine(SearchEngine):
         return SearchResponses(items=items, total=total)
 
     @staticmethod
-    def _build_text_query(dataset: Dataset, text: Optional[Union[TextQuery, str]] = None) -> dict:
+    def _build_text_query(dataset: Dataset, text: TextQuery | str | None = None) -> dict:
         if text is None:
             return {"match_all": {}}
 
@@ -755,7 +756,7 @@ class BaseElasticAndOpenSearchEngine(SearchEngine):
         return es_simple_query_string(es_field_for_record_field(field_name), query=text.q)
 
     @staticmethod
-    def _mapping_for_fields(fields: List[Field]) -> dict:
+    def _mapping_for_fields(fields: list[Field]) -> dict:
         mappings = {}
         for field in fields:
             mappings.update(es_mapping_for_field(field))
@@ -763,7 +764,7 @@ class BaseElasticAndOpenSearchEngine(SearchEngine):
         return mappings
 
     @staticmethod
-    def _mapping_for_metadata_properties(metadata_properties: List[MetadataProperty]) -> dict:
+    def _mapping_for_metadata_properties(metadata_properties: list[MetadataProperty]) -> dict:
         mappings = {
             # metadata properties without mappings will be ignored
             "metadata": {"dynamic": False, "type": "object"},
@@ -775,7 +776,7 @@ class BaseElasticAndOpenSearchEngine(SearchEngine):
         return mappings
 
     @staticmethod
-    def _mapping_for_suggestions(questions: List[Question]) -> dict:
+    def _mapping_for_suggestions(questions: list[Question]) -> dict:
         mappings = {}
 
         for question in questions:
@@ -784,7 +785,7 @@ class BaseElasticAndOpenSearchEngine(SearchEngine):
         return mappings
 
     @staticmethod
-    def _mapping_for_responses(questions: List[Question]) -> dict:
+    def _mapping_for_responses(questions: list[Question]) -> dict:
         return {
             "responses": {
                 "type": "nested",
@@ -802,7 +803,7 @@ class BaseElasticAndOpenSearchEngine(SearchEngine):
             }
         }
 
-    def _mapping_for_vectors_settings(self, vectors_settings: List[VectorSettings]) -> dict:
+    def _mapping_for_vectors_settings(self, vectors_settings: list[VectorSettings]) -> dict:
         mappings = {}
         for vector in vectors_settings:
             mappings.update(self._mapping_for_vector_settings(vector))
@@ -905,7 +906,7 @@ class BaseElasticAndOpenSearchEngine(SearchEngine):
         }
 
     @staticmethod
-    def _map_record_response_to_es(response: Response) -> Dict[str, Any]:
+    def _map_record_response_to_es(response: Response) -> dict[str, Any]:
         return {
             "id": response.id,
             "status": response.status,
@@ -917,7 +918,7 @@ class BaseElasticAndOpenSearchEngine(SearchEngine):
         }
 
     @classmethod
-    def _map_record_fields_to_es(cls, fields: dict, dataset_fields: List[Field]) -> dict:
+    def _map_record_fields_to_es(cls, fields: dict, dataset_fields: list[Field]) -> dict:
         for field in dataset_fields:
             if field.is_image:
                 continue
@@ -930,7 +931,7 @@ class BaseElasticAndOpenSearchEngine(SearchEngine):
 
         return fields
 
-    async def _terms_aggregation(self, index_name: str, field_name: str, query: dict, size: int) -> List[dict]:
+    async def _terms_aggregation(self, index_name: str, field_name: str, query: dict, size: int) -> list[dict]:
         aggregation_name = "terms_agg"
 
         terms_agg = {aggregation_name: {"terms": {"field": field_name, "size": min(size, self.max_terms_size)}}}
@@ -964,10 +965,10 @@ class BaseElasticAndOpenSearchEngine(SearchEngine):
         self,
         index: str,
         vector_settings: VectorSettings,
-        value: List[float],
+        value: list[float],
         k: int,
-        excluded_id: Optional[UUID] = None,
-        query_filters: Optional[List[dict]] = None,
+        excluded_id: UUID | None = None,
+        query_filters: list[dict] | None = None,
     ) -> dict:
         """
         Applies the similarity search request based on a vector configuration, a vector value,
@@ -995,10 +996,10 @@ class BaseElasticAndOpenSearchEngine(SearchEngine):
         self,
         index: str,
         query: dict,
-        size: Optional[int] = None,
-        from_: Optional[int] = None,
-        sort: Optional[dict] = None,
-        aggregations: Optional[dict] = None,
+        size: int | None = None,
+        from_: int | None = None,
+        sort: dict | None = None,
+        aggregations: dict | None = None,
     ) -> dict:
         """Executes request for search documents on a index"""
 
@@ -1007,5 +1008,5 @@ class BaseElasticAndOpenSearchEngine(SearchEngine):
         """Executes request for check if index exists"""
 
     @abstractmethod
-    async def _bulk_op_request(self, actions: List[Dict[str, Any]]):
+    async def _bulk_op_request(self, actions: list[dict[str, Any]]):
         """Executes request for bulk operations"""

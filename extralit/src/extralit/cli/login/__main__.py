@@ -48,8 +48,9 @@ def login(
     """Login to an Extralit Server by providing API URL and API key credentials."""
     import json
 
-    from extralit.cli.rich import get_themed_panel
     from rich.console import Console
+
+    from extralit.cli.rich import get_themed_panel
 
     try:
         headers = {}

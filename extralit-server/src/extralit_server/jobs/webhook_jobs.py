@@ -1,37 +1,34 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-import httpx
 
-from typing import List
-
-from uuid import UUID
 from datetime import datetime
+from uuid import UUID
 
-from rq.job import Retry, Job
-from rq.decorators import job
-from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.encoders import jsonable_encoder
+from rq.decorators import job
+from rq.job import Job, Retry
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from extralit_server.webhooks.v1.commons import notify_event
-from extralit_server.database import AsyncSessionLocal
-from extralit_server.jobs.queues import HIGH_QUEUE
 from extralit_server.contexts import webhooks
+from extralit_server.database import AsyncSessionLocal
+from extralit_server.jobs.queues import HIGH_QUEUE, REDIS_CONNECTION
 from extralit_server.models import Webhook
+from extralit_server.webhooks.v1.commons import notify_event
 
 
-async def enqueue_notify_events(db: AsyncSession, event: str, timestamp: datetime, data: dict) -> List[Job]:
+async def enqueue_notify_events(db: AsyncSession, event: str, timestamp: datetime, data: dict) -> list[Job]:
     enabled_webhooks = await webhooks.list_enabled_webhooks(db)
     if len(enabled_webhooks) == 0:
         return []
@@ -46,7 +43,7 @@ async def enqueue_notify_events(db: AsyncSession, event: str, timestamp: datetim
     return enqueued_jobs
 
 
-@job(HIGH_QUEUE, retry=Retry(max=3, interval=[10, 60, 180]))
+@job(HIGH_QUEUE, connection=REDIS_CONNECTION, retry=Retry(max=3, interval=[10, 60, 180]))
 async def notify_event_job(webhook_id: UUID, event: str, timestamp: datetime, data: dict) -> None:
     async with AsyncSessionLocal() as db:
         webhook = await Webhook.get_or_raise(db, webhook_id)

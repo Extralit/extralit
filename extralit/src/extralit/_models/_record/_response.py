@@ -14,10 +14,10 @@
 
 import warnings
 from enum import Enum
-from typing import Dict, Optional, Union, Any
+from typing import Any, Optional, Union
 from uuid import UUID
 
-from pydantic import BaseModel, field_serializer, field_validator, Field
+from pydantic import BaseModel, Field, field_serializer, field_validator
 
 
 class ResponseStatus(str, Enum):
@@ -29,7 +29,7 @@ class ResponseStatus(str, Enum):
 class UserResponseModel(BaseModel):
     """Schema for the `FeedbackRecord` user response."""
 
-    values: Union[Dict[str, Dict[str, Any]], None]
+    values: Union[dict[str, dict[str, Any]], None]
     status: ResponseStatus
     user_id: Optional[UUID] = Field(None, validate_default=True)
 
@@ -44,6 +44,7 @@ class UserResponseModel(BaseModel):
                 "`user_id` not provided, so it will be set to `None`. Which is not an"
                 " issue, unless you're planning to log the response in Extralit, as"
                 " it will be automatically set to the active `user_id`.",
+                stacklevel=2,
             )
         return user_id
 

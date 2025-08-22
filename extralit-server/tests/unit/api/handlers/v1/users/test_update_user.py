@@ -12,16 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
 from uuid import UUID, uuid4
-from extralit_server.constants import API_KEY_HEADER_NAME
-from extralit_server.contexts import accounts
-from extralit_server.enums import UserRole
-from extralit_server.models import User
+
+import pytest
 from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from extralit_server.constants import API_KEY_HEADER_NAME
+from extralit_server.contexts import accounts
+from extralit_server.enums import UserRole
+from extralit_server.models import User
 from tests.factories import UserFactory
 
 

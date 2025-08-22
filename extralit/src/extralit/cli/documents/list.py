@@ -17,8 +17,8 @@
 import typer
 from rich.console import Console
 
-from extralit.client import Extralit
 from extralit.cli.rich import get_themed_panel, print_rich_table
+from extralit.client import Extralit
 
 
 def list_documents(
@@ -65,7 +65,7 @@ def list_documents(
 
     except Exception as e:
         panel = get_themed_panel(
-            f"Error listing documents: {str(e)}",
+            f"Error listing documents: {e!s}",
             title="Error",
             title_align="left",
             success=False,

@@ -12,17 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
+from uuid import UUID, uuid4
+
 import pytest
 import respx
-import json
-
-from uuid import UUID, uuid4
 from httpx import AsyncClient, Response
 from standardwebhooks.webhooks import Webhook
 
-from extralit_server.contexts import info
 from extralit_server.constants import API_KEY_HEADER_NAME
-
+from extralit_server.contexts import info
 from tests.factories import AdminFactory, AnnotatorFactory, WebhookFactory
 
 

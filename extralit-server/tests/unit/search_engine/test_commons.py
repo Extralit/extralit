@@ -14,7 +14,8 @@
 
 import random
 import uuid
-from typing import Any, Dict, List, Optional, Union, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 import pytest
 import pytest_asyncio
@@ -23,36 +24,39 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 from extralit_server.enums import (
+    DatasetStatus,
     MetadataPropertyType,
     QuestionType,
+    RecordStatus,
     ResponseStatusFilter,
     SimilarityOrder,
-    RecordStatus,
     SortOrder,
-    DatasetStatus,
 )
-from extralit_server.models import Dataset, Question, Record, User, VectorSettings, Vector
+from extralit_server.models import Dataset, Question, Record, User, Vector, VectorSettings
 from extralit_server.search_engine import (
+    AndFilter,
+    Filter,
+    MetadataFilterScope,
+    Order,
+    RangeFilter,
+    RecordFilterScope,
     ResponseFilterScope,
     SuggestionFilterScope,
     TermsFilter,
     TextQuery,
-    Filter,
-    MetadataFilterScope,
-    RangeFilter,
-    Order,
-    RecordFilterScope,
-    AndFilter,
 )
 from extralit_server.search_engine.commons import (
     BaseElasticAndOpenSearchEngine,
-    es_index_name_for_dataset,
     es_field_for_vector_settings,
+    es_index_name_for_dataset,
 )
 from extralit_server.settings import settings as server_settings
 from tests.factories import (
+    ChatFieldFactory,
+    CustomFieldFactory,
     DatasetFactory,
     FloatMetadataPropertyFactory,
+    ImageFieldFactory,
     IntegerMetadataPropertyFactory,
     LabelSelectionQuestionFactory,
     MultiLabelSelectionQuestionFactory,
@@ -67,9 +71,6 @@ from tests.factories import (
     UserFactory,
     VectorFactory,
     VectorSettingsFactory,
-    ImageFieldFactory,
-    ChatFieldFactory,
-    CustomFieldFactory,
 )
 
 
@@ -292,7 +293,7 @@ async def refresh_dataset(dataset: Dataset):
     await dataset.awaitable_attrs.vectors_settings
 
 
-async def refresh_records(records: List[Record]):
+async def refresh_records(records: list[Record]):
     for record in records:
         await record.awaitable_attrs.suggestions
         await record.awaitable_attrs.responses
@@ -300,7 +301,7 @@ async def refresh_records(records: List[Record]):
         await record.awaitable_attrs.vectors
 
 
-def _expected_value_for_question(question: Question) -> Dict[str, Any]:
+def _expected_value_for_question(question: Question) -> dict[str, Any]:
     if question.type in [QuestionType.label_selection, QuestionType.multi_label_selection]:
         return {"type": "keyword"}
     elif question.type == QuestionType.rating:
@@ -589,7 +590,7 @@ class TestBaseElasticAndOpenSearchEngine:
         search_engine: BaseElasticAndOpenSearchEngine,
         opensearch: OpenSearch,
         test_banking_sentiment_dataset: Dataset,
-        query: Union[str, TextQuery],
+        query: str | TextQuery,
         expected_items: int,
     ):
         result = await search_engine.search(test_banking_sentiment_dataset, query=query)
@@ -598,7 +599,7 @@ class TestBaseElasticAndOpenSearchEngine:
         assert result.total == expected_items
 
         scores = [item.score > 0 for item in result.items]
-        assert all(map(lambda s: s > 0, scores))
+        assert all(s > 0 for s in scores)
 
         sorted_scores = scores.copy()
         sorted_scores.sort(reverse=True)
@@ -673,7 +674,7 @@ class TestBaseElasticAndOpenSearchEngine:
         search_engine: BaseElasticAndOpenSearchEngine,
         opensearch: OpenSearch,
         test_banking_sentiment_dataset: Dataset,
-        statuses: List[ResponseStatusFilter],
+        statuses: list[ResponseStatusFilter],
         expected_items: int,
     ):
         user = await UserFactory.create()
@@ -752,7 +753,7 @@ class TestBaseElasticAndOpenSearchEngine:
         search_engine: BaseElasticAndOpenSearchEngine,
         opensearch: OpenSearch,
         test_banking_sentiment_dataset: Dataset,
-        statuses: List[ResponseStatusFilter],
+        statuses: list[ResponseStatusFilter],
         expected_items: int,
     ):
         await self._configure_record_responses(opensearch, test_banking_sentiment_dataset, statuses, expected_items)
@@ -812,7 +813,7 @@ class TestBaseElasticAndOpenSearchEngine:
         assert len(result.items) == len(test_banking_sentiment_dataset.records)
         assert result.total == len(test_banking_sentiment_dataset.records)
 
-        result_scores = set([item.score for item in result.items])
+        result_scores = {item.score for item in result.items}
         assert result_scores == {1.0}
 
     async def test_search_with_response_status_filter_does_not_affect_the_result_scores(
@@ -1239,7 +1240,7 @@ class TestBaseElasticAndOpenSearchEngine:
         ]
         assert len(deleted_docs) == 0
 
-        es_docs = [
+        [
             hit["_source"]
             for hit in opensearch.search(
                 index=index_name, body={"query": {"ids": {"values": [str(record.id) for record in records_to_keep]}}}
@@ -1631,7 +1632,7 @@ class TestBaseElasticAndOpenSearchEngine:
         search_engine: BaseElasticAndOpenSearchEngine,
         opensearch: OpenSearch,
         test_banking_sentiment_dataset_with_vectors: Dataset,
-        statuses: List[ResponseStatusFilter],
+        statuses: list[ResponseStatusFilter],
     ):
         selected_record: Record = test_banking_sentiment_dataset_with_vectors.records[0]
         vector_settings: VectorSettings = test_banking_sentiment_dataset_with_vectors.vectors_settings[0]
@@ -1752,10 +1753,10 @@ class TestBaseElasticAndOpenSearchEngine:
         self,
         opensearch: OpenSearch,
         dataset: Dataset,
-        response_status: List[ResponseStatusFilter],
+        response_status: list[ResponseStatusFilter],
         number_of_answered_records: int,
-        user: Optional[User] = None,
-        rating_value: Optional[int] = None,
+        user: User | None = None,
+        rating_value: int | None = None,
     ):
         index_name = es_index_name_for_dataset(dataset)
 
@@ -1769,7 +1770,7 @@ class TestBaseElasticAndOpenSearchEngine:
         rest_of_the_records = dataset.records[number_of_answered_records:]
 
         # Create two responses with the same status (one in each record)
-        for i, status in enumerate(response_status):
+        for _i, status in enumerate(response_status):
             if status != ResponseStatusFilter.pending:
                 await self._update_records_responses(
                     opensearch, index_name, selected_records, status, user, rating_value
@@ -1785,10 +1786,10 @@ class TestBaseElasticAndOpenSearchEngine:
         self,
         opensearch: OpenSearch,
         index_name: str,
-        records: List[Record],
+        records: list[Record],
         status: ResponseStatusFilter,
-        user: Optional[User] = None,
-        rating_value: Optional[int] = None,
+        user: User | None = None,
+        rating_value: int | None = None,
     ):
         another_user = await UserFactory.create()
 

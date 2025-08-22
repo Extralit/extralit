@@ -15,8 +15,9 @@
 import uuid
 from datetime import datetime
 
-import extralit as ex
 import pytest
+
+import extralit as ex
 from extralit import Extralit, Workspace
 from extralit._exceptions._responses import RecordResponsesError
 from extralit._exceptions._suggestions import RecordSuggestionsError

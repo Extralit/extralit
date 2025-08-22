@@ -1,19 +1,19 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import dataclasses
-from typing import Any, Dict, List, Optional
+from typing import Any
 from uuid import UUID
 
 from opensearchpy import AsyncOpenSearch, helpers
@@ -33,20 +33,20 @@ from extralit_server.settings import settings
 @SearchEngine.register(engine_name=SEARCH_ENGINE_OPENSEARCH)
 @dataclasses.dataclass
 class OpenSearchEngine(BaseElasticAndOpenSearchEngine):
-    config: Dict[str, Any] = dataclasses.field(default_factory=dict)
+    config: dict[str, Any] = dataclasses.field(default_factory=dict)
 
     def __post_init__(self):
         self.client = AsyncOpenSearch(**self.config)
 
     @classmethod
     async def new_instance(cls) -> "OpenSearchEngine":
-        config = dict(
-            hosts=settings.elasticsearch,
-            verify_certs=settings.elasticsearch_ssl_verify,
-            ca_certs=settings.elasticsearch_ca_path,
-            retry_on_timeout=True,
-            max_retries=5,
-        )
+        config = {
+            "hosts": settings.elasticsearch,
+            "verify_certs": settings.elasticsearch_ssl_verify,
+            "ca_certs": settings.elasticsearch_ca_path,
+            "retry_on_timeout": True,
+            "max_retries": 5,
+        }
         return cls(
             config=config,
             number_of_shards=settings.es_records_index_shards,
@@ -61,7 +61,8 @@ class OpenSearchEngine(BaseElasticAndOpenSearchEngine):
         return await self.client.ping()
 
     async def info(self) -> dict:
-        return await self.client.info()
+        response = await self.client.info()
+        return dict(response)
 
     def _configure_index_settings(self):
         base_settings = super()._configure_index_settings()
@@ -85,10 +86,10 @@ class OpenSearchEngine(BaseElasticAndOpenSearchEngine):
         self,
         index: str,
         vector_settings: VectorSettings,
-        value: List[float],
+        value: list[float],
         k: int,
-        excluded_id: Optional[UUID] = None,
-        query_filters: Optional[List[dict]] = None,
+        excluded_id: UUID | None = None,
+        query_filters: list[dict] | None = None,
     ) -> dict:
         knn_query = {"vector": value, "k": k}
 
@@ -109,7 +110,7 @@ class OpenSearchEngine(BaseElasticAndOpenSearchEngine):
         return await self.client.search(index=index, body=body, _source=False, track_total_hits=True, size=k)
 
     async def _create_index_request(self, index_name: str, mappings: dict, settings: dict) -> None:
-        await self.client.indices.create(index=index_name, body=dict(settings=settings, mappings=mappings))
+        await self.client.indices.create(index=index_name, body={"settings": settings, "mappings": mappings})
 
     async def _delete_index_request(self, index_name: str):
         await self.client.indices.delete(index_name, ignore=[404], ignore_unavailable=True)
@@ -125,10 +126,10 @@ class OpenSearchEngine(BaseElasticAndOpenSearchEngine):
         self,
         index: str,
         query: dict,
-        size: Optional[int] = None,
-        from_: Optional[int] = None,
-        sort: Optional[dict] = None,
-        aggregations: Optional[dict] = None,
+        size: int | None = None,
+        from_: int | None = None,
+        sort: dict | None = None,
+        aggregations: dict | None = None,
     ) -> dict:
         body = {"query": query}
         if aggregations:
@@ -149,7 +150,7 @@ class OpenSearchEngine(BaseElasticAndOpenSearchEngine):
     async def _index_exists_request(self, index_name: str) -> bool:
         return await self.client.indices.exists(index=index_name)
 
-    async def _bulk_op_request(self, actions: List[Dict[str, Any]]):
+    async def _bulk_op_request(self, actions: list[dict[str, Any]]):
         # https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-refresh.html
         _, errors = await helpers.async_bulk(client=self.client, actions=actions, raise_on_error=False, refresh=True)
 

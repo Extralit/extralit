@@ -16,9 +16,9 @@ from typing import Optional
 
 import typer
 
+from extralit._models._user import Role
 from extralit.cli.callback import init_callback
 from extralit.cli.rich import print_rich_table
-from extralit._models._user import Role
 
 
 def callback() -> None:
@@ -45,9 +45,10 @@ def create_user(
     ),
 ) -> None:
     """Creates a new user in the system."""
+    from rich.console import Console
+
     from extralit.cli.rich import get_themed_panel
     from extralit.users._resource import User
-    from rich.console import Console
 
     try:
         client = init_callback()
@@ -154,8 +155,9 @@ def delete_user(
     username: str = typer.Option(..., help="Username of the user to be deleted"),
 ) -> None:
     """Delete a user from the system."""
-    from extralit.cli.rich import get_themed_panel
     from rich.console import Console
+
+    from extralit.cli.rich import get_themed_panel
 
     try:
         # Initialize the client

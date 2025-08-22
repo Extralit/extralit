@@ -13,11 +13,11 @@ export class GetLLMExtractionUseCase {
   ) {}
 
   async getExtractionCompletion(
-    reference: string, 
-    schema_name: string, 
+    reference: string,
+    schema_name: string,
     workspaceName: string,
     selectedRowData: Data,
-    extractions: ReferenceValues, 
+    extractions: ReferenceValues,
     columns?: Array<string>,
     headers?: Array<string>,
     types?: Array<string>,
@@ -26,7 +26,7 @@ export class GetLLMExtractionUseCase {
     try {
       const json = this.createRequest(reference, schema_name, selectedRowData, extractions, columns, headers, types, prompt);
       const params = { workspace: workspaceName };
-      
+
       const { data } = await this.axios.post<TableData>(
         `/v1/models/extraction`, json, { params: params }
       );
@@ -54,10 +54,10 @@ export class GetLLMExtractionUseCase {
   }
 
   private createRequest(
-    reference: string, 
-    schema_name: string, 
+    reference: string,
+    schema_name: string,
     selectedRowData: Data,
-    referenceValues?: ReferenceValues, 
+    referenceValues?: ReferenceValues,
     columns?: Array<string>,
     headers?: Array<string>,
     types?: Array<string>,
@@ -68,9 +68,9 @@ export class GetLLMExtractionUseCase {
 
     if (referenceValues) {
       extractions = Object.fromEntries(
-        Object.entries(referenceValues).map(([schema_ref_field, dataframe]: [string, Record<string, Data>]) => 
+        Object.entries(referenceValues).map(([schema_ref_field, dataframe]: [string, Record<string, Data>]) =>
           [
-            schema_ref_field.replace('_ref', ''), 
+            schema_ref_field.replace('_ref', ''),
             Object.entries(dataframe)
               .filter(([key, data]) => selectedRowData.some((row) => row[schema_ref_field] === key))
               .map(([key, data]) => ({ reference: key, ...data }))

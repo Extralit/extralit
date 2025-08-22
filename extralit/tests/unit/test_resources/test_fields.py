@@ -20,8 +20,8 @@ from pytest_httpx import HTTPXMock
 
 import extralit as ex
 from extralit._models import FieldModel
-from extralit._models._settings._fields import ImageFieldSettings, ChatFieldSettings
-from extralit.settings._field import ImageField, ChatField, CustomField
+from extralit._models._settings._fields import ChatFieldSettings, ImageFieldSettings
+from extralit.settings._field import ChatField, CustomField, ImageField
 
 
 class TestImageField:

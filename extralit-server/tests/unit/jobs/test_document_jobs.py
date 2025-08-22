@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
+import pytest
+
 from extralit_server.jobs.document_jobs import upload_and_preprocess_documents_job
-from tests.factories import WorkspaceFactory, UserFactory
+from tests.factories import UserFactory, WorkspaceFactory
 
 
 @pytest.mark.asyncio

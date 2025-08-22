@@ -12,28 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import hashlib
 import io
+import json
+import logging
 import os
 import shutil
-import json
-import hashlib
 import uuid
-import logging
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, BinaryIO, Dict, List, Optional, Union
+from typing import Any, BinaryIO, Optional, Union
 from urllib.parse import urlparse
 from uuid import UUID
-from minio.datatypes import Object
-from urllib3 import HTTPResponse
 
 from fastapi import HTTPException
 from minio import Minio, S3Error
-from minio.versioningconfig import VersioningConfig
-from minio.helpers import ObjectWriteResult
 from minio.commonconfig import ENABLED
+from minio.datatypes import Object
+from minio.helpers import ObjectWriteResult
+from minio.versioningconfig import VersioningConfig
+from urllib3 import HTTPResponse
 
-from extralit_server.api.schemas.v1.files import ListObjectsResponse, ObjectMetadata, FileObjectResponse
+from extralit_server.api.schemas.v1.files import FileObjectResponse, ListObjectsResponse, ObjectMetadata
 from extralit_server.settings import settings
 
 EXCLUDED_VERSIONING_PREFIXES = ["pdf"]
@@ -41,11 +41,11 @@ EXCLUDED_VERSIONING_PREFIXES = ["pdf"]
 _LOGGER = logging.getLogger(__name__)
 
 # Singleton instances
-_minio_client: Optional[Union[Minio, "LocalFileStorage"]] = None
+_minio_client: Union[Minio, "LocalFileStorage"] | None = None
 _local_storage_client: Optional["LocalFileStorage"] = None
 
 
-def _create_minio_client() -> Optional[Union[Minio, "LocalFileStorage"]]:
+def _create_minio_client() -> Union[Minio, "LocalFileStorage"]:
     """Create a new Minio client instance."""
     if None in [settings.s3_endpoint, settings.s3_access_key, settings.s3_secret_key]:
         # Use local file system storage if S3 settings are not provided
@@ -59,10 +59,7 @@ def _create_minio_client() -> Optional[Union[Minio, "LocalFileStorage"]]:
         port = parsed_url.port
 
         if hostname is None:
-            print(
-                f"Invalid URL: no hostname found, possible due to lacking http(s) protocol. Given '{settings.s3_endpoint}'"
-            )
-            return None
+            raise ValueError("S3 endpoint hostname is required")
 
         return Minio(
             endpoint=f"{hostname}:{port}" if port else hostname,
@@ -75,7 +72,7 @@ def _create_minio_client() -> Optional[Union[Minio, "LocalFileStorage"]]:
         raise e
 
 
-def get_minio_client() -> Optional[Union[Minio, "LocalFileStorage"]]:
+def get_minio_client() -> Union[Minio, "LocalFileStorage"]:
     """Get a singleton Minio client instance."""
     global _minio_client
 
@@ -85,7 +82,7 @@ def get_minio_client() -> Optional[Union[Minio, "LocalFileStorage"]]:
     return _minio_client
 
 
-async def get_async_minio_client() -> Optional[Union[Minio, "LocalFileStorage"]]:
+async def get_async_minio_client() -> Union[Minio, "LocalFileStorage"]:
     """Get a singleton Minio client instance for async operations."""
     # For now, return the sync client since Minio client operations are blocking
     # In the future, you could implement an async wrapper or use aioboto3 for S3
@@ -101,7 +98,7 @@ def reset_minio_client():
 class LocalFileStorage:
     """Local file storage implementation that mimics Minio client interface."""
 
-    def __init__(self, base_dir: Union[str, Path]):
+    def __init__(self, base_dir: str | Path):
         self.base_dir = Path(base_dir)
         self.base_dir.mkdir(parents=True, exist_ok=True)
 
@@ -138,11 +135,11 @@ class LocalFileStorage:
         self,
         bucket_name: str,
         object_name: str,
-        data: Union[BinaryIO, bytes],
-        length: Optional[int] = None,
-        content_type: Optional[str] = None,
-        part_size: Optional[int] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        data: BinaryIO | bytes,
+        length: int | None = None,
+        content_type: str | None = None,
+        part_size: int | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> ObjectWriteResult:
         # Ensure bucket exists
         bucket_path = self._get_bucket_path(bucket_name)
@@ -189,7 +186,7 @@ class LocalFileStorage:
             location=None,
         )
 
-    def get_object(self, bucket_name: str, object_name: str, version_id: Optional[str] = None) -> HTTPResponse:
+    def get_object(self, bucket_name: str, object_name: str, version_id: str | None = None) -> HTTPResponse:
         if version_id:
             version_path = self._get_version_path(bucket_name, object_name).with_suffix(f".{version_id}")
             if not version_path.exists():
@@ -208,12 +205,12 @@ class LocalFileStorage:
         meta_path = self._get_object_path(bucket_name, object_name).with_suffix(".metadata.json")
         if not meta_path.exists():
             raise S3Error("NoSuchKey", "The specified key does not exist", object_name, "", "", None)
-        with open(meta_path, "r") as f:
+        with open(meta_path) as f:
             json.load(f)
 
         return HTTPResponse(body=io.BytesIO(content), preload_content=False)  # type: ignore
 
-    def stat_object(self, bucket_name: str, object_name: str, version_id: Optional[str] = None) -> ObjectMetadata:
+    def stat_object(self, bucket_name: str, object_name: str, version_id: str | None = None) -> ObjectMetadata:
         if version_id:
             version_path = self._get_version_path(bucket_name, object_name).with_suffix(f".{version_id}")
             if not version_path.exists():
@@ -230,7 +227,7 @@ class LocalFileStorage:
         if not meta_path.exists():
             raise S3Error("NoSuchKey", "The specified key does not exist", object_name, "", "", None)
 
-        with open(meta_path, "r") as f:
+        with open(meta_path) as f:
             metadata = json.load(f)
 
         stats = path.stat()
@@ -246,7 +243,7 @@ class LocalFileStorage:
             content_type=metadata.get("content_type", "application/octet-stream"),
         )
 
-    def remove_object(self, bucket_name: str, object_name: str, version_id: Optional[str] = None):
+    def remove_object(self, bucket_name: str, object_name: str, version_id: str | None = None):
         if version_id:
             version_path = self._get_version_path(bucket_name, object_name).with_suffix(f".{version_id}")
             if version_path.exists():
@@ -264,11 +261,11 @@ class LocalFileStorage:
     def list_objects(
         self,
         bucket_name: str,
-        prefix: Optional[str] = None,
+        prefix: str | None = None,
         recursive: bool = False,
         include_version: bool = False,
-        start_after: Optional[str] = None,
-    ) -> List[ObjectMetadata]:
+        start_after: str | None = None,
+    ) -> list[ObjectMetadata]:
         bucket_path = self._get_bucket_path(bucket_name)
         if not bucket_path.exists():
             _LOGGER.warning(
@@ -301,7 +298,7 @@ class LocalFileStorage:
             if not meta_path.exists():
                 continue  # Skip objects without metadata
 
-            with open(meta_path, "r") as f:
+            with open(meta_path) as f:
                 metadata = json.load(f)
 
             obj = ObjectMetadata(
@@ -324,12 +321,12 @@ def compute_hash(data: bytes) -> str:
     return hashlib.md5(data).hexdigest()
 
 
-def get_pdf_s3_object_path(id: Union[UUID, str]) -> str:
+def get_pdf_s3_object_path(id: UUID | str) -> str:
     if not id:
         raise Exception("id cannot be None")
 
     elif isinstance(id, UUID):
-        object_path = f"pdf/{str(id)}"
+        object_path = f"pdf/{id!s}"
     else:
         object_path = f"pdf/{id}"
 
@@ -379,27 +376,27 @@ def get_presigned_url_from_document_url(
 
 
 def list_objects(
-    client: Union[Minio, LocalFileStorage],
+    client: Minio | LocalFileStorage,
     bucket: str,
-    prefix: Optional[str] = None,
+    prefix: str | None = None,
     include_version=True,
     recursive=True,
-    start_after: Optional[str] = None,
+    start_after: str | None = None,
 ) -> ListObjectsResponse:
-    objects: List[ObjectMetadata | Object] = client.list_objects(  # type: ignore
+    objects: list[ObjectMetadata | Object] = client.list_objects(  # type: ignore
         bucket, prefix=prefix, recursive=recursive, include_version=include_version, start_after=start_after
     )
-    objects: List[ObjectMetadata] = [
+    objects: list[ObjectMetadata] = [
         obj if isinstance(obj, ObjectMetadata) else ObjectMetadata.from_minio_object(obj) for obj in objects
     ]
     return ListObjectsResponse(objects=objects)
 
 
 def get_object(
-    client: Union[Minio, LocalFileStorage],
+    client: Minio | LocalFileStorage,
     bucket: str,
     object: str,
-    version_id: Optional[str] = None,
+    version_id: str | None = None,
     include_versions=False,
 ) -> FileObjectResponse:
     try:
@@ -438,13 +435,13 @@ def get_object(
 
 
 def put_object(
-    client: Union[Minio, LocalFileStorage],
+    client: Minio | LocalFileStorage,
     bucket: str,
     object: str,
-    data: Union[BinaryIO, bytes, str],
+    data: BinaryIO | bytes | str,
     size: int,
     content_type: str = "application/octet-stream",
-    metadata: Optional[Dict[str, Any]] = None,
+    metadata: dict[str, Any] | None = None,
     part_size: int = 100 * 1024 * 1024,
 ) -> ObjectMetadata:
     if isinstance(data, bytes):
@@ -478,7 +475,7 @@ def put_object(
         raise e
 
 
-def delete_object(client: Union[Minio, LocalFileStorage], bucket: str, object: str, version_id: Optional[str] = None):
+def delete_object(client: Minio | LocalFileStorage, bucket: str, object: str, version_id: str | None = None):
     try:
         client.remove_object(bucket, object, version_id=version_id)
 
@@ -491,9 +488,9 @@ def delete_object(client: Union[Minio, LocalFileStorage], bucket: str, object: s
 
 
 def create_bucket(
-    client: Union[Minio, LocalFileStorage],
+    client: Minio | LocalFileStorage,
     workspace_name: str,
-    excluded_prefixes: List[str] = EXCLUDED_VERSIONING_PREFIXES,
+    excluded_prefixes: list[str] = EXCLUDED_VERSIONING_PREFIXES,
 ):
     try:
         client.make_bucket(workspace_name)
@@ -514,13 +511,13 @@ def create_bucket(
 
 
 def put_document_file(
-    client: Union[Minio, LocalFileStorage],
+    client: Minio | LocalFileStorage,
     workspace_name: str,
     document_id: UUID,
     file_data: bytes,
     filename: str,
-    metadata: Optional[Dict[str, Any]] = None,
-) -> Optional[str]:
+    metadata: dict[str, Any] | None = None,
+) -> str | None:
     """
     Upload a document file to S3/local storage with deduplication.
 
@@ -568,7 +565,32 @@ def put_document_file(
     return None
 
 
-def delete_bucket(client: Union[Minio, LocalFileStorage], workspace_name: str):
+def download_file_content(client: Minio | LocalFileStorage, document_url: str) -> bytes:
+    """
+    Download file content from a document URL.
+
+    Args:
+        client: Minio or LocalFileStorage client
+        document_url: URL in format "/api/v1/file/{bucket_name}/{object_path}"
+
+    Returns:
+        File content as bytes
+    """
+    # Parse URL to get bucket and object path
+    if not document_url.startswith("/api/v1/file/"):
+        raise ValueError(f"Invalid document URL format: {document_url}")
+
+    url_parts = document_url.replace("/api/v1/file/", "").split("/", 1)
+    if len(url_parts) != 2:
+        raise ValueError(f"Invalid document URL format: {document_url}")
+
+    bucket_name, object_path = url_parts
+
+    file_response = get_object(client, bucket_name, object_path)
+    return file_response.response.read()
+
+
+def delete_bucket(client: Minio | LocalFileStorage, workspace_name: str):
     if isinstance(client, LocalFileStorage):
         try:
             bucket_path = client._get_bucket_path(workspace_name)

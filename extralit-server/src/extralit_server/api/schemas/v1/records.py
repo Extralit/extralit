@@ -13,25 +13,26 @@
 # limitations under the License.
 
 from datetime import datetime
-from typing import Annotated, Any, Dict, List, Literal, Optional, Union
+from typing import Annotated, Any, Literal, Union
 from uuid import UUID
+
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    StrictStr,
+    ValidationError,
+    field_validator,
+    model_validator,
+)
+from pydantic.v1.utils import GetterDict
 
 from extralit_server.api.schemas.v1.chat import ChatFieldValue
 from extralit_server.api.schemas.v1.commons import UpdateSchema
 from extralit_server.api.schemas.v1.metadata_properties import MetadataPropertyName
 from extralit_server.api.schemas.v1.responses import Response, ResponseFilterScope, UserResponseCreate
 from extralit_server.api.schemas.v1.suggestions import Suggestion, SuggestionCreate, SuggestionFilterScope
-from extralit_server.enums import RecordInclude, RecordSortField, SimilarityOrder, SortOrder, RecordStatus
-from pydantic import (
-    BaseModel,
-    Field,
-    StrictStr,
-    ValidationError,
-    ConfigDict,
-    model_validator,
-    field_validator,
-)
-from pydantic.v1.utils import GetterDict
+from extralit_server.enums import RecordInclude, RecordSortField, RecordStatus, SimilarityOrder, SortOrder
 from extralit_server.search_engine import TextQuery
 
 RECORDS_CREATE_MIN_ITEMS = 1
@@ -77,14 +78,14 @@ class RecordGetterDict(GetterDict):
 class Record(BaseModel):
     id: UUID
     status: RecordStatus
-    fields: Dict[str, Any]
-    metadata: Optional[Dict[str, Any]] = None
-    external_id: Optional[str] = None
+    fields: dict[str, Any]
+    metadata: dict[str, Any] | None = None
+    external_id: str | None = None
     # TODO: move `responses` to `response` since contextualized endpoint will contains only the user response
     # response: Optional[Response]
-    responses: Optional[List[Response]] = None
-    suggestions: Optional[List[Suggestion]] = None
-    vectors: Optional[Dict[str, List[float]]] = None
+    responses: list[Response] | None = None
+    suggestions: list[Suggestion] | None = None
+    vectors: dict[str, list[float]] | None = None
     dataset_id: UUID
     inserted_at: datetime
     updated_at: datetime
@@ -113,16 +114,16 @@ class Record(BaseModel):
         return data
 
 
-FieldValueCreate = Union[StrictStr, List[ChatFieldValue], Dict[StrictStr, Any], None]
+FieldValueCreate = Union[StrictStr, list[ChatFieldValue], dict[StrictStr, Any], None]
 
 
 class RecordCreate(BaseModel):
-    fields: Dict[str, FieldValueCreate]
-    metadata: Optional[Dict[str, Any]] = None
-    external_id: Optional[str] = None
-    responses: Optional[List[UserResponseCreate]] = None
-    suggestions: Optional[List[SuggestionCreate]] = None
-    vectors: Optional[Dict[str, List[float]]] = None
+    fields: dict[str, FieldValueCreate]
+    metadata: dict[str, Any] | None = None
+    external_id: str | None = None
+    responses: list[UserResponseCreate] | None = None
+    suggestions: list[SuggestionCreate] | None = None
+    vectors: dict[str, list[float]] | None = None
 
     # This config is used to coerce numbers to strings in the fields to align with the previous behavior
     model_config = ConfigDict(coerce_numbers_to_str=True)
@@ -154,9 +155,7 @@ class RecordCreate(BaseModel):
 
     @field_validator("responses")
     @classmethod
-    def check_user_id_is_unique(
-        cls, responses: Optional[List[UserResponseCreate]]
-    ) -> Optional[List[UserResponseCreate]]:
+    def check_user_id_is_unique(cls, responses: list[UserResponseCreate] | None) -> list[UserResponseCreate] | None:
         if responses is None:
             return responses
 
@@ -170,7 +169,7 @@ class RecordCreate(BaseModel):
 
     @field_validator("metadata")
     @classmethod
-    def prevent_nan_values(cls, metadata: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    def prevent_nan_values(cls, metadata: dict[str, Any] | None) -> dict[str, Any] | None:
         if metadata is None:
             return metadata
 
@@ -182,14 +181,14 @@ class RecordCreate(BaseModel):
 
 
 class RecordUpdate(UpdateSchema):
-    fields: Optional[Dict[str, FieldValueCreate]] = None
-    metadata: Optional[Dict[str, Any]] = None
-    suggestions: Optional[List[SuggestionCreate]] = None
-    vectors: Optional[Dict[str, List[float]]] = None
+    fields: dict[str, FieldValueCreate] | None = None
+    metadata: dict[str, Any] | None = None
+    suggestions: list[SuggestionCreate] | None = None
+    vectors: dict[str, list[float]] | None = None
 
     @field_validator("metadata")
     @classmethod
-    def prevent_nan_values(cls, metadata: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    def prevent_nan_values(cls, metadata: dict[str, Any] | None) -> dict[str, Any] | None:
         if metadata is None:
             return metadata
 
@@ -207,16 +206,16 @@ class RecordUpdate(UpdateSchema):
 
 
 class RecordUpsert(RecordCreate):
-    id: Optional[UUID] = None
-    fields: Optional[Dict[str, FieldValueCreate]] = None
+    id: UUID | None = None
+    fields: dict[str, FieldValueCreate] | None = None
 
     def is_set(self, attribute: str) -> bool:
         return attribute in self.model_fields_set
 
 
 class RecordIncludeParam(BaseModel):
-    relationships: Optional[List[RecordInclude]] = Field(None, alias="keys")
-    vectors: Optional[List[str]] = Field(None, alias="vectors")
+    relationships: list[RecordInclude] | None = Field(None, alias="keys")
+    vectors: list[str] | None = Field(None, alias="vectors")
 
     @model_validator(mode="after")
     @classmethod
@@ -272,13 +271,13 @@ class RecordFilterScope(BaseModel):
 
 
 class Records(BaseModel):
-    items: List[Record]
+    items: list[Record]
     # TODO(@frascuchon): Make it required once fetch records without metadata filter computes also the total
-    total: Optional[int] = None
+    total: int | None = None
 
 
 class RecordsCreate(BaseModel):
-    items: List[RecordCreate] = Field(..., min_length=RECORDS_CREATE_MIN_ITEMS, max_length=RECORDS_CREATE_MAX_ITEMS)
+    items: list[RecordCreate] = Field(..., min_length=RECORDS_CREATE_MIN_ITEMS, max_length=RECORDS_CREATE_MAX_ITEMS)
 
 
 class MetadataParsedQueryParam:
@@ -291,8 +290,8 @@ class MetadataParsedQueryParam:
 
 class VectorQuery(BaseModel):
     name: str
-    record_id: Optional[UUID] = None
-    value: Optional[List[float]] = None
+    record_id: UUID | None = None
+    value: list[float] | None = None
     order: SimilarityOrder = SimilarityOrder.most_similar
 
     @model_validator(mode="after")
@@ -309,8 +308,8 @@ class VectorQuery(BaseModel):
 
 
 class Query(BaseModel):
-    text: Optional[TextQuery] = None
-    vector: Optional[VectorQuery] = Field(
+    text: TextQuery | None = None
+    vector: VectorQuery | None = Field(
         None,
         description="Query by vector similarity."
         " Either 'record_id' or 'value' must be provided. "
@@ -324,7 +323,7 @@ class MetadataFilterScope(BaseModel):
 
 
 FilterScope = Annotated[
-    Union[RecordFilterScope, ResponseFilterScope, SuggestionFilterScope, MetadataFilterScope],
+    RecordFilterScope | ResponseFilterScope | SuggestionFilterScope | MetadataFilterScope,
     Field(..., discriminator="entity"),
 ]
 
@@ -337,7 +336,7 @@ class Order(BaseModel):
 class TermsFilter(BaseModel):
     type: Literal["terms"]
     scope: FilterScope
-    values: List[str] = Field(..., min_length=TERMS_FILTER_VALUES_MIN_ITEMS, max_length=TERMS_FILTER_VALUES_MAX_ITEMS)
+    values: list[str] = Field(..., min_length=TERMS_FILTER_VALUES_MIN_ITEMS, max_length=TERMS_FILTER_VALUES_MAX_ITEMS)
 
     model_config = ConfigDict(coerce_numbers_to_str=True)
 
@@ -345,8 +344,8 @@ class TermsFilter(BaseModel):
 class RangeFilter(BaseModel):
     type: Literal["range"]
     scope: FilterScope
-    ge: Optional[Union[float, str]] = None
-    le: Optional[Union[float, str]] = None
+    ge: float | str | None = None
+    le: float | str | None = None
 
     @model_validator(mode="after")
     @classmethod
@@ -362,11 +361,11 @@ class RangeFilter(BaseModel):
         return instance
 
 
-Filter = Annotated[Union[TermsFilter, RangeFilter], Field(..., discriminator="type")]
+Filter = Annotated[TermsFilter | RangeFilter, Field(..., discriminator="type")]
 
 
 class Filters(BaseModel):
-    and_: Optional[List[Filter]] = Field(
+    and_: list[Filter] | None = Field(
         None,
         alias="and",
         min_length=FILTERS_AND_MIN_ITEMS,
@@ -375,9 +374,9 @@ class Filters(BaseModel):
 
 
 class SearchRecordsQuery(BaseModel):
-    query: Optional[Query] = None
-    filters: Optional[Filters] = None
-    sort: Optional[List[Order]] = Field(
+    query: Query | None = None
+    filters: Filters | None = None
+    sort: list[Order] | None = Field(
         None,
         min_length=SEARCH_RECORDS_QUERY_SORT_MIN_ITEMS,
         max_length=SEARCH_RECORDS_QUERY_SORT_MAX_ITEMS,
@@ -388,9 +387,9 @@ class SearchRecordsQuery(BaseModel):
 
 class SearchRecord(BaseModel):
     record: Record
-    query_score: Optional[float] = None
+    query_score: float | None = None
 
 
 class SearchRecordsResult(BaseModel):
-    items: List[SearchRecord]
+    items: list[SearchRecord]
     total: int = 0

@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import re
-from typing import List
 
 from pydantic import field_validator
 
@@ -20,7 +19,7 @@ from extralit._models import ResourceModel
 
 __all__ = ["VectorModel", "VectorValue"]
 
-VectorValue = List[float]
+VectorValue = list[float]
 
 
 class VectorModel(ResourceModel):

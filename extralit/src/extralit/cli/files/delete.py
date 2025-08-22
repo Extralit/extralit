@@ -17,8 +17,8 @@ from typing import Optional
 import typer
 from rich.console import Console
 
-from extralit.client import Extralit
 from extralit.cli.rich import get_themed_panel
+from extralit.client import Extralit
 
 
 def delete_file(
@@ -75,7 +75,7 @@ def delete_file(
 
     except Exception as e:
         panel = get_themed_panel(
-            f"Error deleting file: {str(e)}",
+            f"Error deleting file: {e!s}",
             title="Error",
             title_align="left",
             success=False,

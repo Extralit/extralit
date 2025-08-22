@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Union
 
 from extralit_server.api.schemas.v1.responses import ResponseCreate, ResponseUpdate, ResponseUpsert
 from extralit_server.enums import ResponseStatus
@@ -21,13 +20,13 @@ from extralit_server.models import Record
 from extralit_server.validators.response_values import ResponseValueValidator
 
 
-def _is_submitted_response(response: Union[ResponseCreate, ResponseUpdate, ResponseUpsert]) -> bool:
+def _is_submitted_response(response: ResponseCreate | ResponseUpdate | ResponseUpsert) -> bool:
     return response.status == ResponseStatus.submitted
 
 
 class ResponseValidator:
     @classmethod
-    def validate(cls, response: Union[ResponseCreate, ResponseUpdate, ResponseUpsert], record: Record) -> None:
+    def validate(cls, response: ResponseCreate | ResponseUpdate | ResponseUpsert, record: Record) -> None:
         cls._validate_values_are_present_when_submitted(response)
         cls._validate_required_questions_have_values(response, record)
         cls._validate_values_have_configured_questions(response, record)
@@ -35,14 +34,14 @@ class ResponseValidator:
 
     @staticmethod
     def _validate_values_are_present_when_submitted(
-        response: Union[ResponseCreate, ResponseUpdate, ResponseUpsert],
+        response: ResponseCreate | ResponseUpdate | ResponseUpsert,
     ) -> None:
         if _is_submitted_response(response) and not response.values:
             raise UnprocessableEntityError("missing response values for submitted response")
 
     @staticmethod
     def _validate_required_questions_have_values(
-        response: Union[ResponseCreate, ResponseUpdate, ResponseUpsert], record: Record
+        response: ResponseCreate | ResponseUpdate | ResponseUpsert, record: Record
     ) -> None:
         for question in record.dataset.questions:
             if _is_submitted_response(response) and question.required and question.name not in response.values:
@@ -52,7 +51,7 @@ class ResponseValidator:
 
     @staticmethod
     def _validate_values_have_configured_questions(
-        response: Union[ResponseCreate, ResponseUpdate, ResponseUpsert], record: Record
+        response: ResponseCreate | ResponseUpdate | ResponseUpsert, record: Record
     ) -> None:
         question_names = [question.name for question in record.dataset.questions]
 
@@ -65,7 +64,7 @@ class ResponseValidator:
                 )
 
     @staticmethod
-    def _validate_values(response: Union[ResponseCreate, ResponseUpdate, ResponseUpsert], record: Record) -> None:
+    def _validate_values(response: ResponseCreate | ResponseUpdate | ResponseUpsert, record: Record) -> None:
         if not response.values:
             return
 

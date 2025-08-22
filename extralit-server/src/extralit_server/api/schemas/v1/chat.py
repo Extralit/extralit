@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+
 from pydantic import BaseModel, Field
 
 MIN_MESSAGE_LENGTH = int(os.getenv("EXTRALIT_MIN_MESSAGE_LENGTH", 1))

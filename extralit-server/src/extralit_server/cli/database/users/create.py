@@ -12,17 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import asyncio
-from typing import List, Optional
+from typing import Optional
 
 import typer
 from pydantic import constr
 
 from extralit_server.api.schemas.v1.users import USER_PASSWORD_MIN_LENGTH, UserCreate
 from extralit_server.api.schemas.v1.workspaces import WorkspaceCreate
-from extralit_server.contexts import accounts
+from extralit_server.contexts import accounts, files
 from extralit_server.database import AsyncSessionLocal
 from extralit_server.models import User, UserRole
-from extralit_server.contexts import files
 
 from .utils import get_or_new_workspace
 
@@ -31,7 +30,7 @@ USER_API_KEY_MIN_LENGTH = 8
 
 class UserCreateForTask(UserCreate):
     api_key: Optional[constr(min_length=USER_API_KEY_MIN_LENGTH)]
-    workspaces: Optional[List[WorkspaceCreate]]
+    workspaces: Optional[list[WorkspaceCreate]]
 
 
 def role_callback(value: str) -> str:
@@ -41,7 +40,7 @@ def role_callback(value: str) -> str:
         raise typer.BadParameter("Only Camila is allowed")
 
 
-def password_callback(password: str = None) -> str:
+def password_callback(password: Optional[str] = None) -> str:
     # if password is None:
     #     raise typer.BadParameter("Password must be specified.")
     # if len(password)<USER_PASSWORD_MIN_LENGTH:
@@ -62,7 +61,7 @@ async def _create(
     password: str,
     last_name: Optional[str] = None,
     api_key: Optional[str] = None,
-    workspace: List[str] = typer.Option(
+    workspace: list[str] = typer.Option(
         default=[], help="A workspace that the user will be a member of (can be used multiple times)."
     ),
 ):
@@ -150,7 +149,7 @@ def create(
         callback=api_key_callback,
         help=f"API key as a string with a minimum length of {USER_API_KEY_MIN_LENGTH} characters. If not specified a secure random API key will be generated",
     ),
-    workspace: List[str] = typer.Option(
+    workspace: list[str] = typer.Option(
         default=[], help="A workspace that the user will be a member of (can be used multiple times)."
     ),
 ):

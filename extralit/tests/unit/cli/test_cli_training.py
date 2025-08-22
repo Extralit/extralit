@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from unittest.mock import patch
+
 import pytest
 from typer.testing import CliRunner
-from unittest.mock import patch
 
 from extralit.cli.app import app
 from extralit.cli.training.__main__ import Framework

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from pydantic import BaseModel, Field
 
@@ -30,13 +30,13 @@ class ObjectMetadata(BaseModel):
     content_type: Optional[str] = None
     version_id: Optional[str] = None
     version_tag: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
+    metadata: Optional[dict[str, Any]] = None
 
 
 class ListObjectsResponse(BaseModel):
     """Response for listing objects in a workspace."""
 
-    objects: List[ObjectMetadata] = Field(default_factory=list)
+    objects: list[ObjectMetadata] = Field(default_factory=list)
 
     def __len__(self) -> int:
         return len(self.objects)

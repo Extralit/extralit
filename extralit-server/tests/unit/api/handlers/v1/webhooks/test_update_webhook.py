@@ -1,26 +1,25 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+from typing import Any
+from uuid import UUID, uuid4
 
 import pytest
-
-from uuid import UUID, uuid4
 from httpx import AsyncClient
-from typing import Any
 
-from extralit_server.webhooks.v1.enums import WebhookEvent
 from extralit_server.constants import API_KEY_HEADER_NAME
-
+from extralit_server.webhooks.v1.enums import WebhookEvent
 from tests.factories import AdminFactory, AnnotatorFactory, WebhookFactory
 
 
@@ -154,7 +153,7 @@ class TestUpdateWebhook:
             "updated_at": webhook.updated_at.isoformat(),
         }
 
-        assert webhook.enabled == False
+        assert not webhook.enabled
 
     async def test_update_webhook_with_description(self, async_client: AsyncClient, owner_auth_header: dict):
         webhook = await WebhookFactory.create()
@@ -360,7 +359,7 @@ class TestUpdateWebhook:
 
         assert response.status_code == 422
 
-        assert webhook.url != None
+        assert webhook.url is not None
         assert webhook.events != [WebhookEvent.response_updated]
 
     async def test_update_webhook_with_enabled_as_none(self, async_client: AsyncClient, owner_auth_header: dict):
@@ -375,7 +374,7 @@ class TestUpdateWebhook:
         )
 
         assert response.status_code == 422
-        assert webhook.enabled != None
+        assert webhook.enabled is not None
 
     async def test_update_webhook_with_events_as_none(self, async_client: AsyncClient, owner_auth_header: dict):
         webhook = await WebhookFactory.create()
@@ -392,7 +391,7 @@ class TestUpdateWebhook:
         assert response.status_code == 422
 
         assert webhook.url != "https://example.com/webhook"
-        assert webhook.events != None
+        assert webhook.events is not None
 
     async def test_update_webhook_with_description_as_none(self, async_client: AsyncClient, owner_auth_header: dict):
         webhook = await WebhookFactory.create(description="Test webhook")
@@ -421,7 +420,7 @@ class TestUpdateWebhook:
 
         assert webhook.url == "https://example.com/webhook"
         assert webhook.events == [WebhookEvent.response_updated]
-        assert webhook.description == None
+        assert webhook.description is None
 
     async def test_update_webhook_with_nonexistent_webhook_id(self, async_client: AsyncClient, owner_auth_header: dict):
         webhook_id = uuid4()

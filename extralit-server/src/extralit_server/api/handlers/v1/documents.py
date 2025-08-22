@@ -14,23 +14,23 @@
 
 import json
 import logging
+from typing import TYPE_CHECKING, Annotated
 from uuid import UUID, uuid4
-from typing import TYPE_CHECKING, List, Optional, Union
 
-from fastapi import APIRouter, Body, Depends, File, Form, HTTPException, UploadFile, Path, status, Security, Query
+from fastapi import APIRouter, Body, Depends, File, Form, HTTPException, Path, Query, Security, UploadFile, status
 from minio import Minio
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from extralit_server.database import get_async_db
-from extralit_server.models.database import Document
-from extralit_server.security import auth
-from extralit_server.models import User, Workspace
-from extralit_server.contexts import files, imports
-from extralit_server.contexts.files import LocalFileStorage
 from extralit_server.api.policies.v1 import DocumentPolicy, authorize
 from extralit_server.api.schemas.v1.documents import DocumentCreate, DocumentDelete, DocumentListItem, DocumentUpdate
-from extralit_server.api.schemas.v1.imports import DocumentsBulkResponse, DocumentsBulkCreate
+from extralit_server.api.schemas.v1.imports import DocumentsBulkCreate, DocumentsBulkResponse
+from extralit_server.contexts import files, imports
+from extralit_server.contexts.files import LocalFileStorage
+from extralit_server.database import get_async_db
+from extralit_server.models import User, Workspace
+from extralit_server.models.database import Document
+from extralit_server.security import auth
 
 if TYPE_CHECKING:
     from extralit_server.models import Document
@@ -43,10 +43,10 @@ router = APIRouter(tags=["documents"])
 @router.post("/documents", status_code=status.HTTP_201_CREATED, response_model=UUID)
 async def add_document(
     *,
-    document_create: DocumentCreate = Depends(),
-    file_data: UploadFile = File(None),
+    document_create: Annotated[DocumentCreate, Depends()],
+    file_data: UploadFile | None = File(None),
     db: AsyncSession = Depends(get_async_db),
-    client: Union[Minio, LocalFileStorage] = Depends(files.get_minio_client),
+    client: Minio | LocalFileStorage = Depends(files.get_minio_client),
     current_user: User = Security(auth.get_current_user),
 ):
     await authorize(current_user, DocumentPolicy.create())
@@ -108,20 +108,18 @@ async def add_document(
     return document.id
 
 
-@router.get(
-    "/documents", response_model=List[DocumentListItem], description="Get documents by ID, PMID, DOI, or reference."
-)
+@router.get("/documents", description="Get documents by ID, PMID, DOI, or reference.")
 async def get_document(
     *,
-    workspace_id: UUID = Query(..., description="Workspace ID"),
-    id: Optional[UUID] = Query(None, description="Document ID"),
-    reference: Optional[str] = Query(None, description="Document reference"),
-    pmid: Optional[str] = Query(None, description="PubMed ID"),
-    doi: Optional[str] = Query(None, description="DOI"),
+    workspace_id: Annotated[UUID, Query(description="Workspace ID")],
+    id: Annotated[UUID | None, Query(description="Document ID")] = None,
+    reference: Annotated[str | None, Query(description="Document reference")] = None,
+    pmid: Annotated[str | None, Query(description="PubMed ID")] = None,
+    doi: Annotated[str | None, Query(description="DOI")] = None,
     db: AsyncSession = Depends(get_async_db),
-    client: Union[Minio, LocalFileStorage] = Depends(files.get_minio_client),
+    client: Minio | LocalFileStorage = Depends(files.get_minio_client),
     current_user: User = Security(auth.get_current_user),
-) -> List[DocumentListItem]:
+) -> list[DocumentListItem]:
     await authorize(current_user, DocumentPolicy.get())
 
     if not any([id, pmid, doi, reference]):
@@ -145,12 +143,13 @@ async def get_document(
             detail=f"No documents found with given criteria in workspace {workspace_id}",
         )
 
-    for document in documents:
-        document.url = files.get_presigned_url_from_document_url(
-            client=client,
-            document_url=document.url,
-            expires=3600,
-        )
+    # TODO disable due to CORS restrictions from frontend
+    # for document in documents:
+    #     document.url = files.get_presigned_url_from_document_url(
+    #         client=client,
+    #         document_url=document.url,
+    #         expires=3600,
+    #     )
 
     return documents
 
@@ -158,7 +157,7 @@ async def get_document(
 @router.patch("/documents/{id}", response_model=DocumentListItem, description="Update a document by ID.")
 async def update_document(
     *,
-    id: UUID = Path(..., title="The UUID of the document to update"),
+    id: Annotated[UUID, Path(title="The UUID of the document to update")],
     document_update: DocumentUpdate,
     db: AsyncSession = Depends(get_async_db),
     current_user: User = Security(auth.get_current_user),
@@ -194,9 +193,9 @@ async def update_document(
 async def delete_documents_by_workspace_id(
     *,
     workspace_id: UUID,
-    document_delete: DocumentDelete = Body(None),
+    document_delete: Annotated[DocumentDelete | None, Body()] = None,
     db: AsyncSession = Depends(get_async_db),
-    client: Union[Minio, LocalFileStorage] = Depends(files.get_minio_client),
+    client: Minio | LocalFileStorage = Depends(files.get_minio_client),
     current_user: User = Security(auth.get_current_user),
 ):
     await authorize(current_user, DocumentPolicy.delete(workspace_id))
@@ -225,15 +224,13 @@ async def delete_documents_by_workspace_id(
     return len(documents)
 
 
-@router.get(
-    "/documents/workspace/{workspace_id}", status_code=status.HTTP_200_OK, response_model=List[DocumentListItem]
-)
+@router.get("/documents/workspace/{workspace_id}", status_code=status.HTTP_200_OK)
 async def list_documents(
     *,
-    db: AsyncSession = Depends(get_async_db),
-    workspace_id: UUID = Path(..., title="The UUID of the workspace whose documents will be retrieved"),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    workspace_id: Annotated[UUID, Path(title="The UUID of the workspace whose documents will be retrieved")],
     current_user: User = Security(auth.get_current_user),
-) -> List[DocumentListItem]:
+) -> list[DocumentListItem]:
     await authorize(current_user, DocumentPolicy.list(workspace_id))
 
     documents = await imports.list_documents(db, workspace_id)
@@ -241,11 +238,11 @@ async def list_documents(
     return documents
 
 
-@router.post("/documents/bulk", status_code=status.HTTP_201_CREATED, response_model=DocumentsBulkResponse)
+@router.post("/documents/bulk", status_code=status.HTTP_201_CREATED)
 async def create_documents_bulk(
     *,
-    documents_metadata: str = Form(..., description="JSON string matching the DocumentsBulkCreate schema"),
-    files: List[UploadFile] = File(...),
+    documents_metadata: Annotated[str, Form(description="JSON string matching the DocumentsBulkCreate schema")],
+    files: Annotated[list[UploadFile], File()],
     db: AsyncSession = Depends(get_async_db),
     current_user: User = Security(auth.get_current_user),
 ) -> DocumentsBulkResponse:
@@ -270,15 +267,17 @@ async def create_documents_bulk(
     try:
         metadata_dict = json.loads(documents_metadata)
         bulk_create = DocumentsBulkCreate.model_validate(metadata_dict)
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as e:
+        print(e)
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Invalid JSON in documents_metadata",
         )
     except Exception as e:
+        print(e)
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Invalid metadata format: {str(e)}",
+            detail=f"Invalid metadata format: {e!s}",
         )
 
     if not bulk_create.documents:

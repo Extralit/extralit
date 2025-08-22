@@ -21,7 +21,7 @@ except ImportError:
     from typing_extensions import Self
 
 from extralit._api import DatasetsAPI
-from extralit._exceptions import NotFoundError, SettingsError, ForbiddenError
+from extralit._exceptions import ForbiddenError, NotFoundError, SettingsError
 from extralit._models import DatasetModel
 from extralit._resource import Resource
 from extralit.client import Extralit
@@ -261,7 +261,9 @@ class Dataset(Resource, HubImportExportMixin, DiskImportExportMixin):
 
         if workspace is None:
             workspace = self._client.workspaces.default
-            warnings.warn(f"Workspace not provided. Using default workspace: {workspace.name} id: {workspace.id}")
+            warnings.warn(
+                f"Workspace not provided. Using default workspace: {workspace.name} id: {workspace.id}", stacklevel=2
+            )
         elif isinstance(workspace, str):
             workspace = self._client.workspaces(workspace)
             if workspace is None:
