@@ -3109,7 +3109,7 @@
 <div class="tabbed-block"></div>
 </div>
 </div>
-<p>If you're just getting started with Extralit, click the deploy button below:</p>
+<p>If you're just getting started with Extralit, first <a href="http://huggingface.co/login">login to your Hugging Face account</a>, then click the deploy button below:</p>
 <p><div style="margin: 5px">
     <a href="https://huggingface.co/spaces/extralit/public-demo?duplicate=true" target="_blank">
         <img src="https://huggingface.co/datasets/huggingface/badges/raw/main/deploy-to-spaces-lg.svg" />
@@ -3117,17 +3117,21 @@
 </div></p>
 <p>You can use the default values following these steps:</p>
 <ul>
-<li>Leave the default owner if using your personal account</li>
-<li>
-<p>Leave <code>ADMIN_USERNAME</code> and <code>ADMIN_PASSWORD</code> secrets empty since you'll sign in with your <abbr title="HuggingFace - A platform for deploying and managing open-source AI applications, models and datasets in the cloud.">HF</abbr> user as the Extralit Space <code>owner</code>.</p>
-</li>
-<li>
-<p>You must fill out the following Space secrets fields:</p>
-</li>
-<li><code>OAUTH2_HUGGINGFACE_CLIENT_ID</code> and <code>OAUTH2_HUGGINGFACE_CLIENT_SECRET</code>: The Oauth.</li>
+<li>You must fill out the following Space secrets fields:</li>
+<li><code>USERNAME</code> and <code>PASSWORD</code> that you'll sign in with your <abbr title="HuggingFace - A platform for deploying and managing open-source AI applications, models and datasets in the cloud.">HF</abbr> user with "owner" permissions. Leaving <code>USERNAME</code> blank will use your Hugging Face username.</li>
 <li><code>EXTRALIT_DATABASE_URL</code>: The URL of the PostgreSQL database where the data will be stored. If you leave it blank, the data will be lost when the Space restarts.</li>
-<li><code>S3_ENDPOINT</code>, <code>S3_ACCESS_KEY</code>, <code>S3_SECRET_KEY</code>: The name of the S3 bucket where papers and data extraction artifacts will be stored. If you leave it blank, the data will be lost when the Space restarts.</li>
-<li>Click Duplicate Space to build an Extralit instance 🚀.</li>
+<li>
+<p><code>EXTRALIT_S3_ENDPOINT</code>, <code>EXTRALIT_S3_ACCESS_KEY</code>, <code>EXTRALIT_S3_SECRET_KEY</code>: The name of the S3 bucket where papers and data extraction artifacts will be stored. If you leave it blank, the data will be lost when the Space restarts.</p>
+</li>
+<li>
+<p>These fields for Hugging Face Single-Sign-on are optional to set up, but</p>
+</li>
+<li>
+<p><code>OAUTH_CLIENT_ID</code> and <code>OAUTH_CLIENT_SECRET</code>: The Oauth.</p>
+</li>
+<li>
+<p>Click Duplicate Space to build an Extralit instance 🚀.</p>
+</li>
 <li>Once you see the UI, <a href="#sign-in-into-the-extralit-ui">go to the Sign in into the UI section</a>. If you see the <code>Building</code> message for longer than 2-3 min refresh the page.</li>
 </ul>
 <div class="tabbed-set tabbed-alternate" data-tabs="2:1"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Python <abbr title="Software Development Kit.">SDK</abbr></label></div>
