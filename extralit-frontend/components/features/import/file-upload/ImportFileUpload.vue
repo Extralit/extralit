@@ -109,21 +109,39 @@ export default {
 
     // Event emitters
     const emitBibUpdate = () => {
-      emit("bib-update", {
+      const updateData = {
         isValid: bibData.value.dataframeData && bibData.value.dataframeData.data.length > 0,
         fileName: bibData.value.fileName,
         dataframeData: bibData.value.dataframeData,
         rawContent: bibData.value.rawContent,
+      };
+      
+      console.log('ImportFileUpload: emitBibUpdate', {
+        hasDataframe: !!bibData.value.dataframeData,
+        hasDataframeData: !!(bibData.value.dataframeData && bibData.value.dataframeData.data),
+        dataLength: bibData.value.dataframeData?.data?.length || 0,
+        isValid: updateData.isValid,
+        fileName: updateData.fileName
       });
+      
+      emit("bib-update", updateData);
     };
 
     const emitPdfUpdate = () => {
-      emit("pdf-update", {
+      const updateData = {
         isValid: pdfData.value.matchedFiles.length > 0,
         matchedFiles: pdfData.value.matchedFiles,
         unmatchedFiles: pdfData.value.unmatchedFiles,
         totalFiles: pdfData.value.totalFiles,
+      };
+      
+      console.log('ImportFileUpload: emitPdfUpdate', {
+        matchedFilesLength: pdfData.value.matchedFiles.length,
+        totalFiles: pdfData.value.totalFiles,
+        isValid: updateData.isValid
       });
+      
+      emit("pdf-update", updateData);
     };
 
     const updateDataframeWithFilePaths = (matchedFiles: any[]) => {

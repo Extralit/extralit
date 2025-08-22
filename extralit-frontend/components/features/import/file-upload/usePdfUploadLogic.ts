@@ -3,15 +3,18 @@
  * Gradual migration to Composition API while maintaining existing structure
  */
 
-import { ref, watch, onMounted } from "@nuxtjs/composition-api";
+import { ref, watch, onMounted, computed } from "@nuxtjs/composition-api";
 import { useResolve } from "ts-injecty";
 import { PdfMatchingService } from "~/v1/domain/services/FileMatchingService";
 import type { PdfData } from "./types";
 
-export const usePdfUploadLogic = (props: { 
-  initialData: PdfData;
-  bibliographyEntries: any;
-}) => {
+export const usePdfUploadLogic = (
+  props: { 
+    initialData: PdfData;
+    bibliographyEntries: any;
+  },
+  emit?: (event: string, data: any) => void
+) => {
   const pdfMatchingService = useResolve(PdfMatchingService);
 
   // Reactive state
@@ -35,6 +38,18 @@ export const usePdfUploadLogic = (props: {
     return Math.round((processedFiles.value / totalFiles.value) * 100);
   };
 
+  const getDropzoneIcon = computed(() => {
+    if (hasError.value) return "danger";
+    if (uploaded.value) return "check";
+    return "import";
+  });
+
+  const getDropzoneText = computed(() => {
+    if (hasError.value) return "Error processing PDF files";
+    if (uploaded.value) return "Upload PDF Files";
+    return "Upload PDF Files";
+  });
+
   // Drag and drop handlers
   const handleDragOver = (event: DragEvent) => {
     event.preventDefault();
@@ -50,6 +65,20 @@ export const usePdfUploadLogic = (props: {
     dragOver.value = false;
 
     const files = Array.from(event.dataTransfer?.files || []);
+    processFiles(files);
+  };
+
+  // File input handling
+  const triggerFolderInput = () => {
+    const folderInput = document.querySelector('input[type="file"][webkitdirectory]') as HTMLInputElement;
+    if (folderInput) {
+      folderInput.click();
+    }
+  };
+
+  const handleFolderSelect = (event: Event) => {
+    const target = event.target as HTMLInputElement;
+    const files = Array.from(target.files || []);
     processFiles(files);
   };
 
@@ -118,6 +147,25 @@ export const usePdfUploadLogic = (props: {
       uploaded.value = true;
       hasError.value = false;
       errorMessage.value = "";
+    }
+
+    // Emit update if emit function is provided
+    if (emit) {
+      emitUpdate();
+    }
+  };
+
+  // Watch for changes and emit updates
+  const emitUpdate = () => {
+    if (emit) {
+      emit("update", {
+        isValid: uploaded.value && !hasError.value && data.value.matchedFiles.length > 0,
+        matchedFiles: data.value.matchedFiles,
+        unmatchedFiles: data.value.unmatchedFiles,
+        totalFiles: data.value.totalFiles,
+        hasError: hasError.value,
+        errorMessage: errorMessage.value,
+      });
     }
   };
 
@@ -219,12 +267,17 @@ export const usePdfUploadLogic = (props: {
 
     // Computed
     progressPercentage,
+    getDropzoneIcon,
+    getDropzoneText,
 
     // Methods
     handleDragOver,
     handleDragLeave,
     handleDrop,
+    triggerFolderInput,
+    handleFolderSelect,
     processFiles,
+    emitUpdate,
     showError,
     clearError,
     reset,

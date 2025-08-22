@@ -55,7 +55,6 @@
 </template>
 
 <script lang="ts">
-import { computed } from "@nuxtjs/composition-api";
 import CsvColumnSelection from "./CsvColumnSelection.vue";
 import "assets/icons/check";
 import "assets/icons/danger";
@@ -84,76 +83,12 @@ export default {
   emits: ["update"],
 
   setup(props: any, { emit }: any) {
-    // Use the composable for logic
-    const logic = useTableUploadLogic(props);
-
-    // Computed properties
-    const getDropzoneIcon = computed(() => {
-      if (logic.hasError.value) return "danger";
-      if (logic.uploaded.value) return "check";
-      return "document";
-    });
-
-    const getDropzoneText = computed(() => {
-      if (logic.hasError.value) return "Error parsing bibliography file";
-      if (logic.uploaded.value) return "Upload BibTeX File";
-      return "Upload BibTeX File";
-    });
-
-    // File input handling
-    const triggerFileInput = () => {
-      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-      if (fileInput) {
-        fileInput.click();
-      }
-    };
-
-    const handleFileSelect = (event: Event) => {
-      const target = event.target as HTMLInputElement;
-      const files = target.files;
-      if (files && files.length > 0) {
-        logic.processFile(files[0]);
-      }
-    };
-
-    // Watch for changes and emit updates
-    const emitUpdate = () => {
-      emit("update", {
-        isValid: logic.uploaded.value && !logic.hasError.value && logic.data.value.dataframeData && logic.data.value.dataframeData.data.length > 0,
-        fileName: logic.data.value.fileName,
-        dataframeData: logic.data.value.dataframeData,
-        rawContent: logic.data.value.rawContent,
-      });
-    };
-
-    // Custom process CSV with emit
-    const processCsvWithConfig = async () => {
-      await logic.processCsvWithConfig();
-      emitUpdate();
-    };
-
-    // Override processFile to emit updates
-    const processFile = async (file: File) => {
-      await logic.processFile(file);
-      if (logic.uploaded.value) {
-        emitUpdate();
-      }
-    };
+    // Use the composable for logic with emit function
+    const logic = useTableUploadLogic(props, emit);
 
     return {
       // From composable
       ...logic,
-
-      // Computed properties
-      getDropzoneIcon,
-      getDropzoneText,
-
-      // Custom methods
-      triggerFileInput,
-      handleFileSelect,
-      processFile,
-      processCsvWithConfig,
-      emitUpdate,
     };
   },
 };

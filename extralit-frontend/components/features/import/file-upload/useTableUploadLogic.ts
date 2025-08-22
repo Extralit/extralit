@@ -3,13 +3,16 @@
  * Gradual migration to Composition API while maintaining existing structure
  */
 
-import { ref, watch, onMounted } from "@nuxtjs/composition-api";
+import { ref, watch, onMounted, computed } from "@nuxtjs/composition-api";
 import { useResolve } from "ts-injecty";
 import { FileParsingService } from "~/v1/domain/services/FileParsingService";
 import type { BibliographyData, CsvData } from "./types";
 import type { CSVConfig } from "~/v1/domain/services/IFileParsingService";
 
-export const useTableUploadLogic = (props: { initialData: BibliographyData }) => {
+export const useTableUploadLogic = (
+  props: { initialData: BibliographyData },
+  emit?: (event: string, data: any) => void
+) => {
   const fileService = useResolve(FileParsingService);
 
   // Reactive state
@@ -36,6 +39,19 @@ export const useTableUploadLogic = (props: { initialData: BibliographyData }) =>
     filesColumn: "",
   });
 
+  // Computed properties
+  const getDropzoneIcon = computed(() => {
+    if (hasError.value) return "danger";
+    if (uploaded.value) return "check";
+    return "document";
+  });
+
+  const getDropzoneText = computed(() => {
+    if (hasError.value) return "Error parsing bibliography file";
+    if (uploaded.value) return "Upload BibTeX File";
+    return "Upload BibTeX File";
+  });
+
   // Drag and drop handlers
   const handleDragOver = (event: DragEvent) => {
     event.preventDefault();
@@ -53,6 +69,34 @@ export const useTableUploadLogic = (props: { initialData: BibliographyData }) =>
     const files = event.dataTransfer?.files;
     if (files && files.length > 0) {
       processFile(files[0]);
+    }
+  };
+
+  // File input handling
+  const triggerFileInput = () => {
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.click();
+    }
+  };
+
+  const handleFileSelect = (event: Event) => {
+    const target = event.target as HTMLInputElement;
+    const files = target.files;
+    if (files && files.length > 0) {
+      processFile(files[0]);
+    }
+  };
+
+  // Watch for changes and emit updates
+  const emitUpdate = () => {
+    if (emit) {
+      emit("update", {
+        isValid: uploaded.value && !hasError.value && data.value.dataframeData && data.value.dataframeData.data.length > 0,
+        fileName: data.value.fileName,
+        dataframeData: data.value.dataframeData,
+        rawContent: data.value.rawContent,
+      });
     }
   };
 
@@ -101,6 +145,9 @@ export const useTableUploadLogic = (props: { initialData: BibliographyData }) =>
 
         if (data.value.dataframeData && data.value.dataframeData.data.length > 0) {
           uploaded.value = true;
+          if (emit) {
+            emitUpdate();
+          }
         } else {
           showError("No valid BibTeX entries found in the file.");
         }
@@ -154,6 +201,9 @@ export const useTableUploadLogic = (props: { initialData: BibliographyData }) =>
 
       showCsvColumnSelection.value = false;
       uploaded.value = true;
+      if (emit) {
+        emitUpdate();
+      }
     } catch (error: any) {
       showError(`Failed to process CSV data: ${error.message}`);
     }
@@ -259,12 +309,19 @@ export const useTableUploadLogic = (props: { initialData: BibliographyData }) =>
     csvData,
     csvConfig,
 
+    // Computed
+    getDropzoneIcon,
+    getDropzoneText,
+
     // Methods
     handleDragOver,
     handleDragLeave,
     handleDrop,
+    triggerFileInput,
+    handleFileSelect,
     processFile,
     processCsvWithConfig,
+    emitUpdate,
     handleCsvConfigUpdate,
     cancelCsvSelection,
     showError,

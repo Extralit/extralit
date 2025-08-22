@@ -244,15 +244,45 @@ export default {
 
     // Step handlers
     handleBibUpdate(data) {
+      console.log('ImportFlow: handleBibUpdate', {
+        hasDataframe: !!data.dataframeData,
+        hasDataframeData: !!(data.dataframeData && data.dataframeData.data),
+        dataLength: data.dataframeData?.data?.length || 0,
+        isValid: data.isValid,
+        fileName: data.fileName
+      });
+      
       this.bibData = {
         fileName: data.fileName || "",
         dataframeData: data.dataframeData || null,
         rawContent: data.rawContent || "",
       };
       this.clearError();
+      
+      // Log canGoNext state after update
+      const canGoNext = this.bibData.dataframeData &&
+        this.bibData.dataframeData.data &&
+        this.bibData.dataframeData.data.length > 0 &&
+        !this.hasError &&
+        !!this.workspace;
+        
+      console.log('ImportFlow: canGoNext state after bibUpdate', {
+        hasDataframe: !!this.bibData.dataframeData,
+        hasDataframeData: !!(this.bibData.dataframeData && this.bibData.dataframeData.data),
+        dataLength: this.bibData.dataframeData?.data?.length || 0,
+        hasError: this.hasError,
+        hasWorkspace: !!this.workspace,
+        canGoNext: canGoNext
+      });
     },
 
     handlePdfUpdate(data) {
+      console.log('ImportFlow: handlePdfUpdate', {
+        matchedFilesLength: data.matchedFiles?.length || 0,
+        totalFiles: data.totalFiles || 0,
+        isValid: data.isValid
+      });
+      
       this.pdfData = {
         matchedFiles: data.matchedFiles || [],
         unmatchedFiles: data.unmatchedFiles || [],

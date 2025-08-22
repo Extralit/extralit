@@ -59,7 +59,6 @@
 </template>
 
 <script lang="ts">
-import { computed } from "@nuxtjs/composition-api";
 import "assets/icons/check";
 import "assets/icons/danger";
 import "assets/icons/import";
@@ -87,67 +86,12 @@ export default {
   emits: ["update"],
 
   setup(props: any, { emit }: any) {
-    // Use the composable for logic
-    const logic = usePdfUploadLogic(props);
-
-    // Computed properties
-    const getDropzoneIcon = computed(() => {
-      if (logic.hasError.value) return "danger";
-      if (logic.uploaded.value) return "check";
-      return "import";
-    });
-
-    const getDropzoneText = computed(() => {
-      if (logic.hasError.value) return "Error processing PDF files";
-      if (logic.uploaded.value) return "Upload PDF Files";
-      return "Upload PDF Files";
-    });
-
-    // File input handling
-    const triggerFolderInput = () => {
-      const folderInput = document.querySelector('input[type="file"][webkitdirectory]') as HTMLInputElement;
-      if (folderInput) {
-        folderInput.click();
-      }
-    };
-
-    const handleFolderSelect = (event: Event) => {
-      const target = event.target as HTMLInputElement;
-      const files = Array.from(target.files || []);
-      logic.processFiles(files);
-    };
-
-    // Watch for changes and emit updates
-    const emitUpdate = () => {
-      emit("update", {
-        isValid: logic.uploaded.value && !logic.hasError.value && logic.data.value.matchedFiles.length > 0,
-        matchedFiles: logic.data.value.matchedFiles,
-        unmatchedFiles: logic.data.value.unmatchedFiles,
-        totalFiles: logic.data.value.totalFiles,
-        hasError: logic.hasError.value,
-        errorMessage: logic.errorMessage.value,
-      });
-    };
-
-    // Override processFiles to emit updates
-    const processFiles = async (files: File[]) => {
-      await logic.processFiles(files);
-      emitUpdate();
-    };
+    // Use the composable for logic with emit function
+    const logic = usePdfUploadLogic(props, emit);
 
     return {
       // From composable
       ...logic,
-
-      // Computed properties
-      getDropzoneIcon,
-      getDropzoneText,
-
-      // Custom methods
-      triggerFolderInput,
-      handleFolderSelect,
-      processFiles,
-      emitUpdate,
     };
   },
 };
