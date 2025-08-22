@@ -5,9 +5,9 @@
 
 import { ref, watch, onMounted, computed } from "@nuxtjs/composition-api";
 import { useResolve } from "ts-injecty";
-import { FileParsingService } from "~/v1/domain/services/FileParsingService";
 import type { BibliographyData, CsvData } from "./types";
 import type { CSVConfig } from "~/v1/domain/services/IFileParsingService";
+import { FileParsingService } from "~/v1/domain/services/FileParsingService";
 
 export const useTableUploadLogic = (
   props: { initialData: BibliographyData },

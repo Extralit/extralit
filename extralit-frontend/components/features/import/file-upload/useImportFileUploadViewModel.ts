@@ -1,216 +1,239 @@
 /**
- * Shared view model for file upload components
- * Consolidates common upload logic with strategy pattern for file type-specific behavior
+ * View model for ImportFileUpload component
+ * Handles coordination between bibliography and PDF uploads
  */
 
-import { ref, computed, watch, onMounted } from "@nuxtjs/composition-api";
-import type {
-  FileUploadState,
-  FileUploadStrategy,
-  FileUploadPayload,
-} from "./types";
+import { ref, computed, watch, nextTick } from "@nuxtjs/composition-api";
+import type { BibliographyData, PdfData } from "./types";
 
-// Constants
-export const FILE_UPLOAD_CONSTANTS = {
-  MAX_PDF_SIZE: 200 * 1024 * 1024, // 200MB
-  ACCEPTED_PDF_EXTENSIONS: [".pdf"] as string[],
-  ACCEPTED_BIB_EXTENSIONS: [".bib", ".bibtex", ".csv"] as string[],
-} as const;
+export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
+  // Internal flag to prevent recursive updates during initialization
+  const isInitializing = ref(false);
 
-export interface UseFileUploadOptions {
-  strategy: FileUploadStrategy;
-  initialData?: any;
-  onUpdate?: (payload: FileUploadPayload) => void;
-  hasValidData?: (data: any) => boolean;
-  createPayload?: () => FileUploadPayload;
-}
+  // Bibliography data
+  const bibData = ref<BibliographyData>({
+    fileName: "",
+    dataframeData: null,
+    rawContent: "",
+  });
 
-export const useImportFileUploadViewModel = (options: UseFileUploadOptions) => {
-  const { strategy, initialData, onUpdate, hasValidData: customHasValidData, createPayload: customCreatePayload } = options;
-
-  // Core reactive state
-  const state = ref<FileUploadState>({
-    isDragging: false,
-    uploaded: false,
-    hasError: false,
-    errorMessage: "",
-    processing: false,
-    progress: 0,
-    processedFiles: 0,
+  // PDF data
+  const pdfData = ref<PdfData>({
+    matchedFiles: [],
+    unmatchedFiles: [],
     totalFiles: 0,
   });
 
-  // Additional reactive state for file data
-  const data = ref<any>(initialData || {});
-
   // Computed properties
-  const progressPercentage = computed(() => {
-    if (state.value.totalFiles === 0) return 0;
-    return Math.round((state.value.processedFiles / state.value.totalFiles) * 100);
+  const isValid = computed(() => {
+    return (
+      bibData.value.dataframeData && bibData.value.dataframeData.data.length > 0 &&
+      pdfData.value.matchedFiles.length > 0
+    );
   });
 
-  const getDropzoneIcon = computed(() => {
-    if (state.value.hasError) return "danger";
-    if (state.value.uploaded) return "check";
-    return strategy.getDropzoneIcon();
-  });
-
-  const getDropzoneText = computed(() => {
-    if (state.value.hasError) return "Error processing files";
-    if (state.value.uploaded) return strategy.getDropzoneText();
-    return strategy.getDropzoneText();
-  });
-
-  // Drag and drop handlers
-  const handleDragOver = (event: DragEvent) => {
-    event.preventDefault();
-    state.value.isDragging = true;
+  // Event handlers
+  const handleBibUpdate = (data: any) => {
+    bibData.value = {
+      fileName: data.fileName || "",
+      dataframeData: data.dataframeData || null,
+      rawContent: data.rawContent || "",
+    };
+    emitBibUpdate();
   };
 
-  const handleDragLeave = () => {
-    state.value.isDragging = false;
+  const handlePdfUpdate = (data: any) => {
+    pdfData.value = {
+      matchedFiles: data.matchedFiles || [],
+      unmatchedFiles: data.unmatchedFiles || [],
+      totalFiles: data.totalFiles || 0,
+    };
+
+    // Update dataframe data with matched file paths
+    updateDataframeWithFilePaths(data.matchedFiles || []);
+
+    emitPdfUpdate();
   };
 
-  const handleDrop = (event: DragEvent) => {
-    event.preventDefault();
-    state.value.isDragging = false;
-
-    const files = Array.from(event.dataTransfer?.files || []);
-    processFiles(files);
+  // Event emitters
+  const emitBibUpdate = () => {
+    emit("bib-update", {
+      isValid: bibData.value.dataframeData && bibData.value.dataframeData.data.length > 0,
+      fileName: bibData.value.fileName,
+      dataframeData: bibData.value.dataframeData,
+      rawContent: bibData.value.rawContent,
+    });
   };
 
-  // File processing
-  const processFiles = async (files: File[]) => {
-    // Reset error state
-    state.value.hasError = false;
-    state.value.errorMessage = "";
-    state.value.processing = true;
-    state.value.processedFiles = 0;
-    state.value.totalFiles = files.length;
+  const emitPdfUpdate = () => {
+    emit("pdf-update", {
+      isValid: pdfData.value.matchedFiles.length > 0,
+      matchedFiles: pdfData.value.matchedFiles,
+      unmatchedFiles: pdfData.value.unmatchedFiles,
+      totalFiles: pdfData.value.totalFiles,
+    });
+  };
 
-    try {
-      // Use strategy for processing
-      await strategy.processFiles(files);
-      state.value.uploaded = true;
-      state.value.hasError = false;
-    } catch (error: any) {
-      showError(error.message || "Failed to process files");
-    } finally {
-      state.value.processing = false;
+  const updateDataframeWithFilePaths = (matchedFiles: any[]) => {
+    if (!bibData.value.dataframeData || !matchedFiles.length) {
+      return;
     }
 
-    // Emit update
-    if (onUpdate && customCreatePayload) {
-      onUpdate(createPayload());
+    // Ensure the dataframeData has the expected structure
+    if (!bibData.value.dataframeData.data || !Array.isArray(bibData.value.dataframeData.data)) {
+      console.error('ImportFileUpload: Invalid dataframeData structure', bibData.value.dataframeData);
+      return;
     }
+
+    // Create a map of reference to file paths
+    const referenceToFiles = new Map<string, string[]>();
+
+    matchedFiles.forEach((matchedFile: any) => {
+      const reference = matchedFile.bibEntry?.reference;
+      const fileName = matchedFile.file?.name;
+
+      if (reference && fileName) {
+        if (!referenceToFiles.has(reference)) {
+          referenceToFiles.set(reference, []);
+        }
+        referenceToFiles.get(reference)!.push(fileName);
+      }
+    });
+
+    // Update the dataframe data with file paths
+    const updatedData = bibData.value.dataframeData.data.map((row: any) => {
+      const reference = row.reference || row.key;
+      const filePaths = referenceToFiles.get(reference) || [];
+
+      return {
+        ...row,
+        filePaths
+      };
+    });
+
+    // Preserve the original structure while updating data
+    bibData.value.dataframeData = {
+      ...bibData.value.dataframeData,
+      data: updatedData
+    };
+
+    // Re-emit the bib update with the updated dataframe
+    emitBibUpdate();
   };
 
-  // Error handling
-  const showError = (message: string) => {
-    state.value.hasError = true;
-    state.value.errorMessage = message;
-    state.value.uploaded = false;
-  };
-
-  const clearError = () => {
-    state.value.hasError = false;
-    state.value.errorMessage = "";
-  };
-
-  // Reset functionality
-  const reset = () => {
-    state.value.isDragging = false;
-    state.value.uploaded = false;
-    state.value.hasError = false;
-    state.value.errorMessage = "";
-    state.value.processing = false;
-    state.value.progress = 0;
-    state.value.processedFiles = 0;
-    state.value.totalFiles = 0;
-    
-    // Reset data to initial state
-    data.value = initialData || {};
-  };
-
-  // Initialize with existing data
+  // Initialize component with existing data when navigating back
   const initializeWithExistingData = () => {
-    if (initialData && hasValidData(initialData)) {
-      data.value = { ...initialData };
-      state.value.uploaded = true;
-      state.value.hasError = false;
-      state.value.errorMessage = "";
-      state.value.processing = false;
+    // Set flag to prevent recursive updates
+    isInitializing.value = true;
+
+    // Initialize bibliography data
+    if (props.initialBibData && (props.initialBibData.fileName || (props.initialBibData.dataframeData && props.initialBibData.dataframeData.data.length > 0))) {
+      bibData.value = {
+        fileName: props.initialBibData.fileName || "",
+        dataframeData: props.initialBibData.dataframeData || null,
+        rawContent: props.initialBibData.rawContent || "",
+      };
     }
+
+    // Initialize PDF data
+    if (props.initialPdfData && (props.initialPdfData.matchedFiles.length > 0 || props.initialPdfData.unmatchedFiles.length > 0 || props.initialPdfData.totalFiles > 0)) {
+      pdfData.value = {
+        matchedFiles: props.initialPdfData.matchedFiles || [],
+        unmatchedFiles: props.initialPdfData.unmatchedFiles || [],
+        totalFiles: props.initialPdfData.totalFiles || 0,
+      };
+    }
+
+    // Clear the initialization flag and emit updates after all data is set
+    nextTick(() => {
+      isInitializing.value = false;
+      // Emit updates to parent to ensure consistency
+      emitBibUpdate();
+      emitPdfUpdate();
+    });
   };
 
-  // Helper to check if data is valid (strategy-specific)
-  const hasValidData = (data: any): boolean => {
-    if (customHasValidData) {
-      return customHasValidData(data);
-    }
-    // Default implementation
-    return data && Object.keys(data).length > 0;
-  };
+  // Public methods for parent components
+  const reset = () => {
+    // Set flag to prevent recursive updates during reset
+    isInitializing.value = true;
 
-  // Create payload for emission (strategy-specific)
-  const createPayload = (): FileUploadPayload => {
-    if (customCreatePayload) {
-      return customCreatePayload();
-    }
-    // Default implementation - should be overridden
-    throw new Error("createPayload must be implemented by strategy");
-  };
+    // Reset bibliography data
+    bibData.value = {
+      fileName: "",
+      dataframeData: null,
+      rawContent: "",
+    };
 
-  // Update progress (for strategies that need it)
-  const updateProgress = (processed: number, total: number) => {
-    state.value.processedFiles = processed;
-    state.value.totalFiles = total;
-    state.value.progress = total > 0 ? (processed / total) * 100 : 0;
+    // Reset PDF data
+    pdfData.value = {
+      matchedFiles: [],
+      unmatchedFiles: [],
+      totalFiles: 0,
+    };
+
+    // Clear the initialization flag and emit updates after reset
+    nextTick(() => {
+      isInitializing.value = false;
+      emitBibUpdate();
+      emitPdfUpdate();
+    });
   };
 
   // Watch for initial data changes
   watch(
-    () => initialData,
-    (newData) => {
-      if (newData && hasValidData(newData)) {
-        initializeWithExistingData();
+    () => props.initialBibData,
+    (newData: any, oldData: any) => {
+      // Only initialize if data has actually changed and we're not already initializing
+      if (!isInitializing.value && newData && (newData.fileName || (newData.dataframeData && newData.dataframeData.data.length > 0))) {
+        // Check if the data is actually different to avoid unnecessary updates
+        const hasChanged = !oldData ||
+          newData.fileName !== oldData.fileName ||
+          (newData.dataframeData?.data?.length || 0) !== (oldData.dataframeData?.data?.length || 0);
+
+        if (hasChanged) {
+          initializeWithExistingData();
+        }
       }
     },
     { deep: true, immediate: true }
   );
 
-  // Initialize on mount
-  onMounted(() => {
-    if (initialData && hasValidData(initialData)) {
-      initializeWithExistingData();
-    }
-  });
+  watch(
+    () => props.initialPdfData,
+    (newData: any, oldData: any) => {
+      // Only initialize if data has actually changed and we're not already initializing
+      if (!isInitializing.value && newData && (newData.matchedFiles.length > 0 || newData.unmatchedFiles.length > 0)) {
+        // Check if the data is actually different to avoid unnecessary updates
+        const hasChanged = !oldData ||
+          newData.matchedFiles.length !== oldData.matchedFiles.length ||
+          newData.unmatchedFiles.length !== oldData.unmatchedFiles.length ||
+          newData.totalFiles !== oldData.totalFiles;
+
+        if (hasChanged) {
+          initializeWithExistingData();
+        }
+      }
+    },
+    { deep: true, immediate: true }
+  );
 
   return {
     // Reactive state
-    state,
-    data,
+    isInitializing,
+    bibData,
+    pdfData,
 
-    // Computed properties
-    progressPercentage,
-    getDropzoneIcon,
-    getDropzoneText,
+    // Computed
+    isValid,
 
-    // Event handlers
-    handleDragOver,
-    handleDragLeave,
-    handleDrop,
-
-    // Core methods
-    processFiles,
-    showError,
-    clearError,
-    reset,
+    // Methods
+    handleBibUpdate,
+    handlePdfUpdate,
+    emitBibUpdate,
+    emitPdfUpdate,
+    updateDataframeWithFilePaths,
     initializeWithExistingData,
-    updateProgress,
-
-    // Helpers
-    hasValidData,
-    createPayload,
+    reset,
   };
 };

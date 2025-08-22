@@ -5,9 +5,9 @@
 
 import { ref, watch, onMounted, computed } from "@nuxtjs/composition-api";
 import { useResolve } from "ts-injecty";
-import { PdfMatchingService } from "~/v1/domain/services/FileMatchingService";
+import { FILE_UPLOAD_CONSTANTS } from "./constants";
 import type { PdfData } from "./types";
-import { FILE_UPLOAD_CONSTANTS } from "./useImportFileUploadViewModel";
+import { PdfMatchingService } from "~/v1/domain/services/FileMatchingService";
 
 export const usePdfUploadLogic = (
   props: {
@@ -170,8 +170,8 @@ export const usePdfUploadLogic = (
     }
   };
 
-  const validatePdfFile = async (file: File): Promise<{ valid: boolean; error?: string }> => {
-    const maxSize = FILE_UPLOAD_CONSTANTS.MAX_PDF_FILE_SIZE;
+  const validatePdfFile = (file: File): { valid: boolean; error?: string } => {
+    const maxSize = FILE_UPLOAD_CONSTANTS.MAX_PDF_SIZE;
     if (file.size > maxSize) {
       return { valid: false, error: `File ${file.name} is too large (max 200MB)` };
     } else if (file.size === 0) {
