@@ -333,3 +333,28 @@ The frontend presents normalized data as a unified view for annotation:
 
 
 Keep the documentation synchronized with the actual implementation to ensure accurate guidance for future development and maintenance.
+
+## File Upload Components Architecture
+
+The file upload components have been refactored to use Vue 2 + Composition API with shared composables for improved maintainability and code reuse:
+
+### Components Structure:
+- **ImportFileUpload.vue**: Orchestrator component that coordinates TableUpload and PdfUpload
+- **TableUpload.vue**: Handles bibliography file uploads (BibTeX/CSV) with column selection
+- **PdfUpload.vue**: Handles PDF folder uploads with file matching
+
+### Composables:
+- **useImportFileUploadViewModel.ts**: Core shared logic with strategy pattern (available for future enhancements)
+- **useTableUploadLogic.ts**: Bibliography-specific upload logic 
+- **usePdfUploadLogic.ts**: PDF-specific upload logic
+- **types.ts**: Shared TypeScript interfaces and type definitions
+
+### Benefits Achieved:
+- **DRY Principle**: Common drag/drop, error handling, and state management logic extracted
+- **Type Safety**: Shared type definitions prevent interface mismatches
+- **Better Testing**: Business logic separated from UI concerns, enabling unit testing of composables
+- **Maintainability**: Cleaner component structure with logic in composables
+- **Backward Compatibility**: Same event contracts and prop interfaces maintained
+- **Consistency**: All components now follow Composition API patterns consistent with codebase architecture
+
+All components maintain their existing functionality while now using reactive Composition API patterns for better code organization and reusability.
