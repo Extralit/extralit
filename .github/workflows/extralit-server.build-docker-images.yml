@@ -117,3 +117,13 @@ jobs:
           repository: extralit/extralit-hf-space
           event-type: build-hf-space
           client-payload: '{"tag":"${{ env.IMAGE_TAG }}","is_release":${{ inputs.is_release }}}'
+
+      - name: Docker Hub Description for `extralit-server`
+        uses: peter-evans/dockerhub-description@v4
+        if: ${{ env.TAG_LATEST == 'true' }}
+        with:
+          username: ${{ env.DOCKER_USERNAME }}
+          password: ${{ env.DOCKER_PASSWORD }}
+          repository: $${{ env.SERVER_DOCKER_IMAGE }}
+          readme-filepath: extralit-server/docker/server/README.md
+
