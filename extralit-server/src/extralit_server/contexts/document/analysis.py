@@ -48,10 +48,10 @@ class PDFOCRLayerDetector:
             print(page_info)
 
         pages_with_fonts = sum(1 for page in page_info if page.get("has_fonts", False))
-        total_pages = len(page_info)
+        page_count = len(page_info)
 
         # Return True if more than 50% of pages have fonts
-        return pages_with_fonts > (total_pages * threshold)
+        return pages_with_fonts > (page_count * threshold)
 
     def _check_font_resources_per_page(self, pdf_bytes: bytes) -> list[dict]:
         """

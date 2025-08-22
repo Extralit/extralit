@@ -548,7 +548,7 @@ This structure enables:
 **New Model: ImportHistory**
 ```python
 class ImportHistory(DatabaseModel):
-    __tablename__ = "import_history"
+    __tablename__ = "imports"
 
     workspace_id: Mapped[UUID] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
     user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)

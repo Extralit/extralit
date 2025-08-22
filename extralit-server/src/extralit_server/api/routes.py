@@ -73,6 +73,9 @@ from extralit_server.api.handlers.v1 import (
 )
 from extralit_server.api.handlers.v1 import webhooks as webhooks_v1
 from extralit_server.api.handlers.v1 import (
+    workflows as workflows_v1,
+)
+from extralit_server.api.handlers.v1 import (
     workspaces as workspaces_v1,
 )
 from extralit_server.errors.base_errors import __ALL__
@@ -106,6 +109,7 @@ def create_api_v1():
         vectors_settings_v1.router,
         workspaces_v1.router,
         webhooks_v1.router,
+        workflows_v1.router,
         jobs_v1.router,
         oauth2_v1.router,
         settings_v1.router,

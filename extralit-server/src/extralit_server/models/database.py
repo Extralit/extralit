@@ -15,7 +15,7 @@
 import base64
 import secrets
 from datetime import datetime
-from typing import Any, Union
+from typing import Any, Optional, Union
 from uuid import UUID
 
 from pydantic import TypeAdapter
@@ -26,10 +26,12 @@ from sqlalchemy import (
     String,
     Text,
     UniqueConstraint,
+    select,
     sql,
 )
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.engine.default import DefaultExecutionContext
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -54,6 +56,7 @@ __all__ = [
     "Dataset",
     "DatasetUser",
     "Document",
+    "DocumentWorkflow",
     "Field",
     "ImportHistory",
     "MetadataProperty",
@@ -647,6 +650,13 @@ class Document(DatabaseModel):
     metadata_: Mapped[dict | None] = mapped_column("metadata", MutableDict.as_mutable(JSON()), nullable=True)
 
     workspace: Mapped["Workspace"] = relationship("Workspace", back_populates="documents")
+    workflows: Mapped[list["DocumentWorkflow"]] = relationship(
+        "DocumentWorkflow",
+        back_populates="document",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        order_by="DocumentWorkflow.inserted_at.desc()",
+    )
 
     def __repr__(self):
         return (
@@ -678,7 +688,7 @@ class Webhook(DatabaseModel):
 
 
 class ImportHistory(DatabaseModel):
-    __tablename__ = "import_history"
+    __tablename__ = "imports"
 
     workspace_id: Mapped[UUID] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
     user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
@@ -695,3 +705,45 @@ class ImportHistory(DatabaseModel):
             f"user_id={str(self.user_id)!r}, filename={self.filename!r}, "
             f"inserted_at={str(self.inserted_at)!r}, updated_at={str(self.updated_at)!r})"
         )
+
+
+class DocumentWorkflow(DatabaseModel):
+    """Track document processing workflows for efficient job querying."""
+
+    __tablename__ = "workflows"
+
+    workflow_type: Mapped[str] = mapped_column(String(50))
+    workspace_id: Mapped[UUID] = mapped_column(ForeignKey("workspaces.id"), nullable=False)
+    document_id: Mapped[UUID] = mapped_column(ForeignKey("documents.id"), nullable=False, index=True)
+    reference: Mapped[str] = mapped_column(String(255), nullable=True, index=True)
+
+    # RQ Group integration
+    group_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    status: Mapped[str] = mapped_column(String(50), default="pending", index=True)  # Cached workflow status
+
+    # Relationships
+    document: Mapped["Document"] = relationship("Document", back_populates="workflows")
+    workspace: Mapped["Workspace"] = relationship("Workspace")
+
+    @classmethod
+    async def get_by_document_id(cls, db: AsyncSession, document_id: UUID) -> Optional["DocumentWorkflow"]:
+        """Get workflow by document ID."""
+        result = await db.execute(select(cls).where(cls.document_id == document_id))
+        return result.scalar_one_or_none()
+
+    @classmethod
+    async def get_by_group_id(cls, db: AsyncSession, group_id: str) -> Optional["DocumentWorkflow"]:
+        """Get workflow by RQ Group ID."""
+        result = await db.execute(select(cls).where(cls.group_id == group_id))
+        return result.scalar_one_or_none()
+
+    @classmethod
+    async def get_by_reference(
+        cls, db: AsyncSession, reference: str, workspace_id: str | None = None
+    ) -> list["DocumentWorkflow"]:
+        """Get workflows by reference (batch tracking)."""
+        query = select(cls).where(cls.reference == reference)
+        if workspace_id:
+            query = query.where(cls.workspace_id == workspace_id)
+        result = await db.execute(query)
+        return result.scalars().all()

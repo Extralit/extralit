@@ -14,7 +14,7 @@
 
 import logging
 from os.path import basename
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from fastapi import HTTPException, UploadFile, status
 from sqlalchemy import and_, case, or_, select
@@ -22,6 +22,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from extralit_server.api.schemas.v1.documents import DocumentCreate, DocumentListItem
 from extralit_server.api.schemas.v1.imports import (
+    BulkDocumentInfo,
     DocumentImportAnalysis,
     DocumentMetadata,
     DocumentsBulkCreate,
@@ -34,8 +35,10 @@ from extralit_server.api.schemas.v1.imports import (
     ImportStatus,
     ImportSummary,
 )
-from extralit_server.jobs.document_jobs import upload_and_preprocess_documents_job
-from extralit_server.models.database import Document, ImportHistory
+from extralit_server.contexts import files as file_context
+from extralit_server.database import AsyncSessionLocal
+from extralit_server.models.database import Document, ImportHistory, Workspace
+from extralit_server.workflows.documents import create_document_workflow
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -334,11 +337,10 @@ async def process_bulk_upload(
     user_id: str,
 ) -> DocumentsBulkResponse:
     """
-    Process bulk document upload with associated PDF files using reference-based jobs.
+    Process bulk document upload with associated PDF files using new workflow orchestrator.
 
-    This function creates one job per reference that handles multiple files for that reference.
-    It validates all files, groups them by reference, and creates reference-based upload jobs
-    for efficient processing and progress tracking.
+    This function now handles file upload to S3 before job enqueueing, creates document records
+    in database, and uses the new start_document_workflow() orchestrator for processing.
 
     Args:
         bulk_create: DocumentsBulkCreate with reference-based document information
@@ -346,12 +348,11 @@ async def process_bulk_upload(
         user_id: ID of the user creating the documents
 
     Returns:
-        DocumentsBulkResponse with job IDs indexed by reference and validation results
+        DocumentsBulkResponse with workflow_id and job_ids for tracking
     """
-    from extralit_server.jobs import DEFAULT_QUEUE
 
     # Create a mapping of filenames to file objects for quick lookup
-    file_mapping = {file.filename: file for file in files} if files else {}
+    file_mapping: dict[str, UploadFile] = {file.filename: file for file in files} if files else {}
 
     # Validate that all referenced files are included in the upload
     missing_files = []
@@ -370,8 +371,7 @@ async def process_bulk_upload(
             detail=f"Referenced files not found in upload: {', '.join(missing_files)}",
         )
 
-    # Group documents by reference (should be 1:1 but validate)
-    reference_to_doc = {}
+    reference_to_doc: dict[str, BulkDocumentInfo] = {}
     for doc in bulk_create.documents:
         if doc.reference in reference_to_doc:
             raise HTTPException(
@@ -380,87 +380,128 @@ async def process_bulk_upload(
             )
         reference_to_doc[doc.reference] = doc
 
-    # Process each reference and create reference-based jobs
-    job_ids = {}
+    # Get storage client
+    client = file_context.get_minio_client()
+    if client is None:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to get storage client")
+
+    # Process each reference: upload files to S3, create documents, start workflows
+    job_ids: dict[str, list[str]] = {}
     failed_validations = []
 
-    for reference, doc in reference_to_doc.items():
-        try:
-            # Validate and read all files for this reference
-            file_data_list = []
-            reference_failed = False
+    async with AsyncSessionLocal() as db:
+        for reference, doc in reference_to_doc.items():
+            try:
+                # Get workspace for bucket name
+                workspace = await Workspace.get(db, doc.document_create.workspace_id)
+                if not workspace:
+                    failed_validations.append(f"{reference}: Workspace not found")
+                    continue
 
-            # Handle documents with no associated files
-            if not doc.associated_files:
-                # Create a reference-based job for documents without files
-                job = DEFAULT_QUEUE.enqueue(
-                    upload_and_preprocess_documents_job,
-                    reference=reference,
-                    reference_data=doc.document_create.model_dump(),
-                    file_data_list=[],
-                    user_id=user_id,
-                )
+                # Handle documents with no associated files
+                if not doc.associated_files:
+                    # Create document record without file (uses remote url)
+                    document = await create_document(db, doc.document_create)
+                    continue
 
-                # Store job ID mapped to reference key for frontend tracking
-                job_ids[reference] = job.id
-                _LOGGER.info(f"Created reference-based job {job.id} for reference {reference} with no files")
-                continue
+                # Process files for this reference
+                reference_failed = False
+                uploaded_documents: list[DocumentListItem] = []
 
-            for filename in doc.associated_files:
-                try:
-                    file = file_mapping[filename]
+                for filename in doc.associated_files:
+                    try:
+                        file = file_mapping[filename]
 
-                    if not file.filename or not file.filename.lower().endswith(".pdf"):
-                        failed_validations.append(f"{filename}: Not a PDF file")
+                        if not file.filename or not file.filename.lower().endswith(".pdf"):
+                            failed_validations.append(f"{filename}: Not a PDF file")
+                            reference_failed = True
+                            continue
+
+                        # Read file content
+                        file_content = await file.read()
+
+                        # Reset file position for potential future reads
+                        await file.seek(0)
+
+                        # Create document record first
+                        file_document_create = DocumentCreate(
+                            id=uuid4(),
+                            reference=doc.document_create.reference,
+                            pmid=doc.document_create.pmid,
+                            doi=doc.document_create.doi,
+                            url=None,  # Will be set after S3 upload
+                            file_name=filename,
+                            workspace_id=doc.document_create.workspace_id,
+                            metadata=doc.document_create.metadata,
+                        )
+
+                        # Check for existing documents
+                        existing_documents = await find_existing_documents(
+                            db=db,
+                            workspace_id=file_document_create.workspace_id,
+                            document_id=file_document_create.id,
+                            file_name=file_document_create.file_name,
+                            limit=1,
+                        )
+
+                        if existing_documents:
+                            existing_document_id = existing_documents[0].id
+                            _LOGGER.info(f"Document already exists for file {filename} with ID {existing_document_id}")
+                            continue
+
+                        # Upload file to S3
+                        file_url = file_context.put_document_file(
+                            client=client,
+                            workspace_name=workspace.name,
+                            document_id=file_document_create.id,
+                            file_data=file_content,
+                            filename=filename,
+                        )
+
+                        if file_url:
+                            file_document_create.url = file_url
+
+                            # Create document in database
+                            document = await create_document(db, file_document_create)
+                            uploaded_documents.append(document)
+
+                            _LOGGER.info(f"Uploaded file {filename} to S3 and created document {document.id}")
+
+                    except Exception as e:
+                        _LOGGER.error(f"Error processing file {filename} for reference {reference}: {e!s}")
+                        failed_validations.append(f"{filename}: {e!s}")
                         reference_failed = True
-                        continue
 
-                    # Read file content
-                    file_content = await file.read()
+                # Skip this reference if any files failed validation
+                if reference_failed or not uploaded_documents:
+                    continue
 
-                    # Validate file size (100 MB limit)
-                    if len(file_content) > 100 * 1024 * 1024:
-                        failed_validations.append(f"{filename}: File exceeds maximum size of 100 MB")
-                        reference_failed = True
-                        continue
+                # Start workflows for each uploaded document
+                document_job_group = {}
+                for document in uploaded_documents:
+                    try:
+                        job_group = await create_document_workflow(
+                            document_id=document.id,
+                            s3_url=document.url,
+                            reference=reference,
+                            workspace_name=workspace.name,
+                            workspace_id=workspace.id,
+                        )
 
-                    # Reset file position for potential future reads
-                    await file.seek(0)
+                        # Store the group object for later use
+                        document_job_group[str(document.id)] = job_group
 
-                    file_data_list.append((filename, file_content))
+                    except Exception as e:
+                        _LOGGER.error(f"Error starting workflow for document {document.id}: {e}")
+                        failed_validations.append(f"{reference}/{document.file_name}: Workflow start failed: {e}")
 
-                except Exception as e:
-                    _LOGGER.error(f"Error processing file {filename} for reference {reference}: {e!s}")
-                    failed_validations.append(f"{filename}: {e!s}")
-                    reference_failed = True
+                # For each reference, select first job id
+                # TODO handle multiple jobs per reference or skip reporting job status during frontend upload
+                job_ids[reference] = next(group for group in document_job_group.values()).get_jobs()[0].id
 
-            # Skip this reference if any files failed validation
-            if reference_failed:
-                continue
-
-            # Set a default filename if not already set (use first file)
-            if not doc.document_create.file_name and file_data_list:
-                doc.document_create.file_name = file_data_list[0][0]
-
-            # Create a reference-based job for multiple files
-            job = DEFAULT_QUEUE.enqueue(
-                upload_and_preprocess_documents_job,
-                reference=reference,
-                reference_data=doc.document_create.model_dump(),
-                file_data_list=file_data_list,
-                user_id=user_id,
-                job_timeout=None,  # No timeout for large uploads
-            )
-
-            # Store job ID mapped to reference key for frontend tracking
-            job_ids[reference] = job.id
-            _LOGGER.info(
-                f"Created reference-based job {job.id} for reference {reference} with {len(file_data_list)} files"
-            )
-
-        except Exception as e:
-            _LOGGER.error(f"Error processing reference {reference}: {e!s}")
-            failed_validations.append(f"{reference}: {e!s}")
+            except Exception as e:
+                _LOGGER.error(f"Error processing reference {reference}: {e!s}")
+                failed_validations.append(f"{reference}: {e!s}")
 
     return DocumentsBulkResponse(
         job_ids=job_ids, total_documents=len(reference_to_doc), failed_validations=failed_validations

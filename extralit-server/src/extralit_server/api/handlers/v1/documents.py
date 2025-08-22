@@ -267,12 +267,14 @@ async def create_documents_bulk(
     try:
         metadata_dict = json.loads(documents_metadata)
         bulk_create = DocumentsBulkCreate.model_validate(metadata_dict)
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as e:
+        print(e)
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Invalid JSON in documents_metadata",
         )
     except Exception as e:
+        print(e)
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Invalid metadata format: {e!s}",
