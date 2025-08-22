@@ -13,7 +13,7 @@ Extralit is a free, open-source, self-hosted tool. This means you need to deploy
 
     === "No-code"
 
-    If you're just getting started with Extralit, click the deploy button below:
+    If you're just getting started with Extralit, first [login to your Hugging Face account](http://huggingface.co/login), then click the deploy button below:
 
     <div style="margin: 5px">
         <a href="https://huggingface.co/spaces/extralit/public-demo?duplicate=true" target="_blank">
@@ -23,13 +23,15 @@ Extralit is a free, open-source, self-hosted tool. This means you need to deploy
 
     You can use the default values following these steps:
 
-    - Leave the default owner if using your personal account
-      - Leave `ADMIN_USERNAME` and `ADMIN_PASSWORD` secrets empty since you'll sign in with your HF user as the Extralit Space `owner`.
 
     - You must fill out the following Space secrets fields:
-      - `OAUTH2_HUGGINGFACE_CLIENT_ID` and `OAUTH2_HUGGINGFACE_CLIENT_SECRET`: The Oauth.
+      - `USERNAME` and `PASSWORD` that you'll sign in with your HF user with "owner" permissions. Leaving `USERNAME` blank will use your Hugging Face username.
       - `EXTRALIT_DATABASE_URL`: The URL of the PostgreSQL database where the data will be stored. If you leave it blank, the data will be lost when the Space restarts.
-      - `S3_ENDPOINT`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`: The name of the S3 bucket where papers and data extraction artifacts will be stored. If you leave it blank, the data will be lost when the Space restarts.
+      - `EXTRALIT_S3_ENDPOINT`, `EXTRALIT_S3_ACCESS_KEY`, `EXTRALIT_S3_SECRET_KEY`: The name of the S3 bucket where papers and data extraction artifacts will be stored. If you leave it blank, the data will be lost when the Space restarts.
+
+    - These fields for Hugging Face Single-Sign-on are optional to set up, but
+      - `OAUTH_CLIENT_ID` and `OAUTH_CLIENT_SECRET`: The Oauth.
+
     - Click Duplicate Space to build an Extralit instance 🚀.
     - Once you see the UI, [go to the Sign in into the UI section](#sign-in-into-the-extralit-ui). If you see the `Building` message for longer than 2-3 min refresh the page.
 
