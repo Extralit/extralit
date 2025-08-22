@@ -83,13 +83,7 @@ export default {
   emits: ["update"],
 
   setup(props: any, { emit }: any) {
-    // Use the composable for logic with emit function
-    const logic = useTableUploadLogic(props, emit);
-
-    return {
-      // From composable
-      ...logic,
-    };
+    return useTableUploadLogic(props, emit);
   },
 };
 </script>

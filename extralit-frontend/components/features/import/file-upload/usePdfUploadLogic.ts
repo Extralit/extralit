@@ -5,9 +5,14 @@
 
 import { ref, watch, onMounted, computed } from "@nuxtjs/composition-api";
 import { useResolve } from "ts-injecty";
-import { FILE_UPLOAD_CONSTANTS } from "./constants";
 import type { PdfData } from "./types";
 import { PdfMatchingService } from "~/v1/domain/services/FileMatchingService";
+
+export const FILE_UPLOAD_CONSTANTS = {
+  MAX_PDF_SIZE: 200 * 1024 * 1024, // 200MB
+  ACCEPTED_PDF_EXTENSIONS: [".pdf"] as string[],
+  ACCEPTED_BIB_EXTENSIONS: [".bib", ".bibtex", ".csv"] as string[],
+} as const;
 
 export const usePdfUploadLogic = (
   props: {
@@ -90,10 +95,7 @@ export const usePdfUploadLogic = (
     errorMessage.value = "";
 
     // Get existing files to merge with new ones
-    const existingFiles = [
-      ...data.value.matchedFiles.map(mf => mf.file),
-      ...data.value.unmatchedFiles
-    ];
+    const existingFiles = [...data.value.matchedFiles.map((mf) => mf.file), ...data.value.unmatchedFiles];
 
     processedFiles.value = 0;
 
@@ -113,7 +115,7 @@ export const usePdfUploadLogic = (
 
     for (const file of pdfFiles) {
       // Skip files that are already uploaded (by name)
-      const isDuplicate = existingFiles.some(existingFile => existingFile.name === file.name);
+      const isDuplicate = existingFiles.some((existingFile) => existingFile.name === file.name);
       if (!isDuplicate) {
         const result = await validatePdfFile(file);
         if (result.valid) {
@@ -141,7 +143,7 @@ export const usePdfUploadLogic = (
       const totalCount = successCount + errorCount;
 
       let errorMsg = `Processed ${successCount} of ${totalCount} files successfully.\n\n`;
-      errorMsg += `Files that could not be processed:\n${fileErrors.join('\n')}`;
+      errorMsg += `Files that could not be processed:\n${fileErrors.join("\n")}`;
 
       showError(errorMsg);
     } else {
@@ -186,7 +188,12 @@ export const usePdfUploadLogic = (
   };
 
   const performFileMatching = (uploadedFiles: File[]) => {
-    if (!props.bibliographyEntries || !props.bibliographyEntries.data || props.bibliographyEntries.data.length === 0 || uploadedFiles.length === 0) {
+    if (
+      !props.bibliographyEntries ||
+      !props.bibliographyEntries.data ||
+      props.bibliographyEntries.data.length === 0 ||
+      uploadedFiles.length === 0
+    ) {
       // If no bibliography entries, all files are unmatched
       data.value.matchedFiles = [];
       data.value.unmatchedFiles = uploadedFiles;
@@ -226,7 +233,12 @@ export const usePdfUploadLogic = (
   };
 
   const initializeWithExistingData = () => {
-    if (props.initialData && (props.initialData.matchedFiles.length > 0 || props.initialData.unmatchedFiles.length > 0 || props.initialData.totalFiles > 0)) {
+    if (
+      props.initialData &&
+      (props.initialData.matchedFiles.length > 0 ||
+        props.initialData.unmatchedFiles.length > 0 ||
+        props.initialData.totalFiles > 0)
+    ) {
       data.value = {
         matchedFiles: props.initialData.matchedFiles || [],
         unmatchedFiles: props.initialData.unmatchedFiles || [],

@@ -86,13 +86,7 @@ export default {
   emits: ["update"],
 
   setup(props: any, { emit }: any) {
-    // Use the composable for logic with emit function
-    const logic = usePdfUploadLogic(props, emit);
-
-    return {
-      // From composable
-      ...logic,
-    };
+    return usePdfUploadLogic(props, emit);
   },
 };
 </script>

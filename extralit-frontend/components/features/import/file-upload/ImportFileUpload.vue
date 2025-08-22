@@ -58,7 +58,6 @@ export default {
   emits: ["bib-update", "pdf-update"],
 
   setup(props: any, { emit }: any) {
-    // Use the viewmodel for all logic
     return useImportFileUploadViewModel(props, { emit });
   },
 };
