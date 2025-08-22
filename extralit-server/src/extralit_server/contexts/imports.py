@@ -352,7 +352,7 @@ async def process_bulk_upload(
     """
 
     # Create a mapping of filenames to file objects for quick lookup
-    file_mapping: dict[str, UploadFile] = {file.filename: file for file in files} if files else {}
+    file_mapping: dict[str, UploadFile] = {file.filename: file for file in files if file.filename} if files else {}
 
     # Validate that all referenced files are included in the upload
     missing_files = []
@@ -386,7 +386,7 @@ async def process_bulk_upload(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to get storage client")
 
     # Process each reference: upload files to S3, create documents, start workflows
-    job_ids: dict[str, list[str]] = {}
+    job_ids: dict[str, str] = {}
     failed_validations = []
 
     async with AsyncSessionLocal() as db:
@@ -453,7 +453,7 @@ async def process_bulk_upload(
                         file_url = file_context.put_document_file(
                             client=client,
                             workspace_name=workspace.name,
-                            document_id=file_document_create.id,
+                            document_id=file_document_create.id,  # type: ignore[arg-type]
                             file_data=file_content,
                             filename=filename,
                         )
@@ -468,8 +468,16 @@ async def process_bulk_upload(
                             _LOGGER.info(f"Uploaded file {filename} to S3 and created document {document.id}")
 
                     except Exception as e:
-                        _LOGGER.error(f"Error processing file {filename} for reference {reference}: {e!s}")
-                        failed_validations.append(f"{filename}: {e!s}")
+                        error_msg = f"Error processing file {filename} for reference {reference}: {e!s}"
+                        _LOGGER.error(error_msg)
+
+                        # Provide more specific error information for S3 issues
+                        if "bucket" in str(e).lower() or "storage" in str(e).lower():
+                            error_msg += " - This may be a storage configuration issue. Please check S3 endpoint and credentials."
+                        elif "404" in str(e) or "not found" in str(e).lower():
+                            error_msg += " - The storage bucket or endpoint may not be accessible."
+
+                        failed_validations.append(f"{filename}: {error_msg}")
                         reference_failed = True
 
                 # Skip this reference if any files failed validation
@@ -497,7 +505,10 @@ async def process_bulk_upload(
 
                 # For each reference, select first job id
                 # TODO handle multiple jobs per reference or skip reporting job status during frontend upload
-                job_ids[reference] = next(group for group in document_job_group.values()).get_jobs()[0].id
+                if document_job_group:
+                    first_job_group = next(iter(document_job_group.values()))
+                    first_job = first_job_group.get_jobs()[0]
+                    job_ids[reference] = first_job.id
 
             except Exception as e:
                 _LOGGER.error(f"Error processing reference {reference}: {e!s}")

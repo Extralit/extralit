@@ -110,6 +110,7 @@ class Settings(BaseSettings):
     s3_endpoint: str | None = Field(default=None, description="The S3 endpoint for data storage")
     s3_access_key: str | None = Field(default=None, description="The access key for the S3 storage")
     s3_secret_key: str | None = Field(default=None, description="The secret key for the S3 storage")
+    s3_region: str | None = Field(default=None, description="The region for the S3 storage")
 
     extralit_url: str | None = Field(default=None, description="The extralit server url for LLM serving endpoint")
 

@@ -65,6 +65,7 @@ def _create_minio_client() -> Union[Minio, "LocalFileStorage"]:
             endpoint=f"{hostname}:{port}" if port else hostname,
             access_key=settings.s3_access_key,
             secret_key=settings.s3_secret_key,
+            region=settings.s3_region,
             secure=parsed_url.scheme == "https",
         )
     except Exception as e:
