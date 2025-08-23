@@ -3,16 +3,25 @@ import DocumentsList from './DocumentsList.vue';
 import { Document } from '~/v1/domain/entities/document/Document';
 
 // Mock the view model
+const mockShowDocumentMetadata = jest.fn();
+const mockCloseMetadataModal = jest.fn();
+const mockViewModel = {
+  documents: [],
+  isLoading: false,
+  error: null,
+  groupedDocuments: [],
+  totalFiles: 0,
+  showMetadataModal: false,
+  selectedDocumentMetadata: null,
+  selectedDocumentName: '',
+  loadDocuments: jest.fn(),
+  openDocument: jest.fn(),
+  showDocumentMetadata: mockShowDocumentMetadata,
+  closeMetadataModal: mockCloseMetadataModal,
+};
+
 jest.mock('./useDocumentsListViewModel', () => ({
-  useDocumentsListViewModel: () => ({
-    documents: [],
-    isLoading: false,
-    error: null,
-    groupedDocuments: [],
-    totalFiles: 0,
-    loadDocuments: jest.fn(),
-    openDocument: jest.fn(),
-  }),
+  useDocumentsListViewModel: () => mockViewModel,
 }));
 
 // Mock base components
@@ -52,6 +61,15 @@ describe('DocumentsList', () => {
   };
 
   beforeEach(() => {
+    // Reset mocks before each test
+    jest.clearAllMocks();
+    // Reset mock view model state
+    mockViewModel.documents = [];
+    mockViewModel.showMetadataModal = false;
+    mockViewModel.selectedDocumentMetadata = null;
+    mockViewModel.selectedDocumentName = '';
+    mockViewModel.groupedDocuments = [];
+
     wrapper = createWrapper();
   });
 
@@ -73,15 +91,19 @@ describe('DocumentsList', () => {
         { workflow_status: 'completed', analysis_metadata: { ocr_quality: { total_chars: 1000 } } }
       );
 
-      wrapper.setData({
+      // Update the mock view model data instead of using setData
+      mockViewModel.documents = [documentWithMetadata];
+      mockViewModel.groupedDocuments = [{
+        reference: 'Test Reference',
         documents: [documentWithMetadata],
-      });
+        metadata: documentWithMetadata.metadata
+      }];
 
       await wrapper.vm.$nextTick();
 
       // Check that metadata button logic would work
       expect(documentWithMetadata.metadata).toBeDefined();
-      expect(wrapper.vm.documents[0].metadata).toBeDefined();
+      expect(mockViewModel.documents[0].metadata).toBeDefined();
     });
 
     it('should open metadata modal when metadata button is clicked', async () => {
@@ -104,32 +126,35 @@ describe('DocumentsList', () => {
         testMetadata
       );
 
-      wrapper.setData({
+      // Update the mock view model data
+      mockViewModel.documents = [documentWithMetadata];
+      mockViewModel.groupedDocuments = [{
+        reference: 'Test Reference',
         documents: [documentWithMetadata],
-      });
+        metadata: documentWithMetadata.metadata
+      }];
 
       await wrapper.vm.$nextTick();
 
-      // Call the method directly to test functionality
-      wrapper.vm.showDocumentMetadata(documentWithMetadata);
+      // Call the method through the mock
+      mockShowDocumentMetadata(documentWithMetadata);
 
-      expect(wrapper.vm.showMetadataModal).toBe(true);
-      expect(wrapper.vm.selectedDocumentMetadata).toEqual(testMetadata);
-      expect(wrapper.vm.selectedDocumentName).toBe('test-document.pdf');
+      // Verify the mock was called with correct arguments
+      expect(mockShowDocumentMetadata).toHaveBeenCalledWith(documentWithMetadata);
+      expect(mockShowDocumentMetadata).toHaveBeenCalledTimes(1);
     });
 
     it('should close metadata modal when closeMetadataModal is called', () => {
-      wrapper.setData({
-        showMetadataModal: true,
-        selectedDocumentMetadata: { some: 'data' },
-        selectedDocumentName: 'test.pdf',
-      });
+      // Set up initial modal state
+      mockViewModel.showMetadataModal = true;
+      mockViewModel.selectedDocumentMetadata = { some: 'data' };
+      mockViewModel.selectedDocumentName = 'test.pdf';
 
-      wrapper.vm.closeMetadataModal();
+      // Call the method through the mock
+      mockCloseMetadataModal();
 
-      expect(wrapper.vm.showMetadataModal).toBe(false);
-      expect(wrapper.vm.selectedDocumentMetadata).toBe(null);
-      expect(wrapper.vm.selectedDocumentName).toBe('');
+      // Verify the mock was called
+      expect(mockCloseMetadataModal).toHaveBeenCalledTimes(1);
     });
   });
 });

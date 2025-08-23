@@ -166,7 +166,7 @@ class TestDocumentResourceCRUD:
             reference="Retrieved2023",
             file_name="retrieved.pdf",
         )
-        documents_api.get.return_value = retrieved_model
+        documents_api.get.return_value = [retrieved_model]
 
         # Call get with required workspace_id
         with patch("extralit.documents._resource.Extralit._get_default", return_value=client):
@@ -225,36 +225,24 @@ class TestDocumentResourceCRUD:
         # Verify API was called
         documents_api.delete.assert_called_once_with(sample_document_id, sample_workspace_id)
 
-    def test_document_factory_methods(self, mock_client, sample_workspace_id):
-        """Test Document factory methods."""
+    def test_document_get_by_id_only(self, mock_client, sample_workspace_id):
+        """Test Document.get() method now only accepts ID parameter."""
         client, documents_api = mock_client
 
-        # Mock the API responses for the get method
-        pmid_model = DocumentModel(
+        # Mock the API response for ID-based get method
+        id_model = DocumentModel(
             id=uuid4(),
             workspace_id=sample_workspace_id,
-            reference="PMID:12345678",
+            reference="Test:12345678",
             pmid="12345678",
-        )
-        doi_model = DocumentModel(
-            id=uuid4(),
-            workspace_id=sample_workspace_id,
-            reference="DOI:10.1234/example",
-            doi="10.1234/example",
         )
 
         with patch("extralit.documents._resource.Extralit._get_default", return_value=client):
-            # Test the new unified get method with pmid
-            documents_api.get.return_value = pmid_model
-            doc_pmid = Document.get(workspace_id=sample_workspace_id, pmid="12345678")
-            assert doc_pmid.pmid == "12345678"
-            assert doc_pmid.workspace_id == sample_workspace_id
-
-            # Test the new unified get method with doi
-            documents_api.get.return_value = doi_model
-            doc_doi = Document.get(workspace_id=sample_workspace_id, doi="10.1234/example")
-            assert doc_doi.doi == "10.1234/example"
-            assert doc_doi.workspace_id == sample_workspace_id
+            # Test the get method with ID (should work)
+            documents_api.get.return_value = [id_model]
+            doc = Document.get(workspace_id=sample_workspace_id, id=id_model.id)
+            assert doc.id == id_model.id
+            assert doc.workspace_id == sample_workspace_id
 
     def test_document_from_file_local(self, mock_client, sample_workspace_id):
         """Test Document.from_file() with local file."""
@@ -313,21 +301,24 @@ class TestWorkspaceDocumentIntegration:
         return workspace
 
     def test_workspace_documents_property(self, mock_workspace, sample_document_model):
-        """Test workspace.documents property returns Document resources."""
-        # Mock the list_documents method on the mock instance
-        mock_workspace.list_documents.return_value = [
+        """Test workspace.documents property returns Documents collection."""
+        from extralit.client.resources import Documents
+
+        # Mock the Documents collection and its behavior
+        mock_documents_collection = MagicMock(spec=Documents)
+        mock_documents_collection.list.return_value = [
             Document.from_model(model=sample_document_model, client=mock_workspace._client)
         ]
 
-        # Since we're using a MagicMock, we need to explicitly set up the property behavior
-        # The documents property should call list_documents()
-        mock_workspace.documents = mock_workspace.list_documents.return_value
+        # Mock the documents property to return our Documents collection
+        mock_workspace.documents = mock_documents_collection
 
-        documents = mock_workspace.documents
+        documents_collection = mock_workspace.documents
+        documents_list = documents_collection.list()
 
-        assert len(documents) == 1
-        assert isinstance(documents[0], Document)
-        assert documents[0].id == sample_document_model.id
+        assert len(documents_list) == 1
+        assert isinstance(documents_list[0], Document)
+        assert documents_list[0].id == sample_document_model.id
 
     def test_workspace_add_document_integration(self, mock_workspace, sample_workspace_id):
         """Test workspace.add_document creates Document and calls API."""
