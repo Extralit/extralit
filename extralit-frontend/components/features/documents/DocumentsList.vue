@@ -93,7 +93,7 @@
           </template>
           <MarkdownRenderer
             v-if-else="selectedDocumentMetadata?.text_extraction_metadata?.markdown"
-            :markdown="selectedDocumentMetadata?.text_extraction_metadata?.markdown"
+            :markdown="selectedDocumentMetadata?.text_extraction_metadata?.markdown || ''"
           />
         </pre>
       </div>
