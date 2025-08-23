@@ -25,13 +25,22 @@ from extralit.client import Extralit
 
 
 def delete_document(
-    reference: Optional[str] = typer.Argument(None, help="Reference of the document to delete"),
+    reference: Optional[str] = typer.Option(None, help="Reference of the document to delete"),
     document_id: Optional[UUID] = typer.Option(None, help="ID of the document to delete"),
+    pmid: Optional[str] = typer.Option(None, help="PMID of the document to delete"),
+    doi: Optional[str] = typer.Option(None, help="DOI of the document to delete"),
     workspace: str = typer.Option(..., "--workspace", "-w", help="Workspace name"),
     all: bool = typer.Option(False, "--all", "-a", help="Delete all documents in the workspace"),
     force: bool = typer.Option(False, "--force", "-f", help="Force deletion without confirmation"),
 ) -> None:
-    """Delete a document or all documents from a workspace."""
+    """Delete a document or all documents from a workspace.
+
+    You can specify a document to delete by any of:
+    - --reference (string)
+    - --document-id (UUID)
+    - --pmid (PubMed ID)
+    - --doi (DOI)
+    """
     console = Console()
 
     try:
@@ -49,10 +58,12 @@ def delete_document(
             console.print(panel)
             raise typer.Exit(code=1)
 
-        documents = workspace_obj.documents
+        documents_collection = workspace_obj.documents
 
         if all:
-            if not documents:
+            # Get all documents in the workspace (using efficient call without metadata)
+            all_documents = documents_collection()
+            if not all_documents:
                 panel = get_themed_panel(
                     f"No documents found in workspace '{workspace}'.",
                     title="No documents",
@@ -64,7 +75,7 @@ def delete_document(
 
             if not force:
                 confirm = typer.confirm(
-                    f"Are you sure you want to delete ALL ({len(documents)}) documents from workspace '{workspace}'?"
+                    f"Are you sure you want to delete ALL ({len(all_documents)}) documents from workspace '{workspace}'?"
                 )
                 if not confirm:
                     panel = get_themed_panel(
@@ -78,12 +89,12 @@ def delete_document(
 
             deleted = []
             failed = []
-            for doc in documents:
+            for doc in all_documents:
                 try:
                     doc.delete()
-                    deleted.append(doc.file_name)
+                    deleted.append(doc.file_name or str(doc.id))
                 except Exception as e:
-                    failed.append((doc.file_name, str(e)))
+                    failed.append((doc.file_name or str(doc.id), str(e)))
 
             msg = f"Deleted {len(deleted)} document(s) from workspace '{workspace}'."
             if deleted:
@@ -103,16 +114,51 @@ def delete_document(
                 raise typer.Exit(code=1)
             return
 
-        # Single document deletion
-        document = None
-        if reference:
-            document = next((doc for doc in documents if doc.reference == reference), None)
-        elif document_id:
-            document = next((doc for doc in documents if doc.id == document_id), None)
+        # Single document deletion - check that at least one identifier is provided
+        if not any([reference, document_id, pmid, doi]):
+            panel = get_themed_panel(
+                "You must specify a document to delete using one of: reference, --document-id, --pmid, or --doi",
+                title="Missing document identifier",
+                title_align="left",
+                success=False,
+            )
+            console.print(panel)
+            raise typer.Exit(code=1)
+
+        # Use the new Documents API to get the document by any of the provided criteria
+        # Only pass the non-None values to avoid API errors
+        kwargs = {}
+        if document_id is not None:
+            kwargs["id"] = document_id
+        if reference is not None:
+            kwargs["reference"] = reference
+        if pmid is not None:
+            kwargs["pmid"] = pmid
+        if doi is not None:
+            kwargs["doi"] = doi
+
+        # Type annotation to help type checker understand this returns Optional[Document], not list
+        from extralit.documents import Document
+
+        # Since we're passing kwargs, this will use the specific document lookup, not the list method
+        document_result = documents_collection(**kwargs)
+        document: Optional[Document] = document_result  # type: ignore
 
         if not document:
+            # Build a descriptive error message based on what was provided
+            criteria = []
+            if reference:
+                criteria.append(f"reference '{reference}'")
+            if document_id:
+                criteria.append(f"ID '{document_id}'")
+            if pmid:
+                criteria.append(f"PMID '{pmid}'")
+            if doi:
+                criteria.append(f"DOI '{doi}'")
+
+            criteria_text = " or ".join(criteria)
             panel = get_themed_panel(
-                f"Document with {'reference ' + reference if reference else 'ID ' + str(document_id)} not found in workspace '{workspace}'.",
+                f"Document with {criteria_text} not found in workspace '{workspace}'.",
                 title="Document not found",
                 title_align="left",
                 success=False,
@@ -120,9 +166,12 @@ def delete_document(
             console.print(panel)
             raise typer.Exit(code=1)
 
+        # Get a display name for the document
+        document_name = document.file_name or document.reference or str(document.id)
+
         if not force:
             confirm = typer.confirm(
-                f"Are you sure you want to delete document '{document.file_name}' from workspace '{workspace}'?"
+                f"Are you sure you want to delete document '{document_name}' from workspace '{workspace}'?"
             )
             if not confirm:
                 panel = get_themed_panel(
@@ -137,7 +186,7 @@ def delete_document(
         document.delete()
 
         panel = get_themed_panel(
-            f"Document '{document.file_name}' deleted successfully from workspace '{workspace}'.",
+            f"Document '{document_name}' deleted successfully from workspace '{workspace}'.",
             title="Document deleted",
             title_align="left",
             success=True,

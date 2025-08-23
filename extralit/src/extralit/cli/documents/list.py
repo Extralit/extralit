@@ -41,9 +41,8 @@ def list_documents(
             console.print(panel)
             raise typer.Exit(code=1)
 
-        documents = workspace_obj.documents
-        print(documents[-1].id)
-        print(workspace_obj.documents(id=documents[-1].id))
+        # Get all documents in the workspace (using efficient call without metadata)
+        documents = workspace_obj.documents()
 
         if not documents:
             panel = get_themed_panel(
@@ -55,7 +54,8 @@ def list_documents(
             console.print(panel)
             return
 
-        print_rich_table(documents, title=f"Documents in workspace '{workspace}'")
+        # Use type: ignore since Document is a Resource but type system doesn't recognize the inheritance
+        print_rich_table(documents, title=f"Documents in workspace '{workspace}'")  # type: ignore
 
         panel = get_themed_panel(
             f"Found {len(documents)} documents in workspace '{workspace}'.",

@@ -21,9 +21,9 @@ from rich.table import Table
 from rich.text import Text
 
 if TYPE_CHECKING:
-    from extralit._models._document import Document
     from extralit._models._files import ObjectMetadata
     from extralit._resource import Resource
+    from extralit.client.resources import Documents
 
     try:
         import pandas as pd
@@ -112,7 +112,7 @@ def console_table_to_pandas_df(table: Table) -> "pd.DataFrame":
 
 
 def print_rich_table(
-    resources: list[Union["Resource", "pa.DataFrameSchema", "ObjectMetadata", "Document"]],
+    resources: list[Union["Resource", "pa.DataFrameSchema", "ObjectMetadata", "Documents"]],
     columns: Optional[list[str]] = None,
     title: Optional[str] = None,
     return_table: bool = False,
@@ -222,7 +222,6 @@ def print_rich_table(
                 "PMID": lambda r: r.pmid,
                 "DOI": lambda r: r.doi,
                 "Created": lambda r: r.inserted_at.isoformat(sep=" ") if r.inserted_at else "",
-                "Updated": lambda r: r.updated_at.isoformat(sep=" ") if r.updated_at else "",
             },
             "styles": {
                 "ID": "cyan",
@@ -231,7 +230,6 @@ def print_rich_table(
                 "PMID": "yellow",
                 "DOI": "magenta",
                 "Created": "blue",
-                "Updated": "blue",
             },
         },
         "DataFrameSchema": {

@@ -116,6 +116,7 @@ async def get_document(
     reference: Annotated[str | None, Query(description="Document reference")] = None,
     pmid: Annotated[str | None, Query(description="PubMed ID")] = None,
     doi: Annotated[str | None, Query(description="DOI")] = None,
+    limit: Annotated[int | None, Query(description="Maximum number of documents to return")] = None,
     db: AsyncSession = Depends(get_async_db),
     client: Minio | LocalFileStorage = Depends(files.get_minio_client),
     current_user: User = Security(auth.get_current_user),
@@ -135,6 +136,7 @@ async def get_document(
         pmid=pmid,
         doi=doi,
         reference=reference,
+        limit=limit,
     )
 
     if not documents:

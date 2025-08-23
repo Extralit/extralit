@@ -58,7 +58,7 @@ class DocumentsAPI(ResourceAPI):
 
     @api_error_handler
     def get(self, params: dict) -> "DocumentModel":
-        """Get a document using multiple search criteria.
+        """Get a document using multiple search criteria. If multiple documents match, only the first one is returned.
 
         Args:
             params: Dictionary containing any combination of:
@@ -74,6 +74,7 @@ class DocumentsAPI(ResourceAPI):
         from extralit._models._document import DocumentModel
 
         url = "/api/v1/documents"
+        params["limit"] = 1
         response = self.http_client.get(url=url, params=params)
         response.raise_for_status()
 

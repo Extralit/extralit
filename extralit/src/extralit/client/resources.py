@@ -360,37 +360,36 @@ class Documents(Sequence["Document"], ResourceHTMLReprMixin):
         self._api = client.api.documents
 
     @overload
-    def __call__(self, id: Union[UUID, str]) -> Optional["Document"]:
-        """Get a document by id if exists. Otherwise, returns `None`"""
+    def __call__(self) -> list["Document"]:
+        """List all documents in the workspace (lightweight, no metadata)."""
         ...
 
     @overload
-    def __call__(self, reference: str) -> Optional["Document"]:
-        """Get a document by reference if exists. Otherwise, returns `None`"""
-        ...
-
-    @overload
-    def __call__(self, pmid: str) -> Optional["Document"]:
-        """Get a document by PMID if exists. Otherwise, returns `None`"""
-        ...
-
-    @overload
-    def __call__(self, doi: str) -> Optional["Document"]:
-        """Get a document by DOI if exists. Otherwise, returns `None`"""
-        ...
-
     def __call__(
         self,
+        *,
         id: Optional[Union[UUID, str]] = None,
         reference: Optional[str] = None,
         pmid: Optional[str] = None,
         doi: Optional[str] = None,
     ) -> Optional["Document"]:
         """Get a document by id, reference, pmid, or doi if exists. Otherwise, returns `None`"""
-        if not any([id, reference, pmid, doi]):
-            raise ExtralitError("One of 'id', 'reference', 'pmid', or 'doi' must be provided")
+        ...
 
-        # Build parameters for the API call
+    def __call__(
+        self,
+        *,
+        id: Optional[Union[UUID, str]] = None,
+        reference: Optional[str] = None,
+        pmid: Optional[str] = None,
+        doi: Optional[str] = None,
+    ) -> Union[list["Document"], Optional["Document"]]:
+        """Get a document by id, reference, pmid, or doi if exists, or list all documents if no parameters provided."""
+        # If no parameters provided, return list of all documents (lightweight)
+        if not any([id, reference, pmid, doi]):
+            return self.list()
+
+        # Build parameters for the API call to get specific document
         params = {"workspace_id": str(self._workspace.id)}
         if id is not None:
             params["id"] = str(id)

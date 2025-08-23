@@ -208,16 +208,43 @@ class TestWorkspaceDocuments:
         document = documents_collection(id=uuid.uuid4())
         assert document is None
 
-    def test_documents_get_no_params_error(self, workspace: Workspace):
-        """Test that calling Documents() without parameters raises an error."""
-        from extralit._exceptions import ExtralitError
+    def test_documents_call_no_params_returns_list(self, workspace: Workspace):
+        """Test that calling Documents() without parameters returns a list of all documents."""
+        documents_collection = workspace.documents
+
+        # Should return a list when no parameters are provided (same as .list())
+        documents_from_call = documents_collection()
+        documents_from_list = documents_collection.list()
+
+        # Both should return lists
+        assert isinstance(documents_from_call, list)
+        assert isinstance(documents_from_list, list)
+
+        # Should be the same content
+        assert len(documents_from_call) == len(documents_from_list)
+
+        # Should be empty initially
+        assert len(documents_from_call) == 0
+
+    def test_documents_call_with_documents(self, workspace: Workspace):
+        """Test that calling Documents() without parameters works correctly when documents exist."""
+        # Add a document first
+        test_url = f"https://example.com/test_{uuid.uuid4()}"
+        document_id = workspace.add_document(url=test_url, reference="test-ref-call-list")
+        assert document_id is not None
 
         documents_collection = workspace.documents
 
-        # Should raise an error when no parameters are provided
-        try:
-            # Use type: ignore to suppress the linter error since we're intentionally testing invalid usage
-            documents_collection()  # type: ignore
-            raise AssertionError("Expected an error when calling with no parameters")
-        except ExtralitError as e:
-            assert "must be provided" in str(e)
+        # Both methods should return the same documents
+        documents_from_call = documents_collection()
+        documents_from_list = documents_collection.list()
+
+        # Both should return lists with the same content
+        assert isinstance(documents_from_call, list)
+        assert isinstance(documents_from_list, list)
+        assert len(documents_from_call) == len(documents_from_list)
+        assert len(documents_from_call) > 0
+
+        # Should contain the document we added
+        assert any(doc.url == test_url for doc in documents_from_call)
+        assert any(doc.url == test_url for doc in documents_from_list)

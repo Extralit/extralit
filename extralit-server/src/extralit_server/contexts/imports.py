@@ -85,8 +85,20 @@ async def delete_documents(
 
 
 async def list_documents(db: "AsyncSession", workspace_id: UUID) -> list[DocumentListItem]:
-    result = await db.execute(select(Document).filter_by(workspace_id=workspace_id))
-    documents = [DocumentListItem.model_validate(doc) for doc in result.scalars().all()]
+    result = await db.execute(
+        select(
+            Document.id,
+            Document.workspace_id,
+            Document.url,
+            Document.file_name,
+            Document.reference,
+            Document.pmid,
+            Document.doi,
+            Document.inserted_at,
+            Document.updated_at,
+        ).filter_by(workspace_id=workspace_id)
+    )
+    documents = [DocumentListItem.model_validate(doc) for doc in result.all()]
 
     return documents
 
