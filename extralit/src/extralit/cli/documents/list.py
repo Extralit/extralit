@@ -42,6 +42,7 @@ def list_documents(
             raise typer.Exit(code=1)
 
         documents = workspace_obj.documents
+        print(documents[-1].id)
 
         if not documents:
             panel = get_themed_panel(

@@ -59,6 +59,7 @@ class Document(Resource):
         pmid: Optional[str] = None,
         doi: Optional[str] = None,
         id: Optional[UUID] = None,
+        metadata: Optional[dict] = None,
         client: Optional["Extralit"] = None,
     ) -> None:
         """Initializes a Document object.
@@ -89,10 +90,11 @@ class Document(Resource):
             url=url,
             pmid=pmid,
             doi=doi,
+            metadata=metadata,
         )
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(reference={self.reference!r}, file_name={self.file_name!r}, url={self.url!r}, pmid={self.pmid!r}, doi={self.doi!r})"
+        return f"{self.__class__.__name__}(reference={self.reference!r}, file_name={self.file_name!r}, url={self.url!r}, pmid={self.pmid!r}, doi={self.doi!r}, metadata={(self.metadata or {}).keys()!r})"
 
     @classmethod
     def from_file(
@@ -175,6 +177,7 @@ class Document(Resource):
             pmid=model.pmid,
             doi=model.doi,
             id=model.id,
+            metadata=model.metadata,
             client=client,
         )
         instance._model = model
@@ -288,6 +291,14 @@ class Document(Resource):
     @doi.setter
     def doi(self, value: str) -> None:
         self._model.doi = value
+
+    @property
+    def metadata(self) -> Optional[dict]:
+        return self._model.metadata
+
+    @metadata.setter
+    def metadata(self, value: dict) -> None:
+        self._model.metadata = value
 
     ############################
     # Resource overrides

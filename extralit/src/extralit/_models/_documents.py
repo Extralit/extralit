@@ -26,22 +26,26 @@ class DocumentModel(ResourceModel):
     """Schema for the `Document` model.
 
     Args:
+        id: The unique identifier of the document. Optional.
+        workspace_id: The workspace ID to which the document belongs. Required.
+        reference: A reference to the document, e.g., an identifier. Required.
         url: The URL of the document. Optional.
-        file_data: The file data of the document. Required.
-        file_name: The file name of the document. Required.
-        pmid: The PMID of the document. Optional.
+        file_name: The file name of the document. Optional.
+        file_path: The local file path of the document. Optional.
         doi: The DOI of the document. Optional.
-        workspace_id: The workspace ID of the document. Required.
+        pmid: The PMID of the document. Optional.
+        metadata: Additional metadata for the document. Optional.
     """
 
     id: Optional[UUID] = None
-    reference: str = Field(..., description="A reference to the document, e.g., an identifier.")
     workspace_id: UUID = Field(..., description="The workspace ID to which the document belongs to")
+    reference: str = Field(..., description="A reference to the document, e.g., an identifier.")
+    url: Optional[str] = None
     file_name: Optional[str] = Field(None)
     file_path: Optional[str] = Field(None, description="Local file path")
     doi: Optional[str] = None
     pmid: Optional[str] = None
-    url: Optional[str] = None
+    metadata: Optional[dict] = None
 
     @classmethod
     def from_file(
@@ -79,9 +83,6 @@ class DocumentModel(ResourceModel):
         )
 
     def to_server_payload(self) -> dict[str, Any]:
-        """Method that will be used to create the payload that will be sent to Extralit
-        to create a field in the `FeedbackDataset`.
-        """
         json = {
             "file_name": self.file_name,
             "reference": self.reference,
@@ -94,9 +95,6 @@ class DocumentModel(ResourceModel):
             json["id"] = str(self.id)
 
         return json
-
-    def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(file_name={self.file_name!r}, url={self.url!r}, pmid={self.pmid!r}, doi={self.doi!r}, workspace_id={self.workspace_id!r})"
 
 
 # Backwards compatibility alias
