@@ -18,7 +18,7 @@ from uuid import UUID
 import pytest
 
 from extralit._api._workspaces import WorkspacesAPI
-from extralit._models._documents import Document
+from extralit._models._document import Document
 from extralit._models._files import FileObjectResponse, ListObjectsResponse, ObjectMetadata
 
 

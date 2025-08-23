@@ -20,7 +20,7 @@ from uuid import UUID, uuid4
 import pytest
 
 from extralit._api._workspaces import WorkspacesAPI
-from extralit._models._documents import DocumentModel
+from extralit._models._document import DocumentModel
 from extralit.documents import Document
 
 
