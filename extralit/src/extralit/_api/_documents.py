@@ -57,8 +57,8 @@ class DocumentsAPI(ResourceAPI):
         return model
 
     @api_error_handler
-    def get(self, params: dict) -> "DocumentModel":
-        """Get a document using multiple search criteria. If multiple documents match, only the first one is returned.
+    def get(self, params: dict) -> list["DocumentModel"]:
+        """Get documents using multiple search criteria.
 
         Args:
             params: Dictionary containing any combination of:
@@ -69,37 +69,37 @@ class DocumentsAPI(ResourceAPI):
                 - reference: Document reference
 
         Returns:
-            The document model.
+            A list of document models matching the criteria.
         """
         from extralit._models._document import DocumentModel
 
         url = "/api/v1/documents"
-        params["limit"] = 1
         response = self.http_client.get(url=url, params=params)
         response.raise_for_status()
 
         doc_data_list = response.json()
 
         if not doc_data_list:
-            raise ValueError("No documents found with the provided criteria")
+            return []
 
-        if len(doc_data_list) > 1:
-            print(f"Warning: Multiple documents found ({len(doc_data_list)}). Using the first one.")
+        documents = []
+        for doc_data in doc_data_list:
+            doc = DocumentModel(
+                id=doc_data.get("id"),
+                workspace_id=doc_data.get("workspace_id"),
+                file_name=doc_data.get("file_name"),
+                reference=doc_data.get("reference"),
+                url=doc_data.get("url"),
+                pmid=doc_data.get("pmid"),
+                doi=doc_data.get("doi"),
+                metadata=doc_data.get("metadata"),
+                inserted_at=doc_data.get("inserted_at"),
+                updated_at=doc_data.get("updated_at"),
+                file_path=None,
+            )
+            documents.append(doc)
 
-        doc_data = doc_data_list[0]
-        return DocumentModel(
-            id=doc_data.get("id"),
-            workspace_id=doc_data.get("workspace_id"),
-            file_name=doc_data.get("file_name"),
-            reference=doc_data.get("reference"),
-            url=doc_data.get("url"),
-            pmid=doc_data.get("pmid"),
-            doi=doc_data.get("doi"),
-            metadata=doc_data.get("metadata"),
-            inserted_at=doc_data.get("inserted_at"),
-            updated_at=doc_data.get("updated_at"),
-            file_path=None,
-        )
+        return documents
 
     @api_error_handler
     def list(self, workspace_id: UUID) -> list["DocumentModel"]:

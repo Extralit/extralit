@@ -31,7 +31,6 @@ if TYPE_CHECKING:
     from extralit._models._schema import SchemaStructure
     from extralit.client.resources import Documents
     from extralit.datasets._resource import Dataset
-    from extralit.documents._resource import Document
     from extralit.users._resource import User
 
 
@@ -100,18 +99,6 @@ class Workspace(Resource):
         datasets = self._client.api.datasets.list(self.id)
         self._log_message(f"Got {len(datasets)} datasets for workspace {self.id}")
         return [Dataset.from_model(model=dataset, client=self._client) for dataset in datasets]
-
-    def list_documents(self) -> list["Document"]:
-        """List documents in the workspace as Document resource objects.
-
-        Returns:
-            List[Document]: A list of Document resource objects in the workspace.
-        """
-        from extralit.documents import Document
-
-        documents = self._client.api.documents.list(self.id)
-        self._log_message(f"Got {len(documents)} documents for workspace {self.id}")
-        return [Document.from_model(model=document, client=self._client) for document in documents]
 
     ####################
     # File methods #

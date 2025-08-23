@@ -135,23 +135,25 @@ class TestWorkspaceDocuments:
             os.unlink(temp_file_path)
 
     def test_documents_get_by_id(self, workspace: Workspace):
-        """Test getting a document by ID using the Documents collection."""
+        """Test getting documents by ID using the Documents collection."""
         # Add a document first
         test_url = f"https://example.com/test_{uuid.uuid4()}"
         document_id = workspace.add_document(url=test_url, reference="test-ref-get-by-id")
         assert document_id is not None
 
-        # Get the document by ID using the Documents collection
+        # Get documents by ID using the Documents collection
         documents_collection = workspace.documents
-        document = documents_collection(id=document_id)
+        documents = documents_collection(id=document_id)
 
-        # Verify we got the document
-        assert document is not None
+        # Verify we got a list with the document
+        assert isinstance(documents, list)
+        assert len(documents) >= 1
+        document = documents[0]  # Get the first matching document
         assert document.id == document_id
         assert document.url == test_url
 
     def test_documents_get_by_pmid(self, workspace: Workspace):
-        """Test getting a document by PMID using the Documents collection."""
+        """Test getting documents by PMID using the Documents collection."""
         # Add a document with a PMID
         test_pmid = f"PMC{uuid.uuid4().hex[:8]}"
         document_id = workspace.add_document(
@@ -159,16 +161,18 @@ class TestWorkspaceDocuments:
         )
         assert document_id is not None
 
-        # Get the document by PMID using the Documents collection
+        # Get documents by PMID using the Documents collection
         documents_collection = workspace.documents
-        document = documents_collection(pmid=test_pmid)
+        documents = documents_collection(pmid=test_pmid)
 
-        # Verify we got the document
-        assert document is not None
+        # Verify we got a list with the document
+        assert isinstance(documents, list)
+        assert len(documents) >= 1
+        document = documents[0]  # Get the first matching document
         assert document.pmid == test_pmid
 
     def test_documents_get_by_doi(self, workspace: Workspace):
-        """Test getting a document by DOI using the Documents collection."""
+        """Test getting documents by DOI using the Documents collection."""
         # Add a document with a DOI
         test_doi = f"10.1234/{uuid.uuid4().hex[:8]}"
         document_id = workspace.add_document(
@@ -176,37 +180,42 @@ class TestWorkspaceDocuments:
         )
         assert document_id is not None
 
-        # Get the document by DOI using the Documents collection
+        # Get documents by DOI using the Documents collection
         documents_collection = workspace.documents
-        document = documents_collection(doi=test_doi)
+        documents = documents_collection(doi=test_doi)
 
-        # Verify we got the document
-        assert document is not None
+        # Verify we got a list with the document
+        assert isinstance(documents, list)
+        assert len(documents) >= 1
+        document = documents[0]  # Get the first matching document
         assert document.doi == test_doi
 
     def test_documents_get_by_reference(self, workspace: Workspace):
-        """Test getting a document by reference using the Documents collection."""
+        """Test getting documents by reference using the Documents collection."""
         # Add a document with a unique reference
         test_reference = f"test-ref-unique-{uuid.uuid4().hex[:8]}"
         test_url = f"https://example.com/test_{uuid.uuid4()}"
         document_id = workspace.add_document(url=test_url, reference=test_reference)
         assert document_id is not None
 
-        # Get the document by reference using the Documents collection
+        # Get documents by reference using the Documents collection
         documents_collection = workspace.documents
-        document = documents_collection(reference=test_reference)
+        documents = documents_collection(reference=test_reference)
 
-        # Verify we got the document
-        assert document is not None
+        # Verify we got a list with the document
+        assert isinstance(documents, list)
+        assert len(documents) >= 1
+        document = documents[0]  # Get the first matching document
         assert document.reference == test_reference
 
     def test_documents_get_nonexistent(self, workspace: Workspace):
-        """Test getting a nonexistent document returns None."""
+        """Test getting nonexistent documents returns empty list."""
         documents_collection = workspace.documents
 
-        # Try to get a document that doesn't exist
-        document = documents_collection(id=uuid.uuid4())
-        assert document is None
+        # Try to get documents that don't exist
+        documents = documents_collection(id=uuid.uuid4())
+        assert isinstance(documents, list)
+        assert len(documents) == 0
 
     def test_documents_call_no_params_returns_list(self, workspace: Workspace):
         """Test that calling Documents() without parameters returns a list of all documents."""
@@ -248,3 +257,34 @@ class TestWorkspaceDocuments:
         # Should contain the document we added
         assert any(doc.url == test_url for doc in documents_from_call)
         assert any(doc.url == test_url for doc in documents_from_list)
+
+    def test_documents_multiple_with_same_reference(self, workspace: Workspace):
+        """Test that multiple documents with the same reference are all returned."""
+        # Add multiple documents with the same reference
+        shared_reference = f"shared-ref-{uuid.uuid4().hex[:8]}"
+        test_url1 = f"https://example.com/test1_{uuid.uuid4()}"
+        test_url2 = f"https://example.com/test2_{uuid.uuid4()}"
+
+        document_id1 = workspace.add_document(url=test_url1, reference=shared_reference)
+        document_id2 = workspace.add_document(url=test_url2, reference=shared_reference)
+
+        assert document_id1 is not None
+        assert document_id2 is not None
+
+        documents_collection = workspace.documents
+
+        # Get documents by the shared reference
+        documents = documents_collection(reference=shared_reference)
+
+        # Should return multiple documents
+        assert isinstance(documents, list)
+        assert len(documents) >= 2  # At least the two we added
+
+        # Both URLs should be present
+        urls = [doc.url for doc in documents]
+        assert test_url1 in urls
+        assert test_url2 in urls
+
+        # All should have the same reference
+        for doc in documents:
+            assert doc.reference == shared_reference

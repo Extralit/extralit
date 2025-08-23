@@ -187,27 +187,29 @@ class Document(Resource):
     def get(
         cls,
         workspace_id: UUID,
-        reference: Optional[str] = None,
         id: Optional[UUID] = None,
-        pmid: Optional[str] = None,
-        doi: Optional[str] = None,
         client: Optional["Extralit"] = None,
     ) -> "Document":
         """Get a document by ID, PMID, DOI, reference, or workspace_id.
 
         Args:
             workspace_id: The workspace ID (required).
-            id: The document ID.
-            pmid: The PubMed ID.
-            doi: The DOI.
-            reference: The document reference.
+            id: The document ID (expects exactly one match).
+            pmid: The PubMed ID (returns first match if multiple exist).
+            doi: The DOI (returns first match if multiple exist).
+            reference: The document reference (returns first match if multiple exist).
             client: The client used to interact with Extralit.
 
         Returns:
-            Document: The document object.
+            Document: The document object. For ID searches, ensures exactly one match.
+                     For other criteria, returns the first match.
 
         Raises:
-            ValueError: If workspace_id is not provided or if none of id, pmid, doi, or reference is provided.
+            ValueError: If workspace_id is not provided, if none of id, pmid, doi, or reference is provided,
+                       if no documents are found, or if multiple documents found when searching by ID.
+
+        Note:
+            If you need all documents matching non-ID criteria, use workspace.documents() instead.
         """
         if not workspace_id:
             raise ValueError("workspace_id is required")
@@ -218,19 +220,15 @@ class Document(Resource):
         params = {"workspace_id": str(workspace_id)}
         if id:
             params["id"] = str(id)
-        if pmid:
-            params["pmid"] = pmid
-        if doi:
-            params["doi"] = doi
-        if reference:
-            params["reference"] = reference
 
-        # Ensure at least one identifier is provided in addition to workspace_id
         if len(params) <= 1:  # Only workspace_id is provided
-            raise ValueError("At least one of id, pmid, doi, or reference must be provided in addition to workspace_id")
+            raise ValueError("At least `id` must be provided in addition to `workspace_id`")
 
-        model: DocumentModel = client.api.documents.get(params)
-        return cls.from_model(model, client)
+        models: list[DocumentModel] = client.api.documents.get(params)
+        if not models:
+            raise ValueError("No documents found with the provided criteria")
+
+        return cls.from_model(models[0], client)
 
     ############################
     # Properties

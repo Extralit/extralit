@@ -372,8 +372,8 @@ class Documents(Sequence["Document"], ResourceHTMLReprMixin):
         reference: Optional[str] = None,
         pmid: Optional[str] = None,
         doi: Optional[str] = None,
-    ) -> Optional["Document"]:
-        """Get a document by id, reference, pmid, or doi if exists. Otherwise, returns `None`"""
+    ) -> list["Document"]:
+        """Get documents by id, reference, pmid, or doi. Returns a list of matching documents."""
         ...
 
     def __call__(
@@ -383,13 +383,13 @@ class Documents(Sequence["Document"], ResourceHTMLReprMixin):
         reference: Optional[str] = None,
         pmid: Optional[str] = None,
         doi: Optional[str] = None,
-    ) -> Union[list["Document"], Optional["Document"]]:
-        """Get a document by id, reference, pmid, or doi if exists, or list all documents if no parameters provided."""
+    ) -> list["Document"]:
+        """Get documents by id, reference, pmid, or doi, or list all documents if no parameters provided."""
         # If no parameters provided, return list of all documents (lightweight)
         if not any([id, reference, pmid, doi]):
             return self.list()
 
-        # Build parameters for the API call to get specific document
+        # Build parameters for the API call to get specific documents
         params = {"workspace_id": str(self._workspace.id)}
         if id is not None:
             params["id"] = str(id)
@@ -401,11 +401,11 @@ class Documents(Sequence["Document"], ResourceHTMLReprMixin):
             params["doi"] = doi
 
         try:
-            model = self._api.get(params)
-            return self._from_model(model)
+            models = self._api.get(params)
+            return [self._from_model(model) for model in models]
         except Exception:
-            # Document not found
-            return None
+            # No documents found or error occurred
+            return []
 
     def __iter__(self):
         return self._Iterator(self.list())
