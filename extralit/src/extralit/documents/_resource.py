@@ -24,7 +24,7 @@ except ImportError:
     from typing_extensions import Self
 
 from extralit._api._documents import DocumentsAPI
-from extralit._models._documents import DocumentModel
+from extralit._models._document import DocumentModel
 from extralit._resource import Resource
 from extralit.client import Extralit
 

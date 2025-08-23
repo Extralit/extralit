@@ -20,7 +20,7 @@ from extralit._api._base import ResourceAPI
 from extralit._exceptions._api import api_error_handler
 
 if TYPE_CHECKING:
-    from extralit._models._documents import DocumentModel
+    from extralit._models._document import DocumentModel
 
 
 class DocumentsAPI(ResourceAPI):
@@ -71,7 +71,7 @@ class DocumentsAPI(ResourceAPI):
         Returns:
             The document model.
         """
-        from extralit._models._documents import DocumentModel
+        from extralit._models._document import DocumentModel
 
         url = "/api/v1/documents"
         response = self.http_client.get(url=url, params=params)
@@ -110,7 +110,7 @@ class DocumentsAPI(ResourceAPI):
         Returns:
             A list of document models.
         """
-        from extralit._models._documents import DocumentModel
+        from extralit._models._document import DocumentModel
 
         url = f"/api/v1/documents/workspace/{workspace_id}"
         response = self.http_client.get(url=url)
@@ -157,7 +157,7 @@ class DocumentsAPI(ResourceAPI):
         Returns:
             The updated document model.
         """
-        from extralit._models._documents import DocumentModel
+        from extralit._models._document import DocumentModel
 
         if not model.id:
             raise ValueError("Document ID is required for updates")

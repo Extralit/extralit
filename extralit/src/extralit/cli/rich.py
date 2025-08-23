@@ -21,7 +21,7 @@ from rich.table import Table
 from rich.text import Text
 
 if TYPE_CHECKING:
-    from extralit._models._documents import Document
+    from extralit._models._document import Document
     from extralit._models._files import ObjectMetadata
     from extralit._resource import Resource
 

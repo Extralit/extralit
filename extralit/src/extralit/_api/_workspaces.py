@@ -28,7 +28,7 @@ from extralit._models._files import FileObjectResponse, ListObjectsResponse, Obj
 from extralit._models._workspace import WorkspaceModel
 
 if TYPE_CHECKING:
-    from extralit._models._documents import Document
+    from extralit._models._document import Document
     from extralit._models._schema import SchemaStructure
 
 

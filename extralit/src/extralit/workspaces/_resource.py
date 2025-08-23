@@ -27,9 +27,9 @@ from extralit.client import Extralit
 if TYPE_CHECKING:
     from uuid import UUID
 
-    from extralit._models._documents import DocumentModel
     from extralit._models._files import FileObjectResponse, ListObjectsResponse, ObjectMetadata
     from extralit._models._schema import SchemaStructure
+    from extralit.client.resources import Documents
     from extralit.datasets._resource import Dataset
     from extralit.documents._resource import Document
     from extralit.users._resource import User
@@ -189,7 +189,7 @@ class Workspace(Resource):
         Returns:
             The ID of the added document.
         """
-        from extralit._models._documents import DocumentModel
+        from extralit._models._document import DocumentModel
 
         # Create document from either local file or remote URL
         if file_path:
@@ -207,14 +207,6 @@ class Workspace(Resource):
             raise ValueError("Either file_path or url must be provided")
 
         return self._api.add_document(document)
-
-    def get_documents(self) -> list["DocumentModel"]:
-        """Get documents from the workspace.
-
-        Returns:
-            A list of documents.
-        """
-        return self._api.get_documents(self.id)
 
     ####################
     # Schema methods #
@@ -287,13 +279,20 @@ class Workspace(Resource):
         return self.list_datasets()
 
     @property
-    def documents(self) -> list["Document"]:
-        """List all documents in the workspace
+    def documents(self) -> "Documents":
+        """Access documents in the workspace
 
         Returns:
-            List[Document]: A list of all documents in the workspace
+            Documents: A Documents collection for this workspace that supports:
+                - workspace.documents - list all documents
+                - workspace.documents(id=...) - get document by ID
+                - workspace.documents(pmid=...) - get document by PMID
+                - workspace.documents(doi=...) - get document by DOI
+                - workspace.documents(reference=...) - get document by reference
         """
-        return self.list_documents()
+        from extralit.client.resources import Documents
+
+        return Documents(client=self._client, workspace=self)
 
     @property
     def users(self) -> "WorkspaceUsers":

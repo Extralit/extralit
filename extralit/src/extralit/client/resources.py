@@ -25,13 +25,13 @@ from extralit._api._webhooks import WebhookModel
 from extralit._exceptions import ExtralitError, NotFoundError
 from extralit._helpers import GenericIterator
 from extralit._helpers._resource_repr import ResourceHTMLReprMixin
-from extralit._models import DatasetModel, ResourceModel, UserModel, WorkspaceModel
+from extralit._models import DatasetModel, DocumentModel, ResourceModel, UserModel, WorkspaceModel
 
 if TYPE_CHECKING:
-    from extralit import Dataset, User, Webhook, Workspace
+    from extralit import Dataset, Document, User, Webhook, Workspace
     from extralit.client.core import Extralit
 
-__all__ = ["Datasets", "Users", "Webhooks", "Workspaces"]
+__all__ = ["Datasets", "Documents", "Users", "Webhooks", "Workspaces"]
 
 
 class Users(Sequence["User"], ResourceHTMLReprMixin):
@@ -346,6 +346,102 @@ class Datasets(Sequence["Dataset"], ResourceHTMLReprMixin):
         from extralit.datasets import Dataset
 
         return Dataset.from_model(model=model, client=self._client)
+
+
+class Documents(Sequence["Document"], ResourceHTMLReprMixin):
+    """A collection of documents within a workspace. It can be used to get existing documents."""
+
+    class _Iterator(GenericIterator["Document"]):
+        pass
+
+    def __init__(self, client: "Extralit", workspace: "Workspace") -> None:
+        self._client = client
+        self._workspace = workspace
+        self._api = client.api.documents
+
+    @overload
+    def __call__(self, id: Union[UUID, str]) -> Optional["Document"]:
+        """Get a document by id if exists. Otherwise, returns `None`"""
+        ...
+
+    @overload
+    def __call__(self, reference: str) -> Optional["Document"]:
+        """Get a document by reference if exists. Otherwise, returns `None`"""
+        ...
+
+    @overload
+    def __call__(self, pmid: str) -> Optional["Document"]:
+        """Get a document by PMID if exists. Otherwise, returns `None`"""
+        ...
+
+    @overload
+    def __call__(self, doi: str) -> Optional["Document"]:
+        """Get a document by DOI if exists. Otherwise, returns `None`"""
+        ...
+
+    def __call__(
+        self,
+        id: Optional[Union[UUID, str]] = None,
+        reference: Optional[str] = None,
+        pmid: Optional[str] = None,
+        doi: Optional[str] = None,
+    ) -> Optional["Document"]:
+        """Get a document by id, reference, pmid, or doi if exists. Otherwise, returns `None`"""
+        if not any([id, reference, pmid, doi]):
+            raise ExtralitError("One of 'id', 'reference', 'pmid', or 'doi' must be provided")
+
+        # Build parameters for the API call
+        params = {"workspace_id": str(self._workspace.id)}
+        if id is not None:
+            params["id"] = str(id)
+        if reference is not None:
+            params["reference"] = reference
+        if pmid is not None:
+            params["pmid"] = pmid
+        if doi is not None:
+            params["doi"] = doi
+
+        try:
+            model = self._api.get(params)
+            return self._from_model(model)
+        except Exception:
+            # Document not found
+            return None
+
+    def __iter__(self):
+        return self._Iterator(self.list())
+
+    @overload
+    @abstractmethod
+    def __getitem__(self, index: int) -> "Document": ...
+
+    @overload
+    @abstractmethod
+    def __getitem__(self, index: slice) -> Sequence["Document"]: ...
+
+    def __getitem__(self, index) -> "Document":
+        documents = self.list()
+        return documents[index]
+
+    def __len__(self) -> int:
+        return len(self.list())
+
+    def list(self) -> list["Document"]:
+        """List all documents in the workspace."""
+        models = self._api.list(self._workspace.id)
+        return [self._from_model(model) for model in models]
+
+    ############################
+    # Private methods
+    ############################
+
+    def _repr_html_(self) -> str:
+        return self._represent_as_html(resources=self.list())
+
+    def _from_model(self, model: DocumentModel) -> "Document":
+        from extralit.documents import Document
+
+        return Document.from_model(model=model, client=self._client)
 
 
 class Webhooks(Sequence["Webhook"], ResourceHTMLReprMixin):
