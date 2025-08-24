@@ -402,7 +402,7 @@ def main():
         print("\n🎉 CHUNKING TESTS PASSED!")
         print("✅ The chunking algorithm works correctly with your PDFs")
         print("✅ Document hierarchy is preserved properly")
-        print("✅ Ready for embedding once OpenAI quota is available")
+        print("✅ Ready for embedding with random vectors or real API")
 
         print("\n📋 What we've confirmed:")
         print("• PDF names are recognized and processed")
@@ -411,8 +411,8 @@ def main():
         print("• Chunk metadata is structured correctly")
 
         print("\n🔄 Next steps:")
-        print("1. Add credits to your OpenAI account")
-        print("2. Re-run with real embeddings")
+        print("1. Test with random vectors (no API needed)")
+        print("2. Configure OPENAI_BASE_URL for LiteLLM endpoint if needed")
         print("3. Upload PDFs to Extralit workspace for full integration")
 
     else:

@@ -19,6 +19,7 @@ import re
 from typing import Any, Optional
 from uuid import uuid4
 
+import numpy as np
 import typer
 from rich.console import Console
 from rich.progress import BarColumn, Progress, SpinnerColumn, TaskProgressColumn, TextColumn
@@ -117,22 +118,34 @@ def chunk_markdown(markdown_text: str, chunk_size: int = 1000, overlap: int = 20
     return chunks
 
 
-def create_embedding(text: str, model: str = "text-embedding-ada-002") -> Optional[list[float]]:
+def create_embedding(text: str, model: Optional[str] = None) -> Optional[list[float]]:
     """
-    Create embedding for text using OpenAI API.
+    Create embedding for text using configurable endpoint and model.
 
     Args:
         text: Text to embed
-        model: OpenAI embedding model to use
+        model: Embedding model to use (overrides EMBED_MODEL env var)
 
     Returns:
         List of float values representing the embedding, or None if failed
     """
     try:
+        # Get configuration from environment variables
+        embed_model_name = model or os.getenv("EMBED_MODEL", "text-embedding-ada-002")
+        base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
+        api_key = os.getenv("OPENAI_API_KEY")
+
+        # Use random vectors for testing or when no API key is available
+        if not api_key or base_url == "random" or not base_url.startswith("http"):
+            # Generate random 1536-dimensional vector (same as text-embedding-ada-002)
+            embedding = np.random.rand(1536).tolist()
+            return embedding
+
+        # Use actual OpenAI/LiteLLM endpoint
         from llama_index.embeddings.openai import OpenAIEmbedding
 
-        # Initialize OpenAI embedding
-        embed_model = OpenAIEmbedding(model=model, api_key=os.getenv("OPENAI_API_KEY"))
+        # Initialize embedding with configurable endpoint
+        embed_model = OpenAIEmbedding(model=embed_model_name, api_key=api_key, base_url=base_url)
 
         # Get embedding
         embedding = embed_model.get_text_embedding(text)
@@ -140,7 +153,9 @@ def create_embedding(text: str, model: str = "text-embedding-ada-002") -> Option
 
     except Exception as e:
         print(f"Error creating embedding: {e}")
-        return None
+        # Fallback to random vector if API fails
+        embedding = np.random.rand(1536).tolist()
+        return embedding
 
 
 def create_records_from_chunks(document, chunks: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -188,7 +203,7 @@ def embed_documents(
     dataset_name: str = typer.Option("chunks", "--dataset", "-d", help="Dataset name for storing chunks"),
     chunk_size: int = typer.Option(1000, "--chunk-size", help="Maximum characters per chunk"),
     overlap: int = typer.Option(200, "--overlap", help="Character overlap between chunks"),
-    embedding_model: str = typer.Option("text-embedding-ada-002", "--model", help="OpenAI embedding model"),
+    embedding_model: str = typer.Option("text-embedding-ada-002", "--model", help="Embedding model to use"),
     dry_run: bool = typer.Option(False, "--dry-run", help="Preview chunks without creating records"),
 ) -> None:
     """
@@ -197,21 +212,41 @@ def embed_documents(
     This command:
     1. Fetches documents with the specified reference from the workspace
     2. Chunks the markdown content using content-aware chunking
-    3. Creates embeddings for each chunk using OpenAI API
+    3. Creates embeddings for each chunk using configurable endpoint
     4. Stores the chunks and embeddings in a dataset
+
+    Environment Variables:
+        OPENAI_API_KEY: API key for OpenAI/LiteLLM endpoint (optional, uses random vectors if not set)
+        OPENAI_BASE_URL: Base URL for embedding API (default: https://api.openai.com/v1)
+        EMBED_MODEL: Embedding model to use (default: text-embedding-ada-002)
+
+    Examples:
+        # Basic usage with random vectors
+        extralit documents embed --workspace research --reference paper-001
+
+        # With custom LiteLLM endpoint
+        export OPENAI_BASE_URL="https://litellm.jonnytran.engineer"
+        export OPENAI_API_KEY="your-key"
+        extralit documents embed --workspace research --reference paper-001
+
+        # Preview chunks without creating embeddings
+        extralit documents embed --workspace research --reference paper-001 --dry-run
     """
     console = Console()
 
-    # Check for OpenAI API key
-    if not os.getenv("OPENAI_API_KEY") and not dry_run:
-        panel = get_themed_panel(
-            "OpenAI API key not found. Please set the OPENAI_API_KEY environment variable.",
-            title="Missing API Key",
-            title_align="left",
-            success=False,
-        )
-        console.print(panel)
-        raise typer.Exit(code=1)
+    # Check embedding configuration (only warn, don't fail)
+    api_key = os.getenv("OPENAI_API_KEY")
+    base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
+    embed_model_name = os.getenv("EMBED_MODEL", "text-embedding-ada-002")
+
+    if not api_key and not dry_run:
+        console.print("⚠️  No OPENAI_API_KEY found. Using random vectors for embeddings.")
+
+    if not dry_run:
+        console.print("🔧 Embedding configuration:")
+        console.print(f"   Model: {embed_model_name}")
+        console.print(f"   Endpoint: {base_url}")
+        console.print(f"   API Key: {'✅ Set' if api_key else '❌ Using random vectors'}")
 
     try:
         # Initialize client

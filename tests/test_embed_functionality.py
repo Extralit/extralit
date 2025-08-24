@@ -6,7 +6,7 @@ Tests chunking, embedding creation, and record preparation without requiring CLI
 
 import os
 import sys
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 # Add the extralit package to the path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "extralit", "src"))
@@ -79,40 +79,25 @@ CNNs are particularly effective for image recognition tasks.
 
 
 def test_embedding_creation():
-    """Test the embedding creation functionality (mocked)."""
+    """Test the embedding creation functionality with random vectors."""
     print("\n🧪 Testing embedding creation...")
 
     try:
         from extralit.cli.documents.embed import create_embedding
 
-        # Mock the OpenAI embedding to avoid requiring API key
-        with patch(
-            "llama_index.embeddings.openai.OpenAIEmbedding"
-        ) as mock_embedding_class:
-            # Mock the embedding model instance
-            mock_embedding_instance = Mock()
-            mock_embedding_instance.get_text_embedding.return_value = [
-                0.1,
-                0.2,
-                0.3,
-            ] * 512  # 1536 dimensions
-            mock_embedding_class.return_value = mock_embedding_instance
+        # Test embedding creation (should use random vectors by default)
+        test_text = "This is a test text for embedding generation."
+        embedding = create_embedding(test_text)
 
-            # Test embedding creation
-            test_text = "This is a test text for embedding generation."
-            embedding = create_embedding(test_text)
-
-            if embedding and len(embedding) == 1536:
-                print(
-                    f"✅ Successfully created embedding with {len(embedding)} dimensions"
-                )
-                print(f"  First 5 values: {embedding[:5]}")
-                return True
-            else:
-                print(
-                    f"❌ Embedding creation failed: wrong dimensions {len(embedding) if embedding else 'None'}"
-                )
-                return False
+        if embedding and len(embedding) == 1536:
+            print(f"✅ Successfully created embedding with {len(embedding)} dimensions")
+            print(f"  First 5 values: {embedding[:5]}")
+            return True
+        else:
+            print(
+                f"❌ Embedding creation failed: wrong dimensions {len(embedding) if embedding else 'None'}"
+            )
+            return False
 
     except Exception as e:
         print(f"❌ Embedding test failed: {e}")
@@ -157,42 +142,29 @@ def test_record_creation():
             },
         ]
 
-        # Mock the embedding creation
-        with patch(
-            "llama_index.embeddings.openai.OpenAIEmbedding"
-        ) as mock_embedding_class:
-            mock_embedding_instance = Mock()
-            mock_embedding_instance.get_text_embedding.return_value = [
-                0.1,
-                0.2,
-                0.3,
-            ] * 512  # 1536 dimensions
-            mock_embedding_class.return_value = mock_embedding_instance
+        # Test record creation (should use random vectors by default)
+        records = create_records_from_chunks(mock_document, test_chunks)
 
-            records = create_records_from_chunks(mock_document, test_chunks)
+        if records and len(records) == 2:
+            print(f"✅ Successfully created {len(records)} records")
 
-            if records and len(records) == 2:
-                print(f"✅ Successfully created {len(records)} records")
-
-                # Verify record structure
-                for i, record in enumerate(records):
-                    print(f"\n📝 Record {i + 1}:")
-                    print(
-                        f"  Document reference: {record['fields']['document_reference']}"
-                    )
-                    print(f"  Chunk index: {record['fields']['chunk_index']}")
-                    print(f"  Header: {record['fields']['header']}")
-                    print(f"  Content length: {len(record['fields']['content'])}")
-                    print(
-                        f"  Embedding dimensions: {len(record['vectors']['content_embedding'])}"
-                    )
-
-                return True
-            else:
+            # Verify record structure
+            for i, record in enumerate(records):
+                print(f"\n📝 Record {i + 1}:")
+                print(f"  Document reference: {record['fields']['document_reference']}")
+                print(f"  Chunk index: {record['fields']['chunk_index']}")
+                print(f"  Header: {record['fields']['header']}")
+                print(f"  Content length: {len(record['fields']['content'])}")
                 print(
-                    f"❌ Record creation failed: expected 2 records, got {len(records) if records else 'None'}"
+                    f"  Embedding dimensions: {len(record['vectors']['content_embedding'])}"
                 )
-                return False
+
+            return True
+        else:
+            print(
+                f"❌ Record creation failed: expected 2 records, got {len(records) if records else 'None'}"
+            )
+            return False
 
     except Exception as e:
         print(f"❌ Record creation test failed: {e}")
@@ -241,43 +213,32 @@ AI technologies can substantially enhance healthcare outcomes when properly impl
         chunks = chunk_markdown(sample_markdown, chunk_size=400, overlap=100)
         print(f"📄 Step 1: Created {len(chunks)} chunks")
 
-        # Step 2: Create records (with mocked embeddings)
-        with patch(
-            "llama_index.embeddings.openai.OpenAIEmbedding"
-        ) as mock_embedding_class:
-            mock_embedding_instance = Mock()
-            mock_embedding_instance.get_text_embedding.return_value = [
-                0.1,
-                0.2,
-                0.3,
-            ] * 512  # 1536 dimensions
-            mock_embedding_class.return_value = mock_embedding_instance
+        # Step 2: Create records (with random embeddings)
+        records = create_records_from_chunks(mock_document, chunks)
+        print(f"📝 Step 2: Created {len(records)} records")
 
-            records = create_records_from_chunks(mock_document, chunks)
-            print(f"📝 Step 2: Created {len(records)} records")
+        # Step 3: Verify data integrity
+        total_content_length = sum(
+            len(record["fields"]["content"]) for record in records
+        )
+        print(
+            f"📊 Step 3: Total content length across all records: {total_content_length} characters"
+        )
 
-            # Step 3: Verify data integrity
-            total_content_length = sum(
-                len(record["fields"]["content"]) for record in records
-            )
-            print(
-                f"📊 Step 3: Total content length across all records: {total_content_length} characters"
-            )
+        # Verify all records have embeddings
+        records_with_embeddings = sum(
+            1 for record in records if "content_embedding" in record["vectors"]
+        )
+        print(
+            f"🔮 Step 4: Records with embeddings: {records_with_embeddings}/{len(records)}"
+        )
 
-            # Verify all records have embeddings
-            records_with_embeddings = sum(
-                1 for record in records if "content_embedding" in record["vectors"]
-            )
-            print(
-                f"🔮 Step 4: Records with embeddings: {records_with_embeddings}/{len(records)}"
-            )
-
-            if records_with_embeddings == len(records):
-                print("✅ Full workflow test successful!")
-                return True
-            else:
-                print("❌ Some records missing embeddings")
-                return False
+        if records_with_embeddings == len(records):
+            print("✅ Full workflow test successful!")
+            return True
+        else:
+            print("❌ Some records missing embeddings")
+            return False
 
     except Exception as e:
         print(f"❌ Full workflow test failed: {e}")
@@ -288,8 +249,8 @@ def main():
     """Run all tests and provide summary."""
     print("🚀 Starting comprehensive embed functionality tests...\n")
 
-    # Set mock environment variable for API key check
-    os.environ["OPENAI_API_KEY"] = "test-key-for-mocking"
+    # Set environment for random vector testing
+    os.environ["OPENAI_BASE_URL"] = "random"
 
     test_results = {
         "Chunking": test_chunking(),

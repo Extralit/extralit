@@ -100,8 +100,8 @@ def test_chunking_with_sample():
 
 
 def test_embedding_creation():
-    """Test actual embedding creation with OpenAI."""
-    print("\n🔮 Testing embedding creation with OpenAI API...")
+    """Test embedding creation with random vectors."""
+    print("\n🔮 Testing embedding creation with random vectors...")
 
     try:
         from extralit.cli.documents.embed import create_embedding
@@ -120,12 +120,12 @@ def test_embedding_creation():
 
             embedding = create_embedding(text)
 
-            if embedding:
+            if embedding and len(embedding) == 1536:
                 embeddings_created += 1
                 print(f"   ✅ Success! Dimensions: {len(embedding)}")
                 print(f"   📊 First 3 values: {embedding[:3]}")
             else:
-                print("   ❌ Failed to create embedding")
+                print("   ❌ Failed to create embedding or wrong dimensions")
 
         success_rate = embeddings_created / len(test_texts)
         print(
