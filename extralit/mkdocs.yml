@@ -168,7 +168,7 @@ nav:
   - User Guide:
       - user_guide/index.md
       - Core concepts: user_guide/core_concepts.md
-      - Overview:
+      - Data Annotation Guide:
           - Overview: user_guide/overview.md
           - Distribute the annotation task: user_guide/distribution.md
           - Manage users and credentials: user_guide/user.md
@@ -181,7 +181,8 @@ nav:
 
       - Data Pipeline:
           - Schema definition: user_guide/schema_definition.md
-          # - Importing documents: user_guide/document_import.md
+          - Importing documents: user_guide/document_import.md
+          - Document Processing Workflow: user_guide/document_workflow.md
           # - Text and table OCR: user_guide/text_table_ocr.md
           # - LLM-assisted extraction: user_guide/llm_extraction.md
           # - Consensus review: user_guide/consensus_review.md
@@ -199,7 +200,7 @@ nav:
           # - Optimizing LLM performance: user_guide/optimizing_llm_performance.md
           # - Using the API: user_guide/using_the_api.md
 
-  - Administrator Guide:
+  - Admin Guide:
       - admin_guide/index.md
       - Setup & Deployment:
           - HF Spaces & Docker deployment: admin_guide/docker_deployment.md
