@@ -27,14 +27,18 @@ from rich.progress import BarColumn, Progress, SpinnerColumn, TaskProgressColumn
 from extralit.cli.rich import get_themed_panel
 from extralit.client import Extralit
 
+EMBED_MODEL_NAME = os.getenv("EMBED_MODEL", "text-embedding-ada-002")
+OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-def chunk_markdown(markdown_text: str, chunk_size: int = 1000, overlap: int = 200) -> list[dict[str, Any]]:
+
+def chunk_markdown(markdown_text: str, chunk_size: Optional[int] = 1000, overlap: int = 200) -> list[dict[str, Any]]:
     """
     Chunk markdown text into segments with proper hierarchy preservation.
 
     Args:
         markdown_text: The markdown content to chunk
-        chunk_size: Maximum characters per chunk
+        chunk_size: Maximum characters per chunk, or None for no chunking (full text as single chunk)
         overlap: Character overlap between chunks
 
     Returns:
@@ -68,7 +72,7 @@ def chunk_markdown(markdown_text: str, chunk_size: int = 1000, overlap: int = 20
         current_chunk += line + "\n"
 
         # Check if chunk is large enough to split
-        if len(current_chunk) >= chunk_size:
+        if chunk_size is not None and len(current_chunk) >= chunk_size:
             # Find a good breaking point (end of paragraph or sentence)
             break_point = current_chunk.rfind("\n\n")
             if break_point == -1:
@@ -129,33 +133,18 @@ def create_embedding(text: str, model: Optional[str] = None) -> Optional[list[fl
     Returns:
         List of float values representing the embedding, or None if failed
     """
-    try:
-        # Get configuration from environment variables
-        embed_model_name = model or os.getenv("EMBED_MODEL", "text-embedding-ada-002")
-        base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
-        api_key = os.getenv("OPENAI_API_KEY")
-
-        # Use random vectors for testing or when no API key is available
-        if not api_key or base_url == "random" or not base_url.startswith("http"):
-            # Generate random 1536-dimensional vector (same as text-embedding-ada-002)
-            embedding = np.random.rand(1536).tolist()
-            return embedding
-
-        # Use actual OpenAI/LiteLLM endpoint
-        from llama_index.embeddings.openai import OpenAIEmbedding
-
-        # Initialize embedding with configurable endpoint
-        embed_model = OpenAIEmbedding(model=embed_model_name, api_key=api_key, base_url=base_url)
-
-        # Get embedding
-        embedding = embed_model.get_text_embedding(text)
-        return embedding
-
-    except Exception as e:
-        print(f"Error creating embedding: {e}")
-        # Fallback to random vector if API fails
+    if not OPENAI_API_KEY or OPENAI_BASE_URL == "random" or not OPENAI_BASE_URL.startswith("http"):
+        # Generate random 1536-dimensional vector (same as text-embedding-ada-002)
         embedding = np.random.rand(1536).tolist()
         return embedding
+
+    from llama_index.embeddings.openai import OpenAIEmbedding
+
+    embed_model = OpenAIEmbedding(model=model or EMBED_MODEL_NAME, api_key=OPENAI_API_KEY, base_url=OPENAI_BASE_URL)
+
+    # Get embedding
+    embedding = embed_model.get_text_embedding(text)
+    return embedding
 
 
 def create_records_from_chunks(document, chunks: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -180,16 +169,19 @@ def create_records_from_chunks(document, chunks: list[dict[str, Any]]) -> list[d
         # Prepare record
         record = {
             "fields": {
+                "header": chunk["metadata"]["header"],
                 "content": chunk["content"],
-                "document_reference": document.reference or str(document.id),
-                "document_id": str(document.id),
+            },
+            "metadata": {
+                "reference": document.reference or str(document.id),
+                "doc_id": str(document.id),
                 "chunk_index": chunk["metadata"]["chunk_index"],
                 "page_number": chunk["metadata"]["page_number"],
                 "header": chunk["metadata"]["header"],
                 "level": chunk["metadata"]["level"],
                 "header_hierarchy": " > ".join(chunk["metadata"]["header_hierarchy"]),
             },
-            "vectors": {"content_embedding": embedding},
+            "vectors": {"content": embedding},
         }
 
         records.append(record)
@@ -201,7 +193,9 @@ def embed_documents(
     workspace: str = typer.Option(..., "--workspace", "-w", help="Workspace name"),
     reference: str = typer.Option(..., "--reference", "-r", help="Reference of documents to embed"),
     dataset_name: str = typer.Option("chunks", "--dataset", "-d", help="Dataset name for storing chunks"),
-    chunk_size: int = typer.Option(1000, "--chunk-size", help="Maximum characters per chunk"),
+    chunk_size: Optional[int] = typer.Option(
+        1000, "--chunk-size", help="Maximum characters per chunk, or None for no chunking"
+    ),
     overlap: int = typer.Option(200, "--overlap", help="Character overlap between chunks"),
     embedding_model: str = typer.Option("text-embedding-ada-002", "--model", help="Embedding model to use"),
     dry_run: bool = typer.Option(False, "--dry-run", help="Preview chunks without creating records"),
@@ -234,20 +228,6 @@ def embed_documents(
     """
     console = Console()
 
-    # Check embedding configuration (only warn, don't fail)
-    api_key = os.getenv("OPENAI_API_KEY")
-    base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
-    embed_model_name = os.getenv("EMBED_MODEL", "text-embedding-ada-002")
-
-    if not api_key and not dry_run:
-        console.print("⚠️  No OPENAI_API_KEY found. Using random vectors for embeddings.")
-
-    if not dry_run:
-        console.print("🔧 Embedding configuration:")
-        console.print(f"   Model: {embed_model_name}")
-        console.print(f"   Endpoint: {base_url}")
-        console.print(f"   API Key: {'✅ Set' if api_key else '❌ Using random vectors'}")
-
     try:
         # Initialize client
         client = Extralit.from_credentials()
@@ -264,8 +244,6 @@ def embed_documents(
             console.print(panel)
             raise typer.Exit(code=1)
 
-        # Fetch documents with the specified reference
-        console.print(f"🔍 Fetching documents with reference '{reference}' from workspace '{workspace}'...")
         documents = workspace_obj.documents(reference=reference)
 
         if not documents:
@@ -278,19 +256,13 @@ def embed_documents(
             console.print(panel)
             raise typer.Exit(code=1)
 
-        console.print(f"📄 Found {len(documents)} document(s) to process")
-
         # Get or create dataset
         if not dry_run:
-            console.print(f"📊 Checking dataset '{dataset_name}'...")
             try:
-                dataset = client.dataset(name=dataset_name, workspace=workspace)
-                console.print(f"✅ Using existing dataset '{dataset_name}'")
+                dataset = client.datasets(name=dataset_name, workspace=workspace)
             except Exception:
-                # Dataset doesn't exist, create it
                 console.print(f"🆕 Creating new dataset '{dataset_name}'...")
-                # Note: Dataset creation might need different API - this is a placeholder
-                dataset = client.dataset(name=dataset_name, workspace=workspace)
+                dataset = client.datasets(name=dataset_name, workspace=workspace)
 
         total_chunks = 0
         total_records = 0
@@ -308,26 +280,18 @@ def embed_documents(
             for doc in documents:
                 progress.update(doc_task, description=f"Processing {doc.file_name or doc.reference}")
 
-                # Get markdown content
-                if not hasattr(doc, "metadata") or not doc.metadata:
-                    console.print(f"⚠️  Skipping document {doc.reference}: No metadata available")
-                    progress.advance(doc_task)
-                    continue
-
-                # Check for text extraction metadata
-                if not hasattr(doc.metadata, "text_extraction_metadata") or not doc.metadata.text_extraction_metadata:
+                if not doc.metadata or not doc.metadata.get("text_extraction_metadata", {}).get("markdown"):
                     console.print(f"⚠️  Skipping document {doc.reference}: No text extraction metadata")
                     progress.advance(doc_task)
                     continue
 
-                markdown_content = doc.metadata.text_extraction_metadata.markdown
+                markdown_content = doc.metadata["text_extraction_metadata"]["markdown"]
                 if not markdown_content:
                     console.print(f"⚠️  Skipping document {doc.reference}: No markdown content")
                     progress.advance(doc_task)
                     continue
 
                 # Chunk the markdown content
-                console.print(f"🔪 Chunking document {doc.reference}...")
                 chunks = chunk_markdown(markdown_content, chunk_size=chunk_size, overlap=overlap)
 
                 console.print(f"📝 Created {len(chunks)} chunks for document {doc.reference}")
@@ -335,7 +299,6 @@ def embed_documents(
 
                 if dry_run:
                     # Show preview of chunks
-                    console.print(f"\n📋 Preview of chunks for {doc.reference}:")
                     for i, chunk in enumerate(chunks[:3]):  # Show first 3 chunks
                         preview = chunk["content"][:200] + "..." if len(chunk["content"]) > 200 else chunk["content"]
                         console.print(f"  Chunk {i + 1}: {preview}")
@@ -347,16 +310,12 @@ def embed_documents(
                         console.print(f"  ... and {len(chunks) - 3} more chunks")
                 else:
                     # Create records from chunks
-                    console.print("🔮 Creating embeddings and records...")
                     records = create_records_from_chunks(doc, chunks)
 
                     if records:
                         # Log records to dataset
                         dataset.records.log(records)
-                        console.print(f"✅ Logged {len(records)} records to dataset '{dataset_name}'")
                         total_records += len(records)
-                    else:
-                        console.print(f"⚠️  No valid records created for document {doc.reference}")
 
                 progress.advance(doc_task)
 
