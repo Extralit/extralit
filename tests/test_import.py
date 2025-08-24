@@ -5,9 +5,7 @@ import sys
 import os
 
 # Add the extralit package to the path
-sys.path.insert(
-    0, os.path.join(os.path.dirname(__file__), "extralit", "extralit", "src")
-)
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "extralit", "src"))
 
 try:
     from extralit.cli.documents.embed import chunk_markdown

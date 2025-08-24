@@ -15,7 +15,7 @@ import sys
 from unittest.mock import Mock, patch
 
 # Add the extralit package to the path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "extralit", "src"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "extralit", "src"))
 
 
 def simulate_embed_workflow():
