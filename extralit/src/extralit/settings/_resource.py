@@ -23,6 +23,7 @@ from uuid import UUID
 
 from extralit._exceptions import ExtralitAPIError, ExtralitSerializeError, SettingsError
 from extralit._models._dataset import DatasetModel
+from extralit._models._settings._mapping import DatasetMappingModel
 from extralit._resource import Resource
 from extralit.settings._field import Field, FieldBase, _field_from_dict, _field_from_model
 from extralit.settings._io import build_settings_from_repo_id
@@ -409,6 +410,9 @@ class Settings(DefaultSettingsMixin, Resource):
         if dataset_model.distribution:
             self.distribution = TaskDistribution.from_model(dataset_model.distribution)
 
+        if dataset_model.mapping:
+            self.mapping = dataset_model.mapping.to_dict()
+
     def _update_dataset_related_attributes(self):
         # This flow may be a bit weird, but it's the only way to update the dataset related attributes
         # Everything is point that we should have several settings-related endpoints in the API to handle this.
@@ -418,12 +422,18 @@ class Settings(DefaultSettingsMixin, Resource):
         #   "allow_extra_metadata": ....,
         # }
         # But this is not implemented yet, so we need to update the dataset model directly
+
+        mapping_model = None
+        if self.mapping:
+            mapping_model = DatasetMappingModel.from_dict(self.mapping)
+
         dataset_model = DatasetModel(
             id=self._dataset.id,
             name=self._dataset.name,
             guidelines=self.guidelines,
             allow_extra_metadata=self.allow_extra_metadata,
             distribution=self.distribution._api_model(),
+            mapping=mapping_model,
         )
         self._client.api.datasets.update(dataset_model)
 
