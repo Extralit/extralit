@@ -113,6 +113,16 @@ class DatasetGetterDict(GetterDict):
     def get(self, key: Any, default: Any = None) -> Any:
         if key == "metadata":
             return getattr(self._obj, "metadata_", None)
+        elif key == "mapping":
+            metadata = getattr(self._obj, "metadata_", None)
+            if metadata and "mapping" in metadata:
+                try:
+                    # We'll validate this later when HubDatasetMapping is defined
+                    return metadata["mapping"]
+                    return HubDatasetMapping.model_validate(metadata["mapping"])
+                except Exception:
+                    return None
+            return None
 
         return super().get(key, default)
 
@@ -125,6 +135,7 @@ class Dataset(BaseModel):
     status: DatasetStatus
     distribution: DatasetDistribution
     metadata: dict[str, Any] | None = None
+    mapping: "HubDatasetMapping | None" = None
     workspace_id: UUID
     last_activity_at: datetime
     inserted_at: datetime
