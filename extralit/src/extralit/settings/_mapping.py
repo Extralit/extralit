@@ -68,7 +68,7 @@ class DatasetMapping(DatasetMappingBase):
             return cls.from_model(DatasetMappingModel.from_dict(dict))
 
     def to_dict(self) -> dict[str, Union[str, Sequence[str]]]:
-        return self._model.to_dict()
+        return self._model.model_dump()
 
     def _api_model(self) -> DatasetMappingModel:
         return self._model
