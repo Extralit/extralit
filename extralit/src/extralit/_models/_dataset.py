@@ -22,6 +22,7 @@ from extralit._models import ResourceModel
 
 __all__ = ["DatasetModel"]
 
+from extralit._models._settings._mapping import DatasetMappingModel
 from extralit._models._settings._task_distribution import TaskDistributionModel
 
 
@@ -32,6 +33,7 @@ class DatasetModel(ResourceModel):
     guidelines: Optional[str] = None
     allow_extra_metadata: bool = True  # Ideally, the default value should be provided by the server
     distribution: Optional[TaskDistributionModel] = None
+    mapping: Optional[DatasetMappingModel] = None
     workspace_id: Optional[UUID] = None
     last_activity_at: Optional[datetime] = None
 
