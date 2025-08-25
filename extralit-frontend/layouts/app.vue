@@ -2,12 +2,18 @@
   <div :lang="currentLang">
     <Nuxt v-if="!$slots.default" />
     <slot />
+    <DatasetSettingsModal />
   </div>
 </template>
 
 <script>
+import DatasetSettingsModal from "@/components/features/dataset-settings/DatasetSettingsModal.vue";
+
 export default {
   name: "Index",
+  components: {
+    DatasetSettingsModal,
+  },
   computed: {
     imOffline() {
       return this.$nuxt.isOffline;

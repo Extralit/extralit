@@ -54,7 +54,11 @@ export const useRoutes = () => {
   };
 
   const goToSetting = (id: string) => {
-    router.push(ROUTES.settings(id));
+    // Import dynamically to avoid circular dependency issues
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { useDatasetSettingsModal } = require("@/v1/store/datasetSettingsModal");
+    const modalStore = useDatasetSettingsModal();
+    modalStore.openModal(id);
   };
 
   const goToImportDatasetFromHub = (id: string) => {
