@@ -159,3 +159,5 @@ extralit/site
 
 # Development files
 **/*.db
+
+.claude/
