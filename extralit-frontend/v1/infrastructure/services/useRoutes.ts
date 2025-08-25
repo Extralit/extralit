@@ -18,6 +18,8 @@ type QueryParam = {
   encode?: boolean;
 };
 
+import { useDatasetSettingsModal } from "@/v1/store/datasetSettingsModal";
+
 export const ROUTES = {
   index: "/",
   signIn: "/sign-in",
@@ -54,9 +56,7 @@ export const useRoutes = () => {
   };
 
   const goToSetting = (id: string) => {
-    // Import dynamically to avoid circular dependency issues
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { useDatasetSettingsModal } = require("@/v1/store/datasetSettingsModal");
+    // Use the imported store directly
     const modalStore = useDatasetSettingsModal();
     modalStore.openModal(id);
   };
