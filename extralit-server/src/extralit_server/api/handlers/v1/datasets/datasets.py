@@ -326,7 +326,7 @@ async def update_dataset(
     return await datasets.update_dataset(db, dataset, dataset_update.model_dump(exclude_unset=True))
 
 
-@router.post("/datasets/{dataset_id}/import", status_code=status.HTTP_202_ACCEPTED, response_model=JobSchema)
+@router.post("/datasets/{dataset_id}/import-hub", status_code=status.HTTP_202_ACCEPTED, response_model=JobSchema)
 async def import_dataset_from_hub(
     *,
     db: Annotated[AsyncSession, Depends(get_async_db)],
@@ -349,7 +349,7 @@ async def import_dataset_from_hub(
     return JobSchema(id=job.id, status=job.get_status())
 
 
-@router.post("/datasets/{dataset_id}/import-history", status_code=status.HTTP_202_ACCEPTED, response_model=JobSchema)
+@router.post("/datasets/{dataset_id}/import", status_code=status.HTTP_202_ACCEPTED, response_model=JobSchema)
 async def import_dataset_from_import_history(
     *,
     db: Annotated[AsyncSession, Depends(get_async_db)],
