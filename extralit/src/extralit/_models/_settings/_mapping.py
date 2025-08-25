@@ -75,3 +75,21 @@ class DatasetMappingModel(BaseModel):
         return cls(
             fields=fields, metadata=metadata if metadata else None, suggestions=suggestions if suggestions else None
         )
+
+    @classmethod
+    def from_hub_mapping_dict(cls, mapping_dict: dict) -> "DatasetMappingModel":
+        """Create mapping model from HubDatasetMapping dictionary format."""
+        fields = [DatasetMappingItemModel(**item) for item in mapping_dict.get("fields", [])]
+        metadata = (
+            [DatasetMappingItemModel(**item) for item in mapping_dict.get("metadata", [])]
+            if mapping_dict.get("metadata")
+            else None
+        )
+        suggestions = (
+            [DatasetMappingItemModel(**item) for item in mapping_dict.get("suggestions", [])]
+            if mapping_dict.get("suggestions")
+            else None
+        )
+        external_id = mapping_dict.get("external_id")
+
+        return cls(fields=fields, metadata=metadata, suggestions=suggestions, external_id=external_id)

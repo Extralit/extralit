@@ -23,10 +23,10 @@ from uuid import UUID
 
 from extralit._exceptions import ExtralitAPIError, ExtralitSerializeError, SettingsError
 from extralit._models._dataset import DatasetModel
-from extralit._models._settings._mapping import DatasetMappingModel
 from extralit._resource import Resource
 from extralit.settings._field import Field, FieldBase, _field_from_dict, _field_from_model
 from extralit.settings._io import build_settings_from_repo_id
+from extralit.settings._mapping import DatasetMapping
 from extralit.settings._metadata import MetadataField, MetadataPropertyBase, MetadataType
 from extralit.settings._question import QuestionBase, QuestionType, _question_from_dict, question_from_model
 from extralit.settings._task_distribution import TaskDistribution
@@ -55,7 +55,7 @@ class Settings(DefaultSettingsMixin, Resource):
         guidelines: Optional[str] = None,
         allow_extra_metadata: bool = False,
         distribution: Optional[TaskDistribution] = None,
-        mapping: Optional[dict[str, Union[str, Sequence[str]]]] = None,
+        mapping: Optional[DatasetMapping] = None,
         _dataset: Optional["Dataset"] = None,
     ) -> None:
         """
@@ -70,7 +70,7 @@ class Settings(DefaultSettingsMixin, Resource):
                 Dataset. Defaults to False.
             distribution (TaskDistribution): The annotation task distribution configuration.
                 Default to DEFAULT_TASK_DISTRIBUTION
-            mapping (Dict[str, Union[str, Sequence[str]]]): A dictionary that maps incoming data names to Extralit dataset attributes in DatasetRecords.
+            mapping (DatasetMapping): The dataset mapping configuration that maps incoming data names to Extralit dataset attributes in DatasetRecords.
         """
         super().__init__(client=_dataset._client if _dataset else None)
 
@@ -146,11 +146,11 @@ class Settings(DefaultSettingsMixin, Resource):
         self._distribution = value
 
     @property
-    def mapping(self) -> dict[str, Union[str, Sequence[str]]]:
+    def mapping(self) -> DatasetMapping:
         return self._mapping
 
     @mapping.setter
-    def mapping(self, value: dict[str, Union[str, Sequence[str]]]):
+    def mapping(self, value: DatasetMapping):
         self._mapping = value
 
     @property
@@ -240,7 +240,7 @@ class Settings(DefaultSettingsMixin, Resource):
                 "metadata": self.metadata.serialize(),
                 "allow_extra_metadata": self.allow_extra_metadata,
                 "distribution": self.distribution.to_dict(),
-                "mapping": self.mapping,
+                "mapping": self.mapping.to_dict() if self.mapping else None,
             }
         except Exception as e:
             raise ExtralitSerializeError(f"Failed to serialize the settings. {e.__class__.__name__}") from e
@@ -360,7 +360,7 @@ class Settings(DefaultSettingsMixin, Resource):
             distribution = TaskDistribution.from_dict(distribution)
 
         if mapping:
-            mapping = cls._validate_mapping(mapping)
+            mapping = DatasetMapping.from_dict(mapping)
 
         return cls(
             questions=questions,
@@ -411,7 +411,7 @@ class Settings(DefaultSettingsMixin, Resource):
             self.distribution = TaskDistribution.from_model(dataset_model.distribution)
 
         if dataset_model.mapping:
-            self.mapping = dataset_model.mapping.to_dict()
+            self.mapping = DatasetMapping.from_model(dataset_model.mapping)
 
     def _update_dataset_related_attributes(self):
         # This flow may be a bit weird, but it's the only way to update the dataset related attributes
@@ -425,7 +425,7 @@ class Settings(DefaultSettingsMixin, Resource):
 
         mapping_model = None
         if self.mapping:
-            mapping_model = DatasetMappingModel.from_dict(self.mapping)
+            mapping_model = self.mapping._api_model()
 
         dataset_model = DatasetModel(
             id=self._dataset.id,
@@ -453,19 +453,6 @@ class Settings(DefaultSettingsMixin, Resource):
                         f"but the name {property.name!r} is used by {type(property).__name__!r} and {type(dataset_properties_by_name[property.name]).__name__!r} "
                     )
                 dataset_properties_by_name[property.name] = property
-
-    @classmethod
-    def _validate_mapping(cls, mapping: dict[str, Union[str, Sequence[str]]]) -> dict:
-        validate_mapping = {}
-        for key, value in mapping.items():
-            if isinstance(value, str):
-                validate_mapping[key] = value
-            elif isinstance(value, list) or isinstance(value, tuple):
-                validate_mapping[key] = tuple(value)
-            else:
-                raise SettingsError(f"Invalid mapping value for key {key!r}: {value}")
-
-        return validate_mapping
 
     def __process_guidelines(self, guidelines):
         if guidelines is None:
