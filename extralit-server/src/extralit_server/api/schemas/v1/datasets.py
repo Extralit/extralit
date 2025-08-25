@@ -117,8 +117,6 @@ class DatasetGetterDict(GetterDict):
             metadata = getattr(self._obj, "metadata_", None)
             if metadata and "mapping" in metadata:
                 try:
-                    # We'll validate this later when HubDatasetMapping is defined
-                    return metadata["mapping"]
                     return HubDatasetMapping.model_validate(metadata["mapping"])
                 except Exception:
                     return None
