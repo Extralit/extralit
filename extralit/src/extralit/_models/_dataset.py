@@ -16,7 +16,7 @@ from datetime import datetime
 from typing import Literal, Optional
 from uuid import UUID
 
-from pydantic import ConfigDict, field_serializer
+from pydantic import ConfigDict, Field, field_serializer
 
 from extralit._models import ResourceModel
 
@@ -33,7 +33,7 @@ class DatasetModel(ResourceModel):
     guidelines: Optional[str] = None
     allow_extra_metadata: bool = True  # Ideally, the default value should be provided by the server
     distribution: Optional[TaskDistributionModel] = None
-    mapping: Optional[DatasetMappingModel] = None
+    mapping: Optional[DatasetMappingModel] = Field(None, repr=False)
     workspace_id: Optional[UUID] = None
     last_activity_at: Optional[datetime] = None
 
