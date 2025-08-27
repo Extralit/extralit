@@ -97,6 +97,30 @@ async def list_current_user_datasets(
     return Datasets(items=dataset_list)
 
 
+@router.get("/datasets/compatible", response_model=Datasets)
+async def list_compatible_datasets(
+    *,
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    current_user: Annotated[User, Security(auth.get_current_user)],
+    column_names: Annotated[list[str], Query(description="List of column names to match against existing datasets")],
+    workspace_id: Annotated[UUID | None, Query(description="Filter by workspace_id")] = None,
+):
+    await authorize(current_user, DatasetPolicy.list(workspace_id))
+
+    filters = {
+        "workspace_id": workspace_id,
+        "status": DatasetStatus.ready,
+    }
+
+    dataset_list = await datasets.list_datasets(
+        db, user=current_user, **{k: v for k, v in filters.items() if v is not None}
+    )
+
+    all_datasets = Datasets(items=dataset_list)
+
+    return all_datasets.get_compatible_datasets(column_names)
+
+
 @router.get("/datasets/{dataset_id}/fields", response_model=Fields)
 async def list_dataset_fields(
     *,
