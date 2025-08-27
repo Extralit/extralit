@@ -302,8 +302,9 @@ def embed_documents(
         if not dry_run:
             import extralit as ex
 
-            dataset = client.datasets(name=dataset_name, workspace=workspace)
-            if dataset is None:
+            try:
+                dataset = client.datasets(name=dataset_name, workspace=workspace)
+            except Exception:
                 # Create proper settings for the dataset
                 settings = ex.Settings(
                     fields=[ex.TextField(name="content"), ex.TextField(name="header")],
