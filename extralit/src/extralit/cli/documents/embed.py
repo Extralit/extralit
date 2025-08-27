@@ -32,65 +32,27 @@ OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 
-def chunk_markdown(markdown_text: str, chunk_size: Optional[int] = 1000, overlap: int = 200) -> list[dict[str, Any]]:
-    """
-    Chunk markdown text into segments with proper hierarchy preservation.
-
-    Args:
-        markdown_text: The markdown content to chunk
-        chunk_size: Maximum characters per chunk, or None for no chunking (full text as single chunk)
-        overlap: Character overlap between chunks
-
-    Returns:
-        List of chunk dictionaries with content and metadata
-    """
-    chunks = []
+def parse_sections_with_hierarchy(markdown_text: str) -> list[dict[str, Any]]:
+    """Parse markdown into sections preserving hierarchy structure."""
+    sections = []
     lines = markdown_text.split("\n")
-    current_chunk = ""
+    current_section = ""
     current_headers = []
     current_page = 1
-    chunk_index = 0
+    section_index = 0
 
     for line in lines:
         # Check for headers
         header_match = re.match(r"(#+)\s*(.*)", line)
         if header_match:
-            level = len(header_match.group(1))
-            header_text = header_match.group(2).strip()
-
-            # Update headers stack based on level
-            current_headers = [h for h in current_headers if h["level"] < level]
-            current_headers.append({"level": level, "text": header_text})
-
-        # Check for page breaks (common in PDF extractions)
-        if "---" in line or "Page" in line:
-            page_match = re.search(r"(?:Page|page)\s*(\d+)", line)
-            if page_match:
-                current_page = int(page_match.group(1))
-
-        # Add line to current chunk
-        current_chunk += line + "\n"
-
-        # Check if chunk is large enough to split
-        if chunk_size is not None and len(current_chunk) >= chunk_size:
-            # Find a good breaking point (end of paragraph or sentence)
-            break_point = current_chunk.rfind("\n\n")
-            if break_point == -1:
-                break_point = current_chunk.rfind(". ")
-                if break_point != -1:
-                    break_point += 1
-            if break_point == -1:
-                break_point = chunk_size
-
-            # Create chunk
-            chunk_content = current_chunk[:break_point].strip()
-            if chunk_content:
-                chunks.append(
+            # Save previous section if it exists
+            if current_section.strip():
+                sections.append(
                     {
                         "id": str(uuid4()),
-                        "content": chunk_content,
+                        "content": current_section.strip(),
                         "metadata": {
-                            "chunk_index": chunk_index,
+                            "chunk_index": section_index,
                             "page_number": current_page,
                             "header": current_headers[-1]["text"] if current_headers else "",
                             "level": current_headers[-1]["level"] if current_headers else 0,
@@ -98,19 +60,31 @@ def chunk_markdown(markdown_text: str, chunk_size: Optional[int] = 1000, overlap
                         },
                     }
                 )
-                chunk_index += 1
+                section_index += 1
+                current_section = ""
 
-            # Keep overlap for next chunk
-            current_chunk = current_chunk[max(0, break_point - overlap) :]
+            # Update headers stack
+            level = len(header_match.group(1))
+            header_text = header_match.group(2).strip()
+            current_headers = [h for h in current_headers if h["level"] < level]
+            current_headers.append({"level": level, "text": header_text})
 
-    # Add final chunk if there's remaining content
-    if current_chunk.strip():
-        chunks.append(
+        # Check for page breaks
+        if "---" in line or "Page" in line:
+            page_match = re.search(r"(?:Page|page)\s*(\d+)", line)
+            if page_match:
+                current_page = int(page_match.group(1))
+
+        current_section += line + "\n"
+
+    # Add final section
+    if current_section.strip():
+        sections.append(
             {
                 "id": str(uuid4()),
-                "content": current_chunk.strip(),
+                "content": current_section.strip(),
                 "metadata": {
-                    "chunk_index": chunk_index,
+                    "chunk_index": section_index,
                     "page_number": current_page,
                     "header": current_headers[-1]["text"] if current_headers else "",
                     "level": current_headers[-1]["level"] if current_headers else 0,
@@ -119,7 +93,75 @@ def chunk_markdown(markdown_text: str, chunk_size: Optional[int] = 1000, overlap
             }
         )
 
-    return chunks
+    return sections
+
+
+def apply_character_chunking(sections: list[dict[str, Any]], chunk_size: int, overlap: int) -> list[dict[str, Any]]:
+    """Apply character-based chunking to sections that exceed chunk_size."""
+    chunked_sections = []
+
+    for section in sections:
+        content = section["content"]
+        if len(content) <= chunk_size:
+            chunked_sections.append(section)
+            continue
+
+        # Split large sections
+        current_pos = 0
+
+        while current_pos < len(content):
+            end_pos = min(current_pos + chunk_size, len(content))
+
+            # Find good breaking point
+            if end_pos < len(content):
+                break_point = content.rfind("\n\n", current_pos, end_pos)
+                if break_point == -1:
+                    break_point = content.rfind(". ", current_pos, end_pos)
+                    if break_point != -1:
+                        break_point += 1
+                if break_point == -1:
+                    break_point = end_pos
+            else:
+                break_point = end_pos
+
+            chunk_content = content[current_pos:break_point].strip()
+            if chunk_content:
+                chunked_sections.append(
+                    {
+                        "id": str(uuid4()),
+                        "content": chunk_content,
+                        "metadata": {
+                            **section["metadata"],
+                            "chunk_index": len(chunked_sections),
+                        },
+                    }
+                )
+
+            current_pos = max(current_pos + 1, break_point - overlap)
+
+    return chunked_sections
+
+
+def chunk_markdown(markdown_text: str, chunk_size: Optional[int] = None, overlap: int = 200) -> list[dict[str, Any]]:
+    """
+    Modern RAG chunking: section-first, then optional character limits.
+
+    Args:
+        markdown_text: The markdown content to chunk
+        chunk_size: None to disable character chunking, or max chars per chunk
+        overlap: Character overlap between chunks when character chunking is applied
+
+    Returns:
+        List of chunk dictionaries with content and metadata
+    """
+    # First: Parse by sections and preserve hierarchy
+    sections = parse_sections_with_hierarchy(markdown_text)
+
+    # Second: Apply character chunking only if chunk_size is provided
+    if chunk_size is not None:
+        sections = apply_character_chunking(sections, chunk_size, overlap)
+
+    return sections
 
 
 def create_embedding(text: str, model: Optional[str] = None) -> Optional[list[float]]:
@@ -194,7 +236,7 @@ def embed_documents(
     reference: str = typer.Option(..., "--reference", "-r", help="Reference of documents to embed"),
     dataset_name: str = typer.Option("chunks", "--dataset", "-d", help="Dataset name for storing chunks"),
     chunk_size: Optional[int] = typer.Option(
-        1000, "--chunk-size", help="Maximum characters per chunk, or None for no chunking"
+        None, "--chunk-size", help="Maximum characters per chunk, or None for section-only chunking"
     ),
     overlap: int = typer.Option(200, "--overlap", help="Character overlap between chunks"),
     embedding_model: str = typer.Option("text-embedding-ada-002", "--model", help="Embedding model to use"),
@@ -258,11 +300,28 @@ def embed_documents(
 
         # Get or create dataset
         if not dry_run:
-            try:
-                dataset = client.datasets(name=dataset_name, workspace=workspace)
-            except Exception:
-                console.print(f"🆕 Creating new dataset '{dataset_name}'...")
-                dataset = client.datasets(name=dataset_name, workspace=workspace)
+            import extralit as ex
+
+            dataset = client.datasets(name=dataset_name, workspace=workspace)
+            if dataset is None:
+                # Create proper settings for the dataset
+                settings = ex.Settings(
+                    fields=[ex.TextField(name="content"), ex.TextField(name="header")],
+                    metadata=[
+                        ex.TermsMetadataProperty(name="reference"),
+                        ex.TermsMetadataProperty(name="doc_id"),
+                        ex.IntegerMetadataProperty(name="chunk_index"),
+                        ex.IntegerMetadataProperty(name="page_number"),
+                        ex.TermsMetadataProperty(name="header"),
+                        ex.IntegerMetadataProperty(name="level"),
+                        ex.TermsMetadataProperty(name="header_hierarchy"),
+                    ],
+                    vectors=[ex.VectorField(name="content", dimensions=1536)],
+                )
+
+                # Create dataset with proper settings
+                dataset = ex.Dataset(name=dataset_name, workspace=workspace, settings=settings)
+                dataset.create()
 
         total_chunks = 0
         total_records = 0
@@ -281,33 +340,28 @@ def embed_documents(
                 progress.update(doc_task, description=f"Processing {doc.file_name or doc.reference}")
 
                 if not doc.metadata or not doc.metadata.get("text_extraction_metadata", {}).get("markdown"):
-                    console.print(f"⚠️  Skipping document {doc.reference}: No text extraction metadata")
                     progress.advance(doc_task)
                     continue
 
                 markdown_content = doc.metadata["text_extraction_metadata"]["markdown"]
                 if not markdown_content:
-                    console.print(f"⚠️  Skipping document {doc.reference}: No markdown content")
                     progress.advance(doc_task)
                     continue
 
                 # Chunk the markdown content
                 chunks = chunk_markdown(markdown_content, chunk_size=chunk_size, overlap=overlap)
-
-                console.print(f"📝 Created {len(chunks)} chunks for document {doc.reference}")
                 total_chunks += len(chunks)
 
                 if dry_run:
-                    # Show preview of chunks
-                    for i, chunk in enumerate(chunks[:3]):  # Show first 3 chunks
-                        preview = chunk["content"][:200] + "..." if len(chunk["content"]) > 200 else chunk["content"]
-                        console.print(f"  Chunk {i + 1}: {preview}")
-                        console.print(f"    Header: {chunk['metadata']['header']}")
-                        console.print(f"    Page: {chunk['metadata']['page_number']}")
-                        console.print()
-
-                    if len(chunks) > 3:
-                        console.print(f"  ... and {len(chunks) - 3} more chunks")
+                    # Show minimal preview
+                    if chunks:
+                        preview = (
+                            chunks[0]["content"][:100] + "..."
+                            if len(chunks[0]["content"]) > 100
+                            else chunks[0]["content"]
+                        )
+                        typer.echo(f"  Sample chunk: {preview}")
+                        typer.echo(f"  Total chunks: {len(chunks)}")
                 else:
                     # Create records from chunks
                     records = create_records_from_chunks(doc, chunks)
