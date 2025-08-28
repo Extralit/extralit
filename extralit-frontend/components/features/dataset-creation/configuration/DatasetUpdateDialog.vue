@@ -173,8 +173,17 @@ export default {
         return;
       }
 
+      // Convert BackendDataset to target dataset info with workspace
+      const targetDataset = this.convertBackendDatasetToTargetInfo(this.selectedTargetDataset, this.selectedWorkspace);
+
+      if (!targetDataset) {
+        this.validationError = "Missing target dataset or workspace information";
+        return;
+      }
+
       this.$emit("update-dataset", {
-        dataset: this.selectedTargetDataset,
+        targetDataset,
+        source: this.dataset,
       });
     },
     async onWorkspaceChange() {

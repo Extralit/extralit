@@ -48,6 +48,19 @@ export const useDatasetConfigurationNameAndWorkspace = () => {
     }
   };
 
+  const convertBackendDatasetToTargetInfo = (backendDataset: BackendDataset | null, selectedWorkspace: any) => {
+    if (!backendDataset || !selectedWorkspace) return null;
+
+    return {
+      id: backendDataset.id,
+      name: backendDataset.name,
+      workspace: {
+        id: selectedWorkspace.id,
+        name: selectedWorkspace.name,
+      },
+    };
+  };
+
   return {
     workspaces,
     compatibleDatasets,
@@ -56,5 +69,6 @@ export const useDatasetConfigurationNameAndWorkspace = () => {
     selectedTargetDataset,
     loadCompatibleDatasets,
     onWorkflowTypeChange,
+    convertBackendDatasetToTargetInfo,
   };
 };

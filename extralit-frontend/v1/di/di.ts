@@ -77,6 +77,7 @@ import { GetImportHistoryDetailsUseCase } from "@/v1/domain/usecases/get-import-
 import { GetJobStatusUseCase } from "@/v1/domain/usecases/get-job-status-use-case";
 import { LoadUserUseCase } from "@/v1/domain/usecases/load-user-use-case";
 import { CreateDatasetUseCase } from "@/v1/domain/usecases/create-dataset-use-case";
+import { UpdateDatasetUseCase } from "@/v1/domain/usecases/update-dataset-use-case";
 import { GetFirstRecordFromHub } from "@/v1/domain/usecases/get-first-record-from-hub";
 import { ExportDatasetToHubUseCase } from "@/v1/domain/usecases/export-dataset-to-hub-use-case";
 import { AuthLoginUseCase } from "@/v1/domain/usecases/auth-login-use-case";
@@ -209,6 +210,8 @@ export const loadDependencyContainer = (context: Context) => {
     register(CreateDatasetUseCase)
       .withDependencies(DatasetRepository, WorkspaceRepository, QuestionRepository, FieldRepository, MetadataRepository)
       .build(),
+
+    register(UpdateDatasetUseCase).withDependency(DatasetRepository).build(),
 
     register(GetFirstRecordFromHub).withDependency(HubRepository).build(),
 

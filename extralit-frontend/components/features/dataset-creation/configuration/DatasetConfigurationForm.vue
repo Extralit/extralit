@@ -161,9 +161,12 @@ export default {
       this.isUpdateWorkflow = false;
       this.visibleDatasetUpdateDialog = false;
     },
-    updateDataset() {
-      console.log('Updating dataset', this.dataset)
-      this.create(this.dataset);
+    updateDataset(updateData) {
+      this.closeUpdateDialog();
+
+      // Use the source dataset from the dialog event, or fall back to this.dataset
+      const sourceDataset = updateData.source || this.dataset;
+      this.update(sourceDataset, updateData.targetDataset.id);
     },
     generateName(type: string, number: string | number): string {
       const typeName = this.$t(`config.questionId.${type}`);
