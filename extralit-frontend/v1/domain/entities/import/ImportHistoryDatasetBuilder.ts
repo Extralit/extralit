@@ -29,7 +29,7 @@ export class ImportHistoryDatasetBuilder {
 
   build(): DatasetCreation {
     const subset = this.createSubsetFromImportHistory();
-    const dataset = new DatasetCreation(this.importHistoryData.id, this.datasetName, [subset]);
+    const dataset = new DatasetCreation("", this.datasetName, [subset]);
 
     // Set the importHistoryId for backend import routing
     dataset.importHistoryId = this.importHistoryData.id;
@@ -56,7 +56,8 @@ export class ImportHistoryDatasetBuilder {
           fields: originalMappings.fields,
           metadata: [...originalMappings.metadata],
           suggestions: originalMappings.suggestions,
-          external_id: originalMappings.external_id,
+          source_id: originalMappings.source_id,
+          target_id: originalMappings.target_id,
         };
 
         // Ensure metadata fields are properly mapped
@@ -94,7 +95,7 @@ export class ImportHistoryDatasetBuilder {
       .replace(/[^a-zA-Z0-9_-]/g, "_") // Replace special chars with underscore
       .toLowerCase();
 
-    return `${baseName}_dataset`;
+    return `${baseName}`;
   }
 
   private createSubsetFromImportHistory(): Subset {
