@@ -199,7 +199,7 @@ async def list_objects(
 async def extract_file_content(
     *,
     file: Annotated[UploadFile, File()],
-    current_user: User = Security(auth.get_current_user),
+    current_user: User | None = Security(auth.get_optional_current_user),
 ):
     """Extract text and metadata from uploaded file using Extractous"""
     try:
