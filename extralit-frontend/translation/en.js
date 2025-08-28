@@ -350,7 +350,7 @@ export default {
     requiredField: "Required field",
     requiredQuestion: "Required question",
     select: "Select",
-    mapToColumn: "Map to column",
+    mapToColumn: "Fields mapping",
     applyToaAField: "Annotate spans on:",
     subset: "Subset",
     selectSubset: "Your can create a dataset from only one subset.",

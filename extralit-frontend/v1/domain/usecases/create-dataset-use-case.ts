@@ -55,7 +55,7 @@ export class CreateDatasetUseCase {
 
         const progress = await this.datasetRepository.getProgress(datasetCreated);
 
-        if (progress.hasAtLeastTenRecord) {
+        if (progress.total) {
           break;
         }
 

@@ -93,13 +93,14 @@
 <script lang="ts">
 import { useDatasetConfigurationNameAndWorkspace } from "./useDatasetConfigurationNameAndWorkspace";
 import Validation from "../../annotation/settings/Validation.vue";
+import { DatasetCreation } from "~/v1/domain/entities/hub/DatasetCreation";
 
 export default {
   name: "DatasetUpdateDialog",
   components: { Validation },
   props: {
     dataset: {
-      type: Object, // DatasetCreation type
+      type: DatasetCreation,
       required: true,
     },
     isLoading: {
@@ -195,9 +196,7 @@ export default {
     },
   },
   setup() {
-    return {
-      ...useDatasetConfigurationNameAndWorkspace(),
-    };
+    return useDatasetConfigurationNameAndWorkspace();
   },
 };
 </script>
