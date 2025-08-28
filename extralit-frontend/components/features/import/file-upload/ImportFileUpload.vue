@@ -12,6 +12,13 @@
 
         <!-- PDF Upload Section -->
         <PdfUpload :initial-data="pdfData" :bibliography-entries="bibData.dataframeData" @update="handlePdfUpdate" />
+
+        <!-- File Extraction Section -->
+        <FileExtraction
+          :available-files="uploadedFiles"
+          @extraction-success="handleExtractionSuccess"
+          @extraction-error="handleExtractionError"
+        />
       </div>
 
       <!-- Summary Sidebar -->
@@ -23,6 +30,7 @@
 <script lang="ts">
 import TableUpload from "./TableUpload.vue";
 import PdfUpload from "./PdfUpload.vue";
+import FileExtraction from "./FileExtraction.vue";
 import ImportSummarySidebar from "./ImportSummarySidebar.vue";
 import { useImportFileUploadViewModel } from "./useImportFileUploadViewModel";
 
@@ -32,6 +40,7 @@ export default {
   components: {
     TableUpload,
     PdfUpload,
+    FileExtraction,
     ImportSummarySidebar,
   } as any,
 
@@ -55,7 +64,7 @@ export default {
     },
   },
 
-  emits: ["bib-update", "pdf-update"],
+  emits: ["bib-update", "pdf-update", "extraction-success", "extraction-error"],
 
   setup(props: any, { emit }: any) {
     return useImportFileUploadViewModel(props, { emit });
