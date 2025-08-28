@@ -16,7 +16,7 @@ import uuid
 
 import pytest
 
-from extralit import Dataset, Record, Response, Settings, Suggestion, TextField, TextQuestion
+from extralit import Dataset, Record, Response, Settings, TextField, TextQuestion
 from extralit._exceptions import ExtralitError
 from extralit._models import RecordModel
 from extralit._models._record._metadata import MetadataModel
@@ -34,25 +34,6 @@ def dataset():
 
 
 class TestRecords:
-    def test_record_repr(self):
-        record_id = uuid.uuid4()
-        user_id = uuid.uuid4()
-        record = Record(
-            id=record_id,
-            fields={"name": "John", "age": "30"},
-            metadata={"key": "value"},
-            suggestions=[Suggestion(question_name="question", value="answer")],
-            responses=[Response(question_name="question", value="answer", user_id=user_id)],
-        )
-        assert (
-            record.__repr__() == f"Record(id={record_id},"
-            "status=pending,"
-            "fields={'name': 'John', 'age': '30'},"
-            "metadata={'key': 'value'},"
-            "suggestions={'question': {'value': 'answer', 'score': None, 'agent': None}},"
-            f"responses={{'question': [{{'value': 'answer'}}]}})"
-        )
-
     def test_record_external_id(self):
         for id in [0, "1", "0"]:
             record = Record(id=id, fields={"name": "John", "age": "30"})

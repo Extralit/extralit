@@ -76,11 +76,12 @@ class Settings(DefaultSettingsMixin, Resource):
 
         self._dataset = _dataset
         self._distribution = distribution or TaskDistribution.default()
-        # Convert dict to DatasetMapping if needed
+
         if isinstance(mapping, dict):
             self._mapping = DatasetMapping.from_dict(mapping)
         else:
             self._mapping = mapping
+
         self.__guidelines = self.__process_guidelines(guidelines)
         self.__allow_extra_metadata = allow_extra_metadata
 
@@ -430,17 +431,13 @@ class Settings(DefaultSettingsMixin, Resource):
         # }
         # But this is not implemented yet, so we need to update the dataset model directly
 
-        mapping_model = None
-        if self.mapping:
-            mapping_model = self.mapping._api_model()
-
         dataset_model = DatasetModel(
             id=self._dataset.id,
             name=self._dataset.name,
             guidelines=self.guidelines,
             allow_extra_metadata=self.allow_extra_metadata,
             distribution=self.distribution._api_model(),
-            mapping=mapping_model,
+            mapping=self.mapping._api_model() if self.mapping else None,
         )
         self._client.api.datasets.update(dataset_model)
 

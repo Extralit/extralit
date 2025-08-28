@@ -56,12 +56,7 @@ class DatasetMapping(DatasetMappingBase):
     @classmethod
     def from_dict(cls, dict: dict[str, Any]) -> "DatasetMapping":
         # Check if this is a HubDatasetMapping format (has 'fields' key with list of dicts)
-        if (
-            "fields" in dict
-            and isinstance(dict["fields"], list)
-            and dict["fields"]
-            and isinstance(dict["fields"][0], dict)
-        ):
+        if "fields" in dict and isinstance(dict["fields"], list) and dict["fields"]:
             return cls.from_model(DatasetMappingModel.from_hub_mapping_dict(dict))
         else:
             # This is the simple key-value mapping format
