@@ -155,10 +155,7 @@ class HubDataset:
         )
 
     def _row_external_id(self, row: dict) -> str:
-        if not self.mapping.external_id:
-            return f"{self.split}_{self._next_row_idx()}"
-
-        return row[self.mapping.external_id]
+        return f"{self.split}_{self._next_row_idx()}"
 
     def _row_fields(self, row: dict, dataset: Dataset) -> dict:
         fields = {}
