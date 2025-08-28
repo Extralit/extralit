@@ -4,7 +4,6 @@ import { ref } from "vue-demi";
 import { GetWorkspacesUseCase } from "~/v1/domain/usecases/get-workspaces-use-case";
 import { GetImportCompatibleDatasetsUseCase } from "~/v1/domain/usecases/get-import-compatible-datasets-use-case";
 import { BackendDataset } from "~/v1/infrastructure/types/dataset";
-import { DatasetCreation } from "~/v1/domain/entities/hub/DatasetCreation";
 
 export const useDatasetConfigurationNameAndWorkspace = () => {
   const workspaces = ref<any[]>([]);

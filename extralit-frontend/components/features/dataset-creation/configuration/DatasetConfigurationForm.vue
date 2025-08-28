@@ -72,7 +72,7 @@
           />
 
           <!-- Create Dataset Dialog -->
-          <DatasetConfigurationDialog
+          <DatasetCreateDialog
             v-if="visibleDatasetCreationDialog"
             :dataset="dataset"
             :is-loading="isLoading"

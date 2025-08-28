@@ -19,7 +19,6 @@ export class GetImportCompatibleDatasetsUseCase {
 
       return data.items || []
     } catch (error) {
-      console.error("Error fetching compatible datasets:", error);
       throw new Error("Failed to fetch compatible datasets");
     }
   }
