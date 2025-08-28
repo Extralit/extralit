@@ -15,12 +15,12 @@ export interface ImportHistoryFeature {
   name: string;
 }
 
+export const METADATA_FIELDS = ["reference", "doi", "pmid"] as const;
+
 export class ImportHistoryDatasetBuilder {
   private readonly importHistoryData: ImportHistoryDetailsResponse;
   private readonly datasetName: string;
 
-  // Fields that should be treated as metadata rather than dataset fields
-  private static readonly METADATA_FIELDS = ["reference", "doi", "imdb"] as const;
 
   constructor(importHistoryData: ImportHistoryDetailsResponse) {
     this.importHistoryData = importHistoryData;
@@ -60,7 +60,7 @@ export class ImportHistoryDatasetBuilder {
         };
 
         // Ensure metadata fields are properly mapped
-        ImportHistoryDatasetBuilder.METADATA_FIELDS.forEach((metadataField) => {
+        METADATA_FIELDS.forEach((metadataField) => {
           if (this.availableFields.includes(metadataField)) {
             const hasMapping = mappings.metadata.some((m) => m.target === metadataField);
             if (!hasMapping) {
@@ -102,7 +102,7 @@ export class ImportHistoryDatasetBuilder {
     const features = this.extractFeaturesFromSchema();
 
     // Ensure metadata fields are included in features if they exist in the data
-    ImportHistoryDatasetBuilder.METADATA_FIELDS.forEach((metadataField) => {
+    METADATA_FIELDS.forEach((metadataField) => {
       if (this.availableFields.includes(metadataField) && !features[metadataField]) {
         features[metadataField] = {
           dtype: "string",
@@ -144,7 +144,7 @@ export class ImportHistoryDatasetBuilder {
 
     // Only create metadata for specific fields that should be treated as metadata
     this.importHistoryData.data.schema.fields.forEach((field) => {
-      if (ImportHistoryDatasetBuilder.METADATA_FIELDS.includes(field.name as any)) {
+      if (METADATA_FIELDS.includes(field.name as any)) {
         const metadataType = this.inferMetadataType(field.name);
         if (metadataType) {
           const metadata = MetadataCreation.from(field.name, metadataType);
@@ -161,7 +161,7 @@ export class ImportHistoryDatasetBuilder {
       if (!hasReferenceMetadata) {
         const referenceSource = this.availableFields.includes("reference") ? "reference" : "id";
         // Only add if the reference source is one of our metadata fields
-        if (ImportHistoryDatasetBuilder.METADATA_FIELDS.includes(referenceSource as any)) {
+        if (METADATA_FIELDS.includes(referenceSource as any)) {
           const referenceMetadata = MetadataCreation.from(referenceSource, "terms");
           if (referenceMetadata) {
             (subset as any).metadata.push(referenceMetadata);
@@ -177,10 +177,10 @@ export class ImportHistoryDatasetBuilder {
   private hasReferenceField(): boolean {
     return (
       this.importHistoryData.data.schema.fields.some((field) =>
-        ImportHistoryDatasetBuilder.METADATA_FIELDS.includes(field.name as any)
+        METADATA_FIELDS.includes(field.name as any)
       ) ||
       this.importHistoryData.data.data.some((record) =>
-        ImportHistoryDatasetBuilder.METADATA_FIELDS.some((field) => field in record)
+        METADATA_FIELDS.some((field) => field in record)
       )
     );
   }
@@ -252,7 +252,7 @@ export class ImportHistoryDatasetBuilder {
       const metadata: Record<string, any> = { ...record.metadata };
 
       // Only include specific fields as metadata
-      ImportHistoryDatasetBuilder.METADATA_FIELDS.forEach((metadataField) => {
+      METADATA_FIELDS.forEach((metadataField) => {
         if (record[metadataField] !== undefined) {
           metadata[metadataField] = record[metadataField];
         }
@@ -293,7 +293,7 @@ export class ImportHistoryDatasetBuilder {
     if (!field) return "no mapping";
 
     // Skip fields that should be treated as metadata
-    if (ImportHistoryDatasetBuilder.METADATA_FIELDS.includes(fieldName as any)) {
+    if (METADATA_FIELDS.includes(fieldName as any)) {
       return "no mapping";
     }
 
@@ -317,7 +317,7 @@ export class ImportHistoryDatasetBuilder {
    */
   inferMetadataType(fieldName: string): MetadataTypes | "terms" | null {
     // Only return metadata types for fields that should be treated as metadata
-    if (!ImportHistoryDatasetBuilder.METADATA_FIELDS.includes(fieldName as any)) {
+    if (!METADATA_FIELDS.includes(fieldName as any)) {
       return null;
     }
 
@@ -432,7 +432,7 @@ export class ImportHistoryDatasetBuilder {
       }
 
       // Skip fields that should be treated as metadata
-      if (ImportHistoryDatasetBuilder.METADATA_FIELDS.includes(fieldName as any)) {
+      if (METADATA_FIELDS.includes(fieldName as any)) {
         return;
       }
 
