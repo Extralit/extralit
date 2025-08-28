@@ -326,6 +326,7 @@ export default {
 
   &__button-area {
     display: flex;
+    gap: 1rem;
 
     .button {
       width: 100%;
