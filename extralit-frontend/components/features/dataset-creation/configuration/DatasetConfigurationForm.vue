@@ -105,7 +105,7 @@ export default {
     dataSource: {
       type: String,
       default: "hub",
-      validator: (value) => ["hub", "import"].includes(value),
+      validator: (value: string) => ["hub", "import"].includes(value),
     },
   },
   data() {

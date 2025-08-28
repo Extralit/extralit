@@ -46,7 +46,7 @@
     </dialog>
   </transition>
 </template>
-<script>
+<script lang="ts">
 import Validation from "../../annotation/settings/Validation.vue";
 import { useDatasetConfigurationNameAndWorkspace } from "./useDatasetConfigurationNameAndWorkspace";
 
@@ -64,7 +64,7 @@ export default {
     dataSource: {
       type: String,
       default: "hub",
-      validator: (value) => ["hub", "import"].includes(value),
+      validator: (value: string) => ["hub", "import"].includes(value),
     },
   },
   watch: {
