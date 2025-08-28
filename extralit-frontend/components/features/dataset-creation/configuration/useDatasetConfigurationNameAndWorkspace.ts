@@ -3,14 +3,14 @@ import { useResolve } from "ts-injecty";
 import { ref } from "vue-demi";
 import { GetWorkspacesUseCase } from "~/v1/domain/usecases/get-workspaces-use-case";
 import { GetImportCompatibleDatasetsUseCase } from "~/v1/domain/usecases/get-import-compatible-datasets-use-case";
-import { Dataset } from "~/v1/domain/entities/dataset/Dataset";
+import { BackendDataset } from "~/v1/infrastructure/types/dataset";
 
 export const useDatasetConfigurationNameAndWorkspace = () => {
   const workspaces = ref<any[]>([]);
-  const compatibleDatasets = ref<Dataset[]>([]);
+  const compatibleDatasets = ref<BackendDataset[]>([]);
   const isLoadingCompatibleDatasets = ref(false);
   const workflowType = ref<"create" | "append">("create");
-  const selectedTargetDataset = ref<Dataset | null>(null);
+  const selectedTargetDataset = ref<BackendDataset | null>(null);
 
   const getWorkspacesUseCase = useResolve(GetWorkspacesUseCase);
   const getImportCompatibleDatasetsUseCase = useResolve(GetImportCompatibleDatasetsUseCase);
@@ -48,14 +48,6 @@ export const useDatasetConfigurationNameAndWorkspace = () => {
     }
   };
 
-  const getColumnNamesFromImportData = (importData: any): string[] => {
-    if (!importData?.data?.data?.length) return [];
-
-    // Get column names from the first row of import data
-    const firstRow = importData.data.data[0];
-    return Object.keys(firstRow);
-  };
-
   return {
     workspaces,
     compatibleDatasets,
@@ -64,6 +56,5 @@ export const useDatasetConfigurationNameAndWorkspace = () => {
     selectedTargetDataset,
     loadCompatibleDatasets,
     onWorkflowTypeChange,
-    getColumnNamesFromImportData,
   };
 };

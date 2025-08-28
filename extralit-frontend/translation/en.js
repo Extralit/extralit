@@ -329,13 +329,19 @@ export default {
     atLeastOneRequired: "At least one required question is needed.",
     hasInvalidQuestions: "Some questions are invalid",
     createDataset: "Create the dataset in Extralit",
+    updateDataset: "Add to the dataset in Extralit",
     datasetName: "Dataset name",
     name: "Name",
     assignWorkspace: "Assign a workspace",
     selectSplit: "Select a split",
     recordWarning:
       "The created dataset will include the first 10K rows and further records can be logged via the python SDK.",
-    button: "Create dataset",
+    createButton: "Create dataset",
+    updateButton: "Update dataset",
+    sourceField: "From",
+    targetField: "To",
+    noMapping: "No mapping",
+    importSummary: "You are about to add new and update existing records into the dataset.",
     fields: "Fields",
     metadata: "Metadata Fields",
     metadataDescription: "Select fields to include as metadata for filtering and sorting",
@@ -355,6 +361,7 @@ export default {
     none: "None",
     noWorkspaces:
       "Please, follow this <a target='_blank' href='https://docs.extralit.ai/latest/admin_guide/workspace/#create-a-new-workspace'>guide</a> to create a workspace",
+    noCompatibleDatasets: "No compatible dataset for this import.",
   },
   exportToHub: {
     dialogTitle: "Push to Hugging Face Hub",

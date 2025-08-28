@@ -246,3 +246,8 @@ class HubDatasetExport(BaseModel):
 class ImportHistoryDataset(BaseModel):
     history_id: UUID = Field(..., description="The ID of the import history to import from")
     mapping: HubDatasetMapping = Field(..., description="The mapping configuration for the import")
+
+
+class CompatibleDatasetsRequest(BaseModel):
+    column_names: list[str] = Field(..., description="List of column names to match against existing datasets")
+    workspace_id: UUID | None = Field(None, description="Filter by workspace_id")

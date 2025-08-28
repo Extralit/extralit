@@ -79,7 +79,11 @@
           </template>
           <template #right>
             <div class="dataset-config__configuration">
-              <DatasetConfigurationForm :dataset="dataset" @change-subset="$emit('change-subset', $event)" />
+              <DatasetConfigurationForm
+                :dataset="dataset"
+                :data-source="dataSource"
+                @change-subset="$emit('change-subset', $event)"
+              />
             </div>
           </template>
         </VerticalResizable>
@@ -88,7 +92,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import "assets/icons/document";
 import { useDatasetConfiguration } from "./useDatasetConfiguration";
 import { ImportHistoryDetails } from "~/v1/domain/entities/import/ImportHistoryDetails";

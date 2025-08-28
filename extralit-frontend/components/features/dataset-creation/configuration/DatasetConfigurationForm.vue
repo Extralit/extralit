@@ -45,7 +45,7 @@
               :options="['text', 'label_selection', 'multi_label_selection', 'rating', 'ranking', 'span']"
               @add-question="addQuestion($event)" />
           </div>
-          <div class="config-form__col__content --questions">
+          <div v-if="!isUpdateWorkflow" class="config-form__col__content --questions">
             <draggable v-if="dataset.selectedSubset.questions.length" class="config-form__draggable-area"
               ghost-class="config-form__ghost" :list="dataset.selectedSubset.questions" :group="{ name: 'questions' }"
               :disabled="isFocused">
@@ -59,11 +59,33 @@
           </div>
         </div>
         <div class="config-form__button-area">
-          <BaseButton class="primary" @click.prevent="visibleDatasetCreationDialog = !visibleDatasetCreationDialog">{{
-            $t("datasetCreation.button")
-            }}</BaseButton>
-          <DatasetConfigurationDialog v-if="visibleDatasetCreationDialog" :dataset="dataset" :is-loading="isLoading"
-            @close-dialog="visibleDatasetCreationDialog = false" @create-dataset="createDataset" />
+          <BaseButton
+            class="primary"
+            @click.prevent="openCreateDatasetDialog"
+            v-text="$t('datasetCreation.createButton')"
+          />
+          <BaseButton
+            v-if="dataSource === 'import'"
+            class="secondary"
+            @click.prevent="openUpdateDatasetDialog"
+            v-text="$t('datasetCreation.updateButton')"
+          />
+
+          <!-- Create Dataset Dialog -->
+          <DatasetConfigurationDialog
+            v-if="visibleDatasetCreationDialog"
+            :dataset="dataset"
+            :is-loading="isLoading"
+            @close-dialog="visibleDatasetCreationDialog = false"
+            @create-dataset="createDataset" />
+
+          <!-- Update Dataset Dialog -->
+          <DatasetUpdateDialog
+            v-if="visibleDatasetUpdateDialog"
+            :dataset="dataset"
+            :is-loading="isLoading"
+            @close-dialog="closeUpdateDialog"
+            @update-dataset="updateDataset" />
         </div>
       </div>
     </div>
@@ -80,12 +102,19 @@ export default {
       type: Object,
       required: true,
     },
+    dataSource: {
+      type: String,
+      default: "hub",
+      validator: (value) => ["hub", "import"].includes(value),
+    },
   },
   data() {
     return {
       isFocused: false,
       visibleDatasetCreationDialog: false,
+      visibleDatasetUpdateDialog: false,
       selectedMetadataFields: [],
+      isUpdateWorkflow: false,
     };
   },
   computed: {
@@ -105,9 +134,35 @@ export default {
       // Fallback to field names from the dataset
       return this.dataset.selectedSubset.fields.map((f: any) => f.name);
     },
+    // Extract field schema information from the dataset for compatibility API
+    datasetFieldSchema() {
+      return this.dataset.selectedSubset.fields.map(field => ({
+        name: field.name,
+        type: field.originalType?.value || field.type?.value || 'string'
+      }));
+    },
+    // Get column names for compatibility checking
+    columnNames() {
+      return this.dataset.selectedSubset.fields.map(f => f.name);
+    },
   },
   methods: {
     createDataset() {
+      this.create(this.dataset);
+    },
+    openCreateDatasetDialog() {
+      this.visibleDatasetCreationDialog = true;
+    },
+    openUpdateDatasetDialog() {
+      this.isUpdateWorkflow = true;
+      this.visibleDatasetUpdateDialog = true;
+    },
+    closeUpdateDialog() {
+      this.isUpdateWorkflow = false;
+      this.visibleDatasetUpdateDialog = false;
+    },
+    updateDataset() {
+      console.log('Updating dataset', this.dataset)
       this.create(this.dataset);
     },
     generateName(type: string, number: string | number): string {

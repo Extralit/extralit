@@ -1,6 +1,6 @@
 <template>
   <transition name="fade" appear>
-    <dialog class="dataset-config-dialog" v-click-outside="closeDialog">
+    <dialog v-click-outside="closeDialog" class="dataset-config-dialog">
       <form class="dataset-config-dialog__content" @submit.prevent="createDataset">
         <h1 class="dataset-config-dialog__title" v-text="$t('datasetCreation.createDataset')" />
         <div class="dataset-config-dialog__row">
@@ -22,15 +22,15 @@
             class="dataset-config-dialog__unique-workspace"
             v-text="dataset.workspace.name"
           />
-          <DatasetConfigurationSelector v-else :options="workspaces" v-model="dataset.workspace" />
+          <DatasetConfigurationSelector v-else v-model="dataset.workspace" :options="workspaces" />
         </div>
 
-        <div class="dataset-config-dialog__row" v-if="dataset.selectedSubset.splits?.length > 1">
+        <div v-if="dataset.selectedSubset.splits?.length > 1" class="dataset-config-dialog__row">
           <label class="dataset-config-dialog__label" v-text="$t('datasetCreation.selectSplit')" />
           <DatasetConfigurationSelector
+            v-model="dataset.selectedSubset.selectedSplit"
             class="config-form__selector"
             :options="dataset.selectedSubset.splits"
-            v-model="dataset.selectedSubset.selectedSplit"
           />
         </div>
         <p class="dataset-config-dialog__info" v-text="$t('datasetCreation.recordWarning')" />
@@ -39,7 +39,7 @@
           :loading="isLoading"
           type="submit"
           class="dataset-config-dialog__button primary full"
-          >{{ $t("datasetCreation.button") }}</BaseButton
+          >{{ $t("datasetCreation.createButton") }}</BaseButton
         >
         <Validation v-if="!dataset.isValid" :validations="firstTranslatedValidation" />
       </form>
@@ -60,6 +60,11 @@ export default {
     isLoading: {
       type: Boolean,
       default: false,
+    },
+    dataSource: {
+      type: String,
+      default: "hub",
+      validator: (value) => ["hub", "import"].includes(value),
     },
   },
   watch: {

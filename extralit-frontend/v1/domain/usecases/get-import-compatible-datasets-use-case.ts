@@ -1,5 +1,6 @@
 import { type NuxtAxiosInstance } from "@nuxtjs/axios";
-import { Dataset } from "../entities/dataset/Dataset";
+import type { Response } from "~/v1/infrastructure/types/api";
+import type { BackendDataset } from "~/v1/infrastructure/types/dataset";
 
 export interface GetImportCompatibleDatasetsParams {
   columnNames: string[];
@@ -7,37 +8,16 @@ export interface GetImportCompatibleDatasetsParams {
 }
 
 export class GetImportCompatibleDatasetsUseCase {
-  constructor(private readonly axios: NuxtAxiosInstance) {}
+  constructor(private readonly axios: NuxtAxiosInstance) { }
 
-  async execute(params: GetImportCompatibleDatasetsParams): Promise<Dataset[]> {
+  async execute(params: GetImportCompatibleDatasetsParams): Promise<BackendDataset[]> {
     try {
-      const response = await this.axios.get("/api/v1/datasets/compatible", {
-        params: {
-          column_names: params.columnNames,
-          workspace_id: params.workspaceId,
-        },
+      const { data } = await this.axios.post<Response<BackendDataset[]>>("/v1/datasets/compatible", {
+        column_names: params.columnNames,
+        workspace_id: params.workspaceId,
       });
 
-      return (response.data.items || []).map(
-        (datasetFromBackend: any) =>
-          new Dataset(
-            datasetFromBackend.id,
-            datasetFromBackend.name,
-            datasetFromBackend.guidelines,
-            datasetFromBackend.status,
-            datasetFromBackend.workspace_id,
-            datasetFromBackend.workspace_name,
-            datasetFromBackend.allow_extra_metadata,
-            {
-              strategy: datasetFromBackend.distribution.strategy,
-              minSubmitted: datasetFromBackend.distribution.min_submitted,
-            },
-            datasetFromBackend.metadata,
-            datasetFromBackend.inserted_at,
-            datasetFromBackend.updated_at,
-            datasetFromBackend.last_activity_at
-          )
-      );
+      return data.items || []
     } catch (error) {
       console.error("Error fetching compatible datasets:", error);
       throw new Error("Failed to fetch compatible datasets");
