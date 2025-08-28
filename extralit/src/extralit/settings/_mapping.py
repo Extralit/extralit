@@ -83,3 +83,9 @@ class DatasetMapping(DatasetMappingBase):
     @property
     def external_id(self) -> str:
         return self._model.external_id
+
+    def __eq__(self, other):
+        """Compare DatasetMapping objects for equality."""
+        if not isinstance(other, DatasetMapping):
+            return False
+        return self._model == other._model
